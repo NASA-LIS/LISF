@@ -39,6 +39,7 @@
 !                temp & dew pt if RH not provided.Chris Franks/16WS/WXE/SEMS
 !     25 Jun 20  Modified to check valid times of surface obs.
 !                ..............................Eric Kemp/NASA/SSAI
+!     16 Dec 21  Replaced julhr with YYYYMMDDHH in log...Eric Kemp/NASA/SSAI
 ! 
 ! !INTERFACE: 
 subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
@@ -216,6 +217,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   real                           :: rigrid
   real                           :: rjgrid
   character*6                    :: cjulhr
+  character*10                   :: date10 ! EMK replace cjulhr in log
   character*14, allocatable      :: dtg      ( : )
   character*100                  :: message  ( 20 )
   character*8, allocatable       :: netyp    ( : )
@@ -574,8 +576,10 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !       There was an error retrieving obs for this Julhr and hemi.
 !       Send an alert message, but don't abort.
 !     ------------------------------------------------------------------
-     
-           write(cjulhr,'(i6)',iostat=istat1) julhr
+
+           ! EMK...Replace julhr with YYYYMMDD
+           !write(cjulhr,'(i6)',iostat=istat1) julhr
+           write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
            write(LIS_logunit,*)' '
            write(LIS_logunit,*)'- ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
            write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
@@ -585,8 +589,11 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
            message(3) = '  error retrieving sfc obs from database for'
            message(4) = '  the '//norsou(hemi)//' hemisphere.'
            if( istat1 .eq. 0 ) then
-              write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-              message(5) = '  julhr is ' // trim(cjulhr) // '.'
+              ! EMK...Replace julhr with YYYYMMDD
+              !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
+              !message(5) = '  julhr is ' // trim(cjulhr) // '.'
+              write(LIS_logunit,*)' - YYYYMMDDHH is ' // date10
+              message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
            endif
            alert_number = alert_number + 1
            if(LIS_masterproc) then 
@@ -594,7 +601,9 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
            endif
         endif
      else
-        write(cjulhr,'(i6)',iostat=istat1) julhr
+        ! EMK...Replace julhr with YYYYMMDD
+        !write(cjulhr,'(i6)',iostat=istat1) julhr
+        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'- ROUTINE AGRMET_GETSFC: ERROR RETRIEVING SFC OBS FOR'
         write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
@@ -604,8 +613,11 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
         message(3) = '  error retrieving sfc obs from database for'
         message(4) = '  the '//norsou(hemi)//' hemisphere.'
         if( istat1 .eq. 0 ) then
-           write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-           message(5) = '  julhr is ' // trim(cjulhr) // '.'
+           ! EMK...Replace julhr with YYYYMMDDHH
+           !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
+           !message(5) = '  julhr is ' // trim(cjulhr) // '.'
+           write(LIS_logunit,*)' - YYYYMMDDHH is ' // date10
+           message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
         endif
         alert_number = alert_number + 1
         if(LIS_masterproc) then 

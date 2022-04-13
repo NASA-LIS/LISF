@@ -102,7 +102,7 @@ contains
          return
       else
          write(LDT_logunit,*) &
-              "[INFO] Using " // trim(infilename)
+              "[INFO] Reading " // trim(infilename)
       end if
 
       found_t2 = .false.

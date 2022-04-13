@@ -348,6 +348,8 @@ endif::devonly[]
 |"`ERA5`"                      | ERA5 reanalysis meteorology
 |"`AWRAL processed forcing`"   | AWRA-L processed forcing
 |"`PLUMBER2`"                  | PLUMBER2 forcing
+|"`GDDP`"                      | NEX GDDP forcing
+|"`COAMPSout`"                 | COAMPS output forcing
 |====
 
 .Example _lis.config_ entry
@@ -560,6 +562,7 @@ Acceptable values are:
 |Value      | Description
 
 |"`binary`" | Write output in binary format
+|"`distributed binary`" | Write output in distributed binary format where each processor writes outputs for the respective local domain
 |"`grib1`"  | Write output in GRIB-1 format
 |"`grib2`"  | Write output in GRIB-2 format
 |"`netcdf`" | Write output in netCDF format
@@ -6053,6 +6056,16 @@ or mean sea level (msl) can be selected (which is not supported yet).
 of GEFS ensemble members being read in. Reforecast2 currently
 supports up to a 11 members.
 
+`GEFS forecast grid resolution:` specifies the grid resolution in degrees
+of the GEFS forecast data. The current resolutions supported are:
+
+|====
+|GEFS forecast type | Resolutions
+
+|`Reforecast2`      | `0.25` and `1.0`
+|`Operational`      | `0.25` and `0.50`
+|====
+
 .Example _lis.config_ entry
 ....
 GEFS forecast directory:        ./MET_FORCING/GEFS/Reforecast/
@@ -6061,6 +6074,7 @@ GEFS forecast run mode:          forecast         # forecast | analysis
 GEFS forecast grid projection:   latlon           # latlon | gaussian
 GEFS pressure level field:       surface          # surface | msl
 GEFS forecast number of ensemble members:  11
+GEFS forecast grid resolution:   0.25
 ....
 
 
@@ -6365,6 +6379,25 @@ AWRAL domain y-dimension size:         681
 PLUMBER2 forcing file: ./input/PLUMBER2/AU-Cow_2010-2015_OzFlux_Met.nc          
 PLUMBER2 Station ID: AU-Cow                                                      
 PLUMBER2 Time Delta: 1800  
+....
+
+[[sssec_gddpforcing,GDDP]]
+==== GDDP
+
+`GDDP forcing file:` specifies the location of the GDDP metforcing data.
+
+`GDDP forcing scenario:` specifies the GDDP forcing scenario. Currently only `historical` is supported.
+
+`GDDP reference daily climatology directory:` specifies the location of the GDDP reference daily climatology data.
+
+`GDDP reference hourly climatology directory:` specifies the location of the GDDP reference hourly climatology data.
+
+.Example _lis.config_ entry
+....
+GDDP forcing directory:                      ./input/MET_FORCING/NEX-GDDP-CMIP6/
+GDDP forcing scenario:                       historical
+GDDP reference daily climatology directory:  ./input/MET_FORCING/M2CLIMO/DAILY/
+GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
 ....
 
 [[ssec_lsm,Land surface models]]
@@ -7752,18 +7785,56 @@ in the LIS implementation are indicated with [NS].  Acceptable values are:
 |====
 |Value | Note | Description
  
-| 1    |      | off (use table LAI; use FVEG = SHDFAC from input)
-| 2    |      | on  (dynamic vegetation; must use Ball-Berry canopy option)
-| 3    |      | off (use table LAI; calculate FVEG)
-| 4    |  **  | off (use table LAI; use maximum vegetation fraction)
-| 5    |  **  | on  (use maximum vegetation fraction)
-| 6    |      | on  (use FVEG = SHDFAC from input)
-| 7    |      | off (use input LAI; use FVEG = SHDFAC from input)
-| 8    |      | off (use input LAI; calculate FVEG)
-| 9    |      | off (use input LAI; use maximum vegetation fraction)
+| 1    |      | off (use table LAI/SAI; use input GVF)
+| 2    |      | on  (dynamic vegetation; GVF is a function of LAI/SAI)
+| 3    |      | off (use table LAI/SAI; GVF is a function of LAI/SAI)
+| 4    |  **  | off (use table LAI/SAI; GVF is the maximum value)
+| 5    |  **  | on  (dynamic vegetation; GVF is the maximum value)
+| 6    |      | on  (dynamic vegetation; use input GVF)
+| 7    |      | off (use input LAI/SAI; use input GVF)
+| 8    |      | off (use input LAI/SAI; GVF is a function of LAI/SAI)
+| 9    |      | off (use input LAI/SAI; GVF is the maximum value)
 |10    |  NS  | crop model on (use maximum vegetation fraction)
 |====
- 
+
+When using options 1 through 6, users should set `LAI data source:` to
+"`none`".  For options 1, 3, or 4, the LAI value will be read from the
+`Noah-MP.4.0.1 MP parameter table:` file (typically, "`MPTABLE.TBL`")
+based on the vegetation class of the tile and the current month.  For
+options 2, 5, or 6, the LAI is a prognostic variable as a function of
+the LeafMass calculated from the dynamic vegetation scheme.  When using
+options 7 through 9, users should set `LAI data source:` to "`LDT`",
+after running LDT to include an LAI dataset as one of the parameters
+in the `LIS domain and parameter data file:`.
+
+When using options 1 through 6, users should set `SAI data source:` to
+"`none`".  For options 1, 3, or 4, the SAI value will be read from the
+`Noah-MP.4.0.1 MP parameter table:` file (typically, "`MPTABLE.TBL`")
+based on the vegetation class of the tile and the current month.  For
+options 2, 5, or 6, the SAI is a prognostic variable as a function of
+the StemMass calculated from the dynamic vegetation scheme.  When using
+options 7 through 9, users can set `SAI data source:` to "`LDT`", after
+running LDT to include an SAI dataset as one of the parameters in the
+`LIS domain and parameter data file:`.  Alternatively, for these options
+(7, 8, or 9), users can choose to not use an input SAI dataset by setting
+`SAI data source:` to "`none`", in which case the SAI value will be set
+from the `Noah-MP.4.0.1 MP parameter table:` file.
+
+When using options 1, 4, 5, 6, 7, or 9, users should set `Greenness data
+source:` to "`LDT`", after running LDT to include a greenness dataset as
+one of the parameters in the `LIS domain and parameter data file:`.  The
+greenness parameter variable name can be referred to as GVF (greenness
+vegetation fraction), FVEG, or SHDFAC in the Noah-MP.4.0.1 physics code.
+When using options 1, 6, or 7, the greenness value is set to the monthly
+climatology value for each tile (unless "`CONSTANT`" was chosen when LDT
+was run for the `Greenness data source:`).  When using options 4, 5, or 9,
+the greenness value for each tile is set to the maximum value of all months
+from the monthly climatology at that tile.  When using options 2, 3, or 8,
+the greenness is a function of LAI and SAI at each tile for each timestep.
+
+Note that when using dynamic vegetation option 2, 5, or 6, the Ball-Berry
+canopy stomatal resistance option must be selected for the following config.
+
 `Noah-MP.4.0.1 canopy stomatal resistance option:` specifies the canopy
 stomatal resistance option for Noah-MP-4.0.1 LSM.  Options generally
 recommended for use by the model developers are indicated with [**].
@@ -10077,10 +10148,14 @@ where LIS outputs are located.
 `LIS runoff output interval:` specifies 
 LIS output time step
 
+`LIS runoff output domain file:` specifies location of the LIS runoff output
+domain file.
+
 .Example _lis.config_ entry
 ....
 LIS runoff output directory: ./LIS_OUTPUT/
 LIS runoff output interval: "1da"
+LIS runoff output domain file: ./LIS_OUTPUT/lis_input_010_hybrid.nc
 ....
 
 

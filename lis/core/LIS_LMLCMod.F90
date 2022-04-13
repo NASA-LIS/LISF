@@ -285,12 +285,13 @@ subroutine read_landcover(n)
      allocate(LIS_LMLC(n)%landcover(LIS_rc%lnc(n),LIS_rc%lnr(n), &
           LIS_rc%nsurfacetypes))
 
-     allocate(lc(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsurfacetypes))
-
      ios = nf90_inq_varid(nid,'LANDCOVER',lcid)
      call LIS_verify(ios,'LANDCOVER field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,lcid,lc)
+     ios = nf90_get_var(nid,lcid,LIS_LMLC(n)%landcover,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes/))
      call LIS_verify(ios,'Error in nf90_get_var in read_landcover')
 
      ios = nf90_get_att(nid, NF90_GLOBAL, 'BARESOILCLASS', LIS_rc%bareclass)
@@ -331,13 +332,6 @@ subroutine read_landcover(n)
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_landcover')
 
-     LIS_LMLC(n)%landcover(:,:,:) = lc(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-
-     deallocate(lc)
   else
      write(LIS_logunit,*) '[ERR] landcover map: ',LIS_rc%paramfile(n), ' does not exist'
      write(LIS_logunit,*) '[ERR] program stopping ...'
@@ -423,24 +417,20 @@ subroutine read_surfacetype(n)
 
      allocate(LIS_LMLC(n)%surfacetype(LIS_rc%lnc(n),LIS_rc%lnr(n), LIS_rc%nsurfacetypes))
 
-     allocate(lc(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsurfacetypes))
+!     allocate(lc(LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nsurfacetypes))
 
      ios = nf90_inq_varid(nid,'SURFACETYPE',lcid)
      call LIS_verify(ios,'SURFACETYPE field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,lcid,lc)
+     ios = nf90_get_var(nid,lcid,LIS_LMLC(n)%surfacetype,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1),1/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes/))
      call LIS_verify(ios,'Error in nf90_get_var in read_surfacetype')
 
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in read_surfacetype')
 
-     LIS_LMLC(n)%surfacetype(:,:,:) = lc(&
-          LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1),:)
-     
-     deallocate(lc)
   else
      write(LIS_logunit,*) '[ERR] surfacetype map: ',LIS_rc%paramfile(n), ' does not exist'
      write(LIS_logunit,*) '[ERR] program stopping ...'

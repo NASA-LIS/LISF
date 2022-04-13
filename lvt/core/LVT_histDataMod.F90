@@ -1009,6 +1009,7 @@ contains
 
     call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%sp_avg_mode, &
          label="Spatial averaging mode:",&
+         default="pixel-by-pixel",&
          rc=rc)
     if(rc.ne.0) then 
        write(LVT_logunit,*) "[ERR] Spatial averaging mode: not defined"

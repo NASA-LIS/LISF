@@ -66,8 +66,9 @@ subroutine USAFSI_run(n)
   !**  06 Nov 20  Added GALWEM 2-m temperature.......Eric Kemp, NASA GSFC/SSAI
   !**  12 Dec 20  Added GMI and AMSR2 capability...............Yonghwan Kwon/NASA GSFC/ESSIC
   !**  26 Jan 21  Added revised 10-km snow climatology...........Yeosang Yoon/NASA GSFC/SAIC
-  !**  28 Jan 21  Updated messages for PMW snow retrievals 
+  !**  28 Jan 21  Updated messages for PMW snow retrievals
   !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
+  !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -110,6 +111,7 @@ subroutine USAFSI_run(n)
   character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*100              ::  static               ! STATIC FILE DIRECTORY PATH
   character*100              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
+  character*100 :: sstdir ! EMK 20220113
   character*100              ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
   character*100              ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
   integer                    ::  runcycle             ! CYCLE HOUR
@@ -184,6 +186,7 @@ subroutine USAFSI_run(n)
      end if
 !---------------------------------------------------------kyh20201118
      stmpdir = trim(usafsi_settings%stmpdir)
+     sstdir = trim(usafsi_settings%sstdir) ! EMK 20220113
      static = trim(usafsi_settings%static)
      unmod = trim(usafsi_settings%unmod)
      viirsdir = trim(usafsi_settings%viirsdir)
@@ -343,7 +346,7 @@ subroutine USAFSI_run(n)
            ! Fall back on legacy GETSST for 0.25 deg data.
            write (LDT_logunit,*) &
                 '[INFO] CALLING GETSST TO GET SEA SURFACE TEMPERATURES'
-           call getsst (date10, stmpdir)
+           call getsst (date10, stmpdir, sstdir)
         end if
 
         ! RETRIEVE FRACTIONAL SNOW DATA.
@@ -587,6 +590,7 @@ contains
     end if
 
     ! Open the file
+    write(ldt_logunit,*)'[INFO] Opening ', trim(filename)
     call LDT_verify(nf90_open(path=trim(filename), &
          mode=nf90_nowrite, ncid=ncid), &
          '[ERR] Cannot open '//trim(filename))

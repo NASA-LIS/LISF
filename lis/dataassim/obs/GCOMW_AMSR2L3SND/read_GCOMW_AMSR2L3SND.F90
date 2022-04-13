@@ -702,14 +702,14 @@ subroutine read_AMSR2snd_bc_data(n, k, fname,sndobs_ip)
        GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr,&
        LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
        GCOMW_AMSR2L3SND_struc(n)%rlat,GCOMW_AMSR2L3SND_struc(n)%rlon, &
-       GCOMW_AMSR2L3SND_struc(n)%n11,&
-       GCOMW_AMSR2L3SND_struc(n)%n12,&
-       GCOMW_AMSR2L3SND_struc(n)%n21,&
-       GCOMW_AMSR2L3SND_struc(n)%n22,&
        GCOMW_AMSR2L3SND_struc(n)%w11,&
        GCOMW_AMSR2L3SND_struc(n)%w12,&
        GCOMW_AMSR2L3SND_struc(n)%w21,&
        GCOMW_AMSR2L3SND_struc(n)%w22,&
+       GCOMW_AMSR2L3SND_struc(n)%n11,&
+       GCOMW_AMSR2L3SND_struc(n)%n12,&
+       GCOMW_AMSR2L3SND_struc(n)%n21,&
+       GCOMW_AMSR2L3SND_struc(n)%n22,&
        LIS_rc%udef,ios)
 
 #endif
