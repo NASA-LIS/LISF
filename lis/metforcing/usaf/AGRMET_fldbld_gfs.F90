@@ -781,11 +781,11 @@ subroutine AGRMET_fldbld_read_gfs( fg_filename, ifguess, jfguess,&
   character(len=4) :: check_gfs_grib2_message
   character(len=4) :: grib_msg
   logical :: found
-  real :: plevel
+  integer :: plevel
   integer, external :: set_plevel
   logical :: found_inq
 
-  ! Executable code begins here ... 
+  ! Executable code begins here ...
   rc = 0
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
@@ -1794,7 +1794,7 @@ integer function set_plevel(editionNumber,pds9,level)
    integer, intent(in) :: level
 
    ! Locals
-   real :: plevel
+   integer :: plevel
    integer :: ierr
    character(len=100) :: messages(20)
 

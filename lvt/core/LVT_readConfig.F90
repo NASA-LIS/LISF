@@ -367,6 +367,7 @@ subroutine LVT_readConfig(configfile)
   
   call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%smoothObs, &
        label="Apply temporal smoothing to obs:",&
+       default = 0,&
        rc=rc)
   call LVT_verify(rc,'Apply temporal smoothing to obs: not defined')
 
@@ -398,18 +399,24 @@ subroutine LVT_readConfig(configfile)
        LVT_rc%statswriteint.eq.31536000) then 
       call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%use_shift_mo, &
            label="Starting month if a shifted year definition is used in temporal averaging:",&
+           default=1,&
            rc=rc)
       call LVT_verify(rc,'Starting month if a shifted year definition is used in temporal averaging: not defined')
    endif
   
-  call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%dataMask,label="Apply external mask:",&
-       rc=rc)
+   call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%dataMask,&
+        label="Apply external mask:",&
+        default = 0,&
+        rc=rc)
   call LVT_verify(rc,'Apply external mask: not defined')
 
-  call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%maskdir,label="External mask directory:",&
-       rc=rc)
-  call LVT_verify(rc,'External mask directory: not defined')
-
+  if(LVT_rc%dataMask.ne.0) then 
+     call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%maskdir,&
+          label="External mask directory:",&
+          rc=rc)
+     call LVT_verify(rc,'External mask directory: not defined')
+  endif
+  
 !monthly seasonal mask
   if(LVT_rc%dataMask.eq.3) then 
 
@@ -421,11 +428,11 @@ subroutine LVT_readConfig(configfile)
   endif
 
   call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%data_based_strat, &
-       label="External data-based stratification: ",rc=rc)
+       label="External data-based stratification: ",default=0,rc=rc)
   call LVT_verify(rc,"External data-based stratification: not defined")
 
   call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%var_based_strat, &
-       label="Variable-based stratification: ",rc=rc)
+       label="Variable-based stratification: ",default =0, rc=rc)
   call LVT_verify(rc,"Variable-based stratification: not defined")
 
   if(LVT_rc%var_based_strat.ge.1) then 
@@ -442,6 +449,7 @@ subroutine LVT_readConfig(configfile)
 
   call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%obsCountThreshold,&
        label="Observation count threshold:",&
+       default=0,&
        rc=rc)
   call LVT_verify(rc,'Observation count threshold: not defined')
 
@@ -465,11 +473,11 @@ subroutine LVT_readConfig(configfile)
   if(LVT_rc%runmode.eq.LVT_DataCompId) then 
 
      call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%computeEnsMetrics,&
-          label="Compute ensemble metrics:",rc=rc)
+          label="Compute ensemble metrics:",default=0,rc=rc)
      call LVT_verify(rc,"Compute ensemble metrics: not defined")
      
      call ESMF_ConfigGetAttribute(LVT_config,LVT_rc%computeICMetrics,&
-          label="Compute information theory metrics:",rc=rc)
+          label="Compute information theory metrics:",default=0,rc=rc)
      call LVT_verify(rc,"Compute information theory metrics: not defined")
   
 
@@ -483,6 +491,7 @@ subroutine LVT_readConfig(configfile)
      
      call ESMF_ConfigGetAttribute(LVT_config, scInterval, &
           label="Seasonal cycle interval type:",&
+          default="monthly",&
           rc=rc)
      call LVT_verify(rc,'Seasonal cycle interval type: not defined')
      if(scInterval.eq."monthly") then 
@@ -502,17 +511,18 @@ subroutine LVT_readConfig(configfile)
   ! 1= month, 2-3 months. 
      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%scCountThreshold, &
           label="Seasonal cycle minimum count threshold:",&
+          default=0,&
           rc=rc)
      call LVT_verify(rc,'Seasonal cycle minimum count threshold: not defined')
 
      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%adcCountThreshold, &
           label="Average diurnal cycle minimum count threshold:",&
+          default=0,&
           rc=rc)
      call LVT_verify(rc,'Average diurnal cycle minimum count threshold: not defined')
   
-
      call ESMF_ConfigGetAttribute(LVT_config, LVT_rc%pval_CI,&
-          label="Confidence interval (%): ",rc=rc)
+          label="Confidence interval (%): ",default=95.0,rc=rc)
      call LVT_verify(rc,"Confidence interval (%): not defined")     
      LVT_rc%pval_CI = (100-LVT_rc%pval_CI)/100.0
 

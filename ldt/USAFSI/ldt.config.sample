@@ -32,8 +32,8 @@ USAFSI brightness temperature data option:             1  # 1: SSMIS, 2: XCAL GM
 USAFSI XCAL GMI data directory:                       ./GMI_retrievals/
 USAFSI AMSR2 data directory:                          ./AMSR2_retrievals/
 USAFSI SSMIS data directory:                          ./SSMIS_retrievals/
-USAFSI SST data directory:                            ./USAFSIIN/sfctmps/
 USAFSI surface temperature data directory:            ./USAFSIIN/sfctmps/
+USAFSI FNMOC SST GRIB1 data directory:                ./USAFSIIN/FNMOC_SST/
 USAFSI static data directory:                         ./USAFSIIN/static/
 USAFSI unmodified data directory:                     ./USAFSIIN/unmodified/
 USAFSI VIIRS data directory:                          ./USAFSIIN/viirs

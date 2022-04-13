@@ -26,7 +26,8 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 ! !USES:
   use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_timeMgrMod,only       : LIS_get_julhr,LIS_tick,LIS_time2date
-  use LIS_logMod, only          : LIS_logunit, LIS_verify, LIS_warning
+  use LIS_logMod, only          : LIS_logunit, LIS_verify, LIS_warning,&
+                                  LIS_endrun
   use LIS_spatialDownscalingMod
   use AGRMET_forcingMod,   only : agrmet_struc
 
@@ -61,7 +62,6 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 !
 !EOP
   integer                :: ftn
-  integer                :: ferror
   logical                :: file_exists
   integer                :: iv, iv_total
   integer                :: c,r,t,kk
@@ -109,9 +109,8 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
      call grib_open_file(ftn,trim(agrfile),'r',iret)
      if(iret.ne.0) then 
         write(LIS_logunit,*) &
-             'Could not open file: ',trim(agrfile)
-        ferror = 0
-        return
+             '[ERR] Could not open file: ',trim(agrfile)
+        call LIS_endrun
      endif
 
      call grib_count_in_file(ftn,nvars,iret)
@@ -125,13 +124,12 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
         call LIS_warning(iret, 'error in grib_new_from_file in read_agrmet')
         if(iret.ne.0) then 
            write(LIS_logunit,*) &
-                'Error code: ',iret
+                '[ERR] Error code: ',iret
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
-           ferror = 0
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            deallocate(lb)
            deallocate(f)
-           return           
+           call LIS_endrun
         endif
 
         call grib_get(igrib,'indicatorOfParameter',pds5_val,rc)
@@ -167,14 +165,13 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 
         if(rc.ne.0) then 
            write(LIS_logunit,*) &
-                'Error code: ',rc
+                '[ERR] Error code: ',rc
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            write(LIS_logunit,*) 'for variables ',kk
-           ferror = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           call LIS_endrun
         endif
 
         call grib_get(igrib,'missingValue',missingValue,rc)
@@ -286,17 +283,16 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
      do kk=1,iv_total
         if(.not.var_status(kk)) then 
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            write(LIS_logunit,*) &
-                'kk,var_status = ',kk,var_status(kk)
-           ferror = 0
-           return
+                '[ERR] kk,var_status = ',kk,var_status(kk)
+           call LIS_endrun
         endif
      enddo
   else
      write(LIS_logunit,*) &
-          'Could not find file: ',trim(agrfile)
-     ferror = 0
+          '[ERR] Could not find file: ',trim(agrfile)
+     call LIS_endrun
   endif
 
 #endif
