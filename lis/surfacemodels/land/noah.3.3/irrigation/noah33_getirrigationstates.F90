@@ -176,8 +176,9 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                     rdpth(4) = crootd - zdpth(3)
                  endif
 
-                 if (lroot == 0) then
-                    write(LIS_logunit,*) '[ERR] lroot should be > 0!'
+                 if (lroot == 0 .and. LIS_rc%tscount(nest) == 1 ) then
+                    ! HKB: keep running with warning, do not stop 
+                    write(LIS_logunit,*) '[WARN] lroot should be > 0!'
                     write(LIS_logunit,*) TileNo,gid,vegt,crootd,&
                      IM%irrigRootdepth(TileNo), &
                      noah33_struc(nest)%noah(TileNo)%shdfac, &
@@ -187,7 +188,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                      LIS_domain(nest)%grid(LIS_domain(nest)%gindex( &
                       LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%col,&
                       LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row))%lon
-                     call LIS_endrun()
+                     !call LIS_endrun()
                  endif
 
                  ! compute vegetation threshold for the trigger

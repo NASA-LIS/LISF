@@ -536,8 +536,10 @@ contains
     real,   allocatable    :: l_croptype(:,:)
     real,   allocatable    :: glb_croptype(:,:)
     integer                :: ncroptypes
-    integer                :: cropdim
+    integer                :: croptdim
     integer                :: vegt
+    integer                :: xtype
+    integer                :: dimids(NF90_MAX_VAR_DIMS)
 ! __________________________________________________________________________
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -613,7 +615,7 @@ contains
  !- Read in crop type map file (specified in LIS parameter input file)
  !- CROPTYPE is now 3D array (croptypes,lat,lon) 
  !  Adding backward compatibility for old parameter file
- !  with 2D CROPTYPE or no croptypes dimension -HKB
+ !  with 2D CROPTYPE (lat,lon) or no croptypes dimension -HKB
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
     if(file_exists) then 
        ios = nf90_open(path=LIS_rc%paramfile(n),&
@@ -631,10 +633,11 @@ contains
 
        ios = nf90_inq_varid(nid,'CROPTYPE',croptypeId)
        call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE')
-       ios = nf90_inquire_dimension(nid, croptypeId, len = cropdim)
+       ios = nf90_inquire_variable(nid,croptypeId,xtype=xtype, &
+           ndims=croptdim, dimids=dimids)
        call LIS_verify(ios,'nf90_inquire_dimension failed for CROPTYPE')
 
-       if ( cropdim .eq. 2 ) then   ! 2D
+       if ( croptdim .eq. 2 ) then   ! 2D
          allocate(l_croptype(LIS_rc%lnc(n),LIS_rc%lnr(n)))
          allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        
@@ -654,16 +657,16 @@ contains
          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
             col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
             row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-
             if(l_croptype(col,row).gt.0) then
                rootdepth(t) = rootd(nint(l_croptype(col,row)))
             else
                rootdepth(t) = 0
-           endif
+            endif
+!HKB check            write(99,*) t,col,row,l_croptype(col,row),rootd(nint(l_croptype(col,row)))
          enddo
          deallocate(l_croptype)
 
-       elseif ( cropdim .eq. 3 ) then ! 3D
+       elseif ( croptdim .eq. 3 ) then ! 3D
          do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
            col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
            row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
@@ -676,10 +679,10 @@ contains
 
        else
          write(LIS_logunit,*) "[ERR] The irrigation CROPTYPE parameter ",&
-               LIS_rc%paramfile(n)," invalid dimension."
+               LIS_rc%paramfile(n)," invalid dimension.",croptdim
          write(LIS_logunit,*) "[ERR] Program stopping ..."
          call LIS_endrun
-       endif    ! cropdim
+       endif    ! croptdim
        deallocate( rootd )
 
     else
@@ -855,7 +858,7 @@ contains
        ios = nf90_get_var(nid, itypeId, glb_itype)
        call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
 
-       !-- real in LANDCOVER fractions to populate CROPTYPES (lnc,lnc,numbercrops)
+       !-- read in LANDCOVER fractions to populate CROPTYPES (lnc,lnc,numbercrops)
        ios = nf90_inq_dimid(nid, "sfctypes", sfcdimid)
        call LIS_verify(ios,'nf90_inq_dimid failed for LANDCOVER, NEED new lis_input')
        ios = nf90_inquire_dimension(nid, sfcdimid, len = nsfctypes)
@@ -871,27 +874,6 @@ contains
        ios = nf90_get_var(nid, lcoverId, g_croptype)
        call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
        
-       !-- read in country and county fields       
-       allocate(glb_country(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-       allocate(glb_county(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-       allocate(l_country(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-       allocate(l_county(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-
-       ios = nf90_inq_varid(nid,'COUNTRY',countryId)
-       call LIS_verify(ios,'nf90_inq_varid failed for COUNTRY')
-       
-       ios = nf90_get_var(nid, countryId, glb_country)
-       call LIS_verify(ios,'nf90_get_var failed for in COUNTRY')
-
-       ios = nf90_inq_varid(nid,'COUNTY',countyId)
-       call LIS_verify(ios,'nf90_inq_varid failed for COUNTY')
-       
-       ios = nf90_get_var(nid, countyId, glb_county)
-       call LIS_verify(ios,'nf90_get_var failed for in COUNTY')
-
-       ios = nf90_close(nid)
-       call LIS_verify(ios,'nf90_close failed in alltypes_irrigationMod')
-
        ! Grid to tile mapping CROPTYPES fractions
        t_croptype (:,:,:) = g_croptype (&
           LIS_ews_halo_ind(n,LIS_localPet+1):&         
@@ -912,15 +894,35 @@ contains
        s_itype = l_itype
        
        if (irrigtypetocrop .eq. "distribute") then
- 
-        allocate(PREFTYPE(LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes))
-        PREFTYPE = -1
-        l_county(:,:) = glb_county(&
+         !-- read in country and county fields       
+         allocate(glb_country(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+         allocate(glb_county(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+         allocate(l_country(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+         allocate(l_county(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+         ios = nf90_inq_varid(nid,'COUNTRY',countryId)
+         call LIS_verify(ios,'nf90_inq_varid failed for COUNTRY')
+       
+         ios = nf90_get_var(nid, countryId, glb_country)
+         call LIS_verify(ios,'nf90_get_var failed for in COUNTRY')
+
+         ios = nf90_inq_varid(nid,'COUNTY',countyId)
+         call LIS_verify(ios,'nf90_inq_varid failed for COUNTY')
+       
+         ios = nf90_get_var(nid, countyId, glb_county)
+         call LIS_verify(ios,'nf90_get_var failed for in COUNTY')
+
+         ios = nf90_close(nid)
+         call LIS_verify(ios,'nf90_close failed in alltypes_irrigationMod')
+
+         allocate(PREFTYPE(LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_rc%nsurfacetypes))
+         PREFTYPE = -1
+         l_county(:,:) = glb_county(&
             LIS_ews_halo_ind(n,LIS_localPet+1):&         
             LIS_ewe_halo_ind(n,LIS_localPet+1),&
             LIS_nss_halo_ind(n,LIS_localPet+1):&
             LIS_nse_halo_ind(n,LIS_localPet+1))
-        l_country(:,:) = glb_country(&
+         l_country(:,:) = glb_country(&
             LIS_ews_halo_ind(n,LIS_localPet+1):&         
             LIS_ewe_halo_ind(n,LIS_localPet+1),&
             LIS_nss_halo_ind(n,LIS_localPet+1):&
@@ -968,7 +970,7 @@ contains
          !end do
          deallocate (cell_area)
          !stop
-       endif
+       endif   !irrigtypetocrop .eq. "distribute"
 
        TILE_LOOP: do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
           
@@ -1037,12 +1039,12 @@ contains
 
        deallocate(l_itype, s_itype)
        deallocate(glb_itype)
-       deallocate(temp)
-       deallocate(l_country)
-       deallocate(glb_country)
-       deallocate(l_county)
-       deallocate(glb_county)
        deallocate(l_croptype, t_croptype, g_croptype, s_croptype)
+       deallocate(temp)
+       if (allocated(l_country)) deallocate(l_country)
+       if (allocated(glb_country)) deallocate(glb_country)
+       if (allocated(l_county)) deallocate(l_county)
+       if (allocated(glb_county)) deallocate(glb_county)
        if (allocated(PREFTYPE)) deallocate(PREFTYPE)
     else
        write(LIS_logunit,*) "[ERR] Irrigation type map: ",&

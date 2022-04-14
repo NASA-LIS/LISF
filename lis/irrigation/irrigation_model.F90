@@ -255,8 +255,12 @@ contains
        ma = (asmc - tsmcwlt) /(tsmcref - tsmcwlt) / IM%IrrigScale(TileNo)
     else
        ma = -1.     
-       print*,'ERR: negative ma should not happen!! ',TileNo
-       stop
+       ! HKB: keep running with warning, do not stop
+       if ( LIS_rc%tscount(nest) == 1) then
+       write(LIS_logunit,* )'WARN: negative ma should not happen!! ', &
+        TileNo,tsmcref,tsmcwlt,IM%IrrigScale(TileNo),size(rdpth),rdpth(:)
+       !call LIS_endrun()
+       endif
     endif
 
     ! --------
