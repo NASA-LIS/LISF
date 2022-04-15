@@ -25,7 +25,7 @@ module  MMF_groundwater
   use LDT_logMod,           only : LDT_logunit, LDT_endrun, LDT_verify
   use LDT_coreMod,          only : LDT_rc, LDT_domain, LDT_config
   use LDT_gridmappingMod,   only : LDT_RunDomainPts
-  use LDT_paramMaskCheckMod,only : LDT_fillopts, LDT_contIndivParam_Fill
+  use LDT_paramMaskCheckMod,only : LDT_fillopts, LDT_contIndivParam_Fill, fill_logunit
   use LDT_paramDataMod,     only : LDT_LSMparam_struc
   implicit none
 
@@ -191,12 +191,12 @@ contains
   
   ! ----------------------------------------------------------------
   
-  SUBROUTINE mmf_data_reader (MBR, nest, datadir, lisout, mmf_transform)
+  SUBROUTINE mmf_data_reader (MBR, nest, datadir, lisout, mmf_transform, short_name)
     
     implicit none
 
     class (MMF_BCsReader), intent(inout)    :: MBR
-    character(*), intent (in)               :: datadir, mmf_transform
+    character(*), intent (in)               :: datadir, mmf_transform, short_name
     real, dimension (:,:,:), intent (inout) :: lisout
     integer, intent (in)                    :: nest    
     character(len=1024):: geogridFile
@@ -214,7 +214,8 @@ contains
 
     ! Reading GEOGRID data
     ! --------------------
-
+    write(LDT_logunit,*) "Reading data from: ",trim(datadir)
+    
     num_tile_lon = NX_MMF / MBR%gp%tile_x
     num_tile_lat = NY_MMF / MBR%gp%tile_y
 
@@ -293,7 +294,10 @@ contains
     
     ! Search and fill -also fill lakes
     ! --------------------------------
-       
+    write(LDT_logunit,*) "Checking/filling mask values for: ", &
+                 trim(short_name)
+    write(fill_logunit,*) "Checking/filling mask values for: ", &
+                 trim(short_name)   
     call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
          mmf_transform,                                    &
          nbins,                                            &
