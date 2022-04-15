@@ -233,7 +233,7 @@ contains
                                                   tb89v(:)
       integer,      allocatable, intent(inout) :: qcflag_1d(:)
       real,         allocatable                :: tb_field(:,:,:)
-
+#if (defined USE_HDF5)
       integer(hsize_t), dimension(2)           :: dims_lat, maxdims_lat
       integer(hsize_t), dimension(2)           :: dims_lon, maxdims_lon
       integer(hsize_t), dimension(3)           :: dims_tb, maxdims_tb
@@ -504,7 +504,7 @@ contains
 
       call h5close_f(status)
       call LDT_verify(status,'Error in H5CLOSE call') 
-
+#endif
    end subroutine read_xcalgmi_attributes
 
 
