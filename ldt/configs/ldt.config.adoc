@@ -7,7 +7,7 @@ This section describes the options in the _ldt.config_ file.
 Not all options described here are available in the public version of LDT.
 
 [[ssec-driveropts]]
-=== Overall driver options
+===Overall driver options
 
 `LDT running mode:` specifies the running mode used in LDT. Acceptable values are:
 
@@ -2374,6 +2374,74 @@ Bottom temperature resolution (dy):      0.2500
 .Example _ldt.config_ entry
 ....
 Noah-MP PBL Height Value:     900.    # in meters
+....
+Miguez-Macho and Fan (MMF) Groundwater Parameters
+
+NOTE Currently, Noah-MP.4.0.1 is the only model that supports the MMF groundwater scheme.
+
+`Process Noah-MP-4.0.1 MMF groundwater parameters:` is the switch to turn on processing MMF parameters.
+
+.Example _ldt.config_ entry
+
+`Process Noah-MP-4.0.1 MMF groundwater parameters: .true.`
+
+Directories where 1km FEDEPTH, RECHARGE, RIVERBED, EQWTD, and GMTED2010 data on GEOGRID tiles are located. 
+
+.Example _ldt.config_ entry
+....
+MMF transmissivity dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
+MMF climatological recharge dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
+MMF riverbed elevation dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
+MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
+MMF HGT_M dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
+....
+
+Spatial interpolation and gap filling parameters for each MMF variable.
+
+.Example _ldt.config_ entry
+....
+# MMF parameter interpolation follows that of WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp
+# WPS first (average_gcell) spatially averages finer resolution data to coarser resolution grid cells
+# which is similar to LDT's "upscaleByAveraging".
+MMF map projection: latlon
+MMF spatial transform: average
+
+# WPS uses a two-step gap procedure to fill gaps: (1) average from the immediate neighborhood (average_4pt), (2) search and fill
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+# FDEPTH: Transmissivity e-folding depth [m]
+FDEPTH neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+FDEPTH fill option: neighbor
+FDEPTH fill radius: 1200 # Number of #pixels to search for neighbor
+FDEPTH fill value: 100.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
+# RECHCLIM: Climatological recharge [mm]
+RECHCLIM neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+RECHCLIM fill option: neighbor
+RECHCLIM fill radius: 1200 # Number of #pixels to search for neighbor
+RECHCLIM fill value: -1.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+# RIVERBED Riverbed elevation [m]
+RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+RIVERBED fill option: neighbor
+RIVERBED fill radius: 1200 # Number of #pixels to search for neighbor
+RIVERBED fill value: 0.
+
+# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+# EQWTD: Equilibrium water table depth [m]
+EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+EQWTD fill option: neighbor
+EQWTD fill radius: 1200 # Number of #pixels to search for neighbor
+EQWTD fill value: 0.
+
+# WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
+HGT_M: GMTED2010 30-arc-second topography height [m from MSL]
+HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
+HGT_M fill option: neighbor
+HGT_M fill radius: 1200 # Number of #pixels to search for neighbor
+HGT_M fill value: 0.
 ....
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
