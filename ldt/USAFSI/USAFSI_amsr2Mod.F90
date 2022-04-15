@@ -238,6 +238,7 @@ contains
                                                   tb23h_raw(:,:), tb23v_raw(:,:), &
                                                   tb37h_raw(:,:), tb37v_raw(:,:), &
                                                   tb89h_raw(:,:), tb89v_raw(:,:)
+#if (defined USE_HDF5)
       integer(hsize_t), dimension(2)           :: dims_lat, maxdims_lat
       integer(hsize_t), dimension(2)           :: dims_lon, maxdims_lon
       integer(hsize_t), dimension(3)           :: dims_tb, maxdims_tb
@@ -627,7 +628,7 @@ contains
 
       call h5close_f(status)
       call LDT_verify(status,'Error in H5CLOSE call') 
-
+#endif
    end subroutine read_amsr2_attributes
 
 
