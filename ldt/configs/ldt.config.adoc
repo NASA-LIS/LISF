@@ -2384,6 +2384,10 @@ NOTE Currently, Noah-MP.4.0.1 is the only model that supports the MMF groundwate
 .Example _ldt.config_ entry
 
 `Process Noah-MP-4.0.1 MMF groundwater parameters: .true.`
+If this config entry is not present, then it is assumed to be .false., and the Noah-MP-4.0.1 MMF groundwater parameters will not be processed. 
+Note that these parameters are only needed when running option "5" for the following lis.config entry when running LIS:
+Noah-MP.4.0.1 runoff and groundwater option: 5
+Finally, note that this MMF groundwater option (option 5) is not yet supported in LIS, although the LIS team is nearing completion of its implementation.
 
 Directories where 1km FEDEPTH, RECHARGE, RIVERBED, EQWTD, and GMTED2010 data on GEOGRID tiles are located. 
 
