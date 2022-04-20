@@ -2402,7 +2402,7 @@ MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwat
 MMF HGT_M dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
 ....
 
-Spatial interpolation and gap filling parameters for each MMF variable.
+Spatial interpolation and gap filling parameters for each MMF variable are also required.
 
 .Example _ldt.config_ entry
 ....
