@@ -2416,7 +2416,7 @@ the WPS's interpolation concept.
 
 Below MMF is referred to FEDEPTH, RECHARGE, RIVERBED, EQWTD, or GMTED2010 parameter value.
 
-`MMF map projection: ` map projection parameter is always set to latlon for MMF parameters.
+`MMF map projection:` map projection parameter is always set to latlon for MMF parameters.
 
 `MMF spatial transform:` spatial transform parameter is always set to average for MMF parameters.
 
@@ -2437,6 +2437,7 @@ MMF spatial transform: average
 ....
 
 FDEPTH: Transmissivity e-folding depth [m]
+
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
 ....
 FDEPTH neighborhood radius: 1 
@@ -2447,6 +2448,7 @@ FDEPTH water value: 100.
 ....
 
 RECHCLIM: Climatological recharge [mm]
+
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
 ....
 RECHCLIM neighborhood radius: 1 
@@ -2457,6 +2459,7 @@ RECHCLIM water value: 0.
 ....
 
 RIVERBED Riverbed elevation [m]
+
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 ....
 RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
@@ -2467,6 +2470,7 @@ RIVERBED water value: -100.
 ....
 
 EQWTD: Equilibrium water table depth [m]
+
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 ....
 EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
@@ -2477,6 +2481,7 @@ EQWTD water value: 0.
 ....
 
 HGT_M: GMTED2010 30-arc-second topography height [m from MSL]
+
 WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
 ....
 HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
