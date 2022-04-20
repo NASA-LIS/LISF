@@ -2437,7 +2437,8 @@ MMF spatial transform: average
 ....
 
 FDEPTH: Transmissivity e-folding depth [m]
-.WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+
+WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
 ....
 FDEPTH neighborhood radius: 1 
 FDEPTH fill option: neighbor
