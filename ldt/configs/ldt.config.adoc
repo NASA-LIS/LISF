@@ -2406,9 +2406,9 @@ Spatial interpolation and gap filling parameters for each MMF variable.
 
 .Example _ldt.config_ entry
 ....
-# MMF parameter interpolation follows that of WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp
-# WPS first (average_gcell) spatially averages finer resolution data to coarser resolution grid cells
-# which is similar to LDT's "upscaleByAveraging".
+https://www2.mmm.ucar.edu/wrf/users/docs/user_guide_v4/v4.3/users_guide_chap3.html#_Description_of_GEOGRID.TBL, and WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp
+describe WPS's preprocessing procedures of MMF parameters from the GEOGRID grid to the model grid. WPS performing the entire interpolation process from aggregating to gap filling on the native GEOGRID space makes it fundamentally differ from LDT because LDT first aggregates input data from the native grid to the model grid and then fills gaps on the model grid space. Current LDT implementation of MMF parameter processing does not attempt to replicate the WPS interpolation procedures, instead it uses existing LDT interpolation utilities to follow the WPS's interpolation concept.
+
 MMF map projection: latlon
 MMF spatial transform: average
 
