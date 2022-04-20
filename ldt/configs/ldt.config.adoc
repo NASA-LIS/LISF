@@ -2437,8 +2437,7 @@ MMF spatial transform: average
 ....
 
 FDEPTH: Transmissivity e-folding depth [m]
-
-WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+.WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
 ....
 FDEPTH neighborhood radius: 1 
 FDEPTH fill option: neighbor
@@ -2462,9 +2461,9 @@ RIVERBED Riverbed elevation [m]
 
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 ....
-RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+RIVERBED neighborhood radius: 1 
 RIVERBED fill option: neighbor
-RIVERBED fill radius: 1200 # Number of #pixels to search for neighbor
+RIVERBED fill radius: 1200 
 RIVERBED fill value: 0.
 RIVERBED water value: -100.
 ....
@@ -2473,9 +2472,9 @@ EQWTD: Equilibrium water table depth [m]
 
 WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 ....
-EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+EQWTD neighborhood radius: 1 
 EQWTD fill option: neighbor
-EQWTD fill radius: 1200 # Number of #pixels to search for neighbor
+EQWTD fill radius: 1200 
 EQWTD fill value: 0.
 EQWTD water value: 0.
 ....
@@ -2484,9 +2483,9 @@ HGT_M: GMTED2010 30-arc-second topography height [m from MSL]
 
 WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
 ....
-HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
+HGT_M neighborhood radius: 0 
 HGT_M fill option: neighbor
-HGT_M fill radius: 1200 # Number of #pixels to search for neighbor
+HGT_M fill radius: 1200 
 HGT_M fill value: 0.
 HGT_M water value: -100.
 ....
