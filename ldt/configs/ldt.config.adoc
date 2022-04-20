@@ -2422,7 +2422,7 @@ Below MMF is referred to FEDEPTH, RECHARGE, RIVERBED, EQWTD, or GMTED2010 parame
 
 `MMF neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
-`MMF fill option:` 
+`MMF fill option:` specifies the MMF parameter fill option. neighbor's value is preferred.
 
 `MMF fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
 
