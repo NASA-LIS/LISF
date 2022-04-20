@@ -265,8 +265,8 @@ elsif($opt_lev == 1) {
 }
 elsif($opt_lev == 2) {
    if($sys_arch eq "cray_cray") {
-      $sys_opt = "-O2 -h ipa2,scalar0,vector0 ";
-      $sys_c_opt = "";
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
+      $sys_c_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
    }
    else {
       $sys_opt = "-O2 ";
