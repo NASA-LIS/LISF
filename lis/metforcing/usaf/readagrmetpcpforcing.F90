@@ -61,9 +61,13 @@ subroutine readagrmetpcpforcing(n,findex, order)
         USAF_analyzeprecip, USAF_split12hrgaugeobsdata, USAF_analyzeprecip, &
         USAF_countGoodObs,USAF_waterQC,USAF_filterObsData,USAF_dupQC, &
         USAF_snowQC,USAF_snowDepthQC,USAF_backQC,USAF_superstatQC
+   !use USAF_ImergHHMod, only: newImergHHPrecip, destroyImergHHPrecip, &
+   !     update30minImergHHPrecip,copyToObsDataImergHHPrecip, &
+   !     calc3hrImergHHPrecip, count3hrObsImergHHPrecip, &
+   !     create_Imerg_HH_filename, fetch3hrImergHH
    use USAF_ImergHHMod, only: newImergHHPrecip, destroyImergHHPrecip, &
         update30minImergHHPrecip,copyToObsDataImergHHPrecip, &
-        calc3hrImergHHPrecip, count3hrObsImergHHPrecip, &
+        count3hrObsImergHHPrecip, &
         create_Imerg_HH_filename, fetch3hrImergHH
    use USAF_OBAMod, only: OBA,destroyOBA,makeFilename,writeToFile
 
