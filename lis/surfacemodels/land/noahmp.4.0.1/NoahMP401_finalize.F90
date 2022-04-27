@@ -21,7 +21,7 @@
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP401 with LIS-7
 !
 ! !INTERFACE:
-subroutine NoahMP401_finalize(n)
+subroutine NoahMP401_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use NoahMP401_lsmMod
