@@ -20,7 +20,7 @@
 !   9/4/14: Shugong Wang; initial implementation for NoahMP36 with LIS-7
 !
 ! !INTERFACE:
-subroutine NoahMP36_finalize(n)
+subroutine NoahMP36_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use NoahMP36_lsmMod
