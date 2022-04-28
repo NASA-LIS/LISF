@@ -279,8 +279,14 @@ elsif($opt_lev == 1) {
    $sys_c_opt = "";
 }
 elsif($opt_lev == 2) {
-   $sys_opt = "-O2";
-   $sys_c_opt = "";
+   if($sys_arch eq "cray_cray") {
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
+      $sys_c_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
+   }
+   else {
+      $sys_opt = "-O2 ";
+      $sys_c_opt = "";
+   }
 }
 elsif($opt_lev == 3) {
    $sys_opt = "-O3";
