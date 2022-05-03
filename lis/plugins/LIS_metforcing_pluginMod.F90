@@ -296,6 +296,10 @@ subroutine LIS_metforcing_plugin
    use gddp_forcingMod
 #endif   
 
+#if ( defined MF_GALWEM_FORECAST )
+   use galwem_forcingMod
+#endif
+
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
    external timeinterp_metForcTemplate
@@ -632,6 +636,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_gddp
    external finalize_gddp
    external reset_gddp
+#endif
+
+#if ( defined MF_GALWEM_FORECAST )
+   external get_galwem
+   external timeinterp_galwem
+   external finalize_galwem
+   external reset_galwem
 #endif
    
 #if ( defined MF_MET_TEMPLATE )
@@ -1137,6 +1148,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_gddp)
    call registerfinalmetforc(trim(LIS_gddpId)//char(0),finalize_gddp)
    call registerresetmetforc(trim(LIS_gddpId)//char(0),reset_gddp)
+#endif
+
+#if ( defined MF_GALWEM_FORECAST)
+   call registerinitmetforc(trim(LIS_galwemId)//char(0),init_galwem)
+   call registerretrievemetforc(trim(LIS_galwemId)//char(0),get_galwem)
+   call registertimeinterpmetforc(trim(LIS_galwemId)//char(0), &
+                                  timeinterp_galwem)
+   call registerfinalmetforc(trim(LIS_galwemId)//char(0),finalize_galwem)
+   call registerresetmetforc(trim(LIS_galwemId)//char(0),reset_galwem)
 #endif
 end subroutine LIS_metforcing_plugin
 
