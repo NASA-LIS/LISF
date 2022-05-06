@@ -102,18 +102,18 @@ subroutine USAFSI_run(n)
 
   ! Local variables
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
-  character*100              ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
+  character*255              ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
   character*90               ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
-  character*100              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
-  character*100              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
-  character*100              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
+  character*255              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
+  character*255              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
+  character*255              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
   character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
-  character*100              ::  static               ! STATIC FILE DIRECTORY PATH
-  character*100              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
-  character*100 :: sstdir ! EMK 20220113
-  character*100              ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
-  character*100              ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
+  character*255              ::  static               ! STATIC FILE DIRECTORY PATH
+  character*255              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
+  character*255 :: sstdir ! EMK 20220113
+  character*255              ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
+  character*255              ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
   integer                    ::  runcycle             ! CYCLE HOUR
   integer                    ::  hemi                 ! HEMISPHERE (1 = NH, 2 = SH, 3 = GLOBAL)
   integer                    ::  julhr                ! AFWA JULIAN HOUR BEING PROCESSED
@@ -148,7 +148,7 @@ subroutine USAFSI_run(n)
   logical :: just_12z
 
   ! PMW snow depth retrievals, Yeosang Yoon
-  character*100              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
+  character*255              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
   integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
   maxsobs = usafsi_settings%maxsobs
@@ -560,7 +560,7 @@ contains
     real, allocatable, intent(out) :: landice(:,:)
 
     ! Local variables
-    character*100 :: filename
+    character*255 :: filename
     integer :: ncid
     integer :: dimids(3)
     integer :: landmask_varid, elevation_varid, surfacetype_varid
