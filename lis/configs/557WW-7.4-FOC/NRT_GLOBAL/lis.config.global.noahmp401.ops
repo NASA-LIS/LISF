@@ -64,8 +64,8 @@ Minimum cutoff percentage (aspect bands):         0.05
 
 #Processor layout
 #Should match the total number of processors used
-Number of processors along x:          24
-Number of processors along y:          24
+Number of processors along x:         576
+Number of processors along y:           1
 Halo size along x:                      0
 Halo size along y:                      0
 
