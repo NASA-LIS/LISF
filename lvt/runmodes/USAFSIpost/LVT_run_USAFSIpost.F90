@@ -43,5 +43,5 @@ subroutine LVT_run_USAFSIpost()
 
    ! Clean up
    call USAFSIpost%delete()
-   call LVT_endrun()
+
 end subroutine LVT_run_USAFSIpost
