@@ -311,7 +311,7 @@ contains
 ! !ARGUMENTS:
       integer,intent(in)          :: n
       integer,intent(in)          :: ftn
-      integer,intent(in)          :: dimID(10)
+      integer,intent(in)          :: dimID(11)
       character(len=*),intent(in) :: wformat
 ! !DESCRIPTION:
 !
