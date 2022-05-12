@@ -23,6 +23,7 @@
 !   05/15/19: Yeosang Yoon; code added for snow DA to work
 !   10/29/19: David Mocko; Added RELSMC to output, and an option
 !                          for different units for Qs/Qsb/Albedo
+!   03/09/22: David Mocko: Fixed "input LAI" for dynamic vegetation options 7/8/9
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
@@ -31,6 +32,7 @@ subroutine NoahMP401_main(n)
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_constantsMod,  only : LIS_CONST_RHOFW   !New
+    use LIS_vegDataMod,    only : LIS_lai, LIS_sai
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
@@ -43,7 +45,7 @@ subroutine NoahMP401_main(n)
     real                 :: dt
     real                 :: lat, lon
     real                 :: tempval
-    integer              :: row, col
+    integer              :: row, col, tid
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
@@ -523,8 +525,40 @@ subroutine NoahMP401_main(n)
             tmp_wood            = NOAHMP401_struc(n)%noahmp401(t)%wood
             tmp_stblcp          = NOAHMP401_struc(n)%noahmp401(t)%stblcp
             tmp_fastcp          = NOAHMP401_struc(n)%noahmp401(t)%fastcp
-            tmp_lai             = NOAHMP401_struc(n)%noahmp401(t)%lai
-            tmp_sai             = NOAHMP401_struc(n)%noahmp401(t)%sai
+! DMM - If dynamic vegetation option DVEG = 7, 8, or 9 for "input LAI",
+! then send LAI/SAI from input to the Noah-MP-4.0.1 physics.  If any
+! tile has an undefined LAI/SAI value, instead use the value from the
+! MPTABLE file for that vegetation class and for the month.
+            if ((tmp_dveg_opt.ge.7).and.(tmp_dveg_opt.le.9)) then
+               tid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%tile_id
+! If "LAI data source:" is set to "none" for these three Noah-MP-4.0.1
+! input LAI vegetation options, stop the run.
+               if (LIS_rc%useLAImap(n).ne."none") then
+                  tmp_lai          = LIS_lai(n)%tlai(tid)
+               else
+                  write(LIS_logunit,*)                                 &
+                       '[ERR] Attempting to use input LAI, however'
+                  write(LIS_logunit,*)                                 &
+                       '[ERR] "LAI data source:" is set to "none".'
+                  call LIS_endrun()
+               endif
+! If "SAI data source:" is set to "none" for these three Noah-MP-4.0.1
+! input LAI vegetation options, fill in the SAI values from MPTABLE.
+               if (LIS_rc%useSAImap(n).ne."none") then
+                  tmp_sai          = LIS_sai(n)%tsai(tid)
+               endif
+! If any LAI or SAI values are undefined at a tile,
+! fill in the LAI or SAI values from MPTABLE.
+               if (tmp_lai.eq.LIS_rc%udef) then
+                  tmp_lai          = NOAHMP401_struc(n)%noahmp401(t)%lai
+               endif
+               if (tmp_sai.eq.LIS_rc%udef) then
+                  tmp_sai          = NOAHMP401_struc(n)%noahmp401(t)%sai
+               endif
+            else
+               tmp_lai          = NOAHMP401_struc(n)%noahmp401(t)%lai
+               tmp_sai          = NOAHMP401_struc(n)%noahmp401(t)%sai
+            endif
             tmp_tauss           = NOAHMP401_struc(n)%noahmp401(t)%tauss
             tmp_smoiseq(:)      = NOAHMP401_struc(n)%noahmp401(t)%smoiseq(:)
             tmp_smcwtd          = NOAHMP401_struc(n)%noahmp401(t)%smcwtd

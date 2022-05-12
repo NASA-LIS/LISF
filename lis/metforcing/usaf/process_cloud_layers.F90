@@ -15,6 +15,7 @@
 ! !REVISION HISTORY:
 ! 09 Jun 2016: James Geiger; Initial specification from pseudo code provided
 !                            by Tim Nobis and Mark Conner
+! 16 Dec 2021: Eric Kemp: Replaced julhr with YYYYMMDDHH in log.
 !
 ! !INTERFACE:
 subroutine process_cloud_layers(cod_layered, base_layered, &
@@ -72,6 +73,7 @@ subroutine process_cloud_layers(cod_layered, base_layered, &
 
    integer :: i, j, m, lev
    real    :: weight
+   character*10 :: date10_julhr, date10_cloud_time ! EMK
 
    ! Low    = 1
    ! Middle = 2
@@ -118,11 +120,17 @@ subroutine process_cloud_layers(cod_layered, base_layered, &
             enddo
          else
             ! point has invalid time; skip.
+            ! EMK Replace julhr output with YYYYMMDDHH
+            call AGRMET_julhr_date10 ( julhr, date10_julhr )
+            call AGRMET_julhr_date10 ( int(cloud_times(i,j)), &
+                 date10_cloud_time )
             write(LIS_logunit,*) '[WARN] cloud_time is not valid'
-            write(LIS_logunit,*) '       i,j', i,j
-            write(LIS_logunit,*) '       julhr', julhr
-            write(LIS_logunit,*) '       timeLastUpdate', cloud_times(i,j)
-            write(LIS_logunit,*) '       diff', julhr-cloud_times(i,j)
+            write(LIS_logunit,*) '       i,j ', i,j
+            !write(LIS_logunit,*) '       julhr', julhr
+            write(LIS_logunit,*) '       LIS YYYYMMDDHH ', date10_julhr
+            !write(LIS_logunit,*) '       timeLastUpdate', cloud_times(i,j)
+            write(LIS_logunit,*) '       timeLastUpdate ', date10_cloud_time
+            write(LIS_logunit,*) '       diff ', julhr-cloud_times(i,j)
          endif
       enddo
    enddo

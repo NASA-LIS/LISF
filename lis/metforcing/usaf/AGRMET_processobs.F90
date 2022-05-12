@@ -493,7 +493,6 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
      
      iofunc = "READ "
      read(8, *, iostat=istat, err=100, end=100) count6
-     
      allocate(obs_6(count6))
      
      prior_net = "NULL"
@@ -1433,8 +1432,11 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 !     format statements.
 !-----------------------------------------------------------------------
 
-6000 format(1x, a9, 1x, a9, 1x, f7.2, 1x, f7.2, 1x, ' 24hr ', 1x, & 
-            i9, 1x, '12hr ', i9, ' 6hr ', i9, ' misc ', i9)
+! EMK 15 Apr 2022...Cray compiler does not like the original format statement.
+!6000 format(1x, a9, 1x, a9, 1x, f7.2, 1x, f7.2, 1x, ' 24hr ', 1x, & 
+!            i9, 1x, '12hr ', i9, ' 6hr ', i9, ' misc ', i9)
+6000 format(1x, a9, 1x, a9, 1x, f7.2, 1x, f7.2, 8x, i9, 6x, i9, 5x, i9, &
+          6x, i9)
  
 end subroutine AGRMET_processobs
 
