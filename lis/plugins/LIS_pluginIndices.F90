@@ -163,6 +163,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USGSPETforcId     = "PET USGS"
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
+   character*50, public,  parameter :: LIS_COAMPSoutId       = "COAMPSout"
    character*50, public,  parameter :: LIS_WRFoutv2Id        = "WRFoutv2"
    character*50, public,  parameter :: LIS_WRFakId           = "WRF AK"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
@@ -171,6 +172,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
+   character*50, public,  parameter :: LIS_gddpId        = "GDDP"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------

@@ -79,6 +79,9 @@ contains
     external LVT_init_USAFSIpost
     external LVT_run_USAFSIpost
 
+    external LVT_init_LISpost
+    external LVT_run_LISpost
+
     call registerlvtinit(trim(LVT_DataCompId)//char(0),LVT_init_DataComp) 
     call registerlvtrun(trim(LVT_DataCompId)//char(0),LVT_run_DataComp)
 
@@ -99,6 +102,9 @@ contains
 
     call registerlvtinit(trim(LVT_USAFSIpostId)//char(0),LVT_init_USAFSIpost)
     call registerlvtrun(trim(LVT_USAFSIpostId)//char(0),LVT_run_USAFSIpost)
+
+    call registerlvtinit(trim(LVT_LISpostId)//char(0),LVT_init_LISpost)
+    call registerlvtrun(trim(LVT_LISpostId)//char(0),LVT_run_LISpost)
 
   end subroutine LVT_runmode_plugin
 end module LVT_runmode_pluginMod
