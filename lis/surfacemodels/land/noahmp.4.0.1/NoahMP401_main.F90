@@ -1142,6 +1142,15 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSB, value = NOAHMP401_struc(n)%noahmp401(t)%runsb*dt, &
                                               vlevel=1, unit="kg m-2", direction="OUT", surface_type = LIS_rc%lsm_index)
 
+            ! Combined output variable:  qtot (unit=mm | mm/s). *** total runoff
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QTOT, &
+                             value = NOAHMP401_struc(n)%noahmp401(t)%runsf + NOAHMP401_struc(n)%noahmp401(t)%runsb, &
+                             vlevel=1, unit="kg m-2 s-1", direction="OUT", surface_type = LIS_rc%lsm_index)
+
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QTOT, &
+                             value = NOAHMP401_struc(n)%noahmp401(t)%runsf*dt + NOAHMP401_struc(n)%noahmp401(t)%runsb*dt, &
+                             vlevel=1, unit="kg m-2", direction="OUT", surface_type = LIS_rc%lsm_index)
+
             ![ 55] output variable: ecan (unit=mm/s ). ***  evaporation of intercepted water
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ECANOP, value = NOAHMP401_struc(n)%noahmp401(t)%ecan, &
                                               vlevel=1, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
