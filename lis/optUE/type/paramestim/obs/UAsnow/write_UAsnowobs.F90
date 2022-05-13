@@ -23,6 +23,7 @@ subroutine write_UAsnowobs(Obj_Space)
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_create_output_directory
   use LIS_historyMod,     only : LIS_writevar_gridded
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -42,7 +43,7 @@ subroutine write_UAsnowobs(Obj_Space)
   real,    pointer    :: snod(:), swe(:)
   type(ESMF_Field)    :: snodField, sweField
   logical             :: data_update
-  character*100       :: snod_filename, swe_filename 
+  character(len=LIS_CONST_PATH_LEN) :: snod_filename, swe_filename 
   integer             :: status
   integer             :: snod_ftn, swe_ftn
   integer             :: n 

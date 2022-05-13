@@ -21,13 +21,14 @@ module DEMCz_varctl
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 
   type, public ::  demczctl
-     character*100    :: decspaceAttribsFile
-     character*100    :: rfile
-     character*100    :: optrfile  ! to start from GA run
+     character(len=LIS_CONST_PATH_LEN) :: decspaceAttribsFile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: optrfile  ! to start from GA run
      integer          :: iterNo
      integer          :: maxiter
      integer          :: nparam

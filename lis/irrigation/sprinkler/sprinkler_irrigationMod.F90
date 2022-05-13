@@ -24,6 +24,7 @@ module sprinkler_irrigationMod
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -47,7 +48,7 @@ contains
     real,  allocatable   :: irrigRootdepth(:)
     real,  allocatable   :: irrigScale(:)
     real, pointer        :: frac(:),scale(:),rootdepth(:),irrigrate(:)
-    character*100        :: maxrootdepthfile
+    character(len=LIS_CONST_PATH_LEN) :: maxrootdepthfile
 
     type(ESMF_Field)    :: irriggwratioField
     real,  allocatable  :: irriggwratio(:)

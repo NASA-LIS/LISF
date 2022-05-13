@@ -24,6 +24,7 @@ subroutine write_GLASSlai(n, k, OBS_State)
   use LIS_fileIOMod
   use LIS_historyMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
 
@@ -42,7 +43,7 @@ subroutine write_GLASSlai(n, k, OBS_State)
   type(ESMF_Field)         :: laiField
   logical                  :: data_update
   real, pointer            :: laiobs(:)
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

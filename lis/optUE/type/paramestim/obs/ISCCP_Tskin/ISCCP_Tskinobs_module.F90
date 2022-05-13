@@ -53,6 +53,7 @@ contains
     use LIS_coreMod
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none 
 
@@ -77,7 +78,7 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field), allocatable ::  obsField(:)
-    character*100             ::  synsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100,  allocatable   ::  vname(:)
     character*100             ::  objspaceAttribFile(LIS_rc%nnest)
     integer                   ::  ftn

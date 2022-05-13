@@ -26,6 +26,7 @@ subroutine clsmf25_writerst(n)
   use LIS_timeMgrMod
   use LIS_fileIOMod, only : LIS_create_output_directory, &
                             LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use clsmf25_lsmMod      
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -49,7 +50,7 @@ subroutine clsmf25_writerst(n)
 !   writes the catchment variables into the restart file
 ! \end{description}
 !EOP
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: ftn 
   integer       :: status

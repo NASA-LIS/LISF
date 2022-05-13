@@ -19,7 +19,7 @@ module read_dgg_lookup_table
 ! !REVISION HISTORY:
 !  15 Feb 2021: Mahdi Navari; Initial version
 !
-!  use ESMF
+   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
    use LIS_logMod
 !#if (defined USE_NETCDF3 || defined USE_NETCDF4) 
 !  use netcdf
@@ -58,8 +58,7 @@ contains
     integer, allocatable, intent(inout) :: dgg_lookup_1d(:)
 
     ! Locals
-    character*100 :: fname
-    character*100 :: fname_tmp
+    character(len=LIS_CONST_PATH_LEN) :: fname, fname_tmp
     integer       :: ncid, leng
     logical       :: file_exists
 

@@ -18,6 +18,7 @@ subroutine HYMAP2_routing_output(n)
   use LIS_histDataMod
   use LIS_historyMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP2_routingMod
 
   use LIS_mpiMod
@@ -27,7 +28,7 @@ subroutine HYMAP2_routing_output(n)
   
   character(len=12)     :: cdate1
   integer               :: iret
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   character*100         :: name
   integer               :: ftn
   integer               :: mo, da

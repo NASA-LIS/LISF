@@ -38,6 +38,7 @@ subroutine LIS_readConfig()
                               LIS_localPet, LIS_npes, LIS_masterproc
   use LIS_histDataMod, only : LIS_histData
   use LIS_timeMgrMod,  only : LIS_date2time, LIS_parseTimeString
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod
   use LIS_mpiMod, only: LIS_mpi_comm ! EMK
 !
@@ -66,8 +67,8 @@ subroutine LIS_readConfig()
   character*10   :: time
   integer        :: ios
   integer        :: final_dirpos
-  character(100) :: diag_fname
-  character(100) :: diag_dir
+  character(len=LIS_CONST_PATH_LEN) :: diag_fname
+  character(len=LIS_CONST_PATH_LEN) :: diag_dir
   integer :: ierr ! EMK
   integer, external  :: LIS_create_subdirs
 ! ______________________________________________________________

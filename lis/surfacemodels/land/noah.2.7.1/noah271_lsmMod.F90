@@ -94,6 +94,7 @@ module noah271_lsmMod
 !
 ! !USES:        
   use noah271_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -109,9 +110,9 @@ module noah271_lsmMod
 !EOP
   type, public ::  noah271_type_dec 
 
-     character*100              :: rfile
-     character*100              :: vfile
-     character*100              :: sfile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: vfile
+     character(len=LIS_CONST_PATH_LEN) :: sfile
      integer                    :: useptf
      integer                    :: count
      integer                    :: noah271open
@@ -124,7 +125,7 @@ module noah271_lsmMod
      real                       :: ts
      real                       :: rstInterval
      integer                    :: param_rst
-     character*100              :: prstfile
+     character(len=LIS_CONST_PATH_LEN) :: prstfile
      real                       :: zh
      real                       :: zm
      integer                    :: forcing_ch

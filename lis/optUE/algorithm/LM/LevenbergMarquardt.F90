@@ -44,6 +44,7 @@ module LevenbergMarquardt
   use LIS_coreMod
   use LIS_optUEMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -1018,7 +1019,7 @@ end subroutine fvecAsW4
     integer             :: n 
     integer             :: i,t,m
     integer             :: status
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=4)   :: fgen
     character*100       :: vnames(lm_ctl%nparam)
     type(ESMF_Field)    :: varField(lm_ctl%nparam)
@@ -1187,7 +1188,7 @@ end subroutine fvecAsW4
 ! 
 !EOP
     integer             :: n 
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=3)   :: fgen
     real, allocatable       :: rmse(:)
     real, allocatable       :: objs(:,:)
