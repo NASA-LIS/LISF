@@ -86,6 +86,7 @@ module RUC37_lsmMod
 !
 ! !USES:
     use RUC37_module
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none
 
@@ -100,7 +101,7 @@ module RUC37_lsmMod
     public :: RUC37_struc
 !EOP
     type, public :: RUC37_type_dec
-        character*256      :: rfile
+        character(len=LIS_CONST_PATH_LEN) :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
         ! Parameter file names

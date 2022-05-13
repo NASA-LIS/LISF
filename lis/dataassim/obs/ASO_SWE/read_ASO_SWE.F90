@@ -27,6 +27,7 @@ subroutine read_ASO_SWE(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use UTM_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use ASO_SWE_Mod, only : ASO_SWE_struc
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -74,10 +75,10 @@ subroutine read_ASO_SWE(n, k, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
 
-  character*100       :: sweobsdir
+  character(len=LIS_CONST_PATH_LEN) :: sweobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*200       :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   real                :: latdeg, londeg
   logical             :: alarmCheck
 
@@ -123,7 +124,7 @@ subroutine read_ASO_SWE(n, k, OBS_State, OBS_Pert_State)
      endif
      
      if (readflag) then 
-        write(LIS_logunit,*) 'Reading NASA ASO file ',name
+        write(LIS_logunit,*) 'Reading NASA ASO file ',trim(name)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)        
         call LIS_verify(nf90_open(path=name,mode=NF90_NOWRITE, ncid=ftn),&
@@ -283,9 +284,8 @@ subroutine ASO_SWE_filename(name, ndir, yr, mo,da)
 
   implicit none
 ! !ARGUMENTS: 
-  character*200      :: name
+  character(len=*)  :: name, ndir
   integer           :: yr, mo, da, hr,mn
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates the Level 3 ASO SWE filename based on the time and date 

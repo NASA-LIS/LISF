@@ -55,6 +55,7 @@ contains
     use LIS_timeMgrMod, only : LIS_calendar
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none 
 
@@ -74,9 +75,9 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
-    character*100             ::  landslideobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  landslideobsdir
     character*100             ::  vname
-    character*100             ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     integer                   ::  size, ios, id, yr, mo, da, hr, mn
     real                      ::  lat, lon

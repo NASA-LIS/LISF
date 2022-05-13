@@ -27,6 +27,7 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod, only : LIS_clock
   use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_endrun
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SNODEPobs_Mod,  only : SNODEP_obs_obj
   use LIS_mpiMod
 #if (defined USE_GRIBAPI)
@@ -59,10 +60,10 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
 
-  character*100       :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical             :: data_update
   logical             :: file_exists1,file_exists2
-  character*100       :: name_nh, name_sh
+  character(len=LIS_CONST_PATH_LEN) :: name_nh, name_sh
 
   real                :: value
   logical             :: readflag
@@ -139,7 +140,7 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
            pds5 = 66 
            pds7 = 0
         endif
-        write(LIS_logunit,*) '[INFO] SNODEP file ',name_nh
+        write(LIS_logunit,*) '[INFO] SNODEP file ',trim(name_nh)
 
         call grib_open_file(ftn1,trim(name_nh),'r',iret)
         call LIS_verify(iret,'error in grib_open_file in read_SNODEPobs')
@@ -191,7 +192,7 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
            pds5 = 66 
            pds7 = 0
         endif
-        write(LIS_logunit,*) '[INFO] SNODEP file ',name_sh
+        write(LIS_logunit,*) '[INFO] SNODEP file ',trim(name_sh)
 
         call grib_open_file(ftn2,trim(name_sh),'r',iret)
         call LIS_verify(iret,'error in grib_open_file in read_SNODEPobs')

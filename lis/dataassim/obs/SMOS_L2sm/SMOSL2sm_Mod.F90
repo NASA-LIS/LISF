@@ -23,6 +23,7 @@ module SMOSL2sm_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -38,7 +39,7 @@ module SMOSL2sm_Mod
   public :: SMOSL2sm_struc
 !EOP
   type, public:: SMOSL2sm_dec
-     character*100          :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
      logical                :: startMode
      integer                :: useSsdevScal
      integer                :: nc
@@ -119,8 +120,8 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
     integer                    :: ngrid
 

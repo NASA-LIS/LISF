@@ -16,6 +16,7 @@ subroutine NLDAS_routing_readrst
        LIS_releaseUnitNumber, LIS_endrun
   use LIS_timeMgrMod 
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use NLDAS_routingMod, only : NLDAS_routing_struc
 
   implicit none
@@ -24,7 +25,7 @@ subroutine NLDAS_routing_readrst
   integer       :: ftn
   integer       :: i,j,k
   integer       :: ios,status
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
   real              :: gmt

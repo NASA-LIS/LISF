@@ -21,13 +21,14 @@ module RWMCMC_varctl
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 
   type, public ::  mcmcctl
-     character*100    :: decspaceAttribsFile
-     character*100    :: rfile
-     character*100    :: initfile
+     character(len=LIS_CONST_PATH_LEN) :: decspaceAttribsFile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: initfile
      integer          :: iterNo
      integer          :: maxiter
      integer          :: nparam

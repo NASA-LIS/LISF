@@ -20,6 +20,7 @@ module MCD15A2Hlai_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -108,7 +109,7 @@ contains
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  laiobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  laiobsdir
     character*100          ::  temp
     real,  allocatable         ::  ssdev(:)
     character*1            ::  vid(2)
