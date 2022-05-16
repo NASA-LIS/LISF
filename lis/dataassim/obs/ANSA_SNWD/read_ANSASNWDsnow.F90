@@ -612,7 +612,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   
   integer              :: n 
   integer              :: k
-  character*80         :: name
+  character(len=*)     :: name
   real                 :: tmp_obsl(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
 #if (defined USE_HDFEOS2)
@@ -650,7 +650,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   
   file_id = gdopen(trim(name),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*)"[ERR] Failed to open hdf file",name
+     write(LIS_logunit,*)"[ERR] Failed to open hdf file",trim(name)
      return
   end if
   !  write(LIS_logunit,*) 'opened file',file_id
@@ -658,7 +658,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   !get the grid id
   grid_id = gdattach(file_id,grid_name)
   if (grid_id.eq.-1)then
-     write(LIS_logunit,*)"[ERR] Failed to attach grid: ",grid_name,name
+     write(LIS_logunit,*)"[ERR] Failed to attach grid: ",grid_name,trim(name)
      ret = gdclose(file_id)
      return
   end if
