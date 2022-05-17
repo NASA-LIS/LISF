@@ -9,8 +9,8 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
-! !ROUTINE: readcrd_gddp
-! \label{readcrd_gddp}
+! !ROUTINE: readcrd_galwem
+! \label{readcrd_galwem}
 !
 ! !REVISION HISTORY:
 ! 11 Mar 2022; Yeosang Yoon, Initial Code

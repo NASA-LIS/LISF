@@ -65,11 +65,9 @@ subroutine timeinterp_galwem(n,findex)
   integer :: tempbss
   integer            :: status
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
-  type(ESMF_Field)   :: psurfField,pcpField,cpcpField,snowfField
+  type(ESMF_Field)   :: psurfField,pcpField !,cpcpField,snowfField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
-  real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:),snowf(:)
-  logical            :: forcing_z, forcing_ch, forcing_pet, forcing_cape
-  integer            :: mfactor, m, k, kk
+  real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:) !,cpcp(:),snowf(:)
 ! ________________________________________
 
   btime=galwem_struc(n)%fcsttime1
@@ -144,21 +142,21 @@ subroutine timeinterp_galwem(n,findex)
        rc=status)
   call LIS_verify(status, 'Error: Enable Rainf in the forcing variables list')
 
-  if (LIS_FORC_CRainf%selectOpt.eq.1) then
-     call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
-          LIS_FORC_CRainf%varname(1),cpcpField,&
-          rc=status)
-     call LIS_verify(status, &
-          'Error: Enable CRainf in the forcing variables list')
-  endif
+  !if (LIS_FORC_CRainf%selectOpt.eq.1) then
+  !   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
+  !        LIS_FORC_CRainf%varname(1),cpcpField,&
+  !        rc=status)
+  !   call LIS_verify(status, &
+  !        'Error: Enable CRainf in the forcing variables list')
+  !endif
 
-  if (LIS_FORC_Snowf%selectOpt.eq.1) then
-     call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
-          LIS_FORC_Snowf%varname(1),snowfField,&
-          rc=status)
-     call LIS_verify(status, &
-          'Error: Enable Snowf in the forcing variables list')
-  endif
+  !if (LIS_FORC_Snowf%selectOpt.eq.1) then
+  !   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
+  !        LIS_FORC_Snowf%varname(1),snowfField,&
+  !        rc=status)
+  !   call LIS_verify(status, &
+  !        'Error: Enable Snowf in the forcing variables list')
+  !endif
 
   call ESMF_FieldGet(tmpField,localDE=0,farrayPtr=tmp,rc=status)
   call LIS_verify(status)
@@ -184,16 +182,17 @@ subroutine timeinterp_galwem(n,findex)
   call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
   call LIS_verify(status)
 
-  if (LIS_FORC_CRainf%selectOpt.eq.1) then
-     call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
-     call LIS_verify(status)
-  endif
+  !if (LIS_FORC_CRainf%selectOpt.eq.1) then
+  !   call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
+  !   call LIS_verify(status)
+  !endif
 
-  if (LIS_FORC_Snowf%selectOpt.eq.1) then
-     call ESMF_FieldGet(snowfField,localDE=0,farrayPtr=snowf,rc=status)
-     call LIS_verify(status)
-  endif
+  !if (LIS_FORC_Snowf%selectOpt.eq.1) then
+  !   call ESMF_FieldGet(snowfField,localDE=0,farrayPtr=snowf,rc=status)
+  !   call LIS_verify(status)
+  !endif
 
+  ! Downward shortwave radiation (average):
   do t=1,LIS_rc%ntiles(n)
      index1 = LIS_domain(n)%tile(t)%index
      zdoy=LIS_rc%doy
@@ -217,16 +216,15 @@ subroutine timeinterp_galwem(n,findex)
         endif
 
         if (swd(t).gt.LIS_CONST_SOLAR) then
-           write(unit=LIS_logunit,fmt=*)'warning, sw radiation too high!!'
-           write(unit=LIS_logunit,fmt=*)'it is',swd(t)
-           write(unit=LIS_logunit,fmt=*)'galwemdata1=',&
+           write(unit=LIS_logunit,fmt=*)'[WARN] sw radiation too high!!'
+           write(unit=LIS_logunit,fmt=*)'[WARN] it is',swd(t)
+           write(unit=LIS_logunit,fmt=*)'[WARN] galwemdata1=',&
                 galwem_struc(n)%metdata1(3,index1)
-           write(unit=LIS_logunit,fmt=*)'galwemdata2=',&
+           write(unit=LIS_logunit,fmt=*)'[WARN] galwemdata2=',&
                 galwem_struc(n)%metdata2(3,index1)
-           write(unit=LIS_logunit,fmt=*)'zw1=',zw1,'zw2=',zw2
+           write(unit=LIS_logunit,fmt=*)'[WARN] zw1=',zw1,'zw2=',zw2
            swd(t) = LIS_CONST_SOLAR
-           write(unit=LIS_logunit,fmt=*)'forcing set to ',swd(t)
-           stop
+           write(unit=LIS_logunit,fmt=*)'[WARN] forcing set to ',swd(t)
         endif
      endif
 
@@ -235,18 +233,18 @@ subroutine timeinterp_galwem(n,findex)
            swd(t) = 0.0
         else
            write(LIS_logunit,*) &
-                'ERR: timeinterp_galwem -- Stopping because ', &
-                'forcing not udef but lt0,'
-           write(LIS_logunit,*)'ERR: timeinterp_galwem -- ', &
+                '[ERR] timeinterp_galwem -- Stopping because ', &
+                'forcing not udef but lt 0,'
+           write(LIS_logunit,*)'[ERR] timeinterp_galwem -- ', &
                 t,swd(t),galwem_struc(n)%metdata2(3,index1), &
                 ' (',LIS_localPet,')'
            call LIS_endrun
         endif
      endif
 
-     if (swd(t).gt.LIS_CONST_SOLAR) then
-        swd(t)=galwem_struc(n)%metdata2(3,index1)
-     endif
+     !if (swd(t).gt.LIS_CONST_SOLAR) then
+     !   swd(t)=galwem_struc(n)%metdata2(3,index1)
+     !endif
   enddo
 
 !-----------------------------------------------------------------------
@@ -269,18 +267,43 @@ subroutine timeinterp_galwem(n,findex)
   do t=1,LIS_rc%ntiles(n)
      index1 = LIS_domain(n)%tile(t)%index
 
-     tmp(t) = galwem_struc(n)%metdata1(1,index1)*wt1 + &
-          galwem_struc(n)%metdata2(1,index1)*wt2
-     q2(t)  = galwem_struc(n)%metdata1(2,index1)*wt1 + &
-          galwem_struc(n)%metdata2(2,index1)*wt2
-     lwd(t)  = galwem_struc(n)%metdata1(4,index1)*wt1 + &
-          galwem_struc(n)%metdata2(4,index1)*wt2
-     uwind(t) = galwem_struc(n)%metdata1(5,index1)*wt1+&
-          galwem_struc(n)%metdata2(5,index1)*wt2
-     vwind(t) = galwem_struc(n)%metdata1(6,index1)*wt1 + &
-          galwem_struc(n)%metdata2(6,index1)*wt2
-     psurf(t) = galwem_struc(n)%metdata1(7,index1)*wt1 + &
-          galwem_struc(n)%metdata2(7,index1)*wt2
+     ! 2-meter air temp
+     if((galwem_struc(n)%metdata1(1,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(1,index1).ne.LIS_rc%udef)) then
+        tmp(t) = galwem_struc(n)%metdata1(1,index1)*wt1 + &
+                 galwem_struc(n)%metdata2(1,index1)*wt2
+     endif
+     ! Specific humidity
+     if((galwem_struc(n)%metdata1(2,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(2,index1).ne.LIS_rc%udef)) then
+        q2(t)  = galwem_struc(n)%metdata1(2,index1)*wt1 + &
+                 galwem_struc(n)%metdata2(2,index1)*wt2
+     endif
+     ! Downward longwave field
+     if((galwem_struc(n)%metdata1(4,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(4,index1).ne.LIS_rc%udef)) then
+        lwd(t)  = galwem_struc(n)%metdata1(4,index1)*wt1 + &
+                  galwem_struc(n)%metdata2(4,index1)*wt2
+     endif
+     ! U-wind component
+     if((galwem_struc(n)%metdata1(5,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(5,index1).ne.LIS_rc%udef)) then
+        uwind(t) = galwem_struc(n)%metdata1(5,index1)*wt1+&
+                   galwem_struc(n)%metdata2(5,index1)*wt2
+     endif
+     ! V-wind component
+     if((galwem_struc(n)%metdata1(6,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(6,index1).ne.LIS_rc%udef)) then
+        vwind(t) = galwem_struc(n)%metdata1(6,index1)*wt1 + &
+                   galwem_struc(n)%metdata2(6,index1)*wt2
+     endif
+     ! Surface pressure field
+     if((galwem_struc(n)%metdata1(7,index1).ne.LIS_rc%udef).and.&
+          (galwem_struc(n)%metdata2(7,index1).ne.LIS_rc%udef)) then
+        psurf(t) = galwem_struc(n)%metdata1(7,index1)*wt1 + &
+                   galwem_struc(n)%metdata2(7,index1)*wt2
+     endif
+
   enddo
 
 end subroutine timeinterp_galwem

@@ -41,7 +41,7 @@ subroutine get_galwem(n, findex)
   character(len=LIS_CONST_PATH_LEN) :: fname
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
-  real*8            :: time1, time2, timenow
+  real*8            :: time1, time2!, timenow
   !real*8            :: dtime1, dtime2
   real              :: gmt1, gmt2
   real              :: ts1, ts2
@@ -77,16 +77,16 @@ subroutine get_galwem(n, findex)
      LIS_rc%rstflag(n) = 0
   endif
 
-! Determine Required GALWEM Data Times (The previous hour & the future hour)
-  yr1=LIS_rc%yr    !Time now
-  mo1=LIS_rc%mo
-  da1=LIS_rc%da
-  hr1=LIS_rc%hr
-  mn1=LIS_rc%mn    
-  ss1=0
-  ts1=0 
+  !! Determine Required GALWEM Data Times (The previous hour & the future hour)
+  !yr1=LIS_rc%yr    !Time now
+  !mo1=LIS_rc%mo
+  !da1=LIS_rc%da
+  !hr1=LIS_rc%hr
+  !mn1=LIS_rc%mn    
+  !ss1=0
+  !ts1=0 
 
-  call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+  !call LIS_tick(timenow,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
 
   ! First timestep of run
   if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then
@@ -132,6 +132,15 @@ subroutine get_galwem(n, findex)
         galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
      elseif(galwem_struc(n)%fcst_hour >= 42) then
         galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
+     endif
+
+     ! Check if local forecast hour exceeds max grib file forecast hour:
+     if(galwem_struc(n)%fcst_hour > 168 ) then
+        write(LIS_logunit,*) &
+              "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
+        write(LIS_logunit,*) &
+              '  forecast hour (record). Run will end here for now ... '
+        call LIS_endrun
      endif
    
      ! Update bookend-time record 2:
