@@ -21,6 +21,7 @@ subroutine get_gldas(n,findex)
   use LIS_coreMod,        only : LIS_rc
   use LIS_timeMgrMod,     only : LIS_tick, LIS_get_nstep
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use gldas_forcingMod,    only : gldas_struc
 
   implicit none
@@ -67,7 +68,7 @@ subroutine get_gldas(n,findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2,ts1,ts2
-  character(len=80) :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer :: nstep
 
   gldas_struc(n)%findtime1=0
