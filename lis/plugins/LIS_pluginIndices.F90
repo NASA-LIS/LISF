@@ -172,7 +172,8 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
-   character*50, public,  parameter :: LIS_gddpId        = "GDDP"
+   character*50, public,  parameter :: LIS_gddpId            = "GDDP"
+   character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
