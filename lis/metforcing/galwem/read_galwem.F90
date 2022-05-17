@@ -66,7 +66,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
   real            :: uwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous zonal wind interpolated to 10 metres [m/s]
   real            :: vwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous meridional wind interpolated to 10 metres[m/s]
   real            :: ps(LIS_rc%lnc(n),LIS_rc%lnr(n))        !Instantaneous Surface Pressure [Pa] 
-  real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   !Total precipitation [kg/m^2] 
+  real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   !Total precipitation [kg/m^2/s] 
 
   integer, intent(out) :: rc
 
@@ -110,7 +110,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call grib_get(igrib,'centre',center,ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grib_get: ' // &
-           'centre in AGRMET_fldbld_galwem'
+           'centre in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -119,7 +119,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call grib_get(igrib,'gridType',gtype,ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
-           'gridtype in AGRMET_fldbld_galwem'
+           'gridtype in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -134,7 +134,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
 
    call grib_get(igrib,'Ni',iginfo(1),ierr)
    if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] in grid_get: Ni in AGRMET_fldbld_galwem'
+      write(LIS_logunit,*) '[ERR] in grid_get: Ni in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -142,7 +142,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
 
    call grib_get(igrib,'Nj',iginfo(2),ierr)
    if ( ierr .ne. 0 ) then
-      write(LIS_logunit,*) '[ERR] in grid_get: Nj in AGRMET_fldbld_galwem'
+      write(LIS_logunit,*) '[ERR] in grid_get: Nj in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -152,7 +152,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'jDirectionIncrementInDegrees ' // &
-           'in AGRMET_fldbld_galwem'
+           'in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -163,7 +163,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
            'iDirectionIncrementInDegrees ' // &
-           'in AGRMET_fldbld_galwem'
+           'in read_galwem'
       call grib_release(igrib, ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -172,7 +172,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call grib_get(igrib,'dataDate',dataDate,ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
-           'dataDate in AGRMET_fldbld_galwem'
+           'dataDate in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
@@ -181,45 +181,21 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call grib_get(igrib,'dataTime',dataTime,ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] in grid_get: ' // &
-           'dataTime in AGRMET_fldbld_galwem'
+           'dataTime in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
       call LIS_endrun()
    endif
-
-   !if ( yr1*10000+mo1*100+da1 .ne. dataDate) then
-   !   call grib_release(igrib,ierr)
-   !   call grib_close_file(ftn)
-   !   call LIS_endrun()
-   !end if
-   !if (  hr1*100 .ne. dataTime ) then
-   !   call grib_release(igrib,ierr)
-   !   call grib_close_file(ftn)
-   !   call LIS_endrun()
-   !end if
 
    ! Here we tentatively have a file we can use. Close it for now, and
    ! prepare to pull the appropriate variables.
    call grib_release(igrib,ierr)
    call grib_close_file(ftn)
 
-   ! EMK...Added delta lon
-   !write(LIS_logunit,*)'[INFO] GALWEM FIRST GUESS DELTA LAT IS ', &
-   !     gridres_dlat,' DEGREES'
-   !write(LIS_logunit,*)'[INFO] GALWEM FIRST GUESS DELTA LON IS ', &
-   !     gridres_dlon,' DEGREES'
-
    ifguess = iginfo(1)
    jfguess = iginfo(2)
 
-   ! FIXME...Reject file if wrong center?
-   !if (center .eq. 57) then
-   !   write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS FROM UK UM (GALWEM) MODEL'
-   !else
-   !   write(LIS_logunit,*)'[WARN] UNKNOWN SOURCE FOR FIRST GUESS DATA'
-   !end if
-
-   call AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess, &
+   call fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess, &
            tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
 
    call assign_processed_galwemforc(n,order,1,tair)
@@ -235,9 +211,9 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
 
 end subroutine read_galwem
 
-subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,     &
-                                     tair, qair, swdown, lwdown,                &
-                                     uwind, vwind, ps, prectot, rc)                            
+subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
+                              tair, qair, swdown, lwdown,                  &
+                              uwind, vwind, ps, prectot, rc)                            
  
 ! !USES:
   use LIS_coreMod, only : LIS_rc
@@ -352,7 +328,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
   call grib_count_in_file(ftn,nvars,ierr)
   if ( ierr .ne. 0 ) then
      write(LIS_logunit,*) '[WARN] in grib_count_in_file in ' // &
-          'AGRMET_fldbld_read_galwem'
+          'fldbld_read_galwem'
      goto 100
   end if
 
@@ -370,7 +346,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      call grib_get(igrib,'discipline',param_disc_val,ierr)
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) '[WARN] in grib_get: parameterNumber in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -382,7 +358,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: productDefinitionTemplateNumber in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -391,7 +367,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: parameterCategory in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -400,7 +376,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: parameterNumber in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -409,7 +385,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: level in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -418,7 +394,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: level in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -429,7 +405,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: level in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -444,7 +420,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
         call grib_release(igrib,ierr)
         if (ierr .ne. 0) then
            write(LIS_logunit,*)'[WARN], in grib_release: in ' //&
-                'AGRMET_fldbld_read_galwem'
+                'fldbld_read_galwem'
            goto 100
         end if
         cycle ! Not a message we are interested in.
@@ -454,7 +430,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      if ( ierr .ne. 0 ) then
         write(LIS_logunit,*) &
              '[WARN] in grib_get: values in ' // &
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         call grib_release(igrib,ierr)
         goto 100
      end if
@@ -491,7 +467,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
         flush(LIS_logunit)
         write(cstat,'(i9)',iostat=istat1) ierr
         message(1) = 'Program: LIS'
-        message(2) = '  Subroutine:  AGRMET_fldbld_read_galwem.'
+        message(2) = '  Subroutine:  fldbld_read_galwem.'
         message(3) = '  Error reading first guess file:'
         message(4) = '  ' // trim(gribfile)
         if( istat1 .eq. 0 )then
@@ -504,7 +480,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
      call grib_release(igrib,ierr)
      if (ierr .ne. 0) then
         write(LIS_logunit,*)'[WARN], in grib_release: in ' //&
-             'AGRMET_fldbld_read_galwem'
+             'fldbld_read_galwem'
         goto 100
      end if
 
@@ -567,7 +543,7 @@ subroutine AGRMET_fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfgues
   rc = 0
 #endif
 
-end subroutine AGRMET_fldbld_read_galwem
+end subroutine fldbld_read_galwem
 
 function check_galwem_message(param_disc_val, prod_def_tmpl_num, &
      param_cat_val, param_num_val, surface_val, level_val, surface_val_2)

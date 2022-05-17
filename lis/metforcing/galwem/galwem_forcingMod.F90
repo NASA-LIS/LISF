@@ -29,8 +29,7 @@ module galwem_forcingMod
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !-----------------------------------------------------------------------------
-  public :: init_galwem      !defines the native resolution of
-                             !the input data
+  public :: init_galwem      !defines the native resolution of the input data
 !-----------------------------------------------------------------------------
 ! !PUBLIC TYPES:
 !-----------------------------------------------------------------------------
@@ -46,8 +45,8 @@ module galwem_forcingMod
      integer, allocatable   :: gindex(:,:)
 
      integer                :: mi
-     integer                :: day_check1
-     integer                :: day_check2
+     !integer                :: day_check1
+     !integer                :: day_check2
      
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)
@@ -105,12 +104,13 @@ contains
 
     integer :: n
     real    :: gridDesci(LIS_rc%nnest,50)
+    
+    write(LIS_logunit,*) "[INFO] Initializing the GALWEM forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
     if( LIS_rc%forecastMode.eq.1 ) then
        write(LIS_logunit,*) '[ERR] Currently the GALWEM forecast forcing reader'
        write(LIS_logunit,*) '[ERR] is not set up to run in forecast mode.'
-       write(LIS_logunit,*) '[ERR] May be added in future releases.'
        write(LIS_logunit,*) '[ERR] LIS forecast run-time ending.'
        call LIS_endrun()
     endif
