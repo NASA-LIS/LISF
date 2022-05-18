@@ -502,9 +502,11 @@ subroutine LVT_readConfig(configfile)
         LVT_rc%scInterval = 6
      elseif(scInterval.eq."yearly") then 
         LVT_rc%scInterval = 12
+     elseif(scInterval.eq."3 monthly WY") then
+        LVT_rc%scInterval = 21 !scInterval is 2 with a variation of the 3 monthly
      else
         write(LVT_logunit,*) '[ERR] Seasonal cycle interval type must be -- '
-        write(LVT_logunit,*) '[ERR] monthly, 3 monthly, 6 monthly or yearly'
+        write(LVT_logunit,*) '[ERR] monthly, 3 monthly, 3 monthly WY, 6 monthly or yearly'
         call LVT_endrun()
      endif
      
