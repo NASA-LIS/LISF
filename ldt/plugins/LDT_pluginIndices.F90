@@ -26,6 +26,7 @@ module LDT_pluginIndices
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
 !  07 Feb 2022: Eric Kemp/SSAI -- Added CHELSAV21 precipitation.
+!  13 May 2022: Eric Kemp/SSAI -- Added NAFPA background precipitation.
 !
 !EOP
   PRIVATE
@@ -344,7 +345,10 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_prismpptId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimpptId = "WORLDCLIM"
    character*50, public,  parameter :: LDT_chelsav21pptId = "CHELSAV21"
-
+   character*50, public,  parameter :: LDT_nafpabackgfspptId = "NAFPA_BACK_GFS"
+   character*50, public,  parameter :: LDT_nafpabackgalwempptId = &
+        "NAFPA_BACK_GALWEM"
+   
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimtminId = "WORLDCLIM"

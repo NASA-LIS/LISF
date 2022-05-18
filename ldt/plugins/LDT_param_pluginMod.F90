@@ -26,6 +26,7 @@ module LDT_param_pluginMod
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added
 !  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
 !  07 Feb 2022:  Eric Kemp/SSAI - Added CHELSAV21 precipitation
+!  13 May 2022:  Eric Kemp/SSAI - Added NAFPA background precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -1229,6 +1230,8 @@ contains
   subroutine LDT_climate_plugin
 !EOP
     use LDT_CHELSAV21_climpptMod, only: LDT_read_CHELSAV21_climppt
+    use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt, &
+         LDT_read_NAFPA_back_galwem_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
@@ -1245,6 +1248,12 @@ contains
 
     call registerreadclimppt(trim(LDT_chelsav21pptId)//char(0),&
          LDT_read_CHELSAV21_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgfspptId)//char(0), &
+         LDT_read_NAFPA_back_gfs_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgalwempptId)//char(0), &
+         LDT_read_NAFPA_back_galwem_climppt)
 
 !- Temperature downscaling:
 

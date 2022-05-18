@@ -16,6 +16,7 @@
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
 !  07 Feb 2022: Eric Kemp/SSAI: Added CHELSAV21 precipitation.
+!  13 May 2022: Eric Kemp/SSAI: Added NAFPA background precipitation.
 ! !INTERFACE:
 subroutine setClimateParmsFullnames(n, datatype, source)
 
@@ -59,6 +60,12 @@ subroutine setClimateParmsFullnames(n, datatype, source)
      case ( "CHELSAV21" )
         LDT_climate_struc(n)%climppt%standard_name =&
              "CHELSAV21 PPT climatology fields"
+     case ( "NAFPA_BACK_GFS" )
+        LDT_climate_struc(n)%climppt%standard_name = &
+             "NAFPA_BACK_GFS PPT climatology fields"
+     case( "NAFPA_BACK_GALWEM" )
+        LDT_climate_struc(n)%climppt%standard_name = &
+             "NAFPA_BACK_GALWEM PPT climatology fields"
      end select
 
   case( "mintemp" )

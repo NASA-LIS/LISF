@@ -28,6 +28,7 @@ module LDT_climateParmsMod
 !  08 Aug 2005: Sujay Kumar; Initial implementation
 !  08 Oct 2012: Kristi Arsenault; Expanded for forcing climatology datasets
 !  07 Feb 2022: Eric Kemp/SSAI; Add CHELSAV21 precipitation climatology
+!  13 May 2022: Eric Kemp/SSAI; Add NAFPA background precip climatologies
 !
   use ESMF
   use LDT_coreMod
@@ -406,6 +407,12 @@ contains
                    LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)
                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                case( "NAFPA_BACK_GFS")
+                   LDT_climate_struc(n)%climpptfile = &
+                        trim(LDT_climate_struc(n)%climpptdir)
+                case( "NAFPA_BACK_GALWEM")
+                   LDT_climate_struc(n)%climpptfile = &
+                        trim(LDT_climate_struc(n)%climpptdir)
                 case default
                    write(LDT_logunit,*) &
                         "[ERR] PPT Climatology Source Not Recognized"
