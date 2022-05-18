@@ -144,6 +144,7 @@ Evap:         1  kg/m2s  UP   1 0 0 1  57 10000   # Total evapotranspiration (kg
 Qs:           1  kg/m2s  OUT  1 0 0 1 235 10000   # Surface runoff (kg/m2s)
 Qrec:         0  kg/m2s  IN   1 0 0 1 163 10000   # Recharge (kg/m2s)
 Qsb:          1  kg/m2s  OUT  1 0 0 1 234 10000   # Subsurface runoff (kg/m2s)
+Qtot:         1  kg/m2s  OUT  1 0 0 1 235 10000   # Total runoff or discharge to stream (kg/m2s)
 Qsm:          0  kg/m2s  S2L  1 0 0 1  99 10000   # Snowmelt (kg/m2s)
 Qfz:          0  kg/m2s  L2S  1 0 0 1 130 10000   # Refreezing of water in the snowpack (kg/m2s)
 Qst:          0  kg/m2s  -    1 0 0 1 131 10000   # Snow throughfall (kg/m2s)
@@ -402,7 +403,7 @@ Irrigated water: 0  kg/m2s   -   0 0 0 1 256 10  # Irrigated water amount
 #AWRAL600 output
 e0:           1  mm      -    0 0 0 1 0 1 # potential evaporation
 etot:         1  mm      -    0 0 0 1 0 1 # actual evapotranspiration
-qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
+Qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
 sr:           1  mm      -    0 0 0 1 0 1 # volume of water in the surface water store
 sg:           1  mm      -    0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
 dd:           1  mm      -    0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer
