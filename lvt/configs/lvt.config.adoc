@@ -697,12 +697,13 @@ Stratification attributes file:         ./strat_attribs.txt
 
 [cols="<,<",]
 |===
-| Value     | Description
+| Value        | Description
 
-| monthly   | monthly seasonal cycles (default)
-| 3 monthly | 3-monthly seasonal cycles (DJF,MAM,JJA,SON)
-| 6 monthly | 6-monthly seasonal cycles
-| yearly    | yearly seasonal cycles
+| monthly      | monthly seasonal cycles (default)
+| 3 monthly    | 3-monthly seasonal cycles (DJF,MAM,JJA,SON)
+| 3 monthly WY | 3-monthly seasonal cycles based on water/calendar year (JFM,MAJ,JAS,OND)
+| 6 monthly    | 6-monthly seasonal cycles
+| yearly       | yearly seasonal cycles
 |===
 
 .Example _lvt.config_ entry
