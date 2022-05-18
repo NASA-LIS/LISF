@@ -2836,7 +2836,8 @@ Climatology parameter maps
 |PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
 |WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
 |CHELSAV21 |Global climate layers downscaled. For more info, see: http://chelsa-climate.org/
-
+|NAFPA_BACK_GFS | Global GFS precipitation downscaled, used as background for NAFPA
+|NAFPA_BACK_GALWEM | Global GALWEM precipitation downscaled, used as background for NAFPA
 |===
 
 `PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
@@ -2856,6 +2857,16 @@ CHELSAV21: <directory>/<file header>_<imonth>_<iyear>_V.2.1.tif
 * The file header is CHELSA_pr
 * The imonth represents the month (01, 02, ..., 12)
 * The iyear represents the year (1979, 1980, ..., 2019).
+
+NAFPA_BACK_GFS: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
+* The iyear represents the year (2008, 2009, ..., 2017).
+* The imonth represents the month (01, 02, ..., 12)
+* NOTE: The iyear/imonth refers to the end of the previous month.
+
+NAFPA_BACK_GALWEM: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
+* The iyear represents the year (2017, 2018, ..., 2021).
+* The imonth represents the month (01, 02, ..., 12)
+* NOTE: The iyear/imonth refers to the end of the previous month.
 
 `PPT climatology interval:` specifies the frequency of the precipitation climatology in months. Current option is: "`monthly`"
 
