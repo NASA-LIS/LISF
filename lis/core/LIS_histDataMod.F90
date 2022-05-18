@@ -5530,9 +5530,9 @@ contains
             model_patch=.true.)
     endif
    
-    call ESMF_ConfigFindLabel(modelSpecConfig,"qtot:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qtot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "qtot",&
+         "Qtot",&
          "total_discharge_to_stream",&
          "total discharge to stream",rc)
     if ( rc == 1 ) then
