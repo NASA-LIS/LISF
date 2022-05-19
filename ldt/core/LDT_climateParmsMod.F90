@@ -410,9 +410,11 @@ contains
                 case( "NAFPA_BACK_GFS")
                    LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)
+                   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
                 case( "NAFPA_BACK_GALWEM")
                    LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)
+                   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
                 case default
                    write(LDT_logunit,*) &
                         "[ERR] PPT Climatology Source Not Recognized"
