@@ -41,8 +41,8 @@ subroutine RAPID_routing_output(n)
   integer               :: status
   integer               :: mo, da
   logical               :: alarmCheck
-  integer               :: dimid_time, dimid_riv_bas, dimid_Qout(2)
-  integer               :: dimid_rivid, dimid_nv, dimid_nerr
+  integer               :: dimid_time, dimid_riv_bas
+  integer               :: dimid_rivid, dimid_nv, dimid_nerr, dimid_Qout(2)
   integer               :: varid_Qout, varid_Qout_err,varid_rivid,varid_time
   integer               :: varid_time_bnds, varid_lon, varid_lat,varid_crs
   integer               :: shuffle, deflate, deflate_level
@@ -104,16 +104,13 @@ subroutine RAPID_routing_output(n)
            call LIS_verify(status, "Error in nf90_open in RAPID_routing_output")
 #endif
 
-           ! Define the dimensions.
-           status = nf90_def_dim(ftn,'time',1,dimid_time)
-           call LIS_verify(status, "nf90_put_att failed for time in RAPID_routing_output")
            status = nf90_def_dim(ftn,'rivid',RAPID_routing_struc(n)%n_riv_bas,dimid_rivid)
            call LIS_verify(status, "nf90_put_att failed for rivid in RAPID_routing_output")
-           !status = nf90_def_dim(ftn,'nv',2,dimid_nv)
-           !call LIS_verify(status, "nf90_put_att failed for nv in RAPID_routing_output")
-           !status = nf90_def_dim(ftn,'nerr',3,dimid_nerr)
-           !call LIS_verify(status, "nf90_put_att failed for nerr in RAPID_routing_output")
-           dimid_Qout = (/dimid_rivid, dimid_time/)
+           status = nf90_def_dim(ftn,'time',1,dimid_time)
+           call LIS_verify(status, "nf90_put_att failed for time in RAPID_routing_output")
+
+           !dimid_Qout = (/dimid_rivid, dimid_time/)
+           dimid_Qout = (/dimid_time, dimid_rivid/)
 
            !Define variables
            status = nf90_def_var(ftn,"Qout",NF90_REAL,dimid_Qout,varid_Qout)
@@ -273,10 +270,12 @@ subroutine RAPID_routing_output(n)
            call LIS_verify(status,'Error in nf90_put_var for lat in RAPID_routing_output')
            status = nf90_put_var(ftn,varid_time,0.0)
            call LIS_verify(status,'Error in nf90_put_var for time in RAPID_routing_output')
-                      status = nf90_put_var(ftn,varid_crs,0)
+           status = nf90_put_var(ftn,varid_crs,0)
            call LIS_verify(status,'Error in nf90_put_var for crs in RAPID_routing_output')
-           status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout,&
-                    (/1,1/), (/RAPID_routing_struc(n)%n_riv_bas,1/))
+
+           status = nf90_put_var(ftn,varid_Qout,&
+                    reshape(RAPID_routing_struc(n)%Qout,(/1,RAPID_routing_struc(n)%n_riv_bas/)))
+           !status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout)
            call LIS_verify(status,'Error in nf90_put_var for Qout in RAPID_routing_output')
 
            ! Close the file.
