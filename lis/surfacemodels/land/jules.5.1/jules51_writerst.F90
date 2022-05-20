@@ -203,7 +203,7 @@ subroutine jules51_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10)
+    integer :: dimID(11)
     integer :: tsoil_deep_ID
     integer :: wood_prod_fast_ID
     integer :: wood_prod_med_ID

@@ -187,7 +187,7 @@ subroutine noah39_dump_restart(n, ftn, wformat)
 !
 !EOP
    integer :: l,t
-   integer :: dimID(10)
+   integer :: dimID(11)
    integer :: t1Id, cmcid, snowhid, sneqvid, smcid, sh2oId, stcId
    integer :: cmId, chId,snotime1Id,emissId,z0Id,albId,q1Id
    integer :: xsda_qfx_Id 

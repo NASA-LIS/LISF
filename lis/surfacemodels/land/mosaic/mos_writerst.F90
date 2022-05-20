@@ -170,7 +170,7 @@ subroutine mos_dump_restart(ftn,n,wformat)
 !EOP
   integer             :: l,t
   integer             :: ctId, qaId, icsId, snowId,SoTId,SoWETid
-  integer             :: dimID(10)
+  integer             :: dimID(11)
   real, allocatable   :: tmptilen(:)
 
   allocate(tmptilen(LIS_rc%npatch(n,LIS_rc%lsm_index)))

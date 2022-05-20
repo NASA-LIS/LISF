@@ -16,8 +16,8 @@ import sys
 
 template = "template/lvt.config.template.noahmp401"
 
-startdt = datetime.datetime(2007, 12, 1, 0)
-enddt = datetime.datetime(2007, 12, 2, 0)
+startdt = datetime.datetime(2007, 12, 1, 12)
+enddt = datetime.datetime(2007, 12, 2, 12)
 
 output = "netcdf"
 #output = "grib2"
