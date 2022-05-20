@@ -27,6 +27,7 @@ subroutine read_SNODAS(n, k, OBS_State, OBS_Pert_State)
   use map_utils
   use LIS_pluginIndices
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SNODAS_Mod, only : SNODAS_struc
 
   implicit none
@@ -49,8 +50,8 @@ subroutine read_SNODAS(n, k, OBS_State, OBS_Pert_State)
 !
 !EOP
   integer                :: ftn,status
-  character*100          :: sndobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: sndobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)

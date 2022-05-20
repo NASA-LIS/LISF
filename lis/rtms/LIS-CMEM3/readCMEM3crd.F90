@@ -24,6 +24,7 @@ subroutine readCMEM3crd()
   use ESMF
   use CMEM3_Mod, only : cmem3_struc
   use LIS_coreMod, only : LIS_rc, LIS_config
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod
 
 !
@@ -39,7 +40,7 @@ subroutine readCMEM3crd()
   integer :: ftn 
   integer :: n, j
   real :: freqs(100), theta(100)
-  character*50 :: fname(100)
+  character(len=LIS_CONST_PATH_LEN) :: fname(100)
 
   call ESMF_ConfigFindLabel(LIS_config,"CMEM3 sensor id:",rc=rc)
   do n=1,LIS_rc%nnest

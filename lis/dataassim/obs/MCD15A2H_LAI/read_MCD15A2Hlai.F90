@@ -25,6 +25,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use MCD15A2Hlai_Mod, only : MCD15A2Hlai_struc
 
   implicit none
@@ -50,8 +51,8 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
 !EOP
   integer                :: status
   integer                :: grid_index
-  character*100          :: laiobsdir
-  character*100          :: fname1,fname2, climofile1, climofile2
+  character(len=LIS_CONST_PATH_LEN) :: laiobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname1,fname2, climofile1, climofile2
   integer                :: cyr, cmo, cda, chr,cmn,css,cdoy
   real                   :: wt1, wt2,ts
   integer                :: count

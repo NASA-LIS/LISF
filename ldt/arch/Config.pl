@@ -187,8 +187,9 @@ elsif($opt_lev == 1) {
    $sys_c_opt = "";
 }
 elsif($opt_lev == 2) {
-   if($sys_arch eq "cray_cray") {
-      $sys_opt = "-O2 -h ipa2,scalar0,vector0 ";
+  if($sys_arch eq "cray_cray") {
+      # EMK 14 Apr 2022...For best conformity to IEEE standard, use fp0
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0,fp0 ";
       $sys_c_opt = "";
    }
    else {

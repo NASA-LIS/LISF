@@ -25,17 +25,17 @@ module LDT_usafsiMod
   type, public :: usafsi_t
      ! Former environment variables
      character*10  :: date10
-     character*100 :: fracdir
-     character*100 :: modif
-     character*100 :: sfcobs
-     character*100 :: ssmis
-     character*100 :: gmi    !kyh20201118
-     character*100 :: amsr2  !kyh20201217
-     character*100 :: stmpdir
-     character*100 :: sstdir ! EMK 20220113
-     character*100 :: static
-     character*100 :: unmod
-     character*100 :: viirsdir
+     character*255 :: fracdir
+     character*255 :: modif
+     character*255 :: sfcobs
+     character*255 :: ssmis
+     character*255 :: gmi    !kyh20201118
+     character*255 :: amsr2  !kyh20201217
+     character*255 :: stmpdir
+     character*255 :: sstdir ! EMK 20220113
+     character*255 :: static
+     character*255 :: unmod
+     character*255 :: viirsdir
 
      ! Former namelist variables
      real :: clmadj
@@ -61,11 +61,11 @@ module LDT_usafsiMod
 
      ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
-     character*100 :: ssmis_raw_dir
-     character*100 :: gmi_raw_dir        !kyh20201118
-     character*100 :: amsr2_raw_dir      !kyh20201217
-     character*100 :: ff_file
-     character*100 :: fd_file            !kyh20210113
+     character*255 :: ssmis_raw_dir
+     character*255 :: gmi_raw_dir        !kyh20201118
+     character*255 :: amsr2_raw_dir      !kyh20201217
+     character*255 :: ff_file
+     character*255 :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -77,9 +77,9 @@ module LDT_usafsiMod
 
      ! Other new settings
      real :: fill_climo
-     character*100 :: gofs_sst_dir
-     character*100 :: gofs_cice_dir
-     character*100 :: lis_grib2_dir
+     character*255 :: gofs_sst_dir
+     character*255 :: gofs_cice_dir
+     character*255 :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
      character*20 :: data_res

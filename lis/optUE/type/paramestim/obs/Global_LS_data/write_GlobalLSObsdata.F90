@@ -23,6 +23,7 @@ subroutine write_Globallsobsdata(Obj_Space)
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_create_output_directory
   use LIS_historyMod,     only : LIS_writevar_gridded
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -40,7 +41,7 @@ subroutine write_Globallsobsdata(Obj_Space)
   real,    pointer    :: obsl(:)
   type(ESMF_Field)    :: lsField
   logical             :: data_update
-  character*100       :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer             :: status
   integer             :: ftn
   integer             :: n 

@@ -170,10 +170,17 @@ contains
     real,    intent(out) ::  fldsto !floodplain storage [m3]
     real                 ::  rrivrof,rfldrof
     
-    rrivrof=runoff*(1.-fldfrc)*dt
-    rfldrof=runoff*fldfrc*dt
-    rivsto=rivsto+rrivrof
-    fldsto=fldsto+rfldrof
+    !ag (24Mar2022)
+    !Fix negative fldsto
+    if(runoff<0.)then
+      rfldrof=max(-fldsto,runoff*fldfrc*dt)
+      rrivrof=max(-rivsto,runoff*dt-rfldrof)
+    else
+      rrivrof=runoff*(1.-fldfrc)*dt
+      rfldrof=runoff*fldfrc*dt
+    endif
+    rivsto=max(0.,rivsto+rrivrof)
+    fldsto=max(0.,fldsto+rfldrof)
     
   end subroutine HYMAP2_calc_runoff
   ! ================================================
