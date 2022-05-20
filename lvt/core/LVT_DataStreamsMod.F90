@@ -145,33 +145,36 @@ contains
 ! temperature fields
 !-------------------------------------------------------------------
     if (LVT_rc%runmode .eq. "557 post") then
+
+
        ! EMK FIXME...Replace HYCOM with NAVGEM
+       ! EMK 20220519...Reinstate HYCOM SST processing.
        if (LVT_rc%processHYCOM .eq. 1) then
 
           LVT_rc%HYCOM_proc_start = .true.
 
-          ! ! First, handle water_temp
-          ! LVT_rc%HYCOM_nc = 4500
-          ! LVT_rc%HYCOM_nr = 2001
+          ! First, handle water_temp
+          LVT_rc%HYCOM_nc = 4500
+          LVT_rc%HYCOM_nr = 2001
 
-          ! gridDesci = 0
-          ! gridDesci(1) = 0
-          ! gridDesci(2) = LVT_rc%HYCOM_nc
-          ! gridDesci(3) = LVT_rc%HYCOM_nr
-          ! gridDesci(4) = -80.0
-          ! gridDesci(5) = -180.0
-          ! gridDesci(7) = 80.0
-          ! gridDesci(8) = 180.0
-          ! gridDesci(6) = 128
-          ! gridDesci(9) = 0.08
-          ! gridDesci(10) = 0.08
-          ! gridDesci(20) = 64
+          gridDesci = 0
+          gridDesci(1) = 0
+          gridDesci(2) = LVT_rc%HYCOM_nc
+          gridDesci(3) = LVT_rc%HYCOM_nr
+          gridDesci(4) = -80.0
+          gridDesci(5) = -180.0
+          gridDesci(7) = 80.0
+          gridDesci(8) = 180.0
+          gridDesci(6) = 128
+          gridDesci(9) = 0.08
+          gridDesci(10) = 0.08
+          gridDesci(20) = 64
 
-          ! allocate(LVT_rc%HYCOM_n11(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr))
+          allocate(LVT_rc%HYCOM_n11(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr))
 
-          ! call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
-          !      LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
-          !      LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_n11)
+          call upscaleByAveraging_input(gridDesci, LVT_rc%gridDesc,&
+               LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%HYCOM_n11)
 
           LVT_histData%watertemp%short_name = "water_temp"
           LVT_histData%watertemp%long_name = "water_temp"
@@ -2043,7 +2046,8 @@ contains
        end if
 
        ! EMK...Use HYCOM for sea ice, and NAVGEM for SST.
-       call LVT_append_HYCOM_cice_fields(ftn_mean, &
+       ! EMK 20220519...Reinstate HYCOM SST.
+       call LVT_append_HYCOM_fields(ftn_mean, &
           time_unit, &
           time_past, &
           time_curr, &
@@ -2051,14 +2055,21 @@ contains
           toplev(1), &
           botlev(1), &
           lat, lon)
-       call LVT_append_navgem_sst_field(ftn_mean, &
-             time_unit, &
-             time_past, &
-             time_curr, &
-             timeRange, &
-             toplev(1), &
-             botlev(1))
-
+       ! call LVT_append_HYCOM_cice_fields(ftn_mean, &
+       !    time_unit, &
+       !    time_past, &
+       !    time_curr, &
+       !    timeRange, &
+       !    toplev(1), &
+       !    botlev(1), &
+       !    lat, lon)
+       ! call LVT_append_navgem_sst_field(ftn_mean, &
+       !       time_unit, &
+       !       time_past, &
+       !       time_curr, &
+       !       timeRange, &
+       !       toplev(1), &
+       !       botlev(1))
        if (LVT_rc%lvt_out_format .eq. "grib1") then
           call grib_close_file(ftn_mean, iret)
           if (LVT_rc%tavgInterval == LVT_rc%ts .and. &
@@ -2279,7 +2290,10 @@ contains
 ! \label{LVT_append_HYCOM_cice_fields}
 !
 ! !INTERFACE:
-  subroutine LVT_append_HYCOM_cice_fields(ftn_mean, time_unit, time_past, &
+  !EMK 20220519...Reinstated HYCOM SST.
+  !subroutine LVT_append_HYCOM_cice_fields(ftn_mean, time_unit, time_past, &
+  !     time_curr, timeRange, toplev, botlev, lat, lon)
+  subroutine LVT_append_HYCOM_fields(ftn_mean, time_unit, time_past, &
        time_curr, timeRange, toplev, botlev, lat, lon)
 
 !
@@ -2308,12 +2322,12 @@ contains
     logical                 :: file_exists
     integer                 :: nid,ios
     integer                 :: c,r,c1,r1,k,cindex,rindex
-    !integer                 :: watertid
-    !real                    :: watert_ip(LVT_rc%lnc*LVT_rc%lnr)
+    integer                 :: watertid
+    real                    :: watert_ip(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: lo(LVT_rc%lnc*LVT_rc%lnr)
     logical*1               :: lb(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
-    !real                    :: watert(LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1)
-    !real                    :: watert_1d(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
+    real                    :: watert(LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1)
+    real                    :: watert_1d(LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr)
 
     ! EMK...Support aice_arc
     integer                 :: aice_arc_id
@@ -2365,7 +2379,7 @@ contains
     real                    :: depscale(1)
     integer                 :: pdTemplate
 
-    !integer :: sst_year,sst_month,sst_day, sst_hour, sst_fcst_hr
+    integer :: sst_year,sst_month,sst_day, sst_hour, sst_fcst_hr
     integer :: cice_arc_year, cice_arc_month, cice_arc_day, &
          cice_arc_hour, cice_arc_fcst_hr
     integer :: cice_ant_year, cice_ant_month, cice_ant_day, &
@@ -2382,153 +2396,153 @@ contains
     if (LVT_rc%processHYCOM .eq. 1) then
 
        ! *** HANDLE SST ***
-!       write(unit=cdate,fmt='(i4.4,i2.2,i2.2,i2.2)') &
-!            LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr
-!       ! FIXME...Update HYCOM file name convention
-!       hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
-!           'hycom_glb_928_'//trim(cdate)//'_t000_ts3z.nc'
+      ! write(unit=cdate,fmt='(i4.4,i2.2,i2.2,i2.2)') &
+      !      LVT_rc%yr, LVT_rc%mo, LVT_rc%da, LVT_rc%hr
+      ! ! FIXME...Update HYCOM file name convention
+      ! hycom_fname = trim(LVT_rc%HYCOMdir)//'/'//&
+      !     'hycom_glb_928_'//trim(cdate)//'_t000_ts3z.nc'
 
-!       watert  = LVT_rc%udef
-!       inquire(file=hycom_fname,exist=file_exists)
-!
-!       if (.not. file_exists) then
-!          write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
-!       end if
+      ! watert  = LVT_rc%udef
+      ! inquire(file=hycom_fname,exist=file_exists)
 
-!        watert  = LVT_rc%udef
-!        call get_hycom_sst_filename(hycom_fname, &
-!             sst_year, sst_month, sst_day, sst_hour, sst_fcst_hr)
-!        if (trim(hycom_fname) == "NONE") then
-!           file_exists = .false.
-!        else
-!           file_exists = .true.
-!        end if
+      ! if (.not. file_exists) then
+      !    write(LVT_logunit,*)'[WARN], missing file ',trim(hycom_fname)
+      ! end if
 
-!        if(file_exists) then
-! #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-!           write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
+       watert  = LVT_rc%udef
+       call get_hycom_sst_filename(hycom_fname, &
+            sst_year, sst_month, sst_day, sst_hour, sst_fcst_hr)
+       if (trim(hycom_fname) == "NONE") then
+          file_exists = .false.
+       else
+          file_exists = .true.
+       end if
 
-!           ios = nf90_open(path=trim(hycom_fname),mode=NF90_NOWRITE,ncid=nid)
-!           call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
+       if(file_exists) then
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+          write(LVT_logunit,*) '[INFO] Reading HYCOM data ',trim(hycom_fname)
 
-!           !variable ids
-!           ios = nf90_inq_varid(nid, 'water_temp',watertid)
-!           call LVT_verify(ios, 'Error nf90_inq_varid: water_temp')
+          ios = nf90_open(path=trim(hycom_fname),mode=NF90_NOWRITE,ncid=nid)
+          call LVT_verify(ios, 'Error opening file'//trim(hycom_fname))
 
-!           !values
-!           ios = nf90_get_var(nid,watertid, watert,&
-!                start=(/1,1,1,1/), count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
-!           call LVT_verify(ios, 'Error nf90_get_var: water_temp')
+          !variable ids
+          ios = nf90_inq_varid(nid, 'water_temp',watertid)
+          call LVT_verify(ios, 'Error nf90_inq_varid: water_temp')
 
-!           ios = nf90_close(nid)
-!           call LVT_verify(ios, 'Error in nf90_close')
-! #endif
-!           watert_1d = -9999.0
-!           lb = .false.
+          !values
+          ios = nf90_get_var(nid,watertid, watert,&
+               start=(/1,1,1,1/), count=(/LVT_rc%HYCOM_nc,LVT_rc%HYCOM_nr,1,1/))
+          call LVT_verify(ios, 'Error nf90_get_var: water_temp')
 
-!           do r=1,LVT_rc%HYCOM_nr
-!              do c=1,LVT_rc%HYCOM_nc
-!                 if(watert(c,r,1,1).ne.-30000) then
-!                    if(c.gt.2250) then
-!                       c1 = c-2250
-!                       r1 = r
-!                    else
-!                       c1 = c+2250
-!                       r1 = r
-!                    endif
-!                    !EMK...Change from Celsius to Kelvin
-!                    !watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0
-!                    watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0+273.15
+          ios = nf90_close(nid)
+          call LVT_verify(ios, 'Error in nf90_close')
+#endif
+          watert_1d = -9999.0
+          lb = .false.
 
-!                    lb(c1+(r1-1)*LVT_rc%HYCOM_nc) = .true.
+          do r=1,LVT_rc%HYCOM_nr
+             do c=1,LVT_rc%HYCOM_nc
+                if(watert(c,r,1,1).ne.-30000) then
+                   if(c.gt.2250) then
+                      c1 = c-2250
+                      r1 = r
+                   else
+                      c1 = c+2250
+                      r1 = r
+                   endif
+                   !EMK...Change from Celsius to Kelvin
+                   !watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0
+                   watert_1d(c1+(r1-1)*LVT_rc%HYCOM_nc) = watert(c,r,1,1)*0.001+20.0+273.15
 
-!                 endif
-!              enddo
-!           enddo
+                   lb(c1+(r1-1)*LVT_rc%HYCOM_nc) = .true.
 
-!           call upscaleByAveraging(&
-!                LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
-!                LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
-!                LVT_rc%HYCOM_n11, lb, &
-!                watert_1d, lo, watert_ip)
+                endif
+             enddo
+          enddo
 
-!           EMK: Since SST is missing north of 80N, we need to set water points
-!           in this region to a reasonable value.  We follow the typical
-!           UKMET SURF value of 271.35K.
-!           do r = 1, LVT_rc%gnr
-!              do c = 1, LVT_rc%gnc
-!                 gid = LVT_domain%gindex(c,r)
+          call upscaleByAveraging(&
+               LVT_rc%HYCOM_nc*LVT_rc%HYCOM_nr, &
+               LVT_rc%lnc*LVT_rc%lnr, LVT_rc%udef, &
+               LVT_rc%HYCOM_n11, lb, &
+               watert_1d, lo, watert_ip)
 
-!                 if (gid .eq. -1 .and. lat(c,r) >= 80.) then
-!                    if (watert_ip(c+(r-1)*LVT_rc%gnc) == -9999) then
-!                       watert_ip(c+(r-1)*LVT_rc%gnc) = 271.35
-!                    end if
-!                 end if
-!              end do c
-!           end do r
+          !EMK: Since SST is missing north of 80N, we need to set water points
+          !in this region to a reasonable value.  We follow the typical
+          !UKMET SURF value of 271.35K.
+          do r = 1, LVT_rc%gnr
+             do c = 1, LVT_rc%gnc
+                gid = LVT_domain%gindex(c,r)
 
-!           ! GRIB2 settings...Updated by EMK
-!           gribDis   = 10
-!           stepType  = "avg"
-!           stepType = "instant" EMK
-!           pdTemplate = 0
-!           gribCat   = 3
-!           varid_def = 0
-!           gribSfc   = 1
-!           gribSF    = 10
-!           gribLvl   = 1
+                if (gid .eq. -1 .and. lat(c,r) >= 80.) then
+                   if (watert_ip(c+(r-1)*LVT_rc%gnc) == -9999) then
+                      watert_ip(c+(r-1)*LVT_rc%gnc) = 271.35
+                   end if
+                end if
+             end do ! c
+          end do ! r
 
-!           if(LVT_rc%lvt_out_format.eq."grib2") then
-!              !add to the grib file
-!              call writeSingleGrib2Var(ftn_mean,&
-!                   watert_ip,&
-!                   varid_def,&
-!                   gribSF,&
-!                   gribSfc,&
-!                   gribLvl,&
-!                   gribDis,&
-!                   gribCat,&
-!                   pdTemplate,&
-!                   stepType,&
-!                   time_unit,&
-!                   time_past,&
-!                   time_curr,&
-!                   timeRange,&
-!                   1,&
-!                   toplev(1),&
-!                   botlev(1),&
-!                   depscale(1),&
-!                   typeOfGeneratingProcess=2, &
-!                   typeOfProcessedData=1, &
-!                   ref_year=sst_year, &
-!                   ref_month=sst_month, &
-!                   ref_day=sst_day, &
-!                   ref_hour=sst_hour, &
-!                   ref_fcst_hr=sst_fcst_hr)
+          ! GRIB2 settings...Updated by EMK
+          gribDis   = 10
+          stepType  = "avg"
+          stepType = "instant" ! EMK
+          pdTemplate = 0
+          gribCat   = 3
+          varid_def = 0
+          gribSfc   = 1
+          gribSF    = 10
+          gribLvl   = 1
 
-!           elseif(LVT_rc%lvt_out_format.eq."grib1") then
-!              call writeSingleGrib1Var(ftn_mean,&
-!                   watert_ip,&
-!                   varid_def,&
-!                   gribSF,&
-!                   gribSfc,&
-!                   gribLvl,&
-!                   stepType,&
-!                   time_unit,&
-!                   time_past,&
-!                   time_curr,&
-!                   timeRange,&
-!                   1,&
-!                   toplev(1),&
-!                   botlev(1))
-!           elseif(LVT_rc%lvt_out_format.eq."netcdf") then
-!              call writeSingleNetcdfVar(ftn_mean,&
-!                   watert_ip,&
-!                   LVT_histData%watertemp%varId_def,&
-!                   1)
+          if(LVT_rc%lvt_out_format.eq."grib2") then
+             !add to the grib file
+             call writeSingleGrib2Var(ftn_mean,&
+                  watert_ip,&
+                  varid_def,&
+                  gribSF,&
+                  gribSfc,&
+                  gribLvl,&
+                  gribDis,&
+                  gribCat,&
+                  pdTemplate,&
+                  stepType,&
+                  time_unit,&
+                  time_past,&
+                  time_curr,&
+                  timeRange,&
+                  1,&
+                  toplev(1),&
+                  botlev(1),&
+                  depscale(1),&
+                  typeOfGeneratingProcess=2, &
+                  typeOfProcessedData=1, &
+                  ref_year=sst_year, &
+                  ref_month=sst_month, &
+                  ref_day=sst_day, &
+                  ref_hour=sst_hour, &
+                  ref_fcst_hr=sst_fcst_hr)
 
-!           endif
-!        endif
+          elseif(LVT_rc%lvt_out_format.eq."grib1") then
+             call writeSingleGrib1Var(ftn_mean,&
+                  watert_ip,&
+                  varid_def,&
+                  gribSF,&
+                  gribSfc,&
+                  gribLvl,&
+                  stepType,&
+                  time_unit,&
+                  time_past,&
+                  time_curr,&
+                  timeRange,&
+                  1,&
+                  toplev(1),&
+                  botlev(1))
+          elseif(LVT_rc%lvt_out_format.eq."netcdf") then
+             call writeSingleNetcdfVar(ftn_mean,&
+                  watert_ip,&
+                  LVT_histData%watertemp%varId_def,&
+                  1)
+
+          endif
+       endif
 
        ! *** HANDLE AICE_ARC ***
 
@@ -3007,7 +3021,7 @@ contains
 
     endif
 
-  end subroutine LVT_append_HYCOM_cice_fields
+  end subroutine LVT_append_HYCOM_fields
 
 
   subroutine applyNoiseReductionFilter(gvar)
