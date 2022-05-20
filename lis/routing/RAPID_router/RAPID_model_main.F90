@@ -371,7 +371,7 @@ end do
 !-------------------------------------------------------------------------------
 !Close files
 !-------------------------------------------------------------------------------
-call rapid_close_Qout_file
+!call rapid_close_Qout_file
 !call rapid_close_Vlat_file
 if (BS_opt_for) call rapid_close_Qfor_file(Qfor_file)
 if (BS_opt_hum) call rapid_close_Qhum_file(Qhum_file)
