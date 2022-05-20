@@ -22,6 +22,7 @@ module GLASSalbedo_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -111,7 +112,7 @@ contains
     type(ESMF_Field)       ::  pertField
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  albedoobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  albedoobsdir
     character*100          ::  temp
     real,  allocatable         ::  ssdev(:)
     real,  allocatable         ::  obsstd(:)

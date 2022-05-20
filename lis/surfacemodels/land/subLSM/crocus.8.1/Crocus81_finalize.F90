@@ -20,7 +20,7 @@
 !   10/18/19: Mahdi Navari, Shugong Wang; initial implementation for Crocus81 with LIS-7
 !
 ! !INTERFACE:
-subroutine Crocus81_finalize(n)
+subroutine Crocus81_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use Crocus81_lsmMod

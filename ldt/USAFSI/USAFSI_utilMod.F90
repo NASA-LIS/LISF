@@ -641,7 +641,7 @@ contains
       ! Arguments
       integer*1,     intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*100, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
@@ -750,7 +750,7 @@ contains
       ! Arguments
       integer,       intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*100, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION

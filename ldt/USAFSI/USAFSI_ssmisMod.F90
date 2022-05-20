@@ -51,13 +51,13 @@ contains
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=100), intent(in)  :: ssmis_in
-      character(len=100), intent(in)  :: ssmis
+      character(len=255), intent(in)  :: ssmis_in
+      character(len=255), intent(in)  :: ssmis
       integer,            intent(in)  :: option
 
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=256)              :: filename, nc_filename
+      character(len=255)              :: filename, nc_filename
       integer,           dimension(:), allocatable :: surflag0, surflag, &
            satid0, satid
       character(len=10), dimension(:), allocatable :: date0, date10_arr
@@ -243,7 +243,7 @@ contains
       implicit none
 
       ! Arguments
-      character(len=256), intent(in) :: filename
+      character(len=255), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -401,7 +401,7 @@ contains
         surflag, tb19h, tb19v, tb37h, tb37v, tb22v, tb91v, tb91h)
       use LDT_logMod, only: LDT_endrun, LDT_logunit
       implicit none
-      character(len=256), intent(in) :: filename
+      character(len=255), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -457,7 +457,7 @@ contains
 
       ! Local variables
       integer                                        :: i
-      character(len=256)                             :: ff_filename
+      character(len=255)                             :: ff_filename
       real(kind=8)                                   :: pd19,pd91,tt,si91, &
            scat,sc37,sc91,scx
       logical                                        :: flag
@@ -967,7 +967,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=256), intent(in) :: ff_filename
+      character (len=255), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -997,7 +997,7 @@ contains
    subroutine read_forestfraction(ff_filename, ff)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
-      character (len=256), intent(in) :: ff_filename
+      character (len=255), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
       write(LDT_logunit,*) &
            "[ERR] Recompile LDT with netCDF4 support!"
@@ -1017,11 +1017,11 @@ contains
 
       ! Arguments
       character*10,       intent(in) :: date10
-      character*100,      intent(in) :: ssmis_in
+      character*255,      intent(in) :: ssmis_in
 
       ! Local variables
       integer            :: eof, n, i, j, k
-      character(len=256)               :: file_path, cmd
+      character(len=255)               :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
       character*2                    :: satid (3)

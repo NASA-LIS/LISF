@@ -21,11 +21,12 @@ module ES_varctl
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 
   type, public ::  esctl
-     character*100    :: decspaceAttribsFile
+     character(len=LIS_CONST_PATH_LEN) :: decspaceAttribsFile
      integer          :: nparam
      integer          :: genNo
      real,    allocatable :: parmax(:)

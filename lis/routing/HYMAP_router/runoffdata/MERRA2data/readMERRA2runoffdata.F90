@@ -21,6 +21,7 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   use LIS_logMod
   use MERRA2runoffdataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -44,7 +45,7 @@ subroutine readMERRA2runoffdata(n,surface_runoff, baseflow)
   integer                       :: ftn
   integer                       :: qsid, qsbid
   integer                       :: tindex
-  character*100                 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt

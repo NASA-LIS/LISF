@@ -22,6 +22,7 @@ module SNODAS_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -97,7 +98,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  snodasobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  snodasobsdir
     character*100          ::  temp
     character*1            ::  vid(2)
     character*40, allocatable  ::  vname(:)

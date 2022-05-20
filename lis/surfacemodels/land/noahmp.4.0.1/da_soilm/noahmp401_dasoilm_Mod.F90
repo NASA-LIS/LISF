@@ -24,6 +24,7 @@ module NoahMP401_dasoilm_Mod
   use LIS_coreMod
   use LIS_dataAssimMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -68,7 +69,7 @@ contains
     implicit none
     integer                :: k
     integer                :: n 
-    character*100          :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
     integer                :: status
     integer                :: ngrid
 
