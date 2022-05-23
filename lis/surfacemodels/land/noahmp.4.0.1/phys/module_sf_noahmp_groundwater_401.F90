@@ -88,8 +88,10 @@ CONTAINS
   
   REAL :: BEXP,DKSAT,PSISAT,SMCMAX,SMCWLT
 
+    !print *,"WTABLE Called"
+    !print*, 'ZWT = ',WTD(25,12)
     DELTAT = WTDDT * 60. !timestep in seconds for this calculation
-
+    
     ZSOIL(0) = 0.
     ZSOIL(1) = -DZS(1)
     DO K = 2, NSOIL
@@ -109,7 +111,8 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
                         ,ids,ide,jds,jde,kds,kde                      &
                         ,ims,ime,jms,jme,kms,kme                      &
                         ,its,ite,jts,jte,kts,kte                      )
-
+     !print*, 'LATERALFLOW COMPLETE'
+     !print*, 'ZWT = ',WTD(25,12)
 
 !compute flux from grounwater to rivers in the cell
 
@@ -171,10 +174,42 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
              SH2O(1:NSOIL) = SH2OXY(I,1:NSOIL,J)
              SMCEQ(1:NSOIL) = SMOISEQ(I,1:NSOIL,J)
 
+             !IF (I == 25) THEN
+             !    IF (J == 12) THEN
+             !        print *, "CALLING UPDATEWTD"
+             !        print*, 'NSOIL = ',NSOIL
+             !        print*, 'DZS = ',DZS
+             !        print*, 'ZSOIL = ',ZSOIL
+             !        print*, 'SMCMAX = ',SMCMAX
+             !        print*, 'SMCWLT = ',SMCWLT
+             !        print*, 'PSISAT = ',PSISAT
+             !!        print*, 'BEXP = ',BEXP
+             !        print*, 'TOTWATER = ',TOTWATER
+             !        print*, 'WTD(I,J) = ',WTD(I,J)
+             !        print*, 'SMC = ',SMC
+             !        print*, 'SH2O = ',SH2O
+             !        print*, 'SMCWTD = ',SMCWTD(I,J)
+             !    ENDIF
+             !ENDIF
+
+
 !Update the water table depth and soil moisture
              CALL UPDATEWTD ( NSOIL, DZS , ZSOIL, SMCEQ, SMCMAX, SMCWLT, PSISAT, BEXP ,I , J , &!in
                               TOTWATER, WTD(I,J), SMC, SH2O, SMCWTD(I,J)      , &!inout
                               QSPRING(I,J) ) !out
+
+             !IF (I == 25) THEN
+             !    IF (J == 12) THEN
+             !        print *, "FINISHED UPDATEWTD"
+             !        print*, 'TOTWATER = ',TOTWATER
+             !        print*, 'WTD(I,J) = ',WTD(I,J)
+             !        print*, 'SMC = ',SMC
+             !        print*, 'SH2O = ',SH2O
+             !        print*, 'SMCWTD = ',SMCWTD(I,J)
+             !        print*, 'QSPRING = ',QSPRING(I,J)
+             !    ENDIF
+             !ENDIF
+
 
 !now update soil moisture
              SMOIS(I,1:NSOIL,J) = SMC(1:NSOIL)
@@ -184,6 +219,9 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
        ENDDO
     ENDDO
 
+    !print*, 'UPDATEWTD COMPLETE'
+    !print*, 'ZWT = ',WTD(25,12)
+
 !accumulate fluxes for output
 
     DO J=jts,jte
@@ -191,6 +229,8 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
            QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
            QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
            QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
+           !print*, RECH(I,J)
+           !print*, DEEPRECH(I,J)
            RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
 !zero out DEEPRECH
            DEEPRECH(I,J) =0.
@@ -439,6 +479,11 @@ IF(totwater.gt.0.)then
             if(totwater.le.maxwatup)then
                wtd = wtd + totwater/(smcmax-smcwtd)
                totwater=0.
+               !IF (ILOC == 25) THEN
+               !  IF (JLOC == 12) THEN
+               !    print *, "wtd updated"
+               !  ENDIF
+               !ENDIF
             else
                totwater=totwater-maxwatup
                wtd=zsoil(nsoil)-dzs(nsoil)
