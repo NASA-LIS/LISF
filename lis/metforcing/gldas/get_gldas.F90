@@ -21,6 +21,7 @@ subroutine get_gldas(n,findex)
   use LIS_coreMod,        only : LIS_rc
   use LIS_timeMgrMod,     only : LIS_tick, LIS_get_nstep
   use LIS_logMod,         only : LIS_logunit, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use gldas_forcingMod,    only : gldas_struc
 
   implicit none
@@ -67,7 +68,7 @@ subroutine get_gldas(n,findex)
   real*8  :: timenow, time1, time2
   real*8  :: dumbtime1, dumbtime2
   real    :: gmt1, gmt2,ts1,ts2
-  character(len=80) :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer :: nstep
 
   gldas_struc(n)%findtime1=0
@@ -208,7 +209,7 @@ end subroutine get_gldas
 ! \label{gldasfile}
 !
 ! !INTERFACE:
-subroutine gldasfile(name,gldasdir,yr,mo,da,hr,ncold)
+subroutine gldasfile(name, gldasdir, yr, mo, da, hr, ncold)
   
   implicit none
 ! !ARGUMENTS: 
@@ -239,11 +240,11 @@ subroutine gldasfile(name,gldasdir,yr,mo,da,hr,ncold)
 !
 !EOP
   integer uyr,umo,uda,uhr,i,c,ii,jj
-  character(len=2) :: initcode
-  character*1 fbase(80),fsubs(80)
-  character*1 ftime(10),fdir(6)
+  character(len=2)  :: initcode
+  character(len=10) :: ftime
+  character(len=4)  :: fdir
+  character(len=17), parameter :: fsuffix = '.force.mosaic.grb'
   
-  character(LEN=100) :: temp
   ii = ncold
   jj = 181
 
@@ -279,34 +280,12 @@ subroutine gldasfile(name,gldasdir,yr,mo,da,hr,ncold)
      initcode = '21'
   endif
   
-  write(UNIT=temp,FMT='(A40)') gldasdir 
-  read(UNIT=temp,FMT='(80A1)') (fbase(i),i=1,80)
+  write(UNIT=fdir,FMT='(i4)') uyr
   
-  write(UNIT=temp,FMT='(a1,i4,a1)') '/',uyr,'/'
-  read(UNIT=temp,FMT='(6A1)') fdir
-  do i=1,6
-     if(fdir(i).eq.(' ')) fdir(i)='0'
-  enddo
+  write(UNIT=ftime,FMT='(i4, i2.2, i2.2, a2)') uyr, umo, uda, initcode
+
+  name = trim(gldasdir) // '/' // fdir // '/' // ftime // fsuffix
   
-  write(UNIT=temp,FMT='(i4,i2,i2,a2)') uyr,umo,uda,initcode
-  read(UNIT=temp,FMT='(10A1)') ftime
-  do i=1,10
-     if(ftime(i).eq.(' ')) ftime(i)='0'
-  enddo
-  
-  write(UNIT=temp,FMT='(A17)') '.force.mosaic.grb'
-  read(UNIT=temp,FMT='(80A1)') (fsubs(i),i=1,17)
-  
-  c=0
-  do i=1,80
-     if(fbase(i).eq.(' ').and.c.eq.0) c=i-1 
-  enddo
-  
-  write(UNIT=temp,FMT='(80a1)') (fbase(i),i=1,c),(fdir(i),i=1,6), &
-       (ftime(i),i=1,10),(fsubs(i),i=1,17)
-  
-  
-  read(UNIT=temp, FMT='(a80)') name
   return
 
 end subroutine gldasfile

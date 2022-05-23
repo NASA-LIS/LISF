@@ -24,6 +24,7 @@
     use LIS_logMod,     only : LIS_logunit, LIS_verify, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
     use LIS_fileIOMod,      only : LIS_readData
+    use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
     use USDA_ARSsm_obsMod, only : USDA_ARSsm_obs_struc
     use map_utils
 
@@ -44,7 +45,7 @@
     !    real,    pointer    :: obse(:,:)
     real,    pointer    :: obse(:)
     type(ESMF_Field)    :: smField
-    character*100       :: smobsdir 
+    character(len=LIS_CONST_PATH_LEN) :: smobsdir 
     logical             :: data_update
     integer             :: status 
     logical             :: found

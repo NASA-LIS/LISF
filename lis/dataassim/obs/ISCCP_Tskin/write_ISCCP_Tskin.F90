@@ -23,6 +23,7 @@ subroutine write_ISCCP_Tskin(n, OBS_State)
        LIS_releaseUnitNumber
   use LIS_fileIOMod,  only : LIS_create_output_directory
   use LIS_historyMod, only : LIS_writevar_gridded
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -39,7 +40,7 @@ subroutine write_ISCCP_Tskin(n, OBS_State)
   type(ESMF_Field)          :: tskinfield
   logical                   :: data_update
   real, pointer             :: obsl(:)
-  character*100             :: obsname 
+  character(len=LIS_CONST_PATH_LEN) :: obsname 
   integer                   :: ftn, t
   integer                   :: status
 

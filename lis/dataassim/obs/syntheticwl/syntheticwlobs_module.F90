@@ -22,6 +22,7 @@
 module syntheticwlobs_module
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -82,7 +83,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  synwlobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synwlobsdir
     character*100          ::  temp
     integer                ::  ftn,i,t
     real,  allocatable         ::  obsstd(:)

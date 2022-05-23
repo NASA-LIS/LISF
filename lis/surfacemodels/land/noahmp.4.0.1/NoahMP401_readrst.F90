@@ -30,6 +30,7 @@ subroutine NoahMP401_readrst()
                                LIS_getNextUnitNumber,   &
                                LIS_releaseUnitNumber,   &
                                LIS_verify                
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use NoahMP401_lsmMod
     use ESMF
     use LIS_fileIOMod
@@ -117,7 +118,7 @@ subroutine NoahMP401_readrst()
     real, allocatable :: tmptilen(:)
     logical           :: file_exists
     character*20      :: wformat
-    character*100     :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     integer           :: yr,mo,da,hr,mn,ss,doy
     real*8            :: time
     real              :: gmt

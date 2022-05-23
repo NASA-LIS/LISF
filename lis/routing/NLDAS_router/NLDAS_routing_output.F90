@@ -18,6 +18,7 @@ subroutine NLDAS_routing_output(n)
   use LIS_historyMod,   only : LIS_writeModelOutput
   use LIS_fileIOMod,   only : LIS_create_output_directory, & 
        LIS_create_stats_filename, LIS_create_output_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use NLDAS_routingMod, only : NLDAS_routing_struc
 
   implicit none
@@ -26,7 +27,7 @@ subroutine NLDAS_routing_output(n)
   
   character(len=12)     :: cdate1
   integer               :: iret
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   character*100         :: name
   integer               :: ftn
   integer               :: mo, da

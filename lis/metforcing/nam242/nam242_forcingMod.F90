@@ -62,6 +62,7 @@ module nam242_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -79,8 +80,8 @@ module nam242_forcingMod
   type, public        :: nam242_type_dec
      integer          :: ncold, nrold
      integer          :: nmif
-     character*100    :: namdir   !NAM Forcing Directory
-     character*100    :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: namdir   !NAM Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
      real             :: ts
      real*8           :: namtime1,namtime2
      integer          :: findtime1,findtime2

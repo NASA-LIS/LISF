@@ -174,6 +174,7 @@ contains
     use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
+    use MCD15A2H_obsMod,        only : MCD15A2H_obsinit
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
     use THySM_obsMod,           only : THySM_obsinit
@@ -282,6 +283,7 @@ contains
     external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
+    external readMCD15A2Hobs
     external readERA5obs
     external readFluxSatobs
     external readTHySMobs
@@ -703,6 +705,11 @@ contains
          JASMINsm_obsinit)
     call registerobsread(trim(LVT_JASMINsmobsId)//char(0),&
          readJASMINsmobs)
+
+    call registerobssetup(trim(LVT_MCD15A2HobsId)//char(0), &
+         MCD15A2H_obsinit)
+    call registerobsread(trim(LVT_MCD15A2HobsId)//char(0),&
+         readMCD15A2Hobs)
 
     call registerobssetup(trim(LVT_ERA5obsId)//char(0), &
          ERA5obsinit)

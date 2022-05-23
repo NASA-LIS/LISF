@@ -102,6 +102,7 @@ module agrradps_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
 !-----------------------------------------------------------------------------
@@ -119,7 +120,7 @@ module agrradps_forcingMod
   type agrradps_type_dec
      real                 :: ts
      real*8               :: agrtime1,agrtime2
-     character*40         :: agrpsdir
+     character(len=LIS_CONST_PATH_LEN) :: agrpsdir
      integer              :: gridspan
      integer              :: mo1
      integer              :: mo2

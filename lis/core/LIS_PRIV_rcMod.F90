@@ -362,11 +362,11 @@ module LIS_PRIV_rcMod
 !  \item[pertstateInterval]
 !  State perturbation frequency (in seconds)
 !  \item[pertrestart]
-!  ??
+!  Perturbation restart mode option (coldstart, restart)
 !  \item[pertrestartInterval]
-!  ??
+!  Temporal output interval at which the perturbation restart file is written
 !  \item[pertrestartfile]
-!  ??
+!  The file path for perturbation restart file used in DA runs
 !  \item[nt]
 !  Number of vegetation classes in the landcover dataset
 !  \item[bareclass]
@@ -615,6 +615,7 @@ module LIS_PRIV_rcMod
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   type lisrcdec
      character*50           :: runmode 
@@ -681,8 +682,8 @@ module LIS_PRIV_rcMod
      character*50               :: openwatermodel
      character*50               :: param_proj
     
-     character*100, allocatable :: paramfile(:)
-     character*100, allocatable :: obsdomainfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: paramfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: obsdomainfile(:)
      character*50, allocatable  :: usemaskmap(:)
      character*50, allocatable  :: uselcmap(:)
      character*50           :: lcscheme
@@ -767,7 +768,7 @@ module LIS_PRIV_rcMod
      real, allocatable          :: pertstateInterval(:)
      character*50           :: pertrestart
      real                   :: pertrestartInterval
-     character*100, allocatable :: pertrestartfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: pertrestartfile(:)
      integer                :: pert_bias_corr
 
      integer                :: nsurfacetypes
@@ -787,35 +788,35 @@ module LIS_PRIV_rcMod
      integer                :: cropclass
      integer                :: laiflag  
      integer                :: saiflag       
-     character*100, allocatable :: mfile(:)  
-     character*100, allocatable :: vfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: mfile(:)  
+     character(len=LIS_CONST_PATH_LEN), allocatable :: vfile(:)
      integer,       allocatable :: vfile_form(:)
-     character*100, allocatable :: safile(:) 
-     character*100, allocatable :: clfile(:) 
-     character*100, allocatable :: sifile(:) 
-     character*100, allocatable :: txtfile(:)
-     character*100, allocatable :: pofile(:)
-     character*100, allocatable :: psisatfile(:) 
-     character*100, allocatable :: ksatfile(:) 
-     character*100, allocatable :: bexpfile(:) 
-     character*100, allocatable :: qzfile(:)   
-     character*100, allocatable :: iscfile(:) 
-     character*100, allocatable :: elevfile(:)
-     character*100, allocatable :: slfile(:)
-     character*100, allocatable :: aspfile(:)
-     character*100, allocatable :: curvfile(:)
-     character*100, allocatable :: albfile(:)  
-     character*100, allocatable :: mxsnal(:)   
-     character*100, allocatable :: tbotfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: safile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: clfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: sifile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: txtfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: pofile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: psisatfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: ksatfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: bexpfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: qzfile(:)   
+     character(len=LIS_CONST_PATH_LEN), allocatable :: iscfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: elevfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: slfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: aspfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: curvfile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: albfile(:)  
+     character(len=LIS_CONST_PATH_LEN), allocatable :: mxsnal(:)   
+     character(len=LIS_CONST_PATH_LEN), allocatable :: tbotfile(:) 
      integer                :: tbot_terrain_adj
      integer                :: tbot_update_lag
      integer                :: tbot_lagday
-     character*100, allocatable :: shdmaxfile(:) 
-     character*100, allocatable :: shdminfile(:) 
-     character*100, allocatable :: slopetypefile(:) 
-     character*100, allocatable :: tile_coord_file(:) 
-     character*100, allocatable :: tile_veg_file(:)
-     character*100, allocatable :: outputSpecFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: shdmaxfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: shdminfile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: slopetypefile(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: tile_coord_file(:) 
+     character(len=LIS_CONST_PATH_LEN), allocatable :: tile_veg_file(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: outputSpecFile(:)
      integer                :: output_at_specifictime
      integer                :: albInterval
      integer                :: laiInterval
@@ -835,7 +836,7 @@ module LIS_PRIV_rcMod
      character*50           :: grib_packing_type
      character*50           :: startcode
      integer                :: plevel
-     character*100          :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
      character*100          :: dfile      
      integer                :: sdoy        
      integer                :: sss         
@@ -898,15 +899,15 @@ module LIS_PRIV_rcMod
      integer, allocatable       :: nobtypes(:)
      real, allocatable          :: daoutInterval(:)
      integer, allocatable       :: nensem(:)
-     character*100, allocatable :: biasrstfile(:)
-     character*100          :: forcvarlistFile
-     character*100          :: forcattribFile
-     character*100          :: forcpertattribFile
-     character*100, allocatable :: progpertattribFile(:)
-     character*100, allocatable :: progattribFile(:)
-     character*100, allocatable :: obspertattribFile(:)
-     character*100, allocatable :: obsattribFile(:)
-     character*100, allocatable :: biasOptionsFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: biasrstfile(:)
+     character(len=LIS_CONST_PATH_LEN)          :: forcvarlistFile
+     character(len=LIS_CONST_PATH_LEN)          :: forcattribFile
+     character(len=LIS_CONST_PATH_LEN)          :: forcpertattribFile
+     character(len=LIS_CONST_PATH_LEN), allocatable :: progpertattribFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: progattribFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: obspertattribFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: obsattribFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: biasOptionsFile(:)
      character*50, allocatable  :: dascaloption(:)
 
      integer                :: nforcepert
@@ -933,7 +934,7 @@ module LIS_PRIV_rcMod
      character*20           :: distribution_class
      character*20           :: data_category
      character*20           :: area_of_data
-     character*100          :: lis_config_file='lis.config'
+     character*255          :: lis_config_file='lis.config'
      character*100          :: institution = 'NASA GSFC'
 !RTM related variables
      character*50           :: rtm
@@ -953,6 +954,8 @@ module LIS_PRIV_rcMod
 
      real                   :: irrigation_GVFparam1   !WN
      real                   :: irrigation_GVFparam2   !WN
+     integer                :: irrigation_dveg        !WN
+     integer                :: irrigation_SourcePartition  !WN
      integer                :: irrigation_GWabstraction !JE 
 
      logical, allocatable       :: LSM_DAinst_valid(:)

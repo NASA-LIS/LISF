@@ -27,6 +27,7 @@ subroutine get_cmorph(n, findex)
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use cmorph_forcingMod, only :cmorph_struc
   use LIS_logMod, only : LIS_logunit
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -66,7 +67,7 @@ subroutine get_cmorph(n, findex)
   real*8  :: datatime, breaktime, fnametime                    ! Times used in HUFFMAN to determine data and filename boundaries (see below)
   integer :: order
   real    :: gmt1,gmt4,ts1,ts4
-  character(len=99) :: filename ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename ! Filename variables for precip data sources
   integer :: kk
 
 !=== End Variable Definition =======================
@@ -133,10 +134,10 @@ subroutine get_cmorph(n, findex)
        if(LIS_masterproc) then
          if (sectionofcmorph .EQ. 1) then
            write(LIS_logunit,*) '[INFO] Getting new CMORPH precip data first 30 minutes:'
-           write(LIS_logunit,*) filename
+           write(LIS_logunit,*) trim(filename)
          else
            write(LIS_logunit,*) '[INFO] Getting new CMORPH precip data second 30 minutes:'
-           write(LIS_logunit,*) filename
+           write(LIS_logunit,*) trim(filename)
          endif
        end if
        order = 2
@@ -191,12 +192,11 @@ subroutine cmorphfile( n, kk, findex, filename, cmorphdir, yr, mo, da, hr)
 !EOP
 
   integer, parameter :: T2008060100 = 1212292800
-  character(len=120) :: temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   integer :: tout(9), fmktime, it, ih, irec
 
-  character*100 :: fbase, ftimedir, fstem 
+  character*100 :: fstem 
   character*4   :: cyr
   character*2   :: cmo, cda, chr 
 

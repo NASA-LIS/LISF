@@ -28,6 +28,7 @@ subroutine read_ANSASNWDsnow(n,k, OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only  : LIS_CONST_PATH_LEN
   use LIS_pluginIndices, only : LIS_ANSASNWDsnowobsId
   use ANSASNWDsnow_Mod, only : ANSASNWDsnow_struc
 
@@ -73,7 +74,7 @@ subroutine read_ANSASNWDsnow(n,k, OBS_State,OBS_Pert_State)
   real                          :: gmt
   real                          :: dt
   integer                       :: grid_index
-  character*100                 :: obsdir, ansa_filename, imsfile,MODISfile
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, ansa_filename, imsfile,MODISfile
   integer(hid_t)                :: file_id, snwd_field_id,snwd_flag_field_id
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
@@ -559,9 +560,8 @@ subroutine create_IMS_filename(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name, ndir
   integer           :: yr, doy
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates a timestamped IMS filename
@@ -612,7 +612,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   
   integer              :: n 
   integer              :: k
-  character*80         :: name
+  character(len=*)     :: name
   real                 :: tmp_obsl(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
 #if (defined USE_HDFEOS2)
@@ -641,7 +641,8 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   !Grid and field names
   grid_name ="MOD_CMG_Snow_5km"
   ps_name   ="Day_CMG_Snow_Cover"
-  ci_name   ="Day_CMG_Confidence_Index"
+  ci_name   ="Day_CMG_Clear_Index"   ! MLW collection 6
+  ! ci_name   ="Day_CMG_Confidence_Index"  ! MLW collection 5
   pc_name   ="Day_CMG_Cloud_Obscured"
   qa_name   ="Snow_Spatial_QA"
   
@@ -649,7 +650,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   
   file_id = gdopen(trim(name),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*)"[ERR] Failed to open hdf file",name
+     write(LIS_logunit,*)"[ERR] Failed to open hdf file",trim(name)
      return
   end if
   !  write(LIS_logunit,*) 'opened file',file_id
@@ -657,7 +658,7 @@ subroutine getMOD10data(n,k,name,tmp_obsl)
   !get the grid id
   grid_id = gdattach(file_id,grid_name)
   if (grid_id.eq.-1)then
-     write(LIS_logunit,*)"[ERR] Failed to attach grid: ",grid_name,name
+     write(LIS_logunit,*)"[ERR] Failed to attach grid: ",grid_name,trim(name)
      ret = gdclose(file_id)
      return
   end if
@@ -869,6 +870,6 @@ subroutine get_MOD10C1_filename(name, ndir)
   write(unit=fdoy, fmt='(i3.3)') doy
 
   name = trim(ndir)//'/'//trim(fyr)//'/'//'MOD10C1.A'&
-            //trim(fyr)//trim(fdoy)//'.005.hdf'
+            //trim(fyr)//trim(fdoy)//'.006.hdf' !MLW read collection 6
 end subroutine get_MOD10C1_filename
 

@@ -84,6 +84,7 @@ contains
     use LIS_timeMgrMod
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use map_utils, only: map_init, map_set, latlon_to_ij
 
     implicit none 
@@ -161,9 +162,9 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  lprm_smobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  lprm_smobsdir
     character*100          ::  temp
-    character*100          ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
     character*100          ::  vname

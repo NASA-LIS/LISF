@@ -43,5 +43,7 @@ subroutine LVT_run_USAFSIpost()
 
    ! Clean up
    call USAFSIpost%delete()
-   call LVT_endrun()
+
+   write(LVT_logunit,*)'[INFO] LVT successfully ended!'
+
 end subroutine LVT_run_USAFSIpost

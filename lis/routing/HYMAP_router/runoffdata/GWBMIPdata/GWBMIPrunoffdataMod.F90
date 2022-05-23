@@ -24,6 +24,7 @@ module GWBMIPrunoffdataMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -41,7 +42,7 @@ module GWBMIPrunoffdataMod
   type, public :: GWBMIPrunoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(len=LIS_CONST_PATH_LEN) :: odir 
      character*50            :: model_prefix
      integer                 :: nc, nr
      integer, allocatable    :: n11(:)

@@ -503,7 +503,7 @@ contains
                    LVT_rc%monthCount = 0 
                 endif
              endif
-          elseif(mod(LVT_rc%tavgInterval,7776000).eq.0)then !3 monthly 
+          elseif(mod(LVT_rc%tavgInterval,7776000).eq.0)then !3 monthly
              if(LVT_rc%mo.ne.LVT_rc%prev_mo_tavg) then 
                 LVT_rc%prev_mo_tavg = LVT_rc%mo
                 LVT_rc%monthCount = LVT_rc%monthCount + 1

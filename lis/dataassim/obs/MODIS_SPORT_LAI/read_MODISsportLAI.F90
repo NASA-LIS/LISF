@@ -27,6 +27,7 @@ subroutine read_MODISsportLAI(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only  : LIS_CONST_PATH_LEN
   use MODISsportLAI_Mod, only : MODISsportLAI_struc
 
   implicit none
@@ -53,8 +54,8 @@ subroutine read_MODISsportLAI(n, k, OBS_State, OBS_Pert_State)
 !EOP
   integer                :: status
   integer                :: grid_index
-  character*100          :: laiobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: laiobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)

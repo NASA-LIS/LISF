@@ -26,6 +26,7 @@ module LIS_fileIOMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none 
   PRIVATE
@@ -220,7 +221,7 @@ subroutine LIS_create_output_directory(mname)
 !EOP
    character(len=4) :: cdate
    character(len=8) :: cdate1
-   character(len=200) :: out_dname
+   character(len=LIS_CONST_PATH_LEN) :: out_dname
    integer            :: try,ios
 #if (!defined AIX )
    integer            :: system 
@@ -231,7 +232,7 @@ subroutine LIS_create_output_directory(mname)
    ! standard POSIX function. This requires defining the C wrapper function,
    ! and specifying new variables to pass to said C function.
    integer, external :: LIS_create_subdirs
-   character(len=201) :: c_string
+   character(len=LIS_CONST_PATH_LEN+1) :: c_string
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then
       out_dname = trim(LIS_rc%odir)//'/'
@@ -373,9 +374,9 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if ( present(odir) ) then
@@ -415,9 +416,21 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ("distributed binary")
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif         
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -457,9 +470,21 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ( "distributed binary" )
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif         
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -496,9 +521,21 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ( "distributed binary" )
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif         
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -601,7 +638,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
 ! \label{create_output_filename_expected}
 !
 ! !INTERFACE:
-subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
+subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odir,&
      writeint)
 ! !USES:
    use LIS_coreMod
@@ -613,6 +650,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
 ! !ARGUMENTS:
    integer, intent(in) :: n
    character(len=*), intent(out)          :: fname
+   character(len=*), intent(in)           :: wout
    logical         , intent(in)           :: flag 
    character(len=*), intent(in), optional :: model_name ! needed for gswp run
    character(len=*), intent(in), optional :: odir ! needed for gswp run
@@ -685,9 +723,9 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
    integer                  :: yr, mo, da, hr, mn, ss
    type(ESMF_Time)          :: currTime, outTime
@@ -813,15 +851,27 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ( "binary" )
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ( "distributed binary" )
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif         
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -849,15 +899,27 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ( "distributed binary" )
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif         
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -866,7 +928,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
          out_fname = trim(out_fname)//'.gr2'
       case default
          call lis_log_msg('ERR: create_output_filename -- '// &
-              'Unrecognized LIS_rc%wout value')
+              'Unrecognized wout value')
          call LIS_endrun 
       endselect
    elseif(LIS_rc%wstyle.eq."2 level hierarchy") then
@@ -882,15 +944,27 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
       write(unit=cdate, fmt='(a2,i2.2)') '.d',n      
       out_fname = trim(out_fname)//trim(cdate)
       
-      select case ( LIS_rc%wout )
+      select case ( wout )
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(out_fname)//'.ts4r'
          elseif(LIS_rc%wopt.eq."2d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
          elseif(LIS_rc%wopt.eq."1d gridspace") then 
             out_fname = trim(out_fname)//'.gs4r'
          endif
+      case ( "distributed binary" )
+         if(LIS_rc%wopt.eq."1d tilespace") then 
+            out_fname = trim(out_fname)//'.ts4r'
+         elseif(LIS_rc%wopt.eq."2d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'            
+         elseif(LIS_rc%wopt.eq."1d gridspace") then 
+            out_fname = trim(out_fname)//'.gs4r'
+         endif                  
       case ("grib1")
          out_fname = trim(out_fname)//'.grb'
       case ("netcdf")
@@ -899,7 +973,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
          out_fname = trim(out_fname)//'.gr2'
       case default
          call lis_log_msg('ERR: create_output_filename -- '// &
-              'Unrecognized LIS_rc%wout value')
+              'Unrecognized wout value')
          call LIS_endrun 
       endselect
    elseif(LIS_rc%wstyle.eq."WMO convention") then 
@@ -963,7 +1037,7 @@ subroutine create_output_filename_expected(n, fname, flag, model_name, odir,&
            trim(fproj)//trim(fres2)//'_AR.'//trim(LIS_rc%area_of_data)//&
            '_PA.'//trim(fint)//'-HR-SUM_DD.'//&
            trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
-      select case (LIS_rc%wout)
+      select case (wout)
       case ("binary")
          if(LIS_rc%wopt.eq."1d tilespace") then 
             out_fname = trim(dname)//'.DAT'
@@ -1069,8 +1143,8 @@ subroutine create_dapert_filename(n, fname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -1214,8 +1288,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -1315,8 +1389,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
 !EOP
    character(len=10)        :: cdate
    character(len=12)        :: cdate1
-   character(len=100)       :: dname
-   character(len=200)       :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN)       :: out_fname
    character*50             :: wformat_temp
    integer                  :: yr, mo, da, hr, mn, ss
 
@@ -1514,8 +1588,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
 !EOP
    character(len=10)        :: cdate
    character(len=12)        :: cdate1
-   character(len=100)       :: dname
-   character(len=200)       :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN)       :: out_fname
    character*50             :: wformat_temp
 
 
@@ -1701,7 +1775,7 @@ subroutine LIS_create_stats_filename(n, fname, mname)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LIS_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
 
    write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -1799,8 +1873,8 @@ subroutine LIS_create_innov_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -1976,8 +2050,8 @@ subroutine LIS_create_incr_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -2153,8 +2227,8 @@ subroutine LIS_create_daspread_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -2263,7 +2337,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LIS_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
    character(len=12)       :: cdate1
 
@@ -2642,8 +2716,8 @@ subroutine LIS_create_gain_filename(n, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -3177,7 +3251,6 @@ subroutine LIS_create_gain_filename(n, fname, mname)
   integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
   integer :: nc,nr,c,r
-  real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3203,17 +3276,14 @@ subroutine LIS_create_gain_filename(n, fname, mname)
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,paramid,param)
+     ios = nf90_get_var(nid,paramid,array,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))            
      call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
      
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
-
-     array(:,:) = &
-          param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1))
 
   else
      write(LIS_logunit,*) '[ERR] '//trim(pname)//' map: ',&
@@ -3270,7 +3340,6 @@ end subroutine readparam_real_2d
   integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
   integer :: nc,nr,c,r
-  real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3297,17 +3366,15 @@ end subroutine readparam_real_2d
      if(ios.ne.0) then 
         rc = 1
      else
-        ios = nf90_get_var(nid,paramid,param)
+        ios = nf90_get_var(nid,paramid,array,&
+             start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+             LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+             count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
         call LIS_verify(ios,'Error in nf90_get_var in readparam_real_2d')
         
         ios = nf90_close(nid)
         call LIS_verify(ios,'Error in nf90_close in readparam_real_2d')
         
-        array(:,:) = &
-             param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-             LIS_ewe_halo_ind(n,LIS_localPet+1), &
-             LIS_nss_halo_ind(n,LIS_localPet+1): &
-             LIS_nse_halo_ind(n,LIS_localPet+1))
         rc = 0 
      endif
   else
@@ -3542,7 +3609,6 @@ end subroutine readgparam_real_2d_rc
   integer :: ios1
   integer :: ios,nid,paramid,ncId, nrId
   integer :: nc,nr,c,r
-  real    :: param(LIS_rc%gnc(n),LIS_rc%gnr(n))
   logical :: file_exists
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -3569,17 +3635,14 @@ end subroutine readgparam_real_2d_rc
      ios = nf90_inq_varid(nid,trim(pname),paramid)
      call LIS_verify(ios,trim(pname)//' field not found in the LIS param file')
 
-     ios = nf90_get_var(nid,paramid,param)
+     ios = nf90_get_var(nid,paramid,array,&
+          start=(/LIS_ews_halo_ind(n,LIS_localPet+1),&
+          LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+          count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))          
      call LIS_verify(ios,'Error in nf90_get_var in readparam_int_2d')
      
      ios = nf90_close(nid)
      call LIS_verify(ios,'Error in nf90_close in readparam_int_2d')
-
-     array(:,:) = &
-          nint(param(LIS_ews_halo_ind(n,LIS_localPet+1):&         
-          LIS_ewe_halo_ind(n,LIS_localPet+1), &
-          LIS_nss_halo_ind(n,LIS_localPet+1): &
-          LIS_nse_halo_ind(n,LIS_localPet+1)))
 
   else
      write(LIS_logunit,*) '[ERR] '//trim(pname)//' map: ',&

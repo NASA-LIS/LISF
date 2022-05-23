@@ -23,7 +23,8 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   use NoahMP401_lsmMod
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE, SMCWLT_TABLE, SMCREF_TABLE
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
- 
+  use MODULE_SF_NOAHMPLSM_401, only: DVEG
+
 ! !DESCRIPTION:        
 !
 ! Calculate water requirement and apply the amount to precipitation.
@@ -61,6 +62,8 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 ! Feb 2020: Jessica Erlingis; Correct sprinkler scheme so that it checks moisture
 !                             at otimess and applies constant rate for irrhrs
 ! March 2020: Jessica Erlingis; Add to Noah-MP 4.0.1
+! Apr 2021: Wanshu Nie; Add option to interact with DVEG
+! May 2021: Wanshu Nie; update irrigation using ensemble mean when runing with DA.
 !
 !EOP
   implicit none
@@ -103,15 +106,18 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
   real                 :: gsthresh, ltime
   real                 :: shdfac, shdmin, shdmax
   real                 :: timestep, shift_otimes, shift_otimee
-! _______________wanshu  add GW extraction_______________________________
   real                 :: AWS
   real                 :: Dtime
- 
-!---------------wanshu readin shdmax and shdmin from map----------------
-
   real, allocatable    :: placeshdmax(:,:), placeshdmin(:,:)
-!--------------wanshu-----add temp check-------
   real                 :: sfctemp, tempcheck
+
+  type(ESMF_Field)     :: irriggwratioField
+  real,  pointer       :: irriggwratio(:)
+
+  integer              :: i, m
+  real                 :: sfctemp_avg
+  real                 :: shdfac_avg
+  real                 :: smc_avg(nsoil)
 
   call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
   call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
@@ -139,7 +145,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
        farrayPtr=irrigScale,rc=rc)
   call LIS_verify(rc,'ESMF_FieldGet failed for Irrigation scale')  
 
- !-------------wanshu-----call LIS_read_shdmax and min------------
+  call ESMF_StateGet(irrigState, "Groundwater irrigation ratio",&
+       irriggwratioField,rc=rc)
+  call LIS_verify(rc,'ESMF_StateGet failed for Groundwater irrigation ratio')
+  call ESMF_FieldGet(irriggwratioField, localDE=0,&
+       farrayPtr=irriggwratio,rc=rc)
+  call LIS_verify(rc,'ESMF_FieldGet failed for Groundwater irrigation ratio')
+
   allocate(placeshdmax(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(placeshdmin(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
@@ -163,8 +175,42 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
      otimee = otimefs + irrhrf
   endif
   
- 
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+
+
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
+
+     sfctemp_avg = 0.
+     shdfac_avg  = 0.
+     smc_avg     = 0.
+
+     do m=1,LIS_rc%nensem(n)
+
+        t=(i-1)*LIS_rc%nensem(n)+m
+        
+        sfctemp_avg=sfctemp_avg+NOAHMP401_struc(n)%noahmp401(t)%sfctmp        
+        shdfac_avg=shdfac_avg+NOAHMP401_struc(n)%noahmp401(t)%fveg            
+        
+        do k=1,nsoil
+           
+           smc_avg(k)=smc_avg(k)+NOAHMP401_struc(n)%noahmp401(t)%smc(k)
+        
+        end do
+  
+     end do
+
+     sfctemp_avg=sfctemp_avg/LIS_rc%nensem(n)
+     shdfac_avg=shdfac_avg/LIS_rc%nensem(n)
+
+     do k=1,nsoil
+  
+        smc_avg(k)=smc_avg(k)/LIS_rc%nensem(n)
+    
+     end do
+
+
+     do m=1,LIS_rc%nensem(n)
+
+        t=(i-1)*LIS_rc%nensem(n)+m
 
      timestep = NOAHMP401_struc(n)%dt
      soiltyp = noahmp401_struc(n)%noahmp401(t)%soiltype
@@ -202,7 +248,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
      smcref = SMCREF_TABLE(soiltyp)
      smcwlt = SMCWLT_TABLE(soiltyp)
 
-     sfctemp = NOAHMP401_struc(n)%noahmp401(t)%sfctmp
+  !   sfctemp = NOAHMP401_struc(n)%noahmp401(t)%sfctmp
      tempcheck = 273.16 + 2.5
 
      gid = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
@@ -216,7 +262,13 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
     
-     shdfac =  NOAHMP401_struc(n)%noahmp401(t)%shdfac_monthly(LIS_rc%mo)
+     if((DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6) .AND. LIS_rc%irrigation_dveg == 1) then
+        shdfac = shdfac_avg
+
+     else
+        shdfac =  NOAHMP401_struc(n)%noahmp401(t)%shdfac_monthly(LIS_rc%mo)
+     end if
+
 
    ! If we are outside of the irrigation window, set rate to 0
      if ((ltime.gt.shift_otimee).or.(ltime.lt.shift_otimes)) then
@@ -225,10 +277,9 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 
 ! Calculate vegetation and root depth parameters
    
-!---------wanshu----add temp check----
 ! JE This temperature check avoids irrigating at temperatures near or below 0C
      if((ltime.ge.shift_otimes).and.(ltime.le.shift_otimee).and. &
-         (sfctemp.gt.tempcheck)) then 
+         (sfctemp_avg.gt.tempcheck)) then 
 !------------------------------------
         vegt = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%vegt
        !----------------------------------------------------------------------       
@@ -318,8 +369,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                          !-------------------------------------------------------------
                           if(lroot.gt.0) then 
                              do k=1,lroot
-                                asmc = asmc + NOAHMP401_struc(n)%noahmp401(t)%smc(k)*&
-                                     rdpth(k)*1000.0
+                                asmc = asmc + smc_avg(k)*rdpth(k)*1000.0
                                 tsmcwlt = tsmcwlt + smcwlt * rdpth(k)*1000.0
                                 tsmcref = tsmcref + smcref * rdpth(k)*1000.0
                              enddo
@@ -330,8 +380,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
                              if(ma.le.LIS_rc%irrigation_thresh) then 
                                 do k=1,lroot
                                    water(k) = &
-                                        (smcref-NOAHMP401_struc(n)%noahmp401(t)%smc(k))*&
-                                        rdpth(k)*1000.0
+                                        (smcref-smc_avg(k))*rdpth(k)*1000.0
                                    twater = twater + water(k)
                                 enddo
                                 
@@ -448,10 +497,19 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
            !JE Add in flag to turn groundwater abstraction on/off
            if (LIS_rc%irrigation_GWabstraction.eq.1) then
               AWS = NOAHMP401_struc(n)%noahmp401(t)%wa
-              Dtime = NOAHMP401_struc(n)%dt
-              NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime
+              Dtime = NOAHMP401_struc(n)%ts
+              if (LIS_rc%irrigation_SourcePartition.eq.1) then
+                  if(irriggwratio(t).gt.0) then
+                  NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime*irriggwratio(t)/100
+
+                  end if
+              else
+                 NOAHMP401_struc(n)%noahmp401(t)%wa = AWS - irrigRate(t)*Dtime
+              end if
            end if
        end if
 
-    enddo
+    end do
+  end do
+
   end subroutine noahmp401_getirrigationstates

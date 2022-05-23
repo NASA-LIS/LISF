@@ -28,6 +28,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   use LIS_logMod, only : LIS_logunit
   use LIS_gswpMod, only : getgswp_timeindex
   use gswp2_forcingMod, only : gswp2_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -76,7 +77,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   integer :: tmp_yr, tmp_mo
   integer :: index1,c,r,order
   character*8 :: cyear,cmo
-  character*100 :: ffile
+  character(len=LIS_CONST_PATH_LEN) :: ffile
   real :: fvar(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real, allocatable, dimension(:) :: fvar1
   real :: tempgswp2(LIS_rc%ngrid(n))
@@ -134,7 +135,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   write(cyear, '(I4)') tmp_yr
   write(cmo, '(I2.2)') tmp_mo
   ffile = trim(gswp2_struc(n)%tair)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading tair ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading tair ',trim(ffile)
 
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -213,7 +214,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%qair)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading qair ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading qair ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -275,7 +276,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%swdown)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading swdown ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading swdown ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -337,7 +338,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%lwdown)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading LWdown ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading LWdown ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -399,7 +400,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%wind)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Wind ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Wind ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -462,7 +463,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%psurf)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading psurf ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading psurf ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -524,7 +525,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%rainf)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Rainf ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Rainf ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -578,7 +579,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
 #if ( defined GSWP2_OPENDAP )
 #else
   ffile = trim(gswp2_struc(n)%snowf)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Snowf ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Snowf ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&
@@ -640,7 +641,7 @@ subroutine read_gswp2(order,n, findex, yr,mo,da,hr,mn,ss)
   close(30)
 #else
   ffile = trim(gswp2_struc(n)%rainf_c)//trim(adjustl(cyear))//trim(adjustl(cmo))//".nc"
-  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Rainf_C ',ffile
+  write(LIS_logunit,*)'MSG: GSWP2 forcing -- Reading Rainf_C ',trim(ffile)
 
 #if ( defined USE_NETCDF3 ||  defined USE_NETCDF4 )
   status = nf90_open(path=ffile,mode= nf90_nowrite,&

@@ -28,6 +28,7 @@
 module ANSASNWDsnow_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN 
 !EOP
   implicit none
   
@@ -55,9 +56,8 @@ module ANSASNWDsnow_Mod
      integer             :: offset1, offset2
      real                :: gridDesc(6)
      integer             :: useIMS
-     character*100       :: IMSdir
+     character(len=LIS_CONST_PATH_LEN) :: IMSdir, MODISdir
      integer             :: useMODIS
-     character*100       :: MODISdir
      integer, allocatable    :: n11(:)
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)
@@ -133,7 +133,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  ansasnowobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  ansasnowobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)

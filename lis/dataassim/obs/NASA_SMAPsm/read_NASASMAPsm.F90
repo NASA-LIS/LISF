@@ -24,6 +24,7 @@
 !                  link to the SMAP sm data).
 !  8 July 2020: David Mocko: Removed config entry to toggle the QC check.
 !                            The QC is now always ON for NASA SMAP SM DA.
+!  11 Aug 2020: Yonghwan Kwon: Incorporated Sujay's modifications to support SMAP L2 assimilation
 !
 ! !INTERFACE:
 subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
@@ -37,6 +38,7 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    use LIS_DAobservationsMod
    use map_utils
    use LIS_pluginIndices
+   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
    use NASASMAPsm_Mod, only: NASASMAPsm_struc
 
    implicit none
@@ -66,11 +68,11 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    real, parameter       :: MAX_SM_VALUE = 0.45, MIN_SM_VALUE = 0.0001
    integer                :: status
    integer                :: grid_index
-   character*100          :: smobsdir
-   character*100          :: fname
+   character(len=LIS_CONST_PATH_LEN) :: smobsdir
+   character(len=LIS_CONST_PATH_LEN) :: fname
    logical                :: alarmCheck, file_exists
-   integer                :: t, c, r, j, p, jj
-   real, pointer :: obsl(:)
+   integer                :: t, c, r, jj
+   real,          pointer :: obsl(:)
    type(ESMF_Field)       :: smfield, pertField
    integer                :: gid(LIS_rc%obs_ngrid(k))
    integer                :: assimflag(LIS_rc%obs_ngrid(k))
@@ -90,20 +92,20 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    integer                :: zone
    integer                :: fnd
    real, allocatable      :: ssdev(:)
-   integer                :: lis_julss
-   real                   :: smvalue
-   real                   :: model_delta(LIS_rc%obs_ngrid(k))
-   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
-   character*4       :: yyyy
-   character*2       :: mm, dd, hh
-   integer               :: yr, mo, da, hr, mn, ss
-   integer               :: doy
-   character*200      :: list_files
-   integer               :: ftn, ierr
-   character(len=200) :: cmd
-   integer :: rc
-   character(len=3) :: CRID
-   integer, external :: create_filelist ! C function
+   character*4            :: yyyy
+   character*8            :: yyyymmdd
+   character*2            :: mm, dd, hh
+   integer                :: yr, mo, da, hr, mn, ss
+   integer                :: cyr, cmo, cda, chr, cmn, css
+   integer                :: nyr, nmo, nda, nhr, nmn, nss
+   real*8                 :: timenow, time1,time2,time3
+   integer                :: doy
+   character(len=LIS_CONST_PATH_LEN) :: list_files
+   integer                :: mn_ind
+   integer                :: ftn, ierr
+   integer                :: rc
+   character(len=3)       :: CRID
+   integer, external      :: create_filelist ! C function
 
 
    call ESMF_AttributeGet(OBS_State, "Data Directory", &
@@ -121,10 +123,89 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    smobs_A = LIS_rc%udef
    smobs_D = LIS_rc%udef
 
+   cyr = LIS_rc%yr
+   cmo = LIS_rc%mo
+   cda = LIS_rc%da
+   chr = LIS_rc%hr
+   cmn = LIS_rc%mn
+   css = LIS_rc%ss
+
+   call LIS_tick(time1,doy,gmt,cyr,cmo,cda,chr,cmn,css,0.0)
+   nyr = LIS_rc%yr
+   nmo = LIS_rc%mo
+   nda = LIS_rc%da
+   nhr = LIS_rc%hr
+   nmn = LIS_rc%mn
+   nss = LIS_rc%ss
+
+   call LIS_tick(time2,doy,gmt,nyr,nmo,nda,nhr,nmn,nss,3600.0)
+   nyr = LIS_rc%yr
+   nmo = LIS_rc%mo
+   nda = LIS_rc%da
+   nhr = LIS_rc%hr
+   nmn = LIS_rc%mn
+   nss = LIS_rc%ss
+
+   call LIS_tick(time3,doy,gmt,nyr,nmo,nda,nhr,nmn,nss,LIS_rc%ts)
+
    if (alarmCheck .or. NASASMAPsm_struc(n)%startMode) then
       NASASMAPsm_struc(n)%startMode = .false.
+      if ( (NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP_E") .or. &
+           (NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP") ) then
 
-      if (NASASMAPsm_struc(n)%data_designation .eq. "SPL3SMP_E") then
+         NASASMAPsm_struc(n)%smobs = LIS_rc%udef
+         NASASMAPsm_struc(n)%smtime = -1.0
+ 
+         write(yyyymmdd,'(i4.4,2i2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
+         write(yyyy,'(i4.4)') LIS_rc%yr
+         write(mm,'(i2.2)') LIS_rc%mo
+         write(dd,'(i2.2)') LIS_rc%da
+         write(hh,'(i2.2)') LIS_rc%hr
+
+         if(LIS_masterproc) then
+            list_files = trim(smobsdir)//'/'//trim(yyyy)//'.'//trim(mm)//'.'//&
+                         trim(dd)//'/SMAP_L2_*' &
+                         //trim(yyyy)//trim(mm)//trim(dd)//'T'//trim(hh)//'*.h5'
+            write(LIS_logunit,*) &
+                  '[INFO] Searching for ',trim(list_files)
+            rc = create_filelist(trim(list_files)//char(0), &
+                 "SMAP_filelist.sm.dat"//char(0))
+            if (rc .ne. 0) then
+               write(LIS_logunit,*) &
+                    '[WARN] Problem encountered when searching for SMAP files'
+               write(LIS_logunit,*) &
+                    'Was searching for ',trim(list_files)
+               write(LIS_logunit,*) &
+                    'LIS will continue...'
+            endif
+         end if
+#if (defined SPMD)
+         call mpi_barrier(lis_mpi_comm,ierr)
+#endif
+
+         ftn = LIS_getNextUnitNumber()
+         open(ftn,file="./SMAP_filelist.sm.dat",status='old',iostat=ierr)
+
+         do while(ierr.eq.0)
+            read(ftn,'(a)',iostat=ierr) fname
+            if(ierr.ne.0) then
+               exit
+            endif
+
+            mn_ind = index(fname,trim(yyyymmdd)//'T'//trim(hh))+11
+            read(fname(mn_ind:mn_ind+1),'(i2.2)') mn
+            ss=0
+            call LIS_tick(timenow,doy,gmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                 LIS_rc%hr, mn, ss, 0.0)
+
+            write(LIS_logunit,*) '[INFO] reading ',trim(fname)
+
+            call read_SMAPL2sm_data(n,k,fname,&
+                 NASASMAPsm_struc(n)%smobs,timenow)
+         enddo
+         call LIS_releaseUnitNumber(ftn)
+
+      elseif (NASASMAPsm_struc(n)%data_designation .eq. "SPL3SMP_E") then
 !---------------------------------------------------------------------------
 ! MN: create filename for 9 km product
 !---------------------------------------------------------------------------
@@ -358,26 +439,52 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    ! dt is not defined as absolute value of the time difference to avoid
    ! double counting of the data in assimilation.
 
-   do r = 1, LIS_rc%obs_lnr(k)
-      do c = 1, LIS_rc%obs_lnc(k)
-         if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
-            grid_index = c + (r - 1)*LIS_rc%obs_lnc(k)
+   if ( (NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP_E") .or. &
+        (NASASMAPsm_struc(n)%data_designation.eq."SPL2SMP") ) then
 
-            dt = (LIS_rc%gmt - NASASMAPsm_struc(n)%smtime(c, r))*3600.0
-            if (dt .ge. 0 .and. dt .lt. LIS_rc%ts) then
-               sm_current(c, r) = &
-                  NASASMAPsm_struc(n)%smobs(c, r)
-               if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
-                  obs_unsc(LIS_obs_domain(n, k)%gindex(c, r)) = &
-                     sm_current(c, r)
-               endif
-               if (sm_current(c, r) .ne. LIS_rc%udef) then
-                  fnd = 1
+      do r=1,LIS_rc%obs_lnr(k)
+         do c=1,LIS_rc%obs_lnc(k)
+            if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then
+               grid_index = c+(r-1)*LIS_rc%obs_lnc(k)
+               dt = (NASASMAPsm_struc(n)%smtime(c,r)-time1)
+               if(dt.ge.0.and.dt.lt.(time3-time1)) then
+                  sm_current(c,r) = &
+                       NASASMAPsm_struc(n)%smobs(c,r)
+                  if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then
+                     obs_unsc(LIS_obs_domain(n,k)%gindex(c,r)) = &
+                          sm_current(c,r)
+                  endif
+                  if(sm_current(c,r).ne.LIS_rc%udef) then
+                     fnd = 1
+                  endif
                endif
             endif
-         endif
+         enddo
       enddo
-   enddo
+
+   else
+
+      do r = 1, LIS_rc%obs_lnr(k)
+         do c = 1, LIS_rc%obs_lnc(k)
+            if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
+               grid_index = c + (r - 1)*LIS_rc%obs_lnc(k)
+
+               dt = (LIS_rc%gmt - NASASMAPsm_struc(n)%smtime(c, r))*3600.0
+               if (dt .ge. 0 .and. dt .lt. LIS_rc%ts) then
+                  sm_current(c, r) = &
+                        NASASMAPsm_struc(n)%smobs(c, r)
+                  if (LIS_obs_domain(n, k)%gindex(c, r) .ne. -1) then
+                     obs_unsc(LIS_obs_domain(n, k)%gindex(c, r)) = &
+                        sm_current(c, r)
+                  endif
+                  if (sm_current(c, r) .ne. LIS_rc%udef) then
+                     fnd = 1
+                  endif
+               endif
+            endif
+         enddo
+      enddo
+   endif
 
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
@@ -455,6 +562,25 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
             NASASMAPsm_struc(n)%obs_cdf, &
             sm_current)
       endif
+   elseif(LIS_rc%dascaloption(k).eq."Linear scaling".and.fnd.ne.0) then    !kyh20210416
+        call LIS_rescale_with_linear_scaling(    &
+             n,                                   &
+             k,                                   &
+             NASASMAPsm_struc(n)%nbins,         &
+             NASASMAPsm_struc(n)%ntimes,        &
+             NASASMAPsm_struc(n)%obs_xrange,    &
+             NASASMAPsm_struc(n)%obs_cdf,       &
+             sm_current)
+   elseif(LIS_rc%dascaloption(k).eq."Anomaly scaling".and.fnd.ne.0) then    !kyh20210422
+        call LIS_rescale_with_anomaly(    &
+             n,                                   &
+             k,                                   &
+             NASASMAPsm_struc(n)%nbins,         &
+             NASASMAPsm_struc(n)%ntimes,        &
+             NASASMAPsm_struc(n)%obs_mu,    &
+             NASASMAPsm_struc(n)%model_mu,       &
+             sm_current)
+
    endif
 
    obsl = LIS_rc%udef
@@ -557,6 +683,237 @@ subroutine read_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    endif
 
 end subroutine read_NASASMAPsm
+
+!BOP
+! 
+! !ROUTINE: read_SMAPL2sm_data
+! \label{read_SMAPL2sm_data}
+!
+! !INTERFACE:
+subroutine read_SMAPL2sm_data(n, k,fname, smobs_inp, time)
+! 
+! !USES:   
+
+  use LIS_coreMod
+  use LIS_logMod
+  use LIS_timeMgrMod
+  use NASASMAPsm_Mod, only : NASASMAPsm_struc
+
+#if (defined USE_HDF5) 
+  use hdf5
+#endif
+
+  implicit none
+!
+! !INPUT PARAMETERS: 
+! 
+  integer                  :: n
+  integer                  :: k
+  character (len=*)        :: fname
+  real                     :: smobs_inp(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
+  real*8                   :: time
+
+! !OUTPUT PARAMETERS:
+!
+!
+! !DESCRIPTION: 
+!
+!
+!EOP
+
+#if (defined USE_HDF5)
+
+  character*100,    parameter    :: sm_gr_name = "Soil_Moisture_Retrieval_Data"
+  character*100,    parameter    :: sm_field_name = "soil_moisture"
+  character*100,    parameter    :: sm_qa_name = "retrieval_qual_flag"
+!YK
+  character*100,    parameter    :: vwc_field_name = "vegetation_water_content"
+
+  integer(hsize_t), dimension(1) :: dims
+  integer(hsize_t), dimension(1) :: maxdims
+  integer(hid_t)                 :: file_id
+  integer(hid_t)                 :: dspace_id
+  integer(hid_t)                 :: row_id, col_id
+  integer(hid_t)                 :: sm_gr_id,sm_field_id, sm_qa_id
+  integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A
+  integer(hid_t)                 :: vwc_field_id ! YK
+  real,             allocatable  :: sm_field(:)
+  real,             allocatable  :: vwc_field(:)! YK
+  integer,          allocatable  :: sm_qa(:)
+  integer,          allocatable  :: ease_row(:)
+  integer,          allocatable  :: ease_col(:)
+  integer                        :: c,r,t
+  logical*1                      :: sm_data_b(NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr)
+  logical*1                      :: smobs_b_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+  real                           :: sm_data(NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr)
+  real                           :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
+
+  integer                        :: status,ios,iret
+
+  call h5open_f(status)
+  call LIS_verify(status, 'Error opening HDF fortran interface')
+
+  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status)
+  call LIS_verify(status, 'Error opening SMAP L2 file ')
+
+  call h5gopen_f(file_id,sm_gr_name,sm_gr_id, status)
+  call LIS_verify(status, 'Error opening SM group in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id,sm_field_name,sm_field_id, status)
+  call LIS_verify(status, 'Error opening SM field in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id,"EASE_row_index",row_id, status)
+  call LIS_verify(status, 'Error opening row index field in SMAP L2 file')
+
+  call h5dopen_f(sm_gr_id,"EASE_column_index",col_id, status)
+  call LIS_verify(status, 'Error opening column index field in SMAP L2 file')
+
+!YK
+  call h5dopen_f(sm_gr_id, sm_qa_name,sm_qa_id, status)
+  call LIS_verify(status, 'Error opening QA field in SMAP L2 file')
+
+!YK 
+  call h5dopen_f(sm_gr_id, vwc_field_name,vwc_field_id, status)
+  call LIS_verify(status, 'Error opening Veg water content field in SMAP L2 file')
+
+  call h5dget_space_f(sm_field_id, dspace_id, status)
+  call LIS_verify(status, 'Error in h5dget_space_f: reaSMAP L2Obs')
+
+! Size of the arrays
+! This routine returns -1 on failure, rank on success. 
+  call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status)
+  if(status.eq.-1) then
+     call LIS_verify(status, 'Error in h5sget_simple_extent_dims_f: readSMAP L2Obs')
+  endif
+
+  allocate(sm_field(maxdims(1)))
+  allocate(sm_qa(maxdims(1)))    !YK
+  allocate(vwc_field(maxdims(1)))    !YK
+  allocate(ease_row(maxdims(1)))
+  allocate(ease_col(maxdims(1)))
+
+  call h5dread_f(row_id, H5T_NATIVE_INTEGER,ease_row,dims,status)
+  call LIS_verify(status, 'Error extracting row index from SMAP L2 file')
+
+  call h5dread_f(col_id, H5T_NATIVE_INTEGER,ease_col,dims,status)
+  call LIS_verify(status, 'Error extracting col index from SMAP L2 file')
+
+  call h5dread_f(sm_field_id, H5T_NATIVE_REAL,sm_field,dims,status)
+  call LIS_verify(status, 'Error extracting SM field from SMAP L2 file')
+
+!YK
+  call h5dread_f(sm_qa_id, H5T_NATIVE_INTEGER,sm_qa,dims,status)
+  call LIS_verify(status, 'Error extracting SM field from SMAP L2 file')
+
+!YK get the vegetation water content
+  call h5dread_f(vwc_field_id, H5T_NATIVE_REAL,vwc_field,dims,status)
+  call LIS_verify(status, 'Error extracting Veg water content (AM) field from SMAP L2 file')
+
+!YK
+  call h5dclose_f(sm_qa_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+!YK 
+  call h5dclose_f(vwc_field_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(row_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(col_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5dclose_f(sm_field_id,status)
+  call LIS_verify(status,'Error in H5DCLOSE call')
+
+  call h5gclose_f(sm_gr_id,status)
+  call LIS_verify(status,'Error in H5GCLOSE call')
+
+  call h5fclose_f(file_id,status)
+  call LIS_verify(status,'Error in H5FCLOSE call')
+
+  call h5close_f(status)
+  call LIS_verify(status,'Error in H5CLOSE call')
+
+  sm_data = LIS_rc%udef
+  sm_data_b = .false.
+
+!-------------------------------------------------------------------original
+!!grid the data in EASE projection
+!  do t=1,maxdims(1)
+!     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then
+!        sm_data(ease_col(t) + &
+!             (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = sm_field(t)
+!        if(sm_field(t).ne.-9999.0) then
+!           sm_data_b(ease_col(t) + &
+!                (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = .true.
+!        endif
+!     endif
+!  enddo
+
+!--------------------------------------------------------------------YK
+!grid the data in EASE projection
+! The retrieval_quality_field variable's binary representation consists of bits
+! that indicate whether retrieval is performed or not at a given grid cell. 
+! When retrieval is performed, it contains additional bits to further 
+! indicate the exit status and quality of the retrieval. The first bit 
+! indicates the recommended quality (0-means retrieval has recommended quality).
+  do t=1,maxdims(1)
+     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then
+        sm_data(ease_col(t) + &
+             (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = sm_field(t)
+
+        if(vwc_field(t).gt.5) then !YK Aply QC : if VWC > 5 kg/m2
+           sm_data(ease_col(t) + &
+                (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = LIS_rc%udef
+        else
+           if(sm_data(ease_col(t) + &
+                   (ease_row(t)-1)*NASASMAPsm_struc(n)%nc).ne.-9999.0) then
+              if(ibits(sm_qa(t),0,1).eq.0) then
+                 sm_data_b(ease_col(t) + &
+                    (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = .true.
+              else
+                 sm_data(ease_col(t) + &
+                      (ease_row(t)-1)*NASASMAPsm_struc(n)%nc) = LIS_rc%udef
+              endif
+           endif
+        endif
+     endif
+  enddo
+!-----------------------------------------------------------------------
+
+  !t = 1
+!--------------------------------------------------------------------------
+! Interpolate to the LIS running domain
+!-------------------------------------------------------------------------- 
+  call neighbor_interp(LIS_rc%obs_gridDesc(k,:), sm_data_b, sm_data, &
+       smobs_b_ip, smobs_ip, &
+       NASASMAPsm_struc(n)%nc*NASASMAPsm_struc(n)%nr, &
+       LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
+       NASASMAPsm_struc(n)%rlat, NASASMAPsm_struc(n)%rlon,&
+       NASASMAPsm_struc(n)%n11, LIS_rc%udef, ios)
+
+
+  deallocate(sm_field)
+!  deallocate(sm_qa)
+  deallocate(ease_row)
+  deallocate(ease_col)
+
+!overwrite the input data 
+  do r=1,LIS_rc%obs_lnr(k)
+     do c=1,LIS_rc%obs_lnc(k)
+        if(smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then
+           smobs_inp(c,r) = &
+                smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k))
+
+           NASASMAPsm_struc(n)%smtime(c,r) = &
+                time
+        endif
+     enddo
+  enddo
+#endif
+
+end subroutine read_SMAPL2sm_data
 
 !BOP
 ! 

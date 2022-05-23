@@ -460,6 +460,11 @@ subroutine NoahMP401_coldstart(mtype)
             call  mmf_start(n)
         endif
 
+        deallocate(zsnso)
+        deallocate(tsnow)
+        deallocate(snice)
+        deallocate(snliq)
+        deallocate(zsoil)
         deallocate(tsnoxy)
         deallocate(zsnsoxy)
         deallocate(snicexy)

@@ -25,6 +25,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use MCD15A2Hlai_Mod, only : MCD15A2Hlai_struc
 
   implicit none
@@ -50,8 +51,8 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
 !EOP
   integer                :: status
   integer                :: grid_index
-  character*100          :: laiobsdir
-  character*100          :: fname1,fname2, climofile1, climofile2
+  character(len=LIS_CONST_PATH_LEN) :: laiobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname1,fname2, climofile1, climofile2
   integer                :: cyr, cmo, cda, chr,cmn,css,cdoy
   real                   :: wt1, wt2,ts
   integer                :: count
@@ -105,6 +106,8 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
 
            inquire(file=fname1,exist=file_exists)          
            if(file_exists) then 
+              call LIS_tick(MCD15A2Hlai_struc(n)%time1,cdoy,cgmt,cyr,cmo,cda, &
+                   chr,cmn,css,0.0)
               exit; 
            else
               !go back a day till 8 days
@@ -174,9 +177,10 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
      if(alarmCheck) then 
         call LIS_tick(time,cdoy,cgmt,LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
              LIS_rc%hr,LIS_rc%mn,LIS_rc%ss,0.0)
-        wt1 = (time - MCD15A2Hlai_struc(n)%time1)/&
+
+        wt2 = (time - MCD15A2Hlai_struc(n)%time1)/&
              (MCD15A2Hlai_struc(n)%time2-MCD15A2Hlai_struc(n)%time1)
-        wt2 = 1.0 - wt1
+        wt1 = 1.0 - wt2
         
         if(MCD15A2Hlai_struc(n)%fnd.eq.1) then 
            do t=1,LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)
@@ -194,6 +198,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
            fnd = 0 
         endif
      endif
+
   endif
 
   dataCheck = .false.

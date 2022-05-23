@@ -24,6 +24,7 @@ subroutine get_genEnsFcst(n, findex)
   use LIS_logMod,       only : LIS_logunit, LIS_verify, LIS_endrun
   use LIS_timeMgrMod,   only : LIS_tick, LIS_get_nstep
   use LIS_metforcingMod,only : LIS_forc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use genEnsFcst_forcingMod,  only : genensfcst_struc
   use genEnsFcst_VariablesMod
 
@@ -58,7 +59,7 @@ subroutine get_genEnsFcst(n, findex)
   integer        :: c, r, f, m
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(LIS_CONST_PATH_LEN) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:
@@ -73,7 +74,6 @@ subroutine get_genEnsFcst(n, findex)
   integer  :: hr_int1, hr_int2
 
   integer  :: ensnum
-  character(20) :: fcst_type
 
   integer  :: nid, ncId, nrId, ntimesId
   integer  :: tdel, hindex, tindex
@@ -122,13 +122,13 @@ subroutine get_genEnsFcst(n, findex)
       fullfilename = "none"
 
     ! Assemble the forecast filename:
-      fcst_type = "GEOS5"
 
       do m = 1, genensfcst_struc%max_ens_members
          ensnum = m
-         call get_genEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
-               ensnum, LIS_rc%yr, LIS_rc%mo, &
-               genensfcst_struc%directory, fullfilename  )
+         call get_genEnsFcst_filename( genensfcst_struc%fcst_type, &
+            LIS_rc%syr, LIS_rc%smo, &
+            ensnum, LIS_rc%yr, LIS_rc%mo, &
+            genensfcst_struc%directory, fullfilename )
 
         ! Check if genEnsFcst file is present
         inquire( file=trim(fullfilename), exist=file_exists)
@@ -136,9 +136,9 @@ subroutine get_genEnsFcst(n, findex)
            write(LIS_logunit,*) "[INFO] Reading in GenEnsFcst Forcing File: ",&
                  trim(fullfilename)
         else  ! File missing
-           write(LIS_logunit,*) "[ERR] GenEnsFcst forcing file, "
-           write(LIS_logunit,*) "[ERR]",trim(fullfilename)//", does not exist -- "
-           write(LIS_logunit,*) "[ERR] Calling End run "
+           write(LIS_logunit,*) "[ERR] GenEnsFcst forcing file,"
+           write(LIS_logunit,*) "[ERR] ",trim(fullfilename)," does not exist --"
+           write(LIS_logunit,*) "[ERR] Calling LIS_endrun"
            call LIS_endrun
         endif
         genensfcst_struc%findtime1 = 0

@@ -25,6 +25,7 @@ subroutine RDHM356_dynsetup(n)
     use LIS_coreMod, only    : LIS_rc, LIS_domain, LIS_surface
     use LIS_timeMgrMod, only : LIS_date2time, LIS_tick
     use LIS_fileIOMod, only  : LIS_read_param
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use RDHM356_lsmMod, only : RDHM356_struc
    !use any other modules 
 !
@@ -55,7 +56,7 @@ subroutine RDHM356_dynsetup(n)
     integer           :: mtype 
     character(len=128):: ncvar_name  
     character(len=64) :: dt_str
-    character(len=128):: tmp_paramfile
+    character(len=LIS_CONST_PATH_LEN):: tmp_paramfile
     real, allocatable :: placeholder(:,:)
     
     ! if tmxmn_file is not specified, do not read daily maximun and mimimun temperature 

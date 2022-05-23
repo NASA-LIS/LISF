@@ -41,6 +41,7 @@
 !
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use cable_module
 !
   implicit none
@@ -57,9 +58,9 @@
 !EOP
   type, public :: cable_type_dec
      
-     character*100              :: rfile
-     character*100              :: vfile
-     character*100              :: sfile
+     character(len=LIS_CONST_PATH_LEN)              :: rfile
+     character(len=LIS_CONST_PATH_LEN)              :: vfile
+     character(len=LIS_CONST_PATH_LEN)              :: sfile
      character*25               :: canopyflag
      character*25               :: photosynflag
      character*25               :: soilflag
