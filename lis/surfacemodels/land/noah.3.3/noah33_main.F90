@@ -1066,6 +1066,15 @@ subroutine noah33_main(n)
                 vlevel=1,unit="-",direction="-",surface_type=LIS_rc%lsm_index)
         endif
 
+        ! Compute wchange before removing irrigRate from precip - HKB
+        wchange_prev = prcp - evp - (noah33_struc(n)%noah(t)%runoff1+&
+             noah33_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
+
+        call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSURFSTOR,              &
+             value=(noah33_struc(n)%noah(t)%wchange_prev - wchange_prev),vlevel=1,unit="kg m-2 s-1",&
+             direction="INC",surface_type=LIS_rc%lsm_index)
+        noah33_struc(n)%noah(t)%wchange_prev = wchange_prev
+
         ! Sprinkler Irrigation added water needs to be removed - HKB
         if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
             LIS_rc%irrigation_type .eq. "Concurrent" ) then
@@ -1128,13 +1137,6 @@ subroutine noah33_main(n)
            soilmtc = soilmtc + noah33_struc(n)%noah(t)%smc(i) *           &
                 LIS_CONST_RHOFW * sldpth(i)
         enddo
-        wchange_prev = prcp - evp - (noah33_struc(n)%noah(t)%runoff1+&
-             noah33_struc(n)%noah(t)%runoff2)*LIS_CONST_RHOFW
-
-        call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSURFSTOR,              &
-             value=(noah33_struc(n)%noah(t)%wchange_prev - wchange_prev),vlevel=1,unit="kg m-2 s-1",&
-             direction="INC",surface_type=LIS_rc%lsm_index)
-        noah33_struc(n)%noah(t)%wchange_prev = wchange_prev
 
         call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_DELSOILMOIST,              &
              value=(soilmtc-startsm),vlevel=1,unit="kg m-2",&

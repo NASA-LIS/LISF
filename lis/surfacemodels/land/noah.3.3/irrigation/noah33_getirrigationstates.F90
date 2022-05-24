@@ -234,7 +234,6 @@ subroutine noah33_getirrigationstates(nest,irrigState)
         croptype = vegt - nlctypes
         ! Process only irrigated tiles
         IRRF2: if(IM%irrigFrac(TileNo).gt.0) then
-           ! Determine the amount of irrigation to apply if irrigated tile
            IRRS2: if( IM%IrrigScale(TileNo).gt.0.0 ) then ! irrigated tile
               ! Apply irrigation rate-- zero outside of irrigation hour, 
               ! not in season, or not in deficit
@@ -260,7 +259,10 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                              IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
                              (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)
                    else
-                     ! BZ modification 4/2/2015 to account for ippix and all soil layers:
+                   ! NON-PADDY -- surface only or  multiple layers
+                   ! BZ modification 4/2/2015 to account for ippix and all soil layers:
+                   ! raise SM to saturation instantly and keep it saturated
+                   ! throughout the irrigation duration 
                       do l = 1, LIS_irrig_struc(nest)%irrigation_mxsoildpth
                         noah33_struc(nest)%noah(TileNo)%smc(l) =  &
                              IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
