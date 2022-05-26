@@ -2456,7 +2456,7 @@ MMF spatial transform: average
 # WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
 FDEPTH neighborhood radius: 1 
 FDEPTH fill option: neighbor
-FDEPTH fill radius: 3 
+FDEPTH fill radius: 3. 
 FDEPTH fill value: 100.
 FDEPTH water value: 100.
 ....
@@ -2476,7 +2476,7 @@ FDEPTH water value: 100.
 # WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
 RECHCLIM neighborhood radius: 1 
 RECHCLIM fill option: neighbor
-RECHCLIM fill radius: 3 
+RECHCLIM fill radius: 3. 
 RECHCLIM fill value: -1.
 RECHCLIM water value: 0.
 ....
@@ -2497,7 +2497,7 @@ RECHCLIM water value: 0.
 # WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 RIVERBED neighborhood radius: 1 
 RIVERBED fill option: neighbor
-RIVERBED fill radius: 3 
+RIVERBED fill radius: 3. 
 RIVERBED fill value: 0.
 RIVERBED water value: -100.
 ....
@@ -2517,7 +2517,7 @@ RIVERBED water value: -100.
 # WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
 EQWTD neighborhood radius: 1 
 EQWTD fill option: neighbor
-EQWTD fill radius: 3 
+EQWTD fill radius: 3. 
 EQWTD fill value: 0.
 EQWTD water value: 0.
 ....
@@ -2537,7 +2537,7 @@ EQWTD water value: 0.
 # WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
 HGT_M neighborhood radius: 0 
 HGT_M fill option: neighbor
-HGT_M fill radius: 3 
+HGT_M fill radius: 3. 
 HGT_M fill value: 0.
 HGT_M water value: -100.
 ....
