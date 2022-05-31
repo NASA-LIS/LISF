@@ -481,6 +481,8 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 !  CDF-scaling approach
 !-------------------------------------------------------------------------
    if (cdfT_SMAPsm_struc(n)%useCDFtransfer .gt. 0) then
+      if (LIS_rc%da .eq. 1 .and. LIS_rc%hr .eq. 0 .and. &
+          LIS_rc%mn .eq. 0 .and. LIS_rc%ss .eq. 0) then
       call read_CDFtransferdata_all(n,k,&
            cdfT_SMAPsm_struc(n)%nbins,&
            cdfT_SMAPsm_struc(n)%ntimes,&
@@ -499,6 +501,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
            cdfT_SMAPsm_struc(n)%obs_xrange,&
            cdfT_SMAPsm_struc(n)%obs_cdf)
 
+      endif
       if (fnd .ne. 0) then
 
          call LIS_rescale_with_stratified_CDF(&
@@ -516,7 +519,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
               cdfT_SMAPsm_struc(n)%target_p_climo,&
               cdfT_SMAPsm_struc(n)%n_strat_bins,&
               sm_current) 
-      endif  
+       endif 
    endif
 
    obsl = LIS_rc%udef

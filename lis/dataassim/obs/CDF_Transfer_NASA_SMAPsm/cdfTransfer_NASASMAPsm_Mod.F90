@@ -497,6 +497,8 @@ contains
              allocate(cdfT_SMAPsm_struc(n)%obs_cdf(&
                   cdfT_SMAPsm_struc(n)%n_strat_bins, cdfT_SMAPsm_struc(n)%ntimes, &
                   cdfT_SMAPsm_struc(n)%nbins))
+             write(LIS_logunit,*)&
+                    '[INFO] Successfully read cdf transfer data specifications'
        endif
 
        if(cdfT_SMAPsm_struc(n)%useSsdevScal.eq.1) then
