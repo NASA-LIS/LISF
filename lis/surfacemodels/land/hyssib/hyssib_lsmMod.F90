@@ -59,6 +59,7 @@ module hyssib_lsmMod
 !
 ! !USES:
   use hyssib_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
    
    implicit none
    
@@ -74,10 +75,10 @@ module hyssib_lsmMod
 !EOP
   type, public :: hyssib_type_dec 
 
-     character*80     :: rfile !Restart file
-     character*80     :: vfile !Vegetation Params
-     character*80     :: afile !Albedo and Radiation Params (Veg)
-     character*80     :: topostdfile
+     character(len=LIS_CONST_PATH_LEN) :: rfile !Restart file
+     character(len=LIS_CONST_PATH_LEN) :: vfile !Vegetation Params
+     character(len=LIS_CONST_PATH_LEN) :: afile !Albedo and Radiation Params (Veg)
+     character(len=LIS_CONST_PATH_LEN) :: topostdfile
      integer          :: count
      integer          :: hyssibopen    
      integer          :: numout      

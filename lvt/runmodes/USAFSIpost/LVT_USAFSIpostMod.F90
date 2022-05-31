@@ -84,6 +84,7 @@ contains
       ! Construct the input netCDF filename
       this%input_nc_file = &
            trim(LVT_rc%input_dir) // &
+           '/' // &
            trim(LVT_rc%input_prefix) // &
            trim(LVT_rc%yyyymmddhh) // &
            ".nc"
@@ -1208,7 +1209,7 @@ contains
            // '/PS.557WW_SC.' &
            // trim(LVT_rc%security_class)//'_DI.' &
            // trim(LVT_rc%data_category)//'_GP.' &
-           // 'USAFSI_GR.C0P09DEG_AR.' &
+           // 'LIS-SNOWICE_GR.C0P09DEG_AR.' &
            // trim(LVT_rc%area_of_data)//'_PA.' &
            //'USAFSI_DD.' &
            // yyyymmddhh(1:8)//'_DT.' &

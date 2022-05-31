@@ -20,7 +20,7 @@
 !   1/15/15: Shugong Wang; initial implementation for RUC37 with LIS-7
 !
 ! !INTERFACE:
-subroutine RUC37_finalize(n)
+subroutine RUC37_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use RUC37_lsmMod

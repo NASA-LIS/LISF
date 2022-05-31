@@ -22,6 +22,7 @@ module noah33_peMod
 ! !USES:        
   use ESMF
   use LIS_numerRecipesMod, only : LIS_rand_func
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -65,7 +66,7 @@ contains
 
     implicit none
 ! !ARGUMENTS: 
-    character*100               :: decSpaceAttribsFile
+    character(len=LIS_CONST_PATH_LEN) :: decSpaceAttribsFile
     type(ESMF_State)            :: DEC_State
     type(ESMF_State)            :: Feas_State
 

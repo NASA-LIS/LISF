@@ -26,6 +26,7 @@
 module multisynsmobs_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -78,7 +79,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  synsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     type(pert_dec_type)    ::  obs_pert

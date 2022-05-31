@@ -20,7 +20,7 @@
 !   11/5/13: Shugong Wang; initial implementation for RDHM356 with LIS-7
 !
 ! !INTERFACE:
-subroutine RDHM356_finalize(n)
+subroutine RDHM356_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use RDHM356_lsmMod

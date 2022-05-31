@@ -24,6 +24,7 @@ subroutine read_WindSatCsm(n, OBS_State, OBS_Pert_state)
   use LIS_timeMgrMod, only : LIS_calendar, LIS_clock, LIS_get_julss
   use LIS_logMod,     only : LIS_logunit, LIS_endrun, & 
        LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use WindSatCsm_Mod, only : WindSatCsm_struc
   use map_utils
   
@@ -65,7 +66,7 @@ subroutine read_WindSatCsm(n, OBS_State, OBS_Pert_state)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
   logical             :: data_update
   logical             :: file_exists
 

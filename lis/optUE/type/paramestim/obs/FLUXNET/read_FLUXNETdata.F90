@@ -24,6 +24,7 @@ subroutine read_FLUXNETdata(Obj_Space)
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_readData
   use LIS_timeMgrMod,     only : LIS_calendar, LIS_tick
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use map_utils
   use FLUXNETdata_module,     only : FLUXNETdata_struc
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)  
@@ -45,7 +46,7 @@ subroutine read_FLUXNETdata(Obj_Space)
 !
 !EOP
   integer                  :: n 
-  character*100            :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer                  :: ftn, qleId,qhId
   logical                  :: file_exists
   integer                  :: c,r,t

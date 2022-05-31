@@ -62,6 +62,7 @@ subroutine AGRMET_sfcalc(n)
 ! 10 SEP 2010 Modified to use variable size arrays for surface observation 
 !             data.................................Chris Franks/16WS/WXE/SEMS
 ! 14 Jun 2017 Added GFS/GALWEM ground height, 2-m T, RH........Eric Kemp/GSFC
+! 16 Dec 2021 Replaced julhr with YYYYMMDD in log.........Eric Kemp/NASA/SSAI
 ! 
 ! The arguments and variables are:
 !  \begin{description}
@@ -361,10 +362,12 @@ subroutine AGRMET_sfcalc(n)
 
      step = 1        
      do julhr= julend-5,julend
-     
+
+        call AGRMET_julhr_date10(julhr, yyyymmddhh) ! EMK
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'---------------------------- '
-        write(LIS_logunit,*)'- PROCESSING-SFC JULHR ', julhr
+        !write(LIS_logunit,*)'- PROCESSING-SFC JULHR ', julhr
+        write(LIS_logunit,*)'- PROCESSING-SFC YYYYMMDDHH ', yyyymmddhh
         write(LIS_logunit,*)'---------------------------- '
 
 !     ------------------------------------------------------------------

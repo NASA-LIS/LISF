@@ -24,6 +24,7 @@ module flood_irrigationMod
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -48,7 +49,7 @@ contains
     real,  pointer       :: irrigFrac(:), frac(:)
     real,  pointer       :: irrigRootdepth(:), rootdepth(:)
     real,  pointer       :: irrigScale(:),scale(:)
-    character*100        :: maxrootdepthfile
+    character(len=LIS_CONST_PATH_LEN) :: maxrootdepthfile
 
     do n=1,LIS_rc%nnest
        allocate(irrigFrac(LIS_rc%npatch(n,LIS_rc%lsm_index)))

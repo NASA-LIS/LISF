@@ -31,6 +31,7 @@ module DEMCzAlgorithm
   use LIS_coreMod
   use LIS_optUEMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -354,7 +355,7 @@ module DEMCzAlgorithm
       real                     :: rand      
       real, pointer            :: vardata(:) 
       character*100            :: vnames(demcz_ctl%nparam)
-      character*100            :: filen
+      character(len=LIS_CONST_PATH_LEN) :: filen
       integer :: iteratNo
       real    :: gamma
       real    :: epsilon, b_param

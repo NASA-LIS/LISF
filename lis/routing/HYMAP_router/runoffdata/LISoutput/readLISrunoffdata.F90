@@ -22,6 +22,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   use LIS_logMod
   use LISrunoffdataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -49,7 +50,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   real,   allocatable       :: qs(:,:),qs_t(:)
   real,   allocatable       :: qsb(:,:),qsb_t(:)
   integer                   :: ios, nid,qsid,qsbid
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   logical               :: file_exists
   logical               :: check_Flag
   !create LIS filename

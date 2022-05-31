@@ -311,6 +311,7 @@ contains
     use LIS_fileIOMod,  only : LIS_create_output_directory, &
          LIS_create_output_filename,  &
          LIS_create_stats_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 ! !ARGUMENTS: 
     integer, intent(in)   :: n 
@@ -325,7 +326,7 @@ contains
 !  \end{description}
 !EOP
 
-    character*260       :: outfile, statsfile
+    character(len=LIS_CONST_PATH_LEN) :: outfile, statsfile
     logical             :: alarmCheck
     integer             :: mo, da
     logical             :: open_stats
@@ -369,8 +370,8 @@ contains
        
           if(alarmCheck) then 
              open_stats = .false.
+             call LIS_create_output_directory('SURFACEMODEL')             
              if(LIS_masterproc) then 
-                call LIS_create_output_directory('SURFACEMODEL')
                 if (LIS_sfmodel_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,'SURFACEMODEL')
                    LIS_sfmodel_struc(n)%stats_file_open = .false.

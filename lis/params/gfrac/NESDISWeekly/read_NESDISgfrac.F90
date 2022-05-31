@@ -23,6 +23,7 @@ subroutine read_NESDISgfrac(n, wt1, wt2, array1, array2)
   use ESMF
   use LIS_coreMod,        only : LIS_rc, LIS_domain
   use LIS_logMod,         only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use LIS_vegDataMod,     only : LIS_gfrac
   use LIS_timeMgrMod
 
@@ -51,7 +52,7 @@ subroutine read_NESDISgfrac(n, wt1, wt2, array1, array2)
 !
 !EOP      
 
-  character*100     :: filename1,filename2
+  character(len=LIS_CONST_PATH_LEN) :: filename1,filename2
   logical           :: gfracAlarmCheck
   logical           :: file_exists
   integer           :: i
