@@ -20,7 +20,7 @@
 !   12/18/18: Wendy Sharples, Shugong Wang; initial implementation for AWRAL600 with LIS-7
 !
 ! !INTERFACE:
-subroutine AWRAL600_finalize(n)
+subroutine AWRAL600_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use AWRAL600_lsmMod

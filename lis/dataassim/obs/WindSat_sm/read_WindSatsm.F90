@@ -25,6 +25,7 @@ subroutine read_WindSatsm(n, OBS_State, OBS_Pert_State)
   use LIS_dataAssimMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use WindSatsm_Mod, only : WindSatsm_struc
 
 
@@ -65,10 +66,10 @@ subroutine read_WindSatsm(n, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: smname,tmname,tsname,clsname
+  character(len=LIS_CONST_PATH_LEN) :: smname,tmname,tsname,clsname
 
   logical             :: readflag
   logical             :: data_upd
@@ -135,7 +136,7 @@ subroutine read_WindSatsm(n, OBS_State, OBS_Pert_State)
      if (readflag) then 
 
         write(LIS_logunit,*)  'Reading WindSat soil moisture data ',&
-             smname       
+             trim(smname)
         
         ftn = LIS_getNextUnitNumber()
         open(ftn,file = trim(smname), form='unformatted', status='old',&

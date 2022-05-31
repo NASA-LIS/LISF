@@ -9,11 +9,12 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_gofsMod
-! 
+!
 ! REVISION HISTORY:
 ! 01 Apr 2019  Eric Kemp  First version.
 ! 09 May 2019  Eric Kemp  Rename to LDTSI
 ! 13 Dec 2019  Eric Kemp  Rename to USAFSI
+! 10 Mar 2022  Eric Kemp  Added array initialization.
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy GOFS data.
@@ -259,7 +260,7 @@ contains
 
       ! Imports
       use LDT_coreMod, only: LDT_rc, LDT_domain
-      use LDT_logMod, only: LDT_verify
+      use LDT_logMod, only: LDT_verify, ldt_logunit
       use netcdf
 
       ! Defaults
@@ -309,6 +310,8 @@ contains
            ncid=ncid), &
            "[ERR] Error in nf90_open for " // trim(filename))
 
+      write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
+      
       ! Get the varid for water_temp
       call LDT_verify(nf90_inq_varid(ncid, "water_temp", water_temp_varid), &
            "[ERR] Error in nf90_inq_varid for water_temp")
@@ -579,6 +582,7 @@ contains
            mode=nf90_nowrite, &
            ncid=ncid), &
            "[ERR] Error in nf90_open for " // trim(filename))
+      write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
 
       ! Get the varid for aice
       call LDT_verify(nf90_inq_varid(ncid, "aice", aice_varid), &
@@ -656,6 +660,7 @@ contains
       ! Just copy the non-missing values to the output array.  This should
       ! prevent overwriting of data outside of the GOFS polar region.
       allocate(icecon(nc,nr))
+      icecon = 0.0 ! EMK 20220310, initialize memory
       do r = 1, nr
          do c = 1, nc
             ! Skip land points

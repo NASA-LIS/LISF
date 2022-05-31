@@ -258,7 +258,13 @@ contains
         do i=1,nz
            stonow=rivlen(iseq)*(rivwth(iseq)+wthinc*(real(i)-0.5))*(fldhgt(iseq,i)-hgtpre)
            fldstomax(iseq,i)=stopre+stonow
-           fldgrd(iseq,i)=(fldhgt(iseq,i)-hgtpre) / wthinc
+           !           fldgrd(iseq,i)=(fldhgt(iseq,i)-hgtpre) / wthinc
+           if(wthinc <=0.0) then
+!              write(LIS_logunit,*) '[WARN] set_fldg withinc= 0'
+              fldgrd(iseq,i) = 0.0
+           else
+              fldgrd(iseq,i) = (fldhgt(iseq,i)-hgtpre)/wthinc
+           endif
            stopre=fldstomax(iseq,i)
            hgtpre=fldhgt(iseq,i)
         enddo

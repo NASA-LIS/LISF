@@ -36,6 +36,7 @@ subroutine noah271_writerst(n)
   use LIS_timeMgrMod, only : LIS_isAlarmRinging
   use LIS_fileIOMod, only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use noah271_lsmMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -61,7 +62,7 @@ subroutine noah271_writerst(n)
 ! \end{description}
 !EOP
 !  real :: curr_time
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: status
   integer       :: ftn
@@ -174,7 +175,7 @@ subroutine noah271_dump_restart(n, ftn, wformat)
 !
 !EOP
    integer :: l,t
-   integer :: dimID(10)
+   integer :: dimID(11)
    integer :: t1Id, cmcid, snowhid, sneqvid, smcid, sh2oId, stcId
    integer :: cmId, chId
    real, allocatable :: tmptilen(:)

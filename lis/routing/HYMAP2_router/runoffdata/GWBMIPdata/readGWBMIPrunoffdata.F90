@@ -22,6 +22,7 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
   use LIS_logMod
   use GWBMIPrunoffdataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -45,7 +46,7 @@ subroutine readGWBMIPrunoffdata(n,surface_runoff, baseflow)
   integer                       :: ftn
   integer                       :: qsid, qsbid
   integer                       :: tindex
-  character*100                 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   type(ESMF_Time)               :: currTime, startTime
   type(ESMF_TimeInterval)       :: deltaT
   integer                       :: da_elapsed, hr_elapsed

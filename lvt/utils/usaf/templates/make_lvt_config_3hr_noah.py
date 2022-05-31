@@ -142,7 +142,10 @@ for var in vars:
         if "LVT output format:" in line:
             line = "LVT output format: %s\n" % (output)
         elif "Process HYCOM data:" in line:
-            line = "Process HYCOM data: 0\n"
+            if firstVar:
+                line = "Process HYCOM data: 1\n"
+            else:
+                line = "Process HYCOM data: 0\n"
         elif "Apply noise reduction filter:" in line:
             if var in smooth_vars:
                 line = "Apply noise reduction filter: 1\n"
