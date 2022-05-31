@@ -1132,25 +1132,29 @@ contains
               if(binval.le.0) binval = 1
               cdf_obsval = obs_cdf(strat_binval,kk,binval)
               if(cdf_obsval.gt.1.0) cdf_obsval = 1.0
-              i=1
-              do while((model_cdf(strat_binval,kk,i).lt.cdf_obsval).and.&
-                   (i.le.nbins))
-                 i = i+1
-                 if(i.gt.nbins) exit
-              enddo
-              if(i.gt.nbins) i = i-1
-              obs_tmp = model_xrange(strat_binval,kk,i)
+                 if(cdf_obsval .gt.0)then
+                    i=1
+                    do while((model_cdf(strat_binval,kk,i).lt.cdf_obsval).and.&
+                         (i.le.nbins))
+                       i = i+1
+                       if(i.gt.nbins) exit
+                    enddo
+                    if(i.gt.nbins) i = i-1
+                    obs_tmp = model_xrange(strat_binval,kk,i)
 
-              if(obs_tmp.gt.max_obs_value) then
-!                 obs_tmp = max_obs_value
-                 obs_tmp = LIS_rc%udef
-              endif
+                    if(obs_tmp.gt.max_obs_value) then
+!                       obs_tmp = max_obs_value
+                       obs_tmp = LIS_rc%udef
+                    endif
 
-              if(obs_tmp.le.min_obs_value) then
-!                 obs_tmp = obs_value(col,row)
-                 obs_tmp = LIS_rc%udef
-              endif
-              obs_value(col,row) = obs_tmp
+                    if(obs_tmp.le.min_obs_value) then
+!                       obs_tmp = obs_value(col,row)
+                       obs_tmp = LIS_rc%udef
+                    endif
+                    obs_value(col,row) = obs_tmp
+                 else
+                    obs_value(col,row) = LIS_rc%udef 
+                 endif
            else
               obs_value(col,row) = LIS_rc%udef
            endif
@@ -1282,9 +1286,6 @@ contains
 !BOP
 ! !ROUTINE: read_CDFdata_all   
 ! \label{read_CDFdata_all}
-
-! !REVISION HISTORY:
-! 2 March 2022: Mahdi Navari ; Initial Specification
 !
 ! !INTERFACE: 
    subroutine read_CDFdata_all(n, k, nbins, ntimes, ngrid, &

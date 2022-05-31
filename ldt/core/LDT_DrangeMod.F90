@@ -374,6 +374,7 @@ contains
              strat_minval = 1000000.0
              strat_mask = 0
              strat_delta = 0
+             strat_xrange = 0 
 
              do t=1,LDT_rc%ngrid(n)
                 do j=1,LDT_rc%cdf_ntimes
@@ -445,6 +446,7 @@ contains
              deallocate(strat_minval)
              deallocate(strat_mask)
              deallocate(strat_delta)
+             deallocate(strat_xrange)
 
           elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.1) then
              allocate(strat_drange_total(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
@@ -472,6 +474,7 @@ contains
              strat_minval = 1000000.0
              strat_mask = 0
              strat_delta = 0
+             strat_xrange = 0
 
              do t=1,LDT_rc%ngrid(n)
                 do j=1,LDT_rc%cdf_ntimes
@@ -547,6 +550,7 @@ contains
              deallocate(strat_minval)
              deallocate(strat_mask)
              deallocate(strat_delta)
+             deallocate(strat_xrange)
 
           endif
        endif
