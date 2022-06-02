@@ -315,7 +315,7 @@ class AutomateTuning:
         if "imerg" in self.Lo:
             if self.Lo["imerg"] > 0:
                 line = \
-                    "AGRMET GALWEM Precip IMERG observation error scale length (m)"
+                    "AGRMET GALWEM Precip IMERG observation error scale length (m):"
                 line += " %s\n" %(self.Lo["imerg"])
                 lines.append(line)
 
