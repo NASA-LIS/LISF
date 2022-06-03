@@ -867,7 +867,6 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use mpi
       use USAF_GridHashMod, only: GridHash, newGridHash, destroyGridHash, &
            insertIntoGridHash, getObindexVectorFromGridHash, &
            createIJForGridHash
