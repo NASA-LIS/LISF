@@ -697,7 +697,6 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use esmf
       use mpi
       use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
            destroyReports, appendToReports, bcast_reports
