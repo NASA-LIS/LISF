@@ -23,7 +23,7 @@
 module SYN_LBAND_TB_Mod
 ! !USES: 
   use ESMF
-
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -90,7 +90,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  lbandtbobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  lbandtbobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)

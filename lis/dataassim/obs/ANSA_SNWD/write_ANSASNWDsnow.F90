@@ -24,6 +24,7 @@ subroutine write_ANSASNWDsnowobs(n, k, OBS_State)
   use LIS_fileIOMod
   use LIS_historyMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
 
@@ -44,7 +45,7 @@ subroutine write_ANSASNWDsnowobs(n, k, OBS_State)
   real, pointer            :: snowobs(:)
   real                     :: imsobs(LIS_rc%obs_ngrid(k))
   real                     :: modisobs(LIS_rc%obs_ngrid(k))
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

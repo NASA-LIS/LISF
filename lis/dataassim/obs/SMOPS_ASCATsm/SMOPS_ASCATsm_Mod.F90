@@ -42,6 +42,7 @@ module SMOPS_ASCATsm_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -91,8 +92,8 @@ module SMOPS_ASCATsm_Mod
                                              !e.g., 4/29 13:00:00)
      integer                :: cdf_read_opt  ! 0: read all months at one time
                                              ! 1: read only the current month
-     character*100          :: modelcdffile
-     character*100          :: obscdffile
+     character(len=LIS_CONST_PATH_LEN) :: modelcdffile
+     character(len=LIS_CONST_PATH_LEN) :: obscdffile
 
   end type SMOPS_ASCATsm_dec
   
@@ -143,7 +144,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  rtsmopssmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  rtsmopssmobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)

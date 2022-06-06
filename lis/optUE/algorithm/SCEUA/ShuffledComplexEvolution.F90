@@ -92,6 +92,7 @@
 module ShuffledComplexEvolution
 ! !USES: 
   USE ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   USE SCEUA_varctl 
 
   IMPLICIT NONE
@@ -2255,7 +2256,7 @@ module ShuffledComplexEvolution
     integer             :: n
     integer             :: i
     integer             :: status
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
 !    character (len=3)   :: fTrial 
     character (len=6)   :: fTrial 
     character*100       :: vnames(sceua_ctl%nparam)
@@ -2321,7 +2322,7 @@ module ShuffledComplexEvolution
 !
 !EOP 
     integer             :: n
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
 !    character (len=3)   :: fTrial 
     character (len=6)   :: fTrial 
     real, allocatable       :: GridBestObjFunc(:) ! SY

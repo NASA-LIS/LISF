@@ -26,6 +26,7 @@ module LIS_fileIOMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none 
   PRIVATE
@@ -220,7 +221,7 @@ subroutine LIS_create_output_directory(mname)
 !EOP
    character(len=4) :: cdate
    character(len=8) :: cdate1
-   character(len=200) :: out_dname
+   character(len=LIS_CONST_PATH_LEN) :: out_dname
    integer            :: try,ios
 #if (!defined AIX )
    integer            :: system 
@@ -231,7 +232,7 @@ subroutine LIS_create_output_directory(mname)
    ! standard POSIX function. This requires defining the C wrapper function,
    ! and specifying new variables to pass to said C function.
    integer, external :: LIS_create_subdirs
-   character(len=201) :: c_string
+   character(len=LIS_CONST_PATH_LEN+1) :: c_string
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then
       out_dname = trim(LIS_rc%odir)//'/'
@@ -373,9 +374,9 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if ( present(odir) ) then
@@ -722,9 +723,9 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
    integer                  :: yr, mo, da, hr, mn, ss
    type(ESMF_Time)          :: currTime, outTime
@@ -1142,8 +1143,8 @@ subroutine create_dapert_filename(n, fname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -1287,8 +1288,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -1388,8 +1389,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
 !EOP
    character(len=10)        :: cdate
    character(len=12)        :: cdate1
-   character(len=100)       :: dname
-   character(len=200)       :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN)       :: out_fname
    character*50             :: wformat_temp
    integer                  :: yr, mo, da, hr, mn, ss
 
@@ -1587,8 +1588,8 @@ subroutine create_dapert_filename_withtime(n, fname, yr, mo, da, hr, mn, ss)
 !EOP
    character(len=10)        :: cdate
    character(len=12)        :: cdate1
-   character(len=100)       :: dname
-   character(len=200)       :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN)       :: out_fname
    character*50             :: wformat_temp
 
 
@@ -1774,7 +1775,7 @@ subroutine LIS_create_stats_filename(n, fname, mname)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LIS_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
 
    write(unit=cdate, fmt='(a2,i2.2)') '.d',n
@@ -1872,8 +1873,8 @@ subroutine LIS_create_innov_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -2049,8 +2050,8 @@ subroutine LIS_create_incr_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -2226,8 +2227,8 @@ subroutine LIS_create_daspread_filename(n, k, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 
@@ -2336,7 +2337,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LIS_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
    character(len=12)       :: cdate1
 
@@ -2715,8 +2716,8 @@ subroutine LIS_create_gain_filename(n, fname, mname)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LIS_CONST_PATH_LEN)       :: dname
+   character(len=LIS_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    if(LIS_rc%wstyle.eq."4 level hierarchy") then 

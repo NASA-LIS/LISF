@@ -23,6 +23,7 @@ subroutine read_ALMIPIIroughness(n, wt1,wt2,array1,array2)
   use ESMF
   use LIS_coreMod
   use LIS_logMod,         only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use LIS_vegDataMod,     only : LIS_roughness
   use LIS_timeMgrMod
 
@@ -54,7 +55,7 @@ subroutine read_ALMIPIIroughness(n, wt1,wt2,array1,array2)
 !  \end{description}
 !
 !EOP      
-  character*100               :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   character*100               :: temp
   logical                     :: file_exists
   integer                     :: yr

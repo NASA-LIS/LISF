@@ -124,6 +124,7 @@ module AWRAL600_lsmMod
 !
 ! !USES:
     use AWRAL600_module
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none
 
@@ -138,7 +139,7 @@ module AWRAL600_lsmMod
     public :: AWRAL600_struc
 !EOP
     type, public :: AWRAL600_type_dec
-        character*255      :: rfile
+        character(len=LIS_CONST_PATH_LEN) :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
         ! Parameter file names

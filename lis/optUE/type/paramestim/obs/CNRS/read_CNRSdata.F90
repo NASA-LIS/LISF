@@ -24,6 +24,7 @@
     use LIS_logMod,     only : LIS_logunit, LIS_verify, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
     use LIS_fileIOMod,      only : LIS_readData
+    use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
     use CNRS_em_obsMod, only : CNRS_em_obs_struc
     use map_utils
 
@@ -45,7 +46,7 @@
     real,    pointer    :: obse(:)
     integer, parameter :: numchannels=7
     type(ESMF_Field)    :: emField
-    character*100       :: emobsdir 
+    character(len=LIS_CONST_PATH_LEN) :: emobsdir 
     logical             :: data_update
     integer             :: status 
     logical             :: found
