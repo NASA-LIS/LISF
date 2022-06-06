@@ -1,6 +1,0 @@
-DSET ^lis_input.d01.nc
-XDEF east_west   1440 LINEAR     -179.875      0.25
-YDEF north_south 600  LINEAR      -59.875      0.25
-ZDEF sfctypes     20 LINEAR          1.0      1.0
-TDEF month        12 LINEAR 00Z01jan2000      1mo
-* Note that the monthly values are a climatology

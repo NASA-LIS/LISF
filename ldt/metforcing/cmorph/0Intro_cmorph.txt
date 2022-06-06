@@ -1,5 +1,0 @@
-!BOP
-!\section{CMORPH}
-!This section describes the implementation of the precipitation
-!product from CPC's MORPHing technique, known as CMORPH. 
-!EOP

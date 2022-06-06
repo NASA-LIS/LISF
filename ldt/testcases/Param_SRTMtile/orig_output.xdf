@@ -1,4 +1,0 @@
-DSET ^./original_output/lis_input.d01.nc
-XDEF east_west    464 LINEAR     -124.9375    0.125
-YDEF north_south  224  LINEAR      25.0625    0.125
-ZDEF sfctypes      20  LINEAR        1.0      1.0

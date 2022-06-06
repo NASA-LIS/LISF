@@ -1,5 +1,0 @@
-!BOP
-!\section{STAGEIV}
-!This section describes the implementation of the precipitation
-!product from NCEP, known as STAGEIV
-!EOP

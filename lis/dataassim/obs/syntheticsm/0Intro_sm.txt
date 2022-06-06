@@ -1,3 +1,0 @@
-!BOP
-!\section{Synthetic Soil Moisture }
-!EOP

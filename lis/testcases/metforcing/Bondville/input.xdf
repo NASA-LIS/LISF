@@ -1,4 +1,0 @@
-DSET ^ldt_input.noah33.bondville.nc
-XDEF east_west     2 LINEAR       -88.37      0.25
-YDEF north_south   2 LINEAR        40.01      0.25
-ZDEF sfctypes     24 LINEAR          1.0      1.0

@@ -1,8 +1,0 @@
-DSET ^ORIG_OUTPUT/FORCING/%y4%m2/LDT_HIST_%y4%m2%d2%h200.d01.nc
-TITLE LDT Forcing Output
-DTYPE netcdf
-OPTIONS template
-XDEF east_west   150 LINEAR    -84.950    0.10
-YDEF north_south 100 LINEAR     35.050    0.10
-TDEF time         30 LINEAR  03Z01jun2010  3hr
-**

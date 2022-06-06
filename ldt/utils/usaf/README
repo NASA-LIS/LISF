@@ -1,4 +1,0 @@
-Script for generating LIS restart file from UM dump file.
-
-Uses the MULE Python library to read the UM dump file, which is why this
-capability is outside of LDT.

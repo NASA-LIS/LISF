@@ -1,4 +1,0 @@
-!BOP
-!\section{MERRA2}
-!This section describes the implementation of the MERRA2 forcing data.
-!EOP

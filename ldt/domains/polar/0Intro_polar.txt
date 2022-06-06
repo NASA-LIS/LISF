@@ -1,5 +1,0 @@
-!BOP
-!\section{Polar stereographic domain}
-!This section contains the interface implementations for a LIS
-!instance using a polar stereographic projection with SW to NE data ordering
-!EOP

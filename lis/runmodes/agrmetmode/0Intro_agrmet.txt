@@ -1,5 +1,0 @@
-!BOP
-!\section{AGRMET Running Mode}
-!This is a running mode customized to simulate the various cyclings 
-!used in the AGRMET model. 
-!EOP

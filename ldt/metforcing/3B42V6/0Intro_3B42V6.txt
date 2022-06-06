@@ -1,6 +1,0 @@
-!BOP
-!\section{TRMM 3B42V6}
-!This section describes the implementation of the precipitation
-!product derived from the TRMM 3B42V6 satellite precipitation analysis 
-!genereated by George Huffman at NASA GSFC. 
-!EOP

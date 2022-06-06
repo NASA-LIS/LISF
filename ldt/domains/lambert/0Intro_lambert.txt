@@ -1,5 +1,0 @@
-!BOP
-!\section{Lambert Conformal domain}
-!This section contains the interface implementations for a LIS
-!instance using a lambert conformal projection with SW to NE data ordering
-!EOP

@@ -1,5 +1,0 @@
-!BOP
-!\section{Gaussian domain}
-!This section contains the interface implementations for a LIS
-!instance using a regular Gaussian-based domain.
-!EOP

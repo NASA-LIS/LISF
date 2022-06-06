@@ -1,6 +1,0 @@
-!BOP
-!\section{Princeton}
-!This is the 50 year forcing data~\cite{princeton} produced at Princeton 
-!University. The data is global at 1 degree spatial resolution, at 3 hourly 
-!intervals. 
-!EOP

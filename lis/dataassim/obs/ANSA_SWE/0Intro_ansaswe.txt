@@ -1,3 +1,0 @@
-!BOP
-!\section{ANSA Snow Water Equivalent}
-!EOP

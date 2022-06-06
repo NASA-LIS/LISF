@@ -1,5 +1,0 @@
-DSET ^lis_input.d01.nc
-XDEF east_west   3072 LINEAR   0.0    0.117187
-YDEF north_south 1536 LINEAR -89.9093 0.117187
-ZDEF sfctypes      14 LINEAR   1.0    1.0
-TDEF month          1 LINEAR 00Z01jan2012      1mo

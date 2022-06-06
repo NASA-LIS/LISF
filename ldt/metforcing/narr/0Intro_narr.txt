@@ -1,4 +1,0 @@
-!BOP
-!\section{NARR forcing}
-!This section describes the implementation of the NARR data. 
-!EOP

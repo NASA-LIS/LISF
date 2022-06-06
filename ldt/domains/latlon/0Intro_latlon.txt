@@ -1,5 +1,0 @@
-!BOP
-!\section{Lat/Lon domain}
-!This section contains the interface implementations for a LIS
-!instance using a lat/lon projection with SW to NE data ordering
-!EOP

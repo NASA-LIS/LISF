@@ -1,5 +1,0 @@
-!BOP
-!\section{UTM domain}
-!This section contains the interface implementations for a LDT
-!instance using a UTM projection.
-!EOP

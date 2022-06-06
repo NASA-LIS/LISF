@@ -1,4 +1,0 @@
-!BOP
-!\section{GFS}
-!This section describes the implementation of the GFS forcing data.
-!EOP

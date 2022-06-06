@@ -1,6 +1,0 @@
-!BOP
-!\section{Topography}
-!This section describes the routines to ingest various sources
-!of topography data in different LIS domains
-!EOP
-

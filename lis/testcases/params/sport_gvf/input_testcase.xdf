@@ -1,7 +1,0 @@
-DSET ^lis_input_testcase.d01.nc
-DTYPE netcdf
-XDEF east_west   1929 LINEAR    -124.935 0.03
-YDEF north_south  929 LINEAR      25.065 0.03
-ZDEF sfctypes     20 LINEAR          1.0      1.0
-TDEF month        12 LINEAR 00Z01jan2000      1mo
-* Note that the monthly values are a climatology

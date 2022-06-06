@@ -1,2 +1,0 @@
-RHMin:        1   %      -    0 0 0 1 1 10 0 1      # Minimum 2 meter relative humidity
-Tair_f_min:       1  K       -    1 1 0 1  0 10000 0 0   # Near surface air temperature

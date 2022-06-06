@@ -1,3 +1,0 @@
-!BOP
-!\section{ANSA SNODEP Observations}
-!EOP

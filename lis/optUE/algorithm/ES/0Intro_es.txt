@@ -1,3 +1,0 @@
-!BOP
-!\section{ES}
-!EOP

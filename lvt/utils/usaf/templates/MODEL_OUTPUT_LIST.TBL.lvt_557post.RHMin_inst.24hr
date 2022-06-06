@@ -1,2 +1,0 @@
-Tair_f_min:   1   K      -    1 1 0 1  0 10000 0 0   # Near surface air temperature
-RHMin:        1   %      -    0 0 0 1 1 10 0 1      # 2-m relative humidity at minimum T
