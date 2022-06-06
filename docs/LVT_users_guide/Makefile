@@ -3,12 +3,12 @@ all: html pdf
 
 .PHONY: html
 html:
-	asciidoctor LVT_usersguide.adoc
+	asciidoctor LVT_users_guide.adoc
 
 .PHONY: pdf
 pdf:
-	asciidoctor-pdf LVT_usersguide.adoc
+	asciidoctor-pdf -r asciidoctor-mathematical LVT_users_guide.adoc
 
 .PHONY: clean
 clean:
-	rm -f LVT_usersguide.html LVT_usersguide.pdf
+	rm -f LVT_users_guide.html LVT_users_guide.pdf
