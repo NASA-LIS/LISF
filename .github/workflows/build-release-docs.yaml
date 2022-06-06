@@ -22,9 +22,16 @@ jobs:
           ruby-version: 2.7.6   # Not needed with a .ruby-version file
           bundler-cache: true   # runs 'bundle install' and caches installed gems automatically
 
+      - name: Install Asciidoctor-Mathematical dependencies
+        run: |
+          # below command from: https://github.com/asciidoctor/asciidoctor-mathematical/#installation
+          sudo apt-get -qq -y install bison flex libffi-dev libxml2-dev libgdk-pixbuf2.0-dev libcairo2-dev libpango1.0-dev fonts-lyx cmake
+
       - name: Install Asciidoctor-PDF
         run: |
           gem install asciidoctor-pdf
+          gem install asciidoctor-mathematical
+
           asciidoctor-pdf --version
 
       - name: Store tag in environment

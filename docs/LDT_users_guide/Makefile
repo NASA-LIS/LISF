@@ -7,7 +7,7 @@ html:
 
 .PHONY: pdf
 pdf:
-	asciidoctor-pdf LDT_users_guide.adoc
+	asciidoctor-pdf -r asciidoctor-mathematical LDT_users_guide.adoc
 
 .PHONY: clean
 clean:
