@@ -28,9 +28,8 @@ jobs:
       - name: Install Asciidoctor
         run: |
           gem install asciidoctor
-          asciidoctor --version
 
-          gem install rouge
+          asciidoctor --version
 
       - name: Render Docs
         working-directory: ./docs    # set working directory for following run command
@@ -39,23 +38,20 @@ jobs:
           # render index page
           asciidoctor README.adoc --backend=html5 --destination-dir=${{ env.OUT_DIR }} --out-file index.html
 
-          # list all directories that contain at least one asciidoc file
-          ADOC_DIRS=$(ls -d */*.adoc | cut -d/ -f1 | sort | uniq)
-
           # loop over directories in docs/
-          for DIR in ${ADOC_DIRS}; do
-
+          for DIR in */; do
             # root doc file should have same name as the enclosing directory
-            INFILE="${DIR}/${DIR}.adoc"
+            # (e.g., LIS_users_guide/LIS_users_guide.adoc)
+            INFILE="${DIR}${DIR%/}.adoc"
             DEST_DIR="${{ env.OUT_DIR }}/${DIR}"
 
             # if the directory contains an asciidoc file of the same name
             if [ -f ${INFILE} ]; then
-              # generate HTML version
+              # generate HTML version (asciidoctor-mathematical not needed for HTML)
               echo "Converting ${INFILE} ......."
               asciidoctor ${INFILE} --backend=html5 --destination-dir=${DEST_DIR}
             else
-              echo "[WARN] ${DIR}/ does not contain an Asciidoc file of the same name. Skipping."
+              echo "[WARN] ${DIR} does not contain an Asciidoc file of the same name. Skipping."
             fi
           done
 
