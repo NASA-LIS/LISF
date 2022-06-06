@@ -27,6 +27,7 @@ subroutine read_THySM(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use THySM_Mod, only : THySM_struc
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -61,8 +62,8 @@ subroutine read_THySM(n, k, OBS_State, OBS_Pert_State)
   real                   :: lat(THySM_struc(n)%nr)
   real                   :: lon(THySM_struc(n)%nc)
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj,c1,r1
   real,          pointer :: obsl(:)

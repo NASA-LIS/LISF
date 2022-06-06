@@ -505,7 +505,7 @@ contains
     
     implicit none
 ! !ARGUMENTS: 
-    character(300), intent(in) :: tile_coord_file, catchment_def_file
+    character(len=*), intent(in) :: tile_coord_file, catchment_def_file
     
     type(grid_def_type), intent(out) :: atm_grid
     
@@ -571,7 +571,7 @@ contains
     
     implicit none
 ! !ARGUMENTS: 
-    character(300), intent(in) :: catchment_def_file
+    character(len=*), intent(in) :: catchment_def_file
 
     integer, intent(in) :: N_tile
     

@@ -28,6 +28,7 @@ subroutine RUC37_writerst(n)
                                LIS_releaseUnitNumber , LIS_verify
     use LIS_fileIOMod, only  : LIS_create_output_directory, &
                                LIS_create_restart_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use RUC37_lsmMod
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -53,7 +54,7 @@ subroutine RUC37_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn
@@ -96,7 +97,7 @@ subroutine RUC37_writerst(n)
                 call LIS_verify(status, "Error in nf90_close in RUC37_writerst")
 #endif
             endif
-            write(LIS_logunit, *) "RUC37 archive restart written: ", filen
+            write(LIS_logunit, *) "RUC37 archive restart written: ", trim(filen)
         endif
     endif
 end subroutine RUC37_writerst
@@ -185,7 +186,7 @@ subroutine RUC37_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10)
+    integer :: dimID(11)
     integer :: emiss_ID
     integer :: ch_ID
     integer :: cm_ID

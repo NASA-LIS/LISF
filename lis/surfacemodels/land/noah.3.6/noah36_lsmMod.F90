@@ -75,6 +75,7 @@ module noah36_lsmMod
 !
 ! !USES:        
   use noah36_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -90,10 +91,10 @@ module noah36_lsmMod
 !EOP
   type, public ::  noah36_type_dec 
 
-     character*100              :: rfile
-     character*100              :: vfile
-     character*100              :: sfile
-     character*100              :: gfile
+     character(len=LIS_CONST_PATH_LEN) :: rfile
+     character(len=LIS_CONST_PATH_LEN) :: vfile
+     character(len=LIS_CONST_PATH_LEN) :: sfile
+     character(len=LIS_CONST_PATH_LEN) :: gfile
      integer                    :: useptf
      integer                    :: soilscheme
      integer                    :: nslay

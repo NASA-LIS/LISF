@@ -28,6 +28,7 @@ subroutine cable_writerst(n)
        LIS_releaseUnitNumber, LIS_verify
   use LIS_fileIOMod, only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use cable_lsmMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -57,7 +58,7 @@ subroutine cable_writerst(n)
 !    Writes the CABLE variables into the restart file
 !  \end{description}
 !EOP
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: status
   integer       :: ftn 
@@ -186,7 +187,7 @@ subroutine cable_dump_restart(n,ftn,wformat)
 !  \end{description}
 !EOP
   integer :: l,t
-  integer :: dimID(10)
+  integer :: dimID(11)
   integer :: canstoId,rtsoilId, ssdnnId, snowdId,osnowdId
   integer :: snageId,isflagId, wbtotId,wbiceId,tggsnId
   integer :: ssdnId, smassId,albsoilsnId,wgId,tggId

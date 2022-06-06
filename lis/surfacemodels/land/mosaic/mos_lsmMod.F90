@@ -66,6 +66,7 @@ module mos_lsmMod
 
 ! !USES:        
   use mos_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -84,11 +85,11 @@ module mos_lsmMod
      integer               :: mos_nvegp  
      integer               :: mos_nmvegp      
      integer               :: mos_nsoilp      
-     character*100         :: mos_rfile 
-     character*100         :: mos_vfile 
-     character*100         :: mos_pfile 
-     character*100         :: mos_mvfile 
-     character*100         :: mos_sfile
+     character(len=LIS_CONST_PATH_LEN) :: mos_rfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_vfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_pfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_mvfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_sfile
      integer               :: mos_nstxts
      integer               :: usedsoilmap
      real                  :: dpthlyr1

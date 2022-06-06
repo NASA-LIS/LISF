@@ -24,6 +24,7 @@ module GLDAS2runoffdataMod
 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -41,10 +42,10 @@ module GLDAS2runoffdataMod
   type, public :: GLDAS2runoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(len=LIS_CONST_PATH_LEN) :: odir 
      
      !ag - 31Aug2016
-     character*100       :: previous_filename
+     character(len=LIS_CONST_PATH_LEN) :: previous_filename
      real, allocatable   :: qs(:,:),qsb(:,:)
 
      character*20            :: model_name

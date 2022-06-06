@@ -16,6 +16,7 @@ subroutine HYMAP_routing_readrst
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP_routingMod, only : HYMAP_routing_struc
 
   implicit none
@@ -24,7 +25,7 @@ subroutine HYMAP_routing_readrst
   integer       :: ftn
   integer       :: i,j,k
   integer       :: ios,status
-  character*100 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   logical       :: read_restart
   integer       :: yr,mo,da,hr,mn,ss,doy
   real*8        :: time

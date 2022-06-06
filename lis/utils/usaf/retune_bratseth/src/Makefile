@@ -1,6 +1,6 @@
 # Makefile for Fortran utilities
 #
-# To use, first run lvt/configure script to generate configure.lis in lis/make.
+# To use, first run lis/configure script to generate configure.lis in lis/make.
 #
 # Eric Kemp, SSAI and NASA/GSFC, 26 Oct 2020
 #------------------------------------------------------------------------------

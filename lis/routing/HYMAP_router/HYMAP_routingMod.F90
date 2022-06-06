@@ -30,6 +30,7 @@ module HYMAP_routingMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -96,7 +97,7 @@ module HYMAP_routingMod
 ! === Linear reservoir components ================
      real,    allocatable :: rnfsto(:,:,:)      !! runoff   reservoir storage [m3]
      real,    allocatable :: bsfsto(:,:,:)      !! baseflow reservoir storage [m3]
-     character*100    :: rstfile
+     character(len=LIS_CONST_PATH_LEN) :: rstfile
      integer          :: numout
      integer          :: fileopen
      real             :: outInterval 

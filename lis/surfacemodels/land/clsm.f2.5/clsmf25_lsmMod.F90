@@ -22,6 +22,7 @@
 ! !INTERFACE:
 module clsmf25_lsmMod
 ! !USES:        
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use clsmf25_types
   use clsmf25_drv_types
   use clsmf25_modis_alb_types
@@ -54,7 +55,7 @@ module clsmf25_lsmMod
      integer :: usegreennessflag
      logical :: modelstart
 
-     character*100 :: rfile         ! restart file
+     character(len=LIS_CONST_PATH_LEN) :: rfile         ! restart file
      logical, allocatable               :: good_forcing_mask(:)
      type(cat_param_type), allocatable  :: cat_param(:)
      type(met_force_type), allocatable  :: met_force(:)

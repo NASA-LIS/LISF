@@ -22,6 +22,7 @@ subroutine read_syntheticsweobs(n, k, OBS_State, OBS_Pert_State)
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -48,10 +49,10 @@ subroutine read_syntheticsweobs(n, k, OBS_State, OBS_Pert_State)
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
   real, allocatable       :: dummy(:)
 
-  character*100       :: sweobsdir
+  character(len=LIS_CONST_PATH_LEN) :: sweobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
 
   logical             :: readflag
   integer             :: status
@@ -79,7 +80,7 @@ subroutine read_syntheticsweobs(n, k, OBS_State, OBS_Pert_State)
 
   if (readflag) then 
      allocate(dummy(LIS_rc%obs_ngrid(k)))
-     write(LIS_logunit,*)  'Reading syn data ',name
+     write(LIS_logunit,*)  'Reading syn data ',trim(name)
      
      call ESMF_StateGet(OBS_State,"Observation01",sweField,&
           rc=status)
@@ -139,7 +140,7 @@ end subroutine read_syntheticsweobs
 subroutine synswe_filename(name, ndir, yr, mo,da,hr,mn)
   
   implicit none
-  character*80      :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   character (len=4) :: fyr

@@ -23,6 +23,7 @@
 module syntheticSnowTbObs_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -70,7 +71,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  synTB18Vobsdir, synTB18Hobsdir, synTB36Vobsdir, synTB36Hobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synTB18Vobsdir, synTB18Hobsdir, synTB36Vobsdir, synTB36Hobsdir
     character*100          ::  temp
     real, allocatable          :: ssdev(:)
     character*1            ::  vid(2)

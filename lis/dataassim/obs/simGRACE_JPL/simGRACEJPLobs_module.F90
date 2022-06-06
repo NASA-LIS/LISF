@@ -23,6 +23,7 @@
 module simGRACEJPLobs_module
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -86,7 +87,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  simGRACEJPLobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  simGRACEJPLobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
