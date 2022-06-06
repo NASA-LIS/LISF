@@ -1,7 +1,7 @@
 = LISF Documentation
 :lisf-website-url: https://lis.gsfc.nasa.gov/
 :lisf-gh-url: https://github.com/NASA-LIS/LISF
-:lisf-gh-pages-url: https://bmcandr.github.io/LISF
+:lisf-gh-pages-url: https://nasa-lis.github.io/LISF
 :lisf-gh-releases-url: {lisf-gh-url}/releases
 
 
