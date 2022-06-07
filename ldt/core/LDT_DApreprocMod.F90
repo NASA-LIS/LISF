@@ -100,8 +100,21 @@ contains
           LDT_rc%cdf_ntimes = 1
        elseif(tres.eq."monthly") then 
           LDT_rc%cdf_ntimes = 12
+       elseif(tres.eq."half-monthly") then    !for 9-km operational SMAP (Y.Kwon)
+          LDT_rc%cdf_ntimes = 24
        endif
        
+       !---------------------------------for 9-km operational SMAP (Y.Kwon)
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%daily_interp_switch,&
+            label="Daily interpolation of mean and stddev:",&
+            default=0, rc=rc)
+       call LDT_verify(rc,'Daily interpolation of mean and stddev: not defined')
+
+       if(LDT_rc%daily_interp_switch.eq.1) then
+          LDT_rc%cdf_ntimes = 365
+       endif
+       !--------------------------------------------------------------------
+
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%sp_sampl_cdfs,&
             label="Enable spatial sampling for CDF calculations:",&
             default=0, rc=rc)
