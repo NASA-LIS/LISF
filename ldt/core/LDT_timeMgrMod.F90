@@ -61,6 +61,7 @@ module LDT_timeMgrMod
   PUBLIC :: LDT_tmjul4           ! converts julian time to zulu time. 
   PUBLIC :: LDT_doy2date         ! convert julian day to month and days
   PUBLIC :: LDT_localtime2gmt    ! computes GMT based on localtime
+  PUBLIC :: LDT_gmt2localtime    ! computes localtime based on GMT     !Y.Kwon 
   PUBLIC :: LDT_parseTimeString  ! input time string and converts it to an integer value
   PUBLIC :: LDT_setupTimeWindow  ! sets starts and end time points of a window
   PUBLIC :: LDT_resetClockForTimeWindow ! resets the clock and window bookends
@@ -2899,6 +2900,59 @@ subroutine LDT_tmjul4( hour, day, month, year, julhr )
   return
   
 end subroutine LDT_tmjul4
+
+!Y.Kwon
+!BOP
+! 
+! !ROUTINE: LDT_gmt2localtime
+!  \label{LDT_gmt2localtime}
+! 
+! !DESCRIPTION: 
+! 
+! Calculates local time based on GMT
+! 
+! !INTERFACE:
+subroutine LDT_gmt2localtime (gmt,lon,lhour,zone)
+! !ARGUMENTS:
+  real:: gmt                 ! GMT time (0-23)
+  real:: lon                 ! longitude in degrees
+  real:: change              ! the change in number of hours between
+  real:: lhour               ! local hour (0-23) 0= midnight, 23= 11:00 p.m.
+
+  integer::  i              ! working integer
+  integer:: zone            ! time zone (1-24)
+!EOP
+!----------------------------------------------------------------------
+!  Determine into which time ZONE (15 degree interval) the
+!  longitude falls.
+!----------------------------------------------------------------------
+  do i=1,25
+     if (lon.lt.(-187.5+(15*i))) then
+        zone=i
+        if (zone.eq.25) zone=1
+        go to 60
+     end if
+  end do
+!----------------------------------------------------------------------
+!     Calculate change (in number of hours) from GMT time to
+!     local hour.  Change will be negative for zones < 13 and
+!     positive for zones > 13.
+!     There is also a correction for LHOUR < 0 and LHOUR > 23
+!     to LHOUR between 0 and 23.
+!----------------------------------------------------------------------
+60 if (zone.lt.13) then
+     change=zone-13
+     lhour=gmt+change
+  elseif (zone.eq.13) then
+     lhour=gmt
+  else
+     change=zone-13
+     lhour=gmt+change
+  end if
+  if (lhour.lt.0) lhour=lhour+24
+  if (lhour.gt.23) lhour=lhour-24
+  return
+end subroutine LDT_gmt2localtime
 
 !BOP
 ! 
