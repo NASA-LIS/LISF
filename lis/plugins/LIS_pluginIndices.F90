@@ -269,6 +269,8 @@ module LIS_pluginIndices
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
+   character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
+        "SMAP_E_OPL soil moisture"                                   !YK
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -277,6 +279,10 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
+        "VIIRS GVF"                                                  !YK
+   character*50, public,  parameter :: LIS_CDFSgvfobsId          = &
+        "CDFS GVF"                                                   !YK
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
