@@ -4,7 +4,7 @@
 #SBATCH --account=NWP601
 #SBATCH --output autotune.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=4 --ntasks-per-node=1
+#SBATCH --ntasks=5 --ntasks-per-node=1
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_autotune_discover.sh
@@ -34,8 +34,6 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 # Environment
-#module purge
-#unset LD_LIBRARY_PATH
 module use --append ~emkemp/hpc11/privatemodules
 module load lisf_74_prgenv_cray_8.2.0
 module load afw-python/3.9-202203
@@ -61,44 +59,102 @@ fi
 enddt=$1
 dayrange=$2
 
-# Customize config files for procOBA_NWP, including blacklist creation.
-# These will be run in the background to parallelize the work.
+echo `date`
+
+# Customize config files for procOBA_NWP and procOBA_Sat, including blacklist
+# creation. These will be run in the background to parallelize the work.
 if [ ! -e $SCRIPTDIR/customize_procoba_nwp.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_procoba_nwp.py does not exist!" && exit 1
+fi
+if [ ! -e $SCRIPTDIR/customize_procoba_sat.py ] ; then
+    echo "ERROR, $SCRIPTDIR/customize_procoba_sat.py does not exist!" && exit 1
 fi
 if [ ! -e $CFGDIR/autotune.cfg ] ; then
     echo "ERROR, $CFGDIR/autotune.cfg does not exist!" && exit 1
 fi
+
 i=0
+# We submit the NWP jobs first since they generate blacklists, which is
+# time consuming.
 for varname in "${NWPVARS[@]}" ; do
     echo "Task $i:  Calling customize_procoba_nwp.py for $varname at `date`"
     srun --ntasks=1 --nodes=1 --exclusive \
          $SCRIPTDIR/customize_procoba_nwp.py $CFGDIR/autotune.cfg \
          $enddt $dayrange $varname &
     PIDS+=($!)
+    actives+=(1)
     ((i+=1))
     sleep 1
 done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
-    fi
+for varname in "${SATVARS[@]}" ; do
+    echo "Task $i:  Calling customize_procoba_sat.py for $varname at `date`"
+    srun --ntasks=1 --nodes=1 --exclusive \
+         $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
+         $enddt $dayrange $varname &
+    PIDS+=($!)
+    actives+=(1)
     ((i+=1))
+    sleep 1
+done
+
+echo "Waiting for tasks to complete..."
+while true; do
+    for i in "${!PIDS[@]}"; do
+        if [ "${actives[$i]}" -eq 0 ]; then
+            continue
+        fi
+        pid="${PIDS[$i]}"
+        # See if pid is still running
+        ps --pid "$pid" > /dev/null
+        if [ "$?" -ne 0 ]; then # ps doesn't see it, so it terminated
+            wait "$pid"
+            return_code="$?"
+            actives[$i]=0
+            if [ "${return_code}" -ne 0 ]; then
+                echo "ERROR, Task $i failed, ABORTING at `date`"
+                exit 1
+            else
+                echo "Task $i finished with no reported error at `date`"
+            fi
+        fi
+    done
+    alldone=1
+    for i in "${!actives[@]}" ; do
+        if [ "${actives[$i]}" -eq 1 ] ; then
+            alldone=0
+            break
+        fi
+    done
+    if [ "${alldone}" -eq 1 ] ; then
+        break
+    fi
 done
 unset PIDS
+unset actives
+
 
 # Construct empirical semivariograms.
 # These will be run in the background to parallelize the work.
+if [ ! -e $BINDIR/procOBA_Sat ] ; then
+    echo "ERROR, $BINDIR/procOBA_Sat does not exist!" && exit 1
+fi
 if [ ! -e $BINDIR/procOBA_NWP ] ; then
     echo "ERROR, $BINDIR/procOBA_NWP does not exist!" && exit 1
 fi
 i=0
+for varname in "${SATVARS[@]}" ; do
+    echo "Task $i:  Calling procOBA_Sat for $varname at `date`"
+    if [ ! -e procOBA_Sat.$varname.config ] ; then
+        echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
+    fi
+    srun --ntasks=1 --nodes=1 --exclusive \
+         $BINDIR/procOBA_Sat procOBA_Sat.$varname.config \
+         procOBA_Sat.$varname.log &
+    PIDS+=($!)
+    actives+=(1)
+    ((i+=1))
+    sleep 1
+done
 for varname in "${NWPVARS[@]}" ; do
     echo "Task $i:  Calling procOBA_NWP for $varname at `date`"
     if [ ! -e procOBA_NWP.$varname.config ] ; then
@@ -109,22 +165,45 @@ for varname in "${NWPVARS[@]}" ; do
          procOBA_NWP.$varname.log &
         pid=$!
     PIDS+=($!)
+    actives+=(1)
     ((i+=1))
     sleep 1
 done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
+
+echo "Waiting for tasks to complete..."
+while true; do
+    for i in "${!PIDS[@]}"; do
+        if [ "${actives[$i]}" -eq 0 ]; then
+            continue
+        fi
+        pid="${PIDS[$i]}"
+        # See if pid is still running
+        ps --pid "$pid" > /dev/null
+        if [ "$?" -ne 0 ]; then # ps doesn't see it, so it terminated
+            wait "$pid"
+            return_code="$?"
+            actives[$i]=0
+            if [ "${return_code}" -ne 0 ]; then
+                echo "ERROR, Task $i failed, ABORTING at `date`"
+                exit 1
+            else
+                echo "Task $i finished with no reported error at `date`"
+            fi
+        fi
+    done
+    alldone=1
+    for i in "${!actives[@]}" ; do
+        if [ "${actives[$i]}" -eq 1 ] ; then
+            alldone=0
+            break
+        fi
+    done
+    if [ "${alldone}" -eq 1 ] ; then
+        break
     fi
-    ((i+=1))
 done
 unset PIDS
+unset actives
 
 # Create best-fits to the empirical semivariograms.
 # These will be run in the background to parallelize the work.
@@ -132,6 +211,19 @@ if [ ! -e $SCRIPTDIR/fit_semivariogram.py ] ; then
     echo "ERROR, $SCRIPTDIR/fit_semivariogram.py does not exist!" && exit 1
 fi
 i=0
+for varname in "${SATVARS[@]}" ; do
+    echo "Task $i:  Calling fit_semivariogram.py for $varname at `date`"
+    if [ ! -e $CFGDIR/gage_$varname.cfg ] ; then
+        echo "ERROR, $CFGDIR/gage_$varname.cfg does not exist!" && exit 1
+    fi
+    srun --ntasks=1 --nodes=1 --exclusive \
+         $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
+         gage_$varname.param &
+    PIDS+=($!)
+    actives+=(1)
+    ((i+=1))
+    sleep 1
+done
 for varname in "${NWPVARS[@]}" ; do
     echo "Task $i:  Calling fit_semivariogram.py for $varname at `date`"
     if [ $varname = gage ] ; then
@@ -150,113 +242,45 @@ for varname in "${NWPVARS[@]}" ; do
             $varname.param &
     fi
     PIDS+=($!)
+    actives+=(1)
     ((i+=1))
     sleep 1
 done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
+
+echo "Waiting for tasks to complete..."
+while true; do
+    for i in "${!PIDS[@]}"; do
+        if [ "${actives[$i]}" -eq 0 ]; then
+            continue
+        fi
+        pid="${PIDS[$i]}"
+        # See if pid is still running
+        ps --pid "$pid" > /dev/null
+        if [ "$?" -ne 0 ]; then # ps doesn't see it, so it terminated
+            wait "$pid"
+            return_code="$?"
+            actives[$i]=0
+            if [ "${return_code}" -ne 0 ]; then
+                echo "ERROR, Task $i failed, ABORTING at `date`"
+                exit 1
+            else
+                echo "Task $i finished with no reported error at `date`"
+            fi
+        fi
+    done
+    alldone=1
+    for i in "${!actives[@]}" ; do
+        if [ "${actives[$i]}" -eq 1 ] ; then
+            alldone=0
+            break
+        fi
+    done
+    if [ "${alldone}" -eq 1 ] ; then
+        break
     fi
-    ((i+=1))
 done
 unset PIDS
-
-# Customize config files for procOBA_Sat.
-# These will be run in the background to parallelize the work.
-if [ ! -e $SCRIPTDIR/customize_procoba_sat.py ] ; then
-    echo "ERROR, $SCRIPTDIR/customize_procoba_sat.py does not exist!" && exit 1
-fi
-i=0
-for varname in "${SATVARS[@]}" ; do
-    echo "Task $i:  Calling customize_procoba_sat.py for $varname at `date`"
-    srun --ntasks=1 --nodes=1 --exclusive \
-         $SCRIPTDIR/customize_procoba_sat.py $CFGDIR/autotune.cfg \
-         $enddt $dayrange $varname &
-    PIDS+=($!)
-    ((i+=1))
-    sleep 1
-done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
-    fi
-    ((i+=1))
-done
-unset PIDS
-
-
-# Construct empirical semivariograms for the satellite data w/r/t gages.
-# These will be run in the background to parallelize the work.
-if [ ! -e $BINDIR/procOBA_Sat ] ; then
-    echo "ERROR, $BINDIR/procOBA_Sat does not exist!" && exit 1
-fi
-i=0
-for varname in "${SATVARS[@]}" ; do
-    echo "Task $i:  Calling procOBA_Sat for $varname at `date`"
-    if [ ! -e procOBA_Sat.$varname.config ] ; then
-        echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
-    fi
-    srun --ntasks=1 --nodes=1 --exclusive \
-         $BINDIR/procOBA_Sat procOBA_Sat.$varname.config \
-         procOBA_Sat.$varname.log &
-    PIDS+=($!)
-    ((i+=1))
-    sleep 1
-done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
-    fi
-    ((i+=1))
-done
-unset PIDS
-
-# Create best fits to the satellite semivariograms w/r/t gages.
-# These will be run in the background to parallelize the work.
-i=0
-for varname in "${SATVARS[@]}" ; do
-    echo "Task $i:  Calling fit_semivariogram.py for $varname at `date`"
-    if [ ! -e $CFGDIR/gage_$varname.cfg ] ; then
-        echo "ERROR, $CFGDIR/gage_$varname.cfg does not exist!" && exit 1
-    fi
-    srun --ntasks=1 --nodes=1 --exclusive \
-         $SCRIPTDIR/fit_semivariogram.py $CFGDIR/gage_$varname.cfg \
-         gage_$varname.param &
-    PIDS+=($!)
-    ((i+=1))
-    sleep 1
-done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
-    fi
-    ((i+=1))
-done
-unset PIDS
+unset actives
 
 # Rescale the satellite error variances to be w/r/t NWP.
 # These will be run in the background to parallelize the work.
@@ -269,22 +293,45 @@ for varname in "${SATVARS[@]}" ; do
     srun --ntasks=1 --nodes=1 --exclusive \
          $SCRIPTDIR/rescale_sat_sigma2.py $varname &
     PIDS+=($!)
+    actives+=(1)
     ((i+=1))
     sleep 1
 done
-i=0
-for pid in "${PIDS[@]}"; do
-    wait ${pid}
-    st=($?)
-    if [[ ${st} -ne 0 ]]; then
-        echo "ERROR, Task $i failed, ABORTING..."
-        exit 1
-    else
-        echo "Task $i finished with no reported error"
+
+echo "Waiting for tasks to complete..."
+while true; do
+    for i in "${!PIDS[@]}"; do
+        if [ "${actives[$i]}" -eq 0 ]; then
+            continue
+        fi
+        pid="${PIDS[$i]}"
+        # See if pid is still running
+        ps --pid "$pid" > /dev/null
+        if [ "$?" -ne 0 ]; then # ps doesn't see it, so it terminated
+            wait "$pid"
+            return_code="$?"
+            actives[$i]=0
+            if [ "${return_code}" -ne 0 ]; then
+                echo "ERROR, Task $i failed, ABORTING at `date`"
+                exit 1
+            else
+                echo "Task $i finished with no reported error at `date`"
+            fi
+        fi
+    done
+    alldone=1
+    for i in "${!actives[@]}" ; do
+        if [ "${actives[$i]}" -eq 1 ] ; then
+            alldone=0
+            break
+        fi
+    done
+    if [ "${alldone}" -eq 1 ] ; then
+        break
     fi
-    ((i+=1))
 done
 unset PIDS
+unset actives
 
 # Update the lis.config error settings.
 # Single task, no need to parallelize.
@@ -298,4 +345,7 @@ srun --ntasks=1 --nodes=1 --exclusive --kill-on-bad-exit=1 \
 
 # The end
 echo "INFO, Completed autotuning!"
+
+echo `date`
+
 exit 0
