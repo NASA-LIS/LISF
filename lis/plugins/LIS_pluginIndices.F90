@@ -289,6 +289,8 @@ module LIS_pluginIndices
            "THySM"
    character*50, public,  parameter :: LIS_hydrowebwlId        = &
         "Hydroweb water level"
+   character*50, public,  parameter :: LIS_wusUCLAobsId        = &
+        "Western U.S. UCLA snow"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
