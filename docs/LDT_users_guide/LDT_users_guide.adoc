@@ -1,4 +1,4 @@
-= Land Data Toolkit (LDT): LDT {lisfrevision} Users' Guide
+= Land Data Toolkit (LDT): LDT {lisfrevision} Users`' Guide
 :revnumber: 1.18
 :revdate: 10 Jun 2022
 :doctype: book
@@ -10,14 +10,13 @@
 :stem: latexmath
 :data-uri:
 :devonly:
-:lisfrevision: 7.3
-:lisfurl: http://lis.gsfc.nasa.gov
-:svnurl: http://subversion.apache.org
+:lisfrevision: 7.4
+:lisfurl: https://lis.gsfc.nasa.gov
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
+:nasalisfpages: https://nasa-lis.github.io/LISF/
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
-:lispublicrelease: Initial version - for LDT
-:ldttarball: LISF_public_release_7.3.1.tar.gz
+:ldttarball: LISF_public_release_7.4.0.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
