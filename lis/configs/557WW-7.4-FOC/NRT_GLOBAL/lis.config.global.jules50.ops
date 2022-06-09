@@ -249,7 +249,7 @@ AGRMET IMERG Probability Liquid Precip Threshold: 100
 # Bratseth runtime settings
 AGRMET maximum precip obs:                 2000000         # Max observations to store in memory
 AGRMET minimum wind speed:                 0.25            # Sanity minimum value for winds
-AGRMET output OBA data:                    0               # 0 = do not output diagnostic data from Bratseth
+AGRMET output OBA data:                    1               # 1= output diagnostic data from Bratseth
 AGRMET skip backQC:                        0               # 0 = do not skip backQC check in Bratseth
 AGRMET skip superstatQC:                   0               # 0 = do not skip superstatQC check in Bratseth
 AGRMET 3hr maximum precip ceiling:         200.0
