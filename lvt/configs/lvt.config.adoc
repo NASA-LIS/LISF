@@ -155,7 +155,7 @@ LVT output methodology:                 "2d gridspace"
 | "`SMAP vegetation water content`" | SMAP vegetation water content
 | "`SMAP vegetation optical depth`" | SMAP vegetation optical depth
 | "`LPRM vegetation optical depth`" | LPRM vegetation optical depth
-| "`WG SWRC`"                       | [red]#specifies what?#
+| "`WG SWRC`"                       | Walnut Gulch Southwest Watershed Research Center data
 | "`UA SNOW`"                       | University of Arizona SWE/Snow depth data
 | "`SMAP L3 Tb`"                    | SMAP L3 brightness temperature
 | "`OzFlux`"                        | OzFlux ground measurements
@@ -299,7 +299,7 @@ LVT diagnostic file:                    lvtlog
 [[ssec-domainspec]]
 === Domain specification
 
-LVT expects three sets of domain specification. (1) the domain over which the LVT analysis needs to be carried out (2) the domain in which LIS simulation was carried out (LIS run domain). Section <<ssec-driveropts>> lists the projections that LIS supports.
+LVT expects two sets of domain specifications. (1) the domain over which the LVT analysis needs to be carried out; (2) the domain in which LIS simulation was carried out (LIS run domain). Section <<ssec-driveropts>> lists the projections that LIS supports.
 
 [[sssec-run_latlon]]
 ==== LVT run domain

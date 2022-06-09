@@ -96,7 +96,7 @@ contains
 !
 ! !DESCRIPTION: 
 !  This subroutine initializes and sets up the data structures required
-!  for reading JASMIN AMSRE soil moisture data. 
+!  for reading UA SMAP soil moisture data. 
 ! 
 ! !FILES USED:
 !
