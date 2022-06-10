@@ -1588,6 +1588,20 @@ Soil texture spatial transform:     none
 
 `Soil texture fill value:` indicates which soil texture value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing soil texture value, a value of 6 could be assigned if no nearest neighbor values exists to fill).
 
+`Soil texture fill value for Antarctica:` indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of `Soil texture fill value:` will be used.
+
+`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|.false. |do not enable
+|.true. |enable
+|===
+
+Defaults to `.false.`.
+
 `Soil texture fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
 
 .Example _ldt.config_ entry
@@ -1595,6 +1609,8 @@ Soil texture spatial transform:     none
 Soil texture fill option:      neighbor
 Soil texture fill radius:         3.
 Soil texture fill value:          6.
+Soil texture fill value for Antarctica: 16
+Soil texture force exclusion of water points during fill: .true.
 ....
 
 If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
