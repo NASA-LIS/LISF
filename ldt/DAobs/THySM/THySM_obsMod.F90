@@ -20,6 +20,7 @@ module THySM_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -35,7 +36,7 @@ module THySM_obsMod
 !EOP
   type, public :: thysmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mo
      integer                :: nc, nr
      integer, allocatable   :: n11(:)

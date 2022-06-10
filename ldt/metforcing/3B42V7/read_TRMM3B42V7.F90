@@ -25,13 +25,14 @@ subroutine read_TRMM3B42V7 (n, fname, findex, order, ferror_TRMM3B42V7)
   use LDT_coreMod,           only : LDT_rc, LDT_domain
   use LDT_logMod,            only : LDT_logunit, LDT_getNextUnitNumber, &
                                     LDT_releaseUnitNumber
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_metforcingMod,     only : LDT_forc
   use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
 
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname
+  character(len=LDT_CONST_PATH_LEN)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42V7
@@ -156,9 +157,9 @@ subroutine read_TRMM3B42V7 (n, fname, findex, order, ferror_TRMM3B42V7)
 ! write (97,*) LDT_forc(n,findex)%metdata1(1,:)
 
      ferror_TRMM3B42V7 = 1
-     write(LDT_logunit,*) "Obtained 3B42 V7 precipitation data ", fname
+     write(LDT_logunit,*) "Obtained 3B42 V7 precipitation data ", trim(fname)
   else
-     write(LDT_logunit,*) "Missing 3B42 V7 precipitation data ", fname
+     write(LDT_logunit,*) "Missing 3B42 V7 precipitation data ", trim(fname)
      ferror_TRMM3B42V7 = 0
   endif
   call LDT_releaseUnitNumber(ftn)

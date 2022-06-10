@@ -32,6 +32,7 @@ module FLAKE_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_SurfaceTypeMod, only: LDT_assign_lakesfctype
   use LDT_paramMaskCheckMod
 
@@ -56,9 +57,9 @@ module FLAKE_parmsMod
 
      character*50         :: lakeparms_proj
      character*50         :: lakeparms_gridtransform
-     character*140        :: inlandwaterfile
-     character*140        :: lakedepthfile
-     character*140        :: lakedepthQCfile
+     character(len=LDT_CONST_PATH_LEN)        :: inlandwaterfile
+     character(len=LDT_CONST_PATH_LEN)        :: lakedepthfile
+     character(len=LDT_CONST_PATH_LEN)        :: lakedepthQCfile
      character*50         :: inlandwater_gridtransform
 
      ! -  Lake model-specific:

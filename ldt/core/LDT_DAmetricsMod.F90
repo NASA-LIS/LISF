@@ -23,6 +23,7 @@ module LDT_DAmetricsMod
   use LDT_DAmetricsDataMod
   use LDT_DAobsDataMod
   use LDT_paramDataMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   use LDT_logMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
@@ -66,7 +67,7 @@ contains
     integer, external :: LDT_create_subdirs 
     integer               :: nsize
     integer               :: n 
-    character*100         :: fname_domain
+    character(len=LDT_CONST_PATH_LEN) :: fname_domain
     integer               :: dimID(4)
     integer               :: bdimID(3)
     character(len=8)      :: date
@@ -676,8 +677,8 @@ contains
 
     implicit none
 
-    character*100 :: fname_cdf
-    character*100 :: fname_domain
+    character(len=LDT_CONST_PATH_LEN) :: fname_cdf
+    character(len=LDT_CONST_PATH_LEN) :: fname_domain
     integer       :: pass
     integer       :: rc
     integer       :: n 
@@ -1473,7 +1474,7 @@ contains
 !   screen grid points, both spatially and temporally. 
 !EOP
     integer       :: n 
-    character*100 :: maskfile
+    character(len=LDT_CONST_PATH_LEN) :: maskfile
     logical       :: file_exists
     real          :: datamask(LDT_rc%lnc(n), LDT_rc%lnr(n))
     integer       :: ftn

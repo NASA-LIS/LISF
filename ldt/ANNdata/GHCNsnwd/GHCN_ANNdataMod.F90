@@ -19,6 +19,7 @@ module GHCN_ANNdataMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -34,7 +35,7 @@ module GHCN_ANNdataMod
 !EOP
   type, public :: GHCNobsdec
 
-     character*100              :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      integer                    :: nstns
      real                       :: udef
      integer                    :: nts
@@ -85,7 +86,7 @@ contains
     integer            :: ts
     character*50       :: stnid
     real               :: stnlat, stnlon,stnelev
-    character*100      :: stationfile
+    character(len=LDT_CONST_PATH_LEN) :: stationfile
     integer            :: c,r
     real               :: col,row
 

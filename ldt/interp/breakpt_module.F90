@@ -137,6 +137,7 @@
 !program Breakpt
 module breakpoint_module
 !
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
 !
 !  logical :: lerr
@@ -168,7 +169,7 @@ integer function filedate(log1,filename)
 !
 ! argument variables
   integer, intent(INOUT) :: log1
-  character*80 :: filename
+  character(len=LDT_CONST_PATH_LEN) :: filename
 !
 ! local variables
   integer, dimension(12) :: fileinfo
@@ -394,14 +395,14 @@ end subroutine readcard
 subroutine brkprecip(brkfile,datebeg,dateend,ngauges,intmins,outfmt)
 !
 ! argument variables
-  character*80, intent(INOUT) :: brkfile
+  character(len=*), intent(INOUT) :: brkfile
   character*10, intent(INOUT) :: datebeg,dateend
   integer, intent(INOUT) :: ngauges,intmins,outfmt
 !
 ! local variables
   logical :: brkexists,ppdexists,idxexists,intfiles
   character*80 :: wrtline
-  character*80 :: logfile,ppdfile,idxfile,outfile
+  character(len=LDT_CONST_PATH_LEN) :: logfile,ppdfile,idxfile,outfile
   integer :: brkfunit = 50
   integer :: log1 = 60
   integer :: ppdfunit,idxfunit

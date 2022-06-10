@@ -31,6 +31,7 @@ subroutine readNASASMAPsmObs(n)
    use ESMF
    use LDT_coreMod
    use LDT_logMod
+   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
    use LDT_timeMgrMod
    use LDT_DAobsDataMod
    use NASASMAPsm_obsMod
@@ -51,7 +52,7 @@ subroutine readNASASMAPsmObs(n)
    logical           :: alarmCheck
    logical           :: file_exists
    integer           :: c, r, i, j
-   character*100     :: fname
+   character(len=LDT_CONST_PATH_LEN)     :: fname
    integer           :: mn_ind
    integer           :: yr, mo, da, hr, mn, ss
    integer           :: doy
@@ -62,7 +63,7 @@ subroutine readNASASMAPsmObs(n)
    character*4       :: yyyy
    character*2       :: mm, dd, hh
    character*200     :: list_files
-   character*100     :: smap_filename(10)
+   character(len=LDT_CONST_PATH_LEN)     :: smap_filename(10)
    real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    character(len=3) :: CRID
 !-----------------------------------------------------------------------

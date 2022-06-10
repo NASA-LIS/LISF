@@ -36,6 +36,7 @@ module LDT_gfracMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -59,12 +60,12 @@ module LDT_gfracMod
      real                   :: gfrac_gridDesc(20)
      character*50           :: gfrac_proj
      character*50           :: gfrac_gridtransform
-     character*100          :: gfracdir
-     character*140          :: gfracfile
+     character(len=LDT_CONST_PATH_LEN)          :: gfracdir
+     character(len=LDT_CONST_PATH_LEN)          :: gfracfile
      character*20           :: gfracInterval
 
-     character*140   :: shdmaxfile
-     character*140   :: shdminfile
+     character(len=LDT_CONST_PATH_LEN)   :: shdmaxfile
+     character(len=LDT_CONST_PATH_LEN)   :: shdminfile
 
      type(LDT_paramEntry) :: gfrac       ! Clim.-based greenness fraction
      type(LDT_paramEntry) :: shdmin      ! Min. Greenness fraction (@pixel)

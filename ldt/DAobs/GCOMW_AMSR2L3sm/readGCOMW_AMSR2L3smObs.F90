@@ -24,6 +24,7 @@ subroutine readGCOMW_AMSR2L3smObs(n)
   use LDT_timeMgrMod,   only : LDT_get_julss
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod  
   use GCOMW_AMSR2L3sm_obsMod, only : GCOMW_AMSR2L3smobs
   use map_utils
@@ -43,7 +44,7 @@ subroutine readGCOMW_AMSR2L3smObs(n)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname_A, fname_D
+  character(len=LDT_CONST_PATH_LEN)     :: fname_A, fname_D
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 !-----------------------------------------------------------------------
