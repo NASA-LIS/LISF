@@ -1,33 +1,25 @@
 #!/bin/sh
 #SBATCH --job-name=autotune
 #SBATCH --time=1:00:00
-#SBATCH --account s1189
+#SBATCH --account=NWP601
 #SBATCH --output autotune.slurm.out
 #Adjust node, core, and hardware constraints here
-##SBATCH --ntasks=5 --mem-per-cpu=4G
 #SBATCH --ntasks=5 --ntasks-per-node=1
-#Substitute your e-mail here
-#SBATCH --mail-type=ALL
-#Set quality of service, if needed.
-#SBATCH --qos=debug
 #------------------------------------------------------------------------------
 #
-# SCRIPT: run_autotune_discover.sh
+# SCRIPT: run_autotune_hpc11r.sh
 #
 # Batch script for running autotune software to update error covariance
-# settings for LIS Air Force Bratseth scheme.  Customized for NASA Discover
+# settings for LIS Air Force Bratseth scheme.  Customized for USAF HPC11
 # supercomputer running SLURM batch queueing system.
 #
-# USAGE:  sbatch run_autotune_discover.sh $YYYYMMDDHH $DD
+# USAGE:  sbatch run_autotune_hpc11.sh $YYYYMMDDHH $DD
 #           where $YYYYMMDDHH is the end date/time of the OBA training period
 #           and $DD is the length (in days) of the OBA training period.
 #
 #
 # REVISION HISTORY:
-# 17 Dec 2020:  Eric Kemp.  Initial specification.
-# 13 Dec 2021:  Eric Kemp.  Updated module, and removed obsolete satellite
-#   data feeds.
-# 09 Jun 2022:  Eric Kemp.  Refactored code to reduce runtime.
+# 08 Jun 2022:  Eric Kemp.  Initial specification.
 #
 #------------------------------------------------------------------------------
 
@@ -40,19 +32,18 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 # Environment
-module purge
-unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_2021.4.0_s2s
+module use --append ~emkemp/hpc11/privatemodules
+module load lisf_74_prgenv_cray_8.2.0
+module load afw-python/3.9-202203
 
 # Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/scripts
-CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/cfgs
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/src
+SCRIPTDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/scripts
+CFGDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/cfgs
+BINDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/src
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
@@ -68,8 +59,8 @@ dayrange=$2
 
 echo "INFO, Started autotuning at `date`"
 
-# Customize config files for procOBA_NWP, including blacklist creation.
-# These will be run in the background to parallelize the work.
+# Customize config files for procOBA_NWP and procOBA_Sat, including blacklist
+# creation. These will be run in the background to parallelize the work.
 echo "---Customizing procOBA config files, and creating blacklists---"
 if [ ! -e $SCRIPTDIR/customize_procoba_nwp.py ] ; then
     echo "ERROR, $SCRIPTDIR/customize_procoba_nwp.py does not exist!" && exit 1
