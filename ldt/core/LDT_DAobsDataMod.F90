@@ -89,7 +89,7 @@ module LDT_DAobsDataMod
      integer               :: selectStats      !whether to output stats
      integer               :: minMaxOpt
      integer               :: stdOpt
-     integer               :: varID(5)
+     integer               :: varID(6) !varID(5)  !YK
      character*20, allocatable :: unittypes(:)
      integer, allocatable      :: count(:,:)
      real, allocatable         :: value(:,:) 
