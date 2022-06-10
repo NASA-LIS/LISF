@@ -1610,7 +1610,7 @@ Soil texture fill option:      neighbor
 Soil texture fill radius:         3.
 Soil texture fill value:          6.
 Soil texture fill value for Antarctica: 16
-Soil texture force exclusion of water points during fill: true
+Soil texture force exclusion of water points during fill: .true.
 ....
 
 If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
