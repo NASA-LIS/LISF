@@ -23,6 +23,7 @@ module LISoutOSSEmask_Mod
 ! !REVISION HISTORY: 
 !  02 Oct 2008    Sujay Kumar  Initial Specification
 !
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -47,7 +48,7 @@ module LISoutOSSEmask_Mod
      character*50  :: wstyle
      character*50  :: wopt
      character*50  :: type
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
 
 !--------------------------------------------------------
 !  interpolation/upscaling weights

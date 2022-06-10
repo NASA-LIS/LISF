@@ -32,6 +32,7 @@ module Noah_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -52,12 +53,12 @@ module Noah_parmsMod
   type, public :: noah_type_dec
 
      real           :: tbot_gridDesc(20)
-     character*140  :: tbotfile
+     character(len=LDT_CONST_PATH_LEN)  :: tbotfile
      character*50   :: tbot_gridtransform
      character*50   :: tbot_topocorr
 
      real           :: slopetype_gridDesc(20)
-     character*140  :: slopetypefile
+     character(len=LDT_CONST_PATH_LEN)  :: slopetypefile
      character*50   :: slopetype_gridtransform
 
      character*50   :: tbot_proj

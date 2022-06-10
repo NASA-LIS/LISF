@@ -24,6 +24,7 @@ module LDT_fileIOMod
 ! 
 ! !USES: 
   use LDT_coreMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none 
   PRIVATE
@@ -331,9 +332,9 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LDT_CONST_PATH_LEN)       :: dname
+   character(len=LDT_CONST_PATH_LEN), save :: out_fname
+   character(len=LDT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if ( present(odir) ) then

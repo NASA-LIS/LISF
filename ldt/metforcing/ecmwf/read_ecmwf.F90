@@ -302,7 +302,7 @@ subroutine retrieve_inst_ecmwfvars(n, findex, instfile, glbdata, fret)
      enddo
      fret = 0 
   else
-     write(LDT_logunit,*) 'ERR: Could not find file (I): ',instfile   
+     write(LDT_logunit,*) 'ERR: Could not find file (I): ',trim(instfile)
      fret = -1
   endif
 #endif
@@ -552,7 +552,7 @@ subroutine retrieve_accum_ecmwfvars(n, findex, avgfile1, avgfile2, glbdata1, &
         enddo
         fret = 0 
      else
-        write(LDT_logunit,*) 'ERR: Could not find file (A1): ',avgfile1   
+        write(LDT_logunit,*) 'ERR: Could not find file (A1): ',trim(avgfile1)
         fret = -1
      endif
      

@@ -57,7 +57,7 @@ subroutine read_nldas2a(n, findex, order, month, name,ferror)
   integer, intent(in)      :: n
   integer, intent(in)      :: order
   integer, intent(out)     :: month
-  character*80, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)     :: ferror
 !
 ! !DESCRIPTION:

@@ -28,7 +28,7 @@ subroutine readprecip_RFE2gdas( n, fname, month, findex, order, ferror_RFE2gdas,
 
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: month
   integer, intent(in) :: findex
   integer, intent(in) :: order
@@ -160,10 +160,10 @@ subroutine readprecip_RFE2gdas( n, fname, month, findex, order, ferror_RFE2gdas,
 
      ferror_RFE2gdas = 0
      if(LDT_masterproc) write(LDT_logunit,*) &
-          "[INFO] Reading RFE2gdas data file: ", fname
+          "[INFO] Reading RFE2gdas data file: ", trim(fname)
   else
      if(LDT_masterproc) write(LDT_logunit,*) &
-          "[WARN] Missing RFE2gdas data file ", fname
+          "[WARN] Missing RFE2gdas data file ", trim(fname)
      ferror_RFE2gdas = 1
   endif
 

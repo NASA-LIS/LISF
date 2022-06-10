@@ -20,6 +20,7 @@ module LPRMvod_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -35,7 +36,7 @@ module LPRMvod_obsMod
 !EOP
   type, public :: lprmvodobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      character*20           :: data_designation
      integer                :: mo
      integer                :: nc, nr

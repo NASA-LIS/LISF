@@ -24,6 +24,7 @@ module LPRM_AMSREsm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -39,7 +40,7 @@ module LPRM_AMSREsm_obsMod
 !EOP
   type, public :: lprmamsresmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mo
      integer                :: rawdata
      real,    allocatable       :: smobs(:,:)

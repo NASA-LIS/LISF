@@ -22,6 +22,7 @@ module ASCATTUWsm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -37,7 +38,7 @@ module ASCATTUWsm_obsMod
 !EOP
   type, public :: ascattuwsmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mo
      real,    allocatable   :: smobs(:,:)
      logical                :: startmode 

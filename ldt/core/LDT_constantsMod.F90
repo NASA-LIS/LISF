@@ -13,7 +13,7 @@ module LDT_constantsMod
 !  !MODULE: LDT_constantsMod
 ! 
 !  !DESCRIPTION: 
-!   The code in this file provides values of physical constants for
+!   The code in this file provides values of named constants for
 !   consistent use across different components. 
 !   
 !  !REVISION HISTORY: 
@@ -21,10 +21,16 @@ module LDT_constantsMod
 !
 !EOP
 !BOC
+   use ESMF, only : ESMF_MAXPATHLEN
+   public
+!----------------------------------------------------------------------------
+! software constants
+!----------------------------------------------------------------------------
+   integer,parameter :: LDT_CONST_PATH_LEN = ESMF_MAXPATHLEN ! max path length (in char)
+
 !----------------------------------------------------------------------------
 ! physical constants (all data public)
 !----------------------------------------------------------------------------
-   public
 !   real,parameter :: CONST_PI     = 3.14159265358979323846  ! pi
    real,parameter :: LDT_CONST_PI     = 3.14159265   ! pi
    real,parameter :: LDT_CONST_CDAY   = 86400.0      ! sec in calendar day ~ sec

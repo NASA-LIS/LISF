@@ -23,6 +23,7 @@ subroutine readLPRM_AMSRE_ANNdata(n,iomode)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use LPRM_AMSREsm_ANNdataMod
   use map_utils
@@ -43,7 +44,7 @@ subroutine readLPRM_AMSRE_ANNdata(n,iomode)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname_A, fname_D
+  character(len=LDT_CONST_PATH_LEN) :: fname_A, fname_D
   real              :: smobs_A(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: smobs_D(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: lat,lon

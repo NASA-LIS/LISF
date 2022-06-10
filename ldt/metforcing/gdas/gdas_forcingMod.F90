@@ -90,6 +90,7 @@ module gdas_forcingMod
 !
 ! !USES: 
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -108,8 +109,8 @@ module gdas_forcingMod
      real          :: ts
      integer       :: nc, nr   ! GDAS dimensions
      integer       :: nmif
-     character*100 :: gdasdir        ! GDAS Forcing Directory
-     character*100 :: elevfile
+     character(len=LDT_CONST_PATH_LEN) :: gdasdir        ! GDAS Forcing Directory
+     character(len=LDT_CONST_PATH_LEN) :: elevfile
 
      real*8        :: gdastime1, gdastime2
      real*8        :: griduptime1, griduptime2, griduptime3

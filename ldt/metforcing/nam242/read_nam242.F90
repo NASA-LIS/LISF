@@ -24,6 +24,7 @@ subroutine read_nam242(n, findex, order, name00, name03, name06, &
   use LDT_coreMod,        only : LDT_rc, LDT_domain
   use LDT_metforcingMod,  only : LDT_forc
   use LDT_logMod,         only : LDT_logunit, LDT_endrun, LDT_verify
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use nam242_forcingMod,  only : nam242_struc
 
 #if (defined USE_GRIBAPI)
@@ -78,7 +79,7 @@ subroutine read_nam242(n, findex, order, name00, name03, name06, &
 !EOP
 !==== Local Variables=======================
   
-  character(len=100) :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   integer :: lenfname
   integer :: lennamfname
   character(len=2) :: initcode

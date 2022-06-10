@@ -34,6 +34,7 @@ module LDT_climateParmsMod
   use LDT_metforcingParmsMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -57,21 +58,21 @@ module LDT_climateParmsMod
      character*50  :: clim_gridtransform
      character*50  :: clim_gridtransform2
 
-     character*100 :: climpptdir
-     character*100 :: climpptdir2
-     character*100 :: climtmindir
-     character*100 :: climtmaxdir
+     character(len=LDT_CONST_PATH_LEN) :: climpptdir
+     character(len=LDT_CONST_PATH_LEN) :: climpptdir2
+     character(len=LDT_CONST_PATH_LEN) :: climtmindir
+     character(len=LDT_CONST_PATH_LEN) :: climtmaxdir
      integer       :: output_climppt_ratio
 
      character*20  :: climpptInterval
      character*20  :: climtminInterval
      character*20  :: climtmaxInterval
 
-     character*140 :: climpptfile
-     character*140 :: climpptfile2
-     character*140 :: climtmaxfile
-     character*140 :: climtminfile
-     character*140 :: climelevfile
+     character(len=LDT_CONST_PATH_LEN) :: climpptfile
+     character(len=LDT_CONST_PATH_LEN) :: climpptfile2
+     character(len=LDT_CONST_PATH_LEN) :: climtmaxfile
+     character(len=LDT_CONST_PATH_LEN) :: climtminfile
+     character(len=LDT_CONST_PATH_LEN) :: climelevfile
 
      ! Climate parameters
      type(LDT_paramEntry) :: climppt     ! Precipitation climatology (LIS-domain)

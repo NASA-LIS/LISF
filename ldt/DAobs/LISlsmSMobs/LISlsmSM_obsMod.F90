@@ -22,7 +22,7 @@ module LISlsmSM_obsMod
 ! !REVISION HISTORY: 
 !  02 Oct 2008    Sujay Kumar  Initial Specification
 !
-
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -45,7 +45,7 @@ module LISlsmSM_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      character*20  :: security_class
      character*20  :: distribution_class
      character*20  :: data_category

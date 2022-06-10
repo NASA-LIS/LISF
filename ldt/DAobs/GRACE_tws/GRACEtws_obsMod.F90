@@ -25,6 +25,7 @@ module GRACEtws_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -44,14 +45,14 @@ module GRACEtws_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      character*100 :: datasource 
 
 
      integer       :: reftime
      integer       :: tdims
-     character*100 :: gracefile, gracescalefile
-     character*100 :: graceerrfile
+     character(len=LDT_CONST_PATH_LEN) :: gracefile, gracescalefile
+     character(len=LDT_CONST_PATH_LEN) :: graceerrfile
      logical       :: startMode
      integer       :: gracenc, gracenr
      real, allocatable :: tvals(:)
@@ -84,7 +85,7 @@ module GRACEtws_obsMod
 
      integer              :: process_basin_scale
      integer              :: basin_cat_max
-     character*100        :: basinmapfile
+     character(len=LDT_CONST_PATH_LEN)        :: basinmapfile
      real, allocatable    :: basin_cat(:,:)
 
      !ag (21 DEc 2017)
