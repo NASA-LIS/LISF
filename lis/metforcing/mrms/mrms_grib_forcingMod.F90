@@ -15,10 +15,11 @@ module mrms_grib_forcingMod
 ! !DESCRIPTION: 
 !  This module contains variables and data structures that are used
 !  for the implementation of the precipitation data from the
-!  National Center for Environmental Prediction (NCEP) MRMS  
-!  (MRMS) Doppler Radar+gage product.  The MRMS is a national
-!  level product, on an hourly interval, and supplements mainly
-!  the which base forcing precipitation (e.g., NLDAS) is being used.
+!  National Center for Environmental Prediction (NCEP)
+!  Multi-Radar/Multi-Sensor (MRMS) Doppler Radar+gage product.
+!  The MRMS is a national level product, on an hourly interval,
+!  and supplements mainly the which base forcing precipitation
+!  (e.g., NLDAS) is being used.
 ! 
 !  The implementation in LIS has the derived data type {\tt mrms\_struc}
 !  that includes the variables to specify the runtime options, and 
