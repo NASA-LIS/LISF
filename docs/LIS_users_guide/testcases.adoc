@@ -2,7 +2,7 @@
 [[sec_testcases,Test-cases]]
 == Test-cases
 
-This section describes how to obtain and how to use the test cases provided by the LIS team.
+This section describes how to obtain and how to use the test cases provided by the LISF development team.
 
 There are two categories of testcases: public tests and internal tests.
 
@@ -20,14 +20,14 @@ All required input and data files are bundled with each of the cases from the ab
 
 === Internal tests
 
-The main purpose of these test cases is for the LIS development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
+The main purpose of these test cases is for the LISF development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a _testcases_ sub-directory included in the LIS source code, input data, and output data.
 
 For these test cases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectory cases as a guide to setting up their own individual experiments and for their own testing purposes.
 
 [[sssec_testcases,The _testcases_ Sub-directory]]
 ==== The _testcases_ Sub-directory
 
-The layout of the _testcases_ sub-directory matches the layout of the top-level _src_ directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in _src/metforcing/gdas_.  The test-case for GDAS is in _src/testcases/metforcing/gdas_.
+The layout of the _testcases_ sub-directory matches the layout of the top-level _lis_ directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in _lis/metforcing/gdas_.  The test-case for GDAS is in _lis/testcases/metforcing/gdas_.
 
 
 These test-case sub-directories contain several files.  For example, the _src/testcases/metforcing/gdas_ test-case contains these main files:
