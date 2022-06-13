@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.17">
-<title>Land Data Toolkit (LDT): LDT 7.3 Users' Guide</title>
+<title>Land Data Toolkit (LDT): LDT 7.4 Users&#8217; Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -438,7 +438,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land Data Toolkit (LDT): LDT 7.3 Users' Guide</h1>
+<h1>Land Data Toolkit (LDT): LDT 7.4 Users&#8217; Guide</h1>
 <div class="details">
 <span id="revnumber">version 1.18,</span>
 <span id="revdate">10 Jun 2022</span>
@@ -469,10 +469,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#sec-build">5. Building the Executable</a>
 <ul class="sectlevel2">
-<li><a href="#_development_tools">5.1. Development Tools</a></li>
-<li><a href="#ssec-requiredlibs">5.2. Required Software Libraries</a></li>
-<li><a href="#_optional_software_libraries">5.3. Optional Software Libraries</a></li>
-<li><a href="#_build_instructions">5.4. Build Instructions</a></li>
+<li><a href="#_lisf_dependencies">5.1. LISF Dependencies</a></li>
+<li><a href="#_build_instructions">5.2. Build Instructions</a></li>
 </ul>
 </li>
 <li><a href="#sec-run">6. Running the Executable</a></li>
@@ -636,7 +634,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="sec-intro">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is the User&#8217;s Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software and instructions on building an executable.</p>
+<p>This is the Users&#8217; Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software.  It also describes LDT&#8217;s run-time configuration options (the <em>ldt.config</em> file).</p>
 </div>
 <div class="paragraph">
 <p>This document consists of 7 sections, described as follows:</p>
@@ -676,7 +674,90 @@ describes the various run-time configurations.</p>
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_version_7_3">1.1.1. Version 7.3</h4>
+<h4 id="_version_7_4">1.1.1. Version 7.4</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmode</p>
+<div class="ulist">
+<ul>
+<li>
+<p>observation simulator runmode</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observations</p>
+<div class="ulist">
+<ul>
+<li>
+<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
+</li>
+<li>
+<p>thermal hydraulic disaggregation of soil moisture (THySM)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional parameters</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Crocus parameters</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional meteorological forcing sources</p>
+<div class="ulist">
+<ul>
+<li>
+<p>metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
+</li>
+<li>
+<p>metforcing extracted from WRF output (WRFoutv2)</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Support for these metforcing sources was <strong>removed</strong>:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>ecmwfreanal</p>
+</li>
+<li>
+<p>gdas3d</p>
+</li>
+<li>
+<p>merra-land</p>
+</li>
+<li>
+<p>nldas1</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_version_7_3">1.1.2. Version 7.3</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -773,7 +854,7 @@ describes the various run-time configurations.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_2">1.1.2. Version 7.2</h4>
+<h4 id="_version_7_2">1.1.3. Version 7.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -792,7 +873,7 @@ describes the various run-time configurations.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_1">1.1.3. Version 7.1</h4>
+<h4 id="_version_7_1">1.1.4. Version 7.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -841,7 +922,7 @@ describes the various run-time configurations.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_0">1.1.4. Version 7.0</h4>
+<h4 id="_version_7_0">1.1.5. Version 7.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -964,13 +1045,13 @@ The <code>%</code> symbol represents the command-line prompt. You do <strong>not
 <p>This section describes how to obtain the source code needed to build the LDT executable.</p>
 </div>
 <div class="paragraph">
-<p>Beginning with Land Information System Framework (LISF) public release 7.3, the LDT source code is available as open source under the Apache License, version 2.0.  Please see <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache&#8217;s web-site</a> for a copy of the license.</p>
+<p>Beginning with Land Information System Framework (LISF) public release 7.3, the LDT source code is available as open source under the Apache License, version 2.0.  (Please see <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache&#8217;s web-site</a> for a copy of the license.)  LDT is one of the three main components of LISF (LDT, LIS, and LVT).</p>
 </div>
 <div class="paragraph">
-<p>From LDT public release 7.1rp1 through 7.2, the LDT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> for a copy of the NOSA.</p>
+<p>From LDT public release 7.1rp1 through 7.2, the LDT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> for a copy of the NOSA.</p>
 </div>
 <div class="paragraph">
-<p>Due to the history of LDT&#8217;s development, versions of the LDT source code prior to 7.1rp1 may not be freely distributed.  Older source code is available only to U.S. government agencies or entities with a U.S. government grant/contract.  <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> explains how qualified persons may request a copy of older source code.</p>
+<p>Due to the history of LDT&#8217;s development, versions of the LDT source code prior to 7.1rp1 may not be freely distributed.  Older source code is available only to U.S. government agencies or entities with a U.S. government grant/contract.  <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> explains how qualified persons may request a copy of older source code.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -979,7 +1060,7 @@ The <code>%</code> symbol represents the command-line prompt. You do <strong>not
 <div class="title">Note</div>
 </td>
 <td class="content">
-All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> to fill in the Registration Form and join the mailing list.
+All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> to fill in the Registration Form and join the mailing list.
 </td>
 </tr>
 </table>
@@ -987,13 +1068,13 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 <div class="sect2">
 <h3 id="sec-important_note_fs">4.1. Important Note Regarding File Systems</h3>
 <div class="paragraph">
-<p>LDT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or <code>git clone</code> the LDT code into a directory within a case sensitive file system.  In particular, if you are using LDT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LDT from within a shared folder.  Move the LDT source code into a directory within the virtual machine.</p>
+<p>LDT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or <code>git clone</code> the LISF source code into a directory within a case sensitive file system.  In particular, if you are using LDT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LDT from within a shared folder.  Move the LISF source code into a directory within the virtual machine.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
 <div class="paragraph">
-<p>The LDT public release 7.3 source code is available both on <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.4 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1011,7 +1092,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.3.1.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.4.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -1033,7 +1114,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.3.1.tar.gz | tar xf -</pre>
+<pre>% gzip -dc LISF_public_release_7.4.0.tar.gz | tar xf -</pre>
 </div>
 </div>
 </div>
@@ -1041,7 +1122,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 <div class="sect2">
 <h3 id="sec-checkoutsrc">4.3. master branch</h3>
 <div class="paragraph">
-<p>The LDT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the <code>git</code> client to obtain the LDT source code.  If you need any help regarding <code>git</code> or GitHub, please go to <a href="https://github.com" class="bare">https://github.com</a>.</p>
+<p>The LDT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the <code>git</code> client to obtain the LISF source code.  If you need any help regarding <code>git</code> or GitHub, please go to <a href="https://github.com" class="bare">https://github.com</a>.</p>
 </div>
 <div class="sect3">
 <h4 id="_step_1_2">Step 1</h4>
@@ -1093,7 +1174,10 @@ The directory containing the LDT source code, <em>LISF/ldt</em>, will be referre
 <div class="sect2">
 <h3 id="_documentation">4.5. Documentation</h3>
 <div class="paragraph">
-<p>Processed documentation may be found on <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Docs&#8221; menu.</p>
+<p>Processed documentation for each release may be found on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Docs&#8221; menu.  Starting with LISF public release 7.4, processed documentation may also be found on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+</div>
+<div class="paragraph">
+<p>Processed documentation for the master branch is available on GitHub under the NASA-LIS organization&#8217;s GitHub pages at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>.</p>
 </div>
 </div>
 </div>
@@ -1102,271 +1186,19 @@ The directory containing the LDT source code, <em>LISF/ldt</em>, will be referre
 <h2 id="sec-build">5. Building the Executable</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section describes how to build the source code and create LDT&#8217;s executable: named LDT.</p>
+<p>This section describes how to build the source code and create LDT&#8217;s executable: named <em>LDT</em>.</p>
 </div>
 <div class="paragraph">
-<p>Please see Section <a href="#sec-important_note_fs">Important Note Regarding File Systems</a> for information regarding using a case sensitve file system for compiling/running LDT.</p>
+<p>Please see Section <a href="#sec-important_note_fs">Important Note Regarding File Systems</a> for information regarding using a case sensitive file system for compiling/running LDT.</p>
 </div>
 <div class="sect2">
-<h3 id="_development_tools">5.1. Development Tools</h3>
+<h3 id="_lisf_dependencies">5.1. LISF Dependencies</h3>
 <div class="paragraph">
-<p>This code has been compiled and run on
-Linux PC (Intel/AMD based) systems
-and Cray systems.
-These instructions expect that you are using such a system.  In particular you need:</p>
-</div>
-<div class="sect3">
-<h4 id="_linux">5.1.1. Linux</h4>
-<div class="sect4">
-<h5 id="_compilers">Compilers</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>Intel Fortran Compiler versions 18, 19, or 20 with corresponding Intel C Compiler along with GNU&#8217;s Compiler Collection version 9.2.0</p>
-</li>
-<li>
-<p>or GNU&#8217;s Compiler Collection version 4.9.2 or 7.3, both gfortran and gcc.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_tools">Tools</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>GNU&#8217;s make, gmake, version 3.77 or 3.81</p>
-</li>
-<li>
-<p>Perl, version 5.10</p>
-</li>
-<li>
-<p>Python, version 2.7 or 3.8</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_craylinux">5.1.2. Cray/Linux</h4>
-<div class="sect4">
-<h5 id="_compilers_2">Compilers</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>Intel Fortran Compiler version 18 or 19 with corresponding Intel C Compiler, along with GNU&#8217;s Compiler Collection version 7.3.0</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_tools_2">Tools</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>GNU&#8217;s make, gmake, version 3.77 or 3.81</p>
-</li>
-<li>
-<p>Perl, version 5.10</p>
-</li>
-<li>
-<p>Python, version 2.7 or 3.8</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
-</td>
-</tr>
-</table>
-</div>
-</div>
+<p>Please first read the companion document &#8220;Installing LISF Dependencies&#8221;.  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec-requiredlibs">5.2. Required Software Libraries</h3>
-<div class="paragraph">
-<p>In order to build the LDT executable, the following libraries must be installed on your system:</p>
-</div>
-<div class="sect3">
-<h4 id="_earth_system_modeling_framework_esmf_version_7_1_0r_or_higher">5.2.1. Earth System Modeling Framework (ESMF) version 7.1.0r (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://earthsystemmodeling.org/" class="bare">https://earthsystemmodeling.org/</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_openjpeg_version_2_3_0_or_higher">5.2.2. OpenJPEG version 2.3.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="http://www.openjpeg.org/" class="bare">http://www.openjpeg.org/</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_eccodes_version_2_7_0_or_higher">5.2.3. ecCodes version 2.7.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://confluence.ecmwf.int/display/ECC" class="bare">https://confluence.ecmwf.int/display/ECC</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_netcdf_either_version_3_6_3_or_version_4_5_0_or_higher">5.2.4. NetCDF either version 3.6.3 or version 4.5.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="http://www.unidata.ucar.edu/software/netcdf" class="bare">http://www.unidata.ucar.edu/software/netcdf</a>)</p>
-</div>
-<div class="paragraph">
-<p>Please read the on-line documentation for details on installing NetCDF.</p>
-</div>
-<div class="sect4">
-<h5 id="_additional_notes_for_netcdf_4">Additional notes for NetCDF 4:</h5>
-<div class="paragraph">
-<p>You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add <code>--enable-netcdf-4</code> to the <code>configure</code> options.  To disable compression, add <code>--disable-netcdf-4</code> to the <code>configure</code> options.</p>
-</div>
-<div class="paragraph">
-<p>An example of installing NetCDF 4 without compression:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% ./configure --prefix=$HOME/local/netcdf-4.5.0 --disable-netcdf-4
-% gmake
-% gmake install</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>An example of installing NetCDF 4 with compression:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% CPPFLAGS=-I$HOME/local/hdf5/1.10.1/include \
-&gt; LDFLAGS=-L$HOME/local/hdf5/1.10.1/lib \
-&gt; ./configure --prefix=$HOME/local/netcdf/4.5.0 --enable-netcdf-4
-% gmake
-% gmake install</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You must also download the <em>netcdf-fortran-4.4.4.tar.gz</em> file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.</p>
-</div>
-<div class="paragraph">
-<p>An example of installing the NetCDF 4 Fortran library:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% LD_LIBRARY_PATH=$HOME/local/netcdf/4.5.0/lib:$LD_LIBRARY_PATH \
-&gt; CPPFLAGS=-I$HOME/local/netcdf/4.5.0/include \
-&gt; LDFLAGS=-L$HOME/local/netcdf/4.5.0/lib \
-&gt; ./configure --prefix=$HOME/local/netcdf/4.5.0
-% gmake
-% gmake install</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_optional_software_libraries">5.3. Optional Software Libraries</h3>
-<div class="paragraph">
-<p>The following libraries are not required to compile LDT.  They are used to extend the functionality of LDT.</p>
-</div>
-<div class="sect3">
-<h4 id="_hdf">5.3.1. HDF</h4>
-<div class="paragraph">
-<p>You may choose either HDF version 4, HDF version 5, or both.</p>
-</div>
-<div class="paragraph">
-<p>HDF is used to support a number of remote sensing datasets.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use MODIS snow cover area observations or NASA AMSR-E soil moisture observations, then you need HDF 4 support.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use ANSA snow cover fraction observations, then you need HDF 5 support.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 support.</p>
-</div>
-<div class="sect4">
-<h5 id="_hdf_4">HDF 4</h5>
-<div class="paragraph">
-<p>If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from <a href="https://portal.hdfgroup.org/display/support/Download+HDF4" class="bare">https://portal.hdfgroup.org/display/support/Download+HDF4</a> and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the <code>--enable-fortran</code> option to the <code>configure</code> command.</p>
-</div>
-<div class="paragraph">
-<p>Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the <code>--disable-netcdf</code> option to the <code>configure</code> command.</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-When compiling LDT with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from <a href="http://hdfeos.org/software/library.php" class="bare">http://hdfeos.org/software/library.php</a>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_hdf_5">HDF 5</h5>
-<div class="paragraph">
-<p>If you choose to have HDF version 5 support, please download the HDF source for version 1.10.1 (or higher) from <a href="http://www.hdfgroup.org/HDF5/" class="bare">http://www.hdfgroup.org/HDF5/</a> and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the <code>--enable-fortran</code> option to the <code>configure</code> command.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_gdal_version_2_4_1_or_higher">5.3.2. GDAL version 2.4.1 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://gdal.org" class="bare">https://gdal.org</a>)</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-When compiling LDT with GDAL support, you must also download and compile FortranGIS version 2.4 (or higher) from <a href="http://fortrangis.sourceforge.net" class="bare">http://fortrangis.sourceforge.net</a>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_geotiff_version_1_4_3_or_higher">5.3.3. GeoTIFF version 1.4.3 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://github.com/OSGeo/libgeotiff" class="bare">https://github.com/OSGeo/libgeotiff</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_notes">5.3.4. Notes</h4>
-<div class="paragraph">
-<p>To install these libraries, follow the instructions provided at the various URL listed above. These optional libraries have their own dependencies, which should be documented in their respective documentation.</p>
-</div>
-<div class="paragraph">
-<p>Please note that your system may have several different compilers installed.  You must verify that you are building these libraries with the correct compiler.  You should review the output from the <code>configure</code>, <code>make</code>, etc. commands.  If the wrong compiler is being used, you may have to correct your <code>$PATH</code> environment variable, or set the <code>$CC</code> and <code>$FC</code> environment variables, or pass additional settings to the <code>configure</code> scripts.  Please consult the installation instructions provided at the various URL listed above for each library.</p>
-</div>
-<div class="paragraph">
-<p>Note that due to the mix of programing languages (Fortran and C) used by LDT, you may run into linking errors when building the LDT executable.  This is often due to (1) the Fortran compiler and the C compiler using different cases (upper case vs. lower case) for external names, and (2) the Fortran compiler and C compiler using a different number of underscores for external names.</p>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_build_instructions">5.4. Build Instructions</h3>
+<h3 id="_build_instructions">5.2. Build Instructions</h3>
 <div class="sect3">
 <h4 id="_step_1_3">Step 1</h4>
 <div class="paragraph">
@@ -1376,7 +1208,7 @@ When compiling LDT with GDAL support, you must also download and compile Fortran
 <div class="sect3">
 <h4 id="_step_2_3">Step 2</h4>
 <div class="paragraph">
-<p>Goto the <em>$WORKING</em> directory. This directory contains two scripts for building the LDT executable: <em>configure</em> and <em>compile</em>.</p>
+<p>Go to the <em>$WORKING</em> directory. This directory contains two scripts for building the LDT executable: <em>configure</em> and <em>compile</em>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1396,8 +1228,26 @@ When compiling LDT with GDAL support, you must also download and compile Fortran
 <pre>% export LDT_ARCH=linux_gfortran</pre>
 </div>
 </div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LDT_ARCH=cray_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Cray Fortran compiler</div>
+<div class="content">
+<pre>% export LDT_ARCH=cray_cray</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For an IBM system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LDT_ARCH=ibm_gfortran</pre>
+</div>
+</div>
 <div class="paragraph">
-<p>It is suggested that you place this command in your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set this environment variable in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LDT.</p>
 </div>
 </div>
 <div class="sect3">
@@ -1492,13 +1342,18 @@ When compiling LDT with GDAL support, you must also download and compile Fortran
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to GeoTIFF library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LDT_JPEG</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to JPEG library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system libjpeg by default)</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
 <p>Note that the <code>CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
 </div>
 <div class="paragraph">
-<p>It is suggested that you add these definitions to your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set these environment variables in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LDT.</p>
 </div>
 <div class="paragraph">
 <p>You may encounter errors either when trying to compile LDT or when trying to run LDT because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your <code>$LD_LIBRARY_PATH</code> environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):</p>
@@ -1509,7 +1364,7 @@ When compiling LDT with GDAL support, you must also download and compile Fortran
 </div>
 </div>
 <div class="paragraph">
-<p>It is also suggested that you add this command to your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set this environment variable in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> to load or in an environment script to source before compiling and/or running LDT.</p>
 </div>
 <div class="sect4">
 <h5 id="_example">Example</h5>
@@ -1610,7 +1465,7 @@ LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>This script will compile the libraries provided with LDT, the dependency generator and then the LDT source code. The executable <em>LDT</em> will be placed in the <em>$WORKING</em> directory upon successful completion of the <em>compile</em> script.</p>
+<p>This script will compile the libraries provided with LDT and then the LDT source code. The executable <em>LDT</em> will be placed in the <em>$WORKING</em> directory upon successful completion of the <em>compile</em> script.</p>
 </div>
 </div>
 <div class="sect3">
@@ -2512,7 +2367,7 @@ Acceptable values are:</p>
 </div>
 <div class="paragraph">
 <p><code>Buffer count in x-direction:</code> adds a set number of pixels that buffer
-around a parameter file target domain, both in the x- and y-directions.
+around a parameter file target domain in the x-direction.
 Acceptable values are:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -2528,17 +2383,47 @@ Acceptable values are:</p>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;0&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No buffer added</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Results in no buffer added</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;1&#8221; (or greater)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (or greater)</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Buffer points included</p></td>
 </tr>
 </tbody>
 </table>
 <div class="paragraph">
-<p>The default value is 5, and only activated if buffer option is selected.</p>
+<p>The default value is 5, and it is activated only if <code>Add buffer to parameter grid domain:</code> is enabled.</p>
+</div>
+<div class="paragraph">
+<p><code>Buffer count in y-direction:</code> adds a set number of pixels that buffer
+around a parameter file target domain in the y-direction.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Results in no buffer added</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1 (or greater)</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Buffer points included</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>The default value is 5, and it is activated only if <code>Add buffer to parameter grid domain:</code> is enabled.</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>ldt.config</em> entry</div>
@@ -9590,7 +9475,7 @@ TSSM OSSE mask data resolution (km): 1</pre>
 <p>LDT is designed to bring a read-in parameter file directly to a common LIS-based domain grid, projection and resolution. Currently, the user can upscale or downscale from a given lat/lon projection to any other lat/lon projection but also lambert conformal and other projections.</p>
 </div>
 <div class="paragraph">
-<p>For this example, consider reading in an older &#8216;LIS-produced&#8217; parameter file at 1/4 deg resolution. The coordinates of the south-west and the north-east points must be specified at the grid-cells' centers. Here the south-west grid-cell is given by the box \((-180,-60), (-179.750,-59.750)\). The center of this box is \((-179.875,-59.875)\). <sup class="footnote">[<a id="_footnoteref_1" class="footnote" href="#_footnotedef_1" title="View footnote.">1</a>]</sup> Thus the <code>lower left lat:</code> is \(-59.875\), and the <code>lower left lon:</code> is \(-179.875\).</p>
+<p>For this example, consider reading in an older &#8216;LIS-produced&#8217; parameter file at 1/4 deg resolution. The coordinates of the south-west and the north-east points must be specified at the grid-cells' centers. Here the south-west grid-cell is given by the box \((-180,-60), (-179.750,-59.750)\). The center of this box is \((-179.875,-59.875)\). <sup class="footnote">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> Thus the <code>lower left lat:</code> is \(-59.875\), and the <code>lower left lon:</code> is \(-179.875\).</p>
 </div>
 <div class="paragraph">
 <p>The north-east grid-cell is given by the box \((179.750,89.750), (180,90)\). Its center is \((179.875,89.875)\). Thus the <code>upper right lat:</code> is \(89.875\), and the <code>upper right lon:</code> is \(179.875\).</p>
@@ -17166,13 +17051,16 @@ param domain sections on a UTM projection.</p>
 <div id="footnotes">
 <hr>
 <div class="footnote" id="_footnotedef_1">
-<a href="#_footnoteref_1">1</a>. Note, these coordinates are ordered (longitude, latitude).
+<a href="#_footnoteref_1">1</a>. See the &#8220;Creating a Custom Modulefile&#8221; document found at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>
+</div>
+<div class="footnote" id="_footnotedef_2">
+<a href="#_footnoteref_2">2</a>. Note, these coordinates are ordered (longitude, latitude).
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 1.18<br>
-Last updated 2022-06-13 21:12:35 UTC
+Last updated 2022-06-13 21:53:54 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
