@@ -418,19 +418,33 @@ The default value is 0.
 Add buffer to parameter grid domain:     0
 ....
 
-`Buffer count in x-direction:` adds a set number of pixels that buffer 
-around a parameter file target domain, both in the x- and y-directions.
+`Buffer count in x-direction:` adds a set number of pixels that buffer
+around a parameter file target domain in the x-direction.
 Acceptable values are:
 
 [cols="<,<",]
 |===
 |Value |Description
 
-|"`0`" |No buffer added
-|"`1`" (or greater) |Buffer points included
+|0 |Results in no buffer added
+|1 (or greater) |Buffer points included
 |===
 
-The default value is 5, and only activated if buffer option is selected.
+The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
+
+`Buffer count in y-direction:` adds a set number of pixels that buffer
+around a parameter file target domain in the y-direction.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |Results in no buffer added
+|1 (or greater) |Buffer points included
+|===
+
+The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
 
 .Example _ldt.config_ entry
 ....
