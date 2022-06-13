@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.17">
-<title>Land Information System (LIS): LIS 7.3 Users' Guide</title>
+<title>Land Information System (LIS): LIS 7.4 Users&#8217; Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -438,7 +438,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land Information System (LIS): LIS 7.3 Users' Guide</h1>
+<h1>Land Information System (LIS): LIS 7.4 Users&#8217; Guide</h1>
 <div class="details">
 <span id="revnumber">version 1.19,</span>
 <span id="revdate">27 May 2022</span>
@@ -474,10 +474,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </li>
 <li><a href="#sec_build">5. Building the Executable</a>
 <ul class="sectlevel2">
-<li><a href="#_development_tools">5.1. Development Tools</a></li>
-<li><a href="#ssec_requiredlibs">5.2. Required Software Libraries</a></li>
-<li><a href="#_optional_software_libraries">5.3. Optional Software Libraries</a></li>
-<li><a href="#_build_instructions">5.4. Build Instructions</a></li>
+<li><a href="#_lisf_dependencies">5.1. LISF Dependencies</a></li>
+<li><a href="#_build_instructions">5.2. Build Instructions</a></li>
 </ul>
 </li>
 <li><a href="#sec_run">6. Running the Executable</a>
@@ -539,8 +537,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_file_name_extension_convention_and_access_code_samples">B.5. File name extension convention and access code samples</a></li>
 </ul>
 </li>
-<li><a href="#sec_more_specific_examples">Appendix C: More specific examples</a></li>
-<li><a href="#_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix D: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</a></li>
+<li><a href="#_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</a></li>
 <li><a href="#_references">References</a></li>
 </ul>
 </div>
@@ -670,7 +667,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="sec_intro">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.3.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
+<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.4.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
 </div>
 <div class="paragraph">
 <p>This document consists of 12 sections, described as follows:</p>
@@ -723,14 +720,175 @@ describes the user-configurable output variable options.</p>
 </li>
 <li>
 <p><strong><a href="#sec_usersupport">User Support</a></strong>:
-describes how to request help from and provide feedback to the LIS development team.</p>
+describes how to request help from and provide feedback to the LISF development team.</p>
 </li>
 </ol>
 </div>
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_lis_7_3">1.1.1. LIS 7.3</h4>
+<h4 id="_version_7_4">1.1.1. Version 7.4</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Includes new runmodes</p>
+<div class="ulist">
+<ul>
+<li>
+<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes additional surface models</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Crocus 8.1 snow model</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>metforcing extracted from COAMPS output (COAMPSout)</p>
+</li>
+<li>
+<p>metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
+</li>
+<li>
+<p>metforcing extracted from WRF output (WRFoutv2)</p>
+</li>
+<li>
+<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
+</li>
+<li>
+<p>PLUMBER2 station data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>MCD15A2H LAI</p>
+</li>
+<li>
+<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
+</li>
+<li>
+<p>Snow Data Assimilation System (SNODAS)</p>
+</li>
+<li>
+<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
+</li>
+<li>
+<p>hydroweb water level</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Removes the following metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>AGRMET radiation (latlon)</p>
+</li>
+<li>
+<p>AMMA land surface model intercomparision project phase 2 (ALMIPII)</p>
+</li>
+<li>
+<p>Walnut Gulch meteorological station data (ARMS)</p>
+</li>
+<li>
+<p>Canadian Precipitation analysis (CaPA)</p>
+</li>
+<li>
+<p>CEOP</p>
+</li>
+<li>
+<p>COOP</p>
+</li>
+<li>
+<p>ECMWF reanalysis</p>
+</li>
+<li>
+<p>Single-point FASST product (FASSTsingle)</p>
+</li>
+<li>
+<p>GDAS(3d)</p>
+</li>
+<li>
+<p>GDAS profile data from the PMM land surface working group (GDAS(LSWG))</p>
+</li>
+<li>
+<p>GEOS</p>
+</li>
+<li>
+<p>GMAO Modern Era Retrospective-Analysis for Research and Applications data (MERRA-Land)</p>
+</li>
+<li>
+<p>North American Land Data Assimilation System forcing product (NLDAS1)</p>
+</li>
+<li>
+<p>PILDAS</p>
+</li>
+<li>
+<p>NOAA OHD RDHM 3.5.6 forcing data (RDHM 3.5.6)</p>
+</li>
+<li>
+<p>Rhone AGG</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Disables the following external runoff data sources</p>
+<div class="ulist">
+<ul>
+<li>
+<p>GLDAS1 runoff data</p>
+</li>
+<li>
+<p>GLDAS2 runoff data</p>
+</li>
+<li>
+<p>NLDAS2 runoff data</p>
+</li>
+<li>
+<p>MERRA2 runoff data</p>
+</li>
+<li>
+<p>ERA interim land runoff data</p>
+</li>
+<li>
+<p>GWB MIP runoff data</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Disables the following parameters</p>
+<div class="ulist">
+<ul>
+<li>
+<p>MODIS near-real time LAI</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_lis_7_3">1.1.2. LIS 7.3</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1030,7 +1188,7 @@ describes how to request help from and provide feedback to the LIS development t
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_2">1.1.2. LIS 7.2</h4>
+<h4 id="_lis_7_2">1.1.3. LIS 7.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1115,7 +1273,7 @@ forecasting runmode</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_1">1.1.3. LIS 7.1</h4>
+<h4 id="_lis_7_1">1.1.4. LIS 7.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1168,7 +1326,7 @@ available to external users; they should become available in July 2015</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_0">1.1.4. LIS 7.0</h4>
+<h4 id="_lis_7_0">1.1.5. LIS 7.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1263,7 +1421,7 @@ emissivity support</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_2">1.1.5. LIS 6.2</h4>
+<h4 id="_lis_6_2">1.1.6. LIS 6.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1304,7 +1462,7 @@ version 2 (RFE2) daily precipition (for use in WRSI).</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_1">1.1.6. LIS 6.1</h4>
+<h4 id="_lis_6_1">1.1.7. LIS 6.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1333,7 +1491,7 @@ snowcover, and LPRM retrievals of AMSRE soil moisture.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_0">1.1.7. LIS 6.0</h4>
+<h4 id="_lis_6_0">1.1.8. LIS 6.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1397,7 +1555,7 @@ for radiance based assimilation</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_5_0">1.1.8. LIS 5.0</h4>
+<h4 id="_lis_5_0">1.1.9. LIS 5.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1418,7 +1576,7 @@ replaced with the corresponding ESMF utility.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_2">1.1.9. LIS 4.2</h4>
+<h4 id="_lis_4_2">1.1.10. LIS 4.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1450,7 +1608,7 @@ parallel processing environments.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_1">1.1.10. LIS 4.1</h4>
+<h4 id="_lis_4_1">1.1.11. LIS 4.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1469,7 +1627,7 @@ parallel processing environments.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_0_2">1.1.11. LIS 4.0.2</h4>
+<h4 id="_lis_4_0_2">1.1.12. LIS 4.0.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1486,7 +1644,7 @@ only CLM and Noah models have full support.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_0">1.1.12. LIS 4.0</h4>
+<h4 id="_lis_4_0">1.1.13. LIS 4.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1496,7 +1654,7 @@ only CLM and Noah models have full support.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_3_1">1.1.13. LIS 3.1</h4>
+<h4 id="_lis_3_1">1.1.14. LIS 3.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1533,7 +1691,7 @@ this version of LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_3_0">1.1.14. LIS 3.0</h4>
+<h4 id="_lis_3_0">1.1.15. LIS 3.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1640,7 +1798,7 @@ operation.</p>
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% cd /path/to/LISv7.0</pre>
+<pre>% cd /path/to/LIS</pre>
 </div>
 </div>
 <div class="literalblock">
@@ -1670,7 +1828,7 @@ The <code>%</code> symbol represents the command-line prompt.  You do <strong>no
 <p>File names are written in italics.  E.g.:</p>
 </div>
 <div class="paragraph">
-<p><em>/path/to/LISv7.0/src</em></p>
+<p><em>/path/to/LIS/src</em></p>
 </div>
 </div>
 </div>
@@ -1682,13 +1840,13 @@ The <code>%</code> symbol represents the command-line prompt.  You do <strong>no
 <p>This section describes how to obtain the source code needed to build the LIS executable.</p>
 </div>
 <div class="paragraph">
-<p>Beginning with Land Information System Framework (LISF) public release 7.3, the LIS source code is available as open source under the Apache License, version 2.0.  Please see <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache&#8217;s web-site</a> for a copy of the license.</p>
+<p>Beginning with Land Information System Framework (LISF) public release 7.3, the LIS source code is available as open source under the Apache License, version 2.0.  (Please see <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache&#8217;s web-site</a> for a copy of the license.)  LIS is one of the three main components of LISF (LDT, LIS, and LVT).</p>
 </div>
 <div class="paragraph">
-<p>From LIS public release 7.1rp1 through 7.2, the LIS source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> for a copy of the NOSA.</p>
+<p>From LIS public release 7.1rp1 through 7.2, the LIS source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> for a copy of the NOSA.</p>
 </div>
 <div class="paragraph">
-<p>Due to the history of LIS&#8217; development, versions of the LIS source code prior to 7.1rp1 may not be freely distributed.  Older source code is available only to U.S. government agencies or entities with a U.S. government grant/contract.  <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> explains how qualified persons may request a copy of older source code.</p>
+<p>Due to the history of LIS&#8217; development, versions of the LIS source code prior to 7.1rp1 may not be freely distributed.  Older source code is available only to U.S. government agencies or entities with a U.S. government grant/contract.  <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> explains how qualified persons may request a copy of older source code.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -1697,7 +1855,7 @@ The <code>%</code> symbol represents the command-line prompt.  You do <strong>no
 <div class="title">Note</div>
 </td>
 <td class="content">
-All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> to fill in the Registration Form and join the mailing list.
+All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> to fill in the Registration Form and join the mailing list.
 </td>
 </tr>
 </table>
@@ -1705,13 +1863,13 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 <div class="sect2">
 <h3 id="sec_important_note_fs">4.1. Important Note Regarding File Systems</h3>
 <div class="paragraph">
-<p>LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or <code>git clone</code> the LIS code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LIS source code into a directory within the virtual machine.</p>
+<p>LIS is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or <code>git clone</code> the LISF source code into a directory within a case sensitive file system.  In particular, if you are using LIS within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LIS from within a shared folder.  Move the LISF source code into a directory within the virtual machine.</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
 <div class="paragraph">
-<p>The LIS public release 7.3 source code is available both on <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.4 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1729,7 +1887,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.3.4.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.4.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -1751,7 +1909,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.3.4.tar.gz | tar xf -</pre>
+<pre>% gzip -dc LISF_public_release_7.4.0.tar.gz | tar xf -</pre>
 </div>
 </div>
 </div>
@@ -1759,7 +1917,7 @@ All users are encouraged to go to <a href="http://lis.gsfc.nasa.gov">LISF&#8217;
 <div class="sect2">
 <h3 id="sec_checkoutsrc">4.3. master branch</h3>
 <div class="paragraph">
-<p>The LIS source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the <code>git</code> client to obtain the LIS source code.  If you need any help regarding <code>git</code> or GitHub, please go to <a href="https://github.com" class="bare">https://github.com</a>.</p>
+<p>The LIS source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the <code>git</code> client to obtain the LISF source code.  If you need any help regarding <code>git</code> or GitHub, please go to <a href="https://github.com" class="bare">https://github.com</a>.</p>
 </div>
 <div class="sect3">
 <h4 id="_step_1_2">Step 1</h4>
@@ -1837,13 +1995,13 @@ included components</p>
 <li>
 <p><em>configs</em></p>
 <div class="paragraph">
-<p>some sample LIS configuration files</p>
+<p>Directory containing some sample LIS configuration files</p>
 </div>
 </li>
 <li>
 <p><em>core</em></p>
 <div class="paragraph">
-<p>core routines in LIS</p>
+<p>Directory containing core routines in LIS</p>
 </div>
 </li>
 <li>
@@ -1863,7 +2021,7 @@ included components</p>
 <li>
 <p><em>di</em></p>
 <div class="paragraph">
-<p>direct insertion algorithm for data assimilation</p>
+<p>Direct insertion algorithm for data assimilation</p>
 </div>
 </li>
 <li>
@@ -1893,7 +2051,7 @@ included components</p>
 <li>
 <p><em>pf</em></p>
 <div class="paragraph">
-<p>particle filter algorithm for data assimilation</p>
+<p>Particle filter algorithm for data assimilation</p>
 </div>
 </li>
 </ul>
@@ -2013,6 +2171,12 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>MCD15A2H_LAI</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
 <p><em>MODIS_SPORT_LAI</em></p>
 <div class="paragraph">
 <p><span class="red">specifies what?</span></p>
@@ -2097,6 +2261,18 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>SMOS_NRTNN_L2sm</em></p>
+<div class="paragraph">
+<p>SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)</p>
+</div>
+</li>
+<li>
+<p><em>SNODAS</em></p>
+<div class="paragraph">
+<p>Snow Data Assimilation System (SNODAS)</p>
+</div>
+</li>
+<li>
 <p><em>SNODEP</em></p>
 <div class="paragraph">
 <p>AFWA snowdepth data in Grib1 format</p>
@@ -2112,6 +2288,12 @@ included components</p>
 <p><em>SYN_LBAND_TB</em></p>
 <div class="paragraph">
 <p>Synthetic L-band brightness temperature</p>
+</div>
+</li>
+<li>
+<p><em>THySM</em></p>
+<div class="paragraph">
+<p>Thermal hydraulic disaggregation of soil moisture (THySM)</p>
 </div>
 </li>
 <li>
@@ -2133,6 +2315,12 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>hydrowebWL</em></p>
+<div class="paragraph">
+<p>hydroweb water level</p>
+</div>
+</li>
+<li>
 <p><em>pildas</em></p>
 <div class="paragraph">
 <p>PILDAS soil moisture observations (such as one generated from a previous LIS LSM run)</p>
@@ -2150,7 +2338,7 @@ included components</p>
 <li>
 <p><em>multisynsmobs</em></p>
 <div class="paragraph">
-<p>synthetic soil moisture data with multiple observation types</p>
+<p>Synthetic soil moisture data with multiple observation types</p>
 </div>
 </li>
 <li>
@@ -2162,31 +2350,31 @@ included components</p>
 <li>
 <p><em>syntheticlst</em></p>
 <div class="paragraph">
-<p>synthetic land surface temperature data handler</p>
+<p>Synthetic land surface temperature data handler</p>
 </div>
 </li>
 <li>
 <p><em>syntheticsf</em></p>
 <div class="paragraph">
-<p>synthetic streamflow data handler</p>
+<p>Synthetic streamflow data handler</p>
 </div>
 </li>
 <li>
 <p><em>syntheticsm</em></p>
 <div class="paragraph">
-<p>synthetic soil moisture data handler (produced from a LIS LSM run)</p>
+<p>Synthetic soil moisture data handler (produced from a LIS LSM run)</p>
 </div>
 </li>
 <li>
 <p><em>syntheticsnd</em></p>
 <div class="paragraph">
-<p>synthetic snow depth data handler</p>
+<p>Synthetic snow depth data handler</p>
 </div>
 </li>
 <li>
 <p><em>syntheticswe</em></p>
 <div class="paragraph">
-<p>synthetic snow water equivalent data handler</p>
+<p>Synthetic snow water equivalent data handler</p>
 </div>
 </li>
 <li>
@@ -2226,7 +2414,7 @@ included components</p>
 <li>
 <p><em>forecast</em></p>
 <div class="paragraph">
-<p>Supports forecast capabilities</p>
+<p>Top level directory for forecasting support, which includes the following subcomponents</p>
 </div>
 <div class="ulist">
 <ul>
@@ -2311,7 +2499,7 @@ included components</p>
 <li>
 <p><em>make</em></p>
 <div class="paragraph">
-<p>Makefile and needed header files for building LIS executable</p>
+<p>Directory containing Makefile and needed header files for building LIS executable</p>
 </div>
 </li>
 <li>
@@ -2324,31 +2512,31 @@ included components</p>
 <li>
 <p><em>3B42RT</em></p>
 <div class="paragraph">
-<p>Routines for handling the TRMM 3B42RT precipitation product</p>
+<p>TRMM 3B42RT precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>3B42RTV7</em></p>
 <div class="paragraph">
-<p>Routines for handling the TRMM 3B42RTV7 precipitation product</p>
+<p>TRMM 3B42RTV7 precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>3B42V6</em></p>
 <div class="paragraph">
-<p>Routines for handling the TRMM 3B42V6 precipitation product</p>
+<p>TRMM 3B42V6 precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>3B42V7</em></p>
 <div class="paragraph">
-<p>Routines for handling the TRMM 3B42V7 precipitation product</p>
+<p>TRMM 3B42V7 precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>AWAP</em></p>
 <div class="paragraph">
-<p>Routines for handling the AWAP precipitation product</p>
+<p>AWAP precipitation product</p>
 </div>
 </li>
 <li>
@@ -2360,13 +2548,19 @@ included components</p>
 <li>
 <p><em>Bondville</em></p>
 <div class="paragraph">
-<p>Routines for handling the Bondville forcing products</p>
+<p>Bondville forcing products</p>
+</div>
+</li>
+<li>
+<p><em>COAMPSout</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from COAMPS output (COAMPSout)</p>
 </div>
 </li>
 <li>
 <p><em>HiMAT_GMU</em></p>
 <div class="paragraph">
-<p>downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
+<p>Downscaled MERRA2 precipitation data over the High Mountain Asia domain from GMU (HiMAT_GMU)</p>
 </div>
 </li>
 <li>
@@ -2378,55 +2572,67 @@ included components</p>
 <li>
 <p><em>PALSmetdata</em></p>
 <div class="paragraph">
-<p>Routines for handling the PALS station data</p>
+<p>PALS station data</p>
 </div>
 </li>
 <li>
 <p><em>RFE2Daily</em></p>
 <div class="paragraph">
-<p>Routines for handling the RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)</p>
+<p>RFE2 precipitation product from FEWSNET (diurnally non-disaggregated)</p>
 </div>
 </li>
 <li>
 <p><em>RFE2gdas</em></p>
 <div class="paragraph">
-<p>Routines for handling the RFE2 precipitation product from FEWSNET bias corrected against GDAS data</p>
+<p>RFE2 precipitation product from FEWSNET bias corrected against GDAS data</p>
+</div>
+</li>
+<li>
+<p><em>WRFAKdom</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from WRF output over Alaska domain (WRFAKdom)</p>
 </div>
 </li>
 <li>
 <p><em>WRFout</em></p>
 <div class="paragraph">
-<p>Routines for handling WRF output as forcing input</p>
+<p>Metforcing extracted from WRF output (WRFout)</p>
+</div>
+</li>
+<li>
+<p><em>WRFoutv2</em></p>
+<div class="paragraph">
+<p>Metforcing extracted from WRF output (WRFoutv2)</p>
 </div>
 </li>
 <li>
 <p><em>agrradps</em></p>
 <div class="paragraph">
-<p>Routines for handling the AGRMET radiation product (polar stereographic prjection)</p>
+<p>AGRMET radiation product (polar stereographic prjection)</p>
 </div>
 </li>
 <li>
 <p><em>chirps2</em></p>
 <div class="paragraph">
-<p>Routines for handling the UCSB CHIRPS v2.0 satellite-gage merged precipitation product</p>
+<p>UCSB CHIRPS v2.0 satellite-gage merged precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>climatology</em></p>
 <div class="paragraph">
-<p>Routines for handling LDT-generated forcing climatologies</p>
+<p>LDT-generated forcing climatologies</p>
 </div>
 </li>
 <li>
 <p><em>cmap</em></p>
 <div class="paragraph">
-<p>Routines for handling the CMAP precipitation product</p>
+<p>CMAP precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>cmorph</em></p>
 <div class="paragraph">
-<p>Routines for handling the CMORPH precipitation product</p>
+<p>CMORPH precipitation product</p>
 </div>
 </li>
 <li>
@@ -2454,6 +2660,12 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>gddp</em></p>
+<div class="paragraph">
+<p>NASA Earth Exchange Global Daily Downscaled Projections (NEX-GDDP)</p>
+</div>
+</li>
+<li>
 <p><em>gefs</em></p>
 <div class="paragraph">
 <p><span class="red">specifies what?</span></p>
@@ -2462,7 +2674,7 @@ included components</p>
 <li>
 <p><em>genEnsFcst</em></p>
 <div class="paragraph">
-<p>Routines for handling user-derived ensemble forecast data</p>
+<p>User-derived ensemble forecast data</p>
 </div>
 </li>
 <li>
@@ -2504,7 +2716,7 @@ included components</p>
 <li>
 <p><em>imerg</em></p>
 <div class="paragraph">
-<p>Routines for handling the GPM L3 precipitation product</p>
+<p>GPM L3 precipitation product</p>
 </div>
 </li>
 <li>
@@ -2514,27 +2726,39 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>mrms</em></p>
+<div class="paragraph">
+<p>National Center for Environmental Prediction (NCEP) Multi-Radar/Multi-Sensor (MRMS) Doppler Radar+gage product.</p>
+</div>
+</li>
+<li>
 <p><em>nam242</em></p>
 <div class="paragraph">
-<p>Routines for handling the North American Mesoscale Forecast System (NAM) 242 AWIPS Grid -- Over Alaska product</p>
+<p>North American Mesoscale Forecast System (NAM) 242 AWIPS Grid -- Over Alaska product</p>
 </div>
 </li>
 <li>
 <p><em>narr</em></p>
 <div class="paragraph">
-<p>Routines for handling the North American Regional Reanalysis (3d) data</p>
+<p>North American Regional Reanalysis (3d) data</p>
 </div>
 </li>
 <li>
 <p><em>nldas2</em></p>
 <div class="paragraph">
-<p>Routines for handling the North American Land Data Assimilation System 2 forcing product</p>
+<p>North American Land Data Assimilation System 2 forcing product</p>
 </div>
 </li>
 <li>
 <p><em>pet_usgs</em></p>
 <div class="paragraph">
-<p>Routines for handling daily potential evapotranspiration data from the USGS FAO-PET method, using GDAS forcing fields as inputs</p>
+<p>Daily potential evapotranspiration data from the USGS FAO-PET method, using GDAS forcing fields as inputs</p>
+</div>
+</li>
+<li>
+<p><em>plumber2</em></p>
+<div class="paragraph">
+<p>PLUMBER2 station data</p>
 </div>
 </li>
 <li>
@@ -2552,8 +2776,7 @@ included components</p>
 <li>
 <p><em>scan</em></p>
 <div class="paragraph">
-<p>Routines for handling the Soil Climate Analysis Network precipitation
-product</p>
+<p>Soil Climate Analysis Network precipitation product</p>
 </div>
 </li>
 <li>
@@ -2565,13 +2788,13 @@ product</p>
 <li>
 <p><em>stg2</em></p>
 <div class="paragraph">
-<p>Routines for handling the NCEP Stage IV QPE precipitation product</p>
+<p>NCEP Stage IV QPE precipitation product</p>
 </div>
 </li>
 <li>
 <p><em>stg4</em></p>
 <div class="paragraph">
-<p>Routines for handling the NCEP Stage II precipitation product</p>
+<p>NCEP Stage II precipitation product</p>
 </div>
 </li>
 <li>
@@ -2589,13 +2812,13 @@ product</p>
 <li>
 <p><em>vicforcing</em></p>
 <div class="paragraph">
-<p>Routines for handling VIC 4.1.1 pre-processed meteorological forcing data</p>
+<p>VIC 4.1.1 pre-processed meteorological forcing data</p>
 </div>
 </li>
 <li>
 <p><em>vicforcing.4.1.2</em></p>
 <div class="paragraph">
-<p>Routines for handling VIC 4.1.2 pre-processed meteorological forcing data</p>
+<p>VIC 4.1.2 pre-processed meteorological forcing data</p>
 </div>
 </li>
 </ul>
@@ -2604,7 +2827,7 @@ product</p>
 <li>
 <p><em>offline</em></p>
 <div class="paragraph">
-<p>Contains the main program for the offline mode of operation</p>
+<p>Directory containing the main program for the offline mode of operation</p>
 </div>
 </li>
 <li>
@@ -2624,19 +2847,19 @@ product</p>
 <li>
 <p><em>DEMC</em></p>
 <div class="paragraph">
-<p>differential evolution monte carlo algorithm</p>
+<p>Differential evolution Monte Carlo algorithm</p>
 </div>
 </li>
 <li>
 <p><em>DEMCz</em></p>
 <div class="paragraph">
-<p>differential evolution monte carlo Z algorithm</p>
+<p>Differential evolution Monte Carlo Z algorithm</p>
 </div>
 </li>
 <li>
 <p><em>ES</em></p>
 <div class="paragraph">
-<p>enumerated search</p>
+<p>Enumerated search</p>
 </div>
 </li>
 <li>
@@ -2654,7 +2877,7 @@ product</p>
 <li>
 <p><em>MCSIM</em></p>
 <div class="paragraph">
-<p>monte carlo simple propagation scheme</p>
+<p>Monte Carlo simple propagation scheme</p>
 </div>
 </li>
 <li>
@@ -2696,13 +2919,13 @@ product</p>
 <li>
 <p><em>LL</em></p>
 <div class="paragraph">
-<p>maximum likelihood</p>
+<p>Maximum likelihood</p>
 </div>
 </li>
 <li>
 <p><em>LM</em></p>
 <div class="paragraph">
-<p>objective function definition for LM algorithm</p>
+<p>Objective function definition for LM algorithm</p>
 </div>
 </li>
 <li>
@@ -2714,7 +2937,7 @@ product</p>
 <li>
 <p><em>P</em></p>
 <div class="paragraph">
-<p>prior function definition</p>
+<p>Prior function definition</p>
 </div>
 </li>
 </ul>
@@ -2814,7 +3037,7 @@ product</p>
 <li>
 <p><em>pesynsm1</em></p>
 <div class="paragraph">
-<p>synthetic soil moisture observations</p>
+<p>Synthetic soil moisture observations</p>
 </div>
 </li>
 <li>
@@ -2881,7 +3104,7 @@ product</p>
 <li>
 <p><em>plugins</em></p>
 <div class="paragraph">
-<p>Modules defining the function table registry of extensible functionalities</p>
+<p>Directory containing modules defining the function table registry of extensible functionalities</p>
 </div>
 </li>
 <li>
@@ -2977,7 +3200,13 @@ product</p>
 <li>
 <p><em>landslide_optUE</em></p>
 <div class="paragraph">
-<p>Routines to manage the program flow in combined use of landslide modelling simulations and optimization</p>
+<p>Routines to manage the program flow in combined use of landslide modeling simulations and optimization</p>
+</div>
+</li>
+<li>
+<p><em>nuopc_cpl_mode</em></p>
+<div class="paragraph">
+<p>National Unified Operational Prediction Capability (NUOPC) coupled runmode</p>
 </div>
 </li>
 <li>
@@ -3216,108 +3445,17 @@ product</p>
 </div>
 </li>
 <li>
-<p>Each of these LSM directories contain specific plugin interfaces related to</p>
+<p><em>subLSM</em></p>
 <div class="paragraph">
-<p>(1) coupling to WRF and GCE models,<br>
-(2) Data assimilation instances,<br>
-(3) Irrigation instances,<br>
-(4) Parameter estimation instances,<br>
-(5) Routing instances, and<br>
-(6) Radiative transfer instances.</p>
+<p>Directory containing implementations of sub land surface modeling processes.</p>
 </div>
-<div class="paragraph">
-<p>These routines defined for Noah land surface model version 3.3 are shown below. Note that similar routines are implemented in other LSMs.</p>
-</div>
-</li>
-<li>
-<p>(1) Coupling interfaces:</p>
 <div class="ulist">
 <ul>
 <li>
-<p><em>cpl_wrf_noesmf</em></p>
+<p><em>crocus.8.1</em></p>
 <div class="paragraph">
-<p>Routines for coupling Noah with WRF without ESMF</p>
+<p>Crocus 8.1 snow model</p>
 </div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(2) Data assimilation interfaces:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>da_snodep</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of AFWA SNODEP observations</p>
-</div>
-</li>
-<li>
-<p><em>da_snow</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of snow water equivalent observations</p>
-</div>
-</li>
-<li>
-<p><em>da_soilm</em></p>
-<div class="paragraph">
-<p>Noah routines related to the assimilation of soil moisture observations</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(3) Irrigation interfaces:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>irrigation</em></p>
-<div class="paragraph">
-<p>Noah routines related to interacting with the irrigation scheme</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(4) Parameter estimation interfaces:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>pe</em></p>
-<div class="paragraph">
-<p>Noah routines related to the estimation of soil properties through parameter estimation</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(5) Routing interfaces:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>routing</em></p>
-<div class="paragraph">
-<p>Noah routines related to interacting with the routing schemes</p>
-</div>
-</li>
-</ul>
-</div>
-</li>
-<li>
-<p>(6) Radiative transfer model interfaces:</p>
-<div class="ulist">
-<ul>
-<li>
-<p><em>sfc_cmem3</em></p>
-</li>
-<li>
-<p><em>sfc_crtm</em></p>
-</li>
-<li>
-<p><em>sfc_tauomega</em></p>
 </li>
 </ul>
 </div>
@@ -3358,11 +3496,136 @@ product</p>
 </li>
 </ul>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Each of the LSM directories under <em>surfacemodels/land</em> contain specific plugin interfaces related to</p>
+</div>
+<div class="paragraph">
+<p>(1) coupling to WRF and GCE models,
+(2) Data assimilation instances,
+(3) Irrigation instances,
+(4) Parameter estimation instances,
+(5) Routing instances, and
+(6) Radiative transfer instances.</p>
+</div>
+<div class="paragraph">
+<p>These routines defined for Noah land surface model version 3.3 are shown below. Note that similar routines are implemented in other LSMs.</p>
+</div>
+<div class="paragraph">
+<p>(1) Coupling interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>cpl_wrf_noesmf</em></p>
+<div class="paragraph">
+<p>Routines for coupling Noah with WRF without ESMF</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(2) Data assimilation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>da_snodep</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of AFWA SNODEP observations</p>
+</div>
+</li>
+<li>
+<p><em>da_snow</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of snow water equivalent observations</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>da_soilm</em></p>
+<div class="paragraph">
+<p>Noah routines related to the assimilation of soil moisture observations</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(3) Irrigation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>irrigation</em></p>
+<div class="paragraph">
+<p>Noah routines related to interacting with the irrigation scheme</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(4) Parameter estimation interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>pe</em></p>
+<div class="paragraph">
+<p>Noah routines related to the estimation of soil properties through parameter estimation</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(5) Routing interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>routing</em></p>
+<div class="paragraph">
+<p>Noah routines related to interacting with the routing schemes</p>
+</div>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>(6) Radiative transfer model interfaces:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><em>sfc_cmem3</em></p>
+</li>
+<li>
+<p><em>sfc_crtm</em></p>
+</li>
+<li>
+<p><em>sfc_tauomega</em></p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_documentation">4.5. Documentation</h3>
 <div class="paragraph">
-<p>Processed documentation may be found on <a href="http://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Docs&#8221; menu.</p>
+<p>Processed documentation for each release may be found on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Docs&#8221; menu.  Starting with LISF public release 7.4, processed documentation may also be found on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+</div>
+<div class="paragraph">
+<p>Processed documentation for the master branch is available on GitHub under the NASA-LIS organization&#8217;s GitHub pages at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>.</p>
 </div>
 </div>
 </div>
@@ -3371,597 +3634,19 @@ product</p>
 <h2 id="sec_build">5. Building the Executable</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section describes how to build the source code and create LIS' executable: named LIS.</p>
+<p>This section describes how to build the source code and create LIS' executable: named <em>LIS</em>.</p>
 </div>
 <div class="paragraph">
 <p>Please see Section <a href="#sec_important_note_fs">Important Note Regarding File Systems</a> for information regarding using a case sensitve file system for compiling/running LIS.</p>
 </div>
 <div class="sect2">
-<h3 id="_development_tools">5.1. Development Tools</h3>
+<h3 id="_lisf_dependencies">5.1. LISF Dependencies</h3>
 <div class="paragraph">
-<p>This code has been compiled and run on
-Linux PC (Intel/AMD based) systems
-and Cray systems.
-These instructions expect that you are using such a system.  In particular you need:</p>
-</div>
-<div class="sect3">
-<h4 id="_linux">5.1.1. Linux</h4>
-<div class="sect4">
-<h5 id="_compilers">Compilers</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>Intel Fortran Compiler versions 18, 19, or 20 with corresponding Intel C Compiler along with GNU&#8217;s Compiler Collection version 9.2.0</p>
-</li>
-<li>
-<p>or GNU&#8217;s Compiler Collection version 4.9.2 or 7.3, both gfortran and gcc.</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_tools">Tools</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>GNU&#8217;s make, gmake, version 3.77 or 3.81</p>
-</li>
-<li>
-<p>Perl, version 5.10</p>
-</li>
-<li>
-<p>Python, version 2.7 or 3.8</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_craylinux">5.1.2. Cray/Linux</h4>
-<div class="sect4">
-<h5 id="_compilers_2">Compilers</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>Intel Fortran Compiler version 18 or 19 with corresponding Intel C Compiler, along with GNU&#8217;s Compiler Collection version 7.3.0</p>
-</li>
-</ul>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_tools_2">Tools</h5>
-<div class="ulist">
-<ul>
-<li>
-<p>GNU&#8217;s make, gmake, version 3.77 or 3.81</p>
-</li>
-<li>
-<p>Perl, version 5.10</p>
-</li>
-<li>
-<p>Python, version 2.7 or 3.8</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
-</td>
-</tr>
-</table>
-</div>
-</div>
+<p>Please first read the companion document &#8220;Installing LISF Dependencies&#8221;.  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_requiredlibs">5.2. Required Software Libraries</h3>
-<div class="paragraph">
-<p>In order to build the LIS executable, the following libraries must be installed on your system:</p>
-</div>
-<div class="sect3">
-<h4 id="_earth_system_modeling_framework_esmf_version_7_1_0r_or_higher">5.2.1. Earth System Modeling Framework (ESMF) version 7.1.0r (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://earthsystemmodeling.org/" class="bare">https://earthsystemmodeling.org/</a>)</p>
-</div>
-<div class="paragraph">
-<p>Please read the ESMF User&#8217;s Guide for details on installing ESMF with MPI support and without MPI support (&#8220;mpiuni&#8221;).</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_openjpeg_version_2_3_0_or_higher">5.2.2. OpenJPEG version 2.3.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="http://www.openjpeg.org/" class="bare">http://www.openjpeg.org/</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_eccodes_version_2_7_0_or_higher">5.2.3. ecCodes version 2.7.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="https://confluence.ecmwf.int/display/ECC" class="bare">https://confluence.ecmwf.int/display/ECC</a>)</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_netcdf_either_version_3_6_3_or_version_4_5_0_or_higher">5.2.4. NetCDF either version 3.6.3 or version 4.5.0 (or higher)</h4>
-<div class="paragraph">
-<p>(<a href="http://www.unidata.ucar.edu/software/netcdf" class="bare">http://www.unidata.ucar.edu/software/netcdf</a>)</p>
-</div>
-<div class="paragraph">
-<p>Please read the on-line documentation for details on installing NetCDF.</p>
-</div>
-<div class="sect4">
-<h5 id="_additional_notes_for_netcdf_4">Additional notes for NetCDF 4:</h5>
-<div class="paragraph">
-<p>You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add <code>--enable-netcdf-4</code> to the <code>configure</code> options.  To disable compression, add <code>--disable-netcdf-4</code> to the <code>configure</code> options.</p>
-</div>
-<div class="paragraph">
-<p>An example of installing NetCDF 4 without compression:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% ./configure --prefix=$HOME/local/netcdf-4.5.0 --disable-netcdf-4
-% gmake
-% gmake install</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>An example of installing NetCDF 4 with compression:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% CPPFLAGS=-I$HOME/local/hdf5/1.10.1/include \
-&gt; LDFLAGS=-L$HOME/local/hdf5/1.10.1/lib \
-&gt; ./configure --prefix=$HOME/local/netcdf/4.5.0 --enable-netcdf-4
-% gmake
-% gmake install</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>You must also download the <em>netcdf-fortran-4.4.4.tar.gz</em> file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.</p>
-</div>
-<div class="paragraph">
-<p>An example of installing the NetCDF 4 Fortran library:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% LD_LIBRARY_PATH=$HOME/local/netcdf/4.5.0/lib:$LD_LIBRARY_PATH \
-&gt; CPPFLAGS=-I$HOME/local/netcdf/4.5.0/include \
-&gt; LDFLAGS=-L$HOME/local/netcdf/4.5.0/lib \
-&gt; ./configure --prefix=$HOME/local/netcdf/4.5.0
-% gmake
-% gmake install</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_optional_software_libraries">5.3. Optional Software Libraries</h3>
-<div class="paragraph">
-<p>The following libraries are not required to compile LIS.  They are used to extend the functionality of LIS.</p>
-</div>
-<div class="sect3">
-<h4 id="_message_passing_interface_mpi">5.3.1. Message Passing Interface (MPI)</h4>
-<div class="paragraph">
-<p>If you wish to run LIS with multiple processes (i.e., in parallel), then you must install an MPI library package.</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>vendor supplied (e.g., Intel MPI)</p>
-</li>
-<li>
-<p>Open MPI (<a href="http://www.open-mpi.org/" class="bare">http://www.open-mpi.org/</a>)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>Note that LIS does not support OpenMP style parallelization.  There is some experimental support within LIS, but you should not enable it.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_hdf">5.3.2. HDF</h4>
-<div class="paragraph">
-<p>You may choose either HDF version 4, HDF version 5, or both.</p>
-</div>
-<div class="paragraph">
-<p>HDF is used to support a number of remote sensing datasets.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use MODIS snow cover area observations or NASA AMSR-E soil moisture observations, then you need HDF 4 support.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use ANSA snow cover fraction observations, then you need HDF 5 support.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 support.</p>
-</div>
-<div class="sect4">
-<h5 id="_hdf_4">HDF 4</h5>
-<div class="paragraph">
-<p>If you choose to have HDF version 4 support, please download the HDF source for version 4.2.13 (or higher) from <a href="https://portal.hdfgroup.org/display/support/Download+HDF4" class="bare">https://portal.hdfgroup.org/display/support/Download+HDF4</a> and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the <code>--enable-fortran</code> option to the <code>configure</code> command.</p>
-</div>
-<div class="paragraph">
-<p>Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the <code>--disable-netcdf</code> option to the <code>configure</code> command.</p>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-When compiling LIS with HDF 4 support, you must also download and compile HDF-EOS2 version 2.19v1.00 or higher from <a href="http://hdfeos.org/software/library.php" class="bare">http://hdfeos.org/software/library.php</a>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect4">
-<h5 id="_hdf_5">HDF 5</h5>
-<div class="paragraph">
-<p>If you choose to have HDF version 5 support, please download the HDF source for version 1.10.1 (or higher) from <a href="http://www.hdfgroup.org/HDF5/" class="bare">http://www.hdfgroup.org/HDF5/</a> and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the <code>--enable-fortran</code> option to the <code>configure</code> command.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_jcsda_crtm_version_2_0_2">5.3.3. JCSDA CRTM version 2.0.2</h4>
-<div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to <a href="http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/" class="bare">http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/</a> and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.</p>
-</div>
-<div class="paragraph">
-<p>Please create a directory outside of the LIS source code to checkout the CRTM library into.  Then, within that new directory, run:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% svn checkout -r 9604 https://svnemc.ncep.noaa.gov/projects/crtm/trunk</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Then you must copy the LIS specific updates into this checked out CRTM code.  See <em>$WORKING/lib/lis-crtm/README</em>.</p>
-</div>
-<div class="paragraph">
-<p>Next compile and install the CRTM library:</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% source Set_CRTM_Environment.sh
-% cd src
-% source configure/ifort.setup
-# Of course, choose the setup script that is appropriate
-# for your environment.
-% gmake
-% gmake install</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_cmem_library">5.3.4. LIS-CMEM library</h4>
-<div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must manually compile an included library.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% cd $WORKING/lib/lis-cmem3
-% gmake</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_lis_crtm_profile_utility_library">5.3.5. LIS-CRTM-PROFILE-UTILITY library</h4>
-<div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must manually compile an included library.</p>
-</div>
-<div class="literalblock">
-<div class="content">
-<pre>% cd $WORKING/lib/lis-crtm-profile-utility
-% gmake
-% gmake install</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_notes">5.3.6. Notes</h4>
-<div class="paragraph">
-<p>To install these libraries, follow the instructions provided at the various URL listed above.  These optional libraries have their own dependencies, which should be documented in their respective documentation.</p>
-</div>
-<div class="paragraph">
-<p>Please note that your system may have several different compilers installed.  You must verify that you are building these libraries with the correct compiler.  You should review the output from the <code>configure</code>, <code>make</code>, etc. commands.  If the wrong compiler is being used, you may have to correct your <code>$PATH</code> environment variable, or set the <code>$CC</code> and <code>$FC</code> environment variables, or pass additional settings to the <code>configure</code> scripts.  Please consult the installation instructions provided at the various URL listed above for each library.</p>
-</div>
-<div class="paragraph">
-<p>If you wish to install all the libraries (required and optional, excluding JCSDA CRTM, LIS-CMEM, and LIS-CRTM-PROFILE-UTILITY), here is the recommended order:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>HDF 5 (optional)<br>
-NetCDF has an optional dependency on HDF 5.</p>
-</li>
-<li>
-<p>NetCDF (required)<br>
-ESMF has an optional dependency on NetCDF.<br>
-ecCodes has an optional dependency on NetCDF.</p>
-</li>
-<li>
-<p>openJPEG (required)<br>
-ecCodes depends on openJPEG.</p>
-</li>
-<li>
-<p>ecCodes (required)</p>
-</li>
-<li>
-<p>MPI (optional)<br>
-ESMF has an optional dependency on MPI.</p>
-</li>
-<li>
-<p>ESMF (required)</p>
-</li>
-<li>
-<p>HDF 4 (optional)<br>
-HDF-EOS2 depends on HDF 4.</p>
-</li>
-<li>
-<p>HDF-EOS2 (optional)</p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>Note that due to the mix of programing languages (Fortran and C) used by LIS, you may run into linking errors when building the LIS executable.  This is often due to (1) the Fortran compiler and the C compiler using different cases (upper case vs. lower case) for external names, and (2) the Fortran compiler and C compiler using a different number of underscores for external names.</p>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_specific_examples">5.3.7. Specific examples</h4>
-<div class="paragraph">
-<p>The following tables provide some specific examples of the compiler and library versions that LIS has been tested with.  See Appendix <a href="#sec_more_specific_examples">More specific examples</a> for more examples.</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 1. SUSE Linux Enterprise Server 12.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">9.2.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.1.3.304</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">openJPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.7.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">20.0.0.166</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.13</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">8d</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GEOTIFF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 2. Red Hat Enterprise Linux Server 7.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.0.4.243 20190416 (2019.4.243)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.6.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.4.243</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 3. Red Hat Enterprise Linux Server 7.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">9.2.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.0.5.281 20190815 (2019.5.281)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.7.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">openJPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.18.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.5.281</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.15</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.6.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.6</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">sqlite3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3.33.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">tiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.1.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">proj</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.1</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_build_instructions">5.4. Build Instructions</h3>
+<h3 id="_build_instructions">5.2. Build Instructions</h3>
 <div class="sect3">
 <h4 id="_step_1_3">Step 1</h4>
 <div class="paragraph">
@@ -3971,7 +3656,7 @@ HDF-EOS2 depends on HDF 4.</p>
 <div class="sect3">
 <h4 id="_step_2_3">Step 2</h4>
 <div class="paragraph">
-<p>Goto the <em>$WORKING</em> directory.  This directory contains two scripts for building the LIS executable: <em>configure</em> and <em>compile</em>.</p>
+<p>Go to the <em>$WORKING</em> directory.  This directory contains two scripts for building the LIS executable: <em>configure</em> and <em>compile</em>.</p>
 </div>
 </div>
 <div class="sect3">
@@ -3991,8 +3676,26 @@ HDF-EOS2 depends on HDF 4.</p>
 <pre>% export LIS_ARCH=linux_gfortran</pre>
 </div>
 </div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Intel Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=cray_ifc</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For a Cray system with the Cray Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=cray_cray</pre>
+</div>
+</div>
+<div class="literalblock">
+<div class="title">For an IBM system with the GNU Fortran compiler</div>
+<div class="content">
+<pre>% export LIS_ARCH=ibm_gfortran</pre>
+</div>
+</div>
 <div class="paragraph">
-<p>It is suggested that you place this command in your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set this environment variable in a modulefile <sup class="footnote" id="_footnote_modulefile">[<a id="_footnoteref_2" class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
 </div>
 </div>
 <div class="sect3">
@@ -4092,13 +3795,23 @@ HDF-EOS2 depends on HDF 4.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to LIS-CMEM library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_LAPACK</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to LAPACK library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_JPEG</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to JPEG library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system libjpeg by default)</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
 <p>Note that the <code>CC</code> variable must be set to a C compiler, not a C&#43;&#43; compiler.  A C&#43;&#43; compiler may mangle internal names in a manner that is not consistent with the Fortran compiler.  This will cause errors during linking.</p>
 </div>
 <div class="paragraph">
-<p>It is suggested that you add these definitions to your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set these environment variables in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
 </div>
 <div class="paragraph">
 <p>You may encounter errors either when trying to compile LIS or when trying to run LIS because the compiler or operating system cannot find these libraries.  To fix this, you must add these libraries to your <code>$LD_LIBRARY_PATH</code> environment variable.  For example, say that you are using ESMF, ecCodes, NetCDF, and HDF5.  Then you must execute the following command (written using Bash shell syntax):</p>
@@ -4109,7 +3822,7 @@ HDF-EOS2 depends on HDF 4.</p>
 </div>
 </div>
 <div class="paragraph">
-<p>It is also suggested that you add this command to your <em>.profile</em> (or equivalent) startup file.</p>
+<p>It is suggested that you set this environment variable in a modulefile <sup class="footnoteref">[<a class="footnote" href="#_footnotedef_2" title="View footnote.">2</a>]</sup> to load or in an environment script to source before compiling and/or running LIS.</p>
 </div>
 <div class="sect4">
 <h5 id="_example">Example</h5>
@@ -4224,7 +3937,7 @@ if you wish to enable LIS-CMEM support, then you must also enable LIS-CRTM.  So 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_customizing_the_build_via_lis_plugins">5.4.1. Customizing the build via LIS plugins</h4>
+<h4 id="_customizing_the_build_via_lis_plugins">5.2.1. Customizing the build via LIS plugins</h4>
 <div class="paragraph">
 <p>Various components within LIS are considered plugins, meaning that they are optional and may be enabled/disabled at compile-time.  By default, most plugins are enabled, only 1) the restricted components, which are not available in the public releases of LIS, 2) components still under development, 3) and old/unsupported components are disabled by default.  If you wish to compile LIS with its default plugin configuration, then simply follow the above six steps.  You may skip the rest of this section.  If you wish to toggle whether a plugin is enabled/disabled, then you must create a <em>user.cfg</em> file.</p>
 </div>
@@ -4271,7 +3984,7 @@ Not all the optional components listed below are available in the public release
 <p>Please do not copy this whole list into a <em>user.cfg</em> file.  Create a <em>user.cfg</em> file containing only the components that you want to toggle.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 4. Running modes</caption>
+<caption class="title">Table 1. Running modes</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4318,7 +4031,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 5. Metforcings</caption>
+<caption class="title">Table 2. Metforcings</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4463,6 +4176,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">PLUMBER2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Bondville</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
@@ -4499,6 +4216,18 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COAMPSout</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WRFoutv2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">WRF AK</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">AWAP</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
@@ -4518,10 +4247,14 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">MRMS</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GDDP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 6. Parameters</caption>
+<caption class="title">Table 3. Parameters</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4535,7 +4268,7 @@ Not all the optional components listed below are available in the public release
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MODIS real-time</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">ALMIPII LAI</p></td>
@@ -4572,7 +4305,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 7. RTMS</caption>
+<caption class="title">Table 4. RTMS</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4607,7 +4340,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 8. Applications</caption>
+<caption class="title">Table 5. Applications</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4630,7 +4363,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 9. Routing</caption>
+<caption class="title">Table 6. Routing</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4657,7 +4390,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 10. Irrigation</caption>
+<caption class="title">Table 7. Irrigation</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4684,7 +4417,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 11. DA</caption>
+<caption class="title">Table 8. DA</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4729,6 +4462,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS HYDROWEBWL</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS syntheticsnd</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
@@ -4757,6 +4494,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS THYSM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS LPRM_AMSREsm</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
@@ -4774,6 +4515,10 @@ Not all the optional components listed below are available in the public release
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS GCOMW_AMSR2L3SND</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS SNODAS</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
@@ -4801,11 +4546,19 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS SMOS_NRTNN_L2sm</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS NASA_SMAPvod</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS ASO_SWE</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS MCD15A2H_LAI</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
@@ -4835,7 +4588,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 12. Bias estimation</caption>
+<caption class="title">Table 9. Bias estimation</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4854,7 +4607,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 13. Perturbations</caption>
+<caption class="title">Table 10. Perturbations</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -4873,7 +4626,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 14. Optimization / Parameter estimation</caption>
+<caption class="title">Table 11. Optimization / Parameter estimation</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -5008,7 +4761,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 15. Surface models</caption>
+<caption class="title">Table 12. Surface models</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -5133,6 +4886,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crocus.8.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Flake.1.0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
@@ -5151,7 +4908,7 @@ Not all the optional components listed below are available in the public release
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 16. Forecast algorithms</caption>
+<caption class="title">Table 13. Forecast algorithms</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -5264,7 +5021,7 @@ Not all the optional components listed below are available in the public release
 <h2 id="sec_testcases">7. Test-cases</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section describes how to obtain and how to use the test cases provided by the LIS team.</p>
+<p>This section describes how to obtain and how to use the test cases provided by the LISF development team.</p>
 </div>
 <div class="paragraph">
 <p>There are two categories of testcases: public tests and internal tests.</p>
@@ -5278,7 +5035,7 @@ Not all the optional components listed below are available in the public release
 <p>The new public test cases are available from our main LIS webpage:</p>
 </div>
 <div class="paragraph">
-<p><a href="https://lis.gsfc.nasa.gov/tests/lis" class="bare">https://lis.gsfc.nasa.gov/tests/lis</a></p>
+<p><a href="https://lis.gsfc.nasa.gov/lis-testcases" class="bare">https://lis.gsfc.nasa.gov/lis-testcases</a></p>
 </div>
 <div class="paragraph">
 <p>All required input and data files are bundled with each of the cases from the above website. Also, documentation is provided that accompanies each of the cases for additional details and information. Below the table of test cases on the webpage, users will find information about which version, compiler and libraries used to generate and test the different test cases provided.</p>
@@ -5287,7 +5044,7 @@ Not all the optional components listed below are available in the public release
 <div class="sect2">
 <h3 id="_internal_tests">7.2. Internal tests</h3>
 <div class="paragraph">
-<p>The main purpose of these test cases is for the LIS development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a <em>testcases</em> sub-directory included in the LIS source code, input data, and output data.</p>
+<p>The main purpose of these test cases is for the LISF development team to internally test various components of the LIS source code.  These test cases are comprised of three parts: a <em>testcases</em> sub-directory included in the LIS source code, input data, and output data.</p>
 </div>
 <div class="paragraph">
 <p>For these test cases, we do not provide any of the input or output datasets, but users are welcome to use the config files in these subdirectory cases as a guide to setting up their own individual experiments and for their own testing purposes.</p>
@@ -5295,7 +5052,7 @@ Not all the optional components listed below are available in the public release
 <div class="sect3">
 <h4 id="sssec_testcases">7.2.1. The <em>testcases</em> Sub-directory</h4>
 <div class="paragraph">
-<p>The layout of the <em>testcases</em> sub-directory matches the layout of the top-level <em>src</em> directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in <em>src/metforcing/gdas</em>.  The test-case for GDAS is in <em>src/testcases/metforcing/gdas</em>.</p>
+<p>The layout of the <em>testcases</em> sub-directory matches the layout of the top-level <em>lis</em> directory.  For example, LIS contains support for processing GDAS forcing data.  These routines are in <em>lis/metforcing/gdas</em>.  The test-case for GDAS is in <em>lis/testcases/metforcing/gdas</em>.</p>
 </div>
 <div class="paragraph">
 <p>These test-case sub-directories contain several files.  For example, the <em>src/testcases/metforcing/gdas</em> test-case contains these main files:</p>
@@ -5433,13 +5190,13 @@ Not all the optional components listed below are available in the public release
 <div class="sect2">
 <h3 id="_grib1_output_format">8.2. GRIB1 output format</h3>
 <div class="paragraph">
-<p>GRIB1 is a self-describing data format.  The output files produced in GRIB1 can be inspected by using either the utility <code>wgrib</code> (<a href="http://www.cpc.ncep.noaa.gov/products/wesley/wgrib.html" class="bare">http://www.cpc.ncep.noaa.gov/products/wesley/wgrib.html</a>) or the utility <code>grib_dump</code> (provided with GRIB-API; see Section <a href="#ssec_requiredlibs">Required Software Libraries</a>).</p>
+<p>GRIB1 is a self-describing data format.  The output files produced in GRIB1 can be inspected by using either the utility <code>wgrib</code> (<a href="http://www.cpc.ncep.noaa.gov/products/wesley/wgrib.html" class="bare">http://www.cpc.ncep.noaa.gov/products/wesley/wgrib.html</a>) or the utility <code>grib_dump</code> (provided with GRIB-API; see Section <a href="#ssec_requiredlibs">[ssec_requiredlibs]</a>).</p>
 </div>
 </div>
 <div class="sect2">
 <h3 id="_netcdf_output_format">8.3. NetCDF output format</h3>
 <div class="paragraph">
-<p>NetCDF is a self-describing format. The output files produced in NetCDF can be inspected by using the utility <code>ncdump</code> (provided with NetCDF; see Section <a href="#ssec_requiredlibs">Required Software Libraries</a>).</p>
+<p>NetCDF is a self-describing format. The output files produced in NetCDF can be inspected by using the utility <code>ncdump</code> (provided with NetCDF; see Section <a href="#ssec_requiredlibs">[ssec_requiredlibs]</a>).</p>
 </div>
 </div>
 </div>
@@ -21988,12 +21745,12 @@ sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store
 <h2 id="sec_usersupport">12. User Support</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This section describes how to request help from and provide feedback to the LIS development team.</p>
+<p>This section describes how to request help from and provide feedback to the LISF development team.</p>
 </div>
 <div class="sect2">
 <h3 id="_requesting_help">12.1. Requesting Help</h3>
 <div class="paragraph">
-<p>To request help from the LIS development team, please visit the Discussions tab of our GitHub repository at <a href="https://github.com/NASA-LIS/LISF/discussions" class="bare">https://github.com/NASA-LIS/LISF/discussions</a>.  Please review the existing posts; your question may already be answered.  If it is not, then please open a &#8220;New discussion&#8221; to post your question there.</p>
+<p>To request help from the LISF development team, please visit the Discussions tab of our GitHub repository at <a href="https://github.com/NASA-LIS/LISF/discussions" class="bare">https://github.com/NASA-LIS/LISF/discussions</a>.  Please review the existing posts; your question may already be answered.  If it is not, then please open a &#8220;New discussion&#8221; to post your question there.</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -22075,7 +21832,7 @@ Posting a question requires a GitHub account. Register at <a href="https://githu
 </td>
 <td class="content">
 <div class="paragraph">
-<p>Please note that the LIS development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.</p>
+<p>Please note that the LISF development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.</p>
 </div>
 <div class="paragraph">
 <p>Due to U.S. federal law, we are not allowed to respond to anyone from a designated country (see <a href="https://www.nasa.gov/oiir/export-control" class="bare">https://www.nasa.gov/oiir/export-control</a>). By policy, we will not respond to messages from either non-institutional or non-organizational email addresses; e.g., we will not respond to email messages from gmail.</p>
@@ -22255,941 +22012,7 @@ Program stopping..</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="sec_more_specific_examples">Appendix C: More specific examples</h2>
-<div class="sectionbody">
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 17. SUSE Linux Enterprise Server 11.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">14.0.3.174</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.0.3.048</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.0rp3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 18. SUSE Linux Enterprise Server 11.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GCC compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.9.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Open MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.0rp3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 19. SUSE Linux Enterprise Server 11.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">18.0.3.222</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.7.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">18.0.3.222</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.13</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 20. SUSE Linux Enterprise Server 11.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.7.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">18.0.3.222</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NA (does not compile)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NA (does not compile)</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 21. SUSE Linux Enterprise Server 12.3</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">9.2.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.1.3.304</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">openJPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.7.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">20.0.0.166</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.13</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">8d</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GEOTIFF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 22. Red Hat Enterprise Linux Server 6.7</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">14.0.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.1.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.1.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.0rp3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 23. Red Hat Enterprise Linux Server 6.7</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">14.0.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.1.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Open MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.0rp3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 24. Red Hat Enterprise Linux Server 6.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">15.1.133</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.15</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.2</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.0.3.048</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.0rp3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 25. Cray XC40</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">15.0.2.164</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray-HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray-NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.3.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.14.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray-MPICH</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.2.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.2.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.11</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 26. Cray XC40</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">16.0.2.181</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.18</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.1.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.900.19</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GRIB-API</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.19.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray-MPICH</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.2.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.3.0rp1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.12</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 27. Cray XC40</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">17.0.2.174</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.8.18</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.1.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.7.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray-MPICH</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.5.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">6.3.0rp1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.12</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.19v.1.00</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 28. Cray XC40</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">18.0.3 20180410 (18.0.3.222)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.6.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Cray MPICH</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.5.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libtiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.0.6</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libjbig</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">liblzma</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">5.2.2</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 29. Red Hat Enterprise Linux Server 7.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.2.057</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.6.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.2.057</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 30. Red Hat Enterprise Linux Server 7.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.3.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.0.4.243 20190416 (2019.4.243)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.10.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.6.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.4.5</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">JasPer</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.0.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.4.243</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.14</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.4.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 31. Red Hat Enterprise Linux Server 7.8</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Library</th>
-<th class="tableblock halign-left valign-top">Version</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GNU compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">9.2.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel compiler</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">19.0.5.281 20190815 (2019.5.281)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 5</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.12.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.7.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NetCDF-Fortran</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.5.3</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">openJPEG</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.3.1</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ecCodes</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.18.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Intel MPI</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2019.5.281</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ESMF</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.0r</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF 4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.2.15</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">HDF-EOS2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.20v.1.00</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">libgeotiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1.6.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">GDAL</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.4.4</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">FortranGIS</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2.6</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">sqlite3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3.33.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">tiff</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">4.1.0</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">proj</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">7.1.1</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix D: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</h2>
+<h2 id="_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</h2>
 <div class="sectionbody">
 <div class="paragraph">
 <p>Copyright (c) 2015, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.</p>
@@ -23265,9 +22088,6 @@ Program stopping..</pre>
 <li>
 <p><a id="berg_etal_jgr_2003"></a>[berg_etal_jgr_2003] A. A. Berg, J. S. Famiglietti, J. P.  Walker, and P. R. Houser.  Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes.  <em>Journal of Geophysical Research</em>, 4490, 2003.</p>
 </li>
-<li>
-<p><a id="protex"></a>[protex] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.</p>
-</li>
 </ul>
 </div>
 </div>
@@ -23276,13 +22096,16 @@ Program stopping..</pre>
 <div id="footnotes">
 <hr>
 <div class="footnote" id="_footnotedef_1">
-<a href="#_footnoteref_1">1</a>. Not available in the LISF_public_release_7.3.4.tar.gz public release of LIS 7.3.
+<a href="#_footnoteref_1">1</a>. Not available in the LISF_public_release_7.4.0.tar.gz public release of LISF 7.4.
+</div>
+<div class="footnote" id="_footnotedef_2">
+<a href="#_footnoteref_2">2</a>. See the &#8220;Creating a Custom Modulefile&#8221; document found at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
 Version 1.19<br>
-Last updated 2022-06-10 20:01:31 UTC
+Last updated 2022-06-13 21:12:35 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
