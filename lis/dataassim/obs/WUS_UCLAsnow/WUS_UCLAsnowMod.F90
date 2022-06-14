@@ -40,7 +40,8 @@ module WUS_UCLAsnowMod
   type, public:: WUS_UCLAsnow_dec
      
      logical                :: startMode
-     integer                :: nc
+     logical                :: obsMap
+     integer                :: nc     
      integer                :: nr
      integer                :: mi
      integer                :: c_off, r_off
@@ -222,6 +223,7 @@ contains
           call LIS_readPertAttributes(1,LIS_rc%obspertAttribfile(k),&
                obs_pert)
 
+          WUS_UCLAsnow_struc(n)%obsMap = .true. 
 ! Set obs err to be uniform (will be rescaled later for each grid point). 
           ssdev = obs_pert%ssdev(1)
           WUS_UCLAsnow_struc(n)%ssdev_inp = obs_pert%ssdev(1)
@@ -281,24 +283,52 @@ contains
     do n=1,LIS_rc%nnest
 
        if(LIS_rc%lis_obs_map_proj(k).eq."latlon") then
-          cornerlat1 = max(31.002222, nint((LIS_rc%obs_gridDesc(k,4)-31.002222)/0.00444)*0.00444+31.002222-50*0.00444)
-          cornerlon1 = max(-124.99777777778, nint((LIS_rc%obs_gridDesc(k,5)+124.997777778)/0.00444)*0.00444-124.99777777778-50*0.00444)
-          cornerlat2 = min(48.997777778, nint((LIS_rc%obs_gridDesc(k,7)-31.002222)/0.00444)*0.00444+31.002222+50*0.00444)
-          cornerlon2 = min(-102.002222222222, nint((LIS_rc%obs_gridDesc(k,8)+124.997777778)/0.00444)*0.00444-124.99777777778+50*0.00444)
+          cornerlat1 = max(31.002222, &
+               nint((LIS_rc%obs_gridDesc(k,4)-31.002222)/&
+               0.0044444)*0.0044444+31.002222-50*0.0044444)
+          cornerlon1 = max(-124.99777777778, &
+               nint((LIS_rc%obs_gridDesc(k,5)+&
+               124.997777778)/0.0044444)*0.0044444-124.99777777778-50*0.0044444)
+          cornerlat2 = min(48.997777778, &
+               nint((LIS_rc%obs_gridDesc(k,7)-31.002222)/&
+               0.0044444)*0.0044444+31.002222+50*0.0044444)
+          cornerlon2 = min(-102.002222222222, &
+               nint((LIS_rc%obs_gridDesc(k,8)+124.997777778)/&
+               0.0044444)*0.0044444-124.99777777778+50*0.0044444)
+          if(cornerlat1.gt.48.997777778.or.&
+               cornerlat1.lt.31.002222.or.&
+               cornerlat2.gt.48.997777778.or.&
+               cornerlat2.lt.31.002222.or.&               
+               cornerlon1.gt.-102.002222222222.or.&
+               cornerlon1.lt.-124.99777777778.or.&
+               cornerlon2.gt.-102.002222222222.or.&
+               cornerlon2.lt.-124.99777777778) then
+             WUS_UCLAsnow_struc(n)%obsMap = .false.             
+          endif
+          
+               
        elseif(LIS_rc%lis_obs_map_proj(k).eq."lambert") then
-          cornerlat1 = max(31.002222, nint((LIS_rc%minLat(n)-31.002222)/0.00444)*0.00444+31.002222-50*0.00444)
-          cornerlon1 = max(-124.99777777778, nint((LIS_rc%minLon(n)+124.997777778)/0.00444)*0.00444-124.99777777778-50*0.00444)
-          cornerlat2 = min(48.997777778, nint((LIS_rc%maxLat(n)-31.002222)/0.00444)*0.00444+31.002222+50*0.00444)
-          cornerlon2 = min(-102.002222222222, nint((LIS_rc%maxLon(n)+124.997777778)/0.00444)*0.00444-124.99777777778+50*0.00444)
+          cornerlat1 = max(31.002222, &
+               nint((LIS_rc%minLat(n)-31.002222)/&
+               0.0044444)*0.0044444+31.002222-50*0.0044444)
+          cornerlon1 = max(-124.99777777778, &
+               nint((LIS_rc%minLon(n)+124.997777778)/&
+               0.0044444)*0.0044444-124.99777777778-50*0.0044444)
+          cornerlat2 = min(48.997777778, &
+               nint((LIS_rc%maxLat(n)-31.002222)/&
+               0.0044444)*0.0044444+31.002222+50*0.0044444)
+          cornerlon2 = min(-102.002222222222, &
+               nint((LIS_rc%maxLon(n)+124.997777778)/&
+               0.0044444)*0.0044444-124.99777777778+50*0.0044444)
        endif
-
-       WUS_UCLAsnow_struc(n)%c_off = nint((cornerlon1 + 124.997778)/0.00444)+1
-       WUS_UCLAsnow_struc(n)%r_off = nint((cornerlat1 - 31.002222)/0.00444)+1
        
-       
-       WUS_UCLAsnow_struc(n)%nc = nint((cornerlon2-cornerlon1)/0.00444)+1
-       WUS_UCLAsnow_struc(n)%nr = nint((cornerlat2-cornerlat1)/0.00444)+1
+       WUS_UCLAsnow_struc(n)%c_off = nint((cornerlon1 + 124.997778)/0.0044444)+1
+       WUS_UCLAsnow_struc(n)%r_off = nint((cornerlat1 - 31.002222)/0.0044444)+1
 
+              
+       WUS_UCLAsnow_struc(n)%nc = nint((cornerlon2-cornerlon1)/0.0044444)+1
+       WUS_UCLAsnow_struc(n)%nr = nint((cornerlat2-cornerlat1)/0.0044444)+1
+       
        WUS_UCLAsnow_struc(n)%gridDesci(1) = 0 
        WUS_UCLAsnow_struc(n)%gridDesci(2) = WUS_UCLAsnow_struc(n)%nc
        WUS_UCLAsnow_struc(n)%gridDesci(3) = WUS_UCLAsnow_struc(n)%nr 
@@ -307,8 +337,8 @@ contains
        WUS_UCLAsnow_struc(n)%gridDesci(6) = 128
        WUS_UCLAsnow_struc(n)%gridDesci(7) = cornerlat2
        WUS_UCLAsnow_struc(n)%gridDesci(8) = cornerlon2
-       WUS_UCLAsnow_struc(n)%gridDesci(9) = 0.00444
-       WUS_UCLAsnow_struc(n)%gridDesci(10) = 0.00444
+       WUS_UCLAsnow_struc(n)%gridDesci(9) = 0.0044444
+       WUS_UCLAsnow_struc(n)%gridDesci(10) = 0.0044444
        WUS_UCLAsnow_struc(n)%gridDesci(20) = 64
 
        WUS_UCLAsnow_struc(n)%mi = WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr
@@ -316,7 +346,7 @@ contains
 !-----------------------------------------------------------------------------
 !   Use interpolation if LIS is running finer than 500 m. 
 !-----------------------------------------------------------------------------
-       if(LIS_rc%obs_gridDesc(k,10).le.0.00444) then 
+       if(LIS_rc%obs_gridDesc(k,10).le.0.0044444) then 
 
           allocate(WUS_UCLAsnow_struc(n)%rlat(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
           allocate(WUS_UCLAsnow_struc(n)%rlon(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k)))
@@ -348,7 +378,7 @@ contains
                LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), WUS_UCLAsnow_struc(n)%n11)
        endif
                      
-       WUS_UCLAsnow_struc(n)%datares = 0.00444
+       WUS_UCLAsnow_struc(n)%datares = 0.0044444
 
        call LIS_registerAlarm("WUS_UCLAsnow read alarm",&
             86400.0, 86400.0)

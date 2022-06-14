@@ -91,157 +91,161 @@ subroutine read_WUS_UCLAsnow(n, k, OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "WUS_UCLAsnow read alarm")
   
-  if(alarmCheck.or.WUS_UCLAsnow_struc(n)%startMode) then 
-
+  if(alarmCheck.or.WUS_UCLAsnow_struc(n)%startMode) then
      WUS_UCLAsnow_struc(n)%startMode = .false.
      sndobs = LIS_rc%udef
-        
-     call create_WUS_UCLAsnow_filename(sndobsdir, &
-          LIS_rc%yr, LIS_rc%mo, &
-          LIS_rc%da, fname)
      
-     inquire(file=trim(fname),exist=file_exists)
-
-     if(file_exists) then
-
-        write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-        allocate(snd_data_b(WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr))
-        allocate(var(WUS_UCLAsnow_struc(n)%nc,WUS_UCLAsnow_struc(n)%nr))
-        allocate(snd1d(WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr))
+     if(WUS_UCLAsnow_struc(n)%obsMap) then             
+        call create_WUS_UCLAsnow_filename(sndobsdir, &
+             LIS_rc%yr, LIS_rc%mo, &
+             LIS_rc%da, fname)
         
+        inquire(file=trim(fname),exist=file_exists)
+        
+        if(file_exists) then
+           
+           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           allocate(snd_data_b(WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr))
+           allocate(var(WUS_UCLAsnow_struc(n)%nc,WUS_UCLAsnow_struc(n)%nr))
+           allocate(snd1d(WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr))
+           
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
-        ierr = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=ftn)
-        call LIS_verify(ierr,'error opening WUS UCLA file')
-        
-        ierr = nf90_inq_varid(ftn,'SD_Post',sndId)
-        call LIS_verify(ierr, 'nf90_inq_varid failed for SD_Post in read_WUS_UCLAsnow')
-
-        ierr = nf90_get_var(ftn,sndId, var,&
-             count=(/WUS_UCLAsnow_struc(n)%nc,WUS_UCLAsnow_struc(n)%nr,1/),&
-             start=(/WUS_UCLAsnow_struc(n)%c_off,WUS_UCLAsnow_struc(n)%r_off,1/))
-        call LIS_verify(ierr, 'nf90_get_var failed for SD_Post')
-        
-        ierr = nf90_close(ftn)
-        call LIS_verify(ierr)
+           ierr = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=ftn)
+           call LIS_verify(ierr,'error opening WUS UCLA file')
+           
+           ierr = nf90_inq_varid(ftn,'SD_Post',sndId)
+           call LIS_verify(ierr, 'nf90_inq_varid failed for SD_Post in read_WUS_UCLAsnow')
+           
+           ierr = nf90_get_var(ftn,sndId, var,&
+                count=(/WUS_UCLAsnow_struc(n)%nc,WUS_UCLAsnow_struc(n)%nr,1/),&
+                start=(/WUS_UCLAsnow_struc(n)%c_off,WUS_UCLAsnow_struc(n)%r_off,1/))
+           call LIS_verify(ierr, 'nf90_get_var failed for SD_Post')
+           
+           ierr = nf90_close(ftn)
+           call LIS_verify(ierr)
 #endif
-        
-        snd1d = LIS_rc%udef
-        snd_data_b = .false.
-        
-        do r=1, WUS_UCLAsnow_struc(n)%nr
-           do c=1, WUS_UCLAsnow_struc(n)%nc
-              if(var(c,r).ge.0) then 
-                 snd1d(c+(r-1)*WUS_UCLAsnow_struc(n)%nc) = &
-                      var(c,r)
-                 snd_data_b(c+(r-1)*WUS_UCLAsnow_struc(n)%nc)=.true.
-              endif
+           
+           snd1d = LIS_rc%udef
+           snd_data_b = .false.
+           
+           do r=1, WUS_UCLAsnow_struc(n)%nr
+              do c=1, WUS_UCLAsnow_struc(n)%nc
+                 if(var(c,r).ge.0) then 
+                    snd1d(c+(r-1)*WUS_UCLAsnow_struc(n)%nc) = &
+                         var(c,r)
+                    snd_data_b(c+(r-1)*WUS_UCLAsnow_struc(n)%nc)=.true.
+                 endif
+              enddo
            enddo
-        enddo
-        deallocate(var)
+           deallocate(var)
 !--------------------------------------------------------------------------
 ! Interpolate to the observation grid
 !-------------------------------------------------------------------------- 
 
-        call upscaleByAveraging(&
-             WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr,&
-             LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
-             LIS_rc%udef,&
-             WUS_UCLAsnow_struc(n)%n11,&
-             snd_data_b,snd1d,&
-             sndobs_b_ip,sndobs)
+           call upscaleByAveraging(&
+                WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr,&
+                LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
+                LIS_rc%udef,&
+                WUS_UCLAsnow_struc(n)%n11,&
+                snd_data_b,snd1d,&
+                sndobs_b_ip,sndobs)
+           
+           
+           deallocate(snd1d)
+           deallocate(snd_data_b)
+           
+        endif
         
-
-        deallocate(snd1d)
-        deallocate(snd_data_b)
-
      endif
+
+     call ESMF_StateGet(OBS_State,"Observation01",sndfield,&
+             rc=status)
+     call LIS_verify(status, 'Error: StateGet Observation01')
      
-  endif
-  
-  call ESMF_StateGet(OBS_State,"Observation01",sndfield,&
-       rc=status)
-  call LIS_verify(status, 'Error: StateGet Observation01')
-
-  call ESMF_FieldGet(sndfield,localDE=0,farrayPtr=obsl,rc=status)
-  call LIS_verify(status, 'Error: FieldGet')
-
-  fnd = 0 
-
-  do r=1,LIS_rc%obs_lnr(k)
-     do c=1,LIS_rc%obs_lnc(k)
-        if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-
-           if(sndobs(c+(r-1)*LIS_rc%obs_lnc(k)).ge.0) then 
-              fnd = 1
-              exit
-           endif
-        endif        
-     enddo
-  enddo
-
-  obsl = LIS_rc%udef 
-  if(fnd.ne.0) then 
-     do r=1, LIS_rc%obs_lnr(k)
-        do c=1, LIS_rc%obs_lnc(k)
+     call ESMF_FieldGet(sndfield,localDE=0,farrayPtr=obsl,rc=status)
+     call LIS_verify(status, 'Error: FieldGet')
+     
+     fnd = 0 
+     
+     do r=1,LIS_rc%obs_lnr(k)
+        do c=1,LIS_rc%obs_lnc(k)
            if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
-              obsl(LIS_obs_domain(n,k)%gindex(c,r))=&
-                   sndobs(c+(r-1)*LIS_rc%obs_lnc(k))
+              
+              if(sndobs(c+(r-1)*LIS_rc%obs_lnc(k)).ge.0) then 
+                 fnd = 1
+                 exit
+              endif
            endif
         enddo
      enddo
-  endif
-
+     
+     obsl = LIS_rc%udef 
+     if(fnd.ne.0) then 
+        do r=1, LIS_rc%obs_lnr(k)
+           do c=1, LIS_rc%obs_lnc(k)
+              if(LIS_obs_domain(n,k)%gindex(c,r).ne.-1) then 
+                 obsl(LIS_obs_domain(n,k)%gindex(c,r))=&
+                      sndobs(c+(r-1)*LIS_rc%obs_lnc(k))
+              endif
+           enddo
+        enddo
+     endif
+     
 !-------------------------------------------------------------------------
 !  Apply LSM based quality control and screening of observations
 !-------------------------------------------------------------------------     
-  call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+"&
-       //trim(LIS_wusUCLAobsId)//char(0),n, k, OBS_state)
+     call lsmdaqcobsstate(trim(LIS_rc%lsm)//"+"&
+          //trim(LIS_wusUCLAobsId)//char(0),n, k, OBS_state)
+     
+     snd_current = LIS_rc%udef
+     call LIS_checkForValidObs(n,k,obsl,fnd,sndobs)
 
-  snd_current = LIS_rc%udef
-  call LIS_checkForValidObs(n,k,obsl,fnd,sndobs)
-
-  if(fnd.eq.0) then 
-     data_upd_flag_local = .false. 
-  else
-     data_upd_flag_local = .true. 
-  endif
-
+     if(fnd.eq.0) then 
+        data_upd_flag_local = .false. 
+     else
+        data_upd_flag_local = .true. 
+     endif
+     
 #if (defined SPMD)
-  call MPI_ALLGATHER(data_upd_flag_local,1, &
-       MPI_LOGICAL, data_upd_flag(:),&
-       1, MPI_LOGICAL, LIS_mpi_comm, status)
+     call MPI_ALLGATHER(data_upd_flag_local,1, &
+          MPI_LOGICAL, data_upd_flag(:),&
+          1, MPI_LOGICAL, LIS_mpi_comm, status)
 #endif
-  data_upd = .false.
-  do p=1,LIS_npes
-     data_upd = data_upd.or.data_upd_flag(p)
-  enddo
-
-  if(data_upd) then
-     print*, 'positive ',data_upd
-     do t=1,LIS_rc%obs_ngrid(k)
-        gid(t) = t
-        if(obsl(t).ne.-9999.0) then 
-           assimflag(t) = 1
-        else
-           assimflag(t) = 0
-        endif
+     data_upd = .false.
+     do p=1,LIS_npes
+        data_upd = data_upd.or.data_upd_flag(p)
      enddo
-
-     call ESMF_AttributeSet(OBS_State,"Data Update Status",&
-          .true. , rc=status)
-     call LIS_verify(status)
-
-     if(LIS_rc%obs_ngrid(k).gt.0) then 
-        call ESMF_AttributeSet(sndField,"Grid Number",&
-             gid,itemCount=LIS_rc%obs_ngrid(k),rc=status)
-        call LIS_verify(status)
-
-        call ESMF_AttributeSet(sndField,"Assimilation Flag",&
-             assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+     
+     if(data_upd) then
+        do t=1,LIS_rc%obs_ngrid(k)
+           gid(t) = t
+           if(obsl(t).ne.-9999.0) then 
+              assimflag(t) = 1
+           else
+              assimflag(t) = 0
+           endif
+        enddo
+        
+        call ESMF_AttributeSet(OBS_State,"Data Update Status",&
+             .true. , rc=status)
         call LIS_verify(status)
         
-     endif
+        if(LIS_rc%obs_ngrid(k).gt.0) then 
+           call ESMF_AttributeSet(sndField,"Grid Number",&
+                gid,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+           call LIS_verify(status)
+           
+           call ESMF_AttributeSet(sndField,"Assimilation Flag",&
+                assimflag,itemCount=LIS_rc%obs_ngrid(k),rc=status)
+           call LIS_verify(status)
+           
+        endif
 
+     else
+        call ESMF_AttributeSet(OBS_State,"Data Update Status",&
+             .false., rc=status)
+        call LIS_verify(status)     
+     endif
   else
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .false., rc=status)
