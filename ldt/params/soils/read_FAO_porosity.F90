@@ -23,6 +23,7 @@ subroutine read_FAO_porosity(n, array)
   use LDT_logMod, only      : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
   use LDT_fileIOMod,   only : readLISdata 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -44,7 +45,7 @@ subroutine read_FAO_porosity(n, array)
 !EOP
 
   integer       :: ftn
-  character*100 :: filename
+  character(len=LDT_CONST_PATH_LEN) :: filename
   logical       :: file_exists
   real          :: temp(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
 ! ________________________________
@@ -52,7 +53,7 @@ subroutine read_FAO_porosity(n, array)
   array = LDT_rc%udef
 
   filename = trim(LDT_rc%pofile(n))//trim('.L1.1gd4r')
-  write(LDT_logunit,*) "[INFO] Reading FAO porosity file: ",filename
+  write(LDT_logunit,*) "[INFO] Reading FAO porosity file: ",trim(filename)
 
   inquire(file=trim(filename), exist=file_exists)
   if(.not.file_exists) then 
@@ -80,7 +81,7 @@ subroutine read_FAO_porosity(n, array)
      call LDT_endrun
   endif
 
-  write(LDT_logunit,*) '[INFO] Reading FAO porosity file',filename
+  write(LDT_logunit,*) '[INFO] Reading FAO porosity file',trim(filename)
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=filename, form='unformatted',status='old',&
        access='direct',recl=4)
@@ -100,7 +101,7 @@ subroutine read_FAO_porosity(n, array)
      call LDT_endrun
   endif
 
-  write(LDT_logunit,*) "[INFO] Reading FAO porosity file: ",filename
+  write(LDT_logunit,*) "[INFO] Reading FAO porosity file: ",trim(filename)
   ftn = LDT_getNextUnitNumber()
   open(ftn,file=filename,form='unformatted',status='old',&
        access='direct',recl=4)

@@ -21,6 +21,7 @@ module AMSR2OSSEmask_Mod
 ! !REVISION HISTORY: 
 !  02 Jul 2021    Sujay Kumar  Initial Specification
 !
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ module AMSR2OSSEmask_Mod
      integer       :: nc,nr
      real          :: datares
 
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
 
 !--------------------------------------------------------
 !  interpolation/upscaling weights

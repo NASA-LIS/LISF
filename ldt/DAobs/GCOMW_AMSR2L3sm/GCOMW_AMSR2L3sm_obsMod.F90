@@ -21,6 +21,7 @@ module GCOMW_AMSR2L3sm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -36,7 +37,7 @@ module GCOMW_AMSR2L3sm_obsMod
 !EOP
   type, public :: amsr2smobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mo
      real,    allocatable   :: smobs(:,:)
      integer                :: amsr2nc, amsr2nr

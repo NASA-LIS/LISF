@@ -38,6 +38,7 @@ module WRF_AKdom_forcingMod
 !  \end{description}
 
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -58,7 +59,7 @@ module WRF_AKdom_forcingMod
      real         :: ts
      integer      :: nc, nr
      integer      :: mi
-     character*80 :: WRFAKdir
+     character(len=LDT_CONST_PATH_LEN) :: WRFAKdir
      real*8       :: WRFouttime1,WRFouttime2
      integer      :: findtime1,findtime2
      integer      :: nIter, st_iterid, en_iterid
@@ -85,7 +86,7 @@ module WRF_AKdom_forcingMod
      real, allocatable :: metdata2(:,:,:) 
 
      ! Elevation file:
-     character*200 :: file_wrfelev
+     character(len=LDT_CONST_PATH_LEN) :: file_wrfelev
 
   end type WRFAK_type_dec
 

@@ -24,6 +24,7 @@ subroutine readMOD10A1ANNdata(n,iomode,sindex,eindex)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use MOD10A1_ANNdataMod
   use map_utils
@@ -46,7 +47,7 @@ subroutine readMOD10A1ANNdata(n,iomode,sindex,eindex)
   logical                      :: alarmCheck
   logical                      :: file_exists
   integer                      :: c,r,i,j,c1,r1
-  character*100                :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   logical*1, allocatable       :: lb(:)
   character*1                  :: mod10a1(nc,nr)
   real, allocatable            :: snfrac1(:,:)

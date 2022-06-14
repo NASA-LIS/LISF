@@ -59,6 +59,8 @@ module princeton_forcingMod
 !  modeling, J. Climate, 19 (13), 3088-3111 \newline
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -77,8 +79,8 @@ module princeton_forcingMod
   type, public :: princeton_type_dec
      real               :: ts
      integer            :: nc, nr   !AWIPS 212 dimensions
-     character*100      :: princetondir
-     character*100      :: elevfile
+     character(len=LDT_CONST_PATH_LEN)      :: princetondir
+     character(len=LDT_CONST_PATH_LEN)      :: elevfile
      integer            :: mi
      integer            :: nmif
      real*8             :: princetontime1,princetontime2

@@ -24,11 +24,12 @@
 program LDTmain
 ! !USES:       
   use LDT_coreMod, only : LDT_rc, LDT_configinit
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
 !EOP
   implicit none
 
-  character*100 :: configfile
+  character(len=LDT_CONST_PATH_LEN) :: configfile
   integer       :: i 
   integer       :: iargc
 !BOC  

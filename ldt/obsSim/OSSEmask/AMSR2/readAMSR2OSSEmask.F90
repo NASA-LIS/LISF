@@ -27,6 +27,7 @@ subroutine readAMSR2OSSEmask(n)
   use LDT_obsSimMod
   use LDT_historyMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use AMSR2OSSEmask_Mod
 !
 ! !DESCRIPTION: 
@@ -37,7 +38,7 @@ subroutine readAMSR2OSSEmask(n)
 
   integer,   intent(in) :: n
   integer,   parameter  :: ndays = 16
-  character*100         :: fname
+  character(len=LDT_CONST_PATH_LEN)         :: fname
   integer               :: c,r,k
   integer               :: maskid
   logical               :: file_exists

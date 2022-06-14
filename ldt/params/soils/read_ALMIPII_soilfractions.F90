@@ -64,7 +64,7 @@ subroutine read_ALMIPII_soilfractions(n,num_bins, soilsfgrd, &
 
   inquire(file=(LDT_rc%safile(n)),exist=file_exists) 
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'sand fraction map: ',(LDT_rc%safile(n)),&
+     write(LDT_logunit,*) 'sand fraction map: ',(trim(LDT_rc%safile(n))),&
           ' does not exist'
      write(LDT_logunit,*) 'program stopping ...'
      call LDT_endrun
@@ -115,7 +115,7 @@ subroutine read_ALMIPII_soilfractions(n,num_bins, soilsfgrd, &
 
   inquire(file=(LDT_rc%clfile(n)),exist=file_exists) 
   if(.not.file_exists) then 
-     write(LDT_logunit,*) 'clay fraction map: ',(LDT_rc%clfile(n)),&
+     write(LDT_logunit,*) 'clay fraction map: ',(trim(LDT_rc%clfile(n))),&
           ' does not exist'
      write(LDT_logunit,*) 'program stopping ...'
      call LDT_endrun

@@ -57,7 +57,7 @@ subroutine read_nldas2b(n, findex, order, name,ferror)
   integer, intent(in)      :: findex
   integer, intent(in)      :: n
   integer, intent(in)      :: order
-  character*80, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)     :: ferror
 !
 ! !DESCRIPTION:

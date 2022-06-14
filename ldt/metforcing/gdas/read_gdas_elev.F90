@@ -96,7 +96,7 @@ subroutine read_gdas_elev(n, findex, gdaselev, elevdiff)
 !- Check initially if file exists:
   inquire( file=gdas_struc(n)%elevfile, exist=file_exists )   ! Check if file exists
   if (.not. file_exists)  then
-     write(LDT_logunit,*) "GDAS elevation file missing: ",gdas_struc(n)%elevfile
+     write(LDT_logunit,*) "GDAS elevation file missing: ",trim(gdas_struc(n)%elevfile)
   endif
   write(LDT_logunit,*) "Opening/reading GDAS elev file:: ",trim(gdas_struc(n)%elevfile)
 

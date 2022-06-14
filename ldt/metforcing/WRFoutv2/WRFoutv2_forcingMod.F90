@@ -38,6 +38,8 @@ module WRFoutv2_forcingMod
 !  \end{description}
 
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -58,7 +60,7 @@ module WRFoutv2_forcingMod
      real         :: ts
      integer      :: nc, nr
      integer      :: mi
-     character*80 :: WRFoutv2dir
+     character(len=LDT_CONST_PATH_LEN) :: WRFoutv2dir
      real*8       :: WRFouttime1,WRFouttime2
      integer      :: findtime1,findtime2
      integer      :: nIter, st_iterid, en_iterid
@@ -85,7 +87,7 @@ module WRFoutv2_forcingMod
      real, allocatable :: metdata2(:,:,:) 
 
      ! Elevation file:
-     character*200 :: file_wrfelev
+     character(len=LDT_CONST_PATH_LEN) :: file_wrfelev
 
   end type WRFoutv2_type_dec
 
