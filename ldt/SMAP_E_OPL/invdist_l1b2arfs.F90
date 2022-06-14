@@ -36,7 +36,8 @@
           REAL*4,DIMENSION(2560,1920) :: arfs_wt_tim, arfs_wt_cor_tbv, arfs_wt_cor_tbh, arfs_wt_tbv, arfs_wt_tbh, arfs_wt_nedtv, arfs_wt_nedth, arfs_wt_surwatv, arfs_wt_surwath
           INTEGER*4,DIMENSION(2560,1920) :: arfs_samplenumv, arfs_samplenumh
      
-          ALLOCATE(zerodistflag(size(ref_lat),size(ref_lon)))
+          !ALLOCATE(zerodistflag(size(ref_lat),size(ref_lon)))
+          ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
           !INITIAL THE OUTPUT VARIABLES
           arfs_tim=0.0
           arfs_tbv_cor=0.0

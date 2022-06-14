@@ -140,9 +140,6 @@
 
           IF (tbv.GT.0.0.AND.Ts.GT.0.AND.ARFS_SNOW(i,j).LE.SMAPeOPL%SD_thold.AND.ARFS_BD(i,j).NE.-9999.AND.ARFS_LC(i,j).NE.0.AND.&
             UTChr(i,j).GE.0) THEN
-
-write(*,*) 'kyh_debug'
-
              bulkdensity = ARFS_BD(i,j)
              clay = ARFS_CLAY(i,j)
              tau = ARFS_TAU(i,j)
