@@ -69,6 +69,7 @@ module ESACCIsm_obsMod
   type, public :: esaccismobsdec
 
      character(len=LDT_CONST_PATH_LEN)          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: sensor
      integer                :: mo
      real                   :: version
      real,    allocatable   :: smobs(:,:)
@@ -128,6 +129,15 @@ contains
             rc=status)
        call LDT_verify(status, &
             'ESA CCI soil moisture version of data: not defined')
+    enddo
+
+    call ESMF_ConfigFindLabel(LDT_config, &
+         'ESA CCI soil moisture sensor type:', rc=status)
+    do n=1,LDT_rc%nnest
+       call ESMF_ConfigGetAttribute(LDT_Config, ESACCIsmobs(n)%sensor, &
+            rc=status)
+       call LDT_verify(status, &
+            'ESA CCI soil moisture sensor type: not defined')
     enddo
 
     do n=1,LDT_rc%nnest
