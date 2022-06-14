@@ -39,6 +39,7 @@ subroutine read_gdas( order, n, findex, &
   use LDT_metforcingMod,  only : LDT_forc
   use gdas_forcingMod,    only : gdas_struc
   use LDT_logMod,         only : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -86,7 +87,7 @@ subroutine read_gdas( order, n, findex, &
 !EOP
 !==== Local Variables=======================
   
-  character(len=80) :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   integer :: iv, c,r,t
   integer :: ferror1, ferror2, ferror3
   integer :: nforce

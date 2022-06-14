@@ -25,6 +25,7 @@ module WindSatsm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module WindSatsm_obsMod
 !EOP
   type, public :: windsatsmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mi
      real,    allocatable   :: smobs(:,:)
      real,    allocatable   :: tmobs(:,:)

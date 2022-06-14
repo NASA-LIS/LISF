@@ -53,6 +53,7 @@ module chirps2_forcingMod
 
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -74,7 +75,7 @@ module chirps2_forcingMod
      integer            :: nc
      integer            :: nr
      integer            :: mi
-     character*80       :: directory  
+     character(len=LDT_CONST_PATH_LEN) :: directory  
      real*8             :: chirpstime1, chirpstime2
      logical            :: reset_flag 
 

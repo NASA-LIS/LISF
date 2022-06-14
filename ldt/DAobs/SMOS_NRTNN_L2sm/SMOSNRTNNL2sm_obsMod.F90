@@ -24,6 +24,7 @@ module SMOSNRTNNL2sm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -44,7 +45,7 @@ module SMOSNRTNNL2sm_obsMod
 
   type, public :: smosnrtnnl2smdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      real                   :: search_radius
      integer                :: mo
      real,    allocatable   :: smobs(:,:)

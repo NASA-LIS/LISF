@@ -27,6 +27,7 @@ subroutine get_cmap(n,findex)
   use LDT_coreMod, only : LDT_rc
   use LDT_logMod,  only : LDT_logunit
   use LDT_timeMgrMod, only : LDT_tick, LDT_get_nstep
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use cmap_forcingMod,only : cmap_struc
 
   implicit none
@@ -76,7 +77,7 @@ subroutine get_cmap(n,findex)
   integer :: order
   real    :: gmt1,gmt5,ts1,ts5   ! GMT times for current LDAS time and end boundary times for precip data sources
   real    :: gridDesci(20)
-  character*80 :: filename       ! Filename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename       ! Filename variables for precip data sources
 
 !=== End Variable Definition =======================
 

@@ -31,6 +31,7 @@ module LDT_irrigationMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -52,9 +53,9 @@ module LDT_irrigationMod
 
   type, public :: irrig_type_dec
 
-     character*140    :: irrigtypefile
-     character*140    :: irrigfracfile
-     character*140    :: irriggwratiofile
+     character(len=LDT_CONST_PATH_LEN)    :: irrigtypefile
+     character(len=LDT_CONST_PATH_LEN)    :: irrigfracfile
+     character(len=LDT_CONST_PATH_LEN)    :: irriggwratiofile
      real, allocatable :: irrig_gridDesc(:)
      character*50     :: irrig_proj
 

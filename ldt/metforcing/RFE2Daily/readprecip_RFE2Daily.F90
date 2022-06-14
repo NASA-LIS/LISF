@@ -29,7 +29,7 @@ subroutine readprecip_RFE2Daily( n, fname, findex, order, ferror_RFE2Daily )
 
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=120)  :: fname
+  character(len=*)  :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_RFE2Daily

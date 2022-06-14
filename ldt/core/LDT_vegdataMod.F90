@@ -37,6 +37,7 @@ module LDT_vegdataMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -57,7 +58,7 @@ module LDT_vegdataMod
 
   type, public :: vegdata_type_dec
 
-     character*140        :: drootfile
+     character(len=LDT_CONST_PATH_LEN)        :: drootfile
      type(LDT_paramEntry) :: rootdepth   ! Land cover-based root-depth
 
   end type vegdata_type_dec

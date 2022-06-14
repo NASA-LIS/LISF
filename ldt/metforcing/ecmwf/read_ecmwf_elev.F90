@@ -96,7 +96,7 @@ subroutine read_ecmwf_elev(n, findex, ecmwfelev, elevdiff)
 !- Check initially if file exists:
   inquire( file=ecmwf_filename, exist=file_exists )   ! Check if file exists
   if (.not. file_exists)  then
-     write(LDT_logunit,*) "ECMWF elevation file missing: ",ecmwf_filename
+     write(LDT_logunit,*) "ECMWF elevation file missing: ",trim(ecmwf_filename)
   endif
   write(LDT_logunit,*) "Opening/reading ECMWF elev file:: ",trim(ecmwf_filename)
 

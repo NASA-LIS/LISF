@@ -42,8 +42,8 @@ subroutine stg2file( filename, stg2dir, yr, mo, da, hr)
 ! !ARGUMENTS: 
   integer :: yr, mo, da, hr
 
-  character(80) :: filename
-  character(40) :: stg2dir
+  character(len=*) :: filename
+  character(len=*) :: stg2dir
   character(4)  :: cyear
   character(2)  :: cmon, cday, chour
 

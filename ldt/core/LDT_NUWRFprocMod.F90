@@ -23,6 +23,7 @@ module LDT_NUWRFprocMod
   use ESMF
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -38,8 +39,8 @@ module LDT_NUWRFprocMod
 
 !EOP
   type, public :: nuwrfdec
-     character*100        :: LIShistfile
-     character*100        :: realfile
+     character(len=LDT_CONST_PATH_LEN)        :: LIShistfile
+     character(len=LDT_CONST_PATH_LEN)        :: realfile
      type(LDT_paramEntry) :: avgsurft
   end type nuwrfdec
 

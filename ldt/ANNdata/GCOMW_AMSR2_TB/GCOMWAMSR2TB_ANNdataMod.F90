@@ -19,6 +19,7 @@ module GCOMWAMSR2TB_ANNdataMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -34,7 +35,7 @@ module GCOMWAMSR2TB_ANNdataMod
 !EOP
   type, public :: GCOMWAMSR2TBobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      integer                :: nc
      integer                :: nr
      real,    allocatable   :: TB_A_H(:,:,:)

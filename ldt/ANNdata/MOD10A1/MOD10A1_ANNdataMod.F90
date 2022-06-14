@@ -19,6 +19,7 @@ module MOD10A1_ANNdataMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -34,7 +35,7 @@ module MOD10A1_ANNdataMod
 !EOP
   type, public :: MOD10A1obsdec
 
-     character*100              :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      integer                    :: nc,nr
      integer, allocatable       :: n11(:)
      real                       :: gridDesc(50)

@@ -20,6 +20,7 @@ module MCD15A2Hlai_obsMod
 ! !USES:
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
  
@@ -35,7 +36,7 @@ module MCD15A2Hlai_obsMod
 !EOP
   type, public :: MCD15A2Hlai_dec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      character*100          :: version
      real                   :: gridDesci(50)
      real,    allocatable   :: laiobs(:,:)

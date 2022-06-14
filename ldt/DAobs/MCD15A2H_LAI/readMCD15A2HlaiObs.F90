@@ -22,6 +22,7 @@ subroutine readMCD15A2HlaiObs(n)
   use ESMF
   use LDT_coreMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod
   use MCD15A2Hlai_obsMod
   use map_utils
@@ -41,8 +42,8 @@ subroutine readMCD15A2HlaiObs(n)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname
-  character*100     :: climofile
+  character(len=LDT_CONST_PATH_LEN)     :: fname
+  character(len=LDT_CONST_PATH_LEN)     :: climofile
   real              :: laiobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 !-----------------------------------------------------------------------

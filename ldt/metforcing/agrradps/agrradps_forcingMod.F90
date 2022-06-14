@@ -86,6 +86,7 @@ module agrradps_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
   
 !-----------------------------------------------------------------------------
@@ -103,7 +104,7 @@ module agrradps_forcingMod
   type agrradps_type_dec
      real                 :: ts
      real*8               :: agrtime1,agrtime2
-     character*100        :: agrpsdir
+     character(len=LDT_CONST_PATH_LEN) :: agrpsdir
      integer              :: gridspan
      integer              :: mo1
      integer              :: mo2

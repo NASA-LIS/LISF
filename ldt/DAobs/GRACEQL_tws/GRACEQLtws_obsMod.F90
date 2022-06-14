@@ -21,6 +21,7 @@ module GRACEQLtws_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,13 +41,13 @@ module GRACEQLtws_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
-     character*100 :: datasource 
+     character(len=LDT_CONST_PATH_LEN) :: odir
+     character(len=LDT_CONST_PATH_LEN) :: datasource 
 
      integer       :: yr
      integer       :: reftime
      integer       :: tdims
-     character*100 :: gracefile
+     character(len=LDT_CONST_PATH_LEN) :: gracefile
      logical       :: startMode
      integer       :: gracenc, gracenr
      real, allocatable :: tvals(:)
@@ -79,7 +80,7 @@ module GRACEQLtws_obsMod
 
      integer              :: process_basin_scale
      integer              :: basin_cat_max
-     character*100        :: basinmapfile
+     character(len=LDT_CONST_PATH_LEN)        :: basinmapfile
      real, allocatable    :: basin_cat(:,:)
      type(ESMF_Time)      :: startTime
 

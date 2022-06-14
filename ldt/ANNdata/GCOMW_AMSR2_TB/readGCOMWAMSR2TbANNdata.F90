@@ -23,6 +23,7 @@ subroutine readGCOMWAMSR2TBANNdata(n,iomode, p_s, p_e)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use GCOMWAMSR2TB_ANNdataMod
   use map_utils
@@ -46,7 +47,7 @@ subroutine readGCOMWAMSR2TBANNdata(n,iomode, p_s, p_e)
   logical           :: file_exists
   integer           :: c,r,i,j,k
   integer           :: ftn
-  character*100     :: fnames(2) ! 2 channels
+  character(len=LDT_CONST_PATH_LEN) :: fnames(2) ! 2 channels
   character*3       :: fnest
   real              :: TB_H(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: TB_V(LDT_rc%lnc(n)*LDT_rc%lnr(n))

@@ -52,6 +52,7 @@ module cmap_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
   
@@ -73,7 +74,7 @@ module cmap_forcingMod
      integer              :: nc
      integer              :: nr
      integer              :: mi
-     character*80         :: cmapdir  
+     character(len=LDT_CONST_PATH_LEN) :: cmapdir  
      real*8               :: cmaptime
      real*8               :: griduptime1
      real*8               :: griduptime2

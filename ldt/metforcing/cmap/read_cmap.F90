@@ -32,7 +32,7 @@ subroutine read_cmap( n, filename, findex, order, ferror_cmap, filehr)
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: filename          
+  character(len=*)   :: filename          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_cmap

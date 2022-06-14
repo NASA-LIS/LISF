@@ -27,6 +27,7 @@ module LDT_obsSimMod
   use LDT_coreMod
   use LDT_logMod
   use LDT_ran2_gasdev
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -60,7 +61,7 @@ module LDT_obsSimMod
      real,         allocatable :: varmaxs(:)
      character*50              :: ttransform
      character*50              :: masktype
-     character*50              :: maskdir
+     character(len=LDT_CONST_PATH_LEN) :: maskdir
      character*50              :: errModelType
      character*50              :: errDist
      real                      :: errStdev
@@ -466,8 +467,8 @@ contains
 !  to an external file. 
 ! 
 !EOP
-    character*200           :: dname
-    character*200           :: filename
+    character(len=LDT_CONST_PATH_LEN)           :: dname
+    character(len=LDT_CONST_PATH_LEN)           :: filename
     character(len=10)       :: cdate
     character(len=14)       :: cdate1
     integer                 :: ftn

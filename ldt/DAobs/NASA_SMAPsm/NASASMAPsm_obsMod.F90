@@ -28,6 +28,7 @@ module NASASMAPsm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -43,7 +44,7 @@ module NASASMAPsm_obsMod
 !EOP
   type, public :: smapsmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      character*20           :: data_designation
      character*3             :: release_number
      real                   :: search_radius

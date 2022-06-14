@@ -107,7 +107,7 @@ subroutine read_merra2_elev( n, findex, merra2elev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "[INFO] Reading the MERRA-2 terrain height file: ", &
-        merra2_struc(n)%merra2hgt_file
+        trim(merra2_struc(n)%merra2hgt_file)
 
 #if (defined USE_NETCDF4) 
 

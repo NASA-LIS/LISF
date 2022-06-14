@@ -19,6 +19,7 @@ module geos5fcst_forcingMod
 !  GEOS5 forecast output or the full ensemble. 
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -38,7 +39,7 @@ module geos5fcst_forcingMod
      real               :: ts
      integer            :: nc, nr
      integer            :: max_ens_members
-     character*80       :: geos5fcstdir
+     character(len=LDT_CONST_PATH_LEN) :: geos5fcstdir
      real*8             :: fcsttime1,fcsttime2
      
      real               :: gridDesc(50)

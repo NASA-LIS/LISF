@@ -107,7 +107,7 @@ subroutine read_era5_elev( n, findex, era5elev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "[INFO] Reading the ERA5 terrain height file: ", &
-        era5_struc(n)%era5hgt_file
+        trim(era5_struc(n)%era5hgt_file)
 
 #if (defined USE_NETCDF4) 
 

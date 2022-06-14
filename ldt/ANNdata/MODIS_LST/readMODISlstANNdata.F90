@@ -24,6 +24,7 @@ subroutine readMODISlstANNdata(n,iomode,sindex,eindex)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use MODISlst_ANNdataMod
   use map_utils
@@ -47,7 +48,7 @@ subroutine readMODISlstANNdata(n,iomode,sindex,eindex)
   logical           :: file_exists
   integer           :: c,r,i,j,c1,r1
   integer           :: ftn
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*3       :: fnest
   integer           :: ier,ivar1, ivar2, ivar3
   integer           :: lstid, mainqcid, lsterrid

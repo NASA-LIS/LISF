@@ -24,6 +24,7 @@ subroutine readsyntheticsmObs(n)
   use LDT_timeMgrMod,   only : LDT_get_julss
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod
   use syntheticsm_obsMod, only : syntheticsmobs
   use map_utils
@@ -44,7 +45,7 @@ subroutine readsyntheticsmObs(n)
   logical           :: file_exists
   integer           :: c,r,i,j
   integer           :: ftn
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN)     :: fname
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 
 !-----------------------------------------------------------------------
