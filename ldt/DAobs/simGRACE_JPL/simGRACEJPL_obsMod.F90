@@ -20,6 +20,7 @@ module simGRACEJPL_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,11 +41,11 @@ module simGRACEJPL_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
 
      integer       :: reftime
      integer       :: tdims
-     character*100 :: gracedir
+     character(len=LDT_CONST_PATH_LEN) :: gracedir
      logical       :: startMode
      integer       :: gracenc, gracenr
      real, allocatable :: tvals(:)

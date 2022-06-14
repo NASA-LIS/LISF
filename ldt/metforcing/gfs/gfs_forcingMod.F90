@@ -80,6 +80,7 @@ module gfs_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -98,14 +99,14 @@ module gfs_forcingMod
      real         :: ts
      integer      :: nc, nr   !AWIPS 212 dimensions
      integer      :: nmif
-     character*80 :: gfsdir   !GFS Forcing Directory
-     character*80 :: elevfile
-     character*80 :: t126elevfile
-     character*80 :: t170elevfile
-     character*80 :: t254elevfile
-     character*80 :: t382elevfile
-     character*80 :: t574elevfile
-     character*80 :: t1534elevfile
+     character(len=LDT_CONST_PATH_LEN) :: gfsdir   !GFS Forcing Directory
+     character(len=LDT_CONST_PATH_LEN) :: elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t126elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t170elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t254elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t382elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t574elevfile
+     character(len=LDT_CONST_PATH_LEN) :: t1534elevfile
      real*8       :: gfstime1,gfstime2
      real*8       :: griduptime1,griduptime2,griduptime3
      real*8       :: griduptime4,griduptime5,griduptime6

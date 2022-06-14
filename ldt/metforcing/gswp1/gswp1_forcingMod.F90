@@ -58,6 +58,8 @@
 !EOP
 module gswp1_forcingMod
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE 
@@ -77,7 +79,7 @@ module gswp1_forcingMod
      integer       :: nmif
      integer       :: nc
      integer       :: nr
-     character*100 :: gswp1dir
+     character(len=LDT_CONST_PATH_LEN) :: gswp1dir
      real*8        :: gswp1time1
      real*8        :: gswp1time2
   !Suffixes 1 are for bilinear 

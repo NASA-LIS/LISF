@@ -23,6 +23,7 @@ subroutine readsyntheticsmANNdata(n,iomode)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use syntheticsm_ANNdataMod
   use map_utils
@@ -44,7 +45,7 @@ subroutine readsyntheticsmANNdata(n,iomode)
   logical           :: file_exists
   integer           :: c,r,i,j
   integer           :: ftn
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*3       :: fnest
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 

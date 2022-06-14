@@ -33,6 +33,7 @@ module LDT_glacierMod
   use LDT_paramDataMod
   use LDT_coreMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_SurfaceTypeMod
   use LDT_paramMaskCheckMod
 
@@ -125,7 +126,7 @@ module LDT_glacierMod
     integer             :: nl_start, nl_end
     real,    allocatable :: glacier_fgrd(:,:,:)
     integer, allocatable :: useExternalMask(:)
-    character*100        :: GLmaskname
+    character(len=LDT_CONST_PATH_LEN)        :: GLmaskname
 ! _____________________________________________________________________________
     
 

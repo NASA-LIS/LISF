@@ -22,6 +22,7 @@ subroutine get_stg2(n, findex)
   use LDT_coreMod, only : LDT_rc, LDT_domain
   use LDT_logMod,  only : LDT_logunit
   use LDT_timeMgrMod, only : LDT_tick, LDT_get_nstep
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use stg2_forcingMod, only : stg2_struc
 
   implicit none
@@ -67,7 +68,7 @@ subroutine get_stg2(n, findex)
 !== Local Variables =======================
     integer :: ferror_stg2                   ! Error flags for precip data sources
     real*8  :: stg2_file_time                ! End boundary time for STAGEII file
-    character(80) :: file_name               ! Filename variables for precip data sources
+    character(len=LDT_CONST_PATH_LEN) :: file_name               ! Filename variables for precip data sources
 
     integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
     integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

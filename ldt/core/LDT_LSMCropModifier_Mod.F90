@@ -35,6 +35,7 @@ module LDT_LSMCropModifier_Mod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -57,13 +58,13 @@ module LDT_LSMCropModifier_Mod
      integer           :: selectOpt
      character*50      :: crop_gridtransform
      character*50      :: crop_proj
-     character*140     :: croptfile
+     character(len=LDT_CONST_PATH_LEN)     :: croptfile
    ! LSM/Crop-specific entries:
 !     logical            :: assimcropinfo
      character*20      :: assign_cropvalue
      character*20      :: config_croptype
      character*20      :: crop_classification
-     character*100     :: croplib_dir
+     character(len=LDT_CONST_PATH_LEN)     :: croplib_dir
 
      type(LDT_paramEntry) :: croptype    ! Crop type land cover
   end type LSMCrop_type_dec

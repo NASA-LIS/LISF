@@ -20,6 +20,7 @@
 module NASA_AMSREsm_obsMod
 ! !USES: 
   use ESMF
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -35,7 +36,7 @@ module NASA_AMSREsm_obsMod
 !EOP
   type, public :: nasaamsresmobsdec
 
-     character*100        :: odir
+     character(len=LDT_CONST_PATH_LEN)        :: odir
 
      integer         :: mo
      integer,allocatable :: n112(:)

@@ -57,6 +57,7 @@ module TRMM3B42RTV7_forcingMod
 
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -76,7 +77,7 @@ module TRMM3B42RTV7_forcingMod
      real                     :: ts
      integer                  :: nc
      integer                  :: nr
-     character*40             :: directory  
+     character(len=LDT_CONST_PATH_LEN) :: directory  
      real*8                   :: time_TStepStart ! SY
      integer                  :: yr_TStepStart ! SY
      integer                  :: mo_TStepStart ! SY

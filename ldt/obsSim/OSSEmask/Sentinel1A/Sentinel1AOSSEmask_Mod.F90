@@ -21,6 +21,7 @@ module Sentinel1AOSSEmask_Mod
 ! !REVISION HISTORY:
 !  14 Jul 2021    Rhae Sung Kim  Initial Specification
 !
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +41,7 @@ module Sentinel1AOSSEmask_Mod
      integer       :: nc,nr
      real          :: datares
      real          :: gridDesci(20)
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
 
 !--------------------------------------------------------
 !  interpolation/upscaling weights

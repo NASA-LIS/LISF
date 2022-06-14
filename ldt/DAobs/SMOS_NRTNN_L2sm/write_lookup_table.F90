@@ -21,6 +21,7 @@ module write_lookup_table
 !
   !use ESMF
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -52,7 +53,7 @@ contains
    implicit none
 
    ! Arguments
-    character*100 :: fname
+    character(len=LDT_CONST_PATH_LEN) :: fname
     integer       :: n
     integer       :: iret, ncid, length
     integer, allocatable :: data(:) 

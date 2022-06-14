@@ -23,6 +23,7 @@ subroutine readGHCNANNdata(n,iomode,sindex,eindex)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use GHCN_ANNdataMod
   use map_utils
@@ -42,7 +43,7 @@ subroutine readGHCNANNdata(n,iomode,sindex,eindex)
 !EOP
 
   integer                 :: i,t,c,r,kk
-  character*100           :: ghcnname
+  character(len=LDT_CONST_PATH_LEN) :: ghcnname
   type(ESMF_Time)         :: ghcntime1, ghcntime2
   real                    :: snowdepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
   integer                 :: stn_col, stn_row

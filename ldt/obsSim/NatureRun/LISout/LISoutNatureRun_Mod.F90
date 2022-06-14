@@ -24,6 +24,8 @@ module LISoutNatureRun_Mod
 !  02 Oct 2008    Sujay Kumar  Initial Specification
 !
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -47,7 +49,7 @@ module LISoutNatureRun_Mod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
 
 !--------------------------------------------------------
 !  interpolation/upscaling weights

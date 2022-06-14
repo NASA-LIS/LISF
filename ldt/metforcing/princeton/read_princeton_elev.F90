@@ -87,7 +87,7 @@ subroutine read_princeton_elev(n, findex, princetonelev, elevdiff)
         call LDT_endrun
      endif
      write(LDT_logunit,*) "Reading the PRINCETON elevation map: ", &
-                           princeton_struc(n)%elevfile
+                           trim(princeton_struc(n)%elevfile)
      
    ! Read in free format ascii data:
      ftn = LDT_getNextUnitNumber()

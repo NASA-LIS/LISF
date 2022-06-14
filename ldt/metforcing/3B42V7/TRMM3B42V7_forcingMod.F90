@@ -57,6 +57,7 @@ module TRMM3B42V7_forcingMod
 !  \end{description}
 !
 ! !USES:
+    use LDT_constantsMod, only : LDT_CONST_PATH_LEN
     implicit none
     PRIVATE
 !-----------------------------------------------------------------------------
@@ -75,7 +76,7 @@ module TRMM3B42V7_forcingMod
      real                     :: ts 
      integer                  :: nc
      integer                  :: nr
-     character*40             :: TRMM3B42V7dir
+     character(len=LDT_CONST_PATH_LEN) :: TRMM3B42V7dir
      real*8                   :: TRMM3B42V7time_TStepStart ! SY
      integer                  :: TRMM3B42V7yr_TStepStart ! SY
      integer                  :: TRMM3B42V7mo_TStepStart ! SY

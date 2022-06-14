@@ -71,7 +71,7 @@ subroutine read_nam242_elev(n, findex, nam242elev, elevdiff)
   lb = .true.
   lb_regrid = .true.
 
-  write(LDT_logunit,*) 'Reading the NAM elevation ',nam242_struc(n)%elevfile
+  write(LDT_logunit,*) 'Reading the NAM elevation ',trim(nam242_struc(n)%elevfile)
      
   call grib_open_file(ftn,trim(nam242_struc(n)%elevfile),'r',iret)
   call LDT_verify(iret,'error grib_open_file in read_nam242_elev')

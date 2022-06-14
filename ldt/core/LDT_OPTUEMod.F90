@@ -27,6 +27,7 @@ module LDT_OPTUEMod
   use LDT_historyMod
   use LDT_logMod
   use LDT_paramDataMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -75,7 +76,7 @@ contains
     integer :: n, i,t,c,r
     integer :: rc
     integer :: ftn
-    character*100 :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     real, allocatable :: fitness(:,:),avgfitness(:,:)
     logical           :: file_exists
 ! ______________________________________________________________
