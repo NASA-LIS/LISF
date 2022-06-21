@@ -40,7 +40,7 @@ module CMCSNWD_obsMod
 ! Website: http://nsidc.org/data/nsidc-0447.html
 ! 
 ! Citation: Brown, Ross D. and Bruce Brasnett. 2010. Canadian Meteorological 
-! Centre (CMC) Daily Snow Depth Analysis Data. © Environment Canada, 2010. 
+! Centre (CMC) Daily Snow Depth Analysis Data. Â© Environment Canada, 2010.
 ! Boulder, Colorado USA: National Snow and Ice Data Center. Digital media.
 ! 
 ! !FILES USED:
