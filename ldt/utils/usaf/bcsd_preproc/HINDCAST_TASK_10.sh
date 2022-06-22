@@ -1,4 +1,15 @@
 #!/bin/sh
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #
 # Part3-b: Combine all non-precip 6-hourly files into one file.
 #  and copy BCSD precip files in to the same directory
