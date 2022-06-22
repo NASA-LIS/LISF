@@ -16,6 +16,7 @@
 
 // As documents are added to the docs directory, add a link and brief description to the appropriate section below. This README will also serve as a landing page for the LISF documentation.
 
+* link:{lisf-gh-pages-url}/LISF_installation_guide/LISF_installation_guide.html[LISF Installation Guide]
 * link:{lisf-gh-pages-url}/LDT_users_guide/LDT_users_guide.html[LDT Users`' Guide]
 * link:{lisf-gh-pages-url}/LIS_users_guide/LIS_users_guide.html[LIS Users`' Guide]
 * link:{lisf-gh-pages-url}/LVT_users_guide/LVT_users_guide.html[LVT Users`' Guide]
