@@ -1,0 +1,253 @@
+
+== Dependencies
+
+This section documents the required and optional libraries needed to build LISF (LDT, LIS, and LVT).
+
+=== Required Software Libraries
+
+==== Message Passing Interface (MPI)
+
+NOTE: LIS-only dependency
+
+LIS may be compiled and run serially for small experiments, but, in general, you will want to run LIS with multiple processes (i.e., in parallel), making MPI support a practical requirement.
+
+* vendor supplied (e.g., Intel MPI)
+* MPICH version 3.3 (https://www.mpich.org/)
+* Open MPI version 4 (https://www.open-mpi.org/)
+
+NOTE: LIS does not support OpenMP style parallelization.  There is some experimental support within LIS, but you should not enable it.
+
+NOTE: LDT does not fully support running in parallel with MPI.
+
+NOTE: LVT does not support running in parallel with MPI.
+
+==== Earth System Modeling Framework (ESMF) version 8.1.1 (or higher)
+
+*URL*: https://earthsystemmodeling.org/
+
+Please read the ESMF User`'s Guide for details on installing ESMF with MPI support and without MPI support ("`mpiuni`").
+
+//==== JasPer version 2.0.14 (or higher)
+//
+//(http://www.ece.uvic.ca/{tilde}frodo/jasper/)
+//
+//Note that when running the `configure` command you must include the `--enable-shared` option.
+
+==== ecCodes version 2.19.0 (or higher)
+
+*URL*: https://confluence.ecmwf.int/display/ECC
+
+NOTE: ecCodes is a requirement for LVT, but, given that many of the datasets used in LTD and LIS are in GRIB format, this library is a practical requirement for LISF.
+
+==== NetCDF either version 3.6.3 or version 4.7.4 (or higher)
+
+*URL*: http://www.unidata.ucar.edu/software/netcdf
+
+Please read the on-line documentation for details on installing NetCDF.
+
+===== Additional notes for NetCDF 4:
+
+You must also choose whether to compile with compression enabled.  Compiling with compression enabled requires HDF 5 and zlib libraries.  To enable compression, add `--enable-netcdf-4` to the `configure` options.  To disable compression, add `--disable-netcdf-4` to the `configure` options.
+
+An example of installing NetCDF 4 without compression:
+
+....
+% ./configure --prefix=$HOME/local/netcdf-4.7.4 --disable-netcdf-4
+% gmake
+% gmake install
+....
+
+An example of installing NetCDF 4 with compression:
+
+....
+% CPPFLAGS=-I$HOME/local/hdf5/1.12.0/include \
+> LDFLAGS=-L$HOME/local/hdf5/1.12.0/lib \
+> ./configure --prefix=$HOME/local/netcdf/4.7.4 --enable-netcdf-4
+% gmake
+% gmake install
+....
+
+You must also download the _netcdf-fortran-4.5.3.tar.gz_ file.  First install the NetCDF C library, then install the NetCDF Fortran library.  Again, please read the on-line documentation for more details.
+
+An example of installing the NetCDF 4 Fortran library:
+
+....
+% LD_LIBRARY_PATH=$HOME/local/netcdf/4.7.4/lib:$LD_LIBRARY_PATH \
+> CPPFLAGS=-I$HOME/local/netcdf/4.7.4/include \
+> LDFLAGS=-L$HOME/local/netcdf/4.7.4/lib \
+> ./configure --prefix=$HOME/local/netcdf/4.7.4
+% gmake
+% gmake install
+....
+
+=== Optional Software Libraries
+
+The following libraries are not required to compile LISF.  They are used to extend the functionality of LISF.
+
+==== HDF
+
+You may choose either HDF version 4, HDF version 5, or both.
+
+HDF is used to support a number of remote sensing datasets.
+
+If you wish to use MODIS snow cover area observations or NASA AMSR-E soil moisture observations, then you need HDF 4 support.
+
+If you wish to use ANSA snow cover fraction observations, then you need HDF 5 support.
+
+If you wish to use PMW snow observations, then you need both HDF 4 and HDF 5 support.
+
+===== HDF4 4.2.15 (or higher)
+
+If you choose to have HDF version 4 support, please download the HDF source from https://portal.hdfgroup.org/display/support/Download+HDF4 and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+
+Note that HDF4 contains its own embedded version of NetCDF.  You must disable this support by adding the `--disable-netcdf` option to the `configure` command.
+
+===== HDF5 1.12.0
+
+If you choose to have HDF version 5 support, please download the HDF source from http://www.hdfgroup.org/HDF5/ and compile the source to generate the HDF library.  Make sure that you configure the build process to include the Fortran interfaces by adding the `--enable-fortran` option to the `configure` command.
+
+//Note that when compiling LIS with HDF 5 support, you must also
+//download and compile HDF-EOS5 from http://hdfeos.org/.
+
+==== HDF-EOS2 version 2.20v1.00 (or higher)
+
+*URL*: http://hdfeos.org/software/library.php
+
+NOTE: This library depends on HDF4.
+
+==== GDAL version 2.4.4
+
+NOTE: LDT and LVT dependency
+
+*URL*: https://gdal.org
+
+IMPORTANT: When installing the GDAL library, you must also install FortranGIS version 2.6 (or higher) from http://fortrangis.sourceforge.net.  This library provides Fortran interfaces to the GDAL library.
+
+==== GeoTIFF version 1.6.0 (or higher)
+
+NOTE: LDT-only dependency
+
+*URL*: https://github.com/OSGeo/libgeotiff
+
+==== JCSDA CRTM version 2.0.2
+
+NOTE: LIS-only dependency
+
+If you wish to enable LIS' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/ and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.
+
+Please create a directory outside of the LIS source code to checkout the CRTM library into.  Then, within that new directory, run:
+
+....
+% svn checkout -r 9604 https://svnemc.ncep.noaa.gov/projects/crtm/trunk
+....
+
+Then you must copy the LIS specific updates into this checked out CRTM code.  See _$WORKING/lib/lis-crtm/README_.
+
+Next compile and install the CRTM library:
+
+....
+% source Set_CRTM_Environment.sh
+% cd src
+% source configure/ifort.setup
+# Of course, choose the setup script that is appropriate
+# for your environment.
+% gmake
+% gmake install
+....
+
+==== LIS-CMEM library
+
+NOTE: LIS-only dependency
+
+If you wish to enable LIS' RTM support, then you must manually compile an included library.
+
+....
+% cd $WORKING/lib/lis-cmem3
+% gmake
+....
+
+==== LIS-CRTM-PROFILE-UTILITY library
+
+NOTE: LIS-only dependency
+
+If you wish to enable LIS' RTM support, then you must manually compile an included library.
+
+....
+% cd $WORKING/lib/lis-crtm-profile-utility
+% gmake
+% gmake install
+....
+
+=== Second order dependencies
+
+==== OpenJPEG version 2.4.0 (or higher)
+
+*URL*: http://www.openjpeg.org/
+
+NOTE: Required by ecCodes and GDAL.
+
+==== SQLite3 version 3.35.0 (or higher)
+
+*URL*: https://sqlite.org/
+
+NOTE: Required by PROJ.
+
+//==== TIFF 4.1 (or higher)
+//
+//*URL*: http://www.libtiff.org
+//
+//NOTE: Required by PROJ.
+
+==== PROJ 7.1
+
+*URL*: https://proj.org
+
+NOTE: Required by GeoTIFF and GDAL.
+
+=== Notes
+
+To install these libraries, follow the instructions provided at the various URL listed above.  These libraries have their own dependencies, which should be documented in their respective documentation.
+
+Please note that your system may have several different compilers installed.  You must verify that you are building these libraries with the correct compiler.  You should review the output from the `configure`, `make`, etc. commands.  If the wrong compiler is being used, you may have to correct your `$PATH` environment variable, or set the `$CC` and `$FC` environment variables, or pass additional settings to the `configure` scripts.  Please consult the installation instructions provided at the various URL listed above for each library.
+
+If you wish to install all the libraries (required and optional, excluding JCSDA CRTM, LIS-CMEM, and LIS-CRTM-PROFILE-UTILITY), here is the recommended order:
+
+. MPI (optional) +
+  ESMF has an optional dependency on MPI.
+. HDF 5 (optional) +
+  NetCDF has an optional dependency on HDF 5.
+. NetCDF (required) +
+  ESMF has an optional dependency on NetCDF. +
+  ecCodes has an optional dependency on NetCDF.
+. openJPEG (required) +
+  ecCodes depends on openJPEG.
+. ecCodes (required)
+. ESMF (required)
+. HDF 4 (optional) +
+  HDF-EOS2 depends on HDF 4.
+. HDF-EOS2 (optional)
+. SQLite3 (optional) +
+  PROJ depends on SQLite3
+. PROJ (optional) +
+  GeoTIFF and GDAL depend on PROJ
+. GeoTIFF (optional)
+. GDAL (optional)
+. FortranGIS (optional) +
+  Required to use GDAL
+
+//If not, review the appropriate _$WORKING/arch/configure.lis.*_ file
+//for some hints regarding additional low level libraries needed for
+//linking.
+
+//Note that due to an issue involving multiple definitions within the
+//NetCDF 3 and HDF 4 libraries, you cannot compile LIS with support for
+//both NetCDF 3 and HDF 4 together.
+
+Note that due to the mix of programing languages (Fortran and C) used by LIS, you may run into linking errors when building the LIS executable.  This is often due to (1) the Fortran compiler and the C compiler using different cases (upper case vs. lower case) for external names, and (2) the Fortran compiler and C compiler using a different number of underscores for external names.
+
+//When compiling code using Absoft`'s Pro Fortran SDK, set the following compiler options:
+//
+//`-YEXT_NAMES=LCS -s -YEXT_SFX=_ -YCFRL=1`
+//
+//These must be set for each of the above libraries.
+
