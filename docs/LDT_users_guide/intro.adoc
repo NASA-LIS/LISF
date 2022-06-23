@@ -37,7 +37,7 @@ This document consists of 7 sections, described as follows:
 * observation simulator runmode
 . Supports additional data assimilation observations
 * SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)
-* thermal hydraulic disaggregation of soil moisture (THySM)
+* Thermal hydraulic disaggregation of soil moisture (THySM)
 . Supports additional parameters
 * Crocus parameters
 . Supports additional meteorological forcing sources
