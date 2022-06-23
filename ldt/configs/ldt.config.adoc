@@ -7,7 +7,7 @@ This section describes the options in the _ldt.config_ file.
 Not all options described here are available in the public version of LDT.
 
 [[ssec-driveropts]]
-===Overall driver options
+=== Overall driver options
 
 `LDT running mode:` specifies the running mode used in LDT. Acceptable values are:
 
@@ -2375,73 +2375,171 @@ Bottom temperature resolution (dy):      0.2500
 ....
 Noah-MP PBL Height Value:     900.    # in meters
 ....
+
 Miguez-Macho and Fan (MMF) Groundwater Parameters
 
-NOTE Currently, Noah-MP.4.0.1 is the only model that supports the MMF groundwater scheme.
+IMPORTANT: Currently, Noah-MP.4.0.1 is the only land surface model that supports the MMF groundwater scheme.
 
-`Process Noah-MP-4.0.1 MMF groundwater parameters:` is the switch to turn on processing MMF parameters.
+`Process Noah-MP-4.0.1 MMF groundwater parameters:` specifies whether to process Noah-MP-4.0.1 MMF groundwater parameters. Acceptable values are:
 
-.Example _ldt.config_ entry
+[cols="<,<",]
+|===
+|Value |Description
 
-`Process Noah-MP-4.0.1 MMF groundwater parameters: .true.`
-
-Directories where 1km FEDEPTH, RECHARGE, RIVERBED, EQWTD, and GMTED2010 data on GEOGRID tiles are located. 
+|.false. | do not process (default)
+|.true.  | process
+|===
 
 .Example _ldt.config_ entry
 ....
-MMF transmissivity dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
-MMF climatological recharge dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
-MMF riverbed elevation dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
+Process Noah-MP-4.0.1 MMF groundwater parameters: .true.
+....
+
+[NOTE]
+====
+The Noah-MP-4.0.1 parameters are only needed when running option "5" for the following lis.config entry when running LIS:
+
+`Noah-MP.4.0.1 runoff and groundwater option: 5`
+
+// TODO: remove following admonition when MMF groundwater option 5 is implemented in LIS
+IMPORTANT: The MMF groundwater option (option 5) is not yet supported in LIS. Work on this feature is currently in progress.
+====
+
+`MMF transmissivity dir:` specifies the location of the directory containing FDEPTH (transmissivity e-folding depth [m]) data on GEOGRID tiles.
+
+`MMF climatological recharge dir:` specifies the location of the directory containing RECHARGE (climatological recharge [mm]) data on GEOGRID tiles.
+
+`MMF riverbed elevation dir:` specifies the location of the directory containing RIVERBED (riverbed elevation [m]) data on GEOGRID tiles.
+
+`MMF equilibrium water table depth dir:` specifies the location of the directory containing EQWTD (equilibrium water table depth [m]) data on GEOGRID tiles.
+
+`MMF HGT_M dir:` specifies the location of the directory containing GMTED2010 (30-arc-second topography height [m from MSL]) data on GEOGRID tiles.
+
+.Example _ldt.config_ entry
+....
+MMF transmissivity dir:                ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
+MMF climatological recharge dir:       ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
+MMF riverbed elevation dir:            ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
 MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
-MMF HGT_M dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
+MMF HGT_M dir:                         ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
 ....
 
-Spatial interpolation and gap filling parameters for each MMF variable.
+[NOTE]
+====
+Spatial interpolation and gap filling parameters for each MMF variable are also required. See the config entries below.
+
+link:https://www2.mmm.ucar.edu/wrf/users/docs/user_guide_v4/v4.3/users_guide_chap3.html#_Description_of_GEOGRID.TBL[The WRF User's Guide, window=_blank] (and link:https://github.com/wrf-model/WPS/blob/master/geogrid/GEOGRID.TBL.ARW.noahmp[WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp, window=_blank]) describe WPS's MMF parameter preprocessing procedures from the GEOGRID grid to the model grid. WPS performing the entire interpolation process from aggregating to gap filling on the native GEOGRID space makes it fundamentally different to LDT because LDT first aggregates input data from the native grid to the model grid and then fills gaps on the model grid space. The current LDT implementation of MMF parameter preprocessing does not attempt to replicate the WPS interpolation procedures, instead, it uses existing LDT interpolation utilities to follow the WPS's interpolation concept.
+====
+
+`MMF map projection:` map projection parameter is always set to latlon for MMF parameters.
+
+`MMF spatial transform:` spatial transform parameter is always set to average for MMF parameters.
 
 .Example _ldt.config_ entry
 ....
-# MMF parameter interpolation follows that of WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp
-# WPS first (average_gcell) spatially averages finer resolution data to coarser resolution grid cells
-# which is similar to LDT's "upscaleByAveraging".
-MMF map projection: latlon
+MMF map projection:    latlon
 MMF spatial transform: average
+....
 
-# WPS uses a two-step gap procedure to fill gaps: (1) average from the immediate neighborhood (average_4pt), (2) search and fill
+`FDEPTH neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
-# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
-# FDEPTH: Transmissivity e-folding depth [m]
-FDEPTH neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+`FDEPTH fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`FDEPTH fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`FDEPTH fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`FDEPTH water value:` indicates the parameter value to be used on lakes or water grid cells.
+
+.Example _ldt.config_ entry
+....
+# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
+FDEPTH neighborhood radius: 1 
 FDEPTH fill option: neighbor
-FDEPTH fill radius: 1200 # Number of #pixels to search for neighbor
+FDEPTH fill radius: 3. 
 FDEPTH fill value: 100.
+FDEPTH water value: 100.
+....
 
-# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
-# RECHCLIM: Climatological recharge [mm]
-RECHCLIM neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+`RECHCLIM neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
+
+`RECHCLIM fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`RECHCLIM fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`RECHCLIM fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`RECHCLIM water value:` indicates the parameter value to be used on lakes or water grid cells.
+
+.Example _ldt.config_ entry
+....
+# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
+RECHCLIM neighborhood radius: 1 
 RECHCLIM fill option: neighbor
-RECHCLIM fill radius: 1200 # Number of #pixels to search for neighbor
+RECHCLIM fill radius: 3. 
 RECHCLIM fill value: -1.
+RECHCLIM water value: 0.
+....
 
-# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
-# RIVERBED Riverbed elevation [m]
-RIVERBED neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+
+`RIVERBED neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
+
+`RIVERBED fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`RIVERBED fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`RIVERBED fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`RIVERBED water value:` indicates the parameter value to be used on lakes or water grid cells.
+
+.Example _ldt.config_ entry
+....
+# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+RIVERBED neighborhood radius: 1 
 RIVERBED fill option: neighbor
-RIVERBED fill radius: 1200 # Number of #pixels to search for neighbor
+RIVERBED fill radius: 3. 
 RIVERBED fill value: 0.
+RIVERBED water value: -100.
+....
 
-# WPS interp_option=default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
-# EQWTD: Equilibrium water table depth [m]
-EQWTD neighborhood radius: 1 # average neighborhood points for the first of WPS's two-step gap filling procedure
+`EQWTD neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
+
+`EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`EQWTD fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`EQWTD fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`EQWTD water value:` indicates the parameter value to be used on lakes or water grid cells.
+
+.Example _ldt.config_ entry
+....
+# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
+EQWTD neighborhood radius: 1 
 EQWTD fill option: neighbor
-EQWTD fill radius: 1200 # Number of #pixels to search for neighbor
+EQWTD fill radius: 3. 
 EQWTD fill value: 0.
+EQWTD water value: 0.
+....
 
+`HGT_M neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
+
+`HGT_M fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`HGT_M fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`HGT_M fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`HGT_M water value:` indicates the parameter value to be used on lakes or water grid cells.
+
+.Example _ldt.config_ entry
+....
 # WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
-HGT_M: GMTED2010 30-arc-second topography height [m from MSL]
-HGT_M neighborhood radius: 0 # average neighborhood points for the first of WPS's two-step gap filling procedure
+HGT_M neighborhood radius: 0 
 HGT_M fill option: neighbor
-HGT_M fill radius: 1200 # Number of #pixels to search for neighbor
+HGT_M fill radius: 3. 
 HGT_M fill value: 0.
+HGT_M water value: -100.
 ....
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
