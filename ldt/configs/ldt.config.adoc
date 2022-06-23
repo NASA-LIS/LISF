@@ -2441,48 +2441,39 @@ MMF map projection:    latlon
 MMF spatial transform: average
 ....
 
-`FDEPTH neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
-
 `FDEPTH fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
-`FDEPTH fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+`FDEPTH fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
 
 `FDEPTH fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
 
-`FDEPTH water value:` indicates the parameter value to be used on lakes or water grid cells.
+`FDEPTH water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable FDEPTH value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
 
 .Example _ldt.config_ entry
 ....
-# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = 100.
-FDEPTH neighborhood radius: 1 
 FDEPTH fill option: neighbor
-FDEPTH fill radius: 3. 
+FDEPTH fill radius: 0. 
 FDEPTH fill value: 100.
 FDEPTH water value: 100.
 ....
 
-`RECHCLIM neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
 `RECHCLIM fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
-`RECHCLIM fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+`RECHCLIM fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
 
 `RECHCLIM fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
 
-`RECHCLIM water value:` indicates the parameter value to be used on lakes or water grid cells.
+`RECHCLIM water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable RECHCLIM value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
 
 .Example _ldt.config_ entry
 ....
-# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing = -1.
-RECHCLIM neighborhood radius: 1 
 RECHCLIM fill option: neighbor
-RECHCLIM fill radius: 3. 
-RECHCLIM fill value: -1.
+RECHCLIM fill radius: 0. 
+RECHCLIM fill value:  0.
 RECHCLIM water value: 0.
 ....
 
-
-`RIVERBED neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
 `RIVERBED fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
@@ -2490,19 +2481,15 @@ RECHCLIM water value: 0.
 
 `RIVERBED fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
 
-`RIVERBED water value:` indicates the parameter value to be used on lakes or water grid cells.
+`RIVERBED water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable RIVERBED value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location. Note that this will be overwritten by MMF_HGTM values at the location if an acceptable MMF_GHTM available at the location.
 
 .Example _ldt.config_ entry
 ....
-# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
-RIVERBED neighborhood radius: 1 
 RIVERBED fill option: neighbor
-RIVERBED fill radius: 3. 
-RIVERBED fill value: 0.
+RIVERBED fill radius: 0. 
+RIVERBED fill value: -100.
 RIVERBED water value: -100.
 ....
-
-`EQWTD neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
 `EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
@@ -2510,19 +2497,16 @@ RIVERBED water value: -100.
 
 `EQWTD fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
 
-`EQWTD water value:` indicates the parameter value to be used on lakes or water grid cells.
+`EQWTD water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable EQWTD value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
 
 .Example _ldt.config_ entry
 ....
-# WPS interp_option = default:average_gcell(1.0)+average_4pt+search ; fill_missing=0.
-EQWTD neighborhood radius: 1 
 EQWTD fill option: neighbor
-EQWTD fill radius: 3. 
+EQWTD fill radius: 0. 
 EQWTD fill value: 0.
 EQWTD water value: 0.
 ....
 
-`HGT_M neighborhood radius:` First LDT attempts to fill any gaps using the average of the valid values from 8 neighboring model grid cells.
 
 `HGT_M fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
@@ -2530,16 +2514,12 @@ EQWTD water value: 0.
 
 `HGT_M fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
 
-`HGT_M water value:` indicates the parameter value to be used on lakes or water grid cells.
 
 .Example _ldt.config_ entry
 ....
-# WPS interp_option = gmted2010_30s:average_gcell(4.0)+four_pt+average_4pt ; fill_missing=0.
-HGT_M neighborhood radius: 0 
 HGT_M fill option: neighbor
-HGT_M fill radius: 3. 
-HGT_M fill value: 0.
-HGT_M water value: -100.
+HGT_M fill radius: 0. 
+HGT_M fill value: 10.
 ....
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
