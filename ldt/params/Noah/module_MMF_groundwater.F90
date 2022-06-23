@@ -65,8 +65,8 @@ module  MMF_groundwater
   type, public, extends (MMF_mapping)  ::  MMF_BCsReader
 
      type(LDT_fillopts), public        :: gap_fill
-     type(LDT_fillopts), public        :: neighbor
      type(geogrid),      public        :: gp
+     real, public                      :: water_value
      
    contains
      
@@ -127,10 +127,6 @@ contains
     else
        MBR%gp%DE = .false.
     endif
-
-    ! For WPS's two-step gap filling, first we attempt fill using averaged value from the immedeate neighborhood. 
-    MBR%neighbor%filltype  = 'average'
-    MBR%neighbor%fillvalue = LDT_rc%udef
     
     ! Verify NX_MMF, MY_MMF match with dx, dy
     if ((NINT (360./dx) /= NX_MMF) .OR. (NINT (180./dy) /= NY_MMF)) then
@@ -277,35 +273,29 @@ contains
     
     call regrid_to_lisgrid (nest, garray, lisout)
 
-    ! fill gaps
-
     nbins = size (lisout, 3)
-
-    !Average from the nerighborhood
-    ! -----------------------------
-    call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),   &
-         mmf_transform,                                    &
-         nbins,                                            &
-         lisout, LDT_rc%udef,                              &
-         LDT_LSMparam_struc(nest)%landmask2%value,         &
-         MBR%neighbor%filltype, MBR%neighbor%fillvalue,    &
-         MBR%neighbor%fillradius )
     
-    
-    ! Search and fill -also fill lakes
-    ! --------------------------------
+    ! Search and fill gaps
+    ! --------------------
     write(LDT_logunit,*) "Checking/filling mask values for: ", &
                  trim(short_name)
     write(fill_logunit,*) "Checking/filling mask values for: ", &
                  trim(short_name)   
+
     call LDT_contIndivParam_Fill( nest, LDT_rc%lnc(nest), LDT_rc%lnr(nest),  &
          mmf_transform,                                    &
          nbins,                                            &
-         lisout,  MBR%gap_fill%watervalue,                 &
+         lisout,  LDT_rc%udef,                             &
          LDT_LSMparam_struc(nest)%landmask2%value,         &
          MBR%gap_fill%filltype, MBR%gap_fill%fillvalue,    &
-         MBR%gap_fill%fillradius )
-        
+         MBR%gap_fill%fillradius, leave_good_data = .true. )
+
+    if (trim (short_name) /= "MMF_HGTM") then
+    ! fill suitable parameter values in lakes/water bodies
+       where (lisout == LDT_rc%udef)
+          lisout = MBR%water_value
+       end where
+    endif
     deallocate (tarray, garray)
     
   contains
