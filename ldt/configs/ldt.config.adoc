@@ -2470,8 +2470,8 @@ FDEPTH water value: 100.
 ....
 RECHCLIM fill option: neighbor
 RECHCLIM fill radius: 0. 
-RECHCLIM fill value:  0.
-RECHCLIM water value: 0.
+RECHCLIM fill value:  -1.
+RECHCLIM water value: -1.
 ....
 
 
@@ -2487,8 +2487,8 @@ RECHCLIM water value: 0.
 ....
 RIVERBED fill option: neighbor
 RIVERBED fill radius: 0. 
-RIVERBED fill value: -100.
-RIVERBED water value: -100.
+RIVERBED fill value:  0.
+RIVERBED water value: 0.
 ....
 
 `EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
@@ -2519,7 +2519,7 @@ EQWTD water value: 0.
 ....
 HGT_M fill option: neighbor
 HGT_M fill radius: 0. 
-HGT_M fill value: 10.
+HGT_M fill value: 0.
 ....
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
