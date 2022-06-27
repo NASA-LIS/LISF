@@ -708,6 +708,23 @@ contains
      END IF
 
 ! vegetation phenology
+     IF(SNOWH.GT.10)THEN
+     print *,'WARNING: POSSIBLE ERROR IN SNOW DEPTH'
+     print *,'VEGTYP=',VEGTYP
+     print *,'croptype=',croptype
+     print *,'SNOWH=',SNOWH
+     print *,'TV=',TV
+     print *,'LAT=',LAT
+     print *,'YEARLEN=',YEARLEN
+     print *,'JULIAN=',JULIAN
+     print *,'LAI=',LAI
+     print *,'SAI=',SAI
+     print *,'TROOT=',TROOT
+     print *,'ELAI=',ELAI
+     print *,'ESAI=',ESAI
+     print *,'IGS=',IGS
+     print *,'PGS=',PGS
+     ENDIF
 
      CALL PHENOLOGY (parameters,VEGTYP ,croptype, SNOWH  , TV     , LAT   , YEARLEN , JULIAN , & !in
                      LAI    , SAI    , TROOT  , ELAI    , ESAI   ,IGS, PGS)

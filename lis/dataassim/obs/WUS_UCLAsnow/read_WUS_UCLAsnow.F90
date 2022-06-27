@@ -221,6 +221,10 @@ subroutine read_WUS_UCLAsnow(n, k, OBS_State, OBS_Pert_State)
            gid(t) = t
            if(obsl(t).ne.-9999.0) then 
               assimflag(t) = 1
+              if(obsl(t).gt.10.0) then
+                  !print *,'WARNING: OBSL > 10.0m; OBSL=',obsl(t)
+                  assimflag(t) = 0 !Do not assimilate values > 10m
+              endif
            else
               assimflag(t) = 0
            endif
