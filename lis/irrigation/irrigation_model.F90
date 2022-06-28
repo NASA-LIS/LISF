@@ -48,12 +48,16 @@
 ! Irrigation rate is scaled to grid total crop fraction when irrigation 
 ! fraction is less than the crop fraction.  Optionally, 
 ! efficiency correction is applied to account for field loss that can vary by
-! application method (e.g. sprinkler 75%, drip 85%).
+! application method (e.g. sprinkler 75%, drip 85%). "efcor" is defined as 
+! water loss through inefficiency in the system where crop_water_deficit is 
+! multiplied by 100/(100-efcor). For example, efcor is 25% for the sprinkler 
+! system with 75% efficiency.
 ! Aligning the irrigation fraction with the crop fraction is done in LDT for 
 ! crop tile option, and for no-tiling or no-crop tiling options, a scale is 
 ! predetermined in the alltypes_irrigationMod module (i.e. IM%IrrigScale).  
-! So, IrrigScale should be 1 for a crop tile, but in
-! case it is not, it is a part of soil moisture availability and irrigation
+! So, IrrigScale should be 1 for a crop tile if irrgation fraction is equal
+! to the crop tile fraction, but in cases it is not, it is a part of 
+! soil moisture availability formula and irrigation
 ! application for flood and drip in the model routines.  
 !
 ! The irrigation rate is passed back to respective LSM interface routine and 
@@ -309,7 +313,8 @@ contains
 
        curtime = LIS_rc%time   
 
-       PADDY: if(croptype == LIS_rc%ricecrop) then
+       PADDY: if(croptype == LIS_rc%ricecrop .and. &
+                 IM%irrigType(TileNo) == 3 ) then
           ! PADDY--continually add water to keep the surface soil layer at 
           ! saturation, which would maximize soil evaporation and recharge, 
           ! as would be the case with ponded water during the growing season
@@ -349,6 +354,7 @@ contains
        IM%irrig_schedule_timer(TileNo) = -1.0
        
     endif CROP_GROWING_SEASON
+
     
   END SUBROUTINE update_irrigrate
   
@@ -453,7 +459,6 @@ contains
             mn=LIS_rc%mn
             ss=0
             call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,sprinklerFreq)
-            !print*,'time2 ',time2
          endif
          H2 = time2   ! real*8 -> real
          ! check rootzone soil moisture each time
@@ -491,7 +496,8 @@ contains
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
             ! is it during the revolution?
-            if ( timer <= sprinklerFreq ) then
+            ! ensure the timer hasn't started
+            if ( timer <= sprinklerFreq .and. timer .gt. -1.0 ) then
               timer = timer + LIS_rc%ts
               ! keep irrigStartTime unchanged
               if ( curtime < H2 ) then 
@@ -505,7 +511,6 @@ contains
               sprinklerOn = .false.
             endif
          endif  ! ma
-         !print*,'here',curtime,irrigStartTime
        
       endif SM_DEFICIT_OR_SCHEDULE1
       irrigOn = sprinklerOn
@@ -522,17 +527,19 @@ contains
             ! check soil moisture availability at H1 daily and 
             ! irrigate until root zone becomes field capacity or 
             ! for the duration (H1 <= HC < H2).
-           if((ma <= IT).AND.(H1 == HC)) then
+           if( ma <= IT ) then
              dripOn = .true.
-             irrigStart = .true.
-           else
-             if ( ma < 1.0 .and. HC > H1 ) then
-               dripOn = .true.
-               irrigStart = .false.
-             else  ! at field capacity, shut off
-               dripOn = .false.
+             if (H1 == HC) then
+               irrigStart = .true.
+             else
                irrigStart = .false.
              endif
+           elseif( ma > 0.99 ) then ! at field capacity, shut off
+             dripOn = .false.
+             irrigStart = .false.
+           else
+             dripOn = .true.
+             irrigStart = .false.
            endif
          else
            dripOn = .false.
@@ -558,7 +565,7 @@ contains
             ! check soil moisture availability at H1 daily
             ! and compute rate each time to keep soil saturated for 
             ! the duration (H1 <= HC < H2).
-          if((ma <= IT)) then
+          if((ma <= IT).AND.(H1 == HC)) then
              floodOn = .true.
              irrigStart = .true.
           else
@@ -608,6 +615,11 @@ contains
 
     DYNAMIC_OR_PRESCRIBED1: if( LIS_irrig_struc(nest)%sprinkler_rate .gt. 0 ) then
        ! PRESCRIBED
+     SCHEDULE1P: if ( LIS_irrig_struc(nest)%sprinkler_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+               SRATE = LIS_irrig_struc(nest)%sprinkler_rate*(100.0/(100.0-LIS_irrig_struc(nest)%sprinkler_efcor))*IrrigScale/3600.
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(HC < H2)) then
           ! get the prescribed rate in mm/hr and convert to mm/s at H1 to compute the
           ! rate for the day and maintain the same rate through out the irrigation
@@ -617,8 +629,18 @@ contains
        else
           SRATE = 0.
        endif
+     endif SCHEDULE1P
     else  ! DYNAMIC
 
+     SCHEDULE1D: if ( LIS_irrig_struc(nest)%sprinkler_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+       ! Note: if sprinkler is on schedule, the rate is normally prescribed
+       ! however, the option to compute the demand based rate is provided
+       ! below, but needs refinement (i.e. rate is for H1/H2 duration).
+               SRATE = crop_water_deficit (SMCNT, RDPTH, SMREF)*(100.0/(100.0-LIS_irrig_struc(nest)%sprinkler_efcor))*IrrigScale/(H2 - H1)/3600.
+
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(HC < H2)) then
           ! The model uses rootzone soil moisture state at H1 to compute irrigation
           ! rates for the day and maintains the same rate through out the irrigation
@@ -628,6 +650,7 @@ contains
        else
           SRATE = 0.
        endif
+     endif SCHEDULE1D
     endif DYNAMIC_OR_PRESCRIBED1
     IRATE = SRATE
    endif SPRINKLER
@@ -640,6 +663,11 @@ contains
 
     DYNAMIC_OR_PRESCRIBED2: if( LIS_irrig_struc(nest)%drip_rate .gt. 0 ) then
        ! PRESCRIBED
+     SCHEDULE2P: if ( LIS_irrig_struc(nest)%drip_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+       ! DRIP SCHEDULE is not implemented yet!!!!
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(ma < 1.0)) then
           ! get the prescribed rate in mm/hr and convert to mm/s at H1 to compute the
           ! rate for the day and maintain the same rate through out the irrigation
@@ -651,19 +679,25 @@ contains
        else  
           DRATE = 0.
        endif
+     endif SCHEDULE2P
     else ! DYNAMIC
-
+     SCHEDULE2D: if ( LIS_irrig_struc(nest)%drip_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+       ! DRIP SCHEDULE is not implemented yet!!!!
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(ma < 1.0)) then
           ! Check root zone soil moisture at H1 and irrigate until root zone becomes field capacity
           ! To make drip rate lower than sprinkler with deficit option, irrigation duration may need to be increased.
           ! Alternatively, deficit can be computed for surface layer and multiply by LIS_rc%ts like in flood.  
-          ! Notice drip uses the same soil moisture threshold of sprinkler but with 0.% efficiency correction.
-          if((ma <= IT).AND.(H1 == HC)) &
+          if((ma <= IT).AND.(H1 == HC)) then
                DRATE = crop_water_deficit (SMCNT, RDPTH, SMREF) *  &
                        (100.0/(100.0-LIS_irrig_struc(nest)%drip_efcor))*IrrigScale/(H2 - H1)/3600.
+          endif
        else
           DRATE = 0.
        endif
+     endif SCHEDULE2D
     endif DYNAMIC_OR_PRESCRIBED2
     IRATE = DRATE
    endif  DRIP
@@ -676,6 +710,11 @@ contains
 
     DYNAMIC_OR_PRESCRIBED3: if( LIS_irrig_struc(nest)%flood_rate .gt. 0 ) then
        ! PRESCRIBED
+     SCHEDULE3P: if ( LIS_irrig_struc(nest)%flood_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+       ! FLOOD SCHEDULE is not implemented yet!!!!
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(HC < H2)) then
           ! get the prescribed rate in mm/hr and convert to mm/s at H1 to compute the
           ! rate for the day and maintain the same rate through out the irrigation
@@ -685,23 +724,31 @@ contains
        else
           FRATE = 0.
        endif
+     endif SCHEDULE3P
     else  ! DYNAMIC
+     SCHEDULE3D: if ( LIS_irrig_struc(nest)%flood_schedule .gt. 0 ) then
+       ! ON SCHEDULE, get rate anytime
+       ! FLOOD SCHEDULE is not implemented yet!!!!
+     else   
+       ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(HC < H2)) then
           ! check rootzone soil moisture and saturate top soil layer 
           ! during H1 <= HC < H2 (the rate is variable). 
           ! toplayer => LIS_rc%irrigation_mxsoildpth = 1
           ! but can be expanded to entire column 
           ! note: should we check the rate is greater than infiltration rate?
-          if( ma <= IT ) &
+          if( ma <= IT ) then
             FRATE = crop_water_deficit (                                 &
                     SMCNT(1:LIS_irrig_struc(nest)%irrigation_mxsoildpth),&
                     RDPTH(1:LIS_irrig_struc(nest)%irrigation_mxsoildpth),&
                     SMREF)*                                              &
                     (100.0/(100.0- LIS_irrig_struc(nest)%flood_efcor))*  &
                     IrrigScale/LIS_rc%ts
+          endif
        else
           FRATE = 0.
        endif
+     endif SCHEDULE3D
     endif  DYNAMIC_OR_PRESCRIBED3
     IRATE = FRATE
    endif  FLOOD

@@ -44,9 +44,6 @@ subroutine noah33_getirrigationstates(nest,irrigState)
 ! Growing season threshold (i.e. 40% of GFRAC range) can be changed in 
 ! lis.config.
 !
-! Note, soil saturation (smcmax) and field capacity (smcref) are the same in
-! Noah.
-!
 ! REVISION HISTORY:
 !
 ! Aug 2008: Hiroko Kato; Initial code
@@ -108,7 +105,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
      
      gid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%index
      tid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%tile_id
-     
+
      ! frozen tile check
      irrig_check_frozen_soil = .false.
      
@@ -243,13 +240,12 @@ subroutine noah33_getirrigationstates(nest,irrigState)
 
                 DRIP: if ( IM%irrigType(TileNo) == 2 ) then
                 ! convert rate (mm/s) to accumulation (mm or kg m-2) and 
-                ! apply to surface layer
-                ! if it is enough to saturate root zone moisture at the next 
+                ! then volumetric and apply to surface layer
+                ! if root zone moisture becomes field capacity at the next 
                 ! time step, it will be shut off 
-                   amount = IM%irrigRate(TileNo)*LIS_rc%ts
+                   amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(1)/1000.
                    noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                        IM%IrrigScale(TileNo)*amount + &
-                    (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)      
+                        amount + noah33_struc(nest)%noah(TileNo)%smc(1)      
                 endif DRIP
 
                 FLOOD: if ( IM%irrigType(TileNo) == 3 ) then

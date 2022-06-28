@@ -302,8 +302,8 @@ contains
        ! Crop calendar options
        call ESMF_ConfigGetAttribute(LIS_config, &
             LIS_irrig_struc(n)%cropcalendar,    &
-            label="Crop Calender use:",default="none",rc=rc)
-       write(LIS_logunit,*) "[INFO] Crop Calender use: ",&
+            label="Crop Calendar use:",default="none",rc=rc)
+       write(LIS_logunit,*) "[INFO] Crop Calendar use: ",&
                             LIS_irrig_struc(n)%cropcalendar
        call ESMF_ConfigGetAttribute(LIS_config, &
             LIS_irrig_struc(n)%cropseasons,     &
