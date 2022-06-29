@@ -8,7 +8,7 @@ Please see Section <<sec-important_note_fs>> for information regarding using a c
 
 === LISF Dependencies
 
-Please first read the companion document "`Installing LISF Dependencies`".  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
+Please first read the companion document _LISF Installation Guide_.  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
 
 === Build Instructions
 
@@ -93,7 +93,7 @@ This script will prompt the user with a series of questions regarding support to
 | `LDT_HDF5`       | path to HDF5 library       | optional
 | `LDT_HDFEOS`     | path to HDFEOS2 library    | optional
 | `LDT_GDAL`       | path to GDAL library       | optional
-| `LDT_FORTRANGIS` | path to FortranGIS library | optional (required by GDAL)
+| `LDT_FORTRANGIS` | path to FortranGIS library | optional (required to use GDAL)
 | `LDT_LIBGEOTIFF` | path to GeoTIFF library    | optional
 | `LDT_JPEG`       | path to JPEG library       | optional (use system libjpeg by default)
 |===

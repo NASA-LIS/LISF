@@ -8,7 +8,7 @@ Please see Section <<sec_important_note_fs>> for information regarding using a c
 
 === LISF Dependencies
 
-Please first read the companion document "`Installing LISF Dependencies`".  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
+Please first read the companion document _LISF Installation Guide_.  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
 
 === Build Instructions
 

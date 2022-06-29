@@ -1,0 +1,76 @@
+
+== Development Environments
+
+=== Supported systems
+
+LISF and its dependencies have been compiled and run on
+Linux PC (Intel/AMD based) systems,
+//IBM AIX systems
+//SGI Altix systems
+Cray systems,
+and IBM Power9 systems.
+
+These instructions expect that you are using such a system.  In particular you need:
+
+==== Linux
+
+===== Compilers
+
+* Intel Fortran Compiler versions 18, 19, 20, or 21 with corresponding Intel C Compiler along with GNU`'s Compiler Collection version 9.2.0 or 11.2.0.
+* or GNU`'s Compiler Collection version 9.2.0 or 11.2.0, both gfortran and gcc.
+
+===== Tools
+
+* GNU`'s make, gmake, version 3.77 or 3.81
+* Perl, version 5.10
+* Python, version 2.7 or 3.8
+
+IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+
+//
+//      *** or Absoft's Pro Fortran Software Developement Kit, version 10.0
+//            with GNU`'s C and C++ compilers, gcc and g++, version 3.3.3
+//
+//      *** or Lahey/Fujitsu's Fortran 95 Compiler, release L6.00c
+//            with GNU`'s C and C++ compilers, gcc and g++, version 3.3.3
+//
+
+==== Cray/Linux
+
+===== Compilers
+
+* Intel Fortran Compiler version 18 or 19 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 7.3.0
+* or Intel Fortran Compiler version 21 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 7.5.0
+* or Cray Compiler Environment (cce) version 12.0.3 or 13.0.0, along with GNU`'s Compiler Collection version 11.2.0
+
+===== Tools
+
+* GNU`'s make, gmake, version 3.77 or 3.81
+* Perl, version 5.10
+* Python, version 2.7 or 3.8
+
+IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+
+==== IBM/Linux
+
+===== Compilers
+
+* GNU`'s Compiler Collection version 11.0, both gfortan and gcc.
+
+===== Tools
+
+* GNU`'s make, gmake, version 3.77 or 3.81
+* Perl, version 5.10
+* Python, version 2.7 or 3.8
+
+IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+
+//
+//   * IBM
+//      ** XL Fortran version 10.1.0.6
+//      ** GNU`'s make, gmake, version 3.77
+//
+//   * SGI Altix
+//      ** Intel Fortran Compiler version 12
+//      ** GNU`'s make, gmake, version 3.77
+
