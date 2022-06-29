@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine readLPRM_AMSREsmObs(n)
   use LDT_timeMgrMod,   only : LDT_get_julss
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod
   use LPRM_AMSREsm_obsMod, only : LPRM_AMSREsmobs
   use map_utils
@@ -43,7 +44,7 @@ subroutine readLPRM_AMSREsmObs(n)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname_A, fname_D
+  character(len=LDT_CONST_PATH_LEN)     :: fname_A, fname_D
   real              :: smobs_A(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: smobs_D(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: lat,lon

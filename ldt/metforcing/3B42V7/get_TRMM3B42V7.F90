@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine get_TRMM3B42V7(n, findex)
   use LDT_timeMgrMod, only        : LDT_time2date, LDT_tick, LDT_get_nstep, &
                                     LDT_isAlarmRinging ! SY
   use LDT_logMod, only            : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
   use LDT_metforcingMod, only     : LDT_forc ! SY
 
@@ -67,7 +68,7 @@ subroutine get_TRMM3B42V7(n, findex)
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3               
            ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3     ! SY ,kgmt3, mgmt3
-  character(len=80) :: filename       ! Filefilename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename       ! Filefilename variables for precip data sources
   real*8  :: LDT_timeAtTStepStart_add90min ! SY
   real*8  :: LDT_timeAtTStepEnd_add90min ! SY
   integer :: order
@@ -270,6 +271,7 @@ subroutine TRMM3B42V7file( filename, n, yr, mo, da, hr)
 !
 
 ! !USES:
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use TRMM3B42V7_forcingMod, only : TRMM3B42V7_struc
 
 !EOP
@@ -279,8 +281,8 @@ subroutine TRMM3B42V7file( filename, n, yr, mo, da, hr)
 
 !==== Local Variables=======================
 
-  character(len=80) :: filename, TRMM3B42V7dir
-  character*160 temp
+  character(len=LDT_CONST_PATH_LEN) :: filename, TRMM3B42V7dir
+  character(len=LDT_CONST_PATH_LEN) :: temp
   integer :: yr, mo, da, hr
   integer :: i, j
   integer :: uyr, umo, uda, uhr, umn, uss
@@ -301,11 +303,11 @@ subroutine TRMM3B42V7file( filename, n, yr, mo, da, hr)
    original = 2
    if (original .eq. 1) then     !  1. original: /abc/3B42.980131.12.6.precipitation
      write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') &
-           TRMM3B42V7dir, '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
+           trim(TRMM3B42V7dir), '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
            uhr,  '.6.precipitation'
    else                          !  2. refilenamed: TRMM3B42V7.2005110809
      write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') &
-           TRMM3B42V7dir, '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
+           trim(TRMM3B42V7dir), '/', yr, mo, '/3B42V7.', yr, umo, uda, uhr
    end if
 
   !strip off the spaces

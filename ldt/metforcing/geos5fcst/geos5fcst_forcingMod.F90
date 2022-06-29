@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@ module geos5fcst_forcingMod
 !  GEOS5 forecast output or the full ensemble. 
 !
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -38,7 +39,7 @@ module geos5fcst_forcingMod
      real               :: ts
      integer            :: nc, nr
      integer            :: max_ens_members
-     character*80       :: geos5fcstdir
+     character(len=LDT_CONST_PATH_LEN) :: geos5fcstdir
      real*8             :: fcsttime1,fcsttime2
      
      real               :: gridDesc(50)

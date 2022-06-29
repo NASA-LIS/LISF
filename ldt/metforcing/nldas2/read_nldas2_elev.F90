@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -106,7 +106,7 @@ subroutine read_nldas2_elev( n, findex, narrelev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "Reading the NLDAS-2/NARR terrain height file: ", &
-        nldas2_struc(n)%file_narrelev
+        trim(nldas2_struc(n)%file_narrelev)
 
    ftn1 = LDT_getNextUnitNumber()
    open(ftn1, file = nldas2_struc(n)%file_narrelev, form='unformatted',&
@@ -129,7 +129,7 @@ subroutine read_nldas2_elev( n, findex, narrelev, elevdiff )
 ! Open and Read-in Elevation Difference File (to remain on NLDAS2 grid)
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "Reading the NLDAS2 elevation difference file: ",&
-         nldas2_struc(n)%file_elevdiff
+         trim(nldas2_struc(n)%file_elevdiff)
 
    ftn2 = LDT_getNextUnitNumber()
    open(ftn2, file = nldas2_struc(n)%file_elevdiff, form='unformatted',&

@@ -1,0 +1,16 @@
+
+== Introduction
+
+This document provides guidance on installing the Land Information System Framework (LISF) and its dependencies.  It also provides technical information regarding supported environments.
+
+Please see the _LDT Users`' Guide_, the _LIS Users`' Guide_, and/or the _LVT Users`' Guide_ for specific information regarding installing LDT, LIS, and/or LVT, respectively.
+
+[IMPORTANT]
+====
+LISF is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LISF source code into a directory within a case sensitive file system.  In particular, if you are using LISF within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LISF from within a shared folder.  Move the LISF source code into a directory within the virtual machine.
+====
+
+[WARNING]
+====
+The above may be true for some of LISF`'s dependencies.  It is recommended to install LISF`'s dependencies within a case sensitive file system.
+====
