@@ -473,8 +473,7 @@ subroutine create_ESACCIsm_filename(ndir, version, sensor, yr, mo,da, filename)
   character (len=2) :: fmo,fda
   character (len=3) :: cversion3
   character (len=4) :: cversion4
- 
-  character :: sensortxt
+  character (len=8) :: sensortxt !20220622 Pang 
  
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
@@ -515,11 +514,11 @@ subroutine create_ESACCIsm_filename(ndir, version, sensor, yr, mo,da, filename)
      ! NT: for versions after 2.2
      if (version .lt. 10.0) then
          filename = trim(ndir)//'/'//trim(fyr)//&
-              '/ESACCI-SOILMOISTURE-L3S-SSMV-'//sensortxt//'-' & 
+              '/ESACCI-SOILMOISTURE-L3S-SSMV-'//trim(sensortxt)//'-' &  !20220622 Pang
               //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv0'//cversion3//'.nc'
      else
          filename = trim(ndir)//'/'//trim(fyr)//&
-              '/ESACCI-SOILMOISTURE-L3S-SSMV-'//sensortxt//'-' & 
+              '/ESACCI-SOILMOISTURE-L3S-SSMV-'//trim(sensortxt)//'-' & !20220622 Pang
               //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv'//cversion4//'.nc'
      endif
   endif
