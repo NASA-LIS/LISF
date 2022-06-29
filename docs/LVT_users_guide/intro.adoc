@@ -49,7 +49,7 @@ This document consists of 9 sections, described as follows:
 . Supports additional data streams
 * FluxSat GPP
 * MCD15A2H
-* thermal hydraulic disaggregation of soil moisture (THySM)
+* Thermal hydraulic disaggregation of soil moisture (THySM)
 * UA SMAP
 
 ==== Version 7.3

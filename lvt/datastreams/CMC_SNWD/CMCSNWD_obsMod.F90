@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,7 +40,7 @@ module CMCSNWD_obsMod
 ! Website: http://nsidc.org/data/nsidc-0447.html
 ! 
 ! Citation: Brown, Ross D. and Bruce Brasnett. 2010. Canadian Meteorological 
-! Centre (CMC) Daily Snow Depth Analysis Data. © Environment Canada, 2010. 
+! Centre (CMC) Daily Snow Depth Analysis Data. Â© Environment Canada, 2010.
 ! Boulder, Colorado USA: National Snow and Ice Data Center. Digital media.
 ! 
 ! !FILES USED:
