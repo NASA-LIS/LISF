@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ subroutine readLPRMvodObs(n)
   use ESMF
   use LDT_coreMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_DAobsDataMod
   use LPRMvod_obsMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -45,7 +46,7 @@ subroutine readLPRMvodObs(n)
   integer           :: c,r,c1,r1
   integer           :: ios
   integer           :: ftn
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN)     :: fname
   real              :: vodobs(LDT_rc%lnc(n),LDT_rc%lnr(n))
   real              :: vod_file(LPRMvodobs(n)%nc,LPRMvodobs(n)%nr)
   real              :: vod_inp(LPRMvodobs(n)%nc*LPRMvodobs(n)%nr)

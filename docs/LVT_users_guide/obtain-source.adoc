@@ -4,7 +4,7 @@
 
 This section describes how to obtain the source code needed to build the LVT executable.
 
-Beginning with Land Information System Framework (LISF) public release 7.3, the LVT source code is available as open source under the Apache License, version 2.0.  Please see {apachelicense}[Apache`'s web-site] for a copy of the license.
+Beginning with Land Information System Framework (LISF) public release 7.3, the LVT source code is available as open source under the Apache License, version 2.0.  (Please see {apachelicense}[Apache`'s web-site] for a copy of the license.)  LVT is one of the three main components of LISF (LDT, LIS, and LVT).
 
 From LVT public release 7.1rp1 through 7.2, the LVT source code is available as open source under the NASA Open Source Agreement (NOSA).  Please see {lisfurl}[LISF`'s web-site] for a copy of the NOSA.
 
@@ -15,12 +15,12 @@ NOTE: All users are encouraged to go to {lisfurl}[LISF`'s web-site] to fill in t
 [[sec-important_note_fs]]
 === Important Note Regarding File Systems
 
-LVT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LVT code into a directory within a case sensitive file system.  In particular, if you are using LVT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LVT from within a shared folder.  Move the LVT source code into a directory within the virtual machine.
+LVT is developed on Linux/Unix platforms.  Its build process expects a case sensitive file system.  Please make sure that you unpack and/or `git clone` the LISF source code into a directory within a case sensitive file system.  In particular, if you are using LVT within a Linux-based virtual machine hosted on a Windows or Macintosh system, do not compile/run LVT from within a shared folder.  Move the LISF source code into a directory within the virtual machine.
 
 [[sec_publicrelease,Public Release Source Code]]
 === Public Release Source Code
 
-The LVT public release {lisfrevision} source code is available both on {lisfurl}[LISF`'s web-site] under the "`Source`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
+The LISF public release {lisfrevision} source code is available both on {lisfurl}[LISF`'s web-site] under the "`Source`" menu and on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
 
 After downloading the LISF tar-file:
 
@@ -64,7 +64,7 @@ Unzip and untar the tar-file.
 [[sec-checkoutsrc]]
 === master branch
 
-The LVT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LVT source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
+The LVT source code is maintained in a git repository hosted on GitHub.  If you wish to work with the latest development code (in the master branch), then you must use the `git` client to obtain the LISF source code.  If you need any help regarding `git` or GitHub, please go to {githuburl}.
 
 :sectnums!: // disable section numbers
 
@@ -99,5 +99,6 @@ NOTE: The directory containing the LVT source code, _LISF/lvt_, will be referred
 
 === Documentation
 
-Processed documentation may be found on {lisfurl}[LISF`'s web-site] under the "`Docs`" menu.
+Processed documentation for each release may be found on {lisfurl}[LISF`'s web-site] under the "`Docs`" menu.  Starting with LISF public release 7.4, processed documentation may also be found on GitHub under the NASA-LIS organization at {nasalisf} under the "`Releases`" link.
 
+Processed documentation for the master branch is available on GitHub under the NASA-LIS organization`'s GitHub pages at {nasalisfpages}.

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -35,6 +35,7 @@ module stninterp_module
 !
   use idw_module
   use mqb_module
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 !
   implicit none
 !
@@ -65,8 +66,8 @@ subroutine calcgrids(dirname,stnfile,stns,nnn,method,order,cols,rows,&
 ! local variables
   integer :: s
   logical :: lerr = .FALSE.
-  character*80 :: infile
-  character*80 :: outfile
+  character(len=LDT_CONST_PATH_LEN) :: infile
+  character(len=LDT_CONST_PATH_LEN) :: outfile
   integer :: funit = 10
   real(4), allocatable :: stndata(:,:)
   integer(4), allocatable :: W1grid(:,:,:) ! station numbers for each grid cell
