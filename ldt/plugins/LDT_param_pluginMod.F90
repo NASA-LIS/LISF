@@ -25,7 +25,7 @@ module LDT_param_pluginMod
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
 !  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
-!  
+!  28 Jun 2022:  Eric Kemp    - Added NAFPA background precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -77,8 +77,12 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
-    use Crocus_parmsMod    
+    use Crocus_parmsMod
 
+    external :: registerlsmparamprocinit
+    external :: registerlsmparamprocwriteheader
+    external :: registerlsmparamprocwritedata
+    
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
          NoahParms_init)
@@ -1179,9 +1183,13 @@ contains
 ! !INTERFACE:
   subroutine LDT_climate_plugin
 !EOP
+    use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt, &
+         LDT_read_NAFPA_back_galwem_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
+
+    external :: registerreadclimppt
 
 ! !USES:
 !- Precipitation downscaling:
@@ -1190,6 +1198,12 @@ contains
 
     call registerreadclimppt(trim(LDT_worldclimpptId)//char(0),&
          read_WorldClim_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgfspptId)//char(0),&
+         LDT_read_NAFPA_back_gfs_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgalwempptId)//char(0),&
+         LDT_read_NAFPA_back_galwem_climppt)
 
 !- Temperature downscaling:
 
