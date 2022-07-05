@@ -4947,6 +4947,8 @@ GFS data (_MT.avn*_).
 UK Unified Model (GALWEM) data
 (__PS.557WW_SC.U_DI.F_GP.GALWEM-*__).
 
+`AGRMET PPT Background bias correction option:` 0 = no bias correction, 1 = adjust GFS precip towards GALWEM.
+
 `AGRMET SSMI data directory:` specifies the location of the
 SSM/I data (_ssmira_*_).
 
