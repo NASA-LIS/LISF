@@ -713,7 +713,13 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK Add WWMCA GRIB1 option
      integer :: read_wwmca_grib1
-     
+
+     ! EMK Add precip bias correction option
+     integer :: bias_correct_precip_background
+     character(255) :: chelsa_climo_file
+     character(255) :: gfs_climo_file
+     character(255) :: galwem_climo_file
+
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)

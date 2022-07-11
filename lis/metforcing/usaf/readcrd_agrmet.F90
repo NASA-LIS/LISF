@@ -1080,6 +1080,50 @@ subroutine readcrd_agrmet()
           "[ERR] AGRMET WWMCA GRIB1 read option: not specified in config file")
   enddo ! n
 
+  ! EMK Add precipitation bias correction option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET Precip background bias correction option:", rc=rc)
+  call LIS_verify(rc, &
+       "AGRMET Precip background bias correction option: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%bias_correct_precip_background, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] Precip background bias correction option: not specified in config file")
+  end do
+
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET CHELSA Precip climo file:", rc=rc)
+  call LIS_verify(rc, &
+       "AGRMET CHELSA Precip climo file: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%chelsa_climo_file, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] CHELSA Precip climo file: not specified in config file")
+  end do
+
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET GFS Precip climo file:", rc=rc)
+  call LIS_verify(rc, &
+       "AGRMET GFS Precip climo file: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%gfs_climo_file, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] GFS Precip climo file: not specified in config file")
+  end do
+
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET GALWEM Precip climo file:", rc=rc)
+  call LIS_verify(rc, &
+       "AGRMET GALWEM Precip climo file: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%galwem_climo_file, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] GALWEM Precip climo file: not specified in config file")
+  end do
 
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1
