@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -163,6 +163,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USGSPETforcId     = "PET USGS"
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
+   character*50, public,  parameter :: LIS_COAMPSoutId       = "COAMPSout"
    character*50, public,  parameter :: LIS_WRFoutv2Id        = "WRFoutv2"
    character*50, public,  parameter :: LIS_WRFakId           = "WRF AK"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
@@ -171,6 +172,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
+   character*50, public,  parameter :: LIS_gddpId        = "GDDP"
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------

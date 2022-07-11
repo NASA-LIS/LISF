@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,6 +42,7 @@
     character*20       :: gefs_runmode
     character*20       :: gefs_proj
     character*20       :: gefs_preslevel
+    real               :: gefs_res
     
     real               :: ts
     real*8             :: fcsttime1,fcsttime2
@@ -122,7 +123,7 @@ contains
 
     integer :: n
     integer :: rc
-
+    real :: lonEnd
     write(LIS_logunit,*) "[INFO] Initializing the GEFS forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
@@ -166,7 +167,6 @@ contains
        do n=1,LIS_rc%nnest
 
           gefs_struc(n)%gridDesc  = 0
-
           ! Reforecast product:
           if( gefs_struc(n)%gefs_fcsttype .eq. "Reforecast2" ) then
 
@@ -196,8 +196,15 @@ contains
             gefs_struc(n)%fcst_hour = 0
 
             if( gefs_struc(n)%gefs_proj .eq. "latlon" ) then
-              gefs_struc(n)%nc = 360
-              gefs_struc(n)%nr = 181
+              if( gefs_struc(n)%gefs_res .eq. 0.25 ) then
+                 gefs_struc(n)%nc = 1440
+                 gefs_struc(n)%nr = 721
+                 lonEnd = 179.75
+              else
+                 gefs_struc(n)%nc = 360
+                 gefs_struc(n)%nr = 181
+                 lonEnd = 178.75
+              endif
 
               gefs_struc(n)%gridDesc(1) = 0
               gefs_struc(n)%gridDesc(2) = gefs_struc(n)%nc
@@ -207,10 +214,10 @@ contains
 !              gefs_struc(n)%gridDesc(5) = 0.0     ! original GEFS
               gefs_struc(n)%gridDesc(6) = 128
               gefs_struc(n)%gridDesc(7) = -90.0   ! original GEFS
-              gefs_struc(n)%gridDesc(8) = 178.75
+              gefs_struc(n)%gridDesc(8) = lonEnd
 !              gefs_struc(n)%gridDesc(8) = 359.00  ! original GEFS
-              gefs_struc(n)%gridDesc(9) =  1.0
-              gefs_struc(n)%gridDesc(10) = 1.0
+              gefs_struc(n)%gridDesc(9) =  gefs_struc(n)%gefs_res
+              gefs_struc(n)%gridDesc(10) = gefs_struc(n)%gefs_res
               gefs_struc(n)%gridDesc(20) = 64  ! -180 to 180?
 !              gefs_struc(n)%gridDesc(20) = 0   ! for 0 to 360?
 
@@ -244,8 +251,15 @@ contains
              call LIS_verify(rc,'ESMF_TimeSet failed in init_gefs')
              
              if( gefs_struc(n)%gefs_proj .eq. "latlon" ) then
-                gefs_struc(n)%nc = 720
-                gefs_struc(n)%nr = 361
+                if( gefs_struc(n)%gefs_res .eq. 0.25 ) then
+                   gefs_struc(n)%nc = 1440
+                   gefs_struc(n)%nr = 721
+                   lonEnd = 179.75
+                else
+                   gefs_struc(n)%nc = 720
+                   gefs_struc(n)%nr = 361
+                   lonEnd = 179.5
+                endif
                 
                 gefs_struc(n)%gridDesc(1) = 0
                 gefs_struc(n)%gridDesc(2) = gefs_struc(n)%nc
@@ -255,10 +269,10 @@ contains
 !              gefs_struc(n)%gridDesc(5) = 0.0     ! original GEFS
                 gefs_struc(n)%gridDesc(6) = 128
                 gefs_struc(n)%gridDesc(7) = -90.0   ! original GEFS
-                gefs_struc(n)%gridDesc(8) = 179.5
+                gefs_struc(n)%gridDesc(8) = lonEnd
 !              gefs_struc(n)%gridDesc(8) = 359.00  ! original GEFS
-                gefs_struc(n)%gridDesc(9) =  0.5
-                gefs_struc(n)%gridDesc(10) = 0.5
+                gefs_struc(n)%gridDesc(9) =  gefs_struc(n)%gefs_res
+                gefs_struc(n)%gridDesc(10) = gefs_struc(n)%gefs_res
                 gefs_struc(n)%gridDesc(20) = 64  ! -180 to 180?
 !              gefs_struc(n)%gridDesc(20) = 0   ! for 0 to 360?
 

@@ -2,7 +2,7 @@
 [[sec-intro]]
 == Introduction
 
-This is the User's Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software and instructions on building an executable.
+This is the Users`' Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software.  It also describes LDT`'s run-time configuration options (the _ldt.config_ file).
 
 This document consists of 7 sections, described as follows:
 
@@ -30,6 +30,29 @@ This document consists of 7 sections, described as follows:
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more
 //details.  (See Section~\ref{sec:obtain-src}.)}
+
+==== Version 7.4
+
+. Includes new runmode
+* observation simulator runmode
+. Supports additional data assimilation observations
+* SMOS near-real-time neural-network L2 soil moisture (SMOS NRT NN L2 SM)
+* Thermal hydraulic disaggregation of soil moisture (THySM)
+. Supports additional parameters
+* Crocus parameters
+. Supports additional meteorological forcing sources
+* metforcing extracted from WRF output over Alaska domain (WRFAKdom)
+* metforcing extracted from WRF output (WRFoutv2)
+
+[IMPORTANT]
+====
+Support for these metforcing sources was *removed*:
+
+* ecmwfreanal
+* gdas3d
+* merra-land
+* nldas1
+====
 
 ==== Version 7.3
 

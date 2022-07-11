@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine get_RFE2Daily(n, findex)
   use LDT_timeMgrMod,        only : LDT_calendar, LDT_get_nstep, &
                                     LDT_tick, LDT_date2time, LDT_time2date
   use LDT_logMod,            only : LDT_logunit, LDT_endrun, LDT_verify
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use RFE2Daily_forcingMod,  only : RFE2Daily_struc
 
   implicit none
@@ -93,7 +94,7 @@ subroutine get_RFE2Daily(n, findex)
 
   integer :: ferror_RFE2Daily ! Error flags for precip data sources
 
-  character*120 :: filename    ! Filename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename    ! Filename variables for precip data sources
 
   integer      :: order
 !=== End Variable Definition =======================
@@ -161,7 +162,7 @@ subroutine get_RFE2Daily(n, findex)
     call RFE2Dailyfile( filename, RFE2Daily_struc(n)%RFE2DailyDir, &
                         yr1, mo1, da1 )
 
-    write(LDT_logunit,*) "Locating RFE2Daily precip file: ",filename
+    write(LDT_logunit,*) "Locating RFE2Daily precip file: ",trim(filename)
     ferror_RFE2Daily = 0
     order = 2
     call readprecip_RFE2Daily( n, filename, findex, order, &

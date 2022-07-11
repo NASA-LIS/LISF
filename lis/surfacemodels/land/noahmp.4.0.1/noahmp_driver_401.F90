@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -568,11 +568,12 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   call calc_declin_401(nowdate(1:4)//"-"//nowdate(5:6)//"-"//nowdate(7:8)//"_"//nowdate(9:10)//":"//nowdate(11:12)//":00", &
       latitude, longitude, cosz, yearlen, julian)
 
-  if ( dveg_opt == 1 ) then
-    ! with dveg_opt==1, shdfac is fed directly to fveg
+  if ((dveg_opt.eq.1).or.(dveg_opt.eq.6).or.(dveg_opt.eq.7)) then
+    ! with dveg_opt==1/6/7, shdfac is fed directly to fveg
     vegfra = month_d_401(shdfac_monthly, nowdate)
   else
-    ! with dveg_opt==2, fveg is computed from lai and sai, and shdfac is unused
+    ! with dveg_opt==2/3/8, fveg is computed from lai and sai, and shdfac is unused
+    ! with dveg_opt==4/5/9, fveg is set to the maximum shdfac, and shdfac is unused
     vegfra = -1.E36   ! To match with HRLDAS initialization
   endif
   vegmax = maxval(shdfac_monthly)

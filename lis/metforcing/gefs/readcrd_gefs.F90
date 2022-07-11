@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -67,6 +67,32 @@ subroutine readcrd_gefs()
      call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_proj,rc=rc)
   enddo
 
+  call ESMF_ConfigFindLabel(LIS_config,"GEFS forecast grid resolution:",rc=rc)
+  !call LIS_verify(rc, 'GEFS forecast grid resolution: not defined ')
+  if(rc.ne.0) then
+     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution: not defined '
+     write(LIS_logunit,*) '[WARN] GEFS forecast grid resolution set to 0.25 as default. '
+     do n=1,LIS_rc%nnest
+        gefs_struc(n)%gefs_res = 0.25
+     enddo
+  else
+     do n=1,LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,gefs_struc(n)%gefs_res,rc=rc)
+        
+        if( (gefs_struc(n)%gefs_fcsttype.eq.'Reforecast2' .and. (gefs_struc(n)%gefs_res.ne.0.25 .and. gefs_struc(n)%gefs_res.ne.1.0)) &
+            .or. (gefs_struc(n)%gefs_fcsttype.eq.'Operational' .and. (gefs_struc(n)%gefs_res.ne.0.25 .and. gefs_struc(n)%gefs_res.ne.0.50))) then
+
+           write(LIS_logunit,*) '[ERR] GEFS forecast grid resolution error:'
+           write(LIS_logunit,*) '[ERR] The GEFS reader currently only supports the following:'
+           write(LIS_logunit,*) '[ERR] -- Reforecast2 mode with 1.0 degree or 0.25 degree data.'
+           write(LIS_logunit,*) '[ERR] -- Operational mode with 0.5 degree or 0.25 degree data.'
+           write(LIS_logunit,*) '[ERR] Please change GEFS mode, data source, and/or data resolution.'
+           write(LIS_logunit,*) '[ERR] Stopping...'
+           call LIS_endrun()
+        endif
+     enddo
+  endif
+
   call ESMF_ConfigFindLabel(LIS_config,"GEFS forecast number of ensemble members:",rc=rc)
   call LIS_verify(rc, 'GEFS forecast number of ensemble members: not defined')
   do n=1,LIS_rc%nnest
@@ -93,6 +119,8 @@ subroutine readcrd_gefs()
           gefs_struc(n)%max_ens_members
      write(LIS_logunit,*) '[INFO] GEFS pressure level field:  ',&
           gefs_struc(n)%gefs_preslevel
+     write(LIS_logunit,*) '[INFO] GEFS forecast grid resolution:  ',&
+          gefs_struc(n)%gefs_res
 
      gefs_struc(n)%fcsttime1 = 3000.0
      gefs_struc(n)%fcsttime2 = 0.0

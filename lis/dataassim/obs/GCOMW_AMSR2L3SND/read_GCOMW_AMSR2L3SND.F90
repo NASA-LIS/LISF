@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
   use map_utils
   use LIS_pluginIndices
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use GCOMW_AMSR2L3SND_Mod, only : GCOMW_AMSR2L3SND_struc
 
   implicit none
@@ -54,8 +55,8 @@ subroutine read_GCOMW_AMSR2L3SND(n, k, OBS_State, OBS_Pert_State)
   integer,         parameter    :: IMSnc = 1500,IMSnr = 375
   integer                :: ftn,status
   integer                :: grid_index
-  character*100          :: sndobsdir
-  character*100          :: fname_A, fname_D,imsfile, MODISfile,fname
+  character(len=LIS_CONST_PATH_LEN) :: sndobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname_A, fname_D,imsfile, MODISfile,fname
   logical                :: alarmCheck
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -702,14 +703,14 @@ subroutine read_AMSR2snd_bc_data(n, k, fname,sndobs_ip)
        GCOMW_AMSR2L3SND_struc(n)%amsr2nc*GCOMW_AMSR2L3SND_struc(n)%amsr2nr,&
        LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k),&
        GCOMW_AMSR2L3SND_struc(n)%rlat,GCOMW_AMSR2L3SND_struc(n)%rlon, &
-       GCOMW_AMSR2L3SND_struc(n)%n11,&
-       GCOMW_AMSR2L3SND_struc(n)%n12,&
-       GCOMW_AMSR2L3SND_struc(n)%n21,&
-       GCOMW_AMSR2L3SND_struc(n)%n22,&
        GCOMW_AMSR2L3SND_struc(n)%w11,&
        GCOMW_AMSR2L3SND_struc(n)%w12,&
        GCOMW_AMSR2L3SND_struc(n)%w21,&
        GCOMW_AMSR2L3SND_struc(n)%w22,&
+       GCOMW_AMSR2L3SND_struc(n)%n11,&
+       GCOMW_AMSR2L3SND_struc(n)%n12,&
+       GCOMW_AMSR2L3SND_struc(n)%n21,&
+       GCOMW_AMSR2L3SND_struc(n)%n22,&
        LIS_rc%udef,ios)
 
 #endif
@@ -845,9 +846,8 @@ subroutine create_IMS_filename_AMSR2(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*) :: name, ndir
   integer           :: yr, doy
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates a timestamped IMS filename
@@ -897,7 +897,7 @@ subroutine getMOD10data_AMSR2(n,k,name,tmp_obsl)
   
   integer              :: n 
   integer              :: k
-  character*80         :: name
+  character(len=*) :: name
   real                 :: tmp_obsl(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
 #if (defined USE_HDFEOS2)

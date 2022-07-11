@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -66,6 +66,7 @@ module mos_lsmMod
 
 ! !USES:        
   use mos_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -84,11 +85,11 @@ module mos_lsmMod
      integer               :: mos_nvegp  
      integer               :: mos_nmvegp      
      integer               :: mos_nsoilp      
-     character*100         :: mos_rfile 
-     character*100         :: mos_vfile 
-     character*100         :: mos_pfile 
-     character*100         :: mos_mvfile 
-     character*100         :: mos_sfile
+     character(len=LIS_CONST_PATH_LEN) :: mos_rfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_vfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_pfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_mvfile 
+     character(len=LIS_CONST_PATH_LEN) :: mos_sfile
      integer               :: mos_nstxts
      integer               :: usedsoilmap
      real                  :: dpthlyr1
@@ -136,6 +137,7 @@ contains
 !EOP  
     integer :: n,i
     integer                 :: status
+    character*3         :: fnest
 
     allocate(mos_struc(LIS_rc%nnest))
     call readmoscrd()
@@ -165,11 +167,12 @@ contains
 !------------------------------------------------------------------------
        call LIS_update_timestep(LIS_rc, n, mos_struc(n)%ts)
 
-       call LIS_registerAlarm("Mosaic model alarm",&
+       write(fnest,'(i3.3)') n    
+       call LIS_registerAlarm("Mosaic model alarm "//trim(fnest),&
             mos_struc(n)%ts,&
             mos_struc(n)%ts)
 
-       call LIS_registerAlarm("Mosaic restart alarm",&
+       call LIS_registerAlarm("Mosaic restart alarm "//trim(fnest),&
             mos_struc(n)%ts,&
             mos_struc(n)%rstInterval)
 

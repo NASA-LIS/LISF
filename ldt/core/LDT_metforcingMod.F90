@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -62,6 +62,7 @@ module LDT_metforcingMod
   use LDT_timeMgrMod
   use LDT_logMod
   use LDT_coreMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -1040,7 +1041,7 @@ contains
     integer                   :: objcount
     integer                   :: fobjcount
     integer                   :: offset1
-    character*100             :: fname
+    character(len=LDT_CONST_PATH_LEN)             :: fname
     real,             pointer     :: forcvar(:)    
     real,             pointer     :: pertdata(:)
     character*100,    allocatable :: forcobjs(:)
@@ -2237,7 +2238,7 @@ contains
 !EOP
 
     logical         :: alarmCheck
-    character*200   :: outfile
+    character(len=LDT_CONST_PATH_LEN)   :: outfile
     character*120   :: source_names
     integer         :: m, i
     
@@ -2318,7 +2319,7 @@ contains
 
     integer :: ftn
     integer :: iret
-    character*100 :: mname_temp
+    character(len=LDT_CONST_PATH_LEN) :: mname_temp
     
     if(.NOT.PRESENT(model_name)) then 
        mname_temp = "model_not_specified"

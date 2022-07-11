@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -88,6 +88,35 @@ subroutine LVT_getSeasonalCycleTimeIndex(interval,tind)
         endif
 
      endif
-
+  elseif(interval.eq.21) then
+     if(LVT_rc%statswriteint.eq.2592000) then
+        if(LVT_rc%mo.eq.2.or.LVT_rc%mo.eq.3.or.LVT_rc%mo.eq.4) then
+           !JFM
+           tind = 1
+        elseif(LVT_rc%mo.eq.5.or.LVT_rc%mo.eq.6.or.LVT_rc%mo.eq.7) then
+           !AMJ
+           tind = 2
+        elseif(LVT_rc%mo.eq.8.or.LVT_rc%mo.eq.9.or.LVT_rc%mo.eq.10) then
+           !JAS
+           tind = 3
+        elseif(LVT_rc%mo.eq.11.or.LVT_rc%mo.eq.12.or.LVT_rc%mo.eq.1) then
+           !OND
+           tind = 4
+        endif
+     elseif(LVT_rc%statswriteint.lt.2592000) then
+        if(LVT_rc%mo.eq.1.or.LVT_rc%mo.eq.2.or.LVT_rc%mo.eq.3) then
+           !JFM
+           tind = 1
+        elseif(LVT_rc%mo.eq.4.or.LVT_rc%mo.eq.5.or.LVT_rc%mo.eq.6) then
+           !AMJ
+           tind = 2
+        elseif(LVT_rc%mo.eq.7.or.LVT_rc%mo.eq.8.or.LVT_rc%mo.eq.9) then
+           !JAS
+           tind = 3
+        elseif(LVT_rc%mo.eq.10.or.LVT_rc%mo.eq.11.or.LVT_rc%mo.eq.12) then
+           !OND
+           tind = 4
+        endif
+     endif
   endif
 end subroutine LVT_getSeasonalCycleTimeIndex

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_pluginIndices, only : LIS_PMWsnowobsId
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use PMW_snow_Mod, only : PMW_snow_struc
 
   implicit none
@@ -54,7 +55,7 @@ subroutine read_PMW_snow(n, OBS_State,OBS_Pert_State)
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
-  character*100                 :: obsdir, pmw_filename
+  character(len=LIS_CONST_PATH_LEN):: obsdir, pmw_filename
   real                          :: lon, lhour, lhour1
   integer                       :: zone
   real                          :: ssdev(LIS_rc%ngrid(n))
@@ -295,7 +296,7 @@ subroutine read_PMWSnow_HDF4(n,name)
 
   file_id = sfstart(trim(name),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*)"Failed to open hdf4 file",name
+     write(LIS_logunit,*)"Failed to open hdf4 file",trim(name)
      return
   end if
 
@@ -449,7 +450,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
   !open the hdf-eos file
   file_id = gdopen(trim(name),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*)"Failed to open hdf file",name
+     write(LIS_logunit,*)"Failed to open hdf file",trim(name)
      return
   end if
   
@@ -459,7 +460,7 @@ subroutine read_PMWSnow_HDFEOS(n,name)
     !get the grid id
      grid_id = gdattach(file_id,grid_name(igd))
      if (grid_id.eq.-1)then
-        write(LIS_logunit,*)"Failed to attach grid: ",grid_name(igd),name
+        write(LIS_logunit,*)"Failed to attach grid: ",grid_name(igd),trim(name)
         ret = gdclose(file_id)
         deallocate(li)
         return
@@ -750,7 +751,7 @@ subroutine PMW_snow_filename(name, data_fn_conv, ndir, yr, mo,da)
 
   implicit none
 ! !ARGUMENTS: 
-  character*100     :: name
+  character(len=*)     :: name
   integer           :: yr, mo, da
   character (len=*) :: ndir
   character (len=*) :: data_fn_conv
