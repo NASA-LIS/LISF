@@ -772,6 +772,7 @@ contains
       character(len=100) :: message(20)
       integer :: rc,ierr
       character(len=10) :: yyyymmddhh
+      integer :: r, c
 
       TRACE_ENTER("bratseth_getBackNWP")
       rc = 0
@@ -873,6 +874,20 @@ contains
                call sleep(10) ! Make sure LIS_masterproc finishes LIS_abort
                call LIS_endrun()
             endif
+         end if
+
+         if (agrmet_struc(nest)%back_bias_corr .eq. 2) then
+            call USAF_pcpBackBiasRatio_NRT(nest, yyyymmddhh, pcp_src(k))
+            write(LIS_logunit,*) &
+                 '[INFO] Applying CHELSA-based bias correction to ', &
+                 trim(pcp_src(k)), ' background precip'
+            do r = 1, LIS_rc%gnr(nest)
+               do c = 1, LIS_rc%gnc(nest)
+                  fg_data_glb(c,r) = &
+                       fg_data_glb(c,r) * &
+                       agrmet_struc(nest)%pcp_back_bias_ratio(c,r)
+               end do
+            end do
          end if
 
          back4(:,:,k) = fg_data_glb(:,:)
@@ -6376,4 +6391,260 @@ contains
 
    end subroutine USAF_setBratsethScreenStats
 
+   ! Read monthly climos for correcting background in NRT NAFPA
+   subroutine USAF_pcpBackBiasRatio_NRT(n, yyyymmddhh, first_guess_source)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+     use LIS_coreMod, only: LIS_rc, LIS_localPet, &
+          LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+          LIS_nss_halo_ind, LIS_nse_halo_ind
+     use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+     use netcdf
+#endif
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     integer, intent(in) :: n
+     character(len=10), intent(in) :: yyyymmddhh
+     character(*), intent(in) :: first_guess_source
+
+     ! Locals
+     integer :: imonth
+     logical :: skip
+     integer :: nrows, ncols
+     real, allocatable :: chelsa_climo(:,:), back_climo(:,:)
+     real :: chelsa_udef, back_udef
+     integer :: c, r
+
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+
+     read(yyyymmddhh(5:6),'(i2.2)') imonth
+
+     ! Accumulations ending at 00Z first of month are part of the *previous*
+     ! month.  So decrement imonth by one in that situation, and reset to 12
+     ! (December) at the year change.
+     if (agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) then
+        if (yyyymmddhh(9:10) .eq. '00' .and. &
+             yyyymmddhh(7:8) .eq. '01') then
+           imonth = imonth - 1
+           if (imonth .eq. 0) then
+              imonth = 12
+           end if
+        end if
+     end if
+
+     ! We will only read the climatologies from file if this is the very
+     ! first invocation, or if the month has changed, or if the background
+     ! source has changed.
+     skip = .true.
+     if (agrmet_struc(n)%pcp_back_bias_ratio_month .eq. 0) then
+        skip = .false.
+     else if (imonth .ne. agrmet_struc(n)%pcp_back_bias_ratio_month) then
+        skip = .false.
+     else if (trim(agrmet_struc(n)%pcp_back_source) .eq. 'NULL') then
+        skip = .false.
+     else if (trim(first_guess_source) .ne. &
+          trim(agrmet_struc(n)%pcp_back_source)) then
+        skip = .false.
+     end if
+     if (skip) return
+
+     if (trim(first_guess_source) .ne. 'GFS' .and. &
+          trim(first_guess_source) .ne. 'GALWEM') then
+        write(LIS_logunit,*) &
+             '[ERR] Unknown precipitation background source ', &
+             trim(first_guess_source)
+        write(LIS_logunit,*)'Valid options are GFS and GALWEM!'
+        call LIS_endrun()
+     end if
+     agrmet_struc(n)%pcp_back_bias_ratio_month = imonth
+     agrmet_struc(n)%pcp_back_source = trim(first_guess_source)
+
+     ncols = LIS_rc%gnc(n)
+     nrows = LIS_rc%gnr(n)
+
+     ! Get new month of chelsa climo data
+     allocate(chelsa_climo(ncols,nrows))
+     chelsa_climo = 0
+     call fetch_climo(agrmet_struc(n)%chelsa_climo_file, imonth, &
+          LIS_rc%gnc(n), LIS_rc%gnr(n), chelsa_climo, chelsa_udef)
+
+     ! Get new month of background climo data
+     allocate(back_climo(ncols,nrows))
+     back_climo = 0
+     if (trim(first_guess_source) .eq. "GFS") then
+        call fetch_climo(agrmet_struc(n)%gfs_climo_file, imonth, &
+             ncols, nrows, back_climo, back_udef)
+     else if (trim(first_guess_source) .eq. "GALWEM") then
+        call fetch_climo(agrmet_struc(n)%galwem_climo_file, imonth, &
+             ncols, nrows, back_climo, back_udef)
+     end if
+
+     ! Calculate new bias ratio
+     do r = 1, nrows
+       do c = 1, ncols
+          if (chelsa_climo(c,r) .eq. chelsa_udef .or. &
+               back_climo(c,r) .eq. back_udef) then
+             agrmet_struc(n)%pcp_back_bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1 .and. &
+               back_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_back_bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_back_bias_ratio(c,r) = 0.1 / &
+                  back_climo(c,r)
+          else if (back_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_back_bias_ratio(c,r) = &
+                  chelsa_climo(c,r) / 0.1
+          else
+             agrmet_struc(n)%pcp_back_bias_ratio(c,r) = &
+                  chelsa_climo(c,r) / back_climo(c,r)
+          end if
+       end do
+    end do
+
+    ! Clean up
+    deallocate(chelsa_climo)
+    deallocate(back_climo)
+
+  end subroutine USAF_pcpBackBiasRatio_NRT
+#endif
+  
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+  ! Fetch desired month of remapped precip climatology
+  subroutine fetch_climo(filename, imonth, ncols, nrows, climo_field, udef)
+
+    ! Imports
+    use LIS_logMod, only: LIS_logunit, LIS_endrun
+    use netcdf
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    character(*), intent(in) :: filename
+    integer, intent(in) :: imonth
+    integer, intent(in) :: ncols
+    integer, intent(in) :: nrows
+    real, intent(out) :: climo_field(ncols, nrows)
+    real, intent(out) :: udef
+
+    ! Locals
+    logical :: found_inq
+    integer :: ncid, iret, varid, ndims
+    integer :: dimids(3), dims(3), start(3), count(3), stride(3)
+    integer :: i
+
+    ! Ensure file exists.
+    inquire(file=trim(filename), exist=found_inq)
+    if (.not. found_inq) then
+       write(LIS_logunit,*)'[ERR] Cannot find ', trim(filename)
+       write(LIS_logunit,*)'[ERR] Stopping...'
+       call LIS_endrun()
+    end if
+    write(LIS_logunit,*)'[INFO] Reading ', trim(filename)
+
+    ! Get netCDF file ID.
+    iret = nf90_open(path=trim(filename), mode=NF90_NOWRITE, ncid=ncid)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_open failed for ', trim(filename)
+       call LIS_endrun()
+    end if
+
+    ! Get netCDF variable ID
+    iret = nf90_inq_varid(ncid, 'PPTCLIM', varid)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_inq_varid failed for PPTCLIM'
+       call LIS_endrun()
+    end if
+
+    ! Get number of variable dimensions
+    iret = nf90_inquire_variable(ncid, varid, ndims=ndims)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_inquire_variable failed for PPTCLIM'
+       call LIS_endrun()
+    end if
+    if (ndims .ne. 3) then
+       write(LIS_logunit,*)'[ERR] Unexpected shape for PPTCLIM variable'
+       write(LIS_logunit,*)'[ERR] Expected 3, found ', ndims
+       call LIS_endrun()
+    end if
+
+    ! Get netCDF dimension IDs
+    iret = nf90_inquire_variable(ncid, varid, dimids=dimids)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_inquire_variable failed for PPTCLIM'
+       call LIS_endrun()
+    end if
+
+    ! Get dimensions
+    do i = 1, 3
+       iret = nf90_inquire_dimension(ncid, dimids(i), len=dims(i))
+       if (iret .ne. NF90_NOERR) then
+          write(LIS_logunit,*)'[ERR] nf90_inquire_dimension failed for PPTCLIM'
+          call LIS_endrun()
+       end if
+    end do
+
+    ! Check dimensions
+    if (dims(1) .ne. ncols .or. &
+         dims(2) .ne. nrows .or. &
+         dims(3) .ne. 12) then
+       write(LIS_logunit,*)'[ERR] Shape mismatch for PPTCLIM'
+       write(LIS_logunit,*)'[ERR] Expected ', ncols, nrows, 12
+       write(LIS_logunit,*)'[ERR] Found ', dims(1), dims(2), dims(3)
+       call LIS_endrun()
+    end if
+
+    ! Fetch one month slice of PPTCLIM
+    start(1) = 1
+    start(2) = 1
+    start(3) = imonth
+    count(1) = ncols
+    count(2) = nrows
+    count(3) = 1
+    iret = nf90_get_var(ncid, varid, climo_field, start=start, count=count)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_get_var failed for PPTCLIM'
+       call LIS_endrun()
+    end if
+
+    ! Get missing flag
+    iret = nf90_get_att(ncid, varid, 'missing_value', udef)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_get_att failed for PPTCLIM'
+       call LIS_endrun()
+    end if
+
+    ! Close the file
+    iret = nf90_close(ncid)
+    if (iret .ne. NF90_NOERR) then
+       write(LIS_logunit,*)'[ERR] nf90_close failed!'
+       call LIS_endrun()
+    end if
+
+  end subroutine fetch_climo
+
+#else
+  ! Dummy version if netCDF is missing
+  subroutine fetch_climo(filename, imonth, climo_field, udef)
+    use LIS_logMod, only: LIS_logunit, LIS_endrun
+    implicit none
+    character(*), intent(in) :: filename
+    integer, intent(in) :: imonth
+    real, intent(inout) :: climo_field(:,:)
+    real, intent(out) :: udef
+    write(LIS_logunit,*)'[ERR] LIS was compiled without netCDF support!'
+    write(LIS_logunit,*)'[ERR] Cannot process precipitation climatology!'
+    write(LIS_logunit,*)'[ERR] Recompile LIS with netCDF support and try again'
+    call LDT_endrun()
+  end subroutine fetch_climo
+#endif
+
 end module USAF_bratsethMod
+
+

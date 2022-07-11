@@ -1082,42 +1082,53 @@ subroutine readcrd_agrmet()
 
   ! EMK Add precipitation bias correction option
   call ESMF_ConfigFindLabel(LIS_config, &
-       "AGRMET Precip background bias correction option:", rc=rc)
+       "AGRMET PPT Background bias correction option:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET Precip background bias correction option: not specified in config file")
+       "AGRMET PPT Background bias correction option: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
-          agrmet_struc(n)%bias_correct_precip_background, rc=rc)
+          agrmet_struc(n)%back_bias_corr, rc=rc)
      call LIS_verify(rc, &
-          "[ERR] Precip background bias correction option: not specified in config file")
+          "[ERR] PPT Background bias correction option: not specified in config file")
+     if (agrmet_struc(n)%back_bias_corr .ne. 0 .and. &
+          agrmet_struc(n)%back_bias_corr .ne. 2) then
+        call LIS_verify(rc, &
+             '[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 2')
+     end if
+     if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+        allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%pcp_back_bias_ratio = 1.
+        agrmet_struc(n)%pcp_back_bias_ratio_month = 0
+        agrmet_struc(n)%pcp_back_source = 'NULL'
+     end if
   end do
 
   call ESMF_ConfigFindLabel(LIS_config, &
-       "AGRMET CHELSA Precip climo file:", rc=rc)
+       "AGRMET PPT CHELSA climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET CHELSA Precip climo file: not specified in config file")
+       "AGRMET PPT CHELSA climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%chelsa_climo_file, rc=rc)
      call LIS_verify(rc, &
-          "[ERR] CHELSA Precip climo file: not specified in config file")
+          "[ERR] AGRMET PPT CHELSA climo file: not specified in config file")
   end do
 
   call ESMF_ConfigFindLabel(LIS_config, &
-       "AGRMET GFS Precip climo file:", rc=rc)
+       "AGRMET PPT GFS climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET GFS Precip climo file: not specified in config file")
+       "AGRMET PPT GFS climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%gfs_climo_file, rc=rc)
      call LIS_verify(rc, &
-          "[ERR] GFS Precip climo file: not specified in config file")
+          "[ERR] AGRMET PPT GFS climo file: not specified in config file")
   end do
 
   call ESMF_ConfigFindLabel(LIS_config, &
-       "AGRMET GALWEM Precip climo file:", rc=rc)
+       "AGRMET PPT GALWEM climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET GALWEM Precip climo file: not specified in config file")
+       "AGRMET PPT GALWEM climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%galwem_climo_file, rc=rc)

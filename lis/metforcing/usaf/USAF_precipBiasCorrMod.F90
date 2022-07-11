@@ -119,12 +119,19 @@ contains
     ! Calculate new bias ratio
     do r = 1, nrows
        do c = 1, ncols
-          this%bias_ratio(c,r) = 1.0
-          if (chelsa_climo(c,r) .ne. chelsa_udef) then
-             if (back_climo(c,r) .ne. back_udef) then
-                this%bias_ratio(c,r) = (chelsa_climo(c,r) + 1.e-3) / &
-                     (back_climo(c,r) + 1.e-3)
-             end if
+          if (chelsa_climo(c,r) .eq. chelsa_udef .or. &
+               back_climo(c,r) .eq. back_udef) then
+             this%bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1 .and. &
+               back_climo(c,r) .lt. 0.1) then
+             this%bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1) then
+             this%bias_ratio(c,r) = 0.1 / &
+                  back_climo(c,r)
+          else if (back_climo(c,r) .lt. 0.1) then
+             this%bias_ratio(c,r) = chelsa_climo(c,r) / 0.1
+          else
+             this%bias_ratio(c,r) = chelsa_climo(c,r) / back_climo(c,r)
           end if
        end do
     end do
