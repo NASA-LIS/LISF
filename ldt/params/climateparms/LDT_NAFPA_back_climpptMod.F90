@@ -213,7 +213,7 @@ contains
 
     ! Locals
     integer :: ipass
-    integer :: iyear, iyear_start, iyear_end
+    integer :: iyear
     character(255) :: filename
     logical :: found_inq
     integer :: iret
@@ -231,35 +231,25 @@ contains
     real, allocatable :: w212(:,:), w222(:,:)
     integer :: mi, mo
     integer :: i, j, ij
-
+    integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
+         2018, 2018, 2018, 2017, 2017, 2017/)
+    integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
+         2021, 2021, 2021, 2021, 2021, 2021/)
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
 
     ! Loop through each year for the selected month.  The years vary
     ! depending on whether we have GFS or GALWEM data.
     ipass = 0
-    if (trim(source) .eq. 'GFS') then
-       iyear_start = 2008
-       if (imonth .ge. 10) then
-          iyear_end = 2016
-       else
-          iyear_end = 2017
-       end if
-    else if (trim(source) .eq. 'GALWEM') then
-       if (imonth .gt. 9) then
-          iyear_start = 2017
-       else
-          iyear_start = 2018
-       end if
-       iyear_end = 2021
-    else
+    if (trim(source) .ne. 'GFS' .and. &
+         trim(source) .ne. 'GALWEM') then
        write(LDT_logunit,*)'[ERR] Invalid NAFPA background source selected!'
        write(LDT_logunit,*)'[ERR] Supported options are GFS, GALWEM'
        write(LDT_logunit,*)'[ERR] Found ', trim(source)
        call LDT_endrun()
     end if
 
-    do iyear = iyear_start, iyear_end
+    do iyear = iyear_start(imonth), iyear_end(imonth)
 
        ! Read data from LVT netCDF file.
        call create_filename(this, imonth, iyear, filename)
