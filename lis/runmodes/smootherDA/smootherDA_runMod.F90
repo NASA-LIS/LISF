@@ -153,11 +153,15 @@ contains
                 call LIS_perturb_writerestart(n)
                 call LIS_dataassim_run(n)
                 call LIS_dataassim_output(n)
-                call LIS_surfaceModel_output(n)  
+                if(LIS_rc%DAincrMode(n).eq.1) then 
+                   call LIS_surfaceModel_output(n)
+                endif
                 call LIS_surfaceModel_writerestart(n)
                 call LIS_irrigation_output(n)
                 call LIS_routing_run(n)
-                call LIS_routing_writeoutput(n)
+                if(LIS_rc%DAincrMode(n).eq.1) then 
+                   call LIS_routing_writeoutput(n)
+                endif
                 call LIS_routing_writerestart(n)
                 call updateIncrementsFlag(n)
              endif
