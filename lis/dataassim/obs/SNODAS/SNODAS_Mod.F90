@@ -61,7 +61,6 @@ contains
 ! !INTERFACE: 
   subroutine SNODAS_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod
     use LIS_timeMgrMod
     use LIS_historyMod
