@@ -210,11 +210,10 @@ subroutine read_WUS_UCLAsnow(n, k, OBS_State, OBS_Pert_State)
      call MPI_ALLGATHER(data_upd_flag_local,1, &
           MPI_LOGICAL, data_upd_flag(:),&
           1, MPI_LOGICAL, LIS_mpi_comm, status)
+    data_upd = any(data_upd_flag)
+#else
+    data_upd = data_upd_flag_local
 #endif
-     data_upd = .false.
-     do p=1,LIS_npes
-        data_upd = data_upd.or.data_upd_flag(p)
-     enddo
      
      if(data_upd) then
         do t=1,LIS_rc%obs_ngrid(k)
