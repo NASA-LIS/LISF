@@ -289,6 +289,7 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SNODAS )
    use SNODAS_Mod,    only : SNODAS_setup
 #endif
+
 #if ( defined DA_OBS_WUSUCLA )
    use WUS_UCLAsnowMod, only : WUS_UCLAsnow_setup
 #endif
@@ -471,6 +472,7 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SNODAS )
    external read_SNODAS,  write_SNODAS
 #endif
+
 #if ( defined DA_OBS_WUSUCLA )    
    external read_WUS_UCLAsnow, write_WUS_UCLAsnow
 #endif

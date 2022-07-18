@@ -100,7 +100,7 @@ subroutine read_WUS_UCLAsnow(n, k, OBS_State, OBS_Pert_State)
              LIS_rc%yr, LIS_rc%mo, &
              LIS_rc%da, fname)
         
-        inquire(file=trim(fname),exist=file_exists)
+        inquire(file=fname,exist=file_exists)
         
         if(file_exists) then
            
@@ -110,7 +110,7 @@ subroutine read_WUS_UCLAsnow(n, k, OBS_State, OBS_Pert_State)
            allocate(snd1d(WUS_UCLAsnow_struc(n)%nc*WUS_UCLAsnow_struc(n)%nr))
            
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
-           ierr = nf90_open(path=trim(fname),mode=NF90_NOWRITE,ncid=ftn)
+           ierr = nf90_open(path=fname,mode=NF90_NOWRITE,ncid=ftn)
            call LIS_verify(ierr,'error opening WUS UCLA file')
            
            ierr = nf90_inq_varid(ftn,'SD_Post',sndId)
@@ -291,9 +291,9 @@ subroutine create_WUS_UCLAsnow_filename(ndir, yr, mo,da, filename)
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
  
-  filename = trim(ndir)//'/'//trim(fyr)//&
+  filename = trim(ndir)//'/'//fyr//&
        '/WUS_UCLA_SR_v01_agg_16_SWE_SCA_SD_POST_' &
-       //trim(fyr)//trim(fmo)//trim(fda)//'.nc4'
+       //fyr//fmo//fda//'.nc4'
   
 end subroutine create_WUS_UCLAsnow_filename
 
