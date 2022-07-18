@@ -69,13 +69,6 @@ subroutine noahmp401_setsnowvars(n, LSM_State)
      dsneqv = swe(t) - noahmp401_struc(n)%noahmp401(t)%sneqv   !in mm
      dsnowh = snod(t) - noahmp401_struc(n)%noahmp401(t)%snowh  !in m
 
-     if(noahmp401_struc(n)%noahmp401(t)%snowh.gt.10.0) then
-         print *,'WARNING: NOAH-MP SNOWH > 10.0m; SNOWH=',&
-            noahmp401_struc(n)%noahmp401(t)%snowh 
-     endif
-     if(snod(t).gt.10.0) then
-         print *,'WARNING: snod > 10.0m; snod=',snod(t)
-     endif
      ! update
      call noahmp401_snow_update(n, t, dsneqv, dsnowh)
 
