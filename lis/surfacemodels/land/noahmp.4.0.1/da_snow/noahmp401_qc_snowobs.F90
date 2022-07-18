@@ -94,6 +94,8 @@ subroutine noahmp401_qc_snowobs(n,k,OBS_State)
            snowobs(t) = LIS_rc%udef
         elseif(vegt_obs(t).le.4) then !forest types
            snowobs(t) = LIS_rc%udef
+        elseif(vegt_obs(t).eq.15) then !TML: Eliminate Glaciers
+           snowobs(t) = LIS_rc%udef
 !assume that snow will not form at 5 deg. celcius or higher ground temp. 
        elseif(tv_obs(t).ge.278.15) then
            snowobs(t) = LIS_rc%udef
