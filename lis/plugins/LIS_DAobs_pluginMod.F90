@@ -290,6 +290,10 @@ subroutine LIS_DAobs_plugin
    use SNODAS_Mod,    only : SNODAS_setup
 #endif
 
+#if ( defined DA_OBS_WUSUCLA )
+   use WUS_UCLAsnowMod, only : WUS_UCLAsnow_setup
+#endif
+
 #if ( defined DA_OBS_HYDROWEBWL )
    use hydrowebWLobs_module,   only : hydrowebwlobs_setup
 #endif
@@ -468,8 +472,11 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SNODAS )
    external read_SNODAS,  write_SNODAS
 #endif
-    
 
+#if ( defined DA_OBS_WUSUCLA )    
+   external read_WUS_UCLAsnow, write_WUS_UCLAsnow
+#endif
+   
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
     
 #if ( defined DA_OBS_SYNTHETICSM )
@@ -912,7 +919,17 @@ subroutine LIS_DAobs_plugin
    call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0),read_hydrowebwlobs)
    call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0),write_hydrowebwlobs)
 #endif
-   
+
+#if ( defined DA_OBS_WUSUCLA )
+!MLW: SNODAS snow depth
+   call registerdaobsclass(trim(LIS_wusUCLAobsId),"LSM")
+   call registerdaobssetup(trim(LIS_wusUCLAobsId)//char(0), &
+        WUS_UCLAsnow_setup)
+   call registerreaddaobs(trim(LIS_wusUCLAobsId)//char(0),  &
+        read_WUS_UCLAsnow)
+   call registerwritedaobs(trim(LIS_wusUCLAobsId)//char(0), &
+        write_WUS_UCLAsnow)
+#endif   
 #endif
  end subroutine LIS_DAobs_plugin
 
