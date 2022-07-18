@@ -66,7 +66,7 @@ subroutine write_WUS_UCLAsnow(n, k, OBS_State)
         call WUS_UCLAsnow_obsname(n,k,obsname)        
 
         call LIS_create_output_directory('DAOBS')
-        open(ftn,file=trim(obsname), form='unformatted')
+        open(ftn,file=obsname, form='unformatted')
      endif
 
      call LIS_writevar_gridded_obs(ftn,n,k,sndobs)
