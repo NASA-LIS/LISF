@@ -13,7 +13,8 @@
 ! 
 ! !DESCRIPTION: 
 !   This module contains interfaces and subroutines to
-!   handle SNODAS data
+!   handle the Margulis Western US Snow Reanalysis dataset.
+!   Available online at: https://nsidc.org/data/WUS_UCLA_SR/versions/1
 ! 
 ! !REVISION HISTORY: 
 !  08 Jun 2022: Sujay Kumar; Initial version
