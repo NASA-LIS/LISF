@@ -174,8 +174,11 @@ contains
       integer :: icount
       character(len=100) :: message(20)
       integer :: ierr
+      logical :: saved_good
 
       TRACE_ENTER("update30minImergHHPrecip")
+
+      saved_good = .false. ! Updated below
 
 !Only define actual subroutine if LIS was compiled with HDF5 support.
 #if (defined USE_HDF5)
@@ -302,6 +305,7 @@ contains
       ! Save the "good" precipitationCal data.
       ! Precipitation units are converted from rate (mm/hr) to accumulation
       ! (mm).
+      saved_good = .true.
       icount = 0
       do j = 1,this%nlons
          do i = 1,this%nlats
@@ -330,6 +334,7 @@ contains
 
       ! Clean up before returning.
       100 continue
+      if (.not. saved_good) this%precip_cal_3hr = -9999
       if (allocated(tmp_precip_cal)) deallocate(tmp_precip_cal)
       if (allocated(tmp_prob_liq_precip)) deallocate(tmp_prob_liq_precip)
       if (allocated(tmp_ir_kalman_weights)) deallocate(tmp_ir_kalman_weights)
