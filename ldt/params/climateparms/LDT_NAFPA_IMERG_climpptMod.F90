@@ -165,6 +165,7 @@ contains
     use LDT_climateParmsMod, only: LDT_climate_struc
     use LDT_coreMod, only: LDT_rc, LDT_domain
     use LDT_logMod, only: LDT_logunit, LDT_endrun
+    use map_utils, only: ij_to_latlon
     use netcdf
 
     ! Defaults
@@ -202,6 +203,7 @@ contains
          2018, 2018, 2018, 2017, 2017, 2017/)
     integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
          2021, 2021, 2021, 2021, 2021, 2021/)
+    real :: rlat, rlon
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
 
@@ -372,9 +374,14 @@ contains
     if (allocated(w212)) deallocate(w212)
     if (allocated(w222)) deallocate(w222)
 
-    ! Calculate average value
+    ! Calculate average value.  But screen out high latitudes.
     do j = 1, this%nrows_out
        do i = 1, this%ncols_out
+          call ij_to_latlon(LDT_domain(nest)%ldtproj, float(i), float(j), &
+               rlat, rlon)
+          if (abs(rlat) > 60.) then
+             this%pcp_out(i,j) = LDT_rc%udef
+          end if
           if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
              this%pcp_out(i,j) = &
                   this%pcp_out(i,j) / real(ipass)
