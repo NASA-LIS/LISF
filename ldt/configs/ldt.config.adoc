@@ -2868,6 +2868,8 @@ Climatology parameter maps
 |CHELSAV21 |Global climate layers downscaled. For more info, see: http://chelsa-climate.org/
 |NAFPA_BACK_GFS | Global GFS precipitation downscaled, used as background for NAFPA
 |NAFPA_BACK_GALWEM | Global GALWEM precipitation downscaled, used as background for NAFPA
+|NAFPA_IMERG | Global IMERG monthly precipitation remapped to NAFPA grid
+
 |===
 
 `PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
@@ -2894,6 +2896,11 @@ NAFPA_BACK_GFS: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
 * NOTE: The iyear/imonth refers to the end of the previous month.
 
 NAFPA_BACK_GALWEM: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
+* The iyear represents the year (2017, 2018, ..., 2021).
+* The imonth represents the month (01, 02, ..., 12)
+* NOTE: The iyear/imonth refers to the end of the previous month.
+
+NAFPA_IMERG: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
 * The iyear represents the year (2017, 2018, ..., 2021).
 * The imonth represents the month (01, 02, ..., 12)
 * NOTE: The iyear/imonth refers to the end of the previous month.

@@ -27,6 +27,7 @@ module LDT_pluginIndices
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
 !  07 Feb 2022: Eric Kemp/SSAI -- Added CHELSAV21 precipitation.
 !  13 May 2022: Eric Kemp/SSAI -- Added NAFPA background precipitation.
+!  22 Jul 2022: Eric Kemp/SSAI -- Added NAFPA IMERG precipitation.
 !
 !EOP
   PRIVATE
@@ -348,7 +349,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_nafpabackgfspptId = "NAFPA_BACK_GFS"
    character*50, public,  parameter :: LDT_nafpabackgalwempptId = &
         "NAFPA_BACK_GALWEM"
-   
+   character*50, public,  parameter :: LDT_nafpaimergpptId = "NAFPA_IMERG"
+
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimtminId = "WORLDCLIM"

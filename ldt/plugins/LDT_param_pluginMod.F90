@@ -27,6 +27,7 @@ module LDT_param_pluginMod
 !  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
 !  07 Feb 2022:  Eric Kemp/SSAI - Added CHELSAV21 precipitation
 !  13 May 2022:  Eric Kemp/SSAI - Added NAFPA background precipitation
+!  22 Jul 2022:  Eric Kemp/SSAI - Added NAFPA IMERG precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -1232,6 +1233,7 @@ contains
     use LDT_CHELSAV21_climpptMod, only: LDT_read_CHELSAV21_climppt
     use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt, &
          LDT_read_NAFPA_back_galwem_climppt
+    use LDT_NAFPA_imerg_climpptMod, only: LDT_read_NAFPA_imerg_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
@@ -1254,6 +1256,9 @@ contains
 
     call registerreadclimppt(trim(LDT_nafpabackgalwempptId)//char(0), &
          LDT_read_NAFPA_back_galwem_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpaimergpptId)//char(0), &
+         LDT_read_NAFPA_imerg_climppt)
 
 !- Temperature downscaling:
 
