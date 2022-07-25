@@ -9,7 +9,7 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !------------------------------------------------------------------------------
-!NOTE:  Currently only V05B IMERG data are supported.
+!NOTE:  Currently only V06B IMERG data are supported.
 subroutine readIMERGdata(source)
 
    ! Imports
@@ -26,12 +26,12 @@ subroutine readIMERGdata(source)
 
    ! Defaults
    implicit none
-   
+
    ! Arguments
    integer,intent(in) :: source
 
    ! Local variables
-   integer             :: ftn 
+   integer             :: ftn
    character*100       :: filename
    logical             :: file_exists
    real                :: prcp_in(imergdata(source)%nc,imergdata(source)%nr)

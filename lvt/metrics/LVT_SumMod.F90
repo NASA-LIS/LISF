@@ -369,6 +369,14 @@ contains
                          endif
                       endif
                    endif
+                else ! EMK Missing data
+                   !write(LVT_logunit,*)'EMK: Missing at ', t, k, 1
+                   stats%sum(m)%model_value_total(t,k,1) = LVT_rc%udef
+                   stats%sum(m)%count_model_value_total(t,k,1) = 0
+                   if(metric%timeOpt.eq.1) then
+                      stats%sum(m)%model_value_ts(t,k,1) = LVT_rc%udef
+                      stats%sum(m)%count_model_value_ts(t,k,1) = 0
+                   endif
                 endif
 
                 if(LVT_rc%obssource(2).ne."none") then
@@ -632,6 +640,7 @@ contains
                          stats%sum(m)%tavg_count_model_value_ts(t,k,l) = & 
                               stats%sum(m)%tavg_count_model_value_ts(t,k,l) + 1 
                       else
+                         ! EMK...Ensure missing value is set
                          stats%sum(m)%model_value_ts(t,k,l) = LVT_rc%udef
                       endif
                       if(LVT_rc%obssource(2).ne."none") then 
@@ -660,10 +669,13 @@ contains
                 do m=1,LVT_rc%nensem                
                    do k=1,model%selectNlevs
                       do l=1,LVT_rc%strat_nlevels
-                         if(stats%sum(m)%tavg_count_model_value_ts(t,k,l).gt.0) then 
+                         if(stats%sum(m)%tavg_count_model_value_ts(t,k,l).gt.0) then
                             stats%sum(m)%tavg_model_value_ts(t,k,l) = & 
                                  stats%sum(m)%tavg_model_value_ts(t,k,l) / & 
                                  stats%sum(m)%tavg_count_model_value_ts(t,k,l) 
+                         else ! EMK Mark missing accumulations
+                            stats%sum(m)%tavg_model_value_ts(t,k,l) = &
+                                 LVT_rc%udef 
                          endif
                       enddo
                    enddo
@@ -674,10 +686,13 @@ contains
                    do m=1,LVT_rc%nensem                
                       do k=1,obs%selectNlevs
                          do l=1,LVT_rc%strat_nlevels
-                            if(stats%sum(m)%tavg_count_obs_value_ts(t,k,l).gt.0) then 
+                            if(stats%sum(m)%tavg_count_obs_value_ts(t,k,l).gt.0) then
                                stats%sum(m)%tavg_obs_value_ts(t,k,l) = & 
                                     stats%sum(m)%tavg_obs_value_ts(t,k,l) / & 
-                                    stats%sum(m)%tavg_count_obs_value_ts(t,k,l) 
+                                    stats%sum(m)%tavg_count_obs_value_ts(t,k,l)
+                            else ! EMK Mark missing accumulations
+                               stats%sum(m)%tavg_obs_value_ts(t,k,l) = &
+                                    LVT_rc%udef
                             endif
                          enddo
                       enddo

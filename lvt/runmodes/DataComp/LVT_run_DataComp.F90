@@ -47,7 +47,7 @@ subroutine LVT_run_DataComp
      LVT_rc%curr_pass = i
      call LVT_resetClock(LVT_rc)
      do while (.NOT. LVT_endofrun())
-        call LVT_ticktime   
+        call LVT_ticktime
         call LVT_readDataMask
         call LVT_readDataStreams
         call LVT_tavgDataStreams

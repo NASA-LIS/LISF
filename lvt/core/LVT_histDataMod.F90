@@ -6310,6 +6310,14 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
                    if(value_inp(c,r).ne.LVT_rc%udef) then 
                       if(LVT_domain%gindex(c,r).ne.-1) then 
                          gid = LVT_domain%gindex(c,r)
+
+                         ! EMK...Don't restart accumulation if a bad value
+                         ! was already encountered
+                         if (maxval(dataEntry%count_status(gid,:,k)) &
+                              == -1) then
+                            cycle
+                         end if
+
 ! EMK...Make sure we add accumulations
                          dataEntry%value(gid,:,k) = dataEntry%value(gid,:,k) + &
                               value_inp(c,r)*mfactor
@@ -6318,9 +6326,18 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
                          if (dataEntry%timeAvgOpt .ne. 3) then 
                             dataEntry%count(gid,:,k) = &
                                  dataEntry%count(gid,:,k) + 1
-                            
                          end if
                       endif
+! EMK...For accumulations, nullify the sum if we encounter missing data.
+                   else ! Missing value
+                      if (dataEntry%timeAvgOpt .eq. 3) then
+                         if(LVT_domain%gindex(c,r).ne.-1) then 
+                            gid = LVT_domain%gindex(c,r)
+                            dataEntry%value(gid,:,k) = LVT_rc%udef
+                            dataEntry%count(gid,:,k) = 0
+                            dataEntry%count_status(gid,:,k) = -1
+                         endif
+                      end if
                    endif
                    if(stdev_flag) then 
                       if(stdev(c,r).ne.LVT_rc%udef) then 
@@ -6330,6 +6347,13 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
                                  stdev(c,r)
                             dataEntry%count_stdev(gid,k) = dataEntry%count_stdev(gid,k)+1
                          endif
+! EMK...For accumulations, reset count to zero if data is missing, since we
+! can't trust the accumulation at this stage.
+                      else
+                         if (dataEntry%timeAvgOpt .eq. 3) then
+                            dataEntry%stdev(gid,k) = LVT_rc%udef
+                            dataEntry%count_stdev(gid,k) = 0
+                         end if
                       endif
                    endif
                 endif
