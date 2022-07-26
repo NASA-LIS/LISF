@@ -224,13 +224,7 @@ subroutine timeinterp_galwemge(n,findex)
 !-----------------------------------------------------------------------
 ! precip variable Block Interpolation
 !-----------------------------------------------------------------------
-  ! Determine valid times when forecasts are available to be read in:
-  if(galwemge_struc(n)%fcst_hour < 192) then
-     fcsthr_intv = 3
-  elseif(galwemge_struc(n)%fcst_hour >= 192) then
-     fcsthr_intv = 6
-  endif
-
+  ! Total precipitation field (accumulated):
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,galwemge_struc(n)%max_ens_members
         do k=1,mfactor
@@ -238,8 +232,8 @@ subroutine timeinterp_galwemge(n,findex)
            index1 = LIS_domain(n)%tile(tid)%index
 
            if(galwemge_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
-              ! account for the 3-hour (<=192-hour) 6-hour (>192-hour) accum fields
-              pcp(tid)=galwemge_struc(n)%metdata2(8,m,index1)/(3600*fcsthr_intv)
+              ! account for the accum fields
+              pcp(tid)=galwemge_struc(n)%metdata2(8,m,index1)/(3600*galwemge_struc(n)%fcst_hour)
               if(pcp(tid).lt.0) then
                  pcp(tid) = 0.0
               endif
