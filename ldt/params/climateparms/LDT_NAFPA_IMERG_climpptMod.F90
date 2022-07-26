@@ -201,13 +201,18 @@ contains
     integer :: i, j, ij
     integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
          2018, 2018, 2018, 2017, 2017, 2017/)
-    integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
-         2021, 2021, 2021, 2021, 2021, 2021/)
+    !integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
+    !     2021, 2021, 2021, 2021, 2021, 2021/)
+    integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
+         2019, 2019, 2019, 2019, 2019, 2019/)
+    integer, allocatable :: counts(:,:)
     real :: rlat, rlon
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
 
     ! Loop through each year for the selected month.
+    allocate(counts(this%ncols_out, this%nrows_out))
+    counts = 0
     ipass = 0
     do iyear = iyear_start(imonth), iyear_end(imonth)
 
@@ -283,10 +288,14 @@ contains
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
                 ij = i + (j-1)*this%ncols_out
-                if (go1(ij) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                ! if (go1(ij) < 0.) then
+                !    this%pcp_out(i,j) = LDT_rc%udef
+                ! else
+                !    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                ! end if
+                if (go1(ij) .ge. 0) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -329,10 +338,14 @@ contains
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
                 ij = i + (j-1)*this%ncols_out
-                if (go1(ij) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                !if (go1(ij) < 0.) then
+                !   this%pcp_out(i,j) = LDT_rc%udef
+                !else
+                !   this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                !end if
+                if (go1(ij) .ge. 0) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -341,10 +354,14 @@ contains
 
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
-                if (this%pcp_input(i,j) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                !if (this%pcp_input(i,j) < 0.) then
+                !   this%pcp_out(i,j) = LDT_rc%udef
+                !else
+                !   this%pcp_out(i,j) = this%pcp_out(i,j) + this%pcp_input(i,j)
+                !end if
+                if (this%pcp_input(i,j) .ge. 0.) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + this%pcp_input(i,j)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -379,12 +396,18 @@ contains
        do i = 1, this%ncols_out
           call ij_to_latlon(LDT_domain(nest)%ldtproj, float(i), float(j), &
                rlat, rlon)
-          if (abs(rlat) > 60.) then
+          !EMK TEST...See if high latitudes should be screened out.
+          !if (abs(rlat) > 60.) then
+          !   this%pcp_out(i,j) = LDT_rc%udef
+          !end if
+          !if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
+          !   this%pcp_out(i,j) = &
+          !        this%pcp_out(i,j) / real(ipass)
+          !end if
+          if (counts(i,j) > 0) then
+             this%pcp_out(i,j) = this%pcp_out(i,j) / real(counts(i,j))
+          else
              this%pcp_out(i,j) = LDT_rc%udef
-          end if
-          if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
-             this%pcp_out(i,j) = &
-                  this%pcp_out(i,j) / real(ipass)
           end if
        end do
     end do
@@ -394,6 +417,8 @@ contains
           pcp_out(i,j) = this%pcp_out(i,j)
        end do
     end do
+
+    if (allocated(counts)) deallocate(counts)
   end subroutine LDT_NAFPA_IMERG_climppt_process
 
 #else
