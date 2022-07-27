@@ -475,6 +475,7 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_scale_soilm
    external NoahMP401_descale_soilm
    external NoahMP401_updatesoilm
+   external noahmp401_soilm_DAlog
 
    external NoahMP401_getsnowvars         
    external NoahMP401_setsnowvars              
@@ -485,6 +486,7 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_scale_snow
    external NoahMP401_descale_snow
    external NoahMP401_updatesnowvars
+   external noahmp401_snow_DAlog
 
    external noahmp401_getvegvars
    external noahmp401_setvegvars
@@ -2594,7 +2596,9 @@ subroutine LIS_lsmda_plugin
         trim(LIS_THySMId)//char(0),NoahMP401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_THySMId)//char(0),NoahMP401_updatesoilm)
-   
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_THySMId)//char(0),noahmp401_soilm_DAlog)     
+
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_synsndId)//char(0),noahmp401_dasnow_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
