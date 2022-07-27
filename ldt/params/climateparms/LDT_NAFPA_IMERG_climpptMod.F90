@@ -19,6 +19,7 @@ module LDT_NAFPA_IMERG_climpptMod
   !
   ! REVISION HISTORY:
   ! 22 Jul 2022: Eric Kemp/SSAI: First version.
+  ! 27 Jul 2022: Eric Kemp/SSAI: Revised start/end dates.
 
   ! Defaults
   implicit none
@@ -57,6 +58,7 @@ contains
 
     ! Imports
     use LDT_climateParmsMod, only: LDT_climate_struc
+    use LDT_logMod, only: LDT_logunit
 
     ! Defaults
     implicit none
@@ -71,9 +73,13 @@ contains
     ! Locals
     type(LDT_nafpa_imerg_climppt_t) :: nafpa_imerg
     integer :: imonth
+    character(3) :: months(12)
+    months = (/'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', &
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'/)
 
     call nafpa_imerg%new(nest, ncols_out, nrows_out, gridDesc_out)
     imonth = LDT_climate_struc(nest)%climpptimonth
+    write(LDT_logunit,*)'[INFO] Processing IMERG data for ', months(imonth)
     call nafpa_imerg%process(nest, imonth, ncols_out, nrows_out, pcp_out)
     call nafpa_imerg%delete()
 
@@ -199,12 +205,16 @@ contains
     real, allocatable :: w212(:,:), w222(:,:)
     integer :: mi, mo
     integer :: i, j, ij
-    integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
-         2018, 2018, 2018, 2017, 2017, 2017/)
+    !integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
+    !     2018, 2018, 2018, 2017, 2017, 2017/)
     !integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
     !     2021, 2021, 2021, 2021, 2021, 2021/)
+    ! Overlap between IMERG-ER V06 and CHELSAV21
+    integer :: iyear_start(12) = (/2001, 2001, 2001, 2001, 2001, 2000, &
+         2000, 2000, 2000, 2000, 2000, 2000/)
     integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
-         2019, 2019, 2019, 2019, 2019, 2019/)
+         2018, 2018, 2018, 2018, 2018, 2018/)
+
     integer, allocatable :: counts(:,:)
     real :: rlat, rlon
     external :: upscaleByAveraging_input, upscaleByAveraging
