@@ -169,7 +169,8 @@ subroutine readIMERGdata(source)
    do r=1,LVT_rc%lnr
       do c=1,LVT_rc%lnc
          if(prcp_final(c,r).ge.0) then
-            prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            !prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            prcp_final(c,r) = prcp_final(c,r)*1800.0 !kg/m2 over 30 min
          else
             prcp_final(c,r) = LVT_rc%udef
          endif
