@@ -530,8 +530,10 @@ contains
        
        if(max_index.gt.0) then 
           do i=1,max_index
-          !Call this only once for all instances of the algorithm
-             call perturbinit(trim(alglist(i))//char(0), 2)
+             if(LIS_rc%perturb_state(i).ne."none") then 
+                !Call this only once for all instances of the algorithm
+                call perturbinit(trim(alglist(i))//char(0), 2)
+             endif
           enddo
        endif
        

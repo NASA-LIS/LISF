@@ -203,6 +203,7 @@ subroutine LIS_lsmda_plugin
    use noahmp401_tws_DAlogMod, only : noahmp401_tws_DAlog
    use noahmp401_datws_Mod
    use noahmp401_daveg_Mod
+   use noahmp401_daburnarea_Mod
 #endif
 
 
@@ -496,6 +497,17 @@ subroutine LIS_lsmda_plugin
    external noahmp401_descale_veg
    external noahmp401_veg_DAlog
 
+   external noahmp401_getburnareavars          
+   external noahmp401_setburnareavars  
+   external noahmp401_updateburnareavars
+   external noahmp401_qcburnarea
+   external noahmp401_getburnareapred
+   external noahmp401_qc_burnareaobs
+   external noahmp401_scale_burnarea
+   external noahmp401_descale_burnarea
+   external noahmp401_transform_burnarea
+   external noahmp401_map_burnarea
+   
 !BL:NOAHMP4.0.1 TWS
    external noahmp401_gettws
    external noahmp401_settws
@@ -2848,7 +2860,31 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_ANSASNWDsnowobsId)//char(0),noahmp401_qc_snowobs)
 #endif
- 
+
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_daburnarea_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_getburnareavars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_setburnareavars)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_updateburnareavars)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_qcburnarea)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_getburnareapred)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_qc_burnareaobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_scale_burnarea)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_descale_burnarea)
+
+   call registerlsmdaobstransform(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_transform_burnarea)
+   call registerlsmdamapobstolsm(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD64A1baobsId)//char(0),noahmp401_map_burnarea)
+   
 ! end NoahMP.4.0.1
 #endif
 

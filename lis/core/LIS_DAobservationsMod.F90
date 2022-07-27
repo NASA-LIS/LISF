@@ -286,7 +286,9 @@ contains
        enddo
        if(max_index.gt.0) then 
           do i=1,max_index
-             call perturbinit(trim(alglist(i))//char(0), 3)
+             if(LIS_rc%perturb_obs(i).ne."none") then              
+                call perturbinit(trim(alglist(i))//char(0), 3)
+             endif
           enddo
        endif
        do i=1,LIS_rc%nperts

@@ -238,7 +238,7 @@ subroutine read_MCD15A2Hlai(n, k, OBS_State, OBS_Pert_State)
            endif
         enddo
      enddo
-     
+
      if(fnd.eq.0) then 
         data_upd_flag_local = .false. 
      else

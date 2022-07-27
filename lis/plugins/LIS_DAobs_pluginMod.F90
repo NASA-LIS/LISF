@@ -266,6 +266,9 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_MCD15A2H_LAI )
     use MCD15A2HLAI_Mod,       only : MCD15A2Hlai_setup
 #endif
+#if ( defined DA_OBS_MCD64A1_BA )
+    use MCD64A1ba_Mod,       only : MCD64A1ba_setup
+#endif    
 #if ( defined DA_OBS_NRT_SMAPSM )
     use SMAPNRTsm_Mod,           only : SMAPNRTsm_setup
 #endif
@@ -452,6 +455,9 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_MCD15A2H_LAI)
     external read_MCD15A2Hlai, write_MCD15A2Hlai
 #endif
+#if ( defined DA_OBS_MCD64A1_BA)
+    external read_MCD64A1ba, write_MCD64A1ba
+#endif    
 
 #if ( defined DA_OBS_GLASS_Albedo)
     external read_GLASSalbedo, write_GLASSalbedo
@@ -850,6 +856,16 @@ subroutine LIS_DAobs_plugin
         write_MCD15A2Hlai)
 #endif
 
+#if ( defined DA_OBS_MCD64A1_BA)
+   call registerdaobsclass(trim(LIS_MCD64A1baobsId),"LSM")
+   call registerdaobssetup(trim(LIS_MCD64A1baobsId)//char(0),&
+        MCD64A1ba_setup)
+   call registerreaddaobs(trim(LIS_MCD64A1baobsId)//char(0),&
+        read_MCD64A1ba)
+   call registerwritedaobs(trim(LIS_MCD64A1baobsId)//char(0),&
+        write_MCD64A1ba)
+#endif
+   
 #if ( defined DA_OBS_NRT_SMAPSM )
    call registerdaobsclass(trim(LIS_SMAPNRTsmobsId),"LSM")
    call registerdaobssetup(trim(LIS_SMAPNRTsmobsId)//char(0),&
