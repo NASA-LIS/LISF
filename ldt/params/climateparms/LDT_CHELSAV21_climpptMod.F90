@@ -74,6 +74,7 @@ contains
 
     ! Imports
     use LDT_climateParmsMod, only: LDT_climate_struc
+    use LDT_logMod, only: LDT_logunit
 
     ! Defaults
     implicit none
@@ -88,9 +89,13 @@ contains
     ! Locals
     type(LDT_CHELSAV21_climppt_t) :: chelsav21
     integer :: imonth
+    character(3) :: months(12)
+    months = (/'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', &
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'/)
 
     call chelsav21%new(nest, ncols_out, nrows_out, gridDesc_out)
     imonth = LDT_climate_struc(nest)%climpptimonth
+    write(LDT_logunit,*)'[INFO] Processing CHELSAV21 data for ', months(imonth)
     call chelsav21%process(nest, imonth, ncols_out, nrows_out, pcp_out)
     call chelsav21%delete()
 
@@ -216,17 +221,21 @@ contains
     integer :: mi, mo
     integer :: pb_success
     integer :: i, j, ij, iyear, ipass
+    ! Overlap between IMERG-ER V06 and CHELSAV21
+    integer :: iyear_start(12) = (/2001, 2001, 2001, 2001, 2001, 2000, &
+         2000, 2000, 2000, 2000, 2000, 2000/)
+    integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
+         2018, 2018, 2018, 2018, 2018, 2018/)
 
     external :: upscaleByAveraging_input, upscaleByAveraging
 
     ! Loop through each year for the selected month.  Note: The last year
     ! varies for different months, and this is accounted for below.
     ipass = 0
-    do iyear = 1979, 2019 ! Years in climatology
+    do iyear = iyear_start(imonth), iyear_end(imonth)
        call create_filename(this, imonth, iyear, filename)
        inquire(file=trim(filename), exist=found_inq)
        if (.not. found_inq) then
-          if (iyear .gt. 2018 .and. imonth .gt. 6) exit
           write(ldt_logunit,*)'[ERR] Cannot find ', trim(filename)
           write(ldt_logunit,*)'[ERR] Stopping...'
           call LDT_endrun()
