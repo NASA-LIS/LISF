@@ -5,9 +5,14 @@
 !  AVHRR_NDVI
 !  NOTES : Modified P.W. Liu, 09/12/18
 !=======================================================================
+
+#include "LDT_misc.h"
+
 MODULE TOOLSUBS
     USE FUNCTIONS
+#if (defined USE_HDF5)
     USE HDF5
+#endif
     IMPLICIT NONE
 
     CONTAINS
@@ -65,7 +70,7 @@ MODULE TOOLSUBS
         !status = sfend(sd_id)
     END SUBROUTINE AVHRR_NDVI
     
-        SUBROUTINE AVHRR_NDVI_MATRIX(ssid,lon_ind,lat_ind, NDVI_MAT)
+    SUBROUTINE AVHRR_NDVI_MATRIX(ssid,lon_ind,lat_ind, NDVI_MAT)
          INTEGER :: sd_id, ssid, DFACC, status, sfstart,sfselect,sfrdata, sfendacc, sfend, N_NDVI
          INTEGER :: start(2), edges(2), stride(2)
          INTEGER*2,DIMENSION(:,:),ALLOCATABLE :: data
@@ -97,7 +102,7 @@ MODULE TOOLSUBS
         !status = sfendacc(ssid)
         !status = sfend(sd_id)
     END SUBROUTINE AVHRR_NDVI_MATRIX
-  
+
     SUBROUTINE GetSMAP(filename,dataset,smap_row,smap_col,lon_ind,lat_ind,sm_mat)
     CHARACTER (len=100)    :: filename, dataset
     INTEGER(HID_T) :: file_id, dataset_id
@@ -106,6 +111,7 @@ MODULE TOOLSUBS
     REAL*8,DIMENSION(:,:),ALLOCATABLE  :: sm_mat, data_out
     INTEGER(HSIZE_T),DIMENSION(2):: data_dims
 
+#if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
 !        PRINT*, 'sd_id, hdferr', file_id, hdferr
@@ -121,9 +127,8 @@ MODULE TOOLSUBS
         CALL h5close_f(hdferr)
         sm_mat = data_out(lon_ind(1):lon_ind(size(lon_ind)),lat_ind(1):lat_ind(size(lat_ind)))        
        ! PRINT*, 'SMAP Data', sm_mat
-
+#endif
     END SUBROUTINE GetSMAP
-
 
     SUBROUTINE GetSMAP_L2(filename,dataset1,dataset2,dataset3,data_out,ind)
     CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3
@@ -132,6 +137,8 @@ MODULE TOOLSUBS
     REAL*8,DIMENSION(:),ALLOCATABLE  :: data_out
     INTEGER*4,DIMENSION(:),ALLOCATABLE  :: row_temp_ind, col_temp_ind, ind
     INTEGER(HSIZE_T),DIMENSION(1):: dims, maxdims
+
+#if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
 !        PRINT*, 'sd_id, hdferr', file_id, hdferr
@@ -158,6 +165,7 @@ MODULE TOOLSUBS
         CALL h5fclose_f(file_id,hdferr)
         CALL h5close_f(hdferr)
        ! PRINT*, 'SMAP Data', sm_mat
+#endif
     END SUBROUTINE GetSMAP_L2
 
     SUBROUTINE GetSMAP_L1B(filename, data1_out, data2_out, data3_out, data4_out, data5_out, data6_out, data7_out, data8_out, &
@@ -192,9 +200,7 @@ MODULE TOOLSUBS
        dataset14="/Spacecraft_Data/sc_nadir_angle/"
        dataset15="/Brightness_Temperature/antenna_scan_angle/"
 
-
-
-
+#if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
 !        PRINT*, 'sd_id, hdferr', file_id, hdferr
@@ -263,8 +269,8 @@ MODULE TOOLSUBS
         CALL h5fclose_f(file_id,hdferr)
         CALL h5close_f(hdferr)
        ! PRINT*, 'SMAP Data', sm_mat
+#endif
     END SUBROUTINE GetSMAP_L1B
-
 
     SUBROUTINE NEAREST_1d ( nd, xd, yd, ni, xi, yi )
      IMPLICIT NONE
