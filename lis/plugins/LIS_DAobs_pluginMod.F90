@@ -884,7 +884,7 @@ subroutine LIS_DAobs_plugin
 #endif
 
 !Y.Kwon
-#if ( defined DA_OBS_VIIRS_GVF)
+#if ( defined DA_OBS_VIIRS_GVF )
    call registerdaobsclass(trim(LIS_VIIRSgvfobsId),"LSM")
    call registerdaobssetup(trim(LIS_VIIRSgvfobsId)//char(0),&
         VIIRSgvf_setup)
@@ -894,14 +894,14 @@ subroutine LIS_DAobs_plugin
         write_VIIRSgvfobs)
 #endif
 !Y.Kwon
-#if ( defined DA_OBS_VIIRS_GVF)
-   call registerdaobsclass(trim(LIS_VIIRSgvfobsId),"LSM")
-   call registerdaobssetup(trim(LIS_VIIRSgvfobsId)//char(0),&
-        VIIRSgvf_setup)
-   call registerreaddaobs(trim(LIS_VIIRSgvfobsId)//char(0),&
-        read_VIIRSgvf)
-   call registerwritedaobs(trim(LIS_VIIRSgvfobsId)//char(0),&
-        write_VIIRSgvfobs)
+#if ( defined DA_OBS_CDFS_GVF )
+   call registerdaobsclass(trim(LIS_CDFSgvfobsId),"LSM")
+   call registerdaobssetup(trim(LIS_CDFSgvfobsId)//char(0),&
+        CDFSgvf_setup)
+   call registerreaddaobs(trim(LIS_CDFSgvfobsId)//char(0),&
+        read_CDFSgvf)
+   call registerwritedaobs(trim(LIS_CDFSgvfobsId)//char(0),&
+        write_CDFSgvfobs)
 #endif
 
 #if ( defined DA_OBS_NRT_SMAPSM )
