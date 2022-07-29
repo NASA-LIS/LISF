@@ -59,7 +59,9 @@ MODULE TOOLSUBS
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
 
-        status = sfrdata(ssid,start, stride,edges, data)
+#if (defined USE_HDF5)
+         status = sfrdata(ssid,start, stride,edges, data)
+#endif
         !PRINT *, "Filename", filename
           sum_NDVI=SUM(REAL(data,4),MASK=data.NE.-9999)
           N_NDVI=COUNT(MASK=data.NE.-9999)
@@ -88,8 +90,10 @@ MODULE TOOLSUBS
          !DFACC=1 !Read Only Access
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
-        status = sfrdata(ssid,start, stride,edges, data)
-        NDVI_MAT=-9999
+#if (defined USE_HDF5)
+         status = sfrdata(ssid,start, stride,edges, data)
+#endif
+         NDVI_MAT=-9999
 !        WHERE(data.NE.-9999)
         WHERE(data*0.0001.GT.0.0.AND.data*0.0001.LT.1.0)
         NDVI_MAT=data*0.0001
@@ -105,12 +109,15 @@ MODULE TOOLSUBS
 
     SUBROUTINE GetSMAP(filename,dataset,smap_row,smap_col,lon_ind,lat_ind,sm_mat)
     CHARACTER (len=100)    :: filename, dataset
+#if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id
+#endif
     INTEGER        :: hdferr, smap_row, smap_col
     INTEGER,DIMENSION(:),ALLOCATABLE :: lon_ind, lat_ind
     REAL*8,DIMENSION(:,:),ALLOCATABLE  :: sm_mat, data_out
+#if (defined USE_HDF5)
     INTEGER(HSIZE_T),DIMENSION(2):: data_dims
-
+#endif
 #if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
@@ -132,12 +139,15 @@ MODULE TOOLSUBS
 
     SUBROUTINE GetSMAP_L2(filename,dataset1,dataset2,dataset3,data_out,ind)
     CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3
+#if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id1, dataset_id2, dataset_id3, dspace_id
+#endif
     INTEGER        :: hdferr, m
     REAL*8,DIMENSION(:),ALLOCATABLE  :: data_out
     INTEGER*4,DIMENSION(:),ALLOCATABLE  :: row_temp_ind, col_temp_ind, ind
+#if (defined USE_HDF5)
     INTEGER(HSIZE_T),DIMENSION(1):: dims, maxdims
-
+#endif
 #if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
@@ -173,15 +183,18 @@ MODULE TOOLSUBS
 
     CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7
     CHARACTER (len=100)    :: dataset8, dataset9, dataset10, dataset11, dataset12, dataset13, dataset14, dataset15
+#if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id1, dataset_id2, dataset_id3, dataset_id4, dataset_id5, dataset_id6, dataset_id7, dspace_id
     INTEGER(HID_T) :: dataset_id8, dataset_id9, dataset_id10, dataset_id11, dataset_id12, dataset_id13, dataset_id14, dataset_id15
+#endif
     INTEGER        :: hdferr, m, n
     REAL*4,DIMENSION(:,:),ALLOCATABLE  :: data1_out, data2_out, data3_out, data4_out, data5_out, data6_out
     REAL*4,DIMENSION(:,:),ALLOCATABLE  :: data7_out, data8_out, data9_out, data10_out, data11_out, data15_out
     REAL*4,DIMENSION(:),ALLOCATABLE  :: data14_out
     INTEGER*4,DIMENSION(:,:),ALLOCATABLE  :: data12_out, data13_out
+#if (defined USE_HDF5)
     INTEGER(HSIZE_T),DIMENSION(2):: dims, maxdims
-
+#endif
        !DEFINED DATA TYPE
        dataset1="/Brightness_Temperature/tb_time_seconds/"
        dataset2="/Brightness_Temperature/tb_v_surface_corrected/"          !Dataset name in smap
