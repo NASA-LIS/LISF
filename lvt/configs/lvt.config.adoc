@@ -163,6 +163,7 @@ LVT output methodology:                 "2d gridspace"
 | "`FluxSAT GPP`"                   | FluxSat GPP data
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 | "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
+| "`GRUN runoff`"                  | GRUN runoff data
 |===
 
 .Example _lvt.config_ entry
@@ -1779,6 +1780,17 @@ GRDC station list file: ../GRDC_data/GRDC_stations.txt
 GRDC frequency of data:  monthly
 GRDC file version:       1
 ....
+
+==== GRUN data
+
+`GRUN data directory:` specifies the location of the GRUN data.
+
+
+.Example _lvt.config_ entry
+....
+GRUN data directory:    ../GRDC_data
+....
+
 
 ==== LIS DAOBS output as the observation
 
