@@ -997,18 +997,21 @@ contains
    end subroutine create_Imerg_HH_filename
 
    ! Driver routine to fetch 3hr IMERG data for given start date.
-   subroutine fetch3hrImergHH(j3hr, datadir, product, version, &
+   subroutine fetch3hrImergHH(n, j3hr, datadir, product, version, &
         plp_thresh, nest, sigmaOSqr, oErrScaleLength, net, platform, &
         precipObsData)
 
       ! Modules
-      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
+      use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_coreMod, only: LIS_domain, LIS_rc
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
+      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
 
       ! Defaults
       implicit none
 
       ! Arguments
+      integer, intent(in) :: n
       integer, intent(in) :: j3hr
       character(len=*),intent(in) :: datadir
       character(len=*),intent(in) :: product
@@ -1030,6 +1033,10 @@ contains
       character(len=255) :: filename
       integer :: icount
       integer :: rc
+      integer :: c_imerg, r_imerg, c_lis, r_lis
+      real :: rlat_imerg, rlon_imerg
+      real :: dlat_lis, dlon_lis, ctrlat_lis, ctrlon_lis
+      integer :: gindex
 
       ! Save the start time
       call LIS_julhr_date(j3hr, yr, mo, da, hr)
@@ -1082,6 +1089,49 @@ contains
          cur_time = cur_time + half_hour
 
       end do
+
+      ! Apply bias correction
+      if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+
+         dlat_lis = LIS_domain(n)%lisproj%dlat
+         dlon_lis = LIS_domain(n)%lisproj%dlon
+
+         ! Need to determine global r,c of each observation
+         do r_imerg = 1, imerg%nlats
+            rlat_imerg = imerg%swlat + (r_imerg - 1)*imerg%dlat
+            do r_lis = 1, LIS_rc%gnr(n)
+               gindex = 1 + (r_lis-1)*LIS_rc%gnc(n)
+               ctrlat_lis = LIS_domain(n)%glat(gindex)
+               if (r_lis .eq. 1) then
+                  if (rlat_imerg .lt. (ctrlat_lis - (0.5*dlat_lis))) cycle
+               end if
+               if (rlat_imerg .ge. (ctrlat_lis + (0.5*dlat_lis))) cycle
+               exit
+            end do
+
+            do c_imerg = 1, imerg%nlons
+
+               ! Sanity check
+               if (imerg%precip_cal_3hr(c_imerg, r_imerg) .lt. 0) cycle
+
+               rlon_imerg = imerg%swlon + (c_imerg - 1)*imerg%dlon
+               do c_lis = 1, LIS_rc%gnc(n)
+                  gindex = c_lis + (r_lis-1)*LIS_rc%gnc(n)
+                  ctrlon_lis = LIS_domain(n)%glon(gindex)
+                  if (c_lis .eq. 1) then
+                     if (rlon_imerg .lt. (ctrlon_lis - (0.5*dlon_lis))) cycle
+                  end if
+                  if (rlon_imerg .ge. (ctrlon_lis + (0.5*dlon_lis))) cycle
+                  exit
+               end do
+
+               imerg%precip_cal_3hr(c_imerg,r_imerg) = &
+                    imerg%precip_cal_3hr(c_imerg,r_imerg) * &
+                    agrmet_struc(n)%pcp_imerg_bias_ratio(c_lis,r_lis)
+
+            end do
+         end do
+      end if
 
       ! Create obsData object.  For efficiency, allocate memory to match
       ! the total number of good 3-hr values

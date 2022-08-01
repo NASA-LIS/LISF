@@ -718,11 +718,15 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK Add precip bias correction option
      integer :: back_bias_corr
+     integer :: imerg_bias_corr
      character(255) :: chelsa_climo_file
      character(255) :: gfs_climo_file
      character(255) :: galwem_climo_file
+     character(255) :: imerg_climo_file
      real, allocatable :: pcp_back_bias_ratio(:,:)
+     real, allocatable :: pcp_imerg_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
+     integer :: pcp_imerg_bias_ratio_month
      character(10) :: pcp_back_source
   end type agrmet_type_dec
 

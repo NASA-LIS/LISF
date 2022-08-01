@@ -60,7 +60,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
         USAF_getgeoprecipobsdata, USAF_setbratsethprecipstats, &
         USAF_analyzeprecip, USAF_split12hrgaugeobsdata, USAF_analyzeprecip, &
         USAF_countGoodObs,USAF_waterQC,USAF_filterObsData,USAF_dupQC, &
-        USAF_snowQC,USAF_snowDepthQC,USAF_backQC,USAF_superstatQC
+        USAF_snowQC,USAF_snowDepthQC,USAF_backQC,USAF_superstatQC, &
+        USAF_pcpImergBiasRatio_NRT
    !use USAF_ImergHHMod, only: newImergHHPrecip, destroyImergHHPrecip, &
    !     update30minImergHHPrecip,copyToObsDataImergHHPrecip, &
    !     calc3hrImergHHPrecip, count3hrObsImergHHPrecip, &
@@ -376,6 +377,13 @@ subroutine readagrmetpcpforcing(n,findex, order)
       if (( (julend_lis - julbeg) .ge. 12) .or. &
            (LIS_rc%runmode .ne. LIS_agrmetrunId) ) then
          use_twelve = .true.
+      end if
+
+      ! EMK...Regardless of 6-hr or 12-hr cycle, we need to potentially
+      ! update the IMERG bias ratio if requested.
+      if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+         call AGRMET_julhr_date10(julbeg, yyyymmddhh)
+         call USAF_pcpImergBiasRatio_NRT(n, yyyymmddhh)
       end if
 
       ! EMK...6-hr cycle
@@ -747,7 +755,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
                write(LIS_logunit,*) &
                     '[INFO] Fetching 6 hours of IMERG data, set ',ii
                julbeg_adj = (ii-1)*3
-               call fetch3hrImergHH(julbeg+julbeg_adj, &
+               call fetch3hrImergHH(n, julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
                     imerg_oErrScaleLength,imerg_net,imerg_platform,&
@@ -1295,7 +1303,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
                write(LIS_logunit,*) &
                     '[INFO] Fetching 12 hours of IMERG data, set ',ii
                julbeg_adj = (ii-1)*3
-               call fetch3hrImergHH(julbeg+julbeg_adj, &
+               call fetch3hrImergHH(n,julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
                     imerg_oErrScaleLength,imerg_net,imerg_platform, &

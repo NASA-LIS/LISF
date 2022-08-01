@@ -133,6 +133,7 @@ module USAF_bratsethMod
    public :: USAF_snowDepthQC
    public :: USAF_backQC
    public :: USAF_superstatQC
+   public :: USAF_pcpImergBiasRatio_NRT
 
    ! A simple linked list type that can be used in a hash table.  Intended
    ! to store indices of arrays in the USAF_obsData type for efficient look-up.
@@ -6400,9 +6401,6 @@ contains
           LIS_ews_halo_ind, LIS_ewe_halo_ind, &
           LIS_nss_halo_ind, LIS_nse_halo_ind
      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
-#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
-     use netcdf
-#endif
 
      ! Defaults
      implicit none
@@ -6419,8 +6417,6 @@ contains
      real, allocatable :: chelsa_climo(:,:), back_climo(:,:)
      real :: chelsa_udef, back_udef
      integer :: c, r
-
-#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
 
      read(yyyymmddhh(5:6),'(i2.2)') imonth
 
@@ -6511,8 +6507,101 @@ contains
     deallocate(back_climo)
 
   end subroutine USAF_pcpBackBiasRatio_NRT
-#endif
-  
+
+  ! Read monthly climo for correcting IMERG in NRT NAFPA
+  subroutine USAF_pcpImergBiasRatio_NRT(n, yyyymmddhh)
+
+    ! Imports
+    use AGRMET_forcingMod, only: agrmet_struc
+    use LIS_coreMod, only: LIS_rc, LIS_localPet, &
+         LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+         LIS_nss_halo_ind, LIS_nse_halo_ind
+    use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    integer, intent(in) :: n
+    character(10), intent(in) :: yyyymmddhh
+
+    ! Locals
+    integer :: imonth
+    logical :: skip
+    integer :: nrows, ncols
+    real, allocatable :: chelsa_climo(:,:), imerg_climo(:,:)
+    real :: chelsa_udef, imerg_udef
+    integer :: c, r
+
+    read(yyyymmddhh(5:6),'(i2.2)') imonth
+
+    ! Accumulations ending at 00Z first of month are part of the *previous*
+    ! month.  So decrement imonth by one in that situation, and reset to 12
+    ! (December) at the year change.
+    if (agrmet_struc(n)%pcp_imerg_bias_ratio_month .ne. 0) then
+       if (yyyymmddhh(9:10) .eq. '00' .and. &
+            yyyymmddhh(7:8) .eq. '01') then
+          imonth = imonth - 1
+          if (imonth .eq. 0) then
+             imonth = 12
+          end if
+       end if
+    end if
+
+    ! We will only read the climatologies from file if this is the very
+    ! first invocation, or if the month has changed.
+    skip = .true.
+    if (agrmet_struc(n)%pcp_imerg_bias_ratio_month .eq. 0) then
+       skip = .false.
+    else if (imonth .ne. agrmet_struc(n)%pcp_imerg_bias_ratio_month) then
+       skip = .false.
+    end if
+    if (skip) return
+    agrmet_struc(n)%pcp_imerg_bias_ratio_month = imonth
+
+    ncols = LIS_rc%gnc(n)
+    nrows = LIS_rc%gnr(n)
+
+    ! Get new month of chelsa climo data
+    allocate(chelsa_climo(ncols,nrows))
+    chelsa_climo = 0
+    call fetch_climo(agrmet_struc(n)%chelsa_climo_file, imonth, &
+         LIS_rc%gnc(n), LIS_rc%gnr(n), chelsa_climo, chelsa_udef)
+
+    ! Get new month of background climo data
+    allocate(imerg_climo(ncols,nrows))
+    imerg_climo = 0
+    call fetch_climo(agrmet_struc(n)%imerg_climo_file, imonth, &
+         ncols, nrows, imerg_climo, imerg_udef)
+
+    ! Calculate new bias ratio
+    do r = 1, nrows
+       do c = 1, ncols
+          if (chelsa_climo(c,r) .eq. chelsa_udef .or. &
+               imerg_climo(c,r) .eq. imerg_udef) then
+             agrmet_struc(n)%pcp_imerg_bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1 .and. &
+               imerg_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_imerg_bias_ratio(c,r) = 1.0
+          else if (chelsa_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_imerg_bias_ratio(c,r) = 0.1 / &
+                  imerg_climo(c,r)
+          else if (imerg_climo(c,r) .lt. 0.1) then
+             agrmet_struc(n)%pcp_imerg_bias_ratio(c,r) = &
+                  chelsa_climo(c,r) / 0.1
+          else
+             agrmet_struc(n)%pcp_imerg_bias_ratio(c,r) = &
+                  chelsa_climo(c,r) / imerg_climo(c,r)
+          end if
+       end do
+    end do
+
+    ! Clean up
+    deallocate(chelsa_climo)
+    deallocate(imerg_climo)
+  end subroutine USAF_pcpImergBiasRatio_NRT
+
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
   ! Fetch desired month of remapped precip climatology

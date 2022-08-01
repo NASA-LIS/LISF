@@ -1084,12 +1084,12 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config, &
        "AGRMET PPT Background bias correction option:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET PPT Background bias correction option: not specified in config file")
+       "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%back_bias_corr, rc=rc)
      call LIS_verify(rc, &
-          "[ERR] PPT Background bias correction option: not specified in config file")
+          "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
 
      if (agrmet_struc(n)%back_bias_corr .ne. 0 .and. &
           agrmet_struc(n)%back_bias_corr .ne. 2) then
@@ -1122,7 +1122,7 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config, &
        "AGRMET PPT CHELSA climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET PPT CHELSA climo file: not specified in config file")
+       "[ERR] AGRMET PPT CHELSA climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%chelsa_climo_file, rc=rc)
@@ -1133,7 +1133,7 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config, &
        "AGRMET PPT GFS climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET PPT GFS climo file: not specified in config file")
+       "[ERR] AGRMET PPT GFS climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%gfs_climo_file, rc=rc)
@@ -1144,12 +1144,60 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config, &
        "AGRMET PPT GALWEM climo file:", rc=rc)
   call LIS_verify(rc, &
-       "AGRMET PPT GALWEM climo file: not specified in config file")
+       "[ERR] AGRMET PPT GALWEM climo file: not specified in config file")
   do n = 1, LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config, &
           agrmet_struc(n)%galwem_climo_file, rc=rc)
      call LIS_verify(rc, &
-          "[ERR] GALWEM Precip climo file: not specified in config file")
+          "[ERR] AGRMET PPT GALWEM climo file: not specified in config file")
+  end do
+
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET PPT IMERG bias correction option:", rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET PPT IMERG bias correction option: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%imerg_bias_corr, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT IMERG bias correction option: not specified in config file")
+
+     if (agrmet_struc(n)%imerg_bias_corr .ne. 0 .and. &
+          agrmet_struc(n)%imerg_bias_corr .ne. 1) then
+
+        write(LIS_logunit,*) &
+             '[ERR] AGRMET PPT IMERG bias correction option: bad value in config file, set 0 or 1'
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] AGRMET PPT IMERG bias correction option: bad value in config file, set 0 or 1'
+
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+
+     if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+        allocate(agrmet_struc(n)%pcp_imerg_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%pcp_imerg_bias_ratio = 1.
+        agrmet_struc(n)%pcp_imerg_bias_ratio_month = 0
+     end if
+  end do
+
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET PPT IMERG climo file:", rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET PPT IMERG climo file: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%imerg_climo_file, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT IMERG climo file: not specified in config file")
   end do
 
   do n=1,LIS_rc%nnest
