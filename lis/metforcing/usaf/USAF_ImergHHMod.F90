@@ -1004,6 +1004,7 @@ contains
       ! Modules
       use AGRMET_forcingMod, only: agrmet_struc
       use LIS_coreMod, only: LIS_domain, LIS_rc
+      use LIS_logMod, only: LIS_logunit
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
       use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
 
@@ -1093,6 +1094,7 @@ contains
       ! Apply bias correction
       if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
 
+         write(LIS_logunit,*)'[INFO] Bias correcting IMERG data...'
          dlat_lis = LIS_domain(n)%lisproj%dlat
          dlon_lis = LIS_domain(n)%lisproj%dlon
 
