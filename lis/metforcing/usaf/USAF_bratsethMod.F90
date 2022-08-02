@@ -6423,13 +6423,11 @@ contains
      ! Accumulations ending at 00Z first of month are part of the *previous*
      ! month.  So decrement imonth by one in that situation, and reset to 12
      ! (December) at the year change.
-     if (agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) then
-        if (yyyymmddhh(9:10) .eq. '00' .and. &
-             yyyymmddhh(7:8) .eq. '01') then
-           imonth = imonth - 1
-           if (imonth .eq. 0) then
-              imonth = 12
-           end if
+     if (yyyymmddhh(7:8) .eq. '01' .and. &
+          yyyymmddhh(9:10) .eq. '00') then
+        imonth = imonth - 1
+        if (imonth .eq. 0) then
+           imonth = 12
         end if
      end if
 
@@ -6538,13 +6536,11 @@ contains
     ! Accumulations ending at 00Z first of month are part of the *previous*
     ! month.  So decrement imonth by one in that situation, and reset to 12
     ! (December) at the year change.
-    if (agrmet_struc(n)%pcp_imerg_bias_ratio_month .ne. 0) then
-       if (yyyymmddhh(9:10) .eq. '00' .and. &
-            yyyymmddhh(7:8) .eq. '01') then
-          imonth = imonth - 1
-          if (imonth .eq. 0) then
-             imonth = 12
-          end if
+    if (yyyymmddhh(7:8) .eq. '01' .and. &
+         yyyymmddhh(9:10) .eq. '00') then
+       imonth = imonth - 1
+       if (imonth .eq. 0) then
+          imonth = 12
        end if
     end if
 

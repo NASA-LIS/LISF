@@ -1094,7 +1094,8 @@ contains
       ! Apply bias correction
       if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
 
-         write(LIS_logunit,*)'[INFO] Bias correcting IMERG data...'
+         write(LIS_logunit,*) &
+              '[INFO] Applying CHELSA-based bias correction to IMERG data...'
          dlat_lis = LIS_domain(n)%lisproj%dlat
          dlon_lis = LIS_domain(n)%lisproj%dlon
 

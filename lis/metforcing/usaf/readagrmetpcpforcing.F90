@@ -379,13 +379,6 @@ subroutine readagrmetpcpforcing(n,findex, order)
          use_twelve = .true.
       end if
 
-      ! EMK...Regardless of 6-hr or 12-hr cycle, we need to potentially
-      ! update the IMERG bias ratio if requested.
-      if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
-         call AGRMET_julhr_date10(julbeg, yyyymmddhh)
-         call USAF_pcpImergBiasRatio_NRT(n, yyyymmddhh)
-      end if
-
       ! EMK...6-hr cycle
       if (.not. use_twelve) then
 
@@ -739,6 +732,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
          ! Handle IMERG
          if (agrmet_struc(n)%imerg_swch .eq. 1) then
+
             write(LIS_logunit,*) &
                  '------------------------------------------------------------'
             imerg_datadir = trim(agrmet_struc(n)%imerg_dir)
@@ -755,6 +749,11 @@ subroutine readagrmetpcpforcing(n,findex, order)
                write(LIS_logunit,*) &
                     '[INFO] Fetching 6 hours of IMERG data, set ',ii
                julbeg_adj = (ii-1)*3
+               ! EMK...Update bias ratio for IMERG, if necessary.
+               if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+                  call AGRMET_julhr_date10(julbeg+julbeg_adj+3, yyyymmddhh)
+                  call USAF_pcpImergBiasRatio_NRT(n, yyyymmddhh)
+               end if
                call fetch3hrImergHH(n, julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
@@ -1303,6 +1302,11 @@ subroutine readagrmetpcpforcing(n,findex, order)
                write(LIS_logunit,*) &
                     '[INFO] Fetching 12 hours of IMERG data, set ',ii
                julbeg_adj = (ii-1)*3
+               ! EMK...Update bias ratio for IMERG, if necessary.
+               if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+                  call AGRMET_julhr_date10(julbeg+julbeg_adj+3, yyyymmddhh)
+                  call USAF_pcpImergBiasRatio_NRT(n, yyyymmddhh)
+               end if
                call fetch3hrImergHH(n,julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
