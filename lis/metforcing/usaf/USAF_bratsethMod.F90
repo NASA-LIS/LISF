@@ -6417,6 +6417,9 @@ contains
      real, allocatable :: chelsa_climo(:,:), back_climo(:,:)
      real :: chelsa_udef, back_udef
      integer :: c, r
+     character(3) :: months(12)
+     months = (/'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', &
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'/)
 
      read(yyyymmddhh(5:6),'(i2.2)') imonth
 
@@ -6460,6 +6463,9 @@ contains
 
      ncols = LIS_rc%gnc(n)
      nrows = LIS_rc%gnr(n)
+
+     write(LIS_logunit,*)'[INFO] Fetching ', trim(first_guess_source), &
+          ' bias-correction data for ', months(imonth)
 
      ! Get new month of chelsa climo data
      allocate(chelsa_climo(ncols,nrows))
@@ -6530,6 +6536,9 @@ contains
     real, allocatable :: chelsa_climo(:,:), imerg_climo(:,:)
     real :: chelsa_udef, imerg_udef
     integer :: c, r
+    character(3) :: months(12)
+    months = (/'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', &
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'/)
 
     read(yyyymmddhh(5:6),'(i2.2)') imonth
 
@@ -6557,6 +6566,9 @@ contains
 
     ncols = LIS_rc%gnc(n)
     nrows = LIS_rc%gnr(n)
+
+    write(LIS_logunit,*)'[INFO] Fetching IMERG', &
+         ' bias-correction data for ', months(imonth)
 
     ! Get new month of chelsa climo data
     allocate(chelsa_climo(ncols,nrows))
