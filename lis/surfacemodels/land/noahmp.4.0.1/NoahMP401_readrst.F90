@@ -428,13 +428,13 @@ subroutine NoahMP401_readrst()
                                      varname="PGS", wformat=wformat)
  
             ! read: optional gecros crop
-            do l=1, 60 ! TODO: check loop
-                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="GECROS_STATE", &
-                                         dim=l, vlevels = 60, wformat=wformat)
-                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                    NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l) = tmptilen(t)
-                enddo
-            enddo
+!            do l=1, 60 ! TODO: check loop
+!                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="GECROS_STATE", &
+!                                         dim=l, vlevels = 60, wformat=wformat)
+!                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+!                    NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l) = tmptilen(t)
+!                enddo
+!            enddo
         
             ! close restart file
             if(wformat .eq. "binary") then
