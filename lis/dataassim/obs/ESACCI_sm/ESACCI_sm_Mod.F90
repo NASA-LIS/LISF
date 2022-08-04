@@ -73,7 +73,7 @@ module ESACCI_sm_Mod
   type, public:: ESACCI_sm_dec
      
      logical                :: startMode
-     character(len=LIS_CONST_PATH_LEN)   :: sensor
+     character(len=8)       :: sensor
      real                   :: version
      integer                :: useSsdevScal
      integer                :: nc

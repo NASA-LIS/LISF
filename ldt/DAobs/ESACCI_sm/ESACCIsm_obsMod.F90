@@ -69,7 +69,7 @@ module ESACCIsm_obsMod
   type, public :: esaccismobsdec
 
      character(len=LDT_CONST_PATH_LEN)          :: odir
-     character(len=LDT_CONST_PATH_LEN)          :: sensor
+     character(len=8)       :: sensor
      integer                :: mo
      real                   :: version
      real,    allocatable   :: smobs(:,:)
