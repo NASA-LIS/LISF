@@ -1008,7 +1008,8 @@ contains
       use LIS_logMod, only: LIS_logunit, LIS_alert, LIS_abort
       use LIS_mpiMod
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
-      use map_utils, only: map_init, map_set, latlon_to_ij, PROJ_LATLON
+      use map_utils, only: map_init, map_set, latlon_to_ij, PROJ_LATLON, &
+           proj_info
       use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
 
       ! Defaults
@@ -1043,7 +1044,7 @@ contains
       integer :: gindex
       real :: xpt, ypt
       double precision :: t0,t1
-      type(lis_domain_type) :: LIS_domain_global
+      type(proj_info) :: lisproj_global
       character(100) :: message(20)
       integer :: ierr
 
@@ -1111,13 +1112,11 @@ contains
 
          ! Create global LIS domain object
          if (LIS_domain(n)%lisproj%code == PROJ_LATLON) then
-
-            call map_init(LIS_domain_global%lisproj)
             call map_set(PROJ_LATLON, &
                  LIS_rc%gridDesc(n,34), LIS_rc%gridDesc(n,35), &
                  0.0, LIS_rc%gridDesc(n,39), LIS_rc%gridDesc(n,40), 0.0, &
                  int(LIS_rc%gridDesc(n,32)), int(LIS_rc%gridDesc(n,33)), &
-                 LIS_domain_global%lisproj)
+                 lisproj_global)
          else
             ! Abort if unsupported map projection is used
             write(LIS_logunit,*) &
@@ -1146,7 +1145,7 @@ contains
                if (imerg%precip_cal_3hr(r_imerg, c_imerg) .lt. 0) cycle
 
                ! We now have the IMERG lat/lon.  Find the LIS grid box.
-               call latlon_to_ij(LIS_domain_global%lisproj, &
+               call latlon_to_ij(lisproj_global, &
                     rlat_imerg, rlon_imerg, xpt, ypt)
                c_lis = nint(xpt)
                if (c_lis > LIS_rc%gnc(n)) then
