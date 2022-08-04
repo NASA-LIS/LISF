@@ -54,7 +54,7 @@ subroutine readESACCIsmObs(n)
   smobs= LDT_rc%udef
 
   call create_ESACCIsm_filename(ESACCIsmobs(n)%odir, &
-       ESACCIsmobs(n)%version,&
+       ESACCIsmobs(n)%version, ESACCIsmobs(n)%sensor,&
        LDT_rc%yr, LDT_rc%mo, LDT_rc%da, fname)
   
   inquire(file=trim(fname),exist=file_exists)
@@ -224,13 +224,15 @@ end subroutine read_ESACCI_data
 ! \label{create_ESACCIsm_filename}
 ! 
 ! !INTERFACE: 
-subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
+subroutine create_ESACCIsm_filename(ndir, version, sensor, yr, mo,da, filename)
 ! !USES:   
+  use LDT_logMod
 
   implicit none
 ! !ARGUMENTS: 
   character(len=*)  :: filename
   real              :: version
+  character(len=*)  :: sensor
   integer           :: yr, mo, da
   character (len=*) :: ndir
 ! 
@@ -251,7 +253,8 @@ subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
   character (len=2) :: fmo,fda
   character (len=3) :: cversion3
   character (len=4) :: cversion4
-  
+  character (len=8) :: sensortxt  !20220621 Pang  
+
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
@@ -262,6 +265,18 @@ subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
     write(unit=cversion4, fmt='(f4.1)') version
   endif
   
+  if(sensor == 'passive') then
+      sensortxt = 'PASSIVE'
+  elseif(sensor == 'active') then
+      sensortxt = 'ACTIVE'
+  elseif(sensor == 'combined') then
+      sensortxt = 'COMBINED'
+  else
+      write(LDT_logunit,*) "[ERR] Invalid ESA CCI soil moisture sensor type was chosen."
+      write(LDT_logunit,*) "[ERR] Please choose either 'passive', 'active', or 'combined'."
+      call LDT_endrun
+  endif
+
   if(version.eq.1) then 
      filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-L3S_SOILMOISTURE-SSMV-MERGED-' &
           //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv00.1.nc'
@@ -274,10 +289,10 @@ subroutine create_ESACCIsm_filename(ndir, version, yr, mo,da, filename)
   else
      ! NT: for versions after 2.2
      if (version .lt. 10.0) then
-         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-' & 
+         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-'//trim(sensortxt)//'-' & !20220621 Pang
               //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv0'//cversion3//'.nc'
      else
-         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-COMBINED-' & 
+         filename = trim(ndir)//'/'//trim(fyr)//'/ESACCI-SOILMOISTURE-L3S-SSMV-'//trim(sensortxt)//'-' & !20220621 Pang
               //trim(fyr)//trim(fmo)//trim(fda)//'000000-fv'//cversion4//'.nc'
      endif
   endif
