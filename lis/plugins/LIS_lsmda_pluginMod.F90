@@ -2636,7 +2636,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_ESACCIsmobsId)//char(0),noahmp401_updatesoilm)
 
-#if ( defined DA_OBS_WUSUCLA )
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_dasnow_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
@@ -2657,7 +2656,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_updatesnowvars)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_qc_snowobs)
-#endif
    
 !BL:Noahmp401 TWS 
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
