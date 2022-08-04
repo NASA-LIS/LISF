@@ -3638,10 +3638,22 @@ NASA AMSRE soil moisture observation directory: ./NASA_AMSRE
 
 `ESA CCI soil moisture version of data:` specifies the version of the ESA CCI soil moisture dataset.
 
+`ESA CCI soil moisture sensor type:` specifies the sensor type of the ESA CCI soil moisture dataset.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`passive`"  | passive sensor type
+|"`active`"   | active sensor type
+|"`combined`" | combined sensor type
+|===
+
 .Example _ldt.config_ entry
 ....
 ESA CCI soil moisture observation directory:  ./ECV
 ESA CCI soil moisture version of data:        EXAMPLE
+ESA CCI soil moisture sensor type:            combined
 ....
 
 `GCOMW AMSR2 L3 soil moisture observation directory:` specifies the location of the data directory containing the GCOMW AMSR v2 L3 soil moisture data.

@@ -2616,7 +2616,26 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_synsndId)//char(0),noahmp401_qc_snowobs)
 
-#if ( defined DA_OBS_WUSUCLA )
+! NoahMP-4.0.1 ESACCI soil moisture !2022.06.29 Pang
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_updatesoilm)
+
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_dasnow_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
@@ -2637,7 +2656,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_updatesnowvars)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_qc_snowobs)
-#endif
    
 !BL:Noahmp401 TWS 
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
