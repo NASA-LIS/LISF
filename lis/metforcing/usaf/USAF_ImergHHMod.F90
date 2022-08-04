@@ -1118,10 +1118,6 @@ contains
                  0.0, LIS_rc%gridDesc(n,39), LIS_rc%gridDesc(n,40), 0.0, &
                  int(LIS_rc%gridDesc(n,32)), int(LIS_rc%gridDesc(n,33)), &
                  LIS_domain_global%lisproj)
-
-            !call map_set(PROJ_LATLON, LIS_rc%gridDesc(n,4),LIS_rc%gridDesc(n,5),&
-            !     0.0, LIS_rc%gridDesc(n,9),LIS_rc%gridDesc(n,10), 0.0,&
-            !     LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_domain(n)%lisproj)
          else
             ! Abort if unsupported map projection is used
             write(LIS_logunit,*) &
@@ -1140,16 +1136,6 @@ contains
             call MPI_Barrier(LIS_MPI_COMM, ierr)
 #endif
          endif
-
-         !dlat_lis = LIS_domain(n)%lisproj%dlat
-         !dlon_lis = LIS_domain(n)%lisproj%dlon
-
-         !write(LIS_logunit,*)'EMK: lisproj:', &
-         !     LIS_domain(n)%lisproj%code, &
-         !     LIS_domain(n)%lisproj%lat1, &
-         !     LIS_domain(n)%lisproj%lon1, &
-         !     LIS_domain(n)%lisproj%dlat, &
-         !     LIS_domain(n)%lisproj%dlon
 
          ! Need to determine global r,c of each observation.  Note that
          ! IMERG array is row, column, and the imerg loops below reflect that.
@@ -1170,47 +1156,11 @@ contains
                end if
                r_lis = min(LIS_rc%gnr(n), max(1, nint(ypt)))
 
-               !write(LIS_logunit,*)'EMK: lat, lon, ypt, xpt, r, c = ', &
-               !     rlat_imerg, rlon_imerg, ypt, xpt, r_lis, c_lis
-
                imerg%precip_cal_3hr(r_imerg,c_imerg) = &
                     imerg%precip_cal_3hr(r_imerg,c_imerg) * &
                     agrmet_struc(n)%pcp_imerg_bias_ratio(c_lis,r_lis)
             end do
          end do
-
-         ! !OLD
-         ! do c_imerg = 1, imerg%nlons
-         !    rlon_imerg = imerg%swlon + (c_imerg - 1)*imerg%dlon
-         !    do c_lis = 1, LIS_rc%gnc(n)
-         !       gindex = c_lis
-         !       ctrlon_lis = LIS_domain(n)%glon(gindex)
-         !       if (c_lis .eq. 1) then
-         !          if (rlon_imerg .lt. (ctrlon_lis - (0.5*dlon_lis))) cycle
-         !       end if
-         !       if (rlon_imerg .ge. (ctrlon_lis + (0.5*dlon_lis))) cycle
-         !       exit
-         !    end do
-
-         !    do r_imerg = 1, imerg%nlats
-         !       rlat_imerg = imerg%swlat + (r_imerg - 1)*imerg%dlat
-         !       do r_lis = 1, LIS_rc%gnr(n)
-         !          gindex = 1 + (r_lis-1)*LIS_rc%gnc(n)
-         !          ctrlat_lis = LIS_domain(n)%glat(gindex)
-         !          if (r_lis .eq. 1) then
-         !             if (rlat_imerg .lt. (ctrlat_lis - (0.5*dlat_lis))) cycle
-         !          end if
-         !          if (rlat_imerg .ge. (ctrlat_lis + (0.5*dlat_lis))) cycle
-         !          exit
-         !       end do
-
-         !       if (imerg%precip_cal_3hr(r_imerg, c_imerg) .lt. 0) cycle
-         !       imerg%precip_cal_3hr(r_imerg,c_imerg) = &
-         !            imerg%precip_cal_3hr(r_imerg,c_imerg) * &
-         !            agrmet_struc(n)%pcp_imerg_bias_ratio(c_lis,r_lis)
-
-         !    end do
-         ! end do
 
 #if (defined SPMD)
          t1 = MPI_Wtime()
