@@ -6632,6 +6632,10 @@ WRSI SOS anomaly file:               none</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WORLDCLIM</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Global climate layers downscaled. For more info, see: <a href="http://www.worldclim.org/" class="bare">http://www.worldclim.org/</a></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NAFPA_BACK_GALWEM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">US Air Force GALWEM NWP fields on 10-km NAFPA grid (Oct2017-May2022).</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -6664,6 +6668,19 @@ WRSI SOS anomaly file:               none</pre>
 </ul>
 </div>
 <div class="paragraph">
+<p>NAFPA_BACK_GALWEM: &lt;directory&gt;/&lt;field header&gt;.&lt;tag&gt;.d01.nc</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The field header is SUM_TS</p>
+</li>
+<li>
+<p>The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
 <p><code>PPT climatology interval:</code> specifies the frequency of the precipitation climatology in months. Current option is: &#8220;monthly&#8221;</p>
 </div>
 <div class="literalblock">
@@ -6672,6 +6689,67 @@ WRSI SOS anomaly file:               none</pre>
 <pre>PPT climatology data source:  PRISM
 PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
 PPT climatology interval:     monthly</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>PPT climatology data source 2:</code> specifies the second monthly precipitation (PPT) climatology fields, for calculating bias ratios. Current source options include:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOAA NLDAS-2 fields</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NAFPA_BACK_GFS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NOAA GFS NWP fields on 10-km NAFPA grid (Oct2017-May2022).</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>PPT climatology maps 2:</code> specifies the source of the second group climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:</p>
+</div>
+<div class="paragraph">
+<p>NLDAS: &lt;directory&gt;/&lt;file header&gt;.&lt;tag&gt;.txt</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The file header can be anything (such as ppt_1931_2010).</p>
+</li>
+<li>
+<p>The tag should represent the month (such as jan, feb, mar, etc.).</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>NAFPA_BACK_GFS: &lt;directory&gt;/&lt;field header&gt;.&lt;tag&gt;.d01.nc</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>The field header is SUM_TS</p>
+</li>
+<li>
+<p>The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).</p>
+</li>
+</ul>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>PPT climatology data source 2:  NAFPA_BACK_GFS
+PPT climatology maps 2:  ./METRICS_GFS/</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17095,7 +17173,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-08-04 20:45:23 UTC
+Last updated 2022-08-05 18:32:22 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
