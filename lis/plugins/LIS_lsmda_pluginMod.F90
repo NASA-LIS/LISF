@@ -2639,6 +2639,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_ESACCIsmobsId)//char(0),noahmp401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_ESACCIsmobsId)//char(0),noahmp401_updatesoilm)
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),noahmp401_soilm_DAlog)
 
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_dasnow_init)
@@ -2660,7 +2662,9 @@ subroutine LIS_lsmda_plugin
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_updatesnowvars)
    call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_qc_snowobs)
-   
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_wusUCLAobsId)//char(0),noahmp401_snow_DAlog)  
+ 
 !BL:Noahmp401 TWS 
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_GRACEtwsobsId)//char(0),noahmp401_datws_init)
