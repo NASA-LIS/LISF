@@ -150,19 +150,23 @@ contains
                 call LIS_surfaceModel_perturb_states(n)
                 call LIS_readDAobservations(n)
                 call LIS_perturb_DAobservations(n)
-                call LIS_perturb_writerestart(n)
+                if(LIS_rc%DAincrMode(n).eq.1) then                 
+                   call LIS_perturb_writerestart(n)
+                endif
                 call LIS_dataassim_run(n)
                 call LIS_dataassim_output(n)
                 if(LIS_rc%DAincrMode(n).eq.1) then 
                    call LIS_surfaceModel_output(n)
+                   call LIS_surfaceModel_writerestart(n)
+                   call LIS_irrigation_output(n)
                 endif
-                call LIS_surfaceModel_writerestart(n)
-                call LIS_irrigation_output(n)
                 call LIS_routing_run(n)
                 if(LIS_rc%DAincrMode(n).eq.1) then 
                    call LIS_routing_writeoutput(n)
                 endif
-                call LIS_routing_writerestart(n)
+                if(LIS_rc%DAincrMode(n).eq.1) then 
+                   call LIS_routing_writerestart(n)
+                endif
                 call updateIncrementsFlag(n)
              endif
           enddo
