@@ -715,7 +715,11 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK Add WWMCA GRIB1 option
      integer :: read_wwmca_grib1
-     
+
+     ! EMK Add GFS-to-GALWEM bias correction
+     integer :: back_bias_corr
+     real, allocatable :: pcp_back_bias_ratio(:,:)
+     integer :: pcp_back_bias_ratio_month
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)
