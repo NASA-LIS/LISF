@@ -27,6 +27,7 @@ module LDT_climateParmsMod
 !
 !  08 Aug 2005: Sujay Kumar; Initial implementation
 !  08 Oct 2012: Kristi Arsenault; Expanded for forcing climatology datasets
+!  28 Jun 2022: Eric Kemp; Added NAFPA GFS and GALWEM background datasets.
 !
   use ESMF
   use LDT_coreMod
@@ -74,6 +75,8 @@ module LDT_climateParmsMod
      character(len=LDT_CONST_PATH_LEN) :: climtminfile
      character(len=LDT_CONST_PATH_LEN) :: climelevfile
 
+     integer :: climpptimonth
+
      ! Climate parameters
      type(LDT_paramEntry) :: climppt     ! Precipitation climatology (LIS-domain)
      type(LDT_paramEntry) :: climppt2     ! Precipitation climatology (LIS-domain)
@@ -92,11 +95,19 @@ contains
     character*100   :: source
     integer         :: rc,output_ratio
     integer         :: n
-    
+
     allocate(LDT_climate_struc(LDT_rc%nnest))
     output_ratio = 0
     call ESMF_ConfigFindLabel(LDT_config,"PPT climatology data source 2:",rc=rc)
-    if (rc == 0) output_ratio =1
+    ! EMK...Check source of second climatology.  Don't just assume NLDAS
+    if (rc == 0) then
+       output_ratio =1
+       do n=1,LDT_rc%nnest
+          call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
+          call LDT_set_param_attribs(rc,LDT_climate_struc(n)%climppt2,&
+               "PPT_ratio", source)
+       enddo
+    end if
     call ESMF_ConfigFindLabel(LDT_config,"PPT climatology data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
@@ -176,6 +187,11 @@ contains
     logical            :: climppt_select
     logical            :: climtmin_select
     logical            :: climtmax_select
+    real :: ratio
+
+    external :: setClimateParmsFullnames
+    external :: readclimppt
+    external :: read_nldas_climppt
 
 ! __________________________________________________________________
 
@@ -205,18 +221,24 @@ contains
          call LDT_verify(rc,'PPT climatology maps: not specified')
       enddo
 
-      call ESMF_ConfigFindLabel(LDT_config,"NLDAS PPT climatology maps:",rc=rc)
       do n=1,LDT_rc%nnest
-        if (LDT_climate_struc(n)%output_climppt_ratio >0) then
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptdir2,rc=rc)
-         call LDT_verify(rc,'NLDAS PPT climatology maps: not specified')
-
-         call ESMF_ConfigFindLabel(LDT_config,"Climate params spatial transform 2:",rc=rc)
-         call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform2,&
-              rc=rc)
-         call LDT_verify(rc,&
-              'Climate params spatial transform 2: option not specified in the config file')
-        end if
+         if (LDT_climate_struc(n)%output_climppt_ratio >0) then
+            ! EMK...Legacy NLDAS logic
+            if (trim(LDT_climate_struc(n)%climppt2%source) .eq. "NLDAS") then
+               call ESMF_ConfigFindLabel(LDT_config,"NLDAS PPT climatology maps:",rc=rc)
+               call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptdir2,rc=rc)
+               call ESMF_ConfigFindLabel(LDT_config,"NLDAS PPT climatology maps:",rc=rc)
+            else
+               call ESMF_ConfigFindLabel(LDT_config,"PPT climatology maps 2:",rc=rc)
+               call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%climpptdir2,rc=rc)
+               call ESMF_ConfigFindLabel(LDT_config,"PPT climatology maps 2:",rc=rc)
+            end if
+            call ESMF_ConfigFindLabel(LDT_config,"Climate params spatial transform 2:",rc=rc)
+            call ESMF_ConfigGetAttribute(LDT_config,LDT_climate_struc(n)%clim_gridtransform2,&
+                 rc=rc)
+            call LDT_verify(rc,&
+                 'Climate params spatial transform 2: option not specified in the config file')
+         end if
       enddo
 
       LDT_rc%monthlyData = .false.
@@ -372,45 +394,114 @@ contains
                     LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)//&
                         trim(mon2d(k))
-                  case default
+                 case ("NAFPA_BACK_GALWEM")
+                    LDT_climate_struc(n)%climpptfile = &
+                         trim(LDT_climate_struc(n)%climpptdir)
+                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+!                 case ("NAFPA_BACK_GFS")
+!                    LDT_climate_struc(n)%climpptfile = &
+!                         trim(LDT_climate_struc(n)%climpptdir)
+!                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                 case default
                     write(LDT_logunit,*) "[ERR] PPT Climatology Source Not Recognized"
                     write(LDT_logunit,*) trim(LDT_climate_struc(n)%climppt%source)
                     write(LDT_logunit,*) " Program stopping ..."
-                    call LDT_endrun    
+                    call LDT_endrun
                 end select
-               if (LDT_climate_struc(n)%output_climppt_ratio>0) & 
-                    LDT_climate_struc(n)%climpptfile2 = &
-                        trim(LDT_climate_struc(n)%climpptdir2)//'.'//&
-                        trim(months(k))//'.txt'
 
-             !- Read monthly climatology files:
-                write(LDT_logunit,*) "Reading "//trim(LDT_climate_struc(n)%climpptfile)
+                if (LDT_climate_struc(n)%output_climppt_ratio>0) then
+
+                   select case( trim(LDT_climate_struc(n)%climppt2%source) )
+                   case( "NLDAS" )
+                      LDT_climate_struc(n)%climpptfile2 = &
+                           trim(LDT_climate_struc(n)%climpptdir2)//'.'//&
+                           trim(months(k))//'.txt'
+                   !case ("NAFPA_BACK_GALWEM")
+                   !   LDT_climate_struc(n)%climpptfile2 = &
+                   !        trim(LDT_climate_struc(n)%climpptdir2)
+                   !   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                   case ("NAFPA_BACK_GFS")
+                      LDT_climate_struc(n)%climpptfile2 = &
+                           trim(LDT_climate_struc(n)%climpptdir2)
+                      read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                   case default
+                      write(LDT_logunit,*) "[ERR] PPT Climatology Source 2 Not Recognized"
+                      write(LDT_logunit,*) trim(LDT_climate_struc(n)%climppt2%source)
+                      write(LDT_logunit,*) " Program stopping ..."
+                      call LDT_endrun
+                   end select
+
+
+                end if
+
+               !- Read monthly climatology files:
+               write(LDT_logunit,*) "Reading "//trim(LDT_climate_struc(n)%climpptfile)
 
              !- For LIS Run domain:
-                call readclimppt( trim(LDT_climate_struc(n)%climppt%source)//char(0),&
+               call readclimppt( trim(LDT_climate_struc(n)%climppt%source)//char(0),&
                      n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
                      LDT_climate_struc(n)%climppt%value(:,:,k) )
 
-                  !if the second climatology file exists, calculuate the ratios of the two
-                   if (LDT_climate_struc(n)%output_climppt_ratio>0) then
+                !if the second climatology file exists, calculuate the ratios of the two
+                if (LDT_climate_struc(n)%output_climppt_ratio>0) then
 
-                       !- Read NLDAS PPT climatology for LIS Run domain:
+                   !EMK Preserve legacy NLDAS logic
+                   if (trim(LDT_climate_struc(n)%climppt2%source) .eq. "NLDAS") then
+                      !- Read NLDAS PPT climatology for LIS Run domain:
                       write(LDT_logunit,*) "Reading "//trim(LDT_climate_struc(n)%climpptfile2)
                       call read_NLDAS_climppt(n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
                            LDT_climate_struc(n)%climppt2%value(:,:,k))
-                      !calculate the ratio
-                        do ir =1,LDT_rc%lnr(n) 
-                           do ic=1,LDT_rc%lnc(n)
-                             if (LDT_climate_struc(n)%climppt%value(ic,ir,k).ne.LDT_rc%udef .and. &
-                                     LDT_climate_struc(n)%climppt2%value(ic,ir,k).ne.LDT_rc%udef) then
-                                LDT_climate_struc(n)%climppt%value(ic,ir,k) = LDT_climate_struc(n)%climppt%value(ic,ir,k)/ &
-                                                    LDT_climate_struc(n)%climppt2%value(ic,ir,k)
-                             else
-                                LDT_climate_struc(n)%climppt%value(ic,ir,k)=1.0
-                             end if
-                           end do
-                        end do
+                   else
+                      call readclimppt( trim(LDT_climate_struc(n)%climppt2%source)//char(0),&
+                           n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
+                           LDT_climate_struc(n)%climppt2%value(:,:,k) )
                    end if
+
+                   !calculate the ratio
+                   do ir =1,LDT_rc%lnr(n)
+                      do ic=1,LDT_rc%lnc(n)
+                         ! Handle data voids
+                         if (LDT_climate_struc(n)%climppt%value(ic,ir,k).eq.LDT_rc%udef .or. &
+                              LDT_climate_struc(n)%climppt2%value(ic,ir,k).eq.LDT_rc%udef) then
+                            ratio = 1.0
+
+                         ! If both datasets average less than a monthly trace,
+                         ! treat as a data void.
+                         else if (LDT_climate_struc(n)%climppt%value(ic,ir,k) .lt. 0.1 .and. &
+                              LDT_climate_struc(n)%climppt%value(ic,ir,k) .lt. 0.1) then
+                            ratio = 1.0
+                         ! If top dataset has less than a monthly trace, but
+                         ! the bottom dataset has more, assume a trace for
+                         ! the top (prevent zero bias ratio).
+                         else if (LDT_climate_struc(n)%climppt%value(ic,ir,k) .lt. 0.1) then
+                            ratio = 0.1 / &
+                                 LDT_climate_struc(n)%climppt2%value(ic,ir,k) + 0.1
+                         ! If bottom dataset has less than a monthly trace, but
+                         ! the top dataset has more, assume a trace for
+                         ! the bottom (prevent divide by zero).
+                         else if (LDT_climate_struc(n)%climppt2%value(ic,ir,k) .lt. 0.1) then
+                            ratio = LDT_climate_struc(n)%climppt%value(ic,ir,k) / &
+                                 (0.1)
+                         ! Normal bias ratio.
+                         else
+                            ratio = LDT_climate_struc(n)%climppt%value(ic,ir,k) / &
+                                 LDT_climate_struc(n)%climppt2%value(ic,ir,k)
+
+                         end if
+
+                         ! if (ratio .gt. 10) then
+                         !    write(LDT_logunit,*) &
+                         !         'EMK: ic,ir,k,top,bottom,diff,ratio = ', ic, ir, k, &
+                         !         LDT_climate_struc(n)%climppt%value(ic,ir,k), &
+                         !         LDT_climate_struc(n)%climppt2%value(ic,ir,k), &
+                         !         LDT_climate_struc(n)%climppt%value(ic,ir,k) - &
+                         !         LDT_climate_struc(n)%climppt2%value(ic,ir,k), &
+                         !         ratio
+                         ! end if
+                         LDT_climate_struc(n)%climppt%value(ic,ir,k) = ratio
+                      end do
+                   end do
+                end if
 
              !- For Forcing domains:
                 if( LDT_rc%nmetforc > 0 ) then
