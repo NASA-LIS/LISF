@@ -163,6 +163,7 @@ contains
 ! !USES:
     use LDT_fileIOMod
     use LDT_logMod,    only : LDT_verify
+    use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt2
     use LDT_paramOptCheckMod, only: LDT_climateOptChecks, &
                        LDT_gridOptChecks
 
@@ -508,9 +509,14 @@ contains
                       call read_NLDAS_climppt(n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
                            LDT_climate_struc(n)%climppt2%value(:,:,k))
                     else
-                      call readclimppt( trim(LDT_climate_struc(n)%climppt2%source)//char(0),&
-                           n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
-                           LDT_climate_struc(n)%climppt2%value(:,:,k) )
+
+                       call LDT_read_NAFPA_back_gfs_climppt2(n, &
+                            LDT_rc%lnc(n), LDT_rc%lnr(n), &
+                            LDT_rc%gridDesc(n,:), &
+                            LDT_climate_struc(n)%climppt2%value(:,:,k))
+                       !call readclimppt( trim(LDT_climate_struc(n)%climppt2%source)//char(0),&
+                       !    n, LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%gridDesc(n,:), &
+                       !    LDT_climate_struc(n)%climppt2%value(:,:,k) )
                     end if
 
                     !calculate the ratio
