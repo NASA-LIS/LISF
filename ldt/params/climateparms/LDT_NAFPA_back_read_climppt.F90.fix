@@ -24,7 +24,7 @@ subroutine LDT_read_NAFPA_back_gfs_climppt(nest, ncols_out, nrows_out, &
 
   ! Imports
   use LDT_climateParmsMod, only: LDT_climate_struc
-  use LDT_NAFPA_back_climpptMod, only LDT_NAFPA_back_climppt_t
+  use LDT_NAFPA_back_climpptMod, only: LDT_NAFPA_back_climppt_t
 
   ! Defaults
   implicit none
