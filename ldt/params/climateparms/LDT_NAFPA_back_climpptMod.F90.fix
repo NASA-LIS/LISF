@@ -161,13 +161,13 @@ contains
     ! Arguments
     class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
     integer, intent(in) :: nest
+    integer, intent(in) :: imonth
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(out) :: pcp_out(ncols_out, nrows_out)
     character(*), intent(in) :: source
 
     ! Locals
-    integer :: imonth
     integer :: ipass
     integer :: iyear
     character(255) :: filename
@@ -193,8 +193,6 @@ contains
          2021, 2021, 2021, 2021, 2021, 2021/)
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
-
-    imonth = LDT_climate_struc(nest)%climpptimonth
 
     ! Loop through each year for the selected month.  The years vary
     ! depending on whether we have GFS or GALWEM data.

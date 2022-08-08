@@ -10,36 +10,24 @@
 
 #include "LDT_misc.h"
 
-module LDT_NAFPA_back_read_climpptMod
+! DESCRIPTION:
+! This module implements routines to read, average, and interpolate monthly
+! precipitation values from NAFPA background fields (GFS and GALWEM),
+! already processed by LVT.
+!
+! REVISION HISTORY:
+! 08 Aug 2022: Eric Kemp/SSAI: First version.
 
-  ! DESCRIPTION:
-  ! This module implements routines to read, average, and interpolate monthly
-  ! precipitation values from NAFPA background fields (GFS and GALWEM),
-  ! already processed by LVT.
-  !
-  ! REVISION HISTORY:
-  ! 08 Aug 2022: Eric Kemp/SSAI: First version.
+! Public readers
+subroutine LDT_read_NAFPA_back_gfs_climppt(nest, ncols_out, nrows_out, &
+     gridDesc_out, pcp_out)
+
+  ! Imports
+  use LDT_climateParmsMod, only: LDT_climate_struc
+  use LDT_NAFPA_back_climpptMod, only LDT_NAFPA_back_climppt_t
 
   ! Defaults
   implicit none
-  private
-
-  ! Public readers
-  public :: LDT_read_NAFPA_back_gfs_climppt
-  public :: LDT_read_NAFPA_back_gfs_climppt2
-  public :: LDT_read_NAFPA_back_galwem_climppt
-
-contains
-
-  ! Public readers
-  subroutine LDT_read_NAFPA_back_gfs_climppt(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_NAFPA_back_climpptMod, only LDT_NAFPA_back_climppt_t
-
-    ! Defaults
-    implicit none
 
     ! Arguments
     integer, intent(in) :: nest
@@ -53,7 +41,8 @@ contains
     integer :: imonth
 
     call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    call nafpa_back%process(nest, ncols_out, nrows_out, pcp_out, "GFS")
+    imonth = LDT_climate_struc(nest)%climpptimonth
+    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, "GFS")
     call nafpa_back%delete()
 
   end subroutine LDT_read_NAFPA_back_gfs_climppt
@@ -63,6 +52,7 @@ contains
        gridDesc_out, pcp_out)
 
     ! Imports
+    use LDT_climateParmsMod
     use LDT_NAFPA_back_climpptMod, only LDT_NAFPA_back_climppt_t
 
     ! Defaults
@@ -86,13 +76,14 @@ contains
          "GFS")
     call nafpa_back%delete()
 
-  end subroutine LDT_read_NAFPA_back_gfs_climppt
+  end subroutine LDT_read_NAFPA_back_gfs_climppt2
 
     ! Public reader
   subroutine LDT_read_NAFPA_back_galwem_climppt(nest, ncols_out, nrows_out, &
        gridDesc_out, pcp_out)
 
     ! Imports
+    use LDT_climateParmsMod
     use LDT_NAFPA_back_climpptMod, only LDT_NAFPA_back_climppt_t
 
     ! Defaults
@@ -110,7 +101,8 @@ contains
     integer :: imonth
 
     call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    call nafpa_back%process(nest, ncols_out, nrows_out, pcp_out, &
+    imonth = LDT_climate_struc(nest)%climpptimonth
+    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
          "GALWEM")
     call nafpa_back%delete()
 
