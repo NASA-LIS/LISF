@@ -145,7 +145,7 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
   ! Handle processing of one month of NAFPA background precipitation data
-  subroutine LDT_NAFPA_back_climppt_process(this, nest, &
+  subroutine LDT_NAFPA_back_climppt_process(this, nest, imonth, &
        ncols_out, nrows_out, pcp_out, source)
 
     ! Imports
