@@ -163,7 +163,6 @@ contains
 ! !USES:
     use LDT_fileIOMod
     use LDT_logMod,    only : LDT_verify
-    use LDT_NAFPA_back_read_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt2
     use LDT_paramOptCheckMod, only: LDT_climateOptChecks, &
                        LDT_gridOptChecks
 
@@ -196,7 +195,7 @@ contains
     external :: setClimateParmsFullnames
     external :: readclimppt
     external :: read_nldas_climppt
-
+    external :: LDT_read_NAFPA_back_gfs_climppt2
 ! __________________________________________________________________
 
 
