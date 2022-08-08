@@ -19,6 +19,7 @@ module LDT_NAFPA_back_climpptMod
   !
   ! REVISION HISTORY:
   ! 13 May 2022: Eric Kemp/SSAI: First version.
+  ! 08 Aug 2022: Eric Kemp/SSAI: Moved public readers to new module.
 
   ! Defaults
   implicit none
@@ -47,100 +48,7 @@ module LDT_NAFPA_back_climpptMod
      procedure :: process => LDT_NAFPA_back_climppt_process
   end type LDT_NAFPA_back_climppt_t
 
-  ! Public readers that use the object under the hood
-  public :: LDT_read_NAFPA_back_gfs_climppt
-  public :: LDT_read_NAFPA_back_gfs_climppt2
-  public :: LDT_read_NAFPA_back_galwem_climppt
-
 contains
-
-  ! Public readers
-  subroutine LDT_read_NAFPA_back_gfs_climppt(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_climateParmsMod, only: LDT_climate_struc
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    integer, intent(in) :: nest
-    integer, intent(in) :: ncols_out
-    integer, intent(in) :: nrows_out
-    real, intent(in) :: gridDesc_out(20)
-    real, intent(out) :: pcp_out(ncols_out, nrows_out)
-
-    ! Locals
-    type(LDT_nafpa_back_climppt_t) :: nafpa_back
-    integer :: imonth
-
-    call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    imonth = LDT_climate_struc(nest)%climpptimonth
-    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
-         "GFS")
-    call nafpa_back%delete()
-
-  end subroutine LDT_read_NAFPA_back_gfs_climppt
-
-  ! GFS reader for second climatology data source
-  subroutine LDT_read_NAFPA_back_gfs_climppt2(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_climateParmsMod, only: LDT_climate_struc
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    integer, intent(in) :: nest
-    integer, intent(in) :: ncols_out
-    integer, intent(in) :: nrows_out
-    real, intent(in) :: gridDesc_out(20)
-    real, intent(out) :: pcp_out(ncols_out, nrows_out)
-
-    ! Locals
-    type(LDT_nafpa_back_climppt_t) :: nafpa_back
-    integer :: imonth
-
-    call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out, &
-         source2="GFS")
-    imonth = LDT_climate_struc(nest)%climpptimonth
-    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
-         "GFS")
-    call nafpa_back%delete()
-
-  end subroutine LDT_read_NAFPA_back_gfs_climppt
-
-    ! Public reader
-  subroutine LDT_read_NAFPA_back_galwem_climppt(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_climateParmsMod, only: LDT_climate_struc
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    integer, intent(in) :: nest
-    integer, intent(in) :: ncols_out
-    integer, intent(in) :: nrows_out
-    real, intent(in) :: gridDesc_out(20)
-    real, intent(out) :: pcp_out(ncols_out, nrows_out)
-
-    ! Locals
-    type(LDT_nafpa_back_climppt_t) :: nafpa_back
-    integer :: imonth
-
-    call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    imonth = LDT_climate_struc(nest)%climpptimonth
-    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
-         "GALWEM")
-    call nafpa_back%delete()
-
-  end subroutine LDT_read_NAFPA_back_galwem_climppt
 
   ! Constructor method
   subroutine LDT_NAFPA_back_climppt_new(this, nest, ncols_out, nrows_out, &
@@ -237,7 +145,7 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
   ! Handle processing of one month of NAFPA background precipitation data
-  subroutine LDT_NAFPA_back_climppt_process(this, nest, imonth, &
+  subroutine LDT_NAFPA_back_climppt_process(this, nest, &
        ncols_out, nrows_out, pcp_out, source)
 
     ! Imports
@@ -253,13 +161,13 @@ contains
     ! Arguments
     class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
     integer, intent(in) :: nest
-    integer, intent(in) :: imonth
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(out) :: pcp_out(ncols_out, nrows_out)
     character(*), intent(in) :: source
 
     ! Locals
+    integer :: imonth
     integer :: ipass
     integer :: iyear
     character(255) :: filename
@@ -285,6 +193,8 @@ contains
          2021, 2021, 2021, 2021, 2021, 2021/)
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
+
+    imonth = LDT_climate_struc(nest)%climpptimonth
 
     ! Loop through each year for the selected month.  The years vary
     ! depending on whether we have GFS or GALWEM data.
@@ -529,4 +439,5 @@ contains
          trim(this%topdir_input), &
          '/SUM_TS.', iyear_file, imonth_file, '010000.d01.nc'
   end subroutine create_filename
+
 end module LDT_NAFPA_back_climpptMod
