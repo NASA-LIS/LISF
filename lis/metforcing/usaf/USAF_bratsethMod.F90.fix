@@ -799,7 +799,7 @@ contains
 
          call AGRMET_julhr_date10(j3hr, yyyymmddhh)
 
-         ! EMK...Fetch GFS-to-GALWEM bias ratio if requested
+         ! EMK...Fetch GALWEM-to-GFS bias ratio if requested
          if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
             call USAF_pcpBackBiasRatio_s2s(nest, yyyymmddhh)
          end if
@@ -851,7 +851,7 @@ contains
                ierr = rc
             end if
 
-            ! Apply GFS-to-GALWEM bias correction to background field
+            ! Apply GALWEM-to-GFS bias correction to background field
             if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
                write(LIS_logunit,*) &
                    '[INFO] Applying GALWEM-based bias correction to GFS precip'
