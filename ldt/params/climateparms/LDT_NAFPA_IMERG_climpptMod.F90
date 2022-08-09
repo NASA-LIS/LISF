@@ -10,24 +10,24 @@
 
 #include "LDT_misc.h"
 
-module LDT_NAFPA_back_climpptMod
+module LDT_NAFPA_IMERG_climpptMod
 
   ! DESCRIPTION:
   ! This module implements routines to read, average, and interpolate monthly
-  ! precipitation values from NAFPA background fields (GFS and GALWEM),
-  ! already processed by LVT.
+  ! precipitation values from monthly IMERG fields mapped to the NAFPA grid,
+  ! already preprocessed by LVT.
   !
   ! REVISION HISTORY:
-  ! 13 May 2022: Eric Kemp/SSAI: First version.
-  ! 08 Aug 2022: Eric Kemp/SSAI: Moved public readers to new module.
+  ! 22 Jul 2022: Eric Kemp/SSAI: First version.
+  ! 27 Jul 2022: Eric Kemp/SSAI: Revised start/end dates.
 
   ! Defaults
   implicit none
   private
 
-  ! Class type for reading NAFPA background fields from LVT files,
+  ! Class type for reading NAFPA IMERG fields from LVT files,
   ! interpolating to LIS grid, summing, and averaging each month
-  type, public :: LDT_NAFPA_back_climppt_t
+  type, public :: LDT_NAFPA_IMERG_climppt_t
      private
      character(255) :: topdir_input
      integer :: nlat_input
@@ -40,51 +40,69 @@ module LDT_NAFPA_back_climpptMod
      real, allocatable :: pcp_out(:,:)
      integer :: count
      real :: missing_value_input
-     character(6) :: source ! GFS or GALWEM
    contains
      ! Object methods
-     procedure :: new => LDT_NAFPA_back_climppt_new
-     procedure :: delete => LDT_NAFPA_back_climppt_delete
-     procedure :: process => LDT_NAFPA_back_climppt_process
-  end type LDT_NAFPA_back_climppt_t
+     procedure :: new => LDT_NAFPA_IMERG_climppt_new
+     procedure :: delete => LDT_NAFPA_IMERG_climppt_delete
+     procedure :: process => LDT_NAFPA_IMERG_climppt_process
+  end type LDT_NAFPA_IMERG_climppt_t
+
+  ! Public readers that use the object under the hood
+  public :: LDT_read_NAFPA_IMERG_climppt
 
 contains
 
-  ! Constructor method
-  subroutine LDT_NAFPA_back_climppt_new(this, nest, ncols_out, nrows_out, &
-       gridDesc_out, source2)
+  ! Public reader
+  subroutine LDT_read_NAFPA_IMERG_climppt(nest, ncols_out, nrows_out, &
+       gridDesc_out, pcp_out)
 
     ! Imports
     use LDT_climateParmsMod, only: LDT_climate_struc
-    use LDT_logMod, only: LDT_logunit, LDT_endrun
+    use LDT_logMod, only: LDT_logunit
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
     integer, intent(in) :: nest
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(in) :: gridDesc_out(20)
-    character(*), intent(in), optional :: source2
+    real, intent(out) :: pcp_out(ncols_out, nrows_out)
 
-    ! Usually the requested data is the first climatology, but it is
-    ! possible GFS is requested for the second climatology.  We handle
-    ! this below.
-    if (present(source2)) then
-       if (trim(source2) .eq. "GFS") then
-          this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir2)
-       else
-          write(LDT_logunit,*) &
-               '[ERR] Invalid NAFPA Background source for second climatology!'
-          write(LDT_logunit,*) &
-               '[ERR] Expected GFS, but received ', trim(source2)
-          call LDT_endrun()
-       end if
-    else
-       this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir)
-    end if
+    ! Locals
+    type(LDT_nafpa_imerg_climppt_t) :: nafpa_imerg
+    integer :: imonth
+    character(3) :: months(12)
+    months = (/'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', &
+         'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'/)
+
+    call nafpa_imerg%new(nest, ncols_out, nrows_out, gridDesc_out)
+    imonth = LDT_climate_struc(nest)%climpptimonth
+    write(LDT_logunit,*)'[INFO] Processing IMERG data for ', months(imonth)
+    call nafpa_imerg%process(nest, imonth, ncols_out, nrows_out, pcp_out)
+    call nafpa_imerg%delete()
+
+  end subroutine LDT_read_NAFPA_IMERG_climppt
+
+  ! Constructor method
+  subroutine LDT_NAFPA_IMERG_climppt_new(this, nest, ncols_out, nrows_out, &
+       gridDesc_out)
+
+    ! Imports
+    use LDT_climateParmsMod, only: LDT_climate_struc
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    class(LDT_NAFPA_IMERG_climppt_t), intent(inout) :: this
+    integer, intent(in) :: nest
+    integer, intent(in) :: ncols_out
+    integer, intent(in) :: nrows_out
+    real, intent(in) :: gridDesc_out(20)
+
+    this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir)
 
     ! Set up NAFPA n1280 grid.
     this%nlat_input = 1920
@@ -116,16 +134,16 @@ contains
     ! and averaged.
     this%count = 0
     this%missing_value_input = 0
-  end subroutine LDT_NAFPA_back_climppt_new
+  end subroutine LDT_NAFPA_IMERG_climppt_new
 
   ! Destructor method
-  subroutine LDT_NAFPA_back_climppt_delete(this)
+  subroutine LDT_NAFPA_IMERG_climppt_delete(this)
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
+    class(LDT_NAFPA_IMERG_climppt_t), intent(inout) :: this
 
     ! Clean up data structure
     this%topdir_input = 'NULL'
@@ -140,32 +158,32 @@ contains
     this%count = 0
     this%missing_value_input = 0
 
-  end subroutine LDT_NAFPA_back_climppt_delete
+  end subroutine LDT_NAFPA_IMERG_climppt_delete
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-  ! Handle processing of one month of NAFPA background precipitation data
-  subroutine LDT_NAFPA_back_climppt_process(this, nest, imonth, &
-       ncols_out, nrows_out, pcp_out, source)
+  ! Handle processing of one month of NAFPA IMERG precipitation data
+  subroutine LDT_NAFPA_IMERG_climppt_process(this, nest, imonth, &
+       ncols_out, nrows_out, pcp_out)
 
     ! Imports
     use ESMF
     use LDT_climateParmsMod, only: LDT_climate_struc
     use LDT_coreMod, only: LDT_rc, LDT_domain
     use LDT_logMod, only: LDT_logunit, LDT_endrun
+    use map_utils, only: ij_to_latlon
     use netcdf
 
     ! Defaults
     implicit none
 
     ! Arguments
-    class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
+    class(LDT_NAFPA_IMERG_climppt_t), intent(inout) :: this
     integer, intent(in) :: nest
     integer, intent(in) :: imonth
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(out) :: pcp_out(ncols_out, nrows_out)
-    character(*), intent(in) :: source
 
     ! Locals
     integer :: ipass
@@ -187,24 +205,25 @@ contains
     real, allocatable :: w212(:,:), w222(:,:)
     integer :: mi, mo
     integer :: i, j, ij
-    integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
-         2018, 2018, 2018, 2017, 2017, 2017/)
-    integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
-         2021, 2021, 2021, 2021, 2021, 2021/)
+    !integer :: iyear_start(12) = (/2018, 2018, 2018, 2018, 2018, 2018, &
+    !     2018, 2018, 2018, 2017, 2017, 2017/)
+    !integer :: iyear_end(12)   = (/2022, 2022, 2022, 2022, 2022, 2021, &
+    !     2021, 2021, 2021, 2021, 2021, 2021/)
+    ! Overlap between IMERG-ER V06 and CHELSAV21
+    integer :: iyear_start(12) = (/2001, 2001, 2001, 2001, 2001, 2000, &
+         2000, 2000, 2000, 2000, 2000, 2000/)
+    integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
+         2018, 2018, 2018, 2018, 2018, 2018/)
+
+    integer, allocatable :: counts(:,:)
+    real :: rlat, rlon
     external :: upscaleByAveraging_input, upscaleByAveraging
     external :: conserv_interp_input, conserv_interp
 
-    ! Loop through each year for the selected month.  The years vary
-    ! depending on whether we have GFS or GALWEM data.
+    ! Loop through each year for the selected month.
+    allocate(counts(this%ncols_out, this%nrows_out))
+    counts = 0
     ipass = 0
-    if (trim(source) .ne. 'GFS' .and. &
-         trim(source) .ne. 'GALWEM') then
-       write(LDT_logunit,*)'[ERR] Invalid NAFPA background source selected!'
-       write(LDT_logunit,*)'[ERR] Supported options are GFS, GALWEM'
-       write(LDT_logunit,*)'[ERR] Found ', trim(source)
-       call LDT_endrun()
-    end if
-
     do iyear = iyear_start(imonth), iyear_end(imonth)
 
        ! Read data from LVT netCDF file.
@@ -250,7 +269,7 @@ contains
           if (ipass .eq. 1) then
              allocate(n11(mi)) ; n11 = 0
              write(ldt_logunit,*) &
-                  '[INFO] Averaging NAFPA background data to LDT grid'
+                  '[INFO] Averaging NAFPA IMERG data to LDT grid'
              call upscaleByAveraging_input(this%gridDesc_input, &
                   this%gridDesc_out, mi, mo, n11)
              allocate(gi1(mi))
@@ -279,10 +298,14 @@ contains
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
                 ij = i + (j-1)*this%ncols_out
-                if (go1(ij) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                ! if (go1(ij) < 0.) then
+                !    this%pcp_out(i,j) = LDT_rc%udef
+                ! else
+                !    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                ! end if
+                if (go1(ij) .ge. 0) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -298,7 +321,7 @@ contains
              allocate( w112(mo,25), w122(mo,25), w212(mo,25), w222(mo,25) )
              w112 = 0; w122 = 0; w212 = 0; w222 = 0
              write(ldt_logunit,*) &
-                  '[INFO] Averaging NAFPA background data to LDT grid'
+                  '[INFO] Averaging NAFPA IMERG data to LDT grid'
              call conserv_interp_input(nest, this%gridDesc_input, &
                   n112, n122, n212, n222, w112, w122, w212, w222 )
           end if
@@ -325,10 +348,14 @@ contains
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
                 ij = i + (j-1)*this%ncols_out
-                if (go1(ij) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                !if (go1(ij) < 0.) then
+                !   this%pcp_out(i,j) = LDT_rc%udef
+                !else
+                !   this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                !end if
+                if (go1(ij) .ge. 0) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + go1(ij)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -337,10 +364,14 @@ contains
 
           do j = 1, this%nrows_out
              do i = 1, this%ncols_out
-                if (this%pcp_input(i,j) < 0.) then
-                   this%pcp_out(i,j) = LDT_rc%udef
-                else
+                !if (this%pcp_input(i,j) < 0.) then
+                !   this%pcp_out(i,j) = LDT_rc%udef
+                !else
+                !   this%pcp_out(i,j) = this%pcp_out(i,j) + this%pcp_input(i,j)
+                !end if
+                if (this%pcp_input(i,j) .ge. 0.) then
                    this%pcp_out(i,j) = this%pcp_out(i,j) + this%pcp_input(i,j)
+                   counts(i,j) = counts(i,j) + 1
                 end if
              end do
           end do
@@ -370,12 +401,23 @@ contains
     if (allocated(w212)) deallocate(w212)
     if (allocated(w222)) deallocate(w222)
 
-    ! Calculate average value
+    ! Calculate average value.  But screen out high latitudes.
     do j = 1, this%nrows_out
        do i = 1, this%ncols_out
-          if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
-             this%pcp_out(i,j) = &
-                  this%pcp_out(i,j) / real(ipass)
+          call ij_to_latlon(LDT_domain(nest)%ldtproj, float(i), float(j), &
+               rlat, rlon)
+          !EMK TEST...See if high latitudes should be screened out.
+          !if (abs(rlat) > 60.) then
+          !   this%pcp_out(i,j) = LDT_rc%udef
+          !end if
+          !if (this%pcp_out(i,j) .ne. LDT_rc%udef) then
+          !   this%pcp_out(i,j) = &
+          !        this%pcp_out(i,j) / real(ipass)
+          !end if
+          if (counts(i,j) > 0) then
+             this%pcp_out(i,j) = this%pcp_out(i,j) / real(counts(i,j))
+          else
+             this%pcp_out(i,j) = LDT_rc%udef
           end if
        end do
     end do
@@ -385,29 +427,30 @@ contains
           pcp_out(i,j) = this%pcp_out(i,j)
        end do
     end do
-  end subroutine LDT_NAFPA_back_climppt_process
+
+    if (allocated(counts)) deallocate(counts)
+  end subroutine LDT_NAFPA_IMERG_climppt_process
 
 #else
 
   ! Dummy subroutine if not compiled with netcdf
-  subroutine LDT_NAFPA_back_climppt_process(this, nest, imonth, &
-       ncols_out, nrows_out, pcp_out, gfs_or_galwem)
+  subroutine LDT_NAFPA_IMERG_climppt_process(this, nest, imonth, &
+       ncols_out, nrows_out, pcp_out)
     use LDT_logMod, only: ldt_logunit, LDT_endrun
     implicit none
-    class(LDT_NAFPA_back_climppt_t), intent(inout) :: this
+    class(LDT_NAFPA_IMERG_climppt_t), intent(inout) :: this
     integer, intent(in) :: nest
     integer, intent(in) :: imonth
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(out) :: pcp_out(ncols_out, nrows_out)
-    character(*), intent(in) :: gfs_or_galwem
     write(LDT_logunit,*)'[ERR] LDT was compiled without netCDF support!'
-    write(LDT_logunit,*)'[ERR] Cannot process NAFPA background files!'
+    write(LDT_logunit,*)'[ERR] Cannot process NAFPA IMERG files!'
     write(LDT_logunit,*) &
          '[ERR] Recompile LDT with netCDF support and try again.'
     write(LDT_logunit,*)'[ERR] Stopping...'
     call LDT_endrun()
-  end subroutine LDT_NAFPA_back_climppt_process
+  end subroutine LDT_NAFPA_IMERG_climppt_process
 #endif
 
   subroutine create_filename(this, imonth, iyear, filename)
@@ -416,7 +459,7 @@ contains
     implicit none
 
     ! Arguments
-    class(LDT_NAFPA_back_climppt_t), intent(in) :: this
+    class(LDT_NAFPA_IMERG_climppt_t), intent(in) :: this
     integer, intent(in) :: imonth
     integer, intent(in) :: iyear
     character(255), intent(out) :: filename
@@ -437,5 +480,4 @@ contains
          trim(this%topdir_input), &
          '/SUM_TS.', iyear_file, imonth_file, '010000.d01.nc'
   end subroutine create_filename
-
-end module LDT_NAFPA_back_climpptMod
+end module LDT_NAFPA_IMERG_climpptMod

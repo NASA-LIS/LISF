@@ -2102,7 +2102,7 @@ contains
     do m=LVT_rc%metric_sindex,LVT_rc%metric_eindex
        if(LVT_metricsPtr(m)%metricEntryPtr%timeOpt.eq.1.and.&
             LVT_metricsPtr(m)%metricEntryPtr%writeTS.eq.1.and.&
-            pass.eq.LVT_metricsPtr(m)%metricEntryPtr%npass) then 
+            pass.eq.LVT_metricsPtr(m)%metricEntryPtr%npass) then
           call writemetricentry(m,pass,0,model%selectNlevs,stats,obs)
        endif
     enddo

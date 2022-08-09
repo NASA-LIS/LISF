@@ -9,7 +9,7 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !------------------------------------------------------------------------------
-!NOTE:  Currently only V05B IMERG data are supported.
+!NOTE:  Currently only V06B IMERG data are supported.
 subroutine readIMERGdata(source)
 
    ! Imports
@@ -26,12 +26,12 @@ subroutine readIMERGdata(source)
 
    ! Defaults
    implicit none
-   
+
    ! Arguments
    integer,intent(in) :: source
 
    ! Local variables
-   integer             :: ftn 
+   integer             :: ftn
    character*100       :: filename
    logical             :: file_exists
    real                :: prcp_in(imergdata(source)%nc,imergdata(source)%nr)
@@ -71,16 +71,19 @@ subroutine readIMERGdata(source)
    call ESMF_TimeSet(time1,yy=yr1, mm=mo1, dd=da1, &
        h=hr1,m=mn1,s=ss1,calendar=LVT_calendar,rc=status)
    call LVT_verify(status)
-   ! If it is 00Z, use previous day's time level
-   if (mod(currtime,86400.0).eq.0) then
-      call ESMF_TimeIntervalSet(lis_ts, s = 86400, &
-           rc=status)
-      call LVT_verify(status)  
-   else
-      call ESMF_TimeIntervalSet(lis_ts, s = 0, &
-           rc=status)
-      call LVT_verify(status)  
-   end if
+   ! ! If it is 00Z, use previous day's time level
+   ! if (mod(currtime,86400.0).eq.0) then
+   !    call ESMF_TimeIntervalSet(lis_ts, s = 86400, &
+   !         rc=status)
+   !    call LVT_verify(status)  
+   ! else
+   !    call ESMF_TimeIntervalSet(lis_ts, s = 0, &
+   !         rc=status)
+   !    call LVT_verify(status)  
+   ! end if
+   ! EMK...Read file with accumulation starting 30 minutes prior.
+   call ESMF_TimeIntervalSet(lis_ts, s = 1800, rc=status)
+   call LVT_verify(status)
    time2 = time1 - lis_ts
    call ESMF_TimeGet(time2,yy=yr2, mm=mo2, dd=da2, &
         h=hr2,m=mn2,s=ss2,calendar=LVT_calendar, &
@@ -88,8 +91,11 @@ subroutine readIMERGdata(source)
    call LVT_verify(status)
 
    if (alarmCheck) then
+      !call create_IMERG_filename(imergdata(source)%odir, &
+      !                       yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
       call create_IMERG_filename(imergdata(source)%odir, &
-                             yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
+                             yr2,mo2,da2,hr2,mn2,filename,imergdata(source)%imergver)
+
       inquire(file=trim(filename),exist=file_exists)
 
       if(file_exists) then 
@@ -163,7 +169,8 @@ subroutine readIMERGdata(source)
    do r=1,LVT_rc%lnr
       do c=1,LVT_rc%lnc
          if(prcp_final(c,r).ge.0) then
-            prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            !prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            prcp_final(c,r) = prcp_final(c,r)*1800.0 !kg/m2 over 30 min
          else
             prcp_final(c,r) = LVT_rc%udef
          endif

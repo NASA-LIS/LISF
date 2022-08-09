@@ -997,18 +997,26 @@ contains
    end subroutine create_Imerg_HH_filename
 
    ! Driver routine to fetch 3hr IMERG data for given start date.
-   subroutine fetch3hrImergHH(j3hr, datadir, product, version, &
+   subroutine fetch3hrImergHH(n, j3hr, datadir, product, version, &
         plp_thresh, nest, sigmaOSqr, oErrScaleLength, net, platform, &
         precipObsData)
 
       ! Modules
-      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
+      use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_coreMod, only: LIS_domain, LIS_rc, lis_domain_type, &
+           LIS_masterproc
+      use LIS_logMod, only: LIS_logunit, LIS_alert, LIS_abort
+      use LIS_mpiMod
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
+      use map_utils, only: map_init, map_set, latlon_to_ij, PROJ_LATLON, &
+           proj_info
+      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
 
       ! Defaults
       implicit none
 
       ! Arguments
+      integer, intent(in) :: n
       integer, intent(in) :: j3hr
       character(len=*),intent(in) :: datadir
       character(len=*),intent(in) :: product
@@ -1030,6 +1038,15 @@ contains
       character(len=255) :: filename
       integer :: icount
       integer :: rc
+      integer :: c_imerg, r_imerg, c_lis, r_lis
+      real :: rlat_imerg, rlon_imerg
+      real :: dlat_lis, dlon_lis, ctrlat_lis, ctrlon_lis
+      integer :: gindex
+      real :: xpt, ypt
+      double precision :: t0,t1
+      type(proj_info) :: lisproj_global
+      character(100) :: message(20)
+      integer :: ierr
 
       ! Save the start time
       call LIS_julhr_date(j3hr, yr, mo, da, hr)
@@ -1082,6 +1099,76 @@ contains
          cur_time = cur_time + half_hour
 
       end do
+
+      ! Apply bias correction
+      if (agrmet_struc(n)%imerg_bias_corr .eq. 1) then
+
+#if (defined SPMD)
+         t0 = MPI_Wtime()
+#endif
+
+         write(LIS_logunit,*) &
+              '[INFO] Applying CHELSA-based bias correction to IMERG data...'
+
+         ! Create global LIS domain object
+         if (LIS_domain(n)%lisproj%code == PROJ_LATLON) then
+            call map_set(PROJ_LATLON, &
+                 LIS_rc%gridDesc(n,34), LIS_rc%gridDesc(n,35), &
+                 0.0, LIS_rc%gridDesc(n,39), LIS_rc%gridDesc(n,40), 0.0, &
+                 int(LIS_rc%gridDesc(n,32)), int(LIS_rc%gridDesc(n,33)), &
+                 lisproj_global)
+         else
+            ! Abort if unsupported map projection is used
+            write(LIS_logunit,*) &
+                 '[ERR] Non latlon projection unsupported by NAFPA!'
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program: LIS'
+            message(2) = '  Routine fetch3hrImergHH.'
+            message(3) = '  Invalid map projection selected'
+            if (LIS_masterproc) then
+               call LIS_alert( 'LIS.fetch3hrImergHH', 1, &
+                    message)
+               call LIS_abort(message)
+            end if
+#if ( defined SPMD )
+            call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+         endif
+
+         ! Need to determine global r,c of each observation.  Note that
+         ! IMERG array is row, column, and the imerg loops below reflect that.
+         do c_imerg = 1, imerg%nlons
+            rlon_imerg = imerg%swlon + (c_imerg - 1)*imerg%dlon
+            do r_imerg = 1, imerg%nlats
+               rlat_imerg = imerg%swlat + (r_imerg - 1)*imerg%dlat
+               if (imerg%precip_cal_3hr(r_imerg, c_imerg) .lt. 0) cycle
+
+               ! We now have the IMERG lat/lon.  Find the LIS grid box.
+               call latlon_to_ij(lisproj_global, &
+                    rlat_imerg, rlon_imerg, xpt, ypt)
+               c_lis = nint(xpt)
+               if (c_lis > LIS_rc%gnc(n)) then
+                  c_lis = c_lis - LIS_rc%gnc(n)
+               else if (c_lis < 1) then
+                  c_lis = c_lis + LIS_rc%gnc(n)
+               end if
+               r_lis = min(LIS_rc%gnr(n), max(1, nint(ypt)))
+
+               imerg%precip_cal_3hr(r_imerg,c_imerg) = &
+                    imerg%precip_cal_3hr(r_imerg,c_imerg) * &
+                    agrmet_struc(n)%pcp_imerg_bias_ratio(c_lis,r_lis)
+            end do
+         end do
+
+#if (defined SPMD)
+         t1 = MPI_Wtime()
+         write(LIS_logunit,*) &
+              '[INFO] Total elapsed time for applying bias correction is ', &
+              t1 - t0, ' seconds'
+#endif
+
+      end if
 
       ! Create obsData object.  For efficiency, allocate memory to match
       ! the total number of good 3-hr values
