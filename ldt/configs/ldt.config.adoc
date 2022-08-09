@@ -2865,10 +2865,10 @@ Climatology parameter maps
 
 |PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
 |WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
-|CHELSAV21 |Global climate layers downscaled. For more info, see: http://chelsa-climate.org/
-|NAFPA_BACK_GFS | Global GFS precipitation downscaled, used as background for NAFPA
-|NAFPA_BACK_GALWEM | Global GALWEM precipitation downscaled, used as background for NAFPA
-|NAFPA_IMERG | Global IMERG monthly precipitation remapped to NAFPA grid
+|CHELSAV21 |Global climate layers downscaled from Jun 2000 - Jun 2019. For more info, see: http://chelsa-climate.org/
+|NAFPA_BACK_GFS | Global GFS precipitation downscaled Oct 2017 - May 2022, used as background for NAFPA
+|NAFPA_BACK_GALWEM | Global GALWEM precipitation downscaled Oct 2017 - May 2022, used as background for NAFPA
+|NAFPA_IMERG | Global IMERG monthly precipitation Jun 2000 - Jun 2019 remapped to NAFPA grid
 
 |===
 
@@ -2888,20 +2888,20 @@ CHELSAV21: <directory>/<file header>_<imonth>_<iyear>_V.2.1.tif
 
 * The file header is CHELSA_pr
 * The imonth represents the month (01, 02, ..., 12)
-* The iyear represents the year (1979, 1980, ..., 2019).
+* The iyear represents the year (2000, 2001, ..., 2019).
 
 NAFPA_BACK_GFS: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
-* The iyear represents the year (2008, 2009, ..., 2017).
+* The iyear represents the year (2017, 2018, ..., 2022).
 * The imonth represents the month (01, 02, ..., 12)
 * NOTE: The iyear/imonth refers to the end of the previous month.
 
 NAFPA_BACK_GALWEM: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
-* The iyear represents the year (2017, 2018, ..., 2021).
+* The iyear represents the year (2017, 2018, ..., 2022).
 * The imonth represents the month (01, 02, ..., 12)
 * NOTE: The iyear/imonth refers to the end of the previous month.
 
 NAFPA_IMERG: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
-* The iyear represents the year (2017, 2018, ..., 2021).
+* The iyear represents the year (2000, 2001, ..., 2019).
 * The imonth represents the month (01, 02, ..., 12)
 * NOTE: The iyear/imonth refers to the end of the previous month.
 
@@ -2912,6 +2912,34 @@ NAFPA_IMERG: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
 PPT climatology data source:  PRISM
 PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
 PPT climatology interval:     monthly
+....
+
+`PPT climatology data source 2:` specifies the second monthly precipitation (PPT) climatology fields, for calculating bias ratios. Current source options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|NLDAS |NOAA NLDAS-2 fields
+|NAFPA_BACK_GFS| Global GFS precipitation downscaled Oct 2017 - May 2022, used as background for NAFPA
+|===
+
+`PPT climatology maps 2:` specifies the source of the second group climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
+
+NLDAS: <directory>/<file header>.<tag>.txt
+
+* The file header can be anything (such as ppt_1931_2010).
+* The tag should represent the month (such as jan, feb, mar, etc.).
+
+NAFPA_BACK_GFS: <directory>/SUM_TS.<iyear><imonth>010000.d01.nc
+* The iyear represents the year (2017, 2018, ..., 2022).
+* The imonth represents the month (01, 02, ..., 12)
+* NOTE: The iyear/imonth refers to the end of the previous month.
+
+.Example _ldt.config_ entry
+....
+PPT climatology data source 2:  NAFPA_BACK_GFS
+PPT climatology maps 2:  ./METRICS_GFS/
 ....
 
 `TMIN climatology maps:` specifies the source of the climatology based minimum temperature files.

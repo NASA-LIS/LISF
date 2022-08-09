@@ -1231,15 +1231,14 @@ contains
   subroutine LDT_climate_plugin
 !EOP
     use LDT_CHELSAV21_climpptMod, only: LDT_read_CHELSAV21_climppt
-    use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt, &
-         LDT_read_NAFPA_back_galwem_climppt
     use LDT_NAFPA_imerg_climpptMod, only: LDT_read_NAFPA_imerg_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
-
+    external :: LDT_read_NAFPA_back_gfs_climppt
+    external :: LDT_read_NAFPA_back_galwem_climppt
     external :: registerreadclimppt
-    
+
 ! !USES:
 !- Precipitation downscaling:
     call registerreadclimppt(trim(LDT_prismpptId)//char(0),&

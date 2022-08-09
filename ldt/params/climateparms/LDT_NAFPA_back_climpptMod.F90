@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@ module LDT_NAFPA_back_climpptMod
   !
   ! REVISION HISTORY:
   ! 13 May 2022: Eric Kemp/SSAI: First version.
+  ! 08 Aug 2022: Eric Kemp/SSAI: Moved public readers to new module.
 
   ! Defaults
   implicit none
@@ -47,76 +48,15 @@ module LDT_NAFPA_back_climpptMod
      procedure :: process => LDT_NAFPA_back_climppt_process
   end type LDT_NAFPA_back_climppt_t
 
-  ! Public readers that use the object under the hood
-  public :: LDT_read_NAFPA_back_gfs_climppt
-  public :: LDT_read_NAFPA_back_galwem_climppt
-
 contains
-
-  ! Public reader
-  subroutine LDT_read_NAFPA_back_gfs_climppt(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_climateParmsMod, only: LDT_climate_struc
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    integer, intent(in) :: nest
-    integer, intent(in) :: ncols_out
-    integer, intent(in) :: nrows_out
-    real, intent(in) :: gridDesc_out(20)
-    real, intent(out) :: pcp_out(ncols_out, nrows_out)
-
-    ! Locals
-    type(LDT_nafpa_back_climppt_t) :: nafpa_back
-    integer :: imonth
-
-    call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    imonth = LDT_climate_struc(nest)%climpptimonth
-    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
-         "GFS")
-    call nafpa_back%delete()
-
-  end subroutine LDT_read_NAFPA_back_gfs_climppt
-
-    ! Public reader
-  subroutine LDT_read_NAFPA_back_galwem_climppt(nest, ncols_out, nrows_out, &
-       gridDesc_out, pcp_out)
-
-    ! Imports
-    use LDT_climateParmsMod, only: LDT_climate_struc
-
-    ! Defaults
-    implicit none
-
-    ! Arguments
-    integer, intent(in) :: nest
-    integer, intent(in) :: ncols_out
-    integer, intent(in) :: nrows_out
-    real, intent(in) :: gridDesc_out(20)
-    real, intent(out) :: pcp_out(ncols_out, nrows_out)
-
-    ! Locals
-    type(LDT_nafpa_back_climppt_t) :: nafpa_back
-    integer :: imonth
-
-    call nafpa_back%new(nest, ncols_out, nrows_out, gridDesc_out)
-    imonth = LDT_climate_struc(nest)%climpptimonth
-    call nafpa_back%process(nest, imonth, ncols_out, nrows_out, pcp_out, &
-         "GALWEM")
-    call nafpa_back%delete()
-
-  end subroutine LDT_read_NAFPA_back_galwem_climppt
 
   ! Constructor method
   subroutine LDT_NAFPA_back_climppt_new(this, nest, ncols_out, nrows_out, &
-       gridDesc_out)
+       gridDesc_out, source2)
 
     ! Imports
     use LDT_climateParmsMod, only: LDT_climate_struc
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
 
     ! Defaults
     implicit none
@@ -127,8 +67,24 @@ contains
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(in) :: gridDesc_out(20)
+    character(*), intent(in), optional :: source2
 
-    this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir)
+    ! Usually the requested data is the first climatology, but it is
+    ! possible GFS is requested for the second climatology.  We handle
+    ! this below.
+    if (present(source2)) then
+       if (trim(source2) .eq. "GFS") then
+          this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir2)
+       else
+          write(LDT_logunit,*) &
+               '[ERR] Invalid NAFPA Background source for second climatology!'
+          write(LDT_logunit,*) &
+               '[ERR] Expected GFS, but received ', trim(source2)
+          call LDT_endrun()
+       end if
+    else
+       this%topdir_input = trim(LDT_climate_struc(nest)%climpptdir)
+    end if
 
     ! Set up NAFPA n1280 grid.
     this%nlat_input = 1920
@@ -481,4 +437,5 @@ contains
          trim(this%topdir_input), &
          '/SUM_TS.', iyear_file, imonth_file, '010000.d01.nc'
   end subroutine create_filename
+
 end module LDT_NAFPA_back_climpptMod

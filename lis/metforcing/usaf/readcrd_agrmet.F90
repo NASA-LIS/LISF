@@ -1091,14 +1091,14 @@ subroutine readcrd_agrmet()
      call LIS_verify(rc, &
           "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
 
-     if (agrmet_struc(n)%back_bias_corr .ne. 0 .and. &
-          agrmet_struc(n)%back_bias_corr .ne. 2) then
+     if (agrmet_struc(n)%back_bias_corr .lt. 0 .or. &
+          agrmet_struc(n)%back_bias_corr .gt. 2) then
 
         write(LIS_logunit,*) &
-             '[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 2'
+             '[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0, 1, or 2'
         flush(LIS_logunit)
         message(1) = &
-             '[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 2'
+             '[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0, 1, or 2'
 
 #if (defined SPMD)
         call MPI_Barrier(LIS_MPI_COMM, ierr)
@@ -1111,7 +1111,11 @@ subroutine readcrd_agrmet()
         end if
      end if
 
-     if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+     if (agrmet_struc(n)%back_bias_corr .eq. 1) then
+        allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%pcp_back_bias_ratio = 1.
+        agrmet_struc(n)%pcp_back_bias_ratio_month = 0
+     else if (agrmet_struc(n)%back_bias_corr .eq. 2) then
         allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
         agrmet_struc(n)%pcp_back_bias_ratio = 1.
         agrmet_struc(n)%pcp_back_bias_ratio_month = 0

@@ -81,7 +81,6 @@ contains
   subroutine UASMAP_obsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
