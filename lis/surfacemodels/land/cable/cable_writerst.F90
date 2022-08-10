@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -187,7 +187,7 @@ subroutine cable_dump_restart(n,ftn,wformat)
 !  \end{description}
 !EOP
   integer :: l,t
-  integer :: dimID(10)
+  integer :: dimID(11)
   integer :: canstoId,rtsoilId, ssdnnId, snowdId,osnowdId
   integer :: snageId,isflagId, wbtotId,wbiceId,tggsnId
   integer :: ssdnId, smassId,albsoilsnId,wgId,tggId

@@ -4,7 +4,7 @@
 
 - [[[kumar_etal_gmd_2012]]] S.V. Kumar, C.D. Peters-Lidard, J.A. Santanello, K. Harrison, Y. Liu, and M. Shaw.  Land surface Verification Toolkit (LVT) - a generalized framework for land surface model evaluation.  _Geosci. Model Dev._, pages 869{endash}886, 2012.
 
-- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
+//- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
 
 //@Article{kumar_etal_gmd_2012,
 //  author = 	 {Kumar, S.V. and Peters-Lidard, C.D. and Santanello, J.A. and Harrison, K. and Liu, Y. and Shaw, M.},

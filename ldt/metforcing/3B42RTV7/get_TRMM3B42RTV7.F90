@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine get_TRMM3B42RTV7(n,findex)
   use LDT_timeMgrMod,  only       : LDT_time2date, LDT_tick, LDT_get_nstep, &
                                     LDT_isAlarmRinging ! SY
   use LDT_logMod, only            : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use TRMM3B42RTV7_forcingMod, only : TRMM3B42RTV7_struc
   use LDT_metforcingMod,  only    : LDT_forc 
 
@@ -71,7 +72,7 @@ subroutine get_TRMM3B42RTV7(n,findex)
 ! SY: kgmt3, mgmt3
   real    :: gmt1, gmt2, gmt3             
 
-  character*120 :: filename                ! Filename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename                ! Filename variables for precip data sources
   real*8  :: LDT_timeAtTStepStart_add90min ! SY
   real*8  :: LDT_timeAtTStepEnd_add90min   ! SY
   logical :: alarmCheck  ! SY
