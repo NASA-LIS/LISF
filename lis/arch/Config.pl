@@ -851,10 +851,24 @@ if($use_mkllapack == 1) {
 
 
 if(defined($ENV{LIS_JPEG})){
-   $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
+   $sys_jpeg_path = $ENV{LIS_JPEG};
+   $inc = "/include";
+   $lib = "/lib";
+   $inc_jpeg=$sys_jpeg_path.$inc;
+   $lib_jpeg=$sys_jpeg_path.$lib;
+   $ld_jpeg="-L".$lib_jpeg;
+   $ljpeg="-ljpeg";
+   $libjpeg = $ld_jpeg." ".$ljpeg;
 }
 else{
-   $libjpeg = "-ljpeg";
+   $sys_jpeg_path = "";
+   $inc = "";
+   $lib = "";
+   $inc_jpeg=$sys_jpeg_path.$inc;
+   $lib_jpeg=$sys_jpeg_path.$lib;
+   $ld_jpeg="";
+   $ljpeg="-ljpeg";
+   $libjpeg = $ljpeg;
 }
 
 # ESMF_TRACE does not prompt user
@@ -990,8 +1004,8 @@ if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
    $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
-   $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
-   $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
+   $lib_flags= $lib_flags." -lmfhdf -ldf ".$ljpeg." -lz";
+   $lib_paths= $lib_paths." -L\$(LIB_HDF4) $ld_jpeg"
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";

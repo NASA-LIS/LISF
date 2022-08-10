@@ -38,14 +38,15 @@ endif
 # Compile with Debugging Directives
 # #################################
 
-ifeq ($(DEBUG),on)
+ifneq ($(filter $(BUILD_TYPE),DEBUG Debug debug),)
 override ESMF_F90COMPILECPPFLAGS += -DDEBUG
 override ESMF_CXXCOMPILECPPFLAGS += -DDEBUG
+ifneq ($(filter $(COMPILER),INTEL Intel intel),)
+ESMF_F90COMPILEOPTS += -O0 -traceback -check arg_temp_created,bounds,format,output_conversion,stack,uninit
 endif
-
-ifdef DBGBUILD
-ESMF_F90COMPILEOPTS += -g -traceback
-ESMF_CXXCOMPILEOPTS += -g -traceback
+ifneq ($(filter $(COMPILER),GNU Gnu gnu),)
+ESMF_F90COMPILEOPTS += -O0 -Wall -Wextra -Wconversion -Wno-unused -Wno-unused-dummy-argument -fbacktrace -fimplicit-none -fcheck=all,no-pointer
+endif
 endif
 
 # ###########################

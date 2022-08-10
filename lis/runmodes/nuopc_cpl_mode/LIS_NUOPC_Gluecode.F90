@@ -2083,7 +2083,7 @@ contains
     type(ESMF_DistGrid)                        :: distGrid
     character(len=10)   :: did
     integer             :: petID, deID
-    integer             :: istart, jstart
+    integer             :: start(2)
     integer             :: id, col, row
     real                :: lat_cor, lon_cor
     real                :: lat_cen, lon_cen
@@ -2126,7 +2126,7 @@ contains
       rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
-    call LIS_DecompGet(distgrid,istart=istart,jstart=jstart,rc=rc)
+    call LIS_DecompGet(distgrid,istart=start(1),jstart=start(2),rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     deallocate(deBlockList,petMap,stat=stat)
@@ -2171,10 +2171,10 @@ contains
     endif
 
     call LIS_ESMF_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),coordXcenter,rc)
+      start,coordXcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call LIS_ESMF_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),coordYcenter,rc)
+      start,coordYcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
     ! Add Grid Mask
@@ -2189,7 +2189,7 @@ contains
       farrayPtr=gridmask, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return  ! bail out
     call LIS_ESMF_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),gridmask,rc)
+      start,gridmask,rc)
     if (ESMF_STDERRORCHECK(rc)) return  ! bail out
 
 #ifdef DEBUG
