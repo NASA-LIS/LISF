@@ -1,0 +1,29 @@
+# Name of the variable                           Unit              
+Tair:       1  1  K       # Near surface air temperature
+Qair:       1  1  kg/kg   # Near surface specific humidity
+SWdown:     1  1  W/m2    # Incident shortwave radiation (total)
+SWdirect:   0  1  W/m2    # Incident shortwave radiation (direct)
+SWdiffuse:  0  1  W/m2    # Incident shortwave radiation (diffuse)
+LWdown:     1  1  W/m2    # Incident longwave radiation
+Wind_E:     1  1  W/m2    # Eastward wind
+Wind_N:     1  1  m/s     # Northward wind
+Psurf:      1  1  Pa      # Surface pressure
+Rainf:      1  1  kg/m2   # Rainfall rate
+Snowf:      0  1  kg/m2   # Snowfall rate
+CRainf:     1  1  kg/m2   # Convective rainfall rate
+Forc_Hgt:   0  1  m       # Height of forcing variables
+Ch:         0  1  -       # Surface exchange coefficient for heat
+Cm:         0  1  -       # Surface exchange coefficient for momentum
+Q2sat:      0  1  -       # Saturated mixing ratio
+Emiss:      0  1  -       # Surface emissivity
+Cosz:       0  1  -       # Cosine of zenith angle
+Albedo:     0  1  -       # Surface albedo
+PARDR:      0  1  -       # Photosynthetically Active Direct Radiation
+PARDF:      0  1  -       # Photosynthetically Active Diffuse Radiation
+SWnet:      0  1  -       # Net Shortwave Radiation at the Surface
+PET:        0  1  kg/m2   # Potential ET
+RefET:      0  1  kg/m2s  # Reference ET
+CAPE:       0  1  J/kg    # Convective Available Potential Energy
+LPressure:  0  1  Pa      # Level pressure
+O3:         0  1  -       # Ozone concentration
+Xice:       0  1  -       # Sea ice mask
