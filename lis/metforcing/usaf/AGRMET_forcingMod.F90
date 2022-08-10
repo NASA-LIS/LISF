@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -574,6 +574,8 @@ integer, allocatable   :: n112_sh4(:)
      integer, allocatable   :: n12_anl(:)
      integer, allocatable   :: n21_anl(:)
      integer, allocatable   :: n22_anl(:)
+     integer :: mi111 ! EMK
+     integer, allocatable   :: n111_anl(:) ! EMK
      real, allocatable      :: w11_1_gfs(:)
      real, allocatable      :: w12_1_gfs(:)
      real, allocatable      :: w21_1_gfs(:)
@@ -713,7 +715,11 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK Add WWMCA GRIB1 option
      integer :: read_wwmca_grib1
-     
+
+     ! EMK Add GFS-to-GALWEM bias correction
+     integer :: back_bias_corr
+     real, allocatable :: pcp_back_bias_ratio(:,:)
+     integer :: pcp_back_bias_ratio_month
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)
@@ -2274,6 +2280,20 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
                   agrmet_struc(n)%n21_anl,agrmet_struc(n)%n22_anl,&
                   agrmet_struc(n)%w11_anl,agrmet_struc(n)%w12_anl,&
                   agrmet_struc(n)%w21_anl,agrmet_struc(n)%w22_anl)
+          else if(trim(LIS_rc%met_interp(findex)).eq."average") then
+             agrmet_struc(n)%mi111 = agrmet_struc(n)%nrow * &
+                  agrmet_struc(n)%ncol
+             allocate(agrmet_struc(n)%n111_anl(agrmet_struc(n)%mi111))
+             call upscaleByAveraging_input(gridDesci, &
+                  LIS_rc%gridDesc(n,:), agrmet_struc(n)%mi111, &
+                  LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+                  agrmet_struc(n)%n111_anl)
+          else
+             write(LIS_logunit,*) &
+                  '[ERR] Unsupported AGRMET interpolation option ', &
+                  trim(LIS_rc%met_interp(findex))
+             write(LIS_logunit,*) '[ERR] Aborting...'
+             call LIS_endrun()
           endif
        endif
 

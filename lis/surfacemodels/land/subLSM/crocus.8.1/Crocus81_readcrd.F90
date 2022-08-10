@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -281,7 +281,7 @@ subroutine Crocus81_readcrd()
         call LIS_verify(rc, "CROCUS81 ATMORAD_BOOL: not defined")
     enddo
  
-    ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. )
+    ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. )
     call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 IMPWET:", rc = rc)
     do n=1, LIS_rc%nnest
         do i = 1, CROCUS81_struc(n)%nimpur
@@ -290,7 +290,7 @@ subroutine Crocus81_readcrd()
         enddo
     enddo
  
-    ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)
+    ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)
     call ESMF_ConfigFindLabel(LIS_config, "CROCUS81 IMPDRY:", rc = rc)
     do n=1, LIS_rc%nnest
         do i = 1, CROCUS81_struc(n)%nimpur

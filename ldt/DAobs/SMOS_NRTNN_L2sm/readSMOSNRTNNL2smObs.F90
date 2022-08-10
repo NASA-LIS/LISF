@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -30,6 +30,7 @@ subroutine readSMOSNRTNNL2smObs(n)
    use ESMF
    use LDT_coreMod
    use LDT_logMod
+   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
    use LDT_timeMgrMod
    use LDT_DAobsDataMod
    use SMOSNRTNNL2sm_obsMod
@@ -50,8 +51,8 @@ subroutine readSMOSNRTNNL2smObs(n)
    logical            :: alarmCheck
    logical            :: file_exists
    integer            :: c, r, i, j
-   character*200      :: fname
-   character(len=256) :: nc_filename
+   character(len=LDT_CONST_PATH_LEN)      :: fname
+   character(len=LDT_CONST_PATH_LEN) :: nc_filename
    integer            :: mn_ind
    integer            :: yr, mo, da, hr, mn, ss
    integer            :: doy
@@ -64,7 +65,7 @@ subroutine readSMOSNRTNNL2smObs(n)
    character*4        :: yyyy
    character*2        :: mm, dd, hh
    character*100      :: list_files
-   character*200      :: smos_filename(10)
+   character(len=LDT_CONST_PATH_LEN)      :: smos_filename(10)
    real               :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    integer            :: lat_varid, lon_varid, sm_varid, dim_ids(2)
 

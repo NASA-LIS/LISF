@@ -10,7 +10,7 @@ This section provides some preliminary information to make reading this guide ea
 Commands are written with a fixed-width font.  E.g.:
 
 ....
-% cd /path/to/LISv7.0
+% cd /path/to/LIS
 ....
 
 ....
@@ -25,7 +25,7 @@ NOTE: The `%` symbol represents the command-line prompt.  You do *not* type that
 
 File names are written in italics.  E.g.:
 
-_/path/to/LISv7.0/src_
+_/path/to/LIS/src_
 
 //You must create a directory on your system to install LIS into.  Let's
 //call this directory, _/path/to/LISv6.0/src_.  Throughout the rest of

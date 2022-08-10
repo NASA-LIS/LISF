@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine readsyntheticsmANNdata(n,iomode)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use syntheticsm_ANNdataMod
   use map_utils
@@ -44,7 +45,7 @@ subroutine readsyntheticsmANNdata(n,iomode)
   logical           :: file_exists
   integer           :: c,r,i,j
   integer           :: ftn
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*3       :: fnest
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -63,7 +63,7 @@ subroutine vic412_writerst(n)
    integer, allocatable, dimension(:) :: vegclasses! added by Shugong Wang to support MPI-safe tile ID, 05/07/2012
    integer       :: t, chunk_size
    real, allocatable :: state_chunk(:) ! chunk of state variable 
-   integer       :: state_chunk_ID, dimID(10) 
+   integer       :: state_chunk_ID, dimID(11) 
    integer       :: ftn, l
    real, allocatable :: tmptilen(:)
    character*3   :: fnest 

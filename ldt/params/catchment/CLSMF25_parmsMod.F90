@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,6 +39,7 @@ module CLSMF25_parmsMod
   use LDT_albedoMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -58,8 +59,8 @@ module CLSMF25_parmsMod
 
   type, public :: clsmf25_type_dec
 
-     character*100 :: albnirfile
-     character*100 :: albvisfile
+     character(len=LDT_CONST_PATH_LEN) :: albnirfile
+     character(len=LDT_CONST_PATH_LEN) :: albvisfile
      real          :: catchparms_gridDesc(20)
      character*50  :: catchparms_proj
      character*50  :: catchparms_gridtransform
@@ -67,13 +68,13 @@ module CLSMF25_parmsMod
 !     character*100 :: modisdir        ! sub-directory for MODIS files
 !     character*140 :: tile_coord_file ! tile coordinate file
 !     character*140 :: tile_veg_file   ! tile vegetation file
-     character*140 :: soilparamfile   ! soil parameters file
-     character*140 :: sltsfile        ! surface layer timescales file
-     character*140 :: topo_ar_file    ! topography parameters file
-     character*140 :: topo_bf_file    ! topography parameters file
-     character*140 :: topo_ts_file    ! topography parameters file
-     character*140 :: catchgreenfile  ! greenness climatology file
-     character*140 :: catchlaifile    ! LAI climatology file
+     character(len=LDT_CONST_PATH_LEN) :: soilparamfile   ! soil parameters file
+     character(len=LDT_CONST_PATH_LEN) :: sltsfile        ! surface layer timescales file
+     character(len=LDT_CONST_PATH_LEN) :: topo_ar_file    ! topography parameters file
+     character(len=LDT_CONST_PATH_LEN) :: topo_bf_file    ! topography parameters file
+     character(len=LDT_CONST_PATH_LEN) :: topo_ts_file    ! topography parameters file
+     character(len=LDT_CONST_PATH_LEN) :: catchgreenfile  ! greenness climatology file
+     character(len=LDT_CONST_PATH_LEN) :: catchlaifile    ! LAI climatology file
      real          :: dzsfcrd         ! CLSM top soil layer depth from ldt.config
      real          :: addbdrckcrd     ! CLSM add to bedrock depth from ldt.config
 

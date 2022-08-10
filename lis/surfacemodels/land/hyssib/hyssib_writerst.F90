@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -176,7 +176,7 @@ subroutine hyssib_dump_restart(n, ftn,wformat)
 !
 !EOP
   integer :: l
-  integer :: dimID(10)
+  integer :: dimID(11)
   integer :: tcId, tgId, tsnId, tdId, wwwId, capacId, snowId, sgfgId, sdensId
 
   call LIS_writeGlobalHeader_restart(ftn,n,LIS_rc%lsm_index,&

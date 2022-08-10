@@ -2799,6 +2799,17 @@ of the ESA CCI soil moisture data.
 `ESA CCI soil moisture data version:` specifies the version of the ESA CCI soil
 moisture data.
 
+`ESA CCI soil moisture sensor type:` specifies the sensor type of the ESA CCI soil moisture dataset.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`passive`"  | passive sensor type
+|"`active`"   | active sensor type
+|"`combined`" | combined sensor type
+|===
+
 `ESA CCI use scaled standard deviation model:` specifies if the observation
 error standard deviation is to be scaled using model and observation standard
 deviation.
@@ -2815,6 +2826,7 @@ bins in the CDF.
 ....
 ESA CCI soil moisture data directory:
 ESA CCI soil moisture data version:
+ESA CCI soil moisture sensor type:            combined
 ESA CCI use scaled standard deviation model:
 ESA CCI model CDF file:
 ESA CCI observation CDF file:
@@ -4946,6 +4958,8 @@ GFS data (_MT.avn*_).
 `AGRMET GALWEM data directory:` specifies the location of the
 UK Unified Model (GALWEM) data
 (__PS.557WW_SC.U_DI.F_GP.GALWEM-*__).
+
+`AGRMET PPT Background bias correction option:` 0 = no bias correction, 1 = adjust GFS precip towards GALWEM.
 
 `AGRMET SSMI data directory:` specifies the location of the
 SSM/I data (_ssmira_*_).

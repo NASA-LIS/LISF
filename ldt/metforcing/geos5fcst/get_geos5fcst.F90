@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ subroutine get_geos5fcst(n,findex)
   use LDT_timeMgrMod,       only : LDT_tick
   use LDT_metforcingMod,    only : LDT_forc
   use LDT_logMod,           only : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use geos5fcst_forcingMod, only : geos5fcst_struc
 
   implicit none
@@ -64,7 +65,7 @@ subroutine get_geos5fcst(n,findex)
   real*8        :: dtime1, dtime2
   integer       :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer       :: yr2,mo2,da2,hr2,mn2,ss2,doy2
-  character*100 :: name
+  character(len=LDT_CONST_PATH_LEN) :: name
   real          :: gmt1,gmt2,ts1,ts2
   integer       :: movetime     ! 1=move time 2 data into time 1
 
@@ -166,7 +167,7 @@ subroutine get_geos5fcst(n,findex)
            call geos5fcstfile(name,geos5fcst_struc(n)%geos5fcstdir,&
                 yr1,mo1,da1,hr1,mn1,m)
         
-           write(LDT_logunit,*)'[INFO] getting file1.. ',name
+           write(LDT_logunit,*)'[INFO] getting file1.. ',trim(name)
            order = 1
            call read_geos5fcst(n,m,findex,order,name,ferror)
            if(ferror.ge.1) &
@@ -194,7 +195,7 @@ subroutine get_geos5fcst(n,findex)
            call geos5fcstfile(name,geos5fcst_struc(n)%geos5fcstdir,&
                 yr2,mo2,da2,hr2,mn2,m)
         
-           write(LDT_logunit,*)'[INFO] getting file2.. ',name
+           write(LDT_logunit,*)'[INFO] getting file2.. ',trim(name)
            order = 2
            call read_geos5fcst(n,m,findex,order,name,ferror)
            if(ferror.ge.1) then

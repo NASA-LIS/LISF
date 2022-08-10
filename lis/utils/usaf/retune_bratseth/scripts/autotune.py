@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 SCRIPT: autotune.py
 
@@ -315,7 +326,7 @@ class AutomateTuning:
         if "imerg" in self.Lo:
             if self.Lo["imerg"] > 0:
                 line = \
-                    "AGRMET GALWEM Precip IMERG observation error scale length (m)"
+                    "AGRMET GALWEM Precip IMERG observation error scale length (m):"
                 line += " %s\n" %(self.Lo["imerg"])
                 lines.append(line)
 

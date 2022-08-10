@@ -3,6 +3,7 @@
 :revnumber: 14
 :revdate: 3 Aug 2021
 :sectnums:
+:imagesdir: ./images
 
 :github: https://github.com/
 :github_training: https://www.youtube.com/githubguides

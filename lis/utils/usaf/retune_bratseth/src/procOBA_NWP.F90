@@ -1,3 +1,13 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 !
 ! ROUTINE: procOBA_NWP
 !
@@ -675,7 +685,7 @@ program main
       end if
       call ESMF_LogWrite( &
            "Writing to output file "//trim(outfile), &
-           ESMF_LOGMSG_WARNING)
+           ESMF_LOGMSG_INFO)
       do j = 1, max_vario_bins
          if (icounts_vario(j) .eq. 0) cycle
          write(iunit_out_vario, '(A,f10.0,A,f7.3,A,I14.14)') &
@@ -697,8 +707,6 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
-      use esmf
-      use mpi
       use USAF_ReportsMod, only: Reports, newReports, getNobs, getReport, &
            destroyReports, appendToReports, bcast_reports
       use USAF_StationsMod, only: great_circle_distance

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -170,7 +170,7 @@ subroutine mos_dump_restart(ftn,n,wformat)
 !EOP
   integer             :: l,t
   integer             :: ctId, qaId, icsId, snowId,SoTId,SoWETid
-  integer             :: dimID(10)
+  integer             :: dimID(11)
   real, allocatable   :: tmptilen(:)
 
   allocate(tmptilen(LIS_rc%npatch(n,LIS_rc%lsm_index)))

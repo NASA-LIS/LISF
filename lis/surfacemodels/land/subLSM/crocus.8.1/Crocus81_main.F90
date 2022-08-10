@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -135,8 +135,8 @@ subroutine Crocus81_main(n)
     CHARACTER(len=3)     :: tmp_SNOWMETAMO_opt     ! Metamorphism scheme: B92 (historical version, Brun et al 92), C13, T07, F06 (see Carmagnola et al 2014) [-]
     CHARACTER(len=3)     :: tmp_SNOWRAD_opt        ! Radiative transfer scheme. HSNOWRAD=B92 Brun et al 1992.  HSNOWRAD=T17 (Tuzet et al. 2017) (Libois et al. 2013) TARTES with impurities content scheme [-]
     LOGICAL              :: tmp_ATMORAD_BOOL       ! Activate atmotartes scheme  (default=.FALSE. # This option is not stable yet, but it is supposed to compute the direct/diffuse ratio directly from atmospheric informations (AOD, Ozone column, Water column..)) [-]
-    REAL, allocatable    :: tmp_IMPWET(:)          ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. ) [g/m_/s]
-    REAL, allocatable    :: tmp_IMPDRY(:)          ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s) [g/m_/s]
+    REAL, allocatable    :: tmp_IMPWET(:)          ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. ) [g/m_/s]
+    REAL, allocatable    :: tmp_IMPDRY(:)          ! [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s) [g/m_/s]
     CHARACTER(len=3)     :: tmp_SNOWFALL_opt       ! New options for multiphysics version (Cluzet et al 2016). Falling snow scheme: V12 (Vionnet et al. 2012) , A76 (Anderson 1976), S02 (Lehning and al. 2002), P75 (Pahaut 1975) [-]
     CHARACTER(len=3)     :: tmp_SNOWCOND_opt       ! Thermal conductivity scheme: Y81 (Yen 1981), I02 (Boone et al. 2002) C11 (Calonne et al. 2011) [-]
     CHARACTER(len=3)     :: tmp_SNOWHOLD_opt       ! liquid water content scheme: B92 (Brun et al. 1992) O04 (Oleson et al., 2004) S02 (SNOWPACK, Lehning et al, 2002) B02 (ISBA_ES, Boone et al. 2002) [-]
@@ -494,8 +494,8 @@ endif
                                tmp_SNOWMETAMO_opt    , & ! IN    - Metamorphism scheme: B92 (historical version, Brun et al 92), C13, T07, F06 (see Carmagnola et al 2014) [-]
                                tmp_SNOWRAD_opt       , & ! IN    - Radiative transfer scheme. HSNOWRAD=B92 Brun et al 1992.  HSNOWRAD=T17 (Tuzet et al. 2017) (Libois et al. 2013) TARTES with impurities content scheme [-]
                                tmp_ATMORAD_BOOL      , & ! IN    - Activate atmotartes scheme  (default=.FALSE. # This option is not stable yet, but it is supposed to compute the direct/diffuse ratio directly from atmospheric informations (AOD, Ozone column, Water column..)) [-]
-                               tmp_IMPWET            , & ! IN    - [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. ) [g/m_/s]
-                               tmp_IMPDRY            , & ! IN    - [init_surf_atmn.F90   --> wet deposit coefficient for each impurity typeÊ (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s) [g/m_/s]
+                               tmp_IMPWET            , & ! IN    - [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g/m_/s)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s)   (# 1553 You can either feed the model with prescribed and constant deposition fluxes or introduce a wet and dry deposition field directly in the forcing file. ) [g/m_/s]
+                               tmp_IMPDRY            , & ! IN    - [init_surf_atmn.F90   --> wet deposit coefficient for each impurity type (g)  ,   snowcro.F90 --> Dry and wet deposit coefficient from Forcing File(g/m_/s) [g/m_/s]
                                tmp_SNOWFALL_opt      , & ! IN    - New options for multiphysics version (Cluzet et al 2016). Falling snow scheme: V12 (Vionnet et al. 2012) , A76 (Anderson 1976), S02 (Lehning and al. 2002), P75 (Pahaut 1975) [-]
                                tmp_SNOWCOND_opt      , & ! IN    - Thermal conductivity scheme: Y81 (Yen 1981), I02 (Boone et al. 2002) C11 (Calonne et al. 2011) [-]
                                tmp_SNOWHOLD_opt      , & ! IN    - liquid water content scheme: B92 (Brun et al. 1992) O04 (Oleson et al., 2004) S02 (SNOWPACK, Lehning et al, 2002) B02 (ISBA_ES, Boone et al. 2002) [-]

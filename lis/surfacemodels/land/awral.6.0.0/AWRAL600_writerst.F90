@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -170,7 +170,7 @@ subroutine AWRAL600_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10) ! veg classes hardcoded to 10 I guess copied from everyone else
+    integer :: dimID(11)
     integer :: sr_ID
     integer :: sg_ID
     integer :: s0_ID

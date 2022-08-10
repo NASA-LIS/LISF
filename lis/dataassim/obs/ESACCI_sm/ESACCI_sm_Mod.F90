@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -73,6 +73,7 @@ module ESACCI_sm_Mod
   type, public:: ESACCI_sm_dec
      
      logical                :: startMode
+     character(len=8)       :: sensor
      real                   :: version
      integer                :: useSsdevScal
      integer                :: nc
@@ -201,6 +202,16 @@ contains
        call LIS_verify(status, 'ESA CCI soil moisture data version: is missing')
 
     enddo
+
+    call ESMF_ConfigFindLabel(LIS_config,"ESA CCI soil moisture sensor type:",&
+         rc=status)
+    do n=1,LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,ESACCI_sm_struc(n)%sensor,&
+            rc=status)
+       call LIS_verify(status, 'ESA CCI soil moisture sensor type: is missing')
+
+    enddo
+
 
     call ESMF_ConfigFindLabel(LIS_config,"ESA CCI use scaled standard deviation model:",&
          rc=status)
