@@ -2537,6 +2537,8 @@ EQWTD=WTD
 
                            DX = FUNC/DFUNC
                            SMC = SMC - DX
+                           SMC = MAX(SMC,1.E-4) !TML FIX TO PREVENT EXTREMELY LOW SMC
+                           SMC = MIN(SMC,SMCMAX) !TML FIX TO PREVENT EXTREMELY HIGH SMC
                            IF ( ABS (DX) < 1.E-6)EXIT
                          ENDDO
 
