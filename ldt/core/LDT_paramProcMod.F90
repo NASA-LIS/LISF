@@ -2475,7 +2475,7 @@ contains
         LDT_LSMparam_struc(n)%landcover%standard_name = &
             "AVHRR UMD landcover map"
 
-      case( "MODIS_Native", "MODIS_LIS" )
+      case( "MODIS_Native", "MODIS_LIS", "MCD12Q1" )
         LDT_rc%lc_type(n) = "IGBPNCEP"
         LDT_LSMparam_struc(n)%landcover%num_bins = 20
         LDT_LSMparam_struc(n)%landcover%standard_name = &
