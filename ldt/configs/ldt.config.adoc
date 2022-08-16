@@ -3427,7 +3427,7 @@ Number of bins to use in the CDF: 100
 
 |monthly |stratify for each calendar month
 |yearly |lump (considering all years and all seasons)
-|half-monthly | staratify for each calendar half-month (for SMAP_E_OPL)
+|half-monthly | stratify for each calendar half-month (for SMAP_E_OPL)
 |===
 
 .Example _ldt.config_ entry
