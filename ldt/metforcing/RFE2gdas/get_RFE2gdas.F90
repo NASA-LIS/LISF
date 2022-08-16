@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine get_RFE2gdas(n, findex)
   use LDT_coreMod,         only : LDT_rc
   use LDT_timeMgrMod,      only : LDT_calendar, LDT_get_nstep, LDT_tick
   use LDT_logMod,          only : LDT_logunit, LDT_endrun, LDT_verify
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use RFE2gdas_forcingMod, only : RFE2gdas_struc
 
   implicit none
@@ -77,7 +78,7 @@ subroutine get_RFE2gdas(n, findex)
   real*8  :: ctime,EndTime_RFE2gdas       ! Current LDAS time and end boundary time for precip data source
   real    :: gmtNow,gmt1,gmt2             ! GMT times for current LDAS time and begin and end boundary times for precip data sources
   integer :: ferror_RFE2gdas              ! Error flags for precip data sources
-  character*140:: filename                ! Filename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename                ! Filename variables for precip data sources
   integer      :: order
 
 !=== End Variable Definition =======================

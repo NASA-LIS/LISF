@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@ subroutine read_pesynsm1data(Obj_Space)
   use LIS_historyMod, only : LIS_readvar_gridded
   use LIS_coreMod,  only : LIS_rc, LIS_domain
   use LIS_logMod,     only : LIS_logunit, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -42,10 +43,10 @@ subroutine read_pesynsm1data(Obj_Space)
 !EOP
   type(ESMF_Field)    :: smfield
   real,    pointer    :: obsl(:)
-  character*100       :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
 
 
   logical             :: readflag
@@ -74,7 +75,7 @@ subroutine read_pesynsm1data(Obj_Space)
   endif
   
   if (readflag) then 
-     write(LIS_logunit,*)  'Reading syn data ',name
+     write(LIS_logunit,*)  'Reading syn data ',trim(name)
      
      call ESMF_StateGet(Obj_Space,"Synthetic soil moisture",smfield,&
           rc=status)
@@ -112,7 +113,7 @@ end subroutine read_pesynsm1data
 subroutine pesynsm1_filename(name, ndir, yr, mo,da,hr,mn)
   
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   character (len=4) :: fyr

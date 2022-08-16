@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 <!-- Looking for LISF support? -->
-<!-- Visit https://modelingguru.nasa.gov/community/atmospheric/lis -->
+<!-- Visit https://github.com/NASA-LIS/LISF/discussions -->
 
 ### Bug Description
 

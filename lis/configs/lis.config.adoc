@@ -578,6 +578,7 @@ Acceptable values are:
 |Value      | Description
 
 |"`binary`" | Write output in binary format
+|"`distributed binary`" | Write output in distributed binary format where each processor writes outputs for the respective local domain
 |"`grib1`"  | Write output in GRIB-1 format
 |"`grib2`"  | Write output in GRIB-2 format
 |"`netcdf`" | Write output in netCDF format
@@ -2814,6 +2815,17 @@ of the ESA CCI soil moisture data.
 `ESA CCI soil moisture data version:` specifies the version of the ESA CCI soil
 moisture data.
 
+`ESA CCI soil moisture sensor type:` specifies the sensor type of the ESA CCI soil moisture dataset.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"`passive`"  | passive sensor type
+|"`active`"   | active sensor type
+|"`combined`" | combined sensor type
+|===
+
 `ESA CCI use scaled standard deviation model:` specifies if the observation
 error standard deviation is to be scaled using model and observation standard
 deviation.
@@ -2830,6 +2842,7 @@ bins in the CDF.
 ....
 ESA CCI soil moisture data directory:
 ESA CCI soil moisture data version:
+ESA CCI soil moisture sensor type:            combined
 ESA CCI use scaled standard deviation model:
 ESA CCI model CDF file:
 ESA CCI observation CDF file:
@@ -4962,6 +4975,8 @@ GFS data (_MT.avn*_).
 UK Unified Model (GALWEM) data
 (__PS.557WW_SC.U_DI.F_GP.GALWEM-*__).
 
+`AGRMET PPT Background bias correction option:` 0 = no bias correction, 1 = adjust GFS precip towards GALWEM.
+
 `AGRMET SSMI data directory:` specifies the location of the
 SSM/I data (_ssmira_*_).
 
@@ -6071,8 +6086,15 @@ or mean sea level (msl) can be selected (which is not supported yet).
 of GEFS ensemble members being read in. Reforecast2 currently
 supports up to a 11 members.
 
-`GEFS forecast grid resolution:` specifies the grid resolution of the GEFS
-forecast data. The current resolutions supported are 0.50 and 0.25.
+`GEFS forecast grid resolution:` specifies the grid resolution in degrees
+of the GEFS forecast data. The current resolutions supported are:
+
+|====
+|GEFS forecast type | Resolutions
+
+|`Reforecast2`      | `0.25` and `1.0`
+|`Operational`      | `0.25` and `0.50`
+|====
 
 .Example _lis.config_ entry
 ....

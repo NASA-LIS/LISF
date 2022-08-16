@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -79,6 +79,9 @@ contains
     external LVT_init_USAFSIpost
     external LVT_run_USAFSIpost
 
+    external LVT_init_LISpost
+    external LVT_run_LISpost
+
     call registerlvtinit(trim(LVT_DataCompId)//char(0),LVT_init_DataComp) 
     call registerlvtrun(trim(LVT_DataCompId)//char(0),LVT_run_DataComp)
 
@@ -99,6 +102,9 @@ contains
 
     call registerlvtinit(trim(LVT_USAFSIpostId)//char(0),LVT_init_USAFSIpost)
     call registerlvtrun(trim(LVT_USAFSIpostId)//char(0),LVT_run_USAFSIpost)
+
+    call registerlvtinit(trim(LVT_LISpostId)//char(0),LVT_init_LISpost)
+    call registerlvtrun(trim(LVT_LISpostId)//char(0),LVT_run_LISpost)
 
   end subroutine LVT_runmode_plugin
 end module LVT_runmode_pluginMod

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@ subroutine read_wgPBMRsmdata(Obj_Space)
   use LIS_coreMod,  only : LIS_rc, LIS_domain
   use LIS_logMod,     only : LIS_logunit, LIS_verify, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use LIS_fileIOMod,      only : LIS_readData
   use wgPBMRsmobs_module, only : wgPBMRsm_struc
 
@@ -44,7 +45,7 @@ subroutine read_wgPBMRsmdata(Obj_Space)
   real,    allocatable    :: sm(:,:)
   real,    pointer    :: obsl(:)
   type(ESMF_Field)    :: smField
-  character*100       :: smobsdir, name
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir, name
   logical             :: data_update
   logical             :: file_exists
   logical             :: readflag
@@ -77,7 +78,7 @@ subroutine read_wgPBMRsmdata(Obj_Space)
   endif
 
   if (readflag) then 
-     write(LIS_logunit,*)  'Reading WG PBMR soil moisture data ',name
+     write(LIS_logunit,*)  'Reading WG PBMR soil moisture data ',trim(name)
      
      call ESMF_StateGet(Obj_Space,"PBMR soil moisture",smField,&
           rc=status)
@@ -152,7 +153,7 @@ subroutine wgPBMRsm_filename(name, ndir, site, yr, mo,da,hr,mn,ss)
 !EOP
 
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn,ss
   integer           :: site
   character (len=*) :: ndir

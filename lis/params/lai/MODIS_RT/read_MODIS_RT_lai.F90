@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_MODIS_RT_lai(n, forward_search, array, file_time_stamp)
   use LIS_vegDataMod,    only : LIS_lai
   use LIS_fileIOMod,     only : LIS_readData
   use LIS_timeMgrMod, only: LIS_calendar
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -52,7 +53,7 @@ subroutine read_MODIS_RT_lai(n, forward_search, array, file_time_stamp)
 !
 !EOP      
   integer*1, allocatable      :: tmparr(:,:)
-  character*100 :: filename2
+  character(len=LIS_CONST_PATH_LEN) :: filename2
   integer :: yr, mo, dy 
   integer :: t, it, rc
   integer :: ftn, status, step
@@ -137,7 +138,7 @@ subroutine read_MODIS_RT_lai(n, forward_search, array, file_time_stamp)
   file_time_stamp = time
   deallocate(tmparr)
 
-  write(LIS_logunit,*)'Read LAI File ',filename2
+  write(LIS_logunit,*)'Read LAI File ',trim(filename2)
 end subroutine read_MODIS_RT_lai
 
 subroutine read_lai_1gd1c(n, ftn, gridDesc, char_array)

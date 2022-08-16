@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -109,6 +109,7 @@ contains
     use LIS_optUEMod,        only : LIS_ObjectiveFunc, LIS_decisionSpace
     use LIS_logMod,          only : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_endrun, LIS_verify
+    use LIS_constantsMod,    only : LIS_CONST_PATH_LEN
 ! 
 ! !DESCRIPTION:
 !  This method initializes the objects to be used in the posterior probability
@@ -128,7 +129,7 @@ contains
     real                   :: rand
     real                   :: seed
     character*100, allocatable :: vname(:)
-    character*100          :: priorAttribsFile  !link to lis.config entry for optUE
+    character(len=LIS_CONST_PATH_LEN) :: priorAttribsFile  !link to lis.config entry for optUE
     character*200          :: line
     integer                :: ios
     integer                :: nvars  ! from LIS_decisionSpace as check
@@ -152,7 +153,7 @@ contains
 
     ftn = LIS_getNextUnitNumber()
     write(LIS_logunit,*) 'Reading prior distribution attributes ...', &
-         priorAttribsFile
+         trim(priorAttribsFile)
     open(ftn,file=trim(priorAttribsFile),status='old')
     read(ftn,*)  !demarcate section
     read(ftn,*) dist_ctl%ndists

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine read_MODISlai(n, time1, array)
        LIS_releaseUnitNumber, LIS_endrun
   use LIS_vegDataMod,    only : LIS_lai
   use LIS_fileIOMod,     only : LIS_readData
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -50,7 +51,7 @@ subroutine read_MODISlai(n, time1, array)
 !
 !EOP      
   real, allocatable :: tmparr(:,:)
-  character*100 :: filename2
+  character(len=LIS_CONST_PATH_LEN) :: filename2
   integer :: mo
   integer :: t
   integer :: ftn
@@ -90,7 +91,7 @@ subroutine read_MODISlai(n, time1, array)
      array(t) = tmparr(LIS_domain(n)%tile(t)%col,LIS_domain(n)%tile(t)%row)
   enddo
   deallocate(tmparr)
-  write(LIS_logunit,*)'Read LAI File ',filename2
+  write(LIS_logunit,*)'Read LAI File ',trim(filename2)
 
 
 end subroutine read_MODISlai

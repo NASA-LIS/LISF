@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,16 +25,17 @@ module LDT_usafsiMod
   type, public :: usafsi_t
      ! Former environment variables
      character*10  :: date10
-     character*100 :: fracdir
-     character*100 :: modif
-     character*100 :: sfcobs
-     character*100 :: ssmis
-     character*100 :: gmi    !kyh20201118
-     character*100 :: amsr2  !kyh20201217
-     character*100 :: stmpdir
-     character*100 :: static
-     character*100 :: unmod
-     character*100 :: viirsdir
+     character*255 :: fracdir
+     character*255 :: modif
+     character*255 :: sfcobs
+     character*255 :: ssmis
+     character*255 :: gmi    !kyh20201118
+     character*255 :: amsr2  !kyh20201217
+     character*255 :: stmpdir
+     character*255 :: sstdir ! EMK 20220113
+     character*255 :: static
+     character*255 :: unmod
+     character*255 :: viirsdir
 
      ! Former namelist variables
      real :: clmadj
@@ -60,11 +61,11 @@ module LDT_usafsiMod
 
      ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
-     character*100 :: ssmis_raw_dir
-     character*100 :: gmi_raw_dir        !kyh20201118
-     character*100 :: amsr2_raw_dir      !kyh20201217
-     character*100 :: ff_file
-     character*100 :: fd_file            !kyh20210113
+     character*255 :: ssmis_raw_dir
+     character*255 :: gmi_raw_dir        !kyh20201118
+     character*255 :: amsr2_raw_dir      !kyh20201217
+     character*255 :: ff_file
+     character*255 :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -76,9 +77,9 @@ module LDT_usafsiMod
 
      ! Other new settings
      real :: fill_climo
-     character*100 :: gofs_sst_dir
-     character*100 :: gofs_cice_dir
-     character*100 :: lis_grib2_dir
+     character*255 :: gofs_sst_dir
+     character*255 :: gofs_cice_dir
+     character*255 :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
      character*20 :: data_res
@@ -181,6 +182,13 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%stmpdir, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    ! EMK 20220113
+    cfg_entry = "USAFSI FNMOC SST GRIB1 data directory:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sstdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get static
@@ -603,6 +611,7 @@ contains
   subroutine LDT_usafsiRun(n)
     implicit none
     integer, intent(in) :: n
+    external :: USAFSI_run
     call USAFSI_run(n)
   end subroutine LDT_usafsiRun
 end module LDT_usafsiMod

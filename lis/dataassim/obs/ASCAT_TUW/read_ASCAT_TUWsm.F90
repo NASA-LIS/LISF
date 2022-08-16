@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_ASCAT_TUWsm(n, OBS_State, OBS_Pert_State)
   use LIS_dataAssimMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use ASCAT_TUWsm_Mod, only : ASCAT_TUWsm_struc
 
   implicit none
@@ -53,8 +54,7 @@ subroutine read_ASCAT_TUWsm(n, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname_A,fname_D
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir, fname_A, fname_D
   logical                :: alarmCheck, file_exists,file_status
   integer                :: t,c,r,i,j,p
   real,          pointer :: obsl(:)
@@ -321,7 +321,7 @@ subroutine read_ASCATTUW_data(n, fname_A, fname_D, sm_data, data_status)
   if(file_exists) then 
      data_status = .true. 
      ftn = LIS_getNextUnitNumber()
-     write(LIS_logunit,*) 'Reading ',fname_A
+     write(LIS_logunit,*) 'Reading ',trim(fname_A)
      open(ftn,file=fname_A,form='unformatted')
      read(ftn) n_data
 

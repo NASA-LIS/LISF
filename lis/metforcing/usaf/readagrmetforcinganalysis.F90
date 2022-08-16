@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,7 +26,8 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 ! !USES:
   use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_timeMgrMod,only       : LIS_get_julhr,LIS_tick,LIS_time2date
-  use LIS_logMod, only          : LIS_logunit, LIS_verify, LIS_warning
+  use LIS_logMod, only          : LIS_logunit, LIS_verify, LIS_warning,&
+                                  LIS_endrun, LIS_abort, LIS_alert
   use LIS_spatialDownscalingMod
   use AGRMET_forcingMod,   only : agrmet_struc
 
@@ -61,7 +62,6 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 !
 !EOP
   integer                :: ftn
-  integer                :: ferror
   logical                :: file_exists
   integer                :: iv, iv_total
   integer                :: c,r,t,kk
@@ -83,6 +83,8 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
   integer, save          :: step_count=1
   character(len=10)       :: str_count
   character(len=128)     :: dump_name
+  character(len=100) :: message(20)
+  integer :: mo
 #if(defined USE_GRIBAPI) 
 !--------------------------------------------------------------------------
 ! Set the GRIB parameter specifiers
@@ -109,9 +111,8 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
      call grib_open_file(ftn,trim(agrfile),'r',iret)
      if(iret.ne.0) then 
         write(LIS_logunit,*) &
-             'Could not open file: ',trim(agrfile)
-        ferror = 0
-        return
+             '[ERR] Could not open file: ',trim(agrfile)
+        call LIS_endrun
      endif
 
      call grib_count_in_file(ftn,nvars,iret)
@@ -125,13 +126,12 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
         call LIS_warning(iret, 'error in grib_new_from_file in read_agrmet')
         if(iret.ne.0) then 
            write(LIS_logunit,*) &
-                'Error code: ',iret
+                '[ERR] Error code: ',iret
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
-           ferror = 0
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            deallocate(lb)
            deallocate(f)
-           return           
+           call LIS_endrun
         endif
 
         call grib_get(igrib,'indicatorOfParameter',pds5_val,rc)
@@ -167,14 +167,13 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
 
         if(rc.ne.0) then 
            write(LIS_logunit,*) &
-                'Error code: ',rc
+                '[ERR] Error code: ',rc
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            write(LIS_logunit,*) 'for variables ',kk
-           ferror = 0
            deallocate(lb)
            deallocate(f)
-           return           
+           call LIS_endrun
         endif
 
         call grib_get(igrib,'missingValue',missingValue,rc)
@@ -274,6 +273,58 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
                     endif
                  enddo
               enddo
+           else if (trim(LIS_rc%met_interp(findex)) .eq. "average") then
+              varfield = -9999.0
+              mo = LIS_rc%lnc(n) * LIS_rc%lnr(n)
+              call upscaleByAveraging(agrmet_struc(n)%mi111, mo, LIS_rc%udef, &
+                   agrmet_struc(n)%n111_anl, lb, f, lo, go)
+              count1 = 0
+              do r = 1, LIS_rc%lnr(n)
+                 do c = 1, LIS_rc%lnc(n)
+                    varfield(c,r) = go(c+count1)
+                 enddo
+                 count1 = count1 + LIS_rc%lnc(n)
+              enddo
+              !call AGRMET_fillgaps(n, 1, varfield)
+
+              if(var_index.eq.1) vid = 1
+              if(var_index.eq.2) vid = 2
+              if(var_index.eq.3) vid = 3
+              if(var_index.eq.4) vid = 4
+              if(var_index.eq.5) vid = 5
+              if(var_index.eq.6) vid = 6  !pressure
+              if(var_index.eq.7) vid = 7  !precip
+
+              do r=1, LIS_rc%lnr(n)
+                 do c=1,LIS_rc%lnc(n)
+                    if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                       if(order.eq.1) then
+                          agrmet_struc(n)%metdata1(vid,&
+                               LIS_domain(n)%gindex(c,r)) = &
+                               varfield(c,r)
+                       else
+                          agrmet_struc(n)%metdata2(vid,&
+                               LIS_domain(n)%gindex(c,r)) = &
+                               varfield(c,r)
+                       endif
+                    endif
+                 enddo
+              enddo
+
+           else ! EMK Handle error
+              write(lis_logunit,*) &
+                   '[ERR] Unsupported AGRMET interpolation option ', &
+                   trim(LIS_rc%met_interp(findex))
+              write(lis_logunit,*)'[ERR] Aborting...'
+              message(:) = ''
+              message(1) = '[ERR] Program: LIS'
+              message(2) = '  Routine: readagrmetforcinganalysis.'
+              message(3) = '  Invalid interpolation selected'
+              if (LIS_masterproc) then
+                 call LIS_alert('LIS.readagrmetforcinganalysis', 1, &
+                      message)
+                 call LIS_abort(message)
+              end if
            endif
         endif
         
@@ -286,17 +337,16 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
      do kk=1,iv_total
         if(.not.var_status(kk)) then 
            write(LIS_logunit,*) &
-                'Could not retrieve entries in file: ',trim(agrfile)
+                '[ERR] Could not retrieve entries in file: ',trim(agrfile)
            write(LIS_logunit,*) &
-                'kk,var_status = ',kk,var_status(kk)
-           ferror = 0
-           return
+                '[ERR] kk,var_status = ',kk,var_status(kk)
+           call LIS_endrun
         endif
      enddo
   else
      write(LIS_logunit,*) &
-          'Could not find file: ',trim(agrfile)
-     ferror = 0
+          '[ERR] Could not find file: ',trim(agrfile)
+     call LIS_endrun
   endif
 
 #endif

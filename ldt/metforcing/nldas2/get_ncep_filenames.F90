@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,10 +22,12 @@
 ! !INTERFACE:
  subroutine ncep_nldas2filea(filename,nldas2dir,yr,mo,da,hr)
 
+   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
    implicit none
 ! !ARGUMENTS: 
-   character*80, intent(out) :: filename
-   character*40, intent(in)  :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: nldas2dir
    integer, intent(in)       :: yr,mo,da,hr
 
 ! !DESCRIPTION:
@@ -50,38 +52,23 @@
 !
 !EOP
 
-   integer         :: i, c
-   character*1     :: fbase(40),fsubs(17)
-   character*1     :: ftime(10),fdir(15)
-   character*100   :: temp
-
-  !=== end variable definition =============================================
-
+   character(len=4) :: fyr
+   character(len=8) :: fdate
+   character(len=10) :: ftime
+   character(len=17), parameter :: fsubsext = '.nldasforce-a.grb'
+   
+   !=== end variable definition =============================================
+   
    !=== put together filename
+   
+   write(UNIT=fyr,fmt='(i4)') yr
+   write(UNIT=fdate,fmt='(i4,i2.2,i2.2)') yr, mo, da
+   write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
 
-   write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-   read(UNIT=temp,fmt='(15a1)') fdir
-   do i=1,15
-      if(fdir(i).eq.(' ')) fdir(i) = '0'
-   enddo
-   write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-   read(UNIT=temp,fmt='(10a1)')ftime
-   do i=1,10
-      if(ftime(i).eq.(' ')) ftime(i) = '0'
-   enddo
-   write(UNIT=temp,fmt='(a17)')'.nldasforce-a.grb'
-   read(UNIT=temp,fmt='(17a1)') fsubs
-   write(UNIT=temp,fmt='(a40)') nldas2dir                       
-   read(UNIT=temp,fmt='(40a1)') fbase
-   c=0
-   do i=1,40
-      if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-   enddo
-   write(UNIT=temp,fmt='(80a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), & 
-        (ftime(i),i=1,10),(fsubs(i),i=1,17 ) 
-   read(UNIT=temp,fmt='(a80)') filename
+   filename = trim(nldas2dir) // '/' // fyr // '/' // fdate // '/' // ftime // fsubsext
 
    return
+
  end subroutine ncep_nldas2filea
 
 
@@ -100,10 +87,12 @@
 ! !INTERFACE:
  subroutine ncep_nldas2fileb(filename,nldas2dir,yr,mo,da,hr)
 
+   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
    implicit none
 ! !ARGUMENTS: 
-   character*80, intent(out) :: filename
-   character*40, intent(in)  :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: nldas2dir
    integer, intent(in)       :: yr,mo,da,hr
 ! !DESCRIPTION:
 !   This subroutine puts together NCEP NLDAS-2 ``B'' file name for 
@@ -127,36 +116,22 @@
 !
 !EOP
 
-   integer           :: i, c
-   character*1       :: fbase(40),fsubs(17)
-   character*1       :: ftime(10),fdir(15)
-   character*100     :: temp
+   character(len=4) :: fyr
+   character(len=8) :: fdate
+   character(len=10) :: ftime
+   character(len=17), parameter :: fsubsext = '.nldasforce-b.grb'
+   
    !=== end variable definition =============================================
-
+   
    !=== put together filename
+   
+   write(UNIT=fyr,fmt='(i4)') yr
+   write(UNIT=fdate,fmt='(i4,i2.2,i2.2)') yr, mo, da
+   write(UNIT=ftime,fmt='(i4,i2.2,i2.2,i2.2)') yr, mo, da, hr
 
-   write(UNIT=temp,fmt='(a1,i4,a1,i4,i2,i2,a1)')'/',yr,'/',yr,mo,da,'/'
-   read(UNIT=temp,fmt='(15a1)') fdir
-   do i=1,15
-      if(fdir(i).eq.(' ')) fdir(i) = '0'
-   enddo
-   write(UNIT=temp,fmt='(i4,i2,i2,i2)') yr,mo,da,hr
-   read(UNIT=temp,fmt='(10a1)')ftime
-   do i=1,10
-      if(ftime(i).eq.(' ')) ftime(i) = '0'
-   enddo
-   write(UNIT=temp,fmt='(a17)')'.nldasforce-b.grb'
-   read(UNIT=temp,fmt='(17a1)') fsubs
-   write(UNIT=temp,fmt='(a40)') nldas2dir                       
-   read(UNIT=temp,fmt='(40a1)') fbase
-   c=0
-   do i=1,40
-      if(fbase(i).eq.(' ').and.c.eq.0)c=i-1
-   enddo
-   write(UNIT=temp,fmt='(80a1)')(fbase(i),i=1,c), (fdir(i),i=1,15), & 
-        (ftime(i),i=1,10),(fsubs(i),i=1,17 ) 
-   read(UNIT=temp,fmt='(a80)') filename
-
+   filename = trim(nldas2dir) // '/' // fyr // '/' // fdate // '/' // ftime // fsubsext
+   
    return
+
  end subroutine ncep_nldas2fileb
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ subroutine read_ARSsmobs(Obj_Space)
   use LIS_timeMgrMod, only : LIS_calendar, LIS_tick
   use LIS_logMod,     only : LIS_logunit, LIS_verify, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_fileIOMod,      only : LIS_readData
   use ARSsm_obsMod, only : ARSsm_obs_struc
 
@@ -43,10 +44,10 @@ subroutine read_ARSsmobs(Obj_Space)
 
   type(ESMF_Field)    :: smcField
 !  type(ESMF_Field)    :: smstdField
-  character*100       :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical             :: data_update
   integer             :: i
-  character*200         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   logical               :: file_exists

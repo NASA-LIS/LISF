@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -131,6 +131,7 @@ contains
        end if
 
        ! Count number of messages
+       write(ldt_logunit,*)'[INFO] Reading ', trim(gribfilename)
        call grib_count_in_file(ftn, nvars, ierr)
        if ( ierr .ne. 0 ) then
           write(LDT_logunit,*) '[WARN] in grib_count_in_file ' // &
@@ -140,8 +141,6 @@ contains
        endif
 
        ! Start searching through the messages
-       write(LDT_logunit,*)'[INFO] Reading ', trim(gribfilename)
-
        do k = 1, nvars
 
           call grib_new_from_file(ftn, igrib, ierr)

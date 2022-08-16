@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine get_cmorph(n, findex)
   use LDT_timeMgrMod, only : LDT_tick, LDT_get_nstep
   use cmorph_forcingMod, only :cmorph_struc
   use LDT_logMod,  only : LDT_logunit
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -67,7 +68,7 @@ subroutine get_cmorph(n, findex)
 ! Times used in HUFFMAN to determine data and file filename boundaries (see below)
   integer :: order
   real    :: gmt1,gmt4,ts1,ts4
-  character(len=99) :: filename ! Filefilename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: filename ! Filefilename variables for precip data sources
 
 !=== End Variable Definition =======================
 
@@ -132,10 +133,10 @@ subroutine get_cmorph(n, findex)
      if(LDT_masterproc) then
       if (sectionofcmorph .EQ. 1) then
         write(LDT_logunit,*) 'Getting new CMORPH precip data first 30 minutes'
-        write(LDT_logunit,*) filename
+        write(LDT_logunit,*) trim(filename)
       else
         write(LDT_logunit,*) 'Getting new CMORPH precip data second 30 minutes'
-        write(LDT_logunit,*) filename
+        write(LDT_logunit,*) trim(filename)
       endif
      end if
      order = 2

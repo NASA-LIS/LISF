@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -144,6 +144,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_rtmrunId  = "RTM output processing"
    character*50, public,  parameter :: LVT_557postId = "557 post"
    character*50, public,  parameter :: LVT_usafsipostId = "USAFSI post"
+   character*50, public,  parameter :: LVT_LISpostId = "LIS postprocessing"
 
 !-------------------------------------------------------------------------
 ! Domains

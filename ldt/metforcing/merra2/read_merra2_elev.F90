@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -107,7 +107,7 @@ subroutine read_merra2_elev( n, findex, merra2elev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "[INFO] Reading the MERRA-2 terrain height file: ", &
-        merra2_struc(n)%merra2hgt_file
+        trim(merra2_struc(n)%merra2hgt_file)
 
 #if (defined USE_NETCDF4) 
 

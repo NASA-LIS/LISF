@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,8 +16,8 @@ import sys
 
 template = "template/lvt.config.template.noah39"
 
-startdt = datetime.datetime(2007, 12, 1, 0)
-enddt = datetime.datetime(2007, 12, 2, 0)
+startdt = datetime.datetime(2007, 12, 1, 12)
+enddt = datetime.datetime(2007, 12, 2, 12)
 
 output = "netcdf"
 #output = "grib2"

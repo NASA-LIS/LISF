@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine read_ALMIPIIalbedo(n, wt1,wt2,array1,array2)
   use ESMF
   use LIS_coreMod
   use LIS_logMod,         only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use LIS_albedoMod,  only : LIS_alb
   use LIS_timeMgrMod
 
@@ -54,7 +55,7 @@ subroutine read_ALMIPIIalbedo(n, wt1,wt2,array1,array2)
 !  \end{description}
 !
 !EOP      
-  character*100               :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   character*100               :: temp
   logical                     :: file_exists
   integer                     :: yr

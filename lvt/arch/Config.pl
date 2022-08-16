@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -169,8 +169,14 @@ elsif($opt_lev == 1) {
    $sys_c_opt = "";
 }
 elsif($opt_lev == 2) {
+   if($sys_arch eq "cray_cray") {
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0 ";
+      $sys_c_opt = "";
+   }
+   else {
    $sys_opt = "-O2 ";
    $sys_c_opt = "";
+   }
 }
 elsif($opt_lev == 3) {
    $sys_opt = "-O3 ";

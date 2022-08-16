@@ -1,0 +1,70 @@
+name: Build HTML docs and deploy to gh-pages 
+on:
+  push:
+    branches:
+      - master       # run on push to master (e.g., PR merge)
+    paths:
+      - '**.adoc'    # run ONLY when an *.adoc file is created/modified
+  workflow_dispatch: # enables manual initiation of workflow from Actions tab of repo
+
+jobs:
+
+  render-and-push-docs:
+    runs-on: ubuntu-latest
+    env:  # set global environment variables
+      OUT_DIR: htmldocs
+      IMAGE_DIR: images
+
+    steps:
+      - name: Checkout LISF
+        uses: actions/checkout@v3
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.6   # Not needed with a .ruby-version file
+          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+
+      - name: Install Asciidoctor
+        run: |
+          gem install asciidoctor
+
+          asciidoctor --version
+
+      - name: Render Docs
+        working-directory: ./docs    # set working directory for following run command
+        run: |
+
+          # render index page
+          asciidoctor README.adoc --backend=html5 --destination-dir=${{ env.OUT_DIR }} --out-file index.html
+
+          # loop over directories in docs/
+          for DIR in */; do
+            # root doc file should have same name as the enclosing directory
+            # (e.g., LIS_users_guide/LIS_users_guide.adoc)
+            INFILE="${DIR}${DIR%/}.adoc"
+            DEST_DIR="${{ env.OUT_DIR }}/${DIR}"
+
+            # if the directory contains an asciidoc file of the same name
+            if [ -f ${INFILE} ]; then
+              # generate HTML version (asciidoctor-mathematical not needed for HTML)
+              echo "Converting ${INFILE} ......."
+              asciidoctor ${INFILE} --backend=html5 --destination-dir=${DEST_DIR}
+            else
+              echo "[WARN] ${DIR} does not contain an Asciidoc file of the same name. Skipping."
+            fi
+          done
+
+          # find images directories within doc directories
+          IMAGE_DIRS=$(find . -type d -name ${{ env.IMAGE_DIR }} -not -path "./${{ env.OUT_DIR }}/*")
+
+          # copy any image directories into the output directory
+          for DIR in ${IMAGE_DIRS}; do
+            cp -r ${DIR} ${{ env.OUT_DIR }}/${DIR}/
+          done
+
+      - name: Push ${{ env.OUT_DIR }}/ to gh-pages branch
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs/${{ env.OUT_DIR }} # The folder the action should deploy.

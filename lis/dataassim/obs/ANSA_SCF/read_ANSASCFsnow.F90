@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine read_ANSASCFsnow(n, OBS_State,OBS_Pert_State)
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !  use LIS_pluginIndices, only : LIS_ANSASCFsnowobsId
   use ANSASCFsnow_Mod, only : ANSASCFsnow_struc
 
@@ -65,7 +66,7 @@ subroutine read_ANSASCFsnow(n, OBS_State,OBS_Pert_State)
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
-  character*100                 :: obsdir, ansa_filename
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, ansa_filename
   integer(hid_t)                :: file_id, sca_field_id
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
@@ -128,7 +129,7 @@ subroutine read_ANSASCFsnow(n, OBS_State,OBS_Pert_State)
      inquire(file=ansa_filename,exist=file_exists)
      if(file_exists) then 
 
-        write(LIS_logunit,*)  'Reading ANSA SCF data for EnKF assimilation',ansa_filename
+        write(LIS_logunit,*)  'Reading ANSA SCF data for EnKF assimilation',trim(ansa_filename)
         allocate(dims(2))
 
         dims(1) = ANSASCFsnow_struc(n)%nc

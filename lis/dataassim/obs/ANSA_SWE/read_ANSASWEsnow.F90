@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine read_ANSASWEsnow(n, OBS_State, OBS_Pert_State)
   use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_npes, LIS_localPet
   use LIS_timeMgrMod, only : LIS_calendar, LIS_clock
   use LIS_logMod,     only : LIS_logunit, LIS_endrun, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_pluginIndices, only : LIS_ANSASWEsnowobsId
   use ANSASWEsnow_Mod, only : ANSASWEsnow_struc
 
@@ -64,7 +65,7 @@ subroutine read_ANSASWEsnow(n, OBS_State, OBS_Pert_State)
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
-  character*100                 :: obsdir, ansa_filename
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, ansa_filename
   integer                       :: file_id, swe_field_id
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
@@ -111,7 +112,7 @@ subroutine read_ANSASWEsnow(n, OBS_State, OBS_Pert_State)
      inquire(file=ansa_filename,exist=file_exists)
      if(file_exists) then 
 
-        write(LIS_logunit,*)  'Reading ANSA SWE data ',ansa_filename
+        write(LIS_logunit,*)  'Reading ANSA SWE data ',trim(ansa_filename)
         
         allocate(dims(2))
         dims(1) = ANSASWEsnow_struc(n)%nc
@@ -309,9 +310,8 @@ subroutine ANSAsnow_filename2(name, ndir, yr, mo,da)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name, ndir
   integer           :: yr, mo, da
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates a timestamped ANSA filename

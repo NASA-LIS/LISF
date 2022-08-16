@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -50,6 +50,7 @@ module clm2_lsmMod
 !
 ! !USES:
   use clm2type
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -65,9 +66,9 @@ module clm2_lsmMod
 !EOP
 
   type, public :: clm_type_dec
-     character*100 :: clm_rfile 
-     character*100 :: clm_vfile 
-     character*100 :: clm_chtfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_rfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_vfile 
+     character(len=LIS_CONST_PATH_LEN) :: clm_chtfile 
      integer      :: count
      integer      :: clmopen
      integer      :: numout

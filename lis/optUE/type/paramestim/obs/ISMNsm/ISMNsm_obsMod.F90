@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,7 @@
 module ISMNsm_obsMod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -36,7 +37,7 @@ module ISMNsm_obsMod
   type, public :: ismnstn
      integer                    :: vlevels
      real                       :: lat,lon
-     character*500, allocatable :: fname(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: fname(:)
      real,         allocatable  :: sm(:,:)
      real,         allocatable  :: sfsm(:)
      real,         allocatable  :: rzsm(:)
@@ -45,7 +46,7 @@ module ISMNsm_obsMod
 
   type, public ::  ISMNsm_obs_data_dec
 
-     character*500               :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
      integer                     :: yr
      integer                     :: n_stns
      integer                     :: nts 
@@ -90,9 +91,9 @@ contains
     integer                   ::  n 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
-    character*100             ::  obsdir
+    character(len=LIS_CONST_PATH_LEN) ::  obsdir
     character*100             ::  vname
-    character*100             ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                 :: k
     integer                 :: ftn
     integer                 :: status

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_amsr2Mod
@@ -41,13 +47,13 @@ contains
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=100), intent(in)  :: amsr2_in
-      character(len=100), intent(in)  :: amsr2
+      character(len=255), intent(in)  :: amsr2_in
+      character(len=255), intent(in)  :: amsr2
       integer,            intent(in)  :: option
 
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=256)              :: filename, nc_filename
+      character(len=255)              :: filename, nc_filename
       !integer,           dimension(:), allocatable :: surflag0, surflag
       character(len=10), dimension(:), allocatable :: date0, date10_arr
       real,              dimension(:), allocatable :: lat0, lon0, tb10h0, tb10v0, tb19h0, tb19v0, &
@@ -222,7 +228,7 @@ contains
       implicit none
 
       !Arguments
-      character(len=256), intent(in) :: filename
+      character(len=255), intent(in) :: filename
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real,         allocatable, intent(inout) :: lat(:), lon(:)
       real,         allocatable, intent(inout) :: tb10h(:), tb10v(:), tb19h(:), tb19v(:), &
@@ -238,6 +244,7 @@ contains
                                                   tb23h_raw(:,:), tb23v_raw(:,:), &
                                                   tb37h_raw(:,:), tb37v_raw(:,:), &
                                                   tb89h_raw(:,:), tb89v_raw(:,:)
+#if (defined USE_HDF5)
       integer(hsize_t), dimension(2)           :: dims_lat, maxdims_lat
       integer(hsize_t), dimension(2)           :: dims_lon, maxdims_lon
       integer(hsize_t), dimension(3)           :: dims_tb, maxdims_tb
@@ -627,7 +634,7 @@ contains
 
       call h5close_f(status)
       call LDT_verify(status,'Error in H5CLOSE call') 
-
+#endif
    end subroutine read_amsr2_attributes
 
 
@@ -669,8 +676,8 @@ contains
 
       ! Local variables
       integer                             :: i
-      character(len=256)                  :: ff_filename
-      character(len=256)                  :: fd_filename
+      character(len=255)                  :: ff_filename
+      character(len=255)                  :: fd_filename
       real                                :: pd19,pd37,pd89,tt,si89, &
            scat,sc37,sc89,scx
       logical                             :: flag
@@ -1298,7 +1305,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=256), intent(in) :: ff_filename
+      character (len=255), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -1328,7 +1335,7 @@ contains
    subroutine read_forestfraction(ff_filename, ff)
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
-      character (len=256), intent(in) :: ff_filename
+      character (len=255), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
       write(LDT_logunit,*) &
            "[ERR] Recompile LDT with netCDF4 support!"
@@ -1347,7 +1354,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=256), intent(in) :: fd_filename
+      character (len=255), intent(in) :: fd_filename
       real, intent(out)           :: fd(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -1382,11 +1389,11 @@ contains
 
       ! Arguments
       character*10,       intent(in) :: date10
-      character*100,      intent(in) :: amsr2_in
+      character*255,      intent(in) :: amsr2_in
 
       ! Local variables
       integer            :: eof, n, i, j, k
-      character(len=256)             :: file_path, cmd
+      character(len=255)             :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
       character*2                    :: st_hr_str, cnt

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,7 +20,7 @@
 !   10/18/19: Mahdi Navari, Shugong Wang; initial implementation for Crocus81 with LIS-7
 !
 ! !INTERFACE:
-subroutine Crocus81_finalize(n)
+subroutine Crocus81_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use Crocus81_lsmMod

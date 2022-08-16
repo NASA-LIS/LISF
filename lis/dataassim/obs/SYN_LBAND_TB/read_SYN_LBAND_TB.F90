@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine read_SYN_LBAND_TB(n, OBS_State, OBS_Pert_State)
   use LIS_logMod,     only : LIS_logunit, LIS_endrun, & 
        LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
   use SYN_LBAND_TB_Mod, only : SYN_LBAND_TB_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -47,8 +48,8 @@ subroutine read_SYN_LBAND_TB(n, OBS_State, OBS_Pert_State)
 !
 !EOP
   integer                :: status, iret, ierr
-  character*100          :: lbandobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: lbandobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,c1,r1,nc,grid_id
   integer                :: ftn

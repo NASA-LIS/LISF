@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ module LIS_forecastMod
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_numerRecipesMod
   use LIS_ran2_gasdev
 
@@ -51,7 +52,7 @@ module LIS_forecastMod
      integer                 :: st_iterId
      integer                 :: iterId
      character*50            :: startMode
-     character*100           :: rstfilename
+     character(len=LIS_CONST_PATH_LEN) :: rstfilename
      integer, allocatable    :: seed(:,:)
 
   end type forecast_type_dec
@@ -146,8 +147,8 @@ contains
     integer         :: n 
     integer         :: ios
     integer         :: ftn    
-    character*100   :: out_dname
-    character*100   :: rst_fname
+    character(len=LIS_CONST_PATH_LEN) :: out_dname
+    character(len=LIS_CONST_PATH_LEN) :: rst_fname
     character*4     :: fiter
     integer, external :: LIS_create_subdirs 
     character(len=201) :: c_string  
@@ -188,8 +189,8 @@ contains
     integer         :: n 
     integer         :: ftn    
     integer         :: iterid
-    character*100   :: out_dname
-    character*100   :: rst_fname    
+    character(len=LIS_CONST_PATH_LEN) :: out_dname
+    character(len=LIS_CONST_PATH_LEN) :: rst_fname    
 
     n = 1
     rst_fname = LIS_forecast_struc(n)%rstfilename

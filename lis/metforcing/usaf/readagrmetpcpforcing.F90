@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,9 +61,13 @@ subroutine readagrmetpcpforcing(n,findex, order)
         USAF_analyzeprecip, USAF_split12hrgaugeobsdata, USAF_analyzeprecip, &
         USAF_countGoodObs,USAF_waterQC,USAF_filterObsData,USAF_dupQC, &
         USAF_snowQC,USAF_snowDepthQC,USAF_backQC,USAF_superstatQC
+   !use USAF_ImergHHMod, only: newImergHHPrecip, destroyImergHHPrecip, &
+   !     update30minImergHHPrecip,copyToObsDataImergHHPrecip, &
+   !     calc3hrImergHHPrecip, count3hrObsImergHHPrecip, &
+   !     create_Imerg_HH_filename, fetch3hrImergHH
    use USAF_ImergHHMod, only: newImergHHPrecip, destroyImergHHPrecip, &
         update30minImergHHPrecip,copyToObsDataImergHHPrecip, &
-        calc3hrImergHHPrecip, count3hrObsImergHHPrecip, &
+        count3hrObsImergHHPrecip, &
         create_Imerg_HH_filename, fetch3hrImergHH
    use USAF_OBAMod, only: OBA,destroyOBA,makeFilename,writeToFile
 
