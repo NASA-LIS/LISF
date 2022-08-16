@@ -6,7 +6,7 @@
 ====
 If you have not set up your computing environment to compile and run the LISF code, review the {url-lisf-docs}[official documentation,window=_blank].
 
-Users on NASA's NCCS Discover HPC system may follow instructions in this link:{url-lis-bootcamp}/LIS-on-NCCS-discover.html[Quick Start guide].
+Users on NASA's NCCS Discover HPC system should review _Quick Start Guide for NCCS Discover Users_ in link:{url-lisf-docs}[our docs].
 ====
 
 == Create a working directory

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_glacierFractionMod
@@ -24,6 +30,7 @@ module LDT_glacierFractionMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -45,7 +52,7 @@ module LDT_glacierFractionMod
 
   type, public :: glacierfrac_type_dec
 
-     character*140     :: glacierfracfile
+     character(len=LDT_CONST_PATH_LEN)     :: glacierfracfile
      real, allocatable :: glacierfrac_gridDesc(:)
      character*50      :: glacierfrac_proj
 

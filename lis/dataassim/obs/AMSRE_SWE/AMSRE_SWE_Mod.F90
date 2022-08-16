@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@
 module AMSRE_SWE_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -101,7 +102,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  amsresweobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  amsresweobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
@@ -136,7 +137,7 @@ contains
        call LIS_verify(status, 'AMSR-E SWE data directory: is missing')
 
        call ESMF_AttributeSet(OBS_State(n),"Data Directory",&
-            amsresweobsdir, rc=status)
+            trim(amsresweobsdir), rc=status)
        call LIS_verify(status)
     enddo
 

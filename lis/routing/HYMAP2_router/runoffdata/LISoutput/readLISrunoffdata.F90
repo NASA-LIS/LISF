@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,7 +18,6 @@
 ! 
 ! !USES: 
 subroutine readLISrunoffdata(n,surface_runoff, baseflow)
-
   use LIS_coreMod
   use LIS_logMod
   use LISrunoffdataMod
@@ -66,7 +65,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   !create LIS filename
 
   call LIS_create_output_filename(n, &
-       filename, check_flag, &
+       filename, "netcdf", check_flag, &
        model_name='SURFACEMODEL', &
        odir=LISrunoffdata_struc(n)%odir,&
        writeint=LISrunoffdata_struc(n)%outInterval)
@@ -128,6 +127,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
             
             ios = nf90_get_var(nid,qsbid,qsb2d)
             call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
+
 
             if(LIS_isAtAfinerResolution(n,LISrunoffdata_struc(n)%datares)) then
 

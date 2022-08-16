@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -135,7 +135,7 @@ contains
 
       ! FORMAT STATEMENTS.
 6000  format (/, 1X, 75('*'))
-6200  format ('[ERR] ', A)
+6200  format (A)
 6400  format (A)
 6600  format (1X, 75('*'))
 8000  format (/, 1X, 75('*'),                                          &
@@ -386,11 +386,12 @@ contains
       ! Arguments
       character*12, intent(in)    :: program_name     ! NAME OF CALLING ROUTINE
       character*12, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
-      character*90, intent(in)    :: message (msglns) ! ERROR MESSAGE FROM CALLER
+      character(len=*), intent(in) :: message (msglns) ! ERROR MESSAGE FROM CALLER
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
-      character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character*40                :: message_file     ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
       integer                     :: i                ! DO LOOP COUNTER
@@ -453,7 +454,7 @@ contains
 
       ! FORMAT STATEMENTS.
 6000  format (/, 1X, 75('*'))
-6200  format ('[WARN] ', A)
+6200  format (A)
 6400  format (A)
 6600  format (1X, 75('*'))
 8000  format (/, 1X, 75('*'),                                          &
@@ -640,7 +641,7 @@ contains
       ! Arguments
       integer*1,     intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*100, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
@@ -749,7 +750,7 @@ contains
       ! Arguments
       integer,       intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*100, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION

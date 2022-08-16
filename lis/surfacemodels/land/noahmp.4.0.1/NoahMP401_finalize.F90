@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,7 +21,7 @@
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP401 with LIS-7
 !
 ! !INTERFACE:
-subroutine NoahMP401_finalize(n)
+subroutine NoahMP401_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use NoahMP401_lsmMod

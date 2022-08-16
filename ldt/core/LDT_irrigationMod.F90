@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,6 +31,7 @@ module LDT_irrigationMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -52,9 +53,9 @@ module LDT_irrigationMod
 
   type, public :: irrig_type_dec
 
-     character*140    :: irrigtypefile
-     character*140    :: irrigfracfile
-     character*140    :: irriggwratiofile
+     character(len=LDT_CONST_PATH_LEN)    :: irrigtypefile
+     character(len=LDT_CONST_PATH_LEN)    :: irrigfracfile
+     character(len=LDT_CONST_PATH_LEN)    :: irriggwratiofile
      real, allocatable :: irrig_gridDesc(:)
      character*50     :: irrig_proj
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine get_TRMM3B42V6(n, findex)
   use LDT_timeMgrMod, only        : LDT_time2date, LDT_tick, LDT_get_nstep, &
                                     LDT_isAlarmRinging ! SY
   use LDT_logMod, only            : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use TRMM3B42V6_forcingMod, only : TRMM3B42V6_struc
   use LDT_metforcingMod, only     : LDT_forc ! SY
 
@@ -65,7 +66,7 @@ subroutine get_TRMM3B42V6(n, findex)
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2, ts2               ! SY: Time parameters for TRMM data time nearest to start of model time step
   integer :: doy3, yr3, mo3, da3, hr3, mn3, ss3, ts3               ! SY: Time parameters for TRMM data time nearest to end of model time step
   real    :: gmt1, gmt2, gmt3 ! SY ,kgmt3, mgmt3
-  character(len=80) :: name ! Filename variables for precip data sources
+  character(len=LDT_CONST_PATH_LEN) :: name ! Filename variables for precip data sources
   real*8 :: LDT_timeAtTStepStart_add90min ! SY
   real*8 :: LDT_timeAtTStepEnd_add90min ! SY
   integer :: order
@@ -179,7 +180,7 @@ subroutine get_TRMM3B42V6(n, findex)
                           TRMM3B42V6_struc(n)%TRMM3B42V6mo_TStepStart, &
                           TRMM3B42V6_struc(n)%TRMM3B42V6da_TStepStart, &
                           TRMM3B42V6_struc(n)%TRMM3B42V6hr_TStepStart )
-     write(LDT_logunit, *)'Getting new TRMM 3B42V6 satellite precip data:', name
+     write(LDT_logunit, *)'Getting new TRMM 3B42V6 satellite precip data:', trim(name)
      order = 1
      call read_TRMM3B42V6(n, name, findex, order, ferror_TRMM3B42V6)
    elseif (.NOT. ((TRMM3B42V6_struc(n)%TRMM3B42V6yr_TStepStart .EQ. &
@@ -219,7 +220,7 @@ subroutine get_TRMM3B42V6(n, findex)
                           TRMM3B42V6_struc(n)%TRMM3B42V6mo_TStepEnd, &
                           TRMM3B42V6_struc(n)%TRMM3B42V6da_TStepEnd, &
                           TRMM3B42V6_struc(n)%TRMM3B42V6hr_TStepEnd )
-     write(LDT_logunit, *)'Getting new TRMM 3B42V6 satellite precip data:', name
+     write(LDT_logunit, *)'Getting new TRMM 3B42V6 satellite precip data:', trim(name) 
      order = 2
      call read_TRMM3B42V6(n, name, findex, order, ferror_TRMM3B42V6)
    endif
@@ -268,6 +269,7 @@ end subroutine get_TRMM3B42V6
 subroutine TRMM3B42V6file( name, n, yr, mo, da, hr)
 
   use TRMM3B42V6_forcingMod, only : TRMM3B42V6_struc
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
 !EOP
   implicit none
@@ -276,8 +278,8 @@ subroutine TRMM3B42V6file( name, n, yr, mo, da, hr)
 
 !==== Local Variables=======================
 
-  character(len=80) :: name, TRMM3B42V6dir
-  character*160 temp
+  character(len=LDT_CONST_PATH_LEN) :: name, TRMM3B42V6dir
+  character(len=LDT_CONST_PATH_LEN) :: temp
   integer :: yr, mo, da, hr
   integer :: i, j
   integer :: uyr, umo, uda, uhr, umn, uss
@@ -297,10 +299,10 @@ subroutine TRMM3B42V6file( name, n, yr, mo, da, hr)
 
    original = 2
    if (original .eq. 1) then     !  1. original: /abc/3B42.980131.12.6.precipitation
-     write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') TRMM3B42V6dir, '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
+     write(temp, '(a, a, I4, I2.2, a, 3I2.2, a, I2, a)') trim(TRMM3B42V6dir), '/', yr, mo, '/3B42.', uyr, umo, uda, '.', &
           uhr,  '.6.precipitation'
    else                          !  2. renamed: TRMM3B42V6.2005110809
-     write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') TRMM3B42V6dir, '/', yr, mo, '/3B42V6.', yr, umo, uda, uhr
+     write(temp, '(a, a, I4, I2.2, a, I4, 3I2.2)') trim(TRMM3B42V6dir), '/', yr, mo, '/3B42V6.', yr, umo, uda, uhr
    end if
 
   !strip off the spaces

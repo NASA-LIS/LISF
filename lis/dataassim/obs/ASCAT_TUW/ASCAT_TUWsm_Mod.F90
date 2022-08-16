@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ module ASCAT_TUWsm_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -104,7 +105,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  ascattuwsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  ascattuwsmobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
@@ -114,8 +115,8 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
 
 !    integer                :: c,r

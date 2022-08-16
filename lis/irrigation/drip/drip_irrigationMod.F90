@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ module drip_irrigationMod
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod, only :  LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -48,7 +49,7 @@ contains
     real,  pointer       :: irrigFrac(:), frac(:)
     real,  pointer       :: irrigRootdepth(:), rootdepth(:)
     real,  pointer       :: irrigScale(:),scale(:)
-    character*100        :: maxrootdepthfile
+    character(len=LIS_CONST_PATH_LEN) :: maxrootdepthfile
 
     do n=1,LIS_rc%nnest
        allocate(irrigFrac(LIS_rc%npatch(n,LIS_rc%lsm_index)))

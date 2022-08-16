@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -93,6 +93,8 @@ subroutine noahmp401_qc_snowobs(n,k,OBS_State)
         if(fveg_obs(t).gt.0.7) then
            snowobs(t) = LIS_rc%udef
         elseif(vegt_obs(t).le.4) then !forest types
+           snowobs(t) = LIS_rc%udef
+        elseif(vegt_obs(t).eq.LIS_rc%glacierclass) then !TML: Eliminate Glaciers
            snowobs(t) = LIS_rc%udef
 !assume that snow will not form at 5 deg. celcius or higher ground temp. 
        elseif(tv_obs(t).ge.278.15) then
