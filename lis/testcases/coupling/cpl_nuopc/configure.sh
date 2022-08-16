@@ -24,6 +24,8 @@ usage () {
   printf "  --compiler=COMPILER\n"
   printf "      compiler to use; valid options are 'intel.X.Y.Z', \n"
   printf "      'gnu.X.Y.Z'; default is system dependent.\n"
+  printf "  --auto\n"
+  printf "      run non-interactive configuration\n"
   printf "\n"
 }
 
@@ -34,6 +36,7 @@ settings () {
   printf "  LISF_DIR=${LISF_DIR}\n"
   printf "  SYSTEM=${SYSTEM}\n"
   printf "  COMPILER=${MYCOMPILER}\n"
+  printf "  INTERACTIVE=${INTERACTIVE}\n"
   printf "\n"
 }
 
@@ -48,6 +51,8 @@ find_system () {
 LISF_DIR="$(cd "$(dirname "$(readlink -f -n "${BASH_SOURCE[0]}" )")/../../../.." && pwd -P)"
 SYSTEM=""
 MYCOMPILER=""
+INTERACTIVE=true
+RC=0
 
 # required arguments
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
@@ -65,6 +70,9 @@ while :; do
     --compiler=?*) MYCOMPILER=${1#*=} ;;
     --compiler) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
     --compiler=) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
+    --auto) INTERACTIVE=false ;;
+    --auto=?*) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
+    --auto=) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
     -?*) printf "ERROR: Unknown option $1\n"; usage; exit 1 ;;
     *) break
   esac
@@ -107,6 +115,28 @@ export ESMFMKFILE="${LIS_LIBESMF}/esmf.mk"
 export WRF_HYDRO="1"
 
 # configure
-cd ${LISF_DIR}/lis && ./configure
+printf "*************************************************\n"
+printf "***          LIS BUILD CONFIGURATION          ***\n"
+printf "*************************************************\n"
+if [ ! -f "${LISF_DIR}/lis/configure" ]; then
+  printf "ERROR: LIS configure file is missing\n"
+  exit 1
+else
+  cd ${LISF_DIR}/lis
+fi
+if [ "${INTERACTIVE}" = true ]; then
+  ./configure; RC=$?
+else
+  echo "" | ./configure; RC=$?
+fi
+if [ ! -f "make/configure.lis" ]; then
+  RC=1
+fi
+printf "\n"
+
+if [ $RC -ne 0 ]; then
+  printf "ERROR: configuration failed.\n"
+  exit 1
+fi
 
 exit 0
