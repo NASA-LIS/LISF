@@ -116,6 +116,11 @@ subroutine LIS_metforcing_plugin
    use gdas_forcingMod
 #endif
 
+#if ( defined MF_GDASBC )
+   use gdasbc_forcingMod
+#endif
+      
+
 #if ( defined MF_ECMWF )
    use ecmwf_forcingMod
 #endif
@@ -338,6 +343,13 @@ subroutine LIS_metforcing_plugin
    external reset_gdas
    external finalize_gdas
 #endif
+
+#if ( defined MF_GDASBC )
+   external get_gdasbc
+   external timeinterp_gdasbc
+   external reset_gdasbc
+   external finalize_gdasbc
+#endif   
 
 #if ( defined MF_ECMWF )
    external get_ecmwf
@@ -707,6 +719,15 @@ subroutine LIS_metforcing_plugin
    call registerresetmetforc(trim(LIS_gdasId)//char(0),reset_gdas)
    call registerfinalmetforc(trim(LIS_gdasId)//char(0),finalize_gdas)
 #endif
+
+#if ( defined MF_GDASBC )
+! - GDAS (GSFC) Forcing:
+   call registerinitmetforc(trim(LIS_gdasbcId)//char(0),init_gdasbc)
+   call registerretrievemetforc(trim(LIS_gdasbcId)//char(0),get_gdasbc)
+   call registertimeinterpmetforc(trim(LIS_gdasbcId)//char(0),timeinterp_gdasbc)
+   call registerresetmetforc(trim(LIS_gdasbcId)//char(0),reset_gdasbc)
+   call registerfinalmetforc(trim(LIS_gdasbcId)//char(0),finalize_gdasbc)
+#endif   
 
 #if ( defined MF_ECMWF )
 ! - ECMWF Forcing:

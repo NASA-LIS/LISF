@@ -121,6 +121,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_pptensfcstId      = "PPTEnsFcst"
 
    character*50, public,  parameter :: LIS_gdasId            = "GDAS"
+   character*50, public,  parameter :: LIS_gdasbcId          = "GDAS bias corrected"
    character*50, public,  parameter :: LIS_gdasT1534Id       = "GDAS T1534"
    character*50, public,  parameter :: LIS_geos5fcstId       = "GEOS5 forecast"
    character*50, public,  parameter :: LIS_gefsId            = "GEFS forecast"

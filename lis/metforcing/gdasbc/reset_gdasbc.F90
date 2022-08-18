@@ -1,0 +1,38 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LIS_misc.h"
+!BOP
+! !MODULE: reset_gdasbc
+!  \label{reset_gdasbc}
+!
+! !REVISION HISTORY: 
+! 25Oct2005; Sujay Kumar, Initial Code
+! 
+! !INTERFACE:
+subroutine reset_gdasbc()
+! !USES:
+  use LIS_coreMod,       only : LIS_rc
+  use gdasbc_forcingMod, only : gdasbc_struc
+!
+! !DESCRIPTION:
+!  Routine to reset gdasbc forcing related memory allocations.   
+! 
+!EOP
+  implicit none
+  
+  integer   :: n
+  integer   :: findex
+
+  do n=1,LIS_rc%nnest
+     gdasbc_struc(n)%gdasbctime1 = 3000.0
+     gdasbc_struc(n)%gdasbctime2 = 0.0
+  enddo
+
+end subroutine reset_gdasbc
