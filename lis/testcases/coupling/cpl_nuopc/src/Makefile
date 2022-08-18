@@ -28,10 +28,10 @@ endif
 
 include $(ESMFMKFILE)
 ifneq ($(filter $(COMPILER),INTEL Intel intel),)
-ESMF_F90COMPILEOPTS += -O0 -traceback -check arg_temp_created,bounds,format,output_conversion,stack,uninit
+ESMF_F90COMPILEOPTS += -O0 -g -traceback -check arg_temp_created,bounds,format,output_conversion,stack,uninit
 endif
 ifneq ($(filter $(COMPILER),GNU Gnu gnu),)
-ESMF_F90COMPILEOPTS += -O0 -Wall -Wextra -Wconversion -Wno-unused -Wno-unused-dummy-argument -fbacktrace -fimplicit-none -fcheck=all,no-pointer
+ESMF_F90COMPILEOPTS += -O0 -g -Wall -Wextra -Wconversion -Wno-unused -Wno-unused-dummy-argument -fbacktrace -fimplicit-none -fcheck=all,no-pointer
 endif
 
 # -----------------------------------------------------------------------------

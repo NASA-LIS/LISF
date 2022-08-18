@@ -156,7 +156,7 @@ fi
 if [ "${INTERACTIVE}" = true ]; then
   ./configure; RC=$?
 else
-  echo "" | ./configure; RC=$?
+  echo -ne '\n-2' | ./configure; RC=$?
 fi
 if [ ! -f "make/configure.lis" ]; then
   RC=1
