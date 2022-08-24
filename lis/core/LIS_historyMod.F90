@@ -8720,7 +8720,7 @@ end subroutine writevar_grib2_withstats_real
     max=-100000.
     count1 = 0 
     do t=1,ntiles
-       if(var(t).ne.udef)then
+       if(.not.isNaN(var(t)).and. var(t).ne.udef)then
           count1 = count1 +1
           vsum=vsum+var(t)
           if(var(t).gt.max)max=var(t)
@@ -8854,7 +8854,7 @@ end subroutine writevar_grib2_withstats_real
     max=-100000.
     count1 = 0 
     do t=1,ntiles
-       if(var(t).ne.udef)then
+       if(.not.isNaN(var(t)).and. var(t).ne.udef)then
           count1 = count1 +1
           vsum=vsum+var(t)
           if(var(t).gt.max)max=var(t)
