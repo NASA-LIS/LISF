@@ -397,11 +397,11 @@ contains
                  case ("NAFPA_BACK_GALWEM")
                     LDT_climate_struc(n)%climpptfile = &
                          trim(LDT_climate_struc(n)%climpptdir)
-                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                    read(mon2d(k),'(I3)') LDT_climate_struc(n)%climpptimonth
 !                 case ("NAFPA_BACK_GFS")
 !                    LDT_climate_struc(n)%climpptfile = &
 !                         trim(LDT_climate_struc(n)%climpptdir)
-!                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+!                    read(mon2d(k),'(I3)') LDT_climate_struc(n)%climpptimonth
                  case default
                     write(LDT_logunit,*) "[ERR] PPT Climatology Source Not Recognized"
                     write(LDT_logunit,*) trim(LDT_climate_struc(n)%climppt%source)
@@ -419,11 +419,11 @@ contains
                    !case ("NAFPA_BACK_GALWEM")
                    !   LDT_climate_struc(n)%climpptfile2 = &
                    !        trim(LDT_climate_struc(n)%climpptdir2)
-                   !   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                   !   read(mon2d(k),'(I3)') LDT_climate_struc(n)%climpptimonth
                    case ("NAFPA_BACK_GFS")
                       LDT_climate_struc(n)%climpptfile2 = &
                            trim(LDT_climate_struc(n)%climpptdir2)
-                      read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                      read(mon2d(k),'(I3)') LDT_climate_struc(n)%climpptimonth
                    case default
                       write(LDT_logunit,*) "[ERR] PPT Climatology Source 2 Not Recognized"
                       write(LDT_logunit,*) trim(LDT_climate_struc(n)%climppt2%source)
