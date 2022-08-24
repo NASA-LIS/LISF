@@ -336,6 +336,20 @@ contains
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun
           endif
+        case( "NALCMS_SM" )
+          if( nt .lt. 24 .or. nt .ge. 25 ) then
+            write(LDT_logunit,*) "Param_Check: NALCMS_SM has a minimum of 24 types (includes water)."
+            write(LDT_logunit,*) "             Value is currently at: ",nt
+            write(LDT_logunit,*) " Stopping ..."
+            call LDT_endrun
+          endif
+        case( "NALCMS_SM_IGBPNCEP" )
+          if( nt .lt. 20 .or. nt .ge. 21 ) then
+            write(LDT_logunit,*) "Param_Check: NALCMS_SM_IGBPNCEP has a minimum of 20 types (includes water)."
+            write(LDT_logunit,*) "             Value is currently at: ",nt
+            write(LDT_logunit,*) " Stopping ..."
+            call LDT_endrun
+          endif
 #if 0
         case( "CONSTANT" )
           if( nt .lt. 2 ) then
@@ -356,6 +370,8 @@ contains
           write(LDT_logunit,*) "          -- MOSAIC "
           write(LDT_logunit,*) "          -- ISA "
           write(LDT_logunit,*) "          -- CLM45 "
+          write(LDT_logunit,*) "          -- NALCMS_SM "
+          write(LDT_logunit,*) "          -- NALCMS_SM_IGBPNCEP "
           write(LDT_logunit,*) "          -- CONSTANT "
           write(LDT_logunit,*) " Stopping ..."
           call LDT_endrun

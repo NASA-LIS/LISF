@@ -208,6 +208,7 @@ module LDT_pluginIndices
 ! Snow models and data
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
+   character*50, public,  parameter :: LDT_snowmodelId   = "SnowModel"
 
 !-------------------------------------------------------------------------
 ! Landcover sources
@@ -227,6 +228,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_vic411lcId     = "VIC411"
    character*50, public,  parameter :: LDT_vic412lcId     = "VIC412"
    character*50, public,  parameter :: LDT_clm45lcId      = "CLM45"
+   character*50, public,  parameter :: LDT_nalcmsSMlcId   = "NALCMS_SM"
+   character*50, public,  parameter :: LDT_nalcmsSMIGBPlcId  = "NALCMS_SM_IGBPNCEP"
    character*50, public,  parameter :: LDT_constId        = "CONSTANT"
 
 !-------------------------------------------------------------------------
@@ -255,6 +258,7 @@ module LDT_pluginIndices
    character*50, public, parameter :: LDT_srtmLISId  = "SRTM_LIS"
    character*50, public, parameter :: LDT_srtmNATId  = "SRTM_Native"
    character*50, public, parameter :: LDT_merit1KId  = "MERIT_1K"
+   character*50, public, parameter :: LDT_nedSMId    = "NED_SM"
 
 !-------------------------------------------------------------------------
 ! Soils sources

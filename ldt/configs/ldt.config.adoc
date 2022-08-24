@@ -93,6 +93,7 @@ Surface model types:  "LSM"
 |Mosaic |Mosaic
 |HySSIB |HySSIB
 |CLSMF2.5 |Catchment, Fortuna 2.5
+|SnowModel |SnowModel
 |SAC.3.5.6 |Sacramento
 |SNOW17 |Snow17
 |RDHM.3.5.6 |Sacramento+snow17
@@ -772,6 +773,8 @@ endif::devonly[]
 |VIC412 |Variable Infiltration Capacity model, v4.1.2, UMD land cover.
 |ISA |Impervious Surface Area (ISA) landcover dataset.
 |CLM45 |CLM-4.5 landcover dataset.
+|NALCMS_SM |SnowModel-based NALCMS landcover dataset.
+|NALCMS_SM_IGBPNCEP |SnowModel-based NALCMS landcover dataset with IGBPNCEP-mapped classes.
 |CONSTANT |Ability to set a constant landcover type for a set classification.
 |===
 
@@ -1720,6 +1723,7 @@ Current options include:
 |SRTM_LIS |Similar dataset as to the above one but processed by LISF-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
 |MERIT_1K |The MERIT elevation map, but processed by LISF-team to have a resolution '`0.008333`'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
+|NED_SM | SnowModel-based National Elevation Dataset (NED) topographic fields.
 |===
 
 .Example _ldt.config_ entry
@@ -2450,6 +2454,27 @@ CLM45 upper right lat:                    90.0
 CLM45 upper right lon:                   359.375
 CLM45 resolution (dx):                     1.25
 CLM45 resolution (dy):                     0.9424060
+....
+
+If selecting Glen Liston's SnowModel, the following config entires are required.
+
+`Snowmodel topo-veg data source:` specifies which pre-processed SnowModel parameters and file format type to be read in. Currently, only the "`Grads_binary`" option is available.
+
+`Snowmodel topo-veg map:` specifies the directory-file location of the pre-processed SnowModel topographic and vegetation class parameters.
+
+`Snowmodel topo-veg spatial transform:` specifies the type of grid transform for preprocessed SnowModel topographic and vegetation class parameters. Currently, this option is not yet supported and user option is only "`none`" at this time.
+
+`Snowmodel topo-veg map projection:` specifies the SnowModel parameter file projection. Currently, SnowModel parameter projection needs to be set to the same as the LIS domain projection, for now. SnowModel parameters are best provided either on a Lambert projection (in LIS) and supports some equal-area projection grids, like UTM, which is available in LIS. Future support for more options will be added.
+
+`Snowmodel topo-veg fill option:` specifies the type of fill option used with SnowModel parameters. Currently, this feature is not supported, and will be in future versions.
+
+.Example _ldt.config_ entry
+....
+Snowmodel topo-veg data source:     "Grads_binary"
+Snowmodel topo-veg map:        ../SnowModel_Inputs/uppertuo_100m/topo_vege.gdat
+Snowmodel topo-veg spatial transform:  "none"
+Snowmodel topo-veg map projection:    lambert
+Snowmodel topo-veg fill option:        none       
 ....
 
 Potential Evapotranspiration (PET) maps
