@@ -45,6 +45,7 @@ TST_OBJS := $(TST_SRCS:.F90=.o)
 TST_MODS := lis_nuopc_test_atm.mod
 TST_MODS += lis_nuopc_test_drv.mod
 TST_MODS += lis_nuopc_test_hyd.mod
+TST_MODS += lis_nuopc_test_gwr.mod
 TST_EXE  := lis_nuopc_test.exe
 
 # -----------------------------------------------------------------------------
@@ -159,7 +160,7 @@ $(TST_EXE): $(TST_OBJS) $(DEP_LINK_OBJS)
 # -----------------------------------------------------------------------------
 
 lis_nuopc_test_app.o: lis_nuopc_test_drv.o
-lis_nuopc_test_drv.o: lis_nuopc_test_atm.o lis_nuopc_test_hyd.o
+lis_nuopc_test_drv.o: lis_nuopc_test_atm.o lis_nuopc_test_hyd.o lis_nuopc_test_gwr.o
 
 # -----------------------------------------------------------------------------
 # Install

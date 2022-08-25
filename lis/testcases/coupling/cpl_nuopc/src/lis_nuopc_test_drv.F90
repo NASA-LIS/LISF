@@ -9,6 +9,7 @@ module lis_nuopc_test_drv
   use NUOPC_Connector,    only: cpl_ss => SetServices
   use lis_nuopc_test_atm, only: atm_ss => SetServices
   use lis_nuopc_test_hyd, only: hyd_ss => SetServices
+  use lis_nuopc_test_gwr, only: gwr_ss => SetServices
   use lis_nuopc,          only: lis_ss => SetServices
 
   implicit none
@@ -64,6 +65,9 @@ module lis_nuopc_test_drv
     ! local variables
     type(ESMF_Config)             :: config
     type(NUOPC_FreeFormat)        :: attrFF
+    logical                       :: enabledAtm
+    logical                       :: enabledHyd
+    logical                       :: enabledGwr
     integer, allocatable          :: petList(:)
     integer                       :: dt
     type(ESMF_Time)               :: startTime
@@ -91,62 +95,106 @@ module lis_nuopc_test_drv
       line=__LINE__, file=__FILE__)) return
 
     ! create stub atm component
-    call getPetListFromConfig(config, "pets_atm:", petList=petList, rc=rc)
+    call isComponentEnabled(config, "atm", isEnabled=enabledAtm, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    if (allocated(petList)) then
-      call NUOPC_DriverAddComp(driver, "ATM", atm_ss, petList=petList, &
-        comp=child, rc=rc)
+      line=__LINE__, file=__FILE__)) return  ! bail out
+    if (enabledAtm) then
+      call getPetListFromConfig(config, "pets_atm:", petList=petList, rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
         line=__LINE__, file=__FILE__)) return
-      deallocate(petList)
-    else
-      call NUOPC_DriverAddComp(driver, "ATM", atm_ss, comp=child, rc=rc)
+      if (allocated(petList)) then
+        call NUOPC_DriverAddComp(driver, "ATM", atm_ss, petList=petList, &
+          comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+        deallocate(petList)
+      else
+        call NUOPC_DriverAddComp(driver, "ATM", atm_ss, comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+      end if
+      call NUOPC_CompAttributeSet(child, name="Verbosity", value="1", rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
         line=__LINE__, file=__FILE__)) return
-    end if
-    call NUOPC_CompAttributeSet(child, name="Verbosity", value="1", rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    attrFF = NUOPC_FreeFormatCreate(config, label="atmAttributes::", &
-      relaxedflag=.true., rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    call NUOPC_CompAttributeIngest(child, attrFF, addFlag=.true., rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
+      attrFF = NUOPC_FreeFormatCreate(config, label="atmAttributes::", &
+        relaxedflag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_CompAttributeIngest(child, attrFF, addFlag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+    endif
 
     ! create stub hyd component
-    call getPetListFromConfig(config, "pets_hyd:", petList=petList, rc=rc)
+    call isComponentEnabled(config, "hyd", isEnabled=enabledHyd, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    if (allocated(petList)) then
-      call NUOPC_DriverAddComp(driver, "HYD", hyd_ss, petList=petList, &
-        comp=child, rc=rc)
+      line=__LINE__, file=__FILE__)) return  ! bail out
+    if (enabledHyd) then
+      call getPetListFromConfig(config, "pets_hyd:", petList=petList, rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
         line=__LINE__, file=__FILE__)) return
-      deallocate(petList)
-    else
-      call NUOPC_DriverAddComp(driver, "HYD", hyd_ss, comp=child, rc=rc)
+      if (allocated(petList)) then
+        call NUOPC_DriverAddComp(driver, "HYD", hyd_ss, petList=petList, &
+          comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+        deallocate(petList)
+      else
+        call NUOPC_DriverAddComp(driver, "HYD", hyd_ss, comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+      end if
+      call NUOPC_CompAttributeSet(child, name="Verbosity", value="1", rc=rc)
       if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
         line=__LINE__, file=__FILE__)) return
-    end if
-    call NUOPC_CompAttributeSet(child, name="Verbosity", value="1", rc=rc)
+      attrFF = NUOPC_FreeFormatCreate(config, label="hydAttributes::", &
+        relaxedflag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_CompAttributeIngest(child, attrFF, addFlag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+    endif
+
+    ! create stub gwr component
+    call isComponentEnabled(config, "gwr", isEnabled=enabledGwr, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    attrFF = NUOPC_FreeFormatCreate(config, label="hydAttributes::", &
-      relaxedflag=.true., rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    call NUOPC_CompAttributeIngest(child, attrFF, addFlag=.true., rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
-    call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
-      line=__LINE__, file=__FILE__)) return
+      line=__LINE__, file=__FILE__)) return  ! bail out
+    if (enabledGwr) then
+      call getPetListFromConfig(config, "pets_gwr:", petList=petList, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      if (allocated(petList)) then
+        call NUOPC_DriverAddComp(driver, "GWR", gwr_ss, petList=petList, &
+          comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+        deallocate(petList)
+      else
+        call NUOPC_DriverAddComp(driver, "GWR", gwr_ss, comp=child, rc=rc)
+        if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+          line=__LINE__, file=__FILE__)) return
+      end if
+      call NUOPC_CompAttributeSet(child, name="Verbosity", value="1", rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      attrFF = NUOPC_FreeFormatCreate(config, label="gwrAttributes::", &
+        relaxedflag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_CompAttributeIngest(child, attrFF, addFlag=.true., rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+      call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
+      if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+        line=__LINE__, file=__FILE__)) return
+    endif
 
     ! create lis component
     call getPetListFromConfig(config, "pets_lnd:", petList=petList, rc=rc)
@@ -197,7 +245,7 @@ module lis_nuopc_test_drv
     call ESMF_TimeIntervalSet(timeStep, s=dt, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
-    internalClock = ESMF_ClockCreate(name="ATM-LND-HYD-Clock", &
+    internalClock = ESMF_ClockCreate(name="LIS-TEST-DRIVER-CLOCK", &
       timeStep=timeStep, startTime=startTime, stopTime=stopTime, rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
@@ -258,6 +306,10 @@ module lis_nuopc_test_drv
       canonicalUnits="K", rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("soil_moisture_fraction", &
+      canonicalUnits="m3 m-3", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
     call NUOPC_FieldDictionaryAddEntry("soil_moisture_fraction_layer_1", &
       canonicalUnits="m3 m-3", rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
@@ -271,6 +323,10 @@ module lis_nuopc_test_drv
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
     call NUOPC_FieldDictionaryAddEntry("soil_moisture_fraction_layer_4", &
+      canonicalUnits="m3 m-3", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("liquid_fraction_of_soil_moisture", &
       canonicalUnits="m3 m-3", rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
@@ -298,6 +354,55 @@ module lis_nuopc_test_drv
       canonicalUnits="mm", rc=rc)
     if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
       line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("total_water_flux", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("total_water_flux_layer_1", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("total_water_flux_layer_2", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("total_water_flux_layer_3", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("total_water_flux_layer_4", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("precip_drip", &
+      canonicalUnits="kg m-2 s-1", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("bare_soil_evaporation", &
+      canonicalUnits="W m-2", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("vegetation_transpiration", &
+      canonicalUnits="W m-2", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("porosity", &
+      canonicalUnits="-", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("pressure", &
+      canonicalUnits="m", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("saturation", &
+      canonicalUnits="-", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    call NUOPC_FieldDictionaryAddEntry("ground_water_storage", &
+      canonicalUnits="-", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+
 
   end subroutine SetModelServices
 
@@ -354,6 +459,29 @@ module lis_nuopc_test_drv
     enddo
     deallocate(connectorList)
   end subroutine SetRunSequence
+
+  subroutine isComponentEnabled(config, label, isEnabled, rc)
+    type(ESMF_Config), intent(inout) :: config
+    character(len=*), intent(in)     :: label
+    logical, intent(out)             :: isEnabled
+    integer, intent(out)             :: rc
+
+    ! local
+    logical :: isPresent
+    character(len=10) :: value
+
+    isEnabled = .true.
+
+    call ESMF_ConfigGetAttribute(config, value, label=label//":", &
+      default="no", rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    value = ESMF_UtilStringLowerCase(value, rc=rc)
+    if (ESMF_LogFoundError(rcToCheck=rc, msg=ESMF_LOGERR_PASSTHRU, &
+      line=__LINE__, file=__FILE__)) return
+    isEnabled = (value == "yes" .or. value == "true")
+
+  end subroutine isComponentEnabled
 
   subroutine getPetListFromConfig(config, label, instance, petList, rc)
     type(ESMF_Config), intent(inout)    :: config
