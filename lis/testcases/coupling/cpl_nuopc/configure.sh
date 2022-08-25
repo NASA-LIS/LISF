@@ -28,6 +28,8 @@ usage () {
   printf "      modulfe file to load; default is compiler.\n"
   printf "  --envfile=ENVFILE\n"
   printf "      environment file to load\n"
+  printf "  --build-type=BUILD_TYPE\n"
+  printf "      build type; valid options are 'debug', 'release'.\n"
   printf "  --auto\n"
   printf "      run non-interactive configuration\n"
   printf "\n"
@@ -42,6 +44,7 @@ settings () {
   printf "  COMPILER=${MYCOMPILER}\n"
   printf "  MODFILE=${MODFILE}\n"
   printf "  ENVFILE=${ENVFILE}\n"
+  printf "  BUILD_TYPE=${BUILD_TYPE}\n"
   printf "  INTERACTIVE=${INTERACTIVE}\n"
   printf "\n"
 }
@@ -59,6 +62,7 @@ SYSTEM=""
 MYCOMPILER=""
 MODFILE=""
 ENVFILE=""
+BUILD_TYPE="Debug"
 INTERACTIVE=true
 RC=0
 
@@ -84,6 +88,9 @@ while :; do
     --envfile=?*) ENVFILE=${1#*=} ;;
     --envfile) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
     --envfile=) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
+    --build-type=?*) BUILD_TYPE=${1#*=} ;;
+    --build-type) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
+    --build-type=) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
     --auto) INTERACTIVE=false ;;
     --auto=?*) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
     --auto=) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
@@ -156,7 +163,14 @@ fi
 if [ "${INTERACTIVE}" = true ]; then
   ./configure; RC=$?
 else
-  echo -ne '\n-2' | ./configure; RC=$?
+  case ${BUILD_TYPE} in
+    debug | DEBUG | Debug)
+      echo -ne '\n-2' | ./configure; RC=$?
+      ;;
+    *)
+      echo '' | ./configure; RC=$?
+      ;;
+  esac
 fi
 if [ ! -f "make/configure.lis" ]; then
   RC=1

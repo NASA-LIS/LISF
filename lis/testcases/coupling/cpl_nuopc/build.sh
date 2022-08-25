@@ -28,6 +28,8 @@ usage () {
   printf "      modulfe file to load; default is compiler.\n"
   printf "  --envfile=ENVFILE\n"
   printf "      environment file to load\n"
+  printf "  --build-type=BUILD_TYPE\n"
+  printf "      build type; valid options are 'debug', 'release'.\n"
   printf "  --clean\n"
   printf "      removes existing build; will override --continue\n"
   printf "\n"
@@ -48,6 +50,7 @@ settings () {
   printf "  COMPILER=${MYCOMPILER}\n"
   printf "  MODFILE=${MODFILE}\n"
   printf "  ENVFILE=${ENVFILE}\n"
+  printf "  BUILD_TYPE=${BUILD_TYPE}\n"
   printf "  CLEAN=${CLEAN}\n"
   printf "\n"
 }
@@ -71,6 +74,7 @@ SYSTEM=""
 MYCOMPILER=""
 MODFILE=""
 ENVFILE=""
+BUILD_TYPE="Debug"
 CLEAN=false
 
 # required arguments
@@ -95,6 +99,9 @@ while :; do
     --envfile=?*) ENVFILE=${1#*=} ;;
     --envfile) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
     --envfile=) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
+    --build-type=?*) BUILD_TYPE=${1#*=} ;;
+    --build-type) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
+    --build-type=) printf "ERROR: $1 requires an argument.\n"; usage; exit 1 ;;
     --clean) CLEAN=true ;;
     --clean=?*) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
     --clean=) printf "ERROR: $1 argument ignored.\n"; usage; exit 1 ;;
@@ -158,7 +165,7 @@ export WRF_HYDRO="1"
 if [ "${CLEAN}" = true ]; then
   make distclean CAP_DIR=${CAP_DIR} SRC_DIR=${SRC_DIR} EXP_DIR=${EXP_DIR} BLD_DIR=${BLD_DIR} RUN_DIR=${RUN_DIR}
 else
-  make CAP_DIR=${CAP_DIR} SRC_DIR=${SRC_DIR} EXP_DIR=${EXP_DIR} BLD_DIR=${BLD_DIR} RUN_DIR=${RUN_DIR}
+  make CAP_DIR=${CAP_DIR} SRC_DIR=${SRC_DIR} EXP_DIR=${EXP_DIR} BLD_DIR=${BLD_DIR} RUN_DIR=${RUN_DIR} BLD_TYP=${BUILD_TYPE}
 fi
 
 exit 0

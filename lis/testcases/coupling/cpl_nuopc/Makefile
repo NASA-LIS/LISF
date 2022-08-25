@@ -27,6 +27,7 @@ SRC_DIR ?= $(abspath $(DIR)/src)
 EXP_DIR ?= $(abspath $(DIR)/example)
 BLD_DIR ?= $(abspath $(DIR)/build)
 RUN_DIR ?= $(abspath $(DIR)/run)
+BLD_TYP ?= "Debug"
 
 # -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
@@ -37,8 +38,8 @@ all: build setup
 build:
 	@echo $(HR)
 	@echo "Building"
-	make -C $(CAP_DIR) nuopcinstall INSTPATH=$(BLD_DIR) BUILD_TYPE=Debug COMPILER=$(COMPILER)
-	make -C $(SRC_DIR) COMP1_MK=$(BLD_DIR)/lis.mk BUILD_DIR=$(BLD_DIR) RUN_DIR=$(RUN_DIR) COMPILER=$(COMPILER)
+	make -C $(CAP_DIR) nuopcinstall INSTPATH=$(BLD_DIR) BUILD_TYPE=${BLD_TYP} COMPILER=$(COMPILER)
+	make -C $(SRC_DIR) COMP1_MK=$(BLD_DIR)/lis.mk BUILD_TYPE=${BLD_TYP} BUILD_DIR=$(BLD_DIR) RUN_DIR=$(RUN_DIR) COMPILER=$(COMPILER)
 
 setup:
 	@echo $(HR)

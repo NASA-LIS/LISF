@@ -27,11 +27,13 @@ $(error Environment variable ESMFMKFILE was not set.)
 endif
 
 include $(ESMFMKFILE)
+ifneq ($(filter $(BUILD_TYPE),DEBUG Debug debug),)
 ifneq ($(filter $(COMPILER),INTEL Intel intel),)
 ESMF_F90COMPILEOPTS += -O0 -g -traceback -check arg_temp_created,bounds,format,output_conversion,stack,uninit
 endif
 ifneq ($(filter $(COMPILER),GNU Gnu gnu),)
 ESMF_F90COMPILEOPTS += -O0 -g -Wall -Wextra -Wconversion -Wno-unused -Wno-unused-dummy-argument -fbacktrace -fimplicit-none -fcheck=all,no-pointer
+endif
 endif
 
 # -----------------------------------------------------------------------------
