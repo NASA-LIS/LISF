@@ -1,0 +1,46 @@
+Sentinel-1 backscatter data assimilation testcase for 
+joint assim of VV and VH for SM and LAI updating
+2022/08/28 Michel Bechtold
+==============================================
+
+This is a test case that uses: 
+  (a) the MERRA2 forcing 
+  (b) using bilinear interpolation
+  (c) with no elevation correction
+  (d) the NoahMP 3.6 LSM option
+  (e) a small domain in Belgium
+  (f) a time period from May 1 2018, hr 0 to May 3, 2018, hr 0
+  (g) pre-processed Sentinel-1 data (1 km resolution), gamma_naught
+  (h) calibrated Water Cloud Model parameters in TBL files
+
+This directory contains: 
+  (a) This README file, 
+  (b) the ldt.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+  (c) the lis.config file used for this test case. (This file should be 
+      edited to make sure that the locations of the parameter and 
+      forcing files are specified correctly.) 
+
+To run this test case: 
+  (a) Generate the LDT/LIS executables. 
+  (b) Run the LDT executable using the ldt.config file
+  (b) Run the LIS executable using the lis.config file and the sample 
+      input data. 
+  (c) View the NetCDF output using ncview
+       
+Sentinel-1 observations:
+backscatter (speckle filtering, orbit-bias correction etc.) is processed 
+to gamma_naught into 1-km netcdf files. One file is provided as example.
+
+References:
+Sentinel-1 processing:
+Lievens, H., Demuzere, M., Marshall, H.-P., Reichle, R.H., Brucker, L., Brangers, I., de Rosnay, P., Dumont, M., Girotto, M.,
+    Immerzeel, W.W., Jonas, T., Kim, E.J., Koch, I., Marty, C., Saloranta, T., Schöber, J., De Lannoy, G.J.M., 2019.
+    Snow depth variability in the Northern Hemisphere mountains observed from space. Nature Communications 10,
+    4629. https://doi.org/10.1038/s41467-019-12566-y
+
+Water Cloud Model calibration:
+Modanesi, S., Massari, C., Gruber, A., Lievens, H., Tarpanelli, A., Morbidelli, R., De Lannoy, G.J.M., 2021. Optimizing a
+    backscatter forward operator using Sentinel-1 data over irrigated land. Hydrology and Earth System Sciences 25,
+    6283–6307. https://doi.org/10.5194/hess-25-6283-2021

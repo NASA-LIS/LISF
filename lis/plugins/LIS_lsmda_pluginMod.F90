@@ -32,6 +32,7 @@ module LIS_lsmda_pluginMod
 !                            enabled the compilation of JULES 5.3 DA
 !  13 Dec 2019: Eric Kemp, replaced LDTSI with USAFSI
 !  17 Feb 2020: Yeosang Yoon, added SNODEP & USAFSI Assimilation for Jules 5.x
+!  30 Jun 2021: Sara Modanesi, Michel Bechtold, added Sentinel-1 data assimilation
 !
 !EOP
   implicit none
@@ -187,6 +188,7 @@ subroutine LIS_lsmda_plugin
 
 #if ( defined SM_NOAHMP_3_6 )
    use noahmp36_dasoilm_Mod 
+   use noahmp36_dasoilmLAI_Mod 
    use noahmp36_dasnow_Mod
    use noahmp36_dasnodep_Mod
    use noahmp36_tws_DAlogMod, only : noahmp36_tws_DAlog
@@ -407,6 +409,19 @@ subroutine LIS_lsmda_plugin
    external noahmp36_scale_soilm
    external noahmp36_descale_soilm
    external noahmp36_updatesoilm
+   external noahmp36_getSig0VVpred
+   external noahmp36_qc_Sig0VVobs
+   external noahmp36_getSig0VHpred
+   external noahmp36_qc_Sig0VHobs
+   external noahmp36_getSig0VVVHpred
+   external noahmp36_qc_Sig0VVVHobs
+
+   external noahmp36_getsoilmLAI           
+   external noahmp36_setsoilmLAI              
+   external noahmp36_qcsoilmLAI
+   external noahmp36_scale_soilmLAI
+   external noahmp36_descale_soilmLAI
+   external noahmp36_updatesoilmLAI
 
    external noahmp36_getsnowvars
    external noahmp36_setsnowvars
@@ -1903,6 +1918,53 @@ subroutine LIS_lsmda_plugin
 
 
 #if ( defined SM_NOAHMP_3_6 )
+
+! S1 backscatter DA VVSM
+   call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_getSig0VVpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_qc_Sig0VVobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVSM_obsId)//char(0),noahmp36_updatesoilm)
+
+
+! S1 backscatter DA VVVHSMLAI
+   call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_dasoilmLAI_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_getsoilmLAI)
+   call registerlsmdasetstatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_setsoilmLAI)
+   call registerlsmdagetobspred(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_getSig0VVVHpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_qcsoilmLAI)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_qc_Sig0VVVHobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_scale_soilmLAI)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_descale_soilmLAI)
+   call registerlsmdaupdatestate(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_updatesoilmLAI)
+   call registerlsmdaobstransform(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_transform_veg)
+   call registerlsmdamapobstolsm(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),noahmp36_map_veg)
+
+
 ! Noahmp-3.6 synthetic soil moisture
    call registerlsmdainit(trim(LIS_noahmp36Id)//"+"//&
         trim(LIS_synsmId)//char(0),noahmp36_dasoilm_init)

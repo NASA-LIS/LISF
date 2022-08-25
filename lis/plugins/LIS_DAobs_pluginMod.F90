@@ -22,6 +22,7 @@ module LIS_DAobs_pluginMod
 ! !REVISION HISTORY: 
 !  27 Feb 2005;   Sujay Kumar  Initial Specification
 !  11 Aug 2016:   Mahdi Navari, PILDAS added 
+!  30 Jun 2021:   Sara Modanesi, Michel Bechtold; Added Sentinel 1 observations 
 ! 
 !EOP  
   implicit none
@@ -217,6 +218,14 @@ subroutine LIS_DAobs_plugin
    use SMMRSNWDsnow_Mod,        only : SMMRSNWDsnow_setup
 #endif
 
+#if ( defined DA_OBS_S1_sigmaVVSM )
+   use S1_sigmaVVSM_Mod,       only : S1_sigmaVVSM_setup 
+#endif 
+
+#if ( defined DA_OBS_S1_sigmaVVVHSMLAI )
+   use S1_sigmaVVVHSMLAI_Mod,       only : S1_sigmaVVVHSMLAI_setup
+#endif 
+
 #if ( defined DA_OBS_SSMI_SNWD )
    use SSMISNWDsnow_Mod,        only : SSMISNWDsnow_setup
 #endif
@@ -387,6 +396,14 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SMMR_SNWD )
    external read_SMMRSNWDsnow, write_SMMRSNWDsnowobs
 #endif
+
+#if ( defined DA_OBS_S1_sigmaVVSM)    
+   external read_S1_sigmaVVSM, write_S1_sigmaVVSMobs  
+#endif 
+
+#if ( defined DA_OBS_S1_sigmaVVVHSMLAI)    
+   external read_S1_sigmaVVVHSMLAI, write_S1_sigmaVVVHSMLAIobs  
+#endif 
 
 #if ( defined DA_OBS_SSMI_SNWD )
    external read_SSMISNWDsnow, write_SSMISNWDsnowobs
@@ -639,6 +656,28 @@ subroutine LIS_DAobs_plugin
         read_SMMRSNWDsnow)
    call registerwritedaobs(trim(LIS_SMMRSNWDsnowobsId)//char(0), &
         write_SMMRSNWDsnowobs)
+#endif
+
+#if ( defined DA_OBS_S1_sigmaVVSM )
+!S1 backscatter obs VVSM
+   call registerdaobsclass(trim(LIS_S1_sigmaVVSM_obsId),"LSM")
+   call registerdaobssetup(trim(LIS_S1_sigmaVVSM_obsId)//char(0), &
+        S1_sigmaVVSM_setup)
+   call registerreaddaobs(trim(LIS_S1_sigmaVVSM_obsId)//char(0),  &
+        read_S1_sigmaVVSM)
+   call registerwritedaobs(trim(LIS_S1_sigmaVVSM_obsId)//char(0), &
+        write_S1_sigmaVVSMobs)
+#endif
+
+#if ( defined DA_OBS_S1_sigmaVVVHSMLAI )
+!S1 backscatter obs VVVHSMLAI
+   call registerdaobsclass(trim(LIS_S1_sigmaVVVHSMLAI_obsId),"LSM")
+   call registerdaobssetup(trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0), &
+        S1_sigmaVVVHSMLAI_setup)
+   call registerreaddaobs(trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0),  &
+        read_S1_sigmaVVVHSMLAI)
+   call registerwritedaobs(trim(LIS_S1_sigmaVVVHSMLAI_obsId)//char(0), &
+        write_S1_sigmaVVVHSMLAIobs)
 #endif
 
 #if ( defined DA_OBS_SSMI_SNWD )

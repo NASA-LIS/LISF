@@ -1,0 +1,5 @@
+#perttype  std    std_max   zeromean  tcorr  xcorr ycorr ccorr
+s_vv
+0      0.7   2.5       1        0   0    0    1.0   0.9
+s_vh
+0      0.7   2.5       1        0   0    0    0.9   1.0 

@@ -31,7 +31,7 @@ module LIS_pluginIndices
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS  
 !  28 Aug 2020: Sara Modanesi, added WCM in Radiative Transfer Models
-!  30 Jun 2021: Michel Bechtold, added Sentinel-1 DA cases for SM and LAI updating
+!  30 Jun 2021: Sara Modanesi, Michel Bechtold, added Sentinel-1 DA cases for SM and LAI updating
 !EOP
   PRIVATE
    
