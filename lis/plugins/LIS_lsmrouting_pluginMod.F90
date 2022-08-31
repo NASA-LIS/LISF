@@ -77,7 +77,6 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    external noah39_getrunoffs
    external noah39_getrunoffs_mm
-   external noah39_getrunoffs_hymap2
    external noah39_getrunoffs_rapid
 #endif
 
@@ -116,6 +115,7 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_0 )
    external jules50_getrunoffs_mm
+   external jules5x_getrunoffs_rapid
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -128,7 +128,6 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_X )
    external jules5x_getrunoffs_mm
-   external jules5x_getrunoffs_hymap2
    external jules5x_getrunoffs_rapid
 #endif
 
@@ -259,7 +258,7 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        noah39_getrunoffs_hymap2)
+        noah39_getrunoffs_mm)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -299,12 +298,6 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
         vic412_getrunoffs_mm)
-#endif
-
-#if ( defined SM_JULES_5_X )
-   call registerlsmroutinggetrunoff(trim(LIS_jules5xId)//"+"//&
-        trim(LIS_HYMAP2routerId)//char(0), &
-        jules5x_getrunoffs_hymap2)
 #endif
 #endif
 
@@ -387,6 +380,12 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_RAPIDrouterId)//char(0), &
         noahmp401_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_JULES_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        jules50_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_JULES_5_X )
