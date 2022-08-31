@@ -16,6 +16,7 @@
 !
 ! !REVISION HISTORY:
 ! 13 Jul 2021: Yeosang Yoon;  Initial implementation
+! 31 Aug 2022: Yeosang Yoon;  fix code to product rst file on time
 
 subroutine RAPID_routing_writerst(n)
 
@@ -52,6 +53,31 @@ subroutine RAPID_routing_writerst(n)
   character(len=10)     :: time
   character(len=5)      :: zone
 
+  integer :: days(12)
+  data days /31,28,31,30,31,30,31,31,30,31,30,31/
+  integer :: mo, mn, ss
+
+  ! check leap year
+  if((mod(LIS_rc%yr,4) .eq. 0 .and. mod(LIS_rc%yr, 100).ne.0) &
+       .or.(mod(LIS_rc%yr,400) .eq.0)) then
+     days(2) = 29
+  else
+     days(2) = 28
+  endif
+
+  alarmCheck = .false.
+  ! "30-day" month interval based alarms:
+  if(RAPID_routing_struc(n)%rstInterval == 2592000.0) then
+     if (LIS_rc%da == days(LIS_rc%mo) .and. (LIS_rc%hr == 23) &
+         .and. (LIS_rc%mn == 45)) then
+        alarmCheck = .true.
+     endif
+  else ! daily interval
+     alarmCheck = LIS_isAlarmRinging(LIS_rc,&
+         "RAPID router restart alarm")
+  endif
+
+  ! for NetCDF deflate compression option
   shuffle = NETCDF_shuffle
   deflate = NETCDF_deflate
   deflate_level =NETCDF_deflate_level
