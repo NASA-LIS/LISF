@@ -18,6 +18,7 @@
 ! !REVISION HISTORY:
 ! 31 Jan 2022: Yeosang Yoon;  Initial implementation
 ! 08 Aug 2022: Yeosang Yoon;  Add code to check 'Output methodology' option
+! 31 Aug 2022: Yeosang Yoon;  Fix to broadcast a message (output file)
 
 subroutine RAPID_routing_output(n)
   
@@ -88,14 +89,14 @@ subroutine RAPID_routing_output(n)
         endif
      
         if(alarmCheck) then
-           if(LIS_masterproc) then
-              ! Open output file
-              call LIS_create_output_directory('ROUTING')
-              call LIS_create_output_filename(n,filename,&
+           ! Create output file name
+           call LIS_create_output_directory('ROUTING')
+           call LIS_create_output_filename(n,filename,&
                    model_name='ROUTING',&
                    writeint=RAPID_routing_struc(n)%outInterval)
-              write(LIS_logunit,*) '[INFO] Writing routing model output to:  ',trim(filename)
-
+           write(LIS_logunit,*) '[INFO] Writing routing model output to:  ',trim(filename)
+ 
+           if(LIS_masterproc) then
               ! Create file
 #if (defined USE_NETCDF4)
               status = nf90_create(path=filename, cmode=nf90_netcdf4, ncid = ftn)
