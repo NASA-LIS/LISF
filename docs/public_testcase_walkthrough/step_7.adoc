@@ -124,7 +124,7 @@ We can now compare the results of our OL and DA runs with the observations we as
 
 [IMPORTANT]
 ====
-The gnuplot and Matlab scrips mentioned above expect the existence of a `WORKING_DIR/fig` directory as a location to save figures. The scripts will not automatically make this directory. Therefore, prior to running these scripts, you must manually create a `$WORKING_DIR/fig` directory by running the following command from within your `$WOKRING_DIR`.
+The `gnuplot` and Matlab scrips mentioned above expect the existence of a `$WORKING_DIR/fig` directory as a location to save figures. The scripts will not automatically make this directory. Therefore, prior to running these scripts, you must manually create a `$WORKING_DIR/fig` directory.
 ====
 
 === `gnuplot` Plots
