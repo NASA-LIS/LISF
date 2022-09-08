@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -33,6 +33,7 @@ module SACHTET_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_soilsMod
   use LDT_paramMaskCheckMod
   use LDT_xmrg_reader
@@ -58,10 +59,10 @@ module SACHTET_parmsMod
      character*50  :: pet_proj
      character*50  :: pet_gridtransform
 
-     character*100 :: petdir
-     character*140 :: petfile
-     character*100 :: petadjdir
-     character*140 :: petadjfile
+     character(len=LDT_CONST_PATH_LEN) :: petdir
+     character(len=LDT_CONST_PATH_LEN) :: petfile
+     character(len=LDT_CONST_PATH_LEN) :: petadjdir
+     character(len=LDT_CONST_PATH_LEN) :: petadjfile
      character*20  :: petInterval
 
      real          :: sachtetparms_gridDesc(20)

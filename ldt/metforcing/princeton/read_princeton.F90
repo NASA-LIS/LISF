@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   use LDT_metforcingMod,    only : LDT_forc
   use LDT_timeMgrMod,       only : LDT_tick
   use LDT_logMod,           only : LDT_logunit, LDT_endrun
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use princeton_forcingMod, only : princeton_struc
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -110,7 +111,7 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
   integer, dimension(N_PF), parameter :: fnum = (/ &
        31, 33, 34, 35, 36, 37, 38 /) 
 
-  character*100 :: infile
+  character(len=LDT_CONST_PATH_LEN) :: infile
 
 ! netcdf variables
   integer :: ncid, varid, status
@@ -196,12 +197,12 @@ subroutine read_princeton( order, n, findex, yr, mon, da, hr, ferror )
 
       if (status/=0) then
          if(LDT_masterproc) then 
-            write(LDT_logunit,*) 'Problem opening file: ', infile,status
+            write(LDT_logunit,*) 'Problem opening file: ', trim(infile),status
             write(LDT_logunit,*) 'Stopping...'
          endif
          call LDT_endrun
       else
-         if(LDT_masterproc) write(LDT_logunit,*) 'Opened file: ', infile
+         if(LDT_masterproc) write(LDT_logunit,*) 'Opened file: ', trim(infile)
       end if
 
       status = nf90_get_var(ncid, varid, datain, &

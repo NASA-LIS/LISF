@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -53,6 +53,7 @@ contains
     use LIS_coreMod
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none 
 
@@ -77,7 +78,7 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field), allocatable ::  obsField(:)
-    character*100             ::  synsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100,  allocatable   ::  vname(:)
     character*100             ::  objspaceAttribFile(LIS_rc%nnest)
     integer                   ::  ftn

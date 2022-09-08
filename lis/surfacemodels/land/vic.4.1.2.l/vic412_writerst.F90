@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine vic412_writerst(n)
    use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_getNextUnitNumber, LIS_releaseUnitNumber
    use LIS_fileIOMod,  only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
    use vic412_lsmMod,  only : vic412_struc
    use LIS_historyMod 
    use netcdf 
@@ -55,14 +56,14 @@ subroutine vic412_writerst(n)
 !   index of the nest
 !  \end{description}
 !EOP
-   character*100 :: filen
+   character(len=LIS_CONST_PATH_LEN) :: filen
    logical       :: alarmCheck
    integer       :: status, i
    integer       :: vt_scheme ! added by Shugong Wang to support VIC and LIS based tilings. 
    integer, allocatable, dimension(:) :: vegclasses! added by Shugong Wang to support MPI-safe tile ID, 05/07/2012
    integer       :: t, chunk_size
    real, allocatable :: state_chunk(:) ! chunk of state variable 
-   integer       :: state_chunk_ID, dimID(10) 
+   integer       :: state_chunk_ID, dimID(11) 
    integer       :: ftn, l
    real, allocatable :: tmptilen(:)
    character*3   :: fnest 

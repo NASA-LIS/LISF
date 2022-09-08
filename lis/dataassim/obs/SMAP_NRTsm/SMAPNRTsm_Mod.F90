@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ module SMAPNRTsm_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -67,8 +68,8 @@ module SMAPNRTsm_Mod
                                              !e.g., 4/29 13:00:00)
      integer                :: cdf_read_opt  ! 0: read all months at one time
                                              ! 1: read only the current month
-     character*100          :: modelcdffile
-     character*100          :: obscdffile
+     character(len=LIS_CONST_PATH_LEN) :: modelcdffile
+     character(len=LIS_CONST_PATH_LEN) :: obscdffile
   end type SMAPNRTsm_dec
   
   type(SMAPNRTsm_dec),allocatable :: SMAPNRTsm_struc(:)
@@ -118,7 +119,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  obsdir
+    character(len=LIS_CONST_PATH_LEN) ::  obsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)

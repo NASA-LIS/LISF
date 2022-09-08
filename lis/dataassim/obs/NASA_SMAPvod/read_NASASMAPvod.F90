@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use NASASMAPvod_Mod, only : NASASMAPvod_struc
 
   implicit none
@@ -55,8 +56,8 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_LAI_VALUE=10.0, MIN_LAI_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: vodobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: vodobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -80,8 +81,8 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   real, allocatable      :: ssdev(:)
   integer                :: lis_julss
   real                   :: smvalue
-  character*200          :: list_files
-  character*100          :: smap_filename(10)
+  character(len=LIS_CONST_PATH_LEN) :: list_files
+  character(len=LIS_CONST_PATH_LEN) :: smap_filename(10)
   real*8                 :: timenow, time1,time2,time3
   integer                :: doy
   real                   :: gmt

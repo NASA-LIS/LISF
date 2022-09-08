@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_AMSRE_SWE(n, OBS_State, OBS_Pert_State)
   use LIS_timeMgrMod, only : LIS_calendar, LIS_clock
   use LIS_logMod,     only : LIS_logunit, LIS_endrun, & 
        LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use AMSRE_SWE_Mod, only : AMSRE_SWE_struc
 
   implicit none
@@ -61,10 +62,9 @@ subroutine read_AMSRE_SWE(n, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: sweobsdir
+  character(len=LIS_CONST_PATH_LEN) :: sweobsdir, name
   logical             :: data_update
   logical             :: file_exists
-  character*200       :: name
 
   logical             :: alarmCheck
 
@@ -110,7 +110,7 @@ subroutine read_AMSRE_SWE(n, OBS_State, OBS_Pert_State)
      endif
 
      if (readflag) then 
-        write(LIS_logunit,*) 'Reading NASA AMSRE file ',name
+        write(LIS_logunit,*) 'Reading NASA AMSRE file ',trim(name)
         call read_AMSREswe(n,name)
         
         call maskSWEobs_basedonQC(LIS_rc%lnc(n)*LIS_rc%lnr(n), &
@@ -252,7 +252,7 @@ subroutine read_AMSREswe(n,name)
 
   file_id = gdopen(trim(name),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*)"Failed to open hdf file",name
+     write(LIS_logunit,*)"Failed to open hdf file",trim(name)
      return
   end if
   
@@ -263,7 +263,7 @@ subroutine read_AMSREswe(n,name)
     !get the grid id
      grid_id = gdattach(file_id,grid_name(igd))
      if (grid_id.eq.-1)then
-        write(LIS_logunit,*)"Failed to attach grid: ",grid_name(igd),name
+        write(LIS_logunit,*)"Failed to attach grid: ",grid_name(igd),trim(name)
         ret = gdclose(file_id)
         deallocate(li)
         return
@@ -410,9 +410,8 @@ subroutine AMSRE_SWE_filename(name, ndir, yr, mo,da)
 
   implicit none
 ! !ARGUMENTS: 
-  character*200      :: name
+  character(len=*)  :: name, ndir
   integer           :: yr, mo, da, hr,mn
-  character (len=*) :: ndir
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates the Level 3 AMSRE SWE filename based on the time and date 

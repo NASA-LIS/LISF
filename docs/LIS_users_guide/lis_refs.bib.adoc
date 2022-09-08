@@ -6,7 +6,7 @@
 
 - [[[berg_etal_jgr_2003]]] A. A. Berg, J. S. Famiglietti, J. P.  Walker, and P. R. Houser.  Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes.  _Journal of Geophysical Research_, 4490, 2003.
 
-- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
+//- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
 
 //
 //@Article{sheffield_etal_2006,

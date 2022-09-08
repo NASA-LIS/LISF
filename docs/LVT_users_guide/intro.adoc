@@ -2,9 +2,8 @@
 [[sec-intro]]
 == Introduction
 
-This is the User's Guide for Land surface Verification Toolkit (LVT;<<kumar_etal_gmd_2012>>).
-This document describes how to download and install LVT codes and
-instructions on building an executable.
+This is the Users`' Guide for Land surface Verification Toolkit (LVT; <<kumar_etal_gmd_2012>>).
+This document describes how to download and install the LVT software.  It also describes LVT`'s run-time configuration options (the _lvt.config_ file).
 
 This document consists of 9 sections, described as follows:
 
@@ -37,6 +36,21 @@ This document consists of 9 sections, described as follows:
 
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more details.  (See Section~\ref{sec-obtain-src}.)}
+
+//==== Version 7.5
+//. utils
+//* s2smetric/
+//* s2spost/
+
+==== Version 7.4
+
+. Includes new runmodes
+* LISpost
+. Supports additional data streams
+* FluxSat GPP
+* MCD15A2H
+* Thermal hydraulic disaggregation of soil moisture (THySM)
+* UA SMAP
 
 ==== Version 7.3
 

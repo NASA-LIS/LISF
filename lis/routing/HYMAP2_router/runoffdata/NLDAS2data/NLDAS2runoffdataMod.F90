@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ module NLDAS2runoffdataMod
 ! 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -40,7 +41,7 @@ module NLDAS2runoffdataMod
   type, public :: NLDAS2runoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(len=LIS_CONST_PATH_LEN) :: odir 
      character*20            :: model_name
      integer                 :: nc, nr
      integer, allocatable    :: n11(:)

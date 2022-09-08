@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -49,10 +50,10 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
   real, allocatable       :: dummy(:)
 
-  character*100       :: TB18Vobsdir, TB18Hobsdir, TB36Vobsdir, TB36Hobsdir
+  character(len=LIS_CONST_PATH_LEN) :: TB18Vobsdir, TB18Hobsdir, TB36Vobsdir, TB36Hobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name18V, name18H, name36V, name36H
+  character(len=LIS_CONST_PATH_LEN) :: name18V, name18H, name36V, name36H
   character (len=3)   :: fr_channel
 
   logical             :: readflag
@@ -96,10 +97,10 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
   call synTB_filename(name36H,TB36Hobsdir,fr_channel, &
        LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,LIS_rc%mn)
 
-  write(LIS_logunit,*) 'obs_file_name_18V=', name18V
-  write(LIS_logunit,*) 'obs_file_name_18H=', name18H
-  write(LIS_logunit,*) 'obs_file_name_36V=', name36V
-  write(LIS_logunit,*) 'obs_file_name_36H=', name36H
+  write(LIS_logunit,*) 'obs_file_name_18V=', trim(name18V)
+  write(LIS_logunit,*) 'obs_file_name_18H=', trim(name18H)
+  write(LIS_logunit,*) 'obs_file_name_36V=', trim(name36V)
+  write(LIS_logunit,*) 'obs_file_name_36H=', trim(name36H)
 
   inquire(file=name18V,exist=file_exists)
 
@@ -115,7 +116,7 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
      allocate(dummy(LIS_rc%obs_ngrid(k)))
 
      !----------------------TB_18V----------------------------------
-     write(LIS_logunit,*)  'Reading syn TB_18V data ',name18V
+     write(LIS_logunit,*)  'Reading syn TB_18V data ',trim(name18V)
      
      call ESMF_StateGet(OBS_State,"Observation01",TB18VField,&
           rc=status)
@@ -133,7 +134,7 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
      end do
      close(90)
      !----------------------TB_18H----------------------------------
-     write(LIS_logunit,*)  'Reading syn TB_18H data ',name18H
+     write(LIS_logunit,*)  'Reading syn TB_18H data ',trim(name18H)
 
      call ESMF_StateGet(OBS_State,"Observation02",TB18HField,&
           rc=status)
@@ -151,7 +152,7 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
      end do
      close(90)
      !----------------------TB_36V----------------------------------
-     write(LIS_logunit,*)  'Reading syn TB_36V data ',name36V
+     write(LIS_logunit,*)  'Reading syn TB_36V data ',trim(name36V)
 
      call ESMF_StateGet(OBS_State,"Observation03",TB36VField,&
           rc=status)
@@ -169,7 +170,7 @@ subroutine read_syntheticSnowTbObs(n, k, OBS_State, OBS_Pert_State)
      end do
      close(90)
      !----------------------TB_36H----------------------------------
-     write(LIS_logunit,*)  'Reading syn TB_36H data ',name36H
+     write(LIS_logunit,*)  'Reading syn TB_36H data ',trim(name36H)
 
      call ESMF_StateGet(OBS_State,"Observation04",TB36HField,&
           rc=status)
@@ -268,7 +269,7 @@ subroutine synTB_filename(name, ndir, fr_channel, yr, mo,da,hr,mn)
   use LIS_logMod
   
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   character (len=4) :: fyr

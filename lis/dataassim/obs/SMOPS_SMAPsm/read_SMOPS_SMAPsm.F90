@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@ subroutine read_SMOPS_SMAPsm(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SMOPS_SMAPsm_Mod, only : SMOPS_SMAPsm_struc
 
   implicit none
@@ -58,8 +59,8 @@ subroutine read_SMOPS_SMAPsm(n, k, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)

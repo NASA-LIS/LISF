@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,7 @@
 module AmerifluxobsMod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   PRIVATE
@@ -34,7 +35,7 @@ module AmerifluxobsMod
   PUBLIC :: Amerifluxobs_struc
 
   type, public ::  Amerifluxobs_data_dec
-     character*100 :: odir
+     character(len=LIS_CONST_PATH_LEN) :: odir
      integer                 :: n_stns
      character*100, allocatable  :: site_name(:)
      character*100, allocatable  :: stn_name(:)
@@ -91,16 +92,16 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
-    character*100             ::  obsdir
+    character(len=LIS_CONST_PATH_LEN) ::  obsdir
     character*100             ::  vname
     character*200             ::  currentLine
     real                      ::  swcd(2), tsd(2)
     integer                   ::  k,iloc
     integer                   ::  arrayLen
-    character*100             ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     real                      ::  gridDesci(LIS_rc%nnest,50)
-    character*100             :: stnlist_file
+    character(len=LIS_CONST_PATH_LEN) :: stnlist_file
 
     allocate(Amerifluxobs_struc(LIS_rc%nnest))
 

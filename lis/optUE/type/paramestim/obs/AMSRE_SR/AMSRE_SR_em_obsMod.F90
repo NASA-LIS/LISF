@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -74,6 +74,7 @@ contains
     use LIS_timeMgrMod, only : LIS_calendar
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use map_utils, only: map_init, map_set, latlon_to_ij
 
     implicit none 
@@ -93,10 +94,10 @@ contains
     integer                   ::  status
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
-    character*100             ::  emissivityobsdir
-    character*100             ::  emissivityobsmaskdir
+    character(len=LIS_CONST_PATH_LEN) ::  emissivityobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  emissivityobsmaskdir
     character*100             ::  vname
-    character*100             ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     integer                   ::  numrecords, ios
     integer                   ::  yr
@@ -134,7 +135,7 @@ contains
 
     integer, parameter :: maxd = 4000  ! max number of days for daily overpass 
     integer, parameter :: maxm = 108     ! max number of months    
-    character*200 datfile(maxm)
+    character(len=LIS_CONST_PATH_LEN) :: datfile(maxm)
 
     ! time management                                                          
     character*6 cym                                                  

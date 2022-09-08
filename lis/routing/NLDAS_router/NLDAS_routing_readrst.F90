@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@ subroutine NLDAS_routing_readrst
        LIS_releaseUnitNumber, LIS_endrun
   use LIS_timeMgrMod 
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use NLDAS_routingMod, only : NLDAS_routing_struc
 
   implicit none
@@ -24,7 +25,7 @@ subroutine NLDAS_routing_readrst
   integer       :: ftn
   integer       :: i,j,k
   integer       :: ios,status
-  character*100 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
   real              :: gmt

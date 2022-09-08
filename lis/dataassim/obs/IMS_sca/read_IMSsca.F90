@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_IMSsca(n, OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_pluginIndices, only : LIS_IMSscaobsId
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use IMSsca_Mod, only : IMSsca_struc
 
   implicit none
@@ -59,7 +60,7 @@ subroutine read_IMSsca(n, OBS_State,OBS_Pert_State)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
   integer                       :: ftn
-  character*100                 :: obsdir, ansa_filename, imsfile,MODISfile
+  character(len=LIS_CONST_PATH_LEN):: obsdir, ansa_filename, imsfile,MODISfile
   integer                       :: file_id, snwd_field_id,snwd_flag_field_id
   integer                       :: memrank = 2
   real                          :: tsnow(IMSsca_struc(n)%nc*&
@@ -251,7 +252,7 @@ subroutine create_IMSsca_filename(name, ndir, yr, doy)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)      :: name
   integer           :: yr, doy
   character (len=*) :: ndir
 ! 

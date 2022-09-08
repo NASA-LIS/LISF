@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine read_SMAPsmobs(Obj_Space)
   use LIS_fileIOMod
   use SMAPsm_obsMod
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)  
   use netcdf
@@ -46,7 +47,7 @@ subroutine read_SMAPsmobs(Obj_Space)
   integer                  :: n
   real,    pointer         :: smc(:)
   type(ESMF_Field)         :: smcField
-  character*100            :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   integer                  :: status
   integer                  :: c,r
   real                     :: lon
@@ -57,7 +58,7 @@ subroutine read_SMAPsmobs(Obj_Space)
   logical                  :: alarmCheck
   logical                  :: file_exists
   integer                  :: grid_index
-  character*100            :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   real                     :: dt
   real, allocatable        :: smobs_D(:)
   real, allocatable        :: smobs_A(:)

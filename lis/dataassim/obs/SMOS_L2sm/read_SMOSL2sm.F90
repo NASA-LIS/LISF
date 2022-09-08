@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine read_SMOSL2sm(n, OBS_State, OBS_Pert_State)
   use LIS_dataAssimMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SMOSL2sm_Mod, only : SMOSL2sm_struc
 
   implicit none
@@ -48,8 +49,8 @@ subroutine read_SMOSL2sm(n, OBS_State, OBS_Pert_State)
   integer                :: ftn
   integer                :: ierr,status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname_A, fname_D
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname_A, fname_D
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p
   real,          pointer :: obsl(:)
@@ -60,10 +61,10 @@ subroutine read_SMOSL2sm(n, OBS_State, OBS_Pert_State)
   integer                :: sind
   character*100          :: temp1
   character*1            :: fproc(4)
-  character*100          :: smos_filename
+  character(len=LIS_CONST_PATH_LEN) :: smos_filename
   integer                :: yr,mo,da,hr,mn,ss
   character*8            :: yyyymmdd
-  character*200          :: list_files
+  character(len=LIS_CONST_PATH_LEN) :: list_files
   integer                :: gid(LIS_rc%ngrid(n))
   integer                :: assimflag(LIS_rc%ngrid(n))
   real                   :: obs_unsc(LIS_rc%ngrid(n))

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_MODISscaobs(n, OBS_State, OBS_Pert_State)
   use LIS_historyMod, only : LIS_readvar_gridded
   use LIS_coreMod,  only : LIS_rc, LIS_domain
   use LIS_logMod,     only : LIS_logunit, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use MODISscaobs_module, only : MODISsca_obs_obj
   use LIS_mpiMod
 
@@ -54,11 +55,9 @@ subroutine read_MODISscaobs(n, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, name
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
-
 
   logical             :: readflag
   integer             :: status
@@ -279,7 +278,7 @@ subroutine getMODISsca(n,name,tmp_obsl)
 #endif
   
   integer              :: n 
-  character*80         :: name
+  character(len=*)     :: name
   real                 :: tmp_obsl(LIS_rc%lnc(n)*LIS_rc%lnr(n))
 
 #if (defined USE_HDF4)
@@ -317,7 +316,7 @@ subroutine getMODISsca(n,name,tmp_obsl)
 
      file_id = gdopen(trim(name),DFACC_READ)
      if (file_id.eq.-1)then
-        write(LIS_logunit,*)"Failed to open hdf file",name
+        write(LIS_logunit,*)"Failed to open hdf file",trim(name)
         return
      end if
      !  write(LIS_logunit,*) 'opened file',file_id
@@ -325,7 +324,7 @@ subroutine getMODISsca(n,name,tmp_obsl)
      !get the grid id
      grid_id = gdattach(file_id,grid_name)
      if (grid_id.eq.-1)then
-        write(LIS_logunit,*)"Failed to attach grid: ",grid_name,name
+        write(LIS_logunit,*)"Failed to attach grid: ",grid_name,trim(name)
         ret = gdclose(file_id)
         return
      end if

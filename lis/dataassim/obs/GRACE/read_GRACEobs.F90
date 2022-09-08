@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
   use GRACEobs_module
   use LIS_fileIOMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 !  use smootherDA_runMod, only: smootherDA_increments_mode
   
@@ -63,9 +64,9 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
 
-  character*200       :: GRACEobsdir ! Natt, change 100 to 200
+  character(len=LIS_CONST_PATH_LEN) :: GRACEobsdir ! BMc, change 200 to LIS_CONST_PATH_LEN
   logical             :: file_exists
-  character*200       :: name ! Natt, change 100 to 200
+  character(len=LIS_CONST_PATH_LEN) :: name ! BMc, change 200 to LIS_CONST_PATH_LEN
 
   integer             :: col,row
   logical             :: data_upd
@@ -133,7 +134,7 @@ subroutine read_GRACEobs(n,k, OBS_State, OBS_Pert_State)
                 value=float(days(LIS_rc%mo)),rc=status)
            call LIS_verify(status)
 
-           write(LIS_logunit,*)  '[INFO] Reading GRACE data ',name
+           write(LIS_logunit,*)  '[INFO] Reading GRACE data ',trim(name)
 
            ftn = LIS_getNextUnitNumber()
            open(ftn, file=trim(name),form='unformatted')
