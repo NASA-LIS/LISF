@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_ISMNsmobs(Obj_Space)
   use LIS_logMod,     only : LIS_logunit, LIS_verify, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,  only : LIS_readData
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use ISMNsm_obsMod,  only : ISMNsm_obs_struc
   use map_utils
 
@@ -48,10 +49,10 @@ subroutine read_ISMNsmobs(Obj_Space)
   real,    pointer      :: smc(:)
   integer, pointer      :: nsmc(:)
   type(ESMF_Field)      :: smcField
-  character*100         :: obsdir
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical               :: data_update
   integer               :: i
-  character*200         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   logical               :: file_exists
@@ -397,6 +398,7 @@ subroutine getNumberOfISMNfiles(odir, yr, num_files)
 ! !USES:  
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 !
@@ -415,7 +417,7 @@ subroutine getNumberOfISMNfiles(odir, yr, num_files)
 ! 
 !EOP
   character*100                :: temp1
-  character*500                :: ls_comm
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm
   character*500                :: cmd2
   character*4                  :: fyr
   integer                      :: ftn
@@ -445,6 +447,7 @@ subroutine generateISMNstationInfo(source, odir, yr, num_files)
 
   use LIS_coreMod
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use ISMNsm_obsMod
 
   implicit none
@@ -459,16 +462,16 @@ subroutine generateISMNstationInfo(source, odir, yr, num_files)
   real                         :: depthfrom
   real                         :: depthto
   
-  character*500, allocatable   :: filenames(:)
-  character*500                :: filename2
-  character*500                :: name1, name2, name3
-  character*500                :: stnname
-  character*500                :: checkString
+  character(len=LIS_CONST_PATH_LEN), allocatable :: filenames(:)
+  character(len=LIS_CONST_PATH_LEN) :: filename2
+  character(len=LIS_CONST_PATH_LEN) :: name1, name2, name3
+  character(len=LIS_CONST_PATH_LEN) :: stnname
+  character(len=LIS_CONST_PATH_LEN) :: checkString
 
   
   integer                      :: iloc
   integer                      :: n_stns
-  character*500                :: ls_comm
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm
   character*4                  :: fyr
   integer                      :: k 
   integer                      :: ftn

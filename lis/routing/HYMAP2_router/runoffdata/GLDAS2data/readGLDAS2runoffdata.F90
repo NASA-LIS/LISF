@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   use LIS_logMod
   use GLDAS2runoffdataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -43,7 +44,7 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   !real,   allocatable           :: qsb(:,:)
   integer                       :: ios, nid,qsid,qsbid
   integer                       :: ftn
-  character*100                 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
@@ -152,6 +153,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   use GLDAS2runoffdataMod
   use LIS_fileIOMod
   use HYMAP_routingMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -167,7 +169,7 @@ subroutine readGLDAS2evapdata(n,evap, potevap)
   real,   allocatable           :: potevp(:,:)
   integer                       :: ios, nid,evpid,potevpid
   integer                       :: ftn
-  character*100                 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
@@ -264,6 +266,7 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
      yr,mo,da, doy,hr,filename)
 
   use LIS_logMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 ! 
 ! !USES:   
@@ -301,7 +304,7 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
   character*3             :: fdoy
   character*2             :: fmo, fhr, fda
   integer                 :: ierr
-  character*100           :: list_name
+  character(len=LIS_CONST_PATH_LEN) :: list_name
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine read_syntheticwlobs(n, k, OBS_State, OBS_Pert_state)
   use LIS_logMod
   use LIS_DAobservationsMod
   use LIS_surfaceModelMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use syntheticwlobs_module
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -62,10 +63,10 @@ subroutine read_syntheticwlobs(n, k, OBS_State, OBS_Pert_state)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
   real                :: obs_unsc(LIS_rc%obs_ngrid(k))
-  character*100       :: wlobsdir
+  character(len=LIS_CONST_PATH_LEN) :: wlobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer             :: fnd
   integer             :: wlid
   integer             :: ftn,p
@@ -99,7 +100,7 @@ subroutine read_syntheticwlobs(n, k, OBS_State, OBS_Pert_state)
   endif
   
   if (readflag) then 
-     write(LIS_logunit,*)  '[INFO] Reading syn data ',name
+     write(LIS_logunit,*)  '[INFO] Reading syn data ',trim(name)
      
      call ESMF_StateGet(OBS_State,"Observation01",smfield,&
           rc=status)
@@ -190,7 +191,7 @@ subroutine read_syntheticwlobs(n, k, OBS_State, OBS_Pert_state)
              .false., rc=status)
         call LIS_verify(status)
      endif
-     write(LIS_logunit,*)  '[INFO] Finished reading syn data ',name
+     write(LIS_logunit,*)  '[INFO] Finished reading syn data ',trim(name)
   else
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .false., rc=status)
@@ -210,7 +211,7 @@ subroutine synwl_filename(name, ndir, yr, mo,da,hr,mn)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
 ! 

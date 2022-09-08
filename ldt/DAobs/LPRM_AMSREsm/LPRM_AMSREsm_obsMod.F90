@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ module LPRM_AMSREsm_obsMod
 ! !USES: 
   use ESMF
   use map_utils
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -39,7 +40,7 @@ module LPRM_AMSREsm_obsMod
 !EOP
   type, public :: lprmamsresmobsdec
 
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      integer                :: mo
      integer                :: rawdata
      real,    allocatable       :: smobs(:,:)

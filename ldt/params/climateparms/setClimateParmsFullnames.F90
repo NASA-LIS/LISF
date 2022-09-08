@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  28 Jun 2022: E. Kemp; Added NAFPA background precipitation.
 !
 ! !INTERFACE:
 subroutine setClimateParmsFullnames(n,datatype,source)
@@ -54,7 +55,14 @@ subroutine setClimateParmsFullnames(n,datatype,source)
               "PRISM PPT climatology fields"
         case( "WORLDCLIM" )
           LDT_climate_struc(n)%climppt%standard_name =&
-              "WorldCLIM PPT climatology fields"
+               "WorldCLIM PPT climatology fields"
+       case ( "NAFPA_BACK_GFS")
+          LDT_climate_struc(n)%climppt%standard_name = &
+               "NAFPA_BACK_GFS_PPT climatology fields"
+       case ( "NAFPA_BACK_GALWEM")
+          LDT_climate_struc(n)%climppt%standard_name = &
+               "NAFPA_BACK_GALWEM_PPT climatology fields"
+
       end select
 
     case( "mintemp" )

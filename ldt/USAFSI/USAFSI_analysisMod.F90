@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -309,7 +309,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF USAFSI CYCLE
-      character*100, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
+      character*255, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
       
       ! Local constants
       character*8, parameter :: meshnp05 = '_0p05deg' ! MESH FOR 1/20 DEGREE FILE NAME
@@ -322,7 +322,7 @@ contains
       character*2                 :: cyclhr           ! CYCLE HOUR
 
       character*10                :: datefr           ! DATE-TIME GROUP OF FRACTIONAL SNOW
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -532,7 +532,7 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: elevations(nc,nr)
@@ -540,7 +540,7 @@ contains
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
@@ -758,7 +758,7 @@ contains
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
       integer, intent(in)         :: month                 ! CURRENT MONTH (1-12)
-      character*100, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
+      character*255, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
       character*5,   intent(out)  :: netid       (:)       ! NETWORK ID OF AN OBSERVATION
       character*9,   intent(out)  :: staid       (:)       ! STATION ID OF AN OBSERVATION
       integer, intent(out)        :: stacnt                ! TOTAL NUMBER OF OBSERVATIONS USED
@@ -777,7 +777,7 @@ contains
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*4                 :: msgval                ! ERROR MESSAGE VALUE
       character*90                :: message     (msglns)  ! ERROR MESSAGE
-      character*100               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
+      character*255               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
       character*5                 :: obsnet                ! RETURNED OBS STATION NETWORK
       character*9                 :: obssta                ! RETURNED OBS STATION ID
       character*5,   allocatable  :: oldnet      (:)       ! ARRAY OF NETWORKS FOR OLDSTA
@@ -1172,7 +1172,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! SNODEP DATE-TIME GROUP
-      character*100, intent(in)   :: stmpdir               ! SFC TEMP DIRECTORY PATH
+      character*255, intent(in)   :: stmpdir               ! SFC TEMP DIRECTORY PATH
       logical,       intent(out)  :: sfctmp_found          ! FLAG FOR SFC TEMP FILE FOUND
       real,          intent(out)  :: sfctmp_lis  ( : , : ) ! LIS SURFACE TEMPERATURE DATA
 
@@ -1181,7 +1181,7 @@ contains
 
       ! Local variables
       character*10                :: dtglis                ! LIS DATE-TIME GROUP
-      character*100               :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
+      character*255               :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
       character*7                 :: iofunc                ! ACTION TO BE PERFORMED
       character*90                :: message     (msglns)  ! ERROR MESSAGE
 
@@ -1376,7 +1376,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
-      character*100, intent(in)   :: ssmis                 ! SSMIS FILE DIRECTORY PATH
+      character*255, intent(in)   :: ssmis                 ! SSMIS FILE DIRECTORY PATH
 
       ! Local variables
       character*7                 :: access_type           ! FILE ACCESS TYPE
@@ -1384,7 +1384,7 @@ contains
       character*2                 :: chemifile   ( 2)      ! HEMISPHERE FOR FILENAME ('nh', 'sh')
       character*10                :: date10_hourly         ! DATE-TIME GROUP OF HOURLY DATA
       character*10                :: date10_prev           ! DATE-TIME GROUP OF LAST HOUR READ
-      character*100               :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
+      character*255               :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*90                :: message     (msglns)  ! ERROR MESSAGE
       character*4                 :: msgval                ! PLACEHOLDER FOR ERROR MESSAGE VALUES
@@ -1730,8 +1730,8 @@ contains
 
       ! Arguments
       character*10,  intent(in)  :: date10           ! CURRENT CYCLE DATE-TIME GROUP
-      character*100, intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
-      character*100, intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
+      character*255, intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
+      character*255, intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landice(nc,nr)
@@ -1740,10 +1740,10 @@ contains
 
       ! Local variables
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
-      character*100              :: file_path        ! INPUT FILE PATH AND NAME
+      character*255              :: file_path        ! INPUT FILE PATH AND NAME
       character*90               :: message (msglns) ! ERROR MESSAGE
       character*12               :: routine_name     ! NAME OF THIS SUBROUTINE
-      character*100              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
+      character*255              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
       integer                    :: julhr            ! AFWA JULIAN HOUR
       integer                    :: limit            ! LIMIT ON NUMBER OF CYCLES TO SEARCH
@@ -2210,15 +2210,15 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! SNODEP DATE-TIME GROUP
-      character*100, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
-      character*100, intent(in)   :: sstdir
+      character*255, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
+      character*255, intent(in)   :: sstdir
 
       ! Local constants
       integer, parameter          :: sst_size = sst_igrid * sst_jgrid  ! SST ARRAY SIZE
 
       ! Local variables
       character*10                :: date10_sst       ! SST DATE-TIME GROUP
-      character*100               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
+      character*255               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       !character*90                :: message (msglns) ! ERROR MESSAGE
       character*255                :: message (msglns) ! ERROR MESSAGE
@@ -2237,7 +2237,7 @@ contains
       integer :: gindex,c,r
       real :: rlat,rlon,ri,rj
       integer :: nc,nr
-      character*100 :: file_grib
+      character*255 :: file_grib
       integer :: grstat
 
       data routine_name           / 'GETSST      '/
@@ -2476,14 +2476,14 @@ contains
 
       ! Argments
       character(10), intent(in)   :: date10           ! DATE-TIME GROUP OF SNODEP CYCLE
-      character(100), intent(in)  :: viirsdir         ! FRACTIONAL SNOW DIRECTORY PATH
+      character(255), intent(in)  :: viirsdir         ! FRACTIONAL SNOW DIRECTORY PATH
 
       ! Local variables
       character(2)                :: cyclhr           ! CYCLE HOUR
 
       character(10)               :: datefr           ! DATE-TIME GROUP OF SNOW COVER
-      character(100)              :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
-      character(100)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
+      character(255)              :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
+      character(255)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
       character(7)                :: iofunc           ! ACTION TO BE PERFORMED
       character(90)               :: message (msglns) ! ERROR MESSAGE
       character(12)               :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -3605,11 +3605,11 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
 
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
 
       data cmonth        / '_jan', '_feb', '_mar', '_apr', '_may', '_jun', &
           '_jul', '_aug', '_sep', '_oct', '_nov', '_dec' /

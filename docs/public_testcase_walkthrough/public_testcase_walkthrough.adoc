@@ -8,7 +8,7 @@
 :toc: macro
 :toclevels: 1
 :icons: font
-:source-highlighter: highlightjs        // source code highlighting engine
+:source-highlighter: highlight.js        // source code highlighting engine
 :figure-caption!:                       // disable figure captions
 
 // github commit known to be compatible with this walkthrough
@@ -18,7 +18,6 @@
 :url-lis-website: https://lis.gsfc.nasa.gov
 :url-lis-testcases-page: {url-lis-website}/tests/lis
 :url-lis-testcases-data: https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/
-:url-lis-bootcamp: https://bmcandr.github.io/lis-bootcamp
 :url-lisf-docs: https://github.com/NASA-LIS/LISF/tree/master/docs
 :url-lisf-github: https://github.com/NASA-LIS/LISF
 :ssh-lisf-github: git@github.com:NASA-LIS/LISF.git

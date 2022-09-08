@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,6 +60,8 @@ module merra2_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -77,7 +79,7 @@ module merra2_forcingMod
   type, public ::  merra2_type_dec
      real         :: ts
      integer      :: nc, nr
-     character*40 :: merra2dir   !MERRA2 Forcing Directory
+     character(len=LDT_CONST_PATH_LEN) :: merra2dir   !MERRA2 Forcing Directory
      real*8       :: merra2time1, merra2time2, ringtime
      logical      :: reset_flag
 

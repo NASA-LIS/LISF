@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,13 +31,15 @@ module LDT_PRIV_rcMod
 ! \end{description}
 !
 !EOP
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   implicit none
 
   type ldtrcdec
 
      character*50           :: runmode
      integer                :: nnest
-     character*100, allocatable :: paramAttribsFile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: paramAttribsFile(:)
      character*50,  allocatable :: lis_map_proj(:)
      real, allocatable          :: lis_map_resfactor(:)
      integer                :: add_buffer   ! KA
@@ -100,9 +102,9 @@ module LDT_PRIV_rcMod
      integer                :: metForcTWstarthour  ! KRA
      integer                :: metForcTWendhour    ! KRA
 
-     character*100          :: forcvarlistFile
-     character*100          :: forcattribFile
-     character*100          :: forcpertattribFile
+     character(len=LDT_CONST_PATH_LEN)          :: forcvarlistFile
+     character(len=LDT_CONST_PATH_LEN)          :: forcattribFile
+     character(len=LDT_CONST_PATH_LEN)          :: forcpertattribFile
 
      logical                :: zterp_correction
 
@@ -248,55 +250,55 @@ module LDT_PRIV_rcMod
      character*50               :: create_soilparms_option
 
 ! -- Parameter filepath names:
-     character*140, allocatable :: mfile(:)
-     character*140, allocatable :: vfile(:)
-     character*140, allocatable :: sfctypefile(:)
-     character*140, allocatable :: regfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: mfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: vfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: sfctypefile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: regfile(:)
 
-     character*140, allocatable :: safile(:) 
-     character*140, allocatable :: clfile(:) 
-     character*140, allocatable :: sifile(:) 
-     character*140, allocatable :: gravelfile(:) 
-     character*140, allocatable :: txtfile(:)
-     character*140, allocatable :: pofile(:)
-     character*140, allocatable :: psisatfile(:) 
-     character*140, allocatable :: ksatfile(:) 
-     character*140, allocatable :: bexpfile(:) 
-     character*140, allocatable :: qzfile(:)   
-     character*140, allocatable :: dsoilfile(:)
-     character*140, allocatable :: bdrckdepfile(:)
-     character*140, allocatable :: hsgfile(:)
-     character*140, allocatable :: bulkdensfile(:)
-     character*140, allocatable :: domrockfile(:)
-     character*140, allocatable :: rockvolfile(:)
-     character*140, allocatable :: awcfile(:)
-     character*140, allocatable :: permabfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: safile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: clfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: sifile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gravelfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: txtfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: pofile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: psisatfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: ksatfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: bexpfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: qzfile(:)   
+     character(len=LDT_CONST_PATH_LEN), allocatable :: dsoilfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: bdrckdepfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: hsgfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: bulkdensfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: domrockfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: rockvolfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: awcfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: permabfile(:)
 
-     character*140, allocatable :: iscfile(:) 
-     character*140, allocatable :: elevfile(:)
-     character*140, allocatable :: slfile(:)
-     character*140, allocatable :: aspfile(:)
-     character*140, allocatable :: curvfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: iscfile(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: slfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: aspfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: curvfile(:)
 
-     character*140, allocatable :: glaciermask(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: glaciermask(:)
 
    ! GDAS terrain height files:
-     character*140, allocatable :: gdasT126elevfile(:)
-     character*140, allocatable :: gdasT170elevfile(:)
-     character*140, allocatable :: gdasT254elevfile(:)
-     character*140, allocatable :: gdasT382elevfile(:)
-     character*140, allocatable :: gdasT574elevfile(:)
-     character*140, allocatable :: gdasT1534elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT126elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT170elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT254elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT382elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT574elevfile(:)
+     character(len=LDT_CONST_PATH_LEN), allocatable :: gdasT1534elevfile(:)
 
    ! ECMWF terrain height files:
-     character*140, allocatable :: elevfileifs23r4(:)  
-     character*140, allocatable :: elevfileifs25r1(:)  
-     character*140, allocatable :: elevfileifs30r1(:)  
-     character*140, allocatable :: elevfileifs33r1(:)  
-     character*140, allocatable :: elevfileifs35r2(:) 
-     character*140, allocatable :: elevfileifs35r3(:)  
-     character*140, allocatable :: elevfileifs36r1(:)  
-     character*140, allocatable :: elevfileifs37r2(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs23r4(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs25r1(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs30r1(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs33r1(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs35r2(:) 
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs35r3(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs36r1(:)  
+     character(len=LDT_CONST_PATH_LEN), allocatable :: elevfileifs37r2(:)  
 
      logical,       allocatable :: monthlyData(:)
      logical,       allocatable :: quarterlyData(:)
@@ -308,11 +310,11 @@ module LDT_PRIV_rcMod
      integer                :: wout_form
      integer                :: lis_wopt
      character*3            :: expcode
-     character*100          :: odir
+     character(len=LDT_CONST_PATH_LEN)          :: odir
      character*20           :: model_name
-     character*80           :: diagfile
-     character*100          :: mpfillfile
-     character*100, allocatable :: outputSpecFile(:)
+     character(len=LDT_CONST_PATH_LEN)           :: diagfile
+     character(len=LDT_CONST_PATH_LEN)          :: mpfillfile
+     character(len=LDT_CONST_PATH_LEN), allocatable :: outputSpecFile(:)
 
      integer                :: wsingle
      character*50           :: wstyle
@@ -344,7 +346,7 @@ module LDT_PRIV_rcMod
      integer                :: shrubclass2
   
      integer                :: prev_mo
-     character*40           :: maskdir
+     character(len=LDT_CONST_PATH_LEN)           :: maskdir
 
 ! -- DA Preprocessing Inputs:
      character*50           :: obs_src
@@ -366,7 +368,7 @@ module LDT_PRIV_rcMod
      integer                :: anomalyObsProc
 
      integer                :: obsCountThreshold
-     character*140          :: dapreprocfile
+     character(len=LDT_CONST_PATH_LEN)          :: dapreprocfile
      integer                :: applyMask
      integer, allocatable   :: obssource(:)
      integer                :: pass

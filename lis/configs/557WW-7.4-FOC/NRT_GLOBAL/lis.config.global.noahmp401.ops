@@ -64,8 +64,8 @@ Minimum cutoff percentage (aspect bands):         0.05
 
 #Processor layout
 #Should match the total number of processors used
-Number of processors along x:          24
-Number of processors along y:          24
+Number of processors along x:         576
+Number of processors along y:           1
 Halo size along x:                      0
 Halo size along y:                      0
 
@@ -249,36 +249,35 @@ AGRMET IMERG Probability Liquid Precip Threshold: 100
 # Bratseth runtime settings
 AGRMET maximum precip obs:                 2000000         # Max observations to store in memory
 AGRMET minimum wind speed:                 0.25            # Sanity minimum value for winds
-AGRMET output OBA data:                    0               # 0 = do not output diagnostic data from Bratseth
+AGRMET output OBA data:                    1               # 1 = output diagnostic data from Bratseth
 AGRMET skip backQC:                        0               # 0 = do not skip backQC check in Bratseth
 AGRMET skip superstatQC:                   0               # 0 = do not skip superstatQC check in Bratseth
 AGRMET 3hr maximum precip ceiling:         200.0
 
-# EMK...New recommended settings based on sample NWP and observations
-# for 2 Feb - 7 Mar 2020 and no Box-Cox transformation.
-
-# Bratseth error covariance settings for GALWEM-17km background field.
+# EMK...New recommended settings for GALWEM-17 km based on 28 days of
+# observation and background comparisons ending 00Z 23 May 2022.
 # Replace with commented entries below when GALWEM switches to 10-km.
-AGRMET GALWEM Precip background error scale length (m):            102000.
-AGRMET GALWEM Precip background error variance:                         0.83
-AGRMET GALWEM Precip Gauge observation error variance:                  0.86
+AGRMET GALWEM Precip background error scale length (m): 74753.54866737088
+AGRMET GALWEM Precip background error variance: 0.14443165072415012
+AGRMET GALWEM Precip Gauge observation error variance: 0.19098082428226776
+AGRMET GALWEM Precip IMERG observation error scale length (m): 94462.38998508919
+AGRMET GALWEM Precip IMERG observation error variance: 0.26496359208559706
+AGRMET GALWEM T2M background error scale length (m): 96761.82529455773
+AGRMET GALWEM T2M background error variance: 0.42402717590178063
+AGRMET GALWEM T2M station observation error variance: 1.2655757019800733
+AGRMET GALWEM RH2M background error scale length (m): 34127.84847117105
+AGRMET GALWEM RH2M background error variance: 12.636473357129143
+AGRMET GALWEM RH2M station observation error variance: 41.81798264332559
+AGRMET GALWEM SPD10M background error scale length (m): 55063.07623954051
+AGRMET GALWEM SPD10M background error variance: 0.23406032434793003
+AGRMET GALWEM SPD10M station observation error variance: 1.1451826020714888
+# Older satellite estimates, not for use with LISF 7.4
 AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
 AGRMET GALWEM Precip GEOPRECIP observation error variance:              1.24
 AGRMET GALWEM Precip SSMI observation error scale length (m):      133000.
 AGRMET GALWEM Precip SSMI observation error variance:                   2.58
 AGRMET GALWEM Precip CMORPH observation error scale length (m):     89000.
 AGRMET GALWEM Precip CMORPH observation error variance:                 1.15
-AGRMET GALWEM Precip IMERG observation error scale length (m):     101000.
-AGRMET GALWEM Precip IMERG observation error variance:                  1.93
-AGRMET GALWEM T2M background error scale length (m):               110000.
-AGRMET GALWEM T2M background error variance:                            1.48
-AGRMET GALWEM T2M station observation error variance:                   2.30
-AGRMET GALWEM RH2M background error scale length (m):              119000.
-AGRMET GALWEM RH2M background error variance:                          30.7
-AGRMET GALWEM RH2M station observation error variance:                 65.8
-AGRMET GALWEM SPD10M background error scale length (m):             53000.
-AGRMET GALWEM SPD10M background error variance:                         0.62
-AGRMET GALWEM SPD10M station observation error variance:                2.37
 
 # Bratseth error covariance settings for GALWEM-10km background field.
 # AGRMET GALWEM Precip background error scale length (m):            110000.
