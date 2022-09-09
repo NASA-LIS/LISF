@@ -38,9 +38,8 @@ subroutine timeinterp_galwem(n,findex)
 !  Temporally interpolates the forcing data to the current model
 !  timestep. Downward shortwave radiation is interpolated using a
 !  zenith-angled based approach. Precipitation and longwave radiation
-!  are not temporally interpolated, and the previous 3 hourly value
-!  is used. All other variables are linearly interpolated between
-!  the 3 hourly blocks.
+!  are not temporally interpolated, and the previous value is used.
+!  All other variables are linearly interpolated between the blocks.
 !
 !  The routines invoked are:
 !  \begin{description}
@@ -65,9 +64,9 @@ subroutine timeinterp_galwem(n,findex)
   integer :: tempbss
   integer            :: status
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
-  type(ESMF_Field)   :: psurfField,pcpField !,cpcpField,snowfField
+  type(ESMF_Field)   :: psurfField,pcpField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
-  real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:) !,cpcp(:),snowf(:)
+  real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:)
 ! ________________________________________
 
   btime=galwem_struc(n)%fcsttime1
@@ -142,21 +141,6 @@ subroutine timeinterp_galwem(n,findex)
        rc=status)
   call LIS_verify(status, 'Error: Enable Rainf in the forcing variables list')
 
-  !if (LIS_FORC_CRainf%selectOpt.eq.1) then
-  !   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
-  !        LIS_FORC_CRainf%varname(1),cpcpField,&
-  !        rc=status)
-  !   call LIS_verify(status, &
-  !        'Error: Enable CRainf in the forcing variables list')
-  !endif
-
-  !if (LIS_FORC_Snowf%selectOpt.eq.1) then
-  !   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),&
-  !        LIS_FORC_Snowf%varname(1),snowfField,&
-  !        rc=status)
-  !   call LIS_verify(status, &
-  !        'Error: Enable Snowf in the forcing variables list')
-  !endif
 
   call ESMF_FieldGet(tmpField,localDE=0,farrayPtr=tmp,rc=status)
   call LIS_verify(status)
@@ -181,16 +165,6 @@ subroutine timeinterp_galwem(n,findex)
 
   call ESMF_FieldGet(pcpField,localDE=0,farrayPtr=pcp,rc=status)
   call LIS_verify(status)
-
-  !if (LIS_FORC_CRainf%selectOpt.eq.1) then
-  !   call ESMF_FieldGet(cpcpField,localDE=0,farrayPtr=cpcp,rc=status)
-  !   call LIS_verify(status)
-  !endif
-
-  !if (LIS_FORC_Snowf%selectOpt.eq.1) then
-  !   call ESMF_FieldGet(snowfField,localDE=0,farrayPtr=snowf,rc=status)
-  !   call LIS_verify(status)
-  !endif
 
   ! Downward shortwave radiation (average):
   do t=1,LIS_rc%ntiles(n)
@@ -241,10 +215,6 @@ subroutine timeinterp_galwem(n,findex)
            call LIS_endrun
         endif
      endif
-
-     !if (swd(t).gt.LIS_CONST_SOLAR) then
-     !   swd(t)=galwem_struc(n)%metdata2(3,index1)
-     !endif
   enddo
 
 !-----------------------------------------------------------------------
