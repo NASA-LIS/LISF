@@ -253,4 +253,4 @@ NOTE: The `nccmp` command will be used in future steps. Going forward, some file
 
 == Wrap-up
 
-The LDT parameter processing run generates input parameters and files that LIS require. Your `$WORKING_DIR` should now contain all the files needed to continue on to the next step.
+The LDT parameter processing run generates input parameters and files that LIS requires. Your `$WORKING_DIR` should now contain all the files needed to continue on to the next step.
