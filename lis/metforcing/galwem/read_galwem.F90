@@ -35,16 +35,10 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
   integer,           intent(in)    :: findex  ! Forcing index
   integer,           intent(in)    :: order
   character(len=*),  intent(in)    :: gribfile
-  !integer,           intent(in)    :: jfguess
-  !integer,           intent(in)    :: kprs
-  !integer,           intent(in)    :: prslvls(30)
-  !real,              intent(in)    :: minwnd
-  !real,              intent(in)    :: wndwgt
 
 !DESCRIPTION:
 
 !EOP
-  !character*120           :: gribfile
   integer         :: ftn, igrib, ierr
   integer         :: center
   character*100   :: gtype
@@ -56,8 +50,6 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
   integer         :: ifguess, jfguess
   integer         :: dataDate, dataTime
   integer         :: fc_hr
-  !integer                 :: kprs
-  !integer                 :: prslvls      (30)
 
   real            :: tair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Temperature interpolated to 2 metres [K] 
   real            :: qair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Instantaneous specific humidity interpolated to 2 metres[kg/kg] 
@@ -70,21 +62,9 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
 
   integer, intent(out) :: rc
 
-  ! FIXME...This should be moved into a module for all of LIS to
-  ! reference.
-  !data prslvls / 1000,975,950,925,900,850,800,750,700,650,600,550,500,&
-  !     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/
-  !kprs = 13
-
-  ! Initialize return code to "no error".  We will change it below if
-  ! necessary.
-  rc = 0
-
-  !fc_hr = 0           ! Incremented below
-  !file_julhr = julhr  ! Decremented below
-  !call LIS_julhr_date(file_julhr,yr1,mo1,da1,hr1)
-
-  !call getGALWEMfilename(gribfile,galwem_struc(n)%odir,yr1,mo1,da1,hr1,fc_hr)
+   ! Initialize return code to "no error".  We will change it below if
+   ! necessary.
+   rc = 0
 
    ! Open first guess grib data using library utility.  Just read
    ! the first file only, as all data will be of the same type.

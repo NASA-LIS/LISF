@@ -19,6 +19,7 @@ module galwem_forcingMod
 
 ! REVISION HISTORY:
 ! 11 Mar 2022; Yeosang Yoon; Initial Specification
+! 08 Sep 2022; Yeosang Yoon, Add codes to read GALWEM 25 DEG dataset
 
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -39,15 +40,13 @@ module galwem_forcingMod
      real                              :: ts
      integer                           :: nc, nr, vector_len   
      real*8                            :: fcsttime1,fcsttime2
-     character(len=LIS_CONST_PATH_LEN) :: odir  !GALWEM forecast forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: odir      !GALWEM forecast forcing Directory
      character*20                      :: runmode
+     integer                           :: resol     !GALWEM forecast resolution (17km or 25deg)
 
      integer, allocatable   :: gindex(:,:)
-
      integer                :: mi
-     !integer                :: day_check1
-     !integer                :: day_check2
-     
+
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)
      integer, allocatable   :: n211(:)
@@ -124,8 +123,18 @@ contains
     enddo
 
     do n=1, LIS_rc%nnest
-       galwem_struc(:)%nc = 1536  ! galwem-17km
-       galwem_struc(:)%nr = 1152
+       if(galwem_struc(n)%resol == 17) then ! galwem-17km
+          galwem_struc(:)%nc = 1536  
+          galwem_struc(:)%nr = 1152
+       elseif(galwem_struc(n)%resol == 25) then ! galwem-25deg
+          galwem_struc(:)%nc = 1440
+          galwem_struc(:)%nr = 721
+       else
+          write(LIS_logunit,*) '[ERR] Currently the GALWEM forecast forcing reader'
+          write(LIS_logunit,*) '[ERR] supports 17 km and 25 deg datasets.'
+          write(LIS_logunit,*) '[ERR] LIS forecast run-time ending.'
+          call LIS_endrun()
+       endif
     enddo
 
     ! 8 - key met field
@@ -156,18 +165,34 @@ contains
        galwem_struc(n)%metdata1 = 0
        galwem_struc(n)%metdata2 = 0
        gridDesci = 0
- 
-       gridDesci(n,1) = 0
-       gridDesci(n,2) = galwem_struc(n)%nc !gnc
-       gridDesci(n,3) = galwem_struc(n)%nr !gnr
-       gridDesci(n,4) = -89.9219      !lat(1,1)
-       gridDesci(n,5) = -179.882813   !lon(1,1)
-       gridDesci(n,6) = 128
-       gridDesci(n,7) = 89.9219       !lat(gnc,gnr)
-       gridDesci(n,8) = 179.887       !lon(gnc,gnr)
-       gridDesci(n,9) = 0.234378      !dx
-       gridDesci(n,10) = 0.15625      !dy
-       gridDesci(n,20) = 0
+
+       if(galwem_struc(n)%resol == 17) then   !galwem-17km 
+          gridDesci(n,1) = 0
+          gridDesci(n,2) = galwem_struc(n)%nc !gnc
+          gridDesci(n,3) = galwem_struc(n)%nr !gnr
+          gridDesci(n,4) = -89.921875         !lat(1,1)
+          gridDesci(n,5) = -179.882813        !lon(1,1)
+          gridDesci(n,6) = 128
+          gridDesci(n,7) = 89.921875          !lat(gnc,gnr)
+          gridDesci(n,8) = 179.882813         !lon(gnc,gnr)
+          gridDesci(n,9) = 0.234375           !dx
+          gridDesci(n,10) = 0.15625           !dy
+          gridDesci(n,20) = 0
+       endif
+
+       if(galwem_struc(n)%resol == 25) then   !galwem-25deg
+          gridDesci(n,1) = 0
+          gridDesci(n,2) = galwem_struc(n)%nc !gnc
+          gridDesci(n,3) = galwem_struc(n)%nr !gnr
+          gridDesci(n,4) = -90.0              !lat(1,1)
+          gridDesci(n,5) = -180.0             !lon(1,1)
+          gridDesci(n,6) = 128
+          gridDesci(n,7) = 90.0               !lat(gnc,gnr)
+          gridDesci(n,8) = 179.75             !lon(gnc,gnr)
+          gridDesci(n,9) = 0.25               !dx
+          gridDesci(n,10) = 0.25              !dy
+          gridDesci(n,20) = 0
+       endif
 
        galwem_struc(n)%mi = galwem_struc(n)%nc*galwem_struc(n)%nr
        galwem_struc(n)%fcsttime1 = 3000.0

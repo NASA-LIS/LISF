@@ -14,6 +14,7 @@
 !
 ! !REVISION HISTORY:
 ! 11 Mar 2022; Yeosang Yoon, Initial Code
+! 08 Sep 2022; Yeosang Yoon, Add codes to read GALWEM 25 DEG dataset
 !
 ! !INTERFACE:    
 subroutine readcrd_galwem()
@@ -46,10 +47,16 @@ subroutine readcrd_galwem()
      call ESMF_ConfigGetAttribute(LIS_config,galwem_struc(n)%runmode,rc=rc)
   enddo
 
+  call ESMF_ConfigFindLabel(LIS_config,"GALWEM forecast resolution:",rc=rc)
+  call LIS_verify(rc, 'GALWEM forecast resolution: not defined ')
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,galwem_struc(n)%resol,rc=rc)
+  enddo
+
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) '[INFO] Using GALWEM forecast forcing'
      write(LIS_logunit,*) '[INFO] GALWEM forecast forcing directory: ', trim(galwem_struc(n)%odir)
      write(LIS_logunit,*) '[INFO] GALWEM forecast run mode: ',galwem_struc(n)%runmode
-
+     write(LIS_logunit,*) '[INFO] GALWEM forecast resolution: ',galwem_struc(n)%resol
   enddo
 end subroutine readcrd_galwem
