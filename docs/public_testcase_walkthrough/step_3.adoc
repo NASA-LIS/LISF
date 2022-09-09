@@ -77,35 +77,6 @@ Number of ensembles per tile (input restart):   1
 Number of ensembles per tile (output restart):  12
 ----
 
-As it is written, this .config file is ready to be used to run step 3, *expect* for one minor change. The following specification needs to be pasted in the .config file for this step: 
-
-[source,shell]
-----
-Ensemble restart generation sampling strategy:   "none" 
----- 
-
-It can be added to the script in the following section:
-
-[source, shell]
-----
-...
-# Generate Ensemble Restart File:
-Ensemble restart generation sampling strategy:   "none"  <1>
-LIS number of surface model types:    1
-LIS surface model types:            "LSM"
-
-LIS restart source:                 "LSM"
-Ensemble restart generation mode:   "upscale"
-Input restart filename:   ../OL_OUTPUT/SURFACEMODEL/201801/LIS_RST_NOAH36_201801010000.d01.nc
-...
----- 
-<1> Manually add this specification using a text editor
-
-[NOTE]
-====
-The reason for manually adding this specification is that this testcase is run using a compiled version of the LDT executable from LISF 7.4.  However, the ldt.config file unpacked from the .tar file was written to be compatable LISF 7.3. For more information, view the {url-lisf-docs}[LDT Users' Guide,window=_blank].
-====
-
 == Run LDT -  Generate Ensemble Restart File
 
 include::running_ldt.adoc[]
