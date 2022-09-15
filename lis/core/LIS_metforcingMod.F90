@@ -283,8 +283,8 @@ contains
        call LIS_endrun()
     endif
 
-    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file ",&
-         LIS_rc%forcvarlistfile
+    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file: ",&
+         trim(LIS_rc%forcvarlistfile)
 
     forcConfig = ESMF_ConfigCreate(rc=status)
 
@@ -517,8 +517,8 @@ contains
        call LIS_endrun()
     endif
 
-    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file ",&
-         LIS_rc%forcvarlistfile
+    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file: ",&
+         trim(LIS_rc%forcvarlistfile)
     
     forcConfig = ESMF_ConfigCreate(rc=status)
     
