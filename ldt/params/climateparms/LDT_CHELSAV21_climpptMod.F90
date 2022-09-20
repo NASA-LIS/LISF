@@ -56,6 +56,8 @@ module LDT_CHELSAV21_climpptMod
      real, allocatable :: pcp_out(:,:)
      integer :: count
      real :: missing_value_native
+     integer :: startyears(12)
+     integer :: endyears(12)
    contains
      ! Object methods
      procedure :: new => LDT_CHELSAV21_climppt_new
@@ -106,7 +108,10 @@ contains
        gridDesc_out)
 
     ! Imports
+    use ESMF
     use LDT_climateParmsMod, only: LDT_climate_struc
+    use LDT_coreMod, only: LDT_config
+    use LDT_logMod, only: LDT_verify
 
     ! Defaults
     implicit none
@@ -117,6 +122,10 @@ contains
     integer, intent(in) :: ncols_out
     integer, intent(in) :: nrows_out
     real, intent(in) :: gridDesc_out(20)
+
+    ! Locals
+    integer :: rc
+    integer :: c
 
     this%topdir_native = trim(LDT_climate_struc(nest)%climpptdir)
 
@@ -152,6 +161,21 @@ contains
     ! and averaged.
     this%count = 0
     this%missing_value_native = 0
+
+    call ESMF_ConfigFindLabel(LDT_Config, &
+         label='CHELSA21 start years by month:', rc=rc)
+    call LDT_verify(rc, 'CHELSA21 start years by month: not specified')
+    do c = 1, 12
+       call ESMF_ConfigGetAttribute(LDT_config, this%startyears(c), rc=rc)
+       call LDT_verify(rc, 'CHELSA21 start years by month: not specified')
+    end do
+    call ESMF_ConfigFindLabel(LDT_Config, &
+         label='CHELSA21 end years by month:', rc=rc)
+    call LDT_verify(rc, 'CHELSA21 end years by month: not specified')
+    do c = 1, 12
+       call ESMF_ConfigGetAttribute(LDT_config, this%endyears(c), rc=rc)
+       call LDT_verify(rc, 'CHELSA21 end years by month: not specified')
+    end do
 
   end subroutine LDT_CHELSAV21_climppt_new
 
@@ -222,17 +246,19 @@ contains
     integer :: pb_success
     integer :: i, j, ij, iyear, ipass
     ! Overlap between IMERG-ER V06 and CHELSAV21
-    integer :: iyear_start(12) = (/2001, 2001, 2001, 2001, 2001, 2000, &
-         2000, 2000, 2000, 2000, 2000, 2000/)
-    integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
-         2018, 2018, 2018, 2018, 2018, 2018/)
+    !integer :: iyear_start(12) = (/2001, 2001, 2001, 2001, 2001, 2000, &
+    !     2000, 2000, 2000, 2000, 2000, 2000/)
+    !integer :: iyear_end(12)   = (/2019, 2019, 2019, 2019, 2019, 2019, &
+    !     2018, 2018, 2018, 2018, 2018, 2018/)
 
     external :: upscaleByAveraging_input, upscaleByAveraging
 
     ! Loop through each year for the selected month.  Note: The last year
     ! varies for different months, and this is accounted for below.
     ipass = 0
-    do iyear = iyear_start(imonth), iyear_end(imonth)
+    !do iyear = iyear_start(imonth), iyear_end(imonth)
+    do iyear = this%startyears(imonth), this%endyears(imonth)
+
        call create_filename(this, imonth, iyear, filename)
        inquire(file=trim(filename), exist=found_inq)
        if (.not. found_inq) then
