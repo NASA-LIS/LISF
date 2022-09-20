@@ -52,6 +52,16 @@ module ERA5obsMod
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)
      integer, allocatable    :: n11(:)
+     ! These are used with budget interpolation
+     integer, allocatable        :: n112(:,:)
+     integer, allocatable        :: n122(:,:)
+     integer, allocatable        :: n212(:,:)
+     integer, allocatable        :: n222(:,:)
+     real,    allocatable        :: w112(:,:)
+     real,    allocatable        :: w122(:,:)
+     real,    allocatable        :: w212(:,:)
+     real,    allocatable        :: w222(:,:)
+
      real                    :: gridDesc(50)
      integer                 :: mo
      real                    :: datares
@@ -158,6 +168,34 @@ contains
             era5obs(i)%rlat, &
             era5obs(i)%rlon, &
             era5obs(i)%n11)
+
+       ! Added budget-bilinear interpolation for precip
+       allocate(era5obs(i)%n112(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%n122(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%n212(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%n222(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%w112(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%w122(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%w212(LVT_rc%lnc*LVT_rc%lnr,25))
+       allocate(era5obs(i)%w222(LVT_rc%lnc*LVT_rc%lnr,25))
+       era5obs(i)%n112 = 0
+       era5obs(i)%n122 = 0
+       era5obs(i)%n212 = 0
+       era5obs(i)%n222 = 0
+       era5obs(i)%w112 = 0
+       era5obs(i)%w122 = 0
+       era5obs(i)%w212 = 0
+       era5obs(i)%w222 = 0
+       write(LVT_logunit,*)'EMK: HERE!!!'
+       call conserv_interp_input(era5obs(i)%gridDesc, LVT_rc%gridDesc, &
+            LVT_rc%lnc*LVT_rc%lnr, &
+            era5obs(i)%rlat, era5obs(i)%rlon, &
+            era5obs(i)%n112, era5obs(i)%n122, &
+            era5obs(i)%n212, era5obs(i)%n222, &
+            era5obs(i)%w112, era5obs(i)%w122, &
+            era5obs(i)%w212, era5obs(i)%w222)
+       write(LVT_logunit,*)'EMK: HERE2!!!'
+
     else
        allocate(era5obs(i)%n11(era5obs(i)%nc*era5obs(i)%nr))
        call upscaleByAveraging_input(era5obs(i)%gridDesc,&

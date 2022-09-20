@@ -212,9 +212,9 @@ subroutine process_ERA5data(source, yr, mo, da)
 
         do k=1,rec_size
            call interp_era5var2d(source,prcp(:,k),&
-                era5obs(source)%prcp(:,:,k))
+                era5obs(source)%prcp(:,:,k), 'p')
            call interp_era5var2d(source,tair(:,k),&
-                era5obs(source)%tair(:,:,k))
+                era5obs(source)%tair(:,:,k), 't')
         enddo
      endif
      deallocate(prcp)
@@ -264,7 +264,7 @@ end subroutine select_timeslice_era5var
 ! \label{interp_era5var2d}
 !
 ! !INTERFACE: 
-subroutine interp_era5var2d(source, var_inp,var_out)
+subroutine interp_era5var2d(source, var_inp,var_out,var_type)
 ! !USES: 
   use LVT_coreMod
   use ERA5obsMod
@@ -280,7 +280,8 @@ subroutine interp_era5var2d(source, var_inp,var_out)
   integer           :: source
   real              :: var_inp(era5obs(source)%npts)
   real              :: var_out(LVT_rc%lnc,LVT_rc%lnr)
-! 
+  character(1), intent(in) :: var_type
+  ! 
 ! !DESCRIPTION: 
 !  This routine interpolates/upscales the ERA5 fields to the 
 !  target LVT domain
@@ -311,14 +312,26 @@ subroutine interp_era5var2d(source, var_inp,var_out)
   enddo
   
     if(LVT_isAtAfinerResolution(era5obs(source)%datares)) then
-       call neighbor_interp(LVT_rc%gridDesc, input_bitmap, &
-            var_inp_1d, output_bitmap, var_out_1d, &
-            nc*nr, &
-            LVT_rc%lnc*LVT_rc%lnr, &
-            era5obs(source)%rlat, & 
-            era5obs(source)%rlon, &
-            era5obs(source)%n11, &
-            LVT_rc%udef, iret)
+       if (var_type == 't') then
+          call neighbor_interp(LVT_rc%gridDesc, input_bitmap, &
+               var_inp_1d, output_bitmap, var_out_1d, &
+               nc*nr, &
+               LVT_rc%lnc*LVT_rc%lnr, &
+               era5obs(source)%rlat, & 
+               era5obs(source)%rlon, &
+               era5obs(source)%n11, &
+               LVT_rc%udef, iret)
+       else if (var_type == 'p') then
+          call conserv_interp(LVT_rc%gridDesc, input_bitmap, var_inp_1d, &
+               output_bitmap, var_out_1d, nc*nr, &
+               LVT_rc%lnc*LVT_rc%lnr, era5obs(source)%rlat, &
+               era5obs(source)%rlon, &
+               era5obs(source)%w112, era5obs(source)%w122, &
+               era5obs(source)%w212, era5obs(source)%w222, &
+               era5obs(source)%n112, era5obs(source)%n122, &
+               era5obs(source)%n212, era5obs(source)%n222, &
+               LVT_rc%udef, iret)
+       end if
        
     else
        call upscaleByAveraging(&
