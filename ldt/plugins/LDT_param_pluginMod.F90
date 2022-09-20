@@ -28,6 +28,7 @@ module LDT_param_pluginMod
 !  07 Feb 2022:  Eric Kemp/SSAI - Added CHELSAV21 precipitation
 !  13 May 2022:  Eric Kemp/SSAI - Added NAFPA background precipitation
 !  22 Jul 2022:  Eric Kemp/SSAI - Added NAFPA IMERG precipitation
+!  20 Sep 2022:  Eric Kemp/SSAI - Added NAFPA ERA5 precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -1232,6 +1233,7 @@ contains
 !EOP
     use LDT_CHELSAV21_climpptMod, only: LDT_read_CHELSAV21_climppt
     use LDT_NAFPA_imerg_climpptMod, only: LDT_read_NAFPA_imerg_climppt
+    use LDT_NAFPA_ERA5_climpptMod, only: LDT_read_NAFPA_ERA5_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
@@ -1258,6 +1260,9 @@ contains
 
     call registerreadclimppt(trim(LDT_nafpaimergpptId)//char(0), &
          LDT_read_NAFPA_imerg_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpaera5pptId)//char(0), &
+         LDT_read_NAFPA_ERA5_climppt)
 
 !- Temperature downscaling:
 

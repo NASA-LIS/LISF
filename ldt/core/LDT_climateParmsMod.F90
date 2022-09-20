@@ -30,6 +30,7 @@ module LDT_climateParmsMod
 !  07 Feb 2022: Eric Kemp/SSAI; Add CHELSAV21 precipitation climatology
 !  13 May 2022: Eric Kemp/SSAI; Add NAFPA background precip climatologies
 !  22 Jul 2022: Eric Kemp/SSAI; Add NAFPA IMERG precip climatologies
+!  20 Sep 2022: Eric Kemp/SSAI; Add NAFPA ERA5 precip climatologies
 !
   use ESMF
   use LDT_coreMod
@@ -449,6 +450,10 @@ contains
                         trim(LDT_climate_struc(n)%climpptdir)
                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
                 case( "NAFPA_IMERG")
+                   LDT_climate_struc(n)%climpptfile = &
+                        trim(LDT_climate_struc(n)%climpptdir)
+                   read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth
+                case( "NAFPA_ERA5")
                    LDT_climate_struc(n)%climpptfile = &
                         trim(LDT_climate_struc(n)%climpptdir)
                    read(mon2d(k),'(I)') LDT_climate_struc(n)%climpptimonth

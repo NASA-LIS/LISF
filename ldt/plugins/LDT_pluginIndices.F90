@@ -28,6 +28,7 @@ module LDT_pluginIndices
 !  07 Feb 2022: Eric Kemp/SSAI -- Added CHELSAV21 precipitation.
 !  13 May 2022: Eric Kemp/SSAI -- Added NAFPA background precipitation.
 !  22 Jul 2022: Eric Kemp/SSAI -- Added NAFPA IMERG precipitation.
+!  20 Sep 2022: Eric Kemp/SSAI -- Added NAFPA ERA5 precipitation.
 !
 !EOP
   PRIVATE
@@ -350,6 +351,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_nafpabackgalwempptId = &
         "NAFPA_BACK_GALWEM"
    character*50, public,  parameter :: LDT_nafpaimergpptId = "NAFPA_IMERG"
+   character*50, public,  parameter :: LDT_nafpaera5pptId = "NAFPA_ERA5"
 
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"

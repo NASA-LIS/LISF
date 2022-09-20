@@ -18,6 +18,7 @@
 !  07 Feb 2022: Eric Kemp/SSAI: Added CHELSAV21 precipitation.
 !  13 May 2022: Eric Kemp/SSAI: Added NAFPA background precipitation.
 !  22 Jul 2022: Eric Kemp/SSAI: Added NAFPA IMERG monthly precipitation.
+!  20 Sep 2022: Eric Kemp/SSAI: Added NAFPA ERA5 monthly precipitation.
 ! !INTERFACE:
 subroutine setClimateParmsFullnames(n, datatype, source)
 
@@ -70,6 +71,9 @@ subroutine setClimateParmsFullnames(n, datatype, source)
      case( "NAFPA_IMERG" )
         LDT_climate_struc(n)%climppt%standard_name = &
              "NAFPA_IMERG PPT climatology fields"
+     case( "NAFPA_ERA5" )
+        LDT_climate_struc(n)%climppt%standard_name = &
+             "NAFPA_ERA5 PPT climatology fields"
      end select
 
   case( "mintemp" )
