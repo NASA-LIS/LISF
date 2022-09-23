@@ -83,8 +83,8 @@ include::running_ldt.adoc[]
 
 == LDT Output Files
 
-During this run, LDT produced one output file named `LIS_EnRST_NOAH36_201801010000.d01.nc` and placed it into the `OL_OUTPUT/SURFACEMODEL` directory in your `$WORKING_DIR`.
+During this run, LDT produced one output file named `LIS_EnRST_NOAH36_201801010000.d01.nc` and placed it into the `$WORKING_DIR/DA_ensrst` directory.
 
-Use `ncview`, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the _target_ version of this output file located in the `DA_ensrst` directory. You can also use `nccmp` to directly compare the contents of the file created by your LDT run and the target.
+Use `ncview`, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the _target_ version of this output file, also located in `$WORKING_DIR/D_ensrst`. Additionally, you can use `nccmp` to directly compare the contents of the file created by your LDT run and the target.
 
 // TODO: ADD EXAMPLES HERE
