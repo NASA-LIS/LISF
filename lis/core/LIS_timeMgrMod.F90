@@ -297,7 +297,15 @@ contains
     integer                 :: yr,mo,da,hr,mn,ss,ms
     integer                 :: status
     type(lisalarmEntry), pointer :: alrmEntry, current
+    real*8                  :: time
+    real                    :: gmt, ts
+    integer                 :: doy
 
+    ts = -86400
+    hr = 0
+    mn = 0
+    ss = 0
+    
     call ESMF_ClockGet(LIS_clock, stopTime=stopTime, rc=status)
 
     if(LIS_rc%twInterval.eq.2592000.0) then 
@@ -307,12 +315,16 @@ contains
           yr = LIS_rc%yr -1
           mo = 12
        endif
-       
+
+       da = 1       
        ! This always going to back to the start of the previous month!
+!       if(.not.(yr.eq.LIS_rc%syr.and.mo.eq.LIS_rc%smo)) then          
+          call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,ts)
+!       endif
        
        call ESMF_TimeSet(tTime, yy = yr, &
             mm = mo, &
-            dd = 1, &
+            dd = da, &
             h  = 0, &
             m  = 0,& 
             s  = 0, & 
@@ -348,10 +360,12 @@ contains
           mo = 1
           yr = LIS_rc%yr+1
        endif
-       
+
+       da = 1
+!       call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,ts)
        call ESMF_TimeSet(tTime, yy = yr, &
             mm = mo, &
-            dd = 1, &
+            dd = da, &
             h  = 0, &
             m  = 0,& 
             s  = 0, & 
@@ -362,8 +376,7 @@ contains
        LIS_twStopTime = tTime
        
        write(LIS_logunit,*)'[INFO] Time Window Stop month = ',mo
-       
-       
+                     
        mo = LIS_rc%mo - 1
        yr = LIS_rc%yr
        if(mo.lt.1) then    
@@ -375,7 +388,7 @@ contains
        mn = 0 
        ss = 0 
        ms = 0 
-
+       
        if(LIS_twStopTime.gt.stopTime) then 
           LIS_twStopTime = stopTime
        endif
@@ -419,7 +432,8 @@ contains
             rc = status)
 
     endif
-
+        
+    call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,ts)
     call LIS_timemgr_set(LIS_rc,yr,mo,da,hr,mn,ss,ms,0.0)
     
     LIS_rc%syr= yr
@@ -608,6 +622,7 @@ contains
 !   
 !EOP
     type(ESMF_Time) :: currTime
+    type(ESMF_Time) :: startTime
     integer         :: status
     real*8          :: time
     real            :: gmt
@@ -633,6 +648,11 @@ contains
          LIS_rc%yr,LIS_rc%hr,':',LIS_rc%mn,':',LIS_rc%ss
 24  format(a23,i2.2,a1,i2.2,a1,i4,1x,i2.2,a1,i2.2,a1,i2.2)    ! MLF
 
+    call ESMF_ClockGet(LIS_clock,&
+         startTime=startTime, rc=status)
+    call LIS_verify(status,&
+         'error in ESMF_ClockGet in LIS_timemgr_set')
+    
     call ESMF_TimeSet(currTime, yy = yr, &
          mm = mo, &
          dd = da, &
@@ -645,6 +665,9 @@ contains
     call LIS_verify(status, &
          'error in ESMF_TimeSet:currTime in LIS_timemgr_set')
 
+    if(currTime.lt.startTime) then
+       currTime = startTime
+    endif
     call ESMF_ClockSet(LIS_clock, currTime = currTime, rc=status)
     call LIS_verify(status,&
          'error in ESMF_ClockSet in LIS_timemgr_set')

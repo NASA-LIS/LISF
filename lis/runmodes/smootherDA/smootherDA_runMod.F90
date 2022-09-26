@@ -130,14 +130,15 @@ contains
 !  the end time to be not exactly at the end of the month. 
 !
 !EOP
-    integer           :: n 
+    integer           :: n
 
     LIS_rc%DAincrMode(:) = 0 
-    
     call LIS_surfaceModel_readrestart
     do while (.NOT. LIS_endofrun())
        do while(.NOT.LIS_endofTimeWindow())
+
           call LIS_ticktime
+
           do n=1,LIS_rc%nnest
              if(LIS_timeToRunNest(n)) then
                 call LIS_setDynparams(n)
@@ -169,6 +170,7 @@ contains
                 endif
                 call updateIncrementsFlag(n)
              endif
+
           enddo
           flush(LIS_logunit)
        enddo
@@ -180,7 +182,7 @@ contains
           call LIS_surfaceModel_readrestart
           call LIS_routing_readrestart
           call LIS_perturb_readrestart 
-
+ 
           LIS_rc%iterationId(:) = LIS_rc%iterationId(:) + 1
        endif
     enddo
