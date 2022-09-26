@@ -6105,11 +6105,17 @@ ensemble members desired for the user-generated ensemble forecast dataset.
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.
 
+`Generic ensemble forecast initial date:` specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.
+
 .Example _lis.config_ entry
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5
+Name of base forecast model:               GEOS5
+Generic ensemble forecast initial date:    20200501
 ....
 
 
@@ -6126,11 +6132,17 @@ ensemble members desired for the user-generated precipitation ensemble forecast 
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.
 
+`Precipitation ensemble forecast initial date:` specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.
+
 .Example _lis.config_ entry
 ....
-Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+Precipitation ensemble forecast directory:    ./GEOS5_BiasCorrected/
 Precipitation ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5
+Name of base forecast model:                   GEOS5
+Precipitation ensemble forecast initial date:  20200501
 ....
 
 
