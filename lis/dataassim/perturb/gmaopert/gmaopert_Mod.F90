@@ -2029,6 +2029,7 @@ module gmaopert_Mod
       character(len=LIS_CONST_PATH_LEN) :: filen
       real*8                    :: time
       real                      :: gmt
+      real                      :: ts
       real, allocatable         :: pertdata1d(:)
       real, allocatable         :: pertdata1d_obs(:)
       real, allocatable         :: pertdata1d_patch(:)
@@ -2048,8 +2049,10 @@ module gmaopert_Mod
                        dd=da,calendar=LIS_calendar,rc=status)
                   hr = 0 
                   mn = 0 
-                  ss = 0 
+                  ss = 0
+                  ts = 86400
                   call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
+                  call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,ts)
                else
                   call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
                        dd=da,calendar=LIS_calendar,rc=status)
