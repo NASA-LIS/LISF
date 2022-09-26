@@ -173,8 +173,6 @@ subroutine timeinterp_genEnsFcst(n, findex)
     endif
 #endif
 
-!    do t = 1, LIS_rc%ntiles(n)
-!       index1 = LIS_domain(n)%tile(t)%index
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,genensfcst_struc%max_ens_members
         do k=1,mfactor
@@ -201,19 +199,13 @@ subroutine timeinterp_genEnsFcst(n, findex)
           swd(tid) = genensfcst_struc%metdata1(forcopts%index_swdown,m,index1)
        endif
 #endif
-
          swd(tid) = genensfcst_struc%metdata2(forcopts%index_swdown,m,index1)
-!         if(t==100) then
-!            print *, 'swd: ', swd(t)
-!         endif
         end do
       end do
     end do
   endif
 
 !- Time Averaged Longwave, Block Interpolation
-!   do t = 1, LIS_rc%ntiles(n)
-!      index1 = LIS_domain(n)%tile(t)%index
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,genensfcst_struc%max_ens_members
         do k=1,mfactor
@@ -237,7 +229,6 @@ subroutine timeinterp_genEnsFcst(n, findex)
           if( forcopts%read_psurf ) then 
             if((genensfcst_struc%metdata1(forcopts%index_psurf,m,index1).ne.LIS_rc%udef).and.&
                (genensfcst_struc%metdata2(forcopts%index_psurf,m,index1).ne.LIS_rc%udef)) then
- 
               psurf(tid) = genensfcst_struc%metdata2(forcopts%index_psurf,m,index1) 
             endif
           endif
@@ -259,8 +250,7 @@ subroutine timeinterp_genEnsFcst(n, findex)
           if( forcopts%read_vwind ) then 
             if((genensfcst_struc%metdata1(forcopts%index_vwind,m,index1).ne.LIS_rc%udef).and.&
                (genensfcst_struc%metdata2(forcopts%index_vwind,m,index1).ne.LIS_rc%udef)) then
-             vwind(tid) = genensfcst_struc%metdata2(forcopts%index_vwind,m,index1) 
-!         if(t==100) then; print *, 'vwind: ',vwind(t); endif
+              vwind(tid) = genensfcst_struc%metdata2(forcopts%index_vwind,m,index1) 
             endif
           endif
 
@@ -268,7 +258,9 @@ subroutine timeinterp_genEnsFcst(n, findex)
             if((genensfcst_struc%metdata1(forcopts%index_rainf,m,index1).ne.LIS_rc%udef).and.&
                (genensfcst_struc%metdata2(forcopts%index_rainf,m,index1).ne.LIS_rc%udef)) then
               prcp(tid) = genensfcst_struc%metdata2(forcopts%index_rainf,m,index1)
-!         if(t==100) then; print *, 'prcp: ',prcp(t); endif
+              if( prcp(tid) < 0.0 ) then
+                prcp(tid) = 0.0
+              endif
             endif
           endif
  
@@ -276,6 +268,9 @@ subroutine timeinterp_genEnsFcst(n, findex)
             if((genensfcst_struc%metdata1(forcopts%index_cpcp,m,index1).ne.LIS_rc%udef).and.&
                (genensfcst_struc%metdata2(forcopts%index_cpcp,m,index1).ne.LIS_rc%udef)) then
               cpcp(tid) = genensfcst_struc%metdata2(forcopts%index_cpcp,m,index1)
+              if( cpcp(tid) < 0.0 ) then
+                cpcp(tid) = 0.0
+              endif
             endif     
           endif
 
