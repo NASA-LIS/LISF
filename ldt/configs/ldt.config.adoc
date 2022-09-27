@@ -28,6 +28,7 @@ Not all options described here are available in the public version of LDT.
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
 |"`USAFSI analysis`" |USAF Snow and Ice analysis
 |"`LISHydro preprocessing for WRFHydro`" |Preprocessing Option for WRFHydro
+|"`OPL E SMAP soil moisture retrieval`" |Operational 9-km enhanced SMAP soil moisture retrieval
 |===
 
 .Example _ldt.config_ entry
@@ -3440,6 +3441,11 @@ LIS output timestep:          1da
 |"`NASA SMAP vegetation optical depth`" |NASA SMAP vegetation optical depth observations (units in "`-`")
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM soil moisture`" | Thermal Hydraulic disaggregation of Soil Moisture
+|"`SMAP_E_OPL soil moisture`" | Operational 9-km enhanced SMAP soil moisture retrieval 
+|"`GEOS effective soil temperature`" | GEOS-FP effective soil temperature
+|"`CDFS GVF`" | CDFS green vegetation fraction (GVF) 
+|"`VIIRS GVF`" | VIIRS green vegetation fraction (GVF)
+|"`LIS LSM effective soil temperature`" | Soil temperature output from a LIS run
 |===
 
 .Example _ldt.config_ entry
@@ -3485,12 +3491,15 @@ Number of bins to use in the CDF: 100
 
 |monthly |stratify for each calendar month
 |yearly |lump (considering all years and all seasons)
+|half-monthly | stratify for each calendar half-month (for SMAP_E_OPL)
 |===
 
 .Example _ldt.config_ entry
 ....
 Temporal resolution of CDFs:     monthly
 ....
+
+`Daily interpolation of mean and stddev:` specifies whether daily interpolation of mean and standrd deviation is conducted when 'Temporal resolution of CDFS:' is set to 'half-monthly'. This should be '1' to generate statistics of effective soil temperature (Teff), which are used to scale the LIS Teff during generating the SMAP_E_OPL soil moisture retrievals
 
 `Enable spatial sampling for CDF calculations:` Normally CDFs are calculated (for a given grid cell) by using the data values available at that grid point only. If this option is enabled, then values around a specified radius will be used in the CDF calculations, effectively improving the sampling density at the risk of reduced geographic specificity.
 
@@ -3639,6 +3648,68 @@ LIS soil moisture distribution class:
 LIS soil moisture data category:
 LIS soil moisture area of data:
 LIS soil moisture write interval:
+....
+
+`LIS soil temperature output model name:` specifies the model name used to simulate soil temperature
+
+`LIS soil temperature output directory:` specifies the location of the LIS model output.
+
+`LIS soil temperature output format:` specifies the output format of the LIS model output. (binary/netcdf/grib1)
+
+`LIS soil temperature output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
+
+`LIS soil temperature output naming style:` specifies the output naming style used in the LIS model output (3 level hierarchy/4 level hierarchy, etc.).
+
+`LIS soil temperature output nest index:` specifies the index of the nest used in the LIS model output.
+
+`LIS soil temperature output map projection:` specifies the map projection used in the LIS model output.
+
+`LIS soil temperature domain lower left lat:` specifies the lower left latitude of the LIS model outpu.
+
+`LIS soil temperature domain upper right lat:` specifies the upper right latitude of the LIS model output.
+
+`LIS soil temperature domain lower left lon:` specifies the lower left longitude of the LIS model output.
+
+`LIS soil temperature domain upper right lon` specifies the upper right longitude of the LIS model output.
+
+`LIS soil temperature domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output.
+
+`LIS soil temperature domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output.
+
+For Lambert and polar projections:
+
+`LIS soil temperature domain lower left lat:` specifies the lower left latitude of the LIS model output
+
+`LIS soil temperature domain lower left lon:` specifies the lower left longitude of the LIS model output
+
+`LIS soil temperature domain true lat1:` specifies the true lat1 of the LIS model output
+
+`LIS soil temperature domain true lat2:` specifies the true lat2 of the LIS model output
+
+`LIS soil temperature domain standard lon:` specifies the standard longitude of the LIS model output
+
+`LIS soil temperature domain resolution:` specifies the resolution of the LIS model output
+
+`LIS soil temperature domain x-dimension size:` specifies the x-dimension size of the LIS model output
+
+`LIS soil temperature domain y-dimension size:` specifies the y-dimension size of the LIS model output
+
+.Example _ldt.config_ entry
+....
+LIS soil temperature output model name:       "Noah.3.9"
+LIS soil temperature output directory:         ../OL/OUTPUT
+LIS soil temperature output format:            "netcdf"
+LIS soil temperature output methodology:       "2d gridspace"
+LIS soil temperature output naming style:      "3 level hierarchy"
+LIS soil temperature output nest index:        1
+LIS soil temperature output map projection:   "latlon"
+
+LIS soil temperature domain lower left lat:     -89.9531250
+LIS soil temperature domain upper right lat:     89.9531250
+LIS soil temperature domain lower left lon:    -179.9296875
+LIS soil temperature domain upper right lon:    179.9296875
+LIS soil temperature domain resolution (dx):      0.1406250
+LIS soil temperature domain resolution (dy):      0.0937500
 ....
 
 `Synthetic soil moisture observation directory:` specifies the location of the data directory containing the synthetic soil moisture data.
@@ -4058,7 +4129,7 @@ LPRM vegetation optical depth data designation:      'X-band'
 
 .Example _ldt.config_ entry
 ....
-MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
+SMOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
 ....
 
 `SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
@@ -4073,6 +4144,41 @@ SMOS NRT NN search radius for openwater proximity detection: 3
 .Example _ldt.config_ entry
 ....
 THySM observation directory: ../THySM
+....
+
+`SMAP_E_OPL soil moisture observation directory:` specifies the location of the data directory containing the SMAP_E_OPL soil moisture data
+
+.Example _ldt.config_ entry
+....
+SMAP_E_OPL soil moisture observation directory:  ../SMAP_E_OPL_noah39
+....
+
+`SMAP_E_OPL search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations
+
+.Example _ldt.config_ entry
+....
+SMAP_E_OPL search radius for openwater proximity detection:  3
+....
+
+`GEOS soil temperature data directory:` specifies the location of the data directory containing the GEOS-FP soil temperature data
+
+.Example _ldt.config_ entry
+....
+GEOS soil temperature data directory: ./GEOS
+....
+
+`CDFS GVF data directory:` specifies the location of the data directory containing the CDFS GVF data
+
+.Example _ldt.config_ entry
+....
+CDFS GVF data directory:   ./CDFS_GVF
+....
+
+`VIIRS GVF data directory:` specifies the location of the data directory containing the VIIRS GVF data
+
+.Example _ldt.config_ entry
+....
+VIIRS GVF data directory:   ./VIIRS_GVF
 ....
 
 [[ssec-hymapopts]]
@@ -4698,3 +4804,99 @@ Sentinel1A OSSE mask data resolution (km): 1
 TSSM OSSE mask directory:           ../Masks/TSSM/
 TSSM OSSE mask data resolution (km): 1
 ....
+
+[[ssec-smap_e_opl]]
+=== Operational 9-km enhanced SMAP soil moisture retrieval
+
+`SMAP_E_OPL valid date (YYYYMMDDHH):` valid date and hour (UTC) of SMAP L1B data
+
+`SMAP_E_OPL soil moisture output directory:` specifies a directory where soil moisture retrieval outputs are saved 
+
+`SMAP_E_OPL L1B data directory:` specifies a directory containing the SMAP L1B data
+
+`SMAP_E_OPL L1B data type:` specifies the L1B data type. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|1 |Near real time data
+|2 |Historical data
+|===
+
+`SMAP_E_OPL write L1B resampled output:` specifies whether to write L1B resampled output or not. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |Do not write L1B resampled output
+|1 |Write L1B resampled output
+|===
+
+`SMAP_E_OPL L1B resampled output directory:` specifies a L1B resampled output directory when 'SMAP_E_OPL write L1B resampled output: 1'
+
+`SMAP_E_OPL LIS soil temperature directory:` specifies a directory containing LIS soil temperature outputs
+
+`SMAP_E_OPL apply soil temperature bias correction:` specifies whether soil temperature bias correction is applied or not. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |Do not apply soil temperature bias correction
+|1 |Apply soil temperature bias correction
+|===
+
+`SMAP_E_OPL reference Teff daily statistics file:` specifies a directory and filename of the reference effective soil temperature (Teff) daily statistics file 
+
+`SMAP_E_OPL LIS Teff daily statistics file:` specifies a directory and filename of the LIS Teff daily statistics file
+
+`SMAP_E_OPL LIS snow directory:` specifies a directory containing LIS snow outputs
+
+`SMAP_E_OPL snow depth threshold:` specifies a snow depth threshold (unit: m). Soil moisture retrievals are not generate for grid cells with snow depth greater than the threshold. 
+
+`SMAP_E_OPL TAU directory:` specifies a directory containing the pre-processed TAU data
+
+`SMAP_E_OPL OMEGA file:` specifies a directory and filename of the pre-processed OMEGA data
+
+`SMAP_E_OPL soil bulk density file:` specifies a directory and filename of the pre-processed soil bulk density data
+
+`SMAP_E_OPL soil clay fraction file:` specifies a directory and filename of the pre-processed soil clay fraction data
+
+`SMAP_E_OPL roughness file:` specifies a directory and filename of the pre-processed roughness data
+
+`SMAP_E_OPL landcover file:` specifies a directory and filename of the pre-processed land cover data
+
+.Example _ldt.config_ entry
+....
+SMAP_E_OPL valid date (YYYYMMDDHH):                 2015060312
+SMAP_E_OPL soil moisture output directory:          ./SM_retrieval
+SMAP_E_OPL L1B data directory:                      ../SMAP_L1B_TB
+SMAP_E_OPL L1B data type:                           1
+SMAP_E_OPL write L1B resampled output:              0
+SMAP_E_OPL L1B resampled output directory:          ./ARFS_RESAMPLE
+SMAP_E_OPL LIS soil temperature directory:          ../Noah39_OL
+SMAP_E_OPL apply soil temperature bias correction:  1 
+SMAP_E_OPL reference Teff daily statistics file:    ../geos_daily_statistics_15obs.nc
+SMAP_E_OPL LIS Teff daily statistics file:          ../noah39_daily_statistics_15obs.nc
+SMAP_E_OPL LIS snow directory:                      ../Noah39_snow
+SMAP_E_OPL snow depth threshold:                    0.05
+SMAP_E_OPL TAU directory:                           ../../data/TAU_ARFS_DAILY
+SMAP_E_OPL OMEGA file:                              ../../data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
+SMAP_E_OPL soil bulk density file:                  ../../data/PRMS_RETRIEVAL_ARFS/bd_arfs_006.dat
+SMAP_E_OPL soil clay fraction file:                 ../../data/PRMS_RETRIEVAL_ARFS/clay_arfs_006.dat
+SMAP_E_OPL roughness file:                          ../../data/PRMS_RETRIEVAL_ARFS/hvalue_arfs.dat
+SMAP_E_OPL landcover file:                          ../../data/PRMS_RETRIEVAL_ARFS/SMAP_LC_ARFS.bin
+....
+
+
+
+
+
+
+
+
+
+
+
