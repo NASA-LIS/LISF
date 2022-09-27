@@ -1142,8 +1142,8 @@ contains
     call LIS_verify(rc,'Model output attributes file: not specified')
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%outputSpecFile(n),rc=rc)
-    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File', &
-                         LIS_rc%outputSpecFile(n)
+    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File, ', &
+                         trim(LIS_rc%outputSpecFile(n))
 
     inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
     if(.not.file_exists) then 
