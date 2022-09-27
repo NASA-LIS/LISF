@@ -14772,12 +14772,19 @@ ensemble members desired for the user-generated ensemble forecast dataset.</p>
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.</p>
 </div>
+<div class="paragraph">
+<p><code>Generic ensemble forecast initial date:</code> specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
 <pre>Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5</pre>
+Name of base forecast model:               GEOS5
+Generic ensemble forecast initial date:    20200501</pre>
 </div>
 </div>
 </div>
@@ -14796,12 +14803,19 @@ ensemble members desired for the user-generated precipitation ensemble forecast 
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.</p>
 </div>
+<div class="paragraph">
+<p><code>Precipitation ensemble forecast initial date:</code> specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+<pre>Precipitation ensemble forecast directory:    ./GEOS5_BiasCorrected/
 Precipitation ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5</pre>
+Name of base forecast model:                   GEOS5
+Precipitation ensemble forecast initial date:  20200501</pre>
 </div>
 </div>
 </div>
@@ -22143,7 +22157,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-09-23 17:15:05 UTC
+Last updated 2022-09-27 15:47:29 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
