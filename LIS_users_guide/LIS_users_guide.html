@@ -514,31 +514,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ssec_landslides">9.14. Land slide models</a></li>
 <li><a href="#ssec_irrigation">9.15. Irrigation</a></li>
 <li><a href="#ssec_routing">9.16. Routing</a></li>
-<li><a href="#_runoff">9.17. Runoff</a></li>
-<li><a href="#ssec_outputconfig">9.18. Model output configuration</a></li>
-<li><a href="#ssec_timeinterval">9.19. Defining a time interval</a></li>
 </ul>
 </li>
-<li><a href="#_specification_of_input_forcing_variables">10. Specification of Input Forcing Variables</a></li>
-<li><a href="#_model_output_specifications">11. Model Output Specifications</a></li>
-<li><a href="#sec_usersupport">12. User Support</a>
-<ul class="sectlevel2">
-<li><a href="#_requesting_help">12.1. Requesting Help</a></li>
-<li><a href="#_bug_reports">12.2. Bug Reports</a></li>
-</ul>
-</li>
-<li><a href="#sec_faq">Appendix A: Frequently Asked Questions</a></li>
-<li><a href="#sec_fconv_appendix">Appendix B: LIS Binary File Convention</a>
-<ul class="sectlevel2">
-<li><a href="#_introduction">B.1. Introduction</a></li>
-<li><a href="#_byte_order">B.2. Byte order</a></li>
-<li><a href="#_storage_organization">B.3. Storage organization</a></li>
-<li><a href="#_missingundefined_values">B.4. Missing/undefined values</a></li>
-<li><a href="#_file_name_extension_convention_and_access_code_samples">B.5. File name extension convention and access code samples</a></li>
-</ul>
-</li>
-<li><a href="#_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</a></li>
-<li><a href="#_references">References</a></li>
 </ul>
 </div>
 </div>
@@ -716,15 +693,15 @@ the steps needed to post-process generated output for visualization.</p>
 describes the user-configurable options.</p>
 </li>
 <li>
-<p><strong><a href="#sec_forcingvars">Specification of Input Forcing Variables</a></strong>:
+<p><strong><a href="#sec_forcingvars">[sec_forcingvars]</a></strong>:
 describes the user-configurable input forcing variable options.</p>
 </li>
 <li>
-<p><strong><a href="#sec_modeloutputlisttable">Model Output Specifications</a></strong>:
+<p><strong><a href="#sec_modeloutputlisttable">[sec_modeloutputlisttable]</a></strong>:
 describes the user-configurable output variable options.</p>
 </li>
 <li>
-<p><strong><a href="#sec_usersupport">User Support</a></strong>:
+<p><strong><a href="#sec_usersupport">[sec_usersupport]</a></strong>:
 describes how to request help from and provide feedback to the LISF development team.</p>
 </li>
 </ol>
@@ -5178,7 +5155,7 @@ Not all the optional components listed below are available in the public release
 <p>Note, each file name contains a date-stamp marking the year, month, day, hour, and minute that the data correspond to.  The output data files for other land surface models are similar.  Here the <em>gs4r</em> extension corresponds to the Fortran binary output format.  The output data files for other binary formats are similar.</p>
 </div>
 <div class="paragraph">
-<p>The actual contents of the output files depend on the settings in the <em>lis.config</em> configuration file and the &#8220;Model output attributes file&#8221; file defined within the <em>lis.config</em> configuration file.  See Section <a href="#ssec_outputconfig">Model output configuration</a>.</p>
+<p>The actual contents of the output files depend on the settings in the <em>lis.config</em> configuration file and the &#8220;Model output attributes file&#8221; file defined within the <em>lis.config</em> configuration file.  See Section <a href="#ssec_outputconfig">[ssec_outputconfig]</a>.</p>
 </div>
 <div class="sect2">
 <h3 id="_fortran_binary_output_format">8.1. Fortran binary output format</h3>
@@ -5405,7 +5382,7 @@ Acceptable values are:</p>
 output interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -5609,6 +5586,36 @@ Acceptable values are:</p>
 <div class="content">
 <pre>land slide model:</pre>
 </div>
+</div>
+<div class="paragraph">
+<p><code>Number of subLSMs:</code> specifies the number of subLSMs to run.
+Acceptable values are: 0 : no subLSM; 1 : One subLSM</p>
+</div>
+<div class="paragraph">
+<p><code>subLSM models:</code> specifies the subLSMs to run.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crocus8.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crocus snow model model</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>Note: To run a standalone version of the Crocus, the user need to set
+Land surface model:  "none"</p>
 </div>
 <div class="paragraph">
 <p><code>Number of met forcing sources:</code> specifies the
@@ -6155,7 +6162,7 @@ to <code>.false.</code>.</p>
 <div class="paragraph">
 <p><code>Forcing variables list file:</code> specifies the file containing
 the list of forcing variables to be used. Please refer to the
-sample forcing_variables.txt (Section <a href="#sec_forcingvars">Specification of Input Forcing Variables</a>)
+sample forcing_variables.txt (Section <a href="#sec_forcingvars">[sec_forcingvars]</a>)
 file for a complete specification description.</p>
 </div>
 <div class="literalblock">
@@ -7344,7 +7351,7 @@ Acceptable values are:</p>
 the output diagnostics interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -7619,7 +7626,7 @@ Soil Temperature<br>
 of bias restart files.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -7743,7 +7750,7 @@ Acceptable values are:</p>
 perturbations restart output writing interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -7801,7 +7808,7 @@ Acceptable values are:</p>
 perturbation interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -7908,7 +7915,7 @@ Acceptable values are:</p>
 perturbation interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -7999,7 +8006,7 @@ Acceptable values are:</p>
 perturbation interval.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -10304,7 +10311,7 @@ Acceptable values are:</p>
 of the chosen RTM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -10312,7 +10319,7 @@ of how to specify a time interval.</p>
 output frequency of the RTM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -15178,7 +15185,7 @@ is also used to run LIS with the purpose of only processing and writing
 forcing data.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -15194,7 +15201,7 @@ of how to specify a time interval.</p>
 <p><code>Noah.2.7.1 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15212,7 +15219,7 @@ writing interval for Noah-2.7.1. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15389,7 +15396,7 @@ Noah.2.7.1 reference height for forcing u and v:  20.0</pre>
 <p><code>Noah.3.2 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15407,7 +15414,7 @@ writing interval for Noah-3.2. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15631,7 +15638,7 @@ Noah.3.2 reference height for forcing u and v:  20.0      # (m) - negative=use h
 <p><code>Noah.3.3 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15649,7 +15656,7 @@ writing interval for Noah-3.3. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15878,7 +15885,7 @@ Noah.3.3 soil moisture CDF file:</pre>
 <p><code>Noah.3.6 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -15896,7 +15903,7 @@ writing interval for Noah-3.6. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -16141,7 +16148,7 @@ writing interval for Noah-3.9. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -16386,7 +16393,7 @@ Noah.3.9 FASDAS option (0 or 1):          0</pre>
 Noah-MP-3.6 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -16394,7 +16401,7 @@ of how to specify a time interval.</p>
 interval for the Noah-MP-3.6 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -17047,7 +17054,7 @@ Noah-MP.3.6 soil moisture CDF file:</pre>
 Noah-MP-4.0.1 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -17055,7 +17062,7 @@ of how to specify a time interval.</p>
 interval for the Noah-MP-4.0.1 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -17932,7 +17939,7 @@ Noah-MP.4.0.1 snow depth glacier model option:              2000</pre>
 <p><code>RUC37 model timestep:</code> specifies the timestep for RUC.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18135,7 +18142,7 @@ RUC37 initial qsfc: 1.6260381E-03          # qsfc: effective mixing ratio at the
 <p><code>CLM model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18144,7 +18151,7 @@ writing interval for CLM. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18190,7 +18197,7 @@ CLM initial snow mass:                0.0</pre>
 <p><code>VIC411 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18224,7 +18231,7 @@ writing interval for VIC. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18295,7 +18302,7 @@ VIC411 convert units:              1</pre>
 <p><code>VIC412 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18329,7 +18336,7 @@ writing interval for VIC. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18474,7 +18481,7 @@ JULES.5.0 reference height for forcing u and v: 10</pre>
 <p><code>Mosaic model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18483,7 +18490,7 @@ writing interval for Mosaic.  The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18659,7 +18666,7 @@ Mosaic use distributed soil depth map:            0</pre>
 <p><code>HYSSIB model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18668,7 +18675,7 @@ writing interval for Hy-SSiB. The typical value used in the
 LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18738,7 +18745,7 @@ HYSSIB initial soil temperature:              290.0</pre>
 <p><code>CLSM F2.5 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18747,7 +18754,7 @@ writing  interval for Catchment Fortuna-2_5. The typical
 value used in the LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18862,7 +18869,7 @@ seasons to have GeoWRSI run over (default value is 1).</p>
 <p><code>WRSI model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18871,7 +18878,7 @@ writing  interval for WRSI. The typical value used in the
 LIS-WRSI runs is 10-day, or 1-dekad.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18900,7 +18907,7 @@ WRSI restart file:                  "none"</pre>
 <p><code>CABLE model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -18909,7 +18916,7 @@ writing interval for CABLE-1.4b. The typical value used
 in the LIS runs is 24 hours (1da).</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19019,7 +19026,7 @@ CABLE tile to print:                      26784    # tile number to print (0 = p
 <p><code>RDHM356 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19027,7 +19034,7 @@ of how to specify a time interval.</p>
 writing interval for RDHM356.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19521,7 +19528,7 @@ RDHM356 initial TA_PREV:         0</pre>
 <p><code>SUMMA.1.0 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -19537,14 +19544,14 @@ of how to specify a time interval.</p>
 <p><code>AWRAL600 model timestep:</code> specifies the model timestep for the AWRA-L 6.0.0 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
 <p><code>AWRAL600 restart output interval:</code> specifies the model timestep for the AWRA-L 6.0.0 LSM.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19705,7 +19712,7 @@ AWRAL600 initial mleaf: 0.67 0.2</pre>
 <p><code>FLAKE1 model timestep:</code> specifies the timestep for FLAKE1.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19713,7 +19720,7 @@ of how to specify a time interval.</p>
 interval for FLAKE1.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -19827,7 +19834,7 @@ FLAKE1 initial snow surface albedo with respect to the solar radiation:</pre>
 <p><code>Template open water timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="literalblock">
@@ -19959,7 +19966,7 @@ Acceptable values are:</p>
 interval for irrigation.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20116,7 +20123,7 @@ Irrigation source water partition: 0</pre>
 the HyMAP router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20124,7 +20131,7 @@ of how to specify a time interval.</p>
 writing interval for the HyMAP router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20269,7 +20276,7 @@ Acceptable values are:</p>
 interval for the HyMAP router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20298,7 +20305,7 @@ HYMAP routing model restart file: "./OL/ROUTING/200001/LIS_RST_HYMAP_router_2000
 the HyMAP2 router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20306,7 +20313,7 @@ of how to specify a time interval.</p>
 writing interval for the HyMAP2 router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20623,7 +20630,7 @@ Acceptable values are:</p>
 interval for the HyMAP2 router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20693,7 +20700,7 @@ HYMAP2 2-way coupling flooded fraction threshold: 2.0</pre>
 writing interval for the NLDAS router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20701,7 +20708,7 @@ of how to specify a time interval.</p>
 writing interval for the NLDAS router.</p>
 </div>
 <div class="paragraph">
-<p>See Section <a href="#ssec_timeinterval">Defining a time interval</a> for a description
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
 of how to specify a time interval.</p>
 </div>
 <div class="paragraph">
@@ -20770,311 +20777,489 @@ NLDAS routing model restart file:</pre>
 </div>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="_runoff">9.17. Runoff</h3>
 <div class="sect3">
-<h4 id="sssec_erairunoff">9.17.1. ERA interim land runoff</h4>
+<h4 id="sssec_lsm_Crocus8.1">9.16.4. Crocus8.1</h4>
 <div class="paragraph">
-<p><code>ERA interim land runoff data output directory:</code> specifies directory
-where ERA interim outputs are located.</p>
+<p><code>CROCUS81 model timestep:</code> specifies the timestep for the run.</p>
 </div>
 <div class="paragraph">
-<p><code>ERA interim land runoff data output interval:</code> specifies
-ERA interim output time step</p>
+<p><code>CROCUS81 restart output interval:</code> defines the restart
+writing interval for Crocus8.1. The typical value is 1 month (1mo).</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 nsnow:</code> total number of snow layer</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 nimpur:</code> number of impurity types  Note: this option is not activated in the current version</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWRES_opt:</code> turbulant exchange options ('DEF', 'RIL', 'M98' )
+                                      'DEF' = Default: Louis (ISBA: Noilhan and Mahfouf 1996)
+                                      'RIL' = Limit Richarson number under very stable
+                                              conditions (currently testing)
+                                      'M98'  = Martin et Lejeune 1998 : older computation for turbulent fluxes coefficents in Crocus</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 OMEB_BOOL:</code>                 True = coupled to MEB. This means surface fluxes ae IMPOSED
+                                       as an upper boundary condition to the explicit snow schemes.
+                                      If = False, then energy
+                                      budget and fluxes are computed herein.</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 HIMPLICIT_WIND_opt:</code>  wind implicitation option
+                                      'OLD' = direct
+                                      'NEW' = Taylor serie, order 1</p>
+</div>
+<div class="paragraph">
+<p><code>ROCUS81 PTSTEP:</code> must set to 900s because it has been used to compute the amount of snowfall to triger the CALL_MODEL</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 UREF:</code> reference height of the wind</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 ZREF:</code> reference height of the first atmospheric level</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 Z0NAT:</code> grid box average roughness length</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 Z0EFF:</code> roughness length for momentum</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 Z0HNAT:</code> grid box average roughness length for heat</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 D_G:</code> Assumed first soil layer thickness (m)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWDRIFT_opt:</code>
+                          'NONE': No snowdrift scheme
+                          'DFLT': falling snow falls as purely dendritic
+                          'GA01': Gallee et al 2001
+                          'VI13': Vionnet et al 2013</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWDRIFT_SUBLIM_BOOL:</code> activate sublimation during drift</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOW_ABS_ZENITH_BOOL:</code> activate parametrization of solar absorption for polar regions</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWMETAMO_opt:</code>       Metamorphism scheme
+                                      HSNOWMETAMO=B92 Brun et al 1992
+                                      HSNOWMETAMO=C13 Carmagnola et al 2014
+                                      HSNOWMETAMO=T07 Taillandier et al 2007
+                                      HSNOWMETAMO=F06 Flanner et al 2006</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWRAD_opt:</code>    Radiative transfer scheme
+                                      B92 Brun et al 1992
+                                      T17 (Tuzet et al. 2017) (Libois et al. 2013)
+                                          TARTES with impurities content scheme (Currently not available)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 ATMORAD_BOOL:</code>   activate atmotartes scheme</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 IMPWET:</code> Wet deposit impurity coefficient</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 IMPDRY:</code> Dry deposit impurity coefficient</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWFALL_opt:</code> Falling snow scheme
+                                       V12 Vionnet et al. 2012 from Brun et al. 1989
+                                       A76 Anderson et al. 1976
+                                       S02 Lehning el al. 2002
+                                       P75 Pahaut 1975
+                                       NZE Constant density 200 kg/m3 (who knows ?)
+<code>CROCUS81 SNOWCOND_opt:</code>   Thermal conductivity scheme
+                                       Y81 default Crocus from Yen et al. 1981
+                                       I02 ISBA_ES snow conductivity parametrization (Boone et al. 2002)
+                                       C11 Calonne et al. 2011 snow conductivity parametrization</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWHOLD_opt:</code>  liquid water content scheme
+                                       B92 default Crocus from Brun et al. 1992 or Vionnet et al. 2012
+                                       B02 ISBA_ES  parametrization (Boone et al. 2002)
+                                       O04 CLM parametrization (Oleson et al 2004)
+                                       S02 SNOWPACK aprametrization (Lehning et al 2002)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWCOMP_opt:</code>  compaction option
+                                       B92 snow compaction basis version
+                                       B93 for slightly different parameters</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWZREF_opt:</code>  reference height is constant or variable from the snow surface
+                                       CST constant reference height from the snow surface
+                                       VAR variable reference height from the snow surface (i.e. constant from the ground)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWCOMPACT_BOOL:</code> activate snow comapction</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWMAK_BOOL:</code> activate snowmaking</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWTILLER_BOOL:</code> activate Tilling</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SELF_PROD_BOOL:</code> snow management option</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 SNOWMAK_PROP_BOOL:</code> Additionnal boolean to use modified properties of machine made snow (MMS) or not</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 PRODSNOWMAK_BOOL:</code>  activate snowmaking daytime</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 GLACIER_BOOL:</code>  True = Over permanent snow and ice,
+                                 initialise WGI=WSAT,
+                                 Hsnow&gt;=10m and allow 0.8&lt;SNOALB&lt;0.85
+                                 False = No specific treatment</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 TG:</code> Surface soil temperature (effective temperature the of layer lying below snow)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 use monthly albedo map:</code> .TRUE. #use monthly climatology albedo  # .FALSE. use constant value of 0.2</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 boolean option to partition total precip:</code>  TRUE if forcing only provides total precip. FALSE if forcing contains snowfall and rainfall</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 restart file:</code> specifies the Crocus restart file.</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 restart file format:</code> specifies the format for the Crocus8.1 restart file.</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWSWE:</code>  Initial snow SWE (kg/m2)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWRHO:</code> Initial snow layer(s) density (kg/m3)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWHEAT:</code> Initial snow layer(s) heat content (J/m2)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWALB:</code> Initial surface albedo</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWGRAN1:</code> Initial Snow layer(s) grain parameter 1</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWGRAN2:</code> Initial Snow layer(s) grain parameter 1</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWHIST:</code> Initial Snow layer(s) Historical parameter (-) in {0-5}</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWLIQ:</code> Initial Snow layer(s) liquid water content (m)</p>
+</div>
+<div class="paragraph">
+<p>`ROCUS81 initial SNOWTEMP: Initial Snow layer(s) temperature (K)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWDZ:</code> Initial Snow layer(s) thickness (m)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial GRNDFLUX:</code> Initial Soil/snow interface heat flux (W/m2)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNDRIFT:</code> Initial Blowing snow sublimation (kg/m2/s) NOTE: Snow compaction and metamorphism due to drift, Mass is unchanged</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial RI_n:</code> Initial Richardson number</p>
+</div>
+<div class="paragraph">
+<p><code>ROCUS81 initial CDSNOW:</code> Initial drag coefficient for momentum over snow</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial USTARSNOW:</code> Initial  Friction velocity over snow (m/s)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial CHSNOW:</code> Initial Drag coefficient for heat over snow  (-)</p>
+</div>
+<div class="paragraph">
+<p><code>CROCUS81 initial SNOWMAK_dz:</code> Initial depth from snow making process</p>
 </div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>ERA interim land runoff data output directory: ./ERAI_OUTPUT/
-ERA interim land runoff data output interval: "1da"</pre>
+<pre>CROCUS81 model timestep:                  15mn
+CROCUS81 restart output interval:         1mo
+CROCUS81 nsnow:                           50
+CROCUS81 nimpur:                          2
+CROCUS81 SNOWRES_opt:                     "DEF"
+CROCUS81 OMEB_BOOL:                      .FALSE.
+CROCUS81 HIMPLICIT_WIND_opt:             "NEW"
+CROCUS81 PTSTEP:                          900
+CROCUS81 UREF:                            10
+CROCUS81 ZREF:                            1.5
+CROCUS81 Z0NAT:                           0.005
+CROCUS81 Z0EFF:                           0.001
+CROCUS81 Z0HNAT:                          0.0005
+CROCUS81 D_G:                             0.01
+CROCUS81 SNOWDRIFT_opt:                   "NONE"
+CROCUS81 SNOWDRIFT_SUBLIM_BOOL:           .FALSE.
+CROCUS81 SNOW_ABS_ZENITH_BOOL:            .FALSE.
+CROCUS81 SNOWMETAMO_opt:                  "C13"
+CROCUS81 SNOWRAD_opt:                     "B92"
+CROCUS81 ATMORAD_BOOL:                    .FALSE.
+CROCUS81 IMPWET:                          0.0 0.0
+CROCUS81 IMPDRY:                          0.0 0.0
+CROCUS81 SNOWFALL_opt:                    "V12"
+CROCUS81 SNOWCOND_opt:                    "Y81"
+CROCUS81 SNOWHOLD_opt:                    "B92"
+CROCUS81 SNOWCOMP_opt:                    "B92"
+CROCUS81 SNOWZREF_opt:                    "CST"
+CROCUS81 SNOWCOMPACT_BOOL:                .FALSE.
+CROCUS81 SNOWMAK_BOOL:                    .FALSE.
+CROCUS81 SNOWTILLER_BOOL:                 .FALSE.
+CROCUS81 SELF_PROD_BOOL:                  .FALSE.
+CROCUS81 SNOWMAK_PROP_BOOL:               .FALSE.
+CROCUS81 PRODSNOWMAK_BOOL:                .FALSE.
+CROCUS81 GLACIER_BOOL:                    .FALSE.
+CROCUS81 TG:                              273.15
+CROCUS81 use monthly albedo map:          .TRUE.
+CROCUS81 boolean option to partition total precip:
+CROCUS81 restart file:                    output/SURFACEMODEL/201708/LIS_RST_CROCUS81_201708312345.d01.nc
+CROCUS81 restart file format:             netcdf
+
+CROCUS81 initial SNOWSWE: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWRHO: 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000
+CROCUS81 initial SNOWHEAT: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWALB: 0.0
+CROCUS81 initial SNOWGRAN1: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWGRAN2: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWHIST: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWAGE: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWLIQ: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWTEMP: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWDZ: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial GRNDFLUX: 0.0
+CROCUS81 initial SNDRIFT: 0.0
+CROCUS81 initial RI_n: 0.0
+CROCUS81 initial CDSNOW: 0.0
+CROCUS81 initial USTARSNOW: 0.0
+CROCUS81 initial CHSNOW: 0.0
+CROCUS81 initial SNOWMAK_dz: 0.0
+
+=== Runoff
+
+[[sssec_erairunoff,ERA interim land runoff]]
+==== ERA interim land runoff
+
+`ERA interim land runoff data output directory:` specifies directory
+where ERA interim outputs are located.
+
+
+`ERA interim land runoff data output interval:` specifies
+ERA interim output time step
+
+.Example _lis.config_ entry</pre>
 </div>
 </div>
-</div>
-<div class="sect3">
-<h4 id="sssec_gldas1runoff">9.17.2. GLDAS1 runoff</h4>
 <div class="paragraph">
-<p><code>GLDAS1 runoff data output directory:</code> specifies directory
-where GLDAS1 outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS1 runoff data model name:</code> specifies GLDAS1 land surface model name.</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS1 runoff data spatial resolution (degree):</code> specifies GLDAS1
-output spatial resolution</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS1 runoff data output interval:</code> specifies
-GLDAS1 output time step</p>
+<p>ERA interim land runoff data output directory: ./ERAI_OUTPUT/
+ERA interim land runoff data output interval: "1da"</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>GLDAS1 runoff data output directory: ./GLDAS1_OUTPUT/
+<pre>[[sssec_gldas1runoff,GLDAS1 runoff]]
+==== GLDAS1 runoff
+
+`GLDAS1 runoff data output directory:` specifies directory
+where GLDAS1 outputs are located.
+
+`GLDAS1 runoff data model name:` specifies GLDAS1 land surface model name.
+
+`GLDAS1 runoff data spatial resolution (degree):` specifies GLDAS1
+output spatial resolution
+
+`GLDAS1 runoff data output interval:` specifies
+GLDAS1 output time step
+
+.Example _lis.config_ entry</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>GLDAS1 runoff data output directory: ./GLDAS1_OUTPUT/
 GLDAS1 runoff data model name:  VIC
 GLDAS1 runoff data spatial resolution (degree): 0.25
-GLDAS1 runoff data output interval: "1da"</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="sssec_gldas2runoff">9.17.3. GLDAS2 runoff</h4>
-<div class="paragraph">
-<p><code>GLDAS2 runoff data output directory:</code> specifies directory
-where GLDAS2 outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS2 runoff data model name:</code> specifies GLDAS2 land surface model name.</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS2 runoff data spatial resolution (degree):</code> specifies GLDAS2
-output spatial resolution</p>
-</div>
-<div class="paragraph">
-<p><code>GLDAS2 runoff data output interval:</code> specifies
-GLDAS2 output time step</p>
+GLDAS1 runoff data output interval: "1da"</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>GLDAS2 runoff data output directory: ./GLDAS2_OUTPUT/
+<pre>[[sssec_gldas2runoff,GLDAS2 runoff]]
+==== GLDAS2 runoff
+
+`GLDAS2 runoff data output directory:` specifies directory
+where GLDAS2 outputs are located.
+
+`GLDAS2 runoff data model name:` specifies GLDAS2 land surface model name.
+
+`GLDAS2 runoff data spatial resolution (degree):` specifies GLDAS2
+output spatial resolution
+
+`GLDAS2 runoff data output interval:` specifies
+GLDAS2 output time step
+
+.Example _lis.config_ entry</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>GLDAS2 runoff data output directory: ./GLDAS2_OUTPUT/
 GLDAS2 runoff data model name:  VIC
 GLDAS2 runoff data spatial resolution (degree): 0.25
-GLDAS2 runoff data output interval: "1da"</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="sssec_gwbmiprunoff">9.17.4. GWBMIP runoff</h4>
-<div class="paragraph">
-<p><code>GWBMIP runoff data output directory:</code> specifies directory
-where GWBMIP outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>GWBMIP runoff data model name prefix:</code> specifies
- GWBMIP land surface model used.</p>
-</div>
-<div class="paragraph">
-<p><code>GWBMIP runoff data output interval:</code> specifies
-GWBMIP output time step</p>
+GLDAS2 runoff data output interval: "1da"</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>GWBMIP runoff data output directory: ./GWBMIP_OUTPUT/
+<pre>[[sssec_gwbmiprunoff,GWBMIP runoff]]
+==== GWBMIP runoff
+
+`GWBMIP runoff data output directory:` specifies directory
+where GWBMIP outputs are located.
+
+`GWBMIP runoff data model name prefix:` specifies
+ GWBMIP land surface model used.
+
+`GWBMIP runoff data output interval:` specifies
+GWBMIP output time step
+
+.Example _lis.config_ entry</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>GWBMIP runoff data output directory: ./GWBMIP_OUTPUT/
 GWBMIP runoff data model name prefix: NOAH33
-GWBMIP runoff data output interval: "1da"</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="sssec_lisrunoff">9.17.5. LIS runoff</h4>
-<div class="paragraph">
-<p><code>LIS runoff output directory:</code> specifies directory
-where LIS outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>LIS runoff output interval:</code> specifies
-LIS output time step</p>
-</div>
-<div class="paragraph">
-<p><code>LIS runoff output domain file:</code> specifies location of the LIS runoff output
-domain file.</p>
+GWBMIP runoff data output interval: "1da"</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>LIS runoff output directory: ./LIS_OUTPUT/
+<pre>[[sssec_lisrunoff,LIS runoff]]
+==== LIS runoff
+
+`LIS runoff output directory:` specifies directory
+where LIS outputs are located.
+
+`LIS runoff output interval:` specifies
+LIS output time step
+
+`LIS runoff output domain file:` specifies location of the LIS runoff output
+domain file.
+
+.Example _lis.config_ entry</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>LIS runoff output directory: ./LIS_OUTPUT/
 LIS runoff output interval: "1da"
-LIS runoff output domain file: ./LIS_OUTPUT/lis_input_010_hybrid.nc</pre>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="sssec_merra2runoff">9.17.6. MERRA2 runoff</h4>
-<div class="paragraph">
-<p><code>MERRA2 runoff data output directory:</code> specifies directory
-where MERRA2 outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>MERRA2 runoff data output interval:</code> specifies
-MERRA2 output time step</p>
+LIS runoff output domain file: ./LIS_OUTPUT/lis_input_010_hybrid.nc</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>MERRA2 runoff data output directory: ./MERRA2_OUTPUT/
-MERRA2 runoff data output interval: "1da"</pre>
+<pre>[[sssec_merra2runoff,MERRA2 runoff]]
+==== MERRA2 runoff
+
+`MERRA2 runoff data output directory:` specifies directory
+where MERRA2 outputs are located.
+
+`MERRA2 runoff data output interval:` specifies
+MERRA2 output time step
+
+.Example _lis.config_ entry</pre>
 </div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="sssec_nldas2runoff">9.17.7. NLDAS2 runoff</h4>
-<div class="paragraph">
-<p><code>NLDAS2 runoff data output directory:</code> specifies directory
-where NLDAS2 outputs are located.</p>
-</div>
-<div class="paragraph">
-<p><code>NLDAS2 runoff data model name:</code> specifies
- NLDAS2 land surface model used.</p>
 </div>
 <div class="paragraph">
-<p><code>NLDAS2 runoff data output interval:</code> specifies
-NLDAS2 output time step</p>
+<p>MERRA2 runoff data output directory: ./MERRA2_OUTPUT/
+MERRA2 runoff data output interval: "1da"</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>NLDAS2 runoff data output directory: ./NLDAS2_OUTPUT/
+<pre>[[sssec_nldas2runoff,NLDAS2 runoff]]
+==== NLDAS2 runoff
+
+`NLDAS2 runoff data output directory:` specifies directory
+where NLDAS2 outputs are located.
+
+`NLDAS2 runoff data model name:` specifies
+ NLDAS2 land surface model used.
+
+`NLDAS2 runoff data output interval:` specifies
+NLDAS2 output time step
+
+.Example _lis.config_ entry</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>NLDAS2 runoff data output directory: ./NLDAS2_OUTPUT/
 NLDAS2 runoff data model name:  NOAH
-NLDAS2 runoff data output interval: "1da"</pre>
+NLDAS2 runoff data output interval: "1da"</p>
 </div>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="ssec_outputconfig">9.18. Model output configuration</h3>
-<div class="paragraph">
-<p>The output start time is used to define when to begin writing
+<div class="literalblock">
+<div class="content">
+<pre>[[ssec_outputconfig,Model output configuration]]
+=== Model output configuration
+
+The output start time is used to define when to begin writing
 model output.  Any value not defined will default to the corresponding
 LIS start time.  The output start time does not affect restart writing.
 Restart files are written according to the LIS start time and the model
-restart output interval value.</p>
-</div>
-<div class="paragraph">
-<p>The output start time is specified in the following format:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Variable</th>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start year:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 2001 – present</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start year</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start month:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 1 – 12</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start month</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start day:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 1 – 31</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start day</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start hour:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 23</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start hour</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start minutes:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 59</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start minute</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Output start seconds:</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 59</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output start second</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>Writing output may be restricted to a specified time with
+restart output interval value.
+
+The output start time is specified in the following format:
+
+|====
+|Variable | Value | Description
+
+|`Output start year:`    | integer 2001 {endash} present | specifying output start year
+|`Output start month:`   | integer 1 {endash} 12 | specifying output start month
+|`Output start day:`     | integer 1 {endash} 31 | specifying output start day
+|`Output start hour:`    | integer 0 {endash} 23 | specifying output start hour
+|`Output start minutes:` | integer 0 {endash} 59 | specifying output start minute
+|`Output start seconds:` | integer 0 {endash} 59 | specifying output start second
+|====
+
+Writing output may be restricted to a specified time with
 respect to any year.  To restrict output to a specified time,
 you must set
-<code>Output at specific time only:</code> to 1, and then you must specify the
+`Output at specific time only:` to 1, and then you must specify the
 specific output writing time.  If you choose not to restrict output
 writing to a specified time, then you do not have to set the
-specific output writing time variables.</p>
-</div>
-<div class="paragraph">
-<p><code>Output at specific time only:</code> specifies whether to write
+specific output writing time variables.
+
+`Output at specific time only:` specifies whether to write
 output only at a specified time.  Defaults to 0.
-Acceptable values are:</p>
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not restrict output to a specified time
+|1     | Restrict output to a specified time
+|====
+
+The specific output writing time is specified in the following format:
+
+|====
+|Variable | Value | Description
+
+|`Specific output writing time (month):`  | integer 1 {endash} 12 | specifying output month
+|`Specific output writing time (day):`    | integer 1 {endash} 31 | specifying output day
+|`Specific output writing time (hour):`   | integer 0 {endash} 23 | specifying output hour
+|`Specific output writing time (minute):` | integer 0 {endash} 59 | specifying output minute
+|`Specific output writing time (second):` | integer 0 {endash} 59 | specifying output second
+|====
+
+.Example _lis.config_ entry</pre>
 </div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do not restrict output to a specified time</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Restrict output to a specified time</p></td>
-</tr>
-</tbody>
-</table>
+</div>
 <div class="paragraph">
-<p>The specific output writing time is specified in the following format:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Variable</th>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Specific output writing time (month):</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 1 – 12</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output month</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Specific output writing time (day):</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 1 – 31</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output day</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Specific output writing time (hour):</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 23</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output hour</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Specific output writing time (minute):</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 59</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output minute</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Specific output writing time (second):</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer 0 – 59</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">specifying output second</p></td>
-</tr>
-</tbody>
-</table>
-<div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
-<div class="content">
-<pre>Output start year:
+<p>Output start year:
 Output start month:
 Output start day:
 Output start hour:
@@ -21085,144 +21270,102 @@ Specific output writing time (month):
 Specific output writing time (day):
 Specific output writing time (hour):
 Specific output writing time (minute):
-Specific output writing time (second):</pre>
-</div>
-</div>
-<div class="paragraph">
-<p><code>Model output attributes file:</code> specifies the attributes to be
-used for a customizable model output. Please refer to the
-sample MODEL_OUTPUT_LIST.TBL file for the complete specification.</p>
+Specific output writing time (second):</p>
 </div>
 <div class="literalblock">
-<div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
-<pre>Model output attributes file: './MODEL_OUTPUT_LIST.TBL'</pre>
+<pre>`Model output attributes file:` specifies the attributes to be
+used for a customizable model output. Please refer to the
+sample MODEL_OUTPUT_LIST.TBL file for the complete specification.
+
+.Example _lis.config_ entry</pre>
 </div>
 </div>
-</div>
-<div class="sect2">
-<h3 id="ssec_timeinterval">9.19. Defining a time interval</h3>
 <div class="paragraph">
-<p>Time interval values must be entered in a format where the timestep
+<p>Model output attributes file: './MODEL_OUTPUT_LIST.TBL'</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>[[ssec_timeinterval,Defining a time interval]]
+=== Defining a time interval
+
+Time interval values must be entered in a format where the timestep
 value is followed by 2 character string indicating the
-time units.</p>
-</div>
-<div class="paragraph">
-<p>Examples include: 60ss, 30mn, 2hr, 0.5da</p>
-</div>
-<div class="paragraph">
-<p>Acceptable values for the timestep units are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">ss</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">seconds</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">mn</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">minutes</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">hr</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">hours</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">da</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">days</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">mo</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">months</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">yr</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">years</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p>Units of months assumes a 30-day month.</p>
-</div>
-<div class="paragraph">
-<p>Units of years assumes a 365-day year.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_specification_of_input_forcing_variables">10. Specification of Input Forcing Variables</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><a id="sec_forcingvars"></a></p>
-</div>
-<div class="paragraph">
-<p>This section defines the specification of the input forcing variables
+time units.
+
+Examples include: 60ss, 30mn, 2hr, 0.5da
+
+Acceptable values for the timestep units are:
+
+|====
+|Value | Description
+
+|ss    | seconds
+|mn    | minutes
+|hr    | hours
+|da    | days
+|mo    | months
+|yr    | years
+|====
+
+Units of months assumes a 30-day month.
+
+Units of years assumes a 365-day year.
+
+
+// This is the forcing_variables.txt file.  It contains the
+// user-configurable options plus documentation for the input forcing
+//
+// Please add any updates to the LIS code regarding configuration options
+// to this file -- including documentation.
+//
+// Actual lines of the forcing_variables.txt file should not be marked up.
+//
+//
+// To include this file in the User's Guide:
+// 1) Checkout the latest copy of this file from the repository.
+// 2) Place it with the source for the User's Guide.
+// 3) Rename it forcing_variables.adoc
+
+
+== Specification of Input Forcing Variables
+anchor:sec_forcingvars[Specification of Input Forcing Variables]
+
+This section defines the specification of the input forcing variables
 for LIS.
 This file is specified in a space delimited column format.
-Each row consists of the following entries:</p>
-</div>
-<div class="paragraph">
-<p><code>Short Name</code> short name of the forcing variable.</p>
-</div>
-<div class="paragraph">
-<p><code>Use option</code> determines whether to include this the variable
+Each row consists of the following entries:
+
+`Short Name` short name of the forcing variable.
+
+`Use option` determines whether to include this the variable
 for use within LIS
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">do not include the variable</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">include the variable</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Number of vertical levels</code> The number of vertical levels
-corresponding to the variable.</p>
-</div>
-<div class="paragraph">
-<p><code>Units</code> specified unit of the variable.</p>
-</div>
-<div class="paragraph">
-<p>Note that this is a full list of input forcing variables.
-Not all models use all these variables.</p>
-</div>
-<div class="paragraph">
-<p>Note that being listed in the <em>forcing_variables.txt</em> file
+Acceptable values are:
+
+|====
+|Value | Description
+
+| 0    | do not include the variable
+| 1    | include the variable
+|====
+
+`Number of vertical levels` The number of vertical levels
+corresponding to the variable.
+
+`Units` specified unit of the variable.
+
+Note that this is a full list of input forcing variables.
+Not all models use all these variables.
+
+Note that being listed in the _forcing_variables.txt_ file
 does not guarantee that the field will be available within LIS.
 Availablity depends on the support provided by the base forcing
-and supplemental forcing schemes selected in the <em>lis.config</em>
-run-time configuration file.</p>
+and supplemental forcing schemes selected in the _lis.config_
+run-time configuration file.</pre>
 </div>
-<div class="literalblock">
-<div class="content">
-<pre>#short name  select  vlevels  units
+</div>
+<div class="paragraph">
+<p>#short name  select  vlevels  units
 Tair:       1  1  K       # Near surface air temperature
 Qair:       1  1  kg/kg   # Near surface specific humidity
 SWdown:     1  1  W/m2    # Incident shortwave radiation (total)
@@ -21262,239 +21405,135 @@ Snowflag:   0  1  -       # Snowflag
 Density:    0  1  kg/m3   # Atmospheric Density
 VaporPress: 0  1  Pa      # Vapor Pressure
 VaporPressDeficit: 0 1 Pa # Vapor Pressure Deficit
-Wind:       0  1  m/s     # Wind Speed</pre>
+Wind:       0  1  m/s     # Wind Speed</p>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_model_output_specifications">11. Model Output Specifications</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p><a id="sec_modeloutputlisttable"></a></p>
-</div>
-<div class="paragraph">
-<p>This section defines the specification of the model output from LIS.
+<div class="literalblock">
+<div class="content">
+<pre>//include::da_files.adoc[]
+//include::pe_files.adoc[]
+
+// This is the MODEL_OUTPUT_LIST.TBL file.  It contains the
+// user-configurable options plus documentation for generating output.
+//
+// Please add any updates to the LIS code regarding configuration options
+// to this file -- including documentation.
+//
+//
+// To include this file in the User's Guide:
+// 1) Checkout the latest copy of this file from the repository.
+// 2) Place it with the source for the User's Guide.
+// 3) Rename it MODEL_OUTPUT_LIST.TBL.adoc
+//
+
+
+== Model Output Specifications
+anchor:sec_modeloutputlisttable[Model Output Specifications]
+
+This section defines the specification of the model output from LIS.
 This file is specified in a space delimited column format.
-Each row consists of the following entries:</p>
-</div>
-<div class="paragraph">
-<p><code>Short Name</code> specifies the ALMA compliant short name of the
-variable.</p>
-</div>
-<div class="paragraph">
-<p><code>Use option</code> specifies whether to write the variable.
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">do not write the variable</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">write the variable</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Units:</code> specifies the desired units of the output variable.
+Each row consists of the following entries:
+
+`Short Name` specifies the ALMA compliant short name of the
+variable.
+
+`Use option` specifies whether to write the variable.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not write the variable
+|1     | write the variable
+|====
+
+`Units:` specifies the desired units of the output variable.
 You must check the source code to determine all the units
-that are available for each output variable.</p>
-</div>
-<div class="paragraph">
-<p><code>Sign Convention:</code> specifies the direction in which the variable is
+that are available for each output variable.
+
+`Sign Convention:` specifies the direction in which the variable is
 considered to have positive values. Note that the land models
 in LIS employ the "traditional approach" where all variables
 are considered positive in their dominant direction.
 i.e. precipitation and radiation are positive towards the
 surface (downward), evaporation, sensible heat and runoff
-are positive away from the surface.</p>
-</div>
-<div class="paragraph">
-<p>Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top"></th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-</p></td>
-<td class="tableblock halign-left valign-top"></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">No sign</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">UP</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">DN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Up or Down (Used for fluxes, Precip)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">IN</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">OUT</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">In or Out of the grid cell (Used for runoff, baseflow)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">INC</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">DEC</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Increase or Decrease (Used for change in storager terms)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S2L</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">L2S</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Solid to Liquid and Liquid to Solid (for phase change terms)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">S2V</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">V2S</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Solid to Vapor and Vapor to Solid (for phase change terms)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">E</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">N</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Eastward and Northward (used for Wind components)</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Time Average option</code> determines how temporally process the
+are positive away from the surface.
+
+Acceptable values are:
+
+|====
+|Value |     | Description
+
+|-     |     | No sign
+|UP    | DN  | Up or Down (Used for fluxes, Precip)
+|IN    | OUT | In or Out of the grid cell (Used for runoff, baseflow)
+|INC   | DEC | Increase or Decrease (Used for change in storager terms)
+|S2L   | L2S | Solid to Liquid and Liquid to Solid (for phase change terms)
+|S2V   | V2S | Solid to Vapor and Vapor to Solid (for phase change terms)
+|E     | N   | Eastward and Northward (used for Wind components)
+|====
+
+`Time Average option` determines how temporally process the
 variable.
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Instantaneous output</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Time averaged output</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Instantaneous and Time averaged output</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Accumulated output</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Min/Max option</code> determines whether to record minimum and
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Instantaneous output
+|1     | Time averaged output
+|2     | Instantaneous and Time averaged output
+|3     | Accumulated output
+|====
+
+`Min/Max option` determines whether to record minimum and
 maximum values for the variable.  For a given grid-cell, the minimum
 and maximum values correspond to the minimum and maximum found
 for all subgrid tiles and ensembles contained in the grid-cell
 during that output interval.
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do not compute minimum and maximum values</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do compute minimum and maximum values</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Standard Deviation option</code> determines whether to record
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not compute minimum and maximum values
+|1     | Do compute minimum and maximum values
+|====
+
+`Standard Deviation option` determines whether to record
 the standard deviation of the values for the variable.
 For a given grid-cell, the standard deviation is a measure of the
 spread of the subgrid tiles and ensembles contained within the
-grid-cell from the grid-cell&#8217;s mean.
-Acceptable values are:</p>
-</div>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Value</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do not compute standard deviation</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">Do compute standard deviation</p></td>
-</tr>
-</tbody>
-</table>
-<div class="paragraph">
-<p><code>Number of vertical levels</code> specifies the number of vertical levels
-corresponding to the variable.</p>
-</div>
-<div class="paragraph">
-<p><code>grib ID</code> specifies the grib ID to be used for the variable when
-output is written in grib1 format.</p>
-</div>
-<div class="paragraph">
-<p><code>grib scale factor</code> specifies the grib scale factor to be used for
-the variable when output is written in grib1 format.</p>
-</div>
-<div class="paragraph">
-<p>Note that this is a full list of output variables.  Not all models
+grid-cell from the grid-cell's mean.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not compute standard deviation
+|1     | Do compute standard deviation
+|====
+
+`Number of vertical levels` specifies the number of vertical levels
+corresponding to the variable.
+
+`grib ID` specifies the grib ID to be used for the variable when
+output is written in grib1 format.
+
+`grib scale factor` specifies the grib scale factor to be used for
+the variable when output is written in grib1 format.
+
+Note that this is a full list of output variables.  Not all models
 support all these variables.  You must check the source code to
 verify that the model you want to run supports the variables that
 you want to write.
-\footnotesize</p>
+\footnotesize</pre>
 </div>
-<div class="literalblock">
-<div class="content">
-<pre>#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
-
-#Energy balance components
+</div>
+<div class="paragraph">
+<p>#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname</p>
+</div>
+<div class="paragraph">
+<p>#Energy balance components
 Swnet:        1  W/m2    DN   1 0 0 1 111 10      # Net shortwave radiation (W/m2)
 Lwnet:        1  W/m2    DN   1 0 0 1 112 10      # Net longwave radiation (W/m2)
 Qle:          1  W/m2    UP   1 0 0 1 121 10      # Latent heat flux (W/m2)
@@ -21508,9 +21547,10 @@ DelSurfHeat:  0  J/m2    INC  1 0 0 1 137 10      # Change in surface heat stora
 DelColdCont:  0  J/m2    INC  1 0 0 1 138 10      # Change in snow cold content (J/m2)
 BR:           0  -       -    1 0 1 1 256 10      # Bowen ratio
 EF:           0  -       -    1 0 1 1 256 10      # Evaporative fraction
-Rnet:         0  W/m2    DN   1 0 1 1 256 10      # Total net radiation
-
-#Water balance components
+Rnet:         0  W/m2    DN   1 0 1 1 256 10      # Total net radiation</p>
+</div>
+<div class="paragraph">
+<p>#Water balance components
 Snowf:        1  kg/m2s  DN   1 0 0 1 161 10000   # Snowfall rate (kg/m2s)
 Rainf:        1  kg/m2s  DN   1 0 0 1 162 10000   # Rainfall rate (kg/m2s)
 RainfConv:    1  kg/m2s  DN   1 0 0 1  63 10000   # Convective rainfall rate (kg/m2s)
@@ -21529,9 +21569,10 @@ DelSurfStor:  0  kg/m2   INC  1 0 0 1 134 1000    # Change in surface water stor
 DelIntercept: 0  kg/m2   INC  1 0 0 1 135 1000    # Change in interception storage (kg/m2)
 RHMin:        0  -       -    1 0 0 1  52 10      # Minimum 2-meter relative humidity (-)
 Ch:           0  m/s     -    1 0 0 1 208 10      # Surface exchange coefficient for heat
-Cm:           0  m/s     -    1 0 0 1 252 10      # Surface exchange coefficient for momentum
-
-#Surface state variables
+Cm:           0  m/s     -    1 0 0 1 252 10      # Surface exchange coefficient for momentum</p>
+</div>
+<div class="paragraph">
+<p>#Surface state variables
 SnowT:        0  K       -    1 0 0 1 165 10      # Snow surface temperature (K)
 VegT:         0  K       -    1 0 0 1 146 10      # Vegetation canopy temperature (K)
 BareSoilT:    0  K       -    1 0 0 1 147 10      # Temperature of bare soil (K)
@@ -21540,18 +21581,20 @@ RadT:         0  K       -    1 0 0 1 149 10      # Surface radiative temperatur
 Albedo:       1  -       -    0 0 0 1  84 100     # Surface albedo (-)
 SWE:          1  kg/m2   -    0 0 0 1  65 1000    # Snow Water Equivalent (kg/m2)
 SWEVeg:       0  kg/m2   -    1 0 0 1 139 1000    # SWE intercepted by vegetation (kg/m2)
-SurfStor:     0  kg/m2   -    1 0 0 1 150 1000    # Surface water storage (kg/m2)
-
-#Subsurface state variables
+SurfStor:     0  kg/m2   -    1 0 0 1 150 1000    # Surface water storage (kg/m2)</p>
+</div>
+<div class="paragraph">
+<p>#Subsurface state variables
 SoilMoist:    1  kg/m2   -    0 0 0 4  86 1000    # Average layer soil moisture (kg/m2)
 SoilTemp:     1  K       -    0 0 0 4  85 1000    # Average layer soil temperature (K)
 SmLiqFrac:    0  -       -    0 0 0 4 160 100     # Average layer fraction of liquid moisture (-)
 SmFrozFrac:   0  -       -    0 0 0 4 140 100     # Average layer fraction of frozen moisture (-)
 SoilWet:      0  -       -    0 0 0 1 144 100     # Total soil wetness (-)
 RelSMC:       0  m3/m3   -    0 0 0 4 141 1000    # Relative soil moisture
-RootTemp:     0  K       -    0 0 0 1 142 1000    # Rootzone temperature (K)
-
-#Evaporation components
+RootTemp:     0  K       -    0 0 0 1 142 1000    # Rootzone temperature (K)</p>
+</div>
+<div class="paragraph">
+<p>#Evaporation components
 PotEvap:      0  kg/m2s  UP   1 0 0 1 145 1       # Potential evapotranspiration (kg/m2s)
 ECanop:       0  kg/m2s  UP   1 0 0 1 200 1       # Interception evaporation (kg/m2s)
 TVeg:         0  kg/m2s  UP   1 0 0 1 210 1       # Vegetation transpiration (kg/m2s)
@@ -21565,25 +21608,29 @@ SubSurf:      0  kg/m2s  -    1 0 0 1 143 1000    # Sublimation of the snow free
 ACond:        0  m/s     -    1 0 0 1 179 100000  # Aerodynamic conductance
 CCond:        0  m/s     -    1 0 0 1 181 100000  # Canopy conductance
 SoilET:       0  kg/m2   -    1 0 0 1 256 1       # Soil evaporation
-AResist:      0  s/m     -    1 0 0 1 256 1       # Aerodynamic resistance
-
-#Other hydrologic variables
+AResist:      0  s/m     -    1 0 0 1 256 1       # Aerodynamic resistance</p>
+</div>
+<div class="paragraph">
+<p>#Other hydrologic variables
 WaterTableD:  0  m       -    0 0 0 1 174 1       # Water table depth (m)
 TWS:          0  mm      -    0 0 0 1 175 1       # Terrestrial water storage (mm)
-GWS:          0  mm      -    0 0 0 1 176 1       # Ground water storage (mm)
-
-#Cold season processes
+GWS:          0  mm      -    0 0 0 1 176 1       # Ground water storage (mm)</p>
+</div>
+<div class="paragraph">
+<p>#Cold season processes
 Snowcover:    0  -       -    0 0 0 1 238 100     # Snow cover (-)
 SAlbedo:      0  -       -    0 0 0 1 184 1000    # Albedo of the snow-covered area (-)
 SnowTProf:    0  K       -    0 0 0 1 239 1000    # Temperature of the snow pack (K)
 SnowDepth:    0  m       -    0 0 0 1  66 1000    # Snow depth (m)
 SLiqFrac:     0  -       -    0 0 0 1 185 1000    # Fraction of SWE in the liquid phase
-SnowThresh:   0  -       -    0 0 0 1  66 1000    # Snow depth threshold (m)
-
-#Variables to compared against remote sensed data
-LWup:         0  W/m2    UP   1 0 0 1 212 1       # Longwave radiation up from the surface (W/m2)
-
-#Carbon variables
+SnowThresh:   0  -       -    0 0 0 1  66 1000    # Snow depth threshold (m)</p>
+</div>
+<div class="paragraph">
+<p>#Variables to compared against remote sensed data
+LWup:         0  W/m2    UP   1 0 0 1 212 1       # Longwave radiation up from the surface (W/m2)</p>
+</div>
+<div class="paragraph">
+<p>#Carbon variables
 GPP:          0  kg/m2s2 DN   1 0 0 1 256 1       # Gross Primary Production
 NPP:          0  kg/m2s2 DN   1 0 0 1 256 1       # Net Primary Production
 NEE:          0  kg/m2s2 UP   1 0 0 1 256 1       # Net Ecosystem Exchange
@@ -21591,9 +21638,10 @@ AutoResp:     0  kg/m2s2 UP   1 0 0 1 256 1       # Autotrophic respiration
 HeteroResp:   0  kg/m2s2 UP   1 0 0 1 256 1       # Heterotrophic respiration
 LeafResp:     0  kg/m2s2 UP   1 0 0 1 256 1       # Leaf respiration
 TotSoilCarb:  0  kg/m2   -    1 0 0 1 256 1       # Total soil carbon
-TotLivBiom:   0  kg/m2   -    1 0 0 1 256 1       # Total living biomass
-
-#Forcings
+TotLivBiom:   0  kg/m2   -    1 0 0 1 256 1       # Total living biomass</p>
+</div>
+<div class="paragraph">
+<p>#Forcings
 Wind_f:       1  m/s     -    1 0 0 1  32 10      # Near surface wind (m/s)
 Rainf_f:      1  kg/m2s  DN   1 0 0 1 162 1000    # Average rainfall rate
 Snowf_f:      0  kg/m2s  DN   1 0 0 1 161 1000    # Average snowfall rate
@@ -21604,9 +21652,10 @@ Psurf_f:      1  Pa      -    1 0 0 1   1 10      # Surface pressure
 SWdown_f:     1  W/m2    DN   1 0 0 1 204 10      # Surface incident shortwave radiation
 LWdown_f:     1  W/m2    DN   1 0 0 1 205 10      # Surface incident longwave radiation
 PARDR_f:      0  W/m2    DN   1 0 0 1 256 10      # Surface incident PAR direct
-PARDF_f:      0  W/m2    DN   1 0 0 1 256 10      # Surface incident PAR diffuse
-
-#Additional forcings
+PARDF_f:      0  W/m2    DN   1 0 0 1 256 10      # Surface incident PAR diffuse</p>
+</div>
+<div class="paragraph">
+<p>#Additional forcings
 DirectSW_f:   0  W/m2    -    1 0 0 1 166 10      # Surface direct incident shortwave radiation
 DiffuseSW_f:  0  W/m2    -    1 0 0 1 167 10      # Surface diffuse incident shortwave radiation
 NWind_f:      0  m/s     N    1 0 0 1  34 10      # Northward wind
@@ -21625,14 +21674,16 @@ Q2diag:       0  kg/kg   -    1 0 0 1 256 1       # Diagnostic q2
 Snowflag_f:   0  -       -    1 0 0 1 256 1       # Snowflag
 Density_f:    0  kg/m3   -    1 0 0 1 256 1       # Atmospheric density
 VaporPress_f: 0  -       -    1 0 0 1 256 1       # Vapor pressure
-VaporPressDeficit_f: 0  -  -  1 0 0 1 256 1       # Vapor pressure deficit
-
-#Additional FEWSNET Forcings
+VaporPressDeficit_f: 0  -  -  1 0 0 1 256 1       # Vapor pressure deficit</p>
+</div>
+<div class="paragraph">
+<p>#Additional FEWSNET Forcings
 PET_f:         0 kg/m2s  -    0 0 0 1 228 1000    # Average PET rate
 RefET_f:       0 kg/m2s  -    0 0 0 1 256 1000    # Average RefET rate
-TotalPrecip_f: 0 kg/m2   DN   0 0 0 1 256 1000    # Total precipitation
-
-#Parameters
+TotalPrecip_f: 0 kg/m2   DN   0 0 0 1 256 1000    # Total precipitation</p>
+</div>
+<div class="paragraph">
+<p>#Parameters
 Landmask:     0  -       -    0 0 0 1  81 1       # Land mask (0 - Water, 1 - Land)
 Landcover:    0  -       -    0 0 0 1 225 1       # Land cover
 Soiltype:     0  -       -    0 0 0 1 224 1       # Soil type
@@ -21649,20 +21700,23 @@ Snfralbedo:   0  -       -    0 0 0 1 184 100     # Snow fraction albedo
 Mxsnalbedo:   0  -       -    0 0 0 1 159 100     # Maximum snow albedo
 Greenness:    0  -       -    0 0 0 1  87 100     # Greenness
 Roughness:    0  m       -    0 0 0 1  83 10      # Roughness
-Tempbot:      0  K       -    0 0 0 1 256 10      # Bottom soil temperature
-
-#Routing
-Streamflow:   0  m3/s    -    1 0 0 1 256 10      # Streamflow
-
-#VIC PET output
+Tempbot:      0  K       -    0 0 0 1 256 10      # Bottom soil temperature</p>
+</div>
+<div class="paragraph">
+<p>#Routing
+Streamflow:   0  m3/s    -    1 0 0 1 256 10      # Streamflow</p>
+</div>
+<div class="paragraph">
+<p>#VIC PET output
 vic_pet_satsoil:  0  kg/m2s  -    1 0 0 1 166 1   # Potential evap from saturated bare soil
 vic_pet_h2osurf:  0  kg/m2s  -    1 0 0 1 166 1   # Potential evap from open water
 vic_pet_short:    0  kg/m2s  -    1 0 0 1 166 1   # Potential evap (transpiration only) from short reference crop (grass)
 vic_pet_tall:     0  kg/m2s  -    1 0 0 1 166 1   # Potential evap (transpiration only) from tall reference crop (alfalfa)
 vic_pet_natveg:   0  kg/m2s  -    1 0 0 1 166 1   # Potential evap (transpiration only) from current vegetation and current canopy resistance
-vic_pet_vegnocr:  0  kg/m2s  -    1 0 0 1 166 1   # Potential evap (transpiration only) from current vegetation and 0 canopy resistance
-
-#FLDAS-WRSI components
+vic_pet_vegnocr:  0  kg/m2s  -    1 0 0 1 166 1   # Potential evap (transpiration only) from current vegetation and 0 canopy resistance</p>
+</div>
+<div class="paragraph">
+<p>#FLDAS-WRSI components
 SOS:                      0      - - 0 0 0 1 0 10 # Start-of-season [in dekads]
 WRSI:                     0      - - 0 0 0 1 0 10 # Water requirement satisfaction index [ratio]
 KF2:                      0      % - 0 0 0 1 0 10 # Percent of Season [%]
@@ -21700,9 +21754,10 @@ LGP:                      0      - - 0 0 0 1 0 10 # Length of growing period; pa
 WR_TimeStep:              0  kg/m2 - 0 0 0 1 0 10 # Water requirement per timestep(dekad) [mm]
 AET_TimeStep:             0  kg/m2 - 0 0 0 1 0 10 # Actual ET per timestep [mm]
 WRSI_TimeStep:            0      - - 0 0 0 1 0 10 # WRSI per timestep [-]
-SurplusWater_TimeStep:    0  kg/m2 - 0 0 0 1 0 10 # Surplus water per timestep [mm]
-
-#SacHTET specific output
+SurplusWater_TimeStep:    0  kg/m2 - 0 0 0 1 0 10 # Surplus water per timestep [mm]</p>
+</div>
+<div class="paragraph">
+<p>#SacHTET specific output
 sac_tsint:       0  K        -   0 0 0 1 256 10  # Soil temperature of inteneded layer
 sac_swint:       0  m3/m3    -   0 0 0 1 256 10  # Total volumetric soil moisture content of intended layer
 sac_swhint:      0  m3/m3    -   0 0 0 1 256 10  # Liquid volumetric soil moisture content of intended layer
@@ -21717,17 +21772,19 @@ sac_uztwh:       0  mm       -   0 0 0 1 256 10  # UZTWH
 sac_uzfwh:       0  mm       -   0 0 0 1 256 10  # UZFWH
 sac_lztwh:       0  mm       -   0 0 0 1 256 10  # LZTWH
 sac_lzfsh:       0  mm       -   0 0 0 1 256 10  # LZFSH
-sac_lzfph:       0  mm       -   0 0 0 1 256 10  # LZFPH
-
-#Snow17 specific output
+sac_lzfph:       0  mm       -   0 0 0 1 256 10  # LZFPH</p>
+</div>
+<div class="paragraph">
+<p>#Snow17 specific output
 snow17_swe:      0  kg/m2    -   0 0 0 1 256 10  # SWE
 snow17_aeadj:    0  mm       -   0 0 0 1 256 10  # AEADJ
 snow17_neghs:    0  mm       -   0 0 0 1 256 10  # NEGHS
 snow17_liqw:     0  kg/m2    -   0 0 0 1 256 10  # LIQW
 snow17_accmax:   0  mm       -   0 0 0 1 256 10  # ACCMAX
-snow17_rmlt:     0  kg/m2    -   0 0 0 1 256 10  # RMLT
-
-#Lake output
+snow17_rmlt:     0  kg/m2    -   0 0 0 1 256 10  # RMLT</p>
+</div>
+<div class="paragraph">
+<p>#Lake output
 Lake_Tsnow:      0  K        -   0 0 0 1 256 10  # Lake temperature at the air snow interface
 Lake_Tice:       0  K        -   0 0 0 1 256 10  # Lake temperature at the snow snow interface
 Lake_Tmnw:       0  K        -   0 0 0 1 256 10  # Mean temperature of the water column
@@ -21745,9 +21802,10 @@ Lake_UFRa:       0  -        -   0 0 0 1 256 10  # Lake friction velocity in air
 Lake_UFRw:       0  -        -   0 0 0 1 256 10  # Lake friction velocity in surface water
 Lake_WConv:      0  -        -   0 0 0 1 256 10  # Lake convective velocity scale
 Lake_IW:         0  -        -   0 0 0 1 256 10  # Lake radiation flux at the interface
-Lake_Qbot:       0  -        -   0 0 0 1 256 10  # Lake heat flux across water sediment boundary
-
-#HyMAP routing output
+Lake_Qbot:       0  -        -   0 0 0 1 256 10  # Lake heat flux across water sediment boundary</p>
+</div>
+<div class="paragraph">
+<p>#HyMAP routing output
 RiverStor:       0  m3       -   0 0 0 1 256 10  # River water storage
 RiverDepth:      0  m        -   0 0 0 1 256 10  # River depth
 RiverVelocity:   0  m/s      -   0 0 0 1 256 10  # River flow velocity
@@ -21765,17 +21823,20 @@ RunoffDWI:       0  mm       -   0 0 0 1 256 10  # Runoff deep water infiltratio
 BaseflowDWI:     0  mm       -   0 0 0 1 256 10  # Baseflow deep water infiltration
 SWS:             0  mm       -   0 0 0 1 256 10  # Surface water storage
 EvapWater:       0  kg/m2s   -   0 0 0 1 256 10  # Potential evaporation from open water
-EvapDif:         0  kg/m2s   -   0 0 0 1 256 10  # Differential evaporation (potential evaporation - actual evapotranspiration)
-
-#RTM output
+EvapDif:         0  kg/m2s   -   0 0 0 1 256 10  # Differential evaporation (potential evaporation - actual evapotranspiration)</p>
+</div>
+<div class="paragraph">
+<p>#RTM output
 RTM emissivity:  0  -        -   0 0 0 1 256 10  # RTM emissivity
 RTM Tb:          0  K        -   0 0 0 1 256 10  # RTM brightness temperature
-RTM SoilMoist:   0  m3/m3    -   0 0 0 1 256 10  # RTM soil moisture
-
-#Irrigation output
-Irrigated water: 0  kg/m2s   -   0 0 0 1 256 10  # Irrigated water amount
-
-#AWRAL600 output
+RTM SoilMoist:   0  m3/m3    -   0 0 0 1 256 10  # RTM soil moisture</p>
+</div>
+<div class="paragraph">
+<p>#Irrigation output
+Irrigated water: 0  kg/m2s   -   0 0 0 1 256 10  # Irrigated water amount</p>
+</div>
+<div class="paragraph">
+<p>#AWRAL600 output
 e0:           1  mm      -    0 0 0 1 0 1 # potential evaporation
 etot:         1  mm      -    0 0 0 1 0 1 # actual evapotranspiration
 Qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
@@ -21788,359 +21849,367 @@ sd:           1  mm      -    0 0 0 2 0 1 # water content of the deep soil store
 mleaf:        1  kg/m2   -    0 0 0 2 0 1 # leaf biomass for each hru
 s0_avg:       1  mm      -    0 0 0 1 0 1 # water storage in the surface soil layer
 ss_avg:       1  mm      -    0 0 0 1 0 1 # water content of the shallow soil store
-sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store</pre>
+sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store</p>
 </div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="sec_usersupport">12. User Support</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>This section describes how to request help from and provide feedback to the LISF development team.</p>
-</div>
-<div class="sect2">
-<h3 id="_requesting_help">12.1. Requesting Help</h3>
-<div class="paragraph">
-<p>To request help from the LISF development team, please visit the Discussions tab of our GitHub repository at <a href="https://github.com/NASA-LIS/LISF/discussions" class="bare">https://github.com/NASA-LIS/LISF/discussions</a>.  Please review the existing posts; your question may already be answered.  If it is not, then please open a &#8220;New discussion&#8221; to post your question there.</p>
-</div>
-<div class="admonitionblock note">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Note</div>
-</td>
-<td class="content">
-Posting a question requires a GitHub account. Register at <a href="https://github.com/signup" class="bare">https://github.com/signup</a>.
-</td>
-</tr>
-</table>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_bug_reports">12.2. Bug Reports</h3>
-<div class="paragraph">
-<p>Please review our <a href="https://github.com/NASA-LIS/LISF/blob/master/CONTRIBUTING.md">Contribution Guidelines</a> to learn how to report a bug or error.</p>
-</div>
-<div class="paragraph">
-<p>When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the <em>lislog.0000</em> file.  Also attach a copy of any relevant supporting files such as:<br></p>
-</div>
-<div class="paragraph">
-<p>For LIS:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>lis.config</em></p>
-</li>
-<li>
-<p><em>lislog.0000</em></p>
-</li>
-<li>
-<p><em>MODEL_OUTPUT_LIST.TBL</em></p>
-</li>
-<li>
-<p><em>configure.lis</em> (in your make directory)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>For LDT:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>ldt.config</em></p>
-</li>
-<li>
-<p><em>ldtlog.0000</em></p>
-</li>
-<li>
-<p><em>configure.ldt</em> (in your make directory)</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>For LVT:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p><em>lvt.config</em></p>
-</li>
-<li>
-<p><em>lvtlog.0000</em></p>
-</li>
-<li>
-<p><em>configure.lvt</em> (in your make directory)</p>
-</li>
-</ul>
-</div>
-<div class="admonitionblock important">
-<table>
-<tr>
-<td class="icon">
-<div class="title">Important</div>
-</td>
-<td class="content">
-<div class="paragraph">
-<p>Please note that the LISF development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.</p>
-</div>
-<div class="paragraph">
-<p>Due to U.S. federal law, we are not allowed to respond to anyone from a designated country (see <a href="https://www.nasa.gov/oiir/export-control" class="bare">https://www.nasa.gov/oiir/export-control</a>). By policy, we will not respond to messages from either non-institutional or non-organizational email addresses; e.g., we will not respond to email messages from gmail.</p>
-</div>
-</td>
-</tr>
-</table>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="sec_faq">Appendix A: Frequently Asked Questions</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>This section provides a description of common error messages and a possible few options on how to address them.</p>
-</div>
-<div class="qlist qanda">
-<ol>
-<li>
-<p><em>Routine to diagnose error (variable)</em></p>
 <div class="literalblock">
 <div class="content">
-<pre>Error:&lt;var&gt; field is not defined
+<pre>[[sec_usersupport,User Support]]
+== User Support
+
+This section describes how to request help from and provide feedback to the LISF development team.
+
+=== Requesting Help
+
+To request help from the LISF development team, please visit the Discussions tab of our GitHub repository at https://github.com/NASA-LIS/LISF/discussions.  Please review the existing posts; your question may already be answered.  If it is not, then please open a "`New discussion`" to post your question there.
+
+NOTE: Posting a question requires a GitHub account. Register at https://github.com/signup.
+
+=== Bug Reports
+
+Please review our link:https://github.com/NASA-LIS/LISF/blob/master/CONTRIBUTING.md[Contribution Guidelines] to learn how to report a bug or error.
+
+When reporting a bug or an error running LIS, please provide a description of the problem, including any error messages printed to the screen.  Attach a copy of the _lislog.0000_ file.  Also attach a copy of any relevant supporting files such as: +
+
+For LIS:
+
+* _lis.config_
+* _lislog.0000_
+* _MODEL_OUTPUT_LIST.TBL_
+* _configure.lis_ (in your make directory)
+
+For LDT:
+
+* _ldt.config_
+* _ldtlog.0000_
+* _configure.ldt_ (in your make directory)
+
+For LVT:
+
+* _lvt.config_
+* _lvtlog.0000_
+* _configure.lvt_ (in your make directory)
+
+[IMPORTANT]
+====
+Please note that the LISF development team does not receive funding to provide community support.  Your questions and issues are important to us, but we can address them only when time permits.
+
+Due to U.S. federal law, we are not allowed to respond to anyone from a designated country (see https://www.nasa.gov/oiir/export-control). By policy, we will not respond to messages from either non-institutional or non-organizational email addresses; e.g., we will not respond to email messages from gmail.
+====
+
+[appendix]
+//include::lis_preproc.adoc[]
+
+[[sec_faq,Frequently Asked Questions]]
+== Frequently Asked Questions
+
+This section provides a description of common error messages and a possible few options on how to address them.
+
+[qanda]
+Routine to diagnose error (variable)::
++</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Error:&lt;var&gt; field is not defined
 for diagnostic output ..
 Please exclude it from the model output attributes table
-Program stopping..</pre>
+Program stopping..</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>+
+This error occurs because the variable specified in the model output attributes file is not among the ones supported for output from the particular model. Either exclude the variable (turn it off) from the model output attributes file or implement the routine within the model to support it.
+
+
+Routine to diagnose error (units)::
++</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>This error occurs because the variable specified in the model output attributes file is not among the ones supported for output from the particular model. Either exclude the variable (turn it off) from the model output attributes file or implement the routine within the model to support it.</p>
-</div>
-</li>
-<li>
-<p><em>Routine to diagnose error (units)</em></p>
-<div class="literalblock">
-<div class="content">
-<pre>Error:&lt;units&gt; for field &lt;var&gt; is not defined
+<p>Error:&lt;units&gt; for field &lt;var&gt; is not defined
 for diagnostic output ..
 supported unit types: &lt;list&gt;
-Program stopping..</pre>
+Program stopping..</p>
 </div>
-</div>
-<div class="paragraph">
-<p>This error occurs because the units of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect unit specification or run the model simulation with a unit type that is supported by LIS.</p>
-</div>
-</li>
-<li>
-<p><em>Routine to diagnose error (direction)</em></p>
 <div class="literalblock">
 <div class="content">
-<pre>Error:&lt;direction&gt; for field &lt;var&gt; is not defined
+<pre>+
+This error occurs because the units of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect unit specification or run the model simulation with a unit type that is supported by LIS.
+
+
+Routine to diagnose error (direction)::
++</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Error:&lt;direction&gt; for field &lt;var&gt; is not defined
 for diagnostic output ..
 supported direction types: &lt;list&gt;
-Program stopping..</pre>
+Program stopping..</p>
 </div>
-</div>
-<div class="paragraph">
-<p>This error occurs because the direction of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect direction specification or run the model simulation with a direction type that is supported by LIS.</p>
-</div>
-</li>
-</ol>
-</div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="sec_fconv_appendix">Appendix B: LIS Binary File Convention</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>(Draft, 4/23/2003)</p>
-</div>
-<div class="sect2">
-<h3 id="_introduction">B.1. Introduction</h3>
-<div class="paragraph">
-<p>The majority of LIS data is saved in Fortran binary files, with various formats. This note defines the official LIS file scheme, to facilitate unified and consistent access to LIS data by LIS code, user programs and GDS client-server system.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_byte_order">B.2. Byte order</h3>
-<div class="paragraph">
-<p>LIS data, by default, are saved in binary files as big endian numbers.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_storage_organization">B.3. Storage organization</h3>
-<div class="paragraph">
-<p>For a specific spatial resolution, the spatial grid space has NC columns and NR rows. In addition, a vectorized land space will often be used, with NL land points.</p>
-</div>
-<div class="paragraph">
-<p>The minimum storage unit is a 2-D array of NC X NR, or a 1-D array of NL elements. Two dimensional grid space data and 1-D land space data are always saved in separate files.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_missingundefined_values">B.4. Missing/undefined values</h3>
-<table class="tableblock frame-all grid-all stretch">
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Data type</th>
-<th class="tableblock halign-left valign-top">Missing/Undefined value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">character*1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">CHAR(255)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer*1</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-128</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">integer*4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">-9999 (?)</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">real*4</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">(?)</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="sect2">
-<h3 id="_file_name_extension_convention_and_access_code_samples">B.5. File name extension convention and access code samples</h3>
-<div class="paragraph">
-<p>A LIS binary file name extention has 4 fields. The first field is one or more numeric characters, indicating the total number of storage units the file has. The second field is the lower-case character &#8220;g&#8221; or &#8220;l&#8221;, indicating grid space or land space, respectively. The third field is the lower-case character &#8220;s&#8221; or &#8220;d&#8221;, indicating sequential or direct access. The last field, has 2 character width, with the first character indicating the number of bytes each number in the file takes, and the second character, as &#8220;c&#8221;, &#8220;i&#8221;, or &#8220;r&#8221;, indicating the type of data as character, integer or real, respectively.</p>
-</div>
-<div class="paragraph">
-<p>Example1: <em>datafile1.2gs4r</em></p>
-</div>
-<div class="paragraph">
-<p>Sample Fortran code segment to read this file:</p>
-</div>
-<div class="listingblock">
+<div class="literalblock">
 <div class="content">
-<pre>     Real*4 v1(NC, NR), v2(NC, NR)
+<pre>+
+This error occurs because the direction of the variable specified in the model output attributes file is not among the supported types. Either change the incorrect direction specification or run the model simulation with a direction type that is supported by LIS.
+
+//include::Makefile.adoc[]
+//include::configure.lis.adoc[]
+//include::readgrib.adoc[] // no longer relevant due to move to GRIB_API library
+//include::gribout.adoc[] // no longer relevant due to move to GRIB_API library
+[appendix]
+
+[[sec_fconv_appendix,LIS Binary File Convention]]
+== LIS Binary File Convention
+
+(Draft, 4/23/2003)
+
+
+=== Introduction
+
+The majority of LIS data is saved in Fortran binary files, with various formats. This note defines the official LIS file scheme, to facilitate unified and consistent access to LIS data by LIS code, user programs and GDS client-server system.
+
+
+=== Byte order
+
+LIS data, by default, are saved in binary files as big endian numbers.
+
+
+=== Storage organization
+
+For a specific spatial resolution, the spatial grid space has NC columns and NR rows. In addition, a vectorized land space will often be used, with NL land points.
+
+The minimum storage unit is a 2-D array of NC X NR, or a 1-D array of NL elements. Two dimensional grid space data and 1-D land space data are always saved in separate files.
+
+
+=== Missing/undefined values
+
+|====
+|   Data type     |     Missing/Undefined value
+
+|   character*1   |     CHAR(255)
+|   integer*1     |     -128
+|   integer*4     |     -9999 (?)
+|   real*4        |     (?)
+|====
+
+
+=== File name extension convention and access code samples
+
+A LIS binary file name extention has 4 fields. The first field is one or more numeric characters, indicating the total number of storage units the file has. The second field is the lower-case character "`g`" or "`l`", indicating grid space or land space, respectively. The third field is the lower-case character "`s`" or "`d`", indicating sequential or direct access. The last field, has 2 character width, with the first character indicating the number of bytes each number in the file takes, and the second character, as "`c`", "`i`", or "`r`", indicating the type of data as character, integer or real, respectively.
+
+Example1: _datafile1.2gs4r_
+
+Sample Fortran code segment to read this file:
+
+----
+     Real*4 v1(NC, NR), v2(NC, NR)
      Open(12, file="datafile1.2gs4r", form="unformatted")
      read(12)v1
      read(12)v2
-     Close(12)</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Example2: <em>datafile2.15gd4i</em></p>
-</div>
-<div class="paragraph">
-<p>Sample Fortran code segment to read this file:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>     Integer*4 v1(NC, NR), v10(NC, NR)
+     Close(12)
+----
+
+Example2: _datafile2.15gd4i_
+
+Sample Fortran code segment to read this file:
+
+----
+     Integer*4 v1(NC, NR), v10(NC, NR)
      Open(12, file="datafile2.15gd4i", form="unformatted", &amp;
      access="direct", recl=NC*NR*4)
      read(12, rec=1)v1
      read(12, rec=10)v10
-     Close(12)</pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Example3: <em>soilcolor.1ls1c</em></p>
-</div>
-<div class="paragraph">
-<p>Sample Fortran code segment to read this file:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre>     Character*1 color(NL)
+     Close(12)
+----
+
+Example3: _soilcolor.1ls1c_
+
+Sample Fortran code segment to read this file:
+
+----
+     Character*1 color(NL)
      Open(12, file="soilcolor.1ls1c", form="unformatted")
      read(12)color
-     Close(12)</pre>
+     Close(12)
+----
+
+[appendix]
+
+== CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)
+
+Copyright (c) 2015, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.
+
+All rights reserved. CSIRO is willing to grant you a license to this Community Atmosphere Biosphere Land Exchange (CABLE) Software on the following terms, except where otherwise indicated for third party material.
+
+Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+* Neither the name of CSIRO nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission of CSIRO.
+
+EXCEPT AS EXPRESSLY STATED IN THIS AGREEMENT AND TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED "`AS-IS`". CSIRO MAKES NO REPRESENTATIONS, WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY REPRESENTATIONS, WARRANTIES OR CONDITIONS REGARDING THE CONTENTS OR ACCURACY OF THE SOFTWARE, OR OF TITLE, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, THE ABSENCE OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF ERRORS, WHETHER OR NOT DISCOVERABLE.
+
+TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL CSIRO BE LIABLE ON ANY LEGAL THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION FOR BREACH OF CONTRACT, NEGLIGENCE OR OTHERWISE) FOR ANY CLAIM, LOSS, DAMAGES OR OTHER LIABILITY HOWSOEVER INCURRED.  WITHOUT LIMITING THE SCOPE OF THE PREVIOUS SENTENCE THE EXCLUSION OF LIABILITY SHALL INCLUDE: LOSS OF PRODUCTION OR OPERATION TIME, LOSS, DAMAGE OR CORRUPTION OF DATA OR RECORDS; OR LOSS OF ANTICIPATED SAVINGS, OPPORTUNITY, REVENUE, PROFIT OR GOODWILL, OR OTHER ECONOMIC LOSS; OR ANY SPECIAL, INCIDENTAL, INDIRECT, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, ACCESS OF THE SOFTWARE OR ANY OTHER DEALINGS WITH THE SOFTWARE, EVEN IF CSIRO HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH CLAIM, LOSS, DAMAGES OR OTHER LIABILITY.
+
+APPLICABLE LEGISLATION SUCH AS THE AUSTRALIAN CONSUMER LAW MAY APPLY REPRESENTATIONS, WARRANTIES, OR CONDITIONS, OR IMPOSES OBLIGATIONS OR LIABILITY ON CSIRO THAT CANNOT BE EXCLUDED, RESTRICTED OR MODIFIED TO THE FULL EXTENT SET OUT IN THE EXPRESS TERMS OF THIS CLAUSE ABOVE "`CONSUMER GUARANTEES`".  TO THE EXTENT THAT SUCH CONSUMER GUARANTEES CONTINUE TO APPLY, THEN TO THE FULL EXTENT PERMITTED BY THE APPLICABLE LEGISLATION, THE LIABILITY OF CSIRO UNDER THE RELEVANT CONSUMER GUARANTEE IS LIMITED (WHERE PERMITTED AT CSIRO'S OPTION) TO ONE OF FOLLOWING REMEDIES OR SUBSTANTIALLY EQUIVALENT REMEDIES:
+
+(a)               THE REPLACEMENT OF THE SOFTWARE, THE SUPPLY OF EQUIVALENT SOFTWARE, OR SUPPLYING RELEVANT SERVICES AGAIN;
+
+(b)               THE REPAIR OF THE SOFTWARE;
+
+(c)               THE PAYMENT OF THE COST OF REPLACING THE SOFTWARE, OF ACQUIRING EQUIVALENT SOFTWARE, HAVING THE RELEVANT SERVICES SUPPLIED AGAIN, OR HAVING THE SOFTWARE REPAIRED.
+
+IN THIS CLAUSE, CSIRO INCLUDES ANY THIRD PARTY AUTHOR OR OWNER OF ANY PART OF THE SOFTWARE OR MATERIAL DISTRIBUTED WITH IT.  CSIRO MAY ENFORCE ANY RIGHTS ON BEHALF OF THE RELEVANT THIRD PARTY.
+
+&lt;&lt;&lt;
+*Third Party Components*
+
+The following third party components are distributed with the Software.  You agree to comply with the license terms for these components as part of accessing the Software.  Other third party software may also be identified in separate files distributed with the Software.
+
+'''
+
+Where parts of the CABLE code have not been written by CSIRO employees, permission to redistribute these code portions was granted under the CABLE licence v2.0 (http://www.cawcr.gov.au/projects/access/cable/cable_licence_agreement.pdf) and its predecessor.
+
+Code contributors included:
+
++G.+ Abramowitz, J. Exbrayat, K. Lu, J. Kala.
+
+'''
+
+[bibliography]
+
+[bibliography]
+== References
+
+- [[[sheffield_etal_2006]]] J. Sheffield, G. Goteti, and E. F. Wood.  Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling.  _Journal of Climate_, 13:3088{endash}3111, 2006.
+
+- [[[berg_etal_jgr_2003]]] A. A. Berg, J. S. Famiglietti, J. P.  Walker, and P. R. Houser.  Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes.  _Journal of Geophysical Research_, 4490, 2003.
+
+//- [[[protex]]] W. Sawyer and A. da Silva.  ProTeX: A sample Fortran 90 source code documentation system.  Technical report, NASA GMAO, 1997.  DAO Office Note 97-11.
+
+//
+//@Article{sheffield_etal_2006,
+//  author = 	 {Sheffield, J. and Goteti, G. and Wood, E.F.},
+//  title = 	 {Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling},
+//  journal = 	 {Journal of Climate},
+//  year = 	 {2006},
+//  key = 	 {19},
+//  volume = 	 {13},
+//  pages = 	 {3088--3111},
+//}
+//
+//@Article{berg_etal_jgr_2003,
+//  author = 	 {Berg, A.A. and Famiglietti, J.S. and Walker, J.P. and Houser, P.R.},
+//  title = 	 {Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes},
+//  journal = 	 {Journal of Geophysical Research},
+//  year = 	 {2003},
+//  key = 	 {108},
+//  volume = 	 {4490},
+//  doi    = {10.1029/2002JD003334},
+//}
+//
+//@Article{rogers,
+//  author = 	 {Rogers, ~E. and Black, T.~L. and Deaven, D.~G. and DiMego, G.~J. and Zhao, ~Q. and Baldwin, ~M. and Junker, N.~W. and Lin, ~Y.},
+//  title = 	 {Changes to the operational ``early'' eta analysis/forecast system at the national centers of environmental prediction.},
+//  journal = 	 {Wea. Forecasting},
+//  year = 	 {1996},
+//  volume = 	 {11},
+//  pages = 	 {391--413},
+//},
+//
+//
+//@Article{richards,
+//  author = 	 {Richards, L.~A.},
+//  title = 	 {Capillary conduction of liquids in porous media},
+//  journal = 	 {Physics},
+//  year = 	 {1931},
+//  volume = 	 {1},
+//  pages = 	 {318--333},
+//},
+//
+//@Article{jarvis,
+//  author = 	 {Jarvis, P.~G.},
+//  title = 	 {The interpretation of leaf water potential and stomatal conductance  found in canopies of the field.},
+//  journal = 	 {Phil. Trans. R. Soc.},
+//  year = 	 {1976},
+//  volume = 	 {273},
+//  pages = 	 {593--610},
+//
+//},
+//
+//@Article{collatz,
+//  author = 	 {Collatz, G.~J. and Grivet, ~C and Ball, J.~T. and Berry, J.~A.},
+//  title = 	 {Physiological and environmental regulation of stomatal conducatance:  Photosynthesis and transpiration: A model that includes a laminar boundary  layer.},
+//  journal = 	 {Agric. For. Meteorol.},
+//  year = 	 {1991},
+//  volume = 	 {5},
+//  pages = 	 {107--136},
+//},
+//
+//@Article{chen,
+//  author = 	 {Chen.~F. and Mitchell.~K. and Schaake.~J and Xue.~J and Pan.~H and ~Koren.~V. and ~Duan, Ek.~M and Betts, ~A.},
+//  title = 	 {Modeling of land-surface evaporation by four schemes and comparison  with fife observations.},
+//  journal = 	 {J. Geophys. Res.},
+//  year = 	 {1996},
+//  volume = 	 {101},
+//  number = 	 {D3},
+//  pages = 	 {7251--7268},
+//}
+//
+//@Misc{grads,
+//  title = 	 {Gr\textsc{ADS}},
+//  note = 	 {http://grads.iges.org/grads/grads.html}
+//},
+//@Misc{dods,
+//  title = 	 {\textsc{DODS}},
+//  note = 	 {http://www.unidata.ucar.edu/packages/dods/}
+//},
+//
+//
+//@TechReport{protex,
+//  author = 	 {Sawyer, W. and da Silva, A.},
+//  title = 	 {ProTeX: A sample Fortran 90 source code documentation system},
+//  institution =  {NASA GMAO},
+//  year = 	 {1997},
+//  note = 	 {DAO Office Note 97-11},
+//},
+//
+//@Misc{alma,
+//  title = 	 {\textsc{ALMA}},
+//  note = 	 {http://www.lmd.jussieu.fr/ALMA/}
+//}
+//,
+//@Misc{w3fi63,
+//  title = 	 {\textsc{W3FI63 program}},
+//  note = 	 {http://dss.ucar.edu/datasets/ds609.1/software/mords/w3fi63.f}
+//}
+//,
+//@Misc{ldas,
+//  title = 	 {\textsc{LDAS}},
+//  note = 	 {http://ldas.gsfc.nasa.gov}
+//},
+//@Misc{esmf,
+//  title = 	 {\textsc{ESMF}},
+//  note = 	 {http://esmf.ucar.edu}
+//},
+//
+//@Misc{clm,
+//  title = 	 {\textsc{CLM}},
+//  note = 	 {http://www.cgd.ucar.edu/tss/clm}
+//},
+//@Misc{noah,
+//  title = 	 {\textsc{Noah}},
+//  note = 	 {ftp://ftp.ncep.noaa.gov/pub/gcp/ldas/noahlsm/}
+//},
+//@Misc{vic,
+//  title = 	 {\textsc{VIC}},
+//  note = 	 {http://hydrology.princeton.edu/research/lis/index.html}
+//}</pre>
 </div>
 </div>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_csiro_open_source_software_license_agreement_variation_of_the_bsd_mit_license">Appendix C: CSIRO Open Source Software License Agreement (variation of the BSD / MIT License)</h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Copyright (c) 2015, Commonwealth Scientific and Industrial Research Organisation (CSIRO) ABN 41 687 119 230.</p>
-</div>
-<div class="paragraph">
-<p>All rights reserved. CSIRO is willing to grant you a license to this Community Atmosphere Biosphere Land Exchange (CABLE) Software on the following terms, except where otherwise indicated for third party material.</p>
-</div>
-<div class="paragraph">
-<p>Redistribution and use of this software in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-</div>
-<div class="ulist">
-<ul>
-<li>
-<p>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</p>
-</li>
-<li>
-<p>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</p>
-</li>
-<li>
-<p>Neither the name of CSIRO nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission of CSIRO.</p>
-</li>
-</ul>
-</div>
-<div class="paragraph">
-<p>EXCEPT AS EXPRESSLY STATED IN THIS AGREEMENT AND TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED &#8220;AS-IS&#8221;. CSIRO MAKES NO REPRESENTATIONS, WARRANTIES OR CONDITIONS OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY REPRESENTATIONS, WARRANTIES OR CONDITIONS REGARDING THE CONTENTS OR ACCURACY OF THE SOFTWARE, OR OF TITLE, MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, THE ABSENCE OF LATENT OR OTHER DEFECTS, OR THE PRESENCE OR ABSENCE OF ERRORS, WHETHER OR NOT DISCOVERABLE.</p>
-</div>
-<div class="paragraph">
-<p>TO THE FULL EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL CSIRO BE LIABLE ON ANY LEGAL THEORY (INCLUDING, WITHOUT LIMITATION, IN AN ACTION FOR BREACH OF CONTRACT, NEGLIGENCE OR OTHERWISE) FOR ANY CLAIM, LOSS, DAMAGES OR OTHER LIABILITY HOWSOEVER INCURRED.  WITHOUT LIMITING THE SCOPE OF THE PREVIOUS SENTENCE THE EXCLUSION OF LIABILITY SHALL INCLUDE: LOSS OF PRODUCTION OR OPERATION TIME, LOSS, DAMAGE OR CORRUPTION OF DATA OR RECORDS; OR LOSS OF ANTICIPATED SAVINGS, OPPORTUNITY, REVENUE, PROFIT OR GOODWILL, OR OTHER ECONOMIC LOSS; OR ANY SPECIAL, INCIDENTAL, INDIRECT, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES, ARISING OUT OF OR IN CONNECTION WITH THIS AGREEMENT, ACCESS OF THE SOFTWARE OR ANY OTHER DEALINGS WITH THE SOFTWARE, EVEN IF CSIRO HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH CLAIM, LOSS, DAMAGES OR OTHER LIABILITY.</p>
-</div>
-<div class="paragraph">
-<p>APPLICABLE LEGISLATION SUCH AS THE AUSTRALIAN CONSUMER LAW MAY APPLY REPRESENTATIONS, WARRANTIES, OR CONDITIONS, OR IMPOSES OBLIGATIONS OR LIABILITY ON CSIRO THAT CANNOT BE EXCLUDED, RESTRICTED OR MODIFIED TO THE FULL EXTENT SET OUT IN THE EXPRESS TERMS OF THIS CLAUSE ABOVE &#8220;CONSUMER GUARANTEES&#8221;.  TO THE EXTENT THAT SUCH CONSUMER GUARANTEES CONTINUE TO APPLY, THEN TO THE FULL EXTENT PERMITTED BY THE APPLICABLE LEGISLATION, THE LIABILITY OF CSIRO UNDER THE RELEVANT CONSUMER GUARANTEE IS LIMITED (WHERE PERMITTED AT CSIRO&#8217;S OPTION) TO ONE OF FOLLOWING REMEDIES OR SUBSTANTIALLY EQUIVALENT REMEDIES:</p>
-</div>
-<div class="paragraph">
-<p>(a)               THE REPLACEMENT OF THE SOFTWARE, THE SUPPLY OF EQUIVALENT SOFTWARE, OR SUPPLYING RELEVANT SERVICES AGAIN;</p>
-</div>
-<div class="paragraph">
-<p>(b)               THE REPAIR OF THE SOFTWARE;</p>
-</div>
-<div class="paragraph">
-<p>(c)               THE PAYMENT OF THE COST OF REPLACING THE SOFTWARE, OF ACQUIRING EQUIVALENT SOFTWARE, HAVING THE RELEVANT SERVICES SUPPLIED AGAIN, OR HAVING THE SOFTWARE REPAIRED.</p>
-</div>
-<div class="paragraph">
-<p>IN THIS CLAUSE, CSIRO INCLUDES ANY THIRD PARTY AUTHOR OR OWNER OF ANY PART OF THE SOFTWARE OR MATERIAL DISTRIBUTED WITH IT.  CSIRO MAY ENFORCE ANY RIGHTS ON BEHALF OF THE RELEVANT THIRD PARTY.</p>
-</div>
-<div style="page-break-after: always;"></div>
-<div class="paragraph">
-<p><strong>Third Party Components</strong></p>
-</div>
-<div class="paragraph">
-<p>The following third party components are distributed with the Software.  You agree to comply with the license terms for these components as part of accessing the Software.  Other third party software may also be identified in separate files distributed with the Software.</p>
-</div>
-<hr>
-<div class="paragraph">
-<p>Where parts of the CABLE code have not been written by CSIRO employees, permission to redistribute these code portions was granted under the CABLE licence v2.0 (<a href="http://www.cawcr.gov.au/projects/access/cable/cable_licence_agreement.pdf" class="bare">http://www.cawcr.gov.au/projects/access/cable/cable_licence_agreement.pdf</a>) and its predecessor.</p>
-</div>
-<div class="paragraph">
-<p>Code contributors included:</p>
-</div>
-<div class="paragraph">
-<p>G. Abramowitz, J. Exbrayat, K. Lu, J. Kala.</p>
-</div>
-<hr>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_references">References</h2>
-<div class="sectionbody">
-<div class="ulist bibliography">
-<ul class="bibliography">
-<li>
-<p><a id="sheffield_etal_2006"></a>[sheffield_etal_2006] J. Sheffield, G. Goteti, and E. F. Wood.  Development of a 50-yr high-resolution global dataset of meteorological forcings for land surface modeling.  <em>Journal of Climate</em>, 13:3088–3111, 2006.</p>
-</li>
-<li>
-<p><a id="berg_etal_jgr_2003"></a>[berg_etal_jgr_2003] A. A. Berg, J. S. Famiglietti, J. P.  Walker, and P. R. Houser.  Impact of bias correction to reanalysis products on simulations of North American soil moisture and hydrological fluxes.  <em>Journal of Geophysical Research</em>, 4490, 2003.</p>
-</li>
-</ul>
 </div>
 </div>
 </div>
@@ -22157,7 +22226,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-09-27 21:21:01 UTC
+Last updated 2022-10-06 14:32:17 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
