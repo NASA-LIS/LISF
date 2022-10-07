@@ -22,7 +22,7 @@ subroutine readGRUNrunoffobs(source)
   use LVT_logMod
   use LVT_histDataMod
   use LVT_timeMgrMod
-  use GRUNrunoffMod
+  use GRUNrunoff_obsMod
           
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -138,7 +138,7 @@ subroutine readGRUNrunoffobs(source)
 subroutine interp_grunndata(source, var_inp,var_out)
 ! !USES: 
   use LVT_coreMod
-  use GRUNrunoffMod
+  use GRUNrunoff_obsMod
   use LVT_logMod
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)       

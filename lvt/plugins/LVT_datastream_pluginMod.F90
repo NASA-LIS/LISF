@@ -179,7 +179,7 @@ contains
     use FluxSat_obsMod,         only : FluxSat_obsInit
     use THySM_obsMod,           only : THySM_obsinit
     use UASMAP_obsMod,          only : UASMAP_obsinit
-    use GRUNrunoffMod,          only : GRUNrunoffInit 
+    use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
 
     external readtemplateObs
     external readLISoutput

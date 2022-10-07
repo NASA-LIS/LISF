@@ -10,11 +10,11 @@
 #include "LVT_misc.h"
 !BOP
 ! 
-! !MODULE: GRUNrunoffMod
-! \label(GRUNrunoffMod)
+! !MODULE: GRUNrunoff_obsMod
+! \label(GRUNrunoff_obsMod)
 !
 ! !INTERFACE:
-module GRUNrunoffMod
+module GRUNrunoff_obsMod
 ! 
 ! !USES:   
   use ESMF
@@ -161,7 +161,7 @@ contains
     endif
 
     call ESMF_TimeIntervalSet(grunobs(i)%ts, s=86400,rc=status)
-    call LVT_verify(status, 'Error in timeintervalset: GRUNrunoffMod ')
+    call LVT_verify(status, 'Error in timeintervalset: GRUNrunoff_obsMod ')
 
     call LVT_update_timestep(LVT_rc, 86400)
 
@@ -175,8 +175,8 @@ contains
          m = 0, &
          calendar = LVT_calendar, &
          rc=status)
-    call LVT_verify(status,'error in timeset: GRUNrunoffMod')
+    call LVT_verify(status,'error in timeset: GRUNrunoff_obsMod')
  
   end subroutine GRUNrunoffinit
   
-end module GRUNrunoffMod
+end module GRUNrunoff_obsMod
