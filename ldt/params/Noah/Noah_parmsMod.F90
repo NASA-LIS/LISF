@@ -537,11 +537,11 @@ contains
          call ESMF_ConfigGetAttribute(LDT_config, MBR_RECH%water_value,        label='RECHCLIM water value:', DEFAULT= 0., rc=rc)
          call LDT_verify(rc,"Suitable RECHCLIM parameter value in lakes/waterbodies not defined." )
          
-         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%filltype,  label='RIVERBED fill option:',rc=rc)
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%filltype,  label='RIVERBED fill option:', DEFAULT= "neighbor", rc=rc)
          call LDT_verify(rc,"RIVERBED fill option not defined.")     
-         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillradius,label='RIVERBED fill radius:',rc=rc)
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillradius,label='RIVERBED fill radius:', DEFAULT= 0., rc=rc)
          call LDT_verify(rc,"RIVERBED fill radius not defined.")  
-         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillvalue, label='RIVERBED fill value:' ,rc=rc)
+         call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%gap_fill%fillvalue, label='RIVERBED fill value:' , DEFAULT= 10000., rc=rc)
          call LDT_verify(rc,"RIVERBED fill value not defined." )
          call ESMF_ConfigGetAttribute(LDT_config, MBR_RIVERBED%water_value,        label='RIVERBED water value:', DEFAULT= -100., rc=rc)
          call LDT_verify(rc,"Suitable RIVERBED parameter value in lakes/waterbodies not defined." )
@@ -592,6 +592,11 @@ contains
 
             ! Ensure RIVERBED value in LAKES and WATER grid cells is same as MMF_HGTM
             where (Noah_struc(n)%riverbed%value == MBR_RIVERBED%water_value)
+               Noah_struc(n)%riverbed%value = Noah_struc(n)%hgtm%value 
+            endwhere
+
+            ! Ensure RIVERBED value <= MMF_HGTM
+            where (Noah_struc(n)%riverbed%value > Noah_struc(n)%hgtm%value)
                Noah_struc(n)%riverbed%value = Noah_struc(n)%hgtm%value 
             endwhere
             
