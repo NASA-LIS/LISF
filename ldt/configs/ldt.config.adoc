@@ -2475,22 +2475,6 @@ RECHCLIM water value: -1.
 ....
 
 
-`RIVERBED fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
-
-`RIVERBED fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
-
-`RIVERBED fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
-
-`RIVERBED water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable RIVERBED value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location. Note that this will be overwritten by MMF_HGTM values at the location if an acceptable MMF_GHTM available at the location.
-
-.Example _ldt.config_ entry
-....
-RIVERBED fill option: neighbor
-RIVERBED fill radius: 0. 
-RIVERBED fill value:  0.
-RIVERBED water value: 0.
-....
-
 `EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
 
 `EQWTD fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
