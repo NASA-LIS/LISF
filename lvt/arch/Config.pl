@@ -520,6 +520,13 @@ else{
    $libjpeg = "-ljpeg";
 }
 
+if(defined($ENV{LVT_RPC})){
+   $librpc = "-ltirpc";
+}
+else{
+   $librpc = "";
+}
+
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
       $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
@@ -611,7 +618,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4) ";
    $fflags = $fflags." -I\$(INC_HDF4) ";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ".$librpc;
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5) ";
