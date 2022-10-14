@@ -21,7 +21,7 @@
 
 ! Module for processing NASA half-hourly IMERG 30-min precipitation data.
 ! Updated 26 Apr 2022 by Eric Kemp/SSAI, to reduce memory footprint.
-
+! Updated 14 Jul 2022 by Eric Kemp/SSAI, to support IMERG V07
 module USAF_ImergHHMod
 
    ! Imports
@@ -140,7 +140,7 @@ contains
    ! Code is designed to allow LIS to gracefully handle problems with
    ! HDF5 file.
    subroutine update30minImergHHPrecip(this, itime, filename, &
-        plp_thresh)
+        plp_thresh, version)
 
       ! Imports
 #if (defined USE_HDF5)
@@ -159,6 +159,7 @@ contains
       integer, intent(in) :: itime
       character(len=*), intent(in) :: filename
       integer*2, intent(in) :: plp_thresh
+      character(*), intent(in) :: version
 
       ! Local variables
       logical :: fail
@@ -175,6 +176,9 @@ contains
       character(len=100) :: message(20)
       integer :: ierr
       logical :: saved_good
+      logical :: version_good
+      character(22) :: varname
+      logical :: apply_irkalman_test
 
       TRACE_ENTER("update30minImergHHPrecip")
 
@@ -182,6 +186,34 @@ contains
 
 !Only define actual subroutine if LIS was compiled with HDF5 support.
 #if (defined USE_HDF5)
+
+      ! Only IMERG V06 and V07 supported
+      version_good = .false.
+      if (index(trim(version), 'V06') .ne. 0) then
+         version_good = .true.
+      else if (index(trim(version), 'V07') .ne. 0) then
+         version_good = .true.
+      end if
+      if (.not. version_good) then
+         write(LIS_logunit,*)&
+              '[ERR] update30minImergHHPrecip Invalid IMERG Version  ', &
+              trim(version)
+         write(LIS_logunit,*) 'Only version generations 6 and 7 supported! '
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Invalid IMERG Version '//trim(version)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', 1, &
+                 message )
+            call LIS_abort( message)
+         endif
+#if (defined SPMD)
+         call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+      end if
+
       ! Sanity checks
       if (itime .lt. 1 .or. itime .gt. this%ntimes) then
          write(LIS_logunit,*)&
@@ -218,9 +250,16 @@ contains
 
       ! Open the precipitationCal dataset; sanity check the data type,
       ! dimensions, and units; then read it in.
-      call open_imerg_dataset(file_id, "/Grid/precipitationCal", dataset_id, &
-           fail)
+      ! EMK 14 Jul 2022 -- Support IMERG V06 or V07.
+      if (index(trim(version), "V06") .ne. 0) then
+         varname = "/Grid/precipitationCal"
+      else if (index(trim(version), "V07") .ne. 0) then
+         varname = "/Grid/precipitation"
+      end if
+      call open_imerg_dataset(file_id, trim(varname), &
+           dataset_id, fail)
       if (fail) goto 100
+
       call get_imerg_datatype(dataset_id, datatype_id, fail)
       if (fail) goto 100
       call check_imerg_type(datatype_id, H5T_IEEE_F32LE, fail)
@@ -237,7 +276,7 @@ contains
       call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_precip_cal, dims, hdferr)
       if (hdferr .ne. 0) then
          write(LIS_logunit,*)'[ERR] update30minImergHHPrecip cannot read ', &
-              'dataset /Grid/precipitationCal'
+              'dataset ', trim(varname)
          goto 100
       end if
 
@@ -276,31 +315,37 @@ contains
 
       ! Open the /Grid/IRkalmanFilterWeight dataset; sanity check the data
       ! type and dimensions; then read it in.
-      call open_imerg_dataset(file_id, "/Grid/IRkalmanFilterWeight", &
-           dataset_id, fail)
-      if (fail) goto 100
-      call get_imerg_datatype(dataset_id, datatype_id, fail)
-      if (fail) goto 100
-      call check_imerg_type(datatype_id, H5T_STD_I16LE, fail)
-      if (fail) goto 100
-      dims(1) = this%nlats
-      dims(2) = this%nlons
-      dims(3) = 1
-      call check_imerg_dims(dataset_id, 3, dims, fail)
-      if (fail) goto 100
-      allocate(tmp_ir_kalman_weights(dims(1), dims(2), dims(3)))
-      tmp_ir_kalman_weights = 0
-      call h5dread_f(dataset_id, H5T_STD_I16LE, tmp_ir_kalman_weights, dims, &
-           hdferr)
-      if (hdferr .ne. 0) then
-         write(LIS_logunit,*)'[ERR] update30minImergHHPrecip cannot read ', &
-              'dataset /Grid/IRkalmanFilterWeight'
-         goto 100
+      ! EMK 14 Jul 2022 -- IRkalmanFilterWeight is removed in V07.
+      apply_irkalman_test = .true.
+      if (index(version, "V06") .ne. 0) then
+         call open_imerg_dataset(file_id, "/Grid/IRkalmanFilterWeight", &
+              dataset_id, fail)
+         if (fail) goto 100
+         call get_imerg_datatype(dataset_id, datatype_id, fail)
+         if (fail) goto 100
+         call check_imerg_type(datatype_id, H5T_STD_I16LE, fail)
+         if (fail) goto 100
+         dims(1) = this%nlats
+         dims(2) = this%nlons
+         dims(3) = 1
+         call check_imerg_dims(dataset_id, 3, dims, fail)
+         if (fail) goto 100
+         allocate(tmp_ir_kalman_weights(dims(1), dims(2), dims(3)))
+         tmp_ir_kalman_weights = 0
+         call h5dread_f(dataset_id, H5T_STD_I16LE, tmp_ir_kalman_weights, &
+              dims, hdferr)
+         if (hdferr .ne. 0) then
+            write(LIS_logunit,*) &
+                 '[ERR] update30minImergHHPrecip cannot read ', &
+                 'dataset /Grid/IRkalmanFilterWeight'
+            goto 100
+         end if
+         ! Close the IRkalmanFilterWeight types.
+         if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
+         if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
+      else
+         apply_irkalman_test = .false. ! EMK for IMERG V07
       end if
-
-      ! Close the IRkalmanFilterWeight types.
-      if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
-      if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
 
       ! Save the "good" precipitationCal data.
       ! Precipitation units are converted from rate (mm/hr) to accumulation
@@ -315,12 +360,20 @@ contains
 
             ! Gross error checks
             if (tmp_precip_cal(i,j,1) < 0 .or. &
-                 tmp_prob_liq_precip(i,j,1) < plp_thresh .or. &
-                 tmp_ir_kalman_weights(i,j,1) < 0) then
+                 tmp_prob_liq_precip(i,j,1) < plp_thresh) then
                this%precip_cal_3hr(i,j) = -9999
                cycle
             end if
 
+            ! EMK: IR Kalman Filter check for IMERG V06
+            if (apply_irkalman_test) then
+               if (tmp_ir_kalman_weights(i,j,1) < 0) then
+                  this%precip_cal_3hr(i,j) = -9999
+                  cycle
+               end if
+            end if
+
+            ! Estimate is good.
             this%precip_cal_3hr(i,j) = this%precip_cal_3hr(i,j) + &
                  (tmp_precip_cal(i,j,1) * 0.5)
 
@@ -956,12 +1009,12 @@ contains
       time_diff = start_time - start_of_day
       call esmf_timeintervalget(time_diff, m = tmp_minutes_in_day)
 
-      ! Append minutes from start of month to filename
+      ! Append minutes from start of day to filename
       write(unit=sminutes_in_day, fmt='(i4.4)') tmp_minutes_in_day
       filename = trim(filename)//"."//sminutes_in_day
 
       ! Finish filename construction
-      ! EMK...Acccomodate Final Run
+      ! EMK...Accomodate Final Run
       select case (trim(product))
       case ("3B-HHR")
          filename = trim(filename)//"."//trim(version)//".HDF5"
@@ -1074,7 +1127,7 @@ contains
               yr,mo,da,hr,mn,filename)
 
          ! Process the 30HH file
-         call update30minImergHHPrecip(imerg,itime,filename,plp_thresh)
+         call update30minImergHHPrecip(imerg,itime,filename,plp_thresh,version)
 
          ! Next cycle
          itime = itime + 1

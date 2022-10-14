@@ -872,6 +872,13 @@ if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
 }
 
+if(defined($ENV{LIS_RPC})){
+   $librpc = "-ltirpc";
+}
+else{
+   $librpc = "";
+}
+
 
 #
 # Compiler flags
@@ -989,7 +996,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ".$librpc;
    $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
    $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
