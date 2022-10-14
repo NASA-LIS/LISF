@@ -15,6 +15,7 @@
 ! 13 Dec 2019  Eric Kemp  Changed to USAFSI.
 ! 09 Oct 2020  Eric Kemp  Added legacy SNODEP files.
 ! 14 Jul 2021  Eric Kemp  Fixed bug in creating GRIB output directory.
+! 26 Jul 2022  Eric Kemp  Corrected GRIB2 output name.
 !
 ! DESCRIPTION:
 ! Source code for reading USAFSI netCDF file, writing back out in GRIB,
@@ -1205,13 +1206,22 @@ contains
       character(len=10), intent(in) :: yyyymmddhh
       character(len=255), intent(out) :: filename
 
+      ! filename = trim(output_dir)  &
+      !      // '/PS.557WW_SC.' &
+      !      // trim(LVT_rc%security_class)//'_DI.' &
+      !      // trim(LVT_rc%data_category)//'_GP.' &
+      !      // 'LIS-SNOWICE_GR.C0P09DEG_AR.' &
+      !      // trim(LVT_rc%area_of_data)//'_PA.' &
+      !      //'USAFSI_DD.' &
+      !      // yyyymmddhh(1:8)//'_DT.' &
+      !      // yyyymmddhh(9:10)//'00_DF.GR2'
       filename = trim(output_dir)  &
            // '/PS.557WW_SC.' &
            // trim(LVT_rc%security_class)//'_DI.' &
            // trim(LVT_rc%data_category)//'_GP.' &
-           // 'LIS-SNOWICE_GR.C0P09DEG_AR.' &
+           // 'USAFSI_GR.C0P09DEG_AR.' &
            // trim(LVT_rc%area_of_data)//'_PA.' &
-           //'USAFSI_DD.' &
+           // 'SNOW-ICE_DD.' &
            // yyyymmddhh(1:8)//'_DT.' &
            // yyyymmddhh(9:10)//'00_DF.GR2'
 
