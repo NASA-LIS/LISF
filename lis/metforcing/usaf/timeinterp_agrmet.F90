@@ -19,7 +19,7 @@
 !   30 Apr 2012: Chris Franks: If end-of-run set wt1=0 & wt2=1 for
 !                temporal interpolation
 !   18 Feb 2020: Eric Kemp: Removed convective precip.
-!   16 Feb 2022: Commented out "btime" calls, since not used
+!   16 Feb 2022: K. Arsenault: Commented out "btime" calls, since not used
 !
 ! !INTERFACE:
 subroutine timeinterp_agrmet(n, findex)
