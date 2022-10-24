@@ -142,7 +142,7 @@ download_forecasts(){
     if [ `echo $prec_files | wc -w` -lt 5 ]; then
 	
 	# download NMME precip forecasts
-	s2s_app/download_nnme_precip.sh ${YYYY} ${Mmm} ${CFILE}
+	s2s_app/download_nmme_precip.sh ${YYYY} ${Mmm} ${CFILE}
 	prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc`
 	
 	for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
