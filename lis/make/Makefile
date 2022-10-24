@@ -163,6 +163,27 @@ soil_htc_jls_mod.o: soil_htc_jls_mod.F90
 	$(FC) $(FFLAGS) -O0 $(HEADER_DIRS) $<
 endif
 
+ifeq ($(LIS_ARCH),linux_gfortran)
+# For MPI
+LIS_historyMod.o: LIS_historyMod.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+LIS_DAobservationsMod.o: LIS_DAobservationsMod.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+USAF_bratsethMod.o: USAF_bratsethMod.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+gmaopert_Mod.o: gmaopert_Mod.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+HYMAP2_routingMod.o: HYMAP2_routingMod.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+read_SMOSNRTNNL2sm.o: read_SMOSNRTNNL2sm.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+HYMAP2_model.o: HYMAP2_model.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+# For HDF-EOS2
+read_GLASSlai.o: read_GLASSlai.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+endif
+
 .PHONY: help
 help:
 	@echo ""
