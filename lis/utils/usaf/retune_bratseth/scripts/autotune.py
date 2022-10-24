@@ -300,7 +300,7 @@ class AutomateTuning:
 
         if "geoprecip" in self.sigma2o:
             if self.sigma2o["geoprecip"] > 0:
-                fline = f"AGRMET {nwp} Precip GEOPRECIP observation error variance:"
+                line = f"AGRMET {nwp} Precip GEOPRECIP observation error variance:"
                 line += " %s\n" %(self.sigma2o["geoprecip"])
                 lines.append(line)
 
