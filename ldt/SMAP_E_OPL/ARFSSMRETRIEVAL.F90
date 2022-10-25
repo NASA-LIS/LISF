@@ -147,7 +147,7 @@
              h = ARFS_H(i,j)
              topigbptype = ARFS_LC(i,j)
 
-             CALL algo_vpol(SNGL(i),SNGL(j),sm_retrieval, tau_return, retrieval_flag)               
+             CALL algo_vpol(real(i),real(j),sm_retrieval, tau_return, retrieval_flag)
              ARFS_SM(i,j)=sm_retrieval
              ARFS_SM_FLAG(i,j)=retrieval_flag
           ELSE
