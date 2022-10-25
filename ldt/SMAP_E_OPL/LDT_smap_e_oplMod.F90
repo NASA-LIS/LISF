@@ -237,10 +237,10 @@ contains
        SMAPeOPL%L1Bresampledir_02 = trim(SMAPeOPL%L1Bresampledir)//'/'//&
                                     trim(yyyymmdd)//'/'//trim(hh)
 
-       inquire(DIRECTORY=SMAPeOPL%L1Bresampledir_02,exist=dir_exists)
-       if(.not.dir_exists) then
+       !inquire(DIRECTORY=SMAPeOPL%L1Bresampledir_02,exist=dir_exists)
+       !if(.not.dir_exists) then
           call system('mkdir -p '//trim(SMAPeOPL%L1Bresampledir_02))
-       endif
+       !endif
     endif
 
     ftn = LDT_getNextUnitNumber()
@@ -434,10 +434,10 @@ contains
              call get_UTC(n,TIMEsec,UTChr)                         
 
              ! retrieve
-             inquire(DIRECTORY=SMAPeOPL%SMoutdir,exist=dir_exists)
-             if(.not.dir_exists) then
+             !inquire(DIRECTORY=SMAPeOPL%SMoutdir,exist=dir_exists)
+             !if(.not.dir_exists) then
                 call system('mkdir -p '//trim(SMAPeOPL%SMoutdir))
-             endif
+             !endif
              call ARFSSMRETRIEVAL(smap_L1B_filename(i),teff_01,teff_02,&
                                   SnowDepth,doy_curr,UTChr)
 
