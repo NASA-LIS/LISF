@@ -124,19 +124,6 @@ if (config.getboolean('OPTUE ES', 'enabled') or
         config.getboolean('OPTUE DEMCz', 'enabled')):
     config.set('virtual_optue', 'enabled', 'true')
 
-config.add_section('virtual_da_obs_snodep')
-config.set('virtual_da_obs_snodep', 'enabled', 'false')
-config.set('virtual_da_obs_snodep', 'virtual', 'true')
-if (config.getboolean('virtual_da', 'enabled') and
-        config.getboolean('DA OBS SNODEP', 'enabled')):
-    config.set('virtual_da_obs_snodep', 'enabled', 'true')
-
-config.add_section('virtual_da_obs_usafsi')
-config.set('virtual_da_obs_usafsi', 'enabled', 'false')
-config.set('virtual_da_obs_usafsi', 'virtual', 'true')
-if (config.getboolean('virtual_da', 'enabled') and
-        config.getboolean('DA OBS USAFSI', 'enabled')):
-    config.set('virtual_da_obs_usafsi', 'enabled', 'true')
 
 #
 # Write Filepath and LIS_plugins.h
