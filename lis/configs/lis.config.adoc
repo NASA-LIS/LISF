@@ -966,6 +966,7 @@ Acceptable values are:
 |"`NLDAS router`"  | use the NLDAS router
 |"`HYMAP router`"  | use the HyMAP router
 |"`HYMAP2 router`" | use the HyMAP2 router
+|"`RAPID router`" | use the RAPID router
 |====
 
 
@@ -10065,6 +10066,131 @@ NLDAS routing initial condition for runoff:
 NLDAS routing initial condition for transport:
 NLDAS routing model start mode:
 NLDAS routing model restart file:
+....
+
+
+[[sssec_rapidrouting,RAPID routing]]
+==== RAPID routing
+
+`RAPID routing model time step:` specifies the timestep for
+the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID river routing time step:` specifies the timestep for
+RAPID river routing precedure.
+
+`RAPID routing model output interval:` defines the output
+writing interval for the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID routing model restart interval:` defines the restart output
+writing interval for the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID routing model start mode:` specifies the restart mode
+to be used for the RAPID router.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a RAPID restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`RAPID run in ensemble mode:` specifies whether to run the
+RAPID router in ensemble mode.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mean mode
+|2     | Run in ensemble mode (not support)
+|====
+
+`RAPID run option:` is set to 1 for regular run. The other options do not
+support yet.
+
+`RAPID routing option:` is set to 1 for applying matrix-baed
+Mukingum algorithm. The other options do not support yet.
+
+`RAPID cost function phi option:` is set to 1 for phi1. The other option
+does not support yet.
+
+`RAPID initial flow:` use initial instantaneous flow file. This option
+is not supported. set to .false. .
+
+`RAPID write final flow:` save final instantaneous flow file. This option
+is not supported. set to .false. .
+
+`RAPID compute volume:` compute flow volume. This option
+is not supported. set to .false. .
+
+`RAPID human-induced flow:` apply human-induced flow. This option
+is not supported. set to .false. .
+
+`RAPID upstream forcing:` use upstrem forcing. This option
+is not supported. set to .false. .
+
+`RAPID dam model used:` use dam model. This option
+is not supported. set to .false. .
+
+`RAPID output influence:` use output influence. This option
+is not supported. set to .false.
+
+`RAPID uncertainty quantification:` use uncertainty quantification. This option
+is not supported. set to .false.
+
+`RAPID river connectivity file:` specifies river connectivity file.
+
+`RAPID max number of upstream reaches:` specifies maximum number of upstream
+reaches.
+
+`RAPID river weight table:` specifies river weight table file.
+
+`RAPID river basin ID file:` specifies river basin ID file.
+
+`RAPID Muskingum parameter k file:` specifies Muskingum parameter k file.
+
+`RAPID Muskingum parameter x file:` specifies Muskingum parameter x file.
+
+`RAPID namelist file:` specifies namelist file.
+
+.Example _lis.config_ entry
+....
+RAPID routing model time step: "1da"
+RAPID river routing time step: "15mn"  
+RAPID routing model output interval: "1da"
+RAPID routing model restart interval: "1mo"
+RAPID routing model start mode: restart
+RAPID routing model restart file: ./output/ol/ROUTING/200801/LIS_RST_RAPID_router_200801150000.d01.nc
+RAPID run in ensemble mode: 0
+RAPID run option: 1
+RAPID routing option: 1
+RAPID cost function phi option: 1
+RAPID initial flow: .false.
+RAPID write final flow: .false.
+RAPID compute volume: .false.
+RAPID human-induced flow: .false.
+RAPID upstream forcing: .false.
+RAPID dam model used: .false.
+RAPID output influence: .false.
+RAPID uncertainty quantification: .false.
+RAPID river connectivity file: ./rapid_params/rapid_connect.csv
+RAPID max number of upstream reaches:   3
+RAPID river weight table: ./rapid_params/weight_lis.csv
+RAPID river basin ID file: ./rapid_params/riv_bas_id.csv
+RAPID Muskingum parameter k file: ./rapid_params/k.csv
+RAPID Muskingum parameter x file: ./rapid_params/x.csv
+RAPID namelist file: ./rapid_params/rapid_namelist
 ....
 
 
