@@ -10119,7 +10119,7 @@ Acceptable values are:
 `RAPID run option:` is set to 1 for regular run. The other options do not
 support yet.
 
-`RAPID routing option:` is set to 1 for applying matrix-baed
+`RAPID routing option:` is set to 1 for applying matrix-based
 Mukingum algorithm. The other options do not support yet.
 
 `RAPID cost function phi option:` is set to 1 for phi1. The other option
