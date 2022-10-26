@@ -16,6 +16,7 @@
 !
 ! !REVISION HISTORY: 
 ! 18 Mar 2021: Yeosang Yoon: Initial implementation in LIS 
+! 25 Oct 2022: Yeosang Yoon: Support to run with LSM ensemble mean runoff variables
 ! 
 ! !USES: 
 subroutine RAPID_routing_run(n)
@@ -52,12 +53,14 @@ subroutine RAPID_routing_run(n)
   ! for mpi
   real,   allocatable   :: runoff1_t(:)
   real,   allocatable   :: runoff2_t(:)
-  real,   allocatable   :: gvar1(:)
-  real,   allocatable   :: gvar2(:)
+  real,   allocatable   :: gvar1(:,:)
+  real,   allocatable   :: gvar2(:,:)
   real,   allocatable   :: gtmp1(:)
   real,   allocatable   :: gtmp2(:)
-  integer               :: count1 ,c,r,ntiles,t,gid,stid,tid,l
+  integer               :: count1 ,c,r,ntiles,t,gid,stid,tid,l,i,m
 
+  real,   allocatable   :: meanv1(:) 
+  real,   allocatable   :: meanv2(:)
 ! _______________________________________________
 
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "RAPID router model alarm")
@@ -91,23 +94,61 @@ subroutine RAPID_routing_run(n)
         runoff1_t=surface_runoff_t
         runoff2_t=baseflow_t
 
-        ! temporary memory for mpi_gather
-        allocate(gtmp1(LIS_rc%glbntiles(n)))
-        allocate(gtmp2(LIS_rc%glbntiles(n)))
-        
-        ! temporary memory for reorganizing variable structure
-        allocate(gvar1(LIS_rc%glbntiles(n)))
-        allocate(gvar2(LIS_rc%glbntiles(n)))
+        allocate(gtmp1(LIS_rc%glbngrid(n)))            ! temporary memory for mpi_gather
+        allocate(gtmp2(LIS_rc%glbngrid(n)))
+        allocate(gvar1(LIS_rc%gnc(n),LIS_rc%gnr(n)))   ! temporary memory for reorganizing variable structure
+        allocate(gvar2(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        gtmp1 = 0.0
+        gtmp2 = 0.0
+        gvar1 = 0.0
+       
+        ! only support LSM ensmble mean runoff variables (2022/10/25)
+        if(RAPID_routing_struc(n)%useens==1) then     
+           allocate(meanv1(LIS_rc%ngrid(n)))
+           allocate(meanv2(LIS_rc%ngrid(n)))
+           meanv1 = 0
+           meanv2 = 0
+           do i=1,LIS_rc%ntiles(n), LIS_rc%nensem(n)
+              c=LIS_domain(n)%tile(i)%index
+              do m=1, LIS_rc%nensem(n)
+                 t = i+m-1
+                 if (runoff1_t(t) == -9999.0 ) then ! surface runoff
+                    meanv1(c) = -9999.0
+                 else  ! make ensemble mean
+                    meanv1(c) = meanv1(c) + runoff1_t(t)*LIS_domain(n)%tile(t)%fgrd*&
+                       LIS_domain(n)%tile(t)%pens
+                 endif
+
+                 if (runoff2_t(t) == -9999.0 ) then ! baseflow
+                    meanv2(c) = -9999.0
+                 else
+                    meanv2(c) = meanv2(c) + runoff2_t(t)*LIS_domain(n)%tile(t)%fgrd*&
+                       LIS_domain(n)%tile(t)%pens
+                 endif
+              enddo
+           enddo
 
 #if (defined SPMD)
-        call MPI_GATHERV(runoff1_t,LIS_deltas(n,LIS_localPet),MPI_REAL,&       ! surface runoff  
-                         gtmp1,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
-        call MPI_GATHERV(runoff2_t,LIS_deltas(n,LIS_localPet),MPI_REAL,&       ! baseflow
-                         gtmp2,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
+           call MPI_GATHERV(meanv1,LIS_deltas(n,LIS_localPet),MPI_REAL,&   ! surface runoff  
+                            gtmp1,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
+           call MPI_GATHERV(meanv2,LIS_deltas(n,LIS_localPet),MPI_REAL,&   ! baseflow
+                            gtmp2,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
 #endif
+           deallocate(meanv1)
+           deallocate(meanv2)
+        else if(RAPID_routing_struc(n)%useens==0) then ! OL loop
+#if (defined SPMD)
+           call MPI_GATHERV(runoff1_t,LIS_deltas(n,LIS_localPet),MPI_REAL,&   ! surface runoff
+                            gtmp1,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
+           call MPI_GATHERV(runoff2_t,LIS_deltas(n,LIS_localPet),MPI_REAL,&   ! baseflow
+                            gtmp2,LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
+#endif
+        endif
 
         ! reorganizing variable structure (only for root)
         if(LIS_masterproc) then
+           gvar1 = LIS_rc%udef
+           gvar2 = LIS_rc%udef
            count1=1
            do l=1,LIS_npes
               do r=LIS_nss_halo_ind(n,l),LIS_nse_halo_ind(n,l)
@@ -115,13 +156,17 @@ subroutine RAPID_routing_run(n)
                     gid=c+(r-1)*LIS_rc%gnc(n)
                     ntiles=LIS_domain(n)%ntiles_pergrid(gid)
                     stid=LIS_domain(n)%str_tind(gid)
-            
-                    do t=1,ntiles
-                       tid=stid + t-1
-                       gvar1(tid)=gtmp1(count1)  ! surface runoff
-                       gvar2(tid)=gtmp2(count1)  ! baseflow
-                       count1=count1 + 1         
-                    enddo
+
+                    if(ntiles.ne.0) then
+                       if(r.ge.LIS_nss_ind(n,l).and.&
+                            r.le.LIS_nse_ind(n,l).and.&
+                            c.ge.LIS_ews_ind(n,l).and.&
+                            c.le.LIS_ewe_ind(n,l)) then !points not in halo
+                          gvar1(c,r) = gtmp1(count1) ! surface runoff
+                          gvar2(c,r) = gtmp2(count1) ! baseflow
+                       endif
+                       count1 = count1 + 1
+                    endif
                  enddo
               enddo          
            enddo
@@ -129,15 +174,15 @@ subroutine RAPID_routing_run(n)
        
        ! The message is sent from the root process to all processes in the group
 #if (defined SPMD)
-       call MPI_BCAST(gvar1,LIS_rc%glbntiles(n),MPI_REAL,0, &
+       call MPI_BCAST(gvar1,LIS_rc%glbngrid(n),MPI_REAL,0, &
             LIS_mpi_comm, status)
-       call MPI_BCAST(gvar2,LIS_rc%glbntiles(n),MPI_REAL,0, &
+       call MPI_BCAST(gvar2,LIS_rc%glbngrid(n),MPI_REAL,0, &
             LIS_mpi_comm, status)
 #endif
-
-        surface_runoff=reshape(gvar1,(/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
-        baseflow=reshape(gvar2,(/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
-
+        
+        surface_runoff = gvar1
+        baseflow = gvar2
+        
         deallocate(runoff1_t)
         deallocate(runoff2_t)
         deallocate(gtmp1)
@@ -146,7 +191,6 @@ subroutine RAPID_routing_run(n)
         deallocate(gvar2)
      endif
 
-     !TODO
      ! output file name
      call LIS_create_output_directory('ROUTING')
      call LIS_create_output_filename(n,qout_filename,model_name='ROUTING', &

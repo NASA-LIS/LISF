@@ -115,7 +115,7 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_0 )
    external jules50_getrunoffs_mm
-   external jules5x_getrunoffs_rapid
+   external jules50_getrunoffs_rapid
 #endif
 
 #if ( defined SM_JULES_5_2 )

@@ -24,6 +24,7 @@ module RAPID_routingMod
 ! !REVISION HISTORY: 
 ! 17 Mar 2021: Yeosang Yoon: Initial implementation in LIS based on the 
 !                            RAPID offline routing code. 
+! 25 Oct 2022: Yeosang Yoon: Support to run with LSM ensemble mean runoff variables
 ! 
 ! !USES: 
   use ESMF
@@ -79,15 +80,15 @@ module RAPID_routingMod
      integer          :: n_riv_bas    ! number of river basins  
      integer          :: n_wei_table  ! number of reach in weight table file
   
-     logical             :: initCheck    ! for rapid_init
+     logical             :: initCheck     ! for rapid_init
 
      integer,allocatable :: riv_bas_id(:) ! for rapid output
      real,allocatable    :: riv_tot_lon(:)
      real,allocatable    :: riv_tot_lat(:)
 
-
      real,allocatable    :: Qout(:)  ! instantaneous flow 
-  end type RAPID_routing_dec
+     integer             :: useens   ! ensemble mode
+end type RAPID_routing_dec
 
   type(RAPID_routing_dec), allocatable :: RAPID_routing_struc(:)
 
@@ -319,6 +320,22 @@ contains
        call LIS_verify(status,&
             "RAPID namelist file: not defined")
     enddo
+
+    ! ensemble mode
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "RAPID run in ensemble mode:",rc=status)
+    do n=1, LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            RAPID_routing_struc(n)%useens,rc=status)
+       call LIS_verify(status,&
+            "RAPID run in ensemble mode: not defined")
+    enddo
+
+    ! ensemble mode 0: open loop, ensemble mode 1: ensemble mean 
+    if(RAPID_routing_struc(n)%useens>1) then
+       write(LIS_logunit,*) "[ERR] Currently RAPID only supports ensemble modes 0 or 1" 
+       call LIS_endrun()
+    endif
 
     ! checks the size of static data for RAPID
     do n=1, LIS_rc%nnest

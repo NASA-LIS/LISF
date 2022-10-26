@@ -18,6 +18,7 @@ module LIS_routingMod
 ! 
 ! !REVISION HISTORY: 
 !  6 May 2011: Sujay Kumar, Initial implementation
+!  1 Oct 2022: Yeosang Yoon; excluded RAPID from sws and DA modules
 ! 
 ! !USES: 
   use LIS_coreMod
@@ -421,7 +422,7 @@ module LIS_routingMod
     integer                 :: k 
 
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then 
        do k=1, LIS_rc%nperts
           if(LIS_rc%Routing_DAinst_valid(k)) then
              if(LIS_rc%perturb_state(k).ne."none") then 
@@ -693,7 +694,7 @@ module LIS_routingMod
 
     integer                :: m
 
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%Routing_DAinst_valid(k)) then
           call routingdagetobspred(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0),n, k, Obs_pred)
@@ -726,7 +727,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then 
        if(LIS_rc%routing_DAinst_valid(k)) then
           call routingdagetstatevar(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_Routing_State(n,k))
@@ -759,7 +760,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call routingdasetstatevar(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_Routing_State(n,k))
@@ -791,7 +792,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call routingdascalestatevar(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_Routing_State(n,k))
@@ -822,7 +823,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call routingdadescalestatevar(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_Routing_State(n,k), &
@@ -855,7 +856,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call routingdaupdatestate(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_Routing_State(n,k), &
@@ -887,7 +888,7 @@ module LIS_routingMod
 !  \end{description}
 !EOP
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call routingdaqcstate(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0),n,LIS_Routing_State(n,k))
@@ -929,7 +930,7 @@ module LIS_routingMod
     real,         pointer             :: stdata(:)
     real,         pointer             :: stincrdata(:)
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           allocate(routing_state_objs(LIS_rc%nstvars(k)))
           
@@ -985,7 +986,7 @@ module LIS_routingMod
 !EOP
     integer                :: status
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call ESMF_AttributeGet(LIS_Routing_Incr_State(n,k),&
                "Fresh Increments Status", setstatus, rc=status)
@@ -1022,7 +1023,7 @@ module LIS_routingMod
 !EOP
     integer                :: status
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call ESMF_AttributeSet(LIS_Routing_Incr_State(n,k),&
                "Fresh Increments Status", setstatus, rc=status)
@@ -1070,7 +1071,7 @@ module LIS_routingMod
     real,         pointer             :: stdata(:)
     real,         pointer             :: stincrdata(:)
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           allocate(routing_state_objs(LIS_rc%nstvars(k)))
           
@@ -1147,7 +1148,7 @@ module LIS_routingMod
     real                            :: lat, lon, col,row
     integer                         :: gid,c,r
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           
           c = LIS_routing(n)%tile(tileid)%col
@@ -1218,7 +1219,7 @@ module LIS_routingMod
 !EOP
     integer            :: status
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           call ESMF_StateGet(LIS_Routing_State(n,k),itemNameList=stateNames,&
                rc=status)
@@ -1256,7 +1257,7 @@ module LIS_routingMod
 
     integer             :: i,c,r,gid
 
-    if(LIS_rc%routingmodel.ne."none") then 
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%routing_DAinst_valid(k)) then 
           do i=1,state_size
              c = LIS_routing(n)%tile(i)%col
@@ -1277,7 +1278,7 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%Routing_DAinst_valid(k)) then
           call routingdaobstransform(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, LIS_OBS_State(n,k))
@@ -1290,7 +1291,7 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%Routing_DAinst_valid(k)) then
           call routingdamapobstorouting(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, k, LIS_OBS_State(n,k),&
@@ -1305,7 +1306,7 @@ module LIS_routingMod
     integer                :: n
     integer                :: k
 
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%Routing_DAinst_valid(k)) then
 
           call routingdaqcobsstate(trim(LIS_rc%routingmodel)//"+"&
@@ -1337,7 +1338,7 @@ module LIS_routingMod
 !   \item[n]    index of the nest
 !  \end{description}
 !EOP
-    if(LIS_rc%routingmodel.ne."none") then
+    if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
        if(LIS_rc%Routing_DAinst_valid(k)) then
           call routingdagetstatespacesize(trim(LIS_rc%routingmodel)//"+"//&
                trim(LIS_rc%daset(k))//char(0), n, size)
