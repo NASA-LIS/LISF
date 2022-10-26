@@ -859,11 +859,9 @@ if($use_petsc eq ""){
 if($use_petsc == 1) {
    if(defined($ENV{LIS_PETSc})){
       $sys_petsc_path = $ENV{LIS_PETSc};
-      $inc1 = "/linux-gnu-intel/include/";
-      $inc2 = "/include/";
-      $lib = "/linux-gnu-intel/lib/";
-      $inc_petsc1=$sys_petsc_path.$inc1;
-      $inc_petsc2=$sys_petsc_path.$inc2;
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_petsc=$sys_petsc_path.$inc;
       $lib_petsc=$sys_petsc_path.$lib;
    }
    else {
@@ -1071,7 +1069,7 @@ if($use_mkllapack == 1){
 }
 
 if($use_petsc == 1){
-   $fflags = $fflags." -I\$(INC_PETSc1) -I\$(INC_PETSc2)";
+   $fflags = $fflags." -I\$(INC_PETSc)";
    $ldflags = $ldflags." -L\$(LIB_PETSc) -Wl,-rpath,\$(LIB_PETSc) -lpetsc -lm";
 }
 
@@ -1161,8 +1159,7 @@ printf conf_file "%s%s\n","LIB_PROF_UTIL   = $lib_crtm_prof";
 printf conf_file "%s%s\n","INC_CMEM        = $inc_cmem";
 printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
-printf conf_file "%s%s\n","INC_PETSc1      = $inc_petsc1";
-printf conf_file "%s%s\n","INC_PETSc2      = $inc_petsc2";
+printf conf_file "%s%s\n","INC_PETSc       = $inc_petsc";
 printf conf_file "%s%s\n","LIB_PETSc       = $lib_petsc";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";

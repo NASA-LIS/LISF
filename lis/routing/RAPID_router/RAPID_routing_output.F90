@@ -154,8 +154,8 @@ subroutine RAPID_routing_output(n)
                            'nf90_def_var_deflate failed for lon in RAPID_routing_output')
               call LIS_verify(nf90_def_var_deflate(ftn,varid_lat,shuffle,deflate,deflate_level),&
                            'nf90_def_var_deflate failed for lat in RAPID_routing_output')
-              call LIS_verify(nf90_def_var_deflate(ftn,varid_crs,shuffle,deflate,deflate_level),&
-                           'nf90_def_var_deflate failed for crs in RAPID_routing_output')
+              !call LIS_verify(nf90_def_var_deflate(ftn,varid_crs,shuffle,deflate,deflate_level),&
+              !             'nf90_def_var_deflate failed for crs in RAPID_routing_output')
 
               ! Define variable attributes
               call LIS_verify(nf90_put_att(ftn,varid_Qout,'long_name','average river water ' & 
