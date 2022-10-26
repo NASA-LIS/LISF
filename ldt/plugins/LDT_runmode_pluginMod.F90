@@ -90,6 +90,8 @@ contains
     external LDT_init_LISHydropreproc
     external LDT_run_LISHydropreproc
 
+    external LDT_init_smap_e_opl     !Y.Kwon
+    external LDT_run_smap_e_opl      !Y.Kwon
 
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
@@ -174,6 +176,11 @@ contains
     call registerldtrun(trim(LDT_LISHydropreprocId)//char(0), &
          LDT_run_LISHydropreproc)
 
+  ! OPL E SMAP soil moisture retrieval  (Y.Kwon)
+    call registerldtinit(trim(LDT_SMAP_E_OPLId)//char(0), &
+         LDT_init_smap_e_opl)
+    call registerldtrun(trim(LDT_SMAP_E_OPLId)//char(0), &
+         LDT_run_smap_e_opl)
 
   end subroutine LDT_runmode_plugin
 
