@@ -82,8 +82,6 @@ subroutine RAPID_routing_writerst(n)
   deflate = NETCDF_deflate
   deflate_level =NETCDF_deflate_level
 
-  alarmCheck = LIS_isAlarmRinging(LIS_rc,&
-      "RAPID router restart alarm")
   if(alarmCheck.or.(LIS_rc%endtime ==1)) then
      if(LIS_masterproc) then
         call LIS_create_output_directory('ROUTING')
