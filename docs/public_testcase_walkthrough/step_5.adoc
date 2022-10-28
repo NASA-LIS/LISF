@@ -19,22 +19,22 @@ The following files and directories were added to your common working directory
 [cols="2*",frame=topbot,stripes=odd]
 [%autowidth]
 |===
+|`RS_DATA.tgz`                     |A tar file containing sample SMAP soil moisture observations
 |`DA_proc_SMAP/`                   |A directory containing the files below
 |`ldt.config.smapobs_cdf`          |The LDT config file for this step
 |`target_ldtlog.0000`              |The target LDT log file
 |`target_cdf_smapobs_domain.nc`    |The target LDT-generated Noah LSM _domain_ file
 |`target_cdf_smapobs.nc`           |The target LDT-generated Noah LSM _CDF_ file
-|`RS_DATA.tgz`                     |A tar file containing sample SMAP soil moisture observations
 |===
 
-Unpack `RS_DATA.tgz` in your `$WORKING_DIR`:
+The file `RS_DATA.tgz` should have been recursively unpacked as subdirectory `RS_DATA` within your `$WORKING_DIR`. If it was not, run the following command:
 
 [source,shell]
 ----
 % tar -xzf RS_DATA.tgz -C .
 ----
 
-A new directory named `RS_DATA` contains sample soil moisture observations from the link:https://nsidc.org/data/SPL3SMP/versions/5[_SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, Version 5, window="_blank"]_ data product.
+The new directory, `RS_DATA`, contains sample soil moisture observations from the link:https://nsidc.org/data/SPL3SMP/versions/5[_SMAP L3 Radiometer Global Daily 36 km EASE-Grid Soil Moisture, Version 5, window="_blank"]_ data product.
 
 .SMAP SPL3SMP.005 dataset description:
 [quote]
@@ -86,7 +86,7 @@ SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <8>
 <4> Averaging interval used while computing CDF. In this case, one day.
 <5> Relative path to the directory containing SMAP observation data.
 <6> Specifies which SMAP data product is being used.
-<7> Specifies the radius in which LDT search to detect open water Then removes all pixels within the radius in the CDF calculations.
+<7> Specifies the radius in which LDT searches to detect open water. Then removes all pixels within the radius in the CDF calculations.
 <8> Specifies the release ID of the SMAP dataset.
 
 See the link:{url-lisf-docs}[LDT Users' Guide] for more information about configuration settings.

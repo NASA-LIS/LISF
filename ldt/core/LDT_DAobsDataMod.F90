@@ -43,9 +43,11 @@ module LDT_DAobsDataMod
   public :: LDT_DA_MOC_SWE       
   public :: LDT_DA_MOC_SNOWDEPTH
   public :: LDT_DA_MOC_SOILMOIST 
+  public :: LDT_DA_MOC_SOILTEFF   !Y.Kwon
   public :: LDT_DA_MOC_TWS
   public :: LDT_DA_MOC_VOD
   public :: LDT_DA_MOC_LAI
+  public :: LDT_DA_MOC_GVF   !Y.Kwon
   public :: LDT_DA_MOC_COUNT
 !  public :: LDT_MOC_GRIB_COUNT
 
@@ -56,8 +58,10 @@ module LDT_DAobsDataMod
   integer, parameter :: LDT_DA_MOC_TWS        = 4
   integer, parameter :: LDT_DA_MOC_VOD        = 5
   integer, parameter :: LDT_DA_MOC_LAI        = 6
-   ! READ ABOVE NOTE ABOUT SPECIAL CASE INDICES
-  integer, parameter :: LDT_DA_MOC_COUNT      = 6
+  integer, parameter :: LDT_DA_MOC_GVF        = 7    !Y.Kwon
+  integer, parameter :: LDT_DA_MOC_SOILTEFF   = 8    !Y.Kwon
+  ! READ ABOVE NOTE ABOUT SPECIAL CASE INDICES
+  integer, parameter :: LDT_DA_MOC_COUNT      = 8     !Y.Kwon
   ! Add the special cases.  LDT_MOC_GRIB_COUNT should be used only in
    ! LDT_gribMod.F90.
 !  integer, parameter :: LDT_MOC_GRIB_COUNT = 100
@@ -85,7 +89,7 @@ module LDT_DAobsDataMod
      integer               :: selectStats      !whether to output stats
      integer               :: minMaxOpt
      integer               :: stdOpt
-     integer               :: varID(5)
+     integer               :: varID(6) !varID(5)  !YK
      character*20, allocatable :: unittypes(:)
      integer, allocatable      :: count(:,:)
      real, allocatable         :: value(:,:) 
@@ -96,8 +100,10 @@ module LDT_DAobsDataMod
      type(LDT_DAmetadataEntry) :: swe          ! Snow water equivalent (kg/m2)
      type(LDT_DAmetadataEntry) :: snowdepth
      type(LDT_DAmetadataEntry) :: soilmoist
+     type(LDT_DAmetadataEntry) :: teff         ! effective soil temperature (Y.Kwon)
      type(LDT_DAmetadataEntry) :: vod
      type(LDT_DAmetadataEntry) :: lai
+     type(LDT_DAmetadataEntry) :: gvf          !Y.Kwon
 
   end type output_meta
 
@@ -109,9 +115,11 @@ module LDT_DAobsDataMod
      type(LDT_DAmetadataEntry) :: swe_obs
      type(LDT_DAmetadataEntry) :: snowdepth_obs
      type(LDT_DAmetadataEntry) :: soilmoist_obs
+     type(LDT_DAmetadataEntry) :: teff_obs      !Y.Kwon
      type(LDT_DAmetadataEntry) :: tws_obs
      type(LDT_DAmetadataEntry) :: vod_obs
      type(LDT_DAmetadataEntry) :: lai_obs
+     type(LDT_DAmetadataEntry) :: gvf_obs      !Y.Kwon
   end type obs_list_dec
 
   type, public :: obsdep
@@ -193,12 +201,16 @@ contains
          LDT_DAobsData(i)%snowdepth_obs,1,nsize,(/"m"/))
     call register_obsDataEntry(i,LDT_DA_MOC_SOILMOIST ,&
          LDT_DAobsData(i)%soilmoist_obs,2,nsize,(/"kg/m2", "m3/m3"/))
+    call register_obsDataEntry(i,LDT_DA_MOC_SOILTEFF ,&
+         LDT_DAobsData(i)%teff_obs,1,nsize,(/"K"/))     !Y.Kwon
     call register_obsDataEntry(i,LDT_DA_MOC_TWS ,&
          LDT_DAobsData(i)%tws_obs,1,nsize,(/"mm"/))
     call register_obsDataEntry(i,LDT_DA_MOC_VOD ,&
          LDT_DAobsData(i)%vod_obs,1,nsize,(/"-"/))
     call register_obsDataEntry(i,LDT_DA_MOC_LAI ,&
          LDT_DAobsData(i)%lai_obs,1,nsize,(/"-"/))
+    call register_obsDataEntry(i,LDT_DA_MOC_GVF ,&
+         LDT_DAobsData(i)%gvf_obs,1,nsize,(/"-"/))    !Y.Kwon
   end subroutine LDT_DAobsEntryInit
 
 !BOP
@@ -473,7 +485,7 @@ contains
 !                if(c.eq.61.and.r.eq.91) print*, value(c,r), dataEntry%value(c,r,k)
 !             endif
              if(LDT_domain(n)%datamask(c,r).eq.1) then 
-                if(value(c,r).ne.LDT_rc%udef) then 
+                if(value(c,r).ne.LDT_rc%udef) then
                    if(LDT_domain(n)%gindex(c,r).ne.-1) then 
                       gid = LDT_domain(n)%gindex(c,r)
                       dataEntry%value(gid,k) = dataEntry%value(gid,k) + value(c,r)
