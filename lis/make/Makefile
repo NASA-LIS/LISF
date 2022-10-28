@@ -129,7 +129,10 @@ realclean:
 # Additional prerequisite rules not found by makedep.py.
 # NONE
 
+ifeq ($(LIS_ARCH),linux_ifc)
 include ./Crocus.make
+endif
+
 %.o: %.F
 	$(FC77) -cpp $(FFLAGS77) $(HEADER_DIRS) $<
 
