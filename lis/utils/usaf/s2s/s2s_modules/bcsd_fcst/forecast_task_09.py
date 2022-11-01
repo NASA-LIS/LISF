@@ -111,6 +111,7 @@ def driver():
     for nmme_model in  config['EXP']['NMME_models']:
         cmd = "python"
         cmd += f" {srcdir2}/forecast_task_10.py"
+        cmd += f" -c {config_file}"
         cmd += f" -s {year}"
         cmd += f" -m {month_abbr}"
         cmd += f" -w {cwd}"
@@ -144,7 +145,7 @@ def driver():
     cmd += f" -n {month_num}"
     jobfile = 'bcsd12_run.j'
     jobname = 'bcsd12_'
-    utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
+    utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
 
 #
 # Main Method

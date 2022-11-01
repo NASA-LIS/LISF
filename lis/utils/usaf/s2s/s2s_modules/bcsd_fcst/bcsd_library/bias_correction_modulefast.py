@@ -19,9 +19,8 @@ from dateutil.relativedelta import relativedelta
 import xarray as xr
 import numpy as np
 from Shrad_modules import read_nc_files
-from BCSD_stats_functions import *
-from BCSD_function import CALC_BCSD, get_index
-import sys
+from BCSD_stats_functions import write_4d_netcdf
+from BCSD_functionfast import CALC_BCSD
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -92,6 +91,56 @@ OBS_CLIM_ARRAY = xr.open_dataset(OBS_CLIM_FILE)
 
 
 
+def get_index(ref_array, my_value):
+    """
+      Function for extracting the index of a Numpy array (ref_array)
+      which value is closest to a given number.
+
+      Input parameters:
+        - ref_array: reference Numpy array
+        - my_value:  floating point number
+
+      Returned value:
+        - An integer corresponding to the index
+    """
+    return np.abs(ref_array - my_value).argmin()
+
+def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
+                        np_obs_clim_array, np_fcst_clim_array, \
+                        lead_final, target_fcst_syr, target_fcst_eyr, \
+                        fcst_syr, ens_num, mon, month_name, bc_var, \
+                        tiny, fcst_coarse, correct_fcst_coarse):
+    """Lat and Lon"""
+    num_lats = ilat_max-ilat_min+1
+    num_lons = ilon_max-ilon_min+1
+
+    print("num_lats = ", num_lats, np_obs_clim_array.shape)
+    print("num_lons = ", num_lons, fcst_coarse.shape)
+
+    for ilat in range(num_lats):
+        lat_num = ilat_min + ilat
+        for ilon in range(num_lons):
+            lon_num = ilon_min + ilon
+
+            count_grid = ilon + ilat*num_lons
+
+            ## First read Observed clim data (all months available in one file)
+            ## so don't have to read it again for each lead time
+            obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
+
+            ## Now read forecast climatology data too.
+            fcst_clim_all = np_fcst_clim_array[:, :, ilat, ilon]
+
+            target_fcst_val_arr = fcst_coarse[:, :, :, lat_num, lon_num]
+
+            #print("shape of FCST_COARSE: ", TARGET_FCST_VAL_ARR.shape)
+
+            correct_fcst_coarse[:, :, :, lat_num, lon_num] = \
+            CALC_BCSD(obs_clim_all, fcst_clim_all, lead_final, \
+            target_fcst_val_arr, target_fcst_syr, target_fcst_eyr, \
+            fcst_syr, ens_num, mon, month_name, count_grid, bc_var, tiny)
+
+
 def monthly_calculations(mon):
     """Monthly Bias Correction"""
     month_name = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[mon]).lower())
@@ -132,39 +181,22 @@ def monthly_calculations(mon):
     ilon_max = get_index(LONS, LON2)
     nlats = len(LATS)
     nlons = len(LONS)
-    fcst_clim_array2 = fcst_clim_array.rename_dims({"DIST": "DISTF", "time" : "timef" }) 
+
     # Get the values (Numpy array) for the lat/lon ranges
- 
-    np_obs_clim_xr = OBS_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
-                        latitude=slice(LAT1, LAT2))
-    np_fcst_clim_xr = fcst_clim_array2.clim.sel(longitude=slice(LON1, LON2), \
-                         latitude=slice(LAT1, LAT2))
+    np_obs_clim_array = OBS_CLIM_ARRAY.clim.sel(longitude=slice(LON1, LON2), \
+                        latitude=slice(LAT1, LAT2)).values
+    np_fcst_clim_array = fcst_clim_array.clim.sel(longitude=slice(LON1, LON2), \
+                         latitude=slice(LAT1, LAT2)).values
 
     print("Latitude:  ", nlats, ilat_min, ilat_max)
     print("Longitude: ", nlons, ilon_min, ilon_max)
+    print("np_obs_clim_array:", np_obs_clim_array.shape, type(np_obs_clim_array))
+    print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
+    latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
+    np_obs_clim_array, np_fcst_clim_array, LEAD_FINAL, TARGET_FCST_SYR, \
+    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, month_name, BC_VAR, \
+    TINY, fcst_coarse, correct_fcst_coarse)
 
-    fcst_coarse_xr =  xr.DataArray(fcst_coarse, coords=
-                                   {'fyrs': np.arange(TARGET_FCST_EYR-TARGET_FCST_SYR+1) ,'lead': np.arange(LEAD_FINAL),'ens': np.arange(ENS_NUM), 'latitude': np_fcst_clim_xr.latitude.values,'longitude': np_fcst_clim_xr.longitude.values},
-                                   dims=["fyrs", "lead", "ens", "latitude", "longitude"])
-    
-    if (not np.array_equal(np_obs_clim_xr.latitude.values, np_fcst_clim_xr.latitude.values)) or (not np.array_equal(np_obs_clim_xr.longitude.values, np_fcst_clim_xr.longitude.values)):
-        np_obs_clim_xr = np_obs_clim_xr.assign_coords({"longitude": np_fcst_clim_xr.longitude.values, "latitude": np_fcst_clim_xr.latitude.values})
-
-    correct = xr.apply_ufunc(
-        CALC_BCSD,
-        np_obs_clim_xr.chunk({"latitude": "auto", "longitude": "auto"}).compute(),
-        np_fcst_clim_xr.chunk({"latitude": "auto", "longitude": "auto"}).compute(),
-        fcst_coarse_xr.chunk({"latitude": "auto", "longitude": "auto"}).compute(),
-        input_core_dims=[['DIST','time'],['DISTF','timef'],['fyrs', 'lead', 'ens']],
-        exclude_dims=set(('DIST','time','DISTF','timef','fyrs', 'lead', 'ens')),
-        output_core_dims=[['fyrs', 'lead', 'ens']],
-        vectorize=True,  # loop over non-core dims
-        dask="forbidden",
-        output_dtypes=[np.float64],
-        kwargs={'MON': mon, 'MONTH_NAME': month_name, 'LEAD_FINAL' : LEAD_FINAL, 'TARGET_FCST_SYR' : TARGET_FCST_SYR, 
-                'TARGET_FCST_EYR' : TARGET_FCST_EYR, 'FCST_SYR' : FCST_SYR,  'ENS_NUM' : ENS_NUM, 'BC_VAR' : BC_VAR, 'TINY' : TINY})
-
-    correct_fcst_coarse = np.moveaxis(correct.values,[0,1],[-2,-1])
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \
                           mask=correct_fcst_coarse == -999)
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \

@@ -129,11 +129,8 @@ INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
 #### Change the model name here for other models
 INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
-OUTDIR_TEMPLATE = '{}/final/6-Hourly/{:04d}/{}/ens{:01d}'
+OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
 OUTFILE_TEMPLATE = '{}/CFSv2.{:04d}{:02d}.nc4'
-
-#/discover/nobackup/projects/fame/FORECASTS/GEOS5/Shrad_BCSD/6-hourly/
-#2011/may01/ens1/GEOS5.all_forc_201105.nc4
 
 #VAR_NAME_LIST=['LWS', 'SLRSF', 'PS', 'Q2M', 'T2M', 'WIND10M']
 VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
@@ -149,8 +146,8 @@ for MON in [INIT_FCST_MON]:
     for ens in range(ENS_NUM):
         INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
         INIT_FCST_YEAR, ens+1)
-        OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, INIT_FCST_YEAR, \
-        MONTH_NAME, ens+1)
+        OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+        INIT_FCST_YEAR, ens+1)
         if op.isdir(OUTDIR):
             pass
         else:
@@ -181,5 +178,5 @@ for MON in [INIT_FCST_MON]:
             DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
             write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
             'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
-            UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 5, 39.875, \
-            59.875, -39.875, -19.875, 0.25, 0.25, 21600)
+            UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 5, LATS[-1], \
+            LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)

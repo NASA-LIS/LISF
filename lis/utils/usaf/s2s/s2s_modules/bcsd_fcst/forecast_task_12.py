@@ -71,7 +71,7 @@ def driver():
     for iens in range(1, (ens_num + 1)):
         print(f"Ensemble {iens}/{ens_num}")
 
-        indir = f"{forcedir}/{current_year}/{month_abbr}01/ens{iens}"
+        indir = f"{forcedir}/{month_abbr}01/{current_year}/ens{iens}"
 
         for ilead in range(lead_months):
             fcst_date = (datetime(current_year, month_num, 1) + \

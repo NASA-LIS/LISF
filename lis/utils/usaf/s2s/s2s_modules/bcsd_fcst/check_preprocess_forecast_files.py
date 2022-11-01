@@ -121,7 +121,7 @@ def driver():
     projdir = config["bcsd_preproc"]["projdir"]
 
     # Path for where forecast files are located:
-    forcedir=f"{projdir}/bcsd_fcst/NMME/final/6-Hourly"
+    forcedir=f"{projdir}/bcsd_fcst/forecast/NMME/final/6-Hourly"
 
     ens_num = gather_ensemble_info(nmme_model)
 

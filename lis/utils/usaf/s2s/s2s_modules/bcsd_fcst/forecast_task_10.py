@@ -20,6 +20,8 @@ import os
 import subprocess
 import sys
 import argparse
+import yaml
+import numpy as np
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -38,36 +40,6 @@ def usage():
     print("[INFO] nmme_model: NMME_MODEL")
     print("[INFO] cwd: current working directory")
 
-def gather_ensemble_info(nmme_model):
-    """Gathers ensemble information based on NMME model."""
-
-    # Number of ensembles in the forecast (ENS_NUM)
-    # Ensemble start index (ENS_START)
-    # Ensemble end index (ENS_END)
-    if nmme_model == "CFSv2":
-        ens_num = 24
-        ens_range = list(range(1, 13)) + list(range(1, 13))
-    elif nmme_model == "GEOSv2":
-        ens_num = 10
-        ens_range = range(1, 11)
-    elif nmme_model == "CCM4":
-        ens_num = 10
-        ens_range = range(1, 11)
-    elif nmme_model == "GNEMO5":
-        ens_num = 10
-        ens_range = range(1, 11)
-    elif nmme_model == "CCSM4":
-        ens_num = 10
-        ens_range = range(1, 11)
-    elif nmme_model == "GFDL":
-        ens_num = 30
-        ens_range = list(range(1, 13)) + list(range(1, 13)) + list(range(1, 7))
-    else:
-        print(f"[ERR] Invalid argument for NMME_MODEL! Received {nmme_model}")
-        sys.exit(1)
-
-    return ens_num, ens_range
-
 def copy_subdaily_precipitation(year, month_abbr, ens_num, indir_nmme, outdir):
     """Copies the BC 6-Hourly precipition files to the final directory."""
 
@@ -76,7 +48,7 @@ def copy_subdaily_precipitation(year, month_abbr, ens_num, indir_nmme, outdir):
 
         indir_complete = f"{indir_nmme}/{year}/ens{iens}"
 
-        outdir_complete = f"{outdir}/{year}/{month_abbr}01/ens{iens}"
+        outdir_complete = f"{outdir}/{month_abbr}01/{year}/ens{iens}"
 
         if not os.path.exists(outdir_complete):
             os.makedirs(outdir_complete)
@@ -91,6 +63,7 @@ def driver():
     """Main driver."""
 
     parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config_file', required=True, help='config file name')
     parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
     parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
     parser.add_argument('-n', '--month_num', required=True, help='month number')
@@ -98,11 +71,20 @@ def driver():
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
 
     args = parser.parse_args()
+    config_file = args.config_file
     current_year = int(args.current_year)
     month_abbr = args.month_abbr
     month_num = int(args.month_num)
     cwd = args.cwd
     nmme_model = args.nmme_model
+
+    # load config file
+    with open(config_file, 'r') as file:
+        config = yaml.safe_load(file)
+   
+    nmme_models = config['EXP']['NMME_models']
+    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
+    nof_raw_ens = config['BCSD']['nof_raw_ens']
 
     # Path of the main project directory
     projdir = cwd
@@ -138,8 +120,10 @@ def driver():
                   (init_datetime + relativedelta(months=8)).strftime("%Y%m"),
                   (init_datetime + relativedelta(months=9)).strftime("%Y%m")]
 
-    ens_num, ens_range = gather_ensemble_info(nmme_model)
-
+    ens_num = ensemble_sizes[nmme_model]
+    nreps = int(np.ceil(ens_num/nof_raw_ens))
+    ens_range = np.tile(list(range(1,nof_raw_ens+1)), nreps)[0:ens_num]
+    
     indir_nmme = f"{forcedir_nmme}/bcsd/6-Hourly/{month_abbr}01/{nmme_model}"
     outdir = f"{forcedir_nmme}/final/6-Hourly/{nmme_model}"
 
@@ -150,15 +134,13 @@ def driver():
 
     # Symbolically link the non-precip data
     print("[INFO] Creating symbolic links for non-precip data")
-#    for iens in range(len(ens_range)):
     for iens, ens_value in enumerate(ens_range):
         ens_nmme = iens + 1
         ens_fcst = ens_value
 
-        src_dir = f"{forcedir_fcst}/final/6-Hourly/{current_year}/{month_abbr}01/ens{ens_fcst}"
-        dst_dir = f"{outdir}/{current_year}/{month_abbr}01/ens{ens_nmme}"
+        src_dir = f"{forcedir_fcst}/final/6-Hourly/{month_abbr}01/{current_year}/ens{ens_fcst}"
+        dst_dir = f"{outdir}/{month_abbr}01/{current_year}/ens{ens_nmme}"
 
-#        for ilead in range(len(src_yyyymm)):
         for ilead, src_lead in enumerate(src_yyyymm):
             src_file = f"{src_dir}/{basemodname_src}.{src_lead}.nc4"
             dst_file = f"{dst_dir}/{basemodname_dst}.{dst_yyyymm[ilead]}.nc4"

@@ -56,6 +56,8 @@ CYR = int(sys.argv[2]) ##
 NMME_DOWNLOAD_DIR = str(sys.argv[3])
 NMME_OUTPUT_DIR = str(sys.argv[4])
 SUPPLEMENTARY_DIR = str(sys.argv[5])
+NMME_MODEL = str(sys.argv[6])
+ENS_NUM = int(sys.argv[7])
 
 #MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanCM4i', 'GEM-NEMO', \
 MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
@@ -82,18 +84,18 @@ for i in range(0, 12):
         LDYR[i, j] = KY
 
 INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
-OUTDIR_TEMPLATE = '{}/{}/{:04d}/ens{}/'
+OUTDIR_TEMPLATE = '{}/{}/{}/{:04d}/ens{}/'
 OUTFILE_TEMPLATE = '{}/{}.nmme.monthly.{:04d}{:02d}.nc'
 if not os.path.exists(NMME_OUTPUT_DIR):
     os.makedirs(NMME_OUTPUT_DIR)
 
-## Read in example fine spatial resolution file for lat and lon over AFRICOM
+## Read in example fine spatial resolution file for lat and lon over domain
 EX_FCST_FILENAME = '/ex_raw_fcst_download.nc'
 GE = SUPPLEMENTARY_DIR + EX_FCST_FILENAME
 LONS = read_nc_files(GE, 'lon')
 LATS = read_nc_files(GE, 'lat')
 
-## Read in example coarse spatial resolution file for lat and lon over Globe
+## Read in example coarse spatial resolution file for lat and lon over domain
 EX_NMME_FILENAME = '/ex_raw_nmme_download.nc'
 GE1 = SUPPLEMENTARY_DIR + EX_NMME_FILENAME
 LONI = read_nc_files(GE1, 'X')
@@ -109,41 +111,50 @@ LONI = np.hstack((LON2, LON1))
 
 ## Read all forecast files
 MM = CMN-1
-XPREC = np.empty([1, 12, 94, 181, 360])
-XPRECI = np.empty([1, 320, 320])
+XPRECI = np.empty([1, LATS.size, LONS.size])
 
-for i,m in enumerate(MODEL):
-    if MODEL[i] == 'NCEP-CFSv2':
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
-        print('Reading:', INFILE)
-        x = read_nc_files(INFILE, 'prec')
-        XPREC[0, 0:10, 0:24, :, :] = x[0, 0:10, 0:24, :, :]
-    if MODEL[i] == 'NASA-GEOSS2S':
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
-        print('Reading:', INFILE)
-        XPREC[0, 0:9, 24:34, :, :] = read_nc_files(INFILE, 'prec')
-    if MODEL[i] == 'CanSIPS-IC3':
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
-        print('Reading:', INFILE)
-        x = read_nc_files(INFILE, 'prec')
-        x1 = np.moveaxis(x, 1, 2)
-        XPREC[0, 0:12, 34:44, :, :] = x1[:,:,10:20,:,:]
-        XPREC[0, 0:12, 44:54, :, :] = x1[:,:,0:10,:,:]
-    if MODEL[i] == 'COLA-RSMAS-CCSM4':
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
-        print('Reading:', INFILE)
-        XPREC[0, 0:12, 54:64, :, :] = read_nc_files(INFILE, 'prec')
-    if MODEL[i] == 'GFDL-SPEAR':
-        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL[i], MODEL[i], MON[MM], CYR)
-        print('Reading:', INFILE)
-        XPREC[0, 0:12, 64:94, :, :] = read_nc_files(INFILE, 'prec')
+if NMME_MODEL == 'CFSv2':
+    MODEL = 'NCEP-CFSv2'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    XPREC = x[:, 0:10, 0:24, :, :]
+elif NMME_MODEL == 'GEOSv2':
+    MODEL = 'NASA-GEOSS2S'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    XPREC = read_nc_files(INFILE, 'prec')
+elif NMME_MODEL == 'CCM4':
+    MODEL = 'CanSIPS-IC3'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC = x1[:,:,10:20,:,:]
+elif NMME_MODEL == 'GNEMO5':
+    MODEL = 'CanSIPS-IC3'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC = x1[:,:,0:10,:,:]
+elif NMME_MODEL == 'CCSM4':
+    MODEL = 'COLA-RSMAS-CCSM4'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    XPREC = read_nc_files(INFILE, 'prec')
+elif NMME_MODEL == 'GFDL':
+    MODEL = 'GFDL-SPEAR'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    XPREC = read_nc_files(INFILE, 'prec')
+else:
+    print(f"[ERR] Invalid argument for NMME_MODEL! Received {NMME_MODEL}")
+    sys.exit(1)
+
+print('Reading:', INFILE)
 
 ## Convert units to mm/s or kg/m2/s
 XPREC = XPREC/86400
 
+print(XPREC.shape)
 ## Reorganize and write
 YR = CYR
-for m in range(0, 94):
+for m in range(0, ENS_NUM):
     for l in range(0, 9):
         x = XPREC[0, l, m, :, :]
         print(x.shape, LATI.shape, LONI.shape, LATS.shape, LONS.shape)
@@ -159,7 +170,7 @@ for m in range(0, 94):
         jy = YR+LDYR[MM, l]
         l1 = LEADS1[MM, l]
         print('Year:', jy, ',leads:', l1)
-        OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], YR, m+1)
+        OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], NMME_MODEL, YR, m+1)
         OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MONTH[MM], jy, l1)
         if not os.path.exists(OUTDIR):
             os.makedirs(OUTDIR)
@@ -172,3 +183,4 @@ for m in range(0, 94):
         write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
         'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
         print(f"Writing {OUTFILE}")
+

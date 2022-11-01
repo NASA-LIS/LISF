@@ -62,7 +62,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         'WA': (-19, 26, -5, 25),
         'SA': (8, 52, -37, 6),
         'SA1':(24, 33, -31, -24),
-        'FAME':(-20, 55, -40, 40)
+        'FAME':(-20, 55, -40, 40),
         'EUROPE': (-10, 50, 35, 70),
         'CENTRAL_ASIA': (35, 90, 14, 55),
         'SOUTH_EAST_ASIA': (75, 140, -15, 30),

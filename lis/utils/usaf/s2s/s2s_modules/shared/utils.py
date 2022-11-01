@@ -125,4 +125,62 @@ def update_job_schedule (filename, myid, jobname, afterid):
     with open(filename, "a") as sch_file:
         sch_file.write('{:<10}{:<30}{}\n'.format(myid, jobname, afterid))
 
+def print_status_report (e2es, yyyymm):
+    import glob
+    import os, time
+    import re
+    import sys
+    import datetime
+    import numpy as np
+
+    def read_out (this_no, nfiles, ofile, job_file):
+        file = open(ofile, "r")
+        pattern_walltime = "Walltime Used"
+        pattern_sbu =  "Estimated SBUs"
+        pattern_not1 = "Pct Walltime Used"
+        pattern_not2 = "Total CPU-Time Allocated"
+        
+        for line in file:
+            if re.search(pattern_walltime, line):
+                if (not re.search(pattern_not1, line)) and (not re.search(pattern_not2, line)):
+                    l2 = [int(x) for x in line.split(":")[1:4]]
+            if re.search(pattern_sbu, line):
+                sbu = np.float (line.split(":")[1])
+        file.close()
+        print ('{:>3}/{:>3}  {:<35}{:>2}h {:>2}m {:>2}s'.format(this_no,  nfiles, job_file, l2[0], l2[1], l2[2]))
+        return sbu
+
+    os.chdir(e2es)
+    jfiles = glob.glob("scratch/" + yyyymm + "/*/*.j")
+    jfiles.sort(key=os.path.getmtime)
+
+    print ("  ")
+    print ("#######################################################################")
+    print ("                          STATUS OF SLURM JOBS                         ")
+    print ("#######################################################################")
+    print ("  ")
+    print ("            JOB FILE                          WALLTIME ")
+    print ("  ")
+    total_sbu = 0.
+
+    for file_no, jfile in enumerate(jfiles):
+        job_file = jfile.split("/")[3] 
+        jcut = jfile[:-(len('run.j'))]
+        ofile = glob.glob(jcut + "*.out")
+        if len(ofile) == 1:
+            if file_no == 0:
+                efile = ofile[0][:-(len('out'))]+'err'
+                time_begin = datetime.datetime.fromtimestamp(os.path.getctime(efile))
+            sbu = read_out (file_no + 1, len(jfiles), ofile[0], job_file)
+            total_sbu = total_sbu + sbu
+            time_end = datetime.datetime.fromtimestamp(os.path.getmtime(ofile[0]))
+
+    print ("  ")
+    timedt = time_end - time_begin
+
+    str1 = ' TOTAL SBUs        : {0:.2f}'.format (total_sbu)
+    str2 = ' ELAPSED TIME      : {0:.2f} hours'.format (timedt.total_seconds() / 3600.)
+    print (str1)
+    print (str2)
+
 

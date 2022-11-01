@@ -45,10 +45,10 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "with OPTIONAL flags:"
 	   echo "--------------------"
 	   echo "  DELETE:   delete YEAR/MONTH (valid inputs: Y or N)"
-	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submtted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)"
+	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)"
 	   echo "  STEP:     The E2ES process includes seven steps that are run sequentially LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS."
 	   echo "            However, the STEP option allows user to kick start the process from the last completed step."
-	   echo "            -s STEP is good to ask s2s_run.sh to start from a specifc STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
+	   echo "            -s STEP is good to ask s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
            echo "  ONE_STEP: flag is good to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
 	   exit 1 
 	   ;;	 
@@ -64,7 +64,6 @@ if [ -z "$YYYY" ] || [ -z "$mon" ] || [ -z "$CFILE" ]; then
     echo "Please enter s2s_app/s2s_run.sh -h for usage instructions."
     exit 1
 fi
-
 
 #######################################################################
 #    System Settings and Architecture Specific Environment Variables
@@ -299,18 +298,19 @@ bcsd_fcst(){
     
     cd ${E2ESDIR}/bcsd_fcst
     
+    mkdir -p -m 775 USAF-LIS7.3rc8_25km/raw
     mkdir -p -m 775 CFSv2_25km/raw
     mkdir -p -m 775 NMME/raw
     
     # link Climatology directories
     cd ${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw
-    /bin/ln -s $obs_clim_dir
+    /bin/ln -s $obs_clim_dir Climatology
     
     cd ${E2ESDIR}/bcsd_fcst/NMME/raw
-    /bin/ln -s $nmme_clim_dir
+    /bin/ln -s $nmme_clim_dir Climatology
     
-    cd ${E2ESDIR}/bcsd_fcst/
-    /bin/ln -s $usaf_25km
+    cd ${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw
+    /bin/ln -s $usaf_25km Climatology
     
     # manage jobs from SCRATCH
     cd ${SCRDIR}/bcsd_fcst
@@ -322,20 +322,29 @@ bcsd_fcst(){
     # Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
     # --------------------------------------------------------------------------
     jobname=bcsd01
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j $jobname
     bcsd01_ID=$(submit_job "" "${jobname}_run.j")
     
     # Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
     # --------------------------------------------------------------
     jobname=bcsd03
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 1 -j $jobname
-    bcsd03_ID=$(submit_job "" "${jobname}_run.j")
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+
+    job_list="$jobname*.j"
+    bcsd03_ID=
+    for jfile in $job_list
+    do
+	thisID=$(submit_job "" "${jfile}")
+	bcsd03_ID=`echo $bcsd03_ID`' '$thisID
+    done
+    bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -j $jobname
     
+    unset job_list
     job_list="$jobname*.j"
     bcsd04_ID=
     for jfile in $job_list
@@ -366,7 +375,7 @@ bcsd_fcst(){
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd06
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -j $jobname
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -391,7 +400,7 @@ bcsd_fcst(){
     jobname=bcsd08
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -M $model -j $jobname    
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -M $model -j $jobname    
     done
     
     unset job_list
@@ -408,7 +417,7 @@ bcsd_fcst(){
     #         (forecast_task_09.py: after 8)
     # ---------------------------------------------------------------------------
     jobname=bcsd09
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -j $jobname -t 1 -H 2
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -j $jobname -t 1 -H 4
 
     bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
     
@@ -664,6 +673,12 @@ s2splots(){
 #                           MAIN SCRIPT
 #**********************************************************************
 
+if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
+    # Print status report
+    python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    exit
+fi
+
 #######################################################################
 #                        Set up scratch directory
 #######################################################################
@@ -683,11 +698,10 @@ if [ $DATATYPE  == "forecast" ]; then
 fi
 
 cd ${SCRDIR}/global_usaf_forc
-/bin/ln -s $AF10KM
+/bin/ln -s $AF10KM usaf_lis73rc8_10km
 cd ${SCRDIR}
 /bin/ln -s $METFORC
 cd ${BWD}
-
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
 /bin/rm $JOB_SCHEDULE
 

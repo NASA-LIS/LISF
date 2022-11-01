@@ -39,28 +39,6 @@ def usage():
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] cwd: current working directory")
 
-def gather_ensemble_info(nmme_model):
-    """Gathers ensemble information based on NMME model."""
-
-    # Number of ensembles in the forecast (ens_num)
-    if nmme_model == "CFSv2":
-        ens_num = 24
-    elif nmme_model == "GEOSv2":
-        ens_num = 10
-    elif nmme_model == "CCM4":
-        ens_num = 10
-    elif nmme_model == "GNEMO5":
-        ens_num = 10
-    elif nmme_model == "CCSM4":
-        ens_num = 10
-    elif nmme_model == "GFDL":
-        ens_num = 30
-    else:
-        print(f"[ERR] Invalid argument for nmme_model!  Received {nmme_model}")
-        sys.exit(1)
-
-    return ens_num
-
 def gather_date_info(current_year, month_num, lead_months):
     """Gathers monthly date information based on fcst and lead months."""
 
@@ -92,7 +70,9 @@ def driver():
     # load config file
     with open(config_file, 'r') as file:
         config = yaml.safe_load(file)
+    
     lead_months = config['EXP']['lead_months']
+
     # Path of the main project directory
     projdir = cwd
 
@@ -100,14 +80,15 @@ def driver():
     nmme_data_dir = f"{projdir}/bcsd_fcst/NMME/final/6-Hourly"
 
     # Array of all NMME models
-    nmme_models = ["CFSv2", "GEOSv2", "CCSM4", "CCM4", "GNEMO5", "GFDL"]
+    nmme_models = config['EXP']['NMME_models']
+    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
     src_date, dst_date = gather_date_info(current_year, month_num, lead_months)
 
     for nmme_model in nmme_models:
-        ens_num = gather_ensemble_info(nmme_model)
+        ens_num = ensemble_sizes[nmme_model]
 
         for member in range(1, ens_num+1):
-            outdir = f"{nmme_data_dir}/{nmme_model}/{current_year}/{month_abbr}01/ens{member}"
+            outdir = f"{nmme_data_dir}/{nmme_model}/{month_abbr}01/{current_year}/ens{member}"
 
             cmd = "cp"
             cmd += f" {outdir}/PRECTOT.{src_date}.nc4"
