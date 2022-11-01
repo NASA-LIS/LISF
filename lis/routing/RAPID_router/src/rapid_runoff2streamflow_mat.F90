@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_runoff2streamflow_mat
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_runoff2streamflow_mat
 
 !Purpose:
@@ -14,8 +17,10 @@ subroutine rapid_runoff2streamflow_mat
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                 IS_riv_bas,JS_riv_bas,JS_riv_bas2,JS_up,                       &
                 IM_index_up,IV_riv_index,IV_nbup,                              &
@@ -677,3 +682,16 @@ call VecDestroy(ZV_C3_zeroth,ierr)
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_runoff2streamflow_mat
+
+#else
+
+! Dummy version
+subroutine rapid_runoff2streamflow_mat
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_runoff2streamflow_mat
+
+#endif

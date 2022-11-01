@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_kf_obs_mat
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_kf_obs_mat
 
 !Purpose:
@@ -16,8 +19,10 @@ subroutine rapid_kf_obs_mat
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                 IS_riv_bas,                                                    &
                 IV_obs_loc1,IS_obs_bas,JS_obs_bas,                             &
@@ -157,3 +162,16 @@ call MatDestroy(ZM_L,ierr)
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_kf_obs_mat
+
+#else
+
+! Dummy version
+subroutine rapid_kf_obs_mat
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_kf_obs_mat
+
+#endif

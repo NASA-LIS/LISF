@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Module - rapid_var
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 module rapid_var
 
 !Purpose:
@@ -668,3 +671,11 @@ character(len=200) :: namelist_file
 !End module
 !*******************************************************************************
 end module rapid_var
+
+#else
+
+! Dummy version
+module rapid_var
+end module rapid_var
+
+#endif

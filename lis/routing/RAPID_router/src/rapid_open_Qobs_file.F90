@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_open_Qobs
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_open_Qobs_file(Qobs_file) 
 
 !Purpose:
@@ -33,3 +37,16 @@ if (rank==0) open(33,file=Qobs_file,status='old')
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_open_Qobs_file
+
+#else
+
+! Dummy version
+subroutine rapid_open_Qobs_file
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_open_Qobs_file
+
+#endif

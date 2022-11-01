@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_create_obj
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_create_obj 
 
 !Purpose:
@@ -234,3 +237,10 @@ call VecAssemblyEnd(ZV_2ndIndex,ierr)
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_create_obj
+
+#else
+
+subroutine rapid_create_obj
+end subroutine rapid_create_obj
+
+#endif

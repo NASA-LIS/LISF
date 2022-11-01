@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_routing
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_routing(ZV_C1,ZV_C2,ZV_C3,ZV_Qext,                            &
                          ZV_QoutinitR,                                         &
                          ZV_QoutR,ZV_QoutbarR)
@@ -227,3 +231,16 @@ call VecRestoreArrayF90(ZV_Qext,ZV_Qext_p,ierr)
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_routing
+
+#else
+
+! Dummy version
+subroutine rapid_routing
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_routing
+
+#endif

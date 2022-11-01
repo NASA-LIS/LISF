@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_routing_param
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_routing_param(ZV_k,ZV_x,                                      &
                                ZV_C1,ZV_C2,ZV_C3,ZM_A) 
 
@@ -14,8 +18,10 @@ subroutine rapid_routing_param(ZV_k,ZV_x,                                      &
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                    ZM_Net,ZM_T,ZM_TC1,                                         &
                    ZV_Cdenom,ZS_dtR,                                           &
@@ -79,3 +85,16 @@ end if
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_routing_param
+
+#else
+
+! Dummy version
+subroutine rapid_routing_param
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_routing_param
+
+#endif

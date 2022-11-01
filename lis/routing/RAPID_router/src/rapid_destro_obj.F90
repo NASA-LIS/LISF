@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_destro_obj
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_destro_obj 
 
 !Purpose:
@@ -145,3 +148,16 @@ call PetscFinalize(ierr)
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_destro_obj 
+
+#else
+
+! Dummy version
+subroutine rapid_destro_obj
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_destro_obj
+
+#endif

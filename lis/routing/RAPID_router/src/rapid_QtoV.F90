@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_QtoV
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_QtoV(ZV_k,ZV_x,ZV_QoutbarR,ZV_Qext,ZV_VbarR) 
 
 !Purpose:
@@ -13,8 +17,10 @@ subroutine rapid_QtoV(ZV_k,ZV_x,ZV_QoutbarR,ZV_Qext,ZV_VbarR)
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                    ZM_Net,ierr
 implicit none
@@ -76,3 +82,16 @@ call VecRestoreArrayF90(ZV_VbarR,ZV_VbarR_p,ierr)
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_QtoV
+
+#else
+
+! Dummy version
+subroutine rapid_QtoV
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_QtoV
+
+#endif
