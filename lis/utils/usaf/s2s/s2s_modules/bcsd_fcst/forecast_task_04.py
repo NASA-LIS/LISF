@@ -81,29 +81,32 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = cwd + '/bcsd_fcst/supplementary_files/'
+    supplementary_dir = config['BCSD']['supplementarydir']
 
     # domain
-    lat1 = config['EXP']['domian_extent'][0].get('LAT_SW')
-    lat2 = config['EXP']['domian_extent'][0].get('LAT_NE')
-    lon1 = config['EXP']['domian_extent'][0].get('LON_SW')
-    lon2 = config['EXP']['domian_extent'][0].get('LON_NE')
+    lat1 = config['EXP']['domain_extent'][0].get('LAT_SW')
+    lat2 = config['EXP']['domain_extent'][0].get('LAT_NE')
+    lon1 = config['EXP']['domain_extent'][0].get('LON_SW')
+    lon2 = config['EXP']['domain_extent'][0].get('LON_NE')
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
     clim_syr = config['BCSD']['clim_start_year']
     clim_eyr = config['BCSD']['clim_end_year']
 
     # Path for where observational & forecast files are located:
-    forcedir = f"{projdir}/bcsd_fcst/"
+    forcedir = f"{projdir}/bcsd_fcst"
+    #forcedir = config['BCSD']['fcst_download_dir']
     obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
     fcst_indir = f"{forcedir}/CFSv2_25km"
 
     # Mask file
-    mask_file = f"{supplementary_dir}/Mask_nafpa.nc"
+    mask_file = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
-    obs_var_list = ["Rainf_f_tavg", "LWdown_f_tavg", "SWdown_f_tavg", \
-        "Psurf_f_tavg", "Qair_f_tavg", "Tair_f_tavg", "Wind_f_tavg"]
+    #obs_var_list = ["Rainf_f_tavg", "LWdown_f_tavg", "SWdown_f_tavg", \
+    #    "Psurf_f_tavg", "Qair_f_tavg", "Tair_f_tavg", "Wind_f_tavg"]
+    obs_var_list = ["PRECTOT", "LWGAB", "SWGDN", \
+        "PS", "QV2M", "T2M", "U10M"]
     fcst_var_list = ["PRECTOT", "LWS", "SLRSF", "PS", "Q2M", "T2M", "WIND10M"]
     unit_list = ["kg/m^2/s", "W/m^2", "W/m^2", "Pa", "kg/kg", "K", "m/s"]
 

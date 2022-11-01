@@ -64,6 +64,8 @@ def calc_ic_dates(icmon):
 
 def _driver():
     """Main driver."""
+    
+    # Parse command arguements
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
     parser.add_argument('-e', '--fcst_eyr', required=True, help='forecast end year')
@@ -84,11 +86,11 @@ def _driver():
     ntasks = args.ntasks
     hours = args.hours
 
-    # load config file
+    # Load config file
     with open(config_file, 'r') as file:
         config = yaml.safe_load(file)
 
-        # import local module
+    # Import local module
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.shared import utils
 
@@ -102,15 +104,18 @@ def _driver():
     patchdir = config['BCSD']['patchdir']
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = cwd + '/bcsd_fcst/supplementary_files/'
+    supplementary_dir = config['BCSD']['supplementarydir']
+
+    # Grid description filename
+    grid_description_filename = config['BCSD']['grid_description_file']
 
     # Log file output directory
     logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
-    forcedir = config['BCSD']["fcst_download_dir"]
+    forcedir = config['BCSD']['fcst_download_dir']
     outdir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw"
-    griddesc = f"{supplementary_dir}/CFSv2_25km_AFRICOM_grid_description.txt"
+    griddesc = f"{supplementary_dir}/{grid_description_filename}"
 
     if not os.path.exists(logdir):
         os.makedirs(logdir)
@@ -137,7 +142,7 @@ def _driver():
         jobname = job_name + '_'
         utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
-    print(f"[INFO] Write command to process CFSv2 forecast files for {imon}")
+    print(f"[INFO] Write command to process CFSv2 files for {imon}")
 
 if __name__ == "__main__":
     _driver()

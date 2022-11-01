@@ -48,49 +48,6 @@ def _usage():
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] cwd: current working directory")
 
-def _gather_ensemble_info(nmme_model):
-    """Gathers ensemble information based on NMME model."""
-
-    # Number of ensembles in the forecast (ENS_NUMF)
-    # Number of ensembles in the climatology (ENS_NUMC)
-    # Ensemble start index (ENS_START)
-    # Ensemble end index (ENS_END)
-    if nmme_model == "CFSv2":
-        ens_numf = 24
-        ens_numc = 12
-        ens_start = 1
-        ens_end = 24
-    elif nmme_model == "GEOSv2":
-        ens_numf = 10
-        ens_numc = 4
-        ens_start = 25
-        ens_end = 34
-    elif nmme_model == "CCM4":
-        ens_numf = 10
-        ens_numc = 10
-        ens_start = 35
-        ens_end = 44
-    elif nmme_model == "GNEMO5":
-        ens_numf = 10
-        ens_numc = 10
-        ens_start = 45
-        ens_end = 54
-    elif nmme_model == "CCSM4":
-        ens_numf = 10
-        ens_numc = 10
-        ens_start = 55
-        ens_end = 64
-    elif nmme_model == "GFDL":
-        ens_numf = 30
-        ens_numc = 15
-        ens_start = 65
-        ens_end = 94
-    else:
-        print(f"[ERR] Invalid argument for nmme_model! Received {(nmme_model)}")
-        sys.exit(1)
-
-    return ens_numf, ens_numc, ens_start, ens_end
-
 def _driver():
     """Main driver."""
 
@@ -136,26 +93,28 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = cwd + '/bcsd_fcst/supplementary_files/'
+    supplementary_dir = config['BCSD']['supplementarydir']
 
     # domain
-    lat1 = config['EXP']['domian_extent'][0].get('LAT_SW')
-    lat2 = config['EXP']['domian_extent'][0].get('LAT_NE')
-    lon1 = config['EXP']['domian_extent'][0].get('LON_SW')
-    lon2 = config['EXP']['domian_extent'][0].get('LON_NE')
+    lat1 = config['EXP']['domain_extent'][0].get('LAT_SW')
+    lat2 = config['EXP']['domain_extent'][0].get('LAT_NE')
+    lon1 = config['EXP']['domain_extent'][0].get('LON_SW')
+    lon2 = config['EXP']['domain_extent'][0].get('LON_NE')
     lead_months = config['EXP']['lead_months']
     clim_syr = config['BCSD']['clim_start_year']
     clim_eyr = config['BCSD']['clim_end_year']
+    datatype = config['SETUP']['DATATYPE']
 
     # Path for where observational files are located:
-    forcedir = f"{projdir}/bcsd_fcst/"
+    forcedir = f"{projdir}/bcsd_fcst"
     obs_clim_indir = f"{forcedir}/USAF-LIS7.3rc8_25km/raw/Climatology"
 
     # Mask file
-    mask_file = f"{supplementary_dir}/Mask_nafpa.nc"
+    mask_file = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
-    obs_var = "Rainf_f_tavg"
+    #obs_var = "Rainf_f_tavg"
+    obs_var = "PRECTOT"
     fcst_var = "PRECTOT"
     unit = "kg/m^2/s"
     var_type = "PRCP"
@@ -171,7 +130,8 @@ def _driver():
 
     print(f"[INFO] Processing forecast bias correction of NMME-{nmme_model} precip")
 
-    ens_numf, ens_numc, ens_start, ens_end = _gather_ensemble_info(nmme_model)
+    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
+    ens_num = ensemble_sizes[nmme_model]
 
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
@@ -187,8 +147,7 @@ def _driver():
         cmd += f" {month_num}"
         cmd += f" {nmme_model}"
         cmd += f" {lead_months}"
-        cmd += f" {ens_numc}"
-        cmd += f" {ens_numf}"
+        cmd += f" {ens_num}"
         cmd += f" {year}"
         cmd += f" {year}"
         cmd += f" {clim_syr}"
@@ -198,9 +157,7 @@ def _driver():
         cmd += f" {fcst_indir}"
         cmd += f" {mask_file}"
         cmd += f" {outdir}"
-        cmd += f" {ens_start}"
-        cmd += f" {ens_end}"
-        cmd += f" {logdir}"
+        #cmd += f" {logdir}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
         utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)

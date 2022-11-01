@@ -87,24 +87,24 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = cwd + '/bcsd_fcst/supplementary_files/'
+    supplementary_dir = config['BCSD']['supplementarydir']
 
     # domain
-    lat1 = config['EXP']['domian_extent'][0].get('LAT_SW')
-    lat2 = config['EXP']['domian_extent'][0].get('LAT_NE')
-    lon1 = config['EXP']['domian_extent'][0].get('LON_SW')
-    lon2 = config['EXP']['domian_extent'][0].get('LON_NE')
+    domain = config['EXP']['domain']
+    lat1 = config['EXP']['domain_extent'][0].get('LAT_SW')
+    lat2 = config['EXP']['domain_extent'][0].get('LAT_NE')
+    lon1 = config['EXP']['domain_extent'][0].get('LON_SW')
+    lon2 = config['EXP']['domain_extent'][0].get('LON_NE')
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
     model_name = config['BCSD']['fcst_data_type']
-    domain = config['EXP']['domain']
 
     # Path for where forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km"
 
     # Mask file
-    mask_file_precip = f"{supplementary_dir}/Mask_nafpa.nc"
-    mask_file_nonprecip = f"{supplementary_dir}/Mask_nafpa.nc"
+    mask_file_precip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
+    mask_file_nonprecip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
     obs_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
@@ -127,7 +127,6 @@ def _driver():
         for var_num, var_value in enumerate(obs_var_list):
             if var_num == 1:
                 var_type = "PRCP"
-
                 cmd2 = "python"
                 cmd2 += f" {srcdir2}/forecast_task_07.py"
                 cmd2 += f" -s {year}"
@@ -166,7 +165,6 @@ def _driver():
             cmd += f" {subdaily_raw_fcst_dir}"
             cmd += f" {outdir}"
             cmd += f" {domain}"
-            cmd += f" {logdir}"
             jobfile = job_name + '_' + obs_var + '_run.j'
             jobname = job_name + '_' + obs_var + '_'
 

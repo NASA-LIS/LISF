@@ -67,7 +67,7 @@ def _read_cmd_args():
 def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
     """Set input file information"""
     cutoff_refor_yyyymm = 201103
-    cutoff_oper_yyyymm = 209112
+    cutoff_oper_yyyymm = 209912
     current_yyyymm = (100 * input_fcst_year) + input_fcst_month
 
     # Up to apr1 2011 - Refor_HPS (dlwsfc, dswsfc, q2m, wnd10m), Refor_FL
@@ -104,7 +104,7 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
 
     # Merge all variables into a single file
     cmd = "cdo --no_history merge "
-    cmd += f"{outdir_6hourly}/junk1_*_{temp_name}"
+    cmd += f"{outdir_6hourly}/junk1_*{temp_name}"
     cmd += f" {outdir_6hourly}/junk2_{temp_name}"
     print(cmd)
     subprocess.run(cmd, shell=True, check=True)

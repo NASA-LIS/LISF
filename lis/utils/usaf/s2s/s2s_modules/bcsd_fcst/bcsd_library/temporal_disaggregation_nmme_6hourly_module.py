@@ -119,25 +119,20 @@ if FCST_VAR == 'PRECTOT':
 else:
     MASK_FILE = str(sys.argv[17])
 
-MASK = read_nc_files(MASK_FILE, 'mask')
-print(f"MASK: {MASK.shape}")
+#MASK = read_nc_files(MASK_FILE, 'mask')
+#print(f"MASK: {MASK.shape}")
 
 MONTHLY_BC_FCST_DIR = str(sys.argv[18])
-MONTHLY_RAW_FCST_DIR = str(sys.argv[19])
-SUBDAILY_RAW_FCST_DIR = str(sys.argv[20])
-BASE_OUTDIR = str(sys.argv[21])
+SUBDAILY_RAW_FCST_DIR = str(sys.argv[19])
+BASE_OUTDIR = str(sys.argv[20])
 OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
 
-ENSS=int(sys.argv[22])
-ENSF=int(sys.argv[23])
-DOMAIN=sys.argv[24]
+DOMAIN=str(sys.argv[21])
 
 # All file formats
 MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
-MONTHLY_RAW_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
 SUBDAILY_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
 SUBDAILY_OUTFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
-MONTHLY_NMME_INFILE_TEMPLATE = '{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
 for MON in [INIT_FCST_MON]:
     MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[MON]).lower())
@@ -182,19 +177,6 @@ for MON in [INIT_FCST_MON]:
             OUTFILE = SUBDAILY_OUTFILE_TEMPLATE.format(OUTDIR, OBS_VAR, \
             FCST_YEAR, FCST_MONTH)
             OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-999
-            # Monthly raw data
-            ens1=ens+ENSS
-            if FCST_VAR != 'PRECTOT':
-                MONTHLY_INFILE = MONTHLY_RAW_INFILE_TEMPLATE.format(\
-                MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens1, MONTH_NAME, \
-                FCST_YEAR, FCST_MONTH)
-            else:
-                print("Temporarily using nmme unique TEMPLATE. \
-                Recode in future.")
-                MONTHLY_INFILE = MONTHLY_NMME_INFILE_TEMPLATE.format(\
-                MONTHLY_RAW_FCST_DIR, INIT_FCST_YEAR, ens1, MONTH_NAME, \
-                FCST_YEAR, FCST_MONTH)
-            print(f"Reading raw monthly forecast {MONTHLY_INFILE}")
             # Sub-Daily raw data
             SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
             SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \

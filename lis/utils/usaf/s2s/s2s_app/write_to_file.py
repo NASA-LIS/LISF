@@ -8,7 +8,7 @@ sys.path.append(os.getenv('S2STOOL'))
 from s2s_modules.shared import utils
 
 PARSER = argparse.ArgumentParser()
-PARSER.add_argument('-f', '--JOBFILE', required=True, help='job file name')
+PARSER.add_argument('-f', '--JOBFILE', required=False, help='job file name')
 PARSER.add_argument('-t', '--NTASKS', required=False, help='NTASKS')
 PARSER.add_argument('-c', '--CONFIGFILE', required=False, help='config file name')
 PARSER.add_argument('-H', '--HOURS', required=False, help='time HOURS')
@@ -17,8 +17,17 @@ PARSER.add_argument('-w', '--CWD', required=False, help='current working directo
 PARSER.add_argument('-m', '--MYID', required=False, help='my job id')
 PARSER.add_argument('-a', '--AFTERID', required=False, help='after id')
 PARSER.add_argument('-s', '--SCHEDULE_FILE', required=False, help='schedule file')
+PARSER.add_argument('-r', '--REPORT', required=False, help='print report')
+PARSER.add_argument('-d', '--YYYYMMDIR', required=False, help='yyyymm directory')
 
 ARGS = PARSER.parse_args()
+REPORT = ARGS.REPORT
+if REPORT is not None:
+    CWD = ARGS.CWD
+    YYYYMMDIR = ARGS.YYYYMMDIR
+    utils.print_status_report (CWD, YYYYMMDIR)
+    sys.exit()
+
 NTASKS = ARGS.NTASKS
 JOBFILE = ARGS.JOBFILE
 

@@ -119,14 +119,16 @@ if FCST_VAR == 'PRECTOT':
 else:
     MASK_FILE = str(sys.argv[17])
 
-MASK = read_nc_files(MASK_FILE, 'mask')
-print(f"MASK: {MASK.shape}")
+#MASK = read_nc_files(MASK_FILE, 'mask')
+#print(f"MASK: {MASK.shape}")
 
 MONTHLY_BC_FCST_DIR = str(sys.argv[18])
 MONTHLY_RAW_FCST_DIR = str(sys.argv[19])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[20])
 BASE_OUTDIR = str(sys.argv[21])
 OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
+
+DOMAIN = str(sys.argv[22])
 
 # All file formats
 MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -236,7 +238,14 @@ for MON in [INIT_FCST_MON]:
             mask=OUTPUT_BC_DATA == -999)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
             range(NUM_TIMESTEPS)]
-            write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
-            'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-            OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 39.875, 59.875, -39.875, \
-            -19.875, 0.25, 0.25, 21600)
+
+            if DOMAIN == 'AFRICOM':
+                write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
+                                'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 39.875, 59.875, -39.875, \
+                                -19.875, 0.25, 0.25, 21600)
+            if DOMAIN == 'GLOBAL':
+                write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
+                                'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 89.875, 179.875, -89.875, \
+                                -179.875, 0.25, 0.25, 21600)

@@ -68,23 +68,31 @@ def _driver():
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = cwd + '/bcsd_fcst/supplementary_files/'
+    supplementary_dir = config['BCSD']['supplementarydir']
+    
+    # List of NMME models and ensemble sizes to use
+    nmme_models = config['EXP']['NMME_models']
+    ensemble_sizes = config['EXP']['ensemble_sizes'][0]
 
     # Path for where raw and bias corrected forecast files are located:
     nmme_download_dir = config['BCSD']['nmme_download_dir']
     forcedir = f"{projdir}/bcsd_fcst/NMME"
     nmme_output_dir = f"{forcedir}/raw/Monthly"
 
-    cmd = "python"
-    cmd += f" {srcdir}/nmme_reorg_f.py"
-    cmd += f" {month_num}"
-    cmd += f" {current_year}"
-    cmd += f" {nmme_download_dir}"
-    cmd += f" {nmme_output_dir}"
-    cmd += f" {supplementary_dir}"
-    jobfile = job_name + '_run.j'
-    jobname = job_name + '_'
-    utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+    for nmme_model in  config['EXP']['NMME_models']:
+        ensemble_size = ensemble_sizes[nmme_model]
+        cmd = "python"
+        cmd += f" {srcdir}/nmme_reorg_f.py"
+        cmd += f" {month_num}"
+        cmd += f" {current_year}"
+        cmd += f" {nmme_download_dir}"
+        cmd += f" {nmme_output_dir}"
+        cmd += f" {supplementary_dir}"
+        cmd += f" {nmme_model}"
+        cmd += f" {ensemble_size}"
+        jobfile = job_name + '_' + nmme_model + '_run.j'
+        jobname = job_name + '_' + nmme_model + '_'
+        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
 if __name__ == "__main__":
     _driver()

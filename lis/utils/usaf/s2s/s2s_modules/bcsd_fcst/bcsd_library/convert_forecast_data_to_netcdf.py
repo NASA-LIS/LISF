@@ -103,7 +103,7 @@ def _patch_corrupted_file(settings, args):
 
     # Subset patch file
     cmd = f"cdo -seltimestep,{index_patch_start}/{index_patch_end}" + \
-        f" {args['patch_file']}" + \
+        f" {patch_file}" + \
         f" {args['outdir']}/junk1_{args['file_pfx']}_patch_B.grb2" + \
         " >/dev/null"
     print(cmd)
@@ -155,17 +155,17 @@ def _patch_one_file(args):
         sys.exit(0)
     if comparison_name == "q2m.2011022512.time.grb2":
         settings = \
-            _make_settings_dict(2011022506, 1, 403, 408, 1239)
+            _make_settings_dict(2011022506, 1, 403, 405, 1239)
         _patch_corrupted_file(settings, args)
         sys.exit(0)
     if comparison_name == "q2m.2011022518.time.grb2":
         settings = \
-            _make_settings_dict(2011022506, 1, 829, 834, 1239)
+            _make_settings_dict(2011022506, 1, 829, 832, 1239)
         _patch_corrupted_file(settings, args)
         sys.exit(0)
     if comparison_name == "dlwsfc.2011032706.time.grb2":
         settings = \
-            _make_settings_dict(2011032700, 1, 121, 126, 1244)
+            _make_settings_dict(2011032700, 1, 121, 123, 1244)
         _patch_corrupted_file(settings, args)
         sys.exit(0)
 
@@ -174,7 +174,7 @@ def _patch_all_files(args):
     fcst_timestring = args['fcst_timestring']
     if fcst_timestring == "2016032718":
         settings = \
-            _make_settings_dict(2016032518, 1, 180, 185, 1125)
+            _make_settings_dict(2016032518, 1, 180, 189, 1125)
         _handle_cases_with_corrupted_wind_files(settings, args)
         sys.exit(0)
     if fcst_timestring == "2016042618":
@@ -184,7 +184,7 @@ def _patch_all_files(args):
         sys.exit(0)
     if fcst_timestring == "2016063018":
         settings = \
-            _make_settings_dict(2016070218, 1, 180, 185, 1209)
+            _make_settings_dict(2016070218, 1, 180, 173, 1209)
         _handle_cases_with_corrupted_wind_files(settings, args)
         sys.exit(0)
     if fcst_timestring == "2016073018":
@@ -194,7 +194,7 @@ def _patch_all_files(args):
         sys.exit(0)
     if fcst_timestring == "2016082918":
         settings = \
-            _make_settings_dict(2016090318, 1, 180, 185, 1201)
+            _make_settings_dict(2016090318, 1, 180, 161, 1201)
         _handle_cases_with_corrupted_wind_files(settings, args)
         sys.exit(0)
 
