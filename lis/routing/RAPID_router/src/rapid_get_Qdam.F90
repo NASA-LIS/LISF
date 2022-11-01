@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_get_Qdam
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETsc
+
 subroutine rapid_get_Qdam
 
 !Purpose:
@@ -12,8 +15,10 @@ subroutine rapid_get_Qdam
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                    rank,ierr,vecscat,ZV_pointer,ZV_SeqZero,ZS_one,             &
                    ZM_Net,ZV_Qext,ZV_Qdam,ZV_QoutbarR,ZV_QinbarR,              &
@@ -144,3 +149,16 @@ end if
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_get_Qdam
+
+#else
+
+! Dummy version
+subroutine rapid_get_Qdam
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_get_Qdam
+
+#endif

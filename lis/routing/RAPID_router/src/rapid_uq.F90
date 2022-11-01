@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_uq
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_uq
 
 !Purpose:
@@ -234,3 +238,16 @@ call PetscPrintf(PETSC_COMM_WORLD,'Uncertainty quantification completed'       &
 call PetscPrintf(PETSC_COMM_WORLD,'--------------------------'//char(10),ierr)
 
 end subroutine rapid_uq
+
+#else
+
+! Dummy version
+subroutine rapid_uq
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_uq
+
+#endif

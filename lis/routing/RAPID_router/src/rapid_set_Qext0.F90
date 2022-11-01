@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_set_Qext0
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_set_Qext0
 
 !Purpose:
@@ -80,3 +84,16 @@ end if
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_set_Qext0
+
+#else
+
+! Dummy version
+subroutine rapid_set_Qext0
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_set_Qext0
+
+#endif

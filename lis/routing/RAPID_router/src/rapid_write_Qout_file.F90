@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_write_Qout_file
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_write_Qout_file
 
 !Purpose:
@@ -75,3 +79,16 @@ if (rank==0) call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_write_Qout_file
+
+#else
+
+! Dummy version
+subroutine rapid_write_Qout_file
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_write_Qout_file
+
+#endif

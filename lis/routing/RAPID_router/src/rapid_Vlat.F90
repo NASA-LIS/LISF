@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_Vlat
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_Vlat(nc,nr,runsf,runsb)
 !PURPOSE
 !This coupler allows to convert runoff information from a land surface model
@@ -260,3 +264,16 @@ call VecAssemblyBegin(ZV_Vlat,ierr)
 call VecAssemblyEnd(ZV_Vlat,ierr)
 
 end subroutine rapid_Vlat
+
+#else
+
+! Dummy version
+subroutine rapid_Vlat
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_Vlat
+
+#endif

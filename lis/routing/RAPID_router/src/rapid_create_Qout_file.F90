@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_create_Qout_file
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_create_Qout_file(Qout_file) 
 
 !Purpose:
@@ -249,3 +252,10 @@ end if
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_create_Qout_file
+
+#else
+
+subroutine rapid_create_Qout_file
+end subroutine rapid_create_Qout_file
+
+#endif

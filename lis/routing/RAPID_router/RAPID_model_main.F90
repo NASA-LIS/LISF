@@ -22,6 +22,9 @@
 !*******************************************************************************
 ! Subroutine- RAPID_model_main (rapid_main)
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine RAPID_model_main (n,bQinit,bQfinal,bV,bhum,bfor,   &
                              bdam,binfluence,buq,             &
                              run_opt,routing_opt,phi_opt,     &
@@ -675,3 +678,16 @@ if (LIS_rc%endtime==1) then
 endif
 
 end subroutine RAPID_model_main
+
+#else
+
+! Dummy version
+subroutine RAPID_model_main
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine RAPID_model_main
+
+#endif

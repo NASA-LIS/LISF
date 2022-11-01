@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_mus_mat
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_mus_mat
 
 !Purpose:
@@ -13,8 +16,10 @@ subroutine rapid_mus_mat
 !*******************************************************************************
 !Fortran includes, modules, and implicity
 !*******************************************************************************
+
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                 IS_riv_bas,                                                    &
                 JS_riv_bas,JS_riv_bas2,JS_up,                                  & 
@@ -438,3 +443,16 @@ if (IS_opt_run/=2) then
 end if
 
 end subroutine rapid_mus_mat
+
+#else
+
+! Dummy version
+subroutine rapid_mus_mat
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_mus_mat
+
+#endif

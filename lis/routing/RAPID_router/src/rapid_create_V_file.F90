@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_create_V_file
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_create_V_file(V_file) 
 
 !Purpose:
@@ -249,3 +252,16 @@ end if
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_create_V_file
+
+#else
+
+! Dummy version
+subroutine rapid_create_V_file
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_create_V_file
+
+#endif

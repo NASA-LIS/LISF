@@ -1,6 +1,10 @@
 !*******************************************************************************
 !Subroutine - rapid_read_Qinit_file
 !*******************************************************************************
+
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_read_Qinit_file
 
 !Purpose:
@@ -57,3 +61,16 @@ call VecAssemblyEnd(ZV_QoutinitM,ierr)
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_read_Qinit_file
+
+#else
+
+! Dummy version
+subroutine rapid_read_Qinit_file
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_read_Qinit_file
+
+#endif

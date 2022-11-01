@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_arrays
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_arrays
 
 !Purpose:
@@ -62,6 +65,7 @@ subroutine rapid_arrays
 !*******************************************************************************
 #include <petsc/finclude/petscmat.h>
 use petscmat
+
 use rapid_var, only :                                                          &
                    rapid_connect_file,                                         &
                    IS_riv_tot,JS_riv_tot,JS_up,                                &
@@ -713,3 +717,16 @@ end if
 write(LIS_logunit,*) '[INFO] Arrays created'
 
 end subroutine rapid_arrays
+
+#else
+
+! Dummy version
+subroutine rapid_arrays
+  use LIS_logmod, only: LIS_logunit, LIS_endrun
+  implicit none
+  write(LIS_logunit,*)'[ERR] RAPID called w/o PETSc support!'
+  write(LIS_logunit,*)'[ERR] Recompile with PETSc and try again!'
+  call LIS_endrun()
+end subroutine rapid_arrays
+
+#endif

@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_create_Qfinal_file
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_create_Qfinal_file(Qfinal_file) 
 
 !Purpose:
@@ -207,3 +210,10 @@ end if
 !End subroutine 
 !*******************************************************************************
 end subroutine rapid_create_Qfinal_file
+
+#else
+
+subroutine rapid_create_Qfinal_file
+end subroutine rapid_create_Qfinal_file
+
+#endif

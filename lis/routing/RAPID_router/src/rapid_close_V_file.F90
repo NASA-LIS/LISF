@@ -1,6 +1,9 @@
 !*******************************************************************************
 !Subroutine - rapid_close_V_file 
 !*******************************************************************************
+#include "LIS_misc.h"
+#ifdef PETSc
+
 subroutine rapid_close_V_file
 
 !Purpose:
@@ -33,3 +36,10 @@ if (rank==0) IS_nc_status=NF90_CLOSE(IS_nc_id_fil_V)
 !End subroutine
 !*******************************************************************************
 end subroutine rapid_close_V_file
+
+#else
+
+subroutine rapid_close_V_file
+end subroutine rapid_close_V_file
+
+#endif
