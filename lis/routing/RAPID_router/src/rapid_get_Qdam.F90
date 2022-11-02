@@ -2,7 +2,7 @@
 !Subroutine - rapid_get_Qdam
 !*******************************************************************************
 #include "LIS_misc.h"
-#ifdef PETsc
+#ifdef PETSc
 
 subroutine rapid_get_Qdam
 

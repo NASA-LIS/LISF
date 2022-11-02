@@ -2,7 +2,7 @@
 !Subroutine - rapid_hsh_mat
 !*******************************************************************************
 #include "LIS_misc.h"
-#ifdef PETsc
+#ifdef PETSc
 
 subroutine rapid_hsh_mat
 
