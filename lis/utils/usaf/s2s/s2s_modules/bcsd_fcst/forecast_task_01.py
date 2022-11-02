@@ -103,19 +103,12 @@ def _driver():
     # Path of the directory where patch files for missing data are kept
     patchdir = config['BCSD']['patchdir']
 
-    # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir']
-
-    # Grid description filename
-    grid_description_filename = config['BCSD']['grid_description_file']
-
     # Log file output directory
     logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
     forcedir = config['BCSD']['fcst_download_dir']
     outdir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw"
-    griddesc = f"{supplementary_dir}/{grid_description_filename}"
 
     if not os.path.exists(logdir):
         os.makedirs(logdir)
@@ -131,11 +124,8 @@ def _driver():
         cmd += f" {year:04d}"
         cmd += f" {year:04d}"
         cmd += f" {imon}"
-        cmd += f" {srcdir}"
         cmd += f" {outdir}"
-        cmd += f" {forcedir}"
-        cmd += f" {griddesc}"
-        cmd += f" {patchdir}"
+        cmd += f" {config_file}"
         for ic_date in ic_dates:
             cmd += f" {ic_date}"
         jobfile = job_name + '_run.j'

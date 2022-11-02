@@ -20,21 +20,32 @@
 # Standard modules
 import glob
 import os
-import subprocess
 import sys
+import numpy as np
+import xarray as xr
+import xesmf as xe
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from convert_forecast_data_to_netcdf import read_wgrib
+import yaml
+
+regridder = True
 
 # Internal functions
 def _usage():
     """Print command line usage."""
     txt = \
-        f"[INFO] Usage: {sys.argv[0]} syr eyr fcst_init_monthday srcdir outdir"
+        f"[INFO] Usage: {sys.argv[0]} syr eyr fcst_init_monthday outdir"
     txt += " forcedir grid_description patchdir ic1 ic2 ic3"
     print(txt)
 
 def _read_cmd_args():
     """Read command line arguments."""
 
-    if len(sys.argv) != 12:
+    with open(sys.argv[5], 'r') as file:
+        config = yaml.safe_load(file)
+            
+    if len(sys.argv) != 9:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -42,15 +53,13 @@ def _read_cmd_args():
     args = {
         "syr" : sys.argv[1],
         "eyr" : sys.argv[2],
-        "fcst_init_monthday" : sys.argv[3],
-        "srcdir" : sys.argv[4],
-        "outdir" : sys.argv[5],
-        "forcedir" : sys.argv[6],
-        "grid_description" : sys.argv[7],
-        "patchdir" : sys.argv[8],
-        "ic1" : sys.argv[9],
-        "ic2" : sys.argv[10],
-        "ic3" : sys.argv[11],
+        "fcst_init_monthday" : sys.argv[3],        
+        "outdir" : sys.argv[4],
+        "forcedir" : config['BCSD']["fcst_download_dir"],
+        "patchdir" : config['BCSD']['patchdir'],
+        "ic1" : sys.argv[6],
+        "ic2" : sys.argv[7],
+        "ic3" : sys.argv[8],
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -61,7 +70,7 @@ def _read_cmd_args():
     args['all_monthdays'] = [ic1, ic1, ic1, ic1, \
                              ic2, ic2, ic2, ic2, \
                              ic3, ic3, ic3, ic3]
-
+    args['config'] = config
     return args
 
 def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
@@ -91,10 +100,9 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
         file_sfx = "daily.grb2"
     return subdir, file_pfx, file_sfx
 
-def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
+def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
                               fcst_init, args):
-    """Migrate variables into monthly netCDF files"""
-
+    global regridder
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.cfsv2."
@@ -102,77 +110,63 @@ def _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
          f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
     reftime += f",{fcst_init['hour']}:00:00,1hour"
 
-    # Merge all variables into a single file
-    cmd = "cdo --no_history merge "
-    cmd += f"{outdir_6hourly}/junk1_*{temp_name}"
-    cmd += f" {outdir_6hourly}/junk2_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    if regridder == True:
+        # resample to the S2S grid
+        cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
+        
+        # build regridder
+        xll = args['config']["EXP"]["domian_extent"][0].get("LON_SW")
+        xur = args['config']["EXP"]["domian_extent"][0].get("LON_NE")
+        yll = args['config']["EXP"]["domian_extent"][0].get("LAT_SW")
+        yur = args['config']["EXP"]["domian_extent"][0].get("LAT_NE") 
+        dx = args['config']["EXP"]["domain_dx"]
+        dy = args['config']["EXP"]["domain_dy"]
+        
+        ds_out = xr.Dataset(
+            {
+                "lat": (["lat"], np.arange(yll + dy/2., yur, dy)),
+                "lon": (["lon"], np.arange(xll + dy/2., xur, dx)),
+        }
+        )
+        regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
 
-    # Subset data to only include the 9 forecast months
-    cmd = "cdo --no_history selmon"
-    for month in wanted_months:
-        cmd += f",{month}"
-    cmd += f" {outdir_6hourly}/junk2_{temp_name}" + \
-        f" {outdir_6hourly}/junk3_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    # apply to the entire data set
+    ds_out = regridder(cfsv2)
 
-    # Convert all variable names and set missing value to -9999.f
-    cmd = "cdo --no_history -setmissval,-9999. " + \
-        "-chname,DSWRF_surface,SLRSF,DLWRF_surface,LWS," + \
-        "PRATE_surface,PRECTOT,PRES_surface,PS," + \
-        "SPFH_2maboveground,Q2M,TMP_2maboveground,T2M," + \
-        "UGRD_10maboveground,U10M,VGRD_10maboveground,V10M" + \
-        f" {outdir_6hourly}/junk3_{temp_name}" + \
-        f" {outdir_6hourly}/junk4_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    Mmm = fcst_init['monthday'].split("0")[0].capitalize()
+    dt1 = datetime.strptime('{} 1 {}'.format(Mmm,fcst_init["year"]), '%b %d %Y')
+    for month in range(1,10):
+        file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        dt2 = dt1 + relativedelta(months=1)
+        dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
+        dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-    # Add in windspeed variable
-    cmd = "cdo --no_history "
-    cmd += "aexpr,'WIND10M=sqrt(U10M*U10M + V10M*V10M)' "
-    cmd += f"{outdir_6hourly}/junk4_{temp_name} "
-    cmd += f"{outdir_6hourly}/junk5_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
-
-    cmd = "cdo --no_history "
-    cmd += "setattribute,WIND10M@long_name='Wind Speed',"
-    cmd += "WIND10M@units='m/s',WIND10M@short_name='wnd10m',"
-    cmd += "WIND10M@level='10 m above ground' "
-    cmd += f"{outdir_6hourly}/junk5_{temp_name} "
-    cmd += f"{outdir_6hourly}/junk6_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
-
-    cmd = "cdo --no_history "
-    cmd += f"-remapbil,{args['grid_description']} "
-    cmd += f"-setreftime,{reftime} "
-    cmd += f"{outdir_6hourly}/junk6_{temp_name} "
-    cmd += f"{outdir_6hourly}/junk7_{temp_name}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
-
-    # Output 6-hourly data into monthly files
-    cmd = "cdo --no_history -f nc4c -z zip_1 -splityearmon "
-    cmd += f"{outdir_6hourly}/junk7_{temp_name} "
-    cmd += f"{outdir_6hourly}/{final_name_pfx}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
-
-    # Output monthly data into monthly files
-    cmd = \
-        "cdo --no_history -L -f nc4c -z zip_1 -splityearmon -monmean "
-    cmd += f"{outdir_6hourly}/junk7_{temp_name} "
-    cmd += f"{outdir_monthly}/{final_name_pfx}"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
-
-    # Cleanup intermediate files
-    files = glob.glob(f"{outdir_6hourly}/junk*{temp_name}")
-    for tmpfile in files:
-        os.unlink(tmpfile)
+        this_6h = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
+                                (ds_out['valid_time']  < dt2s), drop=True)
+        this_6h.to_netcdf(file_6h,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999. },
+                                                           "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "LWS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "SLRSF": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},                                                   
+                                                           "SLRSF": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "Q2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "U10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "V10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "WIND10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}})
+        this_mon = this_6h.mean (dim='step')
+        this_mon.to_netcdf(file_mon,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "LWS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "SLRSF": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},                                                     
+                                                           "SLRSF": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "Q2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "U10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "V10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
+                                                           "WIND10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}})
+        dt1 = dt2
+    return
 
 def _print_reftime(fcst_init, ens_num):
     """Print reftime to standard out"""
@@ -190,6 +184,7 @@ def _driver():
     fcst_init = {}
     fcst_init["monthday"] = args['fcst_init_monthday']
     outdirs = {}
+
     for year in range(int(args['syr']), (int(args['eyr']) + 1)):
         print(f"[INFO] {fcst_init['monthday']} {year}")
 
@@ -197,6 +192,12 @@ def _driver():
             fcst_init["year"] = year - 1
         else:
             fcst_init["year"] = year
+
+        Mmm = fcst_init['monthday'].split("0")[0].capitalize()
+        dt1 = datetime.strptime('{} 1 {}'.format(Mmm,fcst_init["year"]), '%b %d %Y')
+        dt2 = dt1 + relativedelta(months=9)
+        dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
+        dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
         for ens_num in range(1, (len(args['all_ensmembers']) + 1)):
             monthday = args['all_monthdays'][ens_num - 1]
@@ -226,6 +227,7 @@ def _driver():
             if not os.path.exists(outdirs['outdir_monthly']):
                 os.makedirs(outdirs['outdir_monthly'])
 
+            cfsv2 = []
             for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                             "q2m", "wnd10m"]:
                 print(f"[INFO] {varname}")
@@ -237,15 +239,19 @@ def _driver():
                 indir += f"{fcst_init['year']}/{fcst_init['date']}"
 
                 # Convert GRIB file to netCDF and handle missing/corrupted data
-                cmd = f"python {args['srcdir']}/convert_forecast_data_to_netcdf.py"
-                cmd += f" {indir} {file_pfx} {fcst_init['timestring']}"
-                cmd += f" {file_sfx} {outdirs['outdir_6hourly']}"
-                cmd += f" {temp_name} {varname} {args['patchdir']}"
-                print(cmd)
-                subprocess.run(cmd, shell=True, check=True)
+                cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
-            _migrate_to_monthly_files(outdirs, temp_name, wanted_months,
+            cfsv2 = xr.merge (cfsv2, compat='override')
+            # rename variables
+            cfsv2 = cfsv2.rename({'prate':'PRECTOT','sp':'PS','t2m':'T2M',
+                                  'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
+                                  'u10':'U10M','v10':'V10M'})
+            # set variable attributes
+            _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
+                                                 (cfsv2['valid_time']  < dt2)),
+                                      outdirs, temp_name, wanted_months,
                                       fcst_init, args)
+
 
     print("[INFO] Done processing CFSv2 forecast files")
 
