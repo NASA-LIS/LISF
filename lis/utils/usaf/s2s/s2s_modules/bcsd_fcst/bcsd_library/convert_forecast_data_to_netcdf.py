@@ -19,6 +19,9 @@
 """
 
 # Standard modules
+import numpy as np
+import cfgrib
+import xarray as xr
 import subprocess
 import sys
 
@@ -29,34 +32,6 @@ def _usage():
         f"[INFO] Usage: {sys.argv[0]} indir file_pfx, fcst_timestring file_sfx"
     txt += " outdir temp_name varname patchdir"
     print(txt)
-
-def _read_cmd_args():
-    """Read command line arguments."""
-
-    # Check if argument count is correct.
-    if len(sys.argv) != 9:
-        print("[ERR] Invalid number of command line arguments!")
-        _usage()
-        sys.exit(2)
-
-    args = {
-        "indir" : sys.argv[1],
-        "file_pfx" : sys.argv[2],
-        "fcst_timestring" : sys.argv[3],
-        "file_sfx" : sys.argv[4],
-        "outdir" : sys.argv[5],
-        "temp_name" : sys.argv[6],
-        "varname" : sys.argv[7],
-        "patchdir" : sys.argv[8],
-    }
-    args['comparison_name'] = \
-        f"{args['file_pfx']}." + \
-        f"{args['fcst_timestring']}." + \
-        f"{args['file_sfx']}"
-    args['subdaily_file'] = \
-        f"{args['indir']}/" + \
-        f"{args['comparison_name']}"
-    return args
 
 def _make_settings_dict(patched_timestring,
                         index_subdaily_start,
@@ -72,6 +47,9 @@ def _make_settings_dict(patched_timestring,
     }
     return settings
 
+def _wgrib2_to_netcdf(grib2_file):
+    ds = cfgrib.open_dataset(grib2_file, indexpath ="")
+    return ds
 def _patch_corrupted_file(settings, args):
     """Patch corrupted GRIB2 file."""
 
@@ -103,7 +81,7 @@ def _patch_corrupted_file(settings, args):
 
     # Subset patch file
     cmd = f"cdo -seltimestep,{index_patch_start}/{index_patch_end}" + \
-        f" {patch_file}" + \
+        f" {args['patch_file']}" + \
         f" {args['outdir']}/junk1_{args['file_pfx']}_patch_B.grb2" + \
         " >/dev/null"
     print(cmd)
@@ -132,10 +110,10 @@ def _replace_missing_file(patched_timestring, args):
     cmd = f"wgrib2 -v0 {patch_file} -netcdf" + \
         f" {args['outdir']}/junk1_{args['file_pfx']}_{args['temp_name']}" + \
         " >/dev/null"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    ds = _wgrib2_to_netcdf (patch_file)
     print(f"[INFO] File not available: {args['subdaily_file']}")
     print(f"[INFO] Using alternate data: {patch_file}")
+    return ds
 
 def _handle_cases_with_corrupted_wind_files(settings, args):
     """Handle cases with corrupted wind GRIB2 files"""
@@ -152,7 +130,7 @@ def _patch_one_file(args):
         settings = \
             _make_settings_dict(2018122600, 1, 1015, 1020, 1116)
         _patch_corrupted_file(settings, args)
-        sys.exit(0)
+        sys.exit(0)        
     if comparison_name == "q2m.2011022512.time.grb2":
         settings = \
             _make_settings_dict(2011022506, 1, 403, 405, 1239)
@@ -201,39 +179,69 @@ def _patch_all_files(args):
 def _patch_missing_files(args):
     """Check and patch files that are completely missing."""
     fcst_timestring = args['fcst_timestring']
+    ds = None
     if fcst_timestring == "2011082406":
-        _replace_missing_file(2011082306, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2011082306, args)
     if fcst_timestring == "2018062518":
-        _replace_missing_file(2018062418, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2018062418, args)
     if fcst_timestring == "2018063018":
-        _replace_missing_file(2018062818, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2018062818, args)
     if fcst_timestring == "2018073018":
-        _replace_missing_file(2018072618, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2018072618, args)
     if fcst_timestring == "2018082918":
-        _replace_missing_file(2018082818, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2018082818, args)
     if fcst_timestring == "2022012100":
-        _replace_missing_file(2022012000, args)
-        sys.exit(0)
+        ds = _replace_missing_file(2022012000, args)
+    return ds
 
-def _driver():
+def magnitude(a, b):
+    func = lambda x, y: np.sqrt(x**2 + y**2)
+    return xr.apply_ufunc(func, a, b)
+
+def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
     """Main driver."""
-    args = _read_cmd_args()
-    _patch_one_file(args) # Will return if not applicable
-    _patch_all_files(args) # Will return if not applicable
-    _patch_missing_files(args) # Will return if not applicable
+    args = {
+        "indir" : argv1,
+        "file_pfx" : argv2,
+        "fcst_timestring" : argv3,
+        "file_sfx" : argv4,
+        "outdir" : argv5,
+        "temp_name" : argv6,
+        "varname" : argv7,
+        "patchdir" : argv8,
+    }
+    args['comparison_name'] = \
+        f"{args['file_pfx']}." + \
+        f"{args['fcst_timestring']}." + \
+        f"{args['file_sfx']}"
+    args['subdaily_file'] = \
+        f"{args['indir']}/" + \
+        f"{args['comparison_name']}"
+    
+    ds = None
+    #_patch_one_file(args) # Will return if not applicable
+    #_patch_all_files(args) # Will return if not applicable
+    ds = _patch_missing_files(args) # Will return if not applicable
 
-    # If we reach this point, we assume the file is fine.
-    print("[INFO] File is normal.")
-    cmd = f"wgrib2 -v0 {args['subdaily_file']} -netcdf"
-    cmd += f" {args['outdir']}/junk1_{args['file_pfx']}_{args['temp_name']}"
-    cmd += " >/dev/null"
-    print(cmd)
-    subprocess.run(cmd, shell=True, check=True)
+    if ds is None:
+        # If we reach this point, we assume the file is fine.
+        print("[INFO] File is normal.")
+        ds = _wgrib2_to_netcdf(args['subdaily_file'])
+        #cmd = f"wgrib2 -v0 {args['subdaily_file']} -netcdf"
+        #cmd += f" {args['outdir']}/junk1_{args['file_pfx']}_{args['temp_name']}"
+        #cmd += " >/dev/null"
+        #print(cmd)
+        #subprocess.run(cmd, shell=True, check=True)
+    if args["varname"] == "wnd10m":
+        U10 = magnitude(ds.u10, ds.v10)
+        ds['WIND10M'] = U10
+        ds['WIND10M'].attrs['units'] = 'm/s'
+        ds['WIND10M'].attrs['short_name']='wnd10m'
+        ds['WIND10M'].attrs['long_name']='Wind Speed'
+        ds['WIND10M'].attrs['level']='10 m above ground'
+        
+    return ds
 
-if __name__ == "__main__":
-    _driver()
+#if __name__ == "__main__":
+#    ds = _driver()
+#    return rs
