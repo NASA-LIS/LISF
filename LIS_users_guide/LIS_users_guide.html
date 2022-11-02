@@ -5908,6 +5908,10 @@ Acceptable values for the sources are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;COAMPSout&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">COAMPS output forcing</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GALWEM forecast&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GALWEM 17km or 0.25deg deterministic forecast reader</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -15171,6 +15175,31 @@ GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="sssec_galwemforecast">9.10.39. GALWEM Forecast</h4>
+<div class="paragraph">
+<p><code>GALWEM forecast forcing directory:</code> specifies the location
+of the GALWEM forecast forcing files.</p>
+</div>
+<div class="paragraph">
+<p><code>GALWEM forecast resolution:</code> specifies the resolution of
+the GALWEM forecast data. The current resolutions supported are:
+17(=17km) or 25(=0.25deg)</p>
+</div>
+<div class="paragraph">
+<p><code>GALWEM forecast run mode:</code> specifies the run mode related
+to the GALWEM dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>GALWEM forecast forcing directory: ./GALWEM_17km
+GALWEM forecast grid resolution:   17          # 17(=17km) or 25(=0.25 deg)
+GALWEM forecast run mode:          forecast    # forecast | analysis</pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="ssec_lsm">9.11. Land surface models</h3>
@@ -22226,7 +22255,7 @@ Code contributors included:
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-10-27 17:30:33 UTC
+Last updated 2022-11-02 21:45:08 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
