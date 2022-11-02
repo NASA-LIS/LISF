@@ -366,6 +366,7 @@ endif::devonly[]
 |"`PLUMBER2`"                  | PLUMBER2 forcing
 |"`GDDP`"                      | NEX GDDP forcing
 |"`COAMPSout`"                 | COAMPS output forcing
+|"`GALWEM forecast`"           | GALWEM 17km or 0.25deg deterministic forecast reader
 |====
 
 .Example _lis.config_ entry
@@ -6440,6 +6441,27 @@ GDDP forcing directory:                      ./input/MET_FORCING/NEX-GDDP-CMIP6/
 GDDP forcing scenario:                       historical
 GDDP reference daily climatology directory:  ./input/MET_FORCING/M2CLIMO/DAILY/
 GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
+....
+
+[[sssec_galwemforecast,GALWEM forecast]]
+==== GALWEM Forecast
+
+`GALWEM forecast forcing directory:` specifies the location
+of the GALWEM forecast forcing files.
+
+`GALWEM forecast resolution:` specifies the resolution of 
+the GALWEM forecast data. The current resolutions supported are:
+17(=17km) or 25(=0.25deg)
+
+`GALWEM forecast run mode:` specifies the run mode related
+to the GALWEM dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+.Example _lis.config_ entry
+....
+GALWEM forecast forcing directory: ./GALWEM_17km
+GALWEM forecast grid resolution:   17          # 17(=17km) or 25(=0.25 deg)
+GALWEM forecast run mode:          forecast    # forecast | analysis
 ....
 
 [[ssec_lsm,Land surface models]]
