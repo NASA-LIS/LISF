@@ -367,6 +367,7 @@ endif::devonly[]
 |"`GDDP`"                      | NEX GDDP forcing
 |"`COAMPSout`"                 | COAMPS output forcing
 |"`GALWEM forecast`"           | GALWEM 17km or 0.25deg deterministic forecast reader
+|"`GALWEM-GE forecast`"        | GALWEM-GE forecast reader
 |====
 
 .Example _lis.config_ entry
@@ -6462,6 +6463,28 @@ run mode. Currently, only the forecast mode is supported.
 GALWEM forecast forcing directory: ./GALWEM_17km
 GALWEM forecast grid resolution:   17          # 17(=17km) or 25(=0.25 deg)
 GALWEM forecast run mode:          forecast    # forecast | analysis
+....
+
+[[sssec_galwemgeforecast,GALWEM-GE forecast]]
+==== GALWEM-GE Forecast
+
+`GALWEM-GE forecast forcing directory:` specifies the location
+of the GALWEM-GE forecast forcing files.
+
+`GALWEM-GE forecast run mode:` specifies the run mode related
+to the GALWEM-GE dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`GALWEM-GE forecast number of ensemble members:` specifies the number of ensembles
+of the GALWEM-GE forecast forcing data.
+
+.Example _lis.config_ entry
+....
+GALWEM-GE forecast forcing directory:          ./GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
+GALWEM-GE forecast number of ensemble members: 21
+
+
 ....
 
 [[ssec_lsm,Land surface models]]
