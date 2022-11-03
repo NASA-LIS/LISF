@@ -173,7 +173,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
    character*50, public,  parameter :: LIS_gddpId            = "GDDP"
-   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast
+   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
    character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
 
 !-------------------------------------------------------------------------
