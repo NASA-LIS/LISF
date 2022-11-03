@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -173,7 +173,9 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
    character*50, public,  parameter :: LIS_gddpId            = "GDDP"
+   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast
    character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
+
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -270,6 +272,8 @@ module LIS_pluginIndices
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
+   character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
+        "SMAP_E_OPL soil moisture"                                   !YK
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -278,6 +282,10 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
+        "VIIRS GVF"                                                  !YK
+   character*50, public,  parameter :: LIS_CDFSgvfobsId          = &
+        "CDFS GVF"                                                   !YK
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
@@ -290,6 +298,8 @@ module LIS_pluginIndices
            "THySM"
    character*50, public,  parameter :: LIS_hydrowebwlId        = &
         "Hydroweb water level"
+   character*50, public,  parameter :: LIS_wusUCLAobsId        = &
+        "Western U.S. UCLA snow"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms

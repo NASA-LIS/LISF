@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -505,7 +505,7 @@ contains
     
     implicit none
 ! !ARGUMENTS: 
-    character(300), intent(in) :: tile_coord_file, catchment_def_file
+    character(len=*), intent(in) :: tile_coord_file, catchment_def_file
     
     type(grid_def_type), intent(out) :: atm_grid
     
@@ -571,7 +571,7 @@ contains
     
     implicit none
 ! !ARGUMENTS: 
-    character(300), intent(in) :: catchment_def_file
+    character(len=*), intent(in) :: catchment_def_file
 
     integer, intent(in) :: N_tile
     

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@
     use LIS_logMod,     only : LIS_logunit, LIS_verify, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
     use LIS_fileIOMod,      only : LIS_readData
+    use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
     use LPRM_AMSREsm_obsMod, only : LPRM_AMSREsm_obs_struc
     use map_utils
 
@@ -69,8 +70,8 @@
   real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname_A, fname_D
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname_A, fname_D
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p
   real,          pointer :: obsl(:)

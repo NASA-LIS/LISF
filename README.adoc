@@ -32,6 +32,8 @@ Please visit our website for more information: {url-lis-website}
 
 == Documentation
 
+Online documentation is available link:https://nasa-lis.github.io/LISF/[here].
+
 Navigate into the link:https://github.com/NASA-LIS/LISF/tree/master/docs[`docs/`] subdirectory of this repository to view our documentation. See the `docs/README` file for instructions.
 
 == Support

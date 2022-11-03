@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -216,6 +216,13 @@ contains
        LVT_rc%scname(2) = 'MAM'
        LVT_rc%scname(3) = 'JJA'
        LVT_rc%scname(4) = 'SON'      
+    elseif(LVT_rc%scInterval.eq.21) then
+       LVT_rc%nasc = 4 ! =12/3
+       allocate(LVT_rc%scname(LVT_rc%nasc))
+       LVT_rc%scname(1) = 'JFM'
+       LVT_rc%scname(2) = 'AMJ'
+       LVT_rc%scname(3) = 'JAS'
+       LVT_rc%scname(4) = 'OND'
     elseif(LVT_rc%scInterval.eq.6) then 
        LVT_rc%nasc = 2 ! =12/6
        allocate(LVT_rc%scname(LVT_rc%nasc))

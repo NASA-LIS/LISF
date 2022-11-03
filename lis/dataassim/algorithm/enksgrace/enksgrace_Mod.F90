@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -36,6 +36,7 @@ module enksgrace_Mod
   use LIS_historyMod
   use enks_general
   use enks_matrix_functions
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -517,9 +518,9 @@ contains
 !BZ    type(ESMF_Logical)            :: fresh_incr
 ! BZ add following
     type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
-    character*100       :: GRACEobsdir
+    character(len=LIS_CONST_PATH_LEN) :: GRACEobsdir
     logical             :: file_exists
-    character*80        :: name
+    character(len=LIS_CONST_PATH_LEN) :: name
     character (len=4) :: fyr
     character (len=2) :: fmo    
 
@@ -683,7 +684,7 @@ end subroutine enksgrace_update
 !
 !EOP
     integer                :: ftn
-    character*100          :: innovfile, gainfile, incrfile
+    character(len=LIS_CONST_PATH_LEN) :: innovfile, gainfile, incrfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3), ares_Id, ninnov_Id, innov_id
     character*100          :: varname, vardimname, standard_name
@@ -818,7 +819,7 @@ end subroutine enksgrace_update
 
     integer                :: ftn 
     integer                :: v
-    character*100          :: spreadfile
+    character(len=LIS_CONST_PATH_LEN) :: spreadfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3)
     integer                :: ensspread_id(LIS_rc%nstvars(k))

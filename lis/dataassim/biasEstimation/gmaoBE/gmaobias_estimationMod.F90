@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -441,6 +441,7 @@ contains
     use LIS_logMod,     only    : LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber
     use LIS_fileIOMod,  only    : LIS_create_output_directory
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 ! 
 ! !ARGUMENTS: 
 !     
@@ -456,7 +457,7 @@ contains
     integer       :: v, t, m
     real          :: tempvar(LIS_rc%ntiles(n)/LIS_rc%nensem(n))
     real          :: curr_time
-    character*100 :: rstname 
+    character(len=LIS_CONST_PATH_LEN) :: rstname
 
     curr_time = float(LIS_rc%hr)*3600+60*float(LIS_rc%mn)+float(LIS_rc%ss)
 

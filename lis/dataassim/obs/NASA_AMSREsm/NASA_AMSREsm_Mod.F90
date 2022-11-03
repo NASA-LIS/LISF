@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@
 module NASA_AMSREsm_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -105,7 +106,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  amsresmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  amsresmobsdir
     character*100          ::  temp
     real,  allocatable         ::  obsstd(:)
     character*1            ::  vid(2)
@@ -115,8 +116,8 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real, allocatable          :: xrange(:), cdf(:)
-    character*100          :: modelcdffile(LIS_rc%nnest)
-    character*100          :: obscdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
     integer                :: t, dummy
 
@@ -350,7 +351,7 @@ contains
 !--------------------------------------------------------------------------------
 
           ftn = LIS_getNextUnitNumber()
-          write(LIS_logunit,*) 'Reading model CDF file ', modelcdffile(n)
+          write(LIS_logunit,*) 'Reading model CDF file ', trim(modelcdffile(n))
           open(ftn,file=modelcdffile(n),form='unformatted')
           do i=1,NASA_AMSREsm_struc(n)%nbins
              call LIS_readvar_gridded(ftn,n,xrange,dummy)
@@ -363,7 +364,7 @@ contains
           call LIS_releaseUnitNumber(ftn)
           
           ftn = LIS_getNextUnitNumber()
-          write(LIS_logunit,*) 'Reading obs CDF file ', obscdffile(n)
+          write(LIS_logunit,*) 'Reading obs CDF file ', trim(obscdffile(n))
           open(ftn,file=obscdffile(n),form='unformatted')
           
           do i=1,NASA_AMSREsm_struc(n)%nbins

@@ -1,7 +1,7 @@
 #
 # README for Air Force Bratseth scheme tuning software
 # Eric Kemp, SSAI and NASA GSFC
-# Last modified 7 Jan 2020
+# Last modified 9 Jun 2022
 #
 #------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ LIS versions, these covariances settings were "canned" based on
 semivariographic analyses of limited time periods (usually around one month).
 However, dynamic updates to the covariances are warranted.
 
-A collection of Python 3 scripts, a Bash script, and Fortran programs have
+A collection of Python 3 scripts, two Bash scripts, and Fortran programs have
 been developed to automatically perform semivariogram analyses, generated new
 best-fit covariance parameters, and then update the relevant lis.config
 settings.  The software is included in subdirectories and are described below.
@@ -65,34 +65,39 @@ And sample contents are:
 A Bash batch script "run_autotune_discover.sh" has been developed to automate
 underlying steps in the covariance fitting.  This script was designed to run
 on the NASA Discover supercomputer using the SLURM batch queueing system.
-It is intended to serve as an example for writing similar scripts on other
+A companion batch script "run_autotune_hpc11.sh" is customized for the USAF
+HPC11 system.  These serve as examples for writing similar scripts on other
 systems, with porting changes (queuing system, queue names, local enviroment
 modules) being limited to the batch script itself.
 
 The batch script is run by:
 
-    sbatch run_autotune_discover.sh $YYYYMMDDHH $DD
+    sbatch run_autotune_discover.sh $YYYYMMDDHH $DD # Or
+    sbatch run_autotune_hpc11.sh    $YYYYMMDDHH $DD
 
 where $YYYYMMDDHH is the end date/time of the OBA training period, and
 $DD is the length (in days) of the OBA training period.
 
 The script performs several major steps:
 
-(1) Customize config files for procOBA_NWP, a Fortran program that creates
-empirical semivariograms for gauge and surface observations against NWP
-background.  This step includes construction of a station blacklist file
+(1) Customize config files for procOBA_NWP and procOBA_Sat, Fortran programs
+that create empirical semivariograms for gauge and surface observations
+against a NWP background, and semivariograms for gauges against satellite
+data.  This step includes construction of a station blacklist file
 to screen out locations with: large mean differences between observation
 and background values; small sample sizes; and multiple networks for the
 same station.  Customization also includes setting the start and end times
 of the tuning period and the frequency for reading OBA files.
 This step is performed by customize_procoba_nwp.py, and the script is run in
 parallel for precipitation, relative humidity, wind speed, and temperature.
+The customize_procoba_sat.py customizes for procOBA_Sat, and does not
+generate a blacklist.
 
 (2) In parallel, run procOBA_NWP for precipitation, relative humidity,
-wind speed, and temperature.  This Fortran program will read the customized
-config files set in (1) above, read the OBA files for the requested time
-period, and construct empirical semivariograms. The empirical semivariograms
-are output in text files.
+wind speed, and temperature; and run procOBA_Sat for IMERG precipitation.
+The Fortran programs will read the customized config files set in (1) above,
+read the OBA files for the requested time period, and construct empirical
+semivariograms. The empirical semivariograms are output in text files.
 
 (3) In parallel, run fit_semivariogram.py to calculate best-fits to the
 empirical semivarograms calculated in (2) above.  This is run for
@@ -100,37 +105,20 @@ precipitation, relative humidity, wind speed, and temperature. Best-fit
 parameters (observation error variance, background error variance, and
 background error correlation length) are output in text files.
 
-(4) Customize config files for procOBA_Sat, a Fortran program for creating
-empirical semivariograms from gauges and nearby satellite retrievals.
-Customization includes setting the start and end times of the tuning period
-and the frequency for reading OBA files.  This step is performed by
-customize_procoba_sat.py, and the script is run in parallel for IMERG,
-CMORPH, GEOPRECIP, and SSMIS data.
-
-(5) In parallel, run procOBA_Sat for IMERG, CMORPH, GEOPRECIP, and SSMIS data.
-This will read in the customized config files set in (4) above, read the
-OBA files for the requested time period, match gauges with nearest
-satellite estimates within a specified radius, and construct empirical
-semivariograms.  The empirical semivariograms are output in text files.
-
-(6) In parallel, run fit_semivariogram.py to calculate best-fits to the
-empirical semivariograms calculated in (5) above.  This is run for IMERG,
-CMORPH, GEOPRECIP, and SSMIS data.  Best-fit parameters (gage observation
-error variance, satellite observation error variance, and satellite
-observation error correlation length) are output to text files.
-
-(7) In parallel, run rescale_sat_sigma2.py to rescale the satellite error
-variances to be w/r/t NWP background. This is accomplished by multiplying
-the satellite error variance from (6) with the gage error variance from (3)
-and then dividing by the gage error variance in (6).  This is performed
-for IMERG, CMORPH, GEOPRECIP, and SSMIS data. The rescaled satellite error
+(4) Run rescale_sat_sigma2.py to rescale the satellite error variances to be
+w/r/t NWP background. This is accomplished by multiplying the gage-satellite
+error variance from (3) with the gage-NWP error variance from (3) and then
+dividing by the gage error variance from (3).  The rescaled satellite error
 variances are output to text files.
 
-(8) Reads a lis.config file, and generates a replacement with new Bratseth
+(5) Reads a lis.config file, and generates a replacement with new Bratseth
 error covariance settings. This is performed by customize_lis_config.py.
+By default, the AGRMET GALWEM settings are updated, but AGRMET GFS can
+be specified instead in the autotune.cfg file (see below).
 
 Note that error checking is performed at each stage.  If an error occurs,
-the script is aborted, and no new lis.config file is generated.
+the script is aborted (return code of 1), and no new lis.config file is
+generated.
 
 3. Config file templates
 
@@ -145,8 +133,12 @@ to compiled Fortran binaries; and the path to lis.config file to be updated.
 Also, a list of variable keys is included for use by customize_lis_config.py.
 This is used to identify which variables or data sources (gage vs satellite
 data) are to be updated.  Possible values are rh2m, spd10m, t2m, gage,
-cmorph, geoprecip, imerg, and ssmi.  NOTE:  NO SPACES SHOULD BE USED FOR
-THE VALUES LISTED IN THE varlist: ENTRY.
+and imerg.  NOTE:  NO SPACES SHOULD BE USED FOR THE VALUES LISTED IN THE
+varlist: ENTRY.
+
+NOTE:  The 'gfs' entry will force the system to update the AGRMET GFS
+covariance settings for LIS instead of AGRMET GALWEM.  This is only expected
+to be used for future LIS reanalyses by NASA.
 
 (*) blacklist_gage.cfg: A Python config file used by customize_procoba_nwp.py.
 This specifies the maximum number of networks a gage platform (ID) is allowed
@@ -158,7 +150,7 @@ Also specified is the directory containing the OBA files for precipitation;
 the "data_frequency" of the OBA files (i.e., either 6 or 12, indicating
 whether 6 hours or 12 hours of precipitation analyses were generated together
 by LIS); and the valid hours-of-the-day (in UTC) to use when creating
-the blacklist.
+the blacklist. 12 IS RECOMMENDED FOR OPS.
 
 (*) blacklist_rh2m.cfg: A Python config file used by customize_procoba_nwp.py.
 Similar to blacklist_gage.cfg, but intended for 2-m relative humidity. The
@@ -172,32 +164,16 @@ customize_procoba_nwp.py.  Similar to blacklist_rh2m.cfg, but intended for
 Similar to blacklist_rh2m.cfg, but intended for 10-m wind speed.  The
 "data_frequency" of the OBA files should be 1.
 
-(*) gage_cmorph.cfg: A Python config file used by fit_semivariogram.py, and by
+(*) gage_imerg.cfg: A Python config file usd by fit_semivariogram.py, and by
 the utility plot_semivariogram.py.  Intended for fitting or plotting
-semivariogram between gages and nearby CMORPH estimates.  Specifies name
-of text file with empirical semivariogram values; the maximum length (distance)
-of the fitted semivariogram, and the function type of the fitted semivariogram
+semivariogram between gages and nearby IMERG estimates.  Specifies name of text
+file with empirical semivariogram values; the maximum length (distance) of the
+fitted semivariogram, and the function type of the fitted semivariogram
 (currently Gaussian).
 
-Additional settings used by plot_semivariogram.py are: A title label, x-axis
-label, y-axis label, and labels for observations (here gage) and background
-(here CMORPH).
-
-(*) gage_geoprecip.cfg: A Python config file used by fit_semivariogram.py, and
-by the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
-semivariograms from gauges and GEOPRECIP estimates.
-
-(*) gage_imerg.cfg: A Python config file used by fit_semivariogram.py, and
-by the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
-semivariograms from gauges and IMERG estimates.
-
 (*) gage_nwp.cfg: A Python config file used by fit_semivariogram.py, and
-by the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
+by the utility plot_semivariogram.py.  Similar to gage_imerg.cfg, but for
 semivariograms from gauges and NWP background.
-
-(*) gage_ssmi.cfg: A Python config file used by fit_semivariogram.py, and
-by the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
-semivariograms from gauges and SSMI background.
 
 (*) procOBA_NWP.gage.config: An ESMF input file used by procOBA_NWP. Sets
 maximum number of gage stations to use; the maximum number of semivariogram
@@ -225,9 +201,9 @@ type is "SPD10M".
 to procOBA_NWP.gage.config but for 2-meter temperature. The observation
 type is "T2M".
 
-(*) procOBA_Sat.cmorph.config: An ESMF input file used by procOBA_Sat. Similar
-to procOBA_NWP.gage.config but for semivariogram between gauges and CMORPH
-estimates. The observation type is "CMORPH".
+(*) procOBA_Sat.imerg.config: An ESMF input file used by procOBA_Sat. Similar
+to procOBA_NWP.gage.config but for semivariogram between gauges and IMERG
+estimates. The observation type is "IMERG".
 
 Additional settings are used by procOBA_Sat to construct a lat/lon grid to
 locate gages.  The settings are the maximum number of latitude and longitude
@@ -238,30 +214,18 @@ report with the nearest satellite estimate.
 In addition, the maximum number of satellite estimates must be provided
 for array allocations.
 
-(*) procOBA_Sat.geoprecip.config: An ESMF input file used by procOBA_Sat.
-Similar to procOBA_Sat.cmorph.config but used for GEOPRECIP satellite
-estimates.
-
-(*) procOBA_Sat.imerg.config: An ESMF input file used by procOBA_Sat.
-Similar to procOBA_Sat.cmorph.config but used for IMERG satellite
-estimates.
-
-(*) procOBA_Sat.ssmi.config: An ESMF input file used by procOBA_Sat.
-Similar to procOBA_Sat.cmorph.config but used for SSMI satellite
-estimates.
-
 (*) rh2m.cfg: A Python config file used by fit_semivariogram.py, and by
-the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
+the utility plot_semivariogram.py.  Similar to gage_imerg.cfg, but for
 semivariograms for 2-meter relative humidity between surface observations
 and NWP background.
 
 (*) spd10m.cfg:  A Python config file used by fit_semivariogram.py, and by
-the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
+the utility plot_semivariogram.py.  Similar to gage_imerg.cfg, but for
 semivariograms for 10-m wind speed between surface observations and NWP
 background.
 
 (*) t2m.cfg: A Python config file used by fit_semivariogram.py, and by
-the utility plot_semivariogram.py.  Similar to gage_cmorph.cfg, but for
+the utility plot_semivariogram.py.  Similar to gage_imerg.cfg, but for
 semivariograms for 2-m temperature between surface observations and NWP
 background.
 
@@ -273,6 +237,8 @@ below.
 4.1 Top script
 
 (*) run_autotune_discover.sh: Described in Section 3 above.
+
+(*) run_autotune_hpc11.sh: Described in Section 3 above.
 
 4.2  Lower-level scripts
 
@@ -290,9 +256,8 @@ the ESMF input files for ProcOBA_Sat.  Uses the autotune.cfg file.
 
 (*) fit_semivariogram.py: A Python script responsible for creating best-fits
 to empirical semivariograms. Depending on the data to be processed, will
-use either gage_cmorph.cfg, gage_geoprecip.cfg, gage_imerg.cfg, gage_nwp.cfg,
-gage_ssmi.cfg, rh2m.cfg, spd10m.cfg, or t2m.cfg.  Output parameters will
-be written to a file specified on the command line.
+use either gage_imerg.cfg, gage_nwp.cfg, rh2m.cfg, spd10m.cfg, or t2m.cfg.
+Output parameters will be written to a file specified on the command line.
 
 (*) plot_semivariogram.py: A Python script responsible for plotting the
 a best-fit semivariogram developed by fit_semivariogram.py.  THIS IS A
@@ -327,9 +292,8 @@ customized procOBA_NWP.$varname.config file, where $varname is gage, rh2m,
 spd10m, or t2m.
 
 (*) procOBA_Sat.F90: Fortran program to construct semivariograms from gages
-and satellite precipitation estimates. Used for CMORPH, GEOPRECIP, IMERG,
-and SSMI.  The program reads in a customized procOBA_Sat.$varname.config
-file, where $varname is cmorph, geoprecip, imerg, or ssmi.
+and satellite precipitation estimates. Used for IMERG.  The program reads in a
+customized procOBA_Sat.$varname.config file, where $varname is imerg.
 
 5.2 Module files
 
@@ -355,4 +319,9 @@ parent directory.  Once this is run and a make/configure.lis file is created,
 the user should run the 'compile' script in the same directory and include the
 '-u' flag (indicating compilation of utilities).
 
-
+COMMENT FOR OPS:  There needs to be at least one OBA file available for this
+software.  If an OBA file is missing, procOBA_NWP and procOBA_Sat will log
+a warning and move on.  If no OBA files were read in, the output binned files
+are empty, and fit_semivariogram.py will abort.  This error will be detected
+by the batch script, and the job will halt with an error message to standard
+out and a return code of 1.  No customized lis.config file will be produced.

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -66,73 +66,11 @@ subroutine timeinterp_pptEnsFcst(n, findex)
   integer :: status
 
 ! ESMF Fields and Pointer Arrays:
-  type(ESMF_Field)   :: airtmpField, spechumField
-  type(ESMF_Field)   :: swdField, lwdField
-  type(ESMF_Field)   :: uwindField, vwindField
-  type(ESMF_Field)   :: psurfField, prcpField, cpcpField
-  real,pointer       :: airtmp(:), spechum(:)
-  real,pointer       :: swd(:), lwd(:)
-  real,pointer       :: uwind(:), vwind(:)
-  real,pointer       :: psurf(:), prcp(:), cpcp(:)
+  type(ESMF_Field)   :: prcpField, cpcpField
+  real,pointer       :: prcp(:), cpcp(:)
 ! __________________________________________________________
 
 ! Get Meteorological Field  - ESMF State Get:
-  if( forcopts%read_airtmp ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Tair%varname(1),airtmpField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable Tair in the forcing variables list')
-    call ESMF_FieldGet(airtmpField,localDE=0,farrayPtr=airtmp,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_spechum ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Qair%varname(1),spechumField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable Qair in the forcing variables list')
-    call ESMF_FieldGet(spechumField,localDE=0,farrayPtr=spechum,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_swdown ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_SWdown%varname(1),swdField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable SWdown in the forcing variables list')
-    call ESMF_FieldGet(swdField,localDE=0,farrayPtr=swd,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_lwdown ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_LWdown%varname(1),lwdField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable LWdown in the forcing variables list')
-    call ESMF_FieldGet(lwdField,localDE=0,farrayPtr=lwd,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_uwind ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_E%varname(1),uwindField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable Uwind in the forcing variables list')
-    call ESMF_FieldGet(uwindField,localDE=0,farrayPtr=uwind,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_vwind ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Wind_N%varname(1),vwindField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable Vwind in the forcing variables list')
-    call ESMF_FieldGet(vwindField,localDE=0,farrayPtr=vwind,rc=status)
-    call LIS_verify(status)
-  endif
-
-  if( forcopts%read_psurf ) then
-    call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Psurf%varname(1),psurfField,&
-         rc=status)
-    call LIS_verify(status, 'Error: Enable Psurf in the forcing variables list')
-    call ESMF_FieldGet(psurfField,localDE=0,farrayPtr=psurf,rc=status)
-    call LIS_verify(status)
-  endif
-
   if( forcopts%read_rainf ) then
     call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Rainf%varname(1),prcpField,&
          rc=status)
@@ -161,114 +99,26 @@ subroutine timeinterp_pptEnsFcst(n, findex)
   ! Ensemble member factor for this ensemble forcing dataset:
   mfactor = LIS_rc%nensem(n)/pptensfcst_struc%max_ens_members
 
-! --- SWDown ---
-!- Perform zenith interpolation on solar radiation fields: 
-  if( forcopts%read_swdown ) then
-#if 0
-    if( pptensfcst_struc%zterp_flags ) then
-      btime = pptensfcst_struc%metforc_time1
-      call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
-      btime = pptensfcst_struc%metforc_time2
-      call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
-    endif
-#endif
-
-!    do t = 1, LIS_rc%ntiles(n)
-!       index1 = LIS_domain(n)%tile(t)%index
-  do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
-     do m=1,pptensfcst_struc%max_ens_members
-        do k=1,mfactor
-           tid = (t-1)*LIS_rc%nensem(n)+(m-1)*mfactor+k
-           index1 = LIS_domain(n)%tile(tid)%index
-#if 0
-       if( pptensfcst_struc%zterp_flags ) then
-         zdoy = LIS_rc%doy
-         call zterp( 0, LIS_domain(n)%grid(index1)%lat,&
-              LIS_domain(n)%grid(index1)%lon, gmt1, gmt2, &
-              LIS_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LIS_rc)
-         swd(t) = pptensfcst_struc%metdata1(forcopts%index_swdown,m,index1)*zw1
-       else
-         swd(t) = pptensfcst_struc%metdata1(forcopts%index_swdown,m,index1)
-       endif
-       if( swd(t) < 0 ) then
-          write(LIS_logunit,*) "[ERR] SW radiation is negative!!"
-          write(LIS_logunit,*) "[ERR] sw=", swd(t), "... negative"
-          write(LIS_logunit,*) "[ERR] PPTEnsFcst SWdown=", &
-                pptensfcst_struc%metdata2(forcopts%index_swdown,m,index1)
-          call LIS_endrun
-       end if
-       if( swd(tid).gt.LIS_CONST_SOLAR ) then
-          swd(tid) = pptensfcst_struc%metdata1(forcopts%index_swdown,m,index1)
-       endif
-#endif
-
-         swd(tid) = pptensfcst_struc%metdata2(forcopts%index_swdown,m,index1)
-!         if(t==100) then
-!            print *, 'swd: ', swd(t)
-!         endif
-        end do
-      end do
-    end do
-  endif
-
 !- Time Averaged Longwave, Block Interpolation
-!   do t = 1, LIS_rc%ntiles(n)
-!      index1 = LIS_domain(n)%tile(t)%index
+
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,pptensfcst_struc%max_ens_members
         do k=1,mfactor
            tid = (t-1)*LIS_rc%nensem(n)+(m-1)*mfactor+k
            index1 = LIS_domain(n)%tile(tid)%index
-
-          if( forcopts%read_airtmp ) then 
-            if((pptensfcst_struc%metdata1(forcopts%index_airtmp,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_airtmp,m,index1).ne.LIS_rc%udef)) then
-              airtmp(tid) = pptensfcst_struc%metdata2(forcopts%index_airtmp,m,index1)
-            endif
-          endif
- 
-          if( forcopts%read_spechum ) then 
-            if((pptensfcst_struc%metdata1(forcopts%index_spechum,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_spechum,m,index1).ne.LIS_rc%udef)) then
-              spechum(tid) = pptensfcst_struc%metdata2(forcopts%index_spechum,m,index1)
-            endif
-          endif
-
-          if( forcopts%read_psurf ) then 
-            if((pptensfcst_struc%metdata1(forcopts%index_psurf,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_psurf,m,index1).ne.LIS_rc%udef)) then
- 
-              psurf(tid) = pptensfcst_struc%metdata2(forcopts%index_psurf,m,index1) 
-            endif
-          endif
-
-          if( forcopts%read_lwdown ) then
-            if((pptensfcst_struc%metdata1(forcopts%index_lwdown,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_lwdown,m,index1).ne.LIS_rc%udef)) then
-              lwd(tid) = pptensfcst_struc%metdata2(forcopts%index_lwdown,m,index1)
-            endif
-          endif
-
-          if( forcopts%read_uwind ) then 
-            if((pptensfcst_struc%metdata1(forcopts%index_uwind,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_uwind,m,index1).ne.LIS_rc%udef)) then
-              uwind(tid) = pptensfcst_struc%metdata2(forcopts%index_uwind,m,index1) 
-            endif
-          endif
-
-          if( forcopts%read_vwind ) then 
-            if((pptensfcst_struc%metdata1(forcopts%index_vwind,m,index1).ne.LIS_rc%udef).and.&
-               (pptensfcst_struc%metdata2(forcopts%index_vwind,m,index1).ne.LIS_rc%udef)) then
-             vwind(tid) = pptensfcst_struc%metdata2(forcopts%index_vwind,m,index1) 
-!         if(t==100) then; print *, 'vwind: ',vwind(t); endif
-            endif
-          endif
 
           if( forcopts%read_rainf ) then 
             if((pptensfcst_struc%metdata1(forcopts%index_rainf,m,index1).ne.LIS_rc%udef).and.&
                (pptensfcst_struc%metdata2(forcopts%index_rainf,m,index1).ne.LIS_rc%udef)) then
               prcp(tid) = pptensfcst_struc%metdata2(forcopts%index_rainf,m,index1)
-!         if(t==100) then; print *, 'prcp: ',prcp(t); endif
+
+              if( prcp(tid) < 0.0 ) then ! mm/s
+                prcp(tid) = 0.0
+              endif
+              if( prcp(tid) > 1.0 ) then ! mm/s
+                prcp(tid) = 0.025
+              endif
+
             endif
           endif
  
@@ -276,6 +126,11 @@ subroutine timeinterp_pptEnsFcst(n, findex)
             if((pptensfcst_struc%metdata1(forcopts%index_cpcp,m,index1).ne.LIS_rc%udef).and.&
                (pptensfcst_struc%metdata2(forcopts%index_cpcp,m,index1).ne.LIS_rc%udef)) then
               cpcp(tid) = pptensfcst_struc%metdata2(forcopts%index_cpcp,m,index1)
+
+              if( cpcp(tid) < 0.0 ) then
+                cpcp(tid) = 0.0
+              endif
+
             endif     
           endif
 

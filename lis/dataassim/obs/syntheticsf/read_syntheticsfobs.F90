@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine read_syntheticsfobs(n, OBS_State, OBS_Pert_state)
   use LIS_logMod
   use LIS_pluginIndices
   use syntheticsfobs_module
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -52,10 +53,10 @@ subroutine read_syntheticsfobs(n, OBS_State, OBS_Pert_state)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
   real                :: obs_unsc(LIS_rc%ngrid(n))
-  character*100       :: sfobsdir
+  character(len=LIS_CONST_PATH_LEN) :: sfobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer             :: fnd
   integer             :: ftn,p
   logical             :: readflag
@@ -87,7 +88,7 @@ subroutine read_syntheticsfobs(n, OBS_State, OBS_Pert_state)
   endif
   
   if (readflag) then 
-     write(LIS_logunit,*)  'Reading synthetic data ',name
+     write(LIS_logunit,*)  'Reading synthetic data ',trim(name)
      
      call ESMF_StateGet(OBS_State,"Observation01",sffield,&
           rc=status)
@@ -192,7 +193,7 @@ end subroutine read_syntheticsfobs
 subroutine synsm_filename(name, ndir, yr, mo,da,hr,mn)
   
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   character (len=4) :: fyr

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@ subroutine NoahMP401_writerst(n)
                                LIS_releaseUnitNumber , LIS_verify
     use LIS_fileIOMod, only  : LIS_create_output_directory, &
                                LIS_create_restart_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use NoahMP401_lsmMod
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -54,7 +55,7 @@ subroutine NoahMP401_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn
@@ -216,7 +217,7 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10)
+    integer :: dimID(11)
     integer :: sfcrunoff_ID
     integer :: udrrunoff_ID
     integer :: smc_ID
@@ -272,7 +273,8 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                                        dim1=NOAHMP401_struc(n)%nsoil+NOAHMP401_struc(n)%nsnow, &
                                        dim2=NOAHMP401_struc(n)%nsoil,                          &
                                        dim3=NOAHMP401_struc(n)%nsnow,                          &
-                                       dim4=60,                                                &
+!                                       dim4=60,                                                & ! GECROS
+                                       dim4=1,                                                 &
                                        dimID=dimID,                                            &
                                        output_format = trim(wformat))
 
@@ -537,10 +539,10 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable gecros_state
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
-    call LIS_writeHeader_restart(ftn, n, dimID, gecros_state_ID, "GECROS_STATE", &
-                                 "optional gecros crop", &
-                                 "-", vlevels=60, valid_min=-99999.0, valid_max=99999.0, &
-                                 var_flag = "dim4") 
+!    call LIS_writeHeader_restart(ftn, n, dimID, gecros_state_ID, "GECROS_STATE", &
+!                                 "optional gecros crop", &
+!                                 "-", vlevels=60, valid_min=-99999.0, valid_max=99999.0, &
+!                                 var_flag = "dim4") 
  
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, NOAHMP401_struc(n)%rstInterval)
@@ -775,12 +777,12 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                               varid=pgs_ID, dim=1, wformat=wformat)
 
     ! optional gecros crop
-    do l=1, 60  ! TODO: check loop
-        tmptilen = 0
-        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-            tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
-        enddo
-        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
-                                  varid=gecros_state_ID, dim=l, wformat=wformat)
-    enddo
+!    do l=1, 60  ! TODO: check loop
+!        tmptilen = 0
+!        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+!            tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
+!        enddo
+!        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+!                                  varid=gecros_state_ID, dim=l, wformat=wformat)
+!    enddo
 end subroutine NoahMP401_dump_restart

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine readGHCNANNdata(n,iomode,sindex,eindex)
   use LDT_coreMod
   use LDT_timeMgrMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_ANNMod
   use GHCN_ANNdataMod
   use map_utils
@@ -42,7 +43,7 @@ subroutine readGHCNANNdata(n,iomode,sindex,eindex)
 !EOP
 
   integer                 :: i,t,c,r,kk
-  character*100           :: ghcnname
+  character(len=LDT_CONST_PATH_LEN) :: ghcnname
   type(ESMF_Time)         :: ghcntime1, ghcntime2
   real                    :: snowdepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
   integer                 :: stn_col, stn_row

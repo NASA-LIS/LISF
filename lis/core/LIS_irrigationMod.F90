@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -239,6 +239,7 @@ contains
     use LIS_fileIOMod,  only : LIS_create_output_directory, &
          LIS_create_output_filename,  &
          LIS_create_stats_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
 ! !ARGUMENTS: 
     integer, intent(in)   :: n 
@@ -254,7 +255,7 @@ contains
 !EOP
     
     logical           :: alarmCheck,open_stats
-    character*100     :: outfile, statsfile
+    character(len=LIS_CONST_PATH_LEN) :: outfile, statsfile
 
     if(LIS_rc%irrigation_type.ne."none") then 
        alarmCheck = LIS_isAlarmRinging(LIS_rc,&

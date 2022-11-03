@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@ subroutine HYMAP_routing_readrst
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP_routingMod, only : HYMAP_routing_struc
 
   implicit none
@@ -24,7 +25,7 @@ subroutine HYMAP_routing_readrst
   integer       :: ftn
   integer       :: i,j,k
   integer       :: ios,status
-  character*100 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   logical       :: read_restart
   integer       :: yr,mo,da,hr,mn,ss,doy
   real*8        :: time

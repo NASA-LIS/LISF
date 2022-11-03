@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@
 module ISCCP_Tskin_module
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP
   implicit none
   
@@ -48,10 +49,10 @@ module ISCCP_Tskin_module
 
 !for scaling runs
      integer             :: scal
-     character*50        :: modelmean
-     character*50        :: modelstd
-     character*50        :: obsmean
-     character*50        :: obsstd
+     character(len=LIS_CONST_PATH_LEN) :: modelmean
+     character(len=LIS_CONST_PATH_LEN) :: modelstd
+     character(len=LIS_CONST_PATH_LEN) :: obsmean
+     character(len=LIS_CONST_PATH_LEN) :: obsstd
   end type isccp_tskin_dec
 
   type(isccp_tskin_dec), allocatable :: isccp_tskin_struc(:)
@@ -94,7 +95,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  synsmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  synsmobsdir
     character*100          ::  temp
     real, pointer          :: obs_temp(:,:)
     real,  allocatable         ::  obsstd(:)

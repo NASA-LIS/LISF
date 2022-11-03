@@ -123,7 +123,7 @@ Streamflow:   0  m3/s    -    1 0 0 1 333 1       # Streamflow
 #AWRAL600
 e0:           1  mm      -    0 0 0 1 0 1 # potential evaporation
 etot:         1  mm      -    0 0 0 1 0 1 # actual evapotranspiration
-qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
+Qtot:         1  mm      -    0 0 0 1 0 1 # total discharge to stream
 sr:           1  mm      -    0 0 0 1 0 1 # volume of water in the surface water store
 sg:           1  mm      -    0 0 0 1 0 1 # groundwater storage in the unconfined aquifer
 dd:           1  mm      -    0 0 0 1 0 1 # vertical drainage from the bottom of the deep soil layer

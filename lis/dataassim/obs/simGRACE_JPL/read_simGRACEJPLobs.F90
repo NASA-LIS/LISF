@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine read_simGRACEJPLobs(n, OBS_State, OBS_Pert_State)
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use simGRACEJPLobs_module
   use LIS_fileIOMod
   
@@ -59,9 +60,9 @@ subroutine read_simGRACEJPLobs(n, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: simGRACEJPLobsdir
+  character(len=LIS_CONST_PATH_LEN) :: simGRACEJPLobsdir
   logical             :: file_exists
-  character*100       :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
 
   integer             :: col,row
   logical             :: data_upd
@@ -134,14 +135,14 @@ subroutine read_simGRACEJPLobs(n, OBS_State, OBS_Pert_State)
            endif
 
 
-           write(LIS_logunit,*)  'Reading simGRACEJPL data ',name
+           write(LIS_logunit,*)  'Reading simGRACEJPL data ',trim(name)
 
            ftn = LIS_getNextUnitNumber()
            open(ftn, file=trim(name),form='unformatted')
            read(ftn) gracegrid_glb
            read(ftn) graceerr_glb
            call LIS_releaseUnitNumber(ftn)
-           write(LIS_logunit,*)  'Done reading simGRACEJPL data ',name
+           write(LIS_logunit,*)  'Done reading simGRACEJPL data ',trim(name)
 
            gracegrid = gracegrid_glb(&
                 LIS_ews_halo_ind(n,LIS_localPet+1):&         
@@ -369,7 +370,7 @@ subroutine checkStatus_simGRACEJPLfile(odir,&
   character(len=*)         :: config
   logical                  :: file_status
 
-  character*100            :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer                  :: da
   character (len=4) :: fyr
   character (len=2) :: fmo

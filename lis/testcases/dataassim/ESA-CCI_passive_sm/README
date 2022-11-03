@@ -1,0 +1,29 @@
+ESA-CCI soilmoisture Testcase
+
+This test-case demonstrates reading the PASSIVE sensor type of the ESA-CCI soilmoisture datasets using EnKF-based assimilation into the NoahMP 4.0.1 LSM (over the Western U.S.).
+
+It uses:
+  (a) The MERRA2 and GPM IMERG forcing datasets
+  (b) retrospective running mode
+  (c) The NoahMP version 4.0.1 land surface model
+  (d) Regional domain over the western US at 1 km spatial resolution
+      (see the ldt.config file)
+  (e) A time period from 23:30Z 30 Sep 2017 to 00Z 01 Nov 2017
+
+This directory contains:
+  (a) This README file
+  (b) The "lis.config" file used for this testcase
+  (c) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (d) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (e) The "ldt.config" file used to preprocess the domain and parameters
+  (f) The "lvt.config" file used to postprocess the output
+
+Note that the "lis.config" file should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Run the LIS executable using the "lis.config" file with the
+      testcase input data.
