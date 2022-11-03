@@ -5912,6 +5912,10 @@ Acceptable values for the sources are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GALWEM forecast&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GALWEM 17km or 0.25deg deterministic forecast reader</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GALWEM-GE forecast&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GALWEM-GE forecast reader</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -15200,6 +15204,30 @@ GALWEM forecast run mode:          forecast    # forecast | analysis</pre>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="sssec_galwemgeforecast">9.10.40. GALWEM-GE Forecast</h4>
+<div class="paragraph">
+<p><code>GALWEM-GE forecast forcing directory:</code> specifies the location
+of the GALWEM-GE forecast forcing files.</p>
+</div>
+<div class="paragraph">
+<p><code>GALWEM-GE forecast run mode:</code> specifies the run mode related
+to the GALWEM-GE dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.</p>
+</div>
+<div class="paragraph">
+<p><code>GALWEM-GE forecast number of ensemble members:</code> specifies the number of ensembles
+of the GALWEM-GE forecast forcing data.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>GALWEM-GE forecast forcing directory:          ./GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
+GALWEM-GE forecast number of ensemble members: 21</pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="ssec_lsm">9.11. Land surface models</h3>
@@ -22255,7 +22283,7 @@ Code contributors included:
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-11-02 21:45:08 UTC
+Last updated 2022-11-03 20:30:47 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
