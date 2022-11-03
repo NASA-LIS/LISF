@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
   use ISCCP_Tskin_module, only : isccp_tskin_struc
   use LIS_historyMod,     only : LIS_readvar_gridded
   use LIS_pluginIndices 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -74,11 +75,9 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
   integer             :: gid(LIS_rc%ngrid(n))
   integer             :: assimflag(LIS_rc%ngrid(n))
 
-  character*100       :: tskinobsdir
+  character(len=LIS_CONST_PATH_LEN) :: tskinobsdir, name
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
-
 
   logical             :: readflag
   integer             :: status
@@ -92,7 +91,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
 
   integer             :: count1
   integer             :: c,r, cnt
-  character*100       :: filename1, filename2
+  character(len=LIS_CONST_PATH_LEN) :: filename1, filename2
   real                :: mean_v1(LIS_rc%ngrid(n),8)
   real                :: std_v1(LIS_rc%ngrid(n),8)
   real                :: mean_v2(LIS_rc%ngrid(n),8)
@@ -120,7 +119,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
   endif
   
   if (readflag) then 
-     write(LIS_logunit,*)  'Reading ISCCP Tskin data ',name
+     write(LIS_logunit,*)  'Reading ISCCP Tskin data ',trim(name)
      
      call ESMF_StateGet(OBS_State,"Observation01",tskinfield,&
           rc=status)
@@ -201,7 +200,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
               call LIS_releaseUnitNumber(ftn)
 
            else
-              write(LIS_logunit,*) 'File not found: ',filename1
+              write(LIS_logunit,*) 'File not found: ',trim(filename1)
               call LIS_endrun
            endif
 
@@ -215,7 +214,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
               call LIS_releaseUnitNumber(ftn)          
 
            else
-              write(LIS_logunit,*) 'File not found: ',filename2
+              write(LIS_logunit,*) 'File not found: ',trim(filename2)
               call LIS_endrun
            endif
            
@@ -229,7 +228,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
               call LIS_releaseUnitNumber(ftn)              
 
            else
-              write(LIS_logunit,*) 'File not found: ',filename1
+              write(LIS_logunit,*) 'File not found: ',trim(filename1)
               call LIS_endrun
            endif
            
@@ -243,7 +242,7 @@ subroutine read_ISCCP_Tskin(n, OBS_State, OBS_Pert_State)
               call LIS_releaseUnitNumber(ftn)
 
            else
-              write(LIS_logunit,*) 'File not found: ',filename2
+              write(LIS_logunit,*) 'File not found: ',trim(filename2)
               call LIS_endrun
            endif
            
@@ -325,7 +324,7 @@ end subroutine read_ISCCP_Tskin
 subroutine ISCCP_Tskin_filename(name, ndir, yr, mo,da,hr)
   
   implicit none
-  character*80      :: name
+  character(len=*)      :: name
   integer           :: yr, mo, da, hr
   character (len=*) :: ndir
   character (len=4) :: fyr

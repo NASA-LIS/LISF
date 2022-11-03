@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,6 +31,7 @@ module LIS_RTMMod
   use ESMF 
   use LIS_coreMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -55,8 +56,8 @@ module LIS_RTMMod
   type(ESMF_State), allocatable :: LIS_forwardState(:)
 
   type, private :: rtm_type_dec
-     character*100           :: outputdirname
-     character*100           :: outputfilename
+     character(len=LIS_CONST_PATH_LEN) :: outputdirname
+     character(len=LIS_CONST_PATH_LEN) :: outputfilename
      character*100           :: fstatsname
      logical                 :: rtmAlarmCheck
      real                    :: rtmoutInterval
@@ -83,6 +84,7 @@ contains
     use LIS_logMod,       only : LIS_verify
     use LIS_fileIOMod,    only : LIS_create_stats_filename
     use LIS_timeMgrMod,   only : LIS_registerAlarm, LIS_parseTimeString
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 !EOP    
     implicit none
     
@@ -92,7 +94,7 @@ contains
     character*10            :: time
     character*100           :: temp
     integer                 :: status
-    character*100           :: statsfilename    
+    character(len=LIS_CONST_PATH_LEN) :: statsfilename    
 
     TRACE_ENTER("rtm_init")
     allocate(LIS_rtm_struc(LIS_rc%nnest))
@@ -315,11 +317,12 @@ contains
     use LIS_fileIOMod,  only : LIS_create_output_directory, &
          LIS_create_output_filename,  &
          LIS_create_stats_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     integer, intent(in)   :: n 
 !EOP
 
-    character*100       :: outfile, statsfile
+    character(len=LIS_CONST_PATH_LEN) :: outfile, statsfile
     logical             :: alarmCheck
     integer             :: mo, da
     logical             :: open_stats

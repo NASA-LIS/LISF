@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -33,6 +33,7 @@ module CLM45_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
 
   implicit none
@@ -53,8 +54,8 @@ module CLM45_parmsMod
   type, public :: clm45_type_dec
 
      real      :: clm45_undef
-     character*140 :: domainfile   ! CLM-4.5 precomputed domain file
-     character*140 :: surfacefile  ! CLM-4.5 precomputed surface file
+     character(len=LDT_CONST_PATH_LEN) :: domainfile   ! CLM-4.5 precomputed domain file
+     character(len=LDT_CONST_PATH_LEN) :: surfacefile  ! CLM-4.5 precomputed surface file
      character*50  :: clm45parms_gridtransform
      character*50  :: clm45parms_proj
      real          :: clm45parms_gridDesc(20)

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -43,6 +43,7 @@ module LIS_vegDataMod
   use LIS_timeMgrMod
   use LIS_histDataMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -92,7 +93,7 @@ module LIS_vegDataMod
 !EOP
   type, public :: gfrac_type_dec
      integer       :: realtimemode
-     character*100 :: gfracfile
+     character(len=LIS_CONST_PATH_LEN) :: gfracfile
      real          :: gfracInterval
      character*50  :: gfracIntervalType
      logical       :: firstInstance
@@ -109,7 +110,7 @@ module LIS_vegDataMod
   type(gfrac_type_dec), allocatable :: LIS_gfrac(:)
 
   type, public :: roughness_type_dec
-     character*100 :: roughnessfile
+     character(len=LIS_CONST_PATH_LEN) :: roughnessfile
      character*50  :: roughnessIntervalType
      real          :: roughnessInterval
      logical       :: firstInstance
@@ -125,7 +126,7 @@ module LIS_vegDataMod
   type(roughness_type_dec), allocatable :: LIS_roughness(:)
 
   type, public :: lai_type_dec
-     character*100 :: laifile
+     character(len=LIS_CONST_PATH_LEN) :: laifile
      character*50  :: laiIntervalType
      real          :: laiInterval
      logical       :: firstInstance
@@ -143,7 +144,7 @@ module LIS_vegDataMod
   type(lai_type_dec), allocatable :: LIS_lai(:)
 
   type, public ::  sai_type_dec
-     character*100 :: saifile
+     character(len=LIS_CONST_PATH_LEN) :: saifile
      character*50  :: saiIntervalType
      real          :: saiInterval
      real(r8), allocatable :: tsai(:)

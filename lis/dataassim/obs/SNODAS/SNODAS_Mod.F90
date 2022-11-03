@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ module SNODAS_Mod
 ! !USES: 
   use ESMF
   use map_utils
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -60,7 +61,6 @@ contains
 ! !INTERFACE: 
   subroutine SNODAS_setup(k, OBS_State, OBS_Pert_State)
 ! !USES: 
-    use ESMF
     use LIS_coreMod
     use LIS_timeMgrMod
     use LIS_historyMod
@@ -97,7 +97,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  snodasobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  snodasobsdir
     character*100          ::  temp
     character*1            ::  vid(2)
     character*40, allocatable  ::  vname(:)

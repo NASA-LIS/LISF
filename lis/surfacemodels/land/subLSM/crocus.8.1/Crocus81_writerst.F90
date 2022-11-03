@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine Crocus81_writerst(n)
                                LIS_releaseUnitNumber , LIS_verify
     use LIS_fileIOMod, only  : LIS_create_output_directory, &
                                LIS_create_restart_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use Crocus81_lsmMod
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -53,7 +54,7 @@ subroutine Crocus81_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn
@@ -98,7 +99,7 @@ subroutine Crocus81_writerst(n)
                 call LIS_verify(status, "Error in nf90_close in Crocus81_writerst")
 #endif
             endif
-            write(LIS_logunit, *) "Crocus81 archive restart written: ", filen
+            write(LIS_logunit, *) "Crocus81 archive restart written: ", trim(filen)
         endif
     endif
 end subroutine Crocus81_writerst
@@ -183,7 +184,7 @@ subroutine Crocus81_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10)  !6
+    integer :: dimID(11)  !6
     integer :: SNOWSWE_ID
     integer :: SNOWRHO_ID
     integer :: SNOWHEAT_ID

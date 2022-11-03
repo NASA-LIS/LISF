@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_ARMdata(Obj_Space)
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_readData
   use LIS_timeMgrMod,     only : LIS_calendar, LIS_tick
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use map_utils
   use ARMdata_module,     only : ARMdata_struc
 
@@ -46,7 +47,7 @@ subroutine read_ARMdata(Obj_Space)
   integer                   :: yr, mo, da, hr, mn, ss,doy
   real*8                    :: lis_prevtime
   integer                   :: status
-  character*100             :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   real                      :: time, gmt
   integer                   :: i,t,gid,c,r,st,et
   type(ESMF_TimeInterval)   :: dayInterval
@@ -349,6 +350,7 @@ subroutine process_ebbr_data(n,tindex,yr,mo,da)
 ! !USES:
   use LIS_coreMod,     only : LIS_rc
   use LIS_logMod,      only : LIS_logunit
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use ARMdata_module,     only : ARMdata_struc
 
   implicit none
@@ -375,7 +377,7 @@ subroutine process_ebbr_data(n,tindex,yr,mo,da)
 !  \end{description}
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(ARMdata_struc(n)%ebbr_select.eq.1) then 
@@ -412,6 +414,7 @@ subroutine process_baebbr_flux_data(n,tindex,yr,mo,da)
 ! !USES:
   use LIS_coreMod,     only : LIS_rc
   use LIS_logMod,      only : LIS_logunit
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use ARMdata_module,     only : ARMdata_struc
 
   implicit none
@@ -438,7 +441,7 @@ subroutine process_baebbr_flux_data(n,tindex,yr,mo,da)
 !  \end{description}
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(ARMdata_struc(n)%baebbr_select.eq.1) then 
@@ -477,6 +480,7 @@ subroutine process_ecor_flux_data(n,tindex,yr,mo,da)
   ! !USES:
   use LIS_coreMod,     only : LIS_rc
   use LIS_logMod,      only : LIS_logunit
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use ARMdata_module,     only : ARMdata_struc
 
   implicit none
@@ -503,7 +507,7 @@ subroutine process_ecor_flux_data(n,tindex,yr,mo,da)
 !  \end{description}
 !EOP 
   integer          :: i 
-  character*100    :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(ARMdata_struc(n)%ecor_select.eq.1) then 

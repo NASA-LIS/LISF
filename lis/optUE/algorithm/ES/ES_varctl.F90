@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,11 +21,12 @@ module ES_varctl
 !  04 Feb 2008; Sujay Kumar; Initial Specification
 !
 !EOP
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   PRIVATE
 
   type, public ::  esctl
-     character*100    :: decspaceAttribsFile
+     character(len=LIS_CONST_PATH_LEN) :: decspaceAttribsFile
      integer          :: nparam
      integer          :: genNo
      real,    allocatable :: parmax(:)

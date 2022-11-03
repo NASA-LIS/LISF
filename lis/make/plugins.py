@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -124,19 +124,6 @@ if (config.getboolean('OPTUE ES', 'enabled') or
         config.getboolean('OPTUE DEMCz', 'enabled')):
     config.set('virtual_optue', 'enabled', 'true')
 
-config.add_section('virtual_da_obs_snodep')
-config.set('virtual_da_obs_snodep', 'enabled', 'false')
-config.set('virtual_da_obs_snodep', 'virtual', 'true')
-if (config.getboolean('virtual_da', 'enabled') and
-        config.getboolean('DA OBS SNODEP', 'enabled')):
-    config.set('virtual_da_obs_snodep', 'enabled', 'true')
-
-config.add_section('virtual_da_obs_usafsi')
-config.set('virtual_da_obs_usafsi', 'enabled', 'false')
-config.set('virtual_da_obs_usafsi', 'virtual', 'true')
-if (config.getboolean('virtual_da', 'enabled') and
-        config.getboolean('DA OBS USAFSI', 'enabled')):
-    config.set('virtual_da_obs_usafsi', 'enabled', 'true')
 
 #
 # Write Filepath and LIS_plugins.h

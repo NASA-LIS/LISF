@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -32,6 +32,7 @@ subroutine read_pildassmobs(n, k, OBS_State, OBS_Pert_state)
   use LIS_logMod
   use LIS_pluginIndices
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use pildassmobs_module
 
   implicit none
@@ -66,10 +67,10 @@ subroutine read_pildassmobs(n, k, OBS_State, OBS_Pert_state)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
   real                :: obs_unsc(LIS_rc%obs_ngrid(k))
-  character*100       :: smobsdir
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   integer             :: fnd
   integer             :: ftn
   logical             :: readflag
@@ -132,7 +133,7 @@ subroutine read_pildassmobs(n, k, OBS_State, OBS_Pert_state)
      endif
   
      if (readflag) then 
-        write(LIS_logunit,*)  '[INFO] Reading syn data ',fname
+        write(LIS_logunit,*)  '[INFO] Reading syn data ',trim(fname)
 
         call read_PILDAS_data(n,k,fname,smobs)
 
@@ -321,7 +322,7 @@ subroutine read_pildassmobs(n, k, OBS_State, OBS_Pert_state)
         call LIS_verify(status,&
              'ESMF_AttributeSet: Data Update Status failed in read_pildassmobs')
      endif
-     write(LIS_logunit,*)  '[INFO] Finished reading syn data ',fname
+     write(LIS_logunit,*)  '[INFO] Finished reading syn data ',trim(fname)
   else
      call ESMF_AttributeSet(OBS_State,"Data Update Status",&
           .false., rc=status)
@@ -472,7 +473,7 @@ subroutine pildassm_filename(fname, ndir, yr, mo,da,hr,mn)
   
   implicit none
   ! !ARGUMENTS: 
-  character*80      :: fname
+  character(len=*)  :: fname
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   ! 

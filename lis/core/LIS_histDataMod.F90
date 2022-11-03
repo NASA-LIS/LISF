@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -1142,8 +1142,8 @@ contains
     call LIS_verify(rc,'Model output attributes file: not specified')
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%outputSpecFile(n),rc=rc)
-    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File', &
-                         LIS_rc%outputSpecFile(n)
+    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File, ', &
+                         trim(LIS_rc%outputSpecFile(n))
 
     inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
     if(.not.file_exists) then 
@@ -5530,15 +5530,16 @@ contains
             model_patch=.true.)
     endif
    
-    call ESMF_ConfigFindLabel(modelSpecConfig,"qtot:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qtot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "qtot",&
+         "Qtot",&
          "total_discharge_to_stream",&
          "total discharge to stream",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QTOT, &
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            n,3,ntiles,(/"mm    ","kg/m2s","kg/m2 "/),&
+            3,(/"-  ","IN ","OUT"/),2,1,1,&
             model_patch=.true.)
     endif
 

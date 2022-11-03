@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,6 +26,7 @@ subroutine readLISlsmSMobs(n)
   use LDT_DAobsDataMod
   use LDT_historyMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LISlsmSM_obsMod,    only : lsmsmobs
 !
 ! !DESCRIPTION: 
@@ -37,7 +38,7 @@ subroutine readLISlsmSMobs(n)
 
   integer,   intent(in) :: n
 
-  character*200    :: fname 
+  character(len=LDT_CONST_PATH_LEN)    :: fname 
   logical          :: file_exists
   real             :: sm_data(LDT_rc%lnc(n),LDT_rc%lnr(n))
   
@@ -229,6 +230,7 @@ subroutine create_lsm_output_filename(n, form, fname, odir, wstyle, wopt, &
 ! !USES:
    use LDT_coreMod,  only : LDT_rc
    use LDT_logMod
+   use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
    implicit none 
 ! !ARGUMENTS:
@@ -313,8 +315,8 @@ subroutine create_lsm_output_filename(n, form, fname, odir, wstyle, wopt, &
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LDT_CONST_PATH_LEN)       :: dname
+   character(len=LDT_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    mname = 'SURFACEMODEL'

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ subroutine get_ecmwf(n,findex)
   use LDT_coreMod,        only : LDT_rc
   use LDT_metforcingMod,  only : LDT_forc
   use LDT_logMod,         only : LDT_logunit
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_timeMgrMod,     only : LDT_get_nstep, LDT_tick
   use ecmwf_forcingMod,   only : ecmwf_struc
 
@@ -63,7 +64,7 @@ subroutine get_ecmwf(n,findex)
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
   integer :: yr2,mo2,da2,hr2,mn2,ss2,doy2
   real*8  :: time1,time2,dumbtime1,dumbtime2
-  character*200 :: avgfilename1, instfilename, avgfilename2
+  character(len=LDT_CONST_PATH_LEN) :: avgfilename1, instfilename, avgfilename2
   real    :: gmt1,gmt2,ts1,ts2
   integer :: movetime      ! 1=move time 2 data into time 1
   integer :: nforce  ! # forcing variables

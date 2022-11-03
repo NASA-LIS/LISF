@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine clm2_writerestart(n)
   use LIS_logMod, only : LIS_logunit
   use LIS_fileIOMod, only : LIS_create_output_directory, &
                               LIS_create_restart_filename
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use clm2_lsmMod, only : clm2_struc
 
   implicit none
@@ -46,7 +47,7 @@ subroutine clm2_writerestart(n)
 !  reads a variable from the restart file
 ! \end{description}
 !EOP
-  character*80 filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical :: alarmCheck
   integer :: status
   character*3   :: fnest
@@ -64,7 +65,7 @@ subroutine clm2_writerestart(n)
      call clm2_dump_restart(n, 40)
      if(LIS_masterproc) then 
         close(40)
-        write(LIS_logunit,*) 'CLM Archive restart written ',filen
+        write(LIS_logunit,*) 'CLM Archive restart written ',trim(filen)
      endif
   endif
 end subroutine clm2_writerestart

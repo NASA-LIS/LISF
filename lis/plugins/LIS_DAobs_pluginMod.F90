@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -256,6 +256,11 @@ subroutine LIS_DAobs_plugin
     use SMOSNRTNNL2sm_Mod,       only : SMOSNRTNNL2sm_setup
 #endif
 
+!YK
+#if ( defined DA_OBS_SMAP_E_OPL_SM )
+    use SMAPEOPLsm_Mod,       only : SMAPEOPLsm_setup
+#endif
+
 #if ( defined DA_OBS_NASA_SMAPVOD )
     use NASASMAPvod_Mod,          only : NASASMAPvod_setup
 #endif
@@ -266,6 +271,16 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_MCD15A2H_LAI )
     use MCD15A2HLAI_Mod,       only : MCD15A2Hlai_setup
 #endif
+
+!Y.Kwon
+#if ( defined DA_OBS_VIIRS_GVF )
+    use VIIRSgvf_Mod,       only : VIIRSgvf_setup
+#endif
+!Y.Kwon
+#if ( defined DA_OBS_CDFS_GVF )
+    use CDFSgvf_Mod,       only : CDFSgvf_setup
+#endif
+
 #if ( defined DA_OBS_NRT_SMAPSM )
     use SMAPNRTsm_Mod,           only : SMAPNRTsm_setup
 #endif
@@ -288,6 +303,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_SNODAS )
    use SNODAS_Mod,    only : SNODAS_setup
+#endif
+
+#if ( defined DA_OBS_WUSUCLA )
+   use WUS_UCLAsnowMod, only : WUS_UCLAsnow_setup
 #endif
 
 #if ( defined DA_OBS_HYDROWEBWL )
@@ -437,6 +456,11 @@ subroutine LIS_DAobs_plugin
     external read_SMOSNRTNNL2sm, write_SMOSNRTNNL2smobs
 #endif
 
+!YK
+#if ( defined DA_OBS_SMAP_E_OPL_SM)
+    external read_SMAPEOPLsm, write_SMAPEOPLsmobs
+#endif
+
 #if ( defined DA_OBS_NASA_SMAPVOD)
     external read_NASASMAPvod, write_NASASMAPvodobs
 #endif
@@ -457,6 +481,15 @@ subroutine LIS_DAobs_plugin
     external read_MODISsportLAI, write_MODISsportLAI
 #endif
 
+!Y.Kwon
+#if ( defined DA_OBS_VIIRS_GVF )
+    external read_VIIRSgvf, write_VIIRSgvfobs
+#endif
+!Y.Kwon
+#if ( defined DA_OBS_CDFS_GVF )
+    external read_CDFSgvf, write_CDFSgvfobs
+#endif
+
 #if ( defined DA_OBS_NRT_SMAPSM )
     external read_SMAPNRTsm, write_SMAPNRTsmobs
 #endif
@@ -468,8 +501,11 @@ subroutine LIS_DAobs_plugin
 #if ( defined DA_OBS_SNODAS )
    external read_SNODAS,  write_SNODAS
 #endif
-    
 
+#if ( defined DA_OBS_WUSUCLA )    
+   external read_WUS_UCLAsnow, write_WUS_UCLAsnow
+#endif
+   
     LIS_DAobsFuncEntry%head_daobsfunc_list => null()
     
 #if ( defined DA_OBS_SYNTHETICSM )
@@ -813,6 +849,17 @@ subroutine LIS_DAobs_plugin
         write_SMOSNRTNNL2smobs)
 #endif
 
+!YK
+#if ( defined DA_OBS_SMAP_E_OPL_SM )
+   call registerdaobsclass(trim(LIS_SMAPEOPLsmobsId),"LSM")
+   call registerdaobssetup(trim(LIS_SMAPEOPLsmobsId)//char(0),&
+        SMAPEOPLsm_setup)
+   call registerreaddaobs(trim(LIS_SMAPEOPLsmobsId)//char(0),&
+        read_SMAPEOPLsm)
+   call registerwritedaobs(trim(LIS_SMAPEOPLsmobsId)//char(0),&
+        write_SMAPEOPLsmobs)
+#endif
+
 #if ( defined DA_OBS_NASA_SMAPVOD )
    call registerdaobsclass(trim(LIS_NASASMAPvodobsId),"LSM")
    call registerdaobssetup(trim(LIS_NASASMAPvodobsId)//char(0),&
@@ -841,6 +888,27 @@ subroutine LIS_DAobs_plugin
         read_MCD15A2Hlai)
    call registerwritedaobs(trim(LIS_MCD15A2HlaiobsId)//char(0),&
         write_MCD15A2Hlai)
+#endif
+
+!Y.Kwon
+#if ( defined DA_OBS_VIIRS_GVF )
+   call registerdaobsclass(trim(LIS_VIIRSgvfobsId),"LSM")
+   call registerdaobssetup(trim(LIS_VIIRSgvfobsId)//char(0),&
+        VIIRSgvf_setup)
+   call registerreaddaobs(trim(LIS_VIIRSgvfobsId)//char(0),&
+        read_VIIRSgvf)
+   call registerwritedaobs(trim(LIS_VIIRSgvfobsId)//char(0),&
+        write_VIIRSgvfobs)
+#endif
+!Y.Kwon
+#if ( defined DA_OBS_CDFS_GVF )
+   call registerdaobsclass(trim(LIS_CDFSgvfobsId),"LSM")
+   call registerdaobssetup(trim(LIS_CDFSgvfobsId)//char(0),&
+        CDFSgvf_setup)
+   call registerreaddaobs(trim(LIS_CDFSgvfobsId)//char(0),&
+        read_CDFSgvf)
+   call registerwritedaobs(trim(LIS_CDFSgvfobsId)//char(0),&
+        write_CDFSgvfobs)
 #endif
 
 #if ( defined DA_OBS_NRT_SMAPSM )
@@ -912,7 +980,17 @@ subroutine LIS_DAobs_plugin
    call registerreaddaobs(trim(LIS_hydrowebwlId)//char(0),read_hydrowebwlobs)
    call registerwritedaobs(trim(LIS_hydrowebwlId)//char(0),write_hydrowebwlobs)
 #endif
-   
+
+#if ( defined DA_OBS_WUSUCLA )
+!MLW: SNODAS snow depth
+   call registerdaobsclass(trim(LIS_wusUCLAobsId),"LSM")
+   call registerdaobssetup(trim(LIS_wusUCLAobsId)//char(0), &
+        WUS_UCLAsnow_setup)
+   call registerreaddaobs(trim(LIS_wusUCLAobsId)//char(0),  &
+        read_WUS_UCLAsnow)
+   call registerwritedaobs(trim(LIS_wusUCLAobsId)//char(0), &
+        write_WUS_UCLAsnow)
+#endif   
 #endif
  end subroutine LIS_DAobs_plugin
 

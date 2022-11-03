@@ -1,0 +1,16 @@
+ESA-CCI passive sensor soilmoisture Testcase
+
+This test-case demonstrates reading the PASSIVE sensor type of the ESA-CCI soilmoisture datasets to generate a CDF.
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data. 

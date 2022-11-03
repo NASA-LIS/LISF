@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -76,6 +76,8 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    external noah39_getrunoffs
    external noah39_getrunoffs_mm
+   external noah39_getrunoffs_hymap2
+   external noah39_getsws_hymap2
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -160,6 +162,9 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noah39_getrunoffs_mm)
+!   call registerlsmroutinggetsws(trim(LIS_noah39Id)//"+"//&
+!        trim(LIS_HYMAP2routerId)//char(0), &
+!        noah39_getsws_hymap2)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -253,7 +258,10 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        noah39_getrunoffs_mm)
+        noah39_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noah39_getsws_hymap2)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )

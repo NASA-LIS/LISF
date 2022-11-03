@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -55,10 +56,10 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
 
   integer             :: snodid
   real                :: snodobs(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
-  character*100       :: sndobsdir
+  character(len=LIS_CONST_PATH_LEN) :: sndobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
 
   logical             :: readflag
   integer             :: status
@@ -93,7 +94,7 @@ subroutine read_syntheticsndobs(n, k, OBS_State, OBS_Pert_State)
      call LIS_verify(status,'ESMF_FieldGet failed in read_syntheticsndobs')
      
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
-     write(LIS_logunit,*)  '[INFO] Reading syn data ',name
+     write(LIS_logunit,*)  '[INFO] Reading syn data ',trim(name)
      
      call LIS_verify(nf90_open(path=trim(name),mode=NF90_NOWRITE,ncid=ftn),&
           'Error opening file '//trim(name))
@@ -161,7 +162,7 @@ end subroutine read_syntheticsndobs
 subroutine synsnd_filename(name, ndir, yr, mo,da,hr,mn)
   
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr,mn
   character (len=*) :: ndir
   character (len=4) :: fyr

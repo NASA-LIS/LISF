@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,7 +60,13 @@ module genEnsFcst_forcingMod
      logical        :: zterp_flags      !(:) Allocatable later?
 
      character(20)  :: fcst_type        ! Forecast type name
+     character(40)  :: user_spec        ! Forecast file, user-specified naming convention
      integer        :: max_ens_members  ! Max number of forecast ensemble members
+   
+     ! Specify forecast initialization date:
+     integer        :: fcst_inityr      ! Forecast initial year
+     integer        :: fcst_initmo      ! Forecast initial month
+     integer        :: fcst_initda      ! Forecast initial day
 
      real, allocatable :: metdata1(:,:,:)  ! Metforcing data from file/bookend 1
      real, allocatable :: metdata2(:,:,:)  ! Metforcing data from file/bookend 2
@@ -157,7 +163,9 @@ contains
    ! Locate starting genEnsFcst file: 
    fullfilename = "none"
    call get_genEnsFcst_filename( genensfcst_struc%fcst_type, &
-      LIS_rc%syr, LIS_rc%smo, &
+      genensfcst_struc%user_spec, &
+!      LIS_rc%syr, LIS_rc%smo, &    ! (Original code prior to 09-02-2022)
+      genensfcst_struc%fcst_inityr, genensfcst_struc%fcst_initmo, &  ! New config entry
       1, LIS_rc%syr, LIS_rc%smo, &
       genensfcst_struc%directory, fullfilename )
 

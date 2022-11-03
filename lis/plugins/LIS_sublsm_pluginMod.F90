@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +21,7 @@ module LIS_sublsm_pluginMod
 !
 ! !REVISION HISTORY:
 !  09 Oct 03    Sujay Kumar  Initial Specification
+!  04 Jun 21    Mahdi Navari Modified for Naoh.3.9
 !
 !EOP
   implicit none
@@ -145,6 +148,11 @@ contains
    external NoahMP401_setCROCUSimport
 #endif
 
+#if ( defined SM_NOAH_3_9 )
+   external Noah39_getCROCUSexport
+   external Noah39_setCROCUSimport
+#endif
+
 #endif
 
 #if ( defined SM_Crocus_8_1 )
@@ -172,6 +180,17 @@ contains
    call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
+
+#if ( defined SM_NOAH_3_9 )
+   call registerlsm2sublsmgetexport(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),Noah39_getCROCUSexport)
+   call registerlsmsetsublsmimport(trim(LIS_noah39Id)//char(0),&
+        Noah39_setCROCUSimport)
+   call registersublsm2lsmgetexport(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+#endif
+
+
 #endif
   end subroutine LIS_sublsm_plugin
 

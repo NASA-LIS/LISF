@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,6 +39,7 @@ module ensrf_Mod
   use LIS_fileIOMod
   use LIS_historyMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -787,7 +788,7 @@ end subroutine ensrf_update
 !
 !EOP
     integer                :: ftn
-    character*100          :: innovfile, gainfile, incrfile
+    character(len=LIS_CONST_PATH_LEN) :: innovfile, gainfile, incrfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3), ares_Id, ninnov_Id, innov_id
     integer                :: forecast_sigma_id, aincr_Id
@@ -1060,7 +1061,7 @@ end subroutine ensrf_update
 
     integer                :: ftn 
     integer                :: v
-    character*100          :: spreadfile
+    character(len=LIS_CONST_PATH_LEN) :: spreadfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3)
     integer                :: ensspread_id(LIS_rc%nstvars(k))
@@ -1202,7 +1203,7 @@ end subroutine ensrf_update
 
     integer                :: ftn 
     integer                :: v
-    character*100          :: incrfile
+    character(len=LIS_CONST_PATH_LEN) :: incrfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3)
     integer                :: incr_id(LIS_rc%nstvars(k))

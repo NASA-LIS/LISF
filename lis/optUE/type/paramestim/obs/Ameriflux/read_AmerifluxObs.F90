@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine read_AmerifluxObs(Obj_Space)
   use LIS_logMod,     only : LIS_logunit, LIS_verify, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use LIS_fileIOMod,      only : LIS_readData
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use AmerifluxobsMod, only : AmerifluxObs_struc
   use map_utils,       only : latlon_to_ij
 
@@ -57,7 +58,7 @@ subroutine read_AmerifluxObs(Obj_Space)
   type(ESMF_Field)    :: qgField
   type(ESMF_Field)    :: sfstField
   type(ESMF_Field)    :: sfsmField
-  character*100       :: obsdir, name
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, name
   logical             :: data_update
   logical             :: file_exists
   logical             :: readflag

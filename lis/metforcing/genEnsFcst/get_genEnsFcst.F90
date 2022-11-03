@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine get_genEnsFcst(n, findex)
   use LIS_logMod,       only : LIS_logunit, LIS_verify, LIS_endrun
   use LIS_timeMgrMod,   only : LIS_tick, LIS_get_nstep
   use LIS_metforcingMod,only : LIS_forc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use genEnsFcst_forcingMod,  only : genensfcst_struc
   use genEnsFcst_VariablesMod
 
@@ -58,7 +59,7 @@ subroutine get_genEnsFcst(n, findex)
   integer        :: c, r, f, m
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(LIS_CONST_PATH_LEN) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:
@@ -125,7 +126,9 @@ subroutine get_genEnsFcst(n, findex)
       do m = 1, genensfcst_struc%max_ens_members
          ensnum = m
          call get_genEnsFcst_filename( genensfcst_struc%fcst_type, &
-            LIS_rc%syr, LIS_rc%smo, &
+            genensfcst_struc%user_spec, &
+!            LIS_rc%syr, LIS_rc%smo, &   ! Original code (prior to 09-02-2022)
+            genensfcst_struc%fcst_inityr, genensfcst_struc%fcst_initmo, &  ! New config file entry
             ensnum, LIS_rc%yr, LIS_rc%mo, &
             genensfcst_struc%directory, fullfilename )
 
@@ -143,9 +146,6 @@ subroutine get_genEnsFcst(n, findex)
         genensfcst_struc%findtime1 = 0
         retrieve_file = .false.
 
-!        print *, " Getting Ensemble Forecast file: ",&
-!                trim(fullfilename)
-
         ! Read in GenEnsFcst Forcing File:
         !  Also, spatially reproject/reinterpolate genEnsFcst file.
         call genEnsFcst_Variables_read( findex, fullfilename, &
@@ -159,9 +159,6 @@ subroutine get_genEnsFcst(n, findex)
                 gindex = LIS_domain(n)%gindex(c,r)
  
                 if( forcopts%read_airtmp ) then
-!                  if( c==10 .and. r==10 ) then
-!                     print *, c,r,tindex,ensfcstvars_struc(n)%airtmp(c,r)
-!                  endif
                   genensfcst_struc%metdata2(forcopts%index_airtmp,m,gindex) = &
                      ensfcstvars_struc(n)%airtmp(c,r)
                 endif

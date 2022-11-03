@@ -270,7 +270,7 @@ You're now ready to run LIS to perform the SMAP DA experiment. From `$WORKING_DI
 ./LIS -f lis.config_noah36_smapda
 ----
 
-Using one processor, as we are here, the run will take approximately 30 minutes to complete. If the run fails, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of `lislog_smapda.0000`. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the `lislog_smapda.0000`:
+Using one processor, as we are here, the run will take approximately 30 minutes to complete. If the run fails, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of `log/lislog_smapda.0000`. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of `log/lislog_smapda.0000`:
 
 [source,shell]
 ----

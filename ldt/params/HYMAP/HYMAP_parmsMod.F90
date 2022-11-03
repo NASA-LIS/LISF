@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -30,6 +30,7 @@ module HYMAP_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -53,27 +54,27 @@ module HYMAP_parmsMod
 
      integer       :: bfdwicode, rundwicode, rivflocode
 
-     character*100 :: riverwidthfile
-     character*100 :: riverheightfile
-     character*100 :: riverlengthfile
-     character*100 :: riverzfile
-     character*100 :: fldheightfile
-     character*100 :: fldzfile
-     character*100 :: flowdirxfile
-     character*100 :: flowdiryfile
-     character*100 :: gridelevfile
-     character*100 :: griddistfile
-     character*100 :: gridareafile
-     character*100 :: drainareafile
-     character*100 :: basinfile
-     character*100 :: runoffdelayfile
-     character*100 :: runoffdelaymfile
-     character*100 :: baseflowdelayfile
-     character*100 :: refqfile
-     character*100 :: basinmaskfile
-     character*100 :: flowtypefile 
-     character*100 :: baseflowdwiratiofile 
-     character*100 :: runoffdwiratiofile 
+     character(len=LDT_CONST_PATH_LEN) :: riverwidthfile
+     character(len=LDT_CONST_PATH_LEN) :: riverheightfile
+     character(len=LDT_CONST_PATH_LEN) :: riverlengthfile
+     character(len=LDT_CONST_PATH_LEN) :: riverzfile
+     character(len=LDT_CONST_PATH_LEN) :: fldheightfile
+     character(len=LDT_CONST_PATH_LEN) :: fldzfile
+     character(len=LDT_CONST_PATH_LEN) :: flowdirxfile
+     character(len=LDT_CONST_PATH_LEN) :: flowdiryfile
+     character(len=LDT_CONST_PATH_LEN) :: gridelevfile
+     character(len=LDT_CONST_PATH_LEN) :: griddistfile
+     character(len=LDT_CONST_PATH_LEN) :: gridareafile
+     character(len=LDT_CONST_PATH_LEN) :: drainareafile
+     character(len=LDT_CONST_PATH_LEN) :: basinfile
+     character(len=LDT_CONST_PATH_LEN) :: runoffdelayfile
+     character(len=LDT_CONST_PATH_LEN) :: runoffdelaymfile
+     character(len=LDT_CONST_PATH_LEN) :: baseflowdelayfile
+     character(len=LDT_CONST_PATH_LEN) :: refqfile
+     character(len=LDT_CONST_PATH_LEN) :: basinmaskfile
+     character(len=LDT_CONST_PATH_LEN) :: flowtypefile 
+     character(len=LDT_CONST_PATH_LEN) :: baseflowdwiratiofile 
+     character(len=LDT_CONST_PATH_LEN) :: runoffdwiratiofile 
 
      type(LDT_paramEntry) :: hymap_river_width
      type(LDT_paramEntry) :: hymap_river_height

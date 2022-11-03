@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine read_GLASSalbedo(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use GLASSalbedo_Mod, only : GLASSalbedo_struc
 
   implicit none
@@ -55,8 +56,8 @@ subroutine read_GLASSalbedo(n, k, OBS_State, OBS_Pert_State)
 !EOP
   integer                :: status
   integer                :: grid_index
-  character*100          :: albedoobsdir
-  character*100          :: fname1,fname2
+  character(len=LIS_CONST_PATH_LEN) :: albedoobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname1,fname2
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -330,7 +331,7 @@ subroutine read_GLASS_ALBEDO_data(n, k, fname, source, albedoobs_bs_ip, &
 
   file_id = gdopen(trim(fname),DFACC_READ)
   if (file_id.eq.-1)then
-     write(LIS_logunit,*) "[ERR] Failed to open hdf file",fname
+     write(LIS_logunit,*) "[ERR] Failed to open hdf file",trim(fname)
   end if
   
   albedo_bs_name = "ABD_BSA_VIS"

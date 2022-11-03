@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,13 +23,14 @@ subroutine read_TRMM3B42RTV7 (n, filename_TRMM3B42RT, findex, &
  use LDT_coreMod, only       : LDT_rc, LDT_domain
  use LDT_logMod, only        : LDT_logunit, LDT_getNextUnitNumber, &
                                LDT_releaseUnitNumber
+ use LDT_constantsMod, only : LDT_CONST_PATH_LEN
  use LDT_metforcingMod, only : LDT_forc
  use TRMM3B42RTV7_forcingMod, only : TRMM3B42RTV7_struc
  
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=120)  :: filename_TRMM3B42RT
+  character(len=*)    :: filename_TRMM3B42RT
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42RT
@@ -67,8 +68,8 @@ subroutine read_TRMM3B42RTV7 (n, filename_TRMM3B42RT, findex, &
   real    :: tmp(TRMM3B42RTV7_struc(n)%nc, TRMM3B42RTV7_struc(n)%nr)   
   real, allocatable  :: precip_regrid(:,:)   ! Interpolated precipitation array
  
-  character(len=120) :: filename             ! Filename variables
-  character*200      :: dirfile 
+  character(len=LDT_CONST_PATH_LEN) :: filename             ! Filename variables
+  character(len=LDT_CONST_PATH_LEN) :: dirfile 
   integer            :: ftn
   logical            :: file_exists
  
@@ -177,7 +178,7 @@ subroutine read_TRMM3B42RTV7 (n, filename_TRMM3B42RT, findex, &
   use LDT_coreMod, only : LDT_rc
 
    implicit none
-   character*200, intent(in) :: dirfile
+   character(len=*), intent(in) :: dirfile
    integer,       intent(in) :: xd, yd 
    real,       intent(inout) :: precip(xd,yd)
 
@@ -283,7 +284,7 @@ end subroutine read_3B42RTV7_gzip
   use LDT_logMod, only : LDT_logunit, LDT_getNextUnitNumber, &
                          LDT_releaseUnitNumber
 
-  character*200, intent(in) :: dirfile
+  character(len=*), intent(in) :: dirfile
   integer, intent(in)       :: xd,yd
   real,    intent(inout)    :: precip(xd,yd)
 

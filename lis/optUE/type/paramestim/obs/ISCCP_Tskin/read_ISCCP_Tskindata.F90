@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@ subroutine read_ISCCP_Tskindata(Obj_Space)
   use LIS_logMod,     only : LIS_logunit, LIS_verify, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
   use ISCCP_Tskinobs_module, only : isccp_tskin_struc
+  use LIS_constantsMod,      only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -63,10 +64,10 @@ subroutine read_ISCCP_Tskindata(Obj_Space)
 
   type(ESMF_Field)    :: tskinField
   real,    pointer    :: obsl(:)
-  character*100       :: tskinobsdir
+  character(len=LIS_CONST_PATH_LEN) :: tskinobsdir
   logical             :: data_update
   logical             :: file_exists
-  character*80        :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer             :: i, j, istat
   integer             :: index1, iret
   logical*1           :: li(N_gswp2)
@@ -100,7 +101,7 @@ subroutine read_ISCCP_Tskindata(Obj_Space)
   if (readflag) then 
      allocate(lo(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
      allocate(go(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-     write(LIS_logunit,*)  'Reading ISCCP Tskin data ',name
+     write(LIS_logunit,*)  'Reading ISCCP Tskin data ',trim(name)
      
      call ESMF_StateGet(Obj_Space,"Skin Temperature",tskinField,&
           rc=status)
@@ -183,7 +184,7 @@ end subroutine read_ISCCP_Tskindata
 subroutine ISCCP_Tskin_filename1(name, ndir, yr, mo,da,hr)
   
   implicit none
-  character*80      :: name
+  character(len=*)  :: name
   integer           :: yr, mo, da, hr
   character (len=*) :: ndir
   character (len=4) :: fyr

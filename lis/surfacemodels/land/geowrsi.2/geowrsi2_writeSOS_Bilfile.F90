@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@
   use LIS_logMod,     only : LIS_logunit, LIS_endrun
   use LIS_fileIOMod,  only : LIS_create_output_directory
   use LIS_historyMod, only : LIS_gather_gridded_output
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use geowrsi2_module
   use geowrsi2_lsmMod
   use geowrsi2_physics_module, only : gMASK_EXC, &
@@ -56,7 +57,7 @@
   integer             :: t, c, r, l, s
   integer             :: ftn
   integer             :: index1, ierr
-  character*100       :: dirname
+  character(len=LIS_CONST_PATH_LEN) :: dirname
   character(len=4)    :: nest_str
   character(len=4)    :: cyr4
   real*4, allocatable     :: gvar(:)
