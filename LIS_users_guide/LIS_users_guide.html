@@ -6915,6 +6915,10 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;HYMAP2 router&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">use the HyMAP2 router</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;RAPID router&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use the RAPID router</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -20835,7 +20839,194 @@ NLDAS routing model restart file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_lsm_Crocus8.1">9.16.4. Crocus8.1</h4>
+<h4 id="sssec_rapidrouting">9.16.4. RAPID routing</h4>
+<div class="paragraph">
+<p><code>RAPID routing model time step:</code> specifies the timestep for
+the RAPID router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID river routing time step:</code> specifies the timestep for
+RAPID river routing precedure.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID routing model output interval:</code> defines the output
+writing interval for the RAPID router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID routing model restart interval:</code> defines the restart output
+writing interval for the RAPID router.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID routing model start mode:</code> specifies the restart mode
+to be used for the RAPID router.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">restart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A restart mode is being used; read a RAPID restart file</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">coldstart</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">A cold start mode is being used; no restart file read</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>RAPID run in ensemble mode:</code> specifies whether to run the
+RAPID router in ensemble mode.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not run in ensemble mode</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Run in ensemble mean mode</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Run in ensemble mode (not support)</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>RAPID run option:</code> is set to 1 for regular run. The other options do not
+support yet.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID routing option:</code> is set to 1 for applying matrix-based
+Mukingum algorithm. The other options do not support yet.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID cost function phi option:</code> is set to 1 for phi1. The other option
+does not support yet.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID initial flow:</code> use initial instantaneous flow file. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID write final flow:</code> save final instantaneous flow file. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID compute volume:</code> compute flow volume. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID human-induced flow:</code> apply human-induced flow. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID upstream forcing:</code> use upstrem forcing. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID dam model used:</code> use dam model. This option
+is not supported. set to .false. .</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID output influence:</code> use output influence. This option
+is not supported. set to .false.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID uncertainty quantification:</code> use uncertainty quantification. This option
+is not supported. set to .false.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID river connectivity file:</code> specifies river connectivity file.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID max number of upstream reaches:</code> specifies maximum number of upstream
+reaches.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID river weight table:</code> specifies river weight table file.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID river basin ID file:</code> specifies river basin ID file.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID Muskingum parameter k file:</code> specifies Muskingum parameter k file.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID Muskingum parameter x file:</code> specifies Muskingum parameter x file.</p>
+</div>
+<div class="paragraph">
+<p><code>RAPID namelist file:</code> specifies namelist file.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>RAPID routing model time step: "1da"
+RAPID river routing time step: "15mn"
+RAPID routing model output interval: "1da"
+RAPID routing model restart interval: "1mo"
+RAPID routing model start mode: restart
+RAPID routing model restart file: ./output/ol/ROUTING/200801/LIS_RST_RAPID_router_200801150000.d01.nc
+RAPID run in ensemble mode: 0
+RAPID run option: 1
+RAPID routing option: 1
+RAPID cost function phi option: 1
+RAPID initial flow: .false.
+RAPID write final flow: .false.
+RAPID compute volume: .false.
+RAPID human-induced flow: .false.
+RAPID upstream forcing: .false.
+RAPID dam model used: .false.
+RAPID output influence: .false.
+RAPID uncertainty quantification: .false.
+RAPID river connectivity file: ./rapid_params/rapid_connect.csv
+RAPID max number of upstream reaches:   3
+RAPID river weight table: ./rapid_params/weight_lis.csv
+RAPID river basin ID file: ./rapid_params/riv_bas_id.csv
+RAPID Muskingum parameter k file: ./rapid_params/k.csv
+RAPID Muskingum parameter x file: ./rapid_params/x.csv
+RAPID namelist file: ./rapid_params/rapid_namelist</pre>
+</div>
+</div>
+<div class="exampleblock">
+<div class="content">
+<div id="sssec_lsm_Crocus8.1" class="paragraph">
+<p>==== Crocus8.1</p>
+</div>
 <div class="paragraph">
 <p><code>CROCUS81 model timestep:</code> specifies the timestep for the run.</p>
 </div>
@@ -22271,6 +22462,8 @@ Code contributors included:
 </div>
 </div>
 </div>
+</div>
+</div>
 <div id="footnotes">
 <hr>
 <div class="footnote" id="_footnotedef_1">
@@ -22283,7 +22476,7 @@ Code contributors included:
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-11-03 20:30:47 UTC
+Last updated 2022-11-07 21:57:40 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
