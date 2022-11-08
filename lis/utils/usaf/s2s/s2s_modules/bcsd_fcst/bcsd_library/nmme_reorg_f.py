@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 """
 # Author: Abheera Hazra
-#This module reorganizes
-#NMME preciptation forecasts
-#Date: May 06, 2021
+#  This module reorganizes NMME preciptation forecasts
+#  Date: May 06, 2021
+# Updated: Sarith Mahanama
+#  Removed basemap call and added xarray and xesmf
+#  module calls
+#  Date: Nov 07, 2022
 # In[28]:
 """
 from __future__ import division
@@ -13,12 +16,13 @@ import sys
 from time import ctime as t_ctime
 from time import time as t_time
 import numpy as np
-from mpl_toolkits import basemap
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files
+import xarray as xr
+import xesmf as xe
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -150,21 +154,43 @@ print('Reading:', INFILE)
 
 ## Convert units to mm/s or kg/m2/s
 XPREC = XPREC/86400
+print(XPREC.shape, XPRECI.shape)
 
-print(XPREC.shape)
+ds_in = xr.Dataset(
+            {
+                "lat": (["lat"], LATI),
+                "lon": (["lon"], LONI),
+        })
+
+ds_in["slice"] = xr.DataArray(
+    data = np.array (XPREC[0,0,0,:,:]),
+    dims=["lat", "lon"],
+    coords=dict(
+        lat=(["lat"], LATI),
+        lon=(["lon"], LONI))
+    )
+ds_in["XPREC"] = xr.DataArray(
+    data = np.array (XPREC[0,0:9,:,:,:]),
+    dims=["mon","ens", "lat", "lon"],
+    coords=dict(
+        mon=(["mon"], np.arange(9)),
+        ens=(["ens"], np.arange(ENS_NUM)),
+        lat=(["lat"], LATI),
+        lon=(["lon"], LONI))
+    )
+ds_out = xr.Dataset(
+            {
+                "lat": (["lat"], LATS),
+                "lon": (["lon"], LONS),
+        })
+regridder = xe.Regridder(ds_in, ds_out, "bilinear", periodic=True)
+ds_out = regridder(ds_in)
+
 ## Reorganize and write
 YR = CYR
 for m in range(0, ENS_NUM):
     for l in range(0, 9):
-        x = XPREC[0, l, m, :, :]
-        print(x.shape, LATI.shape, LONI.shape, LATS.shape, LONS.shape)
-        x1 = x[:, 0:180]
-        x2 = x[:, 180:]
-        x = np.hstack((x2, x1))
-        lone, late = np.meshgrid(LONS, LATS)
-        #print(lone.shape,late.shape)
-        XPRECI[0, :, :] = basemap.interp(x, LONI, LATI, lone, late, \
-                        checkbounds=False, masked=False, order=1)
+        XPRECI[0, :, :] = ds_out["XPREC"].values[l,m,:,:]
         print(XPRECI.shape)
         print('interpolated')
         jy = YR+LDYR[MM, l]
