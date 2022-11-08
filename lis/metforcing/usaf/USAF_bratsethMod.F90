@@ -2821,7 +2821,8 @@ contains
                     yr1, mo1, da1, hr1, fc_hr-3)
             endif
          else if (src .eq. "GALWEM") then
-            call getGALWEMfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
+            call AGRMET_getGALWEMfilename(gribfile, &
+                 agrmet_struc(nest)%agrmetdir,&
                  agrmet_struc(nest)%galwemdir,&
                  agrmet_struc(nest)%use_timestamp,&
                  agrmet_struc(nest)%galwem_res, &
