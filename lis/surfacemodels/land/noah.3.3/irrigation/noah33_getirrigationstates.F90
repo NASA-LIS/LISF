@@ -86,7 +86,6 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   ! -----------------------------------------
   call IM%get_irrig_vegindex (veg_index1, veg_index2, nlctypes)
   
-  
   ! Set global soil  parameters
   sldpth(1) = noah33_struc(nest)%lyrthk(1)         ! Soil layer thicknesses (m)
   sldpth(2) = noah33_struc(nest)%lyrthk(2)
@@ -216,7 +215,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                       noah33_struc(nest)%noah(TileNo)%smcmax,                           &
                       noah33_struc(nest)%noah(TileNo)%smcref,                           &
                       noah33_struc(nest)%noah(TileNo)%smc(:lroot),                      &
-                      rdpth(:lroot))
+                      rdpth(:lroot),noah33_struc(nest)%noah(TileNo)%soiltype)
                                    
               endif VEGIF
            endif IRRS

@@ -322,6 +322,7 @@ module LIS_histDataMod
   public :: LIS_MOC_IRRIGTSP
   public :: LIS_MOC_IRRIGTDP
   public :: LIS_MOC_IRRIGTFD
+  public :: LIS_MOC_IRRLCFRAC
 
   public :: LIS_MOC_LSM_COUNT
   public :: LIS_MOC_ROUTING_COUNT
@@ -810,6 +811,7 @@ module LIS_histDataMod
    integer :: LIS_MOC_IRRIGTSP = -9999
    integer :: LIS_MOC_IRRIGTDP = -9999
    integer :: LIS_MOC_IRRIGTFD = -9999
+   integer :: LIS_MOC_IRRLCFRAC = -9999
 
    integer :: LIS_MOC_LSM_COUNT
    integer :: LIS_MOC_ROUTING_COUNT
@@ -4328,6 +4330,18 @@ contains
          "Flood irrigation type fraction",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGTFD,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"-"/),&
+            1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigLCFrac:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigLCFrac",&
+         "irrigation_landcover_frac",&
+         "land cover and crop fraction",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRLCFRAC,&
             LIS_histData(n)%head_irrig_list,&
             n,1,ntiles,(/"-"/),&
             1,(/"-"/),1,1,1,&

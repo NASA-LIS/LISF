@@ -82,7 +82,10 @@ module LIS_irrigationMod
      real               :: sprinkler_frequency
      real               :: sprinkler_rate
      real               :: drip_rate
+     real               :: drip_frequency
      real               :: flood_rate
+     real               :: flood_frequency
+     character*50       :: soiltextscheme
 
   end type irrig_type_dec
 
@@ -232,7 +235,7 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config, &
             LIS_irrig_struc(n)%sprinkler_frequency, &
             label="Irrigation Sprinkler frequency:",default=0.,rc=rc)
-       write(LIS_logunit,*) "[INFO] Irrigation Sprinkler frequency:  ",&
+       write(LIS_logunit,*) "[INFO] Irrigation Sprinkler cycle frequency:  ",&
                             LIS_irrig_struc(n)%sprinkler_frequency
 
        !Drip
@@ -266,6 +269,11 @@ contains
             label="Irrigation Drip fixed rate:",default=0.,rc=rc)
        write(LIS_logunit,*) "[INFO] Irrigation Drip fixed rate:  ",&
                             LIS_irrig_struc(n)%drip_rate
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            LIS_irrig_struc(n)%drip_frequency, &
+            label="Irrigation Drip frequency:",default=0.,rc=rc)
+       write(LIS_logunit,*) "[INFO] Irrigation Drip cycle frequency:  ",&
+                            LIS_irrig_struc(n)%drip_frequency
                              
        !Flood
        call ESMF_ConfigGetAttribute(LIS_config, &
@@ -285,7 +293,7 @@ contains
                             LIS_irrig_struc(n)%flood_thresh
        call ESMF_ConfigGetAttribute(LIS_config, &
             LIS_irrig_struc(n)%flood_efcor,     &
-            label="Irrigation threshold for Flood:",default=0.5,rc=rc)
+            label="Irrigation Flood efficiency:",default=0.5,rc=rc)
        write(LIS_logunit,*) "[INFO] Irrigation Flood efficiency:  ",&
                             LIS_irrig_struc(n)%flood_efcor
        call ESMF_ConfigGetAttribute(LIS_config, &
@@ -298,6 +306,11 @@ contains
             label="Irrigation Flood fixed rate:",default=0.,rc=rc)
        write(LIS_logunit,*) "[INFO] Irrigation Flood fixed rate:  ",&
                             LIS_irrig_struc(n)%flood_rate
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            LIS_irrig_struc(n)%flood_frequency, &
+            label="Irrigation Flood frequency:",default=0.,rc=rc)
+       write(LIS_logunit,*) "[INFO] Irrigation Flood cycle frequency:  ",&
+                            LIS_irrig_struc(n)%flood_frequency
 
        ! Crop calendar options
        call ESMF_ConfigGetAttribute(LIS_config, &
@@ -330,6 +343,30 @@ contains
           LIS_irrig_struc(n)%models_used = trim(LIS_rc%irrigation_type)
           LIS_irrig_struc(n)%stats_file_open = .true.
        enddo
+
+     ! Get soil texture class
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+       do n=1,LIS_rc%nnest
+        inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+        if(file_exists) then
+
+         write(LIS_logunit,*)'[INFO] Getting Soil Tex Scheme from '&
+                //trim(LIS_rc%paramfile(n))
+         ios = nf90_open(path=LIS_rc%paramfile(n),mode=NF90_NOWRITE,ncid=nid)
+         call LIS_verify(ios,'Error in nf90_open in read_landcover')
+         ios = nf90_get_att(nid, NF90_GLOBAL, 'SOILTEXT_SCHEME', &
+               LIS_irrig_struc(n)%soiltextscheme)
+         call LIS_verify(ios,'Error in nf90_get_att in soiltextscheme')
+         ios = nf90_close(nid)
+         call LIS_verify(ios,'Error in nf90_close in soiltextscheme')
+        else
+         write(LIS_logunit,*) '[ERR] soiltext: ',LIS_rc%paramfile(n), ' does not exist'
+         write(LIS_logunit,*) '[ERR] program stopping ...'
+         call LIS_endrun
+        endif
+       enddo
+#endif
 
        do n=1,LIS_rc%nnest
           write(unit=temp,fmt='(i2.2)') n

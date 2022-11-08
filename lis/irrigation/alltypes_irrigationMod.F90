@@ -280,6 +280,8 @@ contains
     use LIS_FORC_AttributesMod 
     use LIS_histDataMod
     use LIS_metforcingMod, only : LIS_FORC_State    
+    use LIS_coreMod,       only : LIS_rc, LIS_domain
+    use LIS_LMLCMod,       only : LIS_LMLC 
 
     implicit none
 
@@ -296,6 +298,8 @@ contains
     real,    pointer    :: irrigType(:)
     real,    pointer    :: irrigScale(:)
     real                :: itype1, itype2, itype3
+    real, allocatable   :: lcfrac(:)
+    integer             :: i,k,col,row
 
 
     call ESMF_StateGet(irrigState,&
@@ -338,6 +342,8 @@ contains
     call LIS_verify(status,&
          'ESMF_FieldGet failed for rainf in alltypes_irrigation')
 
+    allocate(lcfrac(LIS_rc%nsurfacetypes))
+
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
        if ( irrigType(t) .eq. 1 ) then  ! sprinkler, add to rain
@@ -379,8 +385,24 @@ contains
                value=itype2,unit="-",direction="-",vlevel=1)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGTFD,&
                value=itype3,unit="-",direction="-",vlevel=1)
+         ! 3D land cover fractions 
+         i = LIS_domain(n)%tile(t)%vegt
+         row = LIS_domain(n)%tile(t)%row
+         col = lIS_domain(n)%tile(t)%col
+         lcfrac = LIS_rc%udef
+         lcfrac(i) = LIS_LMLC(n)%landcover(col, row, i)
+! limit printing this out to frst time stemp
+!         write(*,101) t,i,col,row,lcfrac(i),irrigType(t),irrigScale(t),&
+!                      LIS_irrig_struc(n)%plantDay(t,:), &
+!                      LIS_irrig_struc(n)%harvestDay(t,:)
+!    101 format (i5,i4,2i4,f10.6,f4.0,f7.4,2f7.0,2f7.0)
+         do k = 1, LIS_rc%nsurfacetypes
+          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRLCFRAC,&
+               vlevel=k,value=lcfrac(k),unit="-",direction="-")
+         enddo
 
-    enddo
+    enddo   ! t
+    deallocate(lcfrac)
     
   end subroutine alltypes_irrigation_updates
 
