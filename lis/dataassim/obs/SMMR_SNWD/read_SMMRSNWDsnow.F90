@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_SMMRSNWDsnow(n,k,OBS_State,OBS_Pert_State)
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_DAobservationsMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_pluginIndices, only : LIS_SMMRSNWDsnowobsId
   use SMMRSNWDsnow_Mod, only : SMMRSNWDsnow_struc
 
@@ -57,7 +58,7 @@ subroutine read_SMMRSNWDsnow(n,k,OBS_State,OBS_Pert_State)
   logical                       :: dataflag(LIS_npes)
   logical                       :: dataflag_local
   integer                       :: c,r, p, t
-  character*100                 :: obsdir, smmr_filename
+  character(len=LIS_CONST_PATH_LEN) :: obsdir, smmr_filename
   real, allocatable             :: snwd_field(:,:)
   real                          :: tsnow(SMMRSNWDsnow_struc(n)%nc*&
        SMMRSNWDsnow_struc(n)%nr)
@@ -99,7 +100,7 @@ subroutine read_SMMRSNWDsnow(n,k,OBS_State,OBS_Pert_State)
      inquire(file=smmr_filename,exist=file_exists)
      if(file_exists) then 
 
-        write(LIS_logunit,*)  '[INFO] Reading SMMR SNWD data ',smmr_filename
+        write(LIS_logunit,*)  '[INFO] Reading SMMR SNWD data ',trim(smmr_filename)
         
         allocate(snwd_field(SMMRSNWDsnow_struc(n)%nc, &
              SMMRSNWDsnow_struc(n)%nr))
@@ -278,7 +279,7 @@ subroutine SMMRsnow_filename3(name, ndir, yr, mo,da)
   
   implicit none
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=*)      :: name
   integer           :: yr, mo, da
   character (len=*) :: ndir
 ! 

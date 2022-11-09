@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,6 +46,7 @@ contains
 !EOP
 
     use LISlsmSM_obsMod,           only : LISlsmSM_obsInit
+    use LISlsmTEFF_obsMod,         only : LISlsmTEFF_obsInit  !Y.Kwon
     use syntheticsm_obsMod,        only : syntheticsm_obsinit
     use NASA_AMSREsm_obsMod,       only : NASA_AMSREsm_obsInit
     use LPRM_AMSREsm_obsMod,       only : LPRM_AMSREsm_obsInit
@@ -65,14 +66,19 @@ contains
     use ANSASNWDsnow_obsMod,       only : ANSASNWDsnow_obsInit
     use GCOMW_AMSR2L3snd_obsMod,   only : GCOMW_AMSR2L3snd_obsInit
     use NASASMAPsm_obsMod,         only : NASASMAPsm_obsinit
-    use SMOSNRTNNL2sm_obsMod,      only : SMOSNRTNNL2sm_obsinit   !kyh20210105
+    use SMOSNRTNNL2sm_obsMod,      only : SMOSNRTNNL2sm_obsinit   !Y.Kwon
     use NASASMAPvod_obsMod,        only : NASASMAPvod_obsinit
     use GLASSlai_obsMod,           only : GLASSlai_obsinit
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
     use MCD15A2Hlai_obsMod,        only : MCD15A2Hlai_obsinit
     use THySM_obsMod,              only : THySM_obsinit
-    
+    use VIIRSGVFobsMod,            only : VIIRSGVFobsinit        !Y.Kwon   
+    use CDFSGVFobsMod,             only : CDFSGVFobsinit         !Y.Kwon
+    use GEOSTEFF_obsMod,           only : GEOSTeffobsinit        !Y.Kwon    
+    use SMAPEOPLSMobsMod,          only : SMAPEOPLSMobsinit       !Y.Kwon
+
     external readLISlsmSMObs
+    external readLISlsmTEFFObs    !Y.Kwon
     external readsyntheticsmobs
     external readNASA_AMSREsmObs
     external readLPRM_AMSREsmObs
@@ -92,16 +98,24 @@ contains
     external readANSASNWDsnowObs
     external readGCOMW_AMSR2L3sndObs
     external readNASASMAPsmObs
-    external readSMOSNRTNNL2smObs      !kyh20210105
+    external readSMOSNRTNNL2smObs      !Y.Kwon
     external readNASASMAPvodObs
     external readGLASSlaiObs
     external readLPRMvodObs
     external readMCD15A2HlaiObs
     external readTHySMobs
+    external readVIIRS_GVFObs       !Y.Kwon
+    external readCDFS_GVFObs        !Y.Kwon
+    external readGEOSTEFFObs        !Y.Kwon
+    external readSMAPEOPL_SMObs      !Y.Kwon
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
 
+    !Y.Kwon
+    call registerdaobssetup(trim(LDT_LISlsmTEFFobsId)//char(0), LISlsmTEFF_obsInit)
+    call registerdaobsread(trim(LDT_LISlsmTEFFobsId)//char(0), readLISlsmTEFFObs)
+ 
     call registerdaobssetup(trim(LDT_syntheticSMobsId)//char(0), &
          syntheticSM_obsinit)
     call registerdaobsread(trim(LDT_syntheticSMobsId)//char(0),&
@@ -197,12 +211,11 @@ contains
     call registerdaobsread(trim(LDT_NASASMAPsmobsId)//char(0),&
          readNASASMAPsmObs)
 
-    !--------kyh20210105
+    !Y.Kwon
     call registerdaobssetup(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
          SMOSNRTNNL2sm_obsinit)
     call registerdaobsread(trim(LDT_SMOSNRTNNsmobsId)//char(0),&
          readSMOSNRTNNL2smObs)
-    !--------kyh20210105
 
     call registerdaobssetup(trim(LDT_NASASMAPvodobsId)//char(0),&
          NASASMAPvod_obsinit)
@@ -229,6 +242,30 @@ contains
          THySM_obsinit)
     call registerdaobsread(trim(LDT_THySMobsId)//char(0),&
          readTHySMobs)
-    
+
+    !Y.Kwon
+    call registerdaobssetup(trim(LDT_VIIRSgvfobsId)//char(0),&
+         VIIRSGVFobsinit)
+    call registerdaobsread(trim(LDT_VIIRSgvfobsId)//char(0),&
+         readVIIRS_GVFObs)
+
+    !Y.Kwon
+    call registerdaobssetup(trim(LDT_CDFSgvfobsId)//char(0),&
+         CDFSGVFobsinit)
+    call registerdaobsread(trim(LDT_CDFSgvfobsId)//char(0),&
+         readCDFS_GVFObs)
+
+    !Y.Kwon
+    call registerdaobssetup(trim(LDT_GEOSTeffobsId)//char(0),&
+         GEOSTeffobsinit)
+    call registerdaobsread(trim(LDT_GEOSTeffobsId)//char(0),&
+         readGEOSTEFFObs)
+
+    !Y.Kwon
+    call registerdaobssetup(trim(LDT_SMAPEOPLsmobsId)//char(0),&
+         SMAPEOPLSMobsinit)
+    call registerdaobsread(trim(LDT_SMAPEOPLsmobsId)//char(0),&
+         readSMAPEOPL_SMObs)
+
   end subroutine LDT_DAobs_plugin
 end module LDT_DAobs_pluginMod

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -90,6 +90,8 @@ contains
     external LDT_init_LISHydropreproc
     external LDT_run_LISHydropreproc
 
+    external LDT_init_smap_e_opl     !Y.Kwon
+    external LDT_run_smap_e_opl      !Y.Kwon
 
   ! Parameter Preprocessing:
     call registerldtinit(trim(LDT_LSMparamprocId)//char(0), &
@@ -174,6 +176,11 @@ contains
     call registerldtrun(trim(LDT_LISHydropreprocId)//char(0), &
          LDT_run_LISHydropreproc)
 
+  ! OPL E SMAP soil moisture retrieval  (Y.Kwon)
+    call registerldtinit(trim(LDT_SMAP_E_OPLId)//char(0), &
+         LDT_init_smap_e_opl)
+    call registerldtrun(trim(LDT_SMAP_E_OPLId)//char(0), &
+         LDT_run_smap_e_opl)
 
   end subroutine LDT_runmode_plugin
 

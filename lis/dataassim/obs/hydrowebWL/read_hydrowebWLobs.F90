@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ subroutine read_hydrowebWLobs(n, k, OBS_State, OBS_Pert_state)
   use LIS_DAobservationsMod
   use LIS_dataAssimMod
   use LIS_surfaceModelMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use hydrowebWLobs_module
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -62,7 +63,7 @@ subroutine read_hydrowebWLobs(n, k, OBS_State, OBS_Pert_state)
   integer             :: gid(LIS_rc%obs_ngrid(k))
   integer             :: assimflag(LIS_rc%obs_ngrid(k))
   real                :: obs_unsc(LIS_rc%obs_ngrid(k))
-  character*100       :: wlobsdir
+  character(len=LIS_CONST_PATH_LEN) :: wlobsdir
   logical             :: data_update
   logical             :: file_exists
   integer             :: fnd
@@ -97,7 +98,7 @@ subroutine read_hydrowebWLobs(n, k, OBS_State, OBS_Pert_state)
      
      hydroweb_wl_struc(n)%readflag = .false. 
 
-     write(LIS_logunit,*)  '[INFO] Reading Hydroweb WL data ',wlobsdir
+     write(LIS_logunit,*)  '[INFO] Reading Hydroweb WL data ',trim(wlobsdir)
      
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
      call LIS_verify(nf90_open(path=trim(wlobsdir),mode=NF90_NOWRITE,ncid=ftn),&

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -1080,6 +1080,27 @@ subroutine readcrd_agrmet()
           "[ERR] AGRMET WWMCA GRIB1 read option: not specified in config file")
   enddo ! n
 
+  ! EMK Add background bias correction option
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET PPT Background bias correction option:",rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
+  do n = 1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%back_bias_corr, rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
+     if (agrmet_struc(n)%back_bias_corr .lt. 0 .or. &
+          agrmet_struc(n)%back_bias_corr .gt. 1) then
+        call LIS_verify(rc, &
+             "[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 1")
+     end if
+     if (agrmet_struc(n)%back_bias_corr .eq. 1) then
+        allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%pcp_back_bias_ratio = 1.
+        agrmet_struc(n)%pcp_back_bias_ratio_month = 0
+     end if
+  enddo ! n
 
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1

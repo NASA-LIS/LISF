@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -65,8 +65,11 @@ subroutine create_gfsfilename(option, name00, name03, name06, &
   integer :: uyr0, umo0, uda0, uhr0, umn0, uss0
   integer :: remainder
   character(len=2) :: initcode0, initcode1, fcstcode0, fcstcode1, fcstcode2
-  character*1 :: fbase(80), fdir(8), ftime(10), fsubs(21)
-  character(LEN=100) :: temp1,temp2
+  character(len=6)  :: fdir
+  character(len=10) :: ftime
+  character(len=21) :: fsubs
+  character(len=14), parameter :: fsubsprefix = '.gfs.sfluxgrbf'
+  character(len=3),  parameter :: fsubsext    = '.sg'
   real*8      :: time1,dumbtime
   integer     :: doy1,doy
   real        :: gmt1,gmt
@@ -171,91 +174,34 @@ subroutine create_gfsfilename(option, name00, name03, name06, &
   fcstcode2 = '06'
   
   !name00
-  write(UNIT=temp1, fmt='(a40)') gfsdir  
-  read(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp1, fmt='(a1, i4, i2, a1)') '/', uyr, umo, '/'
-  read(UNIT=temp1, fmt='(8a1)') fdir
-  do i = 1, 8
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2)') uyr, umo
 
-  write(UNIT=temp1, fmt='(i4, i2, i2, a2)') uyr, umo, uda, initcode0
-  read(UNIT=temp1, fmt='(10a1)') ftime
-  do i = 1, 10
-     if ( ftime(i) == ' ' ) ftime(i) = '0'
-  end do
+  write(UNIT=ftime, fmt='(i4, i2.2, i2.2, a2)') uyr, umo, uda, initcode0
 
-  write(UNIT=temp1, fmt='(a14, a2, a3)') '.gfs.sfluxgrbf', fcstcode0, '.sg'
-  read (UNIT=temp1, fmt='(80a1)') (fsubs(i), i=1,21)
+  fsubs = fsubsprefix // fcstcode0 // fsubsext
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,8),  &
-                       (ftime(i), i=1,10), (fsubs(i), i=1,21)
-
-  read(UNIT=temp1, fmt='(a80)') name00
+  name00 = trim(gfsdir) // '/' // fdir // '/' // ftime // fsubs
   
   !name 03
-  write(UNIT=temp1, fmt='(a40)') gfsdir  
-  read(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp1, fmt='(a1, i4, i2, a1)') '/', uyr0, umo0, '/'
-  read(UNIT=temp1, fmt='(8a1)') fdir
-  do i = 1, 8
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2)') uyr, umo
 
-  write(UNIT=temp1, fmt='(i4, i2, i2, a2)') uyr0, umo0, uda0, initcode1
-  read(UNIT=temp1, fmt='(10a1)') ftime
-  do i = 1, 10
-     if ( ftime(i) == ' ' ) ftime(i) = '0'
-  end do
+  write(UNIT=ftime, fmt='(i4, i2.2, i2.2, a2)') uyr0, umo0, uda0, initcode1
 
-  write(UNIT=temp1, fmt='(a14, a2, a3)') '.gfs.sfluxgrbf', fcstcode1, '.sg'
-  read (UNIT=temp1, fmt='(80a1)') (fsubs(i), i=1,21)
+  fsubs = fsubsprefix // fcstcode1 // fsubsext
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp1, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,8),  &
-                       (ftime(i), i=1,10), (fsubs(i), i=1,21)
-
-  read(UNIT=temp1, fmt='(a80)') name03
+  name03 = trim(gfsdir) // '/' // fdir // '/' // ftime // fsubs
 
   !namef06
-  write(UNIT=temp2, fmt='(a40)') gfsdir  
-  read(UNIT=temp2, fmt='(80a1)') (fbase(i), i=1,80)
 
-  write(UNIT=temp2, fmt='(a1, i4, i2, a1)') '/', uyr0, umo0, '/'
-  read(UNIT=temp2, fmt='(8a1)') fdir
-  do i = 1, 8
-     if ( fdir(i) == ' ' ) fdir(i) = '0'
-  end do
+  write(UNIT=fdir, fmt='(i4, i2.2)') uyr, umo
 
-  write(UNIT=temp2, fmt='(i4, i2, i2, a2)') uyr0, umo0, uda0, initcode1
-  read(UNIT=temp2, fmt='(10a1)') ftime
-  do i = 1, 10
-     if ( ftime(i) == ' ' ) ftime(i) = '0'
-  end do
+  write(UNIT=ftime, fmt='(i4, i2.2, i2.2, a2)') uyr0, umo0, uda0, initcode1
 
-  write(UNIT=temp2, fmt='(a14, a2, a3)') '.gfs.sfluxgrbf', fcstcode2, '.sg'
-  read (UNIT=temp2, fmt='(80a1)') (fsubs(i), i=1,21)
+  fsubs = fsubsprefix // fcstcode2 // fsubsext
 
-  c = 0
-  do i = 1, 80
-     if ( (fbase(i) == ' ') .and. (c == 0) ) c = i-1
-  end do
-
-  write(UNIT=temp2, fmt='(80a1)') (fbase(i), i=1,c), (fdir(i), i=1,8),  &
-                       (ftime(i), i=1,10), (fsubs(i), i=1,21)
-
-  read(UNIT=temp2, fmt='(a80)') name06
+  name06 = trim(gfsdir) // '/' // fdir // '/' // ftime // fsubs
 
   return
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ module LDT_fileIOMod
 ! 
 ! !USES: 
   use LDT_coreMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none 
   PRIVATE
@@ -331,9 +332,9 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
-   character(len=100)       :: odir_temp
+   character(len=LDT_CONST_PATH_LEN)       :: dname
+   character(len=LDT_CONST_PATH_LEN), save :: out_fname
+   character(len=LDT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if ( present(odir) ) then

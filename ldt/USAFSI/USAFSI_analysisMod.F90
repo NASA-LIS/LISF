@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
+! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -308,7 +309,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF USAFSI CYCLE
-      character*100, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
+      character*255, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
       
       ! Local constants
       character*8, parameter :: meshnp05 = '_0p05deg' ! MESH FOR 1/20 DEGREE FILE NAME
@@ -321,7 +322,7 @@ contains
       character*2                 :: cyclhr           ! CYCLE HOUR
 
       character*10                :: datefr           ! DATE-TIME GROUP OF FRACTIONAL SNOW
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -374,7 +375,7 @@ contains
          inquire (file=file_path, exist=isfile)
 
          if (isfile) then
-
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
             write (ldt_logunit, 6000) routine_name, iofunc, file_path
             call putget_real (infrac_0p05deg, 'r', file_path, &
                  program_name,       &
@@ -520,7 +521,7 @@ contains
 
       ! Imports
       use LDT_coreMod, only: LDT_domain, LDT_rc
-      use LDT_logMod, only: LDT_endrun
+      use LDT_logMod, only: LDT_endrun, ldt_logunit
       use map_utils
       use USAFSI_arraysMod, only: USAFSI_arrays
       use USAFSI_paramsMod
@@ -531,7 +532,7 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: elevations(nc,nr)
@@ -539,7 +540,7 @@ contains
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*90                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
@@ -579,6 +580,7 @@ contains
       ! EACH MONTH IS STORED CONSECUTIVELY STARTING WITH JANUARY.
       FILE_PATH = TRIM(STATIC) // 'snoclimo' // MESHNAME //             &
            CMONTH(MONTH) // FILE_EXT
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       CALL PUTGET_REAL (CLIMO_0p25deg, 'r', FILE_PATH, PROGRAM_NAME,    &
            ROUTINE_NAME, IGRID, JGRID)
 
@@ -634,6 +636,7 @@ contains
 
       ! RETRIEVE SNOW MASK DATA.
       file_path = trim(static) // 'snow_mask' // meshname // file_ext
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       call putget_int1 (snow_poss_0p25deg, 'r', file_path, program_name,     &
            routine_name, igrid, jgrid)
 
@@ -755,7 +758,7 @@ contains
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
       integer, intent(in)         :: month                 ! CURRENT MONTH (1-12)
-      character*100, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
+      character*255, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
       character*5,   intent(out)  :: netid       (:)       ! NETWORK ID OF AN OBSERVATION
       character*9,   intent(out)  :: staid       (:)       ! STATION ID OF AN OBSERVATION
       integer, intent(out)        :: stacnt                ! TOTAL NUMBER OF OBSERVATIONS USED
@@ -774,7 +777,7 @@ contains
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*4                 :: msgval                ! ERROR MESSAGE VALUE
       character*90                :: message     (msglns)  ! ERROR MESSAGE
-      character*100               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
+      character*255               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
       character*5                 :: obsnet                ! RETURNED OBS STATION NETWORK
       character*9                 :: obssta                ! RETURNED OBS STATION ID
       character*5,   allocatable  :: oldnet      (:)       ! ARRAY OF NETWORKS FOR OLDSTA
@@ -1169,7 +1172,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! SNODEP DATE-TIME GROUP
-      character*100, intent(in)   :: stmpdir               ! SFC TEMP DIRECTORY PATH
+      character*255, intent(in)   :: stmpdir               ! SFC TEMP DIRECTORY PATH
       logical,       intent(out)  :: sfctmp_found          ! FLAG FOR SFC TEMP FILE FOUND
       real,          intent(out)  :: sfctmp_lis  ( : , : ) ! LIS SURFACE TEMPERATURE DATA
 
@@ -1178,7 +1181,7 @@ contains
 
       ! Local variables
       character*10                :: dtglis                ! LIS DATE-TIME GROUP
-      character*100               :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
+      character*255               :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
       character*7                 :: iofunc                ! ACTION TO BE PERFORMED
       character*90                :: message     (msglns)  ! ERROR MESSAGE
 
@@ -1215,6 +1218,7 @@ contains
          if (isfile) then
 
             sfctmp_found = .true.
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_stmp)
             write (ldt_logunit, 6000) routine_name, iofunc, file_stmp
             call putget_real (sfctmp_lis_0p25deg, 'r', file_stmp, &
                  program_name,   &
@@ -1372,7 +1376,7 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10                ! DATE-TIME GROUP OF CYCLE
-      character*100, intent(in)   :: ssmis                 ! SSMIS FILE DIRECTORY PATH
+      character*255, intent(in)   :: ssmis                 ! SSMIS FILE DIRECTORY PATH
 
       ! Local variables
       character*7                 :: access_type           ! FILE ACCESS TYPE
@@ -1380,7 +1384,7 @@ contains
       character*2                 :: chemifile   ( 2)      ! HEMISPHERE FOR FILENAME ('nh', 'sh')
       character*10                :: date10_hourly         ! DATE-TIME GROUP OF HOURLY DATA
       character*10                :: date10_prev           ! DATE-TIME GROUP OF LAST HOUR READ
-      character*100               :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
+      character*255               :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*90                :: message     (msglns)  ! ERROR MESSAGE
       character*4                 :: msgval                ! PLACEHOLDER FOR ERROR MESSAGE VALUES
@@ -1566,6 +1570,10 @@ contains
          ! grid
          allocate(ssmis_icecon_0p25deg(igrid,jgrid))
          allocate(ssmis_depth_0p25deg(igrid,jgrid))
+
+         ssmis_icecon_0p25deg = -1
+         ssmis_depth_0p25deg = -1
+
          do j = 1, jgrid
             do i = 1, igrid
                if (icecount_0p25deg (i, j) > 0) then
@@ -1722,8 +1730,8 @@ contains
 
       ! Arguments
       character*10,  intent(in)  :: date10           ! CURRENT CYCLE DATE-TIME GROUP
-      character*100, intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
-      character*100, intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
+      character*255, intent(in)  :: modif            ! PATH TO MODIFIED DATA DIRECTORY
+      character*255, intent(in)  :: unmod            ! PATH TO UNMODIFIED DATA DIRECTORY
       integer, intent(in) :: nc
       integer, intent(in) :: nr
       real, intent(in) :: landice(nc,nr)
@@ -1732,10 +1740,10 @@ contains
 
       ! Local variables
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
-      character*100              :: file_path        ! INPUT FILE PATH AND NAME
+      character*255              :: file_path        ! INPUT FILE PATH AND NAME
       character*90               :: message (msglns) ! ERROR MESSAGE
       character*12               :: routine_name     ! NAME OF THIS SUBROUTINE
-      character*100              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
+      character*255              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
       integer                    :: julhr            ! AFWA JULIAN HOUR
       integer                    :: limit            ! LIMIT ON NUMBER OF CYCLES TO SEARCH
@@ -2075,13 +2083,13 @@ contains
 
       ! Find the date/time group of the previous cycle
       found = .false.
-      found_12z = .false. 
+      found_12z = .false.
       limit = 20
       tries = 1
-      
+
       call date10_julhr(date10, julhr, program_name, routine_name)
       julhr_beg = julhr
-      
+
       ! Grab prior analysis
       do while ((.not. found) .and. (tries .le. limit))
          julhr_beg = julhr_beg - 6
@@ -2092,8 +2100,8 @@ contains
          else
             write (ldt_logunit,6200) trim (routine_name), date10_prev
             tries = tries + 1
-         end if         
-      end do 
+         end if
+      end do
 
       ! If 12Z cycle, retrieve last 12Z snow and ice age
       read (date10(9:10), '(i2)', err=4200) runcycle
@@ -2121,6 +2129,9 @@ contains
               '[WARN] Cannot find prior USAFSI analysis'
          ierr = 2
       else if (.not. found_12z) then
+      !EMK The above else if looks wrong, but using the below, commented-out
+      !else if changes the answer.  For now, use the above.
+      !else if (.not. found_12z .and. runcycle .eq. 12) then
          write(LDT_logunit,*) &
               '[WARN] Cannot find prior 12Z USAFSI analysis'
          ierr = 1
@@ -2142,7 +2153,7 @@ contains
 
    end subroutine getsno_nc
 
-   subroutine getsst (date10, stmpdir)
+   subroutine getsst (date10, stmpdir, sstdir)
 
       !*******************************************************************************
       !*******************************************************************************
@@ -2181,6 +2192,7 @@ contains
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Jan 21  Added FNMOC GRIB1 file...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -2198,16 +2210,18 @@ contains
 
       ! Arguments
       character*10,  intent(in)   :: date10           ! SNODEP DATE-TIME GROUP
-      character*100, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
+      character*255, intent(in)   :: stmpdir          ! SFC TEMPERATURE DIRECTORY PATH
+      character*255, intent(in)   :: sstdir
 
       ! Local constants
       integer, parameter          :: sst_size = sst_igrid * sst_jgrid  ! SST ARRAY SIZE
 
       ! Local variables
       character*10                :: date10_sst       ! SST DATE-TIME GROUP
-      character*100               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
+      character*255               :: file_binary      ! FULLY-QUALIFIED BINARY NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
-      character*90                :: message (msglns) ! ERROR MESSAGE
+      !character*90                :: message (msglns) ! ERROR MESSAGE
+      character*255                :: message (msglns) ! ERROR MESSAGE
       character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
       integer                     :: runcycle         ! CYCLE TIME
       integer                     :: hrdiff           ! DIFFERENCE BETWEEN HOURS
@@ -2223,6 +2237,8 @@ contains
       integer :: gindex,c,r
       real :: rlat,rlon,ri,rj
       integer :: nc,nr
+      character*255 :: file_grib
+      integer :: grstat
 
       data routine_name           / 'GETSST      '/
 
@@ -2251,6 +2267,7 @@ contains
       sst_0p25deg     = -1.0
 
       tries = 1
+      limit = 7 ! EMK Check previous 7 days
 
       ! LOOK FOR DEGRIBBED SST BINARY.  IF NOT FOUND LOOK IN DIFFERENT
       ! DIRECTORY FOR GR1 FILE, DEGRIB, READ, AND WRITE OUT BINARY AFTER
@@ -2265,9 +2282,50 @@ contains
          inquire (file=file_binary, exist=isfile)
          if (isfile) then
             found =.true.
+            write(ldt_logunit,*)'[INFO] Reading ', trim(file_binary)
             write (ldt_logunit, 6000) routine_name, iofunc, trim (file_binary)
             call putget_real ( sst_0p25deg, 'r', file_binary, program_name,  &
                  routine_name, sst_igrid, sst_jgrid )
+         else
+            write(ldt_logunit,*)'[WARN] Cannot find ', trim(file_binary)
+            !EMK 20220113...Reinstated GRIB1 support
+            file_grib = trim(sstdir) &
+                 // 'US058GOCN-GR1mdl.0043_0200_00000A0LT' &
+                 // date10_sst &
+                 // '_0160_000000-000000sea_temp.gr1'
+            inquire(file=file_grib, exist=isfile)
+            if (isfile) then
+               call read_grib1_sst(file_grib, sst_igrid, sst_jgrid, &
+                    sst_0p25deg, grstat)
+               if (grstat .eq. 0) then
+                  found = .true.
+                  file_binary = trim(stmpdir) &
+                       // 'navyssts' &
+                       // meshname &
+                       // '.' &
+                       // date10_sst &
+                       // '.dat'
+                  inquire(file=file_binary, exist=isfile)
+                  if (.not. isfile) then
+                     iofunc = '[INFO] WRITING'
+                     write(ldt_logunit, 6000) routine_name, iofunc, &
+                          trim(file_binary)
+                     call putget_real(sst_0p25deg, 'w', file_binary, &
+                          program_name, routine_name, sst_igrid, sst_jgrid)
+                  end if
+               else
+                  message(1) = '[ERR] ERROR READING FILE'
+                  message(2) = '[ERR] PATH = ' // file_grib
+                  call error_message(program_name, routine_name, message)
+                  write(ldt_logunit, 6400) routine_name, iofunc, file_grib, &
+                       grstat
+               end if
+            else
+               message(1) = '[ERR] ERROR OPENING FILE'
+               message(2) = '[ERR] PATH = ' // file_grib
+               call error_message(program_name, routine_name, message)
+               write(ldt_logunit, 6400) routine_name, iofunc, file_grib, grstat
+            end if
          end if
          julsst = julsst - 24
       end do cycle_loop
@@ -2364,6 +2422,7 @@ contains
 6000  format (/, '[INFO] ', A6, ': ', A7, 1X, A)
 !6200  format (/, '[INFO] ', A6, ': CURRENT SEA SURFACE TEMPERATURE DTG = ', &
 !           A10)
+6400  format (/, '[WARN] ', A6, ': ERROR ', A7, 1X, A, /, 3X, 'STATUS = ', I6)
 6600  format (/, '[WARN] ', A6, ': SEA SURFACE TEMPERATURE DATA NOT FOUND')
 
    end subroutine getsst
@@ -2417,14 +2476,14 @@ contains
 
       ! Argments
       character(10), intent(in)   :: date10           ! DATE-TIME GROUP OF SNODEP CYCLE
-      character(100), intent(in)  :: viirsdir         ! FRACTIONAL SNOW DIRECTORY PATH
+      character(255), intent(in)  :: viirsdir         ! FRACTIONAL SNOW DIRECTORY PATH
 
       ! Local variables
       character(2)                :: cyclhr           ! CYCLE HOUR
 
       character(10)               :: datefr           ! DATE-TIME GROUP OF SNOW COVER
-      character(100)              :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
-      character(100)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
+      character(255)              :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
+      character(255)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
       character(7)                :: iofunc           ! ACTION TO BE PERFORMED
       character(90)               :: message (msglns) ! ERROR MESSAGE
       character(12)               :: routine_name     ! NAME OF THIS SUBROUTINE
@@ -2455,6 +2514,7 @@ contains
       call LDT_endrun()
       
 #else
+      external :: ztif_frac_slice ! EMK 20220113
 
       data routine_name  / 'GETVIIRS    ' /
 
@@ -2538,7 +2598,7 @@ contains
             ! Read the VIIRS data at native resolution one slice at a time.
             ! For each slice, geolocate onto the LDT grid and identify
             ! as snow or bare.
-            do j_viirs = 1, jgrid_viirs               
+            do j_viirs = 1, jgrid_viirs
 
                ierr = 0
                call ztif_frac_slice(mapbuf_slice, &
@@ -3536,7 +3596,7 @@ contains
    subroutine getclimo (month, static)
 
       ! Imports
-      use LDT_logMod, only: LDT_verify
+      use LDT_logMod, only: LDT_verify, ldt_logunit
       use USAFSI_arraysMod, only: USAFSI_arrays
       use netcdf
 
@@ -3545,11 +3605,11 @@ contains
 
       ! Arguments
       integer,       intent(in)   :: month            ! MONTH OF YEAR (1-12)
-      character*100, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
+      character*255, intent(in)   :: static           ! STATIC FILE DIRECTORY PATH
 
       ! Local variables
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
-      character*100               :: file_path        ! FULLY-QUALIFIED FILE NAME
+      character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
 
       data cmonth        / '_jan', '_feb', '_mar', '_apr', '_may', '_jun', &
           '_jul', '_aug', '_sep', '_oct', '_nov', '_dec' /
@@ -3562,6 +3622,7 @@ contains
       file_path = trim(static) //'/snoclimo_10km/'// 'snoclimo_0p10deg' &
            //cmonth(month) // '.nc'
 
+      write(ldt_logunit,*)'[INFO] Reading ', trim(file_path)
       call LDT_verify(nf90_open(path=file_path, mode=nf90_nowrite, ncid=ncid), &
             '[ERR] Error in nf90_open for '//trim(file_path))
       call LDT_verify(nf90_inq_varid(ncid=ncid, name="snoclimo", varid=varid), &
@@ -3573,4 +3634,241 @@ contains
 
    end subroutine getclimo
 
+   ! New routine to read FNMOC SST field from GRIB1 file, using ECCODES
+   subroutine read_grib1_sst(file_grib, sst_igrid, sst_jgrid, &
+        sst_0p25deg, grstat)
+
+     ! Imports
+#if (defined USE_GRIBAPI)
+     use grib_api
+#endif
+     use LDT_logMod, only: LDT_logunit
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=*), intent(in) :: file_grib
+     integer, intent(in) :: sst_igrid
+     integer, intent(in) :: sst_jgrid
+     real, intent(inout) :: sst_0p25deg(sst_igrid, sst_jgrid)
+     integer, intent(out) :: grstat
+
+     ! Locals
+     integer :: ftn
+     integer :: igrib
+     integer :: ierr
+     integer :: nvars
+     integer :: iedition
+     integer :: igriddef
+     integer :: icenter
+     integer :: iparameter
+     integer :: ileveltype
+     integer :: ilevel
+     character(len=100) :: gtype
+     integer :: Ni, Nj
+     real, allocatable :: dum1d(:)
+     integer :: i, j, k
+
+     grstat = 1
+
+#if (defined USE_GRIBAPI)
+     call grib_open_file(ftn, trim(file_grib), 'r', ierr)
+     if (ierr .ne. 0) then
+        write(ldt_logunit,*) '[WARN] Failed to open - ', trim(file_grib)
+        return
+     end if
+
+     write(ldt_logunit,*)'[INFO] Reading ', trim(file_grib)
+
+     call grib_count_in_file(ftn, nvars, ierr)
+     if (ierr .ne. 0) then
+        write(ldt_logunit,*) &
+             '[WARN] error in grib_count_in_file for ', trim(file_grib)
+        call grib_close_file(ftn)
+        return
+     end if
+
+     ! Loop through the fields until we find SST
+     do k = 1, nvars
+        call grib_new_from_file(ftn, igrib, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] failed to read ' // trim(file_grib)
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+
+        call grib_get(igrib, 'editionNumber', iedition, ierr)
+        if ( ierr .ne. 0 ) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: editionNumber in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (iedition .ne. 1) then
+           write(ldt_logunit,*) &
+                '[WARN] No GRIB1 record found in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'centre', icenter, ierr)
+        if ( ierr .ne. 0 ) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: centre in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (icenter .ne. 58) then
+           write(ldt_logunit,*)'[WARN] No FNMOC message in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'gridDefinition', igriddef, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: gridDefinition in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (igriddef .ne. 200) then
+           write(ldt_logunit,*)'[WARN] Wrong SST grid in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'gridType', gtype, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get: gridtype in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (gtype .ne. "regular_ll") then
+           write(ldt_logunit,*) &
+                '[WARN] GRIB data not on regular lat-lon grid!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'indicatorOfParameter', iparameter, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: indicatorOfParameter in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (iparameter .ne. 80) then
+           write(ldt_logunit,*)'[WARN] Wrong GRIB parameter in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'indicatorOfTypeOfLevel', ileveltype, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: indicatorOfTypeOfLevel in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (ileveltype .ne. 160) then
+           write(ldt_logunit,*) &
+                '[WARN] Wrong GRIB level type in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'level', ilevel, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: level in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (ilevel .ne. 0) then
+           write(ldt_logunit,*)'[WARN] Wrong GRIB level in read_grib1_sst!'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'Ni', Ni, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get:Ni in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (Ni .ne. sst_igrid) then
+           write(ldt_logunit,*) '[WARN] Wrong GRIB Ni dimension in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        call grib_get(igrib, 'Nj', Nj, ierr)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) '[WARN] error in grid_get:Nj in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        endif
+        if (Nj .ne. sst_jgrid) then
+           write(ldt_logunit,*) '[WARN] Wrong GRIB Nj dimension in ' // &
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           cycle
+        endif
+
+        ! We found the SST
+        allocate(dum1d(Ni*Nj))
+        call grib_get(igrib, 'values', dum1d)
+        if (ierr .ne. 0) then
+           write(ldt_logunit,*) &
+                '[WARN] error in grib_get: values in ' //&
+                'read_grib1_sst'
+           call grib_release(igrib, ierr)
+           call grib_close_file(ftn)
+           return
+        end if
+
+        ! At this stage, we have the values of the field.
+        call grib_release(igrib, ierr)
+        call grib_close_file(ftn)
+        do j = 1, Nj
+           do i = 1, Ni
+              sst_0p25deg(i,j) = dum1d(i + (j-1)*Ni)
+           end do
+        end do
+        grstat = 0
+        deallocate(dum1d)
+        exit ! Get out of loop
+
+     end do ! k
+
+     if (grstat .ne. 0) then
+        write(ldt_logunit,*) &
+             '[WARN] No SST read in by ' //&
+             'read_grib1_sst'
+        call grib_close_file(ftn)
+     end if
+#endif
+
+   end subroutine read_grib1_sst
 end module USAFSI_analysisMod

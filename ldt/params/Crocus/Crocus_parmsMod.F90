@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module Crocus_parmsMod
 !BOP
@@ -28,6 +34,7 @@ module Crocus_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_paramMaskCheckMod
   use LDT_glacierMod ! MN added for glacier fraction
   implicit none
@@ -48,10 +55,10 @@ module Crocus_parmsMod
   type, public :: Crocus_type_dec
 
      real           :: tbot_gridDesc(20)
-     character*140  :: tbotfile
+     character(len=LDT_CONST_PATH_LEN)  :: tbotfile
      character*50   :: tbot_gridtransform
      character*50   :: tbot_topocorr
-     character*140  :: glacierfracfile
+     character(len=LDT_CONST_PATH_LEN)  :: glacierfracfile
      character*50   :: glacierfrac_gridtransform
      character*50   :: tbot_proj
      character*50   :: glacierfrac_proj

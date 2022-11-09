@@ -1,21 +1,24 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
+
 !BOP
 ! !ROUTINE: read_NASASMAPNRTsm
 ! \label{read_NASASMAPNRTsm}
 !
 ! !REVISION HISTORY:
-!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5. 
-!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data. 
-!  1  Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current month
+!  17 Jun 2010: Sujay Kumar; Updated for use with LPRM AMSRE Version 5.
+!  20 Sep 2012: Sujay Kumar; Updated to the NETCDF version of the data.
+!  01 Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current
+!               month
+!  24 Mar 2022: Eric Kemp; Added fault tolerance for reading SMAP file.
 !
 ! !INTERFACE: 
 subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
@@ -29,6 +32,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   use LIS_DAobservationsMod
   use map_utils
   use LIS_pluginIndices
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use SMAPNRTsm_Mod, only : SMAPNRTsm_struc
 
   implicit none
@@ -58,8 +62,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_SM_VALUE=0.45, MIN_SM_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: smobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: smobsdir, fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)
@@ -95,15 +98,14 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   integer                :: orbid(10),runid(10)
   real                   :: gmt
   real*8                 :: timenow, time1,time2,time3
-  character*200          :: list_files
+  character(len=LIS_CONST_PATH_LEN) :: list_files
   character*100          :: temp1
   character*1            :: fproc(4)
   integer                :: ftn,ierr
-  character*100          :: smap_filename(10),tstring(10)
+  character(len=LIS_CONST_PATH_LEN) :: smap_filename(10),tstring(10)
   character(len=4) :: istring
   character(len=200) :: cmd
   integer :: rc
-
   integer, external :: create_filelist ! C function
 
   smap_filename = ""
@@ -496,8 +498,9 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
 ! 
 ! !USES:   
 
-  use LIS_coreMod,  only : LIS_rc, LIS_domain
-  use LIS_logMod
+  use LIS_coreMod,  only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_logMod, only: LIS_logunit, LIS_alert
+  use LIS_pluginIndices, only: LIS_agrmetrunId
   use LIS_timeMgrMod
   use SMAPNRTsm_Mod, only : SMAPNRTsm_struc
 #if (defined USE_HDF5) 
@@ -564,103 +567,191 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   real                           :: smobs_ip(LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k))
 
   integer                        :: status,ios
+  character(len=512) :: message(20)
+  integer, save :: alert_number = 0
+
+  
+  ! EMK 20220324 Added fault tolerance
+  file_id = -1
+  sm_gr_id = -1
+  sm_field_id = -1
+  row_id = -1
+  col_id = -1
+  sm_qa_id = -1
+  dspace_id = -1
 
   call h5open_f(status)
-  call LIS_verify(status, 'Error opening HDF fortran interface')
-  
-  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
-  call LIS_verify(status, 'Error opening SMAP NRT file ')
-  
-  call h5gopen_f(file_id,sm_gr_name,sm_gr_id, status)
-  call LIS_verify(status, 'Error opening SM group in SMAP NRT file')
-  
-  call h5dopen_f(sm_gr_id,sm_field_name,sm_field_id, status)
-  call LIS_verify(status, 'Error opening SM field in SMAP NRT file')
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot initialize HDF5 Fortran interface!'
+     goto 100
+  end if
 
-  call h5dopen_f(sm_gr_id,"EASE_row_index",row_id, status)
-  call LIS_verify(status, 'Error opening row index field in SMAP NRT file')
+  call h5fopen_f(trim(fname), H5F_ACC_RDONLY_F, file_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open file ', trim(fname)
+     goto 100
+  end if
 
-  call h5dopen_f(sm_gr_id,"EASE_column_index",col_id, status)
-  call LIS_verify(status, 'Error opening column index field in SMAP NRT file')
+  call h5gopen_f(file_id, sm_gr_name, sm_gr_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open SM group ', trim(sm_gr_name)
+     goto 100
+  end if
 
-  call h5dopen_f(sm_gr_id, sm_qa_name,sm_qa_id, status)
-  call LIS_verify(status, 'Error opening QA field in SMAP NRT file')
-  
+  call h5dopen_f(sm_gr_id, sm_field_name, sm_field_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open SM field ', trim(sm_field_name)
+     goto 100
+  end if
+
+  call h5dopen_f(sm_gr_id, "EASE_row_index", row_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open EASE_row_index '
+     goto 100
+  end if
+
+  call h5dopen_f(sm_gr_id, "EASE_column_index", col_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open EASE_column_index '
+     goto 100
+  end if
+
+  call h5dopen_f(sm_gr_id, sm_qa_name, sm_qa_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot open ', trim(sm_qa_name)
+     goto 100
+  end if
+
   call h5dget_space_f(sm_field_id, dspace_id, status)
-  call LIS_verify(status, 'Error in h5dget_space_f: readSMAP NRTObs')
-  
-! Size of the arrays
-! This routine returns -1 on failure, rank on success. 
-  call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status) 
-  if(status.eq.-1) then 
-     call LIS_verify(status, 'Error in h5sget_simple_extent_dims_f: readSMAP NRTObs')
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot copy SM field ', trim(sm_field_name)
+     goto 100
+  end if
+
+  ! Size of the arrays
+  ! This routine returns -1 on failure, rank on success.
+  call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status)
+  if (status .eq. -1) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot get dims from ', trim(sm_field_name)
+     goto 100
   endif
-  
+
   allocate(sm_field(maxdims(1)))
   allocate(sm_qa(maxdims(1)))
   allocate(ease_row(maxdims(1)))
   allocate(ease_col(maxdims(1)))
 
-  call h5dread_f(row_id, H5T_NATIVE_INTEGER,ease_row,dims,status)
-  call LIS_verify(status, 'Error extracting row index from SMAP NRTfile')
+  call h5dread_f(row_id, H5T_NATIVE_INTEGER, ease_row, dims, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot get row index!'
+     goto 100
+  end if
 
-  call h5dread_f(col_id, H5T_NATIVE_INTEGER,ease_col,dims,status)
-  call LIS_verify(status, 'Error extracting col index from SMAP NRTfile')
-  
-  call h5dread_f(sm_field_id, H5T_NATIVE_REAL,sm_field,dims,status)
-  call LIS_verify(status, 'Error extracting SM field from SMAP NRTfile')
+  call h5dread_f(col_id, H5T_NATIVE_INTEGER, ease_col, dims, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot get column index!'
+     goto 100
+  end if
 
-  call h5dread_f(sm_qa_id, H5T_NATIVE_INTEGER,sm_qa,dims,status)
-  call LIS_verify(status, 'Error extracting SM field from SMAP NRTfile')
-  
-  call h5dclose_f(sm_qa_id,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+  call h5dread_f(sm_field_id, H5T_NATIVE_REAL, sm_field, dims, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot extract ', trim(sm_field_name)
+     goto 100
+  end if
 
-  call h5dclose_f(row_id,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+  call h5dread_f(sm_qa_id, H5T_NATIVE_INTEGER, sm_qa, dims, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot extract ', trim(sm_qa_name)
+     goto 100
+  end if
 
-  call h5dclose_f(col_id,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
+  call h5dclose_f(sm_qa_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close ', trim(sm_qa_name)
+     goto 100
+  end if
 
-  call h5dclose_f(sm_field_id,status)
-  call LIS_verify(status,'Error in H5DCLOSE call')
-  
-  call h5gclose_f(sm_gr_id,status)
-  call LIS_verify(status,'Error in H5GCLOSE call')
-    
-  call h5fclose_f(file_id,status)
-  call LIS_verify(status,'Error in H5FCLOSE call')
-  
+  call h5dclose_f(row_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close EASE_row_index'
+     goto 100
+  end if
+
+  call h5dclose_f(col_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close EASE_column_index'
+     goto 100
+  end if
+
+  call h5dclose_f(sm_field_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close ', trim(sm_field_name)
+     goto 100
+  end if
+
+  call h5gclose_f(sm_gr_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close ', trim(sm_gr_name)
+     goto 100
+  end if
+
+  call h5fclose_f(file_id, status)
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close ', trim(fname)
+     goto 100
+  end if
+
   call h5close_f(status)
-  call LIS_verify(status,'Error in H5CLOSE call')
+  if (status .ne. 0) then
+     write(LIS_logunit,*) &
+          '[WARN] read_SMAPNRT_data cannot close HDF5 Fortran interface'
+     goto 100
+  end if
 
   sm_data = LIS_rc%udef
-  sm_data_b = .false. 
+  sm_data_b = .false.
 
 !grid the data in EASE projection
-  do t=1,maxdims(1)
-     if(ibits(sm_qa(t),0,1).eq.0) then 
-        sm_data(ease_col(t) + (ease_row(t)-1)*SMAPNRTsm_struc(n)%nc) = sm_field(t) 
-        if(sm_field(t).ne.-9999.0) then 
-           sm_data_b(ease_col(t) + (ease_row(t)-1)*SMAPNRTsm_struc(n)%nc) = .true. 
+  do t = 1, maxdims(1)
+     if (ibits(sm_qa(t), 0, 1) .eq. 0) then
+        sm_data(ease_col(t) + (ease_row(t)-1)*SMAPNRTsm_struc(n)%nc) = &
+             sm_field(t)
+        if (sm_field(t) .ne. -9999.0) then
+           sm_data_b(ease_col(t) + (ease_row(t)-1)*SMAPNRTsm_struc(n)%nc) = &
+                .true.
         endif
      endif
   enddo
-
-!  open(100,file='smobs.bin',form='unformatted')
-!  write(100) sm_data
-!  close(100)
 
   t = 1
 
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
-!-------------------------------------------------------------------------- 
-  call neighbor_interp(LIS_rc%obs_gridDesc(k,:),&
+!--------------------------------------------------------------------------
+  call neighbor_interp(LIS_rc%obs_gridDesc(k,:), &
        sm_data_b, sm_data, smobs_b_ip, smobs_ip, &
        SMAPNRTsm_struc(n)%nc*SMAPNRTsm_struc(n)%nr, &
        LIS_rc%obs_lnc(k)*LIS_rc%obs_lnr(k), &
-       SMAPNRTsm_struc(n)%rlat, SMAPNRTsm_struc(n)%rlon,&
+       SMAPNRTsm_struc(n)%rlat, SMAPNRTsm_struc(n)%rlon, &
        SMAPNRTsm_struc(n)%n11, LIS_rc%udef, ios)
 
   deallocate(sm_field)
@@ -668,18 +759,46 @@ subroutine read_SMAPNRT_data(n, k, fname, smobs_inp, time)
   deallocate(ease_row)
   deallocate(ease_col)
 
-!overwrite the input data 
-  do r=1,LIS_rc%obs_lnr(k)
-     do c=1,LIS_rc%obs_lnc(k)
-        if(smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then 
+  !overwrite the input data
+  do r = 1, LIS_rc%obs_lnr(k)
+     do c = 1, LIS_rc%obs_lnc(k)
+        if (smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)) .ne. -9999.0) then
            smobs_inp(c+(r-1)*LIS_rc%obs_lnc(k)) = &
                 smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k))
 
-           SMAPNRTsm_struc(n)%smtime(c,r) = & 
+           SMAPNRTsm_struc(n)%smtime(c,r) = &
                 time
         endif
      enddo
   enddo
+
+  return
+
+  ! Handle problem from HDF5 before returning.  We'll ignore the status
+  ! codes here since we want to force a full HDF5 shutdown.
+  100 continue
+  if (allocated(sm_field)) deallocate(sm_field)
+  if (allocated(sm_qa)) deallocate(sm_qa)
+  if (allocated(ease_row)) deallocate(ease_row)
+  if (allocated(ease_col)) deallocate(ease_col)
+  if (sm_qa_id > -1) call h5dclose_f(sm_qa_id, status)
+  if (col_id > -1) call h5dclose_f(col_id, status)
+  if (row_id > -1) call h5dclose_f(row_id, status)
+  if (sm_field_id > -1) call h5dclose_f(sm_field_id, status)
+  if (sm_gr_id > -1) call h5gclose_f(sm_gr_id, status)
+  if (file_id > -1) call h5fclose_f(file_id, status)
+  call h5close_f(status)
+
+  if (trim(LIS_rc%runmode) .eq. LIS_agrmetrunID) then
+     message(:) = ''
+     message(1) = '[ERR] Program:  LIS'
+     message(2) = '  Routine:  read_SMAPNRT_data.'
+     message(3) = '  Problem reading SMAPNRT data from ' // trim(fname)
+     alert_number = alert_number + 1
+     if(LIS_masterproc) then
+        call lis_alert('SMAPNRT              ', alert_number, message )
+     end if
+  end if
 
 #endif
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@
 ! 13 Dec 2019  Eric Kemp  Changed to USAFSI.
 ! 09 Oct 2020  Eric Kemp  Added legacy SNODEP files.
 ! 14 Jul 2021  Eric Kemp  Fixed bug in creating GRIB output directory.
+! 26 Jul 2022  Eric Kemp  Corrected GRIB2 output name.
 !
 ! DESCRIPTION:
 ! Source code for reading USAFSI netCDF file, writing back out in GRIB,
@@ -84,6 +85,7 @@ contains
       ! Construct the input netCDF filename
       this%input_nc_file = &
            trim(LVT_rc%input_dir) // &
+           '/' // &
            trim(LVT_rc%input_prefix) // &
            trim(LVT_rc%yyyymmddhh) // &
            ".nc"
@@ -1204,13 +1206,22 @@ contains
       character(len=10), intent(in) :: yyyymmddhh
       character(len=255), intent(out) :: filename
 
+      ! filename = trim(output_dir)  &
+      !      // '/PS.557WW_SC.' &
+      !      // trim(LVT_rc%security_class)//'_DI.' &
+      !      // trim(LVT_rc%data_category)//'_GP.' &
+      !      // 'LIS-SNOWICE_GR.C0P09DEG_AR.' &
+      !      // trim(LVT_rc%area_of_data)//'_PA.' &
+      !      //'USAFSI_DD.' &
+      !      // yyyymmddhh(1:8)//'_DT.' &
+      !      // yyyymmddhh(9:10)//'00_DF.GR2'
       filename = trim(output_dir)  &
            // '/PS.557WW_SC.' &
            // trim(LVT_rc%security_class)//'_DI.' &
            // trim(LVT_rc%data_category)//'_GP.' &
            // 'USAFSI_GR.C0P09DEG_AR.' &
            // trim(LVT_rc%area_of_data)//'_PA.' &
-           //'USAFSI_DD.' &
+           // 'SNOW-ICE_DD.' &
            // yyyymmddhh(1:8)//'_DT.' &
            // yyyymmddhh(9:10)//'00_DF.GR2'
 

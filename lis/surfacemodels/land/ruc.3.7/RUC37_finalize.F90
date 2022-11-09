@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,7 +20,7 @@
 !   1/15/15: Shugong Wang; initial implementation for RUC37 with LIS-7
 !
 ! !INTERFACE:
-subroutine RUC37_finalize(n)
+subroutine RUC37_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
     use RUC37_lsmMod

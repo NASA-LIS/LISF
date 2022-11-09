@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -71,7 +71,7 @@ subroutine read_nam242_elev(n, findex, nam242elev, elevdiff)
   lb = .true.
   lb_regrid = .true.
 
-  write(LDT_logunit,*) 'Reading the NAM elevation ',nam242_struc(n)%elevfile
+  write(LDT_logunit,*) 'Reading the NAM elevation ',trim(nam242_struc(n)%elevfile)
      
   call grib_open_file(ftn,trim(nam242_struc(n)%elevfile),'r',iret)
   call LDT_verify(iret,'error grib_open_file in read_nam242_elev')

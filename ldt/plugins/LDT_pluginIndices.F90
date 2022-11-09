@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ module LDT_pluginIndices
 !  23 Oct 2008: Sujay Kumar  -- Initial Specification
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
+!  28 Jun 2022: Eric Kemp -- Added NAFPA background precipitation
 !
 !EOP
   PRIVATE
@@ -47,6 +48,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
    character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
    character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
+   character*50, public,  parameter :: LDT_SMAP_E_OPLId       = "OPL E SMAP soil moisture retrieval"  !Y.Kwon
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -66,6 +68,8 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_LISlsmSMobsId              &
         = "LIS LSM soil moisture"
+   character*50, public,  parameter :: LDT_LISlsmTEFFobsId            &
+        = "LIS LSM effective soil temperature"                               !Y.Kwon
    character*50, public,  parameter :: LDT_syntheticSMobsId           &
         = "Synthetic soil moisture"
    character*50, public,  parameter :: LDT_NASA_AMSREsmobsId          &
@@ -104,10 +108,12 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_SMAPEOPLsmobsId            &
+        = "SMAP_E_OPL soil moisture"                                        !Y.Kwon
    character*50, public,  parameter :: LDT_THySMobsId            &
         = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
-        = "SMOS NRT NN soil moisture"                                        !kyh20210105
+        = "SMOS NRT NN soil moisture"                                        !Y.Kwon
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
@@ -117,6 +123,12 @@ module LDT_pluginIndices
 
    character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
         = "MCD15A2H LAI"
+   character*50, public,  parameter :: LDT_VIIRSgvfobsId            &
+        = "VIIRS GVF"                                                    !Y.Kwon
+   character*50, public,  parameter :: LDT_CDFSgvfobsId            &
+        = "CDFS GVF"                                                     !Y.Kwon
+   character*50, public,  parameter :: LDT_GEOSTeffobsId            &
+        = "GEOS effective soil temperature"                              !Y.Kwon
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
@@ -348,6 +360,10 @@ module LDT_pluginIndices
 !- PPT:
    character*50, public,  parameter :: LDT_prismpptId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimpptId = "WORLDCLIM"
+   character*50, public,  parameter :: LDT_nafpabackgfspptId = "NAFPA_BACK_GFS"
+   character*50, public,  parameter :: LDT_nafpabackgalwempptId = &
+        "NAFPA_BACK_GALWEM"
+
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimtminId = "WORLDCLIM"

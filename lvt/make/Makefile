@@ -124,6 +124,14 @@ version.F90:
 	@echo "Building version file $@"
 	sh build_version.sh
 
+ifeq ($(LIS_ARCH),linux_gfortran)
+# For HDF-EOS2
+readGLASSlaiObs.o: readGLASSlaiObs.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+readNASA_AMSREsmObs.o: readNASA_AMSREsmObs.F90
+	$(FC) $(FFLAGS) -fallow-argument-mismatch $(HEADER_DIRS) $<
+endif
+
 .PHONY: help
 help:
 	@echo ""

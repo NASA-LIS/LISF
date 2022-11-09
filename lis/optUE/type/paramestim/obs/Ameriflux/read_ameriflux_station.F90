@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@ subroutine read_ameriflux_station(n, stn_index)
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_logunit, LIS_getNextUnitNumber, & 
        LIS_releaseUnitNumber, LIS_verify
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_timeMgrMod, only : LIS_calendar, LIS_localtime2gmt
   use AmerifluxobsMod, only : AmerifluxObs_struc
 !
@@ -70,7 +71,7 @@ subroutine read_ameriflux_station(n, stn_index)
 
   !This initializes the current line, first line, and filename variables. 
   Character (len = 300) :: currentLine
-  Character (len = 200) :: filename 
+  Character (len=LIS_CONST_PATH_LEN) :: filename 
   character*4           :: fyr
   logical               :: file_exists
 
