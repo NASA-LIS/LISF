@@ -184,3 +184,74 @@ def print_status_report (e2es, yyyymm):
     print (str2)
 
 
+def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_command=None):
+    if in_command is None:
+        this_command = 'COMMAND'
+    else:
+        this_command = in_command
+    if hours is None:
+        thours ='12'
+    else:
+        thours = hours
+
+    with open(s2s_configfile, 'r') as file:
+        cfg = yaml.safe_load(file)
+    sponsor_code = cfg['SETUP']['SPCODE']
+    lisf = cfg['SETUP']['LISFDIR']
+    lisf_module = cfg['SETUP']['LISFMOD']
+    domain=cfg['EXP']['domain']
+    DATATYPE=cfg['SETUP']['DATATYPE']
+    numprocx=cfg['FCST']['numprocx']
+    numprocy=cfg['FCST']['numprocy']
+    ntasks=str(numprocx*numprocy)
+    
+    with open(jobfile, 'w') as f:
+        
+        f.write('#!/bin/bash' + '\n')
+        f.write('\n')
+        f.write('#######################################################################' + '\n')
+        f.write('#                        Batch Parameters ' + '\n')
+        f.write('#######################################################################' + '\n')
+        f.write('\n')
+        f.write('#SBATCH --account=' + sponsor_code + '\n')
+        f.write('#SBATCH --constraint=sky|cas' + '\n')        
+        f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        if DATATYPE == 'hindcast':
+            f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        else:
+            if domain == 'GLOBAL':
+                f.write('#SBATCH  -N 12' + '\n')
+                f.write('#SBATCH --ntasks-per-node=24' + '\n')
+            else:
+                f.write('#SBATCH  -N 1' + '\n')
+                f.write('#SBATCH --ntasks-per-node='+ ntasks + '\n')
+                
+        f.write('#SBATCH --job-name=' + job_name + '\n')
+        f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
+        f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
+        f.write('\n')
+        f.write('#######################################################################' + '\n')
+        f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        f.write('#######################################################################' + '\n')
+        f.write('\n')
+        f.write('source /etc/profile.d/modules.sh' + '\n')
+        f.write('module purge' + '\n')
+        f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+        f.write('module --ignore-cache load ' + lisf_module + '\n')
+        f.write('ulimit -s unlimited' + '\n')
+        f.write('\n')
+        f.write('cd ' + cwd + '\n')
+        f.write( this_command + ' || exit 1' + '\n')
+        f.write('\n')
+        f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
+        f.write('\n')
+        f.write('/usr/bin/touch DONE' + '\n')
+        f.write('exit 0' + '\n')
+    f.close()    
+
+
+    
+
+    
+    
+    
