@@ -203,7 +203,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -t 28 -H 2 -j lisda_ -w ${CWD}
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
     COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
@@ -338,6 +338,7 @@ bcsd_fcst(){
 	bcsd03_ID=`echo $bcsd03_ID`' '$thisID
     done
     bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
+    exit
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
@@ -475,10 +476,7 @@ lis_fcst(){
     
     LDTPARA=`grep ldt_params $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
     Mmm1=`date -d "$YYYY-$MM-01" +%b`1
-    NX=`grep numprocx $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    NY=`grep numprocy $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    NTASKS=$(( ${NX}*${NY} ))
-    
+     
     cd ${E2ESDIR}/lis_fcst
     mkdir -p -m 775 input/LDT_ICs/
     cd ${E2ESDIR}/lis_fcst/input/
@@ -500,7 +498,7 @@ lis_fcst(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst
     
     # write SLURM job scripts
-    python $LISHDIR/s2s_modules/lis_fcst/generate_da_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname -t ${NTASKS}
+    python $LISHDIR/s2s_modules/lis_fcst/generate_da_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
     
     lisfcst_ID=
     

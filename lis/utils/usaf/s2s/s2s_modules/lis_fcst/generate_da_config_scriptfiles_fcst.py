@@ -31,7 +31,6 @@ FORECAST_MONTH = 0
 WORKDIR = ''
 CONFIGFILE = ''
 JOB_NAME = ''
-NTASKS = 1
 
 def _usage():
     """Print command line usage."""
@@ -41,7 +40,6 @@ def _usage():
     print("[INFO] where:")
     print("[INFO]   CONFIGFILE: Path to config file.")
     print("[INFO] JOB_NAME: SLURM JOB_NAME")
-    print("[INFO] NTASKS: SLURM NTASKS")
     print("[INFO] hours: SLURM time hours")
     print("[INFO] cwd: current working directory")
     print("[INFO] year: forecast start year")
@@ -212,7 +210,7 @@ def _driver(config):
             jobfile = JOB_NAME + '_' + nmme_model + '_run.j'
             jobname = JOB_NAME + '_' + nmme_model + '_'
 
-            utils.job_script(CONFIGFILE, jobfile, jobname, NTASKS,'12', WORKDIR,
+            utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                       in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
                                       lisconfig_target)
         else:
@@ -243,7 +241,7 @@ def _driver(config):
                 jobname = JOB_NAME + '_' + nmme_model + '_'
                 print(lisconfig_target)
                 
-                utils.job_script(CONFIGFILE, jobfile, jobname, NTASKS, '12', WORKDIR,
+                utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                  in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
                                  lisconfig_target)        
 
@@ -258,7 +256,6 @@ if __name__ == "__main__":
     PARSER.add_argument('-w', '--WORKDIR', required=True, help='working directory')
     PARSER.add_argument('-c', '--CONFIGFILE', required=True, help='s2s.config file')
     PARSER.add_argument('-j', '--JOB_NAME', required=True, help='JOB_NAME')
-    PARSER.add_argument('-t', '--NTASKS', required=True, help='NTASKS')
     ARGS = PARSER.parse_args()
 
     FORECAST_YEAR = int(ARGS.year)
@@ -266,7 +263,6 @@ if __name__ == "__main__":
     WORKDIR = ARGS.WORKDIR
     CONFIGFILE = ARGS.CONFIGFILE
     JOB_NAME = ARGS.JOB_NAME
-    NTASKS = ARGS.NTASKS
 
     # Read s2s.config
     with open(CONFIGFILE, 'r') as file:
