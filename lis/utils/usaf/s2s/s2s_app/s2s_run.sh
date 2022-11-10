@@ -111,6 +111,40 @@ submit_job(){
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+set_permission(){
+
+    cd ${E2ESDIR}
+    /bin/rm -f set_permission.j
+    cat << EOF > ${E2ESDIR}/set_permission.j
+#!/bin/bash
+
+#######################################################################
+#                        Set Read/Write permission 
+#######################################################################
+
+#SBATCH --account=${SPCODE}
+#SBATCH --ntasks=1
+#SBATCH --time=00:00:15
+#SBATCH --job-name=set_permission_
+#SBATCH --output ${SCRDIR}/set_permission_%j.out
+#SBATCH --error ${SCRDIR}/set_permission_%j.err
+
+cd ${E2ESDIR}
+
+find . -type d -exec chmod 0775 {} \;
+find . -name "*.nc" -exec chmod 0444 {} \;
+find . -name "*.NC" -exec chmod 0444 {} \;
+find . -name "*.NC4" -exec chmod 0444 {} \;
+find . -name "*.nc4" -exec chmod 0444 {} \;
+find . -name "*.TIF" -exec chmod 0444 {} \;
+find . -name "*.png" -exec chmod 0444 {} \;
+
+EOF
+   perm_ID=$(submit_job $1 "set_permission_") 
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 download_forecasts(){
     
     #######################################################################
@@ -203,7 +237,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -t 28 -H 2 -j lisda_ -w ${CWD}
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
     COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
@@ -475,10 +509,7 @@ lis_fcst(){
     
     LDTPARA=`grep ldt_params $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
     Mmm1=`date -d "$YYYY-$MM-01" +%b`1
-    NX=`grep numprocx $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    NY=`grep numprocy $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    NTASKS=$(( ${NX}*${NY} ))
-    
+     
     cd ${E2ESDIR}/lis_fcst
     mkdir -p -m 775 input/LDT_ICs/
     cd ${E2ESDIR}/lis_fcst/input/
@@ -500,7 +531,7 @@ lis_fcst(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst
     
     # write SLURM job scripts
-    python $LISHDIR/s2s_modules/lis_fcst/generate_da_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname -t ${NTASKS}
+    python $LISHDIR/s2s_modules/lis_fcst/generate_da_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
     
     lisfcst_ID=
     
@@ -703,7 +734,7 @@ cd ${SCRDIR}
 /bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
-/bin/rm $JOB_SCHEDULE
+/bin/rm -f $JOB_SCHEDULE
 
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
@@ -722,6 +753,7 @@ bcsd12_ID=
 lisfcst_ID=
 s2spost_ID=
 s2smetric_ID=
+s2splots_ID=
 
 case $STEP in
     LISDA)
@@ -734,8 +766,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $lisda_ID
     ;;
     LDTICS)
 	ldt_ics
@@ -746,8 +783,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $ldtics_ID
     ;;    
     BCSD)
 	bcsd_fcst
@@ -757,8 +799,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
-	fi	
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
+	fi
+	set_permission $bcsd12_ID
     ;;
     FCST)
 	lis_fcst
@@ -767,8 +814,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
-	fi	
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
+	fi
+	set_permission $lisfcst_ID
     ;;
     POST)
 	s2spost
@@ -776,17 +828,27 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
+		set_permission $s2splots_ID
+		exit
 	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $s2spost_ID
     ;;
     METRICS)
 	s2smetrics
 	if [ $ONE == "N" ] || [ $ONE == "n" ]; then
 	    s2splots
+	    set_permission $s2splots_ID
+	    exit
 	fi
+	set_permission $s2smetric_ID
     ;;
     PLOTS)
 	s2splots
+	set_permission $s2splots_ID
+	exit
     ;;
     *)
 	lis_darun
@@ -797,7 +859,10 @@ case $STEP in
 	if [ $DATATYPE == "forecast" ]; then
 	    s2smetrics
 	    s2splots
+	    set_permission $s2splots_ID
+	    exit
 	fi
+	set_permission $s2spost_ID
     ;;
 esac
     

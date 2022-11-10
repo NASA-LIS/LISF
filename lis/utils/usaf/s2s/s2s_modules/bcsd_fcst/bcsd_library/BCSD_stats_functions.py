@@ -11,8 +11,6 @@ from scipy.stats import percentileofscore
 from scipy.stats import scoreatpercentile, pearsonr
 from math import *
 import time
-import matplotlib.pyplot as plt
-
 
 # In[11]:
 

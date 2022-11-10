@@ -20,10 +20,8 @@ from scipy.stats import percentileofscore
 from scipy.stats import scoreatpercentile, pearsonr
 from scipy import interpolate
 from math import *
-from mpl_toolkits import basemap
 from netCDF4 import Dataset, date2num, num2date
 import time
-import xarray as xr
 import os, errno
 
 def write_3d_netcdf(infile, var, varname, DESCRIPTION, SOURCE, VAR_UNITS, SIG_DIGIT, lons, lats, SDATE):

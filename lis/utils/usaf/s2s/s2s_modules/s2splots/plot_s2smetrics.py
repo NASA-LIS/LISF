@@ -343,20 +343,4 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y')
 
-    # set correct permission to directories and files 
-    E2ESDIR = config["SETUP"]["E2ESDIR"]
-    SPCODE = config["SETUP"]["SPCODE"]
-    os.chdir(E2ESDIR)
-    command = "chgrp -R " + SPCODE + ' ' + E2ESDIR
-    res = os.system(command)
-    command = "find . -type d -exec chmod 0775 {} \;"
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.nc" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.NC" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.TIF" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.png" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)    
-    os.chdir(cwd)
+
