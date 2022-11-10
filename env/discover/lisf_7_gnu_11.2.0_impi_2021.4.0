@@ -163,3 +163,6 @@ prepend-path   LD_LIBRARY_PATH   "$def_lis_libesmf"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_netcdf/lib"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_eccodes/lib"
 prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
+
+# EMK Miniconda3 environment for S2S
+prepend-path   PATH  "/discover/nobackup/projects/usaf_lis/emkemp/miniconda3/20221027/bin"
