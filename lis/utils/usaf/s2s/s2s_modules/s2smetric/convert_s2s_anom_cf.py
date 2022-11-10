@@ -31,6 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
+from netCDF4 import Dataset
 
 # Local constants
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
@@ -96,14 +97,6 @@ def _read_cmd_args():
 
     return anom_filename, output_dir
 
-def _run_cmd(cmd, error_msg):
-    """Handle running shell command and checking error."""
-    #print(cmd)
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        print(error_msg)
-        sys.exit(1)
-
 def _copy_anom_file(anom_filename, output_dir):
     """Copy anom file to output directory."""
     shutil.copy(anom_filename, output_dir)
@@ -136,56 +129,6 @@ def _get_output_filename(anom_filename, output_dir):
     output_filename = f"{output_dir}/{basename}"
     return output_filename
 
-def _update_global_attrs(output_filename):
-    """Update global attributes of output filename."""
-    cmd = f"ncatted"
-    cmd += " -a Conventions,global,c,c,'CF-1.8'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
-def _update_latitude_attrs(output_filename):
-    """Update attributes of latitude."""
-    cmd = f"ncatted"
-    cmd += " -a long_name,latitude,c,c,'latitude'"
-    cmd += " -a standard_name,latitude,c,c,'latitude'"
-    cmd += " -a units,latitude,c,c,'degree_north'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
-def _update_longitude_attrs(output_filename):
-    """Update attributes of longitude."""
-    cmd = f"ncatted"
-    cmd += " -a long_name,longitude,c,c,'longitude'"
-    cmd += " -a standard_name,longitude,c,c,'longitude'"
-    cmd += " -a units,longitude,c,c,'degree_east'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
-def _update_ens_attrs(output_filename):
-    """Update attributes of ens."""
-    cmd = f"ncatted"
-    cmd += " -a long_name,ens,c,c,'Ensemble members'"
-    cmd += " -a units,ens,c,c,'1'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
-def _update_lead_attrs(output_filename):
-    """Update attributes of lead."""
-    cmd = f"ncatted"
-    cmd += " -a long_name,lead,c,c,'Forecast month'"
-    cmd += " -a units,lead,c,c,'months'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
-def _update_anom_attrs(output_filename, metric_long_name,
-                       metric_units):
-    """Update attributes of anom variable."""
-    cmd = f"ncatted"
-    cmd += f" -a long_name,anom,c,c,'{metric_long_name}'"
-    cmd += f" -a units,anom,c,c,'{metric_units}'"
-    cmd += f" {output_filename}"
-    _run_cmd(cmd, "[ERR] Problem with ncatted!")
-
 def _driver():
     """Main driver."""
 
@@ -202,13 +145,26 @@ def _driver():
 
     # Edit the attributes
     output_filename = _get_output_filename(anom_filename, output_dir)
-    _update_global_attrs(output_filename)
-    _update_latitude_attrs(output_filename)
-    _update_longitude_attrs(output_filename)
-    _update_ens_attrs(output_filename)
-    _update_lead_attrs(output_filename)
-    _update_anom_attrs(output_filename, metric_long_name, metric_units)
+    nc4 = Dataset(output_filename, 'r+', format='NETCDF4')
+    nc4.Conventions = 'CF-1.8'
+    nc4["latitude"].long_name = 'latitude'
+    nc4["latitude"].standard_name = 'latitude'
+    nc4["latitude"].units = 'degree_north'
+    
+    nc4["longitude"].long_name = 'longitude'
+    nc4["longitude"].standard_name = 'longitude'
+    nc4["longitude"].units = 'degree_east'
 
+    nc4["ens"].long_name = 'Ensemble members'
+    nc4["ens"].units = '1'
+
+    nc4["lead"].long_name = 'Forecast month'
+    nc4["lead"].units = 'months'
+
+    nc4["anom"].long_name = metric_long_name
+    nc4["anom"].units = metric_units
+    nc4.close()
+    
 # Invoke the main driver
 if __name__ == "__main__":
     _driver()

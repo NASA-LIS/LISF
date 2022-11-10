@@ -26,6 +26,8 @@ import sys
 import datetime
 import subprocess
 import yaml
+import xarray as xr
+
 # Local constants
 _METRIC_LIST = ["ANOM", "SANOM"]
 
@@ -82,14 +84,6 @@ def _read_cmd_args():
 
     return input_dir, output_dir, startdate, enddate, model_forcing, configfile
 
-def _run_cmd(cmd, error_msg):
-    """Handle running shell command and checking error."""
-    print(cmd)
-    returncode = subprocess.call(cmd, shell=True)
-    if returncode != 0:
-        print(error_msg)
-        sys.exit(1)
-
 def _proc_date(yyyymmdd):
     """Convert YYYYMMDD string to Python date object."""
     if len(yyyymmdd) != 8:
@@ -125,7 +119,7 @@ def _create_var_metric_filename(input_dir, model_forcing, var, metric,
     return name
 
 def _create_merged_metric_filename(output_dir, startdate, enddate,
-                                   model_forcing):
+                                   model_forcing, domain):
     """Create path to merged S2S metric netCDF file."""
     name = f"{output_dir}"
     name += "/PS.557WW"
@@ -133,7 +127,10 @@ def _create_merged_metric_filename(output_dir, startdate, enddate,
     name += "_DI.C"
     name += f"_GP.LIS-S2S-{model_forcing.upper()}-ANOM"
     name += "_GR.C0P25DEG"
-    name += "_AR.AFRICA"
+    if domain == 'AFRICOM':
+        name += "_AR.AFRICA"        
+    if domain == 'GLOBAL':
+        name += "_AR.GLOBAL"
     name += "_PA.LIS-S2S-ANOM"
     name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
     name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
@@ -156,16 +153,9 @@ def _merge_files(config, input_dir, model_forcing, startdate, mergefile):
         print(f"[ERR] {metricfile} does not exist!")
         sys.exit(1)
 
-    cmd = f"ncks"
-    cmd += f" {metricfile} -6 {mergefile}"
-    _run_cmd(cmd, "[ERR] Problem with ncks!")
-
-    # Rename ANOM array
-    cmd = f"ncrename -O"
-    cmd += f" -v anom,{first_var.replace('-','_')}_{first_metric}"
-    cmd += f" {mergefile}"
-    _run_cmd(cmd, "[ERR] Problem with ncrename!")
-
+    ds_out = xr.open_dataset(metricfile)
+    ds_out = ds_out.rename ({"anom": first_var.replace('-','_') + '_' + first_metric})
+     
     # Loop through remaining var metric files, copy *only* the anom variable,
     # and then rename the anom variable.
     for var in var_list:
@@ -177,25 +167,16 @@ def _merge_files(config, input_dir, model_forcing, startdate, mergefile):
             metricfile = _create_var_metric_filename(input_dir, model_forcing,
                                                      var, metric,
                                                      startdate)
+            
             if not os.path.exists(metricfile):
                 print(f"[ERR] {metricfile} does not exist!")
                 sys.exit(1)
-
-            cmd = f"ncks -A -C"
-            cmd += " -v anom"
-            cmd += f" {metricfile} -6 {mergefile}"
-            _run_cmd(cmd, "[ERR] Problem with ncks!")
-
-            cmd = f"ncrename -O"
-            cmd += f" -v anom,{var.replace('-','_')}_{metric}"
-            cmd += f" {mergefile}"
-            _run_cmd(cmd, "[ERR] Problem with ncrename!")
-
-def _copy_to_final_file(mergefile, final_file):
-    """Copy to new file, with netCDF4 compression."""
-    cmd = f"ncks"
-    cmd += f" {mergefile} -7 -L 1 {final_file}"
-    _run_cmd(cmd, "[ERR] Problem with ncks!")
+            ds = xr.open_dataset(metricfile)
+            ds_out = xr.merge([ds_out, ds.rename ({"anom": var.replace('-','_') + '_' + metric})])
+                
+    comp = dict(zlib=True, complevel=6)
+    encoding = {var: comp for var in ds_out.data_vars}
+    ds_out.to_netcdf(mergefile, encoding=encoding)
 
 def _driver():
     """Main driver"""
@@ -206,12 +187,9 @@ def _driver():
         config = yaml.safe_load(file)
     output_filename = _create_merged_metric_filename(output_dir,
                                                      startdate, enddate,
-                                                     model_forcing)
-    tmp_output_filename = f"{output_dir}/tmp.nc"
+                                                     model_forcing, config["EXP"]["domain"])
     _merge_files(config, input_dir, model_forcing, startdate, \
-                 tmp_output_filename)
-    _copy_to_final_file(tmp_output_filename, output_filename)
-    os.unlink(tmp_output_filename)
+                 output_filename)
 
 # Invoke driver
 if __name__ == "__main__":
