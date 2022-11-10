@@ -111,6 +111,40 @@ submit_job(){
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+set_permission(){
+
+    cd ${E2ESDIR}
+    /bin/rm -f set_permission.j
+    cat << EOF > ${E2ESDIR}/set_permission.j
+#!/bin/bash
+
+#######################################################################
+#                        Set Read/Write permission 
+#######################################################################
+
+#SBATCH --account=${SPCODE}
+#SBATCH --ntasks=1
+#SBATCH --time=00:00:15
+#SBATCH --job-name=set_permission_
+#SBATCH --output ${SCRDIR}/set_permission_%j.out
+#SBATCH --error ${SCRDIR}/set_permission_%j.err
+
+cd ${E2ESDIR}
+
+find . -type d -exec chmod 0775 {} \;
+find . -name "*.nc" -exec chmod 0444 {} \;
+find . -name "*.NC" -exec chmod 0444 {} \;
+find . -name "*.NC4" -exec chmod 0444 {} \;
+find . -name "*.nc4" -exec chmod 0444 {} \;
+find . -name "*.TIF" -exec chmod 0444 {} \;
+find . -name "*.png" -exec chmod 0444 {} \;
+
+EOF
+   perm_ID=$(submit_job $1 "set_permission_") 
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 download_forecasts(){
     
     #######################################################################
@@ -338,7 +372,6 @@ bcsd_fcst(){
 	bcsd03_ID=`echo $bcsd03_ID`' '$thisID
     done
     bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
-    exit
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
@@ -701,7 +734,7 @@ cd ${SCRDIR}
 /bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
-/bin/rm $JOB_SCHEDULE
+/bin/rm -f $JOB_SCHEDULE
 
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
@@ -720,6 +753,7 @@ bcsd12_ID=
 lisfcst_ID=
 s2spost_ID=
 s2smetric_ID=
+s2splots_ID=
 
 case $STEP in
     LISDA)
@@ -732,8 +766,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $lisda_ID
     ;;
     LDTICS)
 	ldt_ics
@@ -744,8 +783,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $ldtics_ID
     ;;    
     BCSD)
 	bcsd_fcst
@@ -755,8 +799,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
-	fi	
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
+	fi
+	set_permission $bcsd12_ID
     ;;
     FCST)
 	lis_fcst
@@ -765,8 +814,13 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
-	    fi    
-	fi	
+		set_permission $s2splots_ID
+		exit
+	    fi
+	    set_permission $s2spost_ID
+	    exit
+	fi
+	set_permission $lisfcst_ID
     ;;
     POST)
 	s2spost
@@ -774,17 +828,27 @@ case $STEP in
 	    if [ $DATATYPE == "forecast" ]; then
 		s2smetrics
 		s2splots
+		set_permission $s2splots_ID
+		exit
 	    fi
+	    set_permission $s2spost_ID
+	    exit
 	fi
+	set_permission $s2spost_ID
     ;;
     METRICS)
 	s2smetrics
 	if [ $ONE == "N" ] || [ $ONE == "n" ]; then
 	    s2splots
+	    set_permission $s2splots_ID
+	    exit
 	fi
+	set_permission $s2smetric_ID
     ;;
     PLOTS)
 	s2splots
+	set_permission $s2splots_ID
+	exit
     ;;
     *)
 	lis_darun
@@ -795,7 +859,10 @@ case $STEP in
 	if [ $DATATYPE == "forecast" ]; then
 	    s2smetrics
 	    s2splots
+	    set_permission $s2splots_ID
+	    exit
 	fi
+	set_permission $s2spost_ID
     ;;
 esac
     
