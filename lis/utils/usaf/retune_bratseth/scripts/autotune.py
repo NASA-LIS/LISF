@@ -35,6 +35,13 @@ class AutomateTuning:
 
     def __init__(self):
         """Initializes object"""
+        self.workdir = "NULL"
+        self.scriptdir = "NULL"
+        self.cfgdir = "NULL"
+        self.bindir = "NULL"
+        self.lis_cfg_template = "NULL"
+        self.varlist = "NULL"
+
         self.use_blacklist = False
         self.sigma2b = {}
         self.l_b = {}
@@ -264,6 +271,158 @@ class AutomateTuning:
                     self.l_o[varname] = l_o
                     continue
 
+    def _assemble_new_lines_lb_gage(self, nwp, lines):
+        if self.l_b["gage"] > 0:
+            line = f"AGRMET {nwp} Precip background error scale length (m):"
+            line += f" {self.l_b['gage']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2b_gage(self, nwp, lines):
+        if self.sigma2b["gage"] > 0:
+            line = f"AGRMET {nwp} Precip background error variance:"
+            line += f" {self.sigma2b['gage']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_gage(self, nwp, lines):
+        if self.sigma2o["gage"] > 0:
+            line = f"AGRMET {nwp} Precip Gauge observation error variance:"
+            line += f" {self.sigma2o['gage']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lo_geoprecip(self, nwp, lines):
+        if "geoprecip" in self.l_o:
+            if self.l_o["geoprecip"] > 0:
+                line = \
+                   f"AGRMET {nwp} Precip GEOPRECIP observation error scale length (m):"
+                line += f" {self.l_o['geoprecip']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_geoprecip(self, nwp, lines):
+        if "geoprecip" in self.sigma2o:
+            if self.sigma2o["geoprecip"] > 0:
+                line = f"AGRMET {nwp} Precip GEOPRECIP observation error variance:"
+                line += f" {self.sigma2o['geoprecip']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lo_ssmi(self, nwp, lines):
+        if "ssmi" in self.l_o:
+            if self.l_o["ssmi"] > 0:
+                line = \
+                    f"AGRMET {nwp} Precip SSMI observation error scale length (m):"
+                line += f" {self.l_o['ssmi']}%s\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_ssmi(self, nwp, lines):
+        if "ssmi" in self.sigma2o:
+            if self.sigma2o["ssmi"] > 0:
+                line = f"AGRMET {nwp} Precip SSMI observation error variance:"
+                line += f" {self.sigma2o['ssmi']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lo_cmorph(self, nwp, lines):
+        if "cmorph" in self.l_o:
+            if self.l_o["cmorph"] > 0:
+                line = \
+                       f"AGRMET {nwp} Precip CMORPH observation error scale length (m):"
+                line += f" {self.l_o['cmorph']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_cmorph(self, nwp, lines):
+        if "cmorph" in self.sigma2o:
+            if self.sigma2o["cmorph"] > 0:
+                line = f"AGRMET {nwp} Precip CMORPH observation error variance:"
+                line += f" {self.sigma2o['cmorph']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lo_imerg(self, nwp, lines):
+        if "imerg" in self.l_o:
+            if self.l_o["imerg"] > 0:
+                line = \
+                    f"AGRMET {nwp} Precip IMERG observation error scale length (m):"
+                line += f" {self.l_o['imerg']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_imerg(self, nwp, lines):
+        if "imerg" in self.sigma2o:
+            if self.sigma2o["imerg"] > 0:
+                line = f"AGRMET {nwp} Precip IMERG observation error variance:"
+                line += f" {self.sigma2o['imerg']}\n"
+                lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lb_t2m(self, nwp, lines):
+        if self.l_b["t2m"] > 0:
+            line = f"AGRMET {nwp} T2M background error scale length (m):"
+            line += f" {self.l_b['t2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2b_t2m(self, nwp, lines):
+        if self.sigma2b["t2m"] > 0:
+            line = f"AGRMET {nwp} T2M background error variance:"
+            line += f" {self.sigma2b['t2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_t2m(self, nwp, lines):
+        if self.sigma2o["t2m"] > 0:
+            line = f"AGRMET {nwp} T2M station observation error variance:"
+            line += f" {self.sigma2o['t2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lb_rh2m(self, nwp, lines):
+        if self.l_b["rh2m"] > 0:
+            line = f"AGRMET {nwp} RH2M background error scale length (m):"
+            line += f" {self.l_b['rh2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2b_rh2m(self, nwp, lines):
+        if self.sigma2b["rh2m"] > 0:
+            line = f"AGRMET {nwp} RH2M background error variance:"
+            line += f" {self.sigma2b['rh2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_rh2m(self, nwp, lines):
+        if self.sigma2o["rh2m"] > 0:
+            line = f"AGRMET {nwp} RH2M station observation error variance:"
+            line += f" {self.sigma2o['rh2m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_lb_spd10m(self, nwp, lines):
+        if self.l_b["spd10m"] > 0:
+            line = f"AGRMET {nwp} SPD10M background error scale length (m):"
+            line += f" {self.l_b['spd10m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2b_spd10m(self, nwp, lines):
+        if self.sigma2b["spd10m"] > 0:
+            line = f"AGRMET {nwp} SPD10M background error variance:"
+            line += f" {self.sigma2b['spd10m']}\n"
+            lines.append(line)
+        return lines
+
+    def _assemble_new_lines_sigma2o_spd10m(self, nwp, lines):
+        if self.sigma2o["spd10m"] > 0:
+            line = f"AGRMET {nwp} SPD10M station observation error variance:"
+            line += f" {self.sigma2o['spd10m']}\n"
+            lines.append(line)
+        return lines
+
     def assemble_new_lines(self):
         """Assemble new lines for lis.config file."""
         lines = []
@@ -272,117 +431,33 @@ class AutomateTuning:
         if self.for_gfs:
             nwp = "GFS"
 
-        if self.l_b["gage"] > 0:
-            line = f"AGRMET {nwp} Precip background error scale length (m):"
-            line += f" {self.l_b['gage']}\n"
-            lines.append(line)
+        lines = self._assemble_new_lines_lb_gage(nwp, lines)
+        lines = self._assemble_new_lines_sigma2b_gage(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_gage(nwp, lines)
 
-        if self.sigma2b["gage"] > 0:
-            line = f"AGRMET {nwp} Precip background error variance:"
-            line += f" {self.sigma2b['gage']}\n"
-            lines.append(line)
+        lines = self._assemble_new_lines_lo_geoprecip(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_geoprecip(nwp, lines)
 
-        if self.sigma2o["gage"] > 0:
-            line = f"AGRMET {nwp} Precip Gauge observation error variance:"
-            line += f" {self.sigma2o['gage']}\n"
-            lines.append(line)
+        lines = self._assemble_new_lines_lo_ssmi(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_ssmi(nwp, lines)
 
-        if "geoprecip" in self.l_o:
-            if self.l_o["geoprecip"] > 0:
-                line = \
-                   f"AGRMET {nwp} Precip GEOPRECIP observation error scale length (m):"
-                line += f" {self.l_o['geoprecip']}\n"
-                lines.append(line)
+        lines = self._assemble_new_lines_lo_cmorph(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_cmorph(nwp, lines)
 
-        if "geoprecip" in self.sigma2o:
-            if self.sigma2o["geoprecip"] > 0:
-                line = f"AGRMET {nwp} Precip GEOPRECIP observation error variance:"
-                line += f" {self.sigma2o['geoprecip']}\n"
-                lines.append(line)
+        lines = self._assemble_new_lines_lo_imerg(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_imerg(nwp, lines)
 
-        if "ssmi" in self.l_o:
-            if self.l_o["ssmi"] > 0:
-                line = \
-                    f"AGRMET {nwp} Precip SSMI observation error scale length (m):"
-                line += f" {self.l_o['ssmi']}%s\n"
-                lines.append(line)
+        lines = self._assemble_new_lines_lb_t2m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2b_t2m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_t2m(nwp, lines)
 
-        if "ssmi" in self.sigma2o:
-            if self.sigma2o["ssmi"] > 0:
-                line = f"AGRMET {nwp} Precip SSMI observation error variance:"
-                line += f" {self.sigma2o['ssmi']}\n"
-                lines.append(line)
+        lines = self._assemble_new_lines_lb_rh2m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2b_rh2m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_rh2m(nwp, lines)
 
-        if "cmorph" in self.l_o:
-            if self.l_o["cmorph"] > 0:
-                line = \
-                    f"AGRMET {nwp} Precip CMORPH observation error scale length (m):"
-                line += f" {self.l_o['cmorph']}\n"
-                lines.append(line)
-
-        if "cmorph" in self.sigma2o:
-            if self.sigma2o["cmorph"] > 0:
-                line = f"AGRMET {nwp} Precip CMORPH observation error variance:"
-                line += f" {self.sigma2o['cmorph']}\n"
-                lines.append(line)
-
-        if "imerg" in self.l_o:
-            if self.l_o["imerg"] > 0:
-                line = \
-                    f"AGRMET {nwp} Precip IMERG observation error scale length (m):"
-                line += f" {self.l_o['imerg']}\n"
-                lines.append(line)
-
-        if "imerg" in self.sigma2o:
-            if self.sigma2o["imerg"] > 0:
-                line = f"AGRMET {nwp} Precip IMERG observation error variance:"
-                line += f" {self.sigma2o['imerg']}\n"
-                lines.append(line)
-
-        if self.l_b["t2m"] > 0:
-            line = f"AGRMET {nwp} T2M background error scale length (m):"
-            line += f" {self.l_b['t2m']}\n"
-            lines.append(line)
-
-        if self.sigma2b["t2m"] > 0:
-            line = f"AGRMET {nwp} T2M background error variance:"
-            line += f" {self.sigma2b['t2m']}\n"
-            lines.append(line)
-
-        if self.sigma2o["t2m"] > 0:
-            line = f"AGRMET {nwp} T2M station observation error variance:"
-            line += f" {self.sigma2o['t2m']}\n"
-            lines.append(line)
-
-        if self.l_b["rh2m"] > 0:
-            line = f"AGRMET {nwp} RH2M background error scale length (m):"
-            line += f" {self.l_b['rh2m']}\n"
-            lines.append(line)
-
-        if self.sigma2b["rh2m"] > 0:
-            line = f"AGRMET {nwp} RH2M background error variance:"
-            line += f" {self.sigma2b['rh2m']}\n"
-            lines.append(line)
-
-        if self.sigma2o["rh2m"] > 0:
-            line = f"AGRMET {nwp} RH2M station observation error variance:"
-            line += f" {self.sigma2o['rh2m']}\n"
-            lines.append(line)
-
-        if self.l_b["spd10m"] > 0:
-            line = f"AGRMET {nwp} SPD10M background error scale length (m):"
-            line += f" {self.l_b['spd10m']}\n"
-            lines.append(line)
-
-        if self.sigma2b["spd10m"] > 0:
-            line = f"AGRMET {nwp} SPD10M background error variance:"
-            line += f" {self.sigma2b['spd10m']}\n"
-            lines.append(line)
-
-        if self.sigma2o["spd10m"] > 0:
-            line = f"AGRMET {nwp} SPD10M station observation error variance:"
-            line += f" {self.sigma2o['spd10m']}\n"
-            lines.append(line)
+        lines = self._assemble_new_lines_lb_spd10m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2b_spd10m(nwp, lines)
+        lines = self._assemble_new_lines_sigma2o_spd10m(nwp, lines)
 
         self.newlines = lines
 
