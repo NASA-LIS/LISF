@@ -26,7 +26,6 @@ REVISION HISTORY:
 import configparser
 import datetime
 import os
-import subprocess
 import sys
 
 import create_blacklist
@@ -38,9 +37,9 @@ class AutomateTuning:
         """Initializes object"""
         self.use_blacklist = False
         self.sigma2b = {}
-        self.Lb = {}
+        self.l_b = {}
         self.sigma2o = {}
-        self.Lo = {}
+        self.l_o = {}
         self.newlines = []
         self.for_gfs = False
         self._process_cmd_line()
@@ -61,8 +60,8 @@ class AutomateTuning:
         self.enddt = \
             datetime.datetime(year=year, month=month, day=day, hour=hour)
 
-        self.dd = sys.argv[3]
-        days = int(self.dd)
+        self.day = sys.argv[3]
+        days = int(self.day)
         delta = datetime.timedelta(days=days)
         self.startdt = self.enddt - delta
 
@@ -71,7 +70,7 @@ class AutomateTuning:
             varname = sys.argv[4]
             if varname not in ["gage", "rh2m", "t2m", "spd10m", \
                                "cmorph", "geoprecip", "imerg", "ssmi"]:
-                print("[ERR] Invalid varname %s provided!" %(varname))
+                print(f"[ERR] Invalid varname {varname} provided!")
                 sys.exit(1)
             self.varname = varname
         else:
@@ -80,7 +79,7 @@ class AutomateTuning:
     def _process_cfg_file(self):
         """Processes config file for this script."""
         if not os.path.exists(sys.argv[1]):
-            print("[ERR] Cannot find config file %s" %(sys.argv[1]))
+            print(f"[ERR] Cannot find config file {sys.argv[1]}")
             print("Cannot continue....")
             sys.exit(1)
 
@@ -98,7 +97,7 @@ class AutomateTuning:
 
     def usage(self):
         """Print usage message for this script."""
-        print("Usage: %s CFGFILE YYYYMMDDHH DD [VARNAME]" %(sys.argv[0]))
+        print(f"Usage: {sys.argv[0]} CFGFILE YYYYMMDDHH DD [VARNAME]")
         print("   CFGFILE is name of config file")
         print("   YYYYMMDDHH is end of training period")
         print("   DD is number of days in training period")
@@ -113,16 +112,16 @@ class AutomateTuning:
 
         self.use_blacklist = True
 
-        cfgfile = "%s/blacklist_%s.cfg" %(self.cfgdir, self.varname)
+        cfgfile = f"{self.cfgdir}/blacklist_{self.varname}.cfg"
         if not os.path.exists(cfgfile):
-            print("[WARN] Cannot find %s" %(cfgfile))
-            print("Will skip blacklist for %s" %(self.varname))
+            print(f"[WARN] Cannot find {cfgfile}")
+            print(f"Will skip blacklist for {self.varname}")
             self.use_blacklist = False
             return
 
-        blacklistfilename = "blacklist_%s.txt" %(self.varname)
+        blacklistfilename = f"blacklist_{self.varname}.txt"
         create_blacklist.create_blacklist(cfgfile, blacklistfilename, \
-                                          self.yyyymmddhh, self.dd)
+                                          self.yyyymmddhh, self.day)
         return
 
     def check_gage_blacklist(self):
@@ -138,42 +137,42 @@ class AutomateTuning:
             print("[ERR] Variable not specified on command line!")
             sys.exit(1)
 
-        cfgfile = "%s/procOBA_NWP.%s.config" %(self.cfgdir, self.varname)
+        cfgfile = f"{self.cfgdir}/procOBA_NWP.{self.varname}.config"
         if not os.path.exists(cfgfile):
-            print("[ERR] Cannot find %s" %(cfgfile))
+            print(f"[ERR] Cannot find {cfgfile}")
             sys.exit(1)
             return
 
         # Copy and customize cfg file
-        lines = open("%s" %(cfgfile), "r").readlines()
-        cfgfile = "%s/procOBA_NWP.%s.config" %(self.workdir, self.varname)
-        fd = open(cfgfile, "w")
+        lines = open(f"{cfgfile}", "r", encoding="ascii").readlines()
+        cfgfile = f"{self.workdir}/procOBA_NWP.{self.varname}.config"
+        file = open(cfgfile, "w", encoding="ascii")
         for line in lines:
             if "startyear:" in line:
-                line = "startyear: %4.4d\n" %(self.startdt.year)
+                line = f"startyear: {self.startdt.year:04d}\n"
             elif "startmonth: " in line:
-                line = "startmonth: %2.2d\n" %(self.startdt.month)
+                line = f"startmonth: {self.startdt.month:02d}\n"
             elif "startday: " in line:
-                line = "startday: %2.2d\n" %(self.startdt.day)
+                line = f"startday: {self.startdt.day:02d}\n"
             elif "starthour: " in line:
-                line = "starthour: %2.2d\n" %(self.startdt.hour)
+                line = f"starthour: {self.startdt.hour:02d}\n"
             elif "endyear:" in line:
-                line = "endyear: %4.4d\n" %(self.enddt.year)
+                line = f"endyear: {self.enddt.year:04d}\n"
             elif "endmonth: " in line:
-                line = "endmonth: %2.2d\n" %(self.enddt.month)
+                line = f"endmonth: {self.enddt.month:02d}\n"
             elif "endday: " in line:
-                line = "endday: %2.2d\n" %(self.enddt.day)
+                line = f"endday: {self.enddt.day:02d}\n"
             elif "endhour: " in line:
-                line = "endhour: %2.2d\n" %(self.enddt.hour)
+                line = f"endhour: {self.enddt.hour:02d}\n"
             elif "use_blacklist:" in line:
                 option = "false\n"
                 if self.use_blacklist:
                     option = "true\n"
                 line = "use_blacklist: " + option
             elif "blacklist_file:" in line:
-                line = "blacklist_file: blacklist_%s.txt" %(self.varname)
-            fd.write(line)
-        fd.close()
+                line = f"blacklist_file: blacklist_{self.varname}.txt"
+            file.write(line)
+        file.close()
 
     def customize_procoba_sat(self):
         """Customizes config file for procOBA_Sat."""
@@ -182,33 +181,33 @@ class AutomateTuning:
             print("[ERR] Variable not specified on command line!")
             sys.exit(1)
 
-        cfgfile = "%s/procOBA_Sat.%s.config" %(self.cfgdir, self.varname)
+        cfgfile = f"{self.cfgdir}/procOBA_Sat.{self.varname}.config"
         if not os.path.exists(cfgfile):
-            print("[ERR] Cannot find %s" %(cfgfile))
+            print(f"[ERR] Cannot find {cfgfile}")
             sys.exit(1)
             return
 
         # Copy and customize cfg file
-        lines = open("%s" %(cfgfile), "r").readlines()
-        cfgfile = "%s/procOBA_Sat.%s.config" %(self.workdir, self.varname)
-        fd = open(cfgfile, "w")
+        lines = open(f"{cfgfile}", "r", encoding="ascii").readlines()
+        cfgfile = f"{self.workdir}/procOBA_Sat.{self.varname}.config"
+        file = open(cfgfile, "w", encoding="ascii")
         for line in lines:
             if "startyear:" in line:
-                line = "startyear: %4.4d\n" %(self.startdt.year)
+                line = f"startyear: {self.startdt.year:04d}\n"
             elif "startmonth: " in line:
-                line = "startmonth: %2.2d\n" %(self.startdt.month)
+                line = f"startmonth: {self.startdt.month:02d}\n"
             elif "startday: " in line:
-                line = "startday: %2.2d\n" %(self.startdt.day)
+                line = f"startday: {self.startdt.day:02d}\n"
             elif "starthour: " in line:
-                line = "starthour: %2.2d\n" %(self.startdt.hour)
+                line = f"starthour: {self.startdt.hour:02d}\n"
             elif "endyear:" in line:
-                line = "endyear: %4.4d\n" %(self.enddt.year)
+                line = f"endyear: {self.enddt.year:04d}\n"
             elif "endmonth: " in line:
-                line = "endmonth: %2.2d\n" %(self.enddt.month)
+                line = f"endmonth: {self.enddt.month:02d}\n"
             elif "endday: " in line:
-                line = "endday: %2.2d\n" %(self.enddt.day)
+                line = f"endday: {self.enddt.day:02d}\n"
             elif "endhour: " in line:
-                line = "endhour: %2.2d\n" %(self.enddt.hour)
+                line = f"endhour: {self.enddt.hour:02d}\n"
             elif "use_blacklist:" in line:
                 option = "false\n"
                 if self.use_blacklist:
@@ -216,23 +215,23 @@ class AutomateTuning:
                 line = "use_blacklist: " + option
             elif "blacklist_file:" in line:
                 line = "blacklist_file: blacklist_gage.txt"
-            fd.write(line)
-        fd.close()
+            file.write(line)
+        file.close()
 
     def get_bratseth_err_settings(self, varname):
         """Fetches Bratseth error settings from files."""
         if varname in ["gage", "rh2m", "spd10m", "t2m"]:
             if varname == "gage":
-                paramfile = "%s_nwp.param" %(varname)
+                paramfile = f"{varname}_nwp.param"
             else:
-                paramfile = "%s.param" %(varname)
+                paramfile = f"{varname}.param"
             if not os.path.exists(paramfile):
-                print("[WARN] Cannot find param file %s" %(paramfile))
+                print(f"[WARN] Cannot find param file {paramfile}")
                 self.sigma2o[varname] = -9999
                 self.sigma2b[varname] = -9999
-                self.Lb[varname] = -9999
+                self.l_b[varname] = -9999
                 return
-            lines = open(paramfile, "r").readlines()
+            lines = open(paramfile, "r", encoding="ascii").readlines()
             for line in lines:
                 # Here sfc reports are "obs", NWP is "background"
                 if "SIGMA2_obs:" in line:
@@ -244,17 +243,17 @@ class AutomateTuning:
                     self.sigma2b[varname] = sigma2
                     continue
                 if "L_back:" in line:
-                    Lb = float(line.split()[-1])*1000 # km to m
-                    self.Lb[varname] = Lb
+                    l_b = float(line.split()[-1])*1000 # km to m
+                    self.l_b[varname] = l_b
                     continue
         elif varname in ["cmorph", "geoprecip", "imerg", "ssmi"]:
-            paramfile = "gage_%s_rescaled.param" %(varname)
+            paramfile = f"gage_{varname}_rescaled.param"
             if not os.path.exists(paramfile):
-                print("[WARN] Cannot find param file %s" %(paramfile))
+                print(f"[WARN] Cannot find param file {paramfile}")
                 self.sigma2o[varname] = -9999
-                self.Lo[varname] = -9999
+                self.l_o[varname] = -9999
                 return
-            lines = open(paramfile, "r").readlines()
+            lines = open(paramfile, "r", encoding="ascii").readlines()
             for line in lines:
                 # NOTE:  Here the satellite obs data are the "background"
                 # We now store them as obs since Bratseth will use NWP as
@@ -264,8 +263,8 @@ class AutomateTuning:
                     self.sigma2o[varname] = sigma2
                     continue
                 if "L_back:" in line:
-                    Lo = float(line.split()[-1])*1000 # km to m
-                    self.Lo[varname] = Lo
+                    l_o = float(line.split()[-1])*1000 # km to m
+                    self.l_o[varname] = l_o
                     continue
 
     def assemble_new_lines(self):
@@ -276,116 +275,116 @@ class AutomateTuning:
         if self.for_gfs:
             nwp = "GFS"
 
-        if self.Lb["gage"] > 0:
+        if self.l_b["gage"] > 0:
             line = f"AGRMET {nwp} Precip background error scale length (m):"
-            line += " %s\n" %(self.Lb["gage"])
+            line += f" {self.l_b['gage']}\n"
             lines.append(line)
 
         if self.sigma2b["gage"] > 0:
             line = f"AGRMET {nwp} Precip background error variance:"
-            line += " %s\n" %(self.sigma2b["gage"])
+            line += f" {self.sigma2b['gage']}\n"
             lines.append(line)
 
         if self.sigma2o["gage"] > 0:
             line = f"AGRMET {nwp} Precip Gauge observation error variance:"
-            line += " %s\n" %(self.sigma2o["gage"])
+            line += f" {self.sigma2o['gage']}\n"
             lines.append(line)
 
-        if "geoprecip" in self.Lo:
-            if self.Lo["geoprecip"] > 0:
+        if "geoprecip" in self.l_o:
+            if self.l_o["geoprecip"] > 0:
                 line = \
                    f"AGRMET {nwp} Precip GEOPRECIP observation error scale length (m):"
-                line += " %s\n" %(self.Lo["geoprecip"])
+                line += f" {self.l_o['geoprecip']}\n"
                 lines.append(line)
 
         if "geoprecip" in self.sigma2o:
             if self.sigma2o["geoprecip"] > 0:
                 line = f"AGRMET {nwp} Precip GEOPRECIP observation error variance:"
-                line += " %s\n" %(self.sigma2o["geoprecip"])
+                line += f" {self.sigma2o['geoprecip']}\n"
                 lines.append(line)
 
-        if "ssmi" in self.Lo:
-            if self.Lo["ssmi"] > 0:
+        if "ssmi" in self.l_o:
+            if self.l_o["ssmi"] > 0:
                 line = \
                     f"AGRMET {nwp} Precip SSMI observation error scale length (m):"
-                line += " %s\n" %(self.Lo["ssmi"])
+                line += f" {self.l_o['ssmi']}%s\n"
                 lines.append(line)
 
         if "ssmi" in self.sigma2o:
             if self.sigma2o["ssmi"] > 0:
                 line = f"AGRMET {nwp} Precip SSMI observation error variance:"
-                line += " %s\n" %(self.sigma2o["ssmi"])
+                line += f" {self.sigma2o['ssmi']}\n"
                 lines.append(line)
 
-        if "cmorph" in self.Lo:
-            if self.Lo["cmorph"] > 0:
+        if "cmorph" in self.l_o:
+            if self.l_o["cmorph"] > 0:
                 line = \
                     f"AGRMET {nwp} Precip CMORPH observation error scale length (m):"
-                line += " %s\n" %(self.Lo["cmorph"])
+                line += f" {self.l_o['cmorph']}\n"
                 lines.append(line)
 
         if "cmorph" in self.sigma2o:
             if self.sigma2o["cmorph"] > 0:
                 line = f"AGRMET {nwp} Precip CMORPH observation error variance:"
-                line += " %s\n" %(self.sigma2o["cmorph"])
+                line += f" {self.sigma2o['cmorph']}\n"
                 lines.append(line)
 
-        if "imerg" in self.Lo:
-            if self.Lo["imerg"] > 0:
+        if "imerg" in self.l_o:
+            if self.l_o["imerg"] > 0:
                 line = \
                     f"AGRMET {nwp} Precip IMERG observation error scale length (m):"
-                line += " %s\n" %(self.Lo["imerg"])
+                line += f" {self.l_o['imerg']}\n"
                 lines.append(line)
 
         if "imerg" in self.sigma2o:
             if self.sigma2o["imerg"] > 0:
                 line = f"AGRMET {nwp} Precip IMERG observation error variance:"
-                line += " %s\n" %(self.sigma2o["imerg"])
+                line += f" {self.sigma2o['imerg']}\n"
                 lines.append(line)
 
-        if self.Lb["t2m"] > 0:
+        if self.l_b["t2m"] > 0:
             line = f"AGRMET {nwp} T2M background error scale length (m):"
-            line += " %s\n" %(self.Lb["t2m"])
+            line += f" {self.l_b['t2m']}\n"
             lines.append(line)
 
         if self.sigma2b["t2m"] > 0:
             line = f"AGRMET {nwp} T2M background error variance:"
-            line += " %s\n" %(self.sigma2b["t2m"])
+            line += f" {self.sigma2b['t2m']}\n"
             lines.append(line)
 
         if self.sigma2o["t2m"] > 0:
             line = f"AGRMET {nwp} T2M station observation error variance:"
-            line += " %s\n" %(self.sigma2o["t2m"])
+            line += f" {self.sigma2o['t2m']}\n"
             lines.append(line)
 
-        if self.Lb["rh2m"] > 0:
+        if self.l_b["rh2m"] > 0:
             line = f"AGRMET {nwp} RH2M background error scale length (m):"
-            line += " %s\n" %(self.Lb["rh2m"])
+            line += f" {self.l_b['rh2m']}\n"
             lines.append(line)
 
         if self.sigma2b["rh2m"] > 0:
             line = f"AGRMET {nwp} RH2M background error variance:"
-            line += " %s\n" %(self.sigma2b["rh2m"])
+            line += f" {self.sigma2b['rh2m']}\n"
             lines.append(line)
 
         if self.sigma2o["rh2m"] > 0:
             line = f"AGRMET {nwp} RH2M station observation error variance:"
-            line += " %s\n" %(self.sigma2o["rh2m"])
+            line += f" {self.sigma2o['rh2m']}\n"
             lines.append(line)
 
-        if self.Lb["spd10m"] > 0:
+        if self.l_b["spd10m"] > 0:
             line = f"AGRMET {nwp} SPD10M background error scale length (m):"
-            line += " %s\n" %(self.Lb["spd10m"])
+            line += f" {self.l_b['spd10m']}\n"
             lines.append(line)
 
         if self.sigma2b["spd10m"] > 0:
             line = f"AGRMET {nwp} SPD10M background error variance:"
-            line += " %s\n" %(self.sigma2b["spd10m"])
+            line += f" {self.sigma2b['spd10m']}\n"
             lines.append(line)
 
         if self.sigma2o["spd10m"] > 0:
             line = f"AGRMET {nwp} SPD10M station observation error variance:"
-            line += " %s\n" %(self.sigma2o["spd10m"])
+            line += f" {self.sigma2o['spd10m']}\n"
             lines.append(line)
 
         self.newlines = lines
@@ -394,24 +393,24 @@ class AutomateTuning:
         """Customize a lis.config file with latest error settings."""
         tmpl = self.lis_cfg_template
         if not os.path.exists(tmpl):
-            print("[ERR] Cannot find LIS config template file %s" %(tmpl))
+            print(f"[ERR] Cannot find LIS config template file {tmpl}")
             sys.exit(1)
-        lines = open(tmpl, "r").readlines()
-        newfile = "%s/lis.config" %(self.workdir)
-        fd = open(newfile, "w")
+        lines = open(tmpl, "r", encoding="ascii").readlines()
+        newfile = f"{self.workdir}/lis.config"
+        file = open(newfile, "w", encoding="ascii")
         for line in lines:
             # Pass through lines that don't specify error covariance settings
             if "AGRMET GALWEM" not in line and "AGRMET GFS" not in line:
-                fd.write(line)
+                file.write(line)
                 continue
             if "error" not in line:
-                fd.write(line)
+                file.write(line)
                 continue
             if "background" not in line and "observation" not in line:
-                fd.write(line)
+                file.write(line)
                 continue
             if "variance" not in line and "scale length" not in line:
-                fd.write(line)
+                file.write(line)
                 continue
             # At this point we have a Bratseth error covariance setting.
             # See if we replaced it.  If not, pass it through.
@@ -422,11 +421,10 @@ class AutomateTuning:
                     found = True
                     break
             if not found:
-                fd.write(line)
+                file.write(line)
 
         # Now append the new Bratseth settings at the end.
-        fd.write("# NEW AUTOTUNED ERROR COVARIANCE SETTINGS\n")
+        file.write("# NEW AUTOTUNED ERROR COVARIANCE SETTINGS\n")
         for line in self.newlines:
-            fd.write(line)
-        fd.close()
-
+            file.write(line)
+        file.close()
