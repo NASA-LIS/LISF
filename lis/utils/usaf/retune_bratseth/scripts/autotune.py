@@ -147,31 +147,29 @@ class AutomateTuning:
         with open(f"{cfgfile}", "r", encoding="ascii") as file:
             lines = file.readlines()
         cfgfile = f"{self.workdir}/procOBA_NWP.{self.varname}.config"
+        entries = {
+            "startyear: " : f"startyear: {self.startdt.year:04d}\n",
+            "startmonth: " : f"startmonth: {self.startdt.month:02d}\n",
+            "startday: " : f"startday: {self.startdt.day:02d}\n",
+            "starthour: " : f"starthour: {self.startdt.hour:02d}\n",
+            "endyear: " : f"endyear: {self.enddt.year:04d}\n",
+            "endmonth: " : f"endmonth: {self.enddt.month:04d}\n",
+            "endday: " : f"endday: {self.enddt.day:04d}\n",
+            "endhour: " : f"endhour: {self.enddt.hour:04d}\n",
+            "blacklist_file:" : f"blacklist_file: blacklist_{self.varname}.txt"
+        }
         with open(cfgfile, "w", encoding="ascii") as file:
             for line in lines:
-                if "startyear:" in line:
-                    line = f"startyear: {self.startdt.year:04d}\n"
-                elif "startmonth: " in line:
-                    line = f"startmonth: {self.startdt.month:02d}\n"
-                elif "startday: " in line:
-                    line = f"startday: {self.startdt.day:02d}\n"
-                elif "starthour: " in line:
-                    line = f"starthour: {self.startdt.hour:02d}\n"
-                elif "endyear:" in line:
-                    line = f"endyear: {self.enddt.year:04d}\n"
-                elif "endmonth: " in line:
-                    line = f"endmonth: {self.enddt.month:02d}\n"
-                elif "endday: " in line:
-                    line = f"endday: {self.enddt.day:02d}\n"
-                elif "endhour: " in line:
-                    line = f"endhour: {self.enddt.hour:02d}\n"
-                elif "use_blacklist:" in line:
+                if "use_blacklist:" in line:
                     option = "false\n"
                     if self.use_blacklist:
                         option = "true\n"
                     line = "use_blacklist: " + option
-                elif "blacklist_file:" in line:
-                    line = f"blacklist_file: blacklist_{self.varname}.txt"
+                else:
+                    for item in entries.items():
+                        if item[0] in line:
+                            line = item[1]
+                            break
                 file.write(line)
 
     def customize_procoba_sat(self):
@@ -191,40 +189,37 @@ class AutomateTuning:
         with open(f"{cfgfile}", "r", encoding="ascii") as file:
             lines = file.readlines()
         cfgfile = f"{self.workdir}/procOBA_Sat.{self.varname}.config"
+        entries = {
+            "startyear: " : f"startyear: {self.startdt.year:04d}\n",
+            "startmonth: " : f"startmonth: {self.startdt.month:02d}\n",
+            "startday: " : f"startday: {self.startdt.day:02d}\n",
+            "starthour: " : f"starthour: {self.startdt.hour:02d}\n",
+            "endyear: " : f"endyear: {self.enddt.year:04d}\n",
+            "endmonth: " : f"endmonth: {self.enddt.month:04d}\n",
+            "endday: " : f"endday: {self.enddt.day:04d}\n",
+            "endhour: " : f"endhour: {self.enddt.hour:04d}\n",
+            "blacklist_file:" : "blacklist_file: blacklist_gage.txt"
+        }
         with open(cfgfile, "w", encoding="ascii") as file:
             for line in lines:
-                if "startyear:" in line:
-                    line = f"startyear: {self.startdt.year:04d}\n"
-                elif "startmonth: " in line:
-                    line = f"startmonth: {self.startdt.month:02d}\n"
-                elif "startday: " in line:
-                    line = f"startday: {self.startdt.day:02d}\n"
-                elif "starthour: " in line:
-                    line = f"starthour: {self.startdt.hour:02d}\n"
-                elif "endyear:" in line:
-                    line = f"endyear: {self.enddt.year:04d}\n"
-                elif "endmonth: " in line:
-                    line = f"endmonth: {self.enddt.month:02d}\n"
-                elif "endday: " in line:
-                    line = f"endday: {self.enddt.day:02d}\n"
-                elif "endhour: " in line:
-                    line = f"endhour: {self.enddt.hour:02d}\n"
-                elif "use_blacklist:" in line:
+                if "use_blacklist:" in line:
                     option = "false\n"
                     if self.use_blacklist:
                         option = "true\n"
                     line = "use_blacklist: " + option
-                elif "blacklist_file:" in line:
-                    line = "blacklist_file: blacklist_gage.txt"
+                else:
+                    for item in entries.items():
+                        if item[0] in line:
+                            line = item[1]
+                            break
                 file.write(line)
 
     def get_bratseth_err_settings(self, varname):
         """Fetches Bratseth error settings from files."""
         if varname in ["gage", "rh2m", "spd10m", "t2m"]:
+            paramfile = f"{varname}.param"
             if varname == "gage":
                 paramfile = f"{varname}_nwp.param"
-            else:
-                paramfile = f"{varname}.param"
             if not os.path.exists(paramfile):
                 print(f"[WARN] Cannot find param file {paramfile}")
                 self.sigma2o[varname] = -9999
