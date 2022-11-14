@@ -88,7 +88,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
     startdt = enddt - delta
 
     # Open the new blacklist file
-    fd = open(blacklistfilename, "w", encoding="ascii")
+    outfile = open(blacklistfilename, "w", encoding="ascii")
 
     # Build list of OBA files
     txt = f"{data_directory}/oba_*_{data_frequency}.txt"
@@ -133,10 +133,10 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
 
     # Now, loop through each station and calculate the mean OMB.  Create
     # a blacklist
-    fd.write(f"# Rejecting stations with more than {network_thresh} network\n")
-    fd.write(\
+    outfile.write(f"# Rejecting stations with more than {network_thresh} network\n")
+    outfile.write(\
         f"# Rejecting stations with less than {count_thresh} observations\n")
-    fd.write(\
+    outfile.write(\
         f"# Rejecting stations with absolute mean OMB beyond {omb_thresh}\n")
 
     platforms = list(data.keys())
@@ -158,19 +158,19 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             OMB[network] += (ob - back)
         length = len(OMB.keys())
         if length > int(network_thresh):
-            fd.write(f"{platform} # Found in {length} networks\n")
+            outfile.write(f"{platform} # Found in {length} networks\n")
             continue
         for network in OMB:
             if n[network] < int(count_thresh):
                 txt = f"{platform} # Only have {n[network]} observation(s)\n"
-                fd.write(txt)
+                outfile.write(txt)
                 continue
             OMB[network] = OMB[network] / float(n[network])
             if abs(OMB[network]) > float(omb_thresh):
                 txt = f"{platform} # Mean OMB is {OMB[network]}\n"
-                fd.write(txt)
+                outfile.write(txt)
                 continue
-    fd.close()
+    outfile.close()
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
