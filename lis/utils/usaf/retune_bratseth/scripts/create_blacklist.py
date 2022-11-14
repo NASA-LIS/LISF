@@ -127,9 +127,9 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
                 continue
             if platform not in data:
                 data[platform] = []
-            ob = line.split()[4]
+            obs = line.split()[4]
             back = line.split()[5]
-            data[platform].append(f"{network}:{ob}:{back}")
+            data[platform].append(f"{network}:{obs}:{back}")
 
     # Now, loop through each station and calculate the mean OMB.  Create
     # a blacklist
@@ -142,32 +142,32 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
     platforms = list(data.keys())
     platforms.sort()
     for platform in platforms:
-        n = {}
-        OMB = {}
+        num = {}
+        omb = {}
         entries = data[platform]
         for entry in entries:
             network = entry.split(":")[0]
-            ob = float(entry.split(":")[1])
+            obs = float(entry.split(":")[1])
             back = float(entry.split(":")[2])
-            if network not in n:
-                n[network] = 1
+            if network not in num:
+                num[network] = 1
             else:
-                n[network] += 1
-            if network not in OMB:
-                OMB[network] = 0.
-            OMB[network] += (ob - back)
-        length = len(OMB.keys())
+                num[network] += 1
+            if network not in omb:
+                omb[network] = 0.
+            omb[network] += (obs - back)
+        length = len(omb.keys())
         if length > int(network_thresh):
             outfile.write(f"{platform} # Found in {length} networks\n")
             continue
-        for network in OMB:
-            if n[network] < int(count_thresh):
-                txt = f"{platform} # Only have {n[network]} observation(s)\n"
+        for network in omb:
+            if num[network] < int(count_thresh):
+                txt = f"{platform} # Only have {num[network]} observation(s)\n"
                 outfile.write(txt)
                 continue
-            OMB[network] = OMB[network] / float(n[network])
-            if abs(OMB[network]) > float(omb_thresh):
-                txt = f"{platform} # Mean OMB is {OMB[network]}\n"
+            omb[network] = omb[network] / float(num[network])
+            if abs(omb[network]) > float(omb_thresh):
+                txt = f"{platform} # Mean OMB is {omb[network]}\n"
                 outfile.write(txt)
                 continue
     outfile.close()
