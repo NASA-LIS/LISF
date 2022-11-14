@@ -144,35 +144,35 @@ class AutomateTuning:
             return
 
         # Copy and customize cfg file
-        lines = open(f"{cfgfile}", "r", encoding="ascii").readlines()
+        with open(f"{cfgfile}", "r", encoding="ascii") as file:
+            lines = file.readlines()
         cfgfile = f"{self.workdir}/procOBA_NWP.{self.varname}.config"
-        file = open(cfgfile, "w", encoding="ascii")
-        for line in lines:
-            if "startyear:" in line:
-                line = f"startyear: {self.startdt.year:04d}\n"
-            elif "startmonth: " in line:
-                line = f"startmonth: {self.startdt.month:02d}\n"
-            elif "startday: " in line:
-                line = f"startday: {self.startdt.day:02d}\n"
-            elif "starthour: " in line:
-                line = f"starthour: {self.startdt.hour:02d}\n"
-            elif "endyear:" in line:
-                line = f"endyear: {self.enddt.year:04d}\n"
-            elif "endmonth: " in line:
-                line = f"endmonth: {self.enddt.month:02d}\n"
-            elif "endday: " in line:
-                line = f"endday: {self.enddt.day:02d}\n"
-            elif "endhour: " in line:
-                line = f"endhour: {self.enddt.hour:02d}\n"
-            elif "use_blacklist:" in line:
-                option = "false\n"
-                if self.use_blacklist:
-                    option = "true\n"
-                line = "use_blacklist: " + option
-            elif "blacklist_file:" in line:
-                line = f"blacklist_file: blacklist_{self.varname}.txt"
-            file.write(line)
-        file.close()
+        with open(cfgfile, "w", encoding="ascii") as file:
+            for line in lines:
+                if "startyear:" in line:
+                    line = f"startyear: {self.startdt.year:04d}\n"
+                elif "startmonth: " in line:
+                    line = f"startmonth: {self.startdt.month:02d}\n"
+                elif "startday: " in line:
+                    line = f"startday: {self.startdt.day:02d}\n"
+                elif "starthour: " in line:
+                    line = f"starthour: {self.startdt.hour:02d}\n"
+                elif "endyear:" in line:
+                    line = f"endyear: {self.enddt.year:04d}\n"
+                elif "endmonth: " in line:
+                    line = f"endmonth: {self.enddt.month:02d}\n"
+                elif "endday: " in line:
+                    line = f"endday: {self.enddt.day:02d}\n"
+                elif "endhour: " in line:
+                    line = f"endhour: {self.enddt.hour:02d}\n"
+                elif "use_blacklist:" in line:
+                    option = "false\n"
+                    if self.use_blacklist:
+                        option = "true\n"
+                    line = "use_blacklist: " + option
+                elif "blacklist_file:" in line:
+                    line = f"blacklist_file: blacklist_{self.varname}.txt"
+                file.write(line)
 
     def customize_procoba_sat(self):
         """Customizes config file for procOBA_Sat."""
@@ -188,35 +188,35 @@ class AutomateTuning:
             return
 
         # Copy and customize cfg file
-        lines = open(f"{cfgfile}", "r", encoding="ascii").readlines()
+        with open(f"{cfgfile}", "r", encoding="ascii") as file:
+            lines = file.readlines()
         cfgfile = f"{self.workdir}/procOBA_Sat.{self.varname}.config"
-        file = open(cfgfile, "w", encoding="ascii")
-        for line in lines:
-            if "startyear:" in line:
-                line = f"startyear: {self.startdt.year:04d}\n"
-            elif "startmonth: " in line:
-                line = f"startmonth: {self.startdt.month:02d}\n"
-            elif "startday: " in line:
-                line = f"startday: {self.startdt.day:02d}\n"
-            elif "starthour: " in line:
-                line = f"starthour: {self.startdt.hour:02d}\n"
-            elif "endyear:" in line:
-                line = f"endyear: {self.enddt.year:04d}\n"
-            elif "endmonth: " in line:
-                line = f"endmonth: {self.enddt.month:02d}\n"
-            elif "endday: " in line:
-                line = f"endday: {self.enddt.day:02d}\n"
-            elif "endhour: " in line:
-                line = f"endhour: {self.enddt.hour:02d}\n"
-            elif "use_blacklist:" in line:
-                option = "false\n"
-                if self.use_blacklist:
-                    option = "true\n"
-                line = "use_blacklist: " + option
-            elif "blacklist_file:" in line:
-                line = "blacklist_file: blacklist_gage.txt"
-            file.write(line)
-        file.close()
+        with open(cfgfile, "w", encoding="ascii") as file:
+            for line in lines:
+                if "startyear:" in line:
+                    line = f"startyear: {self.startdt.year:04d}\n"
+                elif "startmonth: " in line:
+                    line = f"startmonth: {self.startdt.month:02d}\n"
+                elif "startday: " in line:
+                    line = f"startday: {self.startdt.day:02d}\n"
+                elif "starthour: " in line:
+                    line = f"starthour: {self.startdt.hour:02d}\n"
+                elif "endyear:" in line:
+                    line = f"endyear: {self.enddt.year:04d}\n"
+                elif "endmonth: " in line:
+                    line = f"endmonth: {self.enddt.month:02d}\n"
+                elif "endday: " in line:
+                    line = f"endday: {self.enddt.day:02d}\n"
+                elif "endhour: " in line:
+                    line = f"endhour: {self.enddt.hour:02d}\n"
+                elif "use_blacklist:" in line:
+                    option = "false\n"
+                    if self.use_blacklist:
+                        option = "true\n"
+                    line = "use_blacklist: " + option
+                elif "blacklist_file:" in line:
+                    line = "blacklist_file: blacklist_gage.txt"
+                file.write(line)
 
     def get_bratseth_err_settings(self, varname):
         """Fetches Bratseth error settings from files."""
@@ -231,7 +231,8 @@ class AutomateTuning:
                 self.sigma2b[varname] = -9999
                 self.l_b[varname] = -9999
                 return
-            lines = open(paramfile, "r", encoding="ascii").readlines()
+            with open(paramfile, "r", encoding="ascii") as file:
+                lines = file.readlines()
             for line in lines:
                 # Here sfc reports are "obs", NWP is "background"
                 if "SIGMA2_obs:" in line:
@@ -253,7 +254,8 @@ class AutomateTuning:
                 self.sigma2o[varname] = -9999
                 self.l_o[varname] = -9999
                 return
-            lines = open(paramfile, "r", encoding="ascii").readlines()
+            with open(paramfile, "r", encoding="ascii") as file:
+                lines = file.readlines()
             for line in lines:
                 # NOTE:  Here the satellite obs data are the "background"
                 # We now store them as obs since Bratseth will use NWP as
@@ -395,36 +397,36 @@ class AutomateTuning:
         if not os.path.exists(tmpl):
             print(f"[ERR] Cannot find LIS config template file {tmpl}")
             sys.exit(1)
-        lines = open(tmpl, "r", encoding="ascii").readlines()
+        with open(tmpl, "r", encoding="ascii") as file:
+            lines = file.readlines()
         newfile = f"{self.workdir}/lis.config"
-        file = open(newfile, "w", encoding="ascii")
-        for line in lines:
-            # Pass through lines that don't specify error covariance settings
-            if "AGRMET GALWEM" not in line and "AGRMET GFS" not in line:
-                file.write(line)
-                continue
-            if "error" not in line:
-                file.write(line)
-                continue
-            if "background" not in line and "observation" not in line:
-                file.write(line)
-                continue
-            if "variance" not in line and "scale length" not in line:
-                file.write(line)
-                continue
-            # At this point we have a Bratseth error covariance setting.
-            # See if we replaced it.  If not, pass it through.
-            string = line.split(":")[0]
-            found = False
-            for newline in self.newlines:
-                if string in newline:
-                    found = True
-                    break
-            if not found:
-                file.write(line)
+        with open(newfile, "w", encoding="ascii") as file:
+            for line in lines:
+                # Pass through lines that don't specify error covariance
+                if "AGRMET GALWEM" not in line and "AGRMET GFS" not in line:
+                    file.write(line)
+                    continue
+                if "error" not in line:
+                    file.write(line)
+                    continue
+                if "background" not in line and "observation" not in line:
+                    file.write(line)
+                    continue
+                if "variance" not in line and "scale length" not in line:
+                    file.write(line)
+                    continue
+                # At this point we have a Bratseth error covariance setting.
+                # See if we replaced it.  If not, pass it through.
+                string = line.split(":")[0]
+                found = False
+                for newline in self.newlines:
+                    if string in newline:
+                        found = True
+                        break
+                if not found:
+                    file.write(line)
 
-        # Now append the new Bratseth settings at the end.
-        file.write("# NEW AUTOTUNED ERROR COVARIANCE SETTINGS\n")
-        for line in self.newlines:
-            file.write(line)
-        file.close()
+            # Now append the new Bratseth settings at the end.
+            file.write("# NEW AUTOTUNED ERROR COVARIANCE SETTINGS\n")
+            for line in self.newlines:
+                file.write(line)
