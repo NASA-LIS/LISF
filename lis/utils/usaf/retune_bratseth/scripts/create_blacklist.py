@@ -88,89 +88,94 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
     startdt = enddt - delta
 
     # Open the new blacklist file
-    outfile = open(blacklistfilename, "w", encoding="ascii")
+    with open(blacklistfilename, "w", encoding="ascii") as outfile:
 
-    # Build list of OBA files
-    txt = f"{data_directory}/oba_*_{data_frequency}.txt"
-    files = glob.glob(txt)
-    files.sort()
+        # Build list of OBA files
+        txt = f"{data_directory}/oba_*_{data_frequency}.txt"
+        files = glob.glob(txt)
+        files.sort()
 
-    # Loop through each file, and store the O and B for each platform
-    for file in files:
+        # Loop through each file, and store the O and B for each platform
+        for file in files:
 
-        # Check the valid hour to see if we want to use it.
-        chunk = file.split("/")[1][12:14]
-        if chunk not in data_hour_list:
-            continue
-
-        # Make sure the valid datetime is in the desired range
-        yyyymmddhh = file.split("/")[1][4:14]
-        year = int(yyyymmddhh[0:4])
-        month = int(yyyymmddhh[4:6])
-        day = int(yyyymmddhh[6:8])
-        hour = int(yyyymmddhh[8:10])
-        curdt = datetime.datetime(year=year,
-                                  month=month,
-                                  day=day,
-                                  hour=hour)
-        if curdt <= startdt:
-            continue
-        if curdt >= enddt:
-            continue
-
-        # At this point, we trust the file.  Read it.
-        lines = open(file, "r", encoding="ascii").readlines()
-        for line in lines[1:]:
-            network = line.split()[0]
-            platform = line.split()[1]
-            if is_sat(platform):
+            # Check the valid hour to see if we want to use it.
+            chunk = file.split("/")[1][12:14]
+            if chunk not in data_hour_list:
                 continue
-            if platform not in data:
-                data[platform] = []
-            obs = line.split()[4]
-            back = line.split()[5]
-            data[platform].append(f"{network}:{obs}:{back}")
 
-    # Now, loop through each station and calculate the mean OMB.  Create
-    # a blacklist
-    outfile.write(f"# Rejecting stations with more than {network_thresh} network\n")
-    outfile.write(\
-        f"# Rejecting stations with less than {count_thresh} observations\n")
-    outfile.write(\
-        f"# Rejecting stations with absolute mean OMB beyond {omb_thresh}\n")
+            # Make sure the valid datetime is in the desired range
+            yyyymmddhh = file.split("/")[1][4:14]
+            year = int(yyyymmddhh[0:4])
+            month = int(yyyymmddhh[4:6])
+            day = int(yyyymmddhh[6:8])
+            hour = int(yyyymmddhh[8:10])
+            curdt = datetime.datetime(year=year,
+                                      month=month,
+                                      day=day,
+                                      hour=hour)
+            if curdt <= startdt:
+                continue
+            if curdt >= enddt:
+                continue
 
-    platforms = list(data.keys())
-    platforms.sort()
-    for platform in platforms:
-        num = {}
-        omb = {}
-        entries = data[platform]
-        for entry in entries:
-            network = entry.split(":")[0]
-            obs = float(entry.split(":")[1])
-            back = float(entry.split(":")[2])
-            if network not in num:
-                num[network] = 1
-            else:
-                num[network] += 1
-            if network not in omb:
-                omb[network] = 0.
-            omb[network] += (obs - back)
-        length = len(omb.keys())
-        if length > int(network_thresh):
-            outfile.write(f"{platform} # Found in {length} networks\n")
-            continue
-        for network in omb:
-            if num[network] < int(count_thresh):
-                txt = f"{platform} # Only have {num[network]} observation(s)\n"
-                outfile.write(txt)
+            # At this point, we trust the file.  Read it.
+            with open(file, "r", encoding="ascii") as infile:
+                lines = infile.readlines()
+            for line in lines[1:]:
+                network = line.split()[0]
+                platform = line.split()[1]
+                if is_sat(platform):
+                    continue
+                if platform not in data:
+                    data[platform] = []
+                obs = line.split()[4]
+                back = line.split()[5]
+                data[platform].append(f"{network}:{obs}:{back}")
+
+        # Now, loop through each station and calculate the mean OMB.
+        # Create a blacklist
+        txt = "# Rejecting stations with more than " + \
+            f"{network_thresh} network\n"
+        outfile.write(txt)
+        txt = "# Rejecting stations with less than " + \
+            f"{count_thresh} observations\n"
+        outfile.write(txt)
+        txt = "# Rejecting stations with absolute mean OMB beyond " + \
+            "{omb_thresh}\n"
+        outfile.write(txt)
+
+        platforms = list(data.keys())
+        platforms.sort()
+        for platform in platforms:
+            num = {}
+            omb = {}
+            entries = data[platform]
+            for entry in entries:
+                network = entry.split(":")[0]
+                obs = float(entry.split(":")[1])
+                back = float(entry.split(":")[2])
+                if network not in num:
+                    num[network] = 1
+                else:
+                    num[network] += 1
+                if network not in omb:
+                    omb[network] = 0.
+                omb[network] += (obs - back)
+            length = len(omb.keys())
+            if length > int(network_thresh):
+                outfile.write(f"{platform} # Found in {length} networks\n")
                 continue
-            omb[network] = omb[network] / float(num[network])
-            if abs(omb[network]) > float(omb_thresh):
-                txt = f"{platform} # Mean OMB is {omb[network]}\n"
-                outfile.write(txt)
-                continue
-    outfile.close()
+            for network in omb:
+                if num[network] < int(count_thresh):
+                    txt = \
+                      f"{platform} # Only have {num[network]} observation(s)\n"
+                    outfile.write(txt)
+                    continue
+                omb[network] = omb[network] / float(num[network])
+                if abs(omb[network]) > float(omb_thresh):
+                    txt = f"{platform} # Mean OMB is {omb[network]}\n"
+                    outfile.write(txt)
+                    continue
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":
