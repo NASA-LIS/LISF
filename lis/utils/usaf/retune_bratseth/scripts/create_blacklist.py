@@ -36,8 +36,10 @@ import sys
 #------------------------------------------------------------------------------
 def usage():
     """Print usage statement to standard out"""
-    print("Usage: %s CFGFILENAME BLACKLISTFILENAME ENDDATETIME DAYRANGE "
-          %(sys.argv[0]))
+    txt = \
+        f"Usage: {sys.argv[0]} CFGFILENAME BLACKLISTFILENAME ENDDATETIME " + \
+        "DAYRANGE"
+    print(txt)
 
 #------------------------------------------------------------------------------
 def is_sat(my_platform):
@@ -53,7 +55,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
 
     # Read config file
     if not os.path.exists(cfgfile):
-        print("[ERR] Config file %s does not exist!" %(cfgfile))
+        print(f"[ERR] Config file {cfgfile} does not exist!")
         sys.exit(1)
     config = configparser.ConfigParser()
     config.read(cfgfile)
@@ -66,7 +68,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
     # Process the filename information.
     data_directory = config.get('Input', 'data_directory')
     if not os.path.exists(data_directory):
-        print("[ERR] Directory %s does not exist!" %(data_directory))
+        print(f"[ERR] Directory {data_directory} does not exist!")
     data_frequency = config.get('Input', 'data_frequency')
     data_hours = config.get('Input', 'data_hours')
     data_hour_list = data_hours.split(",")
@@ -86,11 +88,11 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
     startdt = enddt - delta
 
     # Open the new blacklist file
-    fd = open(blacklistfilename, "w")
+    fd = open(blacklistfilename, "w", encoding="ascii")
 
     # Build list of OBA files
-    files = glob.glob("%s/oba_*_%s.txt" %(data_directory,
-                                          data_frequency))
+    txt = f"{data_directory}/oba_*_{data_frequency}.txt"
+    files = glob.glob(txt)
     files.sort()
 
     # Loop through each file, and store the O and B for each platform
@@ -117,7 +119,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             continue
 
         # At this point, we trust the file.  Read it.
-        lines = open(file, "r").readlines()
+        lines = open(file, "r", encoding="ascii").readlines()
         for line in lines[1:]:
             network = line.split()[0]
             platform = line.split()[1]
@@ -127,16 +129,15 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
                 data[platform] = []
             ob = line.split()[4]
             back = line.split()[5]
-            data[platform].append("%s:%s:%s" %(network, ob, back))
+            data[platform].append(f"{network}:{ob}:{back}")
 
     # Now, loop through each station and calculate the mean OMB.  Create
     # a blacklist
-    fd.write("# Rejecting stations with more than %s network\n"
-             %(network_thresh))
-    fd.write("# Rejecting stations with less than %s observations\n"
-             %(count_thresh))
-    fd.write("# Rejecting stations with absolute mean OMB beyond %s\n"
-             %(omb_thresh))
+    fd.write(f"# Rejecting stations with more than {network_thresh} network\n")
+    fd.write(\
+        f"# Rejecting stations with less than {count_thresh} observations\n")
+    fd.write(\
+        f"# Rejecting stations with absolute mean OMB beyond {omb_thresh}\n")
 
     platforms = list(data.keys())
     platforms.sort()
@@ -157,16 +158,17 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             OMB[network] += (ob - back)
         length = len(OMB.keys())
         if length > int(network_thresh):
-            fd.write("%s # Found in %s networks\n" %(platform, length))
+            fd.write(f"{platform} # Found in {length} networks\n")
             continue
         for network in OMB:
             if n[network] < int(count_thresh):
-                fd.write("%s # Only have %s observation(s)\n"
-                         %(platform, n[network]))
+                txt = f"{platform} # Only have {n[network]} observation(s)\n"
+                fd.write(txt)
                 continue
             OMB[network] = OMB[network] / float(n[network])
             if abs(OMB[network]) > float(omb_thresh):
-                fd.write("%s # Mean OMB is %s\n" %(platform, OMB[network]))
+                txt = f"{platform} # Mean OMB is {OMB[network]}\n"
+                fd.write(txt)
                 continue
     fd.close()
 
@@ -177,9 +179,3 @@ if __name__ == "__main__":
         print("[ERR] Bad command line arguments!")
         usage()
         sys.exit(1)
-
-    # Get command line args
-    cfgfile = sys.argv[1]
-    blacklistfilename = sys.argv[2]
-    yyyymmddhh = sys.argv[3]
-    dayrange = sys.argv[4]
