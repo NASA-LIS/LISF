@@ -21,6 +21,7 @@ CONTAINS
 
 ! ----------------------------------------------------------------------
   USE NOAHMP_TABLES_401, ONLY: BEXP_TABLE, DKSAT_TABLE, SMCMAX_TABLE,PSISAT_TABLE, SMCWLT_TABLE
+  use LIS_logMod,     only : LIS_logunit
 ! ----------------------------------------------------------------------
   IMPLICIT NONE
 ! ----------------------------------------------------------------------
@@ -87,6 +88,7 @@ CONTAINS
   INTEGER,   DIMENSION( ims:ime, jms:jme )    :: LANDMASK !-1 for water (ice or no ice) and glacial areas, 1 for land where the LSM does its soil moisture calculations.
   
   REAL :: BEXP,DKSAT,PSISAT,SMCMAX,SMCWLT
+  !REAL :: QLAT_temp,QRF_temp,QSPRING_temp,DEEPRECH_temp
 
     !print *,"WTABLE Called"
     !print*, 'ZWT = ',WTD(25,12)
@@ -215,6 +217,13 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
              SMOIS(I,1:NSOIL,J) = SMC(1:NSOIL)
              SH2OXY(I,1:NSOIL,J) = SH2O(1:NSOIL)
 
+           ELSE
+           ! Set Cumulative Variables to Zero over Water (i.e. LANDMASK < 0)
+               QLAT(I,J) = 0.
+               QRF(I,J) = 0.
+               QSPRING(I,J) = 0.
+               DEEPRECH(I,J) = 0.
+
            ENDIF
        ENDDO
     ENDDO
@@ -226,14 +235,58 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
 
     DO J=jts,jte
        DO I=its,ite
+           !***** TML: Previous Debugging Lines to Find Floating Pt. Errors *****
+           ! Remove This Later ...
+           !TML Round Down Small Values to Prevent Floating Point Errors
+           !IF (ABS(QLAT(I,J)).LT.1.E-08)THEN
+           !    QLAT(I,J) = 0.
+           !ENDIF
+           !IF (ABS(QRF(I,J)).LT.1.E-05)THEN
+           !    QRF(I,J) = 0.
+           !ENDIF
+           !IF (ABS(QSPRING(I,J)).LT.1.E-08)THEN
+           !    QSPRING(I,J) = 0.
+           !ENDIF
+           !IF (ABS(DEEPRECH(I,J)).LT.1.E-08)THEN
+           !   DEEPRECH(I,J) = 0.
+           !ENDIF
+           !write(LIS_logunit,*) 'QRF = ',QRF(I,J)
+           !QLAT_temp = QLAT(I,J)*1.E3
+           !QRF_temp = QRF(I,J)*1.E3
+           !QSPRING_temp = QSPRING(I,J)*1.E3
+           !DEEPRECH_temp = DEEPRECH(I,J)*1.E3
+           !Set Excessively large values to 0 (issue for parallel runs)
+           !IF (ABS(QLAT_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QLAT = ',QLAT_temp
+           !    QLAT_temp = 0.
+           !ENDIF
+           !IF (ABS(QRF_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QRF = ',QRF_temp
+           !    QRF_temp = 0.
+           !ENDIF
+           !IF (ABS(QSPRING_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QSPRING = ',QSPRING_temp
+           !    QSPRING_temp = 0.
+           !ENDIF
+           !IF (ABS(DEEPRECH_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: DEEPRECH = ',DEEPRECH_temp
+           !    DEEPRECH_temp = 0.
+           !ENDIF
+           !write(LIS_logunit,*) 'DEEPRECH_temp = ',DEEPRECH_temp
+           !write(LIS_logunit,*) 'RECH = ',RECH(I,J)
+           !QSLAT(I,J) = QSLAT(I,J) + QLAT_temp
+           !QRFS(I,J) = QRFS(I,J) + QRF_temp
+           !QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING_temp
+           !RECH(I,J) = RECH(I,J) + DEEPRECH_temp
+           !***** TML: END DEBUGGING CODE; Returns to Original Code *****
+
            QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
            QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
            QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
-           !print*, RECH(I,J)
-           !print*, DEEPRECH(I,J)
            RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
 !zero out DEEPRECH
            DEEPRECH(I,J) =0.
+
        ENDDO
     ENDDO
 
@@ -650,7 +703,10 @@ ELSEIF(totwater.lt.0.)then
 ENDIF
 
          SH2O = SMC - SICE
-
+ 
+         !if(qspring.lt.-1.E30)then
+         !    print *, 'WARNING EXTREME GW EXCHANGE; Floating point error likely'
+         !endif
 
 END  SUBROUTINE UPDATEWTD
 
