@@ -236,6 +236,9 @@ def _driver():
                                          fcst_init['month'],
                                          varname)
                 indir = f"{args['forcedir']}/{subdir}/"
+                if subdir == "Oper_TS" and not os.path.exists(indir):
+                    indir = f"{args['forcedir']}/"
+                        
                 indir += f"{fcst_init['year']}/{fcst_init['date']}"
 
                 # Convert GRIB file to netCDF and handle missing/corrupted data

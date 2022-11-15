@@ -81,6 +81,7 @@ export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
 export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"    
 else
@@ -152,7 +153,7 @@ download_forecasts(){
     #######################################################################
 
     # CFSv2 forecast
-    cfsv2datadir=`grep cfsv2datadir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+    cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
     sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
@@ -326,9 +327,9 @@ bcsd_fcst(){
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
-    obs_clim_dir=`grep CFSv2_25km_raw_clim $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    nmme_clim_dir=`grep nmme_raw_clim $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    usaf_25km=`grep AF25KM $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+    obs_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/CFSv2_25km/Climatology/
+    nmme_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/NMME/raw/Climatology/
+    usaf_25km=${E2ESROOT}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     
     cd ${E2ESDIR}/bcsd_fcst
     
