@@ -95,7 +95,6 @@ def _driver():
 
     # Path for where observational & forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst"
-    #forcedir = config['BCSD']['fcst_download_dir']
     obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
     fcst_indir = f"{forcedir}/CFSv2_25km"
 

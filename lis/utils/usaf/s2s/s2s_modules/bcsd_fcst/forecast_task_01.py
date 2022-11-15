@@ -107,7 +107,6 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
-    forcedir = config['BCSD']['fcst_download_dir']
     outdir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw"
 
     if not os.path.exists(logdir):
