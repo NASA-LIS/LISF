@@ -532,7 +532,7 @@ lis_fcst(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst
     
     # write SLURM job scripts
-    python $LISHDIR/s2s_modules/lis_fcst/generate_da_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
+    python $LISHDIR/s2s_modules/lis_fcst/generate_lis_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
     
     lisfcst_ID=
     
