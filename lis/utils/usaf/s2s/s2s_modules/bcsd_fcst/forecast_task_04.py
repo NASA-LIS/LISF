@@ -81,7 +81,7 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir']
+    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
 
     # domain
     lat1 = config['EXP']['domain_extent'][0].get('LAT_SW')

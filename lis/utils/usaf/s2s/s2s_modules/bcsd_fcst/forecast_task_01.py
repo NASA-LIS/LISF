@@ -101,7 +101,7 @@ def _driver():
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
 
     # Path of the directory where patch files for missing data are kept
-    patchdir = config['BCSD']['patchdir']
+    patchdir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/patch_files/'
 
     # Log file output directory
     logdir = cwd + '/log_files'

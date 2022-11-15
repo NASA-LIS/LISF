@@ -56,7 +56,7 @@ def _read_cmd_args():
         "fcst_init_monthday" : sys.argv[3],        
         "outdir" : sys.argv[4],
         "forcedir" : config['BCSD']["fcst_download_dir"],
-        "patchdir" : config['BCSD']['patchdir'],
+        "patchdir" : config['BCSD']['supplementarydir'] + '/bcsd_fcst/patch_files/',
         "ic1" : sys.argv[6],
         "ic2" : sys.argv[7],
         "ic3" : sys.argv[8],
