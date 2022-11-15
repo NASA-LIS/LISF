@@ -68,7 +68,7 @@ def _driver():
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir']
+    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
     
     # List of NMME models and ensemble sizes to use
     nmme_models = config['EXP']['NMME_models']
