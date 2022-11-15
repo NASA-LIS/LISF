@@ -11,10 +11,11 @@ Open water model:                       "template open water"
 Number of met forcing sources:          1
 Blending method for forcings:           overlay
 Met forcing sources:                    "AGRMET"
-Topographic correction method (met forcing):  "none"
+Met forcing chosen ensemble member:     1
+Topographic correction method (met forcing):  "slope-aspect"
 Enable spatial downscaling of precipitation:  0
 Spatial upscaling method (met forcing):       average
-Spatial interpolation method (met forcing):   average
+Spatial interpolation method (met forcing):   bilinear
 Temporal interpolation method (met forcing):  linear
 
 #Runtime options
@@ -60,10 +61,9 @@ Minimum cutoff percentage (aspect bands):         0.05
 
 #Processor layout
 #Should match the total number of processors used
-# S2S-Global specs:
-# Nodes: 12; Proc: 24 ==> 288
-Number of processors along x:          4
-Number of processors along y:          72
+# S2S-AFRICOM parallel configuration specs:
+Number of processors along x:          1 
+Number of processors along y:          28
 Halo size along x:                     0
 Halo size along y:                     0
 
@@ -73,58 +73,68 @@ Number of application models:          0
 
 #---------------------DATA ASSIMILATION ----------------------------------
 #Data assimilation options
-Number of data assimilation instances:                1
-Data assimilation algorithm:                         "EnKF"
-Data assimilation set:                               "SMAP(NRT) soil moisture"
-Data assimilation exclude analysis increments:        0                                       
-Data assimilation number of observation types:        1                                       
-Data assimilation output interval for diagnostics:    1mo                                     
-Data assimilation output processed observations:      0                                       
-Data assimilation output innovations:                 0                                       
-Data assimilation output ensemble spread:             0                                     
+Number of data assimilation instances:                3
+Data assimilation algorithm:                          "EnKF"                                  "EnKF"                                  "EnKF"
+Data assimilation set:                                "USAFSI"                                "SMOPS-ASCAT soil moisture"             "SMAP(NRT) soil moisture"
+Data assimilation exclude analysis increments:        0                                       0                                       0
+Data assimilation number of observation types:        1                                       1                                       1
+Data assimilation output interval for diagnostics:    1mo                                     1mo                                     1mo
+Data assimilation output processed observations:      0                                       0                                       0
+Data assimilation output innovations:                 0                                       0                                       0
+Data assimilation output ensemble spread:             0                                       0                                       0
 
-# Check LDT-generated domain mask path:
-# S2S-Global domain:
-Data assimilation observation domain file:   ./input/lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
-##
-Data assimilation scaling strategy:                   "CDF matching"
+Data assimilation observation domain file:   ./input/lis_input.s2s_africom.noahmp401_hymap2.25km.nc  ./input/lis_input.s2s_africom.noahmp401_hymap2.25km.nc ./input/lis_input.s2s_africom.noahmp401_hymap2.25km.nc 
+Data assimilation scaling strategy:                   "none"                                  "CDF matching"                          "CDF matching"
 
-Data assimilation use a trained forward model:        0
-Data assimilation trained forward model output file:  none
+Data assimilation use a trained forward model:        0                                       0                                       0
+Data assimilation trained forward model output file:  none                                    none                                    none
 
 #Bias estimation options
-Bias estimation algorithm:                            none                                    
-Bias estimation attributes file:                      none                                  
-Bias estimation restart output frequency:             1da                                  
-Bias estimation start mode:                           none                                 
-Bias estimation restart file:                         none                                
+Bias estimation algorithm:                            none                                    none                                    none
+Bias estimation attributes file:                      none                                    none                                    none
+Bias estimation restart output frequency:             1da                                     1da                                     1da
+Bias estimation start mode:                           none                                    none                                    none
+Bias estimation restart file:                         none                                    none                                    none
 
 #Perturbation options
-Perturbations start mode:                             PERTMODE                            
-Perturbations restart filename:                   DAPERTRSTFILE 
-Perturbations restart output interval:                1mo                                    
-Apply perturbation bias correction:                   1                                      
+Perturbations start mode:                             PERTMODE                                PERTMODE                                PERTMODE 
+Perturbations restart filename:      DAPERTRSTFILE    DAPERTRSTFILE    DAPERTRSTFILE
+Perturbations restart output interval:                1mo                                     1mo                                     1mo
+Apply perturbation bias correction:                   1                                       1                                       1
 
-Forcing perturbation algorithm:                       "GMAO scheme"                        
-Forcing perturbation frequency:                       1hr                                 
-Forcing attributes file:                              ./input/attribs/forcing_attribs.txt   
-Forcing perturbation attributes file:                 ./input/attribs/forcing_pertattribs.txt  
+Forcing perturbation algorithm:                       "GMAO scheme"                           "GMAO scheme"                           "GMAO scheme"
+Forcing perturbation frequency:                       1hr                                     1hr                                     1hr
+Forcing attributes file:                              ./input/attribs/forcing_attribs.txt     ./input/attribs/forcing_attribs.txt     ./input/attribs/forcing_attribs.txt
+Forcing perturbation attributes file:                 ./input/attribs/forcing_pertattribs.txt  ./input/attribs/forcing_pertattribs.txt  ./input/attribs/forcing_pertattribs.txt
 
-State perturbation algorithm:                         "GMAO scheme"                           
-State perturbation frequency:                         6hr                                    
-State attributes file:                                ./input/attribs/noahmp_sm_attribs.txt 
-State perturbation attributes file:                   ./input/attribs/noahmp_sm_pertattribs.txt 
+State perturbation algorithm:                         "GMAO scheme"                           "GMAO scheme"                           "GMAO scheme"
+State perturbation frequency:                         6hr                                     6hr                                     6hr
+State attributes file:                                ./input/attribs/noahmp_snow_attribs.txt  ./input/attribs/noahmp_sm_attribs.txt  ./input/attribs/noahmp_sm_attribs.txt
+State perturbation attributes file:                   ./input/attribs/noahmp_snow_pertattribs.txt  ./input/attribs/noahmp_sm_pertattribs.txt  ./input/attribs/noahmp_sm_pertattribs.txt
 
-Observation perturbation algorithm:                   "GMAO scheme" 
-Observation perturbation frequency:                   6hr          
-Observation attributes file:                          ./input/attribs/smap_attribs.txt
-Observation perturbation attributes file:             ./input/attribs/smap_pertattribs.txt
+Observation perturbation algorithm:                   "GMAO scheme"                           "GMAO scheme"                           "GMAO scheme"
+Observation perturbation frequency:                   6hr                                     6hr                                     6hr
+Observation attributes file:                          ./input/attribs/usafsi_attribs.txt      ./input/attribs/smops_attribs.txt       ./input/attribs/smap_attribs.txt
+Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt  ./input/attribs/smops_pertattribs.txt   ./input/attribs/smap_pertattribs.txt
 
-# SMAP L3 SM:  Used for the hindcast DA cases:
-# Also: Files used to generate the CDF files for the SMAP-NRT DA operational runs:
+USAFSI data directory:                                ../USAF_FORCING/USAFSI
+USAFSI netcdf filename prefix:                        USAFSI
+
+SMOPS ASCAT soil moisture data directory:             ../USAF_FORCING/SMOPS
+SMOPS ASCAT naming convention:                        "AGRMET ops"
+SMOPS ASCAT version:                                  "date-based"
+SMOPS ASCAT model CDF file:                           ./input/cdf/noahmp401_cdf_200obs.nc
+SMOPS ASCAT observation CDF file:                     ./input/cdf/smops_ascat_cdf_100obs.nc
+SMOPS ASCAT soil moisture number of bins in the CDF:            100
+SMOPS ASCAT use realtime data:                                  1
+SMOPS ASCAT soil moisture use scaled standard deviation model:  0
+SMOPS ASCAT CDF read option:                                    1
+
+# Files used to generate the CDF files for the SMAP-NRT DA operational runs:
+#SMAP(NASA) soil moisture data directory:              ./input/RS_DATA/SMAP/SPL3SMP.007
+#SMAP(NASA) soil moisture data directory:              ./input/SMAP/SPL3SMP.007
 #SMAP(NASA) soil moisture data designation:            SPL3SMP
 #SMAP(NASA) soil moisture Composite Release ID:        R17
-#SMAP(NASA) soil moisture data directory:              ./input/RS_DATA/SMAP/SPL3SMP.007/
 #SMAP(NASA) model CDF file:                            ./input/cdf/noahmp401_cdf_200obs.nc
 #SMAP(NASA) observation CDF file:                      ./input/cdf/smap_c007_cdf_100obs.nc
 #SMAP(NASA) soil moisture number of bins in the CDF:             100
@@ -132,8 +142,8 @@ Observation perturbation attributes file:             ./input/attribs/smap_perta
 #SMAP(NASA) CDF read option:                                     1
 
 # SMAP NRT - Operations-based SM data directory:
-SMAP(NRT) soil moisture data directory:               ../USAF_FORCING/SMAP_L2_SM_NRT/
-SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc  
+SMAP(NRT) soil moisture data directory:               ../USAF_FORCING/SMAP
+SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc
 SMAP(NRT) observation CDF file:                       ./input/cdf/smap_c007_cdf_100obs.nc
 SMAP(NRT) soil moisture number of bins in the CDF:              100
 SMAP(NRT) soil moisture use scaled standard deviation model:    0
@@ -191,7 +201,6 @@ AGRMET security classification:            U
 AGRMET distribution classification:        C
 AGRMET data category:                      ANLYS
 AGRMET area of data:                       GLOBAL
-
 AGRMET PPT Background bias correction option:   0          # Apply bias-correction to PPT background field
 
 # NWP data.  Use GFS until 2017100100, then switch to GALWEM.
@@ -426,7 +435,7 @@ TEMPLATE model timestep:               "15mn"
 #Specify the list of ALMA variables that need to be featured in the
 #LSM model output
 
-Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_lisda
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2
 
 # Start Date/Time when output is to be started:
 Output start year:
