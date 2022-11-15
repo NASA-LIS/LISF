@@ -44,7 +44,8 @@ if __name__ == "__main__":
     if not os.path.exists(FILE1):
         print(f"[ERR] {FILE1} does not exist!")
         sys.exit(1)
-    lines = open(FILE1, "r", encoding="ascii").readlines()
+    with open(FILE1, "r", encoding="ascii") as file:
+        lines = file.readlines()
     SIGMA2_GAGE_NWP = -9999
     for line in lines:
         if "SIGMA2_obs:" in line:
@@ -59,7 +60,8 @@ if __name__ == "__main__":
     if not os.path.exists(FILE2):
         print(f"[ERR] {FILE2} does not exist!")
         sys.exit(1)
-    lines = open(FILE2, "r", encoding="ascii").readlines()
+    with open(FILE2, "r", encoding="ascii") as file:
+        lines = file.readlines()
     SIGMA2_GAGE_SAT = -9999
     SIGMA2_SAT = -9999
     L_SAT = -9999
@@ -87,8 +89,8 @@ if __name__ == "__main__":
     SIGMA2_SAT = (SIGMA2_GAGE_NWP / SIGMA2_GAGE_SAT) * SIGMA2_SAT
 
     # Now write the new param file
-    fd = open(f"gage_{SATDATA}_rescaled.param", "w", encoding="ascii")
-    fd.write(f"SIGMA2_obs: {SIGMA2_GAGE_NWP}\n")
-    fd.write(f"SIGMA2_back: {SIGMA2_SAT}\n")
-    fd.write(f"L_back: {L_SAT}\n")
-    fd.close()
+    with open(f"gage_{SATDATA}_rescaled.param", "w", encoding="ascii") \
+         as outfile:
+        outfile.write(f"SIGMA2_obs: {SIGMA2_GAGE_NWP}\n")
+        outfile.write(f"SIGMA2_back: {SIGMA2_SAT}\n")
+        outfile.write(f"L_back: {L_SAT}\n")
