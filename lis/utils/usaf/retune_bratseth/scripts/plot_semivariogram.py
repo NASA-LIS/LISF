@@ -39,14 +39,15 @@ import semivar
 #------------------------------------------------------------------------------
 def usage():
     """Print usage statement to standard out."""
-    print("Usage: %s CONFIGFILE PARAMFILE" %(sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} CONFIGFILE PARAMFILE")
     print("  CONFIG is config file for this script")
     print("  PARAMFILE contains best-fit parameters from fit_semivariogram.py")
 
 #------------------------------------------------------------------------------
 def read_param_file(paramfile):
     """Reads fitted parameters for semivariogram for plotting."""
-    lines = open(paramfile, "r").readlines()
+    with open(paramfile, "r", encoding="ascii") as file:
+        lines = file.readlines()
     sigma2_gage = None
     sigma2_back = None
     L_back = None
@@ -71,7 +72,7 @@ if len(sys.argv) != 3:
 # Read config file
 cfgfile = sys.argv[1]
 if not os.path.exists(cfgfile):
-    print("[ERR] Config file %s does not exist!" %(cfgfile))
+    print(f"[ERR] Config file {cfgfile} does not exist!")
     sys.exit(1)
 config = configparser.ConfigParser()
 config.read(cfgfile)
@@ -84,7 +85,7 @@ title, xlabel, ylabel, oblabel, bglabel = \
 # Get the param file
 paramfile = sys.argv[2]
 if not os.path.exists(paramfile):
-    print("[ERR] Paramfile %s does not exist!" %(paramfile))
+    print(f"[ERR] Paramfile {paramfile} does not exist!")
     sys.exit(1)
 
 # Read the datafile
@@ -107,12 +108,12 @@ plt.plot(distvector, variovector, "b+",
          distvector, fit_func(distvector, *popt), "r")
 
 # Annotate
-fulltitle  = "%s\n"%(title)
-fulltitle += "Based on %s comparisons of innovations\n" %(samplesize)
+fulltitle  = f"{title}\n"
+fulltitle += f"Based on {samplesize} comparisons of innovations\n"
 plt.title(fulltitle)
 plt.xlabel(r"%s" %(xlabel))
 plt.ylabel(r"%s"%(ylabel))
-plt.legend(["Data", "%s Best Fit" %(function_type)],
+plt.legend(["Data", f"{function_type} Best Fit"],
            loc='lower right')
 
 params = r"$\sigma_{%s}^2 = %f, \sigma_{%s}^2=%f, L_{%s} = %f$" \
