@@ -476,7 +476,7 @@ if __name__ == "__main__":
     configfile, noahmp_file, hymap2_file, output_dir, curdt, model_forcing \
         = _read_cmd_args()
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     final_file = _create_final_filename(output_dir, curdt, model_forcing, config["EXP"]["domain"])

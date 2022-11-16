@@ -309,7 +309,7 @@ if __name__ == '__main__':
     cwd = args.cwd
 
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     if config ["EXP"]["domain"] == 'AFRICOM':

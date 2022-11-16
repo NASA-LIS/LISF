@@ -39,7 +39,7 @@ CONFIGFILE = sys.argv[4]
 BASEOUTDIR = sys.argv[5]
 
 # load CONFIG file
-with open(CONFIGFILE, 'r') as file:
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     CONFIG = yaml.safe_load(file)
 HYD_MODEL = CONFIG["EXP"]["lsmdir"]
 LEAD_NUM = int(CONFIG["EXP"]["lead_months"])

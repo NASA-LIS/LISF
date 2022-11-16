@@ -457,7 +457,7 @@ def _driver():
     configfile, input_dir, output_dir, startdate, enddate, model_forcing \
         = _read_cmd_args()
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     varlists = _make_varlists(config)

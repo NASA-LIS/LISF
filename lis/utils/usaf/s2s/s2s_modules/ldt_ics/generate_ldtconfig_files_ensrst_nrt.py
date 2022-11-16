@@ -208,7 +208,7 @@ if __name__ == "__main__":
     CONFIGFILE = ARGS.CONFIGFILE
 
     # Read s2s.config
-    with open(CONFIGFILE, 'r') as file:
+    with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         CONFIG = yaml.safe_load(file)
 
     # update global params
