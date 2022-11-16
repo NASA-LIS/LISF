@@ -43,7 +43,7 @@ _UNITS_ANOM = {
     "Precip" : "kg m-2",
     "Air_T" : "K",
     "ET" : "kg m-2 s-1",
-    "Air" : "K",
+    "Air-T" : "K",
 }
 _LONG_NAMES_SANOM = {
     "RootZone-SM" : "Root zone soil moisture standardized anomaly",
@@ -53,7 +53,7 @@ _LONG_NAMES_SANOM = {
     "Precip" : "Total precipitation amount standardized anomaly",
     "Air_T" : "Air temperature standardized anomaly",
     "ET" : "Total evapotranspiration standardized anomaly",
-    "Air" : "Air temperature standardized anomaly",
+    "Air-T" : "Air temperature standardized anomaly",
 }
 _LONG_NAMES_ANOM = {
     "RootZone-SM" : "Root zone soil moisture anomaly",
@@ -63,7 +63,7 @@ _LONG_NAMES_ANOM = {
     "Precip" : "Total precipitation amount anomaly",
     "Air_T" : "Air temperature anomaly",
     "ET" : "Total evapotranspiration anomaly",
-    "Air" : "Air temperature anomaly",
+    "Air-T" : "Air temperature anomaly",
 }
 
 def _usage():

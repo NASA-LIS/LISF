@@ -33,6 +33,7 @@
 #
 # REVISION HISTORY:
 # 09 Sep 2022: Eric Kemp/SSAI, first version.
+# 14 Nov 2022: K. Arsenault/SAIC, removed fields for FOC.
 #------------------------------------------------------------------------------
 """
 
@@ -56,79 +57,60 @@ import yaml
 # pylint: enable=no-name-in-module
 
 _cell_methods = {
-    "Albedo_tavg" : "time: mean area: point where land",
-    "AvgSurfT_inst" : "area: point where land",
     "AvgSurfT_tavg" : "time: mean area: point where land",
     "BaseflowStor_tavg" : "time: mean area: point where land",
-    "CanopInt_inst" : "area: point where land",
     "Elevation_inst" : "area: point where land",
     "Evap_tavg" : "time: mean area: point where land",
     "FloodedArea_tavg" : "time: mean area: point where land",
     "FloodedFrac_tavg" : "time: mean area: point where land",
     "FloodStor_tavg" : "time: mean area: point where land",
-    "GWS_inst" : "area: point where land",
+    "GWS_tavg" : "time: mean area: point where land",
     "Greenness_inst" : "area: point where land",
     "LWdown_f_tavg" : "time: mean",
     "Psurf_f_tavg" : "time: mean",
     "Qair_f_tavg" : "time: mean",
-    "Qg_tavg" : "time: mean area: point where land",
-    "Qh_tavg" : "time: mean area: point where land",
-    "Qle_tavg" : "time: mean area: point where land",
     "Qs_acc" : "time: sum area: point where land",
     "Qsb_acc" : "time: sum area: point where land",
-    "RelSMC_inst" : "area: point where land",
-    "RHMin_inst" : "area: point where land",
-    "RiverDepth_tavg" : "time: mean area: point where land",
-    "RiverFlowVelocity_tavg" : "time: mean area: point where land",
+    "RelSMC_tavg" : "time: mean area: point where land",
     "RiverStor_tavg" : "time: mean area: point where land",
-    "SmLiqFrac_inst" : "area: point where land",
-    "Snowcover_inst" : "area: point where land",
-    "SnowDepth_inst" : "area: point where land",
-    "SoilMoist_inst" : "area: point where land",
+    "Snowcover_tavg" : "time: mean area: point where land",
+    "SnowDepth_tavg" : "time: mean area: point where land",
     "SoilMoist_tavg" : "time: mean area: point where land",
-    "SoilTemp_inst" : "area: point where land",
     "SoilTemp_tavg" : "time: mean area: point where land",
     "Streamflow_tavg" : "time: mean area: point where land",
-    "SurfElev_tavg" : "time: mean area: point where land",
     "SWdown_f_tavg" : "time: mean",
-    "SWE_inst" : "area: point where land",
+    "SWE_tavg" : "time: mean area: point where land",
     "SWS_tavg" : "time: mean area: point where land",
     "Tair_f_max" : "time: maximum",
     "Tair_f_min" : "time: minimum",
     "Tair_f_tavg" : "time: mean",
     "TotalPrecip_acc" : "time: sum",
-    "TWS_inst" : "area: point where land",
+    "TWS_tavg" : "time: mean area: point where land",
     "Wind_f_tavg" : "time: mean",
 }
 
 _new_standard_names = {
-    "AvgSurfT_inst" : "surface_temperature",
     "AvgSurfT_tavg" : "surface_temperature",
-    "CanopInt_inst" : "canopy_water_amount",
     "Elevation_inst" : "height_above_mean_sea_level",
     "Evap_tavg" : "water_evapotranspiration_flux",
     "LANDMASK" : "land_binary_mask",
-    "Psurf_f_inst" : "surface_air_pressure",
     "Psurf_f_tavg" : "surface_air_pressure",
     "Qg_tavg" : "downward_heat_flux_at_ground_level_in_soil",
-    "SnowDepth_inst" : "surface_snow_thickness",
+    "SnowDepth_tavg" : "surface_snow_thickness",
     "Soiltype_inst" : "soil_type",
     "Streamflow_tavg" : "water_volume_transport_in_river_channel",
     "TotalPrecip_acc" : "precipitation_amount",
 }
 
-_remove_standard_names_list = ["BaseflowStor_tavg", "RelSMC_inst",
+_remove_standard_names_list = ["BaseflowStor_tavg", "RelSMC_tavg",
                                "FloodedArea_tavg", "FloodedFrac_tavg",
                                "FloodStor_tavg", "Greenness_inst",
-                               "GWS_inst", "Landcover_inst",
-                               "Landmask_inst", "RelSMC_inst",
-                               "RHMin_inst", "RiverDepth_tavg",
-                               "RiverFlowVelocity_tavg", "RiverDepth_tavg",
+                               "GWS_tavg", "Landcover_inst",
+                               "Landmask_inst",
+                               "RiverDepth_tavg",
                                "RiverStor_tavg",
-                               "SmLiqFrac_inst", "SoilMoist_inst",
                                "SoilMoist_tavg", "Soiltype_inst",
-                               "SurfElev_tavg",
-                               "SWS_tavg", "TWS_inst"]
+                               "SWS_tavg", "TWS_tavg"]
 
 _new_units = {
     "ensemble" : "1",
@@ -136,11 +118,8 @@ _new_units = {
     "Greenness_inst" : "1",
     "LANDMASK" : "1",
     "Landmask_inst" : "1",
-    "RelSMC_inst" : "1",
-    "Qair_f_inst" : "1",
+    "RelSMC_tavg" : "1",
     "Qair_f_tavg" : "1",
-    "SmLiqFrac_inst" : "1",
-    "SoilMoist_inst" : "1",
     "SoilMoist_tavg" : "1",
 }
 
@@ -227,9 +206,8 @@ def _create_final_filename(output_dir, curdt, model_forcing, domain):
     name += "_DI.C"
     name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
-        
     if domain == 'AFRICOM':
-        name += "_AR.AFRICA"        
+        name += "_AR.AFRICA"
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
 
@@ -257,13 +235,12 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         "north_south" : "lat",
         "SoilMoist_profiles" : "soil_layer",
         "SoilTemp_profiles" : "soil_layer",
-        "SmLiqFrac_profiles" : "soil_layer",
         "RelSMC_profiles" : "soil_layer",
     }
     for dimname in src1.dimensions:
         # Soil dimensions will be replaced by soil_layer, so just
         # write it once.
-        if dimname in ["SoilTemp_profiles", "SmLiqFrac_profiles", \
+        if dimname in ["SoilTemp_profiles", \
                        "RelSMC_profiles"]:
             continue
         dimname1 = dimname
@@ -287,9 +264,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             dst.createVariable(name, variable.datatype, ("lat"), zlib=True, complevel=6, shuffle=True )
         elif name == "lon":
             dst.createVariable(name, variable.datatype, ("lon"),zlib=True, complevel=6, shuffle=True )
-        elif name in ["SoilMoist_tavg", "SoilMoist_inst",
-                      "SoilTemp_tavg", "SoilTemp_inst",
-                      "SmLiqFrac_inst", "RelSMC_inst"]:
+        elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
+                      "RelSMC_tavg"]:
             dst.createVariable(name, variable.datatype, \
                                ("ensemble", "soil_layer", "lat", "lon"),zlib=True, complevel=6, shuffle=True )
         else:
@@ -316,7 +292,7 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             attrs["axis"] = "Y"
         elif name == "lon":
             attrs["axis"] = "X"
-        elif name in ["SoilMoist_inst", "SoilMoist_tavg"]:
+        elif name in ["SoilMoist_tavg"]:
             attrs["long_name"] = "volumetric soil moisture content"
         elif name == "Soiltype_inst":
             attrs["flag_meanings"] = \
@@ -349,6 +325,7 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         dst[name].setncatts(attrs)
 
     # Add select variables and attributes from src2
+    # KRA -- CHECK THE RUNOFF AND BASEFLOW STORE TERMS ... ?? -- KRA
     src2_excludes = ["lat", "lon", "time", "ensemble", "RunoffStor_tavg",
                      "BaseflowStor_tavg"]
     for name, variable in src2.variables.items():
@@ -419,9 +396,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             dst[name][:] = src1[name][0,:]
         # Special handling for soil variables. CF convention requires
         # switching the soil_layer and ensemble dimension.
-        elif name in ["SoilMoist_tavg", "SoilMoist_inst",
-                      "SoilTemp_tavg", "SoilTemp_inst",
-                      "SmLiqFrac_inst", "RelSMC_inst"]:
+        elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
+                      "RelSMC_tavg"]:
             ns = dst.dimensions["soil_layer"].size
             for i in range(0, ns):
                 dst[name][:,i,:,:] = src1[name][i,:,:,:]

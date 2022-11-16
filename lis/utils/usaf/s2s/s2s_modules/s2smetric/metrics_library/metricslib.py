@@ -84,6 +84,7 @@ def sel_var(sel_cim_data, var_name, model):
             "TWS" : _get_tws,
             "Precip" : _get_precip,
             "Air_T" : _get_air_t,
+            "Air-T" : _get_air_t,
             "ET" : _get_et,
             "Streamflow" : _get_streamflow,
         }
