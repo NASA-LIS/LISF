@@ -50,7 +50,7 @@ def read_param_file(paramfile):
         lines = file.readlines()
     sigma2_gage = None
     sigma2_back = None
-    L_back = None
+    l_back = None
     for line in lines:
         key, value = line.split(":")
         value = float(value)
@@ -59,12 +59,13 @@ def read_param_file(paramfile):
         elif key == "SIGMA2_back":
             sigma2_back = value
         elif key == "L_back":
-            L_back = value
-    return sigma2_gage, sigma2_back, L_back
+            l_back = value
+    return sigma2_gage, sigma2_back, l_back
 
 #------------------------------------------------------------------------------
 
 def main():
+    """Main driver"""
 
     # Check command line
     if len(sys.argv) != 3:
@@ -96,8 +97,8 @@ def main():
          semivar.readdata(vario_filename, max_distance)
 
     # Read the paramfile
-    sigma2_gage, sigma2_back, L_back = read_param_file(paramfile)
-    popt = [sigma2_gage, sigma2_back, L_back]
+    sigma2_gage, sigma2_back, l_back = read_param_file(paramfile)
+    popt = [sigma2_gage, sigma2_back, l_back]
 
     # Plot the semivariogram
     distvector_tmp = np.array([0])
@@ -122,7 +123,7 @@ def main():
 
     params = r"$\sigma_{" + f"{oblabel}" + r"}^2 = " + f"{sigma2_gage:f},"
     params += r" \sigma_{" + f"{bglabel}" + r"}^2=" + f"{sigma2_back:f}"
-    params += r", L_{" + f"{bglabel}" + r"} = " + f"{L_back:f}" + r"$"
+    params += r", L_{" + f"{bglabel}" + r"} = " + f"{l_back:f}" + r"$"
 
     plt.figtext(0.2, 0.9, params)
     plt.grid(True)
