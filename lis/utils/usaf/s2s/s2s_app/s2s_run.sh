@@ -585,7 +585,11 @@ s2spost(){
     
     for model in $MODELS
     do
-	mkdir -p -m 775 ${E2ESDIR}/s2spost/${YYYY}${MM}/$model/
+	if [ $DATATYPE == "hindcast" ]; then
+	    mkdir -p -m 775 ${E2ESDIR}/s2spost/${MM}/${YYYY}${MM}/$model/
+	else
+	    mkdir -p -m 775 ${E2ESDIR}/s2spost/${YYYY}${MM}/$model/
+	fi
     done
     
     cd ${SCRDIR}/s2spost
@@ -596,7 +600,11 @@ s2spost(){
     CWD=`pwd`
     for model in $MODELS
     do
-	/bin/ln -s ${E2ESDIR}/s2spost/${YYYY}${MM}/$model
+	if [ $DATATYPE == "hindcast" ]; then
+	    /bin/ln -s ${E2ESDIR}/s2spost/${MM}/${YYYY}${MM}/$model
+	else
+	    /bin/ln -s ${E2ESDIR}/s2spost/${YYYY}${MM}/$model
+	fi
 	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     

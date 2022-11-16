@@ -6,9 +6,9 @@
 
 SETUP:
   LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/LISF-1/
-  E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES/
+  E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL/
   METFORC: /discover/nobackup/projects/usaf_lis/MET_FORCING/
-  AF10KM:  /discover/nobackup/projects/usaf_lis/MET_FORCING/usaf_lis73rc8_10km/
+  AF10KM:  /discover/nobackup/projects/usaf_lis/MET_FORCING/usaf_lis75s2s_gfs2galwem/
   LISFMOD: lisf_7.5_intel_2021.4.0
   SPCODE:  s1189
   DATATYPE: forecast
@@ -18,7 +18,7 @@ SETUP:
 #######################################################################
 
 EXP:
-  domain: AFRICOM
+  domain: GLOBAL
   lsmdir: NOAHMP
   lsm:    noahmp401
   routing_name: hymap2
@@ -30,8 +30,8 @@ EXP:
   - CCM4: 10
     CCSM4: 10
     GNEMO5: 10
-    GEOSv2: 10
-    CFSv2: 24
+    GEOSv2: 4
+    CFSv2: 12
     GFDL: 15
   NMME_scalings:
   - CCM4: downscale
@@ -41,10 +41,10 @@ EXP:
     CFSv2: upscale
     GFDL: upscale
   domain_extent:
-  - LAT_SW: -40
-    LAT_NE:  40
-    LON_SW: -20
-    LON_NE:  60
+  - LAT_SW: -90
+    LAT_NE:  90
+    LON_SW: -180
+    LON_NE:  180
   domain_dx: 0.25
   domain_dy: 0.25
   # must be consistent with 'Run domain' in ldt_ics/template_files/ldt.config_{MODEL}_{EXP}_TEMPLATE
@@ -54,10 +54,10 @@ EXP:
 #######################################################################
 
 BCSD:
-  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/
-  nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/AFRICOM/E2ES/NRT/bcsd_fcst/input/data/forecast/NMME/raw/download/
-  clim_start_year: 2008
-  clim_end_year: 2020
+  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/	
+  nmme_download_dir: /discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/E2ES-GLOBAL/download/NMME/
+  clim_start_year: 1991
+  clim_end_year: 2021
   nof_raw_ens: 12
   fcst_data_type: CFSv2
   nmme_data_type: nmme
@@ -68,10 +68,10 @@ BCSD:
 #######################################################################
 
 FCST:
-  ldtinputfile: ./input/LDT_Params/lis_input.s2s_africom.noahmp401_hymap2.merit.25km.nc
-  ldt_params: /discover/nobackup/projects/lis_aist17/karsenau/GHI_S2S/AFRICOM/LDT_Params/
-  numprocx: 1
-  numprocy: 28
+  ldtinputfile: ./input/LDT_Params/lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
+  ldt_params: /discover/nobackup/projects/usaf_lis/GHI_S2S/GLOBAL/LDT_Params/
+  numprocx: 4
+  numprocy: 72
   JOB_SEGMENTS:
   - CCM4: 1
     CCSM4: 1
@@ -86,18 +86,16 @@ FCST:
 
 POST:
   var_acc_list: [Qs_acc, Qsb_acc, TotalPrecip_acc]
-  var_tavg_land_list: [Qle_tavg, Qh_tavg, Qg_tavg, Evap_tavg, AvgSurfT_tavg, Albedo_tavg, SoilMoist_tavg, SoilTemp_tavg,
-                       Streamflow_tavg, FloodedFrac_tavg, SurfElev_tavg, SWS_tavg, RiverStor_tavg, RiverDepth_tavg,
-                       RiverFlowVelocity_tavg, FloodStor_tavg, FloodedArea_tavg]
+  var_tavg_land_list: [Evap_tavg, AvgSurfT_tavg, SoilMoist_tavg, SoilTemp_tavg, RelSMC_tavg, AvgSurfT_tavg, SWE_tavg, SnowDepth_tavg,
+                       Snowcover_tavg, Streamflow_tavg, FloodedFrac_tavg, SWS_tavg, RiverStor_tavg, FloodStor_tavg, FloodedArea_tavg]
   var_tavg_f_list: [Wind_f_tavg, Tair_f_tavg, Qair_f_tavg, Psurf_f_tavg, SWdown_f_tavg, LWdown_f_tavg]
-  var_tavg_twsgws_list: [TWS_inst, GWS_inst]
+  var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
   var_tair_max_list: [Tair_f_max]
   var_tair_min_list: [Tair_f_min]
   var_inst_list: [AvgSurfT_inst, SWE_inst, SnowDepth_inst, SoilMoist_inst, SoilTemp_inst, SmLiqFrac_inst, CanopInt_inst, Snowcover_inst,
                   Wind_f_inst, Tair_f_inst, Qair_f_inst, Psurf_f_inst, SWdown_f_inst, LWdown_f_inst, Greenness_inst, RelSMC_inst]
-  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, Landmask_inst, LANDMASK, Landcover_inst, Soiltype_inst, Elevation_inst]
-  metric_vars: [RootZone-SM, Surface-SM, TWS, Precip, Air_T, ET, Streamflow]
-  hindcasts: /discover/nobackup/projects/usaf_lis/GHI_S2S/AFRICOM/hindcasts_9yrclim/
+  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, Landmask_inst, LANDMASK, Landcover_inst, Soiltype_inst, Elevation_inst, TWS_tavg, GWS_tavg]
+  metric_vars: [RootZone-SM, Surface-SM, TWS, Precip, Air-T, ET, Streamflow]
 
 #######################################################################
 #                          Plotting
