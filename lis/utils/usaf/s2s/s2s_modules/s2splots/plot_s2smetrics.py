@@ -209,7 +209,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
             anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
             median_anom = np.median(anom.anom.values, axis=0)
 
-        if var_name == 'Air_T' and USAF_COLORS and standardized_anomaly is None:
+        if (var_name == 'Air-T' or var_name == 'Air_T') and USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*30./25.4
@@ -279,7 +279,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
             cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
 
             if USAF_COLORS and standardized_anomaly is None:
-                if var_name == 'Air_T':
+                if var_name == 'Air-T' or var_name == 'Air_T':
                     cbar.set_label('Anomaly (' + get_units.get('Air_T_AF', 'm^3/m^3') + ')', fontsize=FONT_SIZE2)
                 elif var_name == 'Precip':
                     cbar.set_label('Anomaly (' + get_units.get('Precip_AF', 'm^3/m^3') + ')', fontsize=FONT_SIZE2)

@@ -18,6 +18,7 @@
 #   attributes; added ID for model forcing for LIS to filenames.
 # 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string format complaints.
 # 29 Oct 2021: Eric Kemp/SSAI, added config file.
+# 15 Nov 2022: K. Arsenault/SAIC, removed fields for FOC.
 #------------------------------------------------------------------------------
 """
 
@@ -104,7 +105,6 @@ def _make_varlists(config):
         config["POST"]["var_tair_max_list"]
     varlists["var_tair_min_list"] = \
         config["POST"]["var_tair_min_list"]
-    varlists["var_inst_list"] = config["POST"]["var_inst_list"]
     varlists["const_list"] = config["POST"]["const_list"]
     return varlists
 
@@ -201,7 +201,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
 
     # Copy the fields.
     varnames = []
-    for listname in ["const_list", "var_inst_list", "var_acc_list",
+    for listname in ["const_list", "var_acc_list",
                      "var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list",
                      "var_tair_min_list"]:
@@ -409,7 +409,7 @@ def _update_cell_methods(varlists, outfile):
 
         var = ncid.variables[varname]
 
-        # Special handling for TWS_inst and GWS_inst -- we want the monthly
+        # Special handling for TWS_tws and GWS_tws -- we want the monthly
         # means.
         if varname in varlists["var_tavg_twsgws_list"]:
             var.cell_methods = \
