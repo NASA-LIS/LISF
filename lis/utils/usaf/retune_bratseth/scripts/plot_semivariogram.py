@@ -111,13 +111,18 @@ plt.plot(distvector, variovector, "b+",
 fulltitle  = f"{title}\n"
 fulltitle += f"Based on {samplesize} comparisons of innovations\n"
 plt.title(fulltitle)
-plt.xlabel(r"%s" %(xlabel))
-plt.ylabel(r"%s"%(ylabel))
+plt.xlabel(f"{xlabel}")
+plt.ylabel(f"{ylabel}")
+
 plt.legend(["Data", f"{function_type} Best Fit"],
            loc='lower right')
 
-params = r"$\sigma_{%s}^2 = %f, \sigma_{%s}^2=%f, L_{%s} = %f$" \
-         %(oblabel, sigma2_gage, bglabel, sigma2_back, bglabel, L_back)
+params = r"$\sigma_{" + f"{oblabel}" + r"}^2 = " + f"{sigma2_gage:f},"
+params += r" \sigma_{" + f"{bglabel}" + r"}^2=" + f"{sigma2_back:f}"
+params += r", L_{" + f"{bglabel}" + r"} = " + f"{L_back:f}" + r"$"
+
+print(params)
+
 plt.figtext(0.2, 0.9, params)
 plt.grid(True)
 plt.show()
