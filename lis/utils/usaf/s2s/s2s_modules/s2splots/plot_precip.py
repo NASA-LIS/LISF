@@ -204,7 +204,7 @@ if __name__ == '__main__':
     year = proc_month.year
     month = proc_month.month
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
     
     plotdir_template = cwd + '/plots/{:04d}{:02d}/'

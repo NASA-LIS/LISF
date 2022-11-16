@@ -183,7 +183,7 @@ def _driver():
     input_dir, output_dir, startdate, enddate, model_forcing, configfile \
         = _read_cmd_args()
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
     output_filename = _create_merged_metric_filename(output_dir,
                                                      startdate, enddate,

@@ -265,7 +265,7 @@ if __name__ == "__main__":
     JOB_NAME = ARGS.JOB_NAME
 
     # Read s2s.config
-    with open(CONFIGFILE, 'r') as file:
+    with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         _CONFIG = yaml.safe_load(file)
     _NMME_MODELS = _CONFIG['EXP']['NMME_models']
     _NUM_ENSMEMBERS = _CONFIG['EXP']['ensemble_sizes'][0]

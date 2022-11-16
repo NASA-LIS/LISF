@@ -27,7 +27,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         sec_command = command2
     
         
-    with open(s2s_configfile, 'r') as file:
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
@@ -80,7 +80,7 @@ def job_script_long(s2s_configfile, jobfile, job_name, ntasks, cwd, in_command =
     else:
         this_command = in_command
                 
-    with open(s2s_configfile, 'r') as file:
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
@@ -194,7 +194,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     else:
         thours = hours
 
-    with open(s2s_configfile, 'r') as file:
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']

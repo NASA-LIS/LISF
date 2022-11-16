@@ -42,7 +42,7 @@ def _usage():
 def _read_cmd_args():
     """Read command line arguments."""
 
-    with open(sys.argv[5], 'r') as file:
+    with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
             
     if len(sys.argv) != 9:
