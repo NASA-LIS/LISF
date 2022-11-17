@@ -208,9 +208,9 @@ if __name__ == '__main__':
         config = yaml.safe_load(file)
     
     plotdir_template = cwd + '/plots/{:04d}{:02d}/'
-    plotdir = plotdir_template.format(fcst_year,fcst_mon)+  config["EXP"]["domain"] + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir = plotdir_template.format(fcst_year,fcst_mon)+  config["EXP"]["DOMAIN"] + '/' + config["EXP"]["lsmdir"] + '/'
     s2smetric_temp  = config["SETUP"]["E2ESDIR"] + '/s2smetric/output/{:04d}{:02d}/metrics_cf/' + \
-        config["EXP"]["domain"] + '/'  + config["EXP"]["lsmdir"] + '/{}_Precip_ANOM_init_monthly_{:02d}_{:04d}.nc'
+        config["EXP"]["DOMAIN"] + '/'  + config["EXP"]["lsmdir"] + '/{}_Precip_ANOM_init_monthly_{:02d}_{:04d}.nc'
     get_boundary = {
         'EA': (22, 55, -12, 23),
         'WA': (-19, 26, -5, 25),

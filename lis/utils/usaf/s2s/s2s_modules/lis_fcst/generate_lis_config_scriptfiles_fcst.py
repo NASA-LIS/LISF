@@ -152,7 +152,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
     data = data.replace("LISRSTFILE", f"{lis_rstfile}")
     data = data.replace("HYMAPRSTFILE", f"{hymap_rstfile}")
     data = data.replace("FCSTDIR", f"{fcstdir}")
-    data = data.replace("LDTINPUTFILE", f"{config['FCST']['ldtinputfile']}")
+    data = data.replace("LDTINPUTFILE", f"./input/{config['FCST']['ldtinputfile']}")
 
     with open(lisconfig_target, "wt", encoding='ascii') as file_obj:
         data = file_obj.write(data)
@@ -165,9 +165,9 @@ def _driver(config):
     from s2s_modules.shared import utils
 
     domlabel=''
-    if config['EXP']['domain'] == 'AFRICOM':
+    if config['EXP']['DOMAIN'] == 'AFRICOM':
         domlabel = 's2safricom'
-    elif config['EXP']['domain'] == 'GLOBAL':
+    elif config['EXP']['DOMAIN'] == 'GLOBAL':
         domlabel = 's2sglobal'
 
     for nmme_model in _NMME_MODELS:

@@ -297,7 +297,7 @@ class compute_CCDI (object):
         '''
         result = []
         plotdir_template = cwd + '/plots/{:04d}{:02d}/'
-        plotdir = plotdir_template.format(fcst_year,fcst_mon)+  config["EXP"]["domain"] + '/' + config["EXP"]["lsmdir"] + '/'
+        plotdir = plotdir_template.format(fcst_year,fcst_mon)+  config["EXP"]["DOMAIN"] + '/' + config["EXP"]["lsmdir"] + '/'
         first_file = True
         for month in range (fcst_mon + 1, fcst_mon + 3):
             region = 'FAME'

@@ -466,7 +466,7 @@ def _driver():
     curdate = startdate
     seconddate = startdate + datetime.timedelta(days=1)
     while curdate <= enddate:
-        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing, config["EXP"]["domain"])
+        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing, config["EXP"]["DOMAIN"])
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
             tmp_outfile = f"{output_dir}/tmp_monthly.nc"
@@ -485,14 +485,14 @@ def _driver():
     del tavgs
 
     # Clean up a few details.
-    infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing, config["EXP"]["domain"])
+    infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing, config["EXP"]["DOMAIN"])
     _add_time_data(infile, tmp_outfile, startdate, enddate)
     _update_cell_methods(varlists, tmp_outfile)
     _cleanup_global_attrs(tmp_outfile)
 
     # Rename the output file
     outfile = _create_monthly_s2s_filename(output_dir, startdate,
-                                           enddate, model_forcing, config["EXP"]["domain"])
+                                           enddate, model_forcing, config["EXP"]["DOMAIN"])
     os.rename(tmp_outfile, outfile)
 
 # Invoke driver
