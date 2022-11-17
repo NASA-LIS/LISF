@@ -142,7 +142,7 @@ SMAP(NRT) CDF read option:                                      1
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
 
-LIS domain and parameter data file:     ./input/lis_input.s2s_africom.noahmp401_hymap2.25km.nc
+LIS domain and parameter data file:     ./input/lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
 
 Landmask data source:                   LDT
 Landcover data source:                  LDT

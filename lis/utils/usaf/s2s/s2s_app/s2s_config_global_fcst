@@ -54,7 +54,7 @@ EXP:
 #######################################################################
 
 BCSD:
-  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/	
+  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/
   nmme_download_dir: /discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/E2ES-GLOBAL/download/NMME/
   clim_start_year: 1991
   clim_end_year: 2021
