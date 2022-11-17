@@ -46,6 +46,18 @@ module LDT_DAmetricsDataMod
      real,    allocatable :: sigma(:,:,:)
      integer, allocatable :: count_sigma(:,:,:)
 
+     !-----------------------------------------------Y.Kwon
+     real,    allocatable :: sx_mu_6am(:,:,:), sx_mu_6pm(:,:,:)
+     real,    allocatable :: mu_6am(:,:,:), mu_6pm(:,:,:)
+     integer, allocatable :: count_mu_6am(:,:,:), count_mu_6pm(:,:,:)
+
+     real,    allocatable :: sx_sigma_6am(:,:,:), sx_sigma_6pm(:,:,:)
+     real,    allocatable :: sxx_sigma_6am(:,:,:), sxx_sigma_6pm(:,:,:)
+     real,    allocatable :: sigma_6am(:,:,:), sigma_6pm(:,:,:)
+     integer, allocatable :: count_sigma_6am(:,:,:), count_sigma_6pm(:,:,:)
+     real,    allocatable :: mask_6am(:,:,:), mask_6pm(:,:,:)
+     !-----------------------------------------------Y.Kwon
+
      integer          :: selectOpt
      character*20     :: standard_name
   end type DAmetricsEntry
@@ -168,6 +180,8 @@ module LDT_DAmetricsDataMod
      type(DAmetricsEntry) :: slope
      type(DAmetricsEntry) :: lai
      type(DAmetricsEntry) :: sai
+     type(DAmetricsEntry) :: gvf      !Y.Kwon
+     type(DAmetricsEntry) :: teff     !Y.Kwon
      type(DAmetricsEntry) :: irrigtype
      type(DAmetricsEntry) :: irrigfrac
      type(DAmetricsEntry) :: snfralbedo

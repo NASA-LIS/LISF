@@ -173,7 +173,10 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
-   character*50, public,  parameter :: LIS_gddpId        = "GDDP"
+   character*50, public,  parameter :: LIS_gddpId            = "GDDP"
+   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
+   character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
+
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -270,6 +273,8 @@ module LIS_pluginIndices
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
+   character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
+        "SMAP_E_OPL soil moisture"                                   !YK
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -278,6 +283,10 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
+        "VIIRS GVF"                                                  !YK
+   character*50, public,  parameter :: LIS_CDFSgvfobsId          = &
+        "CDFS GVF"                                                   !YK
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
@@ -356,6 +365,7 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_NLDASrouterId = "NLDAS router"
    character*50, public, parameter :: LIS_HYMAProuterId = "HYMAP router"
    character*50, public, parameter :: LIS_HYMAP2routerId = "HYMAP2 router"
+   character*50, public, parameter :: LIS_RAPIDrouterId = "RAPID router"
 !-------------------------------------------------------------------------
 ! Runoff data support
 !-------------------------------------------------------------------------

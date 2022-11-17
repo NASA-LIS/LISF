@@ -52,6 +52,7 @@ module LIS_dataAssimMod
 !   7 Sep 2017    Mahdi Navari; set a condition to deal the skewness of the both model and obs CDF 
 !   1 Apr 2019    Yonghwan Kwon; include an option to read soil moisture CDF information for each month separately
 !   5 Mar 2021    Eric Kemp; reduced memory usage in read_CDFdata_month
+!   1 Oct 2022    Yeosang Yoon; excluded RAPID from 'Routing_DAinst'
 ! 
 ! !USES: 
   use ESMF
@@ -450,7 +451,7 @@ contains
              endif
           enddo
           do i=1,LIS_rc%ndas
-             if(LIS_rc%routingmodel.ne."none") then
+             if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
                 if(LIS_rc%Routing_DAinst_valid(i)) then
                    call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
                         trim(LIS_rc%daset(i))//char(0),i)

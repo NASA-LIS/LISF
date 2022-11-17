@@ -21,6 +21,7 @@ module LIS_sublsm_pluginMod
 !
 ! !REVISION HISTORY:
 !  09 Oct 2003    Sujay Kumar  Initial Specification
+!  04 Jun 2021    Mahdi Navari Modified for Naoh.3.9
 !  12 Aug 2021    Kristi Arsenault  Added SnowModel 
 !
 !EOP
@@ -153,6 +154,11 @@ contains
    external NoahMP401_setCROCUSimport
 #endif
 
+#if ( defined SM_NOAH_3_9 )
+   external Noah39_getCROCUSexport
+   external Noah39_setCROCUSimport
+#endif
+
 #endif
 
 #if ( defined SM_SNOWMODEL )
@@ -200,6 +206,17 @@ contains
    call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
+
+#if ( defined SM_NOAH_3_9 )
+   call registerlsm2sublsmgetexport(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),Noah39_getCROCUSexport)
+   call registerlsmsetsublsmimport(trim(LIS_noah39Id)//char(0),&
+        Noah39_setCROCUSimport)
+   call registersublsm2lsmgetexport(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+#endif
+
+
 #endif
 
 
