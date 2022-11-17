@@ -296,6 +296,14 @@ subroutine LIS_metforcing_plugin
    use gddp_forcingMod
 #endif   
 
+#if ( defined MF_GALWEM_FORECAST )
+   use galwem_forcingMod
+#endif
+
+#if ( defined MF_GALWEM_GE_FORECAST )
+   use galwemge_forcingMod
+#endif
+
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
    external timeinterp_metForcTemplate
@@ -633,6 +641,22 @@ subroutine LIS_metforcing_plugin
    external finalize_gddp
    external reset_gddp
 #endif
+
+#if ( defined MF_GALWEM_FORECAST )
+   external get_galwem
+   external timeinterp_galwem
+   external finalize_galwem
+   external reset_galwem
+#endif
+ 
+#if ( defined MF_GALWEM_GE_FORECAST )
+   external get_galwemge
+   external timeinterp_galwemge
+   external finalize_galwemge
+   external reset_galwemge
+#endif
+
+
    
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
@@ -1138,6 +1162,25 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_gddpId)//char(0),finalize_gddp)
    call registerresetmetforc(trim(LIS_gddpId)//char(0),reset_gddp)
 #endif
+
+#if ( defined MF_GALWEM_FORECAST)
+   call registerinitmetforc(trim(LIS_galwemId)//char(0),init_galwem)
+   call registerretrievemetforc(trim(LIS_galwemId)//char(0),get_galwem)
+   call registertimeinterpmetforc(trim(LIS_galwemId)//char(0), &
+                                  timeinterp_galwem)
+   call registerfinalmetforc(trim(LIS_galwemId)//char(0),finalize_galwem)
+   call registerresetmetforc(trim(LIS_galwemId)//char(0),reset_galwem)
+#endif
+
+#if ( defined MF_GALWEM_GE_FORECAST)
+   call registerinitmetforc(trim(LIS_galwemgeId)//char(0),init_galwemge)
+   call registerretrievemetforc(trim(LIS_galwemgeId)//char(0),get_galwemge)
+   call registertimeinterpmetforc(trim(LIS_galwemgeId)//char(0), &
+                                  timeinterp_galwemge)
+   call registerfinalmetforc(trim(LIS_galwemgeId)//char(0),finalize_galwemge)
+   call registerresetmetforc(trim(LIS_galwemgeId)//char(0),reset_galwemge)
+#endif
+
 end subroutine LIS_metforcing_plugin
 
 end module LIS_metforcing_pluginMod

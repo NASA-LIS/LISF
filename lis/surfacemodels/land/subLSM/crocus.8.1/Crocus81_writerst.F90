@@ -184,7 +184,7 @@ subroutine Crocus81_dump_restart(n, ftn, wformat)
                
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
-    integer :: dimID(10)  !6
+    integer :: dimID(11)  !6
     integer :: SNOWSWE_ID
     integer :: SNOWRHO_ID
     integer :: SNOWHEAT_ID

@@ -1,0 +1,337 @@
+!*******************************************************************************
+!Subroutine - rapid_Vlat
+!*******************************************************************************
+subroutine rapid_Vlat(runoff_nc_file)
+
+!PURPOSE
+!This coupler allows to convert runoff information from a land surface model
+!to a volume of water entering RAPID river reaches.
+
+!Dec 17, 2020: Yeosang Yoon, Initial Implementation
+
+#include <petsc/finclude/petscvec.h>
+use petscvec
+use netcdf
+
+!use rapid_var, only :                                                            &
+!                   rank,ierr,IS_nc_status,IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat,   &
+!                   IS_nc_id_var_time,IS_nc_id_var_time_bnds,IS_nc_id_var_crs,    &
+!                   IS_nc_id_var_lon,IS_nc_id_var_lat,IS_nc_id_var_Vlat_err,      &
+!                   IS_riv_tot,IS_riv_bas,IS_time,JS_time,ZS_TauR,                &
+!                   YV_title,YV_institution,YV_comment,                           &
+!                   YV_time_units,ZS_crs_sma,ZS_crs_iflat,                        &
+!                   ZV_riv_tot_lon,ZV_riv_tot_lat,IV_time,IM_time_bnds,           &
+!                   ZV_riv_tot_bQlat,ZV_riv_tot_vQlat,ZV_riv_tot_caQlat,ZS_dtUQ,  &
+!                   ZV_riv_tot_cdownQlat,IS_radius,                               &
+!                   IV_nc_start,IV_nc_count,                                      &
+!                   IV_riv_loc1,IV_riv_index,ZV_read_riv_tot,ZV_Vlat,             &
+!                   Runoff_path,Weight_table_file            
+
+use rapid_var, only :                                                            &
+                   rank,ierr,IS_time,JS_time,IS_riv_bas,                         &
+                   ZS_TauR,ZS_crs_sma,ZS_crs_iflat,                              &
+                   IV_time,IM_time_bnds,IV_riv_loc1,IV_riv_index,                &
+                   ZV_read_riv_tot,ZV_Vlat,Runoff_path,weight_table_file
+
+implicit none
+
+!*******************************************************************************
+!Declaration of variables
+!*******************************************************************************
+! Arguments
+character(len=200), intent(in) :: runoff_nc_file
+!character(len=256) :: m3_nc_file
+
+! Weight table file
+integer, dimension(:),   allocatable :: rivid                   ! ID of the each river reach
+integer, dimension(:),   allocatable :: npt                     !
+integer, dimension(:),   allocatable :: idx_i,idx_j             ! i,j index of the grid cell where the contributing catchment centroid
+real,    dimension(:),   allocatable :: area_sqm                ! area of its contributing catchment in m2
+real,    dimension(:),   allocatable :: lat, lon                ! lat, lon of LSM
+
+!character(len=256)                   :: weight_table_file
+character(len=200)                   :: buf
+integer                              :: nreach
+integer                              :: ncid, var_runsf, var_runsb ! variables for netcdf
+
+! Runoff data are in kg/m2 accumulated over a time step
+real,    dimension(:,:), allocatable :: runsf                   ! surface runoff
+real,    dimension(:,:), allocatable :: runsb                   ! subsurface runoff
+integer                              :: nlon, nlat
+
+
+integer                              :: nreach_new
+integer                              :: col, row                !
+real                                 :: conversion_factor=0.001 !convert from kg/m^2 (i.e. mm) to m
+
+integer, dimension(:),   allocatable :: rivid_new
+real,    dimension(:),   allocatable :: m3_riv                  ! inflow data to RAPID river reaches are in m3 accumulated over a time step
+real                                 :: m3_riv_np
+
+integer            :: eof, status
+integer            :: i,j,k
+!integer            :: dim_rivid, dim_time, dimids(2)            ! variables for netcdf
+!integer            :: var_m3_riv, var_rivid                     ! variables for netcdf
+
+!*******************************************************************************
+! Reads weight_table file
+!*******************************************************************************
+! check number of reach in wieght table file
+open(45,file=weight_table_file,status='old',action='read')
+read(45,'(A)',iostat=eof) buf  ! read header in weight table
+nreach=1;
+do
+     read(45,*,iostat=eof) buf
+     if (eof/=0) exit
+
+     nreach=nreach+1
+end do
+nreach=nreach-1 ! adjust size
+close(45)
+
+! allocate sizes
+allocate(rivid(nreach))
+allocate(area_sqm(nreach))
+allocate(idx_i(nreach))
+allocate(idx_j(nreach))
+allocate(npt(nreach))
+allocate(lat(nreach))
+allocate(lon(nreach))
+
+! read weight table file
+open(45,file=weight_table_file,status='old',action='read')
+read(45,'(A)',iostat=eof) buf  ! read header in weight table
+
+nreach=1
+do
+     read(45,*,iostat=eof) rivid(nreach),area_sqm(nreach),              &
+                           idx_i(nreach),idx_j(nreach),npt(nreach),lon(nreach),lat(nreach)
+     if (eof/=0) exit
+     nreach=nreach+1
+end do
+nreach=nreach-1
+close(45)
+
+!-------------------------------------------------------------------------------
+!Read runoff file
+!-------------------------------------------------------------------------------
+! initialization
+nlon=192
+nlat=372
+
+allocate(runsf(nlon,nlat))
+allocate(runsb(nlon,nlat))
+
+runsf(1:nlon,1:nlat)=0
+runsb(1:nlon,1:nlat)=0
+
+! open the file. NF90_NOWRITE tells netCDF we want read-only access to the file
+status=nf90_open(trim(runoff_nc_file), NF90_NOWRITE, ncid)
+
+! get the varid of the data variable, based on its name
+status=nf90_inq_varid(ncid,'Qs_inst', var_runsf)
+status=nf90_inq_varid(ncid,'Qsb_inst', var_runsb)
+! read the data.
+status=nf90_get_var(ncid, var_runsf, runsf)
+status=nf90_get_var(ncid, var_runsb, runsb)
+! close the file, freeing all resources.
+status=nf90_close(ncid)
+
+!-------------------------------------------------------------------------------
+! Obtain a new subset of data & Calculate water inflows
+!-------------------------------------------------------------------------------
+! initialization
+j=1
+k=1
+allocate(m3_riv(IS_riv_bas))
+allocate(rivid_new(IS_riv_bas))
+
+do i=1,nreach
+     m3_riv(k)=0;
+
+     ! check if all npoints points correspond to the same streamID
+     if (npt(i) > 1) then
+        if (i > 1 .AND. (rivid(i-1) == rivid(i)))  CYCLE
+
+        do j=1,npt(i)
+           col=idx_i(i+j-1)+1
+           row=idx_j(i+j-1)+1
+
+           !Set negative values to zero including fill values (i.e., -9999)
+           if (runsf(col,row)<0) runsf(col,row)=0
+           if (runsb(col,row)<0) runsb(col,row)=0
+
+           ! combine data
+           m3_riv_np=(runsf(col,row)                        &
+                     +runsb(col,row))*ZS_TauR               & !kg m-2 s-1 -> kg m-2
+                     *area_sqm(i+j-1)*conversion_factor       !kg m-2 (mm) -> m
+           m3_riv(k)=m3_riv(k)+m3_riv_np
+
+        end do
+        rivid_new(k)=rivid(i)
+        k=k+1
+     else
+        col=idx_i(i)+1
+        row=idx_j(i)+1
+
+        !Set negative values to zero including fill values (i.e., -9999)
+        if (runsf(col,row)<0) runsf(col,col)=0
+        if (runsb(col,row)<0) runsb(col,col)=0
+
+        m3_riv(k)=(runsf(col,row)                       &
+                  +runsb(col,row))*ZS_TauR              & !kg m-2 s-1 -> kg m-2
+                  *area_sqm(i)*conversion_factor          !kg m-2 (mm) -> m
+
+        rivid_new(k)=rivid(k)
+        k=k+1
+     end if
+end do
+
+nreach_new=k-1
+
+!*******************************************************************************
+! open Vlat_file (from rapid_open_Vlat_file.F90)
+!*******************************************************************************
+
+!if (rank==0) then
+!     open(99,file=Vlat_file,status='old')
+!     close(99)
+!     IS_nc_status=NF90_OPEN(Vlat_file,NF90_NOWRITE,IS_nc_id_fil_Vlat)
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'m3_riv',IS_nc_id_var_Vlat)
+!     if (IS_nc_status<0) IS_nc_id_var_Vlat=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'time',IS_nc_id_var_time)
+!     if (IS_nc_status<0) IS_nc_id_var_time=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'time_bnds',                \
+!                                 IS_nc_id_var_time_bnds)
+!     if (IS_nc_status<0) IS_nc_id_var_time_bnds=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'lon',IS_nc_id_var_lon)
+!     if (IS_nc_status<0) IS_nc_id_var_lon=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'lat',IS_nc_id_var_lat)
+!     if (IS_nc_status<0) IS_nc_id_var_lat=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'crs',IS_nc_id_var_crs)
+!     if (IS_nc_status<0) IS_nc_id_var_crs=-9999
+!     IS_nc_status=NF90_INQ_VARID(IS_nc_id_fil_Vlat,'m3_riv_err',               \
+!                                 IS_nc_id_var_Vlat_err)
+!     if (IS_nc_status<0) IS_nc_id_var_Vlat_err=-9999
+     !A negative value for IS_nc_id_var_* is used if the variable doesn't exist,
+     !this is because the default value of "1" might match another existing
+     !variable.
+!end if
+
+!*******************************************************************************
+! set metadata for Vlat_file (from rapid_meta_Vlat_file.F90)
+!*******************************************************************************
+!Read global attributes
+!if (rank==0) then
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,NF90_GLOBAL,                  \
+!                  "title", YV_title)
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,NF90_GLOBAL,                  \
+!                  "institution", YV_institution)
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,NF90_GLOBAL,                  \
+!                  "comment", YV_comment)
+!end if
+
+!Read variable attributes
+if (rank==0) then
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,IS_nc_id_var_time,            \
+!                  "units", YV_time_units)
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,IS_nc_id_var_crs,             \
+!                  "semi_major_axis", ZS_crs_sma)
+!     IS_nc_status=NF90_GET_ATT(IS_nc_id_fil_Vlat,IS_nc_id_var_crs,             \
+!                  "inverse_flattening", ZS_crs_iflat)
+
+     ZS_crs_sma=6378137.0        ! semi major axis of the spheroid
+     ZS_crs_iflat=298.257223563  ! inverse flattening of the spheroid
+end if
+
+!Read space and time variable values
+! TODO: re-review lon/lat, time, time_bnds variables
+!if (rank==0) then
+!     if (IS_nc_id_var_lon>=0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_lon,             \
+!                               ZV_riv_tot_lon,(/1/),(/IS_riv_tot/))
+!     end if
+!     if (IS_nc_id_var_lat>=0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_lat,             \
+!                               ZV_riv_tot_lat,(/1/),(/IS_riv_tot/))
+!     end if
+!     if (IS_nc_id_var_time>=0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_time,            \
+!                               IV_time,(/1/),(/IS_time/))
+!     end if
+!     if (IS_nc_id_var_time_bnds>=0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_time_bnds,       \
+!                               IM_time_bnds,(/1,1/),(/2,IS_time/))
+!     end if
+!end if
+
+!Read uncertainty quantification inputs, convert from volume to flow
+! TODO: re-review later
+!if (rank==0) then
+!     if (IS_nc_id_var_Vlat_err>=0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat_err,        \
+!                               ZV_riv_tot_bQlat,(/1,1/),(/IS_riv_tot,1/))
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat_err,        \
+!                               ZV_riv_tot_vQlat,(/1,2/),(/IS_riv_tot,1/))
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat_err,        \
+!                               ZV_riv_tot_caQlat,(/1,3/),(/IS_riv_tot,1/))
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat_err,        \
+!                               ZV_riv_tot_cdownQlat,(/1,4/),(/IS_riv_tot,IS_radius/))
+
+!     ZV_riv_tot_bQlat=sign(sqrt(abs(ZV_riv_tot_bQlat)),ZV_riv_tot_bQlat)/ZS_dtUQ
+!     ZV_riv_tot_vQlat=ZV_riv_tot_vQlat/(ZS_dtUQ**2)
+!     ZV_riv_tot_caQlat=ZV_riv_tot_caQlat/(ZS_dtUQ**2)
+!     ZV_riv_tot_cdownQlat=ZV_riv_tot_cdownQlat/(ZS_dtUQ**2)
+!     end if
+!end if
+
+!Check temporal consistency if metadata present
+if (IV_time(1)/=-9999) then
+     do JS_time=1,IS_time-1
+     if (IV_time(JS_time+1)-IV_time(JS_time)/=int(ZS_TauR)) then
+     !Checking that interval between values of the time variable is ZS_TauR
+          print '(a53)','Inconsistent time intervals in namelist and Vlat_file'
+          stop 99
+     end if
+     end do
+end if
+
+if (IM_time_bnds(1,1)/=-9999) then
+     do JS_time=1,IS_time-1
+     if (IM_time_bnds(1,JS_time+1)-IM_time_bnds(1,JS_time)/=int(ZS_TauR)) then
+     !Checking that interval between values of the time_bnd variable is ZS_TauR
+          print '(a53)','Inconsistent time intervals in namelist and Vlat_file'
+          stop 99
+     end if
+     end do
+     do JS_time=1,IS_time
+     if (IM_time_bnds(2,JS_time)-IM_time_bnds(1,JS_time)/=int(ZS_TauR)) then
+     !Checking that interval for each value of the time_bnd variable is ZS_TauR
+          print '(a53)','Inconsistent time intervals in namelist and Vlat_file'
+          stop 99
+     end if
+     end do
+end if
+
+!*******************************************************************************
+! Read Vlat_file (from rapid_read_Vlat_file.F90)
+!*******************************************************************************
+
+! read file
+if (rank==0) then
+!     IS_nc_status=NF90_GET_VAR(IS_nc_id_fil_Vlat,IS_nc_id_var_Vlat,            &
+!                               ZV_read_riv_tot,IV_nc_start,IV_nc_count)
+      ZV_read_riv_tot=m3_riv(1:nreach_new)
+end if
+
+! Set values in PETSc vector
+if (rank==0) then
+     call VecSetValues(ZV_Vlat,IS_riv_bas,IV_riv_loc1,                         &
+                       ZV_read_riv_tot(IV_riv_index),INSERT_VALUES,ierr)
+end if
+
+! Assemble PETSc vector
+call VecAssemblyBegin(ZV_Vlat,ierr)
+call VecAssemblyEnd(ZV_Vlat,ierr)
+
+end subroutine rapid_Vlat

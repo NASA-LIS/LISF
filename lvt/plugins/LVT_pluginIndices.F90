@@ -269,6 +269,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_FluxSatobsId = "FluxSAT GPP"
    character*50, public,  parameter :: LVT_THySMobsId = "THySM"
    character*50, public,  parameter :: LVT_UASMAPobsId = "UA SMAP"
+   character*50, public,  parameter :: LVT_GRUNobsId = "GRUN runoff"
 !-------------------------------------------------------------------------
 ! Training algorithms
 !------------------------------------------------------------------------- 

@@ -126,7 +126,8 @@ subroutine get_pptEnsFcst(n, findex)
       do m = 1, pptensfcst_struc%max_ens_members
          ensnum = m
          call get_pptEnsFcst_filename( pptensfcst_struc%fcst_type,&
-               LIS_rc%syr, LIS_rc%smo, &
+!               LIS_rc%syr, LIS_rc%smo, &   ! Original code (prior to 09-02-2022)
+               pptensfcst_struc%fcst_inityr, pptensfcst_struc%fcst_initmo, &  ! New config file entry
                ensnum, LIS_rc%yr, LIS_rc%mo, &
                pptensfcst_struc%directory, fullfilename  )
 
