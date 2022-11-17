@@ -128,7 +128,7 @@ set_permission(){
 
 #SBATCH --account=${SPCODE}
 #SBATCH --ntasks=1
-#SBATCH --time=00:00:15
+#SBATCH --time=00:15:00
 #SBATCH --job-name=set_permission_
 #SBATCH --output ${SCRDIR}/set_permission_%j.out
 #SBATCH --error ${SCRDIR}/set_permission_%j.err
@@ -737,7 +737,10 @@ cd lis_darun/input/
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/template_files
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
-/bin/ln -s ${SUPDIR}/lis_darun/cdf
+/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/tables
+/bin/ln -s ${SUPDIR}/lis_darun/cdf/${DOMAIN} cdf
+/bin/ln -s ${SUPDIR}/lis_darun/RS_DATA
+
 /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
 cd ${BWD}
 

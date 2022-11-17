@@ -249,7 +249,29 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         f.write('exit 0' + '\n')
     f.close()    
 
+def get_domain_info (s2s_configfile, extent=None, coord=None):
+    import numpy as np
+    from netCDF4 import Dataset as nc4
+    
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
+        cfg = yaml.safe_load(file)
+    ldtfile = cfg['BCSD']['supplementarydir'] + '/lis_darun/' + cfg['FCST']['ldtinputfile']
+    ldt = nc4(ldtfile, 'r')
 
+    if extent is not None:
+        lon = np.array(ldt['lon'])
+        lat = np.array(ldt['lat'])
+        return np.int(np.floor(np.min(lat[:,0]))), np.int(np.ceil(np.max(lat[:,0]))), np.int(np.floor(np.min(lon[0,:]))), np.int(np.ceil(np.max(lon[0,:])))
+
+    if coord is not None:
+        lon = np.array(ldt['lon'])
+        lat = np.array(ldt['lat'])
+        return lat[:,0], lon[0,:]
+
+    
+
+    
+    
     
 
     
