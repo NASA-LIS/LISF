@@ -144,7 +144,7 @@ find . -name "*.TIF" -exec chmod 0444 {} \;
 find . -name "*.png" -exec chmod 0444 {} \;
 
 EOF
-   perm_ID=$(submit_job $1 "set_permission_") 
+   perm_ID=$(submit_job $1 "set_permission.j") 
 }
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -247,8 +247,7 @@ lis_darun(){
     
     # configure lis.config
     # --------------------
-    
-    /bin/cp ${E2ESDIR}/lis_darun/template_files/lis.config_template lis.config.${DOMAIN} lis.config_template lis.config
+    /bin/cp ${E2ESDIR}/lis_darun/input/template_files/lis.config_template.${DOMAIN} lis.config
     DAPERTRSTFILE=./output/DAPERT/${YYYYP}${MMP}/LIS_DAPERT_${YYYYP}${MMP}010000.d01.bin
     NOAHMP401RSTFILE=./output/SURFACEMODEL/${YYYYP}${MMP}/LIS_RST_NOAHMP401_${YYYYP}${MMP}010000.d01.nc
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
@@ -286,7 +285,8 @@ ldt_ics(){
     echo "(2) LDT and Initial Conditions" >> $JOB_SCHEDULE
     echo "------------------------------" >> $JOB_SCHEDULE
     echo "              " >> $JOB_SCHEDULE
-    
+
+    mkdir -p ${E2ESDIR}/ldt_ics
     cd ${E2ESDIR}/ldt_ics
     mkdir -p -m 775 $MODELS
     mkdir -p -m 775 ldt.config_files
@@ -739,6 +739,7 @@ cd lis_darun/input/
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
 /bin/ln -s ${SUPDIR}/lis_darun/cdf
 /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
+cd ${BWD}
 
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
