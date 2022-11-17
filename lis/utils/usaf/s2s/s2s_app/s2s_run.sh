@@ -82,11 +82,14 @@ export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
 export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"    
 else
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 fi
+export SUPDIR=`grep supplementarydir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export LDTFILE=`grep ldtinputfile $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 
 unset LD_LIBRARY_PATH
 source /etc/profile.d/modules.sh
@@ -245,7 +248,7 @@ lis_darun(){
     # configure lis.config
     # --------------------
     
-    /bin/cp ${E2ESDIR}/lis_darun/template_files/lis.config_template lis.config
+    /bin/cp ${E2ESDIR}/lis_darun/template_files/lis.config_template lis.config.${DOMAIN} lis.config_template lis.config
     DAPERTRSTFILE=./output/DAPERT/${YYYYP}${MMP}/LIS_DAPERT_${YYYYP}${MMP}010000.d01.bin
     NOAHMP401RSTFILE=./output/SURFACEMODEL/${YYYYP}${MMP}/LIS_RST_NOAHMP401_${YYYYP}${MMP}010000.d01.nc
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
@@ -508,16 +511,18 @@ lis_fcst(){
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
-    LDTPARA=`grep ldt_params $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
     Mmm1=`date -d "$YYYY-$MM-01" +%b`1
      
     cd ${E2ESDIR}/lis_fcst
     mkdir -p -m 775 input/LDT_ICs/
     cd ${E2ESDIR}/lis_fcst/input/
-    /bin/ln -s ${LDTPARA}
-    /bin/ln -s ${E2ESDIR}/bcsd_fcst/data/forecast/
-    cd ${E2ESDIR}/lis_fcst/input/LDT_ICs/
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_fcst/template_files
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_fcst/tables
+    /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
     
+    cd ${E2ESDIR}/lis_fcst/input/LDT_ICs/    
     for model in $MODELS
     do
 	mkdir -m 775 -p ${E2ESDIR}/lis_fcst/${YYYY}${MM}/${model}/logs/
@@ -724,6 +729,17 @@ fi
 #######################################################################
    
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
+
+mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
+cd lis_darun/input/
+
+/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
+/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
+/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/template_files
+/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
+/bin/ln -s ${SUPDIR}/lis_darun/cdf
+/bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
+
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
 mkdir -p -m 775 ${SCRDIR}/lis_darun

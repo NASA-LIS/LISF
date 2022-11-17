@@ -312,7 +312,7 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if config ["EXP"]["domain"] == 'AFRICOM':
+    if config ["EXP"]["DOMAIN"] == 'AFRICOM':
         FONT_SIZE1 = 30
         FONT_SIZE2 = 40
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
@@ -325,7 +325,7 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
 
-    if config ["EXP"]["domain"] == 'GLOBAL':
+    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
 
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')

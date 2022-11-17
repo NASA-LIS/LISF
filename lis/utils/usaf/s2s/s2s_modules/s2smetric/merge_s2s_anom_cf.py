@@ -187,7 +187,7 @@ def _driver():
         config = yaml.safe_load(file)
     output_filename = _create_merged_metric_filename(output_dir,
                                                      startdate, enddate,
-                                                     model_forcing, config["EXP"]["domain"])
+                                                     model_forcing, config["EXP"]["DOMAIN"])
     _merge_files(config, input_dir, model_forcing, startdate, \
                  output_filename)
 

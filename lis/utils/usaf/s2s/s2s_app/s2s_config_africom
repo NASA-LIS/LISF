@@ -18,7 +18,7 @@ SETUP:
 #######################################################################
 
 EXP:
-  domain: AFRICOM
+  DOMAIN: AFRICOM
   lsmdir: NOAHMP
   lsm:    noahmp401
   routing_name: hymap2
@@ -68,8 +68,7 @@ BCSD:
 #######################################################################
 
 FCST:
-  ldtinputfile: ./input/LDT_Params/lis_input.s2s_africom.noahmp401_hymap2.merit.25km.nc
-  ldt_params: /discover/nobackup/projects/lis_aist17/karsenau/GHI_S2S/AFRICOM/LDT_Params/
+  ldtinputfile: lis_input.s2s_africom.noahmp401_hymap2.merit.25km.nc
   numprocx: 1
   numprocy: 28
   JOB_SEGMENTS:
