@@ -7,7 +7,7 @@
 SETUP:
   LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/LISF-1/
   E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL/
-  METFORC: /discover/nobackup/projects/usaf_lis/MET_FORCING/
+  METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   AF10KM:  /discover/nobackup/projects/usaf_lis/smahanam/GLOBAL/MERRA2_CHIRPSM2_NAFPAMod_3hr_9yr/ens1/
   LISFMOD: lisf_7.5_intel_2021.4.0
   SPCODE:  s1189
@@ -40,14 +40,6 @@ EXP:
     GEOSv2: downscale
     CFSv2: upscale
     GFDL: upscale
-  domain_extent:
-  - LAT_SW: -90
-    LAT_NE:  90
-    LON_SW: -180
-    LON_NE:  180
-  domain_dx: 0.25
-  domain_dy: 0.25
-  # must be consistent with 'Run domain' in ldt_ics/template_files/ldt.config_{MODEL}_{EXP}_TEMPLATE
 
 #######################################################################
 #              Bias Correction and Spatial Downscaling (BCSD)
@@ -68,7 +60,7 @@ BCSD:
 #######################################################################
 
 FCST:
-  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
+  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS:

@@ -84,10 +84,8 @@ def _driver():
     supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
 
     # domain
-    lat1 = config['EXP']['domain_extent'][0].get('LAT_SW')
-    lat2 = config['EXP']['domain_extent'][0].get('LAT_NE')
-    lon1 = config['EXP']['domain_extent'][0].get('LON_SW')
-    lon2 = config['EXP']['domain_extent'][0].get('LON_NE')
+    lat1, lat2, lon1, lon2 = utils.get_domain_info(config_file, extent=True)
+
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
     clim_syr = config['BCSD']['clim_start_year']

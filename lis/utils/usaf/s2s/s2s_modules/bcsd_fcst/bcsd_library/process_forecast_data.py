@@ -44,7 +44,10 @@ def _read_cmd_args():
 
     with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-            
+
+    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
+    from s2s_modules.shared import utils
+    
     if len(sys.argv) != 9:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
@@ -60,6 +63,7 @@ def _read_cmd_args():
         "ic1" : sys.argv[6],
         "ic2" : sys.argv[7],
         "ic3" : sys.argv[8],
+        "ldtfile": config['BCSD']['supplementarydir'] + '/lis_darun/' + config['FCST']['ldtinputfile'],
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -115,17 +119,11 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
         cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
         
         # build regridder
-        xll = args['config']["EXP"]["domian_extent"][0].get("LON_SW")
-        xur = args['config']["EXP"]["domian_extent"][0].get("LON_NE")
-        yll = args['config']["EXP"]["domian_extent"][0].get("LAT_SW")
-        yur = args['config']["EXP"]["domian_extent"][0].get("LAT_NE") 
-        dx = args['config']["EXP"]["domain_dx"]
-        dy = args['config']["EXP"]["domain_dy"]
-        
+        lats, lons = utils.get_domain_info(args["ldtfile"], coord=True)        
         ds_out = xr.Dataset(
             {
-                "lat": (["lat"], np.arange(yll + dy/2., yur, dy)),
-                "lon": (["lon"], np.arange(xll + dy/2., xur, dx)),
+                "lat": (["lat"], lats),
+                "lon": (["lon"], lons),
         }
         )
         regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
