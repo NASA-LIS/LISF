@@ -103,7 +103,7 @@ BWD=`pwd`
 #**********************************************************************
 
 submit_job(){
-    if [ $1 == "" ] || [ $1 == "," ]; then
+    if [[ $1 == "" ]] || [[ $1 == "," ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
 	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
     else
@@ -222,6 +222,19 @@ lis_darun(){
     echo "(1) LIS Data Assimilation" >> $JOB_SCHEDULE
     echo "-------------------------" >> $JOB_SCHEDULE
     echo "                         " >> $JOB_SCHEDULE
+
+    # set up input directory
+    mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
+    cd ${E2ESDIR}/lis_darun/input/
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/template_files
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
+    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/tables
+    /bin/ln -s ${SUPDIR}/lis_darun/cdf/${DOMAIN} cdf
+    /bin/ln -s ${SUPDIR}/lis_darun/RS_DATA
+    /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
+    cd ${BWD}
     
     # previous month
     YYYYMMP=`date -d "$YYYY-$MM-01 -1 month" +%Y%m`
@@ -286,10 +299,15 @@ ldt_ics(){
     echo "------------------------------" >> $JOB_SCHEDULE
     echo "              " >> $JOB_SCHEDULE
 
-    mkdir -p ${E2ESDIR}/ldt_ics
+    mkdir -p ${E2ESDIR}/ldt_ics/input
     cd ${E2ESDIR}/ldt_ics
     mkdir -p -m 775 $MODELS
     mkdir -p -m 775 ldt.config_files
+    mkdir -p -m 775 template_files    
+    /bin/cp -p ${LISHDIR}/s2s_modules/ldt_ics/template_files/ldt.config_noahmp401_nmme_TEMPLATE.${DOMAIN} template_files/ldt.config_noahmp401_nmme_TEMPLATE
+    cd ${E2ESDIR}/ldt_ics/input
+    /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
+    /bin/ln -s ${SUPDIR}/LS_PARAMETERS
     
     cd ${SCRDIR}/ldt_ics
     CWD=`pwd`
@@ -729,20 +747,6 @@ fi
 #######################################################################
    
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
-
-mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
-cd ${E2ESDIR}/lis_darun/input/
-
-/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
-/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
-/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/template_files
-/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
-/bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/tables
-/bin/ln -s ${SUPDIR}/lis_darun/cdf/${DOMAIN} cdf
-/bin/ln -s ${SUPDIR}/lis_darun/RS_DATA
-
-/bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
-cd ${BWD}
 
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 mkdir -p -m 775 ${SCRDIR}/global_usaf_forc

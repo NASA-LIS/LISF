@@ -219,6 +219,6 @@ if __name__ == "__main__":
     _NMME_MODELS = CONFIG['EXP']['NMME_models']
     _NMME_SCALINGS = CONFIG['EXP']['NMME_scalings'][0]
     _LDTCONFIG_LSM_TEMPLATE = f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
-    _LDT_INPUT_FILE = f"./input/lis_input.s2s_africom.{_LSM_NAME}_{_ROUTING_NAME}.25km.nc"
+    _LDT_INPUT_FILE = './input/' + CONFIG['FCST']['ldtinputfile']
 
     _driver()
