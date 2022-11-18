@@ -731,7 +731,7 @@ fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
 mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
-cd lis_darun/input/
+cd ${E2ESDIR}/lis_darun/input/
 
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
 /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
