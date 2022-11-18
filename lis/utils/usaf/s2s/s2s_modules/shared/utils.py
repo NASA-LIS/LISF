@@ -214,7 +214,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         f.write('#######################################################################' + '\n')
         f.write('\n')
         f.write('#SBATCH --account=' + sponsor_code + '\n')
-        f.write('#SBATCH --constraint=sky|cas' + '\n')        
+#        f.write('#SBATCH --constraint=sky|cas' + '\n')
+        f.write('#SBATCH --constraint=cssro' + '\n')        
         f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
         if DATATYPE == 'hindcast':
             f.write('#SBATCH --ntasks=' + ntasks + '\n')
