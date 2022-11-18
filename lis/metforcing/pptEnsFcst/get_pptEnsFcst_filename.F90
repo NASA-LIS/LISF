@@ -75,7 +75,12 @@
      ! 
       call LIS_mon3char( fmo, fmo3 )
 
-      filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+      ! Former directory structure:
+!      filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+!          trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
+
+      ! New directory structure (as of Nov 30, 2022):
+      filename = trim(directory)//"/"//fmo3//"01/"//fyr//"/ens"//&
           trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
 
      ! ** Will need to update later to accomodate additional start
