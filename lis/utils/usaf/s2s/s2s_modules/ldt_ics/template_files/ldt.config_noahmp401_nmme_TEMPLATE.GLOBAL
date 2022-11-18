@@ -47,11 +47,20 @@ LDT output directory:                   MODELDIR
 #--
  
 #AFRICOM 25KM domain:
+#Map projection of the LIS domain:       latlon
+#Run domain lower left lat:             -39.8750
+#Run domain upper right lat:             39.875
+#Run domain lower left lon:             -19.8750
+#Run domain upper right lon:             59.875
+#Run domain resolution (dx):              0.25
+#Run domain resolution (dy):              0.25
+
+#S2S-Global 25KM domain:
 Map projection of the LIS domain:       latlon
-Run domain lower left lat:             -39.8750
-Run domain upper right lat:             39.875
-Run domain lower left lon:             -19.8750
-Run domain upper right lon:             59.875
+Run domain lower left lat:             -89.875
+Run domain upper right lat:             89.875
+Run domain lower left lon:            -179.875
+Run domain upper right lon:            179.875
 Run domain resolution (dx):              0.25
 Run domain resolution (dy):              0.25
  
@@ -68,7 +77,7 @@ Landcover fill value:                   10
 #Landmask parameter inputs
 Create or readin landmask:              "readin"
 Landmask data source:                   "UKMO_CAP_Netcdf"
-Landmask file:                          ./input/data/cap2ldt_ps41.nc
+Landmask file:                          ./input/LS_PARAMETERS/cap2ldt_ps41.nc
 Landmask spatial transform:             mode    # Go from ~10 KM to 25KM domain ...
 Landmask map projection:                latlon
 Landmask lower left lat:               -89.9531250
@@ -87,14 +96,15 @@ Porosity data source:                   none
 Porosity map:                           none
  
 #Soil texture map:
-Soil texture data source:    none
-Soil texture map:        ./input/LS_PARAMETERS/soil_parms/ISRIC/v2017/TEXMHT_M_sl1_250m.tif     # v2017 file
-Soil texture map projection:     latlon
-Soil texture spatial transform:   mode                  # none | mode | neighbor | tile
-Soil texture fill option:       neighbor                # none | neighbor
-Soil texture fill radius:         5                     # Number of pixels to search for neighbor
-Soil texture fill value:          6                     # Static value to fill where missing
-Soil texture fill value for Antarctica:  4              # 4 -- USDA value for silty-loam
+Soil texture data source:               none
+#Soil texture data source:               "STATSGOFAO_Native"
+Soil texture map:                       ./input/LS_PARAMETERS/noah_2dparms/topsoil30snew
+Soil texture spatial transform:         mode
+Soil texture map projection:            latlon
+Soil texture fill option:               neighbor
+Soil texture fill radius:               5
+Soil texture fill value:                6
+Soil texture fill value for Antarctica: 16
 Soil texture force exclusion of water points during fill: true
  
 #Topography parameter inputs
