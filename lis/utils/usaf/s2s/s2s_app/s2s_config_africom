@@ -88,4 +88,3 @@ POST:
   const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, Landmask_inst, LANDMASK, Landcover_inst, Soiltype_inst, Elevation_inst, TWS_tavg, GWS_tavg]
   metric_vars: [RootZone-SM, Surface-SM, TWS, Precip, Air-T, ET, Streamflow]
 
-
