@@ -11,11 +11,23 @@ from scipy.stats import percentileofscore
 from scipy.stats import scoreatpercentile, pearsonr
 from math import *
 import time
+import yaml
 
 # In[11]:
 
 #This function write 4 dimensional arrays
+def get_domain_info (configfile, extent=None, coord=None):
+    # load config file
+    with open(configfile, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
+    from s2s_modules.shared import utils
 
+    if extent is not None:
+        return utils.get_domain_info(configfile, extent=True)
+    if coord is not None:
+        return utils.get_domain_info(configfile, coord=True)
+    
 def write_4d_netcdf(infile, var, varname, DESCRIPTION, SOURCE, VAR_UNITS, SIG_DIGIT, lons, lats, ENS_NUM, LEAD_NUM, SDATE, dates):
     from datetime import datetime, timedelta
     import netCDF4 as nc
@@ -31,7 +43,7 @@ def write_4d_netcdf(infile, var, varname, DESCRIPTION, SOURCE, VAR_UNITS, SIG_DI
     latitudes = rootgrp.createVariable('latitude','f4',('latitude',))
     times = rootgrp.createVariable('time','f8',('time',))
     # two dimensions unlimited.
-    varname = rootgrp.createVariable(varname,'f4',('time', 'Lead', 'Ens', 'latitude','longitude'), fill_value=nc.default_fillvals['f4'], zlib=True)
+    varname = rootgrp.createVariable(varname,'f4',('time', 'Lead', 'Ens', 'latitude','longitude'), fill_value=nc.default_fillvals['f4'], zlib=True, complevel=6, shuffle=True)
     import time
     rootgrp.description = DESCRIPTION
     rootgrp.history = 'Created ' + time.ctime(time.time())
@@ -234,9 +246,9 @@ def get_F_from_data_weibul(mean, sd, skew, x, TINY):
     #Weibull (EV Type III distribution) for minima, bounded at zero 
     #approximation for a (alpha) is eq. 11-32 from Kite (1977)
     
-    if(skew>8.214) or (skew<-1): 
-        print ("Outside limit for table in get_data_from_F_weibul")
-        print ("best range is -1<skew<8.2 skew= {:0.2f}".format(skew));
+    #if(skew>8.214) or (skew<-1): 
+    #    print ("Outside limit for table in get_data_from_F_weibul")
+    #    print ("best range is -1<skew<8.2 skew= {:0.2f}".format(skew));
     
     a, A, B = weibul_params(skew);
     b = A*sd+mean;
@@ -277,9 +289,9 @@ def get_data_from_F_weibul(mean, sd, skew, F, TINY):
         print ("Bad quantile: mean={:0.2f} sd={:0.2f} skew={:0.2f} quant={:0.2f}".format(mean,sd,skew,F));
         sys.exit(1);
     
-    if(skew>8.2) or (skew<-1):
-        print ("Outside limit for table in get_data_from_F_weibul")
-        print ("best range is -1<skew<8.2 skew= {:0.2f}".format(skew));
+    #if(skew>8.2) or (skew<-1):
+    #    print ("Outside limit for table in get_data_from_F_weibul")
+    #    print ("best range is -1<skew<8.2 skew= {:0.2f}".format(skew));
     
     a, A, B = weibul_params(skew);
     

@@ -28,6 +28,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from convert_forecast_data_to_netcdf import read_wgrib
 import yaml
+from BCSD_stats_functions import get_domain_info
 
 regridder = True
 
@@ -44,9 +45,6 @@ def _read_cmd_args():
 
     with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
     
     if len(sys.argv) != 9:
         print("[ERR] Invalid number of command line arguments!")
@@ -59,11 +57,11 @@ def _read_cmd_args():
         "fcst_init_monthday" : sys.argv[3],        
         "outdir" : sys.argv[4],
         "forcedir" : config['BCSD']["fcst_download_dir"],
-        "patchdir" : config['BCSD']['supplementarydir'] + '/bcsd_fcst/patch_files/',
+        "patchdir" : config['SETUP']['supplementarydir'] + '/bcsd_fcst/patch_files/',
         "ic1" : sys.argv[6],
         "ic2" : sys.argv[7],
         "ic3" : sys.argv[8],
-        "ldtfile": config['BCSD']['supplementarydir'] + '/lis_darun/' + config['FCST']['ldtinputfile'],
+        "configfile": sys.argv[5],
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -119,7 +117,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
         cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
         
         # build regridder
-        lats, lons = utils.get_domain_info(args["ldtfile"], coord=True)        
+        lats, lons = get_domain_info(args["configfile"], coord=True)        
         ds_out = xr.Dataset(
             {
                 "lat": (["lat"], lats),

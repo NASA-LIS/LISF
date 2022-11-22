@@ -87,11 +87,10 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
+    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     # domain
     domain = config['EXP']['DOMAIN']
-    lat1, lat2, lon1, lon2 = utils.get_domain_info(config_file, extent=True)
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
@@ -99,10 +98,6 @@ def _driver():
 
     # Path for where forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km"
-
-    # Mask file
-    mask_file_precip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
-    mask_file_nonprecip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
     obs_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
@@ -147,21 +142,16 @@ def _driver():
             cmd += f" {month_num}"
             cmd += f" {var_type}"
             cmd += f" {unit}"
-            cmd += f" {lat1}"
-            cmd += f" {lat2}"
-            cmd += f" {lon1}"
-            cmd += f" {lon2}"
             cmd += f" {model_name}"
             cmd += f" {ens_num}"
             cmd += f" {lead_months}"
             cmd += f" {year}"
             cmd += f" {year}"
-            cmd += f" {mask_file_precip}"
-            cmd += f" {mask_file_nonprecip}"
+            cmd += f" {config_file}"            
             cmd += f" {monthly_bc_fcst_dir}"
             cmd += f" {monthly_raw_fcst_dir}"
             cmd += f" {subdaily_raw_fcst_dir}"
-            cmd += f" {outdir}"
+            cmd += f" {outdir}"            
             cmd += f" {domain}"
             jobfile = job_name + '_' + obs_var + '_run.j'
             jobname = job_name + '_' + obs_var + '_'

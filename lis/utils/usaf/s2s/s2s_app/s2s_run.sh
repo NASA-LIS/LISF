@@ -348,10 +348,11 @@ bcsd_fcst(){
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
-    obs_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/CFSv2_25km/Climatology/
+    obs_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/CFSv2_25km/raw/Climatology/
     nmme_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/NMME/raw/Climatology/
     usaf_25km=${E2ESROOT}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     
+    mkdir -p ${E2ESDIR}/bcsd_fcst
     cd ${E2ESDIR}/bcsd_fcst
     
     mkdir -p -m 775 USAF-LIS7.3rc8_25km/raw

@@ -255,7 +255,7 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     
     with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    ldtfile = cfg['BCSD']['supplementarydir'] + '/lis_darun/' + cfg['FCST']['ldtinputfile']
+    ldtfile = cfg['SETUP']['supplementarydir'] + '/lis_darun/' + cfg['FCST']['ldtinputfile']
     ldt = nc4(ldtfile, 'r')
 
     if extent is not None:

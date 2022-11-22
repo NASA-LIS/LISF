@@ -12,6 +12,7 @@ SETUP:
   LISFMOD: lisf_7.5_intel_2021.4.0
   SPCODE:  s1189
   DATATYPE: hindcast
+  supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
    
 #######################################################################
 #                       Experiment Configuration
@@ -53,7 +54,6 @@ BCSD:
   nof_raw_ens: 12
   fcst_data_type: CFSv2
   nmme_data_type: nmme
-  supplementarydir: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL/supplementary_files/
   
 #######################################################################
 #                            LIS Forecast
@@ -64,12 +64,12 @@ FCST:
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS:
-  - CCM4: 1
-    CCSM4: 1
-    GNEMO5: 1
+  - CCM4: 2
+    CCSM4: 2
+    GNEMO5: 2
     GEOSv2: 1
     CFSv2: 2
-    GFDL: 2 
+    GFDL: 3 
   
 #######################################################################
 #                          Post-processor

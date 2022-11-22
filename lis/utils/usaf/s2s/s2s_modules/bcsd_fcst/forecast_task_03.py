@@ -60,6 +60,8 @@ def _driver():
     # import local module
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.shared import utils
+    s2spath = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/'
+    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config['FCST']['ldtinputfile']
 
     # Path of the main project directory
     projdir = cwd
@@ -68,7 +70,7 @@ def _driver():
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
+    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
     
     # List of NMME models and ensemble sizes to use
     nmme_models = config['EXP']['NMME_models']
@@ -90,6 +92,7 @@ def _driver():
         cmd += f" {supplementary_dir}"
         cmd += f" {nmme_model}"
         cmd += f" {ensemble_size}"
+        cmd += f" {config_file}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
         utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)

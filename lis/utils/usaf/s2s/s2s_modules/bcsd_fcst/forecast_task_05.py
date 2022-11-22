@@ -39,10 +39,6 @@ def _usage():
     print("[INFO] clim_eyr: End year of the climatological period")
     print("[INFO] month_abbr: Abbreviation of the initialization month")
     print("[INFO] month_num: Integer number of the initialization month")
-    print("[INFO] lat1: Minimum latitudinal extent")
-    print("[INFO] lat2: Maximum latitudinal extent")
-    print("[INFO] lon1: Minimum longitudinal extent")
-    print("[INFO] lon2: Maximum longitudinal extent")
     print("[INFO] nmme_model: NMME model name")
     print("[INFO] lead_months: Number of lead months")
     print("[INFO] config_file: Config file that sets up environment")
@@ -93,10 +89,7 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
-
-    # domain
-    lat1, lat2, lon1, lon2 = utils.get_domain_info(config_file, extent=True)
+    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     lead_months = config['EXP']['lead_months']
     clim_syr = config['BCSD']['clim_start_year']
@@ -106,9 +99,6 @@ def _driver():
     # Path for where observational files are located:
     forcedir = f"{projdir}/bcsd_fcst"
     obs_clim_indir = f"{forcedir}/USAF-LIS7.3rc8_25km/raw/Climatology"
-
-    # Mask file
-    mask_file = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
     #obs_var = "Rainf_f_tavg"
@@ -138,10 +128,6 @@ def _driver():
         cmd += f" {fcst_var}"
         cmd += f" {var_type}"
         cmd += f" {unit}"
-        cmd += f" {lat1}"
-        cmd += f" {lat2}"
-        cmd += f" {lon1}"
-        cmd += f" {lon2}"
         cmd += f" {month_num}"
         cmd += f" {nmme_model}"
         cmd += f" {lead_months}"
@@ -153,7 +139,7 @@ def _driver():
         cmd += f" {fcst_clim_indir}"
         cmd += f" {obs_clim_indir}"
         cmd += f" {fcst_indir}"
-        cmd += f" {mask_file}"
+        cmd += f" {config_file}"
         cmd += f" {outdir}"
         #cmd += f" {logdir}"
         jobfile = job_name + '_' + nmme_model + '_run.j'

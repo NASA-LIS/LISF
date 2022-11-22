@@ -37,10 +37,6 @@ def _usage():
     print("[INFO] fcst_eyr: End year of forecast")
     print("[INFO] month_abbr: Abbreviation of the initialization month")
     print("[INFO] month_num: Integer number of the initialization month")
-    print("[INFO] lat1: Minimum latitudinal extent")
-    print("[INFO] lat2: Maximum latitudinal extent")
-    print("[INFO] lon1: Minimum longitudinal extent")
-    print("[INFO] lon2: Maximum longitudinal extent")
     print("[INFO] nmme_model: NMME model name")
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] job_name: SLURM job_name")
@@ -91,11 +87,10 @@ def _driver():
     #logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
+    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     # domain
     domain = config['EXP']['DOMAIN']
-    lat1, lat2, lon1, lon2 = utils.get_domain_info(config_file, extent=True)
 
     lead_months = config['EXP']['lead_months']
     datatype = config['SETUP']['DATATYPE']
@@ -104,10 +99,6 @@ def _driver():
 
     # Path for where forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst/NMME"
-
-    # Mask file
-    mask_file_precip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
-    mask_file_nonprecip = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
     obs_var = "PRECTOT"
@@ -135,17 +126,12 @@ def _driver():
         cmd += f" {month_num}"
         cmd += f" {var_type}"
         cmd += f" {unit}"
-        cmd += f" {lat1}"
-        cmd += f" {lat2}"
-        cmd += f" {lon1}"
-        cmd += f" {lon2}"
         cmd += f" {nmme_model}"
         cmd += f" {ens_num}"
         cmd += f" {lead_months}"
         cmd += f" {year}"
         cmd += f" {year}"
-        cmd += f" {mask_file_precip}"
-        cmd += f" {mask_file_nonprecip}"
+        cmd += f" {config_file}"
         cmd += f" {monthly_bc_fcst_dir}"
         cmd += f" {subdaily_raw_fcst_dir}"
         cmd += f" {outdir}"
