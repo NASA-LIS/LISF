@@ -25,6 +25,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files, MAKEDIR
 import xarray as xr
+from BCSD_stats_functions import get_domain_info
 
 def scale_forcings (MON_BC_VALUE, MON_RAW_VALUE, INPUT_RAW_DATA, BC_VAR = None):
 
@@ -104,31 +105,24 @@ INIT_FCST_MON = int(sys.argv[4])
 BC_VAR = str(sys.argv[5])
 ## This is used to figure out if the variable a precipitation variable or not
 UNIT = str(sys.argv[6])
-LAT1, LAT2, LON1, LON2 = int(sys.argv[7]), int(sys.argv[8]), int(sys.argv[9]), int(sys.argv[10])
-
-MODEL_NAME = str(sys.argv[11])
-ENS_NUM = int(sys.argv[12])
-LEAD_FINAL = int(sys.argv[13])
+MODEL_NAME = str(sys.argv[7])
+ENS_NUM = int(sys.argv[8])
+LEAD_FINAL = int(sys.argv[9])
 MONTH_NAME_TEMPLATE = '{}01'
 MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
 
 print(f"*** LEAD FINAL: {LEAD_FINAL}")
-BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[14]), int(sys.argv[15])
-if FCST_VAR == 'PRECTOT':
-    MASK_FILE = str(sys.argv[16])
-else:
-    MASK_FILE = str(sys.argv[17])
+BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
+CONFIG_FILE = str(sys.argv[12])
+LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
 
-#MASK = read_nc_files(MASK_FILE, 'mask')
-#print(f"MASK: {MASK.shape}")
-
-MONTHLY_BC_FCST_DIR = str(sys.argv[18])
-MONTHLY_RAW_FCST_DIR = str(sys.argv[19])
-SUBDAILY_RAW_FCST_DIR = str(sys.argv[20])
-BASE_OUTDIR = str(sys.argv[21])
+MONTHLY_BC_FCST_DIR = str(sys.argv[13])
+MONTHLY_RAW_FCST_DIR = str(sys.argv[14])
+SUBDAILY_RAW_FCST_DIR = str(sys.argv[15])
+BASE_OUTDIR = str(sys.argv[16])
 OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
 
-DOMAIN = str(sys.argv[22])
+DOMAIN = str(sys.argv[17])
 
 # All file formats
 MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -195,7 +189,7 @@ for MON in [INIT_FCST_MON]:
             print(f"Reading raw monthly forecast {MONTHLY_INFILE}")
             MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(MONTHLY_INFILE)
             MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
-            MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATA[FCST_VAR][0,:,:]
+            MONTHLY_INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATA[FCST_VAR][:,:]
             
             # Sub-Daily raw data
             SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
@@ -203,10 +197,12 @@ for MON in [INIT_FCST_MON]:
             FCST_YEAR, FCST_MONTH)
             print(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}")
             INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
-            INPUT_RAW_DATA = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
+            INPUT_RAW_DATA1 = INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
 
             # Bias corrected monthly value
             MON_BC_VALUE = MON_BC_DATA[FCST_VAR][INIT_FCST_YEAR-BC_FCST_SYR, LEAD_NUM, ens,:,:]
+            INPUT_RAW_DATA2 = INPUT_RAW_DATA1.rename_vars({"time": "time_step"})
+            INPUT_RAW_DATA = INPUT_RAW_DATA2.rename_dims({"step": "time"}) 
             
             # make sure lat/lon are aligned.
             if (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lat"].values, MON_BC_VALUE["lat"].values)) or (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lon"].values, MON_BC_VALUE["lon"].values)):

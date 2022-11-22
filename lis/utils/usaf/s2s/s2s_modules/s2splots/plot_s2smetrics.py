@@ -123,7 +123,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     mpl.style.use('bmh')
     cbar_axes = [0.2, 0.04, 0.6, 0.03]
 
-    mask_file100 = config['BCSD']['supplementarydir'] + '/s2splots/composite_streamflow_mask.nc'
+    mask_file100 = config['SETUP']['supplementarydir'] + '/s2splots/composite_streamflow_mask.nc'
     cmap, col_under, col_higher, extend = plt.cm.RdYlGn, 'black', '#B404AE', 'both'
     
     for var_name in config["POST"]["metric_vars"]:

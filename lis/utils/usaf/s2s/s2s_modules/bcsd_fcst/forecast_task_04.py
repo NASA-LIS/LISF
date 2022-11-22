@@ -81,10 +81,7 @@ def _driver():
     logdir = cwd + '/log_files'
 
     # Path of the directory where supplementary files are kept
-    supplementary_dir = config['BCSD']['supplementarydir'] + '/bcsd_fcst/'
-
-    # domain
-    lat1, lat2, lon1, lon2 = utils.get_domain_info(config_file, extent=True)
+    supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
@@ -95,9 +92,6 @@ def _driver():
     forcedir = f"{projdir}/bcsd_fcst"
     obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
     fcst_indir = f"{forcedir}/CFSv2_25km"
-
-    # Mask file
-    mask_file = f"{supplementary_dir}/ex_raw_fcst_download.nc"
 
     #  Calculate bias correction for different variables separately:
     #obs_var_list = ["Rainf_f_tavg", "LWdown_f_tavg", "SWdown_f_tavg", \
@@ -129,10 +123,6 @@ def _driver():
         cmd += f" {fcst_var}"
         cmd += f" {var_type}"
         cmd += f" {unit}"
-        cmd += f" {lat1}"
-        cmd += f" {lat2}"
-        cmd += f" {lon1}"
-        cmd += f" {lon2}"
         cmd += f" {month_num}"
         cmd += f" {lead_months}"
         cmd += f" {ens_num}"
@@ -142,7 +132,7 @@ def _driver():
         cmd += f" {clim_eyr}"
         cmd += f" {obs_indir}"
         cmd += f" {fcst_indir}"
-        cmd += f" {mask_file}"
+        cmd += f" {config_file}"
         cmd += f" {outdir}"
         cmd += f" {logdir}"
         jobfile = job_name + '_' + obs_var + '_run.j'
