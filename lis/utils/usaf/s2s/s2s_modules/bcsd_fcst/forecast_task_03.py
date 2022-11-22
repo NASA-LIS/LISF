@@ -61,7 +61,7 @@ def _driver():
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.shared import utils
     s2spath = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/'
-    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config['FCST']['ldtinputfile']
+    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config['SETUP']['ldtinputfile']
 
     # Path of the main project directory
     projdir = cwd
