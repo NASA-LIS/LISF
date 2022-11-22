@@ -152,7 +152,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
     data = data.replace("LISRSTFILE", f"{lis_rstfile}")
     data = data.replace("HYMAPRSTFILE", f"{hymap_rstfile}")
     data = data.replace("FCSTDIR", f"{fcstdir}")
-    data = data.replace("LDTINPUTFILE", f"./input/{config['FCST']['ldtinputfile']}")
+    data = data.replace("LDTINPUTFILE", f"./input/{config['SETUP']['ldtinputfile']}")
 
     with open(lisconfig_target, "wt", encoding='ascii') as file_obj:
         data = file_obj.write(data)

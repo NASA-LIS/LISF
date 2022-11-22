@@ -13,6 +13,7 @@ SETUP:
   SPCODE:  s1189
   DATATYPE: forecast
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
+  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
   
 #######################################################################
 #                       Experiment Configuration
@@ -60,7 +61,6 @@ BCSD:
 #######################################################################
 
 FCST:
-  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS:

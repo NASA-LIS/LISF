@@ -457,5 +457,5 @@ if __name__ == "__main__":
 
     final_file = _create_final_filename(output_dir, curdt, model_forcing, config["EXP"]["DOMAIN"])
 
-    ldtfile = config["FCST"]["ldtinputfile"]
+    ldtfile = config["SETUP"]["ldtinputfile"]
     _merge_files(ldtfile, noahmp_file, hymap2_file, final_file)
