@@ -2,6 +2,57 @@
  NASA/GSFC GHI-S2S Team 
 Last Modified 3 October 2022
 
+		TABLE OF CONTENTS
+		_________________
+
+1. INTRODUCTION
+
+2. SETTING UP THE E2ES EXPERIMENT
+   2.1 Software requirements
+   2.2 Setting up the experiment directory
+
+3. RUNNING S2S
+   3.1 s2s_run.sh Usage instructions
+   3.2 Monitoring the status of the forecast
+   3.3 Directory structure
+
+4. E2E PROCESS
+   4.1 Downloading input forcings
+       4.1.1 Downloading CFSv2 forcings
+       4.1.2 Downloaading NMME precipitation forcings
+   4.2 LIS-DA run
+   4.3 LDT-ICs
+   4.4 BCSD
+   4.5 LIS Forecast
+   4.6 S2S post processing
+   4.7 S2S metrics computation
+   4.8 S2S plots
+
+5. nctool.py UTILITY
+   
+
+USAGE: s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE -d DELETE -r REPORT -s STEP -o ONE_STEP
+
+where MANDATORY input parameters:
+---------------------------------
+  YEAR:        start year
+  MONTH:       start month
+  CONFIG_FILE: config file (for hindcast or forecast)
+  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH.
+
+with OPTIONAL flags:
+--------------------
+  DELETE:   delete YEAR/MONTH (valid inputs: Y or N)
+  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)
+  STEP:     The E2ES process includes seven steps that are run sequentially LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS.
+            However, the STEP option allows user to kick start the process from the last completed step.
+            -s STEP is good to ask s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS).
+  ONE_STEP: flag is good to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP
+
+
+
+
+1. INTRODUCTION
 This document describes the software and steps used to run the S2S-Global
 forcing and model initial conditions, forecasts with LIS, generate netCDF4
 formatted output files, and produce key metrics of the forecast output.
@@ -238,3 +289,30 @@ LIST OF STEPS AND THEIR DESCRIPTIONS:
 THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 ***
 
+5. nctool.py UTILITY
+A python script to:
+
+(1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial layer separately for each variable:
+     nctool.py file_name
+
+(2) Compare 2 netcdf files:
+         a) check closeness at absolute tolerance of 1.e-3:
+            nctool.py file1 file2
+         b) check whether the 2 files are identical:
+            nctool.py file1 file2 zero_diff
+
+(3) Compare all netcdf files with similar names in two directories (including sub directories):
+         a) check closeness at absolute tolerance of 1.e-3:
+            nctool.py directory1 directory2
+         b) check whether the 2 are identical:
+            nctool.py directory1 directory2 zero_diff
+
+(4) This is also good to print variable value[s] at a specific location specified by lat/lon OR J_INDEX [north-south dimension] and I_INDEX [west-east dimension] as in the netCDF file.
+         First ncdump -h and get exact names of lat, lon and the variable from the netCDF header.
+         nctool.py lat lon latname longname var_name filename
+
+         Example 1 (when lat/lon at the place are known - the script will map the place on the grid space and indentify the grid cell that where the place is located.):
+         nctool.py -0.8486657635296301 32.97690772217679 latitude longitude anom /gpfsm/dnb06/projects/p159/GHI_S2S/AFRICOM/E2ES/NRT/s2smetric/output/202203/DYN_ANOM/AFRICOM/NOAHMP/GNEMO5_Surface-SM_ANOM_init_monthly_03_2022.nc
+
+         Example 2 (when J_INDEX and I_INDEX at the location are known):
+         nctool.py j_index i_index lat lon Evap_tavg /gpfsm/dnb06/projects/p159/GHI_S2S/AFRICOM/E2ES/NRT/lis_darun/output/SURFACEMODEL/202204/LIS_HIST_202204010000.d01.nc
