@@ -352,7 +352,7 @@ bcsd_fcst(){
     nmme_clim_dir=${E2ESROOT}/hindcast/bcsd_fcst/NMME/raw/Climatology/
     usaf_25km=${E2ESROOT}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     
-    mkdir -p ${E2ESDIR}/bcsd_fcst
+    mkdir -p -m 775 ${E2ESDIR}/bcsd_fcst
     cd ${E2ESDIR}/bcsd_fcst
     
     mkdir -p -m 775 USAF-LIS7.3rc8_25km/raw
@@ -531,7 +531,8 @@ lis_fcst(){
     echo "                                           " >> $JOB_SCHEDULE
     
     Mmm1=`date -d "$YYYY-$MM-01" +%b`1
-     
+
+    mkdir -p  -m 775 ${E2ESDIR}/lis_fcst
     cd ${E2ESDIR}/lis_fcst
     mkdir -p -m 775 input/LDT_ICs/
     cd ${E2ESDIR}/lis_fcst/input/
