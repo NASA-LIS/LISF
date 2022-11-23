@@ -48,8 +48,15 @@ def _make_settings_dict(patched_timestring,
     return settings
 
 def _wgrib2_to_netcdf(grib2_file):
+    new_name = {
+        'prate':'PRECTOT','sp':'PS','t2m':'T2M',
+        'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
+        'u10':'U10M','v10':'V10M','q':'Q2M',}
     ds = cfgrib.open_dataset(grib2_file, indexpath ="")
+    for varname, da in ds.data_vars.items():
+        ds = ds.rename({varname : new_name.get(varname)})
     return ds
+
 def _patch_corrupted_file(settings, args):
     """Patch corrupted GRIB2 file."""
 
@@ -225,6 +232,7 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
 
     if ds is None:
         # If we reach this point, we assume the file is fine.
+        print("[INFO] " + args['subdaily_file'])
         print("[INFO] File is normal.")
         ds = _wgrib2_to_netcdf(args['subdaily_file'])
         #cmd = f"wgrib2 -v0 {args['subdaily_file']} -netcdf"
@@ -233,7 +241,7 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
         #print(cmd)
         #subprocess.run(cmd, shell=True, check=True)
     if args["varname"] == "wnd10m":
-        U10 = magnitude(ds.u10, ds.v10)
+        U10 = magnitude(ds.U10M, ds.V10M)
         ds['WIND10M'] = U10
         ds['WIND10M'].attrs['units'] = 'm/s'
         ds['WIND10M'].attrs['short_name']='wnd10m'
@@ -242,6 +250,3 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
         
     return ds
 
-#if __name__ == "__main__":
-#    ds = _driver()
-#    return rs

@@ -138,8 +138,10 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        this_6h = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
+        this_6h1 = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
                                 (ds_out['valid_time']  < dt2s), drop=True)
+        this_6h2 = this_6h1.rename_vars({"time": "time_step"})
+        this_6h = this_6h2.rename_dims({"step": "time"}) 
         this_6h.to_netcdf(file_6h,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999. },
                                                            "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
@@ -150,7 +152,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
                                                            "U10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "V10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "WIND10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}})
-        this_mon = this_6h.mean (dim='step')
+        this_mon = this_6h.mean (dim='time')
         this_mon.to_netcdf(file_mon,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
@@ -241,16 +243,10 @@ def _driver():
                 cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
             cfsv2 = xr.merge (cfsv2, compat='override')
-            # rename variables
-            cfsv2 = cfsv2.rename({'prate':'PRECTOT','sp':'PS','t2m':'T2M',
-                                  'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
-                                  'u10':'U10M','v10':'V10M'})
-            # set variable attributes
             _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
                                                  (cfsv2['valid_time']  < dt2)),
                                       outdirs, temp_name, wanted_months,
                                       fcst_init, args)
-
 
     print("[INFO] Done processing CFSv2 forecast files")
 

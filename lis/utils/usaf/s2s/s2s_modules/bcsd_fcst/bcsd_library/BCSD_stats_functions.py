@@ -175,11 +175,11 @@ def get_F_from_data_normal(mean, sd, x, TINY):
   
     if(F==1.0):
         F-=TINY  # adjustment so that outlier ensembles don't.
-        print ("Invoked TINY in get_F_from_data_normal")
+        # print ("Invoked TINY in get_F_from_data_normal")
 
     if(F==0.0):
         F+=TINY
-        print ("Invoked TINY in get_F_from_data_normal")
+        # print ("Invoked TINY in get_F_from_data_normal")
     
     if(F>=1.0) or (F<=0.0):
         #mostly obviated by above ifs; could be used
@@ -219,10 +219,10 @@ def get_F_from_data_EVI(mean, sd, x, TINY):
     ## For outliers in quantile
     if(F==1.0):
         F-=TINY; 
-        print ("Invoked TINY in get_F_from_data_EVI")
+        #print ("Invoked TINY in get_F_from_data_EVI")
     if(F==0.0):
         F+=TINY;     
-        print ("Invoked TINY in get_F_from_data_EVI")
+        #print ("Invoked TINY in get_F_from_data_EVI")
     
     if(F>=1.0) or (F<=0.0):
         print ("Error in get_F_from_data_EVI")
@@ -261,17 +261,17 @@ def get_F_from_data_weibul(mean, sd, skew, x, TINY):
     c = (x-bound)/(b-bound)
     if (c<0):
         c=0
-        print ('Invoked C=0 in get_F_from_data_weibul')
+        #print ('Invoked C=0 in get_F_from_data_weibul')
     F=1-exp(-1*pow(c,a));
     
     if(F==1.0):
         # For outliers
         F-=TINY;
-        print ("Invoked TINY in get_F_from_data_weibul")
+        #print ("Invoked TINY in get_F_from_data_weibul")
     
     if(F==0.0):
         F+=TINY;
-        print ("Invoked TINY in get_F_from_data_weibul")
+        #print ("Invoked TINY in get_F_from_data_weibul")
     
     if(F>=1.0) or (F<=0.0):
         print ("Error in get_F_from_data_weibul")
