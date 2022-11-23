@@ -77,7 +77,7 @@ FCST:
 
 POST:
   var_acc_list: [Qs_acc, Qsb_acc, TotalPrecip_acc]
-  var_tavg_land_list: [Evap_tavg, AvgSurfT_tavg, SoilMoist_tavg, SoilTemp_tavg, RelSMC_tavg, AvgSurfT_tavg, SWE_tavg, SnowDepth_tavg,
+  var_tavg_land_list: [Evap_tavg, AvgSurfT_tavg, SoilMoist_tavg, SoilTemp_tavg, RelSMC_tavg, SWE_tavg, SnowDepth_tavg,
                        Snowcover_tavg, Streamflow_tavg, FloodedFrac_tavg, SWS_tavg, RiverStor_tavg, FloodStor_tavg, FloodedArea_tavg]
   var_tavg_f_list: [Wind_f_tavg, Tair_f_tavg, Qair_f_tavg, Psurf_f_tavg, SWdown_f_tavg, LWdown_f_tavg]
   var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
