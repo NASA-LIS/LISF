@@ -213,7 +213,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
                 ncid_out.createVariable(varname, var_in.datatype,
                                         dimensions=var_in.dimensions,
                                         zlib=True,
-                                        complevel=1,
+                                        complevel=6,
                                         shuffle=True,
                                         fill_value=var_in.missing_value)
         else:
@@ -221,7 +221,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
                 ncid_out.createVariable(varname, var_in.datatype,
                                         dimensions=var_in.dimensions,
                                         zlib=True,
-                                        complevel=1,
+                                        complevel=6,
                                         shuffle=True)
 
         for attrname in var_in.__dict__:

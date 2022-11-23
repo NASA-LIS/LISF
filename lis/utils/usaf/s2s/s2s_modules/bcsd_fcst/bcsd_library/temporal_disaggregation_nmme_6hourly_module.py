@@ -176,12 +176,8 @@ for MON in [INIT_FCST_MON]:
             FCST_YEAR, FCST_MONTH)
             print(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}")
             MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
-            INPUT_RAW_DATA1 = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
-            INPUT_RAW_DATA2 = INPUT_RAW_DATA1.rename_vars({"time": "time_step"})
-            INPUT_RAW_DATA = INPUT_RAW_DATA2.rename_dims({"step": "time"}) 
-            
+            INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
             MONTHLY_INPUT_RAW_DATA = INPUT_RAW_DATA[FCST_VAR].mean(dim = 'time')
-            
             # Bias corrected monthly value
             MON_BC_VALUE = MON_BC_DATA[FCST_VAR][INIT_FCST_YEAR-BC_FCST_SYR, LEAD_NUM, ens,:,:]
 

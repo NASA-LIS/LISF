@@ -38,7 +38,7 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "where MANDATORY input parameters:"
 	   echo "---------------------------------"
 	   echo "  YEAR:        start year"
-	   echo "  MONTH:       start month"
+	   echo "  MONTH:       start month [1 to 12]"
 	   echo "  CONFIG_FILE: config file (for hindcast or forecast)"
 	   echo "  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH."
 	   echo "     "
@@ -136,12 +136,12 @@ set_permission(){
 cd ${E2ESDIR}
 
 find . -type d -exec chmod 0775 {} \;
-find . -name "*.nc" -exec chmod 0444 {} \;
-find . -name "*.NC" -exec chmod 0444 {} \;
-find . -name "*.NC4" -exec chmod 0444 {} \;
-find . -name "*.nc4" -exec chmod 0444 {} \;
-find . -name "*.TIF" -exec chmod 0444 {} \;
-find . -name "*.png" -exec chmod 0444 {} \;
+find . -name "*.nc" -exec chmod 0644 {} \;
+find . -name "*.NC" -exec chmod 0644 {} \;
+find . -name "*.NC4" -exec chmod 0644 {} \;
+find . -name "*.nc4" -exec chmod 0644 {} \;
+find . -name "*.TIF" -exec chmod 0644 {} \;
+find . -name "*.png" -exec chmod 0644 {} \;
 
 EOF
    perm_ID=$(submit_job $1 "set_permission.j") 
