@@ -748,8 +748,6 @@ fi
 #                        Set up scratch directory
 #######################################################################
    
-MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
-
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
 mkdir -p -m 775 ${SCRDIR}/lis_darun
@@ -762,6 +760,8 @@ if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2splots
     download_forecasts
 fi
+
+MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
 cd ${SCRDIR}/global_usaf_forc
 /bin/ln -s $AF10KM usaf_lis73rc8_10km

@@ -69,10 +69,6 @@ def _submit_batch_jobs(args):
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    newdir = f"{topdatadir}/cf_{model_forcing}"
-    newdir += f"_{startdate.year:04d}{startdate.month:02d}_all"
-    if not os.path.exists(newdir):
-        os.makedirs(newdir)
     total_months = int(config["EXP"]["lead_months"])
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
 
