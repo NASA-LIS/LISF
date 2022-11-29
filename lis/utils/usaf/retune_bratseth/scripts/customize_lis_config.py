@@ -36,5 +36,3 @@ if __name__ == "__main__":
 
     # Customize the lis.config file.
     AUTOMATOR.customize_lis_config()
-
-
