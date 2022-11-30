@@ -31,7 +31,6 @@ FORECAST_MONTH = 0
 WORKDIR = ''
 CONFIGFILE = ''
 JOB_NAME = ''
-NTASKS = 1
 
 def _usage():
     """Print command line usage."""
@@ -41,7 +40,6 @@ def _usage():
     print("[INFO] where:")
     print("[INFO]   CONFIGFILE: Path to config file.")
     print("[INFO] JOB_NAME: SLURM JOB_NAME")
-    print("[INFO] NTASKS: SLURM NTASKS")
     print("[INFO] hours: SLURM time hours")
     print("[INFO] cwd: current working directory")
     print("[INFO] year: forecast start year")
@@ -154,7 +152,7 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
     data = data.replace("LISRSTFILE", f"{lis_rstfile}")
     data = data.replace("HYMAPRSTFILE", f"{hymap_rstfile}")
     data = data.replace("FCSTDIR", f"{fcstdir}")
-    data = data.replace("LDTINPUTFILE", f"{config['FCST']['ldtinputfile']}")
+    data = data.replace("LDTINPUTFILE", f"./input/{config['SETUP']['ldtinputfile']}")
 
     with open(lisconfig_target, "wt", encoding='ascii') as file_obj:
         data = file_obj.write(data)
@@ -167,9 +165,9 @@ def _driver(config):
     from s2s_modules.shared import utils
 
     domlabel=''
-    if config['EXP']['domain'] == 'AFRICOM':
+    if config['EXP']['DOMAIN'] == 'AFRICOM':
         domlabel = 's2safricom'
-    elif config['EXP']['domain'] == 'GLOBAL':
+    elif config['EXP']['DOMAIN'] == 'GLOBAL':
         domlabel = 's2sglobal'
 
     for nmme_model in _NMME_MODELS:
@@ -212,7 +210,7 @@ def _driver(config):
             jobfile = JOB_NAME + '_' + nmme_model + '_run.j'
             jobname = JOB_NAME + '_' + nmme_model + '_'
 
-            utils.job_script(CONFIGFILE, jobfile, jobname, NTASKS,'12', WORKDIR,
+            utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                       in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
                                       lisconfig_target)
         else:
@@ -240,10 +238,10 @@ def _driver(config):
                                          nmme_model, fcstdir, IC_date = dates[0], jobid = '_{:02d}'.format(i))
                 
                 jobfile = JOB_NAME + '_' + nmme_model + jno + '_run.j'
-                jobname = JOB_NAME + '_' + nmme_model + '_'
+                jobname = JOB_NAME + '_' + nmme_model + '_' + jno + '_'
                 print(lisconfig_target)
                 
-                utils.job_script(CONFIGFILE, jobfile, jobname, NTASKS, '12', WORKDIR,
+                utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                  in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
                                  lisconfig_target)        
 
@@ -258,7 +256,6 @@ if __name__ == "__main__":
     PARSER.add_argument('-w', '--WORKDIR', required=True, help='working directory')
     PARSER.add_argument('-c', '--CONFIGFILE', required=True, help='s2s.config file')
     PARSER.add_argument('-j', '--JOB_NAME', required=True, help='JOB_NAME')
-    PARSER.add_argument('-t', '--NTASKS', required=True, help='NTASKS')
     ARGS = PARSER.parse_args()
 
     FORECAST_YEAR = int(ARGS.year)
@@ -266,10 +263,9 @@ if __name__ == "__main__":
     WORKDIR = ARGS.WORKDIR
     CONFIGFILE = ARGS.CONFIGFILE
     JOB_NAME = ARGS.JOB_NAME
-    NTASKS = ARGS.NTASKS
 
     # Read s2s.config
-    with open(CONFIGFILE, 'r') as file:
+    with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         _CONFIG = yaml.safe_load(file)
     _NMME_MODELS = _CONFIG['EXP']['NMME_models']
     _NUM_ENSMEMBERS = _CONFIG['EXP']['ensemble_sizes'][0]
