@@ -10266,8 +10266,7 @@ RAPID Muskingum parameter x file: ./rapid_params/x.csv
 RAPID namelist file: ./rapid_params/rapid_namelist
 ....
 
-=======
-[[sssec_lsm_Crocus8.1, from SURFEX8.1]]
+[[sssec_lsm_Crocus8.1,from SURFEX8.1]]
 ==== Crocus8.1
 
 `CROCUS81 model timestep:` specifies the timestep for the run.
@@ -10426,7 +10425,6 @@ writing interval for Crocus8.1. The typical value is 1 month (1mo).
 
 .Example _lis.config_ entry
 ....
-
 CROCUS81 model timestep:                  15mn 
 CROCUS81 restart output interval:         1mo
 CROCUS81 nsnow:                           50
@@ -10485,6 +10483,7 @@ CROCUS81 initial CDSNOW: 0.0
 CROCUS81 initial USTARSNOW: 0.0
 CROCUS81 initial CHSNOW: 0.0
 CROCUS81 initial SNOWMAK_dz: 0.0
+....
 
 === Runoff
 
