@@ -115,8 +115,8 @@ def _driver():
     imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
 
-    # Process 3-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
-    print("[INFO] Processing CFSv2 3-hrly forecast variables")
+    # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
+    print("[INFO] Processing CFSv2 6-hrly forecast variables")
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
         cmd += f" {srcdir}/process_forecast_data.py"
