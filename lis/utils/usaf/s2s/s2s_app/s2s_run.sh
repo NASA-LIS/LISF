@@ -149,6 +149,67 @@ EOF
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+delete_forecast(){
+
+    delete_files(){
+	echo 'deleting ....  ' $1
+	chmod 755 -R $1
+	/bin/rm -rf $1
+	
+    }
+
+    cd ${E2ESDIR}/
+    YYYY=$1
+    MM=$2
+    mon=`echo $MM |bc`
+    YYYYMMP=`date -d "$YYYY-$MM-01 -1 month" +%Y%m`
+    YYYYP=`echo $YYYYMMP | cut -c1-4`
+    MMP=`echo $YYYYMMP | cut -c5-6`    
+    mon_names=('jan' 'feb' 'mar' 'apr' 'may' 'jun' 'jul' 'aug' 'sep' 'oct' 'nov' 'dec')
+    Mon=`echo ${mon_names[$mon-1]}`
+    
+    # delete scratch
+    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    
+    # delete LISDA
+    delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYY}${MM}/
+    delete_files ${E2ESDIR}/lis_darun/output/SURFACEMODEL/${YYYY}${MM}/
+    delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYYP}${MMP}/LIS_HIST_\*.nc
+    delete_files ${E2ESDIR}/lis_darun/output/SURFACEMODEL/${YYYYP}${MMP}/LIS_HIST_\*.nc
+    delete_files ${E2ESDIR}/lis_darun/output/lis.config_files/lis.config_darun_${YYYY}${MM}
+    
+    # delete LDTICS
+    delete_files ${E2ESDIR}/ldt_ics/ldt.config_files/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}*\
+    
+    # delete BCSD
+    delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/${Mon}01/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/final/6-Hourly/${Mon}01/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/6-Hourly/${Mon}01/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/Monthly/${Mon}01/\*_${YYYY}_${YYYY}.nc
+    delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Monthly/${Mon}01/${YYYY}
+
+    delete_files ${E2ESDIR}/bcsd_fcst/NMME/bcsd/6-Hourly/${Mon}01/\*/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/NMME/final/6-Hourly/\*/${Mon}01/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/NMME/bcsd/Monthly/${Mon}01/\*_${YYYY}_${YYYY}.nc
+    delete_files ${E2ESDIR}/bcsd_fcst/NMME/raw/Monthly/${Mon}01/\*/${YYYY}
+    delete_files ${E2ESDIR}/bcsd_fcst/NMME/linked_cfsv2_precip_files/${Mon}01/${YYYY}
+        
+    # delete FCST
+    delete_files ${E2ESDIR}/lis_fcst/${YYYY}${MM}/
+    delete_files ${E2ESDIR}/lis_fcst/input/\*/\*/lis.config.s2sglobal.noahmp401.hymap2.da_ics_forecast_\*_${YYYY}${MM}
+    
+    # delete POST
+    delete_files ${E2ESDIR}/s2spost/${YYYY}${MM}/
+    # delete METRICS
+    delete_files ${E2ESDIR}/s2smetric/${YYYY}${MM}/
+    # delete PLOTS
+    delete_files ${E2ESDIR}/s2splots/${YYYY}${MM}/
+    exit    
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 download_forecasts(){
     
     #######################################################################
@@ -741,6 +802,18 @@ s2splots(){
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
     python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    exit
+fi
+
+if [ "$DELETE" = 'Y' ] || [ "$DELETE" = 'y' ]; then
+    # delete month
+    read -p "Are you sure you want to delete ${YYYY}${MM} forecast files entirely (Y/N)?" YESORNO
+    if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
+	read -p "I want to double check that I heard you correctly. We want to delete ${YYYY}${MM} forecast files (Y/N)?" YESORNO
+	if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
+	    delete_forecast ${YYYY} ${MM}
+	fi
+    fi
     exit
 fi
 
