@@ -6024,7 +6024,7 @@ WRF nest id:                          1
 
 
 [[sssec_supp_wrfoutv2,WRFoutv2]]
-==== NAM242
+==== WRFoutv2
 
 `WRF output v2 forcing directory:` specifies the location of the
 "`NCAR-WRF 4km metforcing output`" forcing files
@@ -6036,7 +6036,7 @@ WRF output v2 forcing directory: ./input/MET_FORCING/conus_wrf
 
 
 [[sssec_supp_wrfakdom,WRFAKdom]]
-==== NAM242
+==== WRF AK domain
 
 `WRF AK forcing directory:` specifies the location of the
 "`NCAR-WRF Alaska domain 4km metforcing output`" files
