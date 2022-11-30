@@ -42,6 +42,8 @@ dlat  = 0.
 ulon  = 0.
 ulat  = 0.
 carea = 0.
+FONT_SIZE1 = 16
+FONT_SIZE2 = 24
 
 class CachedTiler(object):
     def __init__(self, tiler):
@@ -121,7 +123,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
@@ -133,7 +135,14 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         'WA': (-19, 26, -5, 25),
         'SA': (8, 52, -37, 6),
         'SA1':(24, 33, -31, -24),
-        'FAME':(-20, 55, -40, 40)
+        'FAME':(-20, 55, -40, 40),
+        'EUROPE': (-10, 50, 35, 70),
+        'CENTRAL_ASIA': (35, 90, 14, 55),
+        'SOUTH_EAST_ASIA': (75, 140, -15, 30),
+        'SOUTH_AMERICA':(-85, -35, -55, 10),
+        'NORTH_AMERICA':(-165, -58, 9, 72),
+        'AFRICA':(-20, 55, -40, 40),
+        'GLOBAL':(-179, 179, -89, 89)        
     }
     get_levels = {
         'Streamflow': [-10000, -900, -600, -300, -100, -25, 25, 100, 300, 600, 900, 10000],
@@ -230,7 +239,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     print("Reading infile {}".format(infile))
     
     print(infile)
-    anom = xr.open_mfdataset(infile, concat_dim='ens',preprocess=preproc)
+    anom = xr.open_mfdataset(infile, concat_dim='ens',preprocess=preproc, combine='nested')
     
     median_anom = np.nanmedian(anom.anom.values, axis=0)
         
@@ -266,7 +275,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if lead == 0:
             plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
                      horizontalalignment='center', transform=ax_.transAxes,
-                     color='Blue', fontsize=30, rotation=90)
+                     color='Blue', fontsize=FONT_SIZE1, rotation=90)
             gl_.ylabels_left = True
         plt.title(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year), fontsize=40)
         if lead >= 3:
@@ -274,16 +283,16 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if lead == 3:
             plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
                      horizontalalignment='center', transform=ax_.transAxes,
-                     color='Blue', fontsize=30, rotation=90)
+                     color='Blue', fontsize=FONT_SIZE1, rotation=90)
             gl_.ylabels_left = True
         ax_.coastlines()
         ax_.add_feature(cfeature.BORDERS)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
         cax = fig.add_axes(cbar_axes)
         cbar = fig.colorbar(plt.cm.ScalarMappable(norm=colors.BoundaryNorm(levels, ncolors=cmap.N, clip=False), cmap=cmap), cax=cax, orientation='horizontal', ticks=levels)
-        cbar.set_label('Anomaly (' + get_units.get(var_name, 'm^3/m^3') + ')', fontsize=30)
+        cbar.set_label('Anomaly (' + get_units.get(var_name, 'm^3/m^3') + ')', fontsize=FONT_SIZE1)
         if standardized_anomaly == 'Y':
-            cbar.set_label('Standardized Anomaly', fontsize=30)
+            cbar.set_label('Standardized Anomaly', fontsize=FONT_SIZE1)
         cbar.ax.tick_params(labelsize=20)
 
         figure = figure_template.format(plotdir, region, var_name)
@@ -309,20 +318,32 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    RNetWork =  Dataset (config["PLOTS"]["river_network"], mode='r')
+    RNetWork =  Dataset (config['SETUP']['supplementarydir'] + '/s2splots/RiverNetwork_information.nc4', mode='r')
     downstream_lon = np.array (RNetWork.variables['DownStream_lon'][:])
     downstream_lat = np.array (RNetWork.variables['DownStream_lat'][:])
     upstream_lon   = np.array (RNetWork.variables['UpStream_lon'][:])
     upstream_lat   = np.array (RNetWork.variables['UpStream_lat'][:])
     cum_area = np.array (RNetWork.variables['CUM_AREA'][:])
-    
-    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  )
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  )
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  )
-    
-    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  , standardized_anomaly = 'Y')
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
-    #plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
+
+    if config ["EXP"]["DOMAIN"] == 'AFRICOM':
+        FONT_SIZE1 = 30
+        FONT_SIZE2 = 40
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
+
+    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
+        
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly = 'Y')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly = 'Y')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y')
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y')
+       
 

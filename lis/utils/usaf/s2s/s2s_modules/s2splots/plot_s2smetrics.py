@@ -122,13 +122,11 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
     mpl.style.use('bmh')
     cbar_axes = [0.2, 0.04, 0.6, 0.03]
-
-    mask_file100 = config['SETUP']['supplementarydir'] + '/s2splots/composite_streamflow_mask.nc'
     cmap, col_under, col_higher, extend = plt.cm.RdYlGn, 'black', '#B404AE', 'both'
     
     for var_name in config["POST"]["metric_vars"]:
-        #if var_name == 'Streamflow':
-        #    continue
+        if var_name == 'Streamflow':
+            continue
         levels = get_levels.get(var_name, default_levels)
         if standardized_anomaly == 'Y':
             levels = standardized_levels
@@ -203,6 +201,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
             median_anom = np.nanmedian(anom.anom.values, axis=0)
             #if standardized_anomaly is None:
+            mask_file100 = config['SETUP']['supplementarydir'] + '/s2splots/composite_streamflow_mask.nc'
             mask1 = xr.open_mfdataset(mask_file100)
             mask100=mask1.SFMASK.values
         else:
@@ -326,7 +325,6 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
 
     if config ["EXP"]["DOMAIN"] == 'GLOBAL':
-
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
@@ -334,7 +332,7 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
-        
+
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y')
