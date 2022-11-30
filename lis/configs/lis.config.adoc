@@ -10189,38 +10189,38 @@ Acceptable values are:
 |2     | Run in ensemble mode (not support)
 |====
 
-`RAPID run option:` is set to 1 for regular run. The other options do not
-support yet.
+`RAPID run option:` is set to 1 for a regular run. The other options are not
+supported yet.
 
 `RAPID routing option:` is set to 1 for applying matrix-based
-Mukingum algorithm. The other options do not support yet.
+Mukingum algorithm. The other options are not supported yet.
 
-`RAPID cost function phi option:` is set to 1 for phi1. The other option
-does not support yet.
+`RAPID cost function phi option:` is set to 1 for phi1. The other options
+are not supported yet.
 
 `RAPID initial flow:` use initial instantaneous flow file. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID write final flow:` save final instantaneous flow file. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID compute volume:` compute flow volume. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID human-induced flow:` apply human-induced flow. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID upstream forcing:` use upstrem forcing. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID dam model used:` use dam model. This option
-is not supported. set to .false. .
+is not supported. Set to `.false.`.
 
 `RAPID output influence:` use output influence. This option
-is not supported. set to .false.
+is not supported. Set to `.false.`.
 
 `RAPID uncertainty quantification:` use uncertainty quantification. This option
-is not supported. set to .false.
+is not supported. Set to `.false.`.
 
 `RAPID river connectivity file:` specifies river connectivity file.
 
