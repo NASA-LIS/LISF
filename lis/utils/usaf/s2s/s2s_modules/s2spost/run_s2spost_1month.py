@@ -190,7 +190,7 @@ def _driver():
     """Main driver"""
     configfile, topdatadir, startdate, model_forcing = _read_cmd_args()
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     _loop_daily(config, configfile, topdatadir, startdate, model_forcing)

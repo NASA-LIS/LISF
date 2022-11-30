@@ -152,7 +152,7 @@ def _driver():
     baseoutdir = cwd + '/s2smetric/' + fcst_year  + fcst_mon
     currentdate = _handle_dates(int(fcst_year), int(fcst_mon))
     nmme_model = args.nmme_model
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     if nmme_model is None:

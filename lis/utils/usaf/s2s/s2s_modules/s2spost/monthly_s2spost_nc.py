@@ -18,6 +18,7 @@
 #   attributes; added ID for model forcing for LIS to filenames.
 # 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string format complaints.
 # 29 Oct 2021: Eric Kemp/SSAI, added config file.
+# 15 Nov 2022: K. Arsenault/SAIC, removed fields for FOC.
 #------------------------------------------------------------------------------
 """
 
@@ -104,7 +105,6 @@ def _make_varlists(config):
         config["POST"]["var_tair_max_list"]
     varlists["var_tair_min_list"] = \
         config["POST"]["var_tair_min_list"]
-    varlists["var_inst_list"] = config["POST"]["var_inst_list"]
     varlists["const_list"] = config["POST"]["const_list"]
     return varlists
 
@@ -201,7 +201,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
 
     # Copy the fields.
     varnames = []
-    for listname in ["const_list", "var_inst_list", "var_acc_list",
+    for listname in ["const_list", "var_acc_list",
                      "var_tavg_land_list", "var_tavg_f_list",
                      "var_tavg_twsgws_list", "var_tair_max_list",
                      "var_tair_min_list"]:
@@ -213,7 +213,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
                 ncid_out.createVariable(varname, var_in.datatype,
                                         dimensions=var_in.dimensions,
                                         zlib=True,
-                                        complevel=1,
+                                        complevel=6,
                                         shuffle=True,
                                         fill_value=var_in.missing_value)
         else:
@@ -221,7 +221,7 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
                 ncid_out.createVariable(varname, var_in.datatype,
                                         dimensions=var_in.dimensions,
                                         zlib=True,
-                                        complevel=1,
+                                        complevel=6,
                                         shuffle=True)
 
         for attrname in var_in.__dict__:
@@ -409,7 +409,7 @@ def _update_cell_methods(varlists, outfile):
 
         var = ncid.variables[varname]
 
-        # Special handling for TWS_inst and GWS_inst -- we want the monthly
+        # Special handling for TWS_tws and GWS_tws -- we want the monthly
         # means.
         if varname in varlists["var_tavg_twsgws_list"]:
             var.cell_methods = \
@@ -457,7 +457,7 @@ def _driver():
     configfile, input_dir, output_dir, startdate, enddate, model_forcing \
         = _read_cmd_args()
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     varlists = _make_varlists(config)
@@ -466,7 +466,7 @@ def _driver():
     curdate = startdate
     seconddate = startdate + datetime.timedelta(days=1)
     while curdate <= enddate:
-        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing, config["EXP"]["domain"])
+        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing, config["EXP"]["DOMAIN"])
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
             tmp_outfile = f"{output_dir}/tmp_monthly.nc"
@@ -485,14 +485,14 @@ def _driver():
     del tavgs
 
     # Clean up a few details.
-    infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing, config["EXP"]["domain"])
+    infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing, config["EXP"]["DOMAIN"])
     _add_time_data(infile, tmp_outfile, startdate, enddate)
     _update_cell_methods(varlists, tmp_outfile)
     _cleanup_global_attrs(tmp_outfile)
 
     # Rename the output file
     outfile = _create_monthly_s2s_filename(output_dir, startdate,
-                                           enddate, model_forcing, config["EXP"]["domain"])
+                                           enddate, model_forcing, config["EXP"]["DOMAIN"])
     os.rename(tmp_outfile, outfile)
 
 # Invoke driver

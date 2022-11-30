@@ -1,7 +1,7 @@
 
 LDT running mode:                       "Ensemble restart processing"
 
-Processed LSM parameter filename:       LDTINPUTFILE
+Processed LSM parameter filename:       ../LDT_Params/lis_input.s2s_global.noahmp401_hymap2.25km.nc
 LIS number of nests:                    1
 Number of surface model types:          2
 Surface model types:                    "LSM"  "Openwater"
@@ -17,15 +17,17 @@ Undefined value:                        -9999.0
 # -- New LDT restart generation sampling option
 
 LIS restart source:                               "LSM"
-Ensemble restart generation mode:                 LDTRSTGENOPT
+Ensemble restart generation mode:                 upscale
 Ensemble restart generation sampling strategy:    "random sampling"
 
-Input restart filename:                        INPUTRSTFILE
-Output restart filename:                       OUTPUTRSTFILE 
+Input restart filename:                        ./output/SURFACEMODEL/202208/LIS_RST_NOAHMP401_202208312345.d01.nc
+Output restart filename:                       ./CFSv2/LIS_RST_NOAHMP401_202208312345.ICS_Sep2022.ens12.nc 
 Number of ensembles per tile (input restart):     12
-Number of ensembles per tile (output restart):    OUTENSMEMS
+#Number of ensembles per tile (input restart):     1
+Number of ensembles per tile (output restart):    12
 
 Number of ensembles per tile:                     12
+#Number of ensembles per tile:                     1
 
 Maximum number of surface type tiles per grid:     1
 Minimum cutoff percentage (surface type tiles):    0.05
@@ -40,18 +42,18 @@ Minimum cutoff percentage (slope bands):           0.05
 Maximum number of aspect bands per grid:           1
 Minimum cutoff percentage (aspect bands):          0.05
 
-LDT diagnostic file:                    LSMLDTLOGFILE
-Mask-parameter fill diagnostic file:    PARAMLOGFILE
-LDT output directory:                   MODELDIR
+LDT diagnostic file:                    ./CFSv2/ldtlog_noahmp401_Sep2022
+Mask-parameter fill diagnostic file:    ./CFSv2/MaskParamFill.log
+LDT output directory:                   ./CFSv2/
 
 #--
  
 #AFRICOM 25KM domain:
 Map projection of the LIS domain:       latlon
-Run domain lower left lat:             -39.8750
-Run domain upper right lat:             39.875
-Run domain lower left lon:             -19.8750
-Run domain upper right lon:             59.875
+Run domain lower left lat:             -89.875
+Run domain upper right lat:             89.875
+Run domain lower left lon:            -179.875
+Run domain upper right lon:            179.875
 Run domain resolution (dx):              0.25
 Run domain resolution (dy):              0.25
  
@@ -88,13 +90,14 @@ Porosity map:                           none
  
 #Soil texture map:
 Soil texture data source:    none
-Soil texture map:        ./input/LS_PARAMETERS/soil_parms/ISRIC/v2017/TEXMHT_M_sl1_250m.tif     # v2017 file
-Soil texture map projection:     latlon
-Soil texture spatial transform:   mode                  # none | mode | neighbor | tile
-Soil texture fill option:       neighbor                # none | neighbor
-Soil texture fill radius:         5                     # Number of pixels to search for neighbor
-Soil texture fill value:          6                     # Static value to fill where missing
-Soil texture fill value for Antarctica:  4              # 4 -- USDA value for silty-loam
+#Soil texture data source:               "STATSGOFAO_Native"
+Soil texture map:                       ./input/LS_PARAMETERS/noah_2dparms/topsoil30snew
+Soil texture spatial transform:         mode
+Soil texture map projection:            latlon
+Soil texture fill option:               neighbor
+Soil texture fill radius:               5
+Soil texture fill value:                6
+Soil texture fill value for Antarctica: 16
 Soil texture force exclusion of water points during fill: true
  
 #Topography parameter inputs

@@ -122,13 +122,11 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
     mpl.style.use('bmh')
     cbar_axes = [0.2, 0.04, 0.6, 0.03]
-
-    mask_file100 = config["PLOTS"]["mask_file100"]
     cmap, col_under, col_higher, extend = plt.cm.RdYlGn, 'black', '#B404AE', 'both'
     
     for var_name in config["POST"]["metric_vars"]:
-        #if var_name == 'Streamflow':
-        #    continue
+        if var_name == 'Streamflow':
+            continue
         levels = get_levels.get(var_name, default_levels)
         if standardized_anomaly == 'Y':
             levels = standardized_levels
@@ -203,13 +201,14 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
 
             median_anom = np.nanmedian(anom.anom.values, axis=0)
             #if standardized_anomaly is None:
+            mask_file100 = config['SETUP']['supplementarydir'] + '/s2splots/composite_streamflow_mask.nc'
             mask1 = xr.open_mfdataset(mask_file100)
             mask100=mask1.SFMASK.values
         else:
             anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
             median_anom = np.median(anom.anom.values, axis=0)
 
-        if var_name == 'Air_T' and USAF_COLORS and standardized_anomaly is None:
+        if (var_name == 'Air-T' or var_name == 'Air_T') and USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*30./25.4
@@ -279,7 +278,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
             cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
 
             if USAF_COLORS and standardized_anomaly is None:
-                if var_name == 'Air_T':
+                if var_name == 'Air-T' or var_name == 'Air_T':
                     cbar.set_label('Anomaly (' + get_units.get('Air_T_AF', 'm^3/m^3') + ')', fontsize=FONT_SIZE2)
                 elif var_name == 'Precip':
                     cbar.set_label('Anomaly (' + get_units.get('Precip_AF', 'm^3/m^3') + ')', fontsize=FONT_SIZE2)
@@ -309,10 +308,10 @@ if __name__ == '__main__':
     cwd = args.cwd
 
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if config ["EXP"]["domain"] == 'AFRICOM':
+    if config ["EXP"]["DOMAIN"] == 'AFRICOM':
         FONT_SIZE1 = 30
         FONT_SIZE2 = 40
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
@@ -325,8 +324,7 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
 
-    if config ["EXP"]["domain"] == 'GLOBAL':
-
+    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
@@ -334,7 +332,7 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
-        
+
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y')
@@ -343,20 +341,4 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y')
 
-    # set correct permission to directories and files 
-    E2ESDIR = config["SETUP"]["E2ESDIR"]
-    SPCODE = config["SETUP"]["SPCODE"]
-    os.chdir(E2ESDIR)
-    command = "chgrp -R " + SPCODE + ' ' + E2ESDIR
-    res = os.system(command)
-    command = "find . -type d -exec chmod 0775 {} \;"
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.nc" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.NC" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.TIF" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)
-    command = 'find ' + E2ESDIR + '/. -name "*.png" -type f -exec chmod 0664 {} \;'
-    res = os.system(command)    
-    os.chdir(cwd)
+
