@@ -23,7 +23,7 @@ def _get_surface_sm(sel_cim_data):
 
 def _get_tws(sel_cim_data):
     """Return terrestrial water storage."""
-    return sel_cim_data.TWS_inst
+    return sel_cim_data.TWS_tavg
 
 def _get_precip(sel_cim_data):
     """Return total precipitation."""

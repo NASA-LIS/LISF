@@ -242,7 +242,7 @@ TEMPLATE model timestep:               "15mn"
 #Specify the list of ALMA variables that need to be featured in the
 #LSM model output
 
-Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_fcst
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_hcst
 
 # Start Date/Time when output is to be started:
 Output start year:

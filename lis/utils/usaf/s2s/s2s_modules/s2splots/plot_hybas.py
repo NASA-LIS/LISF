@@ -38,8 +38,8 @@ USAF_COLORS = True
 boundary = [-20, 55, -40, 40]
 standardized_anomaly = 'Y'
 region = ''
-hybas_mask = 0
 
+DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
 
 class CachedTiler(object):
     def __init__(self, tiler):
@@ -68,7 +68,7 @@ class CachedTiler(object):
             img = PIL.Image.open(fh)
             img = img.convert(self.desired_tile_form)     
         return img, self.tileextent(tile), 'lower'
-def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
+def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea, boundary, region, hybas_mask):
     '''
     This function processes arguments and make plots.
     '''
@@ -118,7 +118,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
         infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
@@ -212,7 +212,7 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
     infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
     print("Reading infile {}".format(infile))
        
-    anom = xr.open_mfdataset(infile, concat_dim='ens',preprocess=preproc)
+    anom = xr.open_mfdataset(infile, concat_dim='ens',preprocess=preproc, combine='nested')
     median_anom = np.nanmedian(anom.anom.values, axis=0)
             
     #for lead in lead_month:
@@ -250,23 +250,23 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
                                  norm=colors.BoundaryNorm(levels, ncolors=cmap.N, clip=False), cmap=cmap,zorder=3)                
 
         gl_ = ax_.gridlines(draw_labels=True)
-        gl_.xlabels_top = False
-        gl_.xlabels_bottom = False
-        gl_.ylabels_right = False
-        gl_.ylabels_left = False
+        gl_.top_xlabels = False
+        gl_.bottom_xlabels = False
+        gl_.right_labels = False
+        gl_.left_labels = False
         if lead == 0:
             plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
                      horizontalalignment='center', transform=ax_.transAxes,
                      color='Blue', fontsize=30, rotation=90)
-            gl_.ylabels_left = True
+            gl_.left_labels = True
         plt.title(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year), fontsize=40)
         if lead >= 3:
-            gl_.xlabels_bottom = True
+            gl_.bottom_xlabels = True
         if lead == 3:
             plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
                      horizontalalignment='center', transform=ax_.transAxes,
                      color='Blue', fontsize=30, rotation=90)
-            gl_.ylabels_left = True
+            gl_.left_labels = True
         ax_.coastlines()
         ax_.add_feature(cfeature.BORDERS)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
@@ -280,8 +280,34 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
         
         figure = figure_template.format(plotdir, region, var_name)
         print(figure)
+        #plt.show()
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
 
+def process_domain (fcst_year, fcst_mon, cwd, config, RNetWork, plot_domain):
+
+    downstream_lon = np.array (RNetWork.variables['DownStream_lon'][:])
+    downstream_lat = np.array (RNetWork.variables['DownStream_lat'][:])
+    upstream_lon   = np.array (RNetWork.variables['UpStream_lon'][:])
+    upstream_lat   = np.array (RNetWork.variables['UpStream_lat'][:])
+    cum_area = np.array (RNetWork.variables['CUM_AREA'][:])
+    bmask = xr.open_dataset(config['SETUP']['supplementarydir'] + '/s2splots/HYBAS_' + plot_domain + '.nc4')
+    lonv = bmask.lon.values
+    latv = bmask.lat.values
+    nr, nc = (latv.size, lonv.size)
+    lons, lats = np.meshgrid(lonv, latv)
+    b = 0
+    for bid in bmask.BASIN_ID.values:
+        hybas_mask = bmask.basin_mask.values[b,:,:]
+        tx = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
+        ty = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))
+        boundary = [math.floor(tx.min()), math.ceil(tx.max()), math.floor(ty.min()), math.ceil(ty.max())]
+        vmask = (((upstream_lon >= boundary[0]) & (upstream_lon <= boundary[1])) &
+             ((upstream_lat >= boundary[2]) & (upstream_lat <= boundary[3])))
+        region = "{:10d}".format(bid)
+        plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask], downstream_lat[vmask], upstream_lon[vmask],
+                   upstream_lat[vmask], cum_area[vmask], boundary, region, hybas_mask)
+        b += 1
+    
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -300,27 +326,17 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    RNetWork =  Dataset (config["PLOTS"]["river_network"], mode='r')
-    downstream_lon = np.array (RNetWork.variables['DownStream_lon'][:])
-    downstream_lat = np.array (RNetWork.variables['DownStream_lat'][:])
-    upstream_lon   = np.array (RNetWork.variables['UpStream_lon'][:])
-    upstream_lat   = np.array (RNetWork.variables['UpStream_lat'][:])
-    cum_area = np.array (RNetWork.variables['CUM_AREA'][:])
-
-    bmask = xr.open_dataset(config["PLOTS"]["hybas_mask"])
-    lons = bmask.longitude.values
-    lats = bmask.latitude.values
+    RNetWork =  Dataset (config['SETUP']['supplementarydir'] + '/s2splots/RiverNetwork_information.nc4', mode='r')
+    exp_domain = config["EXP"]["DOMAIN"]
+    if exp_domain == 'GLOBAL':
+        for plot_domain in DEFCOMS:
+            process_domain (fcst_year, fcst_mon, cwd, config, RNetWork, plot_domain)
+            sys.exit()
+    else:
+        plot_domain = exp_domain
+        process_domain (fcst_year, fcst_mon, cwd, config, RNetWork, plot_domain)
+        
     
-    b = 0
-    for bid in bmask.HYBAS_ID.values:
-        hybas_mask = bmask.basin_mask.values[b,]
-        print (hybas_mask.sum())
-        tx = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
-        ty = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))
-        boundary = [math.floor(tx.min()), math.ceil(tx.max()), math.floor(ty.min()), math.ceil(ty.max())]
-        vmask = (((upstream_lon >= boundary[0]) & (upstream_lon <= boundary[1])) &
-             ((upstream_lat >= boundary[2]) & (upstream_lat <= boundary[3])))
-        region = bid.decode("utf-8")
-        plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask], downstream_lat[vmask], upstream_lon[vmask], upstream_lat[vmask], cum_area[vmask])
-        b += 1
+    
+    
 

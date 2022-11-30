@@ -718,16 +718,16 @@ s2splots(){
     
     PLINE=`grep -n plot_s2smetrics.py s2splots_run.j | cut -d':' -f1`
     ((PLINE++))
-    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${SEC_COMMAND}" s2splots_run.j
     ((PLINE++))
-    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
-    ((PLINE++))
-    FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
-    ((PLINE++))
-    FIFTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_ccdi.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    #((PLINE++))
+    #FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    #sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
+    #((PLINE++))
+    #FIFTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_ccdi.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     #sed -i "${PLINE}i ${FIFTH_COMMAND}" s2splots_run.j
 
     s2splots_ID=$(submit_job "$s2smetric_tiff_ID" "${jobname}_run.j")
@@ -755,12 +755,12 @@ mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
 mkdir -p -m 775 ${SCRDIR}/s2spost
+
 if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
     download_forecasts
 fi
-
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
 cd ${SCRDIR}/global_usaf_forc
