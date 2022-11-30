@@ -9,7 +9,7 @@ SETUP:
   E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL/
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   AF10KM:  /discover/nobackup/projects/usaf_lis/smahanam/GLOBAL/MERRA2_CHIRPSM2_NAFPAMod_3hr_9yr/ens1/
-  LISFMOD: lisf_7.5_intel_2021.4.0
+  LISFMOD: lisf_7.5_intel_2021.4.0_s2s
   SPCODE:  s1189
   DATATYPE: hindcast
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
