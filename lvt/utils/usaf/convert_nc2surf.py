@@ -289,8 +289,8 @@ def _get_infile_type(key):
     """Get the infile_type based on the key. Sanity check included."""
     infile_type = key.split(":")[1]
     if infile_type not in ["LDT", "LVT"]:
-        print("[ERR] Invalid infile type %s" % (infile_type))
-        print("[ERR] Found in %s" % (key))
+        print(f"[ERR] Invalid infile type {infile_type}")
+        print(f"[ERR] Found in {key}")
         print("[ERR] Internal error, aborting...")
         sys.exit(1)
     return infile_type
@@ -357,7 +357,7 @@ class Nc2Surf:
             self.ncid_lvt.__dict__['SOIL_LAYER_THICKNESSES']
         cm2m = decimal.Decimal('0.01')
         slt_m = \
-            [cm2m*decimal.Decimal("%s" % x) for x in slt_cm]
+            [cm2m*decimal.Decimal(f"{x}") for x in slt_cm]
         # EMK...Use below for old pre-LIS 7.2 LVT output, which
         # erroneously had output in meters
         # slt_m = \
@@ -598,8 +598,6 @@ class Nc2Surf:
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
         """
 
-        nlev = _NLEVS[key.split(":")[0]]
-
         # Determine how many fields are already in the SURF object
         num_fields = len(surf.fields)
 
@@ -694,12 +692,12 @@ class Nc2Surf:
             if varid in self.ncid_ldt.variables:
                 var = self.ncid_ldt.variables[varid]
             else:
-                print("[WARN] %s not available in LDT file!" % (varid))
+                print(f"[WARN] {varid} not available in LDT file!")
         elif infile_type == "LVT":
             if varid in self.ncid_lvt.variables:
                 var = self.ncid_lvt.variables[varid]
             else:
-                print("[WARN] %s not available in LVT file!" % (varid))
+                print(f"[WARN] {varid} not available in LVT file!")
         if var is None:
             return var, fill_value # Both are None
         fill_value = var.missing_value
@@ -791,7 +789,7 @@ class Nc2Surf:
 
             # See if the varname and source are recognized
             if key not in list(_VARIDS.keys()):
-                print("[WARN] %s not recognized!" % (key))
+                print(f"[WARN] {key} not recognized!")
                 continue
 
             # See if the source is recognized
@@ -819,8 +817,7 @@ class Nc2Surf:
                 # This logic was added with the multi-layer snow physics
                 # of PS41.
                 surface_flag = True
-                if varid == "SoilMoist_inst" or \
-                   varid == "SoilTemp_inst":
+                if varid in ["SoilMoist_inst", "SoilTemp_inst"]:
                     surface_flag = False
                 var2d = self._create_var2d(var, ilev, surface_flag, fill_value)
 
@@ -840,7 +837,7 @@ class Nc2Surf:
                 var2d_provider = self._create_var2d_provider(var2d)
 
                 # Now add the field to the SURF object.
-                print("[INFO] Processing %s, ilev: %s" % (key, ilev))
+                print(f"[INFO] Processing {key}, ilev: {ilev}")
 
                 surf = self._add_field(key, ilev,
                                        var2d_provider, surface_flag, surf)
@@ -855,7 +852,7 @@ class Nc2Surf:
 #------------------------------------------------------------------------------
 def usage():
     """Print command line usage."""
-    print("[INFO] Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
+    print(f"[INFO] Usage: {sys.argv[0]} yyyymmddhh lvt_nc ldt_nc")
     print("[INFO]   where:")
     print("[INFO]    yyyymmddhh is valid year/month/day/hour in UTC")
     print("[INFO]    lvt_nc is name of LVT netCDF file to convert to SURF")
@@ -873,12 +870,12 @@ def read_cmd_args():
     # Convert yyyymmddhh argument to a datetime object
     yyyymmddhh = sys.argv[1]
     if len(yyyymmddhh) != 10:
-        print("[ERR] Invalid yyyymmddhh argument %s!" %(yyyymmddhh))
+        print(f"[ERR] Invalid yyyymmddhh argument {yyyymmddhh}!")
         print("[ERR] Check length!")
         usage()
         sys.exit(1)
 
-    print("[INFO] Processing date/time %s" %(yyyymmddhh))
+    print(f"[INFO] Processing date/time {yyyymmddhh}")
     try:
         year = int(yyyymmddhh[0:4])
         month = int(yyyymmddhh[4:6])
@@ -886,7 +883,7 @@ def read_cmd_args():
         hour = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year, month, day, hour)
     except ValueError:
-        print("[ERR] Cannot process date/time %s" %(yyyymmddhh))
+        print(f"[ERR] Cannot process date/time {yyyymmddhh}")
         usage()
         sys.exit(1)
 
@@ -925,23 +922,15 @@ if __name__ == "__main__":
     FILE_TYPE = "_glu_sst"
     # FUTURE...Add support for SST anomaly
     VARFIELDS = ["water_temp:LVT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
+    SURFFILE = f"{VALIDDT.year:04}{VALIDDT.month:02}{VALIDDT.day:02}"
+    SURFFILE += f"T{VALIDDT.hour:02}00Z{FILE_TYPE}"
     SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_ice SURF file
     FILE_TYPE = "_glu_ice"
     VARFIELDS = ["aice:LVT", "hi:LVT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
+    SURFFILE = f"{VALIDDT.year:04}{VALIDDT.month:02}{VALIDDT.day:02}"
+    SURFFILE += f"T{VALIDDT.hour:02}00Z{FILE_TYPE}"
     SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_snow SURF file
@@ -961,12 +950,8 @@ if __name__ == "__main__":
                  "LayerSnowDensity_inst:LVT",
                  "LayerSnowGrain_inst:LVT"]
 
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
+    SURFFILE = f"{VALIDDT.year:04}{VALIDDT.month:02}{VALIDDT.day:02}"
+    SURFFILE += f"T{VALIDDT.hour:02}00Z{FILE_TYPE}"
     SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     # Generate glu_smc SURF file
@@ -974,12 +959,8 @@ if __name__ == "__main__":
     VARFIELDS = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
                  "AvgSurfT_inst:LVT",
                  "JULES_SM_WILT:LDT", "JULES_SM_CRIT:LDT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
+    SURFFILE = f"{VALIDDT.year:04}{VALIDDT.month:02}{VALIDDT.day:02}"
+    SURFFILE += f"T{VALIDDT.hour:02}00Z{FILE_TYPE}"
     SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
 
     print("[INFO] convert_nc2surf.py completed!")
