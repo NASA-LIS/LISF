@@ -169,7 +169,7 @@ delete_forecast(){
     Mon=`echo ${mon_names[$mon-1]}`
     
     # delete scratch
-    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/
     
     # delete LISDA
     delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYY}${MM}/
