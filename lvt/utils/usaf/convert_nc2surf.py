@@ -789,7 +789,7 @@ class _Nc2Surf:
         for key in varlist:
 
             # See if the varname and source are recognized
-            if key not in list(_VARIDS.keys()):
+            if key not in _VARIDS:
                 print(f"[WARN] {key} not recognized!")
                 continue
 
@@ -811,8 +811,7 @@ class _Nc2Surf:
                 continue
 
             # Loop through each level.
-            nlev = _NLEVS[varid]
-            for ilev in range(0, nlev):
+            for ilev in range(0, _NLEVS[varid]):
 
                 # Added logic to specify if a field is at the surface.
                 # This logic was added with the multi-layer snow physics
