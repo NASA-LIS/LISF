@@ -593,7 +593,7 @@ class _Nc2Surf:
         field.lbuser7 = 1  # Atmosphere
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, ilev, var2d_provider, surface_flag, surf):
+    def _add_field(self, key, ilev, var2d_provider, surf):
         """
         Internal method to create and attach Field object to SURF object.
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
@@ -612,7 +612,7 @@ class _Nc2Surf:
         field.bdatum = 0  # Datum value constant subtracted from field
         # Updated logic to specify surface levels, due to multi-layer
         # snow physics from PS41.
-        if surface_flag:
+        if self.lblev == 9999: # Surface variable
             field.blev = 0  # Surface AGL
         else:
             field.blev = self.grid["soil_layer_thicknesses"][ilev]
@@ -840,7 +840,7 @@ class _Nc2Surf:
                 print(f"[INFO] Processing {key}, ilev: {ilev}")
 
                 surf = self._add_field(key, ilev,
-                                       var2d_provider, surface_flag, surf)
+                                       var2d_provider, surf)
 
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
