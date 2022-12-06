@@ -9,7 +9,7 @@ SETUP:
   E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_AFRICOM/
   METFORC: /discover/nobackup/projects/usaf_lis/MET_FORCING/
   AF10KM:  /discover/nobackup/projects/usaf_lis/MET_FORCING/usaf_lis73rc8_10km/
-  LISFMOD: lisf_7.5_intel_2021.4.0
+  LISFMOD: lisf_7.5_intel_2021.4.0_s2s
   SPCODE:  s1189
   CONSTRAINT: cssro
   DATATYPE: forecast

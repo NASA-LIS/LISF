@@ -9,7 +9,7 @@ SETUP:
   E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL/
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
   AF10KM:  /discover/nobackup/projects/usaf_lis/USAF_FORCING/usaf_lis75s2s_gfs2galwem/
-  LISFMOD: lisf_7.5_intel_2021.4.0
+  LISFMOD: lisf_7.5_intel_2021.4.0_s2s
   SPCODE:  s1189
   DATATYPE: forecast
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/

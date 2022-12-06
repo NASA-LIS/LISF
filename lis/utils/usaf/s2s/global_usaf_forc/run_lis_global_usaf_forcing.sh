@@ -35,7 +35,7 @@ fi
 module purge
 unset LD_LIBRARY_PATH
 ## USER INPUTS:  ##
-module use --append /home/emkemp/privatemodules
+module use --append ~/privatemodules
 module load lisf_7.5_intel_2021.4.0_s2s
 
 # Paths on local system
