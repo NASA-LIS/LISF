@@ -25,6 +25,10 @@
 # * UKMO MULE Python library 2020.01.1
 # * NumPy Python library (for array objects)
 #
+# REVISIONS
+# 31 Mar 2020: Eric Kemp (SSAI), initial version
+# 06 Dec 2022: Eric Kemp (SSAI), changed to improve pylint score.
+#
 # -----------------------------------------------------------------------------
 """
 
@@ -40,7 +44,7 @@ import mule
 if len(sys.argv) in [2]:
     FILENAME = sys.argv[1]
 else:
-    print("Usage: %s filename" %(sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} filename")
     sys.exit(1)
 
 # plot = False
@@ -85,9 +89,9 @@ if ANCIL.level_dependent_constants is not None:
     # of constants in the file.
     for header in mule.ff.FF_LevelDependentConstants.HEADER_MAPPING:
         key, i = header[0], header[1]
-        idx = header[1][1]
-        if idx <= length_ldc:
-            print(idx, key, ' ', ANCIL.level_dependent_constants.raw[i])
+        IDX = header[1][1]
+        if IDX <= length_ldc:
+            print(IDX, key, ' ', ANCIL.level_dependent_constants.raw[i])
 
 if ANCIL.row_dependent_constants is not None:
     print("***row_dependent_constants***")
