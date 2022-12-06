@@ -64,34 +64,25 @@ def _main():
     with open(template, 'r', encoding="ascii") as file:
         lines = file.readlines()
     newlines = []
+    config_dict = {
+        "Starting year:" : f"Starting year: {rundt.year}\n",
+        "Starting month:" : f"Starting month: {rundt.month}\n",
+        "Starting day:" : f"Starting day: {rundt.day}\n",
+        "Starting hour:" : f"Starting hour: {rundt.hour}\n",
+        "Starting minute:" : "Starting minute: 00\n",
+        "Starting second:" : "Starting second: 00\n",
+        "Ending year:" : f"Ending year: {rundt.year}\n",
+        "Ending month:" : f"Ending month: {rundt.month}\n",
+        "Ending day:" : f"Ending day: {rundt.day}\n",
+        "Ending minute:" : "Ending minute: 00\n",
+        "Ending second:" : "Ending second: 00\n"
+    }
     for line in lines:
-        if "Starting year:" in line:
-            newline = f"Starting year: {rundt.year}\n"
-        elif "Starting month:" in line:
-            newline = f"Starting month: {rundt.month}\n"
-        elif "Starting day:" in line:
-            newline = f"Starting day: {rundt.day}\n"
-        elif "Starting hour:" in line:
-            newline = f"Starting hour: {rundt.hour}\n"
-        elif "Starting minute:" in line:
-            newline = "Starting minute: 00\n"
-        elif "Starting second:" in line:
-            newline = "Starting second: 00\n"
-        # For simplicity, we set the end date/time same as the start
-        elif "Ending year:" in line:
-            newline = f"Ending year: {rundt.year}\n"
-        elif "Ending month:" in line:
-            newline = f"Ending month: {rundt.month}\n"
-        elif "Ending day:" in line:
-            newline = f"Ending day: {rundt.day}\n"
-        elif "Ending hour:" in line:
-            newline = f"Ending hour: {rundt.hour}\n"
-        elif "Ending minute:" in line:
-            newline = "Ending minute: 00\n"
-        elif "Ending second:" in line:
-            newline = "Ending second: 00\n"
-        else:
-            newline = line
+        newline = line
+        for _, key in enumerate(config_dict):
+            if key in line:
+                newline = config_dict[key]
+                break
         newlines.append(newline)
 
     # Create the new, customized lvt.config file
