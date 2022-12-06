@@ -32,6 +32,7 @@
 # 09 July 2021: Eric Kemp (SSAI), added metadata to GeoTIFF files describing
 #               raster fields.  Also changed numbering of soil layers from
 #               0-3 to 1-4.
+# 05 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
 #
 #------------------------------------------------------------------------------
 """
@@ -51,7 +52,7 @@ from osgeo import gdal, osr
 
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s ldtfile tsfile finalfile" %(sys.argv[0])
+    txt = f"[INFO] Usage: {sys.argv[0]} ldtfile tsfile finalfile"
     txt += " anomaly_gt_prefix climo_gt_prefix LSM yyyymmddhh"
     print(txt)
     print("[INFO]  where:")
@@ -92,7 +93,7 @@ def _read_cmd_args():
     _yyyymmddhh = sys.argv[7]
 
     if _lsm not in ["noah39", "noahmp401", "jules50"]:
-        print("[ERR] Unknown LSM %s" %(_lsm))
+        print(f"[ERR] Unknown LSM {_lsm}")
         print("Options are noah39, noahmp401, jules50")
         sys.exit(1)
 
@@ -143,23 +144,17 @@ def _set_metadata(varname_arg, soil_layer, model, \
                                 month=int(yyyymmddhh_arg[4:6]),
                                 day=int(yyyymmddhh_arg[6:8]),
                                 hour=int(yyyymmddhh_arg[8:10]))
-    _metadata = { 'varname' : '%s' %(varname_arg),
+    _metadata = { 'varname' : f'{varname_arg}',
                   'units' : 'm3/m3',
-                  'soil_layer' : '%s' %(soil_layer),
-                  'land_surface_model' : '%s' %(model) }
+                  'soil_layer' : f'{soil_layer}',
+                  'land_surface_model' : f'{model}' }
     if climomonth is None:
-        time_string = "Valid %2.2dZ %d %s %4.4d" \
-            %(validdt.hour,
-              validdt.day,
-              _MONTHS[validdt.month-1],
-              validdt.year)
+        time_string = f"Valid {validdt.hour:02}Z {validdt.day} "
+        time_string += f"{_MONTHS[validdt.month-1]} {validdt.year:04}"
         _metadata["valid_date_time"] = time_string
     else:
-        time_string = "Updated %2.2dZ %d %s %4.4d" \
-            %(validdt.hour,
-              validdt.day,
-              _MONTHS[validdt.month-1],
-              validdt.year)
+        time_string = f"Updated {validdt.hour:02}Z {validdt.day} "
+        time_string += f"{_MONTHS[validdt.month-1]} {validdt.year:04}"
         _metadata["update_date_time"] = time_string
         _metadata["climo_month"] = climomonth
 
@@ -174,9 +169,8 @@ _SOIL_LAYERS = {
     "jules50" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
 }
 
-# Main driver
-if __name__ == "__main__":
-
+def _main():
+    """Main driver"""
     # Get the file names for this invocation.
     ldtfile, tsfile, finalfile, anomaly_gt_prefix, \
     climo_gt_prefix, lsm, yyyymmddhh = \
@@ -200,13 +194,12 @@ if __name__ == "__main__":
         # Write soil moisture anomalies to GeoTIFF
         sm1 = sm_anomalies[::-1, :]
         geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-        outfile_anomaly = "%s.layer%d.tif" %(anomaly_gt_prefix,
-                                             i+1)
-        VARNAME = "Soil Moisture Anomaly"
+        outfile_anomaly = f"{anomaly_gt_prefix}.layer{i+1}.tif"
+        varname = "Soil Moisture Anomaly"
         output_raster = _create_output_raster(outfile_anomaly,
                                               ncols, nrows, geotransform,
                                               sm1)
-        metadata = _set_metadata(varname_arg=VARNAME,
+        metadata = _set_metadata(varname_arg=varname,
                                  soil_layer=_soil_layer,
                                  model=lsm,
                                  yyyymmddhh_arg=yyyymmddhh)
@@ -220,7 +213,7 @@ if __name__ == "__main__":
     ncid = nc4_dataset(finalfile, 'r', format='NETCDF4')
     for imonth in range(0, 12):
         month = _MONTHS[imonth]
-        climo_name = "SoilMoist_%s_climo" %(month)
+        climo_name = f"SoilMoist_{month}_climo"
         for i in range(0, 4): # Loop across four LSM layers
             sm_climo = ncid.variables[climo_name][i,:,:]
             nrows, ncols = sm_climo.shape
@@ -231,14 +224,12 @@ if __name__ == "__main__":
             sm1 = sm_climo[::-1, :]
             geotransform = _make_geotransform(longitudes, latitudes,
                                               ncols, nrows)
-            outfile_climo = "%s.%s.layer%d.tif" %(climo_gt_prefix,
-                                                  month,
-                                                  i+1)
-            VARNAME = "Climatological Soil Moisture"
+            outfile_climo = f"{climo_gt_prefix}.{month}.layer{i+1}.tif"
+            varname = "Climatological Soil Moisture"
             output_raster = _create_output_raster(outfile_climo,
                                                   ncols, nrows, geotransform,
                                                   sm1)
-            metadata = _set_metadata(varname_arg=VARNAME,
+            metadata = _set_metadata(varname_arg=varname,
                                      soil_layer=_soil_layer,
                                      model=lsm,
                                      yyyymmddhh_arg=yyyymmddhh,
@@ -248,3 +239,7 @@ if __name__ == "__main__":
             output_raster.FlushCache() # Write to disk
             del output_raster
     ncid.close()
+
+# Main driver
+if __name__ == "__main__":
+    _main()
