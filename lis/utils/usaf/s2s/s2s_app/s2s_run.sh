@@ -180,7 +180,7 @@ delete_forecast(){
     
     # delete LDTICS
     delete_files ${E2ESDIR}/ldt_ics/ldt.config_files/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
-    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}*\
+    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}\*
     
     # delete BCSD
     delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/${Mon}01/${YYYY}
@@ -327,7 +327,7 @@ lis_darun(){
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
     LSMLISLOGFILE=${CWD}/logs_${YYYYP}${MMP}'/lislog'
     
-    #sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
+    sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
     sed -i "s|NOAHMP401RSTFILE|${NOAHMP401RSTFILE}|g" lis.config
     sed -i "s|HYMAP2RSTFILE|${HYMAP2RSTFILE}|g" lis.config
     sed -i "s|STARTYR|${YYYYP}|g" lis.config
