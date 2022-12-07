@@ -16,6 +16,7 @@ Sample script to customize lvt.config files for noah39 postprocessing for
 """
 
 import datetime
+import os
 
 _TEMPLATE = "templates/lvt.config.template.noah39"
 
@@ -131,6 +132,8 @@ def _main():
 
             newlines.append(line)
 
+        if not os.path.exists("configs"):
+            os.mkdir("configs")
         newfile = f"configs/lvt.config.{var}.24hr"
         print(f"Writing {newfile}")
         with open(newfile, "w", encoding="ascii") as file:
