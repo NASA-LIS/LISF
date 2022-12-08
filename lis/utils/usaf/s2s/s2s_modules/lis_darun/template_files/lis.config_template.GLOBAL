@@ -180,7 +180,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory:                  ../USAF_FORCING/usaf_lis73rc8_10km/
+AGRMET forcing directory:                  ../USAF_FORCING/usaf_lis75s2s_gfs2galwem/
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
