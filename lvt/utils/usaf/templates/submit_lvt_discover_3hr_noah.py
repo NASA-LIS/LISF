@@ -56,7 +56,7 @@ def _main():
 #SBATCH --account s1189
 #SBATCH --output {var}.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint="sky|hasw"
+#SBATCH --ntasks=1 --constraint="cas|sky|hasw"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
