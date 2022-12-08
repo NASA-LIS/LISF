@@ -2036,6 +2036,7 @@ module gmaopert_Mod
       integer, allocatable      :: pertdata1d_obs_int(:)
       integer, allocatable      :: pertdata1d_patch_int(:)
       real, allocatable         :: dummy_var(:,:,:)
+      logical                   :: file_exists
 
       do n = 1, LIS_rc%nnest
 
@@ -2062,6 +2063,13 @@ module gmaopert_Mod
             endif
          endif
          
+         inquire( file=trim(LIS_rc%pertRestartFile(n)), exist=file_exists ) 
+         if(file_exists .neqv. .true.) then
+            write(LIS_logunit,*) '[ERR] Reading perturbations restart file MISSING: ',&
+                  trim(LIS_rc%pertRestartFile(n))
+            call LIS_endrun()
+         endif
+
          open(ftn,file=trim(LIS_rc%pertRestartFile(n)), form='unformatted')
          write(LIS_logunit,*) '[INFO] Reading perturbations restart file ',&
               trim(LIS_rc%pertRestartFile(n))

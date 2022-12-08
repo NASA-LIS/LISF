@@ -315,7 +315,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
     COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
