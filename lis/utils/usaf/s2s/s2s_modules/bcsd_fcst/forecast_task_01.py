@@ -18,7 +18,7 @@ import os
 import sys
 import argparse
 import yaml
-
+#pylint: disable=import-outside-toplevel, too-many-locals
 # Local methods
 def _usage():
     """Print command line usage."""
@@ -64,7 +64,7 @@ def calc_ic_dates(icmon):
 
 def _driver():
     """Main driver."""
-    
+
     # Parse command arguements
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
@@ -99,9 +99,6 @@ def _driver():
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
-
-    # Path of the directory where patch files for missing data are kept
-    patchdir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/patch_files/'
 
     # Log file output directory
     logdir = cwd + '/log_files'

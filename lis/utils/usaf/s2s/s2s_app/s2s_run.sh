@@ -76,7 +76,6 @@ export ARCH=`uname`
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
-export AF10KM=`grep AF10KM  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
@@ -309,6 +308,7 @@ lis_darun(){
     /bin/ln -s ${LISFDIR}/lis/LIS
     /bin/ln -s ${E2ESDIR}/lis_darun/input
     /bin/ln -s ${E2ESDIR}/lis_darun/output
+    /bin/ln -s ${METFORC}
     mkdir -p -m 775 output/lis.config_files/
     mkdir -p -m 775 ${CWD}/logs_${YYYYP}${MMP}
     
@@ -779,11 +779,11 @@ s2splots(){
     
     PLINE=`grep -n plot_s2smetrics.py s2splots_run.j | cut -d':' -f1`
     ((PLINE++))
-    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${SEC_COMMAND}" s2splots_run.j
     ((PLINE++))
-    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
+    #THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    #sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
     #((PLINE++))
     #FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     #sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
@@ -822,7 +822,6 @@ fi
 #######################################################################
    
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
-mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
@@ -836,10 +835,6 @@ if [ $DATATYPE  == "forecast" ]; then
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
-cd ${SCRDIR}/global_usaf_forc
-/bin/ln -s $AF10KM usaf_lis73rc8_10km
-cd ${SCRDIR}
-/bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
 /bin/rm -f $JOB_SCHEDULE
