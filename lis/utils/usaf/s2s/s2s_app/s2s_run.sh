@@ -76,7 +76,6 @@ export ARCH=`uname`
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
-export AF10KM=`grep AF10KM  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
@@ -309,6 +308,7 @@ lis_darun(){
     /bin/ln -s ${LISFDIR}/lis/LIS
     /bin/ln -s ${E2ESDIR}/lis_darun/input
     /bin/ln -s ${E2ESDIR}/lis_darun/output
+    /bin/ln -s ${METFORC}
     mkdir -p -m 775 output/lis.config_files/
     mkdir -p -m 775 ${CWD}/logs_${YYYYP}${MMP}
     
@@ -822,7 +822,6 @@ fi
 #######################################################################
    
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
-mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
@@ -836,10 +835,6 @@ if [ $DATATYPE  == "forecast" ]; then
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
-cd ${SCRDIR}/global_usaf_forc
-/bin/ln -s $AF10KM usaf_lis73rc8_10km
-cd ${SCRDIR}
-/bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
 /bin/rm -f $JOB_SCHEDULE
