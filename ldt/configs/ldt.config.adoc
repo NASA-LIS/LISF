@@ -2407,6 +2407,136 @@ Bottom temperature resolution (dy):      0.2500
 Noah-MP PBL Height Value:     900.    # in meters
 ....
 
+Miguez-Macho and Fan (MMF) Groundwater Parameters
+
+IMPORTANT: Currently, Noah-MP.4.0.1 is the only land surface model that supports the MMF groundwater scheme.
+
+`Process Noah-MP-4.0.1 MMF groundwater parameters:` specifies whether to process Noah-MP-4.0.1 MMF groundwater parameters. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|.false. | do not process (default)
+|.true.  | process
+|===
+
+.Example _ldt.config_ entry
+....
+Process Noah-MP-4.0.1 MMF groundwater parameters: .true.
+....
+
+[NOTE]
+====
+The Noah-MP-4.0.1 parameters are only needed when running option "5" for the following lis.config entry when running LIS:
+
+`Noah-MP.4.0.1 runoff and groundwater option: 5`
+
+// TODO: remove following admonition when MMF groundwater option 5 is implemented in LIS
+IMPORTANT: The MMF groundwater option (option 5) is not yet supported in LIS. Work on this feature is currently in progress.
+====
+
+`MMF transmissivity dir:` specifies the location of the directory containing FDEPTH (transmissivity e-folding depth [m]) data on GEOGRID tiles.
+
+`MMF climatological recharge dir:` specifies the location of the directory containing RECHARGE (climatological recharge [mm]) data on GEOGRID tiles.
+
+`MMF riverbed elevation dir:` specifies the location of the directory containing RIVERBED (riverbed elevation [m]) data on GEOGRID tiles.
+
+`MMF equilibrium water table depth dir:` specifies the location of the directory containing EQWTD (equilibrium water table depth [m]) data on GEOGRID tiles.
+
+`MMF HGT_M dir:` specifies the location of the directory containing GMTED2010 (30-arc-second topography height [m from MSL]) data on GEOGRID tiles.
+
+.Example _ldt.config_ entry
+....
+MMF transmissivity dir:                ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
+MMF climatological recharge dir:       ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
+MMF riverbed elevation dir:            ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
+MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
+MMF HGT_M dir:                         ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
+....
+
+[NOTE]
+====
+Spatial interpolation and gap filling parameters for each MMF variable are also required. See the config entries below.
+
+link:https://www2.mmm.ucar.edu/wrf/users/docs/user_guide_v4/v4.3/users_guide_chap3.html#_Description_of_GEOGRID.TBL[The WRF User's Guide, window=_blank] (and link:https://github.com/wrf-model/WPS/blob/master/geogrid/GEOGRID.TBL.ARW.noahmp[WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp, window=_blank]) describe WPS's MMF parameter preprocessing procedures from the GEOGRID grid to the model grid. WPS performing the entire interpolation process from aggregating to gap filling on the native GEOGRID space makes it fundamentally different to LDT because LDT first aggregates input data from the native grid to the model grid and then fills gaps on the model grid space. The current LDT implementation of MMF parameter preprocessing does not attempt to replicate the WPS interpolation procedures, instead, it uses existing LDT interpolation utilities to follow the WPS's interpolation concept.
+====
+
+`MMF map projection:` map projection parameter is always set to latlon for MMF parameters.
+
+`MMF spatial transform:` spatial transform parameter is always set to average for MMF parameters.
+
+.Example _ldt.config_ entry
+....
+MMF map projection:    latlon
+MMF spatial transform: average
+....
+
+`FDEPTH fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`FDEPTH fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
+
+`FDEPTH fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`FDEPTH water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable FDEPTH value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
+
+.Example _ldt.config_ entry
+....
+FDEPTH fill option: neighbor
+FDEPTH fill radius: 0. 
+FDEPTH fill value: 100.
+FDEPTH water value: 100.
+....
+
+
+`RECHCLIM fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`RECHCLIM fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
+
+`RECHCLIM fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`RECHCLIM water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable RECHCLIM value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
+
+.Example _ldt.config_ entry
+....
+RECHCLIM fill option: neighbor
+RECHCLIM fill radius: 0. 
+RECHCLIM fill value:  -1.
+RECHCLIM water value: -1.
+....
+
+
+`EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`EQWTD fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`EQWTD fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+`EQWTD water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable EQWTD value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
+
+.Example _ldt.config_ entry
+....
+EQWTD fill option: neighbor
+EQWTD fill radius: 0. 
+EQWTD fill value: 0.
+EQWTD water value: 0.
+....
+
+
+`HGT_M fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
+
+`HGT_M fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
+
+`HGT_M fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
+
+
+.Example _ldt.config_ entry
+....
+HGT_M fill option: neighbor
+HGT_M fill radius: 0. 
+HGT_M fill value: 0.
+....
+
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
 
 `CLM45 parameter mode:` specifies whether to "`readin`" the CLM-4.5 parameters from pre-processed files. Currently, only the "`readin`" option is available.
