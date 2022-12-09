@@ -66,11 +66,11 @@ module Noah_parmsMod
      character*50   :: tbot_proj
      character*50   :: slopetype_proj
 
-     character*140  :: mmf_fdepth_dir
-     character*140  :: mmf_rechclim_dir
-     character*140  :: mmf_riverbed_dir
-     character*140  :: mmf_eqwtd_dir
-     character*140  :: mmf_hgtm_dir
+     character(len=LDT_CONST_PATH_LEN)  :: mmf_fdepth_dir
+     character(len=LDT_CONST_PATH_LEN)  :: mmf_rechclim_dir
+     character(len=LDT_CONST_PATH_LEN)  :: mmf_riverbed_dir
+     character(len=LDT_CONST_PATH_LEN)  :: mmf_eqwtd_dir
+     character(len=LDT_CONST_PATH_LEN)  :: mmf_hgtm_dir
      character*50   :: mmf_transform
       
      real           :: pblh_value
