@@ -5960,6 +5960,216 @@ Bottom temperature resolution (dy):      0.2500</pre>
 </div>
 </div>
 <div class="paragraph">
+<p>Miguez-Macho and Fan (MMF) Groundwater Parameters</p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+Currently, Noah-MP.4.0.1 is the only land surface model that supports the MMF groundwater scheme.
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><code>Process Noah-MP-4.0.1 MMF groundwater parameters:</code> specifies whether to process Noah-MP-4.0.1 MMF groundwater parameters. Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.false.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not process (default)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">.true.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">process</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Process Noah-MP-4.0.1 MMF groundwater parameters: .true.</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The Noah-MP-4.0.1 parameters are only needed when running option "5" for the following lis.config entry when running LIS:</p>
+</div>
+<div class="paragraph">
+<p><code>Noah-MP.4.0.1 runoff and groundwater option: 5</code></p>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+The MMF groundwater option (option 5) is not yet supported in LIS. Work on this feature is currently in progress.
+</td>
+</tr>
+</table>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><code>MMF transmissivity dir:</code> specifies the location of the directory containing FDEPTH (transmissivity e-folding depth [m]) data on GEOGRID tiles.</p>
+</div>
+<div class="paragraph">
+<p><code>MMF climatological recharge dir:</code> specifies the location of the directory containing RECHARGE (climatological recharge [mm]) data on GEOGRID tiles.</p>
+</div>
+<div class="paragraph">
+<p><code>MMF riverbed elevation dir:</code> specifies the location of the directory containing RIVERBED (riverbed elevation [m]) data on GEOGRID tiles.</p>
+</div>
+<div class="paragraph">
+<p><code>MMF equilibrium water table depth dir:</code> specifies the location of the directory containing EQWTD (equilibrium water table depth [m]) data on GEOGRID tiles.</p>
+</div>
+<div class="paragraph">
+<p><code>MMF HGT_M dir:</code> specifies the location of the directory containing GMTED2010 (30-arc-second topography height [m from MSL]) data on GEOGRID tiles.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>MMF transmissivity dir:                ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
+MMF climatological recharge dir:       ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
+MMF riverbed elevation dir:            ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
+MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
+MMF HGT_M dir:                         ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>Spatial interpolation and gap filling parameters for each MMF variable are also required. See the config entries below.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://www2.mmm.ucar.edu/wrf/users/docs/user_guide_v4/v4.3/users_guide_chap3.html#_Description_of_GEOGRID.TBL" target="_blank" rel="noopener">The WRF User&#8217;s Guide</a> (and <a href="https://github.com/wrf-model/WPS/blob/master/geogrid/GEOGRID.TBL.ARW.noahmp" target="_blank" rel="noopener">WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp</a>) describe WPS&#8217;s MMF parameter preprocessing procedures from the GEOGRID grid to the model grid. WPS performing the entire interpolation process from aggregating to gap filling on the native GEOGRID space makes it fundamentally different to LDT because LDT first aggregates input data from the native grid to the model grid and then fills gaps on the model grid space. The current LDT implementation of MMF parameter preprocessing does not attempt to replicate the WPS interpolation procedures, instead, it uses existing LDT interpolation utilities to follow the WPS&#8217;s interpolation concept.</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p><code>MMF map projection:</code> map projection parameter is always set to latlon for MMF parameters.</p>
+</div>
+<div class="paragraph">
+<p><code>MMF spatial transform:</code> spatial transform parameter is always set to average for MMF parameters.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>MMF map projection:    latlon
+MMF spatial transform: average</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>FDEPTH fill option:</code> specifies the MMF parameter fill option (<code>neighbor</code> is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>FDEPTH fill radius:</code> specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>FDEPTH fill value:</code> indicates the parameter value to be used if an arbitrary value fill is needed.</p>
+</div>
+<div class="paragraph">
+<p><code>FDEPTH water value:</code> MMF scheme is active in lake/water grid cells. Thus, a suitable FDEPTH value in lakes/rivers is needed in case GEOGRID didn&#8217;t have valid data at the location.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>FDEPTH fill option: neighbor
+FDEPTH fill radius: 0.
+FDEPTH fill value: 100.
+FDEPTH water value: 100.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>RECHCLIM fill option:</code> specifies the MMF parameter fill option (<code>neighbor</code> is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>RECHCLIM fill radius:</code> specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>RECHCLIM fill value:</code> indicates the parameter value to be used if an arbitrary value fill is needed.</p>
+</div>
+<div class="paragraph">
+<p><code>RECHCLIM water value:</code> MMF scheme is active in lake/water grid cells. Thus, a suitable RECHCLIM value in lakes/rivers is needed in case GEOGRID didn&#8217;t have valid data at the location.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>RECHCLIM fill option: neighbor
+RECHCLIM fill radius: 0.
+RECHCLIM fill value:  -1.
+RECHCLIM water value: -1.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>EQWTD fill option:</code> specifies the MMF parameter fill option (<code>neighbor</code> is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>EQWTD fill radius:</code> specifies the radius with which to search for nearby value(s) to help fill in the missing value.</p>
+</div>
+<div class="paragraph">
+<p><code>EQWTD fill value:</code> indicates the parameter value to be used if an arbitrary value fill is needed.</p>
+</div>
+<div class="paragraph">
+<p><code>EQWTD water value:</code> MMF scheme is active in lake/water grid cells. Thus, a suitable EQWTD value in lakes/rivers is needed in case GEOGRID didn&#8217;t have valid data at the location.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>EQWTD fill option: neighbor
+EQWTD fill radius: 0.
+EQWTD fill value: 0.
+EQWTD water value: 0.</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>HGT_M fill option:</code> specifies the MMF parameter fill option (<code>neighbor</code> is preferred).</p>
+</div>
+<div class="paragraph">
+<p><code>HGT_M fill radius:</code> specifies the radius with which to search for nearby value(s) to help fill in the missing value.</p>
+</div>
+<div class="paragraph">
+<p><code>HGT_M fill value:</code> indicates the parameter value to be used if an arbitrary value fill is needed.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>HGT_M fill option: neighbor
+HGT_M fill radius: 0.
+HGT_M fill value: 0.</pre>
+</div>
+</div>
+<div class="paragraph">
 <p>If selecting the Community Land Model (4.5 version), the following config entires are also required.</p>
 </div>
 <div class="paragraph">
@@ -17481,7 +17691,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-11-07 21:57:40 UTC
+Last updated 2022-12-09 15:52:29 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
