@@ -27,6 +27,7 @@ subroutine snowmodel_writerst(n)
   use LIS_fileIOMod,  only : LIS_create_output_directory, &
                              LIS_create_restart_filename
   use snowmodel_lsmMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -50,7 +51,7 @@ subroutine snowmodel_writerst(n)
 !   writes the SnowModel variables into the restart file
 ! \end{description}
 !EOP
-  character*200 :: filen
+  character(len=LIS_CONST_PATH_LEN) :: filen
   logical       :: alarmCheck
   integer       :: ftn
   integer       :: status
