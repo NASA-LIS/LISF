@@ -11,6 +11,7 @@ SETUP:
   AF10KM:  /discover/nobackup/projects/usaf_lis/USAF_FORCING/usaf_lis75s2s_gfs2galwem/
   LISFMOD: lisf_7.5_intel_2021.4.0_s2s
   SPCODE:  s1189
+  CONSTRAINT: cssro
   DATATYPE: forecast
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
   ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc

@@ -169,7 +169,7 @@ delete_forecast(){
     Mon=`echo ${mon_names[$mon-1]}`
     
     # delete scratch
-    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/
     
     # delete LISDA
     delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYY}${MM}/
@@ -180,7 +180,7 @@ delete_forecast(){
     
     # delete LDTICS
     delete_files ${E2ESDIR}/ldt_ics/ldt.config_files/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
-    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}*\
+    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}\*
     
     # delete BCSD
     delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/${Mon}01/${YYYY}
@@ -315,7 +315,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
     COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
@@ -327,7 +327,7 @@ lis_darun(){
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
     LSMLISLOGFILE=${CWD}/logs_${YYYYP}${MMP}'/lislog'
     
-    #sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
+    sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
     sed -i "s|NOAHMP401RSTFILE|${NOAHMP401RSTFILE}|g" lis.config
     sed -i "s|HYMAP2RSTFILE|${HYMAP2RSTFILE}|g" lis.config
     sed -i "s|STARTYR|${YYYYP}|g" lis.config
