@@ -56,7 +56,7 @@ module snowmodel_lsmMod
 ! !USES:        
   use snowmodel_module
   use snowmodel_vars
-
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -72,30 +72,30 @@ module snowmodel_lsmMod
   type, public ::  snowmodel_type_dec
 
      ! LIS related parameters:
-     real                     :: rstInterval
-     character(256)           :: rfile
-     character(256)           :: rformat
+     real                                        :: rstInterval
+     character(len=LIS_CONST_PATH_LEN)           :: rfile
+     character(20)                               :: rformat
 
      ! LIS-SnowModel related parameters:
-     character(256)           :: parfile
-     character(256)           :: vfile
-     real                     :: ht_windobs
-     real                     :: ht_rhobs
-     integer                  :: call_sm_preproc
-     integer                  :: write_sm_metfields
-     character(10)            :: sm_params_opt
-     character(10)            :: sm_micromet_opt
+     character(len=LIS_CONST_PATH_LEN)           :: parfile
+     character(len=LIS_CONST_PATH_LEN)           :: vfile
+     real                                        :: ht_windobs
+     real                                        :: ht_rhobs
+     integer                                     :: call_sm_preproc
+     integer                                     :: write_sm_metfields
+     character(10)                               :: sm_params_opt
+     character(10)                               :: sm_micromet_opt
 
-     integer                  :: nsnow
-     real, allocatable        :: lyrthk(:)
-     real, allocatable        :: inittemp(:)
-     real                     :: initsnowdepth
-     real                     :: initsnowequiv
+     integer                                     :: nsnow
+     real, allocatable                           :: lyrthk(:)
+     real, allocatable                           :: inittemp(:)
+     real                                        :: initsnowdepth
+     real                                        :: initsnowequiv
 
-     integer                  :: forc_count
+     integer                                     :: forc_count
 
-     real                     :: ts
-     integer                  :: iter
+     real                                        :: ts
+     integer                                     :: iter
 
      ! SnowModel parameter - snowmodel.h
 !     integer                  :: nx_max
