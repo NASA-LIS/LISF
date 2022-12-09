@@ -18,9 +18,11 @@ from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
+# pylint: disable=import-error
 import BCSD_function
 from BCSD_stats_functions import write_4d_netcdf, get_domain_info
-from Shrad_modules import read_nc_files
+from shrad_modules import read_nc_files
+# pylint: enable=import-error
 
 def get_index(ref_array, my_value):
     """
@@ -96,7 +98,7 @@ FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
 CONFIG_FILE = str(sys.argv[16])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
-LATS, LONS = get_domain_info(CONFIG_FILE, coord=True) 
+LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'

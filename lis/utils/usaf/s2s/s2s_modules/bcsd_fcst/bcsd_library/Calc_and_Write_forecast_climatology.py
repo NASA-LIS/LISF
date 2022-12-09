@@ -5,14 +5,13 @@
 
 from __future__ import division
 import numpy as np
-from Shrad_modules import read_nc_files, MAKEDIR
-import os.path as op
+from shrad_modules import read_nc_files
 import sys
 import calendar
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import xarray as xr
-import os, errno
+import os
 
 # <codecell>
 

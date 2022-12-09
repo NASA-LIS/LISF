@@ -11,9 +11,9 @@
 from __future__ import division
 import numpy as np
 import sys
-from Shrad_modules import read_nc_files, MAKEDIR
+from shrad_modules import read_nc_files
 import xarray as xr
-import os, errno
+import os
 
 # <codecell>
 

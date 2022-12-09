@@ -24,7 +24,6 @@
 import os
 import sys
 import datetime
-import subprocess
 import yaml
 import xarray as xr
 
@@ -128,7 +127,7 @@ def _create_merged_metric_filename(output_dir, startdate, enddate,
     name += f"_GP.LIS-S2S-{model_forcing.upper()}-ANOM"
     name += "_GR.C0P25DEG"
     if domain == 'AFRICOM':
-        name += "_AR.AFRICA"        
+        name += "_AR.AFRICA"
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
     name += "_PA.LIS-S2S-ANOM"
@@ -155,7 +154,7 @@ def _merge_files(config, input_dir, model_forcing, startdate, mergefile):
 
     ds_out = xr.open_dataset(metricfile)
     ds_out = ds_out.rename ({"anom": first_var.replace('-','_') + '_' + first_metric})
-     
+
     # Loop through remaining var metric files, copy *only* the anom variable,
     # and then rename the anom variable.
     for var in var_list:
@@ -167,13 +166,13 @@ def _merge_files(config, input_dir, model_forcing, startdate, mergefile):
             metricfile = _create_var_metric_filename(input_dir, model_forcing,
                                                      var, metric,
                                                      startdate)
-            
+
             if not os.path.exists(metricfile):
                 print(f"[ERR] {metricfile} does not exist!")
                 sys.exit(1)
-            ds = xr.open_dataset(metricfile)
-            ds_out = xr.merge([ds_out, ds.rename ({"anom": var.replace('-','_') + '_' + metric})])
-                
+            _ds = xr.open_dataset(metricfile)
+            ds_out = xr.merge([ds_out, _ds.rename ({"anom": var.replace('-','_') + '_' + metric})])
+
     comp = dict(zlib=True, complevel=6)
     encoding = {var: comp for var in ds_out.data_vars}
     ds_out.to_netcdf(mergefile, encoding=encoding)

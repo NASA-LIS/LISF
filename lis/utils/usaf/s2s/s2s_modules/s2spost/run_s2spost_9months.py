@@ -16,12 +16,11 @@
 """
 
 # Standard modules
-import os
 import sys
 import argparse
 import datetime
 import yaml
-
+# pylint: disable=too-many-locals, import-outside-toplevel
 def _usage():
     """Print command line usage."""
     txt = \
@@ -63,7 +62,7 @@ def _submit_batch_jobs(args):
     model_forcing = args.nmme_model
 
     startdate = datetime.datetime(int(fcst_year), int(fcst_mon), day=1)
-    topdatadir = cwd + '/' + model_forcing + '/' 
+    topdatadir = cwd + '/' + model_forcing + '/'
 
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:

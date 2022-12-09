@@ -2,7 +2,7 @@
 
 from __future__ import division
 import numpy as np
-from Shrad_modules import read_nc_files, MAKEDIR
+from shrad_modules import read_nc_files
 import calendar
 import os.path as op
 import sys

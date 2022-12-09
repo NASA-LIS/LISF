@@ -29,9 +29,10 @@ import numpy as np
 import xarray as xr
 
 # Local modules
+# pylint: disable=import-error
 from metricslib import sel_var, compute_anomaly
-
-
+# pylint: enable=import-error
+# pylint: disable=consider-using-f-string
 # Start reading from command line.
 FCST_INIT_MON = int(sys.argv[1])
 TARGET_YEAR = int(sys.argv[2])
@@ -63,14 +64,16 @@ OUTFILE_TEMPLATE = '{}/{}_{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
 # name
 
 if DOMAIN_NAME == 'AFRICOM':
-    TARGET_INFILE_TEMPLATE1 = '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
+    TARGET_INFILE_TEMPLATE1 = \
+        '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
     CLIM_INFILE_TEMPLATE1 = \
-        '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'    
+        '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
 elif DOMAIN_NAME == 'GLOBAL':
-    TARGET_INFILE_TEMPLATE1 = '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
+    TARGET_INFILE_TEMPLATE1 = \
+        '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
     CLIM_INFILE_TEMPLATE1 = \
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
-    
+
 TARGET_INFILE_TEMPLATE2 = \
     'PA.LIS-S2S_DP.{:04d}{:02d}??-{:04d}{:02d}??_TP.0000-0000_DF.NC'
 CLIM_INFILE_TEMPLATE2 = 'PA.LIS-S2S_DP.*{:02d}??-*{:02d}??_TP.0000-0000_DF.NC'
@@ -89,16 +92,12 @@ for var_name in METRIC_VARS:
         emon = datetime(CLIM_SYR, FCST_INIT_MON, FCST_INIT_DAY) + \
                     relativedelta(months=lead+1)
         ## Adding 1 to lead to make sure the file read is from the month after
-        if DOMAIN_NAME == 'AFRICOM':
-            mon_arg = smon.month
-        elif DOMAIN_NAME == 'GLOBAL':
-            mon_arg = FCST_INIT_MON
-            
+
         INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
                                              FCST_INIT_MON, NMME_MODEL,
                                              NMME_MODEL, \
                                              smon.month, emon.month)
-        
+
         print(f"[INFO] reading forecast climatology {INFILE}")
         infile1 = glob.glob(INFILE)
         print("[INFO] Reading forecast climatology")
@@ -155,10 +154,12 @@ for var_name in METRIC_VARS:
         if lead == 0:
             all_anom = np.ones((ens_count, LEAD_NUM, lat_count, lon_count))*-99
         print('[INFO] Converting data into anomaly')
-        
+
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
-        if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
-            all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values, "lat": target_fcst_data.lat.values})
+        if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
+           (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
+            all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
+                                                         "lat": target_fcst_data.lat.values})
 
         this_anom = xr.apply_ufunc(
             compute_anomaly,
@@ -173,7 +174,7 @@ for var_name in METRIC_VARS:
 
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens]
-        
+
         del all_clim_data, target_fcst_data, all_clim_mean
 
     ### Step-4 Writing output file
