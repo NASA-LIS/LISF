@@ -132,7 +132,7 @@ Observation perturbation attributes file:             ./input/attribs/smap_perta
 #SMAP(NASA) CDF read option:                                     1
 
 # SMAP NRT - Operations-based SM data directory:
-SMAP(NRT) soil moisture data directory:               ../USAF_FORCING/SMAP_L2_SM_NRT/
+SMAP(NRT) soil moisture data directory:               ./USAF_FORCING/SMAP_L2_SM_NRT/
 SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc  
 SMAP(NRT) observation CDF file:                       ./input/cdf/smap_c007_cdf_100obs.nc
 SMAP(NRT) soil moisture number of bins in the CDF:              100
@@ -180,7 +180,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory:                  ../USAF_FORCING/usaf_lis75s2s_gfs2galwem/
+AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis75s2s_gfs2galwem/
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
