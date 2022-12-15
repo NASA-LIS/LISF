@@ -1752,6 +1752,10 @@ LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Catchment, Fortuna 2.5</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SAC.3.5.6</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Sacramento</p></td>
 </tr>
@@ -2942,6 +2946,14 @@ Run domain resolution:                40</pre>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CLM45</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CLM-4.5 landcover dataset.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NALCMS_SM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel-based NALCMS landcover dataset.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NALCMS_SM_IGBPNCEP</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel-based NALCMS landcover dataset with IGBPNCEP-mapped classes.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CONSTANT</p></td>
@@ -4672,6 +4684,10 @@ Soil color resolution (dy):        0.2500</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MERIT_1K</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The MERIT elevation map, but processed by LISF-team to have a resolution &#8216;0.008333&#8217;. See: <a href="http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html" class="bare">http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html</a></p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NED_SM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel-based National Elevation Dataset (NED) topographic fields.</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -6237,6 +6253,34 @@ CLM45 upper right lat:                    90.0
 CLM45 upper right lon:                   359.375
 CLM45 resolution (dx):                     1.25
 CLM45 resolution (dy):                     0.9424060</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>If selecting Glen Liston&#8217;s SnowModel, the following config entires are required.</p>
+</div>
+<div class="paragraph">
+<p><code>Snowmodel topo-veg data source:</code> specifies which pre-processed SnowModel parameters and file format type to be read in. Currently, only the &#8220;Grads_binary&#8221; option is available.</p>
+</div>
+<div class="paragraph">
+<p><code>Snowmodel topo-veg map:</code> specifies the directory-file location of the pre-processed SnowModel topographic and vegetation class parameters.</p>
+</div>
+<div class="paragraph">
+<p><code>Snowmodel topo-veg spatial transform:</code> specifies the type of grid transform for preprocessed SnowModel topographic and vegetation class parameters. Currently, this option is not yet supported and user option is only &#8220;none&#8221; at this time.</p>
+</div>
+<div class="paragraph">
+<p><code>Snowmodel topo-veg map projection:</code> specifies the SnowModel parameter file projection. Currently, SnowModel parameter projection needs to be set to the same as the LIS domain projection, for now. SnowModel parameters are best provided either on a Lambert projection (in LIS) and supports some equal-area projection grids, like UTM, which is available in LIS. Future support for more options will be added.</p>
+</div>
+<div class="paragraph">
+<p><code>Snowmodel topo-veg fill option:</code> specifies the type of fill option used with SnowModel parameters. Currently, this feature is not supported, and will be in future versions.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Snowmodel topo-veg data source:     "Grads_binary"
+Snowmodel topo-veg map:        ../SnowModel_Inputs/uppertuo_100m/topo_vege.gdat
+Snowmodel topo-veg spatial transform:  "none"
+Snowmodel topo-veg map projection:    lambert
+Snowmodel topo-veg fill option:        none</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -17691,7 +17735,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-12-09 15:52:29 UTC
+Last updated 2022-12-15 19:51:56 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

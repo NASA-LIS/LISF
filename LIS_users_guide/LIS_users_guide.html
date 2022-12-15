@@ -509,11 +509,12 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ssec_forcings">9.9. Forcings</a></li>
 <li><a href="#ssec_suppforcings">9.10. Supplemental forcings</a></li>
 <li><a href="#ssec_lsm">9.11. Land surface models</a></li>
-<li><a href="#ssec_lakes">9.12. Lake models</a></li>
-<li><a href="#ssec_openwater">9.13. Open water models</a></li>
-<li><a href="#ssec_landslides">9.14. Land slide models</a></li>
-<li><a href="#ssec_irrigation">9.15. Irrigation</a></li>
-<li><a href="#ssec_routing">9.16. Routing</a></li>
+<li><a href="#ssec_sublsm">9.12. Sublevel land surface models</a></li>
+<li><a href="#ssec_lakes">9.13. Lake models</a></li>
+<li><a href="#ssec_openwater">9.14. Open water models</a></li>
+<li><a href="#ssec_landslides">9.15. Land slide models</a></li>
+<li><a href="#ssec_irrigation">9.16. Irrigation</a></li>
+<li><a href="#ssec_routing">9.17. Routing</a></li>
 </ul>
 </li>
 </ul>
@@ -4926,7 +4927,34 @@ Not all the optional components listed below are available in the public release
 </div>
 </div>
 <div class="paragraph">
-<p>Re-run the <em>configure</em> script to process your <em>user.cfg</em> file. Then compile the LIS source code accordingly.</p>
+<p>Now you may recompile LIS.</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>% ./compile</pre>
+</div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>If you enable the SnowModel by adding</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>SNOWMODEL: On</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>to your <em>user.cfg</em> file, then you must modify the <em>make/configure.lis</em> file by adding <code>-mcmodel=medium</code> to the <code>FFLAGS77</code> and <code>FFLAGS</code> variables.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -5500,6 +5528,54 @@ Acceptable values are:</p>
 </div>
 </div>
 <div class="paragraph">
+<p><code>Number of subLSMs:</code> specifies the number of sub-level LSMs
+or specialized models that may interface with other LSMs in LIS.
+Entry here can be set to 1 with having a surface model type
+specified, such as "LSM", and set to 1.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>Number of subLSMs:             1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>subLSM models:</code> specifies the sub-level land surface model to run.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">template lsm</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crocus8.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Crocus version 8.1 snow model</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Glen Liston&#8217;s SnowModel snow model</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>subLSM models:            "Crocus8.1"</pre>
+</div>
+</div>
+<div class="paragraph">
 <p><code>Lake model:</code> specifies the lake model to run.
 Acceptable values are:</p>
 </div>
@@ -5952,6 +6028,14 @@ Acceptable values are:</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;slope-aspect&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Apply slope-aspect correction for forcing</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;lapse-rate and slope-aspect&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apply both lapse-rate and slope-aspect corrections</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;micromet&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apply Glen Liston&#8217;s MicroMet corrections to forcing fields</p></td>
 </tr>
 </tbody>
 </table>
@@ -19766,9 +19850,147 @@ AWRAL600 initial mleaf: 0.67 0.2</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_lakes">9.12. Lake models</h3>
+<h3 id="ssec_sublsm">9.12. Sublevel land surface models</h3>
 <div class="sect3">
-<h4 id="sssec_flake.1.0">9.12.1. FLAKE.1.0</h4>
+<h4 id="sssec_sublsm_snowmodel">9.12.1. SnowModel, Liston</h4>
+<div class="paragraph">
+<p><code>SnowModel model timestep:</code> specifies the timestep for the run.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel restart output interval:</code> defines the restart
+writing  interval for Glen Liston&#8217;s SnowModel model. The typical
+value used in the LIS runs is 24 hours (1da).</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#ssec_timeinterval">[ssec_timeinterval]</a> for a description
+of how to specify a time interval.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel restart file:</code> specifies the SnowModel active
+restart file.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel restart file format:</code> specifies the restart file
+format for SnowModel.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel parameter file:</code> specifies the main SnowModel-specific
+input and option parameter configuration file, which is needed
+to run SnowModel.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel parameters source option:</code> specifies if SnowModel will
+read in its native binary parameter files from within the SnowModel
+code or what is preprocessed in LDT. LDT option supports parallel runs
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use SnowModel built-in routines to read in</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LDT</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use the LIS SnowModel main driver to load parameters from LDT.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>SnowModel MicroMet input source:</code> specifies if SnowModel will
+read in its own specifically formatted binary or ASCII table forcing
+files, or if LIS meteorological forcing fields will be passed in,
+with the option to turn on MicroMet topographic-downscaling options
+on the LIS metforcing layer side. To turn on "micromet" option in LIS,
+set Topographic correction method (met forcing) to micromet.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SnowModel</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Readin specific SnowModel forcing files</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LIS-based meteorological forcing fields</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>SnowModel preprocess code option:</code> specifies the turning on
+of the SnowModel built-in preprocess code module, which performs
+initial preprocessing of gridded data for running the model.
+Currently, only option supported is 1 (on).</p>
+</div>
+<div class="paragraph">
+<p><code>Write out SnowModel forcing file fields:</code> specifies if you
+want to write out SnowModel forcing fields generated by reading
+in SnowModel-specific forcing files. This option is mainly
+used when SnowModel MicroMet input source is set to SnowModel
+and you run SnowModel in offline subLSM mode (no other LSMs or models
+run with this submodel). Selecting 1 activates this option, and
+0 indicates off.</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel number of snow layers:</code> specifies the number of snow
+layers that would be allowed to build within the SnowModel runtime.
+This option is currently set to 1 within LIS, and must also be
+activated and increased by setting the multiple layer snow model
+scheme in the SnowModel option parameter file (snowmodel.par).</p>
+</div>
+<div class="paragraph">
+<p><code>SnowModel initial snow water equivalent:</code> specifies the initial
+snow water equivalent (SWE) value.  This is currently set to
+default values found in the coldstart mode for model restart reads,
+based on a SnowModel initialization approach.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>SnowModel model timestep:                1hr
+SnowModel restart file:                ./none
+SnowModel restart output interval:       1mo
+SnowModel restart file format:          "netcdf"
+SnowModel parameter file:              ./snowmodel.par
+SnowModel parameters source option:       LDT
+SnowModel MicroMet input source:          LIS
+Write out SnowModel forcing file fields:  1
+SnowModel preprocess code option:         1
+SnowModel number of snow layers:          1
+SnowModel initial snow water equivalent:  0.0</pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="ssec_lakes">9.13. Lake models</h3>
+<div class="sect3">
+<h4 id="sssec_flake.1.0">9.13.1. FLAKE.1.0</h4>
 <div class="paragraph">
 <p><code>FLAKE1 model timestep:</code> specifies the timestep for FLAKE1.</p>
 </div>
@@ -19888,9 +20110,9 @@ FLAKE1 initial snow surface albedo with respect to the solar radiation:</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_openwater">9.13. Open water models</h3>
+<h3 id="ssec_openwater">9.14. Open water models</h3>
 <div class="sect3">
-<h4 id="sssec_templateopenwater">9.13.1. template open water</h4>
+<h4 id="sssec_templateopenwater">9.14.1. template open water</h4>
 <div class="paragraph">
 <p><code>Template open water timestep:</code> specifies the timestep for the run.</p>
 </div>
@@ -19907,9 +20129,9 @@ of how to specify a time interval.</p>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_landslides">9.14. Land slide models</h3>
+<h3 id="ssec_landslides">9.15. Land slide models</h3>
 <div class="sect3">
-<h4 id="sssec_gls">9.14.1. GLS</h4>
+<h4 id="sssec_gls">9.15.1. GLS</h4>
 <div class="paragraph">
 <p><code>GLS susceptibility index map:</code> <span class="red">specifies what?</span></p>
 </div>
@@ -19969,7 +20191,7 @@ GLS output interval:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_trigrs">9.14.2. TRIGRS</h4>
+<h4 id="sssec_trigrs">9.15.2. TRIGRS</h4>
 <div class="paragraph">
 <p><code>TRIGRS initialization file:</code> <span class="red">specifies what?</span></p>
 </div>
@@ -19990,7 +20212,7 @@ TRIGRS rain input source style:</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_irrigation">9.15. Irrigation</h3>
+<h3 id="ssec_irrigation">9.16. Irrigation</h3>
 <div class="paragraph">
 <p><code>Irrigation scheme:</code> specifies the name of the irrigation
 scheme to use.
@@ -20176,9 +20398,9 @@ Irrigation source water partition: 0</pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="ssec_routing">9.16. Routing</h3>
+<h3 id="ssec_routing">9.17. Routing</h3>
 <div class="sect3">
-<h4 id="sssec_hymaprouting">9.16.1. HYMAP routing</h4>
+<h4 id="sssec_hymaprouting">9.17.1. HYMAP routing</h4>
 <div class="paragraph">
 <p><code>HYMAP routing model time step:</code> specifies the timestep for
 the HyMAP router.</p>
@@ -20360,7 +20582,7 @@ HYMAP routing model restart file: "./OL/ROUTING/200001/LIS_RST_HYMAP_router_2000
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_hymap2routing">9.16.2. HYMAP2 routing</h4>
+<h4 id="sssec_hymap2routing">9.17.2. HYMAP2 routing</h4>
 <div class="paragraph">
 <p><code>HYMAP2 routing model time step:</code> specifies the timestep for
 the HyMAP2 router.</p>
@@ -20755,7 +20977,7 @@ HYMAP2 2-way coupling flooded fraction threshold: 2.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_nldasrouting">9.16.3. NLDAS routing</h4>
+<h4 id="sssec_nldasrouting">9.17.3. NLDAS routing</h4>
 <div class="paragraph">
 <p><code>NLDAS routing model output interval:</code> defines the output
 writing interval for the NLDAS router.</p>
@@ -20839,7 +21061,7 @@ NLDAS routing model restart file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_rapidrouting">9.16.4. RAPID routing</h4>
+<h4 id="sssec_rapidrouting">9.17.4. RAPID routing</h4>
 <div class="paragraph">
 <p><code>RAPID routing model time step:</code> specifies the timestep for
 the RAPID router.</p>
@@ -22099,6 +22321,29 @@ s0_avg:       1  mm      -    0 0 0 1 0 1 # water storage in the surface soil la
 ss_avg:       1  mm      -    0 0 0 1 0 1 # water content of the shallow soil store
 sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store</p>
 </div>
+<div class="paragraph">
+<p># SnowModel-specific fields:
+SM_SWE:          1  m       -    0 0 0 1  65 1000    # Snow Water Equivalent (kg/m2)
+SM_SnowDepth:    1  m       -    0 0 0 1  66 1000    # Snow depth (m)
+SM_SnowDensity:  1  kg/m3   -    0 0 0 1 900 10      # Snow density (kg/m3)
+SM_Snowcover:    0  -       -    0 0 0 1 238 100     # Snow cover (-)
+SM_SLiqFrac:     0  -       -    0 0 0 1 185 1000    # Fraction of SWE in the liquid phase
+SM_SWEVeg:       0  kg/m2   -    1 0 0 1 139 1000    # SWE intercepted by vegetation (kg/m2)
+SM_Albedo:       1  -       -    1 0 0 1  84 100     # Surface albedo (-)
+SM_SAlbedo:      0  -       -    0 0 0 1 184 1000    # Albedo of the snow-covered area (-)
+# Other fields&#8201;&#8212;&#8201;summed output:
+SM_Qs:           0  m       OUT  3 0 0 1 235 10000   # Surface runoff from snowpack / top-soil (m/timestep)
+SM_Qsm:          0  m       S2L  3 0 0 1  99 10000   # Snowmelt (kg/m2s)
+SM_SubSnow:      0  m       -    3 0 0 1 198 1000    # Snow sublimation (m)
+SM_Snowf:        1  m       DN   3 0 0 1 161 10000   # Snowfall rate (m/timestep)
+SM_Rainf:        1  m       DN   3 0 0 1 162 10000   # Rainfall rate (m/timestep)
+SM_TotalPrecip:  1  m       DN   3 0 0 1  61 10000   # Total precipitation rate (m/timestep)
+# SnowModel-modified forcings:
+SM_SWdown:    1  W/m2    DN   1 0 0 1 204 10         # SnowModel-modified SWdown
+SM_LWdown:    1  W/m2    DN   1 0 0 1 205 10         # SnowModel-modified LWdown
+SM_NWind:     1  m/s     N    1 0 0 1  34 10         # SnowModel-modified NWind
+SM_EWind:     1  m/s     E    1 0 0 1  33 10         # SnowModel-modified EWind</p>
+</div>
 <div class="literalblock">
 <div class="content">
 <pre>[[sec_usersupport,User Support]]
@@ -22476,7 +22721,7 @@ Code contributors included:
 <div id="footer">
 <div id="footer-text">
 Version 2.0<br>
-Last updated 2022-12-09 15:52:29 UTC
+Last updated 2022-12-15 19:51:56 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
