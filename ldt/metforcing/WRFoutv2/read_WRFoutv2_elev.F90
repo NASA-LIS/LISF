@@ -109,7 +109,7 @@ subroutine read_wrfoutv2_elev( n, findex, wrfoutv2elev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "[INFO] Reading the WRFoutv2 terrain height file: ", &
-        wrfoutv2_struc(n)%file_wrfelev
+        trim(wrfoutv2_struc(n)%file_wrfelev)
 
 #if (defined USE_NETCDF4) 
 
