@@ -41,5 +41,22 @@ After creating a _user.cfg_ file you must recompile the LIS source code.  First 
 % cd ..
 ....
 
-Re-run the _configure_ script to process your _user.cfg_ file. Then compile the LIS source code accordingly.
+//Re-run the _configure_ script to process your _user.cfg_ file. Then compile the LIS source code accordingly.
+
+Now you may recompile LIS.
+
+....
+% ./compile
+....
+
+[NOTE]
+====
+If you enable the SnowModel by adding
+
+....
+SNOWMODEL: On
+....
+
+to your _user.cfg_ file, then you must modify the _make/configure.lis_ file by adding `-mcmodel=medium` to the `FFLAGS77` and `FFLAGS` variables.
+====
 

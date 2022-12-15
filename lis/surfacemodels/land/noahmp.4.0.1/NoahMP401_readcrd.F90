@@ -138,6 +138,9 @@ subroutine NoahMP401_readcrd()
         elseif (trim(landuse_scheme_name) .eq. "IGBPNCEP") then
           NOAHMP401_struc(n)%landuse_scheme_name = &
                                "MODIFIED_IGBP_MODIS_NOAH"
+        elseif (trim(landuse_scheme_name) .eq. "NALCMS_SM_IGBPNCEP" ) then
+          NOAHMP401_struc(n)%landuse_scheme_name = &
+                               "MODIFIED_IGBP_MODIS_NOAH"
         elseif (trim(landuse_scheme_name) .eq. "UMD") then
           NOAHMP401_struc(n)%landuse_scheme_name = "UMD"
         else
