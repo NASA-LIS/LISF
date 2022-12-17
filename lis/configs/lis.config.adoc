@@ -10392,7 +10392,6 @@ RAPID Muskingum parameter x file: ./rapid_params/x.csv
 RAPID namelist file: ./rapid_params/rapid_namelist
 ....
 
-=======
 [[sssec_lsm_Crocus8.1, from SURFEX8.1]]
 ==== Crocus8.1
 
@@ -10549,7 +10548,6 @@ writing interval for Crocus8.1. The typical value is 1 month (1mo).
 
 `CROCUS81 initial SNOWMAK_dz:` Initial depth from snow making process
 
-
 .Example _lis.config_ entry
 ....
 
@@ -10611,6 +10609,7 @@ CROCUS81 initial CDSNOW: 0.0
 CROCUS81 initial USTARSNOW: 0.0
 CROCUS81 initial CHSNOW: 0.0
 CROCUS81 initial SNOWMAK_dz: 0.0
+....
 
 === Runoff
 
@@ -10831,7 +10830,6 @@ sample MODEL_OUTPUT_LIST.TBL file for the complete specification.
 ....
 Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
-
 
 [[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval
