@@ -260,8 +260,8 @@ contains
           do n=1,LIS_rc%nnest
              do k=1,LIS_rc%nperts
                 write(LIS_logunit,*) &
-                     '[INFO] Opening constraints for prognostic state variables ',&
-                     LIS_rc%progattribFile(k)
+                     '[INFO] Opening constraints for prognostic state variables: ',&
+                     trim(LIS_rc%progattribFile(k))
                 ftn = LIS_getNextUnitNumber()
                 open(ftn, file = LIS_rc%progattribFile(k),status='old')
                 read(ftn,*)

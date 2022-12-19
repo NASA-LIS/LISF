@@ -28,6 +28,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from convert_forecast_data_to_netcdf import read_wgrib
 import yaml
+from BCSD_stats_functions import get_domain_info
 
 regridder = True
 
@@ -42,9 +43,9 @@ def _usage():
 def _read_cmd_args():
     """Read command line arguments."""
 
-    with open(sys.argv[5], 'r') as file:
+    with open(sys.argv[5], 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-            
+    
     if len(sys.argv) != 9:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
@@ -56,10 +57,11 @@ def _read_cmd_args():
         "fcst_init_monthday" : sys.argv[3],        
         "outdir" : sys.argv[4],
         "forcedir" : config['BCSD']["fcst_download_dir"],
-        "patchdir" : config['BCSD']['patchdir'],
+        "patchdir" : config['SETUP']['supplementarydir'] + '/bcsd_fcst/patch_files/',
         "ic1" : sys.argv[6],
         "ic2" : sys.argv[7],
         "ic3" : sys.argv[8],
+        "configfile": sys.argv[5],
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -115,17 +117,11 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
         cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
         
         # build regridder
-        xll = args['config']["EXP"]["domian_extent"][0].get("LON_SW")
-        xur = args['config']["EXP"]["domian_extent"][0].get("LON_NE")
-        yll = args['config']["EXP"]["domian_extent"][0].get("LAT_SW")
-        yur = args['config']["EXP"]["domian_extent"][0].get("LAT_NE") 
-        dx = args['config']["EXP"]["domain_dx"]
-        dy = args['config']["EXP"]["domain_dy"]
-        
+        lats, lons = get_domain_info(args["configfile"], coord=True)        
         ds_out = xr.Dataset(
             {
-                "lat": (["lat"], np.arange(yll + dy/2., yur, dy)),
-                "lon": (["lon"], np.arange(xll + dy/2., xur, dx)),
+                "lat": (["lat"], lats),
+                "lon": (["lon"], lons),
         }
         )
         regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
@@ -142,8 +138,10 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        this_6h = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
+        this_6h1 = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
                                 (ds_out['valid_time']  < dt2s), drop=True)
+        this_6h2 = this_6h1.rename_vars({"time": "time_step"})
+        this_6h = this_6h2.rename_dims({"step": "time"}) 
         this_6h.to_netcdf(file_6h,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999. },
                                                            "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
@@ -154,7 +152,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, temp_name, wanted_months,
                                                            "U10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "V10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "WIND10M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}})
-        this_mon = this_6h.mean (dim='step')
+        this_mon = this_6h.mean (dim='time')
         this_mon.to_netcdf(file_mon,format="NETCDF4", encoding = {"PRECTOT": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "PS": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
                                                            "T2M": {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.},
@@ -236,22 +234,19 @@ def _driver():
                                          fcst_init['month'],
                                          varname)
                 indir = f"{args['forcedir']}/{subdir}/"
+                if subdir == "Oper_TS" and not os.path.exists(indir):
+                    indir = f"{args['forcedir']}/"
+                        
                 indir += f"{fcst_init['year']}/{fcst_init['date']}"
 
                 # Convert GRIB file to netCDF and handle missing/corrupted data
                 cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
             cfsv2 = xr.merge (cfsv2, compat='override')
-            # rename variables
-            cfsv2 = cfsv2.rename({'prate':'PRECTOT','sp':'PS','t2m':'T2M',
-                                  'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
-                                  'u10':'U10M','v10':'V10M'})
-            # set variable attributes
             _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
                                                  (cfsv2['valid_time']  < dt2)),
                                       outdirs, temp_name, wanted_months,
                                       fcst_init, args)
-
 
     print("[INFO] Done processing CFSv2 forecast files")
 

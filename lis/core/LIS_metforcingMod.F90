@@ -873,8 +873,8 @@ contains
        enddo
 
        do n=1,LIS_rc%nnest
-          write(LIS_logunit,*) '[INFO] Opening Forcing Attributes file ',&
-               LIS_rc%forcattribfile
+          write(LIS_logunit,*) '[INFO] Opening Forcing Attributes file: ',&
+               trim(LIS_rc%forcattribfile)
           
           ftn = LIS_getNextUnitNumber()
           open(ftn,file=(LIS_rc%forcattribfile), status='old')
