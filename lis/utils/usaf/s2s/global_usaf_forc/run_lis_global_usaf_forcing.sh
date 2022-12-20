@@ -4,6 +4,7 @@
 #SBATCH --account s1189
 #SBATCH --output s2sglb.slurm.out
 #SBATCH --ntasks=560
+##SBATCH --mail-user=[user_email@address]
 #SBATCH --mail-type=ALL
 ##SBATCH --qos=debug
 #------------------------------------------------------------------------------
@@ -25,7 +26,7 @@
 ulimit -s unlimited
 
 # When a batch script is started, it starts in user's home directory.
-# Changet to the directory where job was submitted.
+# Change to the directory where job was submitted.
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
@@ -33,15 +34,19 @@ fi
 # Enviroment
 module purge
 unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_19_1_3_304
+## USER INPUTS:  ##
+module use --append ~/privatemodules
+module load lisf_7.5_intel_2021.4.0_s2s
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/lis_aist17/emkemp/AFWA/lis74_reanalysis_test/LISF/lis/configs/557WW-7.4-FOC/S2S_GLOBAL
-CFGTMPL=$SCRIPTDIR/lis.config.template
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/GHI_S2S/GLOBAL/LISF_557WW_7.5/lis/utils/usaf/s2s/global_usaf_forc
+
+CFGTMPL=input/lis.config.template
 OUTDIR=./output
-RSTDIR=./restarts
-GRIBDIR=./grib
+RSTDIR=./input/restarts
+GRIBDIR=./output/grib
+
+## END OF USER INPUTS ##
 
 # Get the command line arguments.
 if [ -z "$1" ] ; then
