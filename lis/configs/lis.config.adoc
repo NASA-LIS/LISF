@@ -10638,7 +10638,6 @@ Acceptable values are:
 
 `CROCUS81 initial SNOWMAK_dz:` specifies the initial depth from snow making process.
 
-
 .Example _lis.config_ entry
 ....
 CROCUS81 model timestep:                  15mn
@@ -10919,7 +10918,6 @@ sample MODEL_OUTPUT_LIST.TBL file for the complete specification.
 ....
 Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
-
 
 [[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval
