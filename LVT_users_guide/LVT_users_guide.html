@@ -6197,6 +6197,32 @@ Number of state variables in the DA update: 4</pre>
 <pre>Number of vertical levels in the LIS output: 4</pre>
 </div>
 </div>
+<div class="paragraph">
+<p><code>LIS output number of soil moisture layers:</code> specifies the number of soil moisture layers used in the LIS output. This is optional and defaults to 0.</p>
+</div>
+<div class="paragraph">
+<p><code>LIS output soil moisture layer thickness:</code> specifies the number of soil moisture layers used in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil moisture layer thicknesses. If the number of soil moisture layers is omitted or set to 0, this entry is not read and soil moisture layer thicknesses are not written to the NetCDF global attributes.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>LIS output number of soil moisture layers:  4
+LIS output soil moisture layer thickness: 0.1 0.3 0.6 1.0</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>LIS output number of soil temperature layers:</code> specifies the thicknesses of soil moisture layers in the LIS output. This is optional and defaults to 0.</p>
+</div>
+<div class="paragraph">
+<p><code>LIS output soil temperature layer thickness:</code> specifies the thicknesses of soil temperature layers in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil temperature layer thicknesses. If the number of soil temperature layers is omitted or set to 0, this entry is not read and soil temperature layer thicknesses are not written to the NetCDF global attributes.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>LIS output number of soil temperature layers:  4
+LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0</pre>
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -7047,7 +7073,7 @@ rmse_qle_ensSTD rmse_qle_CI
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2022-12-20 18:22:01 UTC
+Last updated 2023-01-05 21:38:22 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
