@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -269,6 +269,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_FluxSatobsId = "FluxSAT GPP"
    character*50, public,  parameter :: LVT_THySMobsId = "THySM"
    character*50, public,  parameter :: LVT_UASMAPobsId = "UA SMAP"
+   character*50, public,  parameter :: LVT_GRUNobsId = "GRUN runoff"
 !-------------------------------------------------------------------------
 ! Training algorithms
 !------------------------------------------------------------------------- 

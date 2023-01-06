@@ -163,6 +163,7 @@ LVT output methodology:                 "2d gridspace"
 | "`FluxSAT GPP`"                   | FluxSat GPP data
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 | "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
+| "`GRUN runoff`"                  | GRUN runoff data
 |===
 
 .Example _lvt.config_ entry
@@ -1780,6 +1781,17 @@ GRDC frequency of data:  monthly
 GRDC file version:       1
 ....
 
+==== GRUN data
+
+`GRUN data directory:` specifies the location of the GRUN data.
+
+
+.Example _lvt.config_ entry
+....
+GRUN data directory:    ../GRDC_data
+....
+
+
 ==== LIS DAOBS output as the observation
 
 `LIS DAOBS output directory:` specifies the LIS DAOBS output directory
@@ -2632,4 +2644,24 @@ Number of fields in the LIS output: 11
 .Example _lvt.config_ entry
 ....
 Number of vertical levels in the LIS output: 4
+....
+
+`LIS output number of soil moisture layers:` specifies the number of soil moisture layers used in the LIS output. This is optional and defaults to 0.
+
+`LIS output soil moisture layer thickness:` specifies the number of soil moisture layers used in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil moisture layer thicknesses. If the number of soil moisture layers is omitted or set to 0, this entry is not read and soil moisture layer thicknesses are not written to the NetCDF global attributes.
+
+.Example _lvt.config_ entry
+....
+LIS output number of soil moisture layers:  4
+LIS output soil moisture layer thickness: 0.1 0.3 0.6 1.0
+....
+
+`LIS output number of soil temperature layers:` specifies the thicknesses of soil moisture layers in the LIS output. This is optional and defaults to 0.
+
+`LIS output soil temperature layer thickness:` specifies the thicknesses of soil temperature layers in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil temperature layer thicknesses. If the number of soil temperature layers is omitted or set to 0, this entry is not read and soil temperature layer thicknesses are not written to the NetCDF global attributes.
+
+.Example _lvt.config_ entry
+....
+LIS output number of soil temperature layers:  4
+LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0
 ....

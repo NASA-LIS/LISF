@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -45,6 +45,7 @@ module LDT_PRIV_rcMod
      integer                :: add_buffer   ! KA
      integer                :: x_buffer
      integer                :: y_buffer
+     integer                :: allmaskland  ! KA: Temporary for NoahMP+SM coupling
 
 ! -- Land surface input parameters:
      integer                :: max_model_types 
@@ -360,6 +361,7 @@ module LDT_PRIV_rcMod
      real                   :: group_cdfs_min
      real                   :: group_cdfs_max
      integer                :: group_cdfs_nbins
+     integer                :: daily_interp_switch  !0:on; 1:off (Y.Kwon)
 
      integer                :: sp_sampl_cdfs
      integer                :: sp_sample_cdf_rad

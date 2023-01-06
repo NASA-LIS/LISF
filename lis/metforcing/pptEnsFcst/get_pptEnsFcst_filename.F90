@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -68,14 +68,22 @@
 
   select case( fcsttype )
   
-    case( "GEOS5", "CFSv2" )
-  ! If forecast dataset of origin is:  GEOS-5, or CFSv2 ...
+    ! If forecast dataset of origin is:  GEOS-5, or CFSv2 ...
+    case( "GEOS5" )
   
-     !- LIS function to convert 2-digit month to 3-char month:
-     ! 
+      !- LIS function to convert 2-digit month to 3-char month:
       call LIS_mon3char( fmo, fmo3 )
 
+      ! Former directory structure:
       filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+          trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
+
+    case( "CFSv2" )
+
+      call LIS_mon3char( fmo, fmo3 )
+
+      ! New directory structure (as of Nov 30, 2022):
+      filename = trim(directory)//"/"//fmo3//"01/"//fyr//"/ens"//&
           trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
 
      ! ** Will need to update later to accomodate additional start

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -85,7 +85,7 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr)
 !  \begin{description}
 !  \item[julhr\_date] (\ref{LIS_julhr_date}) \newline
 !    converts the julian hour to a date format
-!  \item[getGALWEMfilename](\ref{getGALWEMfilename}) \newline
+!  \item[AGRMET_getGALWEMfilename](\ref{AGRMET_getGALWEMfilename}) \newline
 !    generates the first guess GALWEM filename
 !  \item[AGRMET\_fldbld\_read\_galwem](\ref{AGRMET_fldbld_read_galwem}) \newline
 !   read GALWEM data in grib format
@@ -132,7 +132,7 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr)
   do while( (.not.found) .and. (fc_hr <= 24))
      yr_2d = mod(yr1,100)
      if(yr_2d.eq.0) yr_2d = 100 
-     call getGALWEMfilename(avnfile, agrmet_struc(n)%agrmetdir,&
+     call AGRMET_getGALWEMfilename(avnfile, agrmet_struc(n)%agrmetdir,&
           agrmet_struc(n)%galwemdir, agrmet_struc(n)%use_timestamp,&
           yr1,mo1,da1,hr1,fc_hr)
 
@@ -284,7 +284,7 @@ end subroutine AGRMET_fldbld_galwem
 ! \label{getGALWEMfilename}
 !
 ! !INTERFACE: 
-subroutine getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
+subroutine AGRMET_getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
                              yr,mo,da,hr,fc_hr)
 
   implicit none
@@ -342,7 +342,7 @@ subroutine getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
      filename = trim(rootdir) // '/' // trim(dir) // '/' // &
                 fname1 // ftime1 // '_CY.' // fhr // '_FH.' // fchr // '_DF.GR2'
   endif
-end subroutine getGALWEMfilename
+end subroutine AGRMET_getGALWEMfilename
 
 
 !BOP
@@ -490,7 +490,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,   &
   character*9                   :: cstat
   character*100                 :: message     ( 20 )
   character(len=4)              :: grib_msg
-  character(len=4)              :: check_galwem_message
+  character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt
   integer                       :: count_rh
   integer                       :: count_tmp
@@ -594,7 +594,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,   &
         call LIS_verify(ierr, 'error in grib_get: level in ' // &
                               'AGRMET_fldbld_read_galwem')
 
-        grib_msg = check_galwem_message(param_disc_val, param_cat_val, &
+        grib_msg = AGRMET_check_galwem_message(param_disc_val, param_cat_val, &
                                         param_num_val, surface_val)
 
         if ( grib_msg /= 'none' ) then
@@ -791,14 +791,14 @@ end subroutine AGRMET_fldbld_read_galwem
 
 !BOP
 !
-! !ROUTINE: check_galwem_message
-! \label{check_galwem_message}
+! !ROUTINE: AGRMET_check_galwem_message
+! \label{AGRMET_check_galwem_message}
 !
 ! !REVISION HISTORY:
 ! 14 Jun 2016 James Geiger; Initial specification
 !
 ! !INTERFACE:    
-function check_galwem_message(param_disc_val, param_cat_val, &
+function AGRMET_check_galwem_message(param_disc_val, param_cat_val, &
                               param_num_val, surface_val)
 ! !USES: 
 ! none
@@ -807,7 +807,7 @@ function check_galwem_message(param_disc_val, param_cat_val, &
 ! !ARGUMENTS: 
    integer, intent(in) :: param_disc_val, param_cat_val, &
                           param_num_val, surface_val
-   character(len=4)    :: check_galwem_message
+   character(len=4)    :: AGRMET_check_galwem_message
 !
 ! !DESCRIPTION: 
 !  This function compares given grib id values against desired values
@@ -830,36 +830,36 @@ function check_galwem_message(param_disc_val, param_cat_val, &
             param_cat_val  == 3 .and. &
             param_num_val  == 0 .and. &
             surface_val    == 1 ) then
-      check_galwem_message = 'sp'
+      AGRMET_check_galwem_message = 'sp'
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 0 .and. &
             param_num_val  == 0 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 't'
+      AGRMET_check_galwem_message = 't'
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 3 .and. &
             param_num_val  == 5 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 'gh'
+      AGRMET_check_galwem_message = 'gh'
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 1 .and. &
             param_num_val  == 1 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 'r'
+      AGRMET_check_galwem_message = 'r'
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 2 .and. &
             surface_val    == 103 ) then
-      check_galwem_message = '10u'
+      AGRMET_check_galwem_message = '10u'
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 3 .and. &
             surface_val    == 103 ) then
-      check_galwem_message = '10v'
+      AGRMET_check_galwem_message = '10v'
    else 
-      check_galwem_message = 'none'
+      AGRMET_check_galwem_message = 'none'
    endif
-end function check_galwem_message
+ end function AGRMET_check_galwem_message
 
 
 !BOP

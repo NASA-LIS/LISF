@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -111,7 +111,7 @@ subroutine AGRMET_fldbld_precip_galwem(n,julhr,fc_hr,fg_data)
 !  \begin{description}
 !  \item[julhr\_date] (\ref{LIS_julhr_date}) \newline
 !    converts the julian hour to a date format
-!  \item[getGALWEMfilename](\ref{getGALWEMfilename}) \newline
+!  \item[AGRMET_getGALWEMfilename](\ref{AGRMET_getGALWEMfilename}) \newline
 !    generates the first guess GALWEM filename
 !  \item[AGRMET\_fldbld\_read\_precip\_galwem]
 !   (\ref{AGRMET_fldbld_read_precip_galwem}) \newline
@@ -172,11 +172,11 @@ subroutine AGRMET_fldbld_precip_galwem(n,julhr,fc_hr,fg_data)
 
      yr_2d = mod(yr1,100)
      if(yr_2d.eq.0) yr_2d = 100
-     call getGALWEMfilename(avnfile, agrmet_struc(n)%agrmetdir,&
+     call AGRMET_getGALWEMfilename(avnfile, agrmet_struc(n)%agrmetdir,&
           agrmet_struc(n)%galwemdir,agrmet_struc(n)%use_timestamp,&
           yr1,mo1,da1,hr1,fc_hr)
      if (getsixhr.eq.1) then
-        call getGALWEMfilename(avnfile2, agrmet_struc(n)%agrmetdir,&
+        call AGRMET_getGALWEMfilename(avnfile2, agrmet_struc(n)%agrmetdir,&
              agrmet_struc(n)%galwemdir,agrmet_struc(n)%use_timestamp,&
              yr1,mo1,da1,hr1,fc_hr-3)
      endif

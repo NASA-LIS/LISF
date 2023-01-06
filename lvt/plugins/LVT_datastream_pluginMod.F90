@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -178,7 +178,8 @@ contains
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
     use THySM_obsMod,           only : THySM_obsinit
-    use UASMAP_obsMod,           only : UASMAP_obsinit
+    use UASMAP_obsMod,          only : UASMAP_obsinit
+    use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
 
     external readtemplateObs
     external readLISoutput
@@ -288,6 +289,7 @@ contains
     external readFluxSatobs
     external readTHySMobs
     external readUASMAPobs
+    external readGRUNrunoffobs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -731,6 +733,11 @@ contains
     call registerobsread(trim(LVT_UASMAPobsId)//char(0),&
          readUASMAPobs)
     
-
+    call registerobssetup(trim(LVT_GRUNobsId)//char(0), &
+         GRUNrunoffinit)
+    call registerobsread(trim(LVT_GRUNobsId)//char(0),&
+         readGRUNrunoffobs)
+    
+    
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

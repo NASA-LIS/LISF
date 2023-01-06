@@ -8,7 +8,7 @@ Please see Section <<sec_important_note_fs>> for information regarding using a c
 
 === LISF Dependencies
 
-Please first read the companion document "`Installing LISF Dependencies`".  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
+Please first read the companion document _LISF Installation Guide_.  This document describes the required and optional libraries used by LISF.  It also describes the supported development environments.
 
 === Build Instructions
 
@@ -139,6 +139,7 @@ Use LIS-CRTM? (1-yes, 0-no, default=0):
 Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (1-yes, 0-no, default=0):
 Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0):
+Use PETSc? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,7 +39,7 @@ subroutine timeinterp_metForcGenerated(n, findex)
 ! !DESCRIPTION: 
 !
 !  Temporally interpolates the forcing data to the current model 
-!  timestep. If needed, downward shortwtavg radiation is interpolated using a
+!  timestep. If needed, downward shortwave radiation is interpolated using a
 !  zenith-angled based approach, depending on input forcing. 
 !
 !  The arguments are: 
@@ -150,7 +150,7 @@ subroutine timeinterp_metForcGenerated(n, findex)
      cpcp = 0.0
   endif
 
-!- Time interpolate or apply tavgrage rate:
+!- Time interpolate or apply average rate:
    wt1 = (metForcGen_struc%metforc_time2 - LIS_rc%time) / &
          (metForcGen_struc%metforc_time2 - metForcGen_struc%metforc_time1)
    wt2 = 1.0 - wt1
@@ -196,7 +196,7 @@ subroutine timeinterp_metForcGenerated(n, findex)
     enddo
   endif
 
-!- Time Averaged Longwtavg, Block Interpolation
+!- Time Averaged Longwave, Block Interpolation
    do k=1,LIS_rc%ntiles(n)/mfactor
      do m=1,mfactor
        t = m + (k-1)*mfactor
@@ -232,7 +232,6 @@ subroutine timeinterp_metForcGenerated(n, findex)
 
        if( forcopts%read_lwdown ) then
          if( forcopts%stat_lwdown == "inst" ) then
-!!          lwd(t) = metForcGen_struc%metdata1(kk,forcopts%index_lwdown,index1)
            lwd(t) = wt1 * metForcGen_struc%metdata1(kk,forcopts%index_lwdown,index1) &
                   + wt2 * metForcGen_struc%metdata2(kk,forcopts%index_lwdown,index1)
          elseif( forcopts%stat_lwdown == "tavg" ) then
