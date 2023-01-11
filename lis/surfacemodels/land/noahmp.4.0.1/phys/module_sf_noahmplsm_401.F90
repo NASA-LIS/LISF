@@ -1821,7 +1821,7 @@ ENDIF   ! CROPTYPE == 0
 ! ground snow cover fraction [Niu and Yang, 2007, JGR]
 
      FSNO = 0.
-     IF(SNOWH.GT.0.)  THEN
+     IF(SNOWH.GT.0.)  THEN       
          BDSNO    = SNEQV / SNOWH
          FMELT    = (BDSNO/100.)**parameters%MFSNO
          FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))

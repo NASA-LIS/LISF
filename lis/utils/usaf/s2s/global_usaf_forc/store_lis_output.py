@@ -138,7 +138,11 @@ def _copy_grib_files(tmp_output_dir, grib_dir, startdate):
 def _purge_tmp_output_dir(tmp_output_dir):
     """Purges temporary output directory from recent LIS run."""
     for filename in os.listdir(tmp_output_dir):
-        os.remove(os.path.join(tmp_output_dir, filename))
+        path = os.path.join(tmp_output_dir, filename)
+        try:
+            os.remove(path)
+        except IsADirectoryError:
+            continue
 
 def _driver():
     """Main driver."""

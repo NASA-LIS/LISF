@@ -36,6 +36,7 @@ _LDT_EXEC = "./LDT"
 _LSM_NAME = ""
 _ROUTING_NAME = ""
 _INPUT_NUMFCSTMONS = 9
+_LDT_INPUT_FILE = ""
 
 # NMME model names
 _NMME_MODELS = []
@@ -46,9 +47,6 @@ _ENSEMBLE_SIZES = {}
 # Options for scaling to 0.25 deg
 _NMME_SCALINGS = {}
 #
-# Other local input files
-_LDT_INPUT_FILE = \
-    f"./input/lis_input.s2s_africom.{_LSM_NAME}_{_ROUTING_NAME}.25km.nc"
 INPUTDIR = ''
 WORKDIR = ''
 FORECAST_YEAR = 0
@@ -56,8 +54,7 @@ FORECAST_MONTH = 0
 
 _CONFIGS_OUTPUT_DIR = "./ldt.config_files"
 _TEMPLATE_DIR = "./template_files"
-_LDTCONFIG_LSM_TEMPLATE = \
-    f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
+_LDTCONFIG_LSM_TEMPLATE = f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
 
 def _recursive_chmod(path, mode):
     """Recursively runs chmod"""
@@ -208,7 +205,7 @@ if __name__ == "__main__":
     CONFIGFILE = ARGS.CONFIGFILE
 
     # Read s2s.config
-    with open(CONFIGFILE, 'r') as file:
+    with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         CONFIG = yaml.safe_load(file)
 
     # update global params
@@ -219,6 +216,6 @@ if __name__ == "__main__":
     _NMME_MODELS = CONFIG['EXP']['NMME_models']
     _NMME_SCALINGS = CONFIG['EXP']['NMME_scalings'][0]
     _LDTCONFIG_LSM_TEMPLATE = f"{_TEMPLATE_DIR}/ldt.config_{_LSM_NAME}_nmme_TEMPLATE"
-    _LDT_INPUT_FILE = f"./input/lis_input.s2s_africom.{_LSM_NAME}_{_ROUTING_NAME}.25km.nc"
+    _LDT_INPUT_FILE = './input/' + CONFIG['SETUP']['ldtinputfile']
 
     _driver()

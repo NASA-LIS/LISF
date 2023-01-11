@@ -21,8 +21,10 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 from Shrad_modules import read_nc_files
+from BCSD_stats_functions import get_domain_info
 import xarray as xr
 import xesmf as xe
+import yaml
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -62,7 +64,11 @@ NMME_OUTPUT_DIR = str(sys.argv[4])
 SUPPLEMENTARY_DIR = str(sys.argv[5])
 NMME_MODEL = str(sys.argv[6])
 ENS_NUM = int(sys.argv[7])
-
+CONFIGFILE = str(sys.argv[8])
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+LEAD_MONS = config['EXP']['lead_months']
+        
 #MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanCM4i', 'GEM-NEMO', \
 MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
@@ -91,13 +97,10 @@ INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
 OUTDIR_TEMPLATE = '{}/{}/{}/{:04d}/ens{}/'
 OUTFILE_TEMPLATE = '{}/{}.nmme.monthly.{:04d}{:02d}.nc'
 if not os.path.exists(NMME_OUTPUT_DIR):
-    os.makedirs(NMME_OUTPUT_DIR)
+    os.makedirs(NMME_OUTPUT_DIR, exist_ok=True)
 
 ## Read in example fine spatial resolution file for lat and lon over domain
-EX_FCST_FILENAME = '/ex_raw_fcst_download.nc'
-GE = SUPPLEMENTARY_DIR + EX_FCST_FILENAME
-LONS = read_nc_files(GE, 'lon')
-LATS = read_nc_files(GE, 'lat')
+LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
 
 ## Read in example coarse spatial resolution file for lat and lon over domain
 EX_NMME_FILENAME = '/ex_raw_nmme_download.nc'
@@ -121,31 +124,34 @@ if NMME_MODEL == 'CFSv2':
     MODEL = 'NCEP-CFSv2'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
     x = read_nc_files(INFILE, 'prec')
-    XPREC = x[:, 0:10, 0:24, :, :]
+    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'GEOSv2':
     MODEL = 'NASA-GEOSS2S'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    XPREC = read_nc_files(INFILE, 'prec')
+    x = read_nc_files(INFILE, 'prec')
+    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'CCM4':
     MODEL = 'CanSIPS-IC3'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
     x = read_nc_files(INFILE, 'prec')
     x1 = np.moveaxis(x, 1, 2)
-    XPREC = x1[:,:,10:20,:,:]
+    XPREC = x1[:,0:LEAD_MONS,10:20,:,:]
 elif NMME_MODEL == 'GNEMO5':
     MODEL = 'CanSIPS-IC3'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
     x = read_nc_files(INFILE, 'prec')
     x1 = np.moveaxis(x, 1, 2)
-    XPREC = x1[:,:,0:10,:,:]
+    XPREC = x1[:,0:LEAD_MONS,0:10,:,:]
 elif NMME_MODEL == 'CCSM4':
     MODEL = 'COLA-RSMAS-CCSM4'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    XPREC = read_nc_files(INFILE, 'prec')
+    x = read_nc_files(INFILE, 'prec')
+    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'GFDL':
     MODEL = 'GFDL-SPEAR'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    XPREC = read_nc_files(INFILE, 'prec')
+    x = read_nc_files(INFILE, 'prec')
+    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
 else:
     print(f"[ERR] Invalid argument for NMME_MODEL! Received {NMME_MODEL}")
     sys.exit(1)
@@ -154,7 +160,6 @@ print('Reading:', INFILE)
 
 ## Convert units to mm/s or kg/m2/s
 XPREC = XPREC/86400
-print(XPREC.shape, XPRECI.shape)
 
 ds_in = xr.Dataset(
             {
@@ -189,10 +194,8 @@ ds_out = regridder(ds_in)
 ## Reorganize and write
 YR = CYR
 for m in range(0, ENS_NUM):
-    for l in range(0, 9):
+    for l in range(0, LEAD_MONS):
         XPRECI[0, :, :] = ds_out["XPREC"].values[l,m,:,:]
-        print(XPRECI.shape)
-        print('interpolated')
         jy = YR+LDYR[MM, l]
         l1 = LEADS1[MM, l]
         print('Year:', jy, ',leads:', l1)
