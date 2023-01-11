@@ -33,6 +33,7 @@
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
 !  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!  10 Jan 2023  Mahdi Navari added suport for COAMPSout 
 !
 !EOP
 module LVT_datastream_pluginMod
@@ -180,6 +181,7 @@ contains
     use THySM_obsMod,           only : THySM_obsinit
     use UASMAP_obsMod,          only : UASMAP_obsinit
     use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
+    use COAMPSout_dataMod,      only : COAMPSout_datainit
 
     external readtemplateObs
     external readLISoutput
@@ -290,6 +292,7 @@ contains
     external readTHySMobs
     external readUASMAPobs
     external readGRUNrunoffobs
+    external readCOAMPSoutdata
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -737,7 +740,11 @@ contains
          GRUNrunoffinit)
     call registerobsread(trim(LVT_GRUNobsId)//char(0),&
          readGRUNrunoffobs)
-    
+
+    call registerobssetup(trim(LVT_COAMPSoutId)//char(0), &
+         COAMPSout_datainit)
+    call registerobsread(trim(LVT_COAMPSoutId)//char(0),&
+         readCOAMPSoutdata)    
     
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod
