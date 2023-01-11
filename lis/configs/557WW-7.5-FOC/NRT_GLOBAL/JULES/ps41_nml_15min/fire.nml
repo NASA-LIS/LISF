@@ -1,0 +1,8 @@
+&fire_switches
+!!canadian_flag=.false.,
+!!canadian_hemi_opt=.false.,
+l_fire=.false.,
+!!mcarthur_flag=.false.,
+!!mcarthur_opt=1,
+!!nesterov_flag=.false.,
+/

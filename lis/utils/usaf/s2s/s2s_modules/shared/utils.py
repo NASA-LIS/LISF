@@ -27,7 +27,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         sec_command = command2
     
         
-    with open(s2s_configfile, 'r') as file:
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
@@ -44,7 +44,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         f.write('#SBATCH --account=' + sponsor_code + '\n')
         f.write('#SBATCH --ntasks=' + ntasks + '\n')
         f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
-        f.write('#SBATCH --constraint=sky|cas' + '\n')
+        f.write('#SBATCH --constraint=cssro' + '\n')
         f.write('#SBATCH --job-name=' + job_name + '\n')
         f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -80,7 +80,7 @@ def job_script_long(s2s_configfile, jobfile, job_name, ntasks, cwd, in_command =
     else:
         this_command = in_command
                 
-    with open(s2s_configfile, 'r') as file:
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
@@ -98,7 +98,7 @@ def job_script_long(s2s_configfile, jobfile, job_name, ntasks, cwd, in_command =
         f.write('#SBATCH --ntasks=' + ntasks + '\n')
         f.write('#SBATCH --time=23:59:59' + '\n')
         f.write('#SBATCH --qos=long' + '\n')
-        f.write('#SBATCH --constraint=sky' + '\n')
+        f.write('#SBATCH --constraint=cssro' + '\n')
         f.write('#SBATCH --job-name=' + job_name + '\n')
         f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -184,3 +184,96 @@ def print_status_report (e2es, yyyymm):
     print (str2)
 
 
+def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_command=None):
+    if in_command is None:
+        this_command = 'COMMAND'
+    else:
+        this_command = in_command
+    if hours is None:
+        thours ='12'
+    else:
+        thours = hours
+
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
+        cfg = yaml.safe_load(file)
+    sponsor_code = cfg['SETUP']['SPCODE']
+    lisf = cfg['SETUP']['LISFDIR']
+    lisf_module = cfg['SETUP']['LISFMOD']
+    domain=cfg['EXP']['DOMAIN']
+    DATATYPE=cfg['SETUP']['DATATYPE']
+    numprocx=cfg['FCST']['numprocx']
+    numprocy=cfg['FCST']['numprocy']
+    ntasks=str(numprocx*numprocy)
+    
+    with open(jobfile, 'w') as f:
+        
+        f.write('#!/bin/bash' + '\n')
+        f.write('\n')
+        f.write('#######################################################################' + '\n')
+        f.write('#                        Batch Parameters ' + '\n')
+        f.write('#######################################################################' + '\n')
+        f.write('\n')
+        f.write('#SBATCH --account=' + sponsor_code + '\n')
+        f.write('#SBATCH --constraint=cssro' + '\n')        
+        f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        if DATATYPE == 'hindcast':
+            f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        else:
+            if domain == 'GLOBAL':
+                f.write('#SBATCH  -N 12' + '\n')
+                f.write('#SBATCH --ntasks-per-node=24' + '\n')
+            else:
+                f.write('#SBATCH  -N 1' + '\n')
+                f.write('#SBATCH --ntasks-per-node='+ ntasks + '\n')
+                
+        f.write('#SBATCH --job-name=' + job_name + '\n')
+        f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
+        f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
+        f.write('\n')
+        f.write('#######################################################################' + '\n')
+        f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        f.write('#######################################################################' + '\n')
+        f.write('\n')
+        f.write('source /etc/profile.d/modules.sh' + '\n')
+        f.write('module purge' + '\n')
+        f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+        f.write('module --ignore-cache load ' + lisf_module + '\n')
+        f.write('ulimit -s unlimited' + '\n')
+        f.write('\n')
+        f.write('cd ' + cwd + '\n')
+        f.write( this_command + ' || exit 1' + '\n')
+        f.write('\n')
+        f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
+        f.write('\n')
+        f.write('/usr/bin/touch DONE' + '\n')
+        f.write('exit 0' + '\n')
+    f.close()    
+
+def get_domain_info (s2s_configfile, extent=None, coord=None):
+    import numpy as np
+    from netCDF4 import Dataset as nc4
+    
+    with open(s2s_configfile, 'r', encoding="utf-8") as file:
+        cfg = yaml.safe_load(file)
+    ldtfile = cfg['SETUP']['supplementarydir'] + '/lis_darun/' + cfg['SETUP']['ldtinputfile']
+    ldt = nc4(ldtfile, 'r')
+
+    if extent is not None:
+        lon = np.array(ldt['lon'])
+        lat = np.array(ldt['lat'])
+        return np.int(np.floor(np.min(lat[:,0]))), np.int(np.ceil(np.max(lat[:,0]))), np.int(np.floor(np.min(lon[0,:]))), np.int(np.ceil(np.max(lon[0,:])))
+
+    if coord is not None:
+        lon = np.array(ldt['lon'])
+        lat = np.array(ldt['lat'])
+        return lat[:,0], lon[0,:]
+
+    
+
+    
+    
+    
+
+    
+    
+    

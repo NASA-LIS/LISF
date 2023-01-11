@@ -68,14 +68,22 @@
 
   select case( fcsttype )
   
-    case( "GEOS5", "CFSv2" )
-  ! If forecast dataset of origin is:  GEOS-5, or CFSv2 ...
+    ! If forecast dataset of origin is:  GEOS-5, or CFSv2 ...
+    case( "GEOS5" )
   
-     !- LIS function to convert 2-digit month to 3-char month:
-     ! 
+      !- LIS function to convert 2-digit month to 3-char month:
       call LIS_mon3char( fmo, fmo3 )
 
+      ! Former directory structure:
       filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+          trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
+
+    case( "CFSv2" )
+
+      call LIS_mon3char( fmo, fmo3 )
+
+      ! New directory structure (as of Nov 30, 2022):
+      filename = trim(directory)//"/"//fmo3//"01/"//fyr//"/ens"//&
           trim(fensnum)//"/PRECTOT."//lyr//lmo//".nc4"
 
      ! ** Will need to update later to accomodate additional start

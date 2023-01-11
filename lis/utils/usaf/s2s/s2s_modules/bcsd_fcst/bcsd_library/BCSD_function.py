@@ -23,9 +23,7 @@ def get_index(ref_array, my_value):
     """
     return np.abs(ref_array - my_value).argmin()
 
-def CALC_BCSD(OBS_CLIM_ALL, FCST_CLIM_ALL, TARGET_FCST_VAL_ARR,
-              LEAD_FINAL = None, TARGET_FCST_SYR = None, TARGET_FCST_EYR = None, FCST_SYR = None,
-              ENS_NUM = None, MON = None, MONTH_NAME = None, BC_VAR = None, TINY = None):
+def CALC_BCSD(OBS_CLIM_ALL, FCST_CLIM_ALL, LEAD_FINAL, TARGET_FCST_VAL_ARR, TARGET_FCST_SYR, TARGET_FCST_EYR, FCST_SYR, ENS_NUM, MON, MONTH_NAME, BC_VAR, TINY):
 
     CORRECT_FCST_COARSE = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, LEAD_FINAL, ENS_NUM))*-999
     
@@ -92,6 +90,6 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons, \
             CORRECT_FCST_COARSE[:, :, :, lat_num, lon_num] = CALC_BCSD(OBS_CLIM_ALL, FCST_CLIM_ALL, LEAD_FINAL, \
                                                                        TARGET_FCST_VAL_ARR, TARGET_FCST_SYR, \
                                                                        TARGET_FCST_EYR, FCST_SYR, ENS_NUM, MON, \
-                                                                       MONTH_NAME, count_grid, BC_VAR, TINY)
+                                                                       MONTH_NAME, BC_VAR, TINY)
 
     return CORRECT_FCST_COARSE

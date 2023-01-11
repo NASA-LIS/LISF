@@ -1,0 +1,6 @@
+#perttype  std    std_max   zeromean  tcorr  xcorr ycorr ccorr
+SWE
+  1      0.01   2.5       1        10800   0    0    1.0  0.9 
+Snowdepth
+  1      0.01   2.5       1        10800   0    0    0.9  1.0
+
