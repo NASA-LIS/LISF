@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 '''
-This script plots OL anomalies at lead times 0,1,2,3,4 months
-for a given forecast start month and year. The script consolidated
-Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
-Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
+This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
+- Sarith Mahanama (2023-01-13
 '''
 # pylint: disable=no-value-for-parameter
 
@@ -27,7 +25,7 @@ STANDARDIZED_ANOMALY = 'Y'
 DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
 
 def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
-               carea, boundary, region):
+               carea, boundary, region, google_path):
     '''
     This function processes arguments and make plots.
     '''
@@ -76,9 +74,10 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
     if STANDARDIZED_ANOMALY == 'Y':
         clabel = 'Standardized Anomaly'
+
     plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
                           ncols, plot_arr, 'DROUGHT_INV', titles, boundary, figure, under_over,
-                          dlat, dlon, ulat, ulon, carea, fscale=0.8, stitle=stitle,
+                          dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels)
     del anom
     del anom_crop
@@ -97,6 +96,7 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, plot_domain):
     #nr, nc = (latv.size, lonv.size)
     lons, lats = np.meshgrid(lonv, latv)
     bas = 0
+    google_path = config['SETUP']['supplementarydir'] + '/s2splots/'
     for bid in bmask.BASIN_ID.values:
         hybas_mask = bmask.basin_mask.values[bas,:,:]
         tx_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
@@ -107,8 +107,8 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, plot_domain):
              ((upstream_lat >= boundary[0]) & (upstream_lat <= boundary[1])))
         region = "{:10d}".format(bid)
         plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
-                   downstream_lat[vmask], upstream_lon[vmask],
-                   upstream_lat[vmask], cum_area[vmask], boundary, region)
+                   downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
+                   cum_area[vmask], boundary, region, google_path)
         bas += 1
 
 if __name__ == '__main__':

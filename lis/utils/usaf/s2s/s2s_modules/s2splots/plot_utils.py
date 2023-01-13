@@ -1,6 +1,18 @@
 #!/usr/bin/env python
 '''
-plotting functions
+plotting functions:
+(1) dicts contains all domain boundaries, colorbar levels, untis for all plotting variables
+(2) figure_size: sets plotting figure size depends on figure width, number of rows and colummns,
+(3) load_table: custom color tables using RGB values
+(4) compute_daius: computes the radius of the marker to plot stations on the map
+(5) preproc is used to read only the 1st ensemble member for streamflow anomaly processing
+(6) crop: crops a xarray dataset
+(7) map2pfaf: maps LIS grid cells to watersheds to plot river pathway
+(8) CachedTiler an object to pull Google tiles for Cartopy to use as the canvas
+(9) contours : plots contours
+(10) google_map : plots river path ways on the Google map
+(11) stations : plots values using colors at each station depcting a small circle on a map.
+Sarith Mahanama 2023-01-13
 '''
 import os
 import types
@@ -360,8 +372,9 @@ def map2pfaf (anom, lats, lons, dlat, dlon, ulat, ulon, carea, levels):
 
 class CachedTiler(object):
     ''' for Google tiles background '''
-    def __init__(self, tiler):
+    def __init__(self, tiler, google_path):
         self.tiler = tiler
+        self.google_path = google_path
 
     def __getattr__(self, name):
         attr = getattr(self.tiler, name, None)
@@ -372,7 +385,7 @@ class CachedTiler(object):
     def get_image(self, tile):
         ''' down load image if not available '''
         tileset_name = '{}'.format(self.tiler.__class__.__name__.lower())
-        cache_dir = os.path.expanduser(os.path.join('~/', 'image_tiles', tileset_name))
+        cache_dir = os.path.expanduser(os.path.join(self.google_path, 'image_tiles', tileset_name))
         if not os.path.exists(cache_dir):
             os.makedirs(cache_dir)
         tile_fname = os.path.join(cache_dir, '_'.join(str(v) for v in tile) + '.png')
@@ -454,10 +467,10 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
     plt.close()
 
 def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
-               under_over, dlat, dlon, ulat, ulon, carea, min_val=None, \
+               under_over, dlat, dlon, ulat, ulon, carea, google_path, min_val=None, \
                max_val=None, fscale=None, levels=None, \
                stitle=None, clabel=None):
-    ''' plots streams using googler map as the background image'''
+    ''' plots streams using google map as the background image'''
 
     if fscale is None:
         fscale = FONT_SCALE
@@ -473,7 +486,7 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
     # Initialize our Google Maps tiles
     actual_tiler = cimgt.GoogleTiles()
-    imagery = CachedTiler(actual_tiler)
+    imagery = CachedTiler(actual_tiler, google_path)
 
     nplots = len(titles)
     fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
@@ -601,3 +614,4 @@ def stations(nrows, ncols, var, color_palette, titles, domain, figure,
         cbar.ax.tick_params(labelsize=10, rotation = 90)
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
         count_plot += 1
+    plt.close()
