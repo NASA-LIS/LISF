@@ -164,6 +164,7 @@ LVT output methodology:                 "2d gridspace"
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 | "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
 | "`GRUN runoff`"                  | GRUN runoff data
+| "`COAMPSout`"                     | COAMPS forcing data
 |===
 
 .Example _lvt.config_ entry
@@ -2315,10 +2316,31 @@ THySM data directory: ../THySM
 
 .Example _lvt.config_ entry
 ....
+
 MCD15A2H data directory: ./MCD15A2H.006/2019
 ....
 
 [[ssec-optue]]
+
+==== COAMPS forcing data
+
+`COAMPS output forcing directory:` specifies the location of the COAMPS output forcing data directory.
+
+.Example _lvt.config_ entry
+....
+COAMPS output forcing directory: ../COAMPS/EU/COAMPS_forcing
+....
+
+`COAMPS nest id:` specifies the nest id
+COAMPS forcing usually provides forcing for 2 nests. The first nest
+is 15km resolution and the second nest is a smaller sub-domain with
+a resolution of 5km.
+
+.Example _lvt.config_ entry
+....
+COAMPS nest id: 1
+....
+
 === OptUE processing options
 
 This section of the config file specifies the details of the optimization and uncertainty estimation processing options, and the specicialized options to analyze outputs from the Optimization/Uncertainy Estimation algorithms.
