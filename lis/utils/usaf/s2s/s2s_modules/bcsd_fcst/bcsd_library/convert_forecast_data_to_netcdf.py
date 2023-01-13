@@ -17,12 +17,12 @@
 """
 
 # Standard modules
+import sys
+from datetime import datetime
 import numpy as np
 import cfgrib
 import xarray as xr
 import pandas as pd
-from datetime import datetime
-import sys
 
 # Internal functions
 def _usage():
@@ -51,22 +51,24 @@ def _wgrib2_to_netcdf(grib2_file):
         'prate':'PRECTOT','sp':'PS','t2m':'T2M',
         'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
         'u10':'U10M','v10':'V10M','q':'Q2M',}
-    ds = cfgrib.open_dataset(grib2_file, indexpath ="")
-    for varname, da in ds.data_vars.items():
-        ds = ds.rename({varname : new_name.get(varname)})
-    return ds
+    ds_ = cfgrib.open_dataset(grib2_file, indexpath ="")
+    for varname, da_ in ds_.data_vars.items():
+        ds_ = ds_.rename({varname : new_name.get(varname)})
+    return ds_
 
-def magnitude(a, b):
+def magnitude(_a, _b):
+    ''' computes wind magnitude u^2 + v^2'''
     func = lambda x, y: np.sqrt(x**2 + y**2)
-    return xr.apply_ufunc(func, a, b)
+    return xr.apply_ufunc(func, _a, _b)
 
 def _check_replace_missing (args):
-    
-    ds = None
+
+    ds_ = None
     # read patch_files_list.txt
     patch_list = args['patchdir'] + '/patch_files_list.txt'
-    df = pd.read_csv(patch_list, sep=',', engine='python', header=None, names=['Time','Bad','Replace'])
-    df_sort = df.sort_values(by=['Time'])
+    df_ = pd.read_csv(patch_list, sep=',', engine='python',
+                     header=None, names=['Time','Bad','Replace'])
+    df_sort = df_.sort_values(by=['Time'])
     df_sort['Time'] = pd.to_datetime(df_sort['Time'],format='%Y%m%d%H')
 
     # check replace if necessary
@@ -75,7 +77,7 @@ def _check_replace_missing (args):
     fcst_timestring = args['fcst_timestring']
     this_time = datetime.strptime(fcst_timestring, '%Y%m%d%H')
     df_sub = df_sort[(df_sort.Time == this_time)]
-    if not df_sub.empty:        
+    if not df_sub.empty:
         for index, row in df_sub.iterrows():
             if check_file in row['Bad']:
                 replace_file = row['Replace']
@@ -83,11 +85,11 @@ def _check_replace_missing (args):
     # read replace file if need be
     if replace_file is not None:
         patch_file = args['patchdir'] + '/' + replace_file.strip()
-        ds = _wgrib2_to_netcdf (patch_file)
+        ds_ = _wgrib2_to_netcdf (patch_file)
         print(f"[INFO] File not available: {args['subdaily_file']}")
         print(f"[INFO] Using alternate data: {patch_file}")
 
-    return ds
+    return ds_
 
 def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
     """Main driver."""
@@ -108,23 +110,22 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
     args['subdaily_file'] = \
         f"{args['indir']}/" + \
         f"{args['comparison_name']}"
-    
-    ds = None
-    ds = _check_replace_missing (args)
-    
-    if ds is None:
+
+    ds_ = None
+    ds_ = _check_replace_missing (args)
+
+    if ds_ is None:
         # If we reach this point, we assume the file is fine.
         print("[INFO] " + args['subdaily_file'])
         print("[INFO] File is normal.")
-        ds = _wgrib2_to_netcdf(args['subdaily_file'])
+        ds_ = _wgrib2_to_netcdf(args['subdaily_file'])
 
     if args["varname"] == "wnd10m":
-        U10 = magnitude(ds.U10M, ds.V10M)
-        ds['WIND10M'] = U10
-        ds['WIND10M'].attrs['units'] = 'm/s'
-        ds['WIND10M'].attrs['short_name']='wnd10m'
-        ds['WIND10M'].attrs['long_name']='Wind Speed'
-        ds['WIND10M'].attrs['level']='10 m above ground'
-        
-    return ds
+        u10 = magnitude(ds_.U10M, ds_.V10M)
+        ds_['WIND10M'] = u10
+        ds_['WIND10M'].attrs['units'] = 'm/s'
+        ds_['WIND10M'].attrs['short_name']='wnd10m'
+        ds_['WIND10M'].attrs['long_name']='Wind Speed'
+        ds_['WIND10M'].attrs['level']='10 m above ground'
 
+    return ds_

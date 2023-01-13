@@ -4,15 +4,14 @@
 # Output file will contain total LEAD + 1 column where LEAD can be provided as input (e.g. 6 months, 9 months). First column is sorted quantiles ranging from about 0 to 1 and the rest of the columns are just sorted climatology of forecasts for all lead times for a given forecast initialization month
 
 from __future__ import division
-import numpy as np
-from Shrad_modules import read_nc_files, MAKEDIR
-import os.path as op
+import os
 import sys
 import calendar
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import numpy as np
 import xarray as xr
-import os, errno
+from shrad_modules import read_nc_files
 
 # <codecell>
 
@@ -66,8 +65,8 @@ ENSF=int(sys.argv[18])
 print(OUTDIR)
 print(ENSS)
 print(ENSF)
-if not os.path.exists(OUTDIR):
-    os.makedirs(OUTDIR)
+
+os.makedirs(OUTDIR, exist_ok=True)
 
 print ("Ready to create climatology for Variable {}".format(MODEL_NAME, VAR))
 print ("Forecast Initialization month is {}".format(MONTH_NAME))
