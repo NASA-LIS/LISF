@@ -18,9 +18,11 @@ import os
 from dateutil.relativedelta import relativedelta
 import xarray as xr
 import numpy as np
-from Shrad_modules import read_nc_files
+# pylint: disable=import-error
+from shrad_modules import read_nc_files
 from BCSD_stats_functions import write_4d_netcdf, get_domain_info
 from BCSD_functionfast import CALC_BCSD
+# pylint: enable=import-error
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -59,7 +61,7 @@ FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}
 
 CONFIG_FILE = str(sys.argv[14])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
-LATS, LONS = get_domain_info(CONFIG_FILE, coord=True) 
+LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'
