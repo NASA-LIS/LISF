@@ -2331,7 +2331,8 @@ MCD15A2H data directory: ./MCD15A2H.006/2019
 COAMPS output forcing directory: ../COAMPS/EU/COAMPS_forcing
 ....
 
-`COAMPS nest id:` specifies the nest id
+`COAMPS nest id:` specifies the nest id.
+
 COAMPS forcing usually provides forcing for 2 nests. The first nest
 is 15km resolution and the second nest is a smaller sub-domain with
 a resolution of 5km.
