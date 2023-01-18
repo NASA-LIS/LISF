@@ -480,7 +480,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#ssec-domainspec">7.2. Domain specification</a></li>
 <li><a href="#ssec-statsspec">7.3. Analysis options specification</a></li>
 <li><a href="#ssec-obssrc">7.4. Data stream sources</a></li>
-<li><a href="#ssec-optue">7.5. OptUE processing options</a></li>
+<li><a href="#_optue_processing_options">7.5. OptUE processing options</a></li>
 <li><a href="#ssec-dastatrunmode">7.6. DA diagnostics analysis</a></li>
 <li><a href="#ssec-daobsrunmode">7.7. DA observation analysis</a></li>
 <li><a href="#ssec-557postrunmode">7.8. 557 post</a></li>
@@ -2180,6 +2180,10 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GRUN runoff&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">GRUN runoff data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;COAMPSout&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">COAMPS forcing data</p></td>
 </tr>
 </tbody>
 </table>
@@ -5631,9 +5635,35 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 </div>
+<div class="sect3">
+<h4 id="ssec-optue">7.4.74. COAMPS forcing data</h4>
+<div class="paragraph">
+<p><code>COAMPS output forcing directory:</code> specifies the location of the COAMPS output forcing data directory.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>COAMPS output forcing directory: ../COAMPS/EU/COAMPS_forcing</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>COAMPS nest id:</code> specifies the nest id.</p>
+</div>
+<div class="paragraph">
+<p>COAMPS forcing usually provides forcing for 2 nests. The first nest
+is 15km resolution and the second nest is a smaller sub-domain with
+a resolution of 5km.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>COAMPS nest id: 1</pre>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
-<h3 id="ssec-optue">7.5. OptUE processing options</h3>
+<h3 id="_optue_processing_options">7.5. OptUE processing options</h3>
 <div class="paragraph">
 <p>This section of the config file specifies the details of the optimization and uncertainty estimation processing options, and the specicialized options to analyze outputs from the Optimization/Uncertainy Estimation algorithms.</p>
 </div>
@@ -7073,7 +7103,7 @@ rmse_qle_ensSTD rmse_qle_CI
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2023-01-05 21:38:22 UTC
+Last updated 2023-01-18 17:57:44 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
