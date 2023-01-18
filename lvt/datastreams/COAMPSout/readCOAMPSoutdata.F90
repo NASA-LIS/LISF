@@ -263,10 +263,10 @@ call COAMPSoutfile(fname,COAMPSoutdata(source)%odir,COAMPSoutdata(source)%COAMPS
        vlevel=1,units="Pa")
 
   call LVT_logSingleDataStreamVar(LVT_MOC_NWINDFORC,source,v10, &
-             vlevel=1,units="m/s")
+       vlevel=1,units="m/s")
 
   call LVT_logSingleDataStreamVar(LVT_MOC_EWINDFORC,source,u10, &
-             vlevel=1,units="m/s")
+       vlevel=1,units="m/s")
 
   else
      write(LVT_logunit,*) '[ERR] Forcing file '//trim(fname)//' not found'
