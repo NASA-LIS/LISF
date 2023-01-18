@@ -40,6 +40,7 @@
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
 !  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!  10 Jan 2023  Mahdi Navari added suport for COAMPSout 
 !
 !EOP
 module LVT_pluginIndices
@@ -270,6 +271,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_THySMobsId = "THySM"
    character*50, public,  parameter :: LVT_UASMAPobsId = "UA SMAP"
    character*50, public,  parameter :: LVT_GRUNobsId = "GRUN runoff"
+   character*50, public,  parameter :: LVT_COAMPSoutId = "COAMPSout"
 !-------------------------------------------------------------------------
 ! Training algorithms
 !------------------------------------------------------------------------- 
