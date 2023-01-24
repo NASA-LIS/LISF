@@ -34,6 +34,7 @@
 # 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst for
 #               JULES.
 # 05 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
+# 24 Jan 2023:  Eric Kemp (SSAI), updates to GRIB file names.
 #
 #------------------------------------------------------------------------------
 """
@@ -237,7 +238,7 @@ def _get_gr2_mean_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24_DD."
         else:
@@ -255,7 +256,7 @@ def _get_gr2_mean_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
@@ -279,7 +280,7 @@ def _get_gr2_ssdev_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24_DD."
         else:
@@ -297,7 +298,7 @@ def _get_gr2_ssdev_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
@@ -322,7 +323,7 @@ def _get_gr2_latest_files(validdt, lsm):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.3hr" # Always use 3hr processing
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         path += ".LIS_DD."
         path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
         path += f".{validdt.hour:02}00_DF"
