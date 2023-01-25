@@ -597,7 +597,6 @@ contains
                   //'_DT.'//trim(cdate3) &
                   //'_DF.GR1'
 
-             ! FIXME:  Where to add SSDEV in filename?
              fname_ssdev = trim(LVT_rc%statsodir) &
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
@@ -605,14 +604,13 @@ contains
                   //'_GP.'//trim(model_name) &
                   //'_GR.C0P09DEG' &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS24' &
+                  //'_PA.LIS24-SSDEV' &
                   //'_DD.'//trim(cdate2) &
                   //'_DT.'//trim(cdate3) &
-                  //'_DF_SSDEV.GR1'
+                  //'_DF.GR1'
           else
 
              fname_mean = trim(LVT_rc%statsodir) &
-                  ! EMK...Update name convention
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
@@ -625,18 +623,16 @@ contains
                   //'_DF.GR1'
 
              fname_ssdev = trim(LVT_rc%statsodir) &
-                  ! EMK...Update name convention
-                  ! FIXME Where to put SSDEV in filename?
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
                   //'_GP.'//trim(model_name) &
                   //'_GR.C0P09DEG' &
                   //'_AR.'//trim(LVT_rc%area_of_data) &
-                  //'_PA.LIS' &
+                  //'_PA.SSDEV' &
                   //'_DD.'//trim(cdate2) &
                   //'_DT.'//trim(cdate3) &
-                  //'_DF_SSDEV.GR1'
+                  //'_DF.GR1'
 
           end if
 
@@ -746,7 +742,6 @@ contains
                   //'_DF.GR2'
 
              if (LVT_rc%nensem > 1) then
-                ! FIXME Where to put SSDEV in filename?
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
@@ -754,15 +749,14 @@ contains
                      //'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
-                     //'_PA.LIS24' &
+                     //'_PA.LIS24-SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
-                     //'_DF_SSDEV.GR2'
+                     //'_DF.GR2'
              end if
           else
              ! EMK...Assume 3-hr
              fname_mean = trim(LVT_rc%statsodir) &
-                  ! EMK...Update name convention
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
@@ -776,18 +770,16 @@ contains
 
              if (LVT_rc%nensem > 1) then
                 fname_ssdev = trim(LVT_rc%statsodir) &
-                     ! EMK...Update name convention
-                     ! FIXME Where to put SSDEV in filename?
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
                      //'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
-                     //'_PA.LIS' &
+                     //'_PA.SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
-                     //'_DF_SSDEV.GR2'
+                     //'_DF.GR2'
              end if
           end if
           ! Setup of GRIB-1 and GRIB-2 Metadata Section
@@ -868,7 +860,7 @@ contains
           write(unit=cdate3, fmt='(i2.2,i2.2)') &
                LVT_rc%hr, LVT_rc%mn
 
-                    ! EMK...Include LSM in GP section
+          ! EMK...Include LSM in GP section
           if (trim(LVT_LIS_rc(1)%model_name) == "NOAH.3.9") then
              model_name = "LIS-NOAH"
           else if (trim(LVT_LIS_rc(1)%model_name) == "NOAHMP.4.0.1") then
@@ -900,7 +892,6 @@ contains
                   //'_DF.nc'
 
              if (LVT_rc%nensem > 1) then
-                ! FIXME Where to put SSDEV in filename?
                 fname_ssdev = trim(LVT_rc%statsodir) &
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
@@ -908,15 +899,14 @@ contains
                      //'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
-                     //'_PA.LIS24' &
+                     //'_PA.LIS24-SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
-                     //'_DF_SSDEV.nc'
+                     //'_DF.nc'
              end if
           else
 
              fname_mean = trim(LVT_rc%statsodir) &
-                  ! EMK...Update name convention
                   //'/PS.557WW' &
                   //'_SC.'//trim(LVT_rc%security_class) &
                   //'_DI.'//trim(LVT_rc%data_category) &
@@ -929,19 +919,17 @@ contains
                   //'_DF.nc'
 
              if (LVT_rc%nensem > 1) then
-                ! FIXME Where to put SSDEV in filename?
                 fname_ssdev = trim(LVT_rc%statsodir) &
-                     ! EMK...Update name convention
                      //'/PS.557WW' &
                      //'_SC.'//trim(LVT_rc%security_class) &
                      //'_DI.'//trim(LVT_rc%data_category) &
                      //'_GP.'//trim(model_name) &
                      //'_GR.C0P09DEG' &
                      //'_AR.'//trim(LVT_rc%area_of_data) &
-                     //'_PA.LIS' &
+                     //'_PA.SSDEV' &
                      //'_DD.'//trim(cdate2) &
                      //'_DT.'//trim(cdate3) &
-                     //'_DF_SSDEV.nc'
+                     //'_DF.nc'
              end if
           end if
           ! Setup of GRIB-1 and GRIB-2 Metadata Section

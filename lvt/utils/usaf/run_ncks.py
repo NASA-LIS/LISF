@@ -424,13 +424,13 @@ def _get_nc_ssdev_files(validdt, lsm, period):
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
         path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
-            path += ".LIS24_DD."
+            path += ".LIS24-SSDEV_DD."
         else:
-            path += ".LIS_DD."
+            path += ".SSDEV_DD."
         path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
         path += f".{validdt.hour:02}00_DF"
 
-        ssdev_path = path + "_SSDEV.nc"
+        ssdev_path = path + ".nc"
         if not os.path.exists(ssdev_path):
             print(f"[ERR], {ssdev_path} does not exist!")
             sys.exit(1)
@@ -443,13 +443,13 @@ def _get_nc_ssdev_files(validdt, lsm, period):
         os.mkdir(path)
     path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
-        path += ".LIS24_DD."
+        path += ".LIS24-SSDEV_DD."
     else:
-        path += ".LIS_DD."
+        path += ".SSDEV_DD."
     path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
     path += f".{validdt.hour:02}00_DF"
 
-    ssdev_nc_outfile = path + "_SSDEV.nc"
+    ssdev_nc_outfile = path + ".nc"
 
     # All done
     return ssdev_nc_infiles, ssdev_nc_outfile
