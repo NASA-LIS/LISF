@@ -59,7 +59,7 @@ subroutine read_merra2_elev(n,findex)
 
   if ( trim(LIS_rc%met_ecor(findex)) .ne. "none") then 
 
-     write(LIS_logunit,*) 'Reading the MERRA2 elevation map ...'
+     write(LIS_logunit,*) '[INFO] Reading the MERRA2 elevation map ...'
      
      call LIS_read_param(n,"ELEV_MERRA2",go)
 
