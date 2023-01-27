@@ -330,7 +330,8 @@ contains
        merra2_struc(n)%merraforc2 = LIS_rc%udef
 
        if ( LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
-            LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" ) then
+            LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+            LIS_rc%met_ecor(findex) == "micromet" ) then
           call read_merra2_elev(n,findex)
        endif
 
