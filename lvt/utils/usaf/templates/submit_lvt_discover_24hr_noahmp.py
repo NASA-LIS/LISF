@@ -52,8 +52,8 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 module purge
-module use --append ~/privatemodules
-module load lisf_7.5_intel_2021.4.0
+module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
+module load lisf_7_intel_2021.4.0_petsc
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
