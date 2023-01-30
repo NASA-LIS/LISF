@@ -50,6 +50,7 @@
 # 23 Mar 2021:  Eric Kemp (SSAI), revised JULES multi-layer snow variables
 #               for PS41 physics.
 # 05 Dec 2022:  Eric Kemp (SSAI), revised to improve pylint score.
+# 24 Jan 2023:  Eric Kemp (SSAI), updated filenames.
 #
 #------------------------------------------------------------------------------
 """
@@ -63,8 +64,6 @@ import sys
 #------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-# _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
-# _NCKS_PATH = "/app/nco/4.7.7-gnu/bin/ncks" # On Koehr
 _NCKS_PATH = "/usr/local/other/nco/4.8.1/bin/ncks" # On Discover
 
 # Supported LIS LSMs
@@ -380,7 +379,7 @@ def _get_nc_mean_files(validdt, lsm, period):
 
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
 
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24_DD."
         else:
@@ -399,7 +398,7 @@ def _get_nc_mean_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
@@ -423,15 +422,15 @@ def _get_nc_ssdev_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.{period}hr"
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
-            path += ".LIS24_DD."
+            path += ".LIS24-SSDEV_DD."
         else:
-            path += ".LIS_DD."
+            path += ".SSDEV_DD."
         path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
         path += f".{validdt.hour:02}00_DF"
 
-        ssdev_path = path + "_SSDEV.nc"
+        ssdev_path = path + ".nc"
         if not os.path.exists(ssdev_path):
             print(f"[ERR], {ssdev_path} does not exist!")
             sys.exit(1)
@@ -442,15 +441,15 @@ def _get_nc_ssdev_files(validdt, lsm, period):
     path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
-        path += ".LIS24_DD."
+        path += ".LIS24-SSDEV_DD."
     else:
-        path += ".LIS_DD."
+        path += ".SSDEV_DD."
     path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
     path += f".{validdt.hour:02}00_DF"
 
-    ssdev_nc_outfile = path + "_SSDEV.nc"
+    ssdev_nc_outfile = path + ".nc"
 
     # All done
     return ssdev_nc_infiles, ssdev_nc_outfile
@@ -466,7 +465,7 @@ def _get_nc_latest_files(validdt, lsm):
     # Collect input files
     for invocation in invocation_list:
         path = f"OUTPUT/STATS.{invocation}.3hr"# Always use 3hr processing
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         path += ".LIS_DD."  # Always use 3-hr output for latest fields
         path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
         path += f".{validdt.hour:02}00_DF"
