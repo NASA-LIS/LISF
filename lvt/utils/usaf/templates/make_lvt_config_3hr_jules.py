@@ -20,8 +20,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.jules50"
 
-_STARTDT = datetime.datetime(2021, 4, 13,  9)
-_ENDDT = datetime.datetime(2021, 4, 13,  12)
+_STARTDT = datetime.datetime(2022, 8, 2,  9)
+_ENDDT = datetime.datetime(2022, 8, 2,  12)
 
 _OUTPUT = "netcdf" # For 557 Ops (Fields file)
 #_OUTPUT = "grib2"
