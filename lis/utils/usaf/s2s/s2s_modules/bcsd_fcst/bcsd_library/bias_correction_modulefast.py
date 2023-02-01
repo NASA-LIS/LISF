@@ -20,8 +20,8 @@ import xarray as xr
 import numpy as np
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
-from BCSD_stats_functions import write_4d_netcdf, get_domain_info
-from BCSD_functionfast import CALC_BCSD
+from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from bcsd_function import calc_bcsd
 # pylint: enable=import-error
 
 ## Usage: <Name of variable in observed climatology>
@@ -105,7 +105,7 @@ def get_index(ref_array, my_value):
 def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
                         np_obs_clim_array, np_fcst_clim_array, \
                         lead_final, target_fcst_syr, target_fcst_eyr, \
-                        fcst_syr, ens_num, mon, month_name, bc_var, \
+                        fcst_syr, ens_num, mon, bc_var, \
                         tiny, fcst_coarse, correct_fcst_coarse):
     """Lat and Lon"""
     num_lats = ilat_max-ilat_min+1
@@ -119,8 +119,6 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
         for ilon in range(num_lons):
             lon_num = ilon_min + ilon
 
-            count_grid = ilon + ilat*num_lons
-
             ## First read Observed clim data (all months available in one file)
             ## so don't have to read it again for each lead time
             obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
@@ -133,10 +131,9 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
             #print("shape of FCST_COARSE: ", TARGET_FCST_VAL_ARR.shape)
 
             correct_fcst_coarse[:, :, :, lat_num, lon_num] = \
-            CALC_BCSD(obs_clim_all, fcst_clim_all, lead_final, \
+            calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, \
             target_fcst_val_arr, target_fcst_syr, target_fcst_eyr, \
-            fcst_syr, ens_num, mon, month_name, count_grid, bc_var, tiny)
-
+            fcst_syr, ens_num, mon, bc_var, tiny)
 
 def monthly_calculations(mon):
     """Monthly Bias Correction"""
@@ -191,7 +188,7 @@ def monthly_calculations(mon):
     print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
     latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
     np_obs_clim_array, np_fcst_clim_array, LEAD_FINAL, TARGET_FCST_SYR, \
-    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, month_name, BC_VAR, \
+    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, BC_VAR, \
     TINY, fcst_coarse, correct_fcst_coarse)
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \

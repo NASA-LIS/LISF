@@ -166,13 +166,13 @@ if __name__ == '__main__':
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
 
     if config ["EXP"]["DOMAIN"] == 'GLOBAL':
+        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
 
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y')
         plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')

@@ -19,8 +19,8 @@ import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
 # pylint: disable=import-error
-import BCSD_function
-from BCSD_stats_functions import write_4d_netcdf, get_domain_info
+import bcsd_function
+from bcsd_stats_functions import write_4d_netcdf, get_domain_info
 from shrad_modules import read_nc_files
 # pylint: enable=import-error
 
@@ -181,10 +181,10 @@ for MON in [INIT_FCST_MON]:
     print("np_FCST_CLIM_ARRAY:", np_FCST_CLIM_ARRAY.shape, \
     type(np_FCST_CLIM_ARRAY))
 
-    CORRECT_FCST_COARSE = BCSD_function.latlon_calculations(ilat_min, \
+    CORRECT_FCST_COARSE = bcsd_function.latlon_calculations(ilat_min, \
     ilat_max, ilon_min, ilon_max, nlats, nlons, np_OBS_CLIM_ARRAY, \
     np_FCST_CLIM_ARRAY, LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, \
-    FCST_SYR, ENS_NUM, MON, MONTH_NAME, BC_VAR, TINY, FCST_COARSE)
+    FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
 
     CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
     mask=CORRECT_FCST_COARSE == -999)

@@ -410,6 +410,14 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             dst[name][:,:] = src1[name][:,:]
         elif len(variable.dimensions) == 1:
             dst[name][:] = src1[name][:]
+        if name == 'TotalPrecip_acc':
+            # apply LANDMASK
+            prec = np.array(src1[name][:])
+            mask = np.array(src3["LANDMASK"][:])
+            nens = prec.shape[0]
+            for i in range (0, nens):
+                prec[i,:,:] = np.where(mask ==1, prec[i,:,:],-9999.)
+            dst[name][:] = prec
 
     # Write data from src2
     for name, variable in src2.variables.items():
