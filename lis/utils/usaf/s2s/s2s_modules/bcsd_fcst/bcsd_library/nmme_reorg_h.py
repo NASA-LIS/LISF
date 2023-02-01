@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 """
 # Author: Abheera Hazra
-#  This module reorganizes NMME preciptation forecasts
-#  Date: May 06, 2021
-# Updated: Sarith Mahanama
-#  Removed basemap call and added xarray and xesmf
-#  module calls
-#  Date: Nov 07, 2022
+#This module reorganizes
+#NMME preciptation forecasts
+#Date: May 06, 2021
 # In[28]:
 """
 from __future__ import division
@@ -20,13 +17,11 @@ import numpy as np
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-import xarray as xr
-import xesmf as xe
-import yaml
-# pylint: disable=import-error
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import get_domain_info
-# pylint: enable=import-error
+import xarray as xr
+import xesmf as xe
+#import yaml
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -60,25 +55,19 @@ def write_3d_netcdf(infile, var, varname, description, source, \
 
 CMDARGS = str(sys.argv)
 CMN = int(sys.argv[1])  ##
-CYR = int(sys.argv[2]) ##
-NMME_DOWNLOAD_DIR = str(sys.argv[3])
-NMME_OUTPUT_DIR = str(sys.argv[4])
-SUPPLEMENTARY_DIR = str(sys.argv[5])
-NMME_MODEL = str(sys.argv[6])
-ENS_NUM = int(sys.argv[7])
+NMME_DOWNLOAD_DIR = str(sys.argv[2])
+NMME_OUTPUT_DIR = str(sys.argv[3])
+SUPPLEMENTARY_DIR = str(sys.argv[4])
+NMME_MODEL = str(sys.argv[5])
+ENS_NUM = int(sys.argv[6])
+LEAD_MON = int(sys.argv[7])
 CONFIGFILE = str(sys.argv[8])
-with open(CONFIGFILE, 'r', encoding="utf-8") as file:
-    config = yaml.safe_load(file)
-LEAD_MONS = config['EXP']['lead_months']
 
-MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
        'Sep', 'Oct', 'Nov', 'Dec']
 MONTH = ['jan01', 'feb01', 'mar01', 'apr01', 'may01', 'jun01', 'jul01', \
           'aug01', 'sep01', 'oct01', 'nov01', 'dec01']
 MONTHN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-
-print(MODEL[0])
 
 LEADS1 = np.zeros((12, 12), dtype=int)
 LDYR = np.zeros((12, 12), dtype=int)
@@ -94,11 +83,11 @@ for i in range(0, 12):
         LEADS1[i, j] = k
         LDYR[i, j] = KY
 
-INFILE_TEMP = '{}/{}/prec.{}.mon_{}.{:04d}.nc'
+INFILE_TEMP = '{}/{}/prec.{}.mon_{}_{:04d}_{:04d}.nc'
 OUTDIR_TEMPLATE = '{}/{}/{}/{:04d}/ens{}/'
 OUTFILE_TEMPLATE = '{}/{}.nmme.monthly.{:04d}{:02d}.nc'
 if not os.path.exists(NMME_OUTPUT_DIR):
-    os.makedirs(NMME_OUTPUT_DIR, exist_ok=True)
+    os.makedirs(NMME_OUTPUT_DIR)
 
 ## Read in example fine spatial resolution file for lat and lon over domain
 LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
@@ -119,40 +108,91 @@ LONI = np.hstack((LON2, LON1))
 
 ## Read all forecast files
 MM = CMN-1
+XPREC = np.empty([40, LEAD_MON, ENS_NUM, 181, 360])
 XPRECI = np.empty([1, LATS.size, LONS.size])
 
 if NMME_MODEL == 'CFSv2':
     MODEL = 'NCEP-CFSv2'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    x = read_nc_files(INFILE, 'prec')
-    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+    SYR1 = 1982
+    EYR1 = 2010
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+    XPREC[0:29,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+    SYR2 = 2011
+    EYR2 = 2021
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+    XPREC[29:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'GEOSv2':
     MODEL = 'NASA-GEOSS2S'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    x = read_nc_files(INFILE, 'prec')
-    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+    if MM == 0:
+        SYR1 = 1982
+        EYR1 = 2017
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+        XPREC[0:36,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+        SYR2 = 2018
+        EYR2 = 2021
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+        XPREC[36:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+    else:
+        SYR1 = 1982
+        EYR1 = 2016
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+        XPREC[0:35,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+        SYR2 = 2017
+        EYR2 = 2021
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+        XPREC[35:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'CCM4':
     MODEL = 'CanSIPS-IC3'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    SYR1 = 1991
+    EYR1 = 2020
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
     x = read_nc_files(INFILE, 'prec')
     x1 = np.moveaxis(x, 1, 2)
-    XPREC = x1[:,0:LEAD_MONS,10:20,:,:]
+    XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,10:20,:,:]
+
+    SYR2 = 2021
+    EYR2 = 2021
+    #INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+    #x = read_nc_files(INFILE, 'prec')
+    #x1 = np.moveaxis(x, 1, 2)
+    #XPREC[39:40,:,:,:,:] = x1[:,0:LEAD_MON,10:20,:,:]
 elif NMME_MODEL == 'GNEMO5':
     MODEL = 'CanSIPS-IC3'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    SYR1 = 1991
+    EYR1 = 2020
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
     x = read_nc_files(INFILE, 'prec')
     x1 = np.moveaxis(x, 1, 2)
-    XPREC = x1[:,0:LEAD_MONS,0:10,:,:]
+    XPREC[9:39,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
+
+    SYR2 = 2021
+    EYR2 = 2021
+    #INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+    #x = read_nc_files(INFILE, 'prec')
+    #x1 = np.moveaxis(x, 1, 2)
+    #XPREC[39:40,:,:,:,:] = x1[:,0:LEAD_MON,0:10,:,:]
 elif NMME_MODEL == 'CCSM4':
     MODEL = 'COLA-RSMAS-CCSM4'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    x = read_nc_files(INFILE, 'prec')
-    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+    SYR1 = 1982
+    EYR1 = 2021
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+    XPREC = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 elif NMME_MODEL == 'GFDL':
     MODEL = 'GFDL-SPEAR'
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
-    x = read_nc_files(INFILE, 'prec')
-    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+    SYR1 = 1991
+    EYR1 = 2020
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
+    # IH = nc.Dataset(INFILE, mode='r')
+    XPREC[9:39,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+    SYR2 = 2021
+    EYR2 = 2021
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+    # IH = nc.Dataset(INFILE, mode='r')
+    XPREC[39:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 else:
     print(f"[ERR] Invalid argument for NMME_MODEL! Received {NMME_MODEL}")
     sys.exit(1)
@@ -161,7 +201,6 @@ print('Reading:', INFILE)
 
 ## Convert units to mm/s or kg/m2/s
 XPREC = XPREC/86400
-
 ds_in = xr.Dataset(
             {
                 "lat": (["lat"], LATI),
@@ -175,10 +214,12 @@ ds_in["slice"] = xr.DataArray(
         lat=(["lat"], LATI),
         lon=(["lon"], LONI))
     )
+
 ds_in["XPREC"] = xr.DataArray(
-    data = np.array (XPREC[0,0:9,:,:,:]),
-    dims=["mon","ens", "lat", "lon"],
+    data = np.array (XPREC[:,0:9,:,:,:]),
+    dims=["year", "mon","ens", "lat", "lon"],
     coords=dict(
+        year=(["year"], np.arange(40)),
         mon=(["mon"], np.arange(9)),
         ens=(["ens"], np.arange(ENS_NUM)),
         lat=(["lat"], LATI),
@@ -192,24 +233,32 @@ ds_out = xr.Dataset(
 regridder = xe.Regridder(ds_in, ds_out, "bilinear", periodic=True)
 ds_out = regridder(ds_in)
 
+YR = 1981
+print(XPREC.shape)
 ## Reorganize and write
-YR = CYR
-for m in range(0, ENS_NUM):
-    for l in range(0, LEAD_MONS):
-        XPRECI[0, :, :] = ds_out["XPREC"].values[l,m,:,:]
-        jy = YR+LDYR[MM, l]
-        l1 = LEADS1[MM, l]
-        print('Year:', jy, ',leads:', l1)
-        OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], NMME_MODEL, YR, m+1)
-        OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MONTH[MM], jy, l1)
-        if not os.path.exists(OUTDIR):
-            os.makedirs(OUTDIR)
+for y in range(0, 40):
+    YR = YR+1
+    for m in range(0, ENS_NUM):
+        for l in range(0, 9):
+            #x = XPREC[y, l, m, :, :]
+            #x1 = x[:, 0:180]
+            #x2 = x[:, 180:]
+            #x = np.hstack((x2, x1))
+            #x = XPREC[y, l, m, :, :]
+            XPRECI[0, :, :] = ds_out["XPREC"].values[y,l,m,:,:]
+            jy = YR+LDYR[MM, l]
+            l1 = LEADS1[MM, l]
+            print('Year:', jy, ',leads:', l1)
+            OUTDIR = OUTDIR_TEMPLATE.format(NMME_OUTPUT_DIR, MONTH[MM], NMME_MODEL, YR, m+1)
+            OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, MONTH[MM], jy, l1)
+            if not os.path.exists(OUTDIR):
+                os.makedirs(OUTDIR)
 
-        XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
-        LATS = np.nan_to_num(LATS, nan=-9999.)
-        LONS = np.nan_to_num(LONS, nan=-9999.)
+            XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
+            LATS = np.nan_to_num(LATS, nan=-9999.)
+            LONS = np.nan_to_num(LONS, nan=-9999.)
 
-        SDATE = datetime(YR, MM+1, 1)
-        write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
-        'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
-        print(f"Writing {OUTFILE}")
+            SDATE = datetime(YR, MM+1, 1)
+            write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
+            'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
+            print(f"Writing {OUTFILE}")

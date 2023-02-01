@@ -27,10 +27,8 @@ import xesmf as xe
 import yaml
 # pylint: disable=import-error
 from convert_forecast_data_to_netcdf import read_wgrib
-from BCSD_stats_functions import get_domain_info
+from bcsd_stats_functions import get_domain_info
 # pylint: enable=import-error
-
-RUN_REGRIID = True
 
 # Internal functions
 def _usage():
@@ -110,7 +108,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
          f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
     reftime += f",{fcst_init['hour']}:00:00,1hour"
 
-    if RUN_REGRID is True:
+    if args["run_regrid"] is True:
         # resample to the S2S grid
         cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
 
@@ -122,11 +120,11 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
                 "lon": (["lon"], lons),
         }
         )
-        regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
-        RUN_REGRID = False
+        args["regridder"] = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
+        args["run_regrid"] = False
 
     # apply to the entire data set
-    ds_out = regridder(cfsv2)
+    ds_out = args["regridder"](cfsv2)
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
@@ -181,6 +179,8 @@ def _print_reftime(fcst_init, ens_num):
 def _driver():
     """Main driver."""
     args = _read_cmd_args()
+    args['run_regrid'] = True
+    args['regridder'] = 0.
     fcst_init = {}
     fcst_init["monthday"] = args['fcst_init_monthday']
     outdirs = {}

@@ -25,7 +25,7 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from BCSD_stats_functions import get_domain_info
+from bcsd_stats_functions import get_domain_info
 # pylint: enable=import-error
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
@@ -207,7 +207,7 @@ for MON in [INIT_FCST_MON]:
                 vectorize=True,
                 dask="forbidden",
                 output_dtypes=[np.float64],
-                kwargs={'BC_VAR': BC_VAR},
+                kwargs={'bc_var': BC_VAR},
             )
 
             correct2 = np.moveaxis(correct.values,2,0)

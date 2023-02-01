@@ -1,7 +1,9 @@
 #!/bin/bash
-
-# LIS-Hydro_S2S subsystem run script 
-
+#
+# Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
+#
+#  Date: 02-01-2023;  Latest version
+#
 ######################################################################
 #                     PROCESS COMMAND LINE ARGUMENTS
 ######################################################################
@@ -37,19 +39,19 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "     "
 	   echo "where MANDATORY input parameters:"
 	   echo "---------------------------------"
-	   echo "  YEAR:        start year"
-	   echo "  MONTH:       start month [1 to 12]"
-	   echo "  CONFIG_FILE: config file (for hindcast or forecast)"
+	   echo "  YEAR:        forecast start year"
+	   echo "  MONTH:       forecast start month [1 to 12]"
+	   echo "  CONFIG_FILE: E2E main config file (for hindcast or forecast)"
 	   echo "  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH."
 	   echo "     "
 	   echo "with OPTIONAL flags:"
 	   echo "--------------------"
-	   echo "  DELETE:   delete YEAR/MONTH (valid inputs: Y or N)"
-	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)"
+	   echo "  DELETE:   Delete YEAR/MONTH directory (valid inputs: Y or N)"
+	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag can be used to check the progress of SLURM jobs (valid inputs: Y or N)"
 	   echo "  STEP:     The E2ES process includes seven steps that are run sequentially LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS."
-	   echo "            However, the STEP option allows user to kick start the process from the last completed step."
-	   echo "            -s STEP is good to ask s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
-           echo "  ONE_STEP: flag is good to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
+	   echo "            However, the STEP option allows the user to kick start the process from the last completed step."
+	   echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
+           echo "  ONE_STEP: Flag used to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
 	   exit 1 
 	   ;;	 
     esac
@@ -217,7 +219,7 @@ download_forecasts(){
 
     # CFSv2 forecast
     cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
+    #sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
 	exit
@@ -256,7 +258,7 @@ download_forecasts(){
 	    NAVAIL=`echo ${have_model} | wc -w`
 	    ((NAVAIL--))
 	    echo 
-	    read -p "Prpecipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
+	    read -p "Precipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
 	    
 	    if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
 		LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
@@ -274,8 +276,8 @@ download_forecasts(){
 lis_darun(){
 
     #######################################################################
-    # (1) LIS DA run starts on the 1st of the previous month to generate
-    #     initial conditions
+    # (1) LIS DA run starts on the 1st of the previous month to the 1st
+    #      of current month to generate the initial conditions
     #######################################################################
     
     echo "                         " >> $JOB_SCHEDULE
@@ -285,6 +287,7 @@ lis_darun(){
 
     # set up input directory
     mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
+    mkdir -p -m 775 ${E2ESDIR}/lis_darun/output/lis.config_files/
     cd ${E2ESDIR}/lis_darun/input/
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
@@ -309,7 +312,6 @@ lis_darun(){
     /bin/ln -s ${E2ESDIR}/lis_darun/input
     /bin/ln -s ${E2ESDIR}/lis_darun/output
     /bin/ln -s ${METFORC}
-    mkdir -p -m 775 output/lis.config_files/
     mkdir -p -m 775 ${CWD}/logs_${YYYYP}${MMP}
     
     # configure batch script
@@ -352,7 +354,7 @@ lis_darun(){
 ldt_ics(){
     
     #######################################################################
-    # (2) LDT ICS run to LIS input files
+    # (2) LDT-based Initial Condition(IC) run to generate LIS input files
     #######################################################################
 
     echo "              " >> $JOB_SCHEDULE
@@ -401,7 +403,7 @@ ldt_ics(){
 bcsd_fcst(){
     
     #######################################################################
-    # (3) BCSD 
+    # (3) BCSD step
     #######################################################################
     
     echo "              " >> $JOB_SCHEDULE
@@ -587,7 +589,7 @@ lis_fcst(){
     jobname=lis_fcst
     
     echo "              " >> $JOB_SCHEDULE
-    echo "(4) LIS Forecast                           " >> $JOB_SCHEDULE
+    echo "(4) LIS Forecast Runs                      " >> $JOB_SCHEDULE
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
@@ -731,7 +733,7 @@ s2smetrics(){
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 12 -M $model
+	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     
     job_list=`ls $jobname*.j`
