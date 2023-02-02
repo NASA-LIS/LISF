@@ -20,6 +20,7 @@
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  14 Jan 2014: David Mocko, reconfirmed Noah3.3 in LIS7.0
 !  24 Oct 2014: David Mocko, ensured max albedo maps used
+!  22 Feb 2022: Hiroko Beaudoing, added land cover schemes with MIRCA crops
 !
 ! !INTERFACE:
 subroutine noah33_setvegparms(mtype)

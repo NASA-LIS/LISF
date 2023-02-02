@@ -71,7 +71,12 @@
 ! Schedule turns on at a frequency specified in the config file (eg. every 2.5 days). 
 ! It keeps going even when it rains unless the shutoff is triggerred--
 ! (using 90% RZSM for now, should test a)root zone fully saturated,
-! b) surface layer fully saturated).
+! b) surface layer fully saturated). Sprinkler schedule keeps irrigating over the days to 
+! mimic revolution time of pivot system. On the other hand, Flood and Drip schedule is
+! the frequency of irrigation event (eg. once 10 days) and irrigated over the duration hours.
+! 
+! Flood assumes furrow field where every other ditch is flooded, so the amount of irrigation
+! is reduced by half.
 !
 ! REVISION HISTORY:
 !
@@ -81,6 +86,12 @@
 ! Feb 2022: Hiroko Beaudoing; Modified subroutines.
 ! Oct 2022: Hiroko Beaudoing; Added schedule option for drip and flood. Flood has
 !                             a special option for prescribed rate per soil type.
+! Feb 2023: Hiroko Beaudoing; Fixed schedule option for flood and drip to be frequency of 
+!                             irrigation event (eg once every 10-days). Removed the
+!                             special option for prescribed rate per soil type.
+!                             Flood assumes furrow field, thus rate is cut by a half.
+!                             Pass TileNo to trigger and rate subtourines for easier
+!                             debugging.
 
 !EOP
 
@@ -327,13 +338,14 @@ contains
        else  
           ! SPRINKLER, DRIP, or FLOOD
 
-          call irrig_trigger ( nest, HC, ma, IM%irrigType(TileNo),  &
+          call irrig_trigger ( nest, TileNo, HC, ma, IM%irrigType(TileNo),  &
                                irrigOn, irrigStart, &
                                curtime, IM%irrig_schedule_start(TileNo), &
                                IM%irrig_schedule_timer(TileNo) )
 
           if ( irrigStart ) then
-           call get_irrig_rate ( nest, HC, ma, SMREF, SMSAT, SMCNT, RDPTH, soiltype, &
+           call get_irrig_rate ( nest, TileNo, HC, ma, SMREF, SMSAT, SMCNT, &
+                                 RDPTH, soiltype, &
                                  IM%irrigScale(TileNo),IM%irrigType(TileNo), &
                                  IM%irrigRate(TileNo) )
           endif
@@ -344,7 +356,8 @@ contains
              if ( IM%irrigType(TileNo) == 3 ) then
                ! make sure it starts at irrig_start time
                if ( IM%irrigRate(TileNo).gt.0 ) then
-               call get_irrig_rate ( nest, HC, ma, SMREF, SMSAT, SMCNT, RDPTH, soiltype, &
+               call get_irrig_rate ( nest, TileNo, HC, ma, SMREF, SMSAT, &
+                                 SMCNT, RDPTH, soiltype, &
                                  IM%irrigScale(TileNo),IM%irrigType(TileNo), &
                                  IM%irrigRate(TileNo) )
                endif 
@@ -409,7 +422,7 @@ contains
   end FUNCTION IS_WITHIN_SEASON
   ! ----------------------------------------------------------------------------
   
-  SUBROUTINE irrig_trigger (nest, HC, ma, irrigType, irrigOn, irrigStart, &
+  SUBROUTINE irrig_trigger (nest, tileNo, HC, ma, irrigType, irrigOn, irrigStart, &
                             curtime, irrigStartTime, timer)
 ! Checks the irrigation trigger by soil moisture deficit or schedule option
 ! Returns on and off switch and indicator for time to update the irrigation rate
@@ -418,7 +431,7 @@ contains
 
     implicit none
 
-    INTEGER, intent (in)                    :: nest
+    INTEGER, intent (in)                    :: nest, tileNo
     REAL, intent (in)                       :: HC, ma, irrigType
     LOGICAL, intent (out)                   :: irrigOn, irrigStart
     REAL*8, intent(in)                      :: curtime
@@ -434,6 +447,8 @@ contains
     REAL                                    :: sprinklerFreq
     REAL                                    :: dripFreq
     REAL                                    :: floodFreq
+    REAL                                    :: duration
+    INTEGER                                 :: irrDays
 
     irrigOn = .false.
 
@@ -528,11 +543,12 @@ contains
     endif SPRINKLER
 
     DRIP: if( irrigType == 2. ) then
+      IT = LIS_irrig_struc(nest)%drip_thresh
+
       SM_DEFICIT_OR_SCHEDULE2: if ( LIS_irrig_struc(nest)%drip_schedule == 0 ) then  
          ! SM_DEFICIT-- 
          H1 = LIS_irrig_struc(nest)%drip_start
          H2 = LIS_irrig_struc(nest)%drip_start + LIS_irrig_struc(nest)%drip_duration
-         IT = LIS_irrig_struc(nest)%drip_thresh
 
          if ((HC >= H1).AND.(HC < H2)) then
             ! check soil moisture availability at H1 daily and 
@@ -557,9 +573,9 @@ contains
            irrigStart = .false.
          endif
       else  
-         ! SCHEDULE-- can trigger any time
+         ! SCHEDULE-- can trigger any time but applied only during the duration
+         ! drip schedule is frequency of irrigation event (eg every 3-day)
          dripFreq = LIS_irrig_struc(nest)%drip_frequency * 86400.0
-         ! set ending irrigation hour: irrigStart + duration in LIS time unites
          if ( irrigStartTime == -1 ) then   ! start a new cycle
             yr=LIS_rc%yr    !now
             mo=LIS_rc%mo
@@ -567,9 +583,17 @@ contains
             hr=LIS_rc%hr
             mn=LIS_rc%mn
             ss=0
-            call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,dripFreq)
+            duration = LIS_irrig_struc(nest)%drip_duration * 3600.
+         else
+         ! set ending irrigation hour: irrigStart + duration in LIS time unites
+            call LIS_time2date(irrigStartTime,doy,gmt,yr,mo,da,hr,mn)
+            irrDays = int(timer/86400.)
+            ! duration in sec
+            duration = LIS_irrig_struc(nest)%flood_duration * 3600. + &
+                       irrDays * 86400.
+            ss=0
          endif
-         H2 = time2   ! real*8 -> real
+         call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,duration)
          ! check rootzone soil moisture each time
          if( ma <= IT ) then
             ! is it first DOY irrigation or after shutoff?
@@ -580,11 +604,11 @@ contains
               irrigStartTime = curtime
             else                      ! no
               irrigStart = .false.
-              ! is it during the revolution?
-              if ( timer <= dripFreq ) then
+              ! is it during the irrigation event frequency?
+              if ( timer < dripFreq ) then
                 timer = timer + LIS_rc%ts
-                ! keep irrigStartTime unchanged
-                if ( curtime < H2 ) then
+                ! irrigate only during the hours under scheduled dates
+                if ( curtime <= time2 ) then
                   dripOn = .true.
                 else
                   dripOn = .false.
@@ -604,12 +628,12 @@ contains
             timer = -1
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
-            ! is it during the revolution?
+            ! is it during the irrigation event frequency?
             ! ensure the timer hasn't started
-            if ( timer <= dripFreq .and. timer .gt. -1.0 ) then
+            if ( timer < dripFreq .and. timer > -1.0 ) then
               timer = timer + LIS_rc%ts
-              ! keep irrigStartTime unchanged
-              if ( curtime < H2 ) then
+              ! irrigate only during the hours under scheduled dates
+              if ( curtime <= time2 ) then
                 dripOn = .true.
               else
                 dripOn = .false.
@@ -625,11 +649,12 @@ contains
     endif DRIP
 
     FLOOD: if( irrigType == 3. ) then
+      IT = LIS_irrig_struc(nest)%flood_thresh
+
       SM_DEFICIT_OR_SCHEDULE3: if ( LIS_irrig_struc(nest)%flood_schedule == 0 ) then  
          ! SM_DEFICIT-- 
          H1 = LIS_irrig_struc(nest)%flood_start
          H2 = LIS_irrig_struc(nest)%flood_start + LIS_irrig_struc(nest)%flood_duration
-         IT = LIS_irrig_struc(nest)%flood_thresh
 
          if ((HC >= H1).AND.(HC < H2)) then
             ! check soil moisture availability at H1 daily
@@ -647,9 +672,9 @@ contains
           irrigStart = .false.
          endif
       else  
-         ! SCHEDULE-- can trigger any time
+         ! SCHEDULE-- can trigger any time but applied only during the duration
+         ! flood schedule is frequency of irrigation event (eg every 10-day)
          floodFreq = LIS_irrig_struc(nest)%flood_frequency * 86400.0
-         ! set ending irrigation hour: irrigStart + duration in LIS time unites
          if ( irrigStartTime == -1 ) then   ! start a new cycle
             yr=LIS_rc%yr    !now
             mo=LIS_rc%mo
@@ -657,9 +682,17 @@ contains
             hr=LIS_rc%hr
             mn=LIS_rc%mn
             ss=0
-            call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,floodFreq)
+            duration = LIS_irrig_struc(nest)%flood_duration * 3600. 
+         else
+         ! set ending irrigation time: irrigStart + duration in LIS time unites
+            call LIS_time2date(irrigStartTime,doy,gmt,yr,mo,da,hr,mn)
+            irrDays = int(timer/86400.)
+            ! duration in sec
+            duration = LIS_irrig_struc(nest)%flood_duration * 3600. + &
+                       irrDays * 86400.
+            ss=0
          endif
-         H2 = time2   ! real*8 -> real
+         call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,duration)
          ! check rootzone soil moisture each time
          if( ma <= IT ) then
             ! is it first DOY irrigation or after shutoff?
@@ -670,11 +703,11 @@ contains
               irrigStartTime = curtime
             else                      ! no
               irrigStart = .false.
-              ! is it during the revolution?
-              if ( timer <= floodFreq ) then
+              ! is it during the irrigation event frequency?
+              if ( timer < floodFreq ) then
                 timer = timer + LIS_rc%ts
-                ! keep irrigStartTime unchanged
-                if ( curtime < H2 ) then
+                ! irrigate only during the hours under scheduled dates
+                if ( curtime <= time2 ) then
                   floodOn = .true.
                 else
                   floodOn = .false.
@@ -694,12 +727,12 @@ contains
             timer = -1
          else  ! 0.5 < ma <= 0.9
             irrigStart = .false.
-            ! is it during the revolution?
+            ! is it during the irrigation event frequency?
             ! ensure the timer hasn't started
-            if ( timer <= floodFreq .and. timer .gt. -1.0 ) then
+            if ( timer < floodFreq .and. timer > -1.0 ) then
               timer = timer + LIS_rc%ts
-              ! keep irrigStartTime unchanged
-              if ( curtime < H2 ) then
+              ! irrigate only during the hours under scheduled dates
+              if ( curtime <= time2 ) then
                 floodOn = .true.
               else
                 floodOn = .false.
@@ -717,8 +750,8 @@ contains
   END SUBROUTINE irrig_trigger
   ! ----------------------------------------------------------------------------
 
-  SUBROUTINE get_irrig_rate (nest, HC, ma, SMREF, SMSAT, SMCNT, RDPTH, soiltype, &
-                             IrrigScale, irrigType, IRATE)
+  SUBROUTINE get_irrig_rate (nest, tileNo, HC, ma, SMREF, SMSAT, SMCNT, RDPTH, &
+                             soiltype, IrrigScale, irrigType, IRATE)
 ! This subroutine computes irrigation rate for Sprinkler, Drip, or Flood.
 ! The irrigation rate can be computed dunamically based on the water deficit,
 ! or prescribed (NEW!). This routine is called only when irrig_trigger routine
@@ -731,7 +764,7 @@ contains
 
     implicit none
 
-    INTEGER, intent (in)                    :: nest, soiltype
+    INTEGER, intent (in)                    :: nest, soiltype, tileNo
     REAL, intent (in)                       :: HC, ma, SMREF, SMSAT, SMCNT(:), RDPTH(:)
     REAL, intent (in)                       :: IrrigScale, irrigType
     REAL                                    :: H1, H2, IT
@@ -853,25 +886,15 @@ contains
        ! PRESCRIBED
      SCHEDULE3P: if ( LIS_irrig_struc(nest)%flood_schedule .gt. 0 ) then
        ! ON SCHEDULE, get rate anytime
-       ! NEW!!!! variable rate by texture for Flood Schedule case....
-       if ( LIS_irrig_struc(nest)%flood_rate .eq. 1000 ) then
-          ! call a routine for soil texture of the model .....
-          call get_soiltex_infilrate (nest,soiltype,maxinfrate)
-          FRATE = maxinfrate*0.5* &
-              (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))*IrrigScale/3600.
-       else
-          FRATE = LIS_irrig_struc(nest)%flood_rate* &
-              (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))*IrrigScale/3600.
-       endif 
+       FRATE = LIS_irrig_struc(nest)%flood_rate* &
+           (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))*IrrigScale/3600.
      else   
        ! not on SCHEDULE, compute rate only during irrigation hours
        if ((HC >= H1).AND.(HC < H2)) then
-          ! get the prescribed rate in mm/hr and convert to mm/s at H1 to compute the
-          ! rate for the day and maintain the same rate through out the irrigation
-          if(H1 == HC) &
-            FRATE = LIS_irrig_struc(nest)%flood_rate* &
-              (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))*IrrigScale/3600.
-       else
+          ! get the prescribed rate in mm/hr and convert to mm/s 
+          FRATE = LIS_irrig_struc(nest)%flood_rate* &
+            (100.0/(100.0-LIS_irrig_struc(nest)%flood_efcor))*IrrigScale/3600.
+       else  ! reset
           FRATE = 0.
        endif
      endif SCHEDULE3P
@@ -911,7 +934,9 @@ contains
        endif
      endif SCHEDULE3D
     endif  DYNAMIC_OR_PRESCRIBED3
-    IRATE = FRATE
+    ! Assume furrow field, every other ditch is filled, so 50% of field is
+    ! saturated.  Apply this assumption for both demand & prescribed/schedule.
+    IRATE = FRATE*0.5
    endif  FLOOD
 
   END SUBROUTINE get_irrig_rate
@@ -970,6 +995,8 @@ contains
 !  Values based on FAO Annex 2 Infiltration rate and infiltration test website.
 !  Take the max value for testing the upper end of flood irrigation.
 ! 
+!  Note: this routine is not used but keeping it for a reference
+!
    implicit none
     integer, intent(in)    :: n,soiltype
     real, intent(out)      :: maxinfrate

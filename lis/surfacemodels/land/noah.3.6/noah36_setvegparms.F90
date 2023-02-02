@@ -20,6 +20,7 @@
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  14 Jan 2014: David Mocko, reconfirmed Noah3.3 in LIS7.0
 !  30 Oct 2014: David Mocko, added Noah-3.6 into LIS-7
+!  28 Dec 2022: Hiroko Beaudoing, added land cover schemes with MIRCA crops
 !
 ! !INTERFACE:
 subroutine noah36_setvegparms(mtype)
@@ -87,6 +88,9 @@ subroutine noah36_setvegparms(mtype)
      if (LIS_rc%lcscheme.eq."IGBPNCEP") mminlu = 'MODI'
      if (LIS_rc%lcscheme.eq."MODIS")    mminlu = 'MODI'
      if (LIS_rc%lcscheme.eq."ECOCLIMAP2") mminlu = 'ECM2'
+     ! New landcover+crop tile combinations:
+     if (LIS_rc%lcscheme.eq."UMD+MIRCA") mminlu = 'MIIU'
+     if (LIS_rc%lcscheme.eq."IGBPNCEP+MIRCA") mminlu = 'MIIM'
 
 !-----------------------------------------------------------------------
 ! Set Noah-3.6 vegetation type at tile from the LIS domain

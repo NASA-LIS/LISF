@@ -9782,6 +9782,7 @@ Groundwater abstraction for irrigation: 0
 Irrigation source water partition: 0
 ....
 
+'Irrigation Sprinkler/Drip/Flood efficiency:` specifies the % loss due to field or equipment.  Applicble values range from 0 to 100 (%) where 0 means no loss, 25 means 75 % efficient, which would increase the irrigation water amount by apply 125% of water to offset 25% loss.
 
 [[ssec_routing,Routing]]
 === Routing
