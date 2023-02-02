@@ -418,33 +418,19 @@ The default value is 0.
 Add buffer to parameter grid domain:     0
 ....
 
-`Buffer count in x-direction:` adds a set number of pixels that buffer
-around a parameter file target domain in the x-direction.
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
 Acceptable values are:
 
 [cols="<,<",]
 |===
 |Value |Description
 
-|0 |Results in no buffer added
-|1 (or greater) |Buffer points included
+|"`0`" |No buffer added
+|"`1`" (or greater) |Buffer points included
 |===
 
-The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
-
-`Buffer count in y-direction:` adds a set number of pixels that buffer
-around a parameter file target domain in the y-direction.
-Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|0 |Results in no buffer added
-|1 (or greater) |Buffer points included
-|===
-
-The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
+The default value is 5, and only activated if buffer option is selected.
 
 .Example _ldt.config_ entry
 ....
@@ -765,6 +751,7 @@ endif::devonly[]
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
 |MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
 |MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
+|MCD12Q1 |Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in "`Landcover file`" option. 
 |USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
 |USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LISF-team.
 |ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
@@ -805,6 +792,11 @@ Landcover classification:     "UMD"
 ....
 
 `Landcover file:` specifies the location of the vegetation classification file.
+
+.Example _ldt.config_ entry
+....
+Landcover file:               ./MODIS/MCD12Q1.006/2001/MCD12Q1.006_2001001.nc4
+....
 
 `Landcover map projection:` specifies the projection of the landcover map data.
 
@@ -1621,20 +1613,6 @@ Soil texture spatial transform:     none
 
 `Soil texture fill value:` indicates which soil texture value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing soil texture value, a value of 6 could be assigned if no nearest neighbor values exists to fill).
 
-`Soil texture fill value for Antarctica:` indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of `Soil texture fill value:` will be used.
-
-`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|.false. |do not enable
-|.true. |enable
-|===
-
-Defaults to `.false.`.
-
 `Soil texture fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
 
 .Example _ldt.config_ entry
@@ -1642,8 +1620,6 @@ Defaults to `.false.`.
 Soil texture fill option:      neighbor
 Soil texture fill radius:         3.
 Soil texture fill value:          6.
-Soil texture fill value for Antarctica: 16
-Soil texture force exclusion of water points during fill: .true.
 ....
 
 If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
@@ -2865,7 +2841,6 @@ Climatology parameter maps
 
 |PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
 |WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
-|NAFPA_BACK_GALWEM|US Air Force GALWEM NWP fields on 10-km NAFPA grid (Oct2017-May2022).
 |===
 
 `PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
@@ -2880,11 +2855,6 @@ WORLDCLIM: <directory>/<file header>.<tag>.1gd4r
 * The file header can be prec_
 * The tag should represent the month (such as 1, 2,..., 12).
 
-NAFPA_BACK_GALWEM: <directory>/<field header>.<tag>.d01.nc
-
-* The field header is SUM_TS
-* The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).
-
 `PPT climatology interval:` specifies the frequency of the precipitation climatology in months. Current option is: "`monthly`"
 
 .Example _ldt.config_ entry
@@ -2892,34 +2862,6 @@ NAFPA_BACK_GALWEM: <directory>/<field header>.<tag>.d01.nc
 PPT climatology data source:  PRISM
 PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
 PPT climatology interval:     monthly
-....
-
-`PPT climatology data source 2:` specifies the second monthly precipitation (PPT) climatology fields, for calculating bias ratios. Current source options include:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|NLDAS |NOAA NLDAS-2 fields
-|NAFPA_BACK_GFS|NOAA GFS NWP fields on 10-km NAFPA grid (Oct2017-May2022).
-|===
-
-`PPT climatology maps 2:` specifies the source of the second group climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
-
-NLDAS: <directory>/<file header>.<tag>.txt
-
-* The file header can be anything (such as ppt_1931_2010).
-* The tag should represent the month (such as jan, feb, mar, etc.).
-
-NAFPA_BACK_GFS: <directory>/<field header>.<tag>.d01.nc
-
-* The field header is SUM_TS
-* The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).
-
-.Example _ldt.config_ entry
-....
-PPT climatology data source 2:  NAFPA_BACK_GFS
-PPT climatology maps 2:  ./METRICS_GFS/
 ....
 
 `TMIN climatology maps:` specifies the source of the climatology based minimum temperature files.
@@ -3672,22 +3614,10 @@ NASA AMSRE soil moisture observation directory: ./NASA_AMSRE
 
 `ESA CCI soil moisture version of data:` specifies the version of the ESA CCI soil moisture dataset.
 
-`ESA CCI soil moisture sensor type:` specifies the sensor type of the ESA CCI soil moisture dataset.  Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|"`passive`"  | passive sensor type
-|"`active`"   | active sensor type
-|"`combined`" | combined sensor type
-|===
-
 .Example _ldt.config_ entry
 ....
 ESA CCI soil moisture observation directory:  ./ECV
 ESA CCI soil moisture version of data:        EXAMPLE
-ESA CCI soil moisture sensor type:            combined
 ....
 
 `GCOMW AMSR2 L3 soil moisture observation directory:` specifies the location of the data directory containing the GCOMW AMSR v2 L3 soil moisture data.
