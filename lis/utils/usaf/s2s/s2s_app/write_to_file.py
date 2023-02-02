@@ -4,6 +4,8 @@ This script writes SLURM job files.
 import os
 import sys
 import argparse
+#pylint: disable=wrong-import-position
+#pylint: disable=import-error
 sys.path.append(os.getenv('S2STOOL'))
 from s2s_modules.shared import utils
 
