@@ -33,9 +33,8 @@ import yaml
 # NOTE: pylint cannot see the Dataset class in netCDF4 since the latter is not
 # written in Python.  We therefore disable a check for this line to avoid a
 # known false alarm.
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module, too-many-locals
 from netCDF4 import Dataset as nc4_dataset
-# pylint: enable=no-name-in-module
 
 # Private methods.
 def _usage():
@@ -139,12 +138,12 @@ def _create_daily_s2s_filename(input_dir, curdate, model_forcing, domain):
     name += "_DI.C"
     name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
-    
+
     if domain == 'AFRICOM':
         name += "_AR.AFRICA"
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
-        
+
     name += "_PA.LIS-S2S"
     name += f"_DD.{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
     name += "_DT.0000"
@@ -161,12 +160,12 @@ def _create_monthly_s2s_filename(output_dir, startdate, enddate,
     name += "_DI.C"
     name += f"_GP.LIS-S2S-{model_forcing}"
     name += "_GR.C0P25DEG"
-        
+
     if domain == 'AFRICOM':
         name += "_AR.AFRICA"
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
-        
+
     name += "_PA.LIS-S2S"
     name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
     name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
@@ -466,7 +465,8 @@ def _driver():
     curdate = startdate
     seconddate = startdate + datetime.timedelta(days=1)
     while curdate <= enddate:
-        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing, config["EXP"]["DOMAIN"])
+        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing,
+                                            config["EXP"]["DOMAIN"])
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
             tmp_outfile = f"{output_dir}/tmp_monthly.nc"

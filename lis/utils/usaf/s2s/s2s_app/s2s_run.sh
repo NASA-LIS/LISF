@@ -1,7 +1,9 @@
 #!/bin/bash
-
-# LIS-Hydro_S2S subsystem run script 
-
+#
+# Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
+#
+#  Date: 02-01-2023;  Latest version
+#
 ######################################################################
 #                     PROCESS COMMAND LINE ARGUMENTS
 ######################################################################
@@ -37,19 +39,19 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "     "
 	   echo "where MANDATORY input parameters:"
 	   echo "---------------------------------"
-	   echo "  YEAR:        start year"
-	   echo "  MONTH:       start month [1 to 12]"
-	   echo "  CONFIG_FILE: config file (for hindcast or forecast)"
+	   echo "  YEAR:        forecast start year"
+	   echo "  MONTH:       forecast start month [1 to 12]"
+	   echo "  CONFIG_FILE: E2E main config file (for hindcast or forecast)"
 	   echo "  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH."
 	   echo "     "
 	   echo "with OPTIONAL flags:"
 	   echo "--------------------"
-	   echo "  DELETE:   delete YEAR/MONTH (valid inputs: Y or N)"
-	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)"
+	   echo "  DELETE:   Delete YEAR/MONTH directory (valid inputs: Y or N)"
+	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag can be used to check the progress of SLURM jobs (valid inputs: Y or N)"
 	   echo "  STEP:     The E2ES process includes seven steps that are run sequentially LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS."
-	   echo "            However, the STEP option allows user to kick start the process from the last completed step."
-	   echo "            -s STEP is good to ask s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
-           echo "  ONE_STEP: flag is good to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
+	   echo "            However, the STEP option allows the user to kick start the process from the last completed step."
+	   echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
+           echo "  ONE_STEP: Flag used to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
 	   exit 1 
 	   ;;	 
     esac
@@ -76,7 +78,6 @@ export ARCH=`uname`
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
-export AF10KM=`grep AF10KM  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
@@ -169,7 +170,7 @@ delete_forecast(){
     Mon=`echo ${mon_names[$mon-1]}`
     
     # delete scratch
-    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/
     
     # delete LISDA
     delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYY}${MM}/
@@ -180,7 +181,7 @@ delete_forecast(){
     
     # delete LDTICS
     delete_files ${E2ESDIR}/ldt_ics/ldt.config_files/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
-    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}*\
+    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}\*
     
     # delete BCSD
     delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/${Mon}01/${YYYY}
@@ -218,7 +219,7 @@ download_forecasts(){
 
     # CFSv2 forecast
     cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
+    #sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
 	exit
@@ -257,7 +258,7 @@ download_forecasts(){
 	    NAVAIL=`echo ${have_model} | wc -w`
 	    ((NAVAIL--))
 	    echo 
-	    read -p "Prpecipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
+	    read -p "Precipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
 	    
 	    if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
 		LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
@@ -275,8 +276,8 @@ download_forecasts(){
 lis_darun(){
 
     #######################################################################
-    # (1) LIS DA run starts on the 1st of the previous month to generate
-    #     initial conditions
+    # (1) LIS DA run starts on the 1st of the previous month to the 1st
+    #      of current month to generate the initial conditions
     #######################################################################
     
     echo "                         " >> $JOB_SCHEDULE
@@ -286,6 +287,7 @@ lis_darun(){
 
     # set up input directory
     mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
+    mkdir -p -m 775 ${E2ESDIR}/lis_darun/output/lis.config_files/
     cd ${E2ESDIR}/lis_darun/input/
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
@@ -309,13 +311,13 @@ lis_darun(){
     /bin/ln -s ${LISFDIR}/lis/LIS
     /bin/ln -s ${E2ESDIR}/lis_darun/input
     /bin/ln -s ${E2ESDIR}/lis_darun/output
-    mkdir -p -m 775 output/lis.config_files/
+    /bin/ln -s ${METFORC}
     mkdir -p -m 775 ${CWD}/logs_${YYYYP}${MMP}
     
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
     COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
@@ -327,7 +329,7 @@ lis_darun(){
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
     LSMLISLOGFILE=${CWD}/logs_${YYYYP}${MMP}'/lislog'
     
-    #sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
+    sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
     sed -i "s|NOAHMP401RSTFILE|${NOAHMP401RSTFILE}|g" lis.config
     sed -i "s|HYMAP2RSTFILE|${HYMAP2RSTFILE}|g" lis.config
     sed -i "s|STARTYR|${YYYYP}|g" lis.config
@@ -352,7 +354,7 @@ lis_darun(){
 ldt_ics(){
     
     #######################################################################
-    # (2) LDT ICS run to LIS input files
+    # (2) LDT-based Initial Condition(IC) run to generate LIS input files
     #######################################################################
 
     echo "              " >> $JOB_SCHEDULE
@@ -401,7 +403,7 @@ ldt_ics(){
 bcsd_fcst(){
     
     #######################################################################
-    # (3) BCSD 
+    # (3) BCSD step
     #######################################################################
     
     echo "              " >> $JOB_SCHEDULE
@@ -587,7 +589,7 @@ lis_fcst(){
     jobname=lis_fcst
     
     echo "              " >> $JOB_SCHEDULE
-    echo "(4) LIS Forecast                           " >> $JOB_SCHEDULE
+    echo "(4) LIS Forecast Runs                      " >> $JOB_SCHEDULE
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
@@ -731,7 +733,7 @@ s2smetrics(){
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 12 -M $model
+	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     
     job_list=`ls $jobname*.j`
@@ -779,11 +781,11 @@ s2splots(){
     
     PLINE=`grep -n plot_s2smetrics.py s2splots_run.j | cut -d':' -f1`
     ((PLINE++))
-    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${SEC_COMMAND}" s2splots_run.j
     ((PLINE++))
-    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
+    #THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    #sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
     #((PLINE++))
     #FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     #sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
@@ -822,7 +824,6 @@ fi
 #######################################################################
    
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
-mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
@@ -836,10 +837,6 @@ if [ $DATATYPE  == "forecast" ]; then
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
-cd ${SCRDIR}/global_usaf_forc
-/bin/ln -s $AF10KM usaf_lis73rc8_10km
-cd ${SCRDIR}
-/bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
 /bin/rm -f $JOB_SCHEDULE

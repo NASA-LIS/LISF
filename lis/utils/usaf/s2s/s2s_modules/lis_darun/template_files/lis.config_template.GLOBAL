@@ -11,9 +11,7 @@ Open water model:                       "template open water"
 Number of met forcing sources:          1
 Blending method for forcings:           overlay
 Met forcing sources:                    "AGRMET"
-#Topographic correction method (met forcing):  "none"
-# TEMPORARILY TURNING ON SLOPE-ASPECT - BUT WILL BE OFF FOR FINAL RUNS:
-Topographic correction method (met forcing):  "slope-aspect"
+Topographic correction method (met forcing):  "none"
 Enable spatial downscaling of precipitation:  0
 Spatial upscaling method (met forcing):       average
 Spatial interpolation method (met forcing):   average
@@ -75,10 +73,8 @@ Number of application models:          0
 
 #---------------------DATA ASSIMILATION ----------------------------------
 #Data assimilation options
-#Number of data assimilation instances:                1
-Number of data assimilation instances:                0
-#Data assimilation algorithm:                         "EnKF"
-Data assimilation algorithm:                         "none"
+Number of data assimilation instances:                1
+Data assimilation algorithm:                         "EnKF"
 Data assimilation set:                               "SMAP(NRT) soil moisture"
 Data assimilation exclude analysis increments:        0                                       
 Data assimilation number of observation types:        1                                       
@@ -89,10 +85,9 @@ Data assimilation output ensemble spread:             0
 
 # Check LDT-generated domain mask path:
 # S2S-Global domain:
-Data assimilation observation domain file:   ./input/lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
+Data assimilation observation domain file:   ./input/lis_input.s2s_global.noahmp401_hymap2.25km.nc
 ##
-#Data assimilation scaling strategy:                   "CDF matching"
-Data assimilation scaling strategy:                   "none"
+Data assimilation scaling strategy:                   "CDF matching"
 
 Data assimilation use a trained forward model:        0
 Data assimilation trained forward model output file:  none
@@ -120,8 +115,7 @@ State perturbation frequency:                         6hr
 State attributes file:                                ./input/attribs/noahmp_sm_attribs.txt 
 State perturbation attributes file:                   ./input/attribs/noahmp_sm_pertattribs.txt 
 
-#Observation perturbation algorithm:                   "GMAO scheme" 
-Observation perturbation algorithm:                   "none"
+Observation perturbation algorithm:                   "GMAO scheme" 
 Observation perturbation frequency:                   6hr          
 Observation attributes file:                          ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/smap_pertattribs.txt
@@ -138,7 +132,7 @@ Observation perturbation attributes file:             ./input/attribs/smap_perta
 #SMAP(NASA) CDF read option:                                     1
 
 # SMAP NRT - Operations-based SM data directory:
-SMAP(NRT) soil moisture data directory:               ../USAF_FORCING/SMAP_L2_SM_NRT/
+SMAP(NRT) soil moisture data directory:               ./USAF_FORCING/SMAP_L2_SM_NRT/
 SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc  
 SMAP(NRT) observation CDF file:                       ./input/cdf/smap_c007_cdf_100obs.nc
 SMAP(NRT) soil moisture number of bins in the CDF:              100
@@ -186,8 +180,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-#AGRMET forcing directory:                  AF10KMFORC
-AGRMET forcing directory:                  ../USAF_FORCING/usaf_lis75s2s_gfs2galwem/
+AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis75s2s_gfs2galwem/
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
