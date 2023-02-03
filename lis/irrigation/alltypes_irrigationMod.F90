@@ -49,6 +49,7 @@ contains
     integer              :: i
     type(ESMF_ArraySpec) :: arrspec1,arrspec2
     type(ESMF_Field)     :: irrigRateField, irrigFracField
+    type(ESMF_Field)     :: irrigAppRateField
     type(ESMF_Field)     :: irrigRootDepthField, irrigScaleField
     type(ESMF_Field)     :: irrigTypeField
     type(ESMF_Field)     :: irrigScheduleTimerField,irrigScheduleStartField
@@ -61,6 +62,7 @@ contains
     real,  allocatable   :: irrigType(:)
     real, pointer        :: frac(:),scale(:),rootdepth(:),irrigRate(:)
     real, pointer        :: itype(:),scheduleTimer(:)
+    real, pointer        :: irrigAppRate(:)   !HKB
     real*8, pointer      :: scheduleStart(:)
     character*100        :: maxrootdepthfile
     character*50         :: irrigtypetocrop
@@ -134,6 +136,28 @@ contains
        call ESMF_StateAdd(irrigState(n),(/irrigRateField/),rc=status)
        call LIS_verify(status,&
             "ESMF_StateAdd for irrigRate failed in alltypes_irrigation_init")
+
+!HKB  separate irrigation rate that was actually applied to soil and as rain
+       irrigAppRateField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Applied Irrigation rate", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in alltypes_irrigation_init")
+
+       call ESMF_AttributeSet(irrigAppRateField,"Units","mm s-1",&
+               rc=status)
+       call LIS_verify(status,&
+               'error in ESMF_AttributeSet in alltypes_irrigation_init"')
+
+       call ESMF_FieldGet(irrigAppRateField,localDE=0,&
+            farrayPtr=irrigAppRate,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for irrigAppRate ')
+       irrigAppRate = 0.0
+
+       call ESMF_StateAdd(irrigState(n),(/irrigAppRateField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for irrigAppRate failed in alltypes_irrigation_init")
 
        irrigFracField = ESMF_FieldCreate(&
             grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
@@ -292,9 +316,11 @@ contains
     integer             :: status
 
     type(ESMF_Field)    :: irrigRateField,prcpField
+    type(ESMF_Field)    :: irrigAppRateField
     type(ESMF_Field)    :: irrigTypeField,irrigScaleField
     real,    pointer    :: prcp(:)
     real,    pointer    :: irrigRate(:)
+    real,    pointer    :: irrigAppRate(:)
     real,    pointer    :: irrigType(:)
     real,    pointer    :: irrigScale(:)
     real                :: itype1, itype2, itype3
@@ -311,6 +337,16 @@ contains
     call ESMF_FieldGet(irrigRateField,localDE=0,&
          farrayPtr=irrigrate,rc=status)
     call LIS_verify(status,'ESMF_FieldGet failed for irrigrate ')
+
+    call ESMF_StateGet(irrigState,&
+         "Applied Irrigation rate",&
+         irrigAppRateField,rc=status)
+    call LIS_verify(status,&
+         'ESMF_StateGet failed for Applied Irrigation rate')
+    
+    call ESMF_FieldGet(irrigAppRateField,localDE=0,&
+         farrayPtr=irrigapprate,rc=status)
+    call LIS_verify(status,'ESMF_FieldGet failed for irrigapprate ')
 
     call ESMF_StateGet(irrigState,&
          "Irrigation type",&
@@ -353,12 +389,15 @@ contains
      ! Write out irrigated amount of water to separate directory:
        if( LIS_MOC_IRRIGATEDWATER == 1 ) then
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGATEDWATER,&
-               value=irrigRate(t),unit="kg m-2 s-1",direction="-",vlevel=1)
+               value=irrigAppRate(t),unit="kg m-2 s-1",direction="-",vlevel=1)
        else
          write(LIS_logunit,*) "[ERR] 'Irrigated water:' was not selected. Program stopping ..."
          call LIS_endrun
        endif
 !HKB
+     ! Write out irrigation input rate (input /= irrigated for drip & flood)
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGWATERINPUT,&
+               value=irrigRate(t),unit="kg m-2 s-1",direction="-",vlevel=1)
      ! additional fields for checking (time constant fields)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGSCALE,&
                value=irrigScale(t),unit="-",direction="-",vlevel=1)

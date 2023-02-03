@@ -72,8 +72,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   integer              :: croptype
   real                 :: gsthresh
   logical              :: irrig_check_frozen_soil
-  real                 :: amount
-  integer              :: checktid
+  real                 :: amount,added,totamount
   type(irrigation_model) :: IM 
 
   ! _______________________________________________________
@@ -236,6 +235,9 @@ subroutine noah33_getirrigationstates(nest,irrigState)
               IRRON: if ( IM%irrigRate(TileNo).gt.0 ) then
 
                 !SPRINKLER application is in alltypes_irrigation_updates 
+                SPRINKLER: if ( IM%irrigType(TileNo) == 1 ) then
+                  IM%irrigAppRate(TileNo) = IM%irrigRate(TileNo)
+                endif SPRINKLER
 
                 DRIP: if ( IM%irrigType(TileNo) == 2 ) then
                 ! convert rate (mm/s) to accumulation (mm or kg m-2) and 
@@ -243,29 +245,53 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                 ! if root zone moisture becomes field capacity at the next 
                 ! time step, it will be shut off 
                    amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(1)/1000.
+                ! HKB: application need to weight by irrigated fraction of tile
                    noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                        amount + noah33_struc(nest)%noah(TileNo)%smc(1)      
+                        IM%IrrigScale(TileNo)*(amount + noah33_struc(nest)%noah(TileNo)%smc(1)) &
+                        + (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)      
+                   IM%irrigAppRate(TileNo) = IM%irrigRate(TileNo)
                 endif DRIP
 
                 FLOOD: if ( IM%irrigType(TileNo) == 3 ) then
                    if ( croptype == LIS_rc%ricecrop ) then   ! rice
                    ! PADDY-- surface layer only
-                        noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                             IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
-                             (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)
+                     noah33_struc(nest)%noah(TileNo)%smc(1) =  &
+                           IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
+                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)
+                     IM%irrigAppRate(TileNo) = (noah33_struc(nest)%noah(TileNo)%smcmax-noah33_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
                    else
                    ! NON-PADDY -- surface only or  multiple layers
                    ! BZ modification 4/2/2015 to account for ippix and all soil layers:
                    ! raise SM to saturation instantly and keep it saturated
                    ! throughout the irrigation duration 
-                      do l = 1, LIS_irrig_struc(nest)%irrigation_mxsoildpth
+                   ! HKB: make sure the rate is high enough to bring it to
+                   ! saturation in volmetric
+                     totamount = 0.0
+                     do l = 1, LIS_irrig_struc(nest)%irrigation_mxsoildpth
+                      amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(l)/1000.
+                      added = amount + noah33_struc(nest)%noah(TileNo)%smc(l)
+                      if ( added >= noah33_struc(nest)%noah(TileNo)%smcmax ) then  
+                        !add the amount
+                        totamount = totamount + amount
                         noah33_struc(nest)%noah(TileNo)%smc(l) =  &
-                             IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
-                             (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
-                      end do
+                           IM%IrrigScale(TileNo)*added + &
+                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
+                      else
+                        !bring to saturation 
+                        totamount = totamount + &
+                           (noah33_struc(nest)%noah(TileNo)%smcmax - noah33_struc(nest)%noah(TileNo)%smc(l)) &
+                           *sldpth(l)*1000.       ! mm
+                        noah33_struc(nest)%noah(TileNo)%smc(l) =  &
+                           IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
+                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
+                      endif 
+                     end do
+                     IM%irrigAppRate(TileNo) = totamount/LIS_rc%ts
                    endif
                 endif FLOOD
 
+              else
+                IM%irrigAppRate(TileNo) = 0.0
               endif   IRRON
            endif IRRS2
         endif IRRF2

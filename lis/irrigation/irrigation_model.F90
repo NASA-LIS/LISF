@@ -112,6 +112,7 @@ MODULE IRRIGATION_MODULE
   type, public :: irrig_state
      
      real,  pointer :: irrigRate(:)
+     real,  pointer :: irrigAppRate(:)
      real,  pointer :: irrigFrac(:)
      real,  pointer :: irrigType(:)
      real,  pointer :: irrigScale(:)
@@ -145,12 +146,18 @@ contains
     type(ESMF_Field)                        :: irrigRateField,irrigFracField,irrigTypeField,prcpField
     type(ESMF_Field)                        :: irrigRootDepthField,irrigScaleField,irriggwratioField
     type(ESMF_Field)                        :: irrigScheduleTimerField,irrigScheduleStartField
+    type(ESMF_Field)                        :: irrigAppRateField
     integer                                 :: rc
     
     call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
     call LIS_verify(rc,'ESMF_StateGet failed for Irrigation rate')    
     call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=IM%irrigRate,rc=rc)
     call LIS_verify(rc,'ESMF_FieldGet failed for Irrigation rate')
+    
+    call ESMF_StateGet(irrigState, "Applied Irrigation rate",irrigAppRateField,rc=rc)
+    call LIS_verify(rc,'ESMF_StateGet failed for Applied Irrigation rate')    
+    call ESMF_FieldGet(irrigAppRateField, localDE=0,farrayPtr=IM%irrigAppRate,rc=rc)
+    call LIS_verify(rc,'ESMF_FieldGet failed for Applied Irrigation rate')
     
     call ESMF_StateGet(irrigState, "Irrigation frac",&
          irrigFracField,rc=rc)
@@ -230,6 +237,7 @@ contains
     ! OUTPUT (internal ESMF states updated)
     ! ------
     ! irrigRate       : irrigation rate  [kg m-2 s-1]
+    ! irrigAppRate    : irrigation rate applied to soil and rain [kg m-2 s-1]
     ! irrigStartTime  : start time of a scheduled irrigation application 
     !                   cycle [real*8 LIS time unit]
     ! irrigTimer      : scheduled irrigation application timer 

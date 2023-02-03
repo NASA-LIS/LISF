@@ -319,6 +319,7 @@ module LIS_histDataMod
   public :: LIS_MOC_RTM_SM
   ! Irrigation
   public :: LIS_MOC_IRRIGATEDWATER  
+  public :: LIS_MOC_IRRIGWATERINPUT  
   public :: LIS_MOC_IRRIGSCALE
   public :: LIS_MOC_IRRIGTSP
   public :: LIS_MOC_IRRIGTDP
@@ -809,6 +810,7 @@ module LIS_histDataMod
    integer :: LIS_MOC_RTM_SM = -9999
 
    integer :: LIS_MOC_IRRIGATEDWATER = -9999
+   integer :: LIS_MOC_IRRIGWATERINPUT = -9999
    integer :: LIS_MOC_IRRIGSCALE = -9999
    integer :: LIS_MOC_IRRIGTSP = -9999
    integer :: LIS_MOC_IRRIGTDP = -9999
@@ -4301,6 +4303,22 @@ contains
             1,(/"-"/),2,1,1,&
             model_patch=.true.)
     endif
+
+!HKB: separate irrigation input vs the actual applied water 
+!    (sprinkler: input = applied, flood&drip: input /= applied)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigWaterInput:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
+         "IrrigWaterInput",&
+         "input_irrigation_water_amount",&
+         "input irrigation water amount",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_IRRIG_COUNT,LIS_MOC_IRRIGWATERINPUT,&
+            LIS_histData(n)%head_irrig_list,&
+            n,1,ntiles,(/"kg/m2s"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif
+
 !HKB: additional irrigation related output fields (constant)
     call ESMF_ConfigFindLabel(modelSpecConfig,"IrrigationScale:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_irrig_list, &
