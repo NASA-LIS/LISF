@@ -25,6 +25,7 @@ module LDT_pluginIndices
 !  23 Oct 2008: Sujay Kumar  -- Initial Specification
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
+!  28 Jun 2022: Eric Kemp -- Added NAFPA background precipitation
 !
 !EOP
   PRIVATE
@@ -343,6 +344,10 @@ module LDT_pluginIndices
 !- PPT:
    character*50, public,  parameter :: LDT_prismpptId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimpptId = "WORLDCLIM"
+   character*50, public,  parameter :: LDT_nafpabackgfspptId = "NAFPA_BACK_GFS"
+   character*50, public,  parameter :: LDT_nafpabackgalwempptId = &
+        "NAFPA_BACK_GALWEM"
+
 !- TMIN:
    character*50, public,  parameter :: LDT_prismtminId     = "PRISM"
    character*50, public,  parameter :: LDT_worldclimtminId = "WORLDCLIM"
