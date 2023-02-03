@@ -25,9 +25,10 @@
     USE invdist_temp2smap
     USE varsio_m
     USE algo_vpol_m
+    use LDT_ARFSSM_netcdfMod, only: LDT_ARFSSM_write_netcdf
     use LDT_logMod         
     USE LDT_smap_e_oplMod  
- 
+    
     IMPLICIT NONE
 ! !ARGUMENTS:
     CHARACTER (len=100)          :: SMAPFILE                             
@@ -54,6 +55,10 @@
     character (len=100) :: retrieval_fname
     integer             :: L1B_dir_len,L1B_fname_len
     real                :: utc_check
+
+    ! EMK
+    character(8) :: yyyymmdd
+    character(6) :: hhmmss
 
     nrow=2560
     mcol=1920
@@ -121,7 +126,7 @@
     write (LDT_logunit,*) '[INFO] Finished reading landcover'
 
     !generate soil moisture retrievals
-    write (LDT_logunit,*) '[INFO] Generating soil moisture retrievals' 
+    write (LDT_logunit,*) '[INFO] Generating soil moisture retrievals'
     ARFS_SM=-9999
     ARFS_SM_FLAG=-1
     DO i=1,nrow !ROW LON
@@ -161,17 +166,29 @@
     L1B_fname_len = len_trim(SMAPFILE)
 
     if(SMAPeOPL%L1Btype.eq.1) then  !NRT
+       !retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
+       !                  trim(SMAPFILE(L1B_dir_len+18:L1B_fname_len-3))//".dat"
        retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
-                         trim(SMAPFILE(L1B_dir_len+18:L1B_fname_len-3))//".dat"
+                         trim(SMAPFILE(L1B_dir_len+18:L1B_fname_len-3))//".nc"
+       yyyymmdd = trim(SMAPFILE(L1B_fname_len-28:L1B_fname_len-20))
+       hhmmss = trim(SMAPFILE(L1B_fname_len-19:L1B_fname_len-13))
     elseif(SMAPeOPL%L1Btype.eq.2) then  !Historical
+       !retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
+       !     trim(SMAPFILE(L1B_dir_len+14:L1B_fname_len-3))//".dat"
        retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
-                         trim(SMAPFILE(L1B_dir_len+14:L1B_fname_len-3))//".dat"
+            trim(SMAPFILE(L1B_dir_len+14:L1B_fname_len-3))//".nc"
+       yyyymmdd = trim(SMAPFILE(L1B_fname_len-28:L1B_fname_len-20))
+       hhmmss = trim(SMAPFILE(L1B_fname_len-19:L1B_fname_len-13))
     endif
 
     write (LDT_logunit,*) '[INFO] Writing soil moisture retrieval file ', trim(retrieval_fname)
-    OPEN(UNIT=151, FILE=retrieval_fname,FORM='UNFORMATTED',ACCESS='DIRECT', RECL=nrow*mcol*4)
-    WRITE(UNIT=151, REC = 1) ARFS_SM
-    CLOSE(151)
+!    OPEN(UNIT=151, FILE=retrieval_fname,FORM='UNFORMATTED',ACCESS='DIRECT', RECL=nrow*mcol*4)
+!    WRITE(UNIT=151, REC = 1) ARFS_SM
+!    CLOSE(151)
+    ! NOTE: nrow is actually number of columns, mcol is actually number of
+    ! rows
+    call LDT_ARFSSM_write_netcdf(nrow, mcol, arfs_sm, retrieval_fname, &
+         yyyymmdd, hhmmss)
     write (LDT_logunit,*) '[INFO] Successfully wrote soil moisture retrieval file ', trim(retrieval_fname)
     write (LDT_logunit,*) '[INFO] Finished generating soil moisture retrievals'
 
