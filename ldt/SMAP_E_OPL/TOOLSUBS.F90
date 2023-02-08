@@ -357,15 +357,40 @@ MODULE TOOLSUBS
       integer(HID_T) :: file_id, dataset_id, dspace_id
       integer(HSIZE_T) :: dims(2), maxdims(2)
       integer :: hdferr
+      logical :: exists, ishdf5
 
       ierr = 0
       m = 0
       n = 0
 
+      ! Make sure file exists
+      inquire(file=trim(filename), exist=exists)
+      if (.not. exists) then
+         write(LDT_logunit,*)'[ERR] Cannot find file ', trim(filename)
+         ierr = 1
+         return
+      end if
+
       ! Initialize HDF5
       call h5open_f(hdferr)
       if (hdferr == -1) then
          write(LDT_logunit,*)'[ERR] Cannot initialize HDF5 Fortran interface!'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Make sure the file is HDF5
+      call h5fis_hdf5_f(trim(filename), ishdf5, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Problem checking if ', trim(filename), &
+              ' is HDF5'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+      if (.not. ishdf5) then
+         write(LDT_logunit,*)'[ERR] File ', trim(filename), ' is not HDF5!'
          call h5close_f(hdferr)
          ierr = 1
          return
