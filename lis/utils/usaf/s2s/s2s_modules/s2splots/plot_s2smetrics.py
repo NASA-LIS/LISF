@@ -55,6 +55,9 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
 
+    if standardized_anomaly:
+        load_table = 'L11W_'
+
     for var_name in config_["POST"]["metric_vars"]:
         under_over = ['black', '#B404AE']
         if var_name == 'Streamflow':
@@ -82,7 +85,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                 under_over = ['gray', 'blue']
 
         else:
-            load_table = 'RdYlGn'
+            load_table = 'L11W_'
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)

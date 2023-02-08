@@ -242,7 +242,7 @@ def _driver(config):
                                          ic_date = dates[0], jobid = '_{:02d}'.format(i))
 
                 jobfile = JOB_NAME + '_' + nmme_model + jno + '_run.j'
-                jobname = JOB_NAME + '_' + nmme_model + '_' + jno + '_'
+                jobname = JOB_NAME + '_' + nmme_model + jno + '_'
                 print(lisconfig_target)
 
                 utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
