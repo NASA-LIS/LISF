@@ -294,12 +294,12 @@ def load_table (table_key):
                  [255,159,  0],
                  [255,187,  0],
                  [255,255,255],
-                 [ 47,255, 67],
-                 [ 60,230, 15],
-                 [  0,219,  0],
-                 [  0,187,  0],
-                 [  0,159,  0],
-                 [  0,131,  0]],
+                 [  0,167,255],
+                 [  0,115,255],
+                 [  0, 83,255],
+                 [  0,  0,255],
+                 [  0,  0,200],
+                 [  0,  0,130]],
         '14WT2M':[[179, 66,245],
                   [  0,  0,255],
                   [  0,115,255],
@@ -313,7 +313,12 @@ def load_table (table_key):
                   [196,159,128]],
         }
 
-    return tables[table_key]
+    if table_key[-1] == '_':
+        ct_ = tables[table_key[:-1]]
+        ct_.reverse()
+    else:
+        ct_ = tables[table_key]
+    return ct_
 
 def compute_radius(ortho, radius_degrees, lon, lat):
     ''' compute radius '''
@@ -355,6 +360,8 @@ def map2pfaf (anom, lats, lons, dlat, dlon, ulat, ulon, carea, levels):
         iy_ = min(range(len(lats)), key=lambda j: abs(lats[j] - dlat[i]))
         ix_ = min(range(len(lons)), key=lambda j: abs(lons[j] - dlon[i]))
         ad_ = anom[iy_,ix_]
+        if ad_ == -9999. or au_ == -9999.:
+            continue
 
         if au_ and ad_:
             this_val = 0.5*(au_+ad_)
@@ -508,6 +515,10 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
+            if this_col < 0:
+                this_col = 0
+            if this_col >= len(style_color):
+                this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.
             track = sgeom.LineString(zip([xx1[pfaf_cnt],xx2[pfaf_cnt]],
                                          [yy1[pfaf_cnt], yy2[pfaf_cnt]]))

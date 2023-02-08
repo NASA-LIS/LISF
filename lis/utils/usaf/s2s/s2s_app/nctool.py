@@ -26,8 +26,8 @@ USAGE: (1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial lay
 import os
 import sys
 import numpy as np
-import xarray as xr
 from numpy import unravel_index
+import xarray as xr
 #pylint: disable=too-many-arguments, line-too-long
 ZERO_DIFF = False
 ATOL = 1.e-03
