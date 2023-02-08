@@ -223,6 +223,7 @@ contains
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
+    integer :: rc
 
   ! Resample SMAP L1B to L1C
     call search_SMAPL1B_files(SMAPeOPL%L1Bdir,SMAPeOPL%date_curr,&
@@ -268,15 +269,25 @@ contains
           if(i == fi) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec)
-             write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
-             read_L1Bdata = .true. 
+             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+
+             if (rc == 0) then
+                write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
+                read_L1Bdata = .true.
+             else
+                deallocate(SMAPeOPL%ARFS_TBV_COR)
+             end if
           elseif(hhmmss(i) /= hhmmss(i+1)) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec)
-             write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
-             read_L1Bdata = .true.
+             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+
+             if (rc == 0) then
+                write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
+                read_L1Bdata = .true.
+             else
+                deallocate(SMAPeOPL%ARFS_TBV_COR)
+             end if
           endif
 
           if(read_L1Bdata) then

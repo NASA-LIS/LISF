@@ -13,8 +13,8 @@
 ! OUTPUT: SMAPTB_ARFSGRIDE_ddmmyyy.dat
 ! NOTES : Inverse Distance Squared with 0.4 deg serching window
 !-------------------------------------------------------------------------
-
-subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME)
+ 
+subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
 
    USE VARIABLES
    USE DATADOMAIN
@@ -35,6 +35,7 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME)
     integer             :: var_i
     integer             :: L1B_dir_len,L1B_fname_len
     integer :: ierr
+    integer :: rc
 
     REAL*4,DIMENSION(:,:),ALLOCATABLE :: TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B
     REAL*4,DIMENSION(:,:),ALLOCATABLE :: NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, SCNANG_L1B
@@ -48,6 +49,9 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME)
     REAL*4,DIMENSION(2560,1920) :: ARFS_SURWAT_V, ARFS_SURWAT_H, ARFS_WTV, ARFS_WTH
 
     REAL :: T1, T2
+
+    rc = 0
+    
     CALL ARFS_GEO
     ALLOCATE(ARFS_LAT(arfs_nrow_lat),ARFS_LON(arfs_mcol_lon))
     ARFS_LAT = LAT(arfs_geo_lat_lo,arfs_geo_lat_up,-arfs_lat_space)
@@ -66,8 +70,8 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME)
     if (ierr == 1) then
        if (nrow == 0 .and. mcol == 0) then
           write(LDT_logunit,*)'[ERR] Problem reading ', trim(SMAPFILE)
-          write(LDT_logunit,*)'[ERR] Aborting....'
-          call LDT_endrun()
+          rc = 1
+          return
        else if (.not. allocated(TBV_COR_L1B)) then
           write(LDT_logunit,*)'[WARN] Could not find TBV_COR_L1B in ', &
                trim(SMAPFILE)
