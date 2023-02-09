@@ -43,13 +43,12 @@ import copy
 import datetime
 import os
 import sys
-import time
 
 # Third-party libraries
 # NOTE: pylint cannot see the Dataset class in netCDF4 since the latter is not
 # written in Python.  We therefore disable a check for this line to avoid a
 # known false alarm.
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module, too-many-branches, too-many-statements, too-many-locals
 from netCDF4 import Dataset as nc4_dataset
 import numpy as np
 import yaml
@@ -253,21 +252,23 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
     del attrs["missing_value"]
     del attrs["SOIL_LAYER_THICKNESSES"]
     attrs["source"] = "Noah-MP.4.0.1+template open water+HYMAP2"
-    #for gattrname in src1.__dict__:
-    #    dst.setncattr(gattrname, src1.__dict__[gattrname])
+
     dst.setncatts(attrs)
 
     for name, variable in src1.variables.items():
 
         # Special handling for certain variables to match CF convention
         if name == "lat":
-            dst.createVariable(name, variable.datatype, ("lat"), zlib=True, complevel=6, shuffle=True )
+            dst.createVariable(name, variable.datatype, ("lat"), zlib=True,
+                               complevel=6, shuffle=True)
         elif name == "lon":
-            dst.createVariable(name, variable.datatype, ("lon"),zlib=True, complevel=6, shuffle=True )
+            dst.createVariable(name, variable.datatype, ("lon"),zlib=True,
+                               complevel=6, shuffle=True)
         elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
                       "RelSMC_tavg"]:
             dst.createVariable(name, variable.datatype, \
-                               ("ensemble", "soil_layer", "lat", "lon"),zlib=True, complevel=6, shuffle=True )
+                               ("ensemble", "soil_layer", "lat", "lon"),zlib=True,
+                               complevel=6, shuffle=True)
         else:
             # Need to account for new CF dimension names
             dimensions = []
@@ -285,9 +286,9 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         # Extra CF attributes
         attrs = copy.deepcopy(src1[name].__dict__)
         if name == "time":
-           attrs["calendar"] = "standard"
-           attrs["axis"] = "T"
-           attrs["bounds"] = "time_bnds"
+            attrs["calendar"] = "standard"
+            attrs["axis"] = "T"
+            attrs["bounds"] = "time_bnds"
         elif name == "lat":
             attrs["axis"] = "Y"
         elif name == "lon":
@@ -398,8 +399,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         # switching the soil_layer and ensemble dimension.
         elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
                       "RelSMC_tavg"]:
-            ns = dst.dimensions["soil_layer"].size
-            for i in range(0, ns):
+            _ns = dst.dimensions["soil_layer"].size
+            for i in range(0, _ns):
                 dst[name][:,i,:,:] = src1[name][i,:,:,:]
         elif len(variable.dimensions) == 4:
             dst[name][:,:,:,:] = src1[name][:,:,:,:]
@@ -409,6 +410,14 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             dst[name][:,:] = src1[name][:,:]
         elif len(variable.dimensions) == 1:
             dst[name][:] = src1[name][:]
+        if name == 'TotalPrecip_acc':
+            # apply LANDMASK
+            prec = np.array(src1[name][:])
+            mask = np.array(src3["LANDMASK"][:])
+            nens = prec.shape[0]
+            for i in range (0, nens):
+                prec[i,:,:] = np.where(mask ==1, prec[i,:,:],-9999.)
+            dst[name][:] = prec
 
     # Write data from src2
     for name, variable in src2.variables.items():
@@ -449,13 +458,15 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
 if __name__ == "__main__":
 
     # Get the file and directory names
-    configfile, noahmp_file, hymap2_file, output_dir, curdt, model_forcing \
+    _configfile, _noahmp_file, _hymap2_file, _output_dir, _curdt, _model_forcing \
         = _read_cmd_args()
     # load config file
-    with open(configfile, 'r', encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+    with open(_configfile, 'r', encoding="utf-8") as file:
+        _config = yaml.safe_load(file)
 
-    final_file = _create_final_filename(output_dir, curdt, model_forcing, config["EXP"]["DOMAIN"])
+    _final_file = _create_final_filename(_output_dir, _curdt, _model_forcing,
+                                        _config["EXP"]["DOMAIN"])
 
-    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config["SETUP"]["ldtinputfile"]
-    _merge_files(ldtfile, noahmp_file, hymap2_file, final_file)
+    _ldtfile = _config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        _config["SETUP"]["ldtinputfile"]
+    _merge_files(_ldtfile, _noahmp_file, _hymap2_file, _final_file)
