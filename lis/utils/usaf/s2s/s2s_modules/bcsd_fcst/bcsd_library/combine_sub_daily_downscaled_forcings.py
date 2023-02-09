@@ -11,7 +11,7 @@
 """
 
 from __future__ import division
-import os.path as op
+import os
 import sys
 from datetime import datetime
 import calendar
@@ -23,8 +23,9 @@ import numpy as np
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from Shrad_modules import read_nc_files, MAKEDIR
-
+# pylint: disable=import-error
+from shrad_modules import read_nc_files
+# pylint: enable=import-error
 
 def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
 var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
@@ -148,10 +149,10 @@ for MON in [INIT_FCST_MON]:
         INIT_FCST_YEAR, ens+1)
         OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
         INIT_FCST_YEAR, ens+1)
-        if op.isdir(OUTDIR):
+        if os.path.isdir(OUTDIR):
             pass
         else:
-            MAKEDIR(OUTDIR)
+            os.makedirs(OUTDIR, exist_ok=True)
         print(f"OUTDIR is {OUTDIR}")
         for LEAD_NUM in range(0, LEAD_FINAL):
             ## Loop from lead =0 to Final Lead

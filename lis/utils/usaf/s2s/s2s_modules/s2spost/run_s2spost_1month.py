@@ -24,7 +24,7 @@ import sys
 import shutil
 import glob
 import yaml
-
+# pylint: disable=f-string-without-interpolation
 # Local functions
 def _usage():
     """Print command line usage."""
