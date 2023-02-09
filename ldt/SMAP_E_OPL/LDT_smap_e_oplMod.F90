@@ -15,6 +15,7 @@
 !
 ! !REVISION HISTORY: 
 !  14 Dec 2021: Yonghwan Kwon, Initial Specification
+!  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
 !
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -269,7 +270,10 @@ contains
           if(i == fi) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             ! EMK...Process subset of fields.
+             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
+                  SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
 
              if (rc == 0) then
                 write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
@@ -280,7 +284,10 @@ contains
           elseif(hhmmss(i) /= hhmmss(i+1)) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             !EMK Process subset of fields.
+             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
+                  SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
 
              if (rc == 0) then
                 write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
@@ -296,7 +303,7 @@ contains
              ! use LIS outputs from previous day
              read(yyyy,*,iostat=ierr)  yr
              read(mm,*,iostat=ierr)    mo
-             read(dd,*,iostat=ierr)    da                                        
+             read(dd,*,iostat=ierr)    da
              read(hh,*,iostat=ierr)    hr
 
              yr_pre = yr
@@ -441,7 +448,7 @@ contains
              call get_doy(mo,da,doy_curr)
 
              ! get UTC
-             call get_UTC(n,TIMEsec,UTChr)                         
+             call get_UTC(n,TIMEsec,UTChr)
 
              ! retrieve
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
