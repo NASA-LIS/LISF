@@ -244,7 +244,8 @@
                  rmax=r+5 ; IF (rmax > size(ref_lon)) rmax=size(ref_lon)
                  cmin=c-5 ; IF (cmin < 1) cmin=1
                  cmax=c+5 ; IF (cmax > size(ref_lat)) cmax=size(ref_lat)
-                 IF (IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(jj,jj),qualitybit,1) == 0) THEN !RESAMPLE ONLY WHEN BOTH V and H MEET QUALITY
+!                 IF (IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(jj,jj),qualitybit,1) == 0) THEN !RESAMPLE ONLY WHEN BOTH V and H MEET QUALITY
+                 IF (IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(jj,ii),qualitybit,1) == 0) THEN !RESAMPLE ONLY WHEN BOTH V and H MEET QUALITY
                     k=0
                     !                         DO rr = rmin,rmax !Lon direction
                     !                            DO cc =cmin,cmax !Lat direction
