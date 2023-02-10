@@ -7,6 +7,7 @@
 ! REVISION HISTORY:
 !  22 Feb 2022: P.W.LIU; Initial implemetation
 !  22 Feb 2022: Yonghwan Kwon; modified for LDT
+!  10 Feb 2023: Eric Kemp, modified to output retrievals in netCDF.
 !
 ! DESCRIPTION: RETRIEVE SMAP SM FOR ARFS
 ! INPUT : SMAP - L1B Brightness Temperature               
