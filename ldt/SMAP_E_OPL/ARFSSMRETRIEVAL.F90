@@ -130,8 +130,11 @@
     write (LDT_logunit,*) '[INFO] Generating soil moisture retrievals'
     ARFS_SM=-9999
     ARFS_SM_FLAG=-1
-    DO i=1,nrow !ROW LON
-       DO j=1,mcol !COL LAT
+!    DO i=1,nrow !ROW LON
+!       DO j=1,mcol !COL LAT
+    DO j=1,mcol !COL LAT
+       DO i=1,nrow !ROW LON
+
           tbv = ARFS_TB(i,j)
 
           if(UTChr(i,j).ge.0) then
@@ -159,8 +162,10 @@
           ELSE
              !PRINT*,i, j, "NO RETRIEVAL"
           END IF
-       END DO !jj=1,mcol !COL LAT
-    END DO !ii=1,nrow !ROW LON
+!       END DO !jj=1,mcol !COL LAT
+!    END DO !ii=1,nrow !ROW LON
+       END DO !ii=1,nrow !ROW LON
+    END DO !jj=1,mcol !COL LAT
 
     !write soil moisture retrieval outputs
     L1B_dir_len = len_trim(SMAPeOPL%L1Bdir)
