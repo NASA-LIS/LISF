@@ -8,6 +8,7 @@
 !  26 Oct 2021: P.W.LIU; Initial implemetation
 !  28 Jan 2022: P.W.LIU; CHNAGE OUTPUT COORDINATE TO COMPLY LIS OUTPUT
 !  22 Feb 2022: Yonghwan Kwon; modified for LDT
+!  10 Feb 2023: Eric Kemp; Added code to resample subset of variables.
 !
 ! DESCRIPTION: SUBROUTINE TO RESAMPLE L1B TB ONTO AIR FORCE GRID
 !-------------------------------------------------------------------------
