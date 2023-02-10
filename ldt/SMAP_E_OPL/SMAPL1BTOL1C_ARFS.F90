@@ -60,33 +60,31 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
     !Input (Path/filename, datatypes, lat, lon) Return(DATA,LAT,LON,length of row and col) 
     ! READ SMAP_L1B DATA FROM HDF5
 
-    ! EMK...Try fault tolerant NRT version.
-    !CALL GetSMAP_L1B(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
-    !                   NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, ANTSCN_L1B, SCNANG_L1B, nrow,mcol)
-    CALL GetSMAP_L1B_NRT(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, &
-         TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
-         NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, &
-         ANTSCN_L1B, SCNANG_L1B, nrow, mcol, ierr)
-    if (ierr == 1) then
-       if (nrow == 0 .and. mcol == 0) then
-          write(LDT_logunit,*)'[ERR] Problem reading ', trim(SMAPFILE)
-          rc = 1
-          return
-       else if (.not. allocated(TBV_COR_L1B)) then
-          write(LDT_logunit,*)'[WARN] Could not find TBV_COR_L1B in ', &
-               trim(SMAPFILE)
-          write(LDT_logunit,*)'[WARN] Substituting TBV_L1B...'
-          allocate(TBV_COR_L1B(nrow,mcol)) ; TBV_COR_L1B = TBV_L1B
-          allocate(TBH_COR_L1B(nrow,mcol)) ; TBH_COR_L1B = TBH_L1B
-          allocate(SURWAT_V_L1B(nrow,mcol)) ; SURWAT_V_L1B = -9999
-          allocate(SURWAT_H_L1B(nrow,mcol)) ; SURWAT_H_L1B = -9999
-       else
-          write(LDT_logunit,*)'[ERR] Unknown internal error!'
-          write(LDT_logunit,*)'[ERR] Aborting...'
-          call LDT_endrun()
-       end if
-    end if
-    write(LDT_logunit,*)'EMK: maxval(TBV_COR_L1B) = ', maxval(TBV_COR_L1B)
+    CALL GetSMAP_L1B(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
+                       NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, ANTSCN_L1B, SCNANG_L1B, nrow,mcol)
+    ! CALL GetSMAP_L1B_NRT(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, &
+    !      TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
+    !      NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, &
+    !      ANTSCN_L1B, SCNANG_L1B, nrow, mcol, ierr)
+    ! if (ierr == 1) then
+    !    if (nrow == 0 .and. mcol == 0) then
+    !       write(LDT_logunit,*)'[ERR] Problem reading ', trim(SMAPFILE)
+    !       rc = 1
+    !       return
+    !    else if (.not. allocated(TBV_COR_L1B)) then
+    !       write(LDT_logunit,*)'[WARN] Could not find TBV_COR_L1B in ', &
+    !            trim(SMAPFILE)
+    !       write(LDT_logunit,*)'[WARN] Substituting TBV_L1B...'
+    !       allocate(TBV_COR_L1B(nrow,mcol)) ; TBV_COR_L1B = TBV_L1B
+    !       allocate(TBH_COR_L1B(nrow,mcol)) ; TBH_COR_L1B = TBH_L1B
+    !       allocate(SURWAT_V_L1B(nrow,mcol)) ; SURWAT_V_L1B = -9999
+    !       allocate(SURWAT_H_L1B(nrow,mcol)) ; SURWAT_H_L1B = -9999
+    !    else
+    !       write(LDT_logunit,*)'[ERR] Unknown internal error!'
+    !       write(LDT_logunit,*)'[ERR] Aborting...'
+    !       call LDT_endrun()
+    !    end if
+    ! end if
 
     !Input (DATA,LAT,LON,length of row and col); Return(TB in ARFS GRID)
     CALL L1BTB2ARFS_INVDIS(TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
@@ -94,7 +92,6 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
                            ARFS_LAT, ARFS_LON, ARFS_TIME, ARFS_COR_TBV, ARFS_COR_TBH, ARFS_TBV, ARFS_TBH, ARFS_NEDTV, ARFS_NEDTH, &
                            ARFS_SURWAT_V, ARFS_SURWAT_H, ARFS_WTV, ARFS_WTH, ARFS_SAMPLE_V, ARFS_SAMPLE_H)
 
-    write(LDT_logunit,*)'EMK: maxval(ARFS_COR_TBV) = ', maxval(ARFS_COR_TBV)
     SMAPeOPL%ARFS_TBV_COR = ARFS_COR_TBV
 
     variable_name(1)  = 'ARFS_TIME'
