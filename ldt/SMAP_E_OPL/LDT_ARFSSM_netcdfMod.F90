@@ -7,6 +7,15 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+! MODULE: LDT_ARFSSM_netcdfMod
+!
+! REVISION HISTORY:
+!  10 Feb 2023: Eric Kemp.  Initial implementation.
+!
+! DESCRIPTION: Outputs SMAP based soil moisture retrieval in netCDF format.
+!
+!------------------------------------------------------------------------------
 
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -68,11 +77,6 @@ contains
     if (LDT_masterproc) then
        write(LDT_logunit,*)'[INFO] Creating NETCDF file ', &
             trim(retrieval_fname)
-
-       write(LDT_logunit,*)'EMK: nc = ', nc
-       write(LDT_logunit,*)'EMK: nr = ', nr
-       write(LDT_logunit,*)'EMK: yyyymmdd = ', yyyymmdd
-       write(LDT_logunit,*)'EMK: hhmmss = ', hhmmss
 
        ! Copy netCDF compression settings
        shuffle = NETCDF_shuffle
