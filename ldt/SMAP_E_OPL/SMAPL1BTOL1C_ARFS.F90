@@ -13,8 +13,8 @@
 ! OUTPUT: SMAPTB_ARFSGRIDE_ddmmyyy.dat
 ! NOTES : Inverse Distance Squared with 0.4 deg serching window
 !-------------------------------------------------------------------------
- 
-subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
+
+subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME)
 
    USE VARIABLES
    USE DATADOMAIN
@@ -34,8 +34,6 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
     character (len=1)   :: Orbit
     integer             :: var_i
     integer             :: L1B_dir_len,L1B_fname_len
-    integer :: ierr
-    integer :: rc
 
     REAL*4,DIMENSION(:,:),ALLOCATABLE :: TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B
     REAL*4,DIMENSION(:,:),ALLOCATABLE :: NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, SCNANG_L1B
@@ -49,9 +47,6 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
     REAL*4,DIMENSION(2560,1920) :: ARFS_SURWAT_V, ARFS_SURWAT_H, ARFS_WTV, ARFS_WTH
 
     REAL :: T1, T2
-
-    rc = 0
-    
     CALL ARFS_GEO
     ALLOCATE(ARFS_LAT(arfs_nrow_lat),ARFS_LON(arfs_mcol_lon))
     ARFS_LAT = LAT(arfs_geo_lat_lo,arfs_geo_lat_up,-arfs_lat_space)
@@ -62,29 +57,6 @@ subroutine SMAPL1BRESAMPLE(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
 
     CALL GetSMAP_L1B(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
                        NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, ANTSCN_L1B, SCNANG_L1B, nrow,mcol)
-    ! CALL GetSMAP_L1B_NRT(SMAPFILE, TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, &
-    !      TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
-    !      NETD_V_L1B, NETD_H_L1B, LAT_L1B, LON_L1B, TBVFLAG_L1B, TBHFLAG_L1B, &
-    !      ANTSCN_L1B, SCNANG_L1B, nrow, mcol, ierr)
-    ! if (ierr == 1) then
-    !    if (nrow == 0 .and. mcol == 0) then
-    !       write(LDT_logunit,*)'[ERR] Problem reading ', trim(SMAPFILE)
-    !       rc = 1
-    !       return
-    !    else if (.not. allocated(TBV_COR_L1B)) then
-    !       write(LDT_logunit,*)'[WARN] Could not find TBV_COR_L1B in ', &
-    !            trim(SMAPFILE)
-    !       write(LDT_logunit,*)'[WARN] Substituting TBV_L1B...'
-    !       allocate(TBV_COR_L1B(nrow,mcol)) ; TBV_COR_L1B = TBV_L1B
-    !       allocate(TBH_COR_L1B(nrow,mcol)) ; TBH_COR_L1B = TBH_L1B
-    !       allocate(SURWAT_V_L1B(nrow,mcol)) ; SURWAT_V_L1B = -9999
-    !       allocate(SURWAT_H_L1B(nrow,mcol)) ; SURWAT_H_L1B = -9999
-    !    else
-    !       write(LDT_logunit,*)'[ERR] Unknown internal error!'
-    !       write(LDT_logunit,*)'[ERR] Aborting...'
-    !       call LDT_endrun()
-    !    end if
-    ! end if
 
     !Input (DATA,LAT,LON,length of row and col); Return(TB in ARFS GRID)
     CALL L1BTB2ARFS_INVDIS(TIME_L1B, TBV_COR_L1B, TBH_COR_L1B, TBV_L1B, TBH_L1B, SURWAT_V_L1B, SURWAT_H_L1B, &
