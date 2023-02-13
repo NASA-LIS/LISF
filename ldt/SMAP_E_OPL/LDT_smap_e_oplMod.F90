@@ -226,6 +226,8 @@ contains
     integer                 :: doy_pre, doy_curr
     integer :: rc
 
+    external :: readUSAFSI
+
   ! Resample SMAP L1B to L1C
     call search_SMAPL1B_files(SMAPeOPL%L1Bdir,SMAPeOPL%date_curr,&
                               SMAPeOPL%L1Btype)
@@ -441,7 +443,8 @@ contains
              read_L1Bdata = .false.
 
   ! Get snow information from LIS outputs
-             call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
+             !call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
+             call readUSAFSI(n, yyyymmdd, hh, SnowDepth)
 
   ! Retrieve SMAP soil moisture
              ! get DOY
