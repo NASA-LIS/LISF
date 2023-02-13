@@ -28,7 +28,6 @@ Not all options described here are available in the public version of LDT.
 |"`OPTUE parameter processing`" |Process the OPT/UE output to generate optimized parameters
 |"`USAFSI analysis`" |USAF Snow and Ice analysis
 |"`LISHydro preprocessing for WRFHydro`" |Preprocessing Option for WRFHydro
-|"`OPL E SMAP soil moisture retrieval`" |Operational 9-km enhanced SMAP soil moisture retrieval
 |===
 
 .Example _ldt.config_ entry
@@ -36,7 +35,7 @@ Not all options described here are available in the public version of LDT.
 LDT running mode:             "LSM parameter processing"
 ....
 
-`Processed LSM parameter filename:` specifies the output filename (with netcdf extension) of the LSM parameters processed in LDT to go into LIS.  See a sample _lis_input.d01.nc_ (Appendix <<sec-ldt_output_format>>) file for a complete specification description.
+`Processed LSM parameter filename:` specifies the output filename (with netcdf extension) of the LSM parameters processed in LDT to go into LIS.  See a sample _lis_input.d01.nc_ (Appendix <<sec-ldt_output_format>>) file for a complete specification description.
 
 .Example _ldt.config_ entry
 ....
@@ -94,7 +93,6 @@ Surface model types:  "LSM"
 |Mosaic |Mosaic
 |HySSIB |HySSIB
 |CLSMF2.5 |Catchment, Fortuna 2.5
-|SnowModel |SnowModel
 |SAC.3.5.6 |Sacramento
 |SNOW17 |Snow17
 |RDHM.3.5.6 |Sacramento+snow17
@@ -367,7 +365,7 @@ Forcing climatology temporal frequency of data:   "6hr"
 Bayesian merging seasonal stratification type:
 ....
 
-`Forcing variables list file:` specifies the file containing the list of forcing variables to be used.  (Please refer to Section "`Specification of Input Forcing Variables`" in the _LIS Users' Guide_ for a complete specification description of this file.)
+`Forcing variables list file:` specifies the file containing the list of forcing variables to be used.  (Please refer to Section "`Specification of Input Forcing Variables`" in the _LIS Users' Guide_ for a complete specification description of this file.)
 
 .Example _ldt.config_ entry
 ....
@@ -420,33 +418,19 @@ The default value is 0.
 Add buffer to parameter grid domain:     0
 ....
 
-`Buffer count in x-direction:` adds a set number of pixels that buffer
-around a parameter file target domain in the x-direction.
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
 Acceptable values are:
 
 [cols="<,<",]
 |===
 |Value |Description
 
-|0 |Results in no buffer added
-|1 (or greater) |Buffer points included
+|"`0`" |No buffer added
+|"`1`" (or greater) |Buffer points included
 |===
 
-The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
-
-`Buffer count in y-direction:` adds a set number of pixels that buffer
-around a parameter file target domain in the y-direction.
-Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|0 |Results in no buffer added
-|1 (or greater) |Buffer points included
-|===
-
-The default value is 5, and it is activated only if `Add buffer to parameter grid domain:` is enabled.
+The default value is 5, and only activated if buffer option is selected.
 
 .Example _ldt.config_ entry
 ....
@@ -618,7 +602,7 @@ Output naming style: "3 level hierarchy"
 [[ssec-domainspec]]
 === Domain specification
 
-This section of the config file specifies the LIS running domain (domain over which the simulation is carried out). The specification of the LIS Run domain section depends on the type of LIS domain and projection used. Section <<ssec-driveropts>> lists the projections that LIS supports.
+This section of the config file specifies the LIS running domain (domain over which the simulation is carried out). The specification of the LIS Run domain section depends on the type of LIS domain and projection used. Section <<ssec-driveropts>> lists the projections that LIS supports.
 
 `Map projection of the LIS domain:` specifies the output LIS domain grid
 to be used with LIS. Acceptable values are:
@@ -646,7 +630,7 @@ Map projection of the LIS domain:      latlon
 [[sssec-run_latlon]]
 ==== Cylindrical lat/lon
 
-This section describes how to specify a cylindrical latitude/longitude projection. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+This section describes how to specify a cylindrical latitude/longitude projection. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -661,7 +645,7 @@ Run domain resolution (dy):           0.25
 [[sssec-run_lambert]]
 ==== Lambert conformal
 
-This section describes how to specify a Lambert conformal projection.  See Appendix <<sec-d_lambert_example>> for more details about setting these values.
+This section describes how to specify a Lambert conformal projection.  See Appendix <<sec-d_lambert_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -678,7 +662,7 @@ Run domain y-dimension size:          30
 [[sssec-run_gaussian]]
 ==== Gaussian
 
-This section describes how to specify a Gaussian projection. See Appendix <<sec-d_gaussian_example>> for more details about setting these values.
+This section describes how to specify a Gaussian projection. See Appendix <<sec-d_gaussian_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -693,7 +677,7 @@ Run domain number of lat circles:       95
 [[sssec-run_ps]]
 ==== Polar stereographic
 
-This section describes how to specify a polar stereographic projection.  See Appendix <<sec-d_ps_example>> for more details about setting these values.
+This section describes how to specify a polar stereographic projection.  See Appendix <<sec-d_ps_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -710,7 +694,7 @@ Run domain y-dimension size:          30
 [[sssec-run_hrap]]
 ==== HRAP
 
-This section describes how to specify a HRAP projection. See Appendix <<sec-d_hrap_example>> for more details about setting these values.
+This section describes how to specify a HRAP projection. See Appendix <<sec-d_hrap_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -724,7 +708,7 @@ Run domain y-dimension size:          774
 [[sssec-run_mercator]]
 ==== Mercator
 
-This section describes how to specify a Mercator projection. See Appendix <<sec-d_mercator_example>> for more details about setting these values.
+This section describes how to specify a Mercator projection. See Appendix <<sec-d_mercator_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -741,7 +725,7 @@ ifdef::devonly[]
 [[sssec-run_utm]]
 ==== UTM
 
-This section describes how to specify a UTM projection. See Appendix <<sec-d_utm_example>> for more details about setting these values.
+This section describes how to specify a UTM projection. See Appendix <<sec-d_utm_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -767,7 +751,7 @@ endif::devonly[]
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
 |MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
 |MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
-|MCD12Q1 |Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in "`Landcover file`" option.
+|MCD12Q1 |Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in "`Landcover file`" option. 
 |USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
 |USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LISF-team.
 |ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
@@ -775,8 +759,6 @@ endif::devonly[]
 |VIC412 |Variable Infiltration Capacity model, v4.1.2, UMD land cover.
 |ISA |Impervious Surface Area (ISA) landcover dataset.
 |CLM45 |CLM-4.5 landcover dataset.
-|NALCMS_SM |SnowModel-based NALCMS landcover dataset.
-|NALCMS_SM_IGBPNCEP |SnowModel-based NALCMS landcover dataset with IGBPNCEP-mapped classes.
 |CONSTANT |Ability to set a constant landcover type for a set classification.
 |===
 
@@ -859,7 +841,7 @@ Landcover fill radius:     3.        # Number of pixels to search for neighbor
 Landcover fill value:      5.        # Static value to fill where missing
 ....
 
-This section also outlines the domain specifications of the landcover (and for now landmask) data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying landcover data. Note: The Landcover grid domain inputs below are really only required for the "`_LIS`" data source options and that do not include "`_Native`" in the data source entries. All native parameters do not require the below inputs for LDT. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+This section also outlines the domain specifications of the landcover (and for now landmask) data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying landcover data. Note: The Landcover grid domain inputs below are really only required for the "`_LIS`" data source options and that do not include "`_Native`" in the data source entries. All native parameters do not require the below inputs for LDT. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -928,7 +910,7 @@ Landmask map projection:       latlon
 
 This section also outlines the domain specifications of the land water/mask data. The landmask map projection and extents are only needed if you specify "`readin`" for mask type and if the landmask data source is "`MOD44W`" or "`_LIS`".
 
-If the map projection of parameter data is specified to be "`latlon`", the following extents and resolution configuration should be used for specifying landmask data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be "`latlon`", the following extents and resolution configuration should be used for specifying landmask data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 Future landmask data sets will have the projection, grid extents and resolution on the data reader side and not needed to be specified in the _ldt.config_ file, depending on the data source.
 
@@ -1054,7 +1036,7 @@ Inland waterbody spatial transform:    tile
 Regional mask data source:   "none"
 ....
 
-`Regional mask file:` specifies the location of a regional mask file.  This file can be either an index-based state, country, basin, catchment, etc. map used to mask further beyond the main water/land mask.
+`Regional mask file:` specifies the location of a regional mask file.  This file can be either an index-based state, country, basin, catchment, etc. map used to mask further beyond the main water/land mask.
 
 .Example _ldt.config_ entry
 ....
@@ -1093,7 +1075,7 @@ Regional mask spatial transform:   mode
 
 This section also outlines the domain specifications of the regional-based land mask data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying regional mask data.
 
-See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1335,7 +1317,7 @@ Irrigation fraction map projection:    latlon
 ....
 
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1507,7 +1489,7 @@ Soils fill value:    0.33
 Porosity fill value: 0.30
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soils data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soils data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1631,20 +1613,6 @@ Soil texture spatial transform:     none
 
 `Soil texture fill value:` indicates which soil texture value to be used if an arbitrary value fill is needed. (For example, when the landmask indicates a land point but no existing soil texture value, a value of 6 could be assigned if no nearest neighbor values exists to fill).
 
-`Soil texture fill value for Antarctica:` indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of `Soil texture fill value:` will be used.
-
-`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|.false. |do not enable
-|.true. |enable
-|===
-
-Defaults to `.false.`.
-
 `Soil texture fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
 
 .Example _ldt.config_ entry
@@ -1652,11 +1620,9 @@ Defaults to `.false.`.
 Soil texture fill option:      neighbor
 Soil texture fill radius:         3.
 Soil texture fill value:          6.
-Soil texture fill value for Antarctica: 16
-Soil texture force exclusion of water points during fill: .true.
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil texture data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1693,7 +1659,7 @@ Soil color map:
 Soil color spatial transform:     none
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil color data, data source option "`FAO`" or has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying soil color data, data source option "`FAO`" or has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1730,7 +1696,6 @@ Current options include:
 |SRTM_LIS |Similar dataset as to the above one but processed by LISF-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
 |MERIT_1K |The MERIT elevation map, but processed by LISF-team to have a resolution '`0.008333`'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
-|NED_SM | SnowModel-based National Elevation Dataset (NED) topographic fields.
 |===
 
 .Example _ldt.config_ entry
@@ -1859,7 +1824,7 @@ Aspect fill value:           2.0
 Topography spatial transform:     tile
 ....
 
-This section should also specify the domain specifications of the topography data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying topography data, especially if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+This section should also specify the domain specifications of the topography data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying topography data, especially if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -1958,7 +1923,7 @@ Albedo fill radius:               2.
 Albedo fill value:               0.12
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying albedo data where the albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying albedo data where the albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2029,7 +1994,7 @@ Max snow albedo fill radius:             3.
 Max snow albedo fill value:             0.42
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying max snow albedo data, where the max snow albedo albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying max snow albedo data, where the max snow albedo albedo data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2130,7 +2095,7 @@ Greenness maximum fill value:   0.80
 Greenness minimum fill value:   0.05
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying greenness data source, if the option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying greenness data source, if the option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2243,7 +2208,7 @@ LAI maximum fill value:     4
 LAI minimum fill value:     1
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying LAI/SAI data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying LAI/SAI data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2311,7 +2276,7 @@ Slope type fill radius:         2.
 Slope type fill value:          1.
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying slope type data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying slope type data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2397,7 +2362,7 @@ Bottom temperature fill value:     287.0
 Bottom temperature topographic downscaling:    none
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying bottom temperature parameter data, if the data source option has a "`_LIS`" in the name.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying bottom temperature parameter data, if the data source option has a "`_LIS`" in the name.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2415,136 +2380,6 @@ Bottom temperature resolution (dy):      0.2500
 .Example _ldt.config_ entry
 ....
 Noah-MP PBL Height Value:     900.    # in meters
-....
-
-Miguez-Macho and Fan (MMF) Groundwater Parameters
-
-IMPORTANT: Currently, Noah-MP.4.0.1 is the only land surface model that supports the MMF groundwater scheme.
-
-`Process Noah-MP-4.0.1 MMF groundwater parameters:` specifies whether to process Noah-MP-4.0.1 MMF groundwater parameters. Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|.false. | do not process (default)
-|.true.  | process
-|===
-
-.Example _ldt.config_ entry
-....
-Process Noah-MP-4.0.1 MMF groundwater parameters: .true.
-....
-
-[NOTE]
-====
-The Noah-MP-4.0.1 parameters are only needed when running option "5" for the following lis.config entry when running LIS:
-
-`Noah-MP.4.0.1 runoff and groundwater option: 5`
-
-// TODO: remove following admonition when MMF groundwater option 5 is implemented in LIS
-IMPORTANT: The MMF groundwater option (option 5) is not yet supported in LIS. Work on this feature is currently in progress.
-====
-
-`MMF transmissivity dir:` specifies the location of the directory containing FDEPTH (transmissivity e-folding depth [m]) data on GEOGRID tiles.
-
-`MMF climatological recharge dir:` specifies the location of the directory containing RECHARGE (climatological recharge [mm]) data on GEOGRID tiles.
-
-`MMF riverbed elevation dir:` specifies the location of the directory containing RIVERBED (riverbed elevation [m]) data on GEOGRID tiles.
-
-`MMF equilibrium water table depth dir:` specifies the location of the directory containing EQWTD (equilibrium water table depth [m]) data on GEOGRID tiles.
-
-`MMF HGT_M dir:` specifies the location of the directory containing GMTED2010 (30-arc-second topography height [m from MSL]) data on GEOGRID tiles.
-
-.Example _ldt.config_ entry
-....
-MMF transmissivity dir:                ./LS_PARAMETERS/noahmp401_parms/groundwater/f/
-MMF climatological recharge dir:       ./LS_PARAMETERS/noahmp401_parms/groundwater/recharge/
-MMF riverbed elevation dir:            ./LS_PARAMETERS/noahmp401_parms/groundwater/riverbed/
-MMF equilibrium water table depth dir: ./LS_PARAMETERS/noahmp401_parms/groundwater/wtd/
-MMF HGT_M dir:                         ./LS_PARAMETERS/noahmp401_parms/groundwater/topo_gmted2010_30s/
-....
-
-[NOTE]
-====
-Spatial interpolation and gap filling parameters for each MMF variable are also required. See the config entries below.
-
-link:https://www2.mmm.ucar.edu/wrf/users/docs/user_guide_v4/v4.3/users_guide_chap3.html#_Description_of_GEOGRID.TBL[The WRF User's Guide, window=_blank] (and link:https://github.com/wrf-model/WPS/blob/master/geogrid/GEOGRID.TBL.ARW.noahmp[WPS/WPS-4.0.1/geogrid/GEOGRID.TBL.ARW.noahmp, window=_blank]) describe WPS's MMF parameter preprocessing procedures from the GEOGRID grid to the model grid. WPS performing the entire interpolation process from aggregating to gap filling on the native GEOGRID space makes it fundamentally different to LDT because LDT first aggregates input data from the native grid to the model grid and then fills gaps on the model grid space. The current LDT implementation of MMF parameter preprocessing does not attempt to replicate the WPS interpolation procedures, instead, it uses existing LDT interpolation utilities to follow the WPS's interpolation concept.
-====
-
-`MMF map projection:` map projection parameter is always set to latlon for MMF parameters.
-
-`MMF spatial transform:` spatial transform parameter is always set to average for MMF parameters.
-
-.Example _ldt.config_ entry
-....
-MMF map projection:    latlon
-MMF spatial transform: average
-....
-
-`FDEPTH fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
-
-`FDEPTH fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
-
-`FDEPTH fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
-
-`FDEPTH water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable FDEPTH value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
-
-.Example _ldt.config_ entry
-....
-FDEPTH fill option: neighbor
-FDEPTH fill radius: 0. 
-FDEPTH fill value: 100.
-FDEPTH water value: 100.
-....
-
-
-`RECHCLIM fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
-
-`RECHCLIM fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value (0 is preferred).
-
-`RECHCLIM fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
-
-`RECHCLIM water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable RECHCLIM value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
-
-.Example _ldt.config_ entry
-....
-RECHCLIM fill option: neighbor
-RECHCLIM fill radius: 0. 
-RECHCLIM fill value:  -1.
-RECHCLIM water value: -1.
-....
-
-
-`EQWTD fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
-
-`EQWTD fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
-
-`EQWTD fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
-
-`EQWTD water value:` MMF scheme is active in lake/water grid cells. Thus, a suitable EQWTD value in lakes/rivers is needed in case GEOGRID didn't have valid data at the location.
-
-.Example _ldt.config_ entry
-....
-EQWTD fill option: neighbor
-EQWTD fill radius: 0. 
-EQWTD fill value: 0.
-EQWTD water value: 0.
-....
-
-
-`HGT_M fill option:` specifies the MMF parameter fill option (`neighbor` is preferred).
-
-`HGT_M fill radius:` specifies the radius with which to search for nearby value(s) to help fill in the missing value.
-
-`HGT_M fill value:` indicates the parameter value to be used if an arbitrary value fill is needed.
-
-
-.Example _ldt.config_ entry
-....
-HGT_M fill option: neighbor
-HGT_M fill radius: 0. 
-HGT_M fill value: 0.
 ....
 
 If selecting the Community Land Model (4.5 version), the following config entires are also required.
@@ -2591,27 +2426,6 @@ CLM45 upper right lat:                    90.0
 CLM45 upper right lon:                   359.375
 CLM45 resolution (dx):                     1.25
 CLM45 resolution (dy):                     0.9424060
-....
-
-If selecting Glen Liston's SnowModel, the following config entires are required.
-
-`Snowmodel topo-veg data source:` specifies which pre-processed SnowModel parameters and file format type to be read in. Currently, only the "`Grads_binary`" option is available.
-
-`Snowmodel topo-veg map:` specifies the directory-file location of the pre-processed SnowModel topographic and vegetation class parameters.
-
-`Snowmodel topo-veg spatial transform:` specifies the type of grid transform for preprocessed SnowModel topographic and vegetation class parameters. Currently, this option is not yet supported and user option is only "`none`" at this time.
-
-`Snowmodel topo-veg map projection:` specifies the SnowModel parameter file projection. Currently, SnowModel parameter projection needs to be set to the same as the LIS domain projection, for now. SnowModel parameters are best provided either on a Lambert projection (in LIS) and supports some equal-area projection grids, like UTM, which is available in LIS. Future support for more options will be added.
-
-`Snowmodel topo-veg fill option:` specifies the type of fill option used with SnowModel parameters. Currently, this feature is not supported, and will be in future versions.
-
-.Example _ldt.config_ entry
-....
-Snowmodel topo-veg data source:     "Grads_binary"
-Snowmodel topo-veg map:        ../SnowModel_Inputs/uppertuo_100m/topo_vege.gdat
-Snowmodel topo-veg spatial transform:  "none"
-Snowmodel topo-veg map projection:    lambert
-Snowmodel topo-veg fill option:        none       
 ....
 
 Potential Evapotranspiration (PET) maps
@@ -2662,7 +2476,7 @@ PET fill radius:            3
 PET fill value:            10.
 ....
 
-If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying PET data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying PET data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -2734,7 +2548,7 @@ CLSMF25 top soil layer depth:   0.02
 CLSMF25 spatial transform:     none
 ....
 
-This section also outlines the domain specifications of the Catchment LSM Fortuna 2.5 data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying CLSM data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+This section also outlines the domain specifications of the Catchment LSM Fortuna 2.5 data. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying CLSM data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -3027,7 +2841,6 @@ Climatology parameter maps
 
 |PRISM |PRISM US-only climate downscaled fields. For more info, see: http://www.prism.oregonstate.edu/
 |WORLDCLIM |Global climate layers downscaled. For more info, see: http://www.worldclim.org/
-|NAFPA_BACK_GALWEM|US Air Force GALWEM NWP fields on 10-km NAFPA grid (Oct2017-May2022).
 |===
 
 `PPT climatology maps:` specifies the source of the climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
@@ -3042,11 +2855,6 @@ WORLDCLIM: <directory>/<file header>.<tag>.1gd4r
 * The file header can be prec_
 * The tag should represent the month (such as 1, 2,..., 12).
 
-NAFPA_BACK_GALWEM: <directory>/<field header>.<tag>.d01.nc
-
-* The field header is SUM_TS
-* The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).
-
 `PPT climatology interval:` specifies the frequency of the precipitation climatology in months. Current option is: "`monthly`"
 
 .Example _ldt.config_ entry
@@ -3054,34 +2862,6 @@ NAFPA_BACK_GALWEM: <directory>/<field header>.<tag>.d01.nc
 PPT climatology data source:  PRISM
 PPT climatology maps:  ../LS_PARAMETERS/climate_maps/ppt_1981_2010
 PPT climatology interval:     monthly
-....
-
-`PPT climatology data source 2:` specifies the second monthly precipitation (PPT) climatology fields, for calculating bias ratios. Current source options include:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|NLDAS |NOAA NLDAS-2 fields
-|NAFPA_BACK_GFS|NOAA GFS NWP fields on 10-km NAFPA grid (Oct2017-May2022).
-|===
-
-`PPT climatology maps 2:` specifies the source of the second group climatology based precipitation files. The climatology precipitation data files can have the following naming conventions, depending on the data source:
-
-NLDAS: <directory>/<file header>.<tag>.txt
-
-* The file header can be anything (such as ppt_1931_2010).
-* The tag should represent the month (such as jan, feb, mar, etc.).
-
-NAFPA_BACK_GFS: <directory>/<field header>.<tag>.d01.nc
-
-* The field header is SUM_TS
-* The tag should be year, month, day, and hour in UTC (YYYYMMDDHH).
-
-.Example _ldt.config_ entry
-....
-PPT climatology data source 2:  NAFPA_BACK_GFS
-PPT climatology maps 2:  ./METRICS_GFS/
 ....
 
 `TMIN climatology maps:` specifies the source of the climatology based minimum temperature files.
@@ -3112,7 +2892,7 @@ TMAX climatology maps:
 Climate params spatial transform:   average
 ....
 
-This section also outlines the domain specifications of climatology-based parameters, like higher scaled monthly precipitation or min/max temperatures. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying climatology data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+This section also outlines the domain specifications of climatology-based parameters, like higher scaled monthly precipitation or min/max temperatures. If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying climatology data. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -3602,11 +3382,6 @@ LIS output timestep:          1da
 |"`NASA SMAP vegetation optical depth`" |NASA SMAP vegetation optical depth observations (units in "`-`")
 |"`SMOS NRT NN soil moisture`" | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM soil moisture`" | Thermal Hydraulic disaggregation of Soil Moisture
-|"`SMAP_E_OPL soil moisture`" | Operational 9-km enhanced SMAP soil moisture retrieval 
-|"`GEOS effective soil temperature`" | GEOS-FP effective soil temperature
-|"`CDFS GVF`" | CDFS green vegetation fraction (GVF) 
-|"`VIIRS GVF`" | VIIRS green vegetation fraction (GVF)
-|"`LIS LSM effective soil temperature`" | Soil temperature output from a LIS run
 |===
 
 .Example _ldt.config_ entry
@@ -3652,15 +3427,12 @@ Number of bins to use in the CDF: 100
 
 |monthly |stratify for each calendar month
 |yearly |lump (considering all years and all seasons)
-|half-monthly | stratify for each calendar half-month (for SMAP_E_OPL)
 |===
 
 .Example _ldt.config_ entry
 ....
 Temporal resolution of CDFs:     monthly
 ....
-
-`Daily interpolation of mean and stddev:` specifies whether daily interpolation of mean and standrd deviation is conducted when 'Temporal resolution of CDFS:' is set to 'half-monthly'. This should be '1' to generate statistics of effective soil temperature (Teff), which are used to scale the LIS Teff during generating the SMAP_E_OPL soil moisture retrievals
 
 `Enable spatial sampling for CDF calculations:` Normally CDFs are calculated (for a given grid cell) by using the data values available at that grid point only. If this option is enabled, then values around a specified radius will be used in the CDF calculations, effectively improving the sampling density at the risk of reduced geographic specificity.
 
@@ -3811,68 +3583,6 @@ LIS soil moisture area of data:
 LIS soil moisture write interval:
 ....
 
-`LIS soil temperature output model name:` specifies the model name used to simulate soil temperature
-
-`LIS soil temperature output directory:` specifies the location of the LIS model output.
-
-`LIS soil temperature output format:` specifies the output format of the LIS model output. (binary/netcdf/grib1)
-
-`LIS soil temperature output methodology:` specifies the output methodology used in the LIS model output (1d tilespace/1d gridspace/2d gridspace).
-
-`LIS soil temperature output naming style:` specifies the output naming style used in the LIS model output (3 level hierarchy/4 level hierarchy, etc.).
-
-`LIS soil temperature output nest index:` specifies the index of the nest used in the LIS model output.
-
-`LIS soil temperature output map projection:` specifies the map projection used in the LIS model output.
-
-`LIS soil temperature domain lower left lat:` specifies the lower left latitude of the LIS model outpu.
-
-`LIS soil temperature domain upper right lat:` specifies the upper right latitude of the LIS model output.
-
-`LIS soil temperature domain lower left lon:` specifies the lower left longitude of the LIS model output.
-
-`LIS soil temperature domain upper right lon` specifies the upper right longitude of the LIS model output.
-
-`LIS soil temperature domain resolution (dx):` specifies the resolution (in degrees) along the latitude of the LIS model output.
-
-`LIS soil temperature domain resolution (dy):` specifies the resolution (in degrees) along the longitude of the LIS model output.
-
-For Lambert and polar projections:
-
-`LIS soil temperature domain lower left lat:` specifies the lower left latitude of the LIS model output
-
-`LIS soil temperature domain lower left lon:` specifies the lower left longitude of the LIS model output
-
-`LIS soil temperature domain true lat1:` specifies the true lat1 of the LIS model output
-
-`LIS soil temperature domain true lat2:` specifies the true lat2 of the LIS model output
-
-`LIS soil temperature domain standard lon:` specifies the standard longitude of the LIS model output
-
-`LIS soil temperature domain resolution:` specifies the resolution of the LIS model output
-
-`LIS soil temperature domain x-dimension size:` specifies the x-dimension size of the LIS model output
-
-`LIS soil temperature domain y-dimension size:` specifies the y-dimension size of the LIS model output
-
-.Example _ldt.config_ entry
-....
-LIS soil temperature output model name:       "Noah.3.9"
-LIS soil temperature output directory:         ../OL/OUTPUT
-LIS soil temperature output format:            "netcdf"
-LIS soil temperature output methodology:       "2d gridspace"
-LIS soil temperature output naming style:      "3 level hierarchy"
-LIS soil temperature output nest index:        1
-LIS soil temperature output map projection:   "latlon"
-
-LIS soil temperature domain lower left lat:     -89.9531250
-LIS soil temperature domain upper right lat:     89.9531250
-LIS soil temperature domain lower left lon:    -179.9296875
-LIS soil temperature domain upper right lon:    179.9296875
-LIS soil temperature domain resolution (dx):      0.1406250
-LIS soil temperature domain resolution (dy):      0.0937500
-....
-
 `Synthetic soil moisture observation directory:` specifies the location of the data directory containing the synthetic soil moisture data.
 
 `Synthetic soil moisture observation timestep:` specifies the timestep of the synthetic soil moisture observations.
@@ -3904,22 +3614,10 @@ NASA AMSRE soil moisture observation directory: ./NASA_AMSRE
 
 `ESA CCI soil moisture version of data:` specifies the version of the ESA CCI soil moisture dataset.
 
-`ESA CCI soil moisture sensor type:` specifies the sensor type of the ESA CCI soil moisture dataset.  Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|"`passive`"  | passive sensor type
-|"`active`"   | active sensor type
-|"`combined`" | combined sensor type
-|===
-
 .Example _ldt.config_ entry
 ....
 ESA CCI soil moisture observation directory:  ./ECV
 ESA CCI soil moisture version of data:        EXAMPLE
-ESA CCI soil moisture sensor type:            combined
 ....
 
 `GCOMW AMSR2 L3 soil moisture observation directory:` specifies the location of the data directory containing the GCOMW AMSR v2 L3 soil moisture data.
@@ -4290,7 +3988,7 @@ LPRM vegetation optical depth data designation:      'X-band'
 
 .Example _ldt.config_ entry
 ....
-SMOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
+MOS NRT NN soil moisture observation directory: ./SMOS_NRT_NN
 ....
 
 `SMOS NRT NN search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations.
@@ -4305,41 +4003,6 @@ SMOS NRT NN search radius for openwater proximity detection: 3
 .Example _ldt.config_ entry
 ....
 THySM observation directory: ../THySM
-....
-
-`SMAP_E_OPL soil moisture observation directory:` specifies the location of the data directory containing the SMAP_E_OPL soil moisture data
-
-.Example _ldt.config_ entry
-....
-SMAP_E_OPL soil moisture observation directory:  ../SMAP_E_OPL_noah39
-....
-
-`SMAP_E_OPL search radius for openwater proximity detection:` specifies the radius in which LDT search to detect open water. Then removes all pixels within the radius in the CDF calculations
-
-.Example _ldt.config_ entry
-....
-SMAP_E_OPL search radius for openwater proximity detection:  3
-....
-
-`GEOS soil temperature data directory:` specifies the location of the data directory containing the GEOS-FP soil temperature data
-
-.Example _ldt.config_ entry
-....
-GEOS soil temperature data directory: ./GEOS
-....
-
-`CDFS GVF data directory:` specifies the location of the data directory containing the CDFS GVF data
-
-.Example _ldt.config_ entry
-....
-CDFS GVF data directory:   ./CDFS_GVF
-....
-
-`VIIRS GVF data directory:` specifies the location of the data directory containing the VIIRS GVF data
-
-.Example _ldt.config_ entry
-....
-VIIRS GVF data directory:   ./VIIRS_GVF
 ....
 
 [[ssec-hymapopts]]
@@ -4416,7 +4079,7 @@ HYMAP river flow type map:               ../HYMAP_parms/lis_rivflw_0125.bin
 
 This section also outlines the domain specifications of the HYMAP parameter data. For the HYMAP parameters spatial transform option, only "`none`" is supported at this time, and the user is required to input the HYMAP parameters at the grid and resolution of interest.
 
-If the map projection of parameter data is specified to be "`latlon`", the following configuration should be used for specifying HYMAP parameters.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+If the map projection of parameter data is specified to be "`latlon`", the following configuration should be used for specifying HYMAP parameters.  See Appendix <<sec-d_latlon_example>> for more details about setting these values.
 
 .Example _ldt.config_ entry
 ....
@@ -4965,99 +4628,3 @@ Sentinel1A OSSE mask data resolution (km): 1
 TSSM OSSE mask directory:           ../Masks/TSSM/
 TSSM OSSE mask data resolution (km): 1
 ....
-
-[[ssec-smap_e_opl]]
-=== Operational 9-km enhanced SMAP soil moisture retrieval
-
-`SMAP_E_OPL valid date (YYYYMMDDHH):` valid date and hour (UTC) of SMAP L1B data
-
-`SMAP_E_OPL soil moisture output directory:` specifies a directory where soil moisture retrieval outputs are saved 
-
-`SMAP_E_OPL L1B data directory:` specifies a directory containing the SMAP L1B data
-
-`SMAP_E_OPL L1B data type:` specifies the L1B data type. Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|1 |Near real time data
-|2 |Historical data
-|===
-
-`SMAP_E_OPL write L1B resampled output:` specifies whether to write L1B resampled output or not. Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|0 |Do not write L1B resampled output
-|1 |Write L1B resampled output
-|===
-
-`SMAP_E_OPL L1B resampled output directory:` specifies a L1B resampled output directory when 'SMAP_E_OPL write L1B resampled output: 1'
-
-`SMAP_E_OPL LIS soil temperature directory:` specifies a directory containing LIS soil temperature outputs
-
-`SMAP_E_OPL apply soil temperature bias correction:` specifies whether soil temperature bias correction is applied or not. Acceptable values are:
-
-[cols="<,<",]
-|===
-|Value |Description
-
-|0 |Do not apply soil temperature bias correction
-|1 |Apply soil temperature bias correction
-|===
-
-`SMAP_E_OPL reference Teff daily statistics file:` specifies a directory and filename of the reference effective soil temperature (Teff) daily statistics file 
-
-`SMAP_E_OPL LIS Teff daily statistics file:` specifies a directory and filename of the LIS Teff daily statistics file
-
-`SMAP_E_OPL LIS snow directory:` specifies a directory containing LIS snow outputs
-
-`SMAP_E_OPL snow depth threshold:` specifies a snow depth threshold (unit: m). Soil moisture retrievals are not generate for grid cells with snow depth greater than the threshold. 
-
-`SMAP_E_OPL TAU directory:` specifies a directory containing the pre-processed TAU data
-
-`SMAP_E_OPL OMEGA file:` specifies a directory and filename of the pre-processed OMEGA data
-
-`SMAP_E_OPL soil bulk density file:` specifies a directory and filename of the pre-processed soil bulk density data
-
-`SMAP_E_OPL soil clay fraction file:` specifies a directory and filename of the pre-processed soil clay fraction data
-
-`SMAP_E_OPL roughness file:` specifies a directory and filename of the pre-processed roughness data
-
-`SMAP_E_OPL landcover file:` specifies a directory and filename of the pre-processed land cover data
-
-.Example _ldt.config_ entry
-....
-SMAP_E_OPL valid date (YYYYMMDDHH):                 2015060312
-SMAP_E_OPL soil moisture output directory:          ./SM_retrieval
-SMAP_E_OPL L1B data directory:                      ../SMAP_L1B_TB
-SMAP_E_OPL L1B data type:                           1
-SMAP_E_OPL write L1B resampled output:              0
-SMAP_E_OPL L1B resampled output directory:          ./ARFS_RESAMPLE
-SMAP_E_OPL LIS soil temperature directory:          ../Noah39_OL
-SMAP_E_OPL apply soil temperature bias correction:  1 
-SMAP_E_OPL reference Teff daily statistics file:    ../geos_daily_statistics_15obs.nc
-SMAP_E_OPL LIS Teff daily statistics file:          ../noah39_daily_statistics_15obs.nc
-SMAP_E_OPL LIS snow directory:                      ../Noah39_snow
-SMAP_E_OPL snow depth threshold:                    0.05
-SMAP_E_OPL TAU directory:                           ../../data/TAU_ARFS_DAILY
-SMAP_E_OPL OMEGA file:                              ../../data/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
-SMAP_E_OPL soil bulk density file:                  ../../data/PRMS_RETRIEVAL_ARFS/bd_arfs_006.dat
-SMAP_E_OPL soil clay fraction file:                 ../../data/PRMS_RETRIEVAL_ARFS/clay_arfs_006.dat
-SMAP_E_OPL roughness file:                          ../../data/PRMS_RETRIEVAL_ARFS/hvalue_arfs.dat
-SMAP_E_OPL landcover file:                          ../../data/PRMS_RETRIEVAL_ARFS/SMAP_LC_ARFS.bin
-....
-
-
-
-
-
-
-
-
-
-
-
