@@ -444,8 +444,11 @@ contains
 
   ! Get snow information from LIS outputs
              !call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
-             call readUSAFSI(n, yyyymmdd, hh, SnowDepth)
-
+             call readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No USAFSI data available!'
+             endif
+             
   ! Retrieve SMAP soil moisture
              ! get DOY
              call get_doy(mo,da,doy_curr)
