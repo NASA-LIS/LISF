@@ -19,7 +19,7 @@
 !  13 Feb 2023: Eric Kemp, Initial Specification
 !
 ! !INTERFACE:
-subroutine readUSASI(n, yyyymmdd, hh, SnowDepth)
+subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
 
 ! !USES:
   use LDT_coreMod
@@ -115,7 +115,7 @@ subroutine readUSASI(n, yyyymmdd, hh, SnowDepth)
         nn = nn + 1
      endif
   end do
-end subroutine readUSASI
+end subroutine readUSAFSI
 
 !BOP
 !
