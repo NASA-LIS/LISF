@@ -19,7 +19,7 @@
 !  13 Feb 2023: Eric Kemp, Initial Specification
 !
 ! !INTERFACE:
-subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
+subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
 
 ! !USES:
   use LDT_coreMod
@@ -29,10 +29,11 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
   implicit none
 
 ! !ARGUMENTS:
-  integer, intent(in) :: n
-  character*8         :: yyyymmdd
-  character*2         :: hh
-  real                :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  integer, intent(in)     :: n
+  character*8, intent(in) :: yyyymmdd
+  character*2, intent(in) :: hh
+  real, intent(out):: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  integer, intent(out) :: rc
 
 !EOP
   character*255       :: fname
@@ -43,10 +44,12 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
   integer             :: yr, mo, da, hr
   integer             :: nn
   integer             :: ierr
+  integer :: rc1
 
   external :: create_USAFSI_filename
   external :: read_USAFSI_data
 
+  rc = 1 ! Default to error, will update below if USAFSI file read in.
   SnowDepth = LDT_rc%udef
 
   yyyymmdd_snow = yyyymmdd
@@ -55,7 +58,7 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
   dd_snow       = yyyymmdd(7:8)
   hh_snow       = hh
 
-  read(yyyy_snow, *, iostat=ierr)  yr
+  read(yyyy_snow, *, iostat=ierr) yr
   read(mm_snow, *, iostat=ierr) mo
   read(dd_snow, *, iostat=ierr) da
   read(hh_snow, *, iostat=ierr) hr
@@ -69,51 +72,56 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth)
 
      if (file_exists) then
         write(LDT_logunit,*) '[INFO] Reading snow depth from ', trim(fname)
-        call read_USAFSI_data(n, fname, SnowDepth)
-        write(LDT_logunit,*) '[INFO] Finished reading snow outputs from ', &
-             trim(fname)
-        exit
-     else
-        hr = hr - 1
-        if (hr < 0) then
-           da = da - 1
-           hr = 23
-           if (da == 0) then
-              mo = mo - 1
-              if (mo == 0) then
-                 yr = yr - 1
-                 mo = 12
+        call read_USAFSI_data(n, fname, SnowDepth, rc1)
+        if (rc1 == 0) then
+           write(LDT_logunit,*) '[INFO] Finished reading snow outputs from ', &
+                trim(fname)
+           rc = 0
+           exit
+        end if
+     end if
+
+     ! Go back one hour
+     hr = hr - 1
+     if (hr < 0) then
+        da = da - 1
+        hr = 23
+        if (da == 0) then
+           mo = mo - 1
+           if (mo == 0) then
+              yr = yr - 1
+              mo = 12
+              da = 31
+           else
+              if (mo == 1 .or. &
+                   mo == 3 .or. &
+                   mo == 5 .or. &
+                   mo == 7 .or. &
+                   mo == 8 .or. &
+                   mo == 10 .or. &
+                   mo == 12) then
                  da = 31
-              else
-                 if (mo == 1 .or. &
-                      mo == 3 .or. &
-                      mo == 5 .or. &
-                      mo == 7 .or. &
-                      mo == 8 .or. &
-                      mo == 10 .or. &
-                      mo == 12) then
-                    da = 31
-                 elseif (mo == 2) then
-                    if (mod(yr,4) == 0) then
-                       da = 29
-                    else
-                       da = 28
-                    endif
+              elseif (mo == 2) then
+                 if (mod(yr,4) == 0) then
+                    da = 29
                  else
-                    da = 30
+                    da = 28
                  endif
+              else
+                 da = 30
               endif
            endif
         endif
-
-        write(unit=yyyy_snow, fmt='(i4.4)') yr
-        write(unit=mm_snow, fmt='(i2.2)') mo
-        write(unit=dd_snow, fmt='(i2.2)') da
-        write(unit=hh_snow, fmt='(i2.2)') hr
-        yyyymmdd_snow = trim(yyyy_snow) // trim(mm_snow) // trim(dd_snow)
-
-        nn = nn + 1
      endif
+
+     write(unit=yyyy_snow, fmt='(i4.4)') yr
+     write(unit=mm_snow, fmt='(i2.2)') mo
+     write(unit=dd_snow, fmt='(i2.2)') da
+     write(unit=hh_snow, fmt='(i2.2)') hr
+     yyyymmdd_snow = trim(yyyy_snow) // trim(mm_snow) // trim(dd_snow)
+
+     nn = nn + 1
+
   end do
 end subroutine readUSAFSI
 
@@ -123,7 +131,7 @@ end subroutine readUSAFSI
 ! \label{read_USAFSI_data}
 !
 ! !INTERFACE:
-subroutine read_USAFSI_data(n, fname, SnowDepth)
+subroutine read_USAFSI_data(n, fname, SnowDepth, rc)
 !
 ! !USES:
   use LDT_logMod
@@ -137,28 +145,47 @@ subroutine read_USAFSI_data(n, fname, SnowDepth)
 !
 ! !INPUT PARAMETERS:
 !
-  integer, intent(in)           :: n
-  character (len=*)             :: fname
+  integer, intent(in)      :: n
+  character(*), intent(in) :: fname
+  real, intent(inout)      :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  integer, intent(out)     :: rc
 !EOP
 
   integer     :: ios, nid
   integer     :: snowdepthid
-  real        :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
+
+  rc = 1 ! Initialize as error, reset near bottom
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   ios = nf90_open(path=trim(fname), mode=NF90_NOWRITE, ncid=nid)
-  call LDT_verify(ios, 'Error opening file ' // trim(fname))
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Error opening file' // trim(fname)
+     return
+  end if
 
   ios = nf90_inq_varid(nid, 'snoanl', snowdepthid)
-  call LDT_verify(ios, 'Error nf90_inq_varid: snoanl')
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot find snoanl in ' // trim(fname)
+     ios = nf90_close(ncid=nid)
+     return
+  end if
 
   ios = nf90_get_var(nid, snowdepthid, SnowDepth, &
         start=(/1, 1/), &
         count=(/LDT_rc%lnc(n), LDT_rc%lnr(n)/))
-  call LDT_verify(ios, 'Error nf90_get_var: snoanl')
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot read snoanl in ' // trim(fname)
+     ios = nf90_close(ncid=nid)
+     return
+  end if
 
   ios = nf90_close(ncid=nid)
-  call LDT_verify(ios, 'Error closing file ' // trim(fname))
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Error closing ' // trim(fname)
+     return
+  end if
+
+  rc = 0 ! No error detected!
 
 #endif
 
