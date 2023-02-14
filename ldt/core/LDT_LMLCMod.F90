@@ -210,7 +210,9 @@ contains
   ! Don't need to read in "Native" grid extents/resolution, just for LIS inputs:
     do n=1,LDT_rc%nnest
        if( index(LDT_LSMparam_struc(n)%landcover%source,"Native").eq.0 .and. &
-           index(LDT_LSMparam_struc(n)%landcover%source,"CONSTANT").eq.0 ) then
+            index(LDT_LSMparam_struc(n)%landcover%source,"CONSTANT").eq.0 .and.&
+            index(LDT_LSMparam_struc(n)%landcover%source,"MCD12Q1").eq.0) then
+          
          call LDT_readDomainConfigSpecs("Landcover", LDT_rc%lc_proj, LDT_rc%lc_gridDesc)
          if( LDT_rc%lc_proj == "latlon" ) then
            call LDT_gridOptChecks( n, "Landcover", &
