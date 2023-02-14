@@ -2925,6 +2925,10 @@ Run domain resolution:                40</pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Similar dataset as &#8220;MODIS_Native&#8221; above but processed by LISF-team.</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">MCD12Q1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in &#8220;Landcover file&#8221; option.</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">USGS_Native</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">The 24-category USGS native landcover map. See: <a href="http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php" class="bare">http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php</a></p></td>
 </tr>
@@ -3035,6 +3039,12 @@ Acceptable values are:</p>
 </div>
 <div class="paragraph">
 <p><code>Landcover file:</code> specifies the location of the vegetation classification file.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Landcover file:               ./MODIS/MCD12Q1.006/2001/MCD12Q1.006_2001001.nc4</pre>
+</div>
 </div>
 <div class="paragraph">
 <p><code>Landcover map projection:</code> specifies the projection of the landcover map data.</p>
@@ -17740,7 +17750,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2023-01-18 17:57:44 UTC
+Last updated 2023-02-14 19:14:47 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
