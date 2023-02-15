@@ -127,7 +127,7 @@ PetscScalar,   allocatable    :: Qinit(:)
 !Initialize
 !*******************************************************************************
 !Yeosang Yoon, for one-time initialization
-if (initCheck .eq. .true.) then
+if (initCheck .eqv. .true.) then
    BS_opt_Qinit=bQinit
    BS_opt_Qfinal=bQfinal
    BS_opt_V=bV
