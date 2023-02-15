@@ -1070,7 +1070,7 @@ if($use_mkllapack == 1){
 
 if($use_petsc == 1){
    $fflags = $fflags." -I\$(INC_PETSC)";
-   $ldflags = $ldflags." -L\$(LIB_PETSC) -Wl,-rpath,\$(LIB_PETSC) -lpetsc -lm";
+   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm";
 }
 
 if($use_esmf_trace == 1){
