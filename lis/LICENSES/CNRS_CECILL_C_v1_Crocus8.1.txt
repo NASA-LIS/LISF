@@ -1,3 +1,27 @@
+Component name(s): Crocus snowpack model v8.1
+
+Contributing organization/individuals: National Centre for Scientific Research (CNRS) and Météo-France
+
+POC: 
+
+Marie Minvielle
+Météo-France CNRM/GMME/SURFACE
+42, av. G. Coriolis
+31057 Toulouse Cedex - France
+tph : +33 (0) 5 61 07 93 55
+fax : +33 (0) 5 61 07 96 26
+email: marie.minvielle at meteo.fr
+
+Patrick Le Moigne
+Météo-France CNRM/GMME/SURFACE
+42, av. G. Coriolis
+31057 Toulouse Cedex - France
+tph : +33 (0) 5 61 07 98 24
+fax : +33 (0) 5 61 07 96 26
+email: patrick.lemoigne at meteo.fr
+
+License:
+
 CeCILL-C FREE SOFTWARE LICENSE AGREEMENT
 
 
