@@ -1,0 +1,327 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT----------------------
+
+#include "LDT_misc.h"
+#include "LDT_NetCDF_inc.h"
+
+!BOP
+!
+! !ROUTINE: readLIS_Teff_usaf
+! \label{readLISTeff}
+!
+! !REVISION HISTORY:
+!  14 FEB 2023: Eric Kemp, Initial Specification
+!
+! !INTERFACE:
+subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
+! !USES:
+  use LDT_coreMod
+  use LDT_domainMod
+  use LDT_logMod
+  use LDT_smap_e_oplMod
+
+  implicit none
+! !ARGUMENTS:
+  integer, intent(in) :: n
+  character(8), intent(in) :: yyyymmdd
+  character(2), intent(in) :: hh
+  character(1), intent(in) :: Orbit
+  real, intent(out) :: teff(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  integer, intent(out) :: rc
+
+!EOP
+  integer :: c,r
+  real    :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
+  character(255) :: fname
+  logical :: file_exists
+  integer :: rc1
+  integer :: t
+  real, parameter :: kk = 1.007
+  real, parameter :: cc_6am = 0.246
+  real, parameter :: cc_6pm = 1.000
+
+  external :: create_LISsoilT_filename_usaf
+  external :: read_LIStsoil_data_usaf
+
+  ! Initializations
+  teff = LDT_rc%udef
+  tsoil = LDT_rc%udef
+  rc = 1 ! Assume error by default, update below
+
+  ! Set up basic info on Air Force product
+  ! FIXME...Fetch critical data from ldt.config file instead of hardwiring
+  LDT_rc%nensem(n) = 12
+  LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
+  if (.not. allocated(LDT_domain(n)%ntiles_pergrid)) &
+       allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+  LDT_domain(n)%ntiles_pergrid = 1
+  if (.not. allocated(LDT_domain(n)%str_tind)) &
+       allocate(LDT_domain(n)%str_tind(LDT_rc%glbntiles_red(n)))
+  do t = 1, LDT_rc%glbntiles_red(n)
+     LDT_domain(n)%str_tind(t) = t
+  end do
+
+  call create_LISsoilT_filename_usaf(SMAPeOPL%LISdir, &
+       yyyymmdd, hh, fname)
+
+  inquire(file=trim(fname), exist=file_exists)
+  if (file_exists) then
+     write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
+     call read_LIStsoil_data_usaf(n, fname, tsoil, rc1)
+     if (rc1 .ne. 0) then
+        write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
+        return
+     endif
+     write(LDT_logunit,*) '[INFO] Finished reading ', trim(fname)
+
+     ! Calculate effective temperature
+     do r = 1, LDT_rc%lnr(n)
+        do c = 1, LDT_rc%lnc(n)
+           if (Orbit == "D") then
+              if (tsoil(c,r,1) > 273.15 .and. tsoil(c,r,2) > 273.15) then
+                 teff(c,r) = kk * &
+                      (cc_6am * tsoil(c,r,1) + (1 - cc_6am) * tsoil(c,r,2))
+              endif
+           elseif (Orbit == "A") then
+              if (tsoil(c,r,1) > 273.15 .and. tsoil(c,r,2) > 273.15) then
+                 teff(c,r) = kk * &
+                      (cc_6pm * tsoil(c,r,1) + (1 - cc_6pm) * tsoil(c,r,2))
+              endif
+           endif
+        end do
+     end do
+     rc = 0
+  end if
+
+end subroutine readLIS_Teff_usaf
+
+!BOP
+!
+! !ROUTINE: read_LIStsoil_data_usaf
+! \label{read_LIStsoil_data_usaf}
+!
+! !INTERFACE:
+subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
+!
+! !USES:
+  use LDT_logMod
+  use LDT_coreMod
+  use LDT_smap_e_oplMod
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
+
+  implicit none
+
+!
+! !INPUT PARAMETERS:
+!
+  integer, intent(in) :: n
+  character(*), intent(in) :: fname
+  real, intent(inout) :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
+  integer, intent(out) :: rc
+!EOP
+
+  integer :: ios, ncid
+  integer :: ntiles_dimid, ntiles
+  integer :: SoilTemp_profiles_dimid, SoilTemp_profiles
+  integer :: SoilTemp_tavg_id
+  real, allocatable :: SoilTemp_tavg_tiles(:,:)
+  real :: SoilTemp_tavg_ensmean_1layer(LDT_rc%gnc(n), LDT_rc%gnr(n))
+  integer :: k, c, r
+
+  external :: calc_gridded_ensmean_1layer
+
+  rc = 1 ! Initialize as error, reset near bottom
+
+  ! Sanity checks
+  if (LDT_rc%gnc(n) .ne. LDT_rc%lnc(n)) then
+     write(LDT_logunit,*)'[ERR] Mismatched dimensions!'
+     write(LDT_logunit,*)'[ERR] LDT_rc%gnc(n) = ', LDT_rc%gnc(n)
+     write(LDT_logunit,*)'[ERR] LDT_rc%lnc(n) = ', LDT_rc%lnc(n)
+     call LDT_endrun()
+  end if
+  if (LDT_rc%gnr(n) .ne. LDT_rc%lnr(n)) then
+     write(LDT_logunit,*)'[ERR] Mismatched dimensions!'
+     write(LDT_logunit,*)'[ERR] LDT_rc%gnr(n) = ', LDT_rc%gnr(n)
+     write(LDT_logunit,*)'[ERR] LDT_rc%lnr(n) = ', LDT_rc%lnr(n)
+     call LDT_endrun()
+  end if
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  ios = nf90_open(path=trim(fname), mode=NF90_NOWRITE ,ncid=ncid)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Error opening file' // trim(fname)
+     return
+  end if
+
+  ios = nf90_inq_dimid(ncid, "ntiles", ntiles_dimid)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot find ntiles in ' // trim(fname)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+
+  ios = nf90_inquire_dimension(ncid, ntiles_dimid, len=ntiles)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot get dimension ntiles in ' &
+          // trim(fname)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+
+  if (ntiles .ne. LDT_rc%glbntiles_red(n)) then
+     write(LDT_logunit,*)'[ERR] Dimension mismatch!'
+     write(LDT_logunit,*)'[ERR] ntiles = ', ntiles
+     write(LDT_logunit,*)'[ERR] LDT_rc%glbntiles_red(n) = ', &
+          LDT_rc%glbntiles_red(n)
+     call LDT_endrun()
+  end if
+
+  ios = nf90_inq_dimid(ncid, "SoilTemp_profiles", SoilTemp_profiles_dimid)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot find SoilTemp_profiles in ' &
+          // trim(fname)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+
+  ios = nf90_inquire_dimension(ncid, SoilTemp_profiles_dimid, &
+       len=SoilTemp_profiles)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot get dimension SoilTemp_profiles in ' &
+          // trim(fname)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+  if (SoilTemp_profiles .ne. 4) then
+     write(LDT_logunit,*)'[ERR] Dimension mismatch!'
+     write(LDT_logunit,*)'[ERR] SoilTemp_profiles should be 4, but is ', &
+          SoilTemp_profiles
+     call LDT_endrun()
+  end if
+
+  ios = nf90_inq_varid(ncid, 'SoilTemp_tavg', SoilTemp_tavg_id)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot find SoilTemp_tavg in ' // trim(fname)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+
+  allocate(SoilTemp_tavg_tiles(ntiles, SoilTemp_profiles))
+  SoilTemp_tavg_tiles = 0
+
+  ios = nf90_get_var(ncid, SoilTemp_tavg_id, SoilTemp_tavg_tiles, &
+       start=(/1, 1/), &
+       count=(/ntiles, SoilTemp_profiles/))
+  if (ios .ne. 0) then
+     write(LDT_logunit,*)'[WARN] Cannot read SoilTemp_tavg in ' // trim(fname)
+     deallocate(SoilTemp_tavg_tiles)
+     ios = nf90_close(ncid=ncid)
+     return
+  end if
+
+  ! Calculate ensemble mean in 2d grid space, for each soil layer
+  do k = 1, SoilTemp_profiles
+     call calc_gridded_ensmean_1layer(n, SoilTemp_tavg_tiles(:,k), &
+          SoilTemp_tavg_ensmean_1layer)
+     do r = 1, LDT_rc%lnr(n)
+        do c = 1, LDT_rc%lnc(n)
+           if (SoilTemp_tavg_ensmean_1layer(c,r) > 0) then
+              tsoil(c,r,k) = SoilTemp_tavg_ensmean_1layer(c,r)
+           end if
+        end do
+     end do
+  end do
+
+  ! Clean up
+  deallocate(SoilTemp_tavg_tiles)
+
+  ios = nf90_close(ncid=ncid)
+  if (ios .ne. 0) then
+     write(LDT_logunit,*) '[WARN] Error closing ' // trim(fname)
+     return
+  end if
+
+  rc = 0 ! No error detected
+
+#endif
+
+end subroutine read_LIStsoil_data_usaf
+
+! Subroutine for calculating 2d gridded ensemble mean for a single soil layer,
+! from tiled data.
+subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
+
+  ! Imports
+  use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
+  use LDT_logMod, only: LDT_logunit
+
+  ! Defaults
+  implicit none
+
+  ! Arguments
+  integer, intent(in) :: n
+  real, intent(in) :: gvar_tile(LDT_rc%glbntiles_red(n))
+  real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
+
+  ! Locals
+  integer :: count1
+  integer :: l, m, r, c, gid, stid, t, tid
+  integer :: ierr
+
+  gvar = 0
+  if (LDT_masterproc) then
+     do r = 1, LDT_rc%gnr(n)
+        do c = 1, LDT_rc%gnc(n)
+           gid = c + ((r-1) * LDT_rc%gnc(n))
+           stid = LDT_domain(n)%str_tind(gid)
+           if (LDT_domain(n)%ntiles_pergrid(gid) > 0) then
+              do m = 1, LDT_rc%nensem(n)
+                 tid = stid + m - 1
+                 gvar(c,r) = gvar(c,r) + gvar_tile(tid)
+              enddo
+              gvar(c,r) = gvar(c,r) / LDT_rc%nensem(n)
+           end if
+        end do
+     end do
+  end if
+end subroutine calc_gridded_ensmean_1layer
+
+!BOP
+! !ROUTINE: create_LISsoilT_filename_usaf
+! \label{create_LISsoilT_filename_usaf}
+!
+! !INTERFACE:
+subroutine create_LISsoilT_filename_usaf(LISdir, yyyymmdd, hh, filename)
+ !USES:
+
+  implicit none
+ !ARGUMENTS:
+  character(*), intent(in) :: LISdir
+  character(8), intent(in) :: yyyymmdd
+  character(2), intent(in) :: hh
+  character(*), intent(out) :: filename
+!EOP
+
+  filename = trim(LISdir) &
+       // '/PS.AFWA' &
+       // '_SC.U' &
+       // '_DI.C' &
+       // '_DC.ANLYS' &
+       // '_GP.LIS' &
+       // '_GR.C0P09DEG' &
+       // '_AR.GLOBAL' &
+       // '_PA.03-HR-SUM' &
+       // '_DD.' // yyyymmdd &
+       // '_DT.' // hh // '00' &
+       // '_DF.nc'
+
+end subroutine create_LISsoilT_filename_usaf

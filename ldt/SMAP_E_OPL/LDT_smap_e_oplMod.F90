@@ -16,6 +16,7 @@
 ! !REVISION HISTORY: 
 !  14 Dec 2021: Yonghwan Kwon, Initial Specification
 !  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
+!  14 Feb 2023: Eric Kemp, now uses USAFSI and USAF LIS output.
 !
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -193,8 +194,9 @@ contains
 ! This calls the actual SMAP_E_OPL driver
 
 ! !USES:
-    use LDT_logMod
+    use esmf
     use LDT_coreMod
+    use LDT_logMod
 
     implicit none
 ! !ARGUMENTS:
@@ -214,7 +216,7 @@ contains
     character*2             :: hh_02, mm_02, dd_02
     character*1             :: Orbit
     integer                 :: yr, mo, da, hr
-    integer                 :: yr_pre, mo_pre, da_pre
+    integer                 :: yr_pre, mo_pre, da_pre, hh_pre
     integer                 :: yr_02, mo_02, da_02, hr_02
     logical                 :: dir_exists, read_L1Bdata
     real                    :: teff_01(LDT_rc%lnc(n),LDT_rc%lnr(n))
@@ -224,11 +226,17 @@ contains
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
+    type(ESMF_Calendar) :: calendar
+    type(ESMF_Time) :: firsttime, lasttime, curtime
+    type(ESMF_TimeInterval) :: deltatime
+    integer :: deltahr
     integer :: rc
 
     external :: readUSAFSI
 
-  ! Resample SMAP L1B to L1C
+    allocate(LDT_rc%nensem(LDT_rc%nnest))
+
+    ! Resample SMAP L1B to L1C
     call search_SMAPL1B_files(SMAPeOPL%L1Bdir,SMAPeOPL%date_curr,&
                               SMAPeOPL%L1Btype)
 
@@ -308,89 +316,136 @@ contains
              read(dd,*,iostat=ierr)    da
              read(hh,*,iostat=ierr)    hr
 
-             yr_pre = yr
-             mo_pre = mo
-             da_pre = da - 1
-             if(da_pre.eq.0) then
-                mo_pre = mo - 1
+             calendar = ESMF_CalendarCreate(ESMF_CALKIND_GREGORIAN, &
+                  name="Gregorian", &
+                  rc=rc)
 
-                if(mo_pre.eq.0) then
-                   yr_pre = yr - 1
-                   mo_pre = 12
-                   da_pre = 31
-                else
-                   if(mo_pre.eq.1.or.&
-                    mo_pre.eq.3.or.&
-                    mo_pre.eq.5.or.&
-                    mo_pre.eq.7.or.&
-                    mo_pre.eq.8.or.&
-                    mo_pre.eq.10.or.&
-                    mo_pre.eq.12) then
-                      da_pre = 31
-                   elseif(mo_pre.eq.2) then
-                      if(mod(yr,4).eq.0) then
-                         da_pre = 29
-                      else
-                         da_pre = 28
-                      endif
-                   else
-                      da_pre = 30
-                   endif
-                endif
-             endif
+             ! Set current time
+             call ESMF_TimeSet(curtime, yy=yr, mm=mo, dd=da, h=hr, m=0, s=0, &
+                  calendar=calendar, rc=rc)
+             call LDT_verify(rc, '[ERR] in ESMF_TimeSet in LDT_smap_e_oplRun')
+
+             ! Go back 24 hours
+             call ESMF_TimeIntervalSet(deltatime, d=1, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             curtime = curtime - deltatime
+
+             ! Now, find the nearest 3-hrly time (00Z, 03Z, ..., 21Z) prior
+             ! to curtime
+             if (mod(hr,3) == 0) then
+                deltahr = 0
+             else
+                deltahr = hr
+             end if
+             call ESMF_TimeIntervalSet(deltatime, h=deltahr, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             firsttime = curtime - deltatime
+
+             ! Now, find the next 3-hrly time (00Z, 03Z, ..., 21Z) after
+             ! firsttime
+             call ESMF_TimeIntervalSet(deltatime, h=3, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             lasttime = firsttime + deltatime
+
+             ! Now, read the first time.
+             call ESMF_TimeGet(firsttime, yy=yr_pre, mm=mo_pre, dd=da_pre, &
+                  h=hh_pre)
+
+             ! yr_pre = yr
+             ! mo_pre = mo
+             ! da_pre = da - 1
+             ! if(da_pre.eq.0) then
+             !    mo_pre = mo - 1
+
+             !    if(mo_pre.eq.0) then
+             !       yr_pre = yr - 1
+             !       mo_pre = 12
+             !       da_pre = 31
+             !    else
+             !       if(mo_pre.eq.1.or.&
+             !        mo_pre.eq.3.or.&
+             !        mo_pre.eq.5.or.&
+             !        mo_pre.eq.7.or.&
+             !        mo_pre.eq.8.or.&
+             !        mo_pre.eq.10.or.&
+             !        mo_pre.eq.12) then
+             !          da_pre = 31
+             !       elseif(mo_pre.eq.2) then
+             !          if(mod(yr,4).eq.0) then
+             !             da_pre = 29
+             !          else
+             !             da_pre = 28
+             !          endif
+             !       else
+             !          da_pre = 30
+             !       endif
+             !    endif
+             ! endif
 
              write(unit=yyyy_01, fmt='(i4.4)') yr_pre
              write(unit=mm_01, fmt='(i2.2)') mo_pre
              write(unit=dd_01, fmt='(i2.2)') da_pre
              yyyymmdd_01 = trim(yyyy_01)//trim(mm_01)//trim(dd_01)
-             hh_01 = hh
+             write(unit=hh_01, fmt='(i2.2)') hh_pre
+             !hh_01 = hh
 
-             call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
-
-             yr_02 = yr_pre
-             mo_02 = mo_pre
-             da_02 = da_pre
-             hr_02 = hr + 1
-
-             if(hr_02.eq.24) then
-                hr_02 = 0
-                da_02 = da_pre + 1
-                
-                if(mo_pre.eq.1.or.&
-                 mo_pre.eq.3.or.&
-                 mo_pre.eq.5.or.&
-                 mo_pre.eq.7.or.&
-                 mo_pre.eq.8.or.&
-                 mo_pre.eq.10.or.&
-                 mo_pre.eq.12) then
-                   if(da_02.gt.31) then
-                      da_02 = 1
-                      mo_02 = mo_pre + 1
-                   endif
-                elseif(mo_pre.eq.2) then
-                   if(mod(yr_02,4).eq.0) then
-                      if(da_02.gt.29) then
-                         da_02 = 1
-                         mo_02 = mo_pre + 1
-                      endif
-                   else
-                      if(da_02.gt.28) then
-                         da_02 = 1
-                         mo_02 = mo_pre + 1
-                      endif
-                  endif
-                else
-                   if(da_02.gt.30) then
-                      da_02 = 1
-                      mo_02 = mo_pre + 1
-                   endif
-                endif
-
-                if(mo_02.gt.12) then
-                   mo_02 = 1
-                   yr_02 = yr_pre + 1
-                endif
+             !call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
+             call readLIS_Teff_usaf(n, yyyymmdd_01, hh_01, Orbit, teff_01, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
              endif
+
+             ! Now, read the last time.
+             call ESMF_TimeGet(lasttime, yy=yr_02, mm=mo_02, dd=da_02, &
+                  h=hr_02)
+
+             ! yr_02 = yr_pre
+             ! mo_02 = mo_pre
+             ! da_02 = da_pre
+             ! hr_02 = hr + 1
+
+             ! if(hr_02.eq.24) then
+             !    hr_02 = 0
+             !    da_02 = da_pre + 1
+                
+             !    if(mo_pre.eq.1.or.&
+             !     mo_pre.eq.3.or.&
+             !     mo_pre.eq.5.or.&
+             !     mo_pre.eq.7.or.&
+             !     mo_pre.eq.8.or.&
+             !     mo_pre.eq.10.or.&
+             !     mo_pre.eq.12) then
+             !       if(da_02.gt.31) then
+             !          da_02 = 1
+             !          mo_02 = mo_pre + 1
+             !       endif
+             !    elseif(mo_pre.eq.2) then
+             !       if(mod(yr_02,4).eq.0) then
+             !          if(da_02.gt.29) then
+             !             da_02 = 1
+             !             mo_02 = mo_pre + 1
+             !          endif
+             !       else
+             !          if(da_02.gt.28) then
+             !             da_02 = 1
+             !             mo_02 = mo_pre + 1
+             !          endif
+             !      endif
+             !    else
+             !       if(da_02.gt.30) then
+             !          da_02 = 1
+             !          mo_02 = mo_pre + 1
+             !       endif
+             !    endif
+
+             !    if(mo_02.gt.12) then
+             !       mo_02 = 1
+             !       yr_02 = yr_pre + 1
+             !    endif
+             ! endif
 
              write(unit=yyyy_02, fmt='(i4.4)') yr_02
              write(unit=mm_02, fmt='(i2.2)') mo_02
@@ -398,7 +453,11 @@ contains
              write(unit=hh_02, fmt='(i2.2)') hr_02
              yyyymmdd_02 = trim(yyyy_02)//trim(mm_02)//trim(dd_02)
 
-             call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
+             !call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
+             call readLIS_Teff_usaf(n, yyyymmdd_02, hh_02, Orbit, teff_02, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
+             endif
 
   ! Scale LIS teff to GEOS teff climatology
              ! get DOY
@@ -499,5 +558,6 @@ contains
     call system(trim(list_files))
 
   end subroutine search_SMAPL1B_files
+
 
 end module LDT_smap_e_oplMod
