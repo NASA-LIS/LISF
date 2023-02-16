@@ -227,7 +227,7 @@ contains
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
     type(ESMF_Calendar) :: calendar
-    type(ESMF_Time) :: firsttime, lasttime, curtime
+    type(ESMF_Time) :: firsttime, lasttime, curtime, prevdaytime
     type(ESMF_TimeInterval) :: deltatime
     integer :: deltahr
     integer :: rc
@@ -329,7 +329,7 @@ contains
              call ESMF_TimeIntervalSet(deltatime, d=1, rc=rc)
              call LDT_verify(rc, &
                   '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
-             curtime = curtime - deltatime
+             prevdaytime = curtime - deltatime
 
              ! Now, find the nearest 3-hrly time (00Z, 03Z, ..., 21Z) prior
              ! to curtime
@@ -341,7 +341,7 @@ contains
              call ESMF_TimeIntervalSet(deltatime, h=deltahr, rc=rc)
              call LDT_verify(rc, &
                   '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
-             firsttime = curtime - deltatime
+             firsttime = prevdaytime - deltatime
 
              ! Now, find the next 3-hrly time (00Z, 03Z, ..., 21Z) after
              ! firsttime
@@ -519,8 +519,7 @@ contains
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
                 trim(SMAPeOPL%SMoutdir))
              call ARFSSMRETRIEVAL(smap_L1B_filename(i),teff_01,teff_02,&
-                                  SnowDepth,doy_curr,UTChr)
-
+                  SnowDepth,doy_curr,UTChr,firsttime)
              deallocate(SMAPeOPL%ARFS_TBV_COR)
           endif
        enddo
