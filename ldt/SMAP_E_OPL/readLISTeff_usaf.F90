@@ -42,7 +42,7 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   character(255) :: fname
   logical :: file_exists
   integer :: rc1
-  integer :: t
+  integer :: gid
   real, parameter :: kk = 1.007
   real, parameter :: cc_6am = 0.246
   real, parameter :: cc_6pm = 1.000
@@ -60,12 +60,12 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   LDT_rc%nensem(n) = 12
   LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
   if (.not. allocated(LDT_domain(n)%ntiles_pergrid)) &
-       allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+       allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%lnc(n) * LDT_rc%lnr(n)))
   LDT_domain(n)%ntiles_pergrid = 1
   if (.not. allocated(LDT_domain(n)%str_tind)) &
-       allocate(LDT_domain(n)%str_tind(LDT_rc%glbntiles_red(n)))
-  do t = 1, LDT_rc%glbntiles_red(n)
-     LDT_domain(n)%str_tind(t) = t
+       allocate(LDT_domain(n)%str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+  do gid = 1, (LDT_rc%gnc(n) * LDT_rc%gnr(n))
+     LDT_domain(n)%str_tind(gid) = ((gid - 1) * LDT_rc%nensem(n)) + 1
   end do
 
   call create_LISsoilT_filename_usaf(SMAPeOPL%LISdir, &

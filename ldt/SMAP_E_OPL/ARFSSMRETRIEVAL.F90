@@ -16,9 +16,10 @@
 !-------------------------------------------------------------------------
 
  subroutine ARFSSMRETRIEVAL(SMAPFILE,TS_bfresample_01,TS_bfresample_02,&
-                            ARFS_SNOW,DOY,UTChr)
+      ARFS_SNOW,DOY,UTChr,firsttime)
 
-    !USE HDF5
+   !USE HDF5
+    use esmf
     USE VARIABLES
     USE DATADOMAIN
     USE FUNCTIONS
@@ -36,6 +37,7 @@
     REAL*4, DIMENSION(2560,1920) :: TS_bfresample_01, TS_bfresample_02   
     REAL*4, DIMENSION(2560,1920) :: ARFS_SNOW, UTChr                     
     INTEGER                      :: DOY                                  
+    type(ESMF_Time), intent(in) :: firsttime
 !EOP 
     INTEGER :: i, j, nrow, mcol          
     CHARACTER (len=100) :: fname_TAU    
@@ -60,6 +62,8 @@
     ! EMK
     character(8) :: yyyymmdd
     character(6) :: hhmmss
+    real :: deltasec, wgt
+    integer :: firstUTCyr, firstUTCmo, firstUTCdy, firstUTChr
 
     nrow=2560
     mcol=1920
@@ -130,6 +134,10 @@
     write (LDT_logunit,*) '[INFO] Generating soil moisture retrievals'
     ARFS_SM=-9999
     ARFS_SM_FLAG=-1
+
+    call ESMF_TimeGet(firsttime, yy=firstUTCyr, mm=firstUTCmo, dd=firstUTCdy, &
+         h=firstUTChr)
+
 !    DO i=1,nrow !ROW LON
 !       DO j=1,mcol !COL LAT
     DO j=1,mcol !COL LAT
@@ -138,13 +146,38 @@
           tbv = ARFS_TB(i,j)
 
           if(UTChr(i,j).ge.0) then
-             utc_check = UTChr(i,j) - floor(UTChr(i,j))
+             !utc_check = UTChr(i,j) - floor(UTChr(i,j))
+             !if(utc_check.le.0.5) then
+             !    Ts  = ARFS_TS_01(i,j)
+             ! else
+             !    Ts  = ARFS_TS_02(i,j)
+             ! endif
 
-             if(utc_check.le.0.5) then
-                Ts  = ARFS_TS_01(i,j)
+             ! EMK Use linear interpolation between two time periods
+             ! It is possible that a particular SMAP measurement is valid
+             ! just over three hours after the first LIS Teff value; in this
+             ! case we just use second Teff (wgt = 0 for first Teff).
+             if (firstUTChr == 21 .and. (UTChr(i,j) > 21)) then
+                deltasec = ( UTChr(i,j) - firstUTChr ) * 3600
+                wgt = (10800. - deltasec) / 10800.
+             else if (UTChr(i,j) < (firstUTChr + 3)) then
+                deltasec = ( UTChr(i,j) - firstUTChr ) * 3600
+                wgt = (10800. - deltasec) / 10800.
+!                write(LDT_logunit,*)'EMK: i,j, firstUTChr, UTChr, deltasec, wgt = ', &
+!                     i,j,firstUTChr,UTChr(i,j),deltasec,wgt
+
              else
-                Ts  = ARFS_TS_02(i,j)
-             endif
+                wgt = 0
+                write(LDT_logunit,*)'EMK: i,j, firstUTChr, UTChr, wgt = ', &
+                     i,j,firstUTChr,UTChr(i,j),wgt
+
+             end if
+             if (ARFS_TS_01(i,j) > 0 .and. ARFS_TS_02(i,j) > 0) then
+                TS = ((wgt)*ARFS_TS_01(i,j)) + ((1. - wgt)*ARFS_TS_02(i,j))
+             else
+                TS = -9999
+             end if
+
           endif
 
           IF (tbv.GT.0.0.AND.Ts.GT.0.AND.ARFS_SNOW(i,j).LE.SMAPeOPL%SD_thold.AND.ARFS_BD(i,j).NE.-9999.AND.ARFS_LC(i,j).NE.0.AND.&
@@ -191,6 +224,8 @@
 !    OPEN(UNIT=151, FILE=retrieval_fname,FORM='UNFORMATTED',ACCESS='DIRECT', RECL=nrow*mcol*4)
 !    WRITE(UNIT=151, REC = 1) ARFS_SM
 !    CLOSE(151)
+
+
     ! NOTE: nrow is actually number of columns, mcol is actually number of
     ! rows
     call LDT_ARFSSM_write_netcdf(nrow, mcol, arfs_sm, retrieval_fname, &
