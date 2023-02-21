@@ -208,26 +208,29 @@ contains
     integer                 :: ftn, ierr
     character*100           :: fname
     character*100           :: smap_L1B_filename(10)
-    character*8             :: yyyymmdd, yyyymmdd_01, yyyymmdd_02
+    character*8             :: yyyymmdd, yyyymmdd_01, yyyymmdd_02, yyyymmdd_03
     character*6             :: hhmmss(10)
-    character*4             :: yyyy, yyyy_01, yyyy_02
+    character*4             :: yyyy, yyyy_01, yyyy_02, yyyy_03
     character*2             :: hh, mm, dd
-    character*2             :: hh_01, mm_01, dd_01 
+    character*2             :: hh_01, mm_01, dd_01
     character*2             :: hh_02, mm_02, dd_02
+    character*2             :: hh_03, mm_03, dd_03
     character*1             :: Orbit
     integer                 :: yr, mo, da, hr
     integer                 :: yr_pre, mo_pre, da_pre, hh_pre
     integer                 :: yr_02, mo_02, da_02, hr_02
+    integer                 :: yr_03, mo_03, da_03, hr_03
     logical                 :: dir_exists, read_L1Bdata
     real                    :: teff_01(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
+    real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
     type(ESMF_Calendar) :: calendar
-    type(ESMF_Time) :: firsttime, lasttime, curtime, prevdaytime
+    type(ESMF_Time) :: firsttime, secondtime, thirdtime, curtime, prevdaytime
     type(ESMF_TimeInterval) :: deltatime
     integer :: deltahr
     integer :: rc
@@ -332,11 +335,11 @@ contains
              prevdaytime = curtime - deltatime
 
              ! Now, find the nearest 3-hrly time (00Z, 03Z, ..., 21Z) prior
-             ! to curtime
-             if (mod(hr,3) == 0) then
+             ! to prevdaytime
+             if (mod(hr, 3) == 0) then
                 deltahr = 0
              else
-                deltahr = hr
+                deltahr = hr - ((floor(real(hr)/3.))*3)
              end if
              call ESMF_TimeIntervalSet(deltatime, h=deltahr, rc=rc)
              call LDT_verify(rc, &
@@ -348,7 +351,14 @@ contains
              call ESMF_TimeIntervalSet(deltatime, h=3, rc=rc)
              call LDT_verify(rc, &
                   '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
-             lasttime = firsttime + deltatime
+             secondtime = firsttime + deltatime
+
+             ! Now, find the next 3-hrly time (00Z, 03Z, ..., 21Z) after
+             ! secondtime
+             call ESMF_TimeIntervalSet(deltatime, h=3, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             thirdtime = secondtime + deltatime
 
              ! Now, read the first time.
              call ESMF_TimeGet(firsttime, yy=yr_pre, mm=mo_pre, dd=da_pre, &
@@ -398,8 +408,8 @@ contains
                 write(LDT_logunit,*)'[WARN] No Teff data available...'
              endif
 
-             ! Now, read the last time.
-             call ESMF_TimeGet(lasttime, yy=yr_02, mm=mo_02, dd=da_02, &
+             ! Now, read the second time.
+             call ESMF_TimeGet(secondtime, yy=yr_02, mm=mo_02, dd=da_02, &
                   h=hr_02)
 
              ! yr_02 = yr_pre
@@ -459,7 +469,23 @@ contains
                 write(LDT_logunit,*)'[WARN] No Teff data available...'
              endif
 
-  ! Scale LIS teff to GEOS teff climatology
+             ! Now read the third time.
+             call ESMF_TimeGet(thirdtime, yy=yr_03, mm=mo_03, dd=da_03, &
+                  h=hr_03)
+
+             write(unit=yyyy_03, fmt='(i4.4)') yr_03
+             write(unit=mm_03, fmt='(i2.2)') mo_03
+             write(unit=dd_03, fmt='(i2.2)') da_03
+             write(unit=hh_03, fmt='(i2.2)') hr_03
+             yyyymmdd_03 = trim(yyyy_03)//trim(mm_03)//trim(dd_03)
+
+             !call readLIS_Teff(n,yyyymmdd_03,hh_03,Orbit,teff_03)
+             call readLIS_Teff_usaf(n, yyyymmdd_03, hh_03, Orbit, teff_03, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
+             endif
+
+             ! Scale LIS teff to GEOS teff climatology
              ! get DOY
              call get_doy(mo_pre,da_pre,doy_pre)
 
@@ -484,7 +510,7 @@ contains
 
                 ! scale
                 write (LDT_logunit,*) '[INFO] Scaling LIS effective soil temperature'
-                call scale_teff(n,Orbit,teff_01,teff_02)
+                call scale_teff(n, Orbit, teff_01, teff_02, teff_03)
                 write (LDT_logunit,*) '[INFO] Finished scaling LIS effective soil temperature'
 
                 deallocate(SMAPeOPL%mu_6am_ref)
@@ -507,7 +533,7 @@ contains
              if (rc .ne. 0) then
                 write(LDT_logunit,*)'[WARN] No USAFSI data available!'
              endif
-             
+
   ! Retrieve SMAP soil moisture
              ! get DOY
              call get_doy(mo,da,doy_curr)
@@ -518,8 +544,9 @@ contains
              ! retrieve
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
                 trim(SMAPeOPL%SMoutdir))
-             call ARFSSMRETRIEVAL(smap_L1B_filename(i),teff_01,teff_02,&
-                  SnowDepth,doy_curr,UTChr,firsttime)
+             call ARFSSMRETRIEVAL(smap_L1B_filename(i), &
+                  teff_01, teff_02, teff_03, &
+                  SnowDepth, doy_curr, UTChr, firsttime, secondtime, thirdtime)
              deallocate(SMAPeOPL%ARFS_TBV_COR)
           endif
        enddo
