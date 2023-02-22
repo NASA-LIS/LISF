@@ -190,9 +190,9 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
           end if
           if (TS_A > 0 .and. TS_B > 0) then
              TS = ((wgt)*TS_A) + ((1. - wgt)*TS_B)
-             write(LDT_logunit,*) &
-                  'EMK: i,j,UTChr,firstUTChr,secondUTChr,thirdUTChr,wgt:', &
-                  i,j,UTChr(i,j),firstUTChr,secondUTChr,thirdUTChr,wgt
+             ! write(LDT_logunit,*) &
+             !      'EMK: i,j,UTChr,firstUTChr,secondUTChr,thirdUTChr,wgt:', &
+             !      i,j,UTChr(i,j),firstUTChr,secondUTChr,thirdUTChr,wgt
           else
              cycle
           end if
