@@ -57,13 +57,23 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
 
   ! Set up basic info on Air Force product
   ! FIXME...Fetch critical data from ldt.config file instead of hardwiring
-  LDT_rc%nensem(n) = 12
-  LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
+  !LDT_rc%nensem(n) = 12
+  LDT_rc%nensem(n) = SMAPeOPL%num_ens
+  !LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
+  LDT_rc%glbntiles_red(n) = SMAPeOPL%num_tiles
   if (.not. allocated(LDT_domain(n)%ntiles_pergrid)) &
        allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%lnc(n) * LDT_rc%lnr(n)))
-  LDT_domain(n)%ntiles_pergrid = 1
+  !LDT_domain(n)%ntiles_pergrid = 1
+  LDT_domain(n)%ntiles_pergrid = SMAPeOPL%ntiles_pergrid
   if (.not. allocated(LDT_domain(n)%str_tind)) &
        allocate(LDT_domain(n)%str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+  if (SMAPeOPL%ntiles_pergrid .ne. 1) then
+     write(LDT_logunit,*) &
+          '[ERR] Current SMAP_E_OPL code assumes ntiles_pergrid = 1'
+     write(LDT_logunit,*) &
+          '[ERR] Actual value is ', SMAPeOPL%ntiles_pergrid
+     call LDT_endrun()
+  end if
   do gid = 1, (LDT_rc%gnc(n) * LDT_rc%gnr(n))
      LDT_domain(n)%str_tind(gid) = ((gid - 1) * LDT_rc%nensem(n)) + 1
   end do

@@ -17,6 +17,7 @@
 !  14 Dec 2021: Yonghwan Kwon, Initial Specification
 !  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
 !  14 Feb 2023: Eric Kemp, now uses USAFSI and USAF LIS output.
+!  22 Feb 2023: Eric Kemp, ensemble size now in ldt.config file.
 !
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -50,7 +51,9 @@ module LDT_smap_e_oplMod
     integer, allocatable :: grid_col(:), grid_row(:) !(ngrid)
     real, allocatable    :: ARFS_TBV_COR(:,:)
     real                 :: SD_thold
-
+    integer :: num_ens ! Number of ensemble members in LIS USAF file.
+    integer :: num_tiles ! Total number of tiles in LIS USAF file.
+    integer :: ntiles_pergrid ! Number of tiles per grid point
   end type smap_e_opl_dec
 
   type(smap_e_opl_dec), public :: SMAPeOPL  
@@ -63,7 +66,7 @@ contains
     ! Imports
     use ESMF
     use LDT_coreMod, only: LDT_config
-    use LDT_logMod, only: LDT_verify
+    use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
 
     ! Defaults
     implicit none
@@ -144,6 +147,42 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%LISsnowdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    cfg_entry = "SMAP_E_OPL LIS ensemble size:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%num_ens, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_ens < 1) then
+       write(LDT_logunit,*)'[ERR] LIS ensemble size must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%num_ens
+       call LDT_endrun()
+    end if
+
+    cfg_entry = "SMAP_E_OPL LIS total number of tiles (including ensembles):"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%num_tiles, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS total number of tiles (including ensembles) must be'  &
+            //'at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%num_tiles
+       call LDT_endrun()
+    end if
+
+    cfg_entry = "SMAP_E_OPL LIS number of tiles per grid point:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%ntiles_pergrid, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS number of tiles per grid point must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%ntiles_pergrid
+       call LDT_endrun()
+    end if
 
     cfg_entry = "SMAP_E_OPL snow depth threshold:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
