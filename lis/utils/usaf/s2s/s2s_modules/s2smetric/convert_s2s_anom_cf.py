@@ -29,9 +29,8 @@
 
 import os
 import shutil
-import subprocess
 import sys
-from netCDF4 import Dataset
+from netCDF4 import Dataset #pylint: disable=no-name-in-module
 
 # Local constants
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
@@ -150,7 +149,7 @@ def _driver():
     nc4["latitude"].long_name = 'latitude'
     nc4["latitude"].standard_name = 'latitude'
     nc4["latitude"].units = 'degree_north'
-    
+
     nc4["longitude"].long_name = 'longitude'
     nc4["longitude"].standard_name = 'longitude'
     nc4["longitude"].units = 'degree_east'
@@ -164,7 +163,7 @@ def _driver():
     nc4["anom"].long_name = metric_long_name
     nc4["anom"].units = metric_units
     nc4.close()
-    
+
 # Invoke the main driver
 if __name__ == "__main__":
     _driver()

@@ -117,10 +117,10 @@ Observation perturbation frequency:                   6hr                       
 Observation attributes file:                          ./input/attribs/usafsi_attribs.txt      ./input/attribs/smops_attribs.txt       ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt  ./input/attribs/smops_pertattribs.txt   ./input/attribs/smap_pertattribs.txt
 
-USAFSI data directory:                                ../USAF_FORCING/USAFSI
+USAFSI data directory:                                ./USAF_FORCING/USAFSI
 USAFSI netcdf filename prefix:                        USAFSI
 
-SMOPS ASCAT soil moisture data directory:             ../USAF_FORCING/SMOPS
+SMOPS ASCAT soil moisture data directory:             ./USAF_FORCING/SMOPS
 SMOPS ASCAT naming convention:                        "AGRMET ops"
 SMOPS ASCAT version:                                  "date-based"
 SMOPS ASCAT model CDF file:                           ./input/cdf/noahmp401_cdf_200obs.nc
@@ -142,7 +142,7 @@ SMOPS ASCAT CDF read option:                                    1
 #SMAP(NASA) CDF read option:                                     1
 
 # SMAP NRT - Operations-based SM data directory:
-SMAP(NRT) soil moisture data directory:               ../USAF_FORCING/SMAP
+SMAP(NRT) soil moisture data directory:               ./USAF_FORCING/SMAP
 SMAP(NRT) model CDF file:                             ./input/cdf/noahmp401_cdf_200obs.nc
 SMAP(NRT) observation CDF file:                       ./input/cdf/smap_c007_cdf_100obs.nc
 SMAP(NRT) soil moisture number of bins in the CDF:              100
@@ -190,7 +190,7 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-AGRMET forcing directory:                  ../USAF_FORCING/usaf_lis73rc8_10km/
+AGRMET forcing directory:                  ./USAF_FORCING/usaf_lis73rc8_10km/
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings

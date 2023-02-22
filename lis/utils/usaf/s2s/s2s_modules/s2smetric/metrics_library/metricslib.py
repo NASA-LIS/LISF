@@ -97,14 +97,14 @@ def sel_var(sel_cim_data, var_name, model):
     return var_sel_clim_data
 
 def compute_anomaly (target_fcst_data, fcst_clim):
-
+    ''' compute anomaly'''
     out_var = target_fcst_data - fcst_clim
     return out_var
 
 def compute_sanomaly (target_fcst_data, fcst_clim, fcst_std):
-
+    ''' computes standerdized anomaly'''
     out_var = np.ones(len(target_fcst_data))*-99.
     if fcst_std > 0.:
         out_var = (target_fcst_data - fcst_clim) / fcst_std
-        
+
     return out_var

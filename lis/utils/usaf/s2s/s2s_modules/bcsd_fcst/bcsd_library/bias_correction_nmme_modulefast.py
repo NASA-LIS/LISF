@@ -18,9 +18,11 @@ from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
-import BCSD_function
-from BCSD_stats_functions import write_4d_netcdf, get_domain_info
-from Shrad_modules import read_nc_files
+# pylint: disable=import-error
+import bcsd_function
+from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from shrad_modules import read_nc_files
+# pylint: enable=import-error
 
 def get_index(ref_array, my_value):
     """
@@ -96,7 +98,7 @@ FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
 CONFIG_FILE = str(sys.argv[16])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
-LATS, LONS = get_domain_info(CONFIG_FILE, coord=True) 
+LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -179,10 +181,10 @@ for MON in [INIT_FCST_MON]:
     print("np_FCST_CLIM_ARRAY:", np_FCST_CLIM_ARRAY.shape, \
     type(np_FCST_CLIM_ARRAY))
 
-    CORRECT_FCST_COARSE = BCSD_function.latlon_calculations(ilat_min, \
+    CORRECT_FCST_COARSE = bcsd_function.latlon_calculations(ilat_min, \
     ilat_max, ilon_min, ilon_max, nlats, nlons, np_OBS_CLIM_ARRAY, \
     np_FCST_CLIM_ARRAY, LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, \
-    FCST_SYR, ENS_NUM, MON, MONTH_NAME, BC_VAR, TINY, FCST_COARSE)
+    FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
 
     CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
     mask=CORRECT_FCST_COARSE == -999)
