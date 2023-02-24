@@ -15,6 +15,9 @@
 !
 ! !REVISION HISTORY: 
 !  14 Dec 2021: Yonghwan Kwon, Initial Specification
+!  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
+!  14 Feb 2023: Eric Kemp, now uses USAFSI and USAF LIS output.
+!  22 Feb 2023: Eric Kemp, ensemble size now in ldt.config file.
 !
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -48,7 +51,9 @@ module LDT_smap_e_oplMod
     integer, allocatable :: grid_col(:), grid_row(:) !(ngrid)
     real, allocatable    :: ARFS_TBV_COR(:,:)
     real                 :: SD_thold
-
+    integer :: num_ens ! Number of ensemble members in LIS USAF file.
+    integer :: num_tiles ! Total number of tiles in LIS USAF file.
+    integer :: ntiles_pergrid ! Number of tiles per grid point
   end type smap_e_opl_dec
 
   type(smap_e_opl_dec), public :: SMAPeOPL  
@@ -61,7 +66,7 @@ contains
     ! Imports
     use ESMF
     use LDT_coreMod, only: LDT_config
-    use LDT_logMod, only: LDT_verify
+    use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
 
     ! Defaults
     implicit none
@@ -143,6 +148,42 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%LISsnowdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
+    cfg_entry = "SMAP_E_OPL LIS ensemble size:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%num_ens, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_ens < 1) then
+       write(LDT_logunit,*)'[ERR] LIS ensemble size must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%num_ens
+       call LDT_endrun()
+    end if
+
+    cfg_entry = "SMAP_E_OPL LIS total number of tiles (including ensembles):"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%num_tiles, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS total number of tiles (including ensembles) must be'  &
+            //'at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%num_tiles
+       call LDT_endrun()
+    end if
+
+    cfg_entry = "SMAP_E_OPL LIS number of tiles per grid point:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%ntiles_pergrid, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (SMAPeOPL%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS number of tiles per grid point must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', SMAPeOPL%ntiles_pergrid
+       call LDT_endrun()
+    end if
+
     cfg_entry = "SMAP_E_OPL snow depth threshold:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
@@ -192,8 +233,9 @@ contains
 ! This calls the actual SMAP_E_OPL driver
 
 ! !USES:
-    use LDT_logMod
+    use esmf
     use LDT_coreMod
+    use LDT_logMod
 
     implicit none
 ! !ARGUMENTS:
@@ -205,26 +247,38 @@ contains
     integer                 :: ftn, ierr
     character*100           :: fname
     character*100           :: smap_L1B_filename(10)
-    character*8             :: yyyymmdd, yyyymmdd_01, yyyymmdd_02
+    character*8             :: yyyymmdd, yyyymmdd_01, yyyymmdd_02, yyyymmdd_03
     character*6             :: hhmmss(10)
-    character*4             :: yyyy, yyyy_01, yyyy_02
+    character*4             :: yyyy, yyyy_01, yyyy_02, yyyy_03
     character*2             :: hh, mm, dd
-    character*2             :: hh_01, mm_01, dd_01 
+    character*2             :: hh_01, mm_01, dd_01
     character*2             :: hh_02, mm_02, dd_02
+    character*2             :: hh_03, mm_03, dd_03
     character*1             :: Orbit
     integer                 :: yr, mo, da, hr
-    integer                 :: yr_pre, mo_pre, da_pre
+    integer                 :: yr_pre, mo_pre, da_pre, hh_pre
     integer                 :: yr_02, mo_02, da_02, hr_02
+    integer                 :: yr_03, mo_03, da_03, hr_03
     logical                 :: dir_exists, read_L1Bdata
     real                    :: teff_01(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
+    real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
+    type(ESMF_Calendar) :: calendar
+    type(ESMF_Time) :: firsttime, secondtime, thirdtime, curtime, prevdaytime
+    type(ESMF_TimeInterval) :: deltatime
+    integer :: deltahr
+    integer :: rc
 
-  ! Resample SMAP L1B to L1C
+    external :: readUSAFSI
+
+    allocate(LDT_rc%nensem(LDT_rc%nnest))
+
+    ! Resample SMAP L1B to L1C
     call search_SMAPL1B_files(SMAPeOPL%L1Bdir,SMAPeOPL%date_curr,&
                               SMAPeOPL%L1Btype)
 
@@ -268,15 +322,31 @@ contains
           if(i == fi) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec)
-             write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
-             read_L1Bdata = .true. 
+             ! EMK...Process subset of fields.
+             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
+                  SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
+
+             if (rc == 0) then
+                write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
+                read_L1Bdata = .true.
+             else
+                deallocate(SMAPeOPL%ARFS_TBV_COR)
+             end if
           elseif(hhmmss(i) /= hhmmss(i+1)) then
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
-             call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec)
-             write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
-             read_L1Bdata = .true.
+             !EMK Process subset of fields.
+             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
+             call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
+                  SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
+
+             if (rc == 0) then
+                write (LDT_logunit,*) '[INFO] Finished resampling ', trim(smap_L1B_filename(i))
+                read_L1Bdata = .true.
+             else
+                deallocate(SMAPeOPL%ARFS_TBV_COR)
+             end if
           endif
 
           if(read_L1Bdata) then
@@ -285,92 +355,146 @@ contains
              ! use LIS outputs from previous day
              read(yyyy,*,iostat=ierr)  yr
              read(mm,*,iostat=ierr)    mo
-             read(dd,*,iostat=ierr)    da                                        
+             read(dd,*,iostat=ierr)    da
              read(hh,*,iostat=ierr)    hr
 
-             yr_pre = yr
-             mo_pre = mo
-             da_pre = da - 1
-             if(da_pre.eq.0) then
-                mo_pre = mo - 1
+             calendar = ESMF_CalendarCreate(ESMF_CALKIND_GREGORIAN, &
+                  name="Gregorian", &
+                  rc=rc)
 
-                if(mo_pre.eq.0) then
-                   yr_pre = yr - 1
-                   mo_pre = 12
-                   da_pre = 31
-                else
-                   if(mo_pre.eq.1.or.&
-                    mo_pre.eq.3.or.&
-                    mo_pre.eq.5.or.&
-                    mo_pre.eq.7.or.&
-                    mo_pre.eq.8.or.&
-                    mo_pre.eq.10.or.&
-                    mo_pre.eq.12) then
-                      da_pre = 31
-                   elseif(mo_pre.eq.2) then
-                      if(mod(yr,4).eq.0) then
-                         da_pre = 29
-                      else
-                         da_pre = 28
-                      endif
-                   else
-                      da_pre = 30
-                   endif
-                endif
-             endif
+             ! Set current time
+             call ESMF_TimeSet(curtime, yy=yr, mm=mo, dd=da, h=hr, m=0, s=0, &
+                  calendar=calendar, rc=rc)
+             call LDT_verify(rc, '[ERR] in ESMF_TimeSet in LDT_smap_e_oplRun')
+
+             ! Go back 24 hours
+             call ESMF_TimeIntervalSet(deltatime, d=1, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             prevdaytime = curtime - deltatime
+
+             ! Now, find the nearest 3-hrly time (00Z, 03Z, ..., 21Z) prior
+             ! to prevdaytime
+             if (mod(hr, 3) == 0) then
+                deltahr = 0
+             else
+                deltahr = hr - ((floor(real(hr)/3.))*3)
+             end if
+             call ESMF_TimeIntervalSet(deltatime, h=deltahr, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             firsttime = prevdaytime - deltatime
+
+             ! Now, find the next 3-hrly time (00Z, 03Z, ..., 21Z) after
+             ! firsttime
+             call ESMF_TimeIntervalSet(deltatime, h=3, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             secondtime = firsttime + deltatime
+
+             ! Now, find the next 3-hrly time (00Z, 03Z, ..., 21Z) after
+             ! secondtime
+             call ESMF_TimeIntervalSet(deltatime, h=3, rc=rc)
+             call LDT_verify(rc, &
+                  '[ERR] in ESMF_TimeIntervalSet in LDT_smap_e_oplRun')
+             thirdtime = secondtime + deltatime
+
+             ! Now, read the first time.
+             call ESMF_TimeGet(firsttime, yy=yr_pre, mm=mo_pre, dd=da_pre, &
+                  h=hh_pre)
+
+             ! yr_pre = yr
+             ! mo_pre = mo
+             ! da_pre = da - 1
+             ! if(da_pre.eq.0) then
+             !    mo_pre = mo - 1
+
+             !    if(mo_pre.eq.0) then
+             !       yr_pre = yr - 1
+             !       mo_pre = 12
+             !       da_pre = 31
+             !    else
+             !       if(mo_pre.eq.1.or.&
+             !        mo_pre.eq.3.or.&
+             !        mo_pre.eq.5.or.&
+             !        mo_pre.eq.7.or.&
+             !        mo_pre.eq.8.or.&
+             !        mo_pre.eq.10.or.&
+             !        mo_pre.eq.12) then
+             !          da_pre = 31
+             !       elseif(mo_pre.eq.2) then
+             !          if(mod(yr,4).eq.0) then
+             !             da_pre = 29
+             !          else
+             !             da_pre = 28
+             !          endif
+             !       else
+             !          da_pre = 30
+             !       endif
+             !    endif
+             ! endif
 
              write(unit=yyyy_01, fmt='(i4.4)') yr_pre
              write(unit=mm_01, fmt='(i2.2)') mo_pre
              write(unit=dd_01, fmt='(i2.2)') da_pre
              yyyymmdd_01 = trim(yyyy_01)//trim(mm_01)//trim(dd_01)
-             hh_01 = hh
+             write(unit=hh_01, fmt='(i2.2)') hh_pre
+             !hh_01 = hh
 
-             call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
-
-             yr_02 = yr_pre
-             mo_02 = mo_pre
-             da_02 = da_pre
-             hr_02 = hr + 1
-
-             if(hr_02.eq.24) then
-                hr_02 = 0
-                da_02 = da_pre + 1
-                
-                if(mo_pre.eq.1.or.&
-                 mo_pre.eq.3.or.&
-                 mo_pre.eq.5.or.&
-                 mo_pre.eq.7.or.&
-                 mo_pre.eq.8.or.&
-                 mo_pre.eq.10.or.&
-                 mo_pre.eq.12) then
-                   if(da_02.gt.31) then
-                      da_02 = 1
-                      mo_02 = mo_pre + 1
-                   endif
-                elseif(mo_pre.eq.2) then
-                   if(mod(yr_02,4).eq.0) then
-                      if(da_02.gt.29) then
-                         da_02 = 1
-                         mo_02 = mo_pre + 1
-                      endif
-                   else
-                      if(da_02.gt.28) then
-                         da_02 = 1
-                         mo_02 = mo_pre + 1
-                      endif
-                  endif
-                else
-                   if(da_02.gt.30) then
-                      da_02 = 1
-                      mo_02 = mo_pre + 1
-                   endif
-                endif
-
-                if(mo_02.gt.12) then
-                   mo_02 = 1
-                   yr_02 = yr_pre + 1
-                endif
+             !call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
+             call readLIS_Teff_usaf(n, yyyymmdd_01, hh_01, Orbit, teff_01, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
              endif
+
+             ! Now, read the second time.
+             call ESMF_TimeGet(secondtime, yy=yr_02, mm=mo_02, dd=da_02, &
+                  h=hr_02)
+
+             ! yr_02 = yr_pre
+             ! mo_02 = mo_pre
+             ! da_02 = da_pre
+             ! hr_02 = hr + 1
+
+             ! if(hr_02.eq.24) then
+             !    hr_02 = 0
+             !    da_02 = da_pre + 1
+                
+             !    if(mo_pre.eq.1.or.&
+             !     mo_pre.eq.3.or.&
+             !     mo_pre.eq.5.or.&
+             !     mo_pre.eq.7.or.&
+             !     mo_pre.eq.8.or.&
+             !     mo_pre.eq.10.or.&
+             !     mo_pre.eq.12) then
+             !       if(da_02.gt.31) then
+             !          da_02 = 1
+             !          mo_02 = mo_pre + 1
+             !       endif
+             !    elseif(mo_pre.eq.2) then
+             !       if(mod(yr_02,4).eq.0) then
+             !          if(da_02.gt.29) then
+             !             da_02 = 1
+             !             mo_02 = mo_pre + 1
+             !          endif
+             !       else
+             !          if(da_02.gt.28) then
+             !             da_02 = 1
+             !             mo_02 = mo_pre + 1
+             !          endif
+             !      endif
+             !    else
+             !       if(da_02.gt.30) then
+             !          da_02 = 1
+             !          mo_02 = mo_pre + 1
+             !       endif
+             !    endif
+
+             !    if(mo_02.gt.12) then
+             !       mo_02 = 1
+             !       yr_02 = yr_pre + 1
+             !    endif
+             ! endif
 
              write(unit=yyyy_02, fmt='(i4.4)') yr_02
              write(unit=mm_02, fmt='(i2.2)') mo_02
@@ -378,9 +502,29 @@ contains
              write(unit=hh_02, fmt='(i2.2)') hr_02
              yyyymmdd_02 = trim(yyyy_02)//trim(mm_02)//trim(dd_02)
 
-             call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
+             !call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
+             call readLIS_Teff_usaf(n, yyyymmdd_02, hh_02, Orbit, teff_02, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
+             endif
 
-  ! Scale LIS teff to GEOS teff climatology
+             ! Now read the third time.
+             call ESMF_TimeGet(thirdtime, yy=yr_03, mm=mo_03, dd=da_03, &
+                  h=hr_03)
+
+             write(unit=yyyy_03, fmt='(i4.4)') yr_03
+             write(unit=mm_03, fmt='(i2.2)') mo_03
+             write(unit=dd_03, fmt='(i2.2)') da_03
+             write(unit=hh_03, fmt='(i2.2)') hr_03
+             yyyymmdd_03 = trim(yyyy_03)//trim(mm_03)//trim(dd_03)
+
+             !call readLIS_Teff(n,yyyymmdd_03,hh_03,Orbit,teff_03)
+             call readLIS_Teff_usaf(n, yyyymmdd_03, hh_03, Orbit, teff_03, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No Teff data available...'
+             endif
+
+             ! Scale LIS teff to GEOS teff climatology
              ! get DOY
              call get_doy(mo_pre,da_pre,doy_pre)
 
@@ -405,7 +549,7 @@ contains
 
                 ! scale
                 write (LDT_logunit,*) '[INFO] Scaling LIS effective soil temperature'
-                call scale_teff(n,Orbit,teff_01,teff_02)
+                call scale_teff(n, Orbit, teff_01, teff_02, teff_03)
                 write (LDT_logunit,*) '[INFO] Finished scaling LIS effective soil temperature'
 
                 deallocate(SMAPeOPL%mu_6am_ref)
@@ -423,21 +567,25 @@ contains
              read_L1Bdata = .false.
 
   ! Get snow information from LIS outputs
-             call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
+             !call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
+             call readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
+             if (rc .ne. 0) then
+                write(LDT_logunit,*)'[WARN] No USAFSI data available!'
+             endif
 
   ! Retrieve SMAP soil moisture
              ! get DOY
              call get_doy(mo,da,doy_curr)
 
              ! get UTC
-             call get_UTC(n,TIMEsec,UTChr)                         
+             call get_UTC(n,TIMEsec,UTChr)
 
              ! retrieve
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
                 trim(SMAPeOPL%SMoutdir))
-             call ARFSSMRETRIEVAL(smap_L1B_filename(i),teff_01,teff_02,&
-                                  SnowDepth,doy_curr,UTChr)
-
+             call ARFSSMRETRIEVAL(smap_L1B_filename(i), &
+                  teff_01, teff_02, teff_03, &
+                  SnowDepth, doy_curr, UTChr, firsttime, secondtime, thirdtime)
              deallocate(SMAPeOPL%ARFS_TBV_COR)
           endif
        enddo
@@ -475,5 +623,6 @@ contains
     call system(trim(list_files))
 
   end subroutine search_SMAPL1B_files
+
 
 end module LDT_smap_e_oplMod
