@@ -68,7 +68,7 @@ module LIS_PRIV_tileMod
      real    :: elev
      real    :: slope
      real    :: aspect
-     real    :: curv
+     real    :: curvature
 
      integer :: tile_id    
      integer :: d2g        !local tile count to global tile count

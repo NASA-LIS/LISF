@@ -48,6 +48,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
    character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
    character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
+   character*50, public,  parameter :: LDT_SMAP_E_OPLId       = "OPL E SMAP soil moisture retrieval"  !Y.Kwon
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -67,6 +68,8 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_LISlsmSMobsId              &
         = "LIS LSM soil moisture"
+   character*50, public,  parameter :: LDT_LISlsmTEFFobsId            &
+        = "LIS LSM effective soil temperature"                               !Y.Kwon
    character*50, public,  parameter :: LDT_syntheticSMobsId           &
         = "Synthetic soil moisture"
    character*50, public,  parameter :: LDT_NASA_AMSREsmobsId          &
@@ -105,10 +108,12 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_SMAPEOPLsmobsId            &
+        = "SMAP_E_OPL soil moisture"                                        !Y.Kwon
    character*50, public,  parameter :: LDT_THySMobsId            &
         = "THySM soil moisture"
    character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
-        = "SMOS NRT NN soil moisture"                                        !kyh20210105
+        = "SMOS NRT NN soil moisture"                                        !Y.Kwon
    character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
         = "NASA SMAP vegetation optical depth"
    character*50, public,  parameter :: LDT_GLASSlaiobsId            &
@@ -118,6 +123,12 @@ module LDT_pluginIndices
 
    character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
         = "MCD15A2H LAI"
+   character*50, public,  parameter :: LDT_VIIRSgvfobsId            &
+        = "VIIRS GVF"                                                    !Y.Kwon
+   character*50, public,  parameter :: LDT_CDFSgvfobsId            &
+        = "CDFS GVF"                                                     !Y.Kwon
+   character*50, public,  parameter :: LDT_GEOSTeffobsId            &
+        = "GEOS effective soil temperature"                              !Y.Kwon
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
@@ -208,6 +219,7 @@ module LDT_pluginIndices
 ! Snow models and data
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
+   character*50, public,  parameter :: LDT_snowmodelId   = "SnowModel"
 
 !-------------------------------------------------------------------------
 ! Landcover sources
@@ -218,6 +230,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_usgslcNATId    = "USGS_Native"
    character*50, public,  parameter :: LDT_modislcLISId   = "MODIS_LIS"
    character*50, public,  parameter :: LDT_modislcNATId   = "MODIS_Native"
+   character*50, public,  parameter :: LDT_mcd12q1Id      = "MCD12Q1"
    character*50, public,  parameter :: LDT_modislcPFTId   = "MODIS_Native_PFT"
    character*50, public,  parameter :: LDT_ukmoigbpPFTId  = "UKMO_IGBP_Native_PFT"
    character*50, public,  parameter :: LDT_UM_ancillaryId = "UM_Native_Ancillary"
@@ -227,6 +240,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_vic411lcId     = "VIC411"
    character*50, public,  parameter :: LDT_vic412lcId     = "VIC412"
    character*50, public,  parameter :: LDT_clm45lcId      = "CLM45"
+   character*50, public,  parameter :: LDT_nalcmsSMlcId   = "NALCMS_SM"
+   character*50, public,  parameter :: LDT_nalcmsSMIGBPlcId  = "NALCMS_SM_IGBPNCEP"
    character*50, public,  parameter :: LDT_constId        = "CONSTANT"
 
 !-------------------------------------------------------------------------
@@ -255,6 +270,7 @@ module LDT_pluginIndices
    character*50, public, parameter :: LDT_srtmLISId  = "SRTM_LIS"
    character*50, public, parameter :: LDT_srtmNATId  = "SRTM_Native"
    character*50, public, parameter :: LDT_merit1KId  = "MERIT_1K"
+   character*50, public, parameter :: LDT_nedSMId    = "NED_SM"
 
 !-------------------------------------------------------------------------
 ! Soils sources

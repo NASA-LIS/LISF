@@ -19,12 +19,6 @@ REVISION HISTORY:
 03 Nov 2020:  Eric Kemp.  Initial specification.
 """
 
-import configparser
-import datetime
-import os
-import subprocess
-import sys
-
 import autotune
 
 if __name__ == "__main__":

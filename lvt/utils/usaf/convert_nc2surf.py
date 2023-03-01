@@ -44,8 +44,9 @@
 #               upgraded to MULE 2020.01.1.
 # 04 Dec 2020:  Eric Kemp (SSAI): Fixed offset for starting lat/lon.
 # 25 Jan 2021:  Eric Kemp (SSAI): Fixed calculation of bzy and bzx.
-# 05 Feb 2021 : Eric Kemp (SSAI): Switched to multi-layer snow physics for
+# 05 Feb 2021:  Eric Kemp (SSAI): Switched to multi-layer snow physics for
 #               PS41.
+# 06 Dec 2022:  Eric Kemp (SSAI): Updates to improve pylint score.
 #
 #------------------------------------------------------------------------------
 """
@@ -289,8 +290,8 @@ def _get_infile_type(key):
     """Get the infile_type based on the key. Sanity check included."""
     infile_type = key.split(":")[1]
     if infile_type not in ["LDT", "LVT"]:
-        print("[ERR] Invalid infile type %s" % (infile_type))
-        print("[ERR] Found in %s" % (key))
+        print(f"[ERR] Invalid infile type {infile_type}")
+        print(f"[ERR] Found in {key}")
         print("[ERR] Internal error, aborting...")
         sys.exit(1)
     return infile_type
@@ -306,7 +307,7 @@ def _handle_snowfields_var2d(var2d):
     return var2d
 
 #------------------------------------------------------------------------------
-class Nc2Surf:
+class _Nc2Surf:
     """Class for generating the SURF files."""
 
     #--------------------------------------------------------------------------
@@ -357,7 +358,7 @@ class Nc2Surf:
             self.ncid_lvt.__dict__['SOIL_LAYER_THICKNESSES']
         cm2m = decimal.Decimal('0.01')
         slt_m = \
-            [cm2m*decimal.Decimal("%s" % x) for x in slt_cm]
+            [cm2m*decimal.Decimal(f"{x}") for x in slt_cm]
         # EMK...Use below for old pre-LIS 7.2 LVT output, which
         # erroneously had output in meters
         # slt_m = \
@@ -592,13 +593,11 @@ class Nc2Surf:
         field.lbuser7 = 1  # Atmosphere
 
     #--------------------------------------------------------------------------
-    def _add_field(self, key, ilev, var2d_provider, surface_flag, surf):
+    def _add_field(self, key, ilev, var2d_provider, surf):
         """
         Internal method to create and attach Field object to SURF object.
         Refer to Unified Model Documentation Paper F03 for meaning of metadata.
         """
-
-        nlev = _NLEVS[key.split(":")[0]]
 
         # Determine how many fields are already in the SURF object
         num_fields = len(surf.fields)
@@ -613,7 +612,7 @@ class Nc2Surf:
         field.bdatum = 0  # Datum value constant subtracted from field
         # Updated logic to specify surface levels, due to multi-layer
         # snow physics from PS41.
-        if surface_flag:
+        if self.lblev == 9999: # Surface variable
             field.blev = 0  # Surface AGL
         else:
             field.blev = self.grid["soil_layer_thicknesses"][ilev]
@@ -694,12 +693,12 @@ class Nc2Surf:
             if varid in self.ncid_ldt.variables:
                 var = self.ncid_ldt.variables[varid]
             else:
-                print("[WARN] %s not available in LDT file!" % (varid))
+                print(f"[WARN] {varid} not available in LDT file!")
         elif infile_type == "LVT":
             if varid in self.ncid_lvt.variables:
                 var = self.ncid_lvt.variables[varid]
             else:
-                print("[WARN] %s not available in LVT file!" % (varid))
+                print(f"[WARN] {varid} not available in LVT file!")
         if var is None:
             return var, fill_value # Both are None
         fill_value = var.missing_value
@@ -790,8 +789,8 @@ class Nc2Surf:
         for key in varlist:
 
             # See if the varname and source are recognized
-            if key not in list(_VARIDS.keys()):
-                print("[WARN] %s not recognized!" % (key))
+            if key not in _VARIDS:
+                print(f"[WARN] {key} not recognized!")
                 continue
 
             # See if the source is recognized
@@ -812,15 +811,13 @@ class Nc2Surf:
                 continue
 
             # Loop through each level.
-            nlev = _NLEVS[varid]
-            for ilev in range(0, nlev):
+            for ilev in range(0, _NLEVS[varid]):
 
                 # Added logic to specify if a field is at the surface.
                 # This logic was added with the multi-layer snow physics
                 # of PS41.
                 surface_flag = True
-                if varid == "SoilMoist_inst" or \
-                   varid == "SoilTemp_inst":
+                if varid in ["SoilMoist_inst", "SoilTemp_inst"]:
                     surface_flag = False
                 var2d = self._create_var2d(var, ilev, surface_flag, fill_value)
 
@@ -840,10 +837,10 @@ class Nc2Surf:
                 var2d_provider = self._create_var2d_provider(var2d)
 
                 # Now add the field to the SURF object.
-                print("[INFO] Processing %s, ilev: %s" % (key, ilev))
+                print(f"[INFO] Processing {key}, ilev: {ilev}")
 
                 surf = self._add_field(key, ilev,
-                                       var2d_provider, surface_flag, surf)
+                                       var2d_provider, surf)
 
         # All fields have been added to the SURF object.  Write to file.
         surf.to_file(surffile)
@@ -853,32 +850,32 @@ class Nc2Surf:
         return self.__class__.__name__
 
 #------------------------------------------------------------------------------
-def usage():
+def _usage():
     """Print command line usage."""
-    print("[INFO] Usage: %s yyyymmddhh lvt_nc ldt_nc" % (sys.argv[0]))
+    print(f"[INFO] Usage: {sys.argv[0]} yyyymmddhh lvt_nc ldt_nc")
     print("[INFO]   where:")
     print("[INFO]    yyyymmddhh is valid year/month/day/hour in UTC")
     print("[INFO]    lvt_nc is name of LVT netCDF file to convert to SURF")
     print("[INFO]    ldt_nc is name of LDT netCDF file with JULES ancillaries")
 
 #-----------------------------------------------------------------------------
-def read_cmd_args():
+def _read_cmd_args():
     """Read command line arguments"""
     # Check if argument count is correct
     if len(sys.argv) != 4:
         print("[ERR] Invalid number of command line arguments!")
-        usage()
+        _usage()
         sys.exit(1)
 
     # Convert yyyymmddhh argument to a datetime object
     yyyymmddhh = sys.argv[1]
     if len(yyyymmddhh) != 10:
-        print("[ERR] Invalid yyyymmddhh argument %s!" %(yyyymmddhh))
+        print(f"[ERR] Invalid yyyymmddhh argument {yyyymmddhh}!")
         print("[ERR] Check length!")
-        usage()
+        _usage()
         sys.exit(1)
 
-    print("[INFO] Processing date/time %s" %(yyyymmddhh))
+    print(f"[INFO] Processing date/time {yyyymmddhh}")
     try:
         year = int(yyyymmddhh[0:4])
         month = int(yyyymmddhh[4:6])
@@ -886,8 +883,8 @@ def read_cmd_args():
         hour = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year, month, day, hour)
     except ValueError:
-        print("[ERR] Cannot process date/time %s" %(yyyymmddhh))
-        usage()
+        print(f"[ERR] Cannot process date/time {yyyymmddhh}")
+        _usage()
         sys.exit(1)
 
     # NOTE:  Pylint complains about netCDF4 not having Dataset as a
@@ -913,41 +910,34 @@ def read_cmd_args():
 
 #------------------------------------------------------------------------------
 # Main Driver.
-if __name__ == "__main__":
 
+def _main():
+    """Main driver"""
     # Process command line arguments
-    VALIDDT, LVT_NC, LDT_NC = read_cmd_args()
+    validdt, lvt_nc, ldt_nc = _read_cmd_args()
 
     # Create SURF object
-    SURF = Nc2Surf(LVT_NC, LDT_NC)
+    surf = _Nc2Surf(lvt_nc, ldt_nc)
 
     # Generate glu_sst SURF file
-    FILE_TYPE = "_glu_sst"
+    file_type = "_glu_sst"
     # FUTURE...Add support for SST anomaly
-    VARFIELDS = ["water_temp:LVT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
-    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
+    varfields = ["water_temp:LVT"]
+    surffile = f"{validdt.year:04}{validdt.month:02}{validdt.day:02}"
+    surffile += f"T{validdt.hour:02}00Z{file_type}"
+    surf.create_surf_file(file_type, varfields, surffile)
 
     # Generate glu_ice SURF file
-    FILE_TYPE = "_glu_ice"
-    VARFIELDS = ["aice:LVT", "hi:LVT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
-    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
+    file_type = "_glu_ice"
+    varfields = ["aice:LVT", "hi:LVT"]
+    surffile = f"{validdt.year:04}{validdt.month:02}{validdt.day:02}"
+    surffile += f"T{validdt.hour:02}00Z{file_type}"
+    surf.create_surf_file(file_type, varfields, surffile)
 
     # Generate glu_snow SURF file
-    FILE_TYPE = "_glu_snow"
+    file_type = "_glu_snow"
     # EMK...Upgrade to PS41 multi-layer snow
-    VARFIELDS = ["SWE_inst:LVT",
+    varfields = ["SWE_inst:LVT",
                  "SnowGrain_inst:LVT",
                  "SurftSnow_inst:LVT",
                  "GrndSnow_inst:LVT",
@@ -961,26 +951,21 @@ if __name__ == "__main__":
                  "LayerSnowDensity_inst:LVT",
                  "LayerSnowGrain_inst:LVT"]
 
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
-    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
+    surffile = f"{validdt.year:04}{validdt.month:02}{validdt.day:02}"
+    surffile += f"T{validdt.hour:02}00Z{file_type}"
+    surf.create_surf_file(file_type, varfields, surffile)
 
     # Generate glu_smc SURF file
-    FILE_TYPE = "_glu_smc"
-    VARFIELDS = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
+    file_type = "_glu_smc"
+    varfields = ["SoilMoist_inst:LVT", "SoilTemp_inst:LVT",
                  "AvgSurfT_inst:LVT",
                  "JULES_SM_WILT:LDT", "JULES_SM_CRIT:LDT"]
-    SURFFILE = "%4.4d%2.2d%2.2dT%2.2d00Z%s" \
-        % (VALIDDT.year,
-           VALIDDT.month,
-           VALIDDT.day,
-           VALIDDT.hour,
-           FILE_TYPE)
-    SURF.create_surf_file(FILE_TYPE, VARFIELDS, SURFFILE)
+    surffile = f"{validdt.year:04}{validdt.month:02}{validdt.day:02}"
+    surffile += f"T{validdt.hour:02}00Z{file_type}"
+    surf.create_surf_file(file_type, varfields, surffile)
 
     print("[INFO] convert_nc2surf.py completed!")
     sys.exit(0)
+
+if __name__ == "__main__":
+    _main()

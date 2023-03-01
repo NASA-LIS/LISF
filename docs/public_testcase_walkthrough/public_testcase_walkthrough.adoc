@@ -1,7 +1,7 @@
 = LIS Public Testcase Walkthrough
-:revnumber: 0.4
-:revdate: October 14, 2021
-:revremark: Migrated to NASA-LIS/LISF repo
+:revnumber: 1.0
+:revdate: September 23, 2022
+:revremark: Updated for LISF Public 7.4 release
 :imagesdir: ./images
 :title-page:
 :title-page-background-image: image:lisf_logo.png[fit=none,pdfwidth=50%,position=top]

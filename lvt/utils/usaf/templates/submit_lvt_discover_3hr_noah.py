@@ -10,12 +10,17 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
+Sample script for submitting LVT postprocessing batch jobs on Discover for
+noah39 for 557WW.
+"""
+
 import os
 import subprocess
 import sys
 import time
 
-vars = ['RelSMC_inst', 'SmLiqFrac_inst',
+_VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SoilMoist_inst', 'SoilMoist_tavg',
         'SoilTemp_inst', 'SoilTemp_tavg',
         'RHMin_inst',
@@ -35,49 +40,52 @@ vars = ['RelSMC_inst', 'SmLiqFrac_inst',
         'Tair_f_tavg',
         'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
 
+def _main():
+    """Main driver"""
 
-if not os.path.exists("LVT"):
-    print("ERROR, LVT executable does not exist!")
-    sys.exit(1)
+    if not os.path.exists("LVT"):
+        print("ERROR, LVT executable does not exist!")
+        sys.exit(1)
 
-for var in vars:
-    scriptname = "run_lvt.%s_3hr.sh" % (var)
-    f = open(scriptname, "w")
-    line = """#!/bin/sh
-#SBATCH --job-name=%s.3hr
+    for var in _VARS:
+        scriptname = f"run_lvt.{var}_3hr.sh"
+        with open(scriptname, "w", encoding="ascii") as file:
+            line = f"""#!/bin/sh
+#SBATCH --job-name={var}.3hr
 #SBATCH --time=1:00:00
 #SBATCH --account s1189
-#SBATCH --output %s.3hr.slurm.out
+#SBATCH --output {var}.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint="sky|hasw"
+#SBATCH --ntasks=1 --constraint="cas|sky|hasw"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
 
 module purge
-module use --append ~/privatemodules
-#module load lisf_7_intel_19_1_3_304
-module load lisf_7_intel_2021.4.0_s2s
+module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
+module load lisf_7_intel_2021.4.0_petsc
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-if [ ! -e configs/lvt.config.%s.3hr ] ; then
-   echo "ERROR, configs/lvt.config.%s.3hr does not exist!" && exit 1
+if [ ! -e configs/lvt.config.{var}.3hr ] ; then
+   echo "ERROR, configs/lvt.config.{var}.3hr does not exist!" && exit 1
 fi
-time mpirun -np 1 ./LVT configs/lvt.config.%s.3hr || exit 1
+time mpirun -np 1 ./LVT configs/lvt.config.{var}.3hr || exit 1
 
 exit 0
-""" % (var, var, var, var, var)
-    f.write(line)
-    f.close()
+"""
+            file.write(line)
 
-    cmd = "sbatch %s" % (scriptname)
-    print(cmd)
-    rc = subprocess.call(cmd, shell=True)
-    if rc != 0:
-        print("[ERR] Problem with sbatch!")
-        sys.exit(1)
-    time.sleep(1)  # Don't overwhelm SLURM
+        cmd = f"sbatch {scriptname}"
+        print(cmd)
+        err = subprocess.call(cmd, shell=True)
+        if err != 0:
+            print("[ERR] Problem with sbatch!")
+            sys.exit(1)
+        time.sleep(1)  # Don't overwhelm SLURM
+
+if __name__ == "__main__":
+    _main()
