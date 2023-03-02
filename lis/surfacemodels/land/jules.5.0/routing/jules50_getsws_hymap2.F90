@@ -44,7 +44,7 @@ subroutine jules50_getsws_hymap2(n)
 
   if(enable2waycpl==1) then
 
-     write(LIS_logunit,*) '[ERR] Two-way coupling between Noah36 and HYMAP2'
+     write(LIS_logunit,*) '[ERR] Two-way coupling between JULES50 and HYMAP2'
      write(LIS_logunit,*) '[ERR] is not currently supported'
      call LIS_endrun()
   endif
