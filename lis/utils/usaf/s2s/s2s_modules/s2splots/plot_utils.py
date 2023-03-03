@@ -42,19 +42,6 @@ RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
 cbar_axes = [0.15, 0.04, 0.65, 0.03]
 
-bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
-                                           name='admin_0_boundary_lines_land',
-                                           scale=RESOL, facecolor='none', alpha=0.7)
-coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                 scale=RESOL, edgecolor='black', facecolor='none')
-land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
-                                           facecolor=cfeature.COLORS['land'])
-ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
-                                            facecolor=cfeature.COLORS['water'])
-lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
-                                            facecolor=cfeature.COLORS['water'])
-rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
-                                             scale=RESOL, edgecolor='b', facecolor='none')
 mpl.use('pdf')
 mpl.style.use('bmh')
 COL_UNDER = 'black'
@@ -111,6 +98,26 @@ def dicts(dic_name, key):
     elif dic_name == 'units':
         ret = units.get(key, default_units)
     return ret
+
+def cartopy_dir(data_dir):
+    
+    if data_dir is not None:
+        cartopy.config['data_dir'] = data_dir
+
+    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
+                                               name='admin_0_boundary_lines_land',
+                                               scale=RESOL, facecolor='none', alpha=0.7)
+    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+                                                     scale=RESOL, edgecolor='black', facecolor='none')
+    land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
+                                               facecolor=cfeature.COLORS['land'])
+    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+                                                facecolor=cfeature.COLORS['water'])
+    lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
+                                                facecolor=cfeature.COLORS['water'])
+    rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
+                                             scale=RESOL, edgecolor='b', facecolor='none')
+    
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -410,9 +417,9 @@ class CachedTiler(object):
 
 def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
               under_over, min_val=None, max_val=None, fscale=None, levels=None, \
-              stitle=None, clabel=None):
+              stitle=None, clabel=None, cartopy_datadir=None):
     ''' plot contour maps'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 
@@ -476,9 +483,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
 def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
                under_over, dlat, dlon, ulat, ulon, carea, google_path, min_val=None, \
                max_val=None, fscale=None, levels=None, \
-               stitle=None, clabel=None):
+               stitle=None, clabel=None, cartopy_datadir=None):
     ''' plots streams using google map as the background image'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 

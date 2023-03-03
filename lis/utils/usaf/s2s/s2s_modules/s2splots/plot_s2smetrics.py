@@ -131,10 +131,11 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
 
         if standardized_anomaly == 'Y':
             clabel = 'Standardized Anomaly'
-
+        cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
         plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
-                             fscale=0.8, stitle=stitle, clabel=clabel, levels=levels)
+                             fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
+                             cartopy_datadir=cartopy_dir)
         del anom
         del anom_crop
 
