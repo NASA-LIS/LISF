@@ -77,11 +77,12 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
     if STANDARDIZED_ANOMALY == 'Y':
         clabel = 'Standardized Anomaly'
-
+        
+    cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
                           ncols, plot_arr, 'L11W_', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
-                          clabel=clabel, levels=levels)
+                          clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
     del anom
     del anom_crop
 
