@@ -91,11 +91,19 @@ else
 fi
 export SUPDIR=`grep supplementarydir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LDTFILE=`grep ldtinputfile $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export NODE_NAME=`uname -n`
 
 unset LD_LIBRARY_PATH
-source /etc/profile.d/modules.sh
-module use -a $LISFDIR/env/discover/
-module --ignore-cache load $LISFMOD
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    source /etc/profile.d/modules.sh
+fi
+
+if [ -e $LISFDIR/env/discover/$LISFMOD ]; then
+    module use -a $LISFDIR/env/discover/
+else
+    module use -a $SUPDIR/env/
+fi
+module load $LISFMOD
 
 BWD=`pwd`
 
@@ -219,7 +227,7 @@ download_forecasts(){
 
     # CFSv2 forecast
     cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    #sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
+    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
 	exit
@@ -318,7 +326,11 @@ lis_darun(){
     # ----------------------
     
     python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
-    COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+    else
+	COMMAND='mpirun ./LIS'
+    fi
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
     # configure lis.config
