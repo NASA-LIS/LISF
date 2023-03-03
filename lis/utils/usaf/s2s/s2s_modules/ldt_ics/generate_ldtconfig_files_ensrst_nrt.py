@@ -24,6 +24,7 @@
 # Standard modules
 import os
 import sys
+import platform
 import argparse
 import datetime
 import shutil
@@ -165,7 +166,10 @@ def _driver():
                               nmme_model)
 
         # Run LDT
-        cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+        else:
+            cmd = f"mpirun {_LDT_EXEC} {ldtconfig_lsm_target}"
         print(f"[INFO] {cmd}")
         subprocess.run(cmd, shell=True, check=True)
 

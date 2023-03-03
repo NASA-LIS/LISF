@@ -23,6 +23,7 @@
 # 26 Sep 2021: Eric Kemp (SSAI), renamed to clarify forcing.
 #------------------------------------------------------------------------------
 
+export NODE_NAME=`uname -n`
 ulimit -s unlimited
 
 # When a batch script is started, it starts in user's home directory.
@@ -68,8 +69,11 @@ if [ ! -e ./LIS ] ; then
     echo "[ERR] ./LIS does not exist!" && exit 1
 fi
 echo "[INFO] Running LIS..."
-mpirun -np $SLURM_NTASKS ./LIS || exit 1
-
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    mpirun -np $SLURM_NTASKS ./LIS || exit 1
+else
+    mpirun ./LIS || exit 1
+fi
 
 # Clean up
 if [ ! -e $SCRIPTDIR/store_lis_output.py ] ; then
