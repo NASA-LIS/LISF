@@ -55,6 +55,9 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        else:
+            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --partition=batch' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -68,9 +71,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
             _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('module --ignore-cache load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
-        _f.write('module load ' + lisf_module + '\n')
+            _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
@@ -180,9 +184,12 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
+        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        else:
+            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --partition=batch' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         else:
@@ -206,9 +213,10 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
             _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('module --ignore-cache load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
-        _f.write('module load ' + lisf_module + '\n')
+            _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')

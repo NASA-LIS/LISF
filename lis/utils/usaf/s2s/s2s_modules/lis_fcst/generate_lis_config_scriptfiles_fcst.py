@@ -214,7 +214,7 @@ def _driver(config):
             if 'discover' in platform.node() or 'borg' in platform.node():
                 mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
             else:
-                mpi_cmd = 'mpirun ./LIS' + ' -f ' + lisconfig_target
+                mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
             utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                       in_command=mpi_cmd)
@@ -253,7 +253,7 @@ def _driver(config):
                 if 'discover' in platform.node() or 'borg' in platform.node():
                     mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
                 else:
-                    mpi_cmd = 'mpirun ./LIS' + ' -f ' + lisconfig_target
+                    mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
                 utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                  in_command=mpi_cmd)
