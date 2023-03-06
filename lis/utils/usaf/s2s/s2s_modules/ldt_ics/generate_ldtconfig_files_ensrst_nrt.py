@@ -169,7 +169,7 @@ def _driver():
         if 'discover' in platform.node() or 'borg' in platform.node():
             cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
         else:
-            cmd = f"mpirun {_LDT_EXEC} {ldtconfig_lsm_target}"
+            cmd = f"srun {_LDT_EXEC} {ldtconfig_lsm_target}"
         print(f"[INFO] {cmd}")
         subprocess.run(cmd, shell=True, check=True)
 

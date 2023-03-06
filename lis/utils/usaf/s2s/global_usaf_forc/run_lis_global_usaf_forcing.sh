@@ -72,7 +72,7 @@ echo "[INFO] Running LIS..."
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     mpirun -np $SLURM_NTASKS ./LIS || exit 1
 else
-    mpirun ./LIS || exit 1
+    srun ./LIS || exit 1
 fi
 
 # Clean up

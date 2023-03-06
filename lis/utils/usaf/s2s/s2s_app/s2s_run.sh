@@ -93,17 +93,20 @@ export SUPDIR=`grep supplementarydir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LDTFILE=`grep ldtinputfile $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export NODE_NAME=`uname -n`
 
-unset LD_LIBRARY_PATH
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    unset LD_LIBRARY_PATH
     source /etc/profile.d/modules.sh
 fi
 
 if [ -e $LISFDIR/env/discover/$LISFMOD ]; then
+    # Discover: LISFMOD is in LISF repository
     module use -a $LISFDIR/env/discover/
+    module --ignore-cache load $LISFMOD
 else
+    # non-Discover: LISFMOD is in ${supplementary}/env/
     module use -a $SUPDIR/env/
+    module load $LISFMOD
 fi
-module load $LISFMOD
 
 BWD=`pwd`
 
@@ -329,7 +332,7 @@ lis_darun(){
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 	COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     else
-	COMMAND='mpirun ./LIS'
+	COMMAND='srun ./LIS'
     fi
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
@@ -845,7 +848,15 @@ mkdir -p -m 775 ${SCRDIR}/s2spost
 if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
-    download_forecasts
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	download_forecasts
+    else
+	echo 
+	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
+	if [[ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]]; then
+	    exit
+	fi
+    fi
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
