@@ -64,12 +64,12 @@ FCST:
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS:
-  - CCM4: 1
-    CCSM4: 1
-    GNEMO5: 1
+  - CCM4: 2
+    CCSM4: 2
+    GNEMO5: 2
     GEOSv2: 1
-    CFSv2: 2
-    GFDL: 2 
+    CFSv2: 3
+    GFDL: 4 
   
 #######################################################################
 #                          Post-processor
