@@ -457,7 +457,7 @@ bcsd_fcst(){
     # Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
     # --------------------------------------------------------------------------
     jobname=bcsd01
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j $jobname
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 6 -j $jobname
     bcsd01_ID=$(submit_job "" "${jobname}_run.j")
     
     # Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
@@ -790,7 +790,7 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
     
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 12 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD}
     COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" s2splots_run.j
     
