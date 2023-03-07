@@ -457,14 +457,24 @@ bcsd_fcst(){
     # Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
     # --------------------------------------------------------------------------
     jobname=bcsd01
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 6 -j $jobname
-    bcsd01_ID=$(submit_job "" "${jobname}_run.j")
-    
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+
+    job_list="$jobname*.j"
+    echo $job_list
+    bcsd01_ID=
+    for jfile in $job_list
+    do
+	thisID=$(submit_job "" "${jfile}")
+	bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+    done
+    bcsd01_ID=`echo $bcsd01_ID | sed "s| |,|g"`
+
     # Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
     # --------------------------------------------------------------
     jobname=bcsd03
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 
+    unset job_list
     job_list="$jobname*.j"
     bcsd03_ID=
     for jfile in $job_list
@@ -853,7 +863,7 @@ if [ $DATATYPE  == "forecast" ]; then
     else
 	echo 
 	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
-	if [[ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]]; then
+	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
 	    exit
 	fi
     fi
