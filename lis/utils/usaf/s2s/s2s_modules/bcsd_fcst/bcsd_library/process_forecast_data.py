@@ -51,7 +51,7 @@ def _read_cmd_args():
 
     args = {
         "syr" : sys.argv[1],
-        "eyr" : sys.argv[2],
+        "ens_num" : sys.argv[2],
         "fcst_init_monthday" : sys.argv[3],
         "outdir" : sys.argv[4],
         "forcedir" : config['BCSD']["fcst_download_dir"],
@@ -185,69 +185,69 @@ def _driver():
     fcst_init["monthday"] = args['fcst_init_monthday']
     outdirs = {}
 
-    for year in range(int(args['syr']), (int(args['eyr']) + 1)):
-        print(f"[INFO] {fcst_init['monthday']} {year}")
+    year = int(args['syr'])
+    ens_num = int(args['ens_num'])
+    print(f"[INFO] {fcst_init['monthday']} {year}")
 
-        if fcst_init['monthday'] == "jan01":
-            fcst_init["year"] = year - 1
-        else:
-            fcst_init["year"] = year
+    if fcst_init['monthday'] == "jan01":
+        fcst_init["year"] = year - 1
+    else:
+        fcst_init["year"] = year
 
-        mmm = fcst_init['monthday'].split("0")[0].capitalize()
-        dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
-        dt2 = dt1 + relativedelta(months=9)
-        dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
-        dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
+    mmm = fcst_init['monthday'].split("0")[0].capitalize()
+    dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    dt2 = dt1 + relativedelta(months=9)
+    dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
+    dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        for ens_num in range(1, (len(args['all_ensmembers']) + 1)):
-            monthday = args['all_monthdays'][ens_num - 1]
-            temp_name = f"cfsv2.{fcst_init['year']}{monthday}.nc"
-            fcst_init['date'] = f"{fcst_init['year']}{monthday}"
-            fcst_init['month'] = int(monthday[0:2])
-            fcst_init['day'] = int(monthday[2:4])
-            fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
-            fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
-            wanted_months = []
-            for i in range(int(fcst_init['month']), 13):
-                wanted_months.append(i)
-            for i in range(1, int(fcst_init['month'])):
-                wanted_months.append(i)
-            wanted_months = wanted_months[1:10]
+    monthday = args['all_monthdays'][ens_num - 1]
+    temp_name = f"cfsv2.{fcst_init['year']}{monthday}.nc"
+    fcst_init['date'] = f"{fcst_init['year']}{monthday}"
+    fcst_init['month'] = int(monthday[0:2])
+    fcst_init['day'] = int(monthday[2:4])
+    fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
+    fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
+    wanted_months = []
+    for i in range(int(fcst_init['month']), 13):
+        wanted_months.append(i)
+    for i in range(1, int(fcst_init['month'])):
+        wanted_months.append(i)
+    wanted_months = wanted_months[1:10]
 
-            _print_reftime(fcst_init, ens_num)
+    _print_reftime(fcst_init, ens_num)
 
-            outdirs['outdir_6hourly'] = \
-                f"{args['outdir']}/6-Hourly/" + \
-                f"{fcst_init['monthday']}/{year}/ens{ens_num}"
-            if not os.path.exists(outdirs['outdir_6hourly']):
-                os.makedirs(outdirs['outdir_6hourly'])
-            outdirs['outdir_monthly'] = \
-                f"{args['outdir']}/Monthly/" + \
-                f"{fcst_init['monthday']}/{year}/ens{ens_num}"
-            if not os.path.exists(outdirs['outdir_monthly']):
-                os.makedirs(outdirs['outdir_monthly'])
+    outdirs['outdir_6hourly'] = \
+        f"{args['outdir']}/6-Hourly/" + \
+        f"{fcst_init['monthday']}/{year}/ens{ens_num}"
+    if not os.path.exists(outdirs['outdir_6hourly']):
+        os.makedirs(outdirs['outdir_6hourly'])
+    outdirs['outdir_monthly'] = \
+        f"{args['outdir']}/Monthly/" + \
+        f"{fcst_init['monthday']}/{year}/ens{ens_num}"
+    if not os.path.exists(outdirs['outdir_monthly']):
+        os.makedirs(outdirs['outdir_monthly'])
 
-            cfsv2 = []
-            for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
-                            "q2m", "wnd10m"]:
-                print(f"[INFO] {varname}")
-                subdir, file_pfx, file_sfx = \
-                    _set_input_file_info(fcst_init['year'],
-                                         fcst_init['month'],
-                                         varname)
-                indir = f"{args['forcedir']}/{subdir}/"
-                if subdir == "Oper_TS" and not os.path.exists(indir):
-                    indir = f"{args['forcedir']}/"
+    cfsv2 = []
+    for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
+                    "q2m", "wnd10m"]:
+        print(f"[INFO] {varname}")
+        subdir, file_pfx, file_sfx = \
+            _set_input_file_info(fcst_init['year'],
+                                 fcst_init['month'],
+                                 varname)
+        indir = f"{args['forcedir']}/{subdir}/"
+        if subdir == "Oper_TS" and not os.path.exists(indir):
+            indir = f"{args['forcedir']}/"
 
-                indir += f"{fcst_init['year']}/{fcst_init['date']}"
+        indir += f"{fcst_init['year']}/{fcst_init['date']}"
 
-                # Convert GRIB file to netCDF and handle missing/corrupted data
-                cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
+        # Convert GRIB file to netCDF and handle missing/corrupted data
+        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
-            cfsv2 = xr.merge (cfsv2, compat='override')
-            _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
-                                                 (cfsv2['valid_time']  < dt2)),
-                                      outdirs, fcst_init, args)
+    cfsv2 = xr.merge (cfsv2, compat='override')
+    _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
+                                         (cfsv2['valid_time']  < dt2)),
+                              outdirs, fcst_init, args)
 
     print("[INFO] Done processing CFSv2 forecast files")
 
