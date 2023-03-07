@@ -18,7 +18,7 @@ import os
 import sys
 import argparse
 import yaml
-
+#pylint: disable=import-outside-toplevel, too-many-locals
 # Local methods
 def _usage():
     """Print command line usage."""
@@ -64,7 +64,7 @@ def calc_ic_dates(icmon):
 
 def _driver():
     """Main driver."""
-    
+
     # Parse command arguements
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
@@ -87,7 +87,7 @@ def _driver():
     hours = args.hours
 
     # Load config file
-    with open(config_file, 'r') as file:
+    with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     # Import local module
@@ -100,14 +100,10 @@ def _driver():
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
 
-    # Path of the directory where patch files for missing data are kept
-    patchdir = config['BCSD']['patchdir']
-
     # Log file output directory
     logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
-    forcedir = config['BCSD']['fcst_download_dir']
     outdir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw"
 
     if not os.path.exists(logdir):
@@ -116,8 +112,8 @@ def _driver():
     imon = f"{month_abbr}01"
     ic_dates = calc_ic_dates(imon)
 
-    # Process 3-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
-    print("[INFO] Processing CFSv2 3-hrly forecast variables")
+    # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
+    print("[INFO] Processing CFSv2 6-hrly forecast variables")
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
         cmd += f" {srcdir}/process_forecast_data.py"

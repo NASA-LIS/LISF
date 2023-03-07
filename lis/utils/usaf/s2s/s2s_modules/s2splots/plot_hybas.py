@@ -1,286 +1,115 @@
 #!/usr/bin/env python
 '''
-This script plots OL anomalies at lead times 0,1,2,3,4 months
-for a given forecast start month and year. The script consolidated
-Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
-Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
+This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
+- Sarith Mahanama (2023-01-13
 '''
 # pylint: disable=no-value-for-parameter
 
 from __future__ import division
 import os
 import calendar
-import numpy as np
-import matplotlib
-matplotlib.use('pdf')
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import matplotlib.gridspec as gridspec
-import matplotlib.colors as colors
-import xarray as xr
-from netCDF4 import Dataset
-import cartopy
-import cartopy.crs as ccrs
-import cartopy.feature as cfeature
-import cartopy.io.shapereader as shpreader
-import shapely.geometry as sgeom
-import cartopy.io.img_tiles as cimgt
-import types
-from load_colors import load_table
-import math
-import requests
-import PIL
-import yaml
 import argparse
-import sys
+import math
+import xarray as xr
+# pylint: disable=no-name-in-module
+from netCDF4 import Dataset
+# pylint: enable=no-name-in-module
+import numpy as np
+import yaml
+# pylint: disable=import-error
+import plot_utils
+# pylint: enable=import-error
 
-USAF_COLORS = True
-boundary = [-20, 55, -40, 40]
-standardized_anomaly = 'Y'
-region = ''
-hybas_mask = 0
+STANDARDIZED_ANOMALY = 'Y'
 
+DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
 
-class CachedTiler(object):
-    def __init__(self, tiler):
-        self.tiler = tiler
-
-    def __getattr__(self, name):
-        attr = getattr(self.tiler, name, None)
-        if isinstance(attr, types.MethodType):
-            attr = types.MethodType(attr.__func__, self)
-        return attr
-
-    def get_image(self, tile):
-        tileset_name = '{}'.format(self.tiler.__class__.__name__.lower())
-        cache_dir = os.path.expanduser(os.path.join('~/', 'image_tiles', tileset_name))
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir)
-        tile_fname = os.path.join(cache_dir, '_'.join(str(v) for v in tile) + '.png')
-        if not os.path.exists(tile_fname):
-            response = requests.get(self._image_url(tile),
-                                    stream=True)
-
-            with open(tile_fname, "wb") as fh:
-                for chunk in response:
-                    fh.write(chunk)
-        with open(tile_fname, 'rb') as fh:
-            img = PIL.Image.open(fh)
-            img = img.convert(self.desired_tile_form)     
-        return img, self.tileextent(tile), 'lower'
-def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat, carea):
+def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
+               carea, boundary, region, google_path):
     '''
     This function processes arguments and make plots.
     '''
-    def preproc(ds):
-        ds = ds.isel(ens=0) 
-        return ds
 
-    def getclosest_ij(lats,lons,latpt,lonpt):
-        # find squared distance of every point on grid
-        dist_sq = (lats-latpt)**2 + (lons-lonpt)**2
-        minindex_flattened = dist_sq.argmin()
-        return np.unravel_index(minindex_flattened, lats.shape)
-
-    def map2pfaf (anom, lats, lons, levels):
-        carr = []
-        xx1 = []
-        xx2 = []
-        yy1 = []
-        yy2 = []
-        cua = []
-
-        for i, value in enumerate(dlon):
-            iy = min(range(len(lats)), key=lambda j: abs(lats[j] - ulat[i]))
-            ix = min(range(len(lons)), key=lambda j: abs(lons[j] - ulon[i]))
-            au = anom[iy,ix]
-            iy = min(range(len(lats)), key=lambda j: abs(lats[j] - dlat[i]))
-            ix = min(range(len(lons)), key=lambda j: abs(lons[j] - dlon[i]))
-            ad = anom[iy,ix]
-
-            if au and ad:
-                this_val = 0.5*(au+ad)
-                this_val = min (this_val, max(levels) - 0.01)
-                this_val = max (this_val, min(levels) + 0.01)
-                k = min(range(len(levels)), key=lambda i: abs(levels[i]-this_val))
-                carr.append(k)
-                xx1.append(dlon[i])
-                xx2.append(ulon[i])
-                yy1.append(dlat[i])
-                yy2.append(ulat[i])
-                cua.append(carea[i])
-                
-        return carr, xx1, xx2, yy1, yy2, cua
-            
     infile_template = '{}/{}_ANOM_init_monthly_{:02d}_{:04d}.nc'
     figure_template = '{}/NMME_plot_{}_{}_FCST_anom.png'
-    if standardized_anomaly == 'Y':
+    if STANDARDIZED_ANOMALY == 'Y':
         infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd + '/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
-    plotdir = plotdir_template.format(fcst_year, fcst_mon)
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
     data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(fcst_year, fcst_mon)
-    
-    get_levels = {
-        'Streamflow': [-10000, -900, -600, -300, -100, -25, 25, 100, 300, 600, 900, 10000],
-        'Total-Runoff': [-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
-        'Precip_AF': [-10, -6, -4, -2, -1, -0.5, -0.25,0.25, 0.5, 1., 2., 4., 6., 10.],
-        'Precip': [-10, -6, -4, -2, -1, -0.25, 0.25, 1., 2., 4., 6., 10.],
-        'Air-T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
-        'Air_T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
-        #'Air_T_AF': [-15., -12., -9., -6., -3., 3., 6., 9., 12., 15.],
-        'Air_T_AF': [-5., -4., -3., -2., -1., -0.5, 0.5, 1., 2., 3., 4., 5.],
-        'TWS': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*500.,
-        'ET': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*2.
-    }
-    get_units = {
-        'Streamflow': 'm^3/s',
-        'Precip': 'mm/d',
-        'Precip_AF': 'in/mon',
-        'Air-T': 'K',
-        'Air_T': 'K',
-        'Air_T_AF': 'F',
-        'TWS': 'mm',
-        'ET': 'mm/d'
-    }
-    lead_month = [0, 1, 2, 3, 4, 5]
-    # Plotting Parameters
+    data_dir = data_dir_template.format(syear, smonth)
 
-    add_land = True
-    add_rivers = True
-    resol = '50m'  # use data at this scale
-    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
-                                               name='admin_0_boundary_lines_land',
-                                               scale=resol, facecolor='none', alpha=0.7)
-    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                     scale=resol, edgecolor='black', facecolor='none')
-    land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=resol, edgecolor='k',
-                                               facecolor=cfeature.COLORS['land'])
-    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=resol, edgecolor='none',
-                                               facecolor=cfeature.COLORS['water'])
-    lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=resol, edgecolor='b',
-                                                facecolor=cfeature.COLORS['water'])
-    rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
-                                                 scale=resol, edgecolor='b', facecolor='none')
+    lead_month = [0, 1, 2]
     nrows = 1
     ncols = 3
-    figwidth = 25
-    default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
-    standard_levels = [-4.0, -3.0, -2, -1, -0.5, -0.25, 0.25, 0.5, 1.0, 2.0, 3.0, 4.0]    
-
-    mpl.style.use('bmh')
-    cbar_axes = [0.2, 0.04, 0.6, 0.03]
-
-    cmap, col_under, col_higher, extend = plt.cm.RdYlGn, 'black', '#B404AE', 'both'
 
     var_name = "Streamflow"
-    levels = get_levels.get(var_name, default_levels)
-    if standardized_anomaly == 'Y':
-        levels = standard_levels        
-        
-    style_color = load_table('DROUGHT_INV')
-    color_arr = []
-    for color in style_color:
-        rgb = [float(value) / 255 for value in color]
-        color_arr.append(rgb)
+    if STANDARDIZED_ANOMALY == 'Y':
+        levels = plot_utils.dicts('anom_levels', 'standardized')
+    under_over = ['gray', 'blue']
 
-    norm = mpl.colors.BoundaryNorm(levels, ncolors=256)
-    cmap = colors.LinearSegmentedColormap.from_list('my_palette', color_arr, N=256)
-    cmap.set_under('gray')
-    cmap.set_over('blue')
-        
-    count_plot = 0
-
-    # Initialize our Google Maps tiles
-    actual_tiler = cimgt.GoogleTiles()
-    imagery = CachedTiler(actual_tiler)
-        
-    # First plotting Initial conditions
-    # ---------------------------------
-
-    fig = plt.figure(figsize=(figwidth,
-                              figwidth*(nrows*(boundary[3]
-                                               - boundary[2]))
-                              /(ncols*(boundary[1]
-                                       - boundary[0]))), facecolor='white')
-    gs_ = gridspec.GridSpec(nrows, ncols, wspace=0.1, hspace=0.1)
-    ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
     infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
     print("Reading infile {}".format(infile))
-       
-    anom = xr.open_mfdataset(infile, concat_dim='ens',preprocess=preproc)
-    median_anom = np.nanmedian(anom.anom.values, axis=0)
-            
-    #for lead in lead_month:
-    for lead in [0,1,2]:
-        ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
-        
-        count_plot += 1
+
+    anom = xr.open_mfdataset(infile, concat_dim='ens',
+                             preprocess=plot_utils.preproc, combine='nested')
+    anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
+    median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
+    plot_arr = median_anom[lead_month, ]
+    figure = figure_template.format(plotdir, region, var_name)
+
+    titles = []
+    for lead in lead_month:
         fcast_month = smonth+lead
         fcast_year = syear
         if fcast_month > 12:
             fcast_month -= 12
             fcast_year = syear+1
+        titles.append(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year))
+    stitle = var_name + ' Forecast'
+    clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
+    if STANDARDIZED_ANOMALY == 'Y':
+        clabel = 'Standardized Anomaly'
 
-        ax_.set_extent([boundary[1],boundary[0],boundary[2],boundary[3]], crs=ccrs.Geodetic())
-        ax_.add_image(imagery, 9)
-                        
-        if standardized_anomaly == 'Y':
-            sanom = median_anom[lead, ]
-            sanom = np.ma.masked_where(hybas_mask==0, sanom)
-            # loop through vector values and overplot
-            carr, xx1, xx2, yy1, yy2, cua = map2pfaf(sanom, anom.latitude.values, anom.longitude.values, levels)
-            maxa = max(cua)
-            mina = min(cua)
-            pfaf_cnt = 0
-            
-            for this_col in carr:
-                rgb = np.array(style_color[:][this_col])/255.
-                track = sgeom.LineString(zip([xx1[pfaf_cnt],xx2[pfaf_cnt]], [yy1[pfaf_cnt], yy2[pfaf_cnt]]))
-                lw = 1.5*(cua[pfaf_cnt] - mina)/(maxa - mina) + 1.
-                ax_.add_geometries([track], ccrs.PlateCarree(),facecolor='none', edgecolor=rgb, linewidth=lw)
-                pfaf_cnt += 1
+    plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+                          ncols, plot_arr, 'DROUGHT_INV', titles, boundary, figure, under_over,
+                          dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
+                          clabel=clabel, levels=levels)
+    del anom
+    del anom_crop
 
-        else:                        
-            cs_ = plt.pcolormesh(anom.longitude.values, anom.latitude.values, median_anom[lead, ],
-                                 norm=colors.BoundaryNorm(levels, ncolors=cmap.N, clip=False), cmap=cmap,zorder=3)                
-
-        gl_ = ax_.gridlines(draw_labels=True)
-        gl_.xlabels_top = False
-        gl_.xlabels_bottom = False
-        gl_.ylabels_right = False
-        gl_.ylabels_left = False
-        if lead == 0:
-            plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
-                     horizontalalignment='center', transform=ax_.transAxes,
-                     color='Blue', fontsize=30, rotation=90)
-            gl_.ylabels_left = True
-        plt.title(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year), fontsize=40)
-        if lead >= 3:
-            gl_.xlabels_bottom = True
-        if lead == 3:
-            plt.text(-0.15, 0.5, var_name + ' Forecast', verticalalignment='center',
-                     horizontalalignment='center', transform=ax_.transAxes,
-                     color='Blue', fontsize=30, rotation=90)
-            gl_.ylabels_left = True
-        ax_.coastlines()
-        ax_.add_feature(cfeature.BORDERS)
-        ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
-        cax = fig.add_axes(cbar_axes)
-        
-        cbar = fig.colorbar(plt.cm.ScalarMappable(norm=colors.BoundaryNorm(levels, ncolors=cmap.N, clip=False), cmap=cmap), cax=cax, orientation='horizontal', ticks=levels)
-
-        if standardized_anomaly == 'Y':
-            cbar.set_label('Standardized Anomaly', fontsize=30)
-        cbar.ax.tick_params(labelsize=20)
-        
-        figure = figure_template.format(plotdir, region, var_name)
-        print(figure)
-        plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
+def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, plot_domain):
+    ''' processes a single domain GLOBAL or USAF COM '''
+    downstream_lon = np.array (rnetwork.variables['DownStream_lon'][:])
+    downstream_lat = np.array (rnetwork.variables['DownStream_lat'][:])
+    upstream_lon   = np.array (rnetwork.variables['UpStream_lon'][:])
+    upstream_lat   = np.array (rnetwork.variables['UpStream_lat'][:])
+    cum_area = np.array (rnetwork.variables['CUM_AREA'][:])
+    bmask = xr.open_dataset(config['SETUP']['supplementarydir'] + \
+                            '/s2splots/HYBAS_' + plot_domain + '.nc4')
+    lonv = bmask.lon.values
+    latv = bmask.lat.values
+    #nr, nc = (latv.size, lonv.size)
+    lons, lats = np.meshgrid(lonv, latv)
+    bas = 0
+    google_path = config['SETUP']['supplementarydir'] + '/s2splots/'
+    for bid in bmask.BASIN_ID.values:
+        hybas_mask = bmask.basin_mask.values[bas,:,:]
+        tx_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
+        ty_ = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))
+        boundary = [math.floor(ty_.min()), math.ceil(ty_.max()),
+                    math.floor(tx_.min()), math.ceil(tx_.max())]
+        vmask = (((upstream_lon >= boundary[2]) & (upstream_lon <= boundary[3])) &
+             ((upstream_lat >= boundary[0]) & (upstream_lat <= boundary[1])))
+        region = "{:10d}".format(bid)
+        plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
+                   downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
+                   cum_area[vmask], boundary, region, google_path)
+        bas += 1
 
 if __name__ == '__main__':
 
@@ -292,35 +121,19 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     configfile = args.configfile
-    fcst_year = int(args.fcst_year)   
-    fcst_mon = int(args.fcst_mon)   
-    cwd = args.cwd
+    fcst_year_ = int(args.fcst_year)
+    fcst_mon_ = int(args.fcst_mon)
+    cwd_ = args.cwd
 
     # load config file
-    with open(configfile, 'r') as file:
-        config = yaml.safe_load(file)
+    with open(configfile, 'r', encoding="utf-8") as file:
+        config_ = yaml.safe_load(file)
 
-    RNetWork =  Dataset (config["PLOTS"]["river_network"], mode='r')
-    downstream_lon = np.array (RNetWork.variables['DownStream_lon'][:])
-    downstream_lat = np.array (RNetWork.variables['DownStream_lat'][:])
-    upstream_lon   = np.array (RNetWork.variables['UpStream_lon'][:])
-    upstream_lat   = np.array (RNetWork.variables['UpStream_lat'][:])
-    cum_area = np.array (RNetWork.variables['CUM_AREA'][:])
-
-    bmask = xr.open_dataset(config["PLOTS"]["hybas_mask"])
-    lons = bmask.longitude.values
-    lats = bmask.latitude.values
-    
-    b = 0
-    for bid in bmask.HYBAS_ID.values:
-        hybas_mask = bmask.basin_mask.values[b,]
-        print (hybas_mask.sum())
-        tx = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lons))
-        ty = np.ma.compressed(np.ma.masked_where(hybas_mask == 0, lats))
-        boundary = [math.floor(tx.min()), math.ceil(tx.max()), math.floor(ty.min()), math.ceil(ty.max())]
-        vmask = (((upstream_lon >= boundary[0]) & (upstream_lon <= boundary[1])) &
-             ((upstream_lat >= boundary[2]) & (upstream_lat <= boundary[3])))
-        region = bid.decode("utf-8")
-        plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask], downstream_lat[vmask], upstream_lon[vmask], upstream_lat[vmask], cum_area[vmask])
-        b += 1
-
+    rnetwork_ =  Dataset (config_['SETUP']['supplementarydir'] + \
+                         '/s2splots/RiverNetwork_information.nc4', mode='r')
+    exp_domain = config_["EXP"]["DOMAIN"]
+    if exp_domain == 'GLOBAL':
+        for plot_domain_ in DEFCOMS:
+            process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, plot_domain_)
+    else:
+        process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, exp_domain)

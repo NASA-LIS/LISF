@@ -90,11 +90,12 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
-   character*50, public,  parameter :: LIS_clsmf25Id   = "CLSM F2.5"
-   character*50, public,  parameter :: LIS_geowrsi2Id  = "GeoWRSI.2"
+   character*50, public,  parameter :: LIS_clsmf25Id    = "CLSM F2.5"
+   character*50, public,  parameter :: LIS_geowrsi2Id   = "GeoWRSI.2"
    character*50, public,  parameter :: LIS_rdhm356lsmId = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_summa1Id     = "SUMMA.1.0"
-   character*50, public,  parameter :: LIS_Crocus81Id     = "Crocus8.1"  
+   character*50, public,  parameter :: LIS_Crocus81Id   = "Crocus8.1"  
+   character*50, public,  parameter :: LIS_snowmodelId  = "SnowModel"
 
 !-------------------------------------------------------------------------
 ! Lake models

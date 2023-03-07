@@ -11,7 +11,7 @@
 """
 
 from __future__ import division
-import os.path as op
+import os
 import sys
 from datetime import datetime
 import calendar
@@ -19,30 +19,32 @@ from time import ctime as t_ctime
 from time import time as t_time
 from dateutil.relativedelta import relativedelta
 import numpy as np
+import xarray as xr
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from Shrad_modules import read_nc_files, MAKEDIR
-import xarray as xr
+# pylint: disable=import-error
+from bcsd_stats_functions import get_domain_info
+# pylint: enable=import-error
 
-def scale_forcings (MON_BC_VALUE, MON_RAW_VALUE, INPUT_RAW_DATA, BC_VAR = None):
+def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
+    ''' perform scaling '''
+    output_bc_data = np.ones(len(input_raw_data))*-999
 
-    OUTPUT_BC_DATA = np.ones(len(INPUT_RAW_DATA))*-999
-
-    if BC_VAR == 'PRCP':
-        if MON_RAW_VALUE <= 1.e-4:
-            CORRECTION_FACTOR = MON_BC_VALUE
+    if bc_var == 'PRCP':
+        if mon_raw_value <= 1.e-4:
+            correction_factor = mon_bc_value
             ## HACK## for when input monthly value is 0
-            OUTPUT_BC_DATA[:] = CORRECTION_FACTOR
+            output_bc_data[:] = correction_factor
         else:
-            CORRECTION_FACTOR = MON_BC_VALUE/MON_RAW_VALUE
-            OUTPUT_BC_DATA[:] = INPUT_RAW_DATA[:]*CORRECTION_FACTOR
+            correction_factor = mon_bc_value/mon_raw_value
+            output_bc_data[:] = input_raw_data[:]*correction_factor
     else:
-        CORRECTION_FACTOR = MON_BC_VALUE - MON_RAW_VALUE
-        OUTPUT_BC_DATA[:] = INPUT_RAW_DATA[:] + CORRECTION_FACTOR
+        correction_factor = mon_bc_value - mon_raw_value
+        output_bc_data[:] = input_raw_data[:] + correction_factor
 
-    return OUTPUT_BC_DATA
+    return output_bc_data
 
 def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
 var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
@@ -104,30 +106,22 @@ INIT_FCST_MON = int(sys.argv[4])
 BC_VAR = str(sys.argv[5])
 ## This is used to figure out if the variable a precipitation variable or not
 UNIT = str(sys.argv[6])
-LAT1, LAT2, LON1, LON2 = int(sys.argv[7]), int(sys.argv[8]), int(sys.argv[9]), int(sys.argv[10])
-
-MODEL_NAME = str(sys.argv[11])
-ENS_NUM = int(sys.argv[12])
-LEAD_FINAL = int(sys.argv[13])
+MODEL_NAME = str(sys.argv[7])
+ENS_NUM = int(sys.argv[8])
+LEAD_FINAL = int(sys.argv[9])
 MONTH_NAME_TEMPLATE = '{}01'
 MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
 
 print(f"*** LEAD FINAL: {LEAD_FINAL}")
-BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[14]), int(sys.argv[15])
-if FCST_VAR == 'PRECTOT':
-    MASK_FILE = str(sys.argv[16])
-else:
-    MASK_FILE = str(sys.argv[17])
+BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
+CONFIG_FILE = str(sys.argv[12])
+LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
 
-#MASK = read_nc_files(MASK_FILE, 'mask')
-#print(f"MASK: {MASK.shape}")
-
-MONTHLY_BC_FCST_DIR = str(sys.argv[18])
-SUBDAILY_RAW_FCST_DIR = str(sys.argv[19])
-BASE_OUTDIR = str(sys.argv[20])
+MONTHLY_BC_FCST_DIR = str(sys.argv[13])
+SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
+BASE_OUTDIR = str(sys.argv[15])
 OUTDIR_TEMPLATE = '{}/{:04d}/ens{:01d}'
-
-DOMAIN=str(sys.argv[21])
+DOMAIN=str(sys.argv[16])
 
 # All file formats
 MONTHLY_BC_INFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -159,10 +153,10 @@ for MON in [INIT_FCST_MON]:
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
     for ens in range(ENS_NUM):
         OUTDIR = OUTDIR_TEMPLATE.format(BASE_OUTDIR, INIT_FCST_YEAR, ens+1)
-        if op.isdir(OUTDIR):
+        if os.path.isdir(OUTDIR):
             pass
         else:
-            MAKEDIR(OUTDIR)
+            os.makedirs(OUTDIR, exist_ok=True)
         print(f"OUTDIR is {OUTDIR}")
         for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1, 6) + \
@@ -185,16 +179,23 @@ for MON in [INIT_FCST_MON]:
             MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
             INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
             MONTHLY_INPUT_RAW_DATA = INPUT_RAW_DATA[FCST_VAR].mean(dim = 'time')
-            
             # Bias corrected monthly value
             MON_BC_VALUE = MON_BC_DATA[FCST_VAR][INIT_FCST_YEAR-BC_FCST_SYR, LEAD_NUM, ens,:,:]
 
             # make sure lat/lon are aligned.
-            if (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lat"].values, MON_BC_VALUE["lat"].values)) or (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lon"].values, MON_BC_VALUE["lon"].values)):
-                MONTHLY_INPUT_RAW_DATA({"lon": MON_BC_VALUE["lon"].values, "lat": MON_BC_VALUE["lat"].values})
-            if (not np.array_equal(INPUT_RAW_DATA["lat"].values, MON_BC_VALUE["lat"].values)) or (not np.array_equal(INPUT_RAW_DATA["lon"].values, MON_BC_VALUE["lon"].values)):
-                INPUT_RAW_DATA({"lon": MON_BC_VALUE["lon"].values, "lat": MON_BC_VALUE["lat"].values})
-                
+            if (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lat"].values,
+                                   MON_BC_VALUE["lat"].values)) or \
+                                   (not np.array_equal(MONTHLY_INPUT_RAW_DATA["lon"].values,
+                                                       MON_BC_VALUE["lon"].values)):
+                MONTHLY_INPUT_RAW_DATA({"lon": MON_BC_VALUE["lon"].values,
+                                        "lat": MON_BC_VALUE["lat"].values})
+            if (not np.array_equal(INPUT_RAW_DATA["lat"].values,
+                                   MON_BC_VALUE["lat"].values)) or \
+                                   (not np.array_equal(INPUT_RAW_DATA["lon"].values,
+                                                       MON_BC_VALUE["lon"].values)):
+                INPUT_RAW_DATA({"lon": MON_BC_VALUE["lon"].values,
+                                "lat": MON_BC_VALUE["lat"].values})
+
             correct = xr.apply_ufunc(
                 scale_forcings,
                 MON_BC_VALUE.chunk({"lat": "auto", "lon": "auto"}).compute(),
@@ -206,12 +207,12 @@ for MON in [INIT_FCST_MON]:
                 vectorize=True,
                 dask="forbidden",
                 output_dtypes=[np.float64],
-                kwargs={'BC_VAR': BC_VAR},
+                kwargs={'bc_var': BC_VAR},
             )
 
             correct2 = np.moveaxis(correct.values,2,0)
             OUTPUT_BC_DATA[:,JJ1:JJ2+1, II1:II2+1] = correct2[:,:,:]
-            
+
             ### Finish correcting values for all timesteps in the given
             ### month and ensemble member
             print("Now writing {OUTFILE}")
@@ -229,4 +230,4 @@ for MON in [INIT_FCST_MON]:
                 write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
                                 OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 89.875, 179.875, -89.875, \
-                                -179.875, 0.25, 0.25, 21600)                
+                                -179.875, 0.25, 0.25, 21600)

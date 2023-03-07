@@ -16,12 +16,11 @@
 """
 
 # Standard modules
-import os
 import sys
 import argparse
 import datetime
 import yaml
-
+# pylint: disable=too-many-locals, import-outside-toplevel
 def _usage():
     """Print command line usage."""
     txt = \
@@ -63,16 +62,12 @@ def _submit_batch_jobs(args):
     model_forcing = args.nmme_model
 
     startdate = datetime.datetime(int(fcst_year), int(fcst_mon), day=1)
-    topdatadir = cwd + '/' + model_forcing + '/' 
+    topdatadir = cwd + '/' + model_forcing + '/'
 
     # load config file
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    newdir = f"{topdatadir}/cf_{model_forcing}"
-    newdir += f"_{startdate.year:04d}{startdate.month:02d}_all"
-    if not os.path.exists(newdir):
-        os.makedirs(newdir)
     total_months = int(config["EXP"]["lead_months"])
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
 

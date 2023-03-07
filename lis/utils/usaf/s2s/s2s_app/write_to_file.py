@@ -4,6 +4,8 @@ This script writes SLURM job files.
 import os
 import sys
 import argparse
+#pylint: disable=wrong-import-position
+#pylint: disable=import-error
 sys.path.append(os.getenv('S2STOOL'))
 from s2s_modules.shared import utils
 
@@ -19,6 +21,7 @@ PARSER.add_argument('-a', '--AFTERID', required=False, help='after id')
 PARSER.add_argument('-s', '--SCHEDULE_FILE', required=False, help='schedule file')
 PARSER.add_argument('-r', '--REPORT', required=False, help='print report')
 PARSER.add_argument('-d', '--YYYYMMDIR', required=False, help='yyyymm directory')
+PARSER.add_argument('-L', '--RUN_LIS', required=False, help='running LISF executables')
 
 ARGS = PARSER.parse_args()
 REPORT = ARGS.REPORT
@@ -30,6 +33,15 @@ if REPORT is not None:
 
 NTASKS = ARGS.NTASKS
 JOBFILE = ARGS.JOBFILE
+RUN_LIS = ARGS.RUN_LIS
+
+if RUN_LIS is not None:
+    CONFIGFILE = ARGS.CONFIGFILE
+    HOURS = ARGS.HOURS
+    JOBNAME = ARGS.JOBNAME
+    CWD = ARGS.CWD
+    utils.job_script_lis(CONFIGFILE, JOBFILE, JOBNAME, CWD, hours = str(HOURS))
+    sys.exit()
 
 if NTASKS is None:
     SCHEDULE_FILE = ARGS.SCHEDULE_FILE

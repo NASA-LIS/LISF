@@ -1,0 +1,43 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Water balance components
+TotalPrecip:  1  kg/m2   DN   3 0 0 1  61 10000    # Total Precipitation rate (kg/m2s)
+Qs:           1  kg/m2   OUT  3 0 0 1 235 10000    # Surface runoff (kg/m2s)
+Qsb:          1  kg/m2   OUT  3 0 0 1 234 10000    # Subsurface runoff (kg/m2s)
+Evap:         1  kg/m2s  UP   1 0 0 1 204 10000    # Total Evapotranspiration (kg/m2s)
+
+#Energy balance components
+Qle:          1  W/m2    UP   1 0 0 1 121 100      # Latent Heat Flux (W/m2)
+Qh:           1  W/m2    UP   1 0 0 1 122 100      # Sensible Heat Flux (W/m2)
+
+#Surface state variables
+AvgSurfT:     1  K       -    1 0 0 1  11 100      # Average surface temperature (K)
+
+#Subsurface state variables
+SoilMoist:    1  m3/m3   -    1 0 0 4 201 1000     # Average layer soil moisture (kg/m2)
+SoilTemp:     1  K       -    1 0 0 4  85 1000     # Average layer soil temperature (K)
+RelSMC:       1  -       -    1 0 0 4 194 1000     # Relative soil moisture
+
+#Cold season processes
+SWE:          1  kg/m2   -    1 0 0 1  65 10000    # Snow Water Equivalent (kg/m2)
+SnowDepth:    1  m       -    1 0 0 1  66 1000     # Snow Depth (m)
+Snowcover:    1  %       -    1 0 0 1 238 100      # Snow Cover (-) or percentage Snow Coverage
+
+#Other hydrologic variables
+TWS:          1  mm      -    1 0 0 1 175 1       # Terrestrial water storage (mm)
+
+#Forcings
+Tair_f:       1  K       -    1 1 0 1  11 10000    # Near surface air temperature
+Qair_f:       1  kg/kg   -    1 0 0 1  51 10000000 # Near surface specific humidity
+Psurf_f:      1  Pa      -    1 0 0 1   1 1000     # Surface pressure
+SWdown_f:     1  W/m2    DN   1 0 0 1 145 10000    # Surface incident shortwave radiation
+LWdown_f:     1  W/m2    DN   1 0 0 1 144 100000   # Surface incident longwave radiation
+Wind_f:       1  m/s     -    1 0 0 1 209 10000    # Near surface Wind (m/s)
+
+# HyMAP-2 Routing
+Streamflow:      1 m3/s    -     1 0 0 1 333 10    # Streamflow
+SWS:             1 mm      -     1 0 0 1 333 10    # Surface water storage
+FloodedFrac:     1 -       -     1 0 0 1 333 10    # FloodedFrac
+
+# ____________________________________________________________
+

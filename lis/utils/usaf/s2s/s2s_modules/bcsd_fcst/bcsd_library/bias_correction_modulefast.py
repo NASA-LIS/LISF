@@ -18,9 +18,11 @@ import os
 from dateutil.relativedelta import relativedelta
 import xarray as xr
 import numpy as np
-from Shrad_modules import read_nc_files
-from BCSD_stats_functions import write_4d_netcdf
-from BCSD_functionfast import CALC_BCSD
+# pylint: disable=import-error
+from shrad_modules import read_nc_files
+from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from bcsd_function import calc_bcsd
+# pylint: enable=import-error
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -31,25 +33,24 @@ FCST_VAR = str(sys.argv[2])
 BC_VAR = str(sys.argv[3])
 ## This is used to figure out if the variable is a precipitation variable or not
 UNIT = str(sys.argv[4])
-LAT1, LAT2, LON1, LON2 = int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), int(sys.argv[8])
-INIT_FCST_MON = int(sys.argv[9])
+INIT_FCST_MON = int(sys.argv[5])
 
 # Forecast model and ensemble input arguments:
-LEAD_FINAL = int(sys.argv[10])
-ENS_NUM = int(sys.argv[11])
+LEAD_FINAL = int(sys.argv[6])
+ENS_NUM = int(sys.argv[7])
 
 print(LEAD_FINAL)
 print(ENS_NUM)
 
-FCST_SYR = int(sys.argv[12])
-TARGET_FCST_SYR = int(sys.argv[12])
-TARGET_FCST_EYR = int(sys.argv[13])
-CLIM_SYR = int(sys.argv[14])
-CLIM_EYR = int(sys.argv[15])
+FCST_SYR = int(sys.argv[8])
+TARGET_FCST_SYR = int(sys.argv[8])
+TARGET_FCST_EYR = int(sys.argv[9])
+CLIM_SYR = int(sys.argv[10])
+CLIM_EYR = int(sys.argv[11])
 
 # Directory and file addresses
-OBS_INDIR = str(sys.argv[16])
-FCST_INDIR = str(sys.argv[17])
+OBS_INDIR = str(sys.argv[12])
+FCST_INDIR = str(sys.argv[13])
 
 # Observation climatology filename templates:
 OBS_CLIM_FILE_TEMPLATE = '{}/raw/Climatology/{}_obs_clim.nc'
@@ -58,15 +59,13 @@ MONTH_NAME_TEMPLATE = '{}01'
 # GEOS5 filename template:
 FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
 
-# Input mask
-MASK_FILE = str(sys.argv[18])
-#MASK = read_nc_files(MASK_FILE, 'mask')[0, ]
-LATS = read_nc_files(MASK_FILE, 'lat')
-LONS = read_nc_files(MASK_FILE, 'lon')
+CONFIG_FILE = str(sys.argv[14])
+LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
+LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'
-OUTDIR = str(sys.argv[19])
+OUTDIR = str(sys.argv[15])
 print(OUTDIR)
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR, exist_ok=True)
@@ -89,8 +88,6 @@ EPS = 1.0e-5
 OBS_CLIM_FILE = OBS_CLIM_FILE_TEMPLATE.format(OBS_INDIR, OBS_VAR)
 OBS_CLIM_ARRAY = xr.open_dataset(OBS_CLIM_FILE)
 
-
-
 def get_index(ref_array, my_value):
     """
       Function for extracting the index of a Numpy array (ref_array)
@@ -108,7 +105,7 @@ def get_index(ref_array, my_value):
 def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
                         np_obs_clim_array, np_fcst_clim_array, \
                         lead_final, target_fcst_syr, target_fcst_eyr, \
-                        fcst_syr, ens_num, mon, month_name, bc_var, \
+                        fcst_syr, ens_num, mon, bc_var, \
                         tiny, fcst_coarse, correct_fcst_coarse):
     """Lat and Lon"""
     num_lats = ilat_max-ilat_min+1
@@ -122,8 +119,6 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
         for ilon in range(num_lons):
             lon_num = ilon_min + ilon
 
-            count_grid = ilon + ilat*num_lons
-
             ## First read Observed clim data (all months available in one file)
             ## so don't have to read it again for each lead time
             obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
@@ -136,10 +131,9 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
             #print("shape of FCST_COARSE: ", TARGET_FCST_VAL_ARR.shape)
 
             correct_fcst_coarse[:, :, :, lat_num, lon_num] = \
-            CALC_BCSD(obs_clim_all, fcst_clim_all, lead_final, \
+            calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, \
             target_fcst_val_arr, target_fcst_syr, target_fcst_eyr, \
-            fcst_syr, ens_num, mon, month_name, count_grid, bc_var, tiny)
-
+            fcst_syr, ens_num, mon, bc_var, tiny)
 
 def monthly_calculations(mon):
     """Monthly Bias Correction"""
@@ -194,7 +188,7 @@ def monthly_calculations(mon):
     print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
     latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
     np_obs_clim_array, np_fcst_clim_array, LEAD_FINAL, TARGET_FCST_SYR, \
-    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, month_name, BC_VAR, \
+    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, BC_VAR, \
     TINY, fcst_coarse, correct_fcst_coarse)
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \

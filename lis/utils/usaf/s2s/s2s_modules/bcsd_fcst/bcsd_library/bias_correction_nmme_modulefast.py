@@ -18,9 +18,11 @@ from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
-import BCSD_function
-from BCSD_stats_functions import write_4d_netcdf
-from Shrad_modules import read_nc_files
+# pylint: disable=import-error
+import bcsd_function
+from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from shrad_modules import read_nc_files
+# pylint: enable=import-error
 
 def get_index(ref_array, my_value):
     """
@@ -66,27 +68,26 @@ BC_VAR = str(sys.argv[3])
 ## This is used to figure out if the variable is a precipitation
 ## variable or not
 UNIT = str(sys.argv[4])
-LAT1, LAT2, LON1, LON2 = int(sys.argv[5]), int(sys.argv[6]), int(sys.argv[7]), int(sys.argv[8])
-INIT_FCST_MON = int(sys.argv[9])
+INIT_FCST_MON = int(sys.argv[5])
 
 # Forecast model and ensemble input arguments:
-MODEL_NAME = str(sys.argv[10])
-LEAD_FINAL = int(sys.argv[11])
-ENS_NUM = int(sys.argv[12])
+MODEL_NAME = str(sys.argv[6])
+LEAD_FINAL = int(sys.argv[7])
+ENS_NUM = int(sys.argv[8])
 
 print(LEAD_FINAL)
 print(ENS_NUM)
 
-FCST_SYR = int(sys.argv[13])
-TARGET_FCST_SYR = int(sys.argv[13])
-TARGET_FCST_EYR = int(sys.argv[14])
-CLIM_SYR = int(sys.argv[15])
-CLIM_EYR = int(sys.argv[16])
+FCST_SYR = int(sys.argv[9])
+TARGET_FCST_SYR = int(sys.argv[9])
+TARGET_FCST_EYR = int(sys.argv[10])
+CLIM_SYR = int(sys.argv[11])
+CLIM_EYR = int(sys.argv[12])
 
 # Directory and file addresses
-FCST_CLIM_INDIR = str(sys.argv[17])
-OBS_CLIM_INDIR = str(sys.argv[18])
-FCST_INDIR = str(sys.argv[19])
+FCST_CLIM_INDIR = str(sys.argv[13])
+OBS_CLIM_INDIR = str(sys.argv[14])
+FCST_INDIR = str(sys.argv[15])
 
 # Observation climatology filename templates:
 OBS_CLIM_FILE_TEMPLATE = '{}/{}_obs_clim.nc'
@@ -95,14 +96,13 @@ MONTH_NAME_TEMPLATE = '{}01'
 # GEOS5 filename TEMPLATE:
 FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
-# Input mask
-MASK_FILE = str(sys.argv[20])
-LATS = read_nc_files(MASK_FILE, 'lat')
-LONS = read_nc_files(MASK_FILE, 'lon')
+CONFIG_FILE = str(sys.argv[16])
+LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
+LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
-OUTDIR = str(sys.argv[21])
+OUTDIR = str(sys.argv[17])
 print(OUTDIR)
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
@@ -181,10 +181,10 @@ for MON in [INIT_FCST_MON]:
     print("np_FCST_CLIM_ARRAY:", np_FCST_CLIM_ARRAY.shape, \
     type(np_FCST_CLIM_ARRAY))
 
-    CORRECT_FCST_COARSE = BCSD_function.latlon_calculations(ilat_min, \
+    CORRECT_FCST_COARSE = bcsd_function.latlon_calculations(ilat_min, \
     ilat_max, ilon_min, ilon_max, nlats, nlons, np_OBS_CLIM_ARRAY, \
     np_FCST_CLIM_ARRAY, LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, \
-    FCST_SYR, ENS_NUM, MON, MONTH_NAME, BC_VAR, TINY, FCST_COARSE)
+    FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
 
     CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
     mask=CORRECT_FCST_COARSE == -999)

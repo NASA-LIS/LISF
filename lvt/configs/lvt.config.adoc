@@ -164,6 +164,7 @@ LVT output methodology:                 "2d gridspace"
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 | "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
 | "`GRUN runoff`"                  | GRUN runoff data
+| "`COAMPSout`"                     | COAMPS forcing data
 |===
 
 .Example _lvt.config_ entry
@@ -2315,10 +2316,32 @@ THySM data directory: ../THySM
 
 .Example _lvt.config_ entry
 ....
+
 MCD15A2H data directory: ./MCD15A2H.006/2019
 ....
 
 [[ssec-optue]]
+
+==== COAMPS forcing data
+
+`COAMPS output forcing directory:` specifies the location of the COAMPS output forcing data directory.
+
+.Example _lvt.config_ entry
+....
+COAMPS output forcing directory: ../COAMPS/EU/COAMPS_forcing
+....
+
+`COAMPS nest id:` specifies the nest id.
+
+COAMPS forcing usually provides forcing for 2 nests. The first nest
+is 15km resolution and the second nest is a smaller sub-domain with
+a resolution of 5km.
+
+.Example _lvt.config_ entry
+....
+COAMPS nest id: 1
+....
+
 === OptUE processing options
 
 This section of the config file specifies the details of the optimization and uncertainty estimation processing options, and the specicialized options to analyze outputs from the Optimization/Uncertainy Estimation algorithms.
@@ -2644,4 +2667,24 @@ Number of fields in the LIS output: 11
 .Example _lvt.config_ entry
 ....
 Number of vertical levels in the LIS output: 4
+....
+
+`LIS output number of soil moisture layers:` specifies the number of soil moisture layers used in the LIS output. This is optional and defaults to 0.
+
+`LIS output soil moisture layer thickness:` specifies the number of soil moisture layers used in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil moisture layer thicknesses. If the number of soil moisture layers is omitted or set to 0, this entry is not read and soil moisture layer thicknesses are not written to the NetCDF global attributes.
+
+.Example _lvt.config_ entry
+....
+LIS output number of soil moisture layers:  4
+LIS output soil moisture layer thickness: 0.1 0.3 0.6 1.0
+....
+
+`LIS output number of soil temperature layers:` specifies the thicknesses of soil moisture layers in the LIS output. This is optional and defaults to 0.
+
+`LIS output soil temperature layer thickness:` specifies the thicknesses of soil temperature layers in the LIS output. These values will be written to the NetCDF as global attributes and should match those used in the LIS configuration file to define the LSM soil temperature layer thicknesses. If the number of soil temperature layers is omitted or set to 0, this entry is not read and soil temperature layer thicknesses are not written to the NetCDF global attributes.
+
+.Example _lvt.config_ entry
+....
+LIS output number of soil temperature layers:  4
+LIS output soil temperature layer thickness:  0.1 0.3 0.6 1.0
 ....

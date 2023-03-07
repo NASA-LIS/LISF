@@ -10,9 +10,8 @@
 from __future__ import division
 import numpy as np
 from All_functions import *
-from Shrad_modules import read_nc_files, MAKEDIR
+from shrad_modules import read_nc_files
 import calendar
-import os.path as op
 import sys
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -20,10 +19,8 @@ from scipy.stats import percentileofscore
 from scipy.stats import scoreatpercentile, pearsonr
 from scipy import interpolate
 from math import *
-from mpl_toolkits import basemap
 from netCDF4 import Dataset, date2num, num2date
 import time
-import xarray as xr
 import os, errno
 
 def write_3d_netcdf(infile, var, varname, DESCRIPTION, SOURCE, VAR_UNITS, SIG_DIGIT, lons, lats, SDATE):
@@ -66,7 +63,7 @@ dir1='/discover/nobackup/projects/fame/FORECASTS/GEOS5/BCSD_Test/EXPERIMENTS/NMM
 OUTFILE_template = '{}/{:04d}/{}/ens{}/nmme/{}.nmme.monthly.{:04d}{:02d}.nc'
 OUTDIR_template = '{}/{:04d}/{}/ens{}/nmme/'
 if not os.path.exists(dir1):
- os.makedirs(dir1)
+ os.makedirs(dir1, exist_ok=True)
 
 #reads sample file for lat and lon values
 ge1 = '/discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/AFRICOM/data/CFSv2/RAW_CFSv2/Monthly/jan01/2008/ens10/jan01.cfsv2.200801.nc'
@@ -96,7 +93,7 @@ for mm in range(2,len(month)):
         OUTFILE = OUTFILE_template.format(dir1, yr1, month[mm], ens, month[mm], yr1, mm1)
         OUTDIR = OUTDIR_template.format(dir1, yr1, month[mm], ens)
         if not os.path.exists(OUTDIR):
-            os.makedirs(OUTDIR)
+            os.makedirs(OUTDIR, exist_ok=True)
 
         SDATE = datetime(yr1, mm1, 1)
         write_3d_netcdf(OUTFILE, xpreci, 'PRECTOT', 'Downscaled to 0.25deg', 'Raw NMME at 1deg', 'kg m-2 s-1', 5, lons, lats, SDATE)

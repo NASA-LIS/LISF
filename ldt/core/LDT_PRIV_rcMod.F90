@@ -45,6 +45,7 @@ module LDT_PRIV_rcMod
      integer                :: add_buffer   ! KA
      integer                :: x_buffer
      integer                :: y_buffer
+     integer                :: allmaskland  ! KA: Temporary for NoahMP+SM coupling
 
 ! -- Land surface input parameters:
      integer                :: max_model_types 

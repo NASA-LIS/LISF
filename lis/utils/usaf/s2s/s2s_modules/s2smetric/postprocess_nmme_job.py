@@ -21,7 +21,7 @@ import argparse
 import datetime
 import subprocess
 import yaml
-
+# pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
 # Local methods
 def _usage():
     """Print command line usage."""
@@ -152,7 +152,7 @@ def _driver():
     baseoutdir = cwd + '/s2smetric/' + fcst_year  + fcst_mon
     currentdate = _handle_dates(int(fcst_year), int(fcst_mon))
     nmme_model = args.nmme_model
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     if nmme_model is None:
@@ -165,7 +165,8 @@ def _driver():
         hours = args.hours
         sys.path.append(config['SETUP']['LISFDIR']  + '/lis/utils/usaf/s2s/')
         from s2s_modules.shared import utils
-        pylibdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/metrics_library/'
+        pylibdir = config['SETUP']['LISFDIR'] + \
+            '/lis/utils/usaf/s2s/s2s_modules/s2smetric/metrics_library/'
         for anom_type in ["anom", "sanom"]:
             py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
             cmd = "python"

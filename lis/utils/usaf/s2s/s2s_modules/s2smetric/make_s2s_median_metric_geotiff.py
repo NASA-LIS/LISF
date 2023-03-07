@@ -322,7 +322,7 @@ def _set_newdate(date):
 def _driver():
     """Main driver."""
     topdir, metric, configfile = _read_cmd_args()
-    with open(configfile, 'r') as file:
+    with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
     mgt = _MetricGeoTiff(topdir, metric, config)

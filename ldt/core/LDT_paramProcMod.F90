@@ -2506,7 +2506,7 @@ contains
         LDT_LSMparam_struc(n)%landcover%standard_name = &
             "AVHRR UMD landcover map"
 
-      case( "MODIS_Native", "MODIS_LIS" )
+      case( "MODIS_Native", "MODIS_LIS", "MCD12Q1" )
         LDT_rc%lc_type(n) = "IGBPNCEP"
         LDT_LSMparam_struc(n)%landcover%num_bins = 20
         LDT_LSMparam_struc(n)%landcover%standard_name = &
@@ -2566,6 +2566,18 @@ contains
         LDT_LSMparam_struc(n)%landcover%num_bins = 36
         LDT_LSMparam_struc(n)%landcover%standard_name = &
             "CLM-4.5 PFT and landunits landcover map"
+
+      case( "NALCMS_SM" )
+        LDT_rc%lc_type(n) = "NALCMS_SM"
+        LDT_LSMparam_struc(n)%landcover%num_bins = 24
+        LDT_LSMparam_struc(n)%landcover%standard_name = &
+            "SnowModel-mapped NALCMS landcover classes map"
+
+      case( "NALCMS_SM_IGBPNCEP" )
+        LDT_rc%lc_type(n) = "NALCMS_SM_IGBPNCEP"
+        LDT_LSMparam_struc(n)%landcover%num_bins = 20
+        LDT_LSMparam_struc(n)%landcover%standard_name = &
+            "NALCMS/SnowModel landcover classes mapped to IGBP/NCEP"
 
       case( "CONSTANT" ) 
         LDT_LSMparam_struc(n)%landcover%num_bins = 13
