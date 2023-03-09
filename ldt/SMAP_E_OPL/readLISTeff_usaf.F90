@@ -142,12 +142,16 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
   integer :: ios, ncid
   integer :: ntiles_dimid, ntiles
   integer :: SoilTemp_profiles_dimid, SoilTemp_profiles
-  integer :: SoilTemp_tavg_id
-  real, allocatable :: SoilTemp_tavg_tiles(:,:)
-  real :: SoilTemp_tavg_ensmean_1layer(LDT_rc%gnc(n), LDT_rc%gnr(n))
+  !integer :: SoilTemp_tavg_id
+  integer :: SoilTemp_inst_id
+  !real, allocatable :: SoilTemp_tavg_tiles(:,:)
+  !real :: SoilTemp_tavg_ensmean_1layer(LDT_rc%gnc(n), LDT_rc%gnr(n))
+  real, allocatable :: SoilTemp_inst_tiles(:,:)
+  real :: SoilTemp_inst_1layer(LDT_rc%gnc(n), LDT_rc%gnr(n))
   integer :: k, c, r
 
-  external :: calc_gridded_ensmean_1layer
+  !external :: calc_gridded_ensmean_1layer
+  external :: calc_gridded_lastens_1layer
 
   rc = 1 ! Initialize as error, reset near bottom
 
@@ -218,41 +222,54 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
      call LDT_endrun()
   end if
 
-  ios = nf90_inq_varid(ncid, 'SoilTemp_tavg', SoilTemp_tavg_id)
+  !ios = nf90_inq_varid(ncid, 'SoilTemp_tavg', SoilTemp_tavg_id)
+  ios = nf90_inq_varid(ncid, 'SoilTemp_inst', SoilTemp_inst_id)
   if (ios .ne. 0) then
-     write(LDT_logunit,*)'[WARN] Cannot find SoilTemp_tavg in ' // trim(fname)
+     !write(LDT_logunit,*)'[WARN] Cannot find SoilTemp_tavg in ' // trim(fname)
+     write(LDT_logunit,*)'[WARN] Cannot find SoilTemp_inst in ' // trim(fname)
      ios = nf90_close(ncid=ncid)
      return
   end if
 
-  allocate(SoilTemp_tavg_tiles(ntiles, SoilTemp_profiles))
-  SoilTemp_tavg_tiles = 0
+  !allocate(SoilTemp_tavg_tiles(ntiles, SoilTemp_profiles))
+  !SoilTemp_tavg_tiles = 0
+  allocate(SoilTemp_inst_tiles(ntiles, SoilTemp_profiles))
+  SoilTemp_inst_tiles = 0
 
-  ios = nf90_get_var(ncid, SoilTemp_tavg_id, SoilTemp_tavg_tiles, &
+  !ios = nf90_get_var(ncid, SoilTemp_tavg_id, SoilTemp_tavg_tiles, &
+  ios = nf90_get_var(ncid, SoilTemp_inst_id, SoilTemp_inst_tiles, &
        start=(/1, 1/), &
        count=(/ntiles, SoilTemp_profiles/))
   if (ios .ne. 0) then
-     write(LDT_logunit,*)'[WARN] Cannot read SoilTemp_tavg in ' // trim(fname)
-     deallocate(SoilTemp_tavg_tiles)
+     !write(LDT_logunit,*)'[WARN] Cannot read SoilTemp_tavg in ' // trim(fname)
+     !deallocate(SoilTemp_tavg_tiles)
+     write(LDT_logunit,*)'[WARN] Cannot read SoilTemp_inst in ' // trim(fname)
+     deallocate(SoilTemp_inst_tiles)
      ios = nf90_close(ncid=ncid)
      return
   end if
 
   ! Calculate ensemble mean in 2d grid space, for each soil layer
   do k = 1, SoilTemp_profiles
-     call calc_gridded_ensmean_1layer(n, SoilTemp_tavg_tiles(:,k), &
-          SoilTemp_tavg_ensmean_1layer)
+     !call calc_gridded_ensmean_1layer(n, SoilTemp_tavg_tiles(:,k), &
+     !     SoilTemp_tavg_ensmean_1layer)
+     call calc_gridded_lastens_1layer(n, SoilTemp_inst_tiles(:,k), &
+          SoilTemp_inst_1layer)
      do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
-           if (SoilTemp_tavg_ensmean_1layer(c,r) > 0) then
-              tsoil(c,r,k) = SoilTemp_tavg_ensmean_1layer(c,r)
+           !if (SoilTemp_tavg_ensmean_1layer(c,r) > 0) then
+           !   tsoil(c,r,k) = SoilTemp_tavg_ensmean_1layer(c,r)
+           !end if
+           if (SoilTemp_inst_1layer(c,r) > 0) then
+              tsoil(c,r,k) = SoilTemp_inst_1layer(c,r)
            end if
         end do
      end do
   end do
 
   ! Clean up
-  deallocate(SoilTemp_tavg_tiles)
+  !deallocate(SoilTemp_tavg_tiles)
+  deallocate(SoilTemp_inst_tiles)
 
   ios = nf90_close(ncid=ncid)
   if (ios .ne. 0) then
@@ -272,7 +289,6 @@ subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
 
   ! Imports
   use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
-  use LDT_logMod, only: LDT_logunit
 
   ! Defaults
   implicit none
@@ -283,9 +299,7 @@ subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
   real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
 
   ! Locals
-  integer :: count1
-  integer :: l, m, r, c, gid, stid, t, tid
-  integer :: ierr
+  integer :: m, r, c, gid, stid, tid
 
   gvar = 0
   if (LDT_masterproc) then
@@ -304,6 +318,40 @@ subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
      end do
   end if
 end subroutine calc_gridded_ensmean_1layer
+
+! Subroutine for extracting last ensemble member for a single soil layer,
+! from tiled data.
+subroutine calc_gridded_lastens_1layer(n, gvar_tile, gvar)
+
+  ! Imports
+  use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
+
+  ! Defaults
+  implicit none
+
+  ! Arguments
+  integer, intent(in) :: n
+  real, intent(in) :: gvar_tile(LDT_rc%glbntiles_red(n))
+  real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
+
+  ! Locals
+  integer :: m, r, c, gid, stid, tid
+
+  if (LDT_masterproc) then
+     gvar = 0
+     do r = 1, LDT_rc%gnr(n)
+        do c = 1, LDT_rc%gnc(n)
+           gid = c + ((r-1) * LDT_rc%gnc(n))
+           stid = LDT_domain(n)%str_tind(gid)
+           if (LDT_domain(n)%ntiles_pergrid(gid) > 0) then
+              m = LDT_rc%nensem(n)
+              tid = stid + m - 1
+              gvar(c,r) = gvar_tile(tid)
+           end if
+        end do
+     end do
+  end if
+end subroutine calc_gridded_lastens_1layer
 
 !BOP
 ! !ROUTINE: create_LISsoilT_filename_usaf

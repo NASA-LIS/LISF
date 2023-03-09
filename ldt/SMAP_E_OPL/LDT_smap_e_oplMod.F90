@@ -275,6 +275,7 @@ contains
     integer :: rc
 
     external :: readUSAFSI
+    external :: readLIS_Teff_usaf
 
     allocate(LDT_rc%nensem(LDT_rc%nnest))
 
