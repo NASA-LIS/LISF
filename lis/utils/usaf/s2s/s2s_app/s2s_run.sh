@@ -131,6 +131,14 @@ set_permission(){
 
     cd ${E2ESDIR}
     /bin/rm -f set_permission.j
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	line1=
+	line2=
+    else
+	line1="#SBATCH --cluster-constraint=green"
+	line2="#SBATCH --partition=batch"
+    fi
+	
     cat << EOF > ${E2ESDIR}/set_permission.j
 #!/bin/bash
 
@@ -144,6 +152,8 @@ set_permission(){
 #SBATCH --job-name=set_permission_
 #SBATCH --output ${SCRDIR}/set_permission_%j.out
 #SBATCH --error ${SCRDIR}/set_permission_%j.err
+`echo "${line1}"`
+`echo "${line2}"`
 
 cd ${E2ESDIR}
 
