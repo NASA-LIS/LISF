@@ -210,7 +210,6 @@ subroutine noah33_main(n)
   real :: tempval, soiltm, soiltw, soilt
 ! J.Case -- end mod (9/11/2014)
 ! HKB: added below (2/22/2022)
-!  type(ESMF_State)                        :: irrigState
   type(ESMF_Field)                        :: irrigRateField,irrigTypeField
   real,    pointer                        :: irrigRate(:)
   real,    pointer                        :: irrigType(:)
@@ -228,13 +227,11 @@ subroutine noah33_main(n)
      ! HKB -- need to get irrigation states and subtract from precip
      if (LIS_rc%irrigation_type .eq. "Sprinkler" .or. &
          LIS_rc%irrigation_type .eq. "Concurrent" ) then
-!      call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=status)
       call ESMF_StateGet(LIS_irrig_state(n), "Irrigation rate", &
            irrigRateField,rc=status)
       call LIS_verify(status,'noah33_main: ESMF_StateGet failed for irrigRate')
       call ESMF_FieldGet(irrigRateField, localDE=0,farrayPtr=irrigRate,rc=status)
       call LIS_verify(status,'noah33_main: ESMF_FieldGet failed for irrigRate')
-!      call ESMF_StateGet(irrigState, "Irrigation type",irrigTypeField,rc=status)
       call ESMF_StateGet(LIS_irrig_state(n), "Irrigation type", &
            irrigTypeField,rc=status)
       call LIS_verify(status,'noah33_main: ESMF_StateGet failed for irrigType')

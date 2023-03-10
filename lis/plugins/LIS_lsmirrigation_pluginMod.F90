@@ -45,6 +45,14 @@ subroutine LIS_lsmirrigation_plugin
    external noah33_getirrigationstates
 #endif
 
+#if ( defined SM_NOAH_3_6 )
+   external noah36_getirrigationstates
+#endif
+
+#if ( defined SM_NOAH_3_9 )
+   external noah39_getirrigationstates
+#endif
+
 #if ( defined SM_CLSM_F2_5 )
    external clsmf25_getirrigationstates
 #endif
@@ -65,6 +73,14 @@ subroutine LIS_lsmirrigation_plugin
 #if ( defined SM_NOAH_3_3 )
    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
         trim(LIS_concurrentIrrigationId)//char(0),noah33_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_concurrentIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -87,6 +103,14 @@ subroutine LIS_lsmirrigation_plugin
 #if ( defined SM_NOAH_3_3 )
    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
         trim(LIS_sprinklerIrrigationId)//char(0),noah33_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_sprinklerIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_sprinklerIrrigationId)//char(0),noah39_getirrigationstates)
 #endif
 
 #if ( defined SM_CLSM_F2_5 )
@@ -115,6 +139,14 @@ subroutine LIS_lsmirrigation_plugin
    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
         trim(LIS_floodIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_floodIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_floodIrrigationId)//char(0),noah39_getirrigationstates)
+#endif
 
 #if ( defined SM_CLSM_F2_5 )
    call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
@@ -142,6 +174,14 @@ subroutine LIS_lsmirrigation_plugin
    call registerlsmirrigationgetstates(trim(LIS_noah33Id)//"+"//&
         trim(LIS_dripIrrigationId)//char(0),noah33_getirrigationstates)
 #endif
+#if ( defined SM_NOAH_3_6 )
+   call registerlsmirrigationgetstates(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_dripIrrigationId)//char(0),noah36_getirrigationstates)
+#endif
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmirrigationgetstates(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_dripIrrigationId)//char(0),noah39_getirrigationstates)
+#endif
 
 #if ( defined SM_CLSM_F2_5 )
    call registerlsmirrigationgetstates(trim(LIS_clsmf25Id)//"+"//&
@@ -151,11 +191,6 @@ subroutine LIS_lsmirrigation_plugin
 #if ( defined SM_RUC_3_7 )
    call registerlsmirrigationgetstates(trim(LIS_ruc37Id)//"+"//&
         trim(LIS_dripIrrigationId)//char(0),ruc37_getirrigationstates)
-#endif
-
-#if ( defined SM_NOAHMP_3_6 )
-   call registerlsmirrigationgetstates(trim(LIS_noahmp36Id)//"+"//&
-        trim(LIS_dripIrrigationId)//char(0),NoahMP36_getirrigationstates)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )

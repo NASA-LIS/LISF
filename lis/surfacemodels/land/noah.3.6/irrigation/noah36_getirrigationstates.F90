@@ -11,17 +11,17 @@
 
 !BOP
 ! 
-! !ROUTINE: noah33_getirrigationstates
-! \label{noah33_getirrigationstates}
+! !ROUTINE: noah36_getirrigationstates
+! \label{noah36_getirrigationstates}
 ! 
 ! !INTERFACE:
-subroutine noah33_getirrigationstates(nest,irrigState)
+subroutine noah36_getirrigationstates(nest,irrigState)
 ! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
-  use noah33_lsmMod
+  use noah36_lsmMod
   use LIS_irrigationMod
   use IRRIGATION_MODULE
   
@@ -64,9 +64,9 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   integer              :: rc
   integer              :: TileNo,tid,gid,vegt,l
   type(ESMF_State)     :: irrigState
-  real                 :: sldpth(noah33_struc(nest)%nslay)
-  real                 :: rdpth(noah33_struc(nest)%nslay)
-  real                 :: zdpth(noah33_struc(nest)%nslay)
+  real                 :: sldpth(noah36_struc(nest)%nslay)
+  real                 :: rdpth(noah36_struc(nest)%nslay)
+  real                 :: zdpth(noah36_struc(nest)%nslay)
   real                 :: crootd
   integer              :: lroot,veg_index1,veg_index2, nlctypes
   integer              :: croptype
@@ -86,10 +86,10 @@ subroutine noah33_getirrigationstates(nest,irrigState)
   call IM%get_irrig_vegindex (veg_index1, veg_index2, nlctypes)
   
   ! Set global soil  parameters
-  sldpth(1) = noah33_struc(nest)%lyrthk(1)         ! Soil layer thicknesses (m)
-  sldpth(2) = noah33_struc(nest)%lyrthk(2)
-  sldpth(3) = noah33_struc(nest)%lyrthk(3)
-  sldpth(4) = noah33_struc(nest)%lyrthk(4)
+  sldpth(1) = noah36_struc(nest)%lyrthk(1)         ! Soil layer thicknesses (m)
+  sldpth(2) = noah36_struc(nest)%lyrthk(2)
+  sldpth(3) = noah36_struc(nest)%lyrthk(3)
+  sldpth(4) = noah36_struc(nest)%lyrthk(4)
   zdpth(1) = sldpth(1)         ! Soil layer depth from top (m)
   zdpth(2) = sldpth(1) + sldpth(2)
   zdpth(3) = sldpth(1) + sldpth(2) + sldpth(3)
@@ -107,23 +107,23 @@ subroutine noah33_getirrigationstates(nest,irrigState)
      ! frozen tile check
      irrig_check_frozen_soil = .false.
      
-     if((noah33_struc(nest)%noah(TileNo)%smc(1) - &
-          noah33_struc(nest)%noah(TileNo)%sh2o(1)).gt.0.0001) then 
+     if((noah36_struc(nest)%noah(TileNo)%smc(1) - &
+          noah36_struc(nest)%noah(TileNo)%sh2o(1)).gt.0.0001) then 
         irrig_check_frozen_soil = .true. 
-     elseif((noah33_struc(nest)%noah(TileNo)%smc(2) - &
-          noah33_struc(nest)%noah(TileNo)%sh2o(2)).gt.0.0001) then 
+     elseif((noah36_struc(nest)%noah(TileNo)%smc(2) - &
+          noah36_struc(nest)%noah(TileNo)%sh2o(2)).gt.0.0001) then 
         irrig_check_frozen_soil = .true. 
-     elseif((noah33_struc(nest)%noah(TileNo)%smc(3) - &
-          noah33_struc(nest)%noah(TileNo)%sh2o(3)).gt.0.0001) then 
+     elseif((noah36_struc(nest)%noah(TileNo)%smc(3) - &
+          noah36_struc(nest)%noah(TileNo)%sh2o(3)).gt.0.0001) then 
         irrig_check_frozen_soil = .true. 
-     elseif((noah33_struc(nest)%noah(TileNo)%smc(4) - &
-          noah33_struc(nest)%noah(TileNo)%sh2o(4)).gt.0.0001) then 
+     elseif((noah36_struc(nest)%noah(TileNo)%smc(4) - &
+          noah36_struc(nest)%noah(TileNo)%sh2o(4)).gt.0.0001) then 
         irrig_check_frozen_soil = .true. 
-     elseif(noah33_struc(nest)%noah(TileNo)%stc(2).le.LIS_CONST_TKFRZ) then
+     elseif(noah36_struc(nest)%noah(TileNo)%stc(2).le.LIS_CONST_TKFRZ) then
         irrig_check_frozen_soil = .true. 
-     elseif(noah33_struc(nest)%noah(TileNo)%stc(3).le.LIS_CONST_TKFRZ) then
+     elseif(noah36_struc(nest)%noah(TileNo)%stc(3).le.LIS_CONST_TKFRZ) then
         irrig_check_frozen_soil = .true. 
-     elseif(noah33_struc(nest)%noah(TileNo)%stc(4).le.LIS_CONST_TKFRZ) then
+     elseif(noah36_struc(nest)%noah(TileNo)%stc(4).le.LIS_CONST_TKFRZ) then
         irrig_check_frozen_soil = .true. 
      endif
      
@@ -145,10 +145,10 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                  ! Calculate active root depth
                  ! ---------------------------
                  ! make sure greenness data is not zero
-                 if ( noah33_struc(nest)%noah(TileNo)%shdfac.eq.0.0) then 
+                 if ( noah36_struc(nest)%noah(TileNo)%shdfac.eq.0.0) then 
                    crootd = IM%irrigRootdepth(TileNo)
                  else
-                   crootd = IM%irrigRootdepth(TileNo)*noah33_struc(nest)%noah(TileNo)%shdfac
+                   crootd = IM%irrigRootdepth(TileNo)*noah36_struc(nest)%noah(TileNo)%shdfac
                  endif
                  lroot  = 0
                  if(crootd.gt.0.and.crootd.lt.zdpth(1)) then 
@@ -176,7 +176,7 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                     write(LIS_logunit,*) '[WARN] lroot should be > 0!'
                     write(LIS_logunit,*) TileNo,gid,vegt,crootd,&
                      IM%irrigRootdepth(TileNo), &
-                     noah33_struc(nest)%noah(TileNo)%shdfac, &
+                     noah36_struc(nest)%noah(TileNo)%shdfac, &
                      LIS_domain(nest)%grid(LIS_domain(nest)%gindex( &
                       LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%col,&
                       LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%row))%lat, &
@@ -188,18 +188,15 @@ subroutine noah33_getirrigationstates(nest,irrigState)
 
                  ! compute vegetation threshold for the trigger
                  ! --------------------------------------------
-                 !gsthresh = noah33_struc(nest)%noah(TileNo)%shdmin +   &
-                 !     LIS_irrig_struc(nest)%veg_thresh * (noah33_struc(nest)%noah(TileNo)%shdmax - &
-                 !     noah33_struc(nest)%noah(TileNo)%shdmin)
                  ! let gsthresh be a function of the range, which means the larger
                  ! the range is, the higher GVF threshold will be for this grid.  
-                  gsthresh = noah33_struc(nest)%noah(TileNo)%shdmin + &
+                  gsthresh = noah36_struc(nest)%noah(TileNo)%shdmin + &
                       (LIS_irrig_struc(nest)%irrigation_GVFparam1 + &
                        LIS_irrig_struc(nest)%irrigation_GVFparam2* &
-                       (noah33_struc(nest)%noah(TileNo)%shdmax- &
-                        noah33_struc(nest)%noah(TileNo)%shdmin)) * &
-                       (noah33_struc(nest)%noah(TileNo)%shdmax - &
-                        noah33_struc(nest)%noah(TileNo)%shdmin)
+                       (noah36_struc(nest)%noah(TileNo)%shdmax- &
+                        noah36_struc(nest)%noah(TileNo)%shdmin)) * &
+                       (noah36_struc(nest)%noah(TileNo)%shdmax - &
+                        noah36_struc(nest)%noah(TileNo)%shdmin)
 
                  ! get irrigation rates from the irrigation model
                  ! ----------------------------------------------
@@ -208,12 +205,12 @@ subroutine noah33_getirrigationstates(nest,irrigState)
 
                  call IM%update_irrigrate (                                             &
                       nest,TileNo, croptype, LIS_domain(nest)%grid(gid)%lon,     &
-                      noah33_struc(nest)%noah(TileNo)%shdfac,gsthresh,                  &
-                      noah33_struc(nest)%noah(TileNo)%smcwlt,                           &
-                      noah33_struc(nest)%noah(TileNo)%smcmax,                           &
-                      noah33_struc(nest)%noah(TileNo)%smcref,                           &
-                      noah33_struc(nest)%noah(TileNo)%smc(:lroot),                      &
-                      rdpth(:lroot),noah33_struc(nest)%noah(TileNo)%soiltype)
+                      noah36_struc(nest)%noah(TileNo)%shdfac,gsthresh,                  &
+                      noah36_struc(nest)%noah(TileNo)%smcwlt,                           &
+                      noah36_struc(nest)%noah(TileNo)%smcmax,                           &
+                      noah36_struc(nest)%noah(TileNo)%smcref,                           &
+                      noah36_struc(nest)%noah(TileNo)%smc(:lroot),                      &
+                      rdpth(:lroot),noah36_struc(nest)%noah(TileNo)%soiltype)
                                    
               endif VEGIF
            endif IRRS
@@ -245,19 +242,19 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                 ! time step, it will be shut off 
                    amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(1)/1000.
                 ! HKB: application need to weight by irrigated fraction of tile
-                   noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                        IM%IrrigScale(TileNo)*(amount + noah33_struc(nest)%noah(TileNo)%smc(1)) &
-                        + (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)      
+                   noah36_struc(nest)%noah(TileNo)%smc(1) =  &
+                        IM%IrrigScale(TileNo)*(amount + noah36_struc(nest)%noah(TileNo)%smc(1)) &
+                        + (1-IM%IrrigScale(TileNo))*noah36_struc(nest)%noah(TileNo)%smc(1)      
                    IM%irrigAppRate(TileNo) = IM%irrigRate(TileNo)
                 endif DRIP
 
                 FLOOD: if ( IM%irrigType(TileNo) == 3 ) then
                    if ( croptype == LIS_rc%ricecrop ) then   ! rice
                    ! PADDY-- surface layer only
-                     noah33_struc(nest)%noah(TileNo)%smc(1) =  &
-                           IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
-                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(1)
-                     IM%irrigAppRate(TileNo) = (noah33_struc(nest)%noah(TileNo)%smcmax-noah33_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
+                     noah36_struc(nest)%noah(TileNo)%smc(1) =  &
+                           IM%IrrigScale(TileNo)*noah36_struc(nest)%noah(TileNo)%smcmax + &
+                           (1-IM%IrrigScale(TileNo))*noah36_struc(nest)%noah(TileNo)%smc(1)
+                     IM%irrigAppRate(TileNo) = (noah36_struc(nest)%noah(TileNo)%smcmax-noah36_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
                    else
                    ! NON-PADDY -- surface only or  multiple layers
                    ! BZ modification 4/2/2015 to account for ippix and all soil layers:
@@ -268,21 +265,21 @@ subroutine noah33_getirrigationstates(nest,irrigState)
                      totamount = 0.0
                      do l = 1, LIS_irrig_struc(nest)%irrigation_mxsoildpth
                       amount = IM%irrigRate(TileNo)*LIS_rc%ts/sldpth(l)/1000.
-                      added = amount + noah33_struc(nest)%noah(TileNo)%smc(l)
-                      if ( added >= noah33_struc(nest)%noah(TileNo)%smcmax ) then  
+                      added = amount + noah36_struc(nest)%noah(TileNo)%smc(l)
+                      if ( added >= noah36_struc(nest)%noah(TileNo)%smcmax ) then  
                         !add the amount
                         totamount = totamount + amount
-                        noah33_struc(nest)%noah(TileNo)%smc(l) =  &
+                        noah36_struc(nest)%noah(TileNo)%smc(l) =  &
                            IM%IrrigScale(TileNo)*added + &
-                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
+                           (1-IM%IrrigScale(TileNo))*noah36_struc(nest)%noah(TileNo)%smc(l)
                       else
                         !bring to saturation 
                         totamount = totamount + &
-                           (noah33_struc(nest)%noah(TileNo)%smcmax - noah33_struc(nest)%noah(TileNo)%smc(l)) &
+                           (noah36_struc(nest)%noah(TileNo)%smcmax - noah36_struc(nest)%noah(TileNo)%smc(l)) &
                            *sldpth(l)*1000.       ! mm
-                        noah33_struc(nest)%noah(TileNo)%smc(l) =  &
-                           IM%IrrigScale(TileNo)*noah33_struc(nest)%noah(TileNo)%smcmax + &
-                           (1-IM%IrrigScale(TileNo))*noah33_struc(nest)%noah(TileNo)%smc(l)
+                        noah36_struc(nest)%noah(TileNo)%smc(l) =  &
+                           IM%IrrigScale(TileNo)*noah36_struc(nest)%noah(TileNo)%smcmax + &
+                           (1-IM%IrrigScale(TileNo))*noah36_struc(nest)%noah(TileNo)%smc(l)
                       endif 
                      end do
                      IM%irrigAppRate(TileNo) = totamount/LIS_rc%ts
@@ -296,4 +293,4 @@ subroutine noah33_getirrigationstates(nest,irrigState)
         endif IRRF2
   end do TILE_LOOP2
     
-end subroutine noah33_getirrigationstates
+end subroutine noah36_getirrigationstates
