@@ -50,6 +50,8 @@ subroutine readLISlsmTEFFobs(n)
   real             :: teffvalue1d(lsmteffobs%nc*lsmteffobs%nr)
   real             :: Tsoil01value2d(lsmteffobs%nc, lsmteffobs%nr)
   real             :: Tsoil02value2d(lsmteffobs%nc, lsmteffobs%nr)
+  real :: tsoil(lsmteffobs%nc, lsmteffobs%nr, 4)
+  integer :: rc1
   integer          :: c,r
   character*20     :: vname
   integer          :: varid
@@ -156,21 +158,39 @@ subroutine readLISlsmTEFFobs(n)
         if(iret.ne.0) then 
            vname = 'SoilTemp_tavg'
         endif
-
-        if(lsmteffobs%datares.eq.LDT_rc%gridDesc(n,10)) then 
-           call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-                1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
-           call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-                2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
-        else
-           call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-                1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
-           call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-                2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
-        endif
-        
         iret = nf90_close(ftn)
         call LDT_verify(iret,'Error in nf90_close')
+        
+        !if(lsmteffobs%datares.eq.LDT_rc%gridDesc(n,10)) then 
+        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
+        !        1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
+        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
+        !        2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
+        !else
+        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
+        !        1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
+        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
+        !        2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
+        !endif
+        !iret = nf90_close(ftn)
+        !call LDT_verify(iret,'Error in nf90_close')
+
+        if ((LDT_rc%lnc(n) .ne. lsmteffobs%nc) .or. &
+             (LDT_rc%lnr(n) .ne. lsmteffobs%nr)) then
+           write(LDT_logunit,*)'[ERR] Dimension mismatch for LIS data!'
+           write(LDT_logunit,*)'[ERR] LDT_rc%lnc, LDT_rc%lnr = ', &
+                LDT_rc%lnc(n), LDT_rc%lnr(n)
+           write(LDT_Logunit,*)'[ERR] lsmteffobs%nc, lsmteffobs%nr = ', &
+                lsmteffobs%nc, lsmteffobs%nr
+           call LDT_endrun()
+        end if
+        call read_LIStsoil_data_usaf(n, fname, tsoil, rc1)
+        if (rc1 .ne. 0) then
+           write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
+           call LDT_endrun()
+        end if
+        tsoil01value2d = tsoil(:,:,1)
+        tsoil02value2d = tsoil(:,:,2)
 
         kk = 1.007
         cc_6am = 0.246;    !Descending       
