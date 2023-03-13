@@ -294,6 +294,52 @@ download_forecasts(){
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+print_walltimes(){
+    
+    #######################################################################
+    #                     Print Walltimes in HPC-11
+    #######################################################################
+
+    echo "#######################################################################"
+    echo "                          STATUS OF SLURM JOBS"
+    echo "#######################################################################"
+    echo " "
+    echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
+    echo " "
+    
+    jobids=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f1`)
+    jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
+    tLen=${#jobids[@]}
+    ((tLen--))
+    if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
+	((tLen++))
+    fi 
+    
+    cjobs=0
+    fmt="%7s %-36s %s\n"
+    for jid in ${!jobids[@]}
+    do
+	if [[ ${jobfiles[$cjobs]} !=  'set_permission.j' ]]; then
+	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
+	    start_job=`echo $times | cut -d' ' -f1`
+	    end_job=`echo $times | cut -d' ' -f2`
+	    elapse=`echo $times | cut -d' ' -f3`
+	    #echo $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
+	    printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
+	    if [ ${cjobs} -eq 0 ]; then
+		strart_time=$start_job
+	    fi
+	    ((cjobs++))
+	fi
+    done
+    tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
+    hms=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f5`
+    echo ' '
+    echo 'ELAPSED TIME : ' $(($tdays-1))'d' `echo $hms| cut -d':' -f1`'h '`echo $hms| cut -d':' -f2`'m '`echo $hms| cut -d':' -f3`'s' 
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 lis_darun(){
 
     #######################################################################
@@ -836,9 +882,14 @@ s2splots(){
 #                           MAIN SCRIPT
 #**********************************************************************
 
+SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
-    python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    else
+	print_walltimes
+    fi
     exit
 fi
 
@@ -858,7 +909,6 @@ fi
 #                        Set up scratch directory
 #######################################################################
    
-SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
