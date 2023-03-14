@@ -307,7 +307,11 @@ print_walltimes(){
     echo " "
     
     jobids=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f1`)
-    jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
+    else
+	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f2`)
+    fi
     tLen=${#jobids[@]}
     ((tLen--))
     if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
@@ -519,7 +523,6 @@ bcsd_fcst(){
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 
     job_list="$jobname*.j"
-    echo $job_list
     bcsd01_ID=
     for jfile in $job_list
     do
