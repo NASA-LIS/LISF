@@ -319,17 +319,20 @@ print_walltimes(){
     fmt="%7s %-36s %s\n"
     for jid in ${!jobids[@]}
     do
-	if [[ ${jobfiles[$cjobs]} !=  'set_permission.j' ]]; then
+	if [ ${jobfiles[$cjobs]} !=  'set_permission.j' ]; then
 	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
 	    start_job=`echo $times | cut -d' ' -f1`
 	    end_job=`echo $times | cut -d' ' -f2`
-	    elapse=`echo $times | cut -d' ' -f3`
-	    #echo $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
-	    printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
-	    if [ ${cjobs} -eq 0 ]; then
-		strart_time=$start_job
+	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
+		elapse=`echo $times | cut -d' ' -f3`
+		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
+		if [ ${cjobs} -eq 0 ]; then
+		    strart_time=$start_job
+		fi
+		((cjobs++))
+	    else
+		exit
 	    fi
-	    ((cjobs++))
 	fi
     done
     tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
