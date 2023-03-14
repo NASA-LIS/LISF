@@ -156,8 +156,7 @@ set_permission(){
 `echo "${line2}"`
 
 cd ${E2ESDIR}
-
-find . -type d -exec chmod 0775 {} \;
+find . -type d \( -path ./hindcast -o -path ./bcsd_fcst/CFSv2_25km/raw/Climatology -o -path ./bcsd_fcst/NMME/raw/Climatology -path ./bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology \) -prune -o -exec chmod 0775 {} \;
 find . -name "*.nc" -exec chmod 0644 {} \;
 find . -name "*.NC" -exec chmod 0644 {} \;
 find . -name "*.NC4" -exec chmod 0644 {} \;
@@ -316,7 +315,7 @@ print_walltimes(){
     fi 
     
     cjobs=0
-    fmt="%7s %-36s %s\n"
+    fmt="%7s %-36s %3s %3s %3s\n"
     for jid in ${!jobids[@]}
     do
 	if [ ${jobfiles[$cjobs]} !=  'set_permission.j' ]; then
@@ -325,7 +324,8 @@ print_walltimes(){
 	    end_job=`echo $times | cut -d' ' -f2`
 	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
 		elapse=`echo $times | cut -d' ' -f3`
-		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $elapse
+		ehms=`echo $elapse| cut -d':' -f1`'h '`echo $elapse| cut -d':' -f2`'m '`echo $elapse| cut -d':' -f3`'s'
+		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $ehms
 		if [ ${cjobs} -eq 0 ]; then
 		    strart_time=$start_job
 		fi
