@@ -60,7 +60,7 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   !LDT_rc%nensem(n) = 12
   LDT_rc%nensem(n) = SMAPeOPL%num_ens
   !LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
-  LDT_rc%glbntiles_red(n) = SMAPeOPL%num_tiles
+  !LDT_rc%glbntiles_red(n) = SMAPeOPL%num_tiles
   if (.not. allocated(LDT_domain(n)%ntiles_pergrid)) &
        allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%lnc(n) * LDT_rc%lnr(n)))
   !LDT_domain(n)%ntiles_pergrid = 1
@@ -84,7 +84,7 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   inquire(file=trim(fname), exist=file_exists)
   if (file_exists) then
      write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
-     call read_LIStsoil_data_usaf(n, fname, tsoil, rc1)
+     call read_LIStsoil_data_usaf(n, SMAPeOPL%num_tiles, fname, tsoil, rc1)
      if (rc1 .ne. 0) then
         write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
         return
@@ -118,7 +118,7 @@ end subroutine readLIS_Teff_usaf
 ! \label{read_LIStsoil_data_usaf}
 !
 ! !INTERFACE:
-subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
+subroutine read_LIStsoil_data_usaf(n, ntiles, fname, tsoil, rc)
 !
 ! !USES:
   use LDT_logMod
@@ -134,13 +134,14 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
 ! !INPUT PARAMETERS:
 !
   integer, intent(in) :: n
+  integer, intent(in) :: ntiles
   character(*), intent(in) :: fname
   real, intent(inout) :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
   integer, intent(out) :: rc
 !EOP
 
   integer :: ios, ncid
-  integer :: ntiles_dimid, ntiles
+  integer :: ntiles_dimid, ntiles_local
   integer :: SoilTemp_profiles_dimid, SoilTemp_profiles
   integer :: SoilTemp_inst_id
   real, allocatable :: SoilTemp_inst_tiles(:,:)
@@ -179,7 +180,7 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
      return
   end if
 
-  ios = nf90_inquire_dimension(ncid, ntiles_dimid, len=ntiles)
+  ios = nf90_inquire_dimension(ncid, ntiles_dimid, len=ntiles_local)
   if (ios .ne. 0) then
      write(LDT_logunit,*)'[WARN] Cannot get dimension ntiles in ' &
           // trim(fname)
@@ -187,11 +188,17 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
      return
   end if
 
-  if (ntiles .ne. LDT_rc%glbntiles_red(n)) then
+  ! if (ntiles .ne. LDT_rc%glbntiles_red(n)) then
+  !    write(LDT_logunit,*)'[ERR] Dimension mismatch!'
+  !    write(LDT_logunit,*)'[ERR] ntiles = ', ntiles
+  !    write(LDT_logunit,*)'[ERR] LDT_rc%glbntiles_red(n) = ', &
+  !         LDT_rc%glbntiles_red(n)
+  !    call LDT_endrun()
+  ! end if
+  if (ntiles_local .ne. ntiles) then
      write(LDT_logunit,*)'[ERR] Dimension mismatch!'
-     write(LDT_logunit,*)'[ERR] ntiles = ', ntiles
-     write(LDT_logunit,*)'[ERR] LDT_rc%glbntiles_red(n) = ', &
-          LDT_rc%glbntiles_red(n)
+     write(LDT_logunit,*)'[ERR] ntiles = ', ntiles_local
+     write(LDT_logunit,*)'[ERR] Expected ', ntiles
      call LDT_endrun()
   end if
 
@@ -240,7 +247,7 @@ subroutine read_LIStsoil_data_usaf(n, fname, tsoil, rc)
 
   ! Calculate ensemble mean in 2d grid space, for each soil layer
   do k = 1, SoilTemp_profiles
-     call calc_gridded_ensmean_1layer(n, SoilTemp_inst_tiles(:,k), &
+     call calc_gridded_ensmean_1layer(n, ntiles, SoilTemp_inst_tiles(:,k), &
           SoilTemp_inst_ensmean_1layer)
      do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
@@ -268,7 +275,7 @@ end subroutine read_LIStsoil_data_usaf
 
 ! Subroutine for calculating 2d gridded ensemble mean for a single soil layer,
 ! from tiled data.
-subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
+subroutine calc_gridded_ensmean_1layer(n, ntiles, gvar_tile, gvar)
 
   ! Imports
   use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
@@ -278,7 +285,8 @@ subroutine calc_gridded_ensmean_1layer(n, gvar_tile, gvar)
 
   ! Arguments
   integer, intent(in) :: n
-  real, intent(in) :: gvar_tile(LDT_rc%glbntiles_red(n))
+  integer, intent(in) :: ntiles
+  real, intent(in) :: gvar_tile(ntiles)
   real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
 
   ! Locals
