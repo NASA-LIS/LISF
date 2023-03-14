@@ -184,7 +184,8 @@ subroutine readLISlsmTEFFobs(n)
                 lsmteffobs%nc, lsmteffobs%nr
            call LDT_endrun()
         end if
-        call read_LIStsoil_data_usaf(n, fname, tsoil, rc1)
+        call read_LIStsoil_data_usaf(n, lsmteffobs%num_tiles, fname, tsoil, &
+             rc1)
         if (rc1 .ne. 0) then
            write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
            call LDT_endrun()
@@ -515,6 +516,15 @@ subroutine create_lsm_teff_output_filename(n, form, fname, odir, wstyle, wopt, &
          fres2 = trim(fres2)//'DEG'
       endif
 
+      ! out_fname = trim(odir)//'/'//&
+      !      '/PS.AFWA_SC.'//trim(security_class)//&
+      !      '_DI.'//trim(distribution_class)//&
+      !      '_DC.'//trim(data_category)//&
+      !      '_GP.LIS_GR.'//&
+      !      trim(fproj)//trim(fres2)//&
+      !      '_AR.'//trim(area_of_data)//&
+      !      '_PA.'//trim(write_interval)//'-HR-SUM_DD.'//&
+      !      trim(cdate1)//'_DT.'//trim(cdate)//'_DF.GR1'
       out_fname = trim(odir)//'/'//&
            '/PS.AFWA_SC.'//trim(security_class)//&
            '_DI.'//trim(distribution_class)//&
@@ -523,7 +533,18 @@ subroutine create_lsm_teff_output_filename(n, form, fname, odir, wstyle, wopt, &
            trim(fproj)//trim(fres2)//&
            '_AR.'//trim(area_of_data)//&
            '_PA.'//trim(write_interval)//'-HR-SUM_DD.'//&
-           trim(cdate1)//'_DT.'//trim(cdate)//'_DF.GR1'
+           trim(cdate1)//'_DT.'//trim(cdate)//'_DF'
+      if (form == "netcdf") then
+         out_fname = trim(out_fname) // ".nc"
+      else if (form == "grib1") then
+         out_fname = trim(out_fname) // ".GR1"
+      else if (form == "grib2") then
+         out_fname = trim(out_fname) // ".GR2"
+      else
+         write(LDT_logunit,*)'[ERR] Invalid LIS file format ', trim(form)
+         call LDT_endrun()
+      end if
+
    endif
    fname = out_fname
  end subroutine create_lsm_teff_output_filename
