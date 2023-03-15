@@ -114,8 +114,8 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
      call SNODEP_filename(name_sh, SNODEP_obs_obj(n)%mesh, hemi, obsdir,&
           yr, mo, da, hr, mn, SNODEP_obs_obj(n)%conv)
      
-     inquire(file=trim(name_nh),exist=file_exists1)
-     inquire(file=trim(name_sh),exist=file_exists2)
+     inquire(file=name_nh,exist=file_exists1)
+     inquire(file=name_sh,exist=file_exists2)
   endif
 
   if(file_exists1.and.file_exists2) then 
