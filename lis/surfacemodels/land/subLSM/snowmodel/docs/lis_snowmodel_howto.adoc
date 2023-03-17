@@ -136,9 +136,9 @@ Curvature data source:                LDT
 ....
 +
 
-* Check out the SnowModel specific options under “LAND SURFACE MODELS” section header. This is where where you will specify your model timestep and point to your snowmodel.par file, for example. For further details and options, please check out link:https://github.com/NASA-LIS/LISF/blob/master/lis/configs/lis.config.adoc 
+* Check out the SnowModel specific options under “LAND SURFACE MODELS” section header. This is where where you will specify your model timestep and point to your snowmodel.par file, for example. For further details and options, please check out :https://github.com/NASA-LIS/LISF/blob/master/lis/configs/lis.config.adoc 
 
-* Since SnowModel is a subLSM in LIS, this setup has some model-specific variable names, where we added an “SM” prefix to SWE, SnowDepth, and other fields, as designated in the MODEL_OUTPUT.TBL.  This setup was in support of being able to run semi-coupled with other LSMs in LIS, e.g., Noah or Noah-MP (Niu et al., 2011 and Yang et al., 2011), allowing the user to be able to look at both the LSM and this subLSM-based output fields in the LIS output files.  Output field specifications for SnowModel can be found here link:https://github.com/NASA-LIS/LISF/blob/master/lis/configs/MODEL_OUTPUT_LIST.TBL.adoc 
+* Since SnowModel is a subLSM in LIS, this setup has some model-specific variable names, where we added an “SM” prefix to SWE, SnowDepth, and other fields, as designated in the MODEL_OUTPUT.TBL.  This setup was in support of being able to run semi-coupled with other LSMs in LIS, e.g., Noah or Noah-MP (Niu et al., 2011 and Yang et al., 2011), allowing the user to be able to look at both the LSM and this subLSM-based output fields in the LIS output files.  Output field specifications for SnowModel can be found here https://github.com/NASA-LIS/LISF/blob/master/lis/configs/MODEL_OUTPUT_LIST.TBL.adoc 
 
 .  Place your LDT and LIS executables along with your input config files within the same working directory, running LDT first to generate your LIS input parameter file. Then run LIS to generate your LIS-SnowModel based simulation and output.   
 
@@ -158,7 +158,7 @@ Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for hig
  
 Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology, 53(181), 241-256. doi:10.3189/172756507782202865 
  
-Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). link:https://doi.org/10.1002/2017JC013706 
+Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). https://doi.org/10.1002/2017JC013706 
  
 Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling. Environ. Modelling & Software, 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
  
