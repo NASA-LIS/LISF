@@ -45,7 +45,7 @@ Running the SnowModel model within the LIS Framework.
 [[ssec_snowmodelsteps,A. Outline of SnowModel Steps]]
 === A. Outline of SnowModel Steps
  
-. Define and generate your model domain and native binary input parameter file (“topo_vege.gdat”) using Glen Liston’s SnowModel topo_vege tools and scripts.  We recommend using Lambert conformal type grids when setting up your domain for running with LDT and LIS.  LIS can handle also UTM and Mercator domains, but additional code updates would be needed to support these grids for SnowModel in LISF. 
+. Define and generate your model domain and native binary input parameter file (“topo_vege.gdat”) using Glen Liston’s SnowModel topo_vege tools and scripts. For access to these scripts, you can reach out to Dr. Glen Liston at CSU (glen.liston@colostate.edu). We recommend using Lambert conformal type grids when setting up your domain for running with LDT and LIS.  LIS can handle also UTM and Mercator domains, but additional code updates would be needed to support these grids for SnowModel in LISF. 
  
 . LIS is able to support running SnowModel with either its original native ASCII- or binary-formatted “station-based” meteorological forcing files (found in “met/[forcing_dataset]/7_mk_mm/”), or you can use any of the meteorological forcing data readers available in LIS (e.g., NLDAS2, GDAS, MERRA2), which allows the user to bypass all the main SnowModel preprocessing steps.  For running with the SnowModel’s native ASCII-formatted files, for example, this option can allow the user to run with in situ station observations as before. 
  
@@ -69,7 +69,7 @@ Finally, for the LIS-SnowModel model output, output fields and files are written
 Check out the latest “master” branch from the LISF GitHub page.
 ====
  
-. In the LDT directory, run the configure script and make sure to select the “little-endian” option (“1-little"), if running on a little-endian based operating system.  Also note, the SnowModel parameter readers in LIS support parallel reads of the input topo_vege.gdat file, so you could also select “1-dmpar” for the “Parallelism” option. 
+. In the LDT directory, run the configure script and make sure to select the “little-endian” option (“1-little"), if running on a little-endian based operating system.  Also note, the SnowModel parameter readers in LDT and LIS support parallel reads of the input topo_vege.gdat file, so you could also select “1-dmpar” for the “Parallelism” option. 
  
 . Then run the compile script to generate the LDT executable file. 
  
