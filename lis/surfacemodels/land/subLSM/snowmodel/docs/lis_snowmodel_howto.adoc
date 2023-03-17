@@ -162,7 +162,7 @@ Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for hig
  
 Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology, 53(181), 241-256. doi:10.3189/172756507782202865 
  
-Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). https://doi.org/10.1002/2017JC013706 
+Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). link:https://doi.org/10.1002/2017JC013706 
  
 Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling. Environ. Modelling & Software, 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
  
