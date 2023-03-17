@@ -38,15 +38,11 @@ Running the SnowModel model within the LIS Framework.
 === Prerequisites
 
 +
-* SnowModel input files, including snowmodel.par, topo_vege file, 
-   GrADS descriptor files (“ctl_files”) and optional forcing input file.
+* SnowModel input files, including snowmodel.par, topo_vege file, GrADS descriptor files (“ctl_files”) and optional forcing input file.
 * Compiled LDT and LIS executables.
-* LDT and LIS config files, LDT output parameter file, and LIS 
-   input forcing and model output tables.
+* LDT and LIS config files, LDT output parameter file, and LIS input forcing and model output tables.
 +
  
-A. Outline of SnowModel Steps 
-
 [[ssec_snowmodelsteps,A. Outline of SnowModel Steps]]
 === A. Outline of SnowModel Steps
  
@@ -63,7 +59,7 @@ A. Outline of SnowModel Steps
  metforce_opt = 0 
 ....
  
-.  Finally, for the LIS-SnowModel model output, output fields and files are written in and follow the LIS output standards (e.g., ALMA standards).  The native SnowModel output files are not currently supported in LIS (e.g., “outputs/wo_assim/snod.gdat”). 
+Finally, for the LIS-SnowModel model output, output fields and files are written in and follow the LIS output standards (e.g., ALMA standards).  The native SnowModel output files are not currently supported in LIS (e.g., “outputs/wo_assim/snod.gdat”). 
  
 
 [[ssec_ldtsteps,B. Outline of LDT Steps:  Generating the LIS-SnowModel input parameter file]]
@@ -71,12 +67,12 @@ A. Outline of SnowModel Steps
  
 [NOTE]
 ====
- Check out the latest “master” branch from the LISF GitHub page.
+Check out the latest “master” branch from the LISF GitHub page.
 ====
  
 . In the LDT directory, run the configure script and make sure to select the “little-endian” option (“1-little"), if running on a little-endian based operating system.  Also note, the SnowModel parameter readers in LIS support parallel reads of the input topo_vege.gdat file, so you could also select “1-dmpar” for the “Parallelism” option. 
  
-Then run the compile script to generate the LDT executable file. 
+. Then run the compile script to generate the LDT executable file. 
  
 . Set up your LDT input config file (e.g., ldt.config) to match the run domain of your SnowModel grid that you generated in step A1 (above).  You will point the SnowModel-based parameter readers to your single SnowModel input file, e.g., topo_vege.gdat.   
 
@@ -90,13 +86,12 @@ The main points that are specific to SnowModel are:
 
 For more information on all the options supported for SnowModel parameters in LDT, please see the full LDT instructions and documentation:  
  
- link:https://github.com/NASA-LIS/LISF/blob/master/ldt/configs/ldt.config.adoc 
+ https://github.com/NASA-LIS/LISF/blob/master/ldt/configs/ldt.config.adoc 
  
 . Run your LDT executable with your ldt.config to generate the model parameter input file used in your LIS-SnowModel run. 
  
     ./LDT ldt.config 
- 
-     Output file:  lis_input.d01.nc.   (for example)  
+     Output file:  lis_input.d01.nc   (example filename)  
  
 
 [[ssec_lissteps,C. Outline of LIS Steps:  Running LIS-SnowModel]]
@@ -121,6 +116,7 @@ e) Before compiling the LIS code, you will need to include the following Fortran
 
 f) Once you add that flag, you are now ready to run the LIS compile script and generate the LIS executable file (“LIS”).  
 
+[start=2]
 . Set up your LIS input config file (e.g., lis.config) for the SnowModel setup, as a “subLSM” (and not as one of the LSMs). 
     Main things to pay attention to: 
 +
