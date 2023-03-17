@@ -87,6 +87,7 @@ For more information on all the options supported for SnowModel parameters in LD
  
  https://github.com/NASA-LIS/LISF/blob/master/ldt/configs/ldt.config.adoc 
  
+[start=4]
 . Run your LDT executable with your ldt.config to generate the model parameter input file used in your LIS-SnowModel run. 
  
     ./LDT ldt.config 
