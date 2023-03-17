@@ -37,12 +37,11 @@ Running the SnowModel model within the LIS Framework.
 [[ssec_prerequisites,Prerequisites]]
 === Prerequisites
 
-+
 * SnowModel input files, including snowmodel.par, topo_vege file, GrADS descriptor files (“ctl_files”) and optional forcing input file.
 * Compiled LDT and LIS executables.
 * LDT and LIS config files, LDT output parameter file, and LIS input forcing and model output tables.
-+
  
+
 [[ssec_snowmodelsteps,A. Outline of SnowModel Steps]]
 === A. Outline of SnowModel Steps
  
