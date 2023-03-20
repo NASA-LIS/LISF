@@ -12,8 +12,10 @@ import os
 import sys
 import numpy as np
 import xarray as xr
+import yaml
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
+from bcsd_stats_functions import get_domain_info
 # pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values and
@@ -34,18 +36,21 @@ def create_sorted_ts(data_ts):
 # Directory and file addresses
 CMDARGS = str(sys.argv)
 VAR_NAME = str(sys.argv[1]) ## variable name to create observational climatology (precip or tmp)
-lat1, lat2, lon1, lon2 = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
+CONFIGFILE = str(sys.argv[2])
+OUTDIR =  str(sys.argv[3])
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
 
-INDIR = str(sys.argv[6]) ## location of observed data, that is on the same grid as the NMME data
-INFILE_TEMPLATE = '{}/{:04d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
-CLIM_SYR, CLIM_EYR = int(sys.argv[7]), int(sys.argv[8])
-MASK_FILE = str(sys.argv[9])
-LATS = read_nc_files(MASK_FILE, 'lat')
-LONS = read_nc_files(MASK_FILE, 'lon')
-OUTDIR =  str(sys.argv[10])
+INDIR = config['SETUP']['AF10KM']
+CLIM_SYR = config['BCSD']['clim_start_year']
+CLIM_EYR = config['BCSD']['clim_end_year']
+LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
+lat1, lat2, lon1, lon2 = get_domain_info(CONFIGFILE, extent=True)
+
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
+INFILE_TEMPLATE = '{}/{:04d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 OUTFILE_TEMPLATE = '{}/{}_obs_clim.nc'
 
 ## Defining array to store observed data
@@ -66,7 +71,8 @@ CLIM_ARRAY = np.empty((13, (CLIM_EYR-CLIM_SYR)+1, len(LATS), len(LONS)))
 for lat_num in range(0, len(LATS)):
     for lon_num in range(0, len(LONS)):
         ## Only work with grid cells that are within the given mask
-        if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and (lon1<=LONS[lon_num]) and (LONS[lon_num]<=lon2)):
+        if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and
+            (lon1<=LONS[lon_num]) and (LONS[lon_num]<=lon2)):
             ## 1st column is for sorted quantile array
             ## The other twelve columns have sorted climatology values for all years
             for MON_NUM in range(0, 12): ## Looping from month 1 to 12
@@ -75,7 +81,7 @@ for lat_num in range(0, len(LATS)):
                 ## Now creating sorted time series of observed data and a time series of
                 ## quantile values (ranging from 1/(n+1) to n/(n+1)
                 ## Note that we are only passing data the belongs to CLIM_SYR to CLIM_EYR
-                CLIM_ARRAY[MON_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] = create_sorted_ts(OBS_TS)
+                CLIM_ARRAY[MON_NUM+1, :, lat_num, lon_num],CLIM_ARRAY[0, :, lat_num, lon_num] = create_sorted_ts(OBS_TS)
 ## finished storing climatology for all months
 OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR_NAME)
 ## opening outfile to write
