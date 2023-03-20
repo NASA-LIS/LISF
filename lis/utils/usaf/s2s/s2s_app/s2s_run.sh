@@ -4,6 +4,128 @@
 #
 #  Date: 02-01-2023;  Latest version
 #
+
+######################################################################
+#                              SHARED FUNCTIONS
+######################################################################
+SOURCE_ONLY='N'
+submit_job(){
+    if [[ $1 == "" ]] || [[ $1 == "," ]]; then
+	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
+	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
+    else
+	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
+	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $1`
+    fi
+    echo $submit_ID
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+set_permission(){
+
+    cd ${E2ESDIR}
+    /bin/rm -f set_permission.j
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	line1=
+	line2=
+    else
+	line1="#SBATCH --cluster-constraint=green"
+	line2="#SBATCH --partition=batch"
+    fi
+	
+    cat << EOF > ${E2ESDIR}/set_permission.j
+#!/bin/bash
+
+#######################################################################
+#                        Set Read/Write permission 
+#######################################################################
+
+#SBATCH --account=${SPCODE}
+#SBATCH --ntasks=1
+#SBATCH --time=00:15:00
+#SBATCH --job-name=set_permission_
+#SBATCH --output ${SCRDIR}/set_permission_%j.out
+#SBATCH --error ${SCRDIR}/set_permission_%j.err
+`echo "${line1}"`
+`echo "${line2}"`
+
+cd ${E2ESDIR}
+find . -type d \( -path ./hindcast -o -path ./bcsd_fcst/CFSv2_25km/raw/Climatology -o -path ./bcsd_fcst/NMME/raw/Climatology -path ./bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology \) -prune -o -exec chmod 0775 {} \;
+find . -name "*.nc" -exec chmod 0644 {} \;
+find . -path ./hindcast -prune -o -name "*.NC" -exec chmod 0644 {} \;
+find . -name "*.NC4" -exec chmod 0644 {} \;
+find . -name "*.nc4" -exec chmod 0644 {} \;
+find . -name "*.TIF" -exec chmod 0644 {} \;
+find . -name "*.png" -exec chmod 0644 {} \;
+
+EOF
+   perm_ID=$(submit_job $1 "set_permission.j") 
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+print_walltimes(){
+    
+    #######################################################################
+    #                     Print Walltimes in HPC-11
+    #######################################################################
+
+    echo "#######################################################################"
+    echo "                          STATUS OF SLURM JOBS"
+    echo "#######################################################################"
+    echo " "
+    echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
+    echo " "
+    
+    jobids=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f1`)
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
+    else
+	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f2`)
+    fi
+    tLen=${#jobids[@]}
+    ((tLen--))
+    if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
+	((tLen++))
+    fi
+
+    cjobs=0
+    fmt="%7s %-36s %3s %3s %3s\n"
+    for jid in ${!jobids[@]}
+    do
+	if [ ${jobfiles[$cjobs]} !=  'set_permission.j' ]; then
+	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
+	    start_job=`echo $times | cut -d' ' -f1`
+	    end_job=`echo $times | cut -d' ' -f2`
+	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
+		elapse=`echo $times | cut -d' ' -f3`
+		ehms=`echo $elapse| cut -d':' -f1`'h '`echo $elapse| cut -d':' -f2`'m '`echo $elapse| cut -d':' -f3`'s'
+		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $ehms
+		if [ ${cjobs} -eq 0 ]; then
+		    strart_time=$start_job
+		fi
+		((cjobs++))
+	    else
+		exit
+	    fi
+	fi
+    done
+    tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
+    hms=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f5`
+    echo ' '
+    echo 'ELAPSED TIME : ' $(($tdays-1))'d' `echo $hms| cut -d':' -f1`'h '`echo $hms| cut -d':' -f2`'m '`echo $hms| cut -d':' -f3`'s' 
+}
+
+if [ "${1}" == "--source-only" ]; then
+    SOURCE_ONLY='Y'
+fi
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# continue s2s_run.sh forecast
+
+if [ $SOURCE_ONLY == 'N' ]; then
+    
 ######################################################################
 #                     PROCESS COMMAND LINE ARGUMENTS
 ######################################################################
@@ -111,62 +233,9 @@ fi
 BWD=`pwd`
 
 #**********************************************************************
-#                           FUNCTIONS
+#                           S2S FORECAST FUNCTIONS
 #**********************************************************************
 
-submit_job(){
-    if [[ $1 == "" ]] || [[ $1 == "," ]]; then
-	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
-    else
-	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $1`
-    fi
-    echo $submit_ID
-}
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-set_permission(){
-
-    cd ${E2ESDIR}
-    /bin/rm -f set_permission.j
-    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	line1=
-	line2=
-    else
-	line1="#SBATCH --cluster-constraint=green"
-	line2="#SBATCH --partition=batch"
-    fi
-	
-    cat << EOF > ${E2ESDIR}/set_permission.j
-#!/bin/bash
-
-#######################################################################
-#                        Set Read/Write permission 
-#######################################################################
-
-#SBATCH --account=${SPCODE}
-#SBATCH --ntasks=1
-#SBATCH --time=00:15:00
-#SBATCH --job-name=set_permission_
-#SBATCH --output ${SCRDIR}/set_permission_%j.out
-#SBATCH --error ${SCRDIR}/set_permission_%j.err
-`echo "${line1}"`
-`echo "${line2}"`
-
-cd ${E2ESDIR}
-find . -type d \( -path ./hindcast -o -path ./bcsd_fcst/CFSv2_25km/raw/Climatology -o -path ./bcsd_fcst/NMME/raw/Climatology -path ./bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology \) -prune -o -exec chmod 0775 {} \;
-find . -name "*.nc" -exec chmod 0644 {} \;
-find . -name "*.NC" -exec chmod 0644 {} \;
-find . -name "*.NC4" -exec chmod 0644 {} \;
-find . -name "*.nc4" -exec chmod 0644 {} \;
-find . -name "*.TIF" -exec chmod 0644 {} \;
-find . -name "*.png" -exec chmod 0644 {} \;
-
-EOF
-   perm_ID=$(submit_job $1 "set_permission.j") 
-}
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -291,59 +360,6 @@ download_forecasts(){
     fi
 }
 
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-print_walltimes(){
-    
-    #######################################################################
-    #                     Print Walltimes in HPC-11
-    #######################################################################
-
-    echo "#######################################################################"
-    echo "                          STATUS OF SLURM JOBS"
-    echo "#######################################################################"
-    echo " "
-    echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
-    echo " "
-    
-    jobids=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f1`)
-    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
-    else
-	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f2`)
-    fi
-    tLen=${#jobids[@]}
-    ((tLen--))
-    if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
-	((tLen++))
-    fi 
-    
-    cjobs=0
-    fmt="%7s %-36s %3s %3s %3s\n"
-    for jid in ${!jobids[@]}
-    do
-	if [ ${jobfiles[$cjobs]} !=  'set_permission.j' ]; then
-	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
-	    start_job=`echo $times | cut -d' ' -f1`
-	    end_job=`echo $times | cut -d' ' -f2`
-	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
-		elapse=`echo $times | cut -d' ' -f3`
-		ehms=`echo $elapse| cut -d':' -f1`'h '`echo $elapse| cut -d':' -f2`'m '`echo $elapse| cut -d':' -f3`'s'
-		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $ehms
-		if [ ${cjobs} -eq 0 ]; then
-		    strart_time=$start_job
-		fi
-		((cjobs++))
-	    else
-		exit
-	    fi
-	fi
-    done
-    tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
-    hms=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f5`
-    echo ' '
-    echo 'ELAPSED TIME : ' $(($tdays-1))'d' `echo $hms| cut -d':' -f1`'h '`echo $hms| cut -d':' -f2`'m '`echo $hms| cut -d':' -f3`'s' 
-}
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -517,34 +533,37 @@ bcsd_fcst(){
     
     mmm=`date -d "$YYYY-$MM-01" +%b | tr '[:upper:]' '[:lower:]'`
     
-    # Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
-    # --------------------------------------------------------------------------
-    jobname=bcsd01
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
-
-    job_list="$jobname*.j"
-    bcsd01_ID=
-    for jfile in $job_list
-    do
-	thisID=$(submit_job "" "${jfile}")
-	bcsd01_ID=`echo $bcsd01_ID`' '$thisID
-    done
-    bcsd01_ID=`echo $bcsd01_ID | sed "s| |,|g"`
-
-    # Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
-    # --------------------------------------------------------------
-    jobname=bcsd03
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
-
-    unset job_list
-    job_list="$jobname*.j"
-    bcsd03_ID=
-    for jfile in $job_list
-    do
-	thisID=$(submit_job "" "${jfile}")
-	bcsd03_ID=`echo $bcsd03_ID`' '$thisID
-    done
-    bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
+    if [ $DATATYPE == "forecast" ]; then
+	# hindcast does not run bcsd01 and bcsd03 since they have been preprocessed.
+	# Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
+	# --------------------------------------------------------------------------
+	jobname=bcsd01
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	
+	job_list="$jobname*.j"
+	bcsd01_ID=
+	for jfile in $job_list
+	do
+	    thisID=$(submit_job "" "${jfile}")
+	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	done
+	bcsd01_ID=`echo $bcsd01_ID | sed "s| |,|g"`
+	
+	# Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
+	# --------------------------------------------------------------
+	jobname=bcsd03
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	
+	unset job_list
+	job_list="$jobname*.j"
+	bcsd03_ID=
+	for jfile in $job_list
+	do
+	    thisID=$(submit_job "" "${jfile}")
+	    bcsd03_ID=`echo $bcsd03_ID`' '$thisID
+	done
+	bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
+    fi
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
@@ -556,7 +575,11 @@ bcsd_fcst(){
     bcsd04_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	if [ $DATATYPE == "forecast" ]; then
+	    thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	else
+	    thisID=$(submit_job "" "${jfile}")
+	fi
 	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
     done
     bcsd04_ID=`echo $bcsd04_ID | sed "s| |,|g"`
@@ -574,7 +597,11 @@ bcsd_fcst(){
     bcsd05_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	if [ $DATATYPE == "forecast" ]; then
+	    thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	else
+	    thisID=$(submit_job "" "${jfile}")
+	fi
 	bcsd05_ID=`echo $bcsd05_ID`' '$thisID
     done
     bcsd05_ID=`echo $bcsd05_ID | sed "s| |,|g"`
@@ -1069,5 +1096,5 @@ case $STEP in
 	set_permission $s2spost_ID
     ;;
 esac
-    
+fi
 

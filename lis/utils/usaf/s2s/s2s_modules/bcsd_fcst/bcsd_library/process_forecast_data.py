@@ -125,6 +125,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
 
     # apply to the entire data set
     ds_out = args["regridder"](cfsv2)
+    ds_out2 = ds_out.drop_vars('slice', errors="ignore")
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
@@ -135,8 +136,8 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        this_6h1 = ds_out.sel(step = (ds_out['valid_time']  >= dt1s) &
-                                (ds_out['valid_time']  < dt2s), drop=True)
+        this_6h1 = ds_out2.sel(step = (ds_out2['valid_time']  >= dt1s) &
+                                (ds_out2['valid_time']  < dt2s), drop=True)
         this_6h2 = this_6h1.rename_vars({"time": "time_step"})
         this_6h = this_6h2.rename_dims({"step": "time"})
         this_6h.to_netcdf(

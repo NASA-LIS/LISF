@@ -68,6 +68,7 @@ def _driver():
     # Parse command arguements
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
+    parser.add_argument('-e', '--fcst_eyr', required=False, help='forecast end year')
     parser.add_argument('-c', '--config_file', required=True, help='config file name')
     parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
@@ -77,7 +78,8 @@ def _driver():
 
     args = parser.parse_args()
     config_file = args.config_file
-    year = int(args.fcst_syr)
+    syear = int(args.fcst_syr)
+    eyear = int(args.fcst_eyr)
     month_abbr = args.month_abbr
     cwd = args.cwd
     job_name = args.job_name
@@ -97,7 +99,6 @@ def _driver():
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
-
     # Log file output directory
     logdir = cwd + '/log_files'
 
@@ -112,20 +113,39 @@ def _driver():
 
     # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
     print("[INFO] Processing CFSv2 6-hrly forecast variables")
-    ensemble_sizes = config['EXP']['ensemble_sizes'][0]    
-    for ens_num in range(1, ensemble_sizes['CFSv2'] + 1):
-        cmd = "python"
-        cmd += f" {srcdir}/process_forecast_data.py"
-        cmd += f" {year:04d}"
-        cmd += f" {ens_num:02d}"
-        cmd += f" {imon}"
-        cmd += f" {outdir}"
-        cmd += f" {config_file}"
-        for ic_date in ic_dates:
-            cmd += f" {ic_date}"
-        jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
-        jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+    nof_raw_ens = config['BCSD']['nof_raw_ens']
+    for ens_num in range(1, nof_raw_ens + 1):
+        if eyear is not None:
+            cmd_list = []
+            for cyear in range(syear,eyear+1):
+                cmd = "python"
+                cmd += f" {srcdir}/process_forecast_data.py"
+                cmd += f" {cyear:04d}"
+                cmd += f" {ens_num:02d}"
+                cmd += f" {imon}"
+                cmd += f" {outdir}"
+                cmd += f" {config_file}"
+                for ic_date in ic_dates:
+                    cmd += f" {ic_date}"
+                cmd_list.append(cmd)
+            jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
+            jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
+            utils.job_script(config_file, jobfile, jobname, ntasks,
+                             hours, cwd, command_list=cmd_list)
+
+        else:
+            cmd = "python"
+            cmd += f" {srcdir}/process_forecast_data.py"
+            cmd += f" {syear:04d}"
+            cmd += f" {ens_num:02d}"
+            cmd += f" {imon}"
+            cmd += f" {outdir}"
+            cmd += f" {config_file}"
+            for ic_date in ic_dates:
+                cmd += f" {ic_date}"
+            jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
+            jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Write command to process CFSv2 files for {imon}")
 
