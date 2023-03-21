@@ -25,6 +25,6 @@ year=`cat current_year_$MM`
 
 if [ $NJOBS -lt 120 ] && [ $year -le $clim_eyr ]; then
     # NCCS permits 256 jobs per user at a given time. The s2s_run.sh (hindcast) consists of `100 jobs  
-    ## s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE
+    s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE
     echo $year > current_year_$MM
 fi
