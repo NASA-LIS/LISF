@@ -51,7 +51,7 @@ Running the SnowModel model within the LIS Framework.
  
 . For large domains, we recommend also setting up the “extra_met” grid_lon.gdat and grid_lat.gdat files for handling of UTC time changes for the solar radiation calculations in SnowModel. 
  
-. Next, you will want to set up your SnowModel parameter text-based input file:  snowmodel.par, as you normally would to run the model. This input parameter file is read in by LIS and “loads” the variety of options available to run the SnowModel system. Note:  With the LIS version, one new option was included in the snowmodel.par file, which an example is provided within this “docs” directory with this “How To”, default option is: 
+. Next, you will want to set up your SnowModel parameter text-based input file:  snowmodel.par, as you normally would to run the model. This input parameter file is read in by LIS and “loads” the variety of options available to run the SnowModel system. Note:  With the LIS version, one new option was included in the snowmodel.par file, which an example is provided within this “docs” directory with this “How To”. The default option is: 
  
 [subs="attributes+,-callouts"]
 ....
@@ -91,7 +91,7 @@ For more information on all the options supported for SnowModel parameters in LD
 . Run your LDT executable with your ldt.config to generate the model parameter input file used in your LIS-SnowModel run. 
  
     ./LDT ldt.config 
-     Output file:  lis_input.d01.nc   (example filename)  
+     Output file: lis_input.d01.nc   (example filename)  
  
 
 [[ssec_lissteps,C. Outline of LIS Steps:  Running LIS-SnowModel]]
@@ -99,7 +99,7 @@ For more information on all the options supported for SnowModel parameters in LD
 
 . In the LIS directory, you will first go into “make” directory and you will do the following: 
  
-a) Open the file:   default.cfg    (with an editor of choice) 
+a) Open the file: default.cfg    (with an editor of choice) 
 
 b) Go to the “SNOWMODEL” section and turn on the model with “True”: 
  
@@ -136,9 +136,9 @@ Curvature data source:                LDT
 ....
 +
 
-* Check out the SnowModel specific options under “LAND SURFACE MODELS” section header. This is where where you will specify your model timestep and point to your snowmodel.par file, for example. For further details and options, please check out :https://github.com/NASA-LIS/LISF/blob/master/lis/configs/lis.config.adoc 
+* Check out the SnowModel specific options under “LAND SURFACE MODELS” section header. This is where where you will specify your model timestep and point to your snowmodel.par file, for example. For further details and options, please check out: https://github.com/NASA-LIS/LISF/blob/master/lis/configs/lis.config.adoc 
 
-* Since SnowModel is a subLSM in LIS, this setup has some model-specific variable names, where we added an “SM” prefix to SWE, SnowDepth, and other fields, as designated in the MODEL_OUTPUT.TBL.  This setup was in support of being able to run semi-coupled with other LSMs in LIS, e.g., Noah or Noah-MP (Niu et al., 2011 and Yang et al., 2011), allowing the user to be able to look at both the LSM and this subLSM-based output fields in the LIS output files.  Output field specifications for SnowModel can be found here https://github.com/NASA-LIS/LISF/blob/master/lis/configs/MODEL_OUTPUT_LIST.TBL.adoc 
+* Since SnowModel is a subLSM in LIS, this setup has some model-specific variable names, where we added an “SM” prefix to SWE, SnowDepth, and other fields, as designated in the MODEL_OUTPUT.TBL.  This setup was in support of being able to run semi-coupled with other LSMs in LIS, e.g., Noah or Noah-MP (Niu et al., 2011 and Yang et al., 2011), allowing the user to be able to look at both the LSM and this subLSM-based output fields in the LIS output files.  Output field specifications for SnowModel can be found here: https://github.com/NASA-LIS/LISF/blob/master/lis/configs/MODEL_OUTPUT_LIST.TBL.adoc 
 
 .  Place your LDT and LIS executables along with your input config files within the same working directory, running LDT first to generate your LIS input parameter file. Then run LIS to generate your LIS-SnowModel based simulation and output.   
 
@@ -150,20 +150,20 @@ Curvature data source:                LDT
  
 Arsenault, K.R., S.V. Kumar, J.V. Geiger, S. Wang, E. Kemp, D.M. Mocko, H.K. Beaudoing, A. Getirana, M. Navari, B. Li, J. Jacob, J. Wegiel, and C.D. Peters-Lidard (2018), The Land surface Data Toolkit (LDT v7.2) – a data fusion environment for land data assimilation systems. Geosci. Model Dev., 11, 3605-3621, doi:10.5194/gmd-11-3605-2018 
  
-Liston, G., & Sturm, M. (1998), A snow-transport model for complex terrain. Journal of Glaciology, 44(148), 498-516. doi:10.3189/S0022143000002021. 
+Liston, G., & Sturm, M. (1998), A snow-transport model for complex terrain. Journal of Glaciology. 44(148), 498-516. doi:10.3189/S0022143000002021 
  
-Liston, G. E., & Elder, K. (2006a), A distributed snow-evolution modeling system (SnowModel). Journal of Hydrometeorology. 7(6): 1259-1276. 
+Liston, G. E., & Elder, K. (2006a), A distributed snow-evolution modeling system (SnowModel). Journal of Hydrometeorology. 7(6): 1259-1276 
  
-Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for high-resolution terrestrial modeling (MicroMet), Journal of Hydrometeorology, 7(2), 217-234. 
+Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for high-resolution terrestrial modeling (MicroMet). Journal of Hydrometeorology, 7(2), 217-234 
  
-Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology, 53(181), 241-256. doi:10.3189/172756507782202865 
+Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology. 53(181), 241-256. doi:10.3189/172756507782202865 
  
 Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). https://doi.org/10.1002/2017JC013706 
  
-Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling. Environ. Modelling & Software, 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
+Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling, Environ. Modelling & Software. 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
  
 Kumar, S.V., et al. (2012), Land surface Verification Toolkit (LVT) - a generalized framework for land surface model evaluation. Geosci. Model Dev., 5, 869-886, doi:10.5194/gmd-5-869-2012 
  
-Niu, G.-Y., et al. (2011), The community Noah land surface model with multiparameterization options (Noah-MP): 1. Model description and evaluation with local-scale measurements. J. Geophys. Res., 116, D12109, doi: 10.1029/2010JD015139. 
+Niu, G.-Y., et al. (2011), The community Noah land surface model with multiparameterization options (Noah-MP): 1. Model description and evaluation with local-scale measurements. J. Geophys. Res., 116, D12109, doi: 10.1029/2010JD015139 
  
-Yang, Z.-L., G.-Y. Niu, K. E. Mitchell, F. Chen, M. B. Ek, M. Barlage, K. Manning, D. Niyogi, M. Tewari, & Y. Xia (2011), The Community Noah Land Surface Model with Multi-Parameterization Options (Noah-MP): 2. Evaluation over Global River Basins. J. Geophys. Res., doi:10.1029/2010JD015140. 
+Yang, Z.-L., G.-Y. Niu, K. E. Mitchell, F. Chen, M. B. Ek, M. Barlage, K. Manning, D. Niyogi, M. Tewari, & Y. Xia (2011), The Community Noah Land Surface Model with Multi-Parameterization Options (Noah-MP): 2. Evaluation over Global River Basins. J. Geophys. Res., doi:10.1029/2010JD015140 
