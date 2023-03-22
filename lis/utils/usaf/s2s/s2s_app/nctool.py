@@ -36,8 +36,8 @@ def file_info(infile):
     ''' read file info. '''
     def print_summary (arr):
         str_out =  'Mean :' + str(np.nanmean(arr)) + ' Max:' + str(np.nanmax(arr)) + \
-            str(unravel_index(arr.argmax(), arr.shape)) + \
-            ' Min :' + str(np.nanmin(arr)) + str(unravel_index(arr.argmin(), arr.shape))
+            str(unravel_index(np.nanargmax(arr), arr.shape)) + \
+            ' Min :' + str(np.nanmin(arr)) + str(unravel_index(np.nanargmin(arr), arr.shape))
         return str_out
 
     _a = xr.open_dataset(infile)
@@ -94,6 +94,7 @@ def print_var(latp, lonp, latname, lonname, varname, filename):
     # find indeces closest to latp/lonp
     if latp.find('.') == -1:
         _iy, _ix = int(latp), int(lonp)
+        print('cell location [LAT/LON]:', lats[_iy],lons[_ix])
     else:
         if len(lats.shape) == 2:
             _iy, _ix = getclosest_ij(lats.astype(np.float), lons.astype(np.float),
