@@ -150,17 +150,17 @@ Curvature data source:                LDT
  
 Arsenault, K.R., S.V. Kumar, J.V. Geiger, S. Wang, E. Kemp, D.M. Mocko, H.K. Beaudoing, A. Getirana, M. Navari, B. Li, J. Jacob, J. Wegiel, and C.D. Peters-Lidard (2018), The Land surface Data Toolkit (LDT v7.2) – a data fusion environment for land data assimilation systems. Geosci. Model Dev., 11, 3605-3621, doi:10.5194/gmd-11-3605-2018 
  
-Liston, G., & Sturm, M. (1998), A snow-transport model for complex terrain. Journal of Glaciology. 44(148), 498-516. doi:10.3189/S0022143000002021 
+Liston, G., & Sturm, M. (1998), A snow-transport model for complex terrain. Journal of Glaciology, 44(148), 498-516. doi:10.3189/S0022143000002021 
  
-Liston, G. E., & Elder, K. (2006a), A distributed snow-evolution modeling system (SnowModel). Journal of Hydrometeorology. 7(6): 1259-1276 
+Liston, G. E., & Elder, K. (2006a), A distributed snow-evolution modeling system (SnowModel). Journal of Hydrometeorology, 7(6): 1259-1276 
  
 Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for high-resolution terrestrial modeling (MicroMet). Journal of Hydrometeorology, 7(2), 217-234 
  
-Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology. 53(181), 241-256. doi:10.3189/172756507782202865 
+Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology, 53(181), 241-256. doi:10.3189/172756507782202865 
  
 Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). https://doi.org/10.1002/2017JC013706 
  
-Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling, Environ. Modelling & Software. 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
+Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling. Environ. Modelling & Software, 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
  
 Kumar, S.V., et al. (2012), Land surface Verification Toolkit (LVT) - a generalized framework for land surface model evaluation. Geosci. Model Dev., 5, 869-886, doi:10.5194/gmd-5-869-2012 
  
