@@ -61,6 +61,9 @@ subroutine readLISlsmTEFFobs(n)
   real       :: gmt
   real       :: lhour
   integer    :: zone
+  integer, allocatable :: ntiles_pergrid(:)
+  integer, allocatable :: str_tind(:)
+  integer :: gid
 
   interface
      subroutine create_lsm_teff_output_filename(n, form, fname, odir, wstyle, wopt, &
@@ -184,18 +187,29 @@ subroutine readLISlsmTEFFobs(n)
                 lsmteffobs%nc, lsmteffobs%nr
            call LDT_endrun()
         end if
-        call read_LIStsoil_data_usaf(n, lsmteffobs%num_tiles, fname, tsoil, &
-             rc1)
+        tsoil = 0
+        allocate(ntiles_pergrid(lsmteffobs%nc * lsmteffobs%nr))
+        ntiles_pergrid = lsmteffobs%ntiles_pergrid ! Copy scalar to array
+        allocate(str_tind(lsmteffobs%nc * lsmteffobs%nr))
+        do gid = 1, lsmteffobs%nc * lsmteffobs%nr
+           str_tind(gid) = ((gid - 1) * lsmteffobs%num_ens) + 1
+        end do
+        call read_LIStsoil_data_usaf(n, lsmteffobs%num_tiles, str_tind, &
+             ntiles_pergrid, &
+             lsmteffobs%num_ens, &
+             fname, tsoil, rc1)
         if (rc1 .ne. 0) then
            write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
            call LDT_endrun()
         end if
         tsoil01value2d = tsoil(:,:,1)
         tsoil02value2d = tsoil(:,:,2)
+        deallocate(ntiles_pergrid)
+        deallocate(str_tind)
 
         kk = 1.007
-        cc_6am = 0.246;    !Descending       
-        cc_6pm = 1.000;    !Ascending 
+        cc_6am = 0.246;    !Descending
+        cc_6pm = 1.000;    !Ascending
 
         do r=1,lsmteffobs%nr
            do c=1, lsmteffobs%nc
@@ -204,14 +218,18 @@ subroutine readLISlsmTEFFobs(n)
               gmt = LDT_rc%hr
               call LDT_gmt2localtime(gmt, lon, lhour, zone)
 
-              if(lhour.eq.6) then
+              !if(lhour.eq.6) then ! Orig
+              if(lhour > 4 .and. lhour < 8) then ! EMK for 3-hrly data
+
                  if (Tsoil01value2d(c,r).gt.273.15.and.Tsoil02value2d(c,r).gt.273.15) then
                     teffvalue1d(c+(r-1)*lsmteffobs%nc) = &
                           kk * (cc_6am * Tsoil01value2d(c,r) + (1 - cc_6am) * Tsoil02value2d(c,r))
                  else
                     teffvalue1d(c+(r-1)*lsmteffobs%nc) = LDT_rc%udef
                  endif
-              elseif(lhour.eq.18) then
+              !elseif(lhour.eq.18) then ! Orig
+              elseif (lhour > 16 .and. lhour < 20) then ! EMK for 3-hrly data
+
                  if (Tsoil01value2d(c,r).gt.273.15.and.Tsoil02value2d(c,r).gt.273.15) then
                     teffvalue1d(c+(r-1)*lsmteffobs%nc) = &
                           kk * (cc_6pm * Tsoil01value2d(c,r) + (1 - cc_6pm) * Tsoil02value2d(c,r))
@@ -221,9 +239,10 @@ subroutine readLISlsmTEFFobs(n)
               else
                  teffvalue1d(c+(r-1)*lsmteffobs%nc) = LDT_rc%udef
               endif
+
            enddo
         enddo
-        
+
         call transformDataToLDTgrid_teff(n,teffvalue1d,teff_data)
 
 #endif
