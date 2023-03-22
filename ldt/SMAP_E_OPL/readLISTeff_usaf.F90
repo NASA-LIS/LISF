@@ -43,6 +43,9 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   logical :: file_exists
   integer :: rc1
   integer :: gid
+  integer :: nens
+  integer, allocatable :: str_tind(:)
+  integer, allocatable :: ntiles_pergrid(:)
   real, parameter :: kk = 1.007
   real, parameter :: cc_6am = 0.246
   real, parameter :: cc_6pm = 1.000
@@ -56,17 +59,8 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   rc = 1 ! Assume error by default, update below
 
   ! Set up basic info on Air Force product
-  ! FIXME...Fetch critical data from ldt.config file instead of hardwiring
-  !LDT_rc%nensem(n) = 12
-  LDT_rc%nensem(n) = SMAPeOPL%num_ens
-  !LDT_rc%glbntiles_red(n) = LDT_rc%lnc(n) * LDT_rc%lnr(n) * LDT_rc%nensem(n)
-  !LDT_rc%glbntiles_red(n) = SMAPeOPL%num_tiles
-  if (.not. allocated(LDT_domain(n)%ntiles_pergrid)) &
-       allocate(LDT_domain(n)%ntiles_pergrid(LDT_rc%lnc(n) * LDT_rc%lnr(n)))
-  !LDT_domain(n)%ntiles_pergrid = 1
-  LDT_domain(n)%ntiles_pergrid = SMAPeOPL%ntiles_pergrid
-  if (.not. allocated(LDT_domain(n)%str_tind)) &
-       allocate(LDT_domain(n)%str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+  nens = SMAPeOPL%num_ens
+  allocate(str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
   if (SMAPeOPL%ntiles_pergrid .ne. 1) then
      write(LDT_logunit,*) &
           '[ERR] Current SMAP_E_OPL code assumes ntiles_pergrid = 1'
@@ -75,8 +69,10 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
      call LDT_endrun()
   end if
   do gid = 1, (LDT_rc%gnc(n) * LDT_rc%gnr(n))
-     LDT_domain(n)%str_tind(gid) = ((gid - 1) * LDT_rc%nensem(n)) + 1
+     str_tind(gid) = ((gid - 1) * nens) + 1
   end do
+  allocate(ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnr(n)))
+  ntiles_pergrid = SMAPeOPL%ntiles_pergrid
 
   call create_LISsoilT_filename_usaf(SMAPeOPL%LISdir, &
        yyyymmdd, hh, fname)
@@ -84,7 +80,9 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
   inquire(file=trim(fname), exist=file_exists)
   if (file_exists) then
      write(LDT_logunit,*) '[INFO] Reading ', trim(fname)
-     call read_LIStsoil_data_usaf(n, SMAPeOPL%num_tiles, fname, tsoil, rc1)
+     call read_LIStsoil_data_usaf(n, SMAPeOPL%num_tiles, str_tind, &
+          ntiles_pergrid, nens, &
+          fname, tsoil, rc1)
      if (rc1 .ne. 0) then
         write(LDT_logunit,*) '[ERR] Cannot read from ', trim(fname)
         return
@@ -110,6 +108,9 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
      rc = 0
   end if
 
+  if (allocated(str_tind)) deallocate(str_tind)
+  if (allocated(ntiles_pergrid)) deallocate(ntiles_pergrid)
+
 end subroutine readLIS_Teff_usaf
 
 !BOP
@@ -118,7 +119,8 @@ end subroutine readLIS_Teff_usaf
 ! \label{read_LIStsoil_data_usaf}
 !
 ! !INTERFACE:
-subroutine read_LIStsoil_data_usaf(n, ntiles, fname, tsoil, rc)
+subroutine read_LIStsoil_data_usaf(n, ntiles, str_tind, ntiles_pergrid, nens, &
+     fname, tsoil, rc)
 !
 ! !USES:
   use LDT_logMod
@@ -135,6 +137,9 @@ subroutine read_LIStsoil_data_usaf(n, ntiles, fname, tsoil, rc)
 !
   integer, intent(in) :: n
   integer, intent(in) :: ntiles
+  integer, intent(in) :: str_tind(LDT_rc%gnc(n) * LDT_rc%gnc(n))
+  integer, intent(in) :: ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnc(n))
+  integer, intent(in) :: nens
   character(*), intent(in) :: fname
   real, intent(inout) :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
   integer, intent(out) :: rc
@@ -247,7 +252,9 @@ subroutine read_LIStsoil_data_usaf(n, ntiles, fname, tsoil, rc)
 
   ! Calculate ensemble mean in 2d grid space, for each soil layer
   do k = 1, SoilTemp_profiles
-     call calc_gridded_ensmean_1layer(n, ntiles, SoilTemp_inst_tiles(:,k), &
+     call calc_gridded_ensmean_1layer(n, ntiles, str_tind, ntiles_pergrid, &
+          nens, &
+          SoilTemp_inst_tiles(:,k), &
           SoilTemp_inst_ensmean_1layer)
      do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
@@ -275,10 +282,12 @@ end subroutine read_LIStsoil_data_usaf
 
 ! Subroutine for calculating 2d gridded ensemble mean for a single soil layer,
 ! from tiled data.
-subroutine calc_gridded_ensmean_1layer(n, ntiles, gvar_tile, gvar)
+subroutine calc_gridded_ensmean_1layer(n, ntiles, str_tind, ntiles_pergrid, &
+     nens, gvar_tile, gvar)
 
   ! Imports
   use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
+  use LDT_logMod, only: LDT_logunit
 
   ! Defaults
   implicit none
@@ -286,6 +295,9 @@ subroutine calc_gridded_ensmean_1layer(n, ntiles, gvar_tile, gvar)
   ! Arguments
   integer, intent(in) :: n
   integer, intent(in) :: ntiles
+  integer, intent(in) :: str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n))
+  integer, intent(in) :: ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnr(n))
+  integer, intent(in) :: nens
   real, intent(in) :: gvar_tile(ntiles)
   real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
 
@@ -297,13 +309,13 @@ subroutine calc_gridded_ensmean_1layer(n, ntiles, gvar_tile, gvar)
      do r = 1, LDT_rc%gnr(n)
         do c = 1, LDT_rc%gnc(n)
            gid = c + ((r-1) * LDT_rc%gnc(n))
-           stid = LDT_domain(n)%str_tind(gid)
-           if (LDT_domain(n)%ntiles_pergrid(gid) > 0) then
-              do m = 1, LDT_rc%nensem(n)
+           stid = str_tind(gid)
+           if (ntiles_pergrid(gid) > 0) then
+              do m = 1, nens
                  tid = stid + m - 1
                  gvar(c,r) = gvar(c,r) + gvar_tile(tid)
               enddo
-              gvar(c,r) = gvar(c,r) / LDT_rc%nensem(n)
+              gvar(c,r) = gvar(c,r) / nens
            end if
         end do
      end do
