@@ -279,11 +279,12 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
            !QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING_temp
            !RECH(I,J) = RECH(I,J) + DEEPRECH_temp
            !***** TML: END DEBUGGING CODE; Returns to Original Code *****
-
-           QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
-           QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
-           QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
-           RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
+           IF(LANDMASK(I,J).GT.0)THEN
+               QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
+               QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
+               QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
+               RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
+           ENDIF
 !zero out DEEPRECH
            DEEPRECH(I,J) =0.
 
@@ -325,11 +326,16 @@ END  SUBROUTINE WTABLE_mmf_noahmp
   REAL,    PARAMETER :: PI = 3.14159265 
   REAL,    PARAMETER :: FANGLE = 0.22754493   ! = 0.5*sqrt(0.5*tan(pi/8))
 
-itsh=max(its-1,ids)
-iteh=min(ite+1,ide-1)
-jtsh=max(jts-1,jds)
-jteh=min(jte+1,jde-1)
+!itsh=max(its-1,ids)
+!iteh=min(ite+1,ide-1)
+!jtsh=max(jts-1,jds)
+!jteh=min(jte+1,jde-1)
 
+! TML: Exchanges not possible between boundaries; need to rely on halos ...
+itsh=its
+iteh=ite
+jtsh=jts
+jteh=jte
 
     DO J=jtsh,jteh
        DO I=itsh,iteh
@@ -348,10 +354,16 @@ jteh=min(jte+1,jde-1)
        ENDDO
     ENDDO
 
-itsh=max(its,ids+1)
-iteh=min(ite,ide-2)
-jtsh=max(jts,jds+1)
-jteh=min(jte,jde-2)
+!itsh=max(its,ids+1)
+!iteh=min(ite,ide-2)
+!jtsh=max(jts,jds+1)
+!jteh=min(jte,jde-2)
+
+! TML: Exchanges not possible between boundaries; need to rely on halos ...
+itsh=its+1
+iteh=ite-1
+jtsh=jts+1
+jteh=jte-1
 
     DO J=jtsh,jteh
        DO I=itsh,iteh

@@ -371,16 +371,22 @@ contains
             
             !SW, for MMF, 09202021
             if(NOAHMP401_struc(n)%run_opt .eq. 5) then 
-                NOAHMP401_struc(n)%row_min = huge(1)
-                NOAHMP401_struc(n)%row_max = 0 
-                NOAHMP401_struc(n)%col_min = huge(1)
-                NOAHMP401_struc(n)%col_max = 0 
-                do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                    NOAHMP401_struc(n)%row_min = min(NOAHMP401_struc(n)%row_min, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row)
-                    NOAHMP401_struc(n)%row_max = max(NOAHMP401_struc(n)%row_max, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row) 
-                    NOAHMP401_struc(n)%col_min = min(NOAHMP401_struc(n)%col_min, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col)
-                    NOAHMP401_struc(n)%col_max = max(NOAHMP401_struc(n)%col_max, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col) 
-                enddo 
+                !NOAHMP401_struc(n)%row_min = huge(1)
+                !NOAHMP401_struc(n)%row_max = 0 
+                !NOAHMP401_struc(n)%col_min = huge(1)
+                !NOAHMP401_struc(n)%col_max = 0 
+                !do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                !    NOAHMP401_struc(n)%row_min = min(NOAHMP401_struc(n)%row_min, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row)
+                !    NOAHMP401_struc(n)%row_max = max(NOAHMP401_struc(n)%row_max, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row) 
+                !    NOAHMP401_struc(n)%col_min = min(NOAHMP401_struc(n)%col_min, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col)
+                !    NOAHMP401_struc(n)%col_max = max(NOAHMP401_struc(n)%col_max, LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col) 
+                !enddo 
+
+
+                NOAHMP401_struc(n)%row_min = 1
+                NOAHMP401_struc(n)%row_max = LIS_rc%lnr(n)
+                NOAHMP401_struc(n)%col_min = 1
+                NOAHMP401_struc(n)%col_max = LIS_rc%lnc(n)
 
                 allocate(NOAHMP401_struc(n)%rct_idx(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
