@@ -21,6 +21,15 @@ from bcsd_stats_functions import get_domain_info
 # This function takes in a time series as input and provides sorted times series of values and
 # quantiles in return
 ## Using Plotting position formula to get quantiles
+
+VAR_REPLACE = {'LWdown_f_tavg': 'LWGAB',
+               'Rainf_f_tavg': 'PRECTOT',
+               'Psurf_f_tavg': 'PS',
+               'Qair_f_tavg': 'QV2M',
+               'SWdown_f_tavg': 'SWGDN',
+               'Tair_f_tavg': 'T2M',
+               'Wind_f_tavg': 'U10M'}
+
 def create_sorted_ts(data_ts):
     """create sorted ts"""
     clim_sort = np.sort(data_ts) ## np.sort a function to sort data into ascending order
@@ -50,7 +59,7 @@ lat1, lat2, lon1, lon2 = get_domain_info(CONFIGFILE, extent=True)
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
-INFILE_TEMPLATE = '{}/{:04d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
+INFILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 OUTFILE_TEMPLATE = '{}/{}_obs_clim.nc'
 
 ## Defining array to store observed data
@@ -60,7 +69,13 @@ MON_COUNTER = 0
 for YEAR in range(CLIM_SYR, CLIM_EYR+1):
     for MON in range(0, 12):
 		    #INFILE = INFILE_TEMPLATE.format(INDIR, YEAR, MON+1, YEAR, MON+1)
-        INFILE = INFILE_TEMPLATE.format(INDIR, YEAR, YEAR, MON+1)
+        # LIS_HIST monthly file directory is month + 1
+        lis_year = YEAR
+        lis_month = MON+2
+        if lis_month > 12:
+           lis_month -= 12
+           lis_year = lis_year + 1
+        INFILE = INFILE_TEMPLATE.format(INDIR, lis_year, lis_month, lis_year, lis_month)
         print (f"Reading Observed Data {INFILE}")
         OBS_DATA_COARSE[MON_COUNTER, ] = read_nc_files(INFILE, VAR_NAME)
         MON_COUNTER+=1
@@ -83,7 +98,7 @@ for lat_num in range(0, len(LATS)):
                 ## Note that we are only passing data the belongs to CLIM_SYR to CLIM_EYR
                 CLIM_ARRAY[MON_NUM+1, :, lat_num, lon_num],CLIM_ARRAY[0, :, lat_num, lon_num] = create_sorted_ts(OBS_TS)
 ## finished storing climatology for all months
-OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR_NAME)
+OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR_REPLACE.get(VAR_NAME))
 ## opening outfile to write
 print (CLIM_ARRAY.min(), CLIM_ARRAY.max())
 # Now writing output file
