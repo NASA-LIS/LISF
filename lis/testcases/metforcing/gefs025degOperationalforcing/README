@@ -1,0 +1,28 @@
+GEFS 0.25deg Operational Reader Test Case
+
+This test-case performs a 1/2 degree simulation
+from 2021-11-05 to 2021-11-06 to test the processing
+of the 0.25 deg GEFS operational forcing data set.
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+
+Notes:
+
+This feature was added in pull request #1002:
+http://github.com/nasa-lis/lisf/pull/1002
