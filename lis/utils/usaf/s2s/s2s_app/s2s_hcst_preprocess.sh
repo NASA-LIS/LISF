@@ -246,7 +246,7 @@ clim_nafpa(){
      
     python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
     this_var=0
-    for var in LWGAB PRECTOT  PS QV2M  SWGDN T2M  U10M; do
+    for var in LWdown_f_tavg Rainf_f_tavg Psurf_f_tavg  Qair_f_tavg SWdown_f_tavg Tair_f_tavg Wind_f_tavg; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir"
 	if [ $this_var == 0 ]; then
 	    sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_run.j
@@ -257,7 +257,7 @@ clim_nafpa(){
 	fi	
 	((this_var++))
     done;
-    
+
     clim_nafpa_ID=$(submit_job "" "${jobname}_run.j")
     cd ${BWD}
 
