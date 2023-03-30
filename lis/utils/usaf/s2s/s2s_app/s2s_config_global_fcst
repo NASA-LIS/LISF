@@ -5,7 +5,7 @@
 #######################################################################
 
 SETUP:
-  E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_GLOBAL_2/
+  E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_testcase/
   METFORC: /discover/nobackup/projects/usaf_lis/GHI_S2S/USAF_FORCING/
   supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
   LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/LISF-1/

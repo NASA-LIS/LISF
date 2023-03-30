@@ -91,7 +91,7 @@ for lat_num in range(0, len(LATS)):
      # The other twelve columns have sorted climatology values for all year
 			for LEAD_NUM in range(0, LEAD_FINAL):
 				## Now sorting climtology time series for the given lead time
-				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] =
+				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] =\
                                   create_sorted_ts(FCST_TS[LEAD_NUM, :, lat_num, lon_num])
 
 ## finished storing climatology for all months
