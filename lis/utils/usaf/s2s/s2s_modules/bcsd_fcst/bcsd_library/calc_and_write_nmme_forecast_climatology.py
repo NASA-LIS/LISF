@@ -88,7 +88,7 @@ for lat_num in range(0, len(LATS)):
 		if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and (lon1<=LONS[lon_num]) and
                          (LONS[lon_num]<=lon2)):
 			## 1st column is for sorted quantile array
-			and then rest tweleve columns have sorted climatology values for all year
+			## and then rest tweleve columns have sorted climatology values for all year
 			for LEAD_NUM in range(0, LEAD_FINAL):
 				## Now sorting climtology time series for the given lead time
 				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :,

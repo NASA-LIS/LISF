@@ -94,7 +94,7 @@ print_walltimes(){
     fmt="%7s %-36s %3s %3s %3s\n"
     for jid in ${!jobids[@]}
     do
-	if [ ${jobfiles[$cjobs]} !=  'set_permission.j' ]; then
+	if [[ ${jobfiles[$cjobs]} !=  'set_permission.j' ]]; then
 	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
 	    start_job=`echo $times | cut -d' ' -f1`
 	    end_job=`echo $times | cut -d' ' -f2`
