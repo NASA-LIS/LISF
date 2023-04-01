@@ -24,7 +24,7 @@ submit_job(){
 
 set_permission(){
 
-    cd ${E2ESDIR}
+    cd ${SCRDIR}/
     /bin/rm -f set_permission.j
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 	line1=
@@ -34,7 +34,7 @@ set_permission(){
 	line2="#SBATCH --partition=batch"
     fi
 	
-    cat << EOF > ${E2ESDIR}/set_permission.j
+    cat << EOF > ${SCRDIR}/set_permission.j
 #!/bin/bash
 
 #######################################################################
@@ -51,6 +51,7 @@ set_permission(){
 `echo "${line2}"`
 
 cd ${E2ESDIR}
+
 find . -type d \( -path ./hindcast -o -path ./bcsd_fcst/CFSv2_25km/raw/Climatology -o -path ./bcsd_fcst/NMME/raw/Climatology -path ./bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology \) -prune -o -exec chmod 0775 {} \;
 find . -name "*.nc" -exec chmod 0644 {} \;
 find . -path ./hindcast -prune -o -name "*.NC" -exec chmod 0644 {} \;
@@ -60,6 +61,7 @@ find . -name "*.TIF" -exec chmod 0644 {} \;
 find . -name "*.png" -exec chmod 0644 {} \;
 
 EOF
+   chmod 777 set_permission.j
    perm_ID=$(submit_job $1 "set_permission.j") 
 }
 
@@ -78,18 +80,14 @@ print_walltimes(){
     echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
     echo " "
     
-    jobids=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f1`)
-    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f4`)
-    else
-	jobfiles=(`more ${SCRDIR}/SLURM_JOB_SCHEDULE | grep '.j' | cut -d' ' -f2`)
-    fi
+    jobids=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f1`)
+    jobfiles=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f2`)
     tLen=${#jobids[@]}
     ((tLen--))
     if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
 	((tLen++))
     fi
-
+    
     cjobs=0
     fmt="%7s %-36s %3s %3s %3s\n"
     for jid in ${!jobids[@]}
@@ -207,7 +205,8 @@ export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
-    export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"    
+    export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"
+    export ICSDIR=`grep ICSDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 else
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 fi
@@ -518,13 +517,13 @@ bcsd_fcst(){
     
     # link Climatology directories
     cd ${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw
-    /bin/ln -s $obs_clim_dir Climatology
+    /bin/ln -s $obs_clim_dir 
     
     cd ${E2ESDIR}/bcsd_fcst/NMME/raw
-    /bin/ln -s $nmme_clim_dir Climatology
+    /bin/ln -s $nmme_clim_dir 
     
     cd ${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw
-    /bin/ln -s $usaf_25km Climatology
+    /bin/ln -s $usaf_25km 
     
     # manage jobs from SCRATCH
     cd ${SCRDIR}/bcsd_fcst
@@ -947,6 +946,7 @@ mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
 mkdir -p -m 775 ${SCRDIR}/s2spost
+chmod 775 ${E2ESDIR}/scratch/
 
 if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2smetric
@@ -962,6 +962,14 @@ if [ $DATATYPE  == "forecast" ]; then
     fi
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
+if [ $DATATYPE == "hindcast" ]; then
+    mkdir -p ${E2ESDIR}/ldt_ics/
+    cd ${E2ESDIR}/ldt_ics
+    for model in $MODELS
+    do
+	/bin/ln -s ${ICSDIR}/$model
+    done
+fi
 
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
@@ -1082,8 +1090,10 @@ case $STEP in
 	exit
     ;;
     *)
-	lis_darun
-	ldt_ics
+	if [ $DATATYPE == "forecast" ]; then
+	    lis_darun
+	    ldt_ics
+	fi
 	bcsd_fcst
 	lis_fcst
 	s2spost

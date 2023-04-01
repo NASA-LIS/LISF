@@ -28,3 +28,4 @@ if [ $NJOBS -lt 120 ] && [ $year -le $clim_eyr ]; then
     s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE
     echo $year > current_year_$MM
 fi
+chmod 777 current_year_$MM
