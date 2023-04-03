@@ -10,7 +10,7 @@
 ######################################################################
 SOURCE_ONLY='N'
 submit_job(){
-    if [[ $1 == "" ]] || [[ $1 == "," ]]; then
+    if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
 	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
     else
