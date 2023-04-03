@@ -24,7 +24,7 @@ EXP:
   lsmdir: NOAHMP
   lsm:    noahmp401
   routing_name: hymap2
-  pertmode: coldstart
+  pertmode: restart
   lead_months: 9
   NMME_ALL: [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]
   NMME_models: [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]
