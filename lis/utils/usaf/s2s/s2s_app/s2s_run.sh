@@ -546,7 +546,7 @@ bcsd_fcst(){
 	    thisID=$(submit_job "" "${jfile}")
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
 	done
-	bcsd01_ID=`echo $bcsd01_ID | sed "s| |,|g"`
+	bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
 	
 	# Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
 	# --------------------------------------------------------------
@@ -561,7 +561,7 @@ bcsd_fcst(){
 	    thisID=$(submit_job "" "${jfile}")
 	    bcsd03_ID=`echo $bcsd03_ID`' '$thisID
 	done
-	bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
+	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
     fi
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
@@ -575,13 +575,13 @@ bcsd_fcst(){
     for jfile in $job_list
     do
 	if [ $DATATYPE == "forecast" ]; then
-	    thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
 	else
 	    thisID=$(submit_job "" "${jfile}")
 	fi
 	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
     done
-    bcsd04_ID=`echo $bcsd04_ID | sed "s| |,|g"`
+    bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
     
     # Task 5: Monthly "BC" step applied to NMME (forecast_task_05.py: after 1 and 3)
     # ------------------------------------------------------------------------------
@@ -597,13 +597,13 @@ bcsd_fcst(){
     for jfile in $job_list
     do
 	if [ $DATATYPE == "forecast" ]; then
-	    thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
 	else
 	    thisID=$(submit_job "" "${jfile}")
 	fi
 	bcsd05_ID=`echo $bcsd05_ID`' '$thisID
     done
-    bcsd05_ID=`echo $bcsd05_ID | sed "s| |,|g"`
+    bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
     
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
@@ -615,10 +615,10 @@ bcsd_fcst(){
     bcsd06_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd04_ID,$bcsd05_ID" "${jfile}")
+	thisID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jfile}")
 	bcsd06_ID=`echo $bcsd06_ID`' '$thisID
     done
-    bcsd06_ID=`echo $bcsd06_ID | sed "s| |,|g"` 
+    bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"` 
     
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
     # temporal disaggregation due to an uneven number of ensembles between the datasets
@@ -644,7 +644,7 @@ bcsd_fcst(){
 	thisID=$(submit_job "$bcsd06_ID" "${jfile}")
 	bcsd08_ID=`echo $bcsd08_ID`' '$thisID
     done
-    bcsd08_ID=`echo $bcsd08_ID | sed "s| |,|g"`
+    bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
     
     # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
     #         (forecast_task_09.py: after 8)
@@ -670,7 +670,7 @@ bcsd_fcst(){
 	thisID=$(submit_job "$bcsd08_ID" "${jfile}")
 	bcsd10_ID=`echo $bcsd10_ID`' '$thisID
     done
-    bcsd10_ID=`echo $bcsd10_ID | sed "s| |,|g"`
+    bcsd10_ID=`echo $bcsd10_ID | sed "s| |:|g"`
     
     # Task 11: Copy 9th forecast lead file as 10th forecast lead for LIS runs
     #         (forecast_task_11.py: after 9 and 10)
@@ -678,7 +678,7 @@ bcsd_fcst(){
     jobname=bcsd11
     # NOTE : Task 11  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd11_ID=$(submit_job "$bcsd09_ID,$bcsd10_ID" "${jobname}_run.j")
+    bcsd11_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
     
     # Task 12:  Task to introduce an all-zero variable V10M due to the way wind
     #           is handled in the USAF forcing
@@ -687,7 +687,7 @@ bcsd_fcst(){
     jobname=bcsd12
     # NOTE : Task 12  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd12_ID=$(submit_job "$bcsd09_ID,$bcsd10_ID" "${jobname}_run.j")
+    bcsd12_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
     
     cd ${BWD}
 }
@@ -749,7 +749,7 @@ lis_fcst(){
 	do
 	    if [ $nFiles -gt 1 ]; then
 		if [ $FileNo  -eq 1 ]; then
-		    thisID=$(submit_job "$bcsd11_ID,$bcsd12_ID" "$jfile")
+		    thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
 		    lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 		    prevID=$thisID
 		else
@@ -764,7 +764,7 @@ lis_fcst(){
 	    ((FileNo++))
 	done
     done
-    lisfcst_ID=`echo $lisfcst_ID | sed "s| |,|g"`
+    lisfcst_ID=`echo $lisfcst_ID | sed "s| |:|g"`
 
     cd ${BWD}
 }
@@ -816,7 +816,7 @@ s2spost(){
 	thisID=$(submit_job "$lisfcst_ID" "$jfile")
 	s2spost_ID=`echo $s2spost_ID`' '$thisID
     done
-    s2spost_ID=`echo $s2spost_ID | sed "s| |,|g"`    
+    s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`    
     cd ${BWD}
 }
 
@@ -856,7 +856,7 @@ s2smetrics(){
 	thisID=$(submit_job "$s2spost_ID" "$jfile")
 	s2smetric_ID=`echo $s2smetric_ID`' '$thisID
     done
-    s2smetric_ID=`echo $s2smetric_ID | sed "s| |,|g"`
+    s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     
     # write tiff file
     python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
