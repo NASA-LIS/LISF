@@ -189,7 +189,7 @@ reorg_cfsv2(){
 	thisID=$(submit_job "" "${jfile}")
 	reorg_cfsv2_ID=`echo $reorg_cfsv2_ID`' '$thisID
     done
-    reorg_cfsv2_ID=`echo $reorg_cfsv2_ID | sed "s| |,|g"`	
+    reorg_cfsv2_ID=`echo $reorg_cfsv2_ID | sed "s| |:|g"`	
     
     cd ${BWD}
 }
