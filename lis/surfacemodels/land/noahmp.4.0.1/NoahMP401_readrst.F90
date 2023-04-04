@@ -141,7 +141,9 @@ subroutine NoahMP401_readrst()
                       hr = 0
                       mn = 0
                       ss = 0
+                      ts = 86400
                       call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
+                      call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,ts)
                     else
                       call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
                            dd=da,calendar=LIS_calendar,rc=status)

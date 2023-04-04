@@ -1147,7 +1147,7 @@ CONTAINS
       lon360 = lon
     ENDIF    
     deltalon = lon360 - proj%lon1      
-    IF (deltalon .LT. 0) deltalon = deltalon + 360.
+    IF (deltalon .LT. -0.0001) deltalon = deltalon + 360.
  
     ! Compute i/j
     i = deltalon/proj%dlon + 1.

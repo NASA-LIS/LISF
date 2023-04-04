@@ -20,6 +20,7 @@ subroutine noahmp401_settws(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
+  use LIS_constantsMod
   use LIS_logMod
   use noahMP401_lsmMod
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE,SMCWLT_TABLE
@@ -35,7 +36,8 @@ subroutine noahmp401_settws(n, LSM_State)
 !  model space. 
 ! 
 !EOP
-  real, parameter        :: MIN_GWS_THRESHOLD = 0.00
+
+    real, parameter        :: MIN_GWS_THRESHOLD = 0.00
   real, parameter        :: MAX_GWS_THRESHOLD = 7000.0
   real, parameter        :: MAX_WA = 7000.0
   real, parameter        :: ZSOIL = 2 !mm
@@ -65,13 +67,16 @@ subroutine noahmp401_settws(n, LSM_State)
   logical                :: diffCheck(LIS_rc%ngrid(n))
   logical                :: ensCheck(LIS_rc%ngrid(n))
   logical                :: largeSM(LIS_rc%ngrid(n))
-  integer                :: i, c,r,t,m
+  real                   :: snodens(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  integer                :: i, c,r,t,m,gid
   integer                :: SOILTYP           ! soil type index [-]
   real                   :: sh2o_tmp, sh2o_rnd 
-  real                   :: dsneqv,dsnowh,swe_old, snowh_old
+  real                   :: dsneqv,dsnowh, snowh_new
+  real                   :: TWS1, TWS2, TWSd,delta1
   integer                :: status
+  logical                :: update_flag(LIS_rc%ngrid(n))
   logical                :: rc1,rc2,rc3,rc4,rc5
-  
+
   
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -91,10 +96,6 @@ subroutine noahmp401_settws(n, LSM_State)
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: SWE failed in noahmp401_settws")
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Snowdepth failed in noahmp401_settws")
-
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,&
@@ -114,11 +115,8 @@ subroutine noahmp401_settws(n, LSM_State)
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet: SWE failed in noahmp401_settws")
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Snowdepth failed in noahmp401_settws")
 
-
+  
   ensCheck = .true.
   diffCheck = .false.
   largeSM  = .false.
@@ -138,6 +136,14 @@ subroutine noahmp401_settws(n, LSM_State)
          noahmp401_struc(n)%noahmp401(t)%smc(1).gt.0.50) then 
         largeSM(i) = .true.
      endif
+
+     if(noahmp401_struc(n)%noahmp401(t)%snowh.gt.0) then 
+        snodens(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/&
+             noahmp401_struc(n)%noahmp401(t)%snowh
+     else
+        snodens(t) = 0.0
+     endif
+     
   enddo
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -151,7 +157,6 @@ subroutine noahmp401_settws(n, LSM_State)
         soilm3(t) = noahmp401_struc(n)%noahmp401(t)%smc(3)
         soilm4(t) = noahmp401_struc(n)%noahmp401(t)%smc(4)
         gws(t) = NOAHMP401_struc(n)%noahmp401(t)%wa
-        snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh 
         swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
      endif
   enddo
@@ -230,54 +235,182 @@ subroutine noahmp401_settws(n, LSM_State)
            soilm3(t) = noahmp401_struc(n)%noahmp401(t)%smc(3)
            soilm4(t) = noahmp401_struc(n)%noahmp401(t)%smc(4)
            gws(t) = NOAHMP401_struc(n)%noahmp401(t)%wa
-           snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh 
            swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
         enddo
      endif
   enddo
         
+
+  update_flag = .true. 
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+  
+     SOILTYP = noahmp401_struc(n)%noahmp401(t)%soiltype        
+     MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP)   ! MAXSMC (SOILTYP)
+     sm_threshold = SMCMAX_TABLE(SOILTYP) - 0.02  ! MAXSMC (SOILTYP) - 0.02
+     
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row) 
+     
+     delta1 = soilm1(t)-noahmp401_struc(n)%noahmp401(t)%smc(1)
+
+     if(noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
+          noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.lt.&
+          sm_threshold) then 
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+     delta1 = soilm2(t)-noahmp401_struc(n)%noahmp401(t)%smc(2)
+
+     if(noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta1.gt.MIN_THRESHOLD .and.&
+          noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta1.lt.&
+          sm_threshold) then 
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+
+     delta1 = soilm3(t)-noahmp401_struc(n)%noahmp401(t)%smc(3)
+          
+     if(noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta1.gt.MIN_THRESHOLD .and.&
+          noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta1.lt.&
+          sm_threshold) then 
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+
+     delta1 = soilm4(t)-noahmp401_struc(n)%noahmp401(t)%smc(4)
+
+     if(noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta1.gt.MIN_THRESHOLD .and.&
+          noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta1.lt.&
+          sm_threshold) then 
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif     
+  enddo
+
+!  if(LIS_localPet.eq.387) then
+!     gid = LIS_domain(n)%gindex(&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row) 
+!     print*, 'tw1 ',NOAHMP401_struc(n)%noahmp401(16068)%smc,&
+!          NOAHMP401_struc(n)%noahmp401(16068)%sh2o,&
+!          NOAHMP401_struc(n)%noahmp401(16068)%sneqv,&
+!          update_flag(gid)
+!  endif
   
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     delta = soilm1(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(1)    
-     NOAHMP401_struc(n)%noahmp401(t)%smc(1) = soilm1(t)
-     NOAHMP401_struc(n)%noahmp401(t)%sh2o(1) = &
-          NOAHMP401_struc(n)%noahmp401(t)%sh2o(1) + delta
 
-     delta = soilm2(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(2)    
-     NOAHMP401_struc(n)%noahmp401(t)%smc(2) = soilm2(t)
-     NOAHMP401_struc(n)%noahmp401(t)%sh2o(2) = &
-          NOAHMP401_struc(n)%noahmp401(t)%sh2o(2) + delta
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row) 
 
-     delta = soilm3(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(3)    
-     NOAHMP401_struc(n)%noahmp401(t)%smc(3) = soilm3(t)
-     NOAHMP401_struc(n)%noahmp401(t)%sh2o(3) = &
-          NOAHMP401_struc(n)%noahmp401(t)%sh2o(3) + delta
+     if(update_flag(gid)) then      
+        delta = soilm1(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(1)    
+        NOAHMP401_struc(n)%noahmp401(t)%smc(1) = soilm1(t)
+        NOAHMP401_struc(n)%noahmp401(t)%sh2o(1) = &
+             NOAHMP401_struc(n)%noahmp401(t)%sh2o(1) + delta
+        
+        delta = soilm2(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(2)    
+        NOAHMP401_struc(n)%noahmp401(t)%smc(2) = soilm2(t)
+        NOAHMP401_struc(n)%noahmp401(t)%sh2o(2) = &
+             NOAHMP401_struc(n)%noahmp401(t)%sh2o(2) + delta
+        
+        delta = soilm3(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(3)    
+        NOAHMP401_struc(n)%noahmp401(t)%smc(3) = soilm3(t)
+        NOAHMP401_struc(n)%noahmp401(t)%sh2o(3) = &
+             NOAHMP401_struc(n)%noahmp401(t)%sh2o(3) + delta
+        
+        delta = soilm4(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(4)    
+        NOAHMP401_struc(n)%noahmp401(t)%smc(4) = soilm4(t)
+        NOAHMP401_struc(n)%noahmp401(t)%sh2o(4) = &
+             NOAHMP401_struc(n)%noahmp401(t)%sh2o(4) + delta
 
-     delta = soilm4(t) - NOAHMP401_struc(n)%noahmp401(t)%smc(4)    
-     NOAHMP401_struc(n)%noahmp401(t)%smc(4) = soilm4(t)
-     NOAHMP401_struc(n)%noahmp401(t)%sh2o(4) = &
-          NOAHMP401_struc(n)%noahmp401(t)%sh2o(4) + delta
+     else
+
+        TWS2 =(soilm1(t)*NOAHMP401_struc(n)%sldpth(1)*&
+             soilm2(t)*NOAHMP401_struc(n)%sldpth(2)*&
+             soilm3(t)*NOAHMP401_struc(n)%sldpth(3)*&
+             soilm4(t)*NOAHMP401_struc(n)%sldpth(4))*&             
+             LIS_CONST_RHOFW
+        
+        
+        TWS1 =(Noahmp401_struc(n)%noahmp401(t)%smc(1)*&
+             NOAHMP401_struc(n)%sldpth(1)*&
+             noahmp401_struc(n)%noahmp401(t)%smc(2)*&
+             NOAHMP401_struc(n)%sldpth(2)*&
+             noahmp401_struc(n)%noahmp401(t)%smc(3)*&
+             NOAHMP401_struc(n)%sldpth(3)*&
+             noahmp401_struc(n)%noahmp401(t)%smc(4)*&
+             NOAHMP401_struc(n)%sldpth(4))*&             
+             LIS_CONST_RHOFW
+
+        TWSd = TWS1 - TWS2
+
+        if(NOAHMP401_struc(n)%noahmp401(t)%sneqv > 5.and.&
+             swe(t)+TWSd.gt.0) then
+!only add snow if the increment is small           
+           if(TWSd/NOAHMP401_struc(n)%noahmp401(t)%sneqv < 0.10) then 
+              swe(t) = swe(t)+TWSd
+           endif
+        else
+           swe(t) = 0.0
+        endif
+        
+!        if(LIS_localPet.eq.387.and.t.eq.16068) then
+!           print*, 'swe ',LIS_localPet, t, swe(t), TWSd
+!           !since soil moisture update is not accepted, add this to snow
+!        endif
+
+     endif
+
      
      NOAHMP401_struc(n)%noahmp401(t)%wa=gws(t)
+
   enddo
   
+!  if(LIS_localPet.eq.387) then
+!     gid = LIS_domain(n)%gindex(&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row) 
+!     print*, 'tw2 ',NOAHMP401_struc(n)%noahmp401(16068)%smc,&
+!          NOAHMP401_struc(n)%noahmp401(16068)%sh2o,&
+!          NOAHMP401_struc(n)%noahmp401(16068)%sneqv,&
+!          update_flag(gid)
+!  endif
+  
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe_old = noahmp401_struc(n)%noahmp401(t)%sneqv
-     snowh_old = noahmp401_struc(n)%noahmp401(t)%snowh
+     if(snodens(t).eq.0) then
+        swe(t) = 0.0
+     endif
+     dsneqv =  swe(t) - NOAHMP401_struc(n)%noahmp401(t)%sneqv
 
-     dsneqv = swe(t) - noahmp401_struc(n)%noahmp401(t)%sneqv !in mm
-     dsnowh = snod(t) - noahmp401_struc(n)%noahmp401(t)%snowh  !in m
+     snowh_new = 0
+     if(snodens(t).gt.0) then 
+        snowh_new = swe(t)/snodens(t)
+     endif
 
-     !alternate option
+     dsnowh = snowh_new - NOAHMP401_struc(n)%noahmp401(t)%sneqv
+     
      call noahmp401_snow_update(n, t, dsneqv, dsnowh)
 
-     if(noahmp401_struc(n)%noahmp401(t)%sneqv.eq.0.or.&
-          noahmp401_struc(n)%noahmp401(t)%snowh.eq.0) then
-        noahmp401_struc(n)%noahmp401(t)%sneqv = 0
-        noahmp401_struc(n)%noahmp401(t)%snowh = 0
+     if(LIS_localPet.eq.428.and.t.eq.8191) then
+        print*, 'tw1 ',NOAHMP401_struc(n)%noahmp401(t)%isnow,&
+             NOAHMP401_struc(n)%noahmp401(t)%sneqv,&
+             NOAHMP401_struc(n)%noahmp401(t)%snowh
      endif
+     
   enddo
 
+  
+     
+!  write(101,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,10E14.6)') &
+!       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
+!       NOAHMP401_struc(n)%noahmp401(991:1000)%sneqv     
 end subroutine noahmp401_settws
 
 
