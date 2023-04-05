@@ -15,7 +15,8 @@ submit_job(){
 	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
     else
 	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $1`
+	c2c=`echo $1 | sed "s|:|,|g"`
+	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c`
     fi
     echo $submit_ID
 }
