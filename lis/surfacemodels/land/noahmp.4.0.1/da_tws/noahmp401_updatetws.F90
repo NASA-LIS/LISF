@@ -155,13 +155,7 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status)
 
 
-
-!  write(*,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,2E14.6)') &
-!       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
-!       sum(swe(991:1000))/10.0, sum(sweincr(991:1000))/10.0
-
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
      soilm1(t) = soilm1(t) + soilmIncr1(t)
      soilm2(t) = soilm2(t) + soilmIncr2(t)
      soilm3(t) = soilm3(t) + soilmIncr3(t)
@@ -169,77 +163,4 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
      gws(t)    = gws(t)    + gwsIncr(t)
      swe(t) = swe(t)  + sweIncr(t)
   enddo
-
-#if 0
-
-  update_flag    = .true.
-  perc_violation = 0.0
-  snodmean       = 0.0
-  nsnodmean      = 0
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     swetmp = swe(t) + sweincr(t)
-
-     if((swetmp.lt.0)) then
-        update_flag(gid) = .false.
-        perc_violation(gid) = perc_violation(gid) +1
-     endif
-
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     perc_violation(gid) = perc_violation(gid) / real(LIS_rc%nensem(n))
-  enddo
-
-! For ensembles that are unphysical, compute the ensemble average after excluding them. This
-! is done only if the majority of the ensemble members are good (>80%)
-
-
-
-! If the update is unphysical, simply set to the average of
-! the good ensemble members. If all else fails, do not update.
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-
-
-     swetmp  = swe(t) + sweincr(t)
-
-!Use the model's snow density from the previous timestep
-     sndens = 0.0
-     if(noahmp401_struc(n)%noahmp401(t)%snowh.gt.0) then
-       sndens = noahmp401_struc(n)%noahmp401(t)%sneqv/noahmp401_struc(n)%noahmp401(t)%snowh
-     endif
-
-     if(update_flag(gid)) then
-        snod(t) = snodtmp
-        swe(t) = swetmp
-     elseif(perc_violation(gid).lt.0.2) then
-       if(snodtmp.lt.0.0) then  ! average of the good ensemble members
-          snod(t) = snodmean(gid)
-          swe(t) =  snodmean(gid)*sndens
-       else
-          snod(t) = snodtmp
-          swe(t) = swetmp
-       endif
-     else            ! do not update
-       snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
-       swe(t)  = noahmp401_struc(n)%noahmp401(t)%sneqv
-     end if
-
-  enddo
-#endif
-
-!  write(*,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,2E14.6)') &
-!       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
-!       sum(swe(991:1000))/10.0, sum(sweincr(991:1000))/10.0
-
-
 end subroutine noahmp401_updatetws
