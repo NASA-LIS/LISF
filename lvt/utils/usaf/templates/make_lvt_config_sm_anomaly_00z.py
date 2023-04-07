@@ -20,6 +20,7 @@
 #
 # REVISION HISTORY:
 # 28 Jun 2021: Eric Kemp (SSAI), first version.
+# 08 Dec 2022: Eric Kemp (SSAI), refactored to improve pylint score.
 #
 #------------------------------------------------------------------------------
 """
@@ -29,14 +30,14 @@ import datetime
 import os
 import sys
 
-NEWFILE = "configs/lvt.config.sm_anomaly"
+_NEWFILE = "configs/lvt.config.sm_anomaly"
 
-VAR_ATTRIBUTES = \
+_VAR_ATTRIBUTES = \
     "SoilMoist   1  4  m3/m3  -  1  4 SoilMoist   1  4  m3/m3  -  1  4"
 
 def _usage():
     """Print command line usage."""
-    print("[INFO] Usage: %s restart_dir template yyyymmdd" %(sys.argv[0]))
+    print(f"[INFO] Usage: {sys.argv[0]} restart_dir template yyyymmdd")
     print("[INFO]   where:")
     print("[INFO]    restart_dir is the directory with the LVT restart file.")
     print("[INFO]    template is input lvt.config template file to customize.")
@@ -51,26 +52,27 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Check if restart_dir exists.
-    _restart_dir = sys.argv[1]
-    if not os.path.exists(_restart_dir):
-        print("[ERR] %s does not exist!" %(_restart_dir))
+    restart_dir = sys.argv[1]
+    if not os.path.exists(restart_dir):
+        print(f"[ERR] {restart_dir} does not exist!")
         sys.exit(1)
 
     # Check if lvt.config template exists.
-    _template = sys.argv[2]
-    if not os.path.exists(_template):
-        print("[ERR] %s does not exist!" %(_template))
+    template = sys.argv[2]
+    if not os.path.exists(template):
+        print(f"[ERR] {template} does not exist!")
         sys.exit(1)
 
     # Parse the valid date
     yyyymmdd = sys.argv[3]
-    _date = datetime.date(year=int(yyyymmdd[0:4]),
-                              month=int(yyyymmdd[4:6]),
-                              day=int(yyyymmdd[6:8]))
+    date = datetime.date(year=int(yyyymmdd[0:4]),
+                         month=int(yyyymmdd[4:6]),
+                         day=int(yyyymmdd[6:8]))
 
-    return _restart_dir, _template, _date
+    return restart_dir, template, date
 
-if __name__ == "__main__":
+def _main():
+    """Main driver"""
     restart_dir, template, rundate = _read_cmd_args()
 
     rundt = datetime.datetime(year=rundate.year,
@@ -79,84 +81,88 @@ if __name__ == "__main__":
                               hour=0)
     startdt = rundt - datetime.timedelta(days=1)
 
-    lines = open(template, 'r').readlines()
+    with open(template, 'r', encoding="ascii") as file:
+        lines = file.readlines()
     newlines = []
-    for LINE in lines:
-        if "LVT running mode:" in LINE:
-            LINE = 'LVT running mode: "Data intercomparison"\n'
-        elif "LVT output format:" in LINE:
-            LINE = "LVT output format: netcdf\n"
-        elif "LVT output methodology:" in LINE:
-            LINE = 'LVT output methodology: "2d gridspace"\n'
-        elif "Analysis data sources:" in LINE:
-            LINE = 'Analysis data sources: "LIS output" "none"\n'
-        elif "Process HYCOM data:" in LINE:
-            LINE = "Process HYCOM data 0\n"
-        elif "Apply noise reduction filter: " in LINE:
-            LINE = "Apply noise reduction filter: 0\n"
-        elif "Start mode:" in LINE:
-            LINE = "Start mode: restart\n"
-        elif "LVT output restart files:" in LINE:
-            LINE = "LVT output restart files: 1\n"
-        elif "LVT restart output interval:" in LINE:
-            LINE = "LVT restart output interval: 24hr\n"
-        elif "LVT restart filename:" in LINE:
-            LINE = "LVT restart filename: "
-            LINE += "%s/LVT.%4.4d%2.2d%2.2d%2.2d00.rst\n" \
-                %(restart_dir, startdt.year, startdt.month,
-                  startdt.day, startdt.hour)
-        elif "Starting year:" in LINE:
-            LINE = "Starting year: %s\n" %(startdt.year)
-        elif "Starting month:" in LINE:
-            LINE = "Starting month: %s\n" %(startdt.month)
-        elif "Starting day:" in LINE:
-            LINE = "Starting day: %s\n" %(startdt.day)
-        elif "Starting hour:" in LINE:
-            LINE = "Starting hour: %s\n" %(startdt.hour)
-        elif "Starting minute:" in LINE:
-            LINE = "Starting minute: 00\n"
-        elif "Starting second:" in LINE:
-            LINE = "Starting second: 00\n"
-        elif "Ending year:" in LINE:
-            LINE = "Ending year: %s\n" %(rundt.year)
-        elif "Ending month:" in LINE:
-            LINE = "Ending month: %s\n" %(rundt.month)
-        elif "Ending day:" in LINE:
-            LINE = "Ending day: %s\n" %(rundt.day)
-        elif "Ending hour:" in LINE:
-            LINE = "Ending hour: %s\n" %(rundt.hour)
-        elif "Ending minute:" in LINE:
-            LINE = "Ending minute: 00\n"
-        elif "Ending second:" in LINE:
-            LINE = "Ending second: 00\n"
-        elif "LVT clock timestep:" in LINE:
-            LINE = "LVT clock timestep: 24hr\n"
-        elif "LVT diagnostic file:" in LINE:
-            LINE = "LVT diagnostic file: logs/lvtlog.sm_anomaly\n"
-        elif "LVT datastream attributes table::" in LINE:
-            LINE = "LVT datastream attributes table::\n"
-            LINE += "%s\n" %(VAR_ATTRIBUTES)
-        elif "Metrics attributes file:" in LINE:
-            LINE = 'Metrics attributes file: tables/METRICS.TBL.anomaly\n'
-        elif "Metrics computation frequency:" in LINE:
-            LINE = "Metrics computation frequency: 24hr\n"
-        elif "Metrics output directory:" in LINE:
-            LINE = "Metrics output directory: OUTPUT/STATS.sm_anomaly\n"
-        elif "Metrics output frequency:" in LINE:
-            LINE = "Metrics output frequency: 24hr\n"
-        elif "LIS output interval:" in LINE:
-            LINE = "LIS output interval: 3hr\n"
-        elif "LIS output attributes file:" in LINE:
-            LINE = "LIS output attributes file: ./tables/"
-            LINE += "MODEL_OUTPUT_LIST.TBL.lvt_557post.SoilMoist_inst.24hr\n"
-        elif "LIS model timestep:" in LINE:
-            LINE = "LIS model timestep: 15mn\n"
+    for line in lines:
+        if "LVT running mode:" in line:
+            line = 'LVT running mode: "Data intercomparison"\n'
+        elif "LVT output format:" in line:
+            line = "LVT output format: netcdf\n"
+        elif "LVT output methodology:" in line:
+            line = 'LVT output methodology: "2d gridspace"\n'
+        elif "Analysis data sources:" in line:
+            line = 'Analysis data sources: "LIS output" "none"\n'
+        elif "Process HYCOM data:" in line:
+            line = "Process HYCOM data 0\n"
+        elif "Apply noise reduction filter: " in line:
+            line = "Apply noise reduction filter: 0\n"
+        elif "Start mode:" in line:
+            line = "Start mode: restart\n"
+        elif "LVT output restart files:" in line:
+            line = "LVT output restart files: 1\n"
+        elif "LVT restart output interval:" in line:
+            line = "LVT restart output interval: 24hr\n"
+        elif "LVT restart filename:" in line:
+            line = "LVT restart filename: "
+            line += f"{restart_dir}/"
+            line += f"LVT.{startdt.year:04}{startdt.month:02}"
+            line += f"{startdt.day:02}{startdt.hour:02}00.rst\n"
+        elif "Starting year:" in line:
+            line = f"Starting year: {startdt.year}\n"
+        elif "Starting month:" in line:
+            line = f"Starting month: {startdt.month}\n"
+        elif "Starting day:" in line:
+            line = f"Starting day: {startdt.day}\n"
+        elif "Starting hour:" in line:
+            line = f"Starting hour: {startdt.hour}\n"
+        elif "Starting minute:" in line:
+            line = "Starting minute: 00\n"
+        elif "Starting second:" in line:
+            line = "Starting second: 00\n"
+        elif "Ending year:" in line:
+            line = f"Ending year: {rundt.year}\n"
+        elif "Ending month:" in line:
+            line = f"Ending month: {rundt.month}\n"
+        elif "Ending day:" in line:
+            line = f"Ending day: {rundt.day}\n"
+        elif "Ending hour:" in line:
+            line = f"Ending hour: {rundt.hour}\n"
+        elif "Ending minute:" in line:
+            line = "Ending minute: 00\n"
+        elif "Ending second:" in line:
+            line = "Ending second: 00\n"
+        elif "LVT clock timestep:" in line:
+            line = "LVT clock timestep: 24hr\n"
+        elif "LVT diagnostic file:" in line:
+            line = "LVT diagnostic file: logs/lvtlog.sm_anomaly\n"
+        elif "LVT datastream attributes table::" in line:
+            line = "LVT datastream attributes table::\n"
+            line += f"{_VAR_ATTRIBUTES}\n"
+        elif "Metrics attributes file:" in line:
+            line = 'Metrics attributes file: tables/METRICS.TBL.anomaly\n'
+        elif "Metrics computation frequency:" in line:
+            line = "Metrics computation frequency: 24hr\n"
+        elif "Metrics output directory:" in line:
+            line = "Metrics output directory: OUTPUT/STATS.sm_anomaly\n"
+        elif "Metrics output frequency:" in line:
+            line = "Metrics output frequency: 24hr\n"
+        elif "LIS output interval:" in line:
+            line = "LIS output interval: 3hr\n"
+        elif "LIS output attributes file:" in line:
+            line = "LIS output attributes file: ./tables/"
+            line += "MODEL_OUTPUT_LIST.TBL.lvt_557post.SoilMoist_inst.24hr\n"
+        elif "LIS model timestep:" in line:
+            line = "LIS model timestep: 15mn\n"
 
-        newlines.append(LINE)
+        newlines.append(line)
 
+    if not os.path.exists("configs"):
+        os.mkdir("configs")
+    print(f"[INFO] Writing {_NEWFILE}")
+    with open(_NEWFILE, "w", encoding="ascii") as file:
+        for line in newlines:
+            file.write(line)
 
-    print("[INFO] Writing %s" %(NEWFILE))
-    f = open(NEWFILE, "w")
-    for line in newlines:
-        f.write(line)
-    f.close()
+if __name__ == "__main__":
+    _main()

@@ -10,20 +10,25 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
+Sample script to customize lvt.config files for noahmp401 postprocessing for
+557WW.
+"""
+
 import datetime
 import os
-import sys
 
-template = "template/lvt.config.template.noahmp401"
 
-startdt = datetime.datetime(2007, 12, 1, 12)
-enddt = datetime.datetime(2007, 12, 2, 12)
+_TEMPLATE = "templates/lvt.config.template.noahmp401"
 
-output = "netcdf"
-#output = "grib2"
+_STARTDT = datetime.datetime(2022, 8, 1, 12)
+_ENDDT = datetime.datetime(2022, 8, 2, 12)
+
+#_OUTPUT = "netcdf"
+_OUTPUT = "grib2"
 
 # Most variables are processed independently, and are listed below.
-var_attributes = {
+_VAR_ATTRIBUTES = {
     "Evap_tavg":
     "Evap        1  1  kg/m2s -  1  1 Evap        1  1  kg/m2s -  1  1",
     "LWdown_f_tavg":
@@ -45,7 +50,7 @@ var_attributes = {
 }
 
 # RHMin must be processed with Tair_f_min, so these are listed together
-var_attributes_special = {
+_VAR_ATTRIBUTES_SPECIAL = {
     "Tair_f_min":
     "Tair_f_min  1  1  K      -  1  1 Tair_f_min  1  1  K      -  1  1",
     "RHMin_inst":
@@ -54,77 +59,84 @@ var_attributes_special = {
 
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-smooth_vars = ["Evap_tavg", "LWdown_f_tavg",
+_SMOOTH_VARS = ["Evap_tavg", "LWdown_f_tavg",
                "SoilMoist_tavg",
                "SoilTemp_tavg", "SWdown_f_tavg",
                "Tair_f_max", "Tair_f_tavg",
                "TotalPrecip_acc", "Tair_f_min", "RHMin_inst"]
 
-lines = open(template, 'r').readlines()
+def _main():
+    """Main Driver"""
 
-vars = list(var_attributes.keys())
-vars.append("RHMin_inst")  # RHMin will be handled specially below
-vars.sort()
-for var in vars:
-    newlines = []
-    for line in lines:
-        if "LVT output format:" in line:
-            line = "LVT output format: %s\n" % (output)
-        elif "Process HYCOM data:" in line:
-            line = "Process HYCOM data: 0\n"
-        elif "Apply noise reduction filter:" in line:
-            if var in smooth_vars:
-                line = "Apply noise reduction filter: 1\n"
-            else:
-                line = "Apply noise reduction filter: 0\n"
-        elif "Starting year:" in line:
-            line = "Starting year: %s\n" % (startdt.year)
-        elif "Starting month:" in line:
-            line = "Starting month: %s\n" % (startdt.month)
-        elif "Starting day:" in line:
-            line = "Starting day: %s\n" % (startdt.day)
-        elif "Starting hour:" in line:
-            line = "Starting hour: %s\n" % (startdt.hour)
-        elif "Ending year:" in line:
-            line = "Ending year: %s\n" % (enddt.year)
-        elif "Ending month:" in line:
-            line = "Ending month: %s\n" % (enddt.month)
-        elif "Ending day:" in line:
-            line = "Ending day: %s\n" % (enddt.day)
-        elif "Ending hour:" in line:
-            line = "Ending hour: %s\n" % (enddt.hour)
-        elif "LVT clock timestep:" in line:
-            line = 'LVT clock timestep: "24hr"\n'
-        elif "LVT diagnostic file:" in line:
-            line = "LVT diagnostic file: logs/lvtlog.%s.24hr" % (var)
-        elif "LVT datastream attributes table::" in line:
-            line = "LVT datastream attributes table::\n"
-            # Special handling for RHMin_inst, which must be processed with
-            # Tair_f_min
-            if var == "RHMin_inst":
-                keys = sorted(list(var_attributes_special.keys()))
-                for key in keys:
-                    line += "%s\n" % (var_attributes_special[key])
-            # The general case
-            else:
-                line += "%s\n" % (var_attributes[var])
-        elif "Metrics attributes file:" in line:
-            line = 'Metrics attributes file: "tables/METRICS.TBL"\n'
-        elif "Metrics computation frequency:" in line:
-            line = 'Metrics computation frequency: "24hr"\n'
-        elif "Metrics output directory:" in line:
-            line = "Metrics output directory: OUTPUT/STATS.%s.24hr\n" % (var)
-        elif "Metrics output frequency:" in line:
-            line = 'Metrics output frequency: "24hr"\n'
-        elif "LIS output attributes file:" in line:
-            line = "LIS output attributes file:"
-            line += " ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.24hr\n" % (var)
+    with open(_TEMPLATE, 'r', encoding="ascii") as file:
+        lines = file.readlines()
 
-        newlines.append(line)
+    varlist = list(_VAR_ATTRIBUTES.keys())
+    varlist.append("RHMin_inst")  # RHMin will be handled specially below
+    varlist.sort()
+    for var in varlist:
+        newlines = []
+        for line in lines:
+            if "LVT output format:" in line:
+                line = f"LVT output format: {_OUTPUT}\n"
+            elif "Process HYCOM data:" in line:
+                line = "Process HYCOM data: 0\n"
+            elif "Apply noise reduction filter:" in line:
+                if var in _SMOOTH_VARS:
+                    line = "Apply noise reduction filter: 1\n"
+                else:
+                    line = "Apply noise reduction filter: 0\n"
+            elif "Starting year:" in line:
+                line = f"Starting year: {_STARTDT.year}\n"
+            elif "Starting month:" in line:
+                line = f"Starting month: {_STARTDT.month}\n"
+            elif "Starting day:" in line:
+                line = f"Starting day: {_STARTDT.day}\n"
+            elif "Starting hour:" in line:
+                line = f"Starting hour: {_STARTDT.hour}\n"
+            elif "Ending year:" in line:
+                line = f"Ending year: {_ENDDT.year}\n"
+            elif "Ending month:" in line:
+                line = f"Ending month: {_ENDDT.month}\n"
+            elif "Ending day:" in line:
+                line = f"Ending day: {_ENDDT.day}\n"
+            elif "Ending hour:" in line:
+                line = f"Ending hour: {_ENDDT.hour}\n"
+            elif "LVT clock timestep:" in line:
+                line = 'LVT clock timestep: "24hr"\n'
+            elif "LVT diagnostic file:" in line:
+                line = f"LVT diagnostic file: logs/lvtlog.{var}.24hr"
+            elif "LVT datastream attributes table::" in line:
+                line = "LVT datastream attributes table::\n"
+                # Special handling for RHMin_inst, which must be processed with
+                # Tair_f_min
+                if var == "RHMin_inst":
+                    keys = sorted(list(_VAR_ATTRIBUTES_SPECIAL.keys()))
+                    for key in keys:
+                        line += f"{_VAR_ATTRIBUTES_SPECIAL[key]}\n"
+                else:
+                    line += f"{_VAR_ATTRIBUTES[var]}\n"
+            elif "Metrics attributes file:" in line:
+                line = 'Metrics attributes file: "templates/METRICS.TBL"\n'
+            elif "Metrics computation frequency:" in line:
+                line = 'Metrics computation frequency: "24hr"\n'
+            elif "Metrics output directory:" in line:
+                line = f"Metrics output directory: OUTPUT/STATS.{var}.24hr\n"
+            elif "Metrics output frequency:" in line:
+                line = 'Metrics output frequency: "24hr"\n'
+            elif "LIS output attributes file:" in line:
+                line = "LIS output attributes file:"
+                line += f" ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.24hr\n"
 
-    newfile = "configs/lvt.config.%s.24hr" % (var)
-    print("Writing %s" % (newfile))
-    f = open(newfile, "w")
-    for line in newlines:
-        f.write(line)
-    f.close()
+            newlines.append(line)
+
+        if not os.path.exists("configs"):
+            os.mkdir("configs")
+        newfile = f"configs/lvt.config.{var}.24hr"
+        print(f"Writing {newfile}")
+        with open(newfile, "w", encoding="ascii") as file:
+            for line in newlines:
+                file.write(line)
+
+if __name__ == "__main__":
+    _main()

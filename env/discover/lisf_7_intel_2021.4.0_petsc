@@ -25,6 +25,7 @@ proc ModulesHelp { } {
     puts stderr "\t\tLIS_CRTM_PROF"
     puts stderr "\t\tLIS_CMEM"
     puts stderr "\t\tLIS_LAPACK"
+    puts stderr "\t\tLIS_PETSC"
     puts stderr "\t\tLDT_ARCH"
     puts stderr "\t\tLDT_FC"
     puts stderr "\t\tLDT_CC"
@@ -120,7 +121,7 @@ setenv   LIS_CRTM        $def_lis_crtm
 setenv   LIS_CRTM_PROF   $def_lis_crtm_prof
 setenv   LIS_CMEM        $def_lis_cmem
 setenv   LIS_LAPACK      $def_lis_lapack
-setenv   LIS_PETSc       $def_lis_petsc
+setenv   LIS_PETSC       $def_lis_petsc
 
 setenv   LDT_ARCH        linux_ifc
 setenv   LDT_FC          mpiifort
@@ -164,4 +165,5 @@ prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf5/lib"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_libesmf"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_netcdf/lib"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_eccodes/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
 prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
