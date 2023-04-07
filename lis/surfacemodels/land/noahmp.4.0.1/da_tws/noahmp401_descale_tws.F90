@@ -22,7 +22,7 @@ subroutine noahmp401_descale_tws(n, LSM_State, LSM_Incr_State)
   use ESMF
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
@@ -31,8 +31,8 @@ subroutine noahmp401_descale_tws(n, LSM_State, LSM_Incr_State)
 !
 !  Descales tws related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline

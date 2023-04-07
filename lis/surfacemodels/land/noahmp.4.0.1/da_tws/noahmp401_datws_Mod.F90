@@ -15,12 +15,12 @@ module noahmp401_datws_Mod
 ! !MODULE: noahmp401_datws_Mod
 !
 ! !DESCRIPTION:
-!  
+!
 ! !REVISION HISTORY:
 !
 ! 14 Mar 2017: Sujay Kumar; Initial Specification
 
-! !USES:        
+! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_dataAssimMod
@@ -49,31 +49,31 @@ module noahmp401_datws_Mod
      integer                :: scal
 
   end type dasm_dec
-  
+
   type(dasm_dec), allocatable :: noahmp401_dasm_struc(:)
 
 contains
 !BOP
-! 
+!
 ! !ROUTINE: noahmp401_datws_init
 ! \label{noahmp401_datws_init}
-! 
+!
 ! !INTERFACE:
   subroutine noahmp401_datws_init(k)
 ! !USES:
-! !DESCRIPTION:        
+! !DESCRIPTION:
 !
 !EOP
-    
+
     implicit none
     integer                :: k
-    integer                :: n 
+    integer                :: n
     integer                :: status
     integer                :: ngrid
 
-    if(.not.allocated(noahmp401_dasm_struc)) then 
+    if(.not.allocated(noahmp401_dasm_struc)) then
        allocate(noahmp401_dasm_struc(LIS_rc%nnest))
     endif
-    
+
   end subroutine noahmp401_datws_init
 end module noahmp401_datws_Mod
