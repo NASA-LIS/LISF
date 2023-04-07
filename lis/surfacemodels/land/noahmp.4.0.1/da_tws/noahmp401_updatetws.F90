@@ -13,7 +13,7 @@
 !
 ! !REVISION HISTORY:
 ! 14 Mar 2017: Sujay Kumar; Initial Specification
-! 29 May 2020: Bailing Li; created for Noah-MP4.0.1 
+! 29 May 2020: Bailing Li; created for Noah-MP4.0.1
 !
 ! !INTERFACE:
 subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
@@ -24,16 +24,16 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
   use noahmp401_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
   type(ESMF_State)       :: LSM_Incr_State
 !
 ! !DESCRIPTION:
-!  
+!
 !  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
-! 
+!  model space.
+!
 !EOP
 
   type(ESMF_Field)       :: sm1Field
@@ -51,7 +51,7 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
   type(ESMF_Field)     :: gwField
   type(ESMF_Field)     :: gwIncrField
   real, pointer        :: gws(:)
-  real, pointer        :: gwsIncr(:)  
+  real, pointer        :: gwsIncr(:)
 
   real, pointer          :: soilm1(:)
   real, pointer          :: soilm2(:)
@@ -71,7 +71,7 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
 
   real                   :: snodmean(LIS_rc%ngrid(n))
   integer                :: nsnodmean(LIS_rc%ngrid(n))
-  
+
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -89,7 +89,7 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
   call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Groundwater Storage failed in noahmp401_updatetws")
- 
+
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
 
@@ -159,7 +159,7 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
 !  write(*,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,2E14.6)') &
 !       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
 !       sum(swe(991:1000))/10.0, sum(sweincr(991:1000))/10.0
-  
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
      soilm1(t) = soilm1(t) + soilmIncr1(t)
@@ -170,14 +170,14 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
      swe(t) = swe(t)  + sweIncr(t)
   enddo
 
-#if 0   
-  
+#if 0
+
   update_flag    = .true.
   perc_violation = 0.0
   snodmean       = 0.0
   nsnodmean      = 0
 
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)     
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
@@ -233,10 +233,10 @@ subroutine noahmp401_updatetws(n, LSM_State, LSM_Incr_State)
        snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
        swe(t)  = noahmp401_struc(n)%noahmp401(t)%sneqv
      end if
-     
+
   enddo
 #endif
-  
+
 !  write(*,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,2E14.6)') &
 !       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
 !       sum(swe(991:1000))/10.0, sum(sweincr(991:1000))/10.0
