@@ -24,6 +24,7 @@
 # REVISION HISTORY:
 # 15 Jul 2021: Eric Kemp (SSAI), first version.
 # 19 Jan 2022: Eric Kemp (SSAI), Discover updates.
+# 08 Dec 2022: Eric Kemp (SSAI), refactored to increase pylint score.
 #
 #------------------------------------------------------------------------------
 """
@@ -35,13 +36,13 @@ import sys
 
 def _usage():
     """Prints usage statement for script."""
-    print("Usage: %s chargecode qos" %(sys.argv[0]))
+    print(f"Usage: {sys.argv[0]} chargecode qos")
     print("  where:")
     print("    chargecode is SLURM account")
     print("    qos is the SLURM quality-of-service")
 
-# Main driver
-if __name__ == "__main__":
+def _main():
+    """Main driver"""
 
     # Check command-line arguments
     if len(sys.argv) != 3:
@@ -58,15 +59,15 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Create a batch script.
-    SCRIPTNAME = "run_lvt.usafsipost.sh"
-    f = open(SCRIPTNAME, "w")
-    line = """#!/bin/sh
-#SBATCH --account %s
+    scriptname = "run_lvt.usafsipost.sh"
+    with open(scriptname, "w", encoding="ascii") as file:
+        line = f"""#!/bin/sh
+#SBATCH --account {account}
 #SBATCH --constraint="hasw|sky|cas"
 #SBATCH --job-name=usafsipost
 #SBATCH --ntasks=1
 #SBATCH --output usafsipost.slurm.out
-#SBATCH --qos=%s
+#SBATCH --qos={qos}
 #SBATCH --time=0:05:00
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
@@ -76,7 +77,7 @@ fi
 # NOTE: This privatemodule can be found in LISF/env/discover
 module purge
 module use --append ~/privatemodules
-module load lisf_7_intel_2021.4.0_s2s
+module load lisf_7.5_intel_2021.4.0
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
@@ -90,16 +91,17 @@ mpirun -np 1 ./LVT lvt.config.usafsipost || exit 1
 
 exit 0
 
-""" %(account, qos)
-    f.write(line)
-    f.close()
+"""
+        file.write(line)
 
     # Submit the batch job to SLURM
-    # NOTE: pylint is insistent on treating CMD and RC as constants, and
-    # thus requiring UPPER_CASE naming style.
-    CMD = "sbatch %s" %(SCRIPTNAME)
-    print(CMD)
-    RC = subprocess.call(CMD, shell=True)
-    if RC != 0:
+    cmd = f"sbatch {scriptname}"
+    print(cmd)
+    err = subprocess.call(cmd, shell=True)
+    if err != 0:
         print("[ERR] Problem with sbatch!")
         sys.exit(1)
+
+# Main driver
+if __name__ == "__main__":
+    _main()
