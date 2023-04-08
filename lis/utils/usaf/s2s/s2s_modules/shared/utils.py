@@ -159,7 +159,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     else:
         this_command = in_command
     if hours is None:
-        thours ='6'
+        thours ='9'
     else:
         thours = hours
 
