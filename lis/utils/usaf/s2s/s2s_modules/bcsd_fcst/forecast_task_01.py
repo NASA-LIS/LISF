@@ -79,7 +79,10 @@ def _driver():
     args = parser.parse_args()
     config_file = args.config_file
     syear = int(args.fcst_syr)
-    eyear = int(args.fcst_eyr)
+    if args.fcst_eyr is None:
+        eyear = None
+    else:
+        eyear = int(args.fcst_eyr)
     month_abbr = args.month_abbr
     cwd = args.cwd
     job_name = args.job_name
