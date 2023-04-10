@@ -915,7 +915,6 @@ s2splots(){
 #                           MAIN SCRIPT
 #**********************************************************************
 
-setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
@@ -942,7 +941,8 @@ fi
 #######################################################################
 #                        Set up scratch directory
 #######################################################################
-   
+
+setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
