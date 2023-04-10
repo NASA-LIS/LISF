@@ -24,7 +24,7 @@ submit_job(){
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 set_permission(){
-
+    exit
     cd ${SCRDIR}/
     /bin/rm -f set_permission.j
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
@@ -915,6 +915,7 @@ s2splots(){
 #                           MAIN SCRIPT
 #**********************************************************************
 
+setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/
 SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
