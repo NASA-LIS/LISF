@@ -63,7 +63,9 @@ def dicts(dic_name, key):
         'SOUTH_AMERICA':(-55, 10, -85, -35),
         'NORTH_AMERICA':(9, 72, -165, -58),
         'AFRICA':(-40, 40, -20, 55),
-        'GLOBAL':(-89, 89, -179, 179)
+        'GLOBAL':(-89, 89, -179, 179),
+        'TUNISIA':(30, 38, 7, 12),
+        'MENA':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -100,7 +102,9 @@ def dicts(dic_name, key):
     return ret
 
 def cartopy_dir(data_dir):
-    
+    '''
+    configuring cartopy
+    '''
     if data_dir is not None:
         cartopy.config['data_dir'] = data_dir
 
@@ -108,7 +112,8 @@ def cartopy_dir(data_dir):
                                                name='admin_0_boundary_lines_land',
                                                scale=RESOL, facecolor='none', alpha=0.7)
     coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                     scale=RESOL, edgecolor='black', facecolor='none')
+                                                     scale=RESOL, edgecolor='black',
+                                                     facecolor='none')
     land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
                                                facecolor=cfeature.COLORS['land'])
     ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
