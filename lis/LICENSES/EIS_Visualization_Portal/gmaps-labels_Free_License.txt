@@ -1,0 +1,17 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: iamcal/gmaps-labels
+
+POC:
+
+https://github.com/iamcal/gmaps-labels
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-fire/css/gmaps-labels.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/gmaps-labels.css
+lis/utils/eis_visualization_portal/eis-sealevel/css/gmaps-labels.css
+
+License:
+
+None provided.  This is a public GitHub repository.
