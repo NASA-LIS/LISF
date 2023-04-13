@@ -1,0 +1,21 @@
+LDT MODIS LAI (MCD15A2Hv006) DA Preprocessing Reader Testcase
+
+This testcase demonstrates the MODIS LAI MCD15A2Hv006 reader in the DA 
+pre-processing mode of LDT.
+
+The testcase includes the following files:
+    (a) this README file
+    (b) the ldt.config file
+
+To run this testcase:
+
+    1. Unpack the inputs in MCD15A2Hv006LAIreadertest_ldt_v73.tar.gz
+       in the same directory as the ldt.config file
+    2. Generate the LDT executable
+    3. Run the LDT executable with the ldt.config file
+    4. View the NetCDF output using a tool such as ncview
+
+Notes:
+
+This feature was added in pull request #659:
+https://github.com/nasa-lis/lisf/pull/659
