@@ -160,7 +160,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         this_command = in_command
     if hours is None:
         if 'discover' in platform.node() or 'borg' in platform.node():
-            thours ='8'
+            thours ='7'
         else:
             thours ='6'
     else:
