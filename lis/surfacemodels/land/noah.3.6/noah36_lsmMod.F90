@@ -228,7 +228,7 @@ contains
                 
           !ag(05Jan2021)
           noah36_struc(n)%noah(i)%rivsto = 0.0
-          noah36_struc(n)%noah(i)%fldfrc = 0.0
+          noah36_struc(n)%noah(i)%fldsto = 0.0
           noah36_struc(n)%noah(i)%fldfrc = 0.0
        enddo
 
