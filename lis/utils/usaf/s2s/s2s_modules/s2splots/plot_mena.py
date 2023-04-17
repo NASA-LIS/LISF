@@ -12,15 +12,75 @@ import os
 import calendar
 import argparse
 import xarray as xr
+# pylint: disable=no-name-in-module
+from netCDF4 import Dataset
+# pylint: enable=no-name-in-module
 import numpy as np
 import yaml
 # pylint: disable=import-error
 import plot_utils
 # pylint: enable=import-error
 
+
 USAF_COLORS = True
 
-def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None):
+def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
+                     carea, boundary, region, google_path, hymap_mask):
+    '''
+    This function processes arguments and make plots.
+    '''
+
+    infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
+    figure_template = '{}/NMME_plot_{}_{}_basins_sanom.png'
+
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
+    plotdir = plotdir_template.format(syear, smonth)
+    if not os.path.exists(plotdir):
+        os.makedirs(plotdir)
+    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config["EXP"]["lsmdir"] + '/'
+    data_dir = data_dir_template.format(syear, smonth)
+
+    lead_month = [0, 1, 2, 3, 4, 5]
+    nrows = 2
+    ncols = 3
+
+    var_name = "Streamflow"
+    levels = plot_utils.dicts('anom_levels', 'standardized')
+    under_over = ['gray', 'blue']
+
+    infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
+    print("Reading infile {}".format(infile))
+
+    anom = xr.open_mfdataset(infile, concat_dim='ens',
+                             preprocess=plot_utils.preproc, combine='nested')
+    anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
+    median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
+    plot_arr = median_anom[lead_month, ]
+    for i in range (0, len(lead_month)):
+        plot_arr[i,:,:] = np.where(hymap_mask >= 1.0e9, plot_arr[i,:,:],-9999.)
+
+    figure = figure_template.format(plotdir, region, var_name)
+
+    titles = []
+    for lead in lead_month:
+        fcast_month = smonth+lead
+        fcast_year = syear
+        if fcast_month > 12:
+            fcast_month -= 12
+            fcast_year = syear+1
+        titles.append(calendar.month_abbr[fcast_month] + ', ' + str(fcast_year))
+    stitle = var_name + ' Forecast'
+    clabel = 'Standardized Anomaly'
+
+    cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
+    plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+                          ncols, plot_arr, 'L11W_', titles, boundary, figure, under_over,
+                          dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
+                          clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
+    del anom
+    del anom_crop
+
+def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     '''
     This function processes arguments and make plots.
     '''
@@ -38,15 +98,15 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         infile_template = '{}/{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
         figure_template = '{}/NMME_plot_{}_{}_FCST_sanom.png'
 
-    plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/' + config_["EXP"]["lsmdir"] + '/'
-    plotdir = plotdir_template.format(fcst_year, fcst_mon)
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
+    plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
 
     # Where input data files are located ("s2smetric dir - CF-convention nc files):
-    data_dir_template = cwd_ + '/s2smetric/{:04d}{:02d}/metrics_cf/' + \
-        config_["EXP"]["lsmdir"] + '/'
-    data_dir = data_dir_template.format(fcst_year, fcst_mon)
+    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + \
+        config["EXP"]["lsmdir"] + '/'
+    data_dir = data_dir_template.format(syear, smonth)
 
     lead_month = [0, 1, 2, 3, 4, 5]
 
@@ -58,7 +118,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     if standardized_anomaly:
         load_table = 'L11W_'
 
-    for var_name in config_["POST"]["metric_vars"]:
+    for var_name in ['RootZone-SM', 'Surface-SM', 'Precip', 'Air-T']:
         under_over = ['black', '#B404AE']
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
@@ -139,6 +199,30 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         del anom
         del anom_crop
 
+def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, region):
+    ''' processes a single domain GLOBAL or USAF COM '''
+    downstream_lon = np.array (rnetwork.variables['DownStream_lon'][:])
+    downstream_lat = np.array (rnetwork.variables['DownStream_lat'][:])
+    upstream_lon   = np.array (rnetwork.variables['UpStream_lon'][:])
+    upstream_lat   = np.array (rnetwork.variables['UpStream_lat'][:])
+    cum_area = np.array (rnetwork.variables['CUM_AREA'][:])
+
+    google_path = config['SETUP']['supplementarydir'] + '/s2splots/'
+
+    boundary = plot_utils.dicts('boundary', region)
+    vmask = (((upstream_lon >= boundary[2]) & (upstream_lon <= boundary[3])) &
+         ((upstream_lat >= boundary[0]) & (upstream_lat <= boundary[1])))
+
+    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile']
+    ldt = xr.open_mfdataset(ldtfile)
+    ldt_crop = plot_utils.crop(boundary, ldt.lat, ldt.lon, ldt)
+    hymap_mask = ldt_crop.HYMAP_drain_area.values
+
+    plot_anoms_basin(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
+               downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
+                     cum_area[vmask], boundary, region, google_path, hymap_mask)
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -149,39 +233,18 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     configfile = args.configfile
-    fcst_year = int(args.fcst_year)
-    fcst_mon = int(args.fcst_mon)
-    cwd = args.cwd
+    fcst_year_ = int(args.fcst_year)
+    fcst_mon_ = int(args.fcst_mon)
+    cwd_ = args.cwd
 
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+        config_ = yaml.safe_load(file)
 
-    if config ["EXP"]["DOMAIN"] == 'AFRICOM':
+    rnetwork_ =  Dataset (config_['SETUP']['supplementarydir'] + \
+                          '/s2splots/RiverNetwork_information.nc4', mode='r')
 
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  )
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  )
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  )
-
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  , standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
-
-    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
-
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y')
+    for region_ in ['TUNISIA', 'MENA']:
+        process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, region_)
+        plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_)
+        plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_, standardized_anomaly = 'Y')

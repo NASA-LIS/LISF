@@ -1,10 +1,9 @@
-# Overall driver options
-# - Provided by Yeosang Yoon (04-29-2021); Adapted for S2S needs
-# - For a ~25KM Global domain
+# GHI-S2S 25KM Global Input Parameters Config File for LIS
+# -- Originally based on the ~10km GHI-NRT/MR Global config file
 # _______________________________________________________________
 
 LDT running mode:                       "LSM parameter processing"
-Processed LSM parameter filename:       ./lis_input.s2s_global.noahmp401_hymap2.merit.25km.nc
+Processed LSM parameter filename:       ./lis_input.s2s_global.noahmp401_hymap2.25km.nc
 LIS number of nests:                    1
 Number of surface model types:          2
 Surface model types:                    "LSM"  "Openwater"
@@ -45,7 +44,6 @@ Landcover fill value:                   10
 Create or readin landmask:              "readin"
 Landmask data source:                   "UKMO_CAP_Netcdf"
 Landmask file:                          ./input/data/cap2ldt_ps41.nc
-#Landmask spatial transform:             none   # none | mode | neighbor
 Landmask spatial transform:             mode    # Go from ~10 KM to 25KM domain ...
 Landmask map projection:                latlon
 Landmask lower left lat:               -89.9531250
