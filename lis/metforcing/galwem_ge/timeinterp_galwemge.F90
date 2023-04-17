@@ -188,7 +188,7 @@ subroutine timeinterp_galwemge(n,findex)
               galwemge_struc(n)%metdata2(3,m,index1).ne.LIS_rc%udef) then
               !swd(tid) = galwemge_struc(n)%metdata1(3,m,index1)*zw1+&
               !         galwemge_struc(n)%metdata2(3,m,index1)*zw2
-             
+
               swd(tid) = zw1 * galwemge_struc(n)%metdata2(3,m,index1)
               ! In cases of small cos(zenith) angles, use linear weighting
               !  to avoid overly large weights
@@ -198,7 +198,7 @@ subroutine timeinterp_galwemge(n,findex)
               !   swd(tid) = galwemge_struc(n)%metdata1(3,m,index1)*swt1+ &
               !            galwemge_struc(n)%metdata2(3,m,index1)*swt2
               !endif
-          
+
               if(swd(tid).lt.0.0) then
                  write(unit=LIS_logunit,fmt=*)'[ERR] SW radiation is unphysical'
                  write(unit=LIS_logunit,fmt=*)'[ERR] it is', LIS_localPet, tid, swd(tid)
