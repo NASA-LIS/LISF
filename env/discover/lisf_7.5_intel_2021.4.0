@@ -25,6 +25,7 @@ proc ModulesHelp { } {
     puts stderr "\t\tLIS_CRTM_PROF"
     puts stderr "\t\tLIS_CMEM"
     puts stderr "\t\tLIS_LAPACK"
+    puts stderr "\t\tLIS_PETSC"
     puts stderr "\t\tLDT_ARCH"
     puts stderr "\t\tLDT_FC"
     puts stderr "\t\tLDT_CC"
@@ -100,6 +101,7 @@ set   def_lvt_proj        /discover/nobackup/projects/lis/libs/sles-12.3/proj/9.
 set   def_lvt_gdal        /discover/nobackup/projects/lis/libs/sles-12.3/gdal/3.5.2_intel-2021.4.0
 set   def_lvt_fortrangis  /discover/nobackup/projects/lis/libs/sles-12.3/fortrangis/2.6_gdal-3.5.2_intel-2021.4.0
 set   def_ldt_libgeotiff  /discover/nobackup/projects/lis/libs/sles-12.3/geotiff/1.7.0_proj-9.1.0_intel-2021.4.0
+set   def_lis_petsc       /discover/nobackup/projects/lis/libs/sles-12.3/petsc/3.16.1_intel-2021.4.0
 
 setenv   DEV_ENV         LISF_7_5_INTEL_2021_4_0
 setenv   LIS_ARCH        linux_ifc
@@ -120,7 +122,7 @@ setenv   LIS_CRTM        $def_lis_crtm
 setenv   LIS_CRTM_PROF   $def_lis_crtm_prof
 setenv   LIS_CMEM        $def_lis_cmem
 setenv   LIS_LAPACK      $def_lis_lapack
-
+setenv   LIS_PETSC       $def_lis_petsc
 
 setenv   LDT_ARCH        linux_ifc
 setenv   LDT_FC          mpiifort
@@ -165,4 +167,5 @@ prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf5/lib"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_libesmf"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_netcdf/lib"
 prepend-path   LD_LIBRARY_PATH   "$def_lis_eccodes/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
 prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"
