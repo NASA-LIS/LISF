@@ -136,6 +136,10 @@ subroutine LIS_metforcing_plugin
    use merra2_forcingMod
 #endif
 
+#if ( defined MF_GEOS_IT )
+   use geosit_forcingMod
+#endif
+
 #if ( defined MF_ERA5 )
    use era5_forcingMod
 #endif
@@ -378,6 +382,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_merra2
    external finalize_merra2
    external reset_merra2
+#endif
+
+#if ( defined MF_GEOS_IT )
+   external get_geosit
+   external timeinterp_geosit
+   external finalize_geosit
+   external reset_geosit
 #endif
 
 #if ( defined MF_ERA5 )
@@ -776,6 +787,16 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_merra2)
    call registerresetmetforc(trim(LIS_merra2Id)//char(0),reset_merra2)
    call registerfinalmetforc(trim(LIS_merra2Id)//char(0),finalize_merra2)
+#endif
+
+#if ( defined MF_GEOS_IT )
+! - GEOS-IT Forcing:
+   call registerinitmetforc(trim(LIS_geositId)//char(0),init_geosit)
+   call registerretrievemetforc(trim(LIS_geositId)//char(0),get_geosit)
+   call registertimeinterpmetforc(trim(LIS_geositId)//char(0), &
+                                  timeinterp_geosit)
+   call registerresetmetforc(trim(LIS_geositId)//char(0),reset_geosit)
+   call registerfinalmetforc(trim(LIS_geositId)//char(0),finalize_geosit)
 #endif
 
 #if ( defined MF_ERA5)
