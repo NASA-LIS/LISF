@@ -38,7 +38,8 @@ export ECCODES_SAMPLES_PATH=${LISF_LIBS_ECCODES}/share/eccodes/samples
 export PATH=${HERE}/usr/bin:${PATH}
 
 function lisf_usage {
-   echo "Usage: $(basename ${0}) [options] [-- LISF options]"
+   NAME="LISF-x86_64.AppImage"
+   echo "Usage: $NAME [options] [-- LISF options]"
    echo ""
    echo "   where [options] are:"
    echo "   -h               show this help message"
@@ -50,9 +51,9 @@ function lisf_usage {
    echo "   these must be preceeded by --"
    echo ""
    echo "   Examples:"
-   echo "      $(basename ${0}) -a LDT ldt.config"
-   echo "      mpirun -n N $(basename ${0}) -a LIS -- --file lis.config"
-   echo "      $(basename ${0}) -a LVT lvt.config"
+   echo "      $NAME -a LDT ldt.config"
+   echo "      mpirun -n N $NAME -a LIS -- --file lis.config"
+   echo "      $NAME -a LVT lvt.config"
 }
 
 function lisf_version {
