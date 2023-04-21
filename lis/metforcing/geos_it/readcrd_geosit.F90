@@ -32,7 +32,7 @@
 !EOP
       implicit none
 
-      integer :: n,t,rc
+      integer :: n,t,rc,m
 
       call ESMF_ConfigFindLabel(LIS_config,                            &
                                      "GEOS-IT forcing directory:",rc=rc)
@@ -51,16 +51,18 @@
                'GEOS-IT use lowest model level forcing: not defined')
       enddo
 
-      if (geosit_struc(n)%uselml.eq.0) then
-         call ESMF_ConfigFindLabel(LIS_config,                         &
+      do m = 1, LIS_rc%nnest
+        if (geosit_struc(m)%uselml.eq.0) then
+           call ESMF_ConfigFindLabel(LIS_config,                         &
                                     "GEOS-IT use 2m wind fields:",rc=rc)
-         do n = 1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config,                   &
+           do n = 1,LIS_rc%nnest
+              call ESMF_ConfigGetAttribute(LIS_config,                   &
                                         geosit_struc(n)%use2mwind,rc=rc)
-            call LIS_verify(rc,                                        &
+              call LIS_verify(rc,                                        &
                               'GEOS-IT use 2m wind fields: not defined')
-         enddo
-      endif
+           enddo
+        endif
+      enddo
 
       do n = 1,LIS_rc%nnest
          write(LIS_logunit,*) '[INFO] Using GEOS-IT forcing'
