@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+sudo docker create --name dummy lisf_appdir
+sudo docker cp dummy:/home/workdir/LISF.AppDir .
+sudo docker rm -f dummy
+
+sudo appimagetool LISF.AppDir
