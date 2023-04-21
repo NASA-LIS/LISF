@@ -1,0 +1,19 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: Federico Zivolo / floating-ui/floating-ui / mdbootstrap/mdb-ui-kit
+ 
+POC:
+
+https://popper.js.org
+https://github.com/floating-ui/floating-ui
+https://github.com/mdbootstrap/mdb-ui-kit
+https://github.com/FezVrasta
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-toplanding/js/popper.js
+../..//utils/eis_visualization_portal/eis-toplanding/js/popper.js
+
+License:
+
+Distributed under the MIT License (license terms are at http://opensource.org/licenses/MIT).
