@@ -1,0 +1,62 @@
+!=======================================================================
+!  MODULE CSMVersion
+!  07/05/2018 CV  Written
+!=======================================================================
+
+      MODULE CSMVersion
+!     Contains defintion of version and branch which will be
+!     used throughout the model.
+
+!=======================================================================
+
+!     Global CSM Version Number
+      TYPE VersionType
+        INTEGER :: Major = 4
+        INTEGER :: Minor = 8
+        INTEGER :: Model = 0
+        INTEGER :: Build = 22
+      END TYPE VersionType
+      TYPE (VersionType) Version
+!     CMake no longer able to change the branch name, do it manually.      
+!     CHARACTER(len=*), PARAMETER :: VBranch = '-develop_v4.8_RS'
+      CHARACTER(len=*), PARAMETER :: VBranch = '-methane'
+
+!     Version history:  
+!       4.8.0.22 chp 2022-01-28 More CROPGRO calibrations,  NWheat & NTeff updates
+!       4.8.0.21 chp 2022-01-20 Methane model. CROPGRO calibrations for v4.8. 
+!       4.8.0.20 chp 2022-01-14 More ETPHOT protections, mulch water initialization, 
+!                               fix puddling date, filepath length for linux, misc.
+!       4.8.0.19 chp 2021-12-13 Remove plant.for initializations in seasinit 
+!       4.8.0.18 chp 2021-12-10 ETPHOT protections, FO 
+!       4.8.0.17 chp 2021-10-25 Pre-season forecast enabled, portability issues 
+!       4.8.0.16 chp 2021-09-24 OilCropSun model added, 
+!                               updated calibration quinoa, chia, safflower
+!       4.8.0.15 chp 2021-08-20 Roll back some ETPHOT protections 
+!       4.8.0.14 chp 2021-08-19 OilCrop-Sun model added, mods to chia, quinoa, cassava,
+!                               safflower 
+!       4.8.0.13 chp 2021-08-12 Forage model minor mods
+!       4.8.0.12 chp 2021-08-06 Ceres-teff added, Changes to CSYCA and PRFRM models 
+!                               update genotype files for GLUE compatibility
+!       4.8.0.11 chp 2021-07-23 July 2021 Sprint version 
+!       4.8.0.10 chp 2021-06-25 FP protections, cassava minor, Mow file path 
+!       4.8.0.9  chp 2021-06-04 v4.8 (=v4.7.5.41) Summary: Lat-long, freshweight
+!       4.8.0.8  chp 2021-06-04 v4.8 (=v4.7.5.39) Bugfix SW_INIT, Allow TMAX = TMIN
+!       4.8.0.7  chp 2021-05-14 v4.8 (=v4.7.5.37) May 2021 Workshop
+!       4.8.0.6  chp 2021-05-04 v4.8 (=v4.7.5.36+) Pre-release test version
+!       4.8.0.5  chp 2021-04-23 v4.8 (=v4.7.5.36)
+!       4.8.0.4  chp 2021-04-04 v4.8 (=v4.7.5.33)
+!       4.8.0.3  chp 2021-02-08 v4.8 (=v4.7.5.29)
+!       4.8.0.2  chp 2020-07-21 v4.8 (=v4.7.5.28)
+!       4.8.0.1  chp 2020-07-21 v4.8 (=v4.7.5.14)
+!       4.7.5.0  chp 2018-12-18 Pre-release version
+!       4.7.2.0  chp 2018-05-07 v4.7.2 Release 2018 Workshop
+!       4.7.1.0  chp 2017-10-27 v4.7.1 Release
+!       4.7.0.0  chp 2017-08-09 v4.7.0 Release
+!       4.6.5.1  chp 2017-05-10 v4.6.5 Release 2017 Workshop  
+!       4.6.0.1  chp 2011-06-28 v4.6.0 Release
+!       4.5.1.0  chp 2010-10-10 v4.5.1 Release
+!       4.0.2.0  chp 2005-08-11 v4.0.2 Release
+!       4.0.1.0  chp 2004-01-28 v4.0.1 Release 
+!=======================================================================
+      END MODULE CSMVersion
+
