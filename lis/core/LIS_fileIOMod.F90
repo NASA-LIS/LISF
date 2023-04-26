@@ -704,19 +704,16 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       dname = trim(odir_temp) &
            //'/PS.557WW' &
            //'_SC.'//trim(LIS_rc%security_class) &
-           //'_DI.'//trim(LIS_rc%distribution_class) &
-           //'_GP.'//'LIS-'//trim(model_name) &
-           //'_GR.'//trim(fproj)//trim(fres2) &
-           //'_AR.'//trim(LIS_rc%area_of_data)
+           //'_DI.'//trim(LIS_rc%distribution_class)
       if (LIS_rc%lsm .eq. "Noah.3.9") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-NOAH'
+           //'_GP.'//'LIS-NOAH'
       else if (LIS_rc%lsm .eq. "Noah-MP.4.0.1") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-NOAHMP'
+           //'_GP.'//'LIS-NOAHMP'
       else if (LIS_rc%lsm .eq. "JULES.5.0") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-JULES'
+           //'_GP.'//'LIS-JULES'
       else
          write(LIS_logunit,*) &
               '[ERR] Invalid Land surface model for 557WW streamflow convention ', &
@@ -739,6 +736,9 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       end if
 
       dname = trim(dname) &
+           //'_GR.'//trim(fproj)//trim(fres2) &
+           //'_AR.'//trim(LIS_rc%area_of_data) &
+           //'_PA.'//'LIS-'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
@@ -1251,19 +1251,16 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       dname = trim(odir_temp) &
            //'/PS.557WW' &
            //'_SC.'//trim(LIS_rc%security_class) &
-           //'_DI.'//trim(LIS_rc%distribution_class) &
-           //'_GP.'//'LIS-'//trim(model_name) &
-           //'_GR.'//trim(fproj)//trim(fres2) &
-           //'_AR.'//trim(LIS_rc%area_of_data)
+           //'_DI.'//trim(LIS_rc%distribution_class)
       if (LIS_rc%lsm .eq. "Noah.3.9") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-NOAH'
+           //'_GP.'//'LIS-NOAH'
       else if (LIS_rc%lsm .eq. "Noah-MP.4.0.1") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-NOAHMP'
+           //'_GP.'//'LIS-NOAHMP'
       else if (LIS_rc%lsm .eq. "JULES.5.0") then
          dname = trim(dname) &
-           //'_PA.'//'LIS-JULES'
+           //'_GP.'//'LIS-JULES'
       else
          write(LIS_logunit,*) &
               '[ERR] Invalid Land surface model for 557WW streamflow convention ', &
@@ -1286,6 +1283,9 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       end if
 
       dname = trim(dname) &
+           //'_GR.'//trim(fproj)//trim(fres2) &
+           //'_AR.'//trim(LIS_rc%area_of_data) &
+           //'_PA.'//'LIS-'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
