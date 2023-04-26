@@ -5890,6 +5890,10 @@ Acceptable values for the sources are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MERRA2</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GEOS-IT&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GEOS-IT</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;CMAP&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CMAP</p></td>
 </tr>
@@ -14244,7 +14248,86 @@ MERRA2 use corrected total precipitation:  1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_forcings_ERA5">9.9.9. ERA5</h4>
+<h4 id="sssec_forcings_GEOS-IT">9.9.9. GEOS-IT</h4>
+<div class="paragraph">
+<p><code>GEOS-IT forcing directory:</code> specifies the location of
+the GEOS-IT forcing files.</p>
+</div>
+<div class="paragraph">
+<p>Please note that GEOS-IT is currently in production and is
+not complete for all calendar years.  Also, it is not yet
+available outside of NASA&#8217;s NCCS computing platforms.
+Also, the topographic or elevation correction option is
+supported through the MERRA-2 geopotential terrain height
+file.  Please also see the latest LDT notes for updates on
+how to use this option.</p>
+</div>
+<div class="paragraph">
+<p><code>GEOS-IT use lowest model level forcing:</code> specifies whether
+to use the lowest model level forcing.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use the lowest model level forcing.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use the lowest model level forcing.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>GEOS-IT use 2m wind fields:</code> specifies whether to use the
+2m diagnosed wind fields.  This option will only work if
+the lowest model level forcing option is turned off.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use the 2m diagnosed wind speed fields.</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use the 2m diagnosed wind speed fields.</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>GEOS-IT forcing directory:                  ./GEOS-IT
+GEOS-IT use lowest model level forcing:     1
+GEOS-IT use 2m wind fields:                 0</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="sssec_forcings_ERA5">9.9.10. ERA5</h4>
 <div class="paragraph">
 <p><code>ERA5 forcing directory:</code> specifies the location of
 the ERA5 forcing files.</p>
@@ -14262,7 +14345,7 @@ ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_forcings_gswp1">9.9.10. GSWP1</h4>
+<h4 id="sssec_forcings_gswp1">9.9.11. GSWP1</h4>
 <div class="paragraph">
 <p><code>GSWP1 forcing directory:</code> specifies the location of the
 GSWP1 forcing files.</p>
@@ -23317,7 +23400,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.1<br>
-Last updated 2023-03-22 16:14:20 UTC
+Last updated 2023-04-26 13:55:06 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
