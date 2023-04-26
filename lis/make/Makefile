@@ -40,7 +40,7 @@ HEADER_DIRS2 = $(call uniq,$(HEADER_DIRS1))
 HEADER_DIRS = $(foreach dir,$(HEADER_DIRS2),-I$(dir))
 
 # Get list of files and determine objects and dependency files
-FIND_FILES = $(wildcard $(dir)/*.F $(dir)/*.f $(dir)/*.F90 $(dir)/*.f90 $(dir)/*.c $(dir)/*.cc)
+FIND_FILES = $(wildcard $(dir)/*.F $(dir)/*.f $(dir)/*.F90 $(dir)/*.f90 $(dir)/*.for $(dir)/*.c $(dir)/*.cc)
 FILES      = $(foreach dir, $(dirs),$(FIND_FILES))
 SOURCES   := $(sort $(notdir $(FILES)))
 DEPS      := $(addsuffix .d, $(basename $(SOURCES)))
@@ -120,6 +120,9 @@ realclean:
 %.d: %.f90
 	@$(DEPGEN) $(DEPGEN_FLAGS) $< $(VPATH)
 
+%.d: %.for
+	@$(DEPGEN) $(DEPGEN_FLAGS) $< $(VPATH)
+
 %.d: %.c
 	@$(DEPGEN) $(DEPGEN_FLAGS) $< $(VPATH)
 
@@ -143,6 +146,9 @@ endif
 	$(FC) $(FFLAGS) $(HEADER_DIRS) $<
 
 %.o: %.f90
+	$(FC) -cpp $(FFLAGS) $(HEADER_DIRS) $<
+
+%.o: %.for
 	$(FC) -cpp $(FFLAGS) $(HEADER_DIRS) $<
 
 %.o: %.c

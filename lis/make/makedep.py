@@ -177,7 +177,7 @@ def suffix_check(f):
     """
     Return the type of file f by examining its suffix.
     """
-    fortran90 = {'.f90', '.F90'}
+    fortran90 = {'.f90', '.F90', '.for'}
     fortran77 = {'.f', '.F'}
     c = {'.c', '.cc'}
     suffix = get_suffix(f)
@@ -257,8 +257,10 @@ def find_module_file(desired_mod):
     for d in get_cli_search_dirs():
         f90s = os.path.join(d, '*.f90')
         F90s = os.path.join(d, '*.F90')
+        fors = os.path.join(d, '*.for')
         check_files = glob.glob(f90s)
         check_files += glob.glob(F90s)
+        check_files += glob.glob(fors)
         for cf in check_files:
             if contains_module_definition(cf, desired_mod):
                 return cf
