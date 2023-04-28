@@ -37,13 +37,13 @@ _VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
         'SnowDepth_inst', 'Snowcover_inst',
         'Tair_f_inst', 'Tair_f_max',
         'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
-         "ActSnowNL_inst", "GrndSnow_inst",
-         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
-         "LayerSnowGrain_inst", "SnowDensity_inst",
-         "SnowGrain_inst", "SnowIce_inst",
-         "SnowLiq_inst", "SnowTProf_inst",
-         "SurftSnow_inst"]
+        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+#         "ActSnowNL_inst", "GrndSnow_inst",
+#         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+#         "LayerSnowGrain_inst", "SnowDensity_inst",
+#         "SnowGrain_inst", "SnowIce_inst",
+#         "SnowLiq_inst", "SnowTProf_inst",
+#         "SurftSnow_inst"]
 
 def _main():
     """Main driver"""
@@ -68,8 +68,10 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 module purge
-module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
-module load lisf_7_intel_2021.4.0_petsc
+#module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
+#module load lisf_7_intel_2021.4.0_petsc
+module use --append ~/privatemodules
+module load lisf_7.5_intel_2021.4.0_s2s
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
