@@ -56,7 +56,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     if standardized_anomaly:
-        load_table = 'L11W_'
+        load_table = 'CB11W_'
 
     for var_name in config_["POST"]["metric_vars"]:
         under_over = ['black', '#B404AE']
@@ -72,7 +72,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             levels = plot_utils.dicts('anom_levels', 'standardized')
 
         if var_name in {'Air-T', 'Air_T'}:
-            load_table = 'L11W'
+            load_table = 'CB11W'
             if USAF_COLORS and standardized_anomaly is None:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
@@ -85,7 +85,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                 under_over = ['gray', 'blue']
 
         else:
-            load_table = 'L11W_'
+            load_table = 'CB11W_'
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)

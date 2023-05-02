@@ -293,6 +293,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             attrs["axis"] = "Y"
         elif name == "lon":
             attrs["axis"] = "X"
+        elif name == "ensemble":
+            attrs["axis"] = "E"
         elif name in ["SoilMoist_tavg"]:
             attrs["long_name"] = "volumetric soil moisture content"
         elif name == "Soiltype_inst":

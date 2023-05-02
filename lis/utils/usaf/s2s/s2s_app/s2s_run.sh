@@ -207,7 +207,7 @@ export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"
-    export ICSDIR=`grep ICSDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+    export LISDADIR=`grep LISDADIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 else
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 fi
@@ -307,12 +307,12 @@ download_forecasts(){
     #######################################################################
 
     # CFSv2 forecast
-    cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
-    ret_code=$?
-    if [ $ret_code -gt 0 ]; then
-	exit
-    fi
+    #cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+    #sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
+    #ret_code=$?
+    #if [ $ret_code -gt 0 ]; then
+    # exit
+    #fi
     
     # NMME Precipitation
     Mmm=`date -d "${YYYY}-${MM}-01" +%b`
@@ -469,7 +469,11 @@ ldt_ics(){
     cd ${SCRDIR}/ldt_ics
     CWD=`pwd`
     /bin/ln -s ${LISFDIR}/ldt/LDT
-    /bin/ln -s ${E2ESDIR}/lis_darun/output lisda_output
+    if [ $DATATYPE  == "forecast" ]; then
+	/bin/ln -s ${E2ESDIR}/lis_darun/output lisda_output
+    else
+	/bin/ln -s ${LISDADIR} lisda_output
+    fi
     /bin/ln -s ${E2ESDIR}/ldt_ics/input
     
     for model in $MODELS
@@ -564,7 +568,7 @@ bcsd_fcst(){
 	done
 	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
     fi
-    
+
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
@@ -759,7 +763,7 @@ lis_fcst(){
 		    prevID=$thisID		
 		fi
 	    else
-		thisID=$(submit_job "$bcsd11_ID,$bcsd12_ID" "$jfile")
+		thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
 		lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 	    fi	
 	    ((FileNo++))
@@ -943,7 +947,6 @@ fi
 #######################################################################
 
 setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
-mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
@@ -951,6 +954,7 @@ mkdir -p -m 775 ${SCRDIR}/s2spost
 chmod 775 ${E2ESDIR}/scratch/
 
 if [ $DATATYPE  == "forecast" ]; then
+    mkdir -p -m 775 ${SCRDIR}/lis_darun
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
@@ -964,14 +968,6 @@ if [ $DATATYPE  == "forecast" ]; then
     fi
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
-if [ $DATATYPE == "hindcast" ]; then
-    mkdir -p ${E2ESDIR}/ldt_ics/
-    cd ${E2ESDIR}/ldt_ics
-    for model in $MODELS
-    do
-	/bin/ln -s ${ICSDIR}/$model
-    done
-fi
 
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
@@ -1094,8 +1090,8 @@ case $STEP in
     *)
 	if [ $DATATYPE == "forecast" ]; then
 	    lis_darun
-	    ldt_ics
 	fi
+	ldt_ics
 	bcsd_fcst
 	lis_fcst
 	s2spost
