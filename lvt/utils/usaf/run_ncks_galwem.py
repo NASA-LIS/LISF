@@ -51,7 +51,6 @@
 #               for PS41 physics.
 # 05 Dec 2022:  Eric Kemp (SSAI), revised to improve pylint score.
 # 24 Jan 2023:  Eric Kemp (SSAI), updated filenames.
-# 30 Mar 2023:  Eric Kemp (SSAI), restored older JULES postprocessing.
 #
 #------------------------------------------------------------------------------
 """
@@ -158,27 +157,27 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
-                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
-#                              'ActSnowNL_inst', 'GrndSnow_inst',
-#                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-#                              'LayerSnowGrain_inst', 'SnowDensity_inst',
-#                              'SnowGrain_inst', 'SnowIce_inst',
-#                              'SnowLiq_inst',
-#                              'SnowTProf_inst', 'SurftSnow_inst']
+                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
+                              'ActSnowNL_inst', 'GrndSnow_inst',
+                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+                              'LayerSnowGrain_inst', 'SnowDensity_inst',
+                              'SnowGrain_inst', 'SnowIce_inst',
+                              'SnowLiq_inst',
+                              'SnowTProf_inst', 'SurftSnow_inst']
 
-# # EMK for RECON
-# _LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
-#                               "SoilMoist_inst","SoilTemp_inst",
-#                               "PS41Snow_inst"]
+# EMK for RECON
+_LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
+                              "SoilMoist_inst","SoilTemp_inst",
+                              "PS41Snow_inst"]
 
-# # JULES PS41 snow variables are in a unique netCDF file.
-# _LVT_JULES_PS41_SNOW_3HR = ["SnowDepth_inst", "SWE_inst",
-#                             'ActSnowNL_inst', 'GrndSnow_inst',
-#                             'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-#                             'LayerSnowGrain_inst', 'SnowDensity_inst',
-#                             'SnowGrain_inst', 'SnowIce_inst',
-#                             'SnowLiq_inst',
-#                             'SnowTProf_inst', 'SurftSnow_inst']
+# JULES PS41 snow variables are in a unique netCDF file.
+_LVT_JULES_PS41_SNOW_3HR = ["SnowDepth_inst", "SWE_inst",
+                            'ActSnowNL_inst', 'GrndSnow_inst',
+                            'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+                            'LayerSnowGrain_inst', 'SnowDensity_inst',
+                            'SnowGrain_inst', 'SnowIce_inst',
+                            'SnowLiq_inst',
+                            'SnowTProf_inst', 'SurftSnow_inst']
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
