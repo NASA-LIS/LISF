@@ -65,7 +65,7 @@ def dicts(dic_name, key):
         'AFRICA':(-40, 40, -20, 55),
         'GLOBAL':(-89, 89, -179, 179),
         'TUNISIA':(30, 38, 7, 12),
-        'MENA':(21, 39, 24, 62)
+        'ME_CRES':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -105,6 +105,7 @@ def cartopy_dir(data_dir):
     '''
     configuring cartopy
     '''
+    global bodr, coastlines, land, ocean, lakes, rivers
     if data_dir is not None:
         cartopy.config['data_dir'] = data_dir
 
@@ -201,7 +202,18 @@ def load_table (table_key):
                 [233, 23,  0],
                 [197,  0,  0],
                 [158,  0,  0]],
-         'L11W':[[  0,  0,130],
+        'CB11W':[[103,0,31],
+                [178,24,43],
+                [214,96,77],
+                [244,165,130],
+                [253,219,199],
+                [247,247,247],
+                [209,229,240],
+                [146,197,222],
+                [67,147,195],
+                [33,102,172],
+                [5,48,97]],
+        'L11W':[[  0,  0,130],
                 [  0,  0,255],
                 [  0,115,255],
                 [  0,195,255],
@@ -474,8 +486,10 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
                          color='Blue', fontsize=fscale*FONT_SIZE1, rotation=90)
         if (nplots - count_plot -1) < ncols:
             gl_.bottom_labels = True
-        ax_.coastlines()
-        ax_.add_feature(cfeature.BORDERS)
+        ax_.coastlines(alpha=0.1, zorder=3)
+        ax_.add_feature(ocean, linewidth=0.2, zorder=3 )
+        ax_.add_feature(coastlines, edgecolor='black', alpha=1, zorder=3)
+        ax_.add_feature(bodr, linestyle='--', edgecolor='k', alpha=1, zorder=3)        
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
 
         cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)

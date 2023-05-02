@@ -74,7 +74,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
 
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
-                          ncols, plot_arr, 'L11W_', titles, boundary, figure, under_over,
+                          ncols, plot_arr, 'CB11W_', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
     del anom
@@ -244,7 +244,7 @@ if __name__ == '__main__':
     rnetwork_ =  Dataset (config_['SETUP']['supplementarydir'] + \
                           '/s2splots/RiverNetwork_information.nc4', mode='r')
 
-    for region_ in ['TUNISIA', 'MENA']:
+    for region_ in ['TUNISIA', 'ME_CRES']:
         process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, region_)
         plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_)
         plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_, standardized_anomaly = 'Y')

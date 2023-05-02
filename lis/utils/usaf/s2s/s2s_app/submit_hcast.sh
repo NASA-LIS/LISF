@@ -16,7 +16,7 @@ fi
 
 current_year=hindcast/scratch/$MM/current_year_$MM
 bcsd_year=hindcast/scratch/$MM/bcsd_year_$MM
-NJMAX_BCSD=196
+NJMAX_BCSD=207
 NJMAX_FCST=164
 
 if [[ $BCSD == "BCSD" ]]; then
@@ -53,6 +53,7 @@ fi
 if [ $NJOBS -le $NJMAX ] && [ $year -le $clim_eyr ]; then
     # NCCS permits 256 jobs per user at a given time. The s2s_run.sh (hindcast) consists of `100 jobs
     if [[ $BCSD == "BCSD" ]]; then
+	#s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE -s LDTICS -o Y
 	s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE -s BCSD -o Y
 	echo $year > $update_file
     else
