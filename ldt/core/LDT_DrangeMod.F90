@@ -385,11 +385,11 @@ contains
                            metrics%count_drange_total(t,j,k)
                       if(metrics%maxval(t,j,k).gt.&
                            strat_maxval(sindex,j,k)) then
-                         strat_maxval(sindex,j,k) = metrics%maxval(t,j,k)
+                           strat_maxval(sindex,j,k) = metrics%maxval(t,j,k)
                       endif
                       if(metrics%minval(t,j,k).lt.&
                            strat_minval(sindex,j,k)) then
-                         strat_minval(sindex,j,k) = metrics%minval(t,j,k)
+                           strat_minval(sindex,j,k) = metrics%minval(t,j,k)
                       endif
                    enddo
                 enddo

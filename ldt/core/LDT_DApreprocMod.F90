@@ -213,14 +213,21 @@ contains
              do r=1,LDT_rc%lnr(n)
                 do c=1,LDT_rc%lnc(n)
                    if(LDT_domain(n)%gindex(c,r).ne.-1) then
-                      LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = &
-                           nint((stratification_data(c,r,j) - LDT_rc%strat_cdfs_min)/&
-                           delta)+1
-                      if (LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) .gt. LDT_rc%strat_cdfs_nbins) then
-                          write(LDT_logunit,*) '[INFO] Startification bins is larger then Max Startification bins',&
-                                LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) , 'vs.', LDT_rc%strat_cdfs_nbins,& 
-                               'Value adjusted to the Max Startification bins'
-                          LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = LDT_rc%strat_cdfs_nbins      
+                      if(stratification_data(c,r,j) .gt. 0) then 
+                         LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = &
+                              nint((stratification_data(c,r,j) - LDT_rc%strat_cdfs_min)/&
+                              delta)+1
+                         if (LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) .gt. LDT_rc%strat_cdfs_nbins) then
+                             write(LDT_logunit,*) '[INFO] Startification bins is larger then Max Startification bins',&
+                                   LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) , 'vs.', LDT_rc%strat_cdfs_nbins,& 
+                                  'Value adjusted to the Max Startification bins'
+                             LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = LDT_rc%strat_cdfs_nbins      
+                         endif
+                      else
+                         write(LDT_logunit,*) '[INFO] Total precip is zero or undefined',&
+                                stratification_data(c,r,j) ,&
+                               'Value adjusted to the Min Startification bins'
+                         LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = 1
                       endif
                    endif
                 enddo
