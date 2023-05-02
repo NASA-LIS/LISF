@@ -180,6 +180,7 @@ contains
     use THySM_obsMod,           only : THySM_obsinit
     use UASMAP_obsMod,          only : UASMAP_obsinit
     use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
+    use SMAPEOPLSMobsMod,       only : SMAPEOPLSMobsinit
 
     external readtemplateObs
     external readLISoutput
@@ -290,6 +291,7 @@ contains
     external readTHySMobs
     external readUASMAPobs
     external readGRUNrunoffobs
+    external readSMAPEOPL_SMObs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -737,7 +739,11 @@ contains
          GRUNrunoffinit)
     call registerobsread(trim(LVT_GRUNobsId)//char(0),&
          readGRUNrunoffobs)
-    
+
+    call registerobssetup(trim(LVT_SMAP_E_OPLId)//char(0), &
+         SMAPEOPLSMobsinit)
+    call registerobsread(trim(LVT_SMAP_E_OPLId)//char(0),&
+         readSMAPEOPL_SMObs)    
     
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod
