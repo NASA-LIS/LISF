@@ -2232,7 +2232,7 @@ LPRM vegetation optical depth data designation:      X-band
 
 ==== SMAP-E-OPL soil moisture retrieval
 
-`SMAP_E_OPL soil moisture data directory:` specifies the location of the Operational enhanced SMAP soil moisture retieval data directory.
+`SMAP_E_OPL soil moisture data directory:` specifies the location of the Operational enhanced SMAP soil moisture retrieval data directory.
  
 .Example _lvt.config_ entry
 ....
