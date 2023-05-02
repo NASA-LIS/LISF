@@ -603,6 +603,7 @@ Acceptable values are:
 |"`3 level hierarchy`" | 3 levels of hierarchy
 |"`4 level hierarchy`" | 4 levels of hierarchy
 |"`WMO convention`"    | WMO convention for weather codes
+|"`557WW streamflow convention`" | 557WW convention for streamflow output
 |====
 
 .Example _lis.config_ entry
