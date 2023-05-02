@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -559,18 +559,22 @@ subroutine HYMAP2_model_core(n,it,mis,nseqall,nz,time,dt,  &
   enddo
 
   deallocate(rivelv_glb)
-  deallocate(rivdph_glb) 
+  deallocate(rivsto_glb)
+  deallocate(rivdph_glb)
   deallocate(rivdph_pre_glb)
   deallocate(fldelv1_glb)
   deallocate(flddph1_glb)
+  deallocate(fldsto_glb)
   deallocate(flddph_pre_glb)
 !  deallocate(next_glb)
   deallocate(rivout_glb)
-  deallocate(rivsto_glb)
-  deallocate(fldsto_glb)
-  deallocate(fldout_glb)  
+  deallocate(fldout_glb)
+  deallocate(rivinf_glb)
+  deallocate(fldinf_glb)
   !ag(27Apr2020)
   if(flowtype==4)then
+    deallocate(drsto_glb)
+    deallocate(drout_glb)
     deallocate(drinf_glb)
   endif
 end subroutine HYMAP2_model_core

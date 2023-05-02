@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -33,6 +33,7 @@
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
 !  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!  10 Jan 2023  Mahdi Navari added suport for COAMPSout 
 !
 !EOP
 module LVT_datastream_pluginMod
@@ -178,7 +179,9 @@ contains
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
     use THySM_obsMod,           only : THySM_obsinit
-    use UASMAP_obsMod,           only : UASMAP_obsinit
+    use UASMAP_obsMod,          only : UASMAP_obsinit
+    use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
+    use COAMPSout_dataMod,      only : COAMPSout_datainit
 
     external readtemplateObs
     external readLISoutput
@@ -288,6 +291,8 @@ contains
     external readFluxSatobs
     external readTHySMobs
     external readUASMAPobs
+    external readGRUNrunoffobs
+    external readCOAMPSoutdata
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -731,6 +736,15 @@ contains
     call registerobsread(trim(LVT_UASMAPobsId)//char(0),&
          readUASMAPobs)
     
+    call registerobssetup(trim(LVT_GRUNobsId)//char(0), &
+         GRUNrunoffinit)
+    call registerobsread(trim(LVT_GRUNobsId)//char(0),&
+         readGRUNrunoffobs)
 
+    call registerobssetup(trim(LVT_COAMPSoutId)//char(0), &
+         COAMPSout_datainit)
+    call registerobsread(trim(LVT_COAMPSoutId)//char(0),&
+         readCOAMPSoutdata)    
+    
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

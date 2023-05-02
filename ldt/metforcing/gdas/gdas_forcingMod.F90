@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -90,6 +90,7 @@ module gdas_forcingMod
 !
 ! !USES: 
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -108,8 +109,8 @@ module gdas_forcingMod
      real          :: ts
      integer       :: nc, nr   ! GDAS dimensions
      integer       :: nmif
-     character*100 :: gdasdir        ! GDAS Forcing Directory
-     character*100 :: elevfile
+     character(len=LDT_CONST_PATH_LEN) :: gdasdir        ! GDAS Forcing Directory
+     character(len=LDT_CONST_PATH_LEN) :: elevfile
 
      real*8        :: gdastime1, gdastime2
      real*8        :: griduptime1, griduptime2, griduptime3

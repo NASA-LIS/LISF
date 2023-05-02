@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -32,6 +32,7 @@ module FLAKE_parmsMod
   use LDT_historyMod
   use LDT_paramDataMod
   use LDT_logMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_SurfaceTypeMod, only: LDT_assign_lakesfctype
   use LDT_paramMaskCheckMod
 
@@ -56,9 +57,9 @@ module FLAKE_parmsMod
 
      character*50         :: lakeparms_proj
      character*50         :: lakeparms_gridtransform
-     character*140        :: inlandwaterfile
-     character*140        :: lakedepthfile
-     character*140        :: lakedepthQCfile
+     character(len=LDT_CONST_PATH_LEN)        :: inlandwaterfile
+     character(len=LDT_CONST_PATH_LEN)        :: lakedepthfile
+     character(len=LDT_CONST_PATH_LEN)        :: lakedepthQCfile
      character*50         :: inlandwater_gridtransform
 
      ! -  Lake model-specific:

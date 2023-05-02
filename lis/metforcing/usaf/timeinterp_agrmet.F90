@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,8 @@
 !   30 Apr 2012: Chris Franks: If end-of-run set wt1=0 & wt2=1 for
 !                temporal interpolation
 !   18 Feb 2020: Eric Kemp: Removed convective precip.
+!   16 Feb 2022: K. Arsenault: Commented out "btime" calls, since not used
+!
 ! !INTERFACE:
 subroutine timeinterp_agrmet(n, findex)
 ! !USES:
@@ -57,8 +59,8 @@ subroutine timeinterp_agrmet(n, findex)
 !EOP
   integer :: bdoy,byr,bmo
   integer :: bda,bhr,bmn
-  real*8 :: btime
-  real :: wt1,wt2,gmt1,gmt2
+  real*8  :: btime
+  real    :: wt1,wt2,gmt1,gmt2
   integer :: index1, t
   integer            :: status
   type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
@@ -180,12 +182,14 @@ subroutine timeinterp_agrmet(n, findex)
            endif
         enddo
      endif
+
+  ! Retrospective USAF/NAFPA forcing (offline):
   else
-     
-     btime=agrmet_struc(n)%agrmettime1
-     call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
-     btime=agrmet_struc(n)%agrmettime2
-     call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
+      ! Note below code is not used in this routine:
+!     btime=agrmet_struc(n)%agrmettime1
+!     call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)
+!     btime=agrmet_struc(n)%agrmettime2
+!     call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
      
      call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Tair%varname(1),tmpField,&
           rc=status)
@@ -261,9 +265,9 @@ subroutine timeinterp_agrmet(n, findex)
              agrmet_struc(n)%metdata2(1,index1).ne.-9999.0) then 
            tmp(t)   = wt1*agrmet_struc(n)%metdata1(1,index1)+&
                 wt2*agrmet_struc(n)%metdata2(1,index1)
-!kludge fix for some bad data points over the high lat. regions
-           if(tmp(t).gt.400) then 
-              tmp(t) = 273.1
+         ! Kludge fix for some bad data points over the high lat. regions
+           if(tmp(t).gt.360.) then  ! In Kelvins (~87 deg C)
+              tmp(t) = 273.1        ! Assign to Tfrz
            endif
         else
            tmp(t) = -9999.0
@@ -307,7 +311,7 @@ subroutine timeinterp_agrmet(n, findex)
         endif
         if(agrmet_struc(n)%metdata1(7,index1).ne.-9999.0.and.&
              agrmet_struc(n)%metdata2(7,index1).ne.-9999.0) then 
-           pcp(t)  = agrmet_struc(n)%metdata2(7,index1)/(3*3600) !??
+           pcp(t)  = agrmet_struc(n)%metdata2(7,index1)/(3*3600) !Convert accum input to rate
         else
            pcp(t) = -9999.0
         endif

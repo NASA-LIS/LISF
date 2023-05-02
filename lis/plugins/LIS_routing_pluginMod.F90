@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@ module LIS_routing_pluginMod
 !
 ! !REVISION HISTORY:
 !  6 May 11    Sujay Kumar  Initial Specification
+! 17 Mar 21    Yeosang Yoon: Add RAPID
 !
 !EOP
   implicit none
@@ -60,6 +61,10 @@ subroutine LIS_routing_plugin
     use HYMAP2_routingMod, only : HYMAP2_routingInit
 #endif
 
+#if ( defined ROUTE_RAPID_ROUTER )
+    use RAPID_routingMod, only : RAPID_routingInit
+#endif
+
    implicit none
 
 #if ( defined ROUTE_NLDAS_ROUTER )
@@ -81,6 +86,13 @@ subroutine LIS_routing_plugin
    external HYMAP2_routing_run
    external HYMAP2_routing_output
    external HYMAP2_routing_writerst
+#endif
+
+#if ( defined ROUTE_RAPID_ROUTER )
+   external RAPID_routing_readrst
+   external RAPID_routing_run
+   external RAPID_routing_output
+   external RAPID_routing_writerst
 #endif
 
 #if ( defined ROUTE_NLDAS_ROUTER )
@@ -114,6 +126,17 @@ subroutine LIS_routing_plugin
                               HYMAP2_routing_output)
    call registerroutingwriterestart(trim(LIS_HYMAP2routerId)//char(0), &
                                     HYMAP2_routing_writerst)
+#endif
+
+#if ( defined ROUTE_RAPID_ROUTER )
+   call registerroutinginit(trim(LIS_RAPIDrouterId)//char(0),RAPID_routingInit)
+   call registerroutingreadrestart(trim(LIS_RAPIDrouterId)//char(0), &
+                                   RAPID_routing_readrst)
+   call registerroutingrun(trim(LIS_RAPIDrouterId)//char(0),RAPID_routing_run)
+   call registerroutingoutput(trim(LIS_RAPIDrouterId)//char(0), &
+                              RAPID_routing_output)
+   call registerroutingwriterestart(trim(LIS_RAPIDrouterId)//char(0), &
+                                    RAPID_routing_writerst)
 #endif
 
 end subroutine LIS_routing_plugin

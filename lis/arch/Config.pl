@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -849,6 +849,30 @@ if($use_mkllapack == 1) {
    }
 }
 
+print "Use PETSc? (1-yes, 0-no, default=0): ";
+$use_petsc=<stdin>;
+chomp($use_petsc);
+if($use_petsc eq ""){
+   $use_petsc=0;
+}
+
+if($use_petsc == 1) {
+   if(defined($ENV{LIS_PETSc})){
+      $sys_petsc_path = $ENV{LIS_PETSc};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_petsc=$sys_petsc_path.$inc;
+      $lib_petsc=$sys_petsc_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PETSc path using\n";
+      print "the LIS_PETsc variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
 
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
@@ -870,6 +894,13 @@ if ($ENV{WRF_HYDRO} eq '1') {
 # MPDECOMP2 does not prompt user
 if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
+}
+
+if(defined($ENV{LIS_RPC})){
+   $librpc = "-ltirpc";
+}
+else{
+   $librpc = "";
 }
 
 
@@ -989,7 +1020,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ".$librpc;
    $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
    $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
@@ -1035,6 +1066,11 @@ if($use_lapack == 1){
 if($use_mkllapack == 1){
    #Changed to be able to use mkl Wendy Sharples
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
+}
+
+if($use_petsc == 1){
+   $fflags = $fflags." -I\$(INC_PETSc)";
+   $ldflags = $ldflags." -L\$(LIB_PETSc) -Wl,-rpath,\$(LIB_PETSc) -lpetsc -lm";
 }
 
 if($use_esmf_trace == 1){
@@ -1123,6 +1159,8 @@ printf conf_file "%s%s\n","LIB_PROF_UTIL   = $lib_crtm_prof";
 printf conf_file "%s%s\n","INC_CMEM        = $inc_cmem";
 printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
+printf conf_file "%s%s\n","INC_PETSc       = $inc_petsc";
+printf conf_file "%s%s\n","LIB_PETSc       = $lib_petsc";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
@@ -1217,6 +1255,12 @@ else{
    printf misc_file "%s\n","#undef MKL_LAPACK ";
 }
 
+if($use_petsc == 1) {
+   printf misc_file "%s\n","#define PETSc ";
+}
+else{
+   printf misc_file "%s\n","#undef PETSc ";
+}
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

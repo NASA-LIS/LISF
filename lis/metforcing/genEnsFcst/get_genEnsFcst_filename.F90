@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,9 +13,11 @@
 !
 ! !REVISION HISTORY:
 !  27 Sep 2016: K. Arsenault; Initial Implementation
+!  21 Jul 2022: K. Arsenault; Updated to support long-term reanalysis
 !
 ! !INTERFACE:
- subroutine get_genEnsFcst_filename( fcsttype, fcstyr, fcstmo,&
+ subroutine get_genEnsFcst_filename( fcsttype, userspec, &
+                fcstyr, fcstmo,&
                 ensnum, yr, mo, & 
                 directory, filename)
 ! !USES:
@@ -24,11 +26,12 @@
    implicit none
 ! !ARGUMENTS: 
    character*20,  intent(in)  :: fcsttype        ! Forecast file of origin
+   character*40,  intent(in)  :: userspec        ! Forecast file, user-specified convention
    integer,       intent(in)  :: fcstyr          ! Forecast year
    integer,       intent(in)  :: fcstmo          ! Forecast month - Need to convert to "3-letter month"
    integer,       intent(in)  :: ensnum          ! Forecast ensemble number
    integer,       intent(in)  :: yr, mo          ! Lead-time year, month
-   character(len=*), intent(in)  :: directory       ! Dataset Directory
+   character(len=*), intent(in)  :: directory    ! Dataset Directory
    character(len=*), intent(out) :: filename        
 !
 ! !DESCRIPTION:
@@ -86,11 +89,22 @@
      !- LIS function to convert 2-digit month to 3-char month:
       call LIS_mon3char( fmo, fmo3 )
 
-      filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+! Former directory structure:
+!      filename = trim(directory)//"/"//fyr//"/"//fmo3//"01/ens"//&
+!          trim(fensnum)//"/"//trim(fcsttype)//"."//lyr//lmo//".nc4"
+! New directory structure (as of Nov 30, 2022):
+      filename = trim(directory)//"/"//fmo3//"01/"//fyr//"/ens"//&
           trim(fensnum)//"/"//trim(fcsttype)//"."//lyr//lmo//".nc4"
 
+    case( "user-specified" )
+     ! User specified entry ...
+      if( trim(userspec) .ne. "none" ) then
+         filename = trim(directory)//"/ens"//trim(fensnum)//"/"&
+                 //lyr//"/"//trim(userspec)//"_"//lyr//lmo//".nc4"
+      endif
+
     case default
-      write(*,*) " No other forecast datasets supported at this time "
+      write(*,*) "[ERR] GenEnsFcst: No other forecast datasets supported at this time "
 
     end select
 

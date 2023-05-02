@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@ module LIS_lsmrouting_pluginMod
 !  16 Jul 09    Sujay Kumar  Initial Specification
 !  01 Jun 17    Augusto Getirana: Add HyMAP2
 !  12 Sep 19    Augusto Getirana: Add 2-way coupling
+!  17 Mar 21    Yeosang Yoon: Add RAPID
 ! 
   implicit none
   
@@ -44,7 +45,7 @@ subroutine LIS_lsmrouting_plugin
    use LIS_pluginIndices
    use LIS_routingMod, only : LIS_runoff_state
 
-#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) )
+#if ( ( defined ROUTE_HYMAP_ROUTER ) ||  ( defined ROUTE_HYMAP2_ROUTER ) || ( defined ROUTE_NLDAS_ROUTER ) || ( defined ROUTE_RAPID_ROUTER ))
 
 #if ( defined SM_LSM_TEMPLATE )
    external template_getrunoffs
@@ -76,6 +77,9 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    external noah39_getrunoffs
    external noah39_getrunoffs_mm
+   external noah39_getrunoffs_rapid
+   external noah39_getrunoffs_hymap2
+   external noah39_getsws_hymap2
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -83,6 +87,7 @@ subroutine LIS_lsmrouting_plugin
    external noahmp36_getrunoffs_mm
    external noahmp36_getrunoffs_hymap2
    external noahmp36_getsws_hymap2
+   external noahmp36_getrunoffs_rapid
 #endif
 
 #if ( defined SM_NOAHMP_4_0_1 )
@@ -90,6 +95,7 @@ subroutine LIS_lsmrouting_plugin
    external noahmp401_getrunoffs_mm
    external noahmp401_getrunoffs_hymap2
    external noahmp401_getsws_hymap2
+   external noahmp401_getrunoffs_rapid   
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -111,6 +117,7 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_0 )
    external jules50_getrunoffs_mm
+   external jules50_getrunoffs_rapid
 #endif
 
 #if ( defined SM_JULES_5_2 )
@@ -123,6 +130,7 @@ subroutine LIS_lsmrouting_plugin
 
 #if ( defined SM_JULES_5_X )
    external jules5x_getrunoffs_mm
+   external jules5x_getrunoffs_rapid
 #endif
 
 #if ( defined ROUTE_HYMAP_ROUTER )
@@ -160,6 +168,9 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noah39_getrunoffs_mm)
+!   call registerlsmroutinggetsws(trim(LIS_noah39Id)//"+"//&
+!        trim(LIS_HYMAP2routerId)//char(0), &
+!        noah39_getsws_hymap2)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -182,7 +193,6 @@ subroutine LIS_lsmrouting_plugin
         trim(LIS_HYMAProuterId)//char(0), &
         ruc37_getrunoffs_mm)
 #endif
-
 
 #if ( defined SM_CLSM_F2_5 )
    call registerlsmroutinggetrunoff(trim(LIS_clsmf25Id)//"+"//&
@@ -253,7 +263,10 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_NOAH_3_9 )
    call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        noah39_getrunoffs_mm)
+        noah39_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noah39_getsws_hymap2)
 #endif
 
 #if ( defined SM_NOAHMP_3_6 )
@@ -279,7 +292,6 @@ subroutine LIS_lsmrouting_plugin
         trim(LIS_HYMAP2routerId)//char(0), &
         ruc37_getrunoffs_mm)
 #endif
-   
 
 #if ( defined SM_CLSM_F2_5 )
    call registerlsmroutinggetrunoff(trim(LIS_clsmf25Id)//"+"//&
@@ -356,6 +368,38 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
         trim(LIS_NLDASrouterId)//char(0), &
         vic412_getrunoffs)
+#endif
+#endif
+
+#if ( defined ROUTE_RAPID_ROUTER )
+#if ( defined SM_NOAH_3_9 )
+   call registerlsmroutinggetrunoff(trim(LIS_noah39Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        noah39_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        noahmp36_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_NOAHMP_4_0_1 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        noahmp401_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_JULES_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_jules50Id)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        jules50_getrunoffs_rapid)
+#endif
+
+#if ( defined SM_JULES_5_X )
+   call registerlsmroutinggetrunoff(trim(LIS_jules5xId)//"+"//&
+        trim(LIS_RAPIDrouterId)//char(0), &
+        jules5x_getrunoffs_rapid)
 #endif
 #endif
 #endif

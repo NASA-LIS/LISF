@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ module LDT_obsSimMod
   use LDT_coreMod
   use LDT_logMod
   use LDT_ran2_gasdev
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
@@ -60,7 +61,7 @@ module LDT_obsSimMod
      real,         allocatable :: varmaxs(:)
      character*50              :: ttransform
      character*50              :: masktype
-     character*50              :: maskdir
+     character(len=LDT_CONST_PATH_LEN) :: maskdir
      character*50              :: errModelType
      character*50              :: errDist
      real                      :: errStdev
@@ -466,8 +467,8 @@ contains
 !  to an external file. 
 ! 
 !EOP
-    character*200           :: dname
-    character*200           :: filename
+    character(len=LDT_CONST_PATH_LEN)           :: dname
+    character(len=LDT_CONST_PATH_LEN)           :: filename
     character(len=10)       :: cdate
     character(len=14)       :: cdate1
     integer                 :: ftn

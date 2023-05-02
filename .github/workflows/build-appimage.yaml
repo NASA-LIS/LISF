@@ -1,0 +1,84 @@
+name: LISF AppImage
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - published
+  #workflow_dispatch:
+
+jobs:
+  build_and_publish:
+    name: Build and publish AppImage
+    runs-on: ubuntu-22.04
+    if: ${{ !contains(github.ref_name, 'support/lisf-557ww') }}
+    steps:
+      - if: github.event_name == 'release'
+        run: echo "DEV_IMAGE=${{ github.event.release.target_commitish }}" >>$GITHUB_ENV
+      - if: github.event_name == 'push' #|| github.event_name == 'workflow_dispatch'
+        run: echo "DEV_IMAGE=master" >>$GITHUB_ENV
+      - name: Get LISF libraries image
+        run: curl --insecure --no-progress-meter -O https://portal.nccs.nasa.gov/lisdata_pub/TESTING/dev-images/$DEV_IMAGE/lisf_libraries.tar.gz
+      - name: Load LISF libraries image
+        run: docker image load --input lisf_libraries.tar.gz
+      - name: Checkout LISF source code
+        uses: actions/checkout@v3
+      - name: Compile LISF
+        run: docker build --build-arg LISF_SOURCE=$GITHUB_WORKSPACE --tag lisf_appdir --file ./.github/scripts/appimage/Dockerfile $GITHUB_WORKSPACE/..
+      - name: Make AppImage
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fuse
+          wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod 755 appimagetool-x86_64.AppImage
+          mv appimagetool-x86_64.AppImage /usr/local/bin/appimagetool
+          ./.github/scripts/appimage/make_appimage
+      - name: Prepare release notes (if necessary)
+        if: github.event_name == 'push' #|| github.event_name == 'workflow_dispatch'
+        run: |
+          cat <<EOB >$RUNNER_TEMP/notes.md
+          This AppImage is compatible with:
+
+          * Linux: x86_64 machines (as reported by \`uname -s -m\`)
+          * GLIBC: 2.22 or newer (as reported by \`ldd --version\`)
+          * MPI: MPICH, Intel MPI, or Cray MPI
+
+          After downloading the AppImage, run:
+
+          \`\`\`
+          chmod 755 ./LISF-x86_64.AppImage
+          \`\`\`
+
+          To get started with the AppImage, run:
+
+          \`\`\`
+          ./LISF-x86_64.AppImage -h
+          \`\`\`
+
+          Note:
+
+          This AppImage requires FUSE to run.  If you get an error, then try:
+          \`\`\`
+          mkdir LISF-x86_64
+          cd LISF-x86_64
+          ../LISF-x86_64.AppImage --appimage-extract
+          cd ..
+          ./LISF-x86_64/squashfs-root/AppRun -h
+          \`\`\`
+          EOB
+      - name: Create pre-release (if necessary)
+        if: github.event_name == 'push' #|| github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LISF_TAG: master-latest
+          TITLE: "LISF master (pre-release) image"
+        run: |
+          gh release delete $LISF_TAG --yes || true
+          git push origin :$LISF_TAG || true
+          gh release create $LISF_TAG --prerelease --notes-file "$RUNNER_TEMP/notes.md" --title "$TITLE" --target $GITHUB_SHA ./LISF-x86_64.AppImage
+      - name: Upload asset (if necessary)
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload ${{ github.event.release.tag_name }} ./LISF-x86_64.AppImage

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -96,7 +96,7 @@ subroutine read_ecmwf_elev(n, findex, ecmwfelev, elevdiff)
 !- Check initially if file exists:
   inquire( file=ecmwf_filename, exist=file_exists )   ! Check if file exists
   if (.not. file_exists)  then
-     write(LDT_logunit,*) "ECMWF elevation file missing: ",ecmwf_filename
+     write(LDT_logunit,*) "ECMWF elevation file missing: ",trim(ecmwf_filename)
   endif
   write(LDT_logunit,*) "Opening/reading ECMWF elev file:: ",trim(ecmwf_filename)
 

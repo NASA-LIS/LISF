@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -896,13 +896,15 @@ subroutine HYMAP2_routing_run(n)
     if(HYMAP2_routing_struc(n)%evapflag.ne.0)then
        deallocate(tmp_tmp)
        deallocate(tmp_q2)
-       deallocate(tmp_qnet)
-       deallocate(tmp_wind)
        deallocate(tmp_psurf)
-       deallocate(tair)     
+       deallocate(tmp_wind)
+       deallocate(tmp_qnet)
+
+       deallocate(evap)
+       deallocate(tair)
        deallocate(qair)
-       deallocate(pres)     
-       deallocate(wind)     
+       deallocate(pres)
+       deallocate(wind)
        deallocate(qnet)
        deallocate(tmpet)
     endif

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -70,6 +70,7 @@ module ecmwf_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -89,15 +90,15 @@ module ecmwf_forcingMod
   type, public ::  ecmwf_type_dec 
      real         :: ts
      integer      :: ncold, nrold   !AWIPS 212 dimensions
-     character*45 :: ecmwfdir   !ecmwf Forcing Directory
-     character*45 :: elevfileifs23r4  !elevation for 2001-2002
-     character*45 :: elevfileifs25r1  !elevation for 2003-2006
-     character*45 :: elevfileifs30r1  !elevation for 2006 - jun 2008
-     character*45 :: elevfileifs33r1  !elevation for jun 2008 - mar 2009
-     character*45 :: elevfileifs35r2  !elevation for mar 2009 - sep 2009
-     character*45 :: elevfileifs35r3  !elevation for sep 2009 - jan 2010
-     character*45 :: elevfileifs36r1  !elevation for jan 2010 - may 2011
-     character*45 :: elevfileifs37r2  !elevation for may 2011 onward
+     character(len=LDT_CONST_PATH_LEN) :: ecmwfdir   !ecmwf Forcing Directory
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs23r4  !elevation for 2001-2002
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs25r1  !elevation for 2003-2006
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs30r1  !elevation for 2006 - jun 2008
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs33r1  !elevation for jun 2008 - mar 2009
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs35r2  !elevation for mar 2009 - sep 2009
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs35r3  !elevation for sep 2009 - jan 2010
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs36r1  !elevation for jan 2010 - may 2011
+     character(len=LDT_CONST_PATH_LEN) :: elevfileifs37r2  !elevation for may 2011 onward
      real*8       :: ecmwftime1,ecmwftime2
      real*8       :: griduptime1,griduptime2,griduptime3,griduptime4, &
                      griduptime5,griduptime6,griduptime7

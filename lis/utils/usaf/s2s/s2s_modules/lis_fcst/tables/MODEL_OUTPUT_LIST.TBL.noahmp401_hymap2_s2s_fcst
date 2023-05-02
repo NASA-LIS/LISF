@@ -1,0 +1,50 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Water balance components
+TotalPrecip:  1  kg/m2   DN   3 0 0 1  61 10000    # Total Precipitation rate (kg/m2s)
+Qs:           1  kg/m2   OUT  3 0 0 1 235 10000    # Surface runoff (kg/m2s)
+Qsb:          1  kg/m2   OUT  3 0 0 1 234 10000    # Subsurface runoff (kg/m2s)
+Evap:         1  kg/m2s  UP   1 0 0 1 204 10000    # Total Evapotranspiration (kg/m2s)
+
+#Surface state variables
+AvgSurfT:     1  K       -    1 0 0 1  11 100      # Average surface temperature (K)
+
+#Subsurface state variables
+SoilMoist:    1  m3/m3   -    1 0 0 4 201 1000     # Average layer soil moisture (kg/m2)
+SoilTemp:     1  K       -    1 0 0 4  85 1000     # Average layer soil temperature (K)
+RelSMC:       1  -       -    1 0 0 4 194 1000     # Relative soil moisture
+
+#Cold season processes
+SWE:          1  kg/m2   -    1 0 0 1  65 10000    # Snow Water Equivalent (kg/m2)
+SnowDepth:    1  m       -    1 0 0 1  66 1000     # Snow Depth (m)
+Snowcover:    1  %       -    1 0 0 1 238 100      # Snow Cover (-) or percentage Snow Coverage
+
+#Other hydrologic variables
+TWS:          1  mm      -    1 0 0 1 175 1       # Terrestrial water storage (mm)
+GWS:          1  mm      -    1 0 0 1 176 1       # Ground water storage (mm)
+
+#Forcings
+Tair_f:       1  K       -    2 1 0 1  11 10000    # Near surface air temperature
+Qair_f:       1  kg/kg   -    1 0 0 1  51 10000000 # Near surface specific humidity
+Psurf_f:      1  Pa      -    1 0 0 1   1 1000     # Surface pressure
+SWdown_f:     1  W/m2    DN   1 0 0 1 145 10000    # Surface incident shortwave radiation
+LWdown_f:     1  W/m2    DN   1 0 0 1 144 100000   # Surface incident longwave radiation
+Wind_f:       1  m/s     -    1 0 0 1 209 10000    # Near surface Wind (m/s)
+
+#Parameters
+Landmask:     1  -       -    0 0 0 1  81 1        # Land Mask (0 - Water, 1 - Land)
+Landcover:    1  -       -    0 0 0 1 241 1        # Land cover
+Soiltype:     1  -       -    0 0 0 1 205 1        # Soil type
+Elevation:    1  m       -    0 0 0 1 233 100      # Elevation
+Greenness:    1  -       -    0 0 0 1 193 1000     # Greenness
+
+# HyMAP-2 Routing
+Streamflow:      1 m3/s    -     1 0 0 1 333 10    # Streamflow
+SWS:             1 mm      -     1 0 0 1 333 10    # Surface water storage
+RiverStor:       1 m3      -     1 0 0 1 333 10    # RiverStorage
+FloodStor:       1 m3      -     1 0 0 1 333 10    # FloodStorage
+FloodedFrac:     1 -       -     1 0 0 1 333 10    # FloodedFrac
+FloodedArea:     1 m2      -     1 0 0 1 333 10    # FloodedArea
+
+# ____________________________________________________________
+

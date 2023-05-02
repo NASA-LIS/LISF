@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 SCRIPT: semivar.py
 
@@ -10,7 +21,6 @@ REVISION HISTORY:
 """
 
 # Standard library
-import configparser
 import os
 import sys
 
@@ -81,7 +91,8 @@ def readdata(filename, maxdist):
     dist_vector = []
     vario_vector = []
     count_vector = []
-    lines = open(filename,"r").readlines()
+    with open(filename,"r",encoding="ascii") as file:
+        lines = file.readlines()
     sample_size = 0
     for line in lines:
         if "#" in line:
@@ -115,7 +126,7 @@ def read_input_section_cfg(config):
         print("[ERR] Problem reading from config file!")
         raise
     if not os.path.exists(vario_filename):
-        print("[ERR] %s does not exist!" %(vario_filename))
+        print(f"[ERR] {vario_filename} does not exist!")
         sys.exit(1)
     if max_distance <= 0:
         print("[ERR] Maximum distance must be positive!")
@@ -134,10 +145,10 @@ def read_fit_section_cfg(config):
     function_types = list(function_types)
     function_types.sort()
     if function_type not in function_types:
-        print('[ERR] function type %s is not supported!' %(function_type))
+        print(f'[ERR] function type {function_type} is not supported!')
         print("Currently only the following functions can be fit:")
-        for f in function_types:
-            print("  %s" %(f))
+        for func in function_types:
+            print(f"  {func}")
             sys.exit(1)
     return function_type
 

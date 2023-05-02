@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -772,6 +772,7 @@ contains
       character(len=100) :: message(20)
       integer :: rc,ierr
       character(len=10) :: yyyymmddhh
+      integer :: c, r
 
       TRACE_ENTER("bratseth_getBackNWP")
       rc = 0
@@ -791,11 +792,17 @@ contains
 
       fg_data_glb = LIS_rc%udef
 
-      do j3hr = j6hr+3, j6hr+6,3
+      do j3hr = j6hr+3, j6hr+6, 3
          k = k + 1
          ierr = 0
 
          call AGRMET_julhr_date10(j3hr, yyyymmddhh)
+
+         ! EMK...Fetch bias ratio if requested
+         if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
+            call USAF_pcpBackBiasRatio_s2s(nest, yyyymmddhh)
+         end if
+
          write(LIS_logunit,*) &
               '[INFO] Searching for NWP precipitation valid ', yyyymmddhh
 
@@ -841,6 +848,19 @@ contains
                call fldbld_precip_nwp(nest,findex,j6hr,src,fc_hr, &
                     fg_data_glb,rc)
                ierr = rc
+            end if
+
+            ! Apply bias correction to background field
+            if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
+               write(LIS_logunit,*) &
+                   '[INFO] Applying GALWEM-based bias correction to GFS precip'
+               do r = 1, LIS_rc%gnr(nest)
+                  do c = 1, LIS_rc%gnc(nest)
+                     fg_data_glb(c,r) = &
+                          fg_data_glb(c,r) * &
+                          agrmet_struc(nest)%pcp_back_bias_ratio(c,r)
+                  end do
+               end do
             end if
 
             ! Use GFS Bratseth settings if we have the data
@@ -2801,7 +2821,8 @@ contains
                     yr1, mo1, da1, hr1, fc_hr-3)
             endif
          else if (src .eq. "GALWEM") then
-            call getGALWEMfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
+            call AGRMET_getGALWEMfilename(gribfile, &
+                 agrmet_struc(nest)%agrmetdir,&
                  agrmet_struc(nest)%galwemdir,&
                  agrmet_struc(nest)%use_timestamp,&
                  agrmet_struc(nest)%galwem_res, &
@@ -6376,4 +6397,75 @@ contains
 
    end subroutine USAF_setBratsethScreenStats
 
+   ! Read bias ratio for background field
+   subroutine USAF_pcpBackBiasRatio_s2s(n, yyyymmddhh)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+     use LIS_coreMod, only: LIS_rc, LIS_localPet, &
+          LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+          LIS_nss_halo_ind, LIS_nse_halo_ind
+     use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+     use netcdf
+#endif
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     integer, intent(in) :: n
+     character(len=10), intent(in) :: yyyymmddhh
+
+     ! Locals
+     integer :: imonth
+     logical :: file_exists
+     integer :: ncid, ppt_ratio_Id
+
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+
+     read(yyyymmddhh(5:6),'(i2.2)') imonth
+
+     ! Accumulations ending at 00Z first of month are part of the *previous*
+     ! month.  So decrement imonth by one in that situation, and reset to 12
+     ! (December) at the year change.
+     if (agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) then
+        if (yyyymmddhh(9:10) .eq. '00' .and. &
+             yyyymmddhh(7:8) .eq. '01') then
+           imonth = imonth - 1
+           if (imonth .eq. 0) then
+              imonth = 12
+           end if
+        end if
+     end if
+     if (imonth .eq. agrmet_struc(n)%pcp_back_bias_ratio_month .and. &
+          agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) return
+
+     agrmet_struc(n)%pcp_back_bias_ratio_month = imonth
+
+     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[ERR] Cannot find ', trim(LIS_rc%paramfile(n))
+        call LIS_endrun()
+     end if
+
+     write(LIS_logunit,*) '[INFO] Reading precip bias ratio for month ', imonth
+
+     call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),&
+               mode=NF90_NOWRITE, ncid=ncid), &
+               'Error in nf90_open in USAF_pcpBackBiasRatio_s2s')
+     call LIS_verify(nf90_inq_varid(ncid, "PPT_ratio", ppt_ratio_Id), &
+          'PPT_ratio field not found in LIS param file')
+     call LIS_verify(nf90_get_var(ncid, ppt_ratio_Id, &
+          agrmet_struc(n)%pcp_back_bias_ratio, &
+               start=(/1,1,imonth/), &
+               count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
+               'n90_get_var failed for PPT_ratio in LIS param file')
+     call LIS_verify(nf90_close(ncid),&
+          'nf90_close failed in USAF_pcpBackBiasRatio_s2s')
+
+#endif
+
+   end subroutine USAF_pcpBackBiasRatio_s2s
 end module USAF_bratsethMod

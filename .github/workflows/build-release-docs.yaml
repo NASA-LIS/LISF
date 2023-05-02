@@ -1,0 +1,65 @@
+name: Create Release Docs
+on:
+  release: # only run when a new release is published
+    types: [published]
+
+jobs:
+  publish:
+    # generate PDFs of Users Guides and attach them to the release
+    runs-on: ubuntu-latest
+    env: # set global environment variables
+      GUIDES: "LDT_users_guide LIS_users_guide LVT_users_guide"
+      WORKING_DIR: docs/
+      OUT_DIR: pdfs/
+
+    steps:
+      - name: Checkout LISF repo
+        uses: actions/checkout@v3
+
+      - name: Install Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7   # Not needed with a .ruby-version file
+      
+      - name: Configure Bundler
+        run: bundle config --local path .bundle/gems
+
+      - name: Install Asciidoctor-Mathematical dependencies
+        run: |
+          # below command from: https://github.com/asciidoctor/asciidoctor-mathematical/#installation
+          sudo apt-get update -y
+          sudo apt-get -qq -y install bison flex libffi-dev libxml2-dev libgdk-pixbuf2.0-dev libcairo2-dev libpango1.0-dev libwebp-dev fonts-lyx cmake
+
+      - name: Install Asciidoctor-PDF
+        run: |
+          gem install asciidoctor-pdf
+          asciidoctor-pdf --version
+
+      - name: Install asciidoctor-mathematical
+        run: |
+          gem install asciidoctor-mathematical
+
+      - name: Store tag in environment
+        run : echo "RELEASE_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Create PDFs
+        working-directory: ${{ env.WORKING_DIR }}    # set working directory for this action
+        run: | 
+          mkdir ${{ env.OUT_DIR }}
+
+          for GUIDE in ${{ env.GUIDES }}; do
+            make -C ${GUIDE} pdf;                    # use Makefiles to create PDFs
+            # move PDFs into output directory
+            cp "${GUIDE}/${GUIDE}.pdf" "${{ env.OUT_DIR }}/${GUIDE}-${{ env.RELEASE_TAG }}.pdf"
+          done
+
+      - name: Attach PDFs to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          file_glob: true  # enables globbing for files
+          file: ${{ env.WORKING_DIR }}/${{ env.OUT_DIR }}/*.pdf  # glob pattern to find user guide PDFs
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "The LDT, LIS, and LVT Users Guide for this release."
+

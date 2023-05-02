@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -99,7 +99,7 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
 
      yr_2d = mod(yr1,100)
      if(yr_2d.eq.0) yr_2d = 100 
-     call getGALWEMfilename(gribfile, agrmet_struc(n)%agrmetdir,&
+     call AGRMET_getGALWEMfilename(gribfile, agrmet_struc(n)%agrmetdir,&
           agrmet_struc(n)%galwemdir, agrmet_struc(n)%use_timestamp,&
           agrmet_struc(n)%galwem_res, yr1,mo1,da1,hr1,fc_hr)
 
@@ -308,13 +308,13 @@ end subroutine AGRMET_fldbld_galwem
 
 !BOP
 ! 
-! !ROUTINE: getGALWEMfilename
-! \label{getGALWEMfilename}
+! !ROUTINE: AGRMET_getGALWEMfilename
+! \label{AGRMET_getGALWEMfilename}
 !
 ! !INTERFACE: 
 !EMK...Added support for 10-km GALWEM
-subroutine getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
-                             nominal_res_km,yr,mo,da,hr,fc_hr)
+subroutine AGRMET_getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
+     nominal_res_km,yr,mo,da,hr,fc_hr)
 
   use LIS_logMod, only: LIS_logunit, LIS_endrun
   implicit none
@@ -385,7 +385,7 @@ subroutine getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
      filename = trim(rootdir) // '/' // trim(dir) // '/' // &
                 fname1 // ftime1 // '_CY.' // fhr // '_FH.' // fchr // '_DF.GR2'
   endif
-end subroutine getGALWEMfilename
+end subroutine AGRMET_getGALWEMfilename
 
 
 !BOP
@@ -450,7 +450,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
   character*9                   :: cstat
   character*100                 :: message     ( 20 )
   character(len=4)              :: grib_msg
-  character(len=4)              :: check_galwem_message
+  character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt
   integer                       :: count_rh
   integer                       :: count_tmp
@@ -631,7 +631,8 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
 
      ! We have enough information to determine what GRIB parameter this
      ! is.
-     grib_msg = check_galwem_message(param_disc_val, prod_def_tmpl_num, &
+     grib_msg = AGRMET_check_galwem_message(param_disc_val, &
+          prod_def_tmpl_num, &
           param_cat_val, &
           param_num_val, surface_val, level_val, surface_val_2)
 
@@ -810,8 +811,8 @@ end subroutine AGRMET_fldbld_read_galwem
 
 !BOP
 !
-! !ROUTINE: check_galwem_message
-! \label{check_galwem_message}
+! !ROUTINE: AGRMET_check_galwem_message
+! \label{AGRMET_check_galwem_message}
 !
 ! !REVISION HISTORY:
 ! 14 Jun 2016 James Geiger; Initial specification
@@ -822,7 +823,7 @@ end subroutine AGRMET_fldbld_read_galwem
 !             to ensure variable is instantaneous at horizontal level
 !             (not layer).
 ! !INTERFACE:    
-function check_galwem_message(param_disc_val, prod_def_tmpl_num, &
+function AGRMET_check_galwem_message(param_disc_val, prod_def_tmpl_num, &
      param_cat_val, &
      param_num_val, surface_val, level_val, surface_val_2)
 ! !USES: 
@@ -833,7 +834,7 @@ function check_galwem_message(param_disc_val, prod_def_tmpl_num, &
    integer, intent(in) :: param_disc_val, prod_def_tmpl_num, &
         param_cat_val, &
         param_num_val, surface_val, level_val, surface_val_2
-   character(len=4)    :: check_galwem_message
+   character(len=4)    :: AGRMET_check_galwem_message
 !
 ! !DESCRIPTION: 
 !  This function compares given grib id values against desired values
@@ -855,36 +856,36 @@ function check_galwem_message(param_disc_val, prod_def_tmpl_num, &
 
    ! EMK...Only use instantaneous variables
    if (prod_def_tmpl_num .ne. 0) then
-      check_galwem_message = 'none'
+      AGRMET_check_galwem_message = 'none'
       return
    end if
    ! EMK...Only use single level fields, not layers
    if (surface_val_2 .ne. 255) then
-      check_galwem_message = 'none'
+      AGRMET_check_galwem_message = 'none'
       return
    end if
    if     ( param_disc_val == 0 .and. &
             param_cat_val  == 3 .and. &
             param_num_val  == 0 .and. &
             surface_val    == 1 ) then
-      check_galwem_message = 'sp' ! Surface pressure
+      AGRMET_check_galwem_message = 'sp' ! Surface pressure
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 0 .and. &
             param_num_val  == 0 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 't' ! Isobaric temperature
+      AGRMET_check_galwem_message = 't' ! Isobaric temperature
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 0 .and. &
             param_num_val  == 0 .and. &
             surface_val    == 103 .and. &
             level_val == 2) then
-      check_galwem_message = '2t' ! 2-m temperature
+      AGRMET_check_galwem_message = '2t' ! 2-m temperature
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 1 .and. &
             param_num_val  == 1 .and. &
             surface_val    == 103 .and. &
             level_val == 2) then
-      check_galwem_message = '2rh' ! 2-m relative humidity
+      AGRMET_check_galwem_message = '2rh' ! 2-m relative humidity
 !EMK...Use values provided by Jerry Wegiel 12 Sep 2017
 !   elseif ( param_disc_val == 0 .and. &
 !            param_cat_val  == 3 .and. &
@@ -894,33 +895,33 @@ function check_galwem_message(param_disc_val, prod_def_tmpl_num, &
             param_cat_val  == 0 .and. &
             param_num_val  == 7 .and. &
             surface_val    == 1) then
-      check_galwem_message = 'sfch' ! Surface terrain height
+      AGRMET_check_galwem_message = 'sfch' ! Surface terrain height
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 3 .and. &
             param_num_val  == 5 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 'gh' ! Isobaric geopotential height
+      AGRMET_check_galwem_message = 'gh' ! Isobaric geopotential height
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 1 .and. &
             param_num_val  == 1 .and. &
             surface_val    == 100 ) then
-      check_galwem_message = 'r' ! Isobaric relative humidity
+      AGRMET_check_galwem_message = 'r' ! Isobaric relative humidity
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 2 .and. &
             surface_val    == 103 .and. &
             level_val == 10) then
-      check_galwem_message = '10u' ! 10-meter U wind
+      AGRMET_check_galwem_message = '10u' ! 10-meter U wind
    elseif ( param_disc_val == 0 .and. &
             param_cat_val  == 2 .and. &
             param_num_val  == 3 .and. &
             surface_val    == 103 .and. &
             level_val == 10) then
-      check_galwem_message = '10v' ! 10-meter V wind
+      AGRMET_check_galwem_message = '10v' ! 10-meter V wind
    else 
-      check_galwem_message = 'none'
+      AGRMET_check_galwem_message = 'none'
    endif
-end function check_galwem_message
+ end function AGRMET_check_galwem_message
 
 
 !BOP

@@ -1,0 +1,70 @@
+= Land Information System (LIS): LIS {lisfrevision} Users`' Guide
+:revnumber: 2.1
+:revdate: 30 Nov 2022
+:doctype: book
+:sectnums:
+:toc:
+:math:
+:mathematical-format: svg
+:imagesoutdir: images
+:stem: latexmath
+:devonly:
+:lisfrevision: 7.4
+:lisfurl: https://lis.gsfc.nasa.gov
+:listesturl: https://lis.gsfc.nasa.gov/lis-testcases
+:nasalisf: https://github.com/NASA-LIS/LISF
+:githuburl: https://github.com
+:nasalisfpages: https://nasa-lis.github.io/LISF/
+:apachelicense: https://www.apache.org/licenses/LICENSE-2.0
+:listarball: LISF_public_release_7.4.0.tar.gz
+:lispublicna: Not available in the {listarball} public release of LISF 7.4.
+:emdash: —
+:endash: –
+:vertellipsis: ⋮
+
+
+// Set :devonly: when compiling the developers' version of the Users' Guide.
+// Set :devonly!: when compiling the public version of the Users' Guide.
+//
+// The ifdef::devonly[] command allows one to include text for the developers'
+// version of the Users' Guide.
+// Usage:
+// ifdef::devonly[]
+// line one
+// line two
+// endif::devonly[]
+
+
+// asciidoctor-pdf -r asciidoctor-mathematical LIS_users_guide.adoc
+
+
+include::revision_table.adoc[]
+
+include::intro.adoc[]
+include::backgrd.adoc[]
+include::prelim.adoc[]
+//include::runningmodes.adoc[]
+include::obtain-source.adoc[]
+include::build.adoc[]
+include::run.adoc[]
+include::testcases.adoc[]
+include::postproc.adoc[]
+include::../../lis/configs/lis.config.adoc[]
+include::../../lis/configs/forcing_variables.adoc[]
+//include::da_files.adoc[]
+//include::pe_files.adoc[]
+include::../../lis/configs/MODEL_OUTPUT_LIST.TBL.adoc[]
+include::support.adoc[]
+[appendix]
+//include::lis_preproc.adoc[]
+include::faq.adoc[]
+//include::Makefile.adoc[]
+//include::configure.lis.adoc[]
+//include::readgrib.adoc[] // no longer relevant due to move to GRIB_API library
+//include::gribout.adoc[] // no longer relevant due to move to GRIB_API library
+[appendix]
+include::fconvention.adoc[]
+[appendix]
+include::licenses/CSIRO_BSD_MIT_License_v2.0_CABLE.adoc[]
+[bibliography]
+include::lis_refs.bib.adoc[]
