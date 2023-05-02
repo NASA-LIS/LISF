@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -57,6 +57,7 @@ module LIS_dataAssimMod
 !                                     read_CDFtransferdata_all
 !                                     read_Precip_climo_maxval
 !                                     read_Precip_climo
+!   1 Oct 2022    Yeosang Yoon; excluded RAPID from 'Routing_DAinst'
 ! 
 ! !USES: 
   use ESMF
@@ -461,7 +462,7 @@ contains
              endif
           enddo
           do i=1,LIS_rc%ndas
-             if(LIS_rc%routingmodel.ne."none") then
+             if(LIS_rc%routingmodel.ne."none" .and. LIS_rc%routingmodel.ne."RAPID router") then
                 if(LIS_rc%Routing_DAinst_valid(i)) then
                    call routingdainit(trim(LIS_rc%routingmodel)//"+"//&
                         trim(LIS_rc%daset(i))//char(0),i)

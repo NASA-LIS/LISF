@@ -1,0 +1,3 @@
+#name                                total in-time writeTS extractTS minthreshold maxthreshold ASC ADC
+Mean:                                  1   1    1   1   -9999.0 -9999.0 0  0  #Mean
+#Standard deviation:                    1   1    0   0   -9999.0 -9999.0 0  0  #Std

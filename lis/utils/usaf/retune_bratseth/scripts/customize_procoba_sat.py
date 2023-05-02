@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 SCRIPT: customize_procoba_sat.py
 
@@ -7,12 +18,6 @@ Customizes config file for procOBA_Sat program.
 REVISION HISTORY:
 03 Nov 2020:  Eric Kemp.  Initial specification.
 """
-
-import configparser
-import datetime
-import os
-import subprocess
-import sys
 
 import autotune
 

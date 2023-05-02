@@ -3,12 +3,12 @@ all: html pdf
 
 .PHONY: html
 html:
-	asciidoctor LIS_usersguide.adoc
+	asciidoctor LIS_users_guide.adoc
 
 .PHONY: pdf
 pdf:
-	asciidoctor-pdf LIS_usersguide.adoc
+	asciidoctor-pdf -r asciidoctor-mathematical LIS_users_guide.adoc
 
 .PHONY: clean
 clean:
-	rm -f LIS_usersguide.html LIS_usersguide.pdf
+	rm -f LIS_users_guide.html LIS_users_guide.pdf

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -283,8 +283,8 @@ contains
        call LIS_endrun()
     endif
 
-    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file ",&
-         LIS_rc%forcvarlistfile
+    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file: ",&
+         trim(LIS_rc%forcvarlistfile)
 
     forcConfig = ESMF_ConfigCreate(rc=status)
 
@@ -517,8 +517,8 @@ contains
        call LIS_endrun()
     endif
 
-    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file ",&
-         LIS_rc%forcvarlistfile
+    write(LIS_logunit,*) "[INFO] Opening Forcing Variables list file: ",&
+         trim(LIS_rc%forcvarlistfile)
     
     forcConfig = ESMF_ConfigCreate(rc=status)
     
@@ -873,8 +873,8 @@ contains
        enddo
 
        do n=1,LIS_rc%nnest
-          write(LIS_logunit,*) '[INFO] Opening Forcing Attributes file ',&
-               LIS_rc%forcattribfile
+          write(LIS_logunit,*) '[INFO] Opening Forcing Attributes file: ',&
+               trim(LIS_rc%forcattribfile)
           
           ftn = LIS_getNextUnitNumber()
           open(ftn,file=(LIS_rc%forcattribfile), status='old')
@@ -1077,7 +1077,7 @@ contains
 !  \item[LIS\_slopeAspectCorrection](\ref{LIS_slopeAspectCorrection}) \newline
 !    method to apply slope aspect based topographical corrections
 !  \item[LIS\_microMetCorrection](\ref{LIS_microMetCorrection}) \newline
-!    method to apply topographical corrections (not currently supported)
+!    method to apply topographical corrections (updated with latest code)
 ! \end{description}
 !EOP
 
@@ -1132,10 +1132,35 @@ contains
              call LIS_lapseRateCorrection(n, LIS_forc(n,m)%modelelev,&
                   LIS_FORC_Base_State(n,m))
              call LIS_slopeAspectCorrection(n, LIS_FORC_Base_State(n,m))
+
+          ! New MicroMet option:
+          elseif(LIS_rc%met_ecor(m).eq."micromet") then
+
+             if( LIS_rc%useelevationmap(n)  == "none" .or. &
+                 LIS_rc%useslopemap(n)      == "none" .or. &
+                 LIS_rc%useaspectmap(n)     == "none" .or. &
+                 LIS_rc%usecurvaturemap(n)  == "none" ) then
+
+                write(LIS_logunit,*) "[ERR] 'micromet' turned on for"
+                write(LIS_logunit,*) "[ERR] the forcing dataset, ",trim(LIS_rc%metforc(m)),","
+                write(LIS_logunit,*) "[ERR] ... Though NO LDT-generated topo fields read in ... "
+                write(LIS_logunit,*) "[ERR] This LIS run is ending ..."
+                call LIS_endrun
+             endif
+
+             call LIS_MicroMetCorrection(n, LIS_forc(n,m)%modelelev,&
+                  LIS_FORC_Base_State(n,m))
+
+          elseif( LIS_rc%met_ecor(m) .eq. "micromet and slope-aspect" ) then
+             write(LIS_logunit,*) "[ERR] Slope-aspect correction option not supported "
+             write(LIS_logunit,*) "[ERR]  with micromet, since the micromet option accounts"
+             write(LIS_logunit,*) "[ERR]  for slope, aspect and curvature corrections."
+             write(LIS_logunit,*) "[ERR]  Please check lis.config.adoc for options."
+             call LIS_endrun
           end if
        enddo
        
-!blending algorithms (overlay, forcing ensembles, bias correction..)
+       ! Blending algorithms (overlay, forcing ensembles, bias correction..)
        if(LIS_rc%metforc_blend_alg.eq."overlay") then ! simple overlays
           call overlayForcings(n)
        elseif(LIS_rc%metforc_blend_alg.eq."ensemble") then !forcing ensembles

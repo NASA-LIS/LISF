@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -2036,6 +2036,7 @@ module gmaopert_Mod
       integer, allocatable      :: pertdata1d_obs_int(:)
       integer, allocatable      :: pertdata1d_patch_int(:)
       real, allocatable         :: dummy_var(:,:,:)
+      logical                   :: file_exists
 
       do n = 1, LIS_rc%nnest
 
@@ -2062,6 +2063,13 @@ module gmaopert_Mod
             endif
          endif
          
+         inquire( file=trim(LIS_rc%pertRestartFile(n)), exist=file_exists ) 
+         if(file_exists .neqv. .true.) then
+            write(LIS_logunit,*) '[ERR] Reading perturbations restart file MISSING: ',&
+                  trim(LIS_rc%pertRestartFile(n))
+            call LIS_endrun()
+         endif
+
          open(ftn,file=trim(LIS_rc%pertRestartFile(n)), form='unformatted')
          write(LIS_logunit,*) '[INFO] Reading perturbations restart file ',&
               trim(LIS_rc%pertRestartFile(n))

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ module LDT_DAmetricsMod
   use LDT_DAmetricsDataMod
   use LDT_DAobsDataMod
   use LDT_paramDataMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   use LDT_logMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
@@ -67,7 +68,7 @@ contains
     integer, external :: LDT_create_subdirs 
     integer               :: nsize
     integer               :: n 
-    character*100         :: fname_domain
+    character(len=LDT_CONST_PATH_LEN) :: fname_domain
     integer               :: dimID(4)
     integer               :: bdimID(3)
     character(len=8)      :: date
@@ -91,6 +92,8 @@ contains
          LDT_DAobsData(n)%snowdepth_obs,LDT_DAmetrics%snowdepth)
     call registerMetricsEntry(LDT_DA_MOC_SOILMOIST,nsize,&
          LDT_DAobsData(n)%soilmoist_obs,LDT_DAmetrics%soilmoist)
+    call registerMetricsEntry(LDT_DA_MOC_SOILTEFF,nsize,&
+         LDT_DAobsData(n)%teff_obs,LDT_DAmetrics%teff)  !Effective soil temperature (Y.Kwon)
     call registerMetricsEntry(LDT_DA_MOC_TWS,nsize,&
          LDT_DAobsData(n)%tws_obs,LDT_DAmetrics%tws)
     call registerMetricsEntry(LDT_DA_MOC_VOD,nsize,&
@@ -99,7 +102,8 @@ contains
          LDT_DAobsData(n)%lai_obs,LDT_DAmetrics%lai)
     call registerMetricsEntry(LDT_DA_MOC_TOTALPRECIP,nsize,&
          LDT_DAobsData(n)%totalprecip_obs,LDT_DAmetrics%totalprecip)
-
+    call registerMetricsEntry(LDT_DA_MOC_GVF,nsize,&
+         LDT_DAobsData(n)%gvf_obs,LDT_DAmetrics%gvf)   !Y.Kwon
 !------------------------------------------------------------------------
 ! the generation of the obsgrid only doesn't require a pass through the
 ! data
@@ -143,8 +147,15 @@ contains
             'east_west',LDT_rc%gnc(n),dimID(1)))
        call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,&
             'north_south',LDT_rc%gnr(n),dimID(2)))
-       call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
-            LDT_rc%cdf_ntimes,dimID(3)))
+
+       !Y.Kwon
+       if(LDT_rc%daily_interp_switch.eq.0) then
+          call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
+               LDT_rc%cdf_ntimes,dimID(3)))
+       elseif(LDT_rc%daily_interp_switch.eq.1) then
+          call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
+               24,dimID(3)))
+       endif
        
        call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'east_west_b',&
             LDT_rc%gnc_buf(n),bdimID(1)))
@@ -571,75 +582,195 @@ contains
 
     if(metrics%selectOpt.eq.1) then 
        if(LDT_rc%comp_cdf.eq.1) then 
-          allocate(metrics%mask(nsize,LDT_rc%cdf_ntimes, obs%vlevels))
-          allocate(metrics%maxval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-          allocate(metrics%minval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-          metrics%mask = LDT_rc%udef
-          metrics%maxval = -1000000.0
-          metrics%minval =  1000000.0
-          allocate(metrics%count_drange_total(nsize, LDT_rc%cdf_ntimes,&
-               obs%vlevels))
-          metrics%count_drange_total = 0
+          if(LDT_rc%daily_interp_switch.eq.0) then  !Y.Kwon
+             allocate(metrics%mask(nsize,LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%maxval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%minval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             metrics%mask = LDT_rc%udef
+             metrics%maxval = -1000000.0
+             metrics%minval =  1000000.0
+             allocate(metrics%count_drange_total(nsize, LDT_rc%cdf_ntimes,&
+                  obs%vlevels))
+             metrics%count_drange_total = 0
 
-          allocate(metrics%cdf_bincounts(nsize,&
-               LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-          allocate(metrics%delta(nsize,LDT_rc%cdf_ntimes,obs%vlevels))
-          allocate(metrics%xrange(nsize,&
-               LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-          allocate(metrics%cdf(nsize,&
-               LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+             allocate(metrics%cdf_bincounts(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+             allocate(metrics%delta(nsize,LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%xrange(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+             allocate(metrics%cdf(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
 
-          if(LDT_rc%write_strat_cdfs.eq.1) then
-             if(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.0) then
-                allocate(metrics%strat_xrange(LDT_rc%group_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                allocate(metrics%strat_cdf(LDT_rc%group_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                     LDT_rc%stratified_cdfs_nbins = LDT_rc%group_cdfs_nbins
-             elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1 ) then 
-                allocate(metrics%strat_xrange(LDT_rc%strat_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                allocate(metrics%strat_cdf(LDT_rc%strat_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                     LDT_rc%stratified_cdfs_nbins = LDT_rc%strat_cdfs_nbins
-             elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.1 ) then
-                allocate(metrics%strat_xrange(LDT_rc%group_cdfs_nbins*&
-                     LDT_rc%strat_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                allocate(metrics%strat_cdf(LDT_rc%group_cdfs_nbins*&
-                     LDT_rc%strat_cdfs_nbins,&
-                     LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
-                     LDT_rc%stratified_cdfs_nbins = LDT_rc%group_cdfs_nbins*&
-                                                    LDT_rc%strat_cdfs_nbins 
-             endif 
-             metrics%strat_xrange = 0
-             metrics%strat_cdf = 0
+             if(LDT_rc%write_strat_cdfs.eq.1) then
+                if(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.0) then
+                   allocate(metrics%strat_xrange(LDT_rc%group_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                   allocate(metrics%strat_cdf(LDT_rc%group_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                        LDT_rc%stratified_cdfs_nbins = LDT_rc%group_cdfs_nbins
+                elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1 ) then
+                   allocate(metrics%strat_xrange(LDT_rc%strat_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                   allocate(metrics%strat_cdf(LDT_rc%strat_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                        LDT_rc%stratified_cdfs_nbins = LDT_rc%strat_cdfs_nbins
+                elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.1 ) then
+                   allocate(metrics%strat_xrange(LDT_rc%group_cdfs_nbins*&
+                        LDT_rc%strat_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                   allocate(metrics%strat_cdf(LDT_rc%group_cdfs_nbins*&
+                        LDT_rc%strat_cdfs_nbins,&
+                        LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+                        LDT_rc%stratified_cdfs_nbins = LDT_rc%group_cdfs_nbins*&
+                                                    LDT_rc%strat_cdfs_nbins
+                endif
+                metrics%strat_xrange = 0
+                metrics%strat_cdf = 0
+             endif
+          
+             metrics%cdf_bincounts = 0 
+             metrics%delta = 0 
+             metrics%xrange = 0 
+             metrics%cdf = 0 
+
+             allocate(metrics%sx_mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%count_mu(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+
+             metrics%sx_mu = 0 
+             metrics%mu = 0 
+             metrics%count_mu = 0 
+
+             allocate(metrics%sx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sxx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%count_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+
+             metrics%sx_sigma = 0 
+             metrics%sxx_sigma = 0 
+             metrics%sigma = 0 
+             metrics%count_sigma = 0           
+
+          !-----------------------------------Y.Kwon
+          elseif(LDT_rc%daily_interp_switch.eq.1) then
+             allocate(metrics%sx_mu_6am(nsize,24,obs%vlevels))
+             allocate(metrics%sx_mu_6pm(nsize,24,obs%vlevels))
+             allocate(metrics%mu_6am(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%mu_6pm(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%count_mu_6am(nsize,24,obs%vlevels))
+             allocate(metrics%count_mu_6pm(nsize,24,obs%vlevels))
+             allocate(metrics%mask_6am(nsize,24, obs%vlevels))
+             allocate(metrics%mask_6pm(nsize,24, obs%vlevels))
+
+             metrics%sx_mu_6am = 0
+             metrics%sx_mu_6pm = 0
+             metrics%mu_6am = 0
+             metrics%mu_6pm = 0
+             metrics%count_mu_6am = 0
+             metrics%count_mu_6pm = 0
+             metrics%mask_6am = LDT_rc%udef
+             metrics%mask_6pm = LDT_rc%udef
+
+             allocate(metrics%sx_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%sx_sigma_6pm(nsize, 24,obs%vlevels))
+             allocate(metrics%sxx_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%sxx_sigma_6pm(nsize, 24,obs%vlevels))
+             allocate(metrics%sigma_6am(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sigma_6pm(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%count_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%count_sigma_6pm(nsize, 24,obs%vlevels))
+
+             metrics%sx_sigma_6am = 0
+             metrics%sx_sigma_6pm = 0
+             metrics%sxx_sigma_6am = 0
+             metrics%sxx_sigma_6pm = 0
+             metrics%sigma_6am = 0
+             metrics%sigma_6pm = 0
+             metrics%count_sigma_6am = 0
+             metrics%count_sigma_6pm = 0
           endif
-
-          metrics%cdf_bincounts = 0 
-          metrics%delta = 0 
-          metrics%xrange = 0 
-          metrics%cdf = 0 
-
-          allocate(metrics%sx_mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
-          allocate(metrics%mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
-          allocate(metrics%count_mu(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-
-          metrics%sx_mu = 0 
-          metrics%mu = 0 
-          metrics%count_mu = 0 
-
-          allocate(metrics%sx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-          allocate(metrics%sxx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-          allocate(metrics%sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-          allocate(metrics%count_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
-
-          metrics%sx_sigma = 0 
-          metrics%sxx_sigma = 0 
-          metrics%sigma = 0 
-          metrics%count_sigma = 0           
-
+          !-----------------------------------Y.Kwon
        endif
+          if(LDT_rc%daily_interp_switch.eq.0) then  !Y.Kwon
+             allocate(metrics%mask(nsize,LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%maxval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%minval(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             metrics%mask = LDT_rc%udef
+             metrics%maxval = -1000000.0
+             metrics%minval =  1000000.0
+             allocate(metrics%count_drange_total(nsize, LDT_rc%cdf_ntimes,&
+                  obs%vlevels))
+             metrics%count_drange_total = 0
+
+             allocate(metrics%cdf_bincounts(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+             allocate(metrics%delta(nsize,LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%xrange(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+             allocate(metrics%cdf(nsize,&
+                  LDT_rc%cdf_ntimes, obs%vlevels,LDT_rc%cdf_nbins))
+
+             metrics%cdf_bincounts = 0
+             metrics%delta = 0
+             metrics%xrange = 0
+             metrics%cdf = 0
+
+             allocate(metrics%sx_mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%mu(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%count_mu(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+
+             metrics%sx_mu = 0
+             metrics%mu = 0
+             metrics%count_mu = 0
+
+             allocate(metrics%sx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sxx_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%count_sigma(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+
+             metrics%sx_sigma = 0
+             metrics%sxx_sigma = 0
+             metrics%sigma = 0
+             metrics%count_sigma = 0
+
+          !-----------------------------------Y.Kwon
+          elseif(LDT_rc%daily_interp_switch.eq.1) then
+             allocate(metrics%sx_mu_6am(nsize,24,obs%vlevels))
+             allocate(metrics%sx_mu_6pm(nsize,24,obs%vlevels))
+             allocate(metrics%mu_6am(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%mu_6pm(nsize, LDT_rc%cdf_ntimes, obs%vlevels))
+             allocate(metrics%count_mu_6am(nsize,24,obs%vlevels))
+             allocate(metrics%count_mu_6pm(nsize,24,obs%vlevels))
+             allocate(metrics%mask_6am(nsize,24, obs%vlevels))
+             allocate(metrics%mask_6pm(nsize,24, obs%vlevels))
+
+             metrics%sx_mu_6am = 0
+             metrics%sx_mu_6pm = 0
+             metrics%mu_6am = 0
+             metrics%mu_6pm = 0
+             metrics%count_mu_6am = 0
+             metrics%count_mu_6pm = 0
+             metrics%mask_6am = LDT_rc%udef
+             metrics%mask_6pm = LDT_rc%udef
+
+             allocate(metrics%sx_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%sx_sigma_6pm(nsize, 24,obs%vlevels))
+             allocate(metrics%sxx_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%sxx_sigma_6pm(nsize, 24,obs%vlevels))
+             allocate(metrics%sigma_6am(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%sigma_6pm(nsize, LDT_rc%cdf_ntimes,obs%vlevels))
+             allocate(metrics%count_sigma_6am(nsize, 24,obs%vlevels))
+             allocate(metrics%count_sigma_6pm(nsize, 24,obs%vlevels))
+
+             metrics%sx_sigma_6am = 0
+             metrics%sx_sigma_6pm = 0
+             metrics%sxx_sigma_6am = 0
+             metrics%sxx_sigma_6pm = 0
+             metrics%sigma_6am = 0
+             metrics%sigma_6pm = 0
+             metrics%count_sigma_6am = 0
+             metrics%count_sigma_6pm = 0
+          endif
     endif
 
   end subroutine initMetricsEntry
@@ -669,14 +800,21 @@ contains
     integer       :: n 
 
     if(LDT_rc%computeFlag) then 
-       if(LDT_rc%comp_cdf.eq.1) then           
-          if(pass.eq.1) then 
-             call LDT_diagnoseDrange(n)
-             call LDT_diagnoseMu(n)
-             call LDT_diagnoseSigma(n)
-          endif
-          if(pass.eq.2) then 
-             call LDT_diagnoseCDF(n)
+       if(LDT_rc%comp_cdf.eq.1) then          
+          if(LDT_rc%daily_interp_switch.eq.0) then  !Y.Kwon
+             if(pass.eq.1) then
+                call LDT_diagnoseDrange(n)
+                call LDT_diagnoseMu(n)
+                call LDT_diagnoseSigma(n)
+             endif
+             if(pass.eq.2) then
+                call LDT_diagnoseCDF(n)
+             endif
+          elseif(LDT_rc%daily_interp_switch.eq.1) then  !Y.Kwon
+             if(pass.eq.1) then
+                call LDT_diagnoseMu(n)
+                call LDT_diagnoseSigma(n)
+             endif
           endif
        endif
        
@@ -707,8 +845,8 @@ contains
 
     implicit none
 
-    character*100 :: fname_cdf, fname_strat_cdf
-    character*100 :: fname_domain
+    character(len=LDT_CONST_PATH_LEN) :: fname_cdf, fname_strat_cdf
+    character(len=LDT_CONST_PATH_LEN) :: fname_domain
     integer       :: pass
     integer       :: rc
     integer       :: n 
@@ -717,13 +855,20 @@ contains
 
     if(LDT_rc%computeFlag) then 
        if(LDT_rc%comp_cdf.eq.1) then           
-          if(pass.eq.1) then 
-             call LDT_computeDrange(n)          
-             call LDT_computeMu(n)
-             call LDT_computeSigma(n)
-          endif
-          if(pass.eq.2) then 
-             call LDT_computeCDF(n)
+          if(LDT_rc%daily_interp_switch.eq.0) then   !Y.Kwon
+             if(pass.eq.1) then
+                call LDT_computeDrange(n)
+                call LDT_computeMu(n)
+                call LDT_computeSigma(n)
+             endif
+             if(pass.eq.2) then
+                call LDT_computeCDF(n)
+             endif
+          elseif(LDT_rc%daily_interp_switch.eq.1) then  !Y.Kwon
+             if(pass.eq.1) then
+                call LDT_computeMu(n)
+                call LDT_computeSigma(n)
+             endif
           endif
        endif
        
@@ -941,8 +1086,14 @@ contains
          'east_west',LDT_rc%gnc(n),dimID(1)))
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,&
          'north_south',LDT_rc%gnr(n),dimID(2)))
-    call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
-         LDT_rc%cdf_ntimes,dimID(3)))
+
+    if(LDT_rc%daily_interp_switch.eq.0) then     !Y.Kwon
+       call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
+            LDT_rc%cdf_ntimes,dimID(3)))
+    elseif(LDT_rc%daily_interp_switch.eq.1) then  !Y.Kwon
+       call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'ntimes',&
+            24,dimID(3)))
+    endif
     
     call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,'east_west_b',&
          LDT_rc%gnc_buf(n),bdimID(1)))
@@ -1348,43 +1499,43 @@ contains
        call LDT_verify(nf90_def_dim(LDT_rc%ftn_cdf,trim(vname),&
             obs%vlevels,dimID(3)))
        
-
-       call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
-            trim(obs%standard_name)//'_xrange',&
-            nf90_float, dimids = dimID, varid=obs%varID(1)))
+       if(LDT_rc%daily_interp_switch.eq.0) then  !Y.Kwon
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_xrange',&
+               nf90_float, dimids = dimID, varid=obs%varID(1)))
 
 #if (defined USE_NETCDF4) 
-       call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
-            obs%varID(1), shuffle, deflate, deflate_level),&
-            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(1), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 #endif
 
-       call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
-            trim(obs%standard_name)//'_mu',&
-            nf90_float, dimids = dimID(1:3), varid=obs%varID(2)))
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_mu',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(2)))
 
 #if (defined USE_NETCDF4) 
-       call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
-            obs%varID(2), shuffle, deflate, deflate_level),&
-            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(2), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 #endif
-       call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
-            trim(obs%standard_name)//'_sigma',&
-            nf90_float, dimids = dimID(1:3), varid=obs%varID(3)))
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_sigma',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(3)))
 
 #if (defined USE_NETCDF4) 
-       call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
-            obs%varID(3), shuffle, deflate, deflate_level),&
-            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(3), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 #endif
-       call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
-            trim(obs%standard_name)//'_CDF',&
-            nf90_float, dimids = dimID, varid=obs%varID(4)))
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_CDF',&
+               nf90_float, dimids = dimID, varid=obs%varID(4)))
 
 #if (defined USE_NETCDF4) 
-       call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
-            obs%varID(4), shuffle, deflate, deflate_level),&
-            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(4), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 #endif
 
 !       call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
@@ -1397,6 +1548,70 @@ contains
 !            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 !#endif
 
+!----------------------------------------------------------Y.Kwon
+       elseif(LDT_rc%daily_interp_switch.eq.1) then
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_mu_6am',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(1)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(1), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_mu_6pm',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(2)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(2), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_sigma_6am',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(3)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(3), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               trim(obs%standard_name)//'_sigma_6pm',&
+               nf90_float, dimids = dimID(1:3), varid=obs%varID(4)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(4), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               'grid_col',&
+               nf90_int, dimids = dimID(1), varid=obs%varID(5)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(5), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_cdf,&
+               'grid_row',&
+               nf90_int, dimids = dimID(1), varid=obs%varID(6)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_cdf,&
+               obs%varID(6), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+       endif
+!----------------------------------------------------Y.Kwon
     endif
 #endif
     
@@ -1477,7 +1692,7 @@ contains
 ! !INTERFACE:   
   subroutine writeFinalSingleEntry(pass,metrics, obs)
 ! !USES: 
-    use LDT_coreMod,    only  : LDT_rc
+    use LDT_coreMod,    only  : LDT_rc, LDT_domain
     use LDT_historyMod, only  : LDT_writevar_gridded
 
     implicit none
@@ -1499,25 +1714,50 @@ contains
     n = 1
     if(obs%selectOpt.eq.1.and.metrics%selectOpt.eq.1) then 
        
-       if(pass.eq.2.and.LDT_rc%comp_cdf.eq.1) then 
-          call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
-               metrics%xrange, LDT_rc%cdf_ntimes, &
-               obs%vlevels, LDT_rc%cdf_nbins,&
-               obs%varID(1))
-          call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
-               metrics%mu, LDT_rc%cdf_ntimes, obs%vlevels, &
-               obs%varID(2))
-          call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
-               metrics%sigma, LDT_rc%cdf_ntimes,obs%vlevels,  &
-               obs%varID(3))
-          call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
-               metrics%cdf, LDT_rc%cdf_ntimes, &
-               obs%vlevels, LDT_rc%cdf_nbins,&
-               obs%varID(4))
-!          call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
-!               float(metrics%cdf_bincounts), LDT_rc%cdf_ntimes, &
-!               obs%vlevels, LDT_rc%cdf_nbins,&
-!               obs%varID(5))
+       if(pass.eq.2.and.LDT_rc%comp_cdf.eq.1) then
+
+          if(LDT_rc%daily_interp_switch.eq.0) then  !Y.Kwon
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%xrange, LDT_rc%cdf_ntimes, &
+                  obs%vlevels, LDT_rc%cdf_nbins,&
+                  obs%varID(1))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%mu, LDT_rc%cdf_ntimes, obs%vlevels, &
+                  obs%varID(2))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%sigma, LDT_rc%cdf_ntimes,obs%vlevels,  &
+                  obs%varID(3))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%cdf, LDT_rc%cdf_ntimes, &
+                  obs%vlevels, LDT_rc%cdf_nbins,&
+                  obs%varID(4))
+!             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+!                  float(metrics%cdf_bincounts), LDT_rc%cdf_ntimes, &
+!                  obs%vlevels, LDT_rc%cdf_nbins,&
+!                  obs%varID(5))
+
+          !----------------------------------------------Y.Kwon
+          elseif(LDT_rc%daily_interp_switch.eq.1) then
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%mu_6am, LDT_rc%cdf_ntimes, obs%vlevels, &
+                  obs%varID(1))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%mu_6pm, LDT_rc%cdf_ntimes, obs%vlevels, &
+                  obs%varID(2))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%sigma_6am, LDT_rc%cdf_ntimes,obs%vlevels,  &
+                  obs%varID(3))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  metrics%sigma_6pm, LDT_rc%cdf_ntimes,obs%vlevels,  &
+                  obs%varID(4))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  LDT_domain(n)%grid%col,  &
+                  obs%varID(5))
+             call LDT_writevar_gridded(n,LDT_rc%ftn_cdf,&
+                  LDT_domain(n)%grid%row,  &
+                  obs%varID(6))
+          endif
+          !---------------------------------------------Y.Kwon
        endif
     endif
 
@@ -1618,15 +1858,40 @@ contains
        call LDT_verify(nf90_def_dim(LDT_rc%ftn_DAobs_domain,trim(vname),&
             obs%vlevels,dimID(4)))
 
-       call LDT_verify(nf90_def_var(LDT_rc%ftn_DAobs_domain,&
-            trim(obs%standard_name)//'_domain',&
-            nf90_float, dimids = dimID, varid=obs%varID(1)))
+       if(LDT_rc%daily_interp_switch.eq.0) then          !Y.Kwon
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_DAobs_domain,&
+               trim(obs%standard_name)//'_domain',&
+               nf90_float, dimids = dimID, varid=obs%varID(1)))
 
 #if (defined USE_NETCDF4) 
-       call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_DAobs_domain,&
-            obs%varID(1), shuffle, deflate, deflate_level),&
-            'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_DAobs_domain,&
+               obs%varID(1), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
 #endif
+
+!---------------------------------------------------------------Y.Kwon
+       elseif(LDT_rc%daily_interp_switch.eq.1) then
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_DAobs_domain,&
+               trim(obs%standard_name)//'_domain_6am',&
+               nf90_float, dimids = dimID, varid=obs%varID(1)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_DAobs_domain,&
+               obs%varID(1), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+
+          call LDT_verify(nf90_def_var(LDT_rc%ftn_DAobs_domain,&
+               trim(obs%standard_name)//'_domain_6pm',&
+               nf90_float, dimids = dimID, varid=obs%varID(2)))
+
+#if (defined USE_NETCDF4) 
+          call LDT_verify(nf90_def_var_deflate(LDT_rc%ftn_DAobs_domain,&
+               obs%varID(2), shuffle, deflate, deflate_level),&
+               'nf90_def_var_deflate failed in LDT_DAmetricsMod')
+#endif
+       endif
+!---------------------------------------------------------------Y.Kwon
     endif
 #endif
     
@@ -1664,11 +1929,24 @@ contains
        
        if(pass.eq.2.and.LDT_rc%comp_cdf.eq.1) then 
           do k=1,obs%vlevels
-             do j=1,LDT_rc%cdf_ntimes
-                call LDT_writevar_gridded(n,LDT_rc%ftn_DAobs_domain,&
-                     metrics%mask(:,j,k), obs%varID(1), dim1=k,&
-                     dim2=j,wopt = "2d gridspace" )
-             enddo
+             if(LDT_rc%daily_interp_switch.eq.0) then         !Y.Kwon
+                do j=1,LDT_rc%cdf_ntimes
+                   call LDT_writevar_gridded(n,LDT_rc%ftn_DAobs_domain,&
+                        metrics%mask(:,j,k), obs%varID(1), dim1=k,&
+                        dim2=j,wopt = "2d gridspace" )
+                enddo
+             !-----------------------------------------------Y.Kwon
+             elseif(LDT_rc%daily_interp_switch.eq.1) then
+                do j=1,24
+                   call LDT_writevar_gridded(n,LDT_rc%ftn_DAobs_domain,&
+                        metrics%mask_6am(:,j,k), obs%varID(1), dim1=k,&
+                        dim2=j,wopt = "2d gridspace" )
+                   call LDT_writevar_gridded(n,LDT_rc%ftn_DAobs_domain,&
+                        metrics%mask_6pm(:,j,k), obs%varID(2), dim1=k,&
+                        dim2=j,wopt = "2d gridspace" )
+                enddo
+             endif
+             !-----------------------------------------------Y.Kwon
           enddo
        endif
     endif
@@ -1693,7 +1971,7 @@ contains
 !   screen grid points, both spatially and temporally. 
 !EOP
     integer       :: n 
-    character*100 :: maskfile
+    character(len=LDT_CONST_PATH_LEN) :: maskfile
     logical       :: file_exists
     real          :: datamask(LDT_rc%lnc(n), LDT_rc%lnr(n))
     integer       :: ftn

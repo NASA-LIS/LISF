@@ -1,0 +1,27 @@
+= LISF Installation Guide
+:revnumber: 1.1
+:revdate: 30 Nov 2022
+:doctype: book
+:sectnums:
+:toc:
+:math:
+:mathematical-format: svg
+:imagesoutdir: images
+:stem: latexmath
+:emdash: —
+:endash: –
+:vertellipsis: ⋮
+
+// asciidoctor-pdf LISF_installation_guide.adoc
+
+
+include::revision_table.adoc[]
+
+include::intro.adoc[]
+include::devenv.adoc[]
+include::dependencies.adoc[]
+include::platforms.adoc[]
+[appendix]
+include::additional_platforms.adoc[]
+//[bibliography]
+//include::lis_refs.bib.adoc[]
