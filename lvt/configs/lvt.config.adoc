@@ -164,6 +164,7 @@ LVT output methodology:                 "2d gridspace"
 | "`THySM`"                          | Thermal Hydraulic disaggregation of Soil Moisture
 | "`MCD15A2H LAI`"                  | MODIS MCD15A2H LAI data
 | "`GRUN runoff`"                  | GRUN runoff data
+| "`OPL E SMAP soil moisture retrieval`"     | Operational enhanced SMAP soil moisture retrieval data
 |===
 
 .Example _lvt.config_ entry
@@ -2227,6 +2228,15 @@ SMAP vegetation optical depth data designation:      SPL3SMP
 ....
 LPRM vegetation optical depth observation directory: ../LPRM_VOD
 LPRM vegetation optical depth data designation:      X-band
+....
+
+==== SMAP-E-OPL soil moisture retrieval
+
+`SMAP_E_OPL soil moisture data directory:` specifies the location of the Operational enhanced SMAP soil moisture retrieval data directory.
+ 
+.Example _lvt.config_ entry
+....
+SMAP_E_OPL soil moisture data directory: ./SM_retrieval
 ....
 
 ==== WG SWRC
