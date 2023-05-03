@@ -1,0 +1,22 @@
+&jules_soil_biogeochem
+!!bio_hum_cn=10.0,
+ch4_substrate=1,
+!!! const_ch4_cs=5.41e-12, !not supported by JULES 5.0, SW
+!!! const_ch4_npp=9.99e-3, !not supported by JULES 5.0, SW 
+!!! const_ch4_resps=4.36e-3, !not supported by JULES 5.0, SW 
+!!diff_n_pft=100.0,
+l_ch4_interactive=.false.,
+l_ch4_tlayered=.false.,
+l_layeredc=.false.,
+l_q10=.true.,
+l_soil_resp_lev2=.false.,
+!!n_inorg_turnover=1.0,
+!!! q10_ch4_cs=3.7,       !not supported by JULES 5.0, SW 
+!!! q10_ch4_npp=1.5,      !not supported by JULES 5.0, SW 
+!!! q10_ch4_resps=1.5,    !not supported by JULES 5.0, SW 
+soil_bgc_model=1,
+!!sorp=10.0,
+!!! t0_ch4=273.15,        !not supported by JULES 5.0, SW 
+!!tau_lit=5.0,
+!!tau_resp=2.0,
+/
