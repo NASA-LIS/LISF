@@ -605,11 +605,27 @@ Acceptable values are:
 |"`WMO convention`"    | WMO convention for weather codes
 |"`557WW streamflow convention`" | 557WW convention for streamflow output
 |====
-
 .Example _lis.config_ entry
 ....
 Output naming style: "3 level hierarchy"
 ....
+
+`AGRMET security classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET distribution classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET data category:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET area of data:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+.Example _lis.config_ entry
+....
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               ANLYS
+AGRMET area of data:                GLOBAL
+....
+
 
 `Enable output statistics:` specifies whether to write the ASCII
 statistics file for the output data.
