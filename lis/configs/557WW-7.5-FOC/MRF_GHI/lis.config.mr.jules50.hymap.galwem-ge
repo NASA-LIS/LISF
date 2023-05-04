@@ -23,6 +23,10 @@ Output methodology:                     "2d ensemble gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:                    "557WW streamflow convention"
+AGRMET security classification:            U
+AGRMET distribution classification:        C
+AGRMET data category:                      ANLYS
+AGRMET area of data:                       GLOBAL
 Start mode:                             restart
 Starting year:                          2023 
 Starting month:                            3
