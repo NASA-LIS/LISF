@@ -25,7 +25,7 @@ Output data format:                     netcdf
 Output naming style:                    "557WW streamflow convention"
 AGRMET security classification:            U
 AGRMET distribution classification:        C
-AGRMET data category:                      ANLYS
+AGRMET data category:                      FCST
 AGRMET area of data:                       GLOBAL
 Start mode:                             restart
 Starting year:                          2023 
