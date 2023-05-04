@@ -22,21 +22,19 @@ import yaml
 # BCSD
 #
 
-NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL/'
-CFSv2_PATH = os.getcwd() + '/bcsd_fcst/CFSv2_25km/'
 OUT_PATH =  os.getcwd() + '/plots/CFSv2/'
 
-NAFPA_CLIM_TEMPLATE = '{}/*{:02d}/LIS_HIST_*{:02d}010000.d01.nc'
+NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/SURFACEMODEL/'
 NAFPA_FILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 
 CFSv2_CLIM_TEMPLATE_RAW = '{}/raw/Climatology/{}/{}_fcst_clim.nc'
-CFSv2_MONTHLY_TEMPLATE_RAW = '{}/raw/Monthly/{}/{:04d}/{}/{}.cfsv2.{:04}{:02d}.nc'
+CFSv2_MONTHLY_TEMPLATE_RAW = '{}/raw/Monthly/{}/{:04d}/{}/{}.cfsv2.{:04d}{:02d}.nc'
 
-CFSv2_CLIM_TEMPLATE_BCSD = '{}/bcsd/Monthly/{}/{}.CFSv2.{}_*_*.nc'
+CFSv2_CLIM_TEMPLATE_BCSD = 'hindcast/bcsd_fcst/CFSv2_25km/bcsd/Monthly/{}/{}.CFSv2.{}_*_*.nc'
 CFSv2_MONTHLY_TEMPLATE_BCSD = '{}/bcsd/Monthly/{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'
 
 lis_name = {
-        'PRECTOT': 'Rainf_f_tavg','PS': 'Psurf_f_tavg','T2M': 'Tair_f_tavg',
+        'PRECTOT': 'TotalPrecip_acc','PS': 'Psurf_f_tavg','T2M': 'Tair_f_tavg',
         'LWS': 'LWdown_f_tavg','SLRSF': 'SWdown_f_tavg','Q2M': 'Qair_f_tavg',
         'WIND10M': 'Wind_f_tavg',}
 
@@ -47,7 +45,7 @@ mean_lwval = {
     'Qair_f_tavg': 0.,
     'Tair_f_tavg': 200.,
     'Wind_f_tavg': 0.3,
-    'Rainf_f_tavg': 0
+    'TotalPrecip_acc': 0
     }
 
 mean_upval = {
@@ -57,7 +55,7 @@ mean_upval = {
     'Qair_f_tavg': 2500,
     'Tair_f_tavg': 320.,
     'Wind_f_tavg': 20,
-    'Rainf_f_tavg': 50
+    'TotalPrecip_acc': 50
     }
 
 color_table = {
@@ -92,6 +90,11 @@ if __name__ == "__main__":
 
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.s2splots import plot_utils
+    clim_syr = int(cfg["BCSD"]["clim_start_year"])
+    clim_eyr = int(cfg["BCSD"]["clim_end_year"])    
+    CFSv2_PATH = 'bcsd_fcst/CFSv2_25km/'
+    if cfg['SETUP']['DATATYPE'] == 'hindcast':
+        CFSv2_PATH = 'hindcast/bcsd_fcst/CFSv2_25km/'
     
     var_levels = np.linspace(mean_lwval.get(lis_name.get(variable)), mean_upval.get(lis_name.get(variable)), 21)
     mmm = calendar.month_abbr[ic_month].lower() + '01'
@@ -118,7 +121,7 @@ if __name__ == "__main__":
     varname_clim_var = np.mean(varname_clim_xr['clim'].values[lead_month+1,:], axis=0)
     varname_clim_xr.close()
 
-    varname_clim_files_bcsd = CFSv2_CLIM_TEMPLATE_BCSD.format(CFSv2_PATH,mmm,variable,mmm)
+    varname_clim_files_bcsd = CFSv2_CLIM_TEMPLATE_BCSD.format(mmm,variable,mmm)
     print(varname_clim_files_bcsd)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/hindcast/bcsd_fcst/CFSv2_25km/bcsd/Monthly/sep01/T2M.CFSv2.sep01_*_*.nc
     varname_clim_bcsd_xr = xr.open_mfdataset(varname_clim_files_bcsd,concat_dim = 'time', combine='nested')
@@ -126,7 +129,7 @@ if __name__ == "__main__":
     varname_clim_bcsd_xr.close()
         
     # compute NAFPA mean
-    nafpa_clim_files = NAFPA_CLIM_TEMPLATE.format(NAFPA_PATH,lis_month,lis_month)
+    nafpa_clim_files = [NAFPA_FILE_TEMPLATE.format(NAFPA_PATH,cyear, lis_month,cyear,lis_month) for cyear in range(clim_syr, clim_eyr + 1)]
     print(nafpa_clim_files)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL//*02/LIS_HIST_*02010000.d01.nc
     nafpa_clim_xr = xr.open_mfdataset(nafpa_clim_files,concat_dim = 'time', combine='nested')
@@ -183,13 +186,13 @@ if __name__ == "__main__":
             os.makedirs(plot_dir)
 
         # plot anom
-        anom_file = plot_dir + '{:04}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_' + eee + '_anom.png'
+        anom_file = plot_dir + '{:04d}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_' + eee + '_anom.png'
         print (anom_file)
         plot_utils.contours (varname_mon_xr['lon'].values, varname_mon_xr['lat'].values, nrows,
                              ncols, plot_arr, load_table, plot_title, domain, anom_file, under_over,
                              fscale=1.1, stitle=stitle, clabel=clabel, levels=levels)
         # plot monthly
-        mon_file = plot_dir + '{:04}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_' + eee + '.png'
+        mon_file = plot_dir + '{:04d}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_' + eee + '.png'
         plot_arr[0,] = varname_mon_var
         plot_arr[2,] = nafpa_mon_var
         plot_arr[1,] = bcsd_mon_var

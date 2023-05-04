@@ -22,17 +22,15 @@ import yaml
 # BCSD
 #
 
-NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL/'
-NMME_PATH = os.getcwd() + '/bcsd_fcst/NMME/'
 OUT_PATH =  os.getcwd() + '/plots/NMME/'
 
-NAFPA_CLIM_TEMPLATE = '{}/*{:02d}/LIS_HIST_*{:02d}010000.d01.nc'
+NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/SURFACEMODEL/'
 NAFPA_FILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 
 NMME_CLIM_TEMPLATE_RAW = '{}/raw/Climatology/{}/{}/PRECTOT_fcst_clim.nc'
 NMME_MONTHLY_TEMPLATE_RAW = '{}/raw/Monthly/{}/{}/{:04d}/{}/{}.nmme.monthly.{:04}{:02d}.nc'
 
-NMME_CLIM_TEMPLATE_BCSD = '{}/bcsd/Monthly/{}/PRECTOT.{}.{}_*_*.nc'
+NMME_CLIM_TEMPLATE_BCSD = 'hindcast/bcsd_fcst/NMME/bcsd/Monthly/{}/PRECTOT.{}.{}_*_*.nc'
 NMME_MONTHLY_TEMPLATE_BCSD = '{}/bcsd/Monthly/{}/PRECTOT.{}.{}_{:04d}_{:04d}.nc'
 
 rainf_levels = [0,0.5,1.,1.5,2.,2.5,3.,3.5,4.,4.5,5.,7,9,11,13,15,17,20,25,30,50]
@@ -58,8 +56,14 @@ if __name__ == "__main__":
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     NENS = cfg['EXP']['ensemble_sizes'][0]
+    clim_syr = int(cfg["BCSD"]["clim_start_year"])
+    clim_eyr = int(cfg["BCSD"]["clim_end_year"])    
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.s2splots import plot_utils
+
+    NMME_PATH = 'bcsd_fcst/NMME/'
+    if cfg['SETUP']['DATATYPE'] == 'hindcast':
+        NMME_PATH = 'hindcast/bcsd_fcst/NMME/'
 
     mmm = calendar.month_abbr[ic_month].lower() + '01'
     fcast_month = ic_month + lead_month
@@ -85,7 +89,7 @@ if __name__ == "__main__":
     nmme_clim_prcp = np.mean(nmme_clim_xr['clim'].values[lead_month+1,:], axis=0)
     nmme_clim_xr.close()
 
-    nmme_clim_files_bcsd = NMME_CLIM_TEMPLATE_BCSD.format(NMME_PATH,mmm,model,mmm)
+    nmme_clim_files_bcsd = NMME_CLIM_TEMPLATE_BCSD.format(mmm,model,mmm)
     print(nmme_clim_files_bcsd)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/hindcast/bcsd_fcst/NMME//bcsd/Monthly/sep01/PRECTOT.CCM4.sep01_*_*.nc
     nmme_clim_bcsd_xr = xr.open_mfdataset(nmme_clim_files_bcsd,concat_dim = 'time', combine='nested')
@@ -93,18 +97,18 @@ if __name__ == "__main__":
     nmme_clim_bcsd_xr.close()
         
     # compute NAFPA mean
-    nafpa_clim_files = NAFPA_CLIM_TEMPLATE.format(NAFPA_PATH,lis_month,lis_month)
+    nafpa_clim_files = [NAFPA_FILE_TEMPLATE.format(NAFPA_PATH,cyear, lis_month,cyear,lis_month) for cyear in range(clim_syr, clim_eyr + 1)]
     print(nafpa_clim_files)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL//*02/LIS_HIST_*02010000.d01.nc
     nafpa_clim_xr = xr.open_mfdataset(nafpa_clim_files,concat_dim = 'time', combine='nested')
     nafpa_clim = nafpa_clim_xr.mean(dim = 'time')
-    nafpa_clim_prcp = nafpa_clim['Rainf_f_tavg'].values
+    nafpa_clim_prcp = nafpa_clim['TotalPrecip_acc'].values
     
     nafpa_fcst_file = NAFPA_FILE_TEMPLATE.format(NAFPA_PATH,lis_year,lis_month,lis_year,lis_month) 
     print(nafpa_fcst_file)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL//200102/LIS_HIST_200102010000.d01.nc
     nafpa_mon_xr = xr.open_dataset(nafpa_fcst_file)
-    nafpa_mon_prcp = nafpa_mon_xr['Rainf_f_tavg'].values # [1,2]
+    nafpa_mon_prcp = nafpa_mon_xr['TotalPrecip_acc'].values # [1,2]
     nafpa_anom_prcp = nafpa_mon_prcp - nafpa_clim_prcp   # [2,2]
 
     # ensemble anomaly
@@ -139,7 +143,7 @@ if __name__ == "__main__":
         nmme_anom_prcp = nmme_mon_prcp - nmme_clim_prcp  # [1,2]
 
         plot_arr[0,] = nmme_anom_prcp*unit_conv
-        plot_arr[2,] = nafpa_anom_prcp*unit_conv
+        plot_arr[2,] = nafpa_anom_prcp/25.4
         
         # NMME BCSD
         bcsd_mon_prcp = nmme_mon_bcsd_xr['PRECTOT'].isel(Lead=lead_month, Ens=ens-1,  time= 0).values # [1,3]
@@ -159,7 +163,7 @@ if __name__ == "__main__":
         # plot monthly
         mon_file = plot_dir + '{:04}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_' + eee + '.png'
         plot_arr[0,] = nmme_mon_prcp*86400.
-        plot_arr[2,] = nafpa_mon_prcp*86400.
+        plot_arr[2,] = nafpa_mon_prcp/calendar.monthrange(year,fcast_month)[1]
         plot_arr[1,] = bcsd_mon_prcp*86400.
         plot_utils.contours (nmme_mon_xr['lon'].values, nmme_mon_xr['lat'].values, nrows,
                              ncols, plot_arr, 'L21', plot_title, domain, mon_file, under_over,

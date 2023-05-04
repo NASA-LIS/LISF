@@ -50,7 +50,7 @@ import yaml
 #                T2M:standard_name = "T2M" ;
 
 lis_name = {
-        'PRECTOT': 'Rainf_f_tavg','PS': 'Psurf_f_tavg','T2M': 'Tair_f_tavg',
+        'PRECTOT': 'TotalPrecip_acc','PS': 'Psurf_f_tavg','T2M': 'Tair_f_tavg',
         'LWS': 'LWdown_f_tavg','SLRSF': 'SWdown_f_tavg','Q2M': 'Qair_f_tavg',
         'WIND10M': 'Wind_f_tavg',}
 
@@ -61,7 +61,7 @@ mean_lwval = {
     'Qair_f_tavg': 0.,
     'Tair_f_tavg': 200.,
     'Wind_f_tavg': 0.3,
-    'Rainf_f_tavg': 0
+    'TotalPrecip_acc': 0
     }
 
 mean_upval = {
@@ -71,7 +71,7 @@ mean_upval = {
     'Qair_f_tavg': 2500,
     'Tair_f_tavg': 320.,
     'Wind_f_tavg': 20,
-    'Rainf_f_tavg': 50
+    'TotalPrecip_acc': 50
     }
 
 if __name__ == "__main__":
@@ -97,6 +97,10 @@ if __name__ == "__main__":
 
     sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.s2splots import plot_utils
+
+    bcsd_path =  'bcsd_fcst/'
+    if cfg['SETUP']['DATATYPE'] == 'hindcast':
+        bcsd_path =  'hindcast/bcsd_fcst/'
     
     under_over = ['black', '#B404AE']
     plot_title = ['Monthly', 'Monthly mean from 6-hourly']
@@ -113,7 +117,7 @@ if __name__ == "__main__":
                 os.makedirs(plot_dir)
                 
             # Read Monthly
-            mon_file = 'bcsd_fcst/NMME/bcsd/Monthly/' + '{}/PRECTOT.{}.{}_{:04d}_{:04d}.nc'.format(mmm, nmme_model,mmm, IC_YEAR, IC_YEAR)
+            mon_file = bcsd_path + '/NMME/bcsd/Monthly/' + '{}/PRECTOT.{}.{}_{:04d}_{:04d}.nc'.format(mmm, nmme_model,mmm, IC_YEAR, IC_YEAR)
             monthly_xr = xr.open_dataset(mon_file)
             print ('NMME Monthly File : ', mon_file)
         
@@ -128,7 +132,7 @@ if __name__ == "__main__":
                     plot_arr = np.zeros([2,720,1440],dtype=float)
                     mon_arr = monthly_xr['PRECTOT'].isel(Lead=lead_month, Ens = ens -1, time =0)
                     eee = 'ens' + str(ens)
-                    six_file = 'bcsd_fcst/NMME/bcsd/6-Hourly/' + '{}/{}/{:04d}/{}/PRECTOT.{:04d}{:02d}.nc4'.format(mmm,nmme_model,IC_YEAR,eee,year,fcast_month)
+                    six_file = bcsd_path + '/NMME/bcsd/6-Hourly/' + '{}/{}/{:04d}/{}/PRECTOT.{:04d}{:02d}.nc4'.format(mmm,nmme_model,IC_YEAR,eee,year,fcast_month)
                     print ('Comparing ' + nmme_model, ': L=',lead_month, ' E=',ens)
                     six_xr = xr.open_dataset(six_file)
                     six_xarr = six_xr['PRECTOT'] # .to_array.mean(dim=['time']).to_numpy()
@@ -151,7 +155,7 @@ if __name__ == "__main__":
         NENS = 12
         
         # Read Monthly
-        mon_file = 'bcsd_fcst/CFSv2_25km/bcsd/Monthly/' + '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'.format(mmm, variable,mmm, IC_YEAR, IC_YEAR)
+        mon_file =  bcsd_path + '/CFSv2_25km/bcsd/Monthly/' + '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'.format(mmm, variable,mmm, IC_YEAR, IC_YEAR)
         monthly_xr = xr.open_dataset(mon_file)
         print ('CFSv2 Monthly File : ', mon_file)
         plot_dir = OUT_PATH 
@@ -169,7 +173,7 @@ if __name__ == "__main__":
                 plot_arr = np.zeros([2,720,1440],dtype=float)
                 mon_arr = monthly_xr[variable].isel(Lead=lead_month, Ens = ens -1, time =0)
                 eee = 'ens' + str(ens)
-                six_file = 'bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/' + '{}/{:04d}/{}/{}.{:04d}{:02d}.nc4'.format(mmm,IC_YEAR,eee,variable,year,fcast_month)
+                six_file = bcsd_path + '/CFSv2_25km/bcsd/6-Hourly/' + '{}/{:04d}/{}/{}.{:04d}{:02d}.nc4'.format(mmm,IC_YEAR,eee,variable,year,fcast_month)
                 print ('Comparing CFASv2 ' + variable + ': L=',lead_month, ' E=',ens)
                 six_xr = xr.open_dataset(six_file)
                 six_xarr = six_xr[variable] # .to_array.mean(dim=['time']).to_numpy()
