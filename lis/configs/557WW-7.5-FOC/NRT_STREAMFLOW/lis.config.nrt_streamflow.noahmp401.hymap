@@ -118,7 +118,7 @@ SNODEP data directory:                                ./input/MET_FORCING/AFWA_S
 SNODEP mesh resolution:                               16
 SNODEP naming convention:                             LIS
 
-USAFSI data directory:                                ./input/USAF_FORCING/USAFSI1
+USAFSI data directory:                                ./input/USAF_FORCING/USAFSI
 USAFSI netcdf filename prefix:                        USAFSI
 
 SMOPS ASCAT soil moisture data directory:             ./input/USAF_FORCING/SMOPS
