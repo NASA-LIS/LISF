@@ -9,7 +9,7 @@ Land surface model:                     "JULES.5.0"
 Open water model:                       "template open water"
 Number of met forcing sources:          1
 Blending method for forcings:           overlay
-Met forcing sources:                    "GALWEM forecast"
+Met forcing sources:                    "GALWEM-GE forecast"
 Met forcing chosen ensemble member:     1
 Topographic correction method (met forcing):  "none"
 Enable spatial downscaling of precipitation:  0
@@ -19,27 +19,33 @@ Temporal interpolation method (met forcing):  linear
 
 #Runtime options
 Forcing variables list file:            ./input/forcing_variables.txt
-Output methodology:                     "2d gridspace"
+Output methodology:                     "2d ensemble gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
-Output naming style:                    "3 level hierarchy"
+Output naming style:                    "557WW streamflow convention"
+AGRMET security classification:            U
+AGRMET distribution classification:        C
+AGRMET data category:                      FCST
+AGRMET area of data:                       GLOBAL
 Start mode:                             restart
-Starting year:                          2022
-Starting month:                            8
-Starting day:                             23
-Starting hour:                             0
+Starting year:                          2023 
+Starting month:                            3
+Starting day:                             27
+Starting hour:                            12
 Starting minute:                           0
 Starting second:                           0
-Ending year:                            2022
-Ending month:                              8
-Ending day:                               28
-Ending hour:                              23
-Ending minute:                            45
+Ending year:                            2023
+Ending month:                              4       # End of 16-day forecast
+Ending day:                               12
+Ending hour:                               0
+Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
-Output directory:                       "output/2022082300Z/hymap/jules50/"
-Diagnostic output file:                 "output/2022082300Z/hymap/jules50/log/lislog"
-Number of ensembles per tile:           1
+Output directory:                       "output/2023032712Z/hymap/jules50/"
+Diagnostic output file:                 "output/2023032712Z/hymap/jules50/log/lislog"
+
+# Number of forecast ensemble members:
+Number of ensembles per tile:             18    
 
 #The following options are used for subgrid tiling based on vegetation
 Maximum number of surface type tiles per grid:    1
@@ -137,15 +143,15 @@ TBOT lag skin temperature update option:  0
 TBOT skin temperature lag days:           0
 
 #--------------------------------FORCINGS----------------------------------
-# GALWEM forecast
-GALWEM forecast forcing directory:         ./input/GALWEM_0p25deg
-GALWEM forecast resolution:                25            # 17(=17km) or 25(=25 deg)
-GALWEM forecast run mode:                  forecast
+# GALWEM-GE forecast
+GALWEM-GE forecast forcing directory:          ./input/GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast
+GALWEM-GE forecast number of ensemble members: 18
 
 #-----------------------LAND SURFACE MODELS--------------------------
 JULES.5.0 model timestep:                 15mn
 JULES.5.0 restart output interval:        1mo
-JULES.5.0 restart file:                   ./rstfile/2022082300Z/jules50/LIS_RST_JULES50_202208230000.d01.nc
+JULES.5.0 restart file:                   ./rstfile/2023032712Z/jules50/LIS_RST_JULES50_202303271200_EN18.d01.nc
 JULES.5.0 namelist directory:             ./JULES/ps41_nml_15min
 JULES.5.0 reference height for forcing T and q:  2
 JULES.5.0 reference height for forcing u and v: 10
@@ -162,17 +168,19 @@ Output start hour:
 Output start minutes:
 Output start seconds:
 
-Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.jules50
 
 #------------------------ ROUTING ----------------------------------
-# ROUTING MODEL:  HYMAP
-Routing model:                          "HYMAP2 router"
+#Sub-models
+Routing model:                  "HYMAP2 router"
 
-HYMAP2 routing model time step:         "15mn"
-HYMAP2 routing model output interval:   "1da"
-HYMAP2 routing model restart interval:  "1mo"
-HYMAP2 enable 2-way coupling:            0
-HYMAP2 run in ensemble mode:             0      # Run HYMAP in single member mode
+HYMAP2 routing model time step:              "15mn"
+TEMPLATE model timestep:                     "15mn"
+HYMAP2 routing model output interval:        "1da"
+HYMAP2 routing model restart interval:       "1mo"
+
+HYMAP2 routing model start mode:             restart
+HYMAP2 routing model restart file:           ./rstfile/2023032712Z/jules50/LIS_RST_HYMAP2_router_202303271200_EN18.d01.nc
 
 # method:                         enter "kinematic", "diffusive" or "local inertia"
 # linear reservoir flag:          enter 1 - use; or 0 - do not use linear reservoirs
@@ -182,23 +190,21 @@ HYMAP2 run in ensemble mode:             0      # Run HYMAP in single member mod
 # if "adaptive" time step, provide alfa coefficient value
 #
 #
-HYMAP2 routing method:                   "kinematic"  #"local inertia"
-HYMAP2 routing model time step method:   "constant"   # "adaptive"
+HYMAP2 routing method:                       "kinematic" #"local inertia" # "kinematic" #
+HYMAP2 routing model time step method:       "constant"  #"adaptive" # "constant" #
 HYMAP2 routing model adaptive time step alfa coefficient: 1.0
-HYMAP2 floodplain dynamics:              1
-HYMAP2 routing model dwi flag:           0
+HYMAP2 run in ensemble mode:                 1           
+HYMAP2 routing model linear reservoir flag:  0
+HYMAP2 routing model evaporation option:     none        # "penman"
+HYMAP2 floodplain dynamics: 1
 
-HYMAP2 routing model start mode:         restart
-HYMAP2 routing model restart file:       ./rstfile/2022082300Z/jules50/LIS_RST_HYMAP2_router_202208230000.d01.nc
-
-HYMAP2 routing model evaporation option:      none     # "penman"
-HYMAP2 routing model linear reservoir flag:   0
-HYMAP2 reservoir operation option:            0
-HYMAP2 number of reservoirs:                  1
+HYMAP2 reservoir operation option: 0
+HYMAP2 number of reservoirs: 1
 HYMAP2 reservoir operation input time series size: 2
-HYMAP2 reservoir operation input directory:  ./
+HYMAP2 reservoir operation input directory: ./
 HYMAP2 reservoir operation header filename: ./header_test.txt
 HYMAP2 reservoir operation input data type: "water level" # "streamflow" #
 
-TEMPLATE model timestep:               "15mn"
+HYMAP2 routing model dwi flag: 0
+HYMAP2 enable 2-way coupling:  0
 
