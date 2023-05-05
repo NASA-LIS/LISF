@@ -235,3 +235,21 @@ if __name__ == "__main__":
                              fscale=1.1, stitle=stitle, clabel=clabel, levels=levels)
          
         nmme_mon_xr.close()
+
+    # plot NOAA_NCEP anom on the native grid
+    plot_title = ['ENS1',  'ENS2', 'ENS3', 'ENS4']
+    loni2 = np.roll(np.where (loni <=180., loni, loni -360.),179)
+    ncep_anom2 = np.roll(ncep_anom, 179, axis =3)
+
+    plot_arr = np.zeros([4,181,360],dtype=float)
+    plot_arr[0,] = ncep_anom2[0,lead_month,:,:]*unit_conv
+    plot_arr[1,] = ncep_anom2[1,lead_month,:,:]*unit_conv
+    plot_arr[2,] = ncep_anom2[2,lead_month,:,:]*unit_conv
+    plot_arr[3,] = ncep_anom2[3,lead_month,:,:]*unit_conv
+
+    anom_file = plot_dir + '{:04}-{}'.format(IC_YEAR,mmm) + '_' + fm_label + '_RAW_anom.png'
+    plot_utils.contours (loni2, lati, nrows,
+                         ncols, plot_arr, load_table, plot_title, domain, anom_file, under_over,
+                         fscale=1.1, stitle=stitle, clabel=clabel, levels=levels)
+
+    
