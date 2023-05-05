@@ -31,13 +31,13 @@ Starting month:                           02
 Starting day:                             28
 Starting hour:                            23
 Starting minute:                          45
-Starting second:                           0
+Starting second:                          00
 Ending year:                            2023
-Ending month:                              3
-Ending day:                                2
-Ending hour:                               0
-Ending minute:                             5
-Ending second:                             0
+Ending month:                             03
+Ending day:                               01
+Ending hour:                              12
+Ending minute:                            05
+Ending second:                            00
 Undefined value:                       -9999
 Output directory:                       "./output/noah39/"
 Diagnostic output file:                 "./output/noah39/logs/lislog"
