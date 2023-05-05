@@ -90,6 +90,9 @@ if __name__ == "__main__":
     if lis_month > 12:
         lis_month -= 12
         lis_year = lis_year+1
+        clim_syr = clim_syr + 1
+        clim_eyr = clim_eyr + 1
+        
     fm_label = str(year) + '-' + calendar.month_abbr[fcast_month] + '_NCEP'
     print (fm_label)
 
