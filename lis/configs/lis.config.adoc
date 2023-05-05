@@ -610,6 +610,10 @@ Acceptable values are:
 Output naming style: "3 level hierarchy"
 ....
 
+[NOTE]
+====
+The "`557WW streamflow convention`" has 4 additional settings:
+
 `AGRMET security classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
 
 `AGRMET distribution classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
@@ -618,13 +622,17 @@ Output naming style: "3 level hierarchy"
 
 `AGRMET area of data:` used with 557WW streamflow convention or AGRMET Ops runmode.
 
+See Section <<sssec_forcings_afwa,AFWA/AGRMET>> for more information.
+
 .Example _lis.config_ entry
 ....
+Output naming style: "557WW streamflow convention"
 AGRMET security classification:     U
 AGRMET distribution classification: C
 AGRMET data category:               ANLYS
 AGRMET area of data:                GLOBAL
 ....
+====
 
 
 `Enable output statistics:` specifies whether to write the ASCII
