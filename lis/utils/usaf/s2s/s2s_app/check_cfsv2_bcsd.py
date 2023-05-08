@@ -122,6 +122,7 @@ if __name__ == "__main__":
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/hindcast/bcsd_fcst/CFSv2_25km/raw/Climatology/sep01/T2M_fcst_clim.nc
     varname_clim_xr = xr.open_dataset(varname_clim_file_raw)
     varname_clim_var = np.mean(varname_clim_xr['clim'].values[lead_month+1,:], axis=0)
+    varname_clim_std = np.std(varname_clim_xr['clim'].values[lead_month+1,:], axis=0)
     varname_clim_xr.close()
 
     varname_clim_files_bcsd = CFSv2_CLIM_TEMPLATE_BCSD.format(mmm,variable,mmm)
@@ -129,6 +130,7 @@ if __name__ == "__main__":
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/hindcast/bcsd_fcst/CFSv2_25km/bcsd/Monthly/sep01/T2M.CFSv2.sep01_*_*.nc
     varname_clim_bcsd_xr = xr.open_mfdataset(varname_clim_files_bcsd,concat_dim = 'time', combine='nested')
     varname_clim_bcsd = varname_clim_bcsd_xr[variable].isel(Lead=lead_month).mean(dim=['time', 'Ens']).values
+    varname_clim_bcsd_std = varname_clim_bcsd_xr[variable].isel(Lead=lead_month).std(dim=['time', 'Ens']).values
     varname_clim_bcsd_xr.close()
         
     # compute NAFPA mean
@@ -137,14 +139,16 @@ if __name__ == "__main__":
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL//*02/LIS_HIST_*02010000.d01.nc
     nafpa_clim_xr = xr.open_mfdataset(nafpa_clim_files,concat_dim = 'time', combine='nested')
     nafpa_clim = nafpa_clim_xr.mean(dim = 'time')
+    nafpa_std = nafpa_clim_xr.std(dim = 'time')
     nafpa_clim_var = nafpa_clim[lis_name.get(variable)].values
+    nafpa_std_var = nafpa_std[lis_name.get(variable)].values
     
     nafpa_fcst_file = NAFPA_FILE_TEMPLATE.format(NAFPA_PATH,lis_year,lis_month,lis_year,lis_month) 
     print(nafpa_fcst_file)
     # /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL//200102/LIS_HIST_200102010000.d01.nc
     nafpa_mon_xr = xr.open_dataset(nafpa_fcst_file)
     nafpa_mon_var = nafpa_mon_xr[lis_name.get(variable)].values # [1,2]
-    nafpa_anom_var = nafpa_mon_var - nafpa_clim_var   # [2,2]
+    nafpa_anom_var = (nafpa_mon_var - nafpa_clim_var)/ nafpa_std_var  # [2,2]
 
     # ensemble anomaly
     varname_monthly_file_bcsd = CFSv2_MONTHLY_TEMPLATE_BCSD.format(CFSv2_PATH,mmm,variable,mmm,IC_YEAR,IC_YEAR)
@@ -156,13 +160,13 @@ if __name__ == "__main__":
     nrows = 3
     ncols = 1
     domain = plot_utils.dicts('boundary', 'GLOBAL')
-    load_table = color_table.get(variable)
-    levels = plot_utils.dicts('anom_levels','Air_T_AF')
+    load_table = 'CB11W_' #color_table.get(variable, default =  'CB11W_')
+    levels = levels = plot_utils.dicts('anom_levels', 'standardized')
     plot_title = ['CFSv2', 'BCSD', 'AF10km']
     under_over = ['black', '#B404AE']
     stitle = variable + ' Forecast'
-    clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
-    clabel2 = 'Monthly ' + variable + '(K)'
+    clabel = 'Standardized Anomaly'
+    clabel2 = 'Monthly ' + variable 
     
     for ens in range (1, NENS +1):
         plot_arr = np.zeros([3,720,1440],dtype=float)
@@ -174,15 +178,15 @@ if __name__ == "__main__":
         # CFSv2 Raw
         varname_mon_xr = xr.open_dataset(varname_monthly_file_raw)
         varname_mon_var = varname_mon_xr[variable].values    # [1,1]
-        varname_anom_var = varname_mon_var - varname_clim_var  # [1,2]
+        varname_anom_var = (varname_mon_var - varname_clim_var)/varname_clim_std  # [1,2]
 
-        plot_arr[0,] = varname_anom_var*unit_conv.get(variable)
-        plot_arr[2,] = nafpa_anom_var*unit_conv.get(variable)
+        plot_arr[0,] = varname_anom_var
+        plot_arr[2,] = nafpa_anom_var
         
         # CFSv2 BCSD
         bcsd_mon_var = varname_mon_bcsd_xr[variable].isel(Lead=lead_month, Ens=ens-1,  time= 0).values # [1,3]
-        bcsd_anom_var = bcsd_mon_var - varname_clim_bcsd                                               # [2,3]
-        plot_arr[1,] = bcsd_anom_var*unit_conv.get(variable)
+        bcsd_anom_var = (bcsd_mon_var - varname_clim_bcsd)/varname_clim_bcsd_std                                          # [2,3]
+        plot_arr[1,] = bcsd_anom_var
         
         plot_dir = OUT_PATH + variable + '/'
         if not os.path.exists(plot_dir):
