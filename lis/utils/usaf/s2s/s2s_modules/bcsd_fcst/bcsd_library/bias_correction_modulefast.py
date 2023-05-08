@@ -162,7 +162,7 @@ def monthly_calculations(mon):
                 init_fcst_year, ens+1, month_name, fcst_year, fcst_month)
                 print(infile)
                 fcst_coarse[init_fcst_year-TARGET_FCST_SYR, lead_num, ens, ] = \
-                read_nc_files(infile, FCST_VAR)[0,]
+                read_nc_files(infile, FCST_VAR)[:]
     # Defining array to store bias-corrected monthly forecasts
     correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
     LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-999
