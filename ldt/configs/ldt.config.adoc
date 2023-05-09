@@ -3703,6 +3703,54 @@ landcover.1gd4r +
 CDF grouping attributes file:     cdf_grouping.txt
 ....
 
+`Stratify CDFs by external data:` specifies whether to stratify CDFs for each pixel by an externally specified categorical map; for example, by precipitation climatology.
+This option generates a stratified CDF for each grid cell. That means if the domain contains 10000 grid cells, the CDF file also has 10000 CDFs. But CDFs in grid cells with a similar precipitation climatology are the same.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |do not stratify by external data
+|1 |stratify by external data
+|===
+
+.Example _ldt.config_ entry
+....
+Stratify CDFs by external data:    1
+.... 
+
+`Number of bins to use for stratification:`  specifies the number of stratification bins to use for computing the CDF. 
+
+.Example _ldt.config_ entry
+....
+Number of bins to use for stratification: 15
+.... 
+
+`Stratification data source:` specifies the name of the stratification data source 
+
+.Example _ldt.config_ entry
+....
+Stratification data source:  "LIS LSM total precipitation"
+....
+
+`External stratification file:` Specifies the name of a NetCDF file that contains the monthly precipitation climatology. The user needs to run an LSM and generate daily total precipitation output for a long period. Then the user needs to run LVT to generate monthly precipitation climatology.  
+
+
+.Example _ldt.config_ entry
+....
+External stratification file:              "LVT_MEAN_FINAL.202201010000.d01.nc" 
+....
+
+
+`Write stratified geolocation independent CDFs:` specifies whether to write the stratified CDF or not. 
+This option eliminates the similar CDFs and collapses the stratified CDFs into a number of stratified bins.  For example, if the domain contains 10000 grid cells and you chose to stratify the CDFs to 15 precipitation bins. This option collapses the 10000 CDFs to 15 CDFs. This CDF is a geolocation independent CDFs. 
+
+.Example _ldt.config_ entry
+....
+Write stratified geolocation independent CDFs: 1
+....
+
 `Temporal averaging interval:` specifies temporal averaging interval to be used while computing the CDF.
 
 .Example _ldt.config_ entry
