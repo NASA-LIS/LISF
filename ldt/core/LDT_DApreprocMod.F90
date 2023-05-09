@@ -238,7 +238,7 @@ contains
                          endif
                       else
                          write(LDT_logunit,*) '[INFO] Total precip is zero or undefined',&
-                                stratification_data(c,r,j) ,&
+                                stratification_data(c,r,j) ,c,r,j,&
                                'Value adjusted to the Min Startification bins'
                          LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = 1
                       endif
