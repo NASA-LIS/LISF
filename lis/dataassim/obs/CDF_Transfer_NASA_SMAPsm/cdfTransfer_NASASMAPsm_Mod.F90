@@ -198,7 +198,7 @@ contains
        call LIS_verify(status, 'SMAP(NASA) soil moisture use scaled standard deviation model: is missing')
        
     enddo
-#IF 0
+#if 0
     call ESMF_ConfigFindLabel(LIS_config,"SMAP(NASA) model CDF file:",&
          rc=status)
     do n=1,LIS_rc%nnest
@@ -212,13 +212,13 @@ contains
        call ESMF_ConfigGetAttribute(LIS_config,cdfT_SMAPsm_struc(n)%obscdffile,rc=status)   
        call LIS_verify(status, 'SMAP(NASA) observation CDF file: not defined')
     enddo
-#ENDIF    
+#endif    
     call ESMF_ConfigFindLabel(LIS_config, "SMAP(NASA) soil moisture number of bins in the CDF:", rc=status)
     do n=1, LIS_rc%nnest
        call ESMF_ConfigGetAttribute(LIS_config,cdfT_SMAPsm_struc(n)%nbins, rc=status)
        call LIS_verify(status, "SMAP(NASA) soil moisture number of bins in the CDF: not defined")
     enddo
-#IF 0
+#if 0
    do n=1, LIS_rc%nnest
       cdfT_SMAPsm_struc(n)%cdf_read_mon = .false.   
 
@@ -227,7 +227,7 @@ contains
       call ESMF_ConfigGetAttribute(LIS_config, cdfT_SMAPsm_struc(n)%cdf_read_opt, rc=status)
       call LIS_verify(status, "SMAP(NASA) CDF read option: not defined")
    enddo
-#ENDIF
+#endif
 
     call ESMF_ConfigFindLabel(LIS_config,"Use CDF transfer for soil moisture data assimilation:",&
          rc=status)
@@ -256,13 +256,13 @@ contains
                 rc=status)
           call LIS_verify(status, 'Reference domain obs CDF file: is missing')
        enddo
-#IF 0
+#if 0
        call ESMF_ConfigFindLabel(LIS_config, "Number of bins in the soil moisture CDF:", rc=status)
        do n=1, LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,cdfT_SMAPsm_struc(n)%nbins, rc=status)
           call LIS_verify(status, "Number of bins in the soil moisture CDF not defined")
        enddo
-#ENDIF
+#endif
 
     call ESMF_ConfigFindLabel(LIS_config,"Reference domain precipitation climatology data source:",&
          rc=status)

@@ -588,7 +588,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          write(LIS_logunit,*) '[ERR] for CDF transfer method'
          call LIS_endrun()
       endif
-#IF 0
+#if 0
       if (LIS_rc%dascaloption(k) .eq. "CDF matching") then
          if (cdfT_SMAPsm_struc(n)%useSsdevScal .eq. 1) then
             call ESMF_StateGet(OBS_Pert_State, "Observation01", pertfield, &
@@ -621,7 +621,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
             deallocate (ssdev)
          endif
       endif
-#ENDIF
+#endif
    else
       call ESMF_AttributeSet(OBS_State, "Data Update Status", &
                              .false., rc=status)
