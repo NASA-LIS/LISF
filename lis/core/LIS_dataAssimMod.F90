@@ -1915,7 +1915,7 @@ subroutine read_Precip_climo(n,k, filename, precip)
 !     enddo
 !     deallocate(precip_climo)
 
-#IF 0 
+#if 0 
            if(ngrid.gt.0) then
               do kk=1,nbins
                  call LIS_convertObsVarToLocalSpace(n,k,xrange_file(:,1,kk), &
@@ -1924,7 +1924,7 @@ subroutine read_Precip_climo(n,k, filename, precip)
                       cdf(:,j,kk))
               enddo
            endif
-#ENDIF  
+#endif  
 
 ! end USE_NETCDF4
 #endif

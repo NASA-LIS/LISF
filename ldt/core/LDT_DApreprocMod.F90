@@ -248,7 +248,7 @@ contains
           enddo
 
 
-#IF 0           
+#if 0           
           !if(LDT_rc%strat_cdfs.gt.0) then
           allocate(LDT_rc%stratification_data(LDT_rc%ngrid(n)))
           allocate(stratification_data(LDT_rc%ngrid(n),2))
@@ -281,7 +281,7 @@ contains
           !   read(ftn,*)
           !   read(ftn,*) LDT_rc%strat_cdfs_nbins
           !   call LDT_releaseUnitNumber(ftn)
-#ENDIF
+#endif
        endif
     endif
 
