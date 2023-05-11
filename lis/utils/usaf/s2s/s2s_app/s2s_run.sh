@@ -928,6 +928,8 @@ if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
 	print_walltimes
     fi
     exit
+elif [ "$REPORT" = 'N' ] || [ "$REPORT" = 'n' ]; then
+    exit
 fi
 
 if [ "$DELETE" = 'Y' ] || [ "$DELETE" = 'y' ]; then
