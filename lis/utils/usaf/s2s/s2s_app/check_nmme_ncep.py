@@ -33,8 +33,6 @@ NOAA_NCEP = {
     'GFDL':'GFDL_SPEAR',
     'GNEMO5':'GEM5_NEMO',}
 
-OUT_PATH =  os.getcwd() + '/plots/NMME/'
-
 NOAA_NMME_PATH = '/discover/nobackup/projects/usaf_lis/GHI_S2S/NOAA_NMME/netcdf/realtime_anom/'
 NOAA_NMME_TEMPLATE = '{}/{}/{}.prate.{:04d}{:02d}.anom.nc'
 
@@ -66,7 +64,8 @@ if __name__ == "__main__":
     model = args.model
     IC_YEAR = int(args.year)
     CONFIGFILE = args.config_file
-    
+    OUT_PATH =  os.getcwd() + '/plots/' + calendar.month_abbr[ic_month].upper() + '01/NMME/'
+
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     NENS = cfg['EXP']['ensemble_sizes'][0]
