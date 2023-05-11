@@ -16,13 +16,10 @@ import yaml
 # AF10KM monthly      AF10KM anom
 # BCSD monthly        BCSD anom
 
-
 # NMME
 # /discover/nobackup/projects/usaf_lis/razamora/NAFPAMod_Aggregate_Monthly/1991-2021/LIS_HIST_{199111}010000.d01.nc
 # BCSD
 #
-
-OUT_PATH =  os.getcwd() + '/plots/NMME/'
 
 NAFPA_PATH = '/discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/SURFACEMODEL/'
 NAFPA_FILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
@@ -52,6 +49,7 @@ if __name__ == "__main__":
     model = args.model
     IC_YEAR = int(args.year)
     CONFIGFILE = args.config_file
+    OUT_PATH =  os.getcwd() + '/plots/' + calendar.month_abbr[ic_month].upper() + '01/NMME/'
     
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)

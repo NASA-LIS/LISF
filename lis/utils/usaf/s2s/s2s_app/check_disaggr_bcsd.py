@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
     IC_YEAR = int(args.year)
     mmm = calendar.month_abbr[ic_month].lower() + '01'
-    OUT_PATH =  os.getcwd() + '/plots/DISAGG/' + forcing + '/'
+    OUT_PATH =  os.getcwd() + '/plots/' + calendar.month_abbr[ic_month].upper() + '01/DISAGG/' + forcing + '/'
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
 
