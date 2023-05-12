@@ -1,5 +1,4 @@
 #Overall driver options
-#Running mode:                           "retrospective"
 Running mode:                           "AGRMET ops"
 Map projection of the LIS domain:       latlon
 Number of nests:                        1
@@ -96,7 +95,7 @@ Bias estimation restart file:                         none                      
 #Perturbation options
 Perturbations start mode:                             restart                                    restart                                    restart
 
-Perturbations restart output interval:                1da                                        1da                                        1da
+Perturbations restart output interval:                12hr                                        12hr                                        12hr
 Perturbations restart filename:                       ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin
 Apply perturbation bias correction:                   1                                          1                                          1
 
@@ -367,7 +366,7 @@ AGRMET PPT Background bias correction option: 0
 
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah-MP.4.0.1 model timestep:                15mn
-Noah-MP.4.0.1 restart output interval:       1da
+Noah-MP.4.0.1 restart output interval:       12hr
 Noah-MP.4.0.1 restart file:                  ./input/SURFACEMODEL/LIS_RST_NOAHMP401_202302282345.d01.nc
 Noah-MP.4.0.1 restart file format:           netcdf
 Noah-MP.4.0.1 soil parameter table:          ./input/LS_PARAMETERS/noahmp401_parms/SOILPARM.TBL
@@ -423,10 +422,10 @@ Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noa
 # ROUTING MODEL:  RAPID
 Routing model:                               "RAPID router"
 
-RAPID routing model time step:               "1da"
+RAPID routing model time step:               "12hr"
 RAPID river routing time step:               "15mn"   # less than routing model time step
 RAPID routing model output interval:         "3hr"
-RAPID routing model restart interval:        "1da"
+RAPID routing model restart interval:        "12hr"
 
 RAPID routing model start mode:         restart
 RAPID routing model restart file:       ./input/ROUTING/LIS_RST_RAPID_router_202302282345.d01.nc
