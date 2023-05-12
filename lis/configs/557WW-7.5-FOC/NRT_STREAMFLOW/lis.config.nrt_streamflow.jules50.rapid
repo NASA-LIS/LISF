@@ -1,5 +1,4 @@
 #Overall driver options
-#Running mode:                           "retrospective"
 Running mode:                           "AGRMET ops"
 Map projection of the LIS domain:       latlon
 Number of nests:                        1
@@ -97,7 +96,7 @@ Bias estimation restart file:                         none                      
 #Perturbation options
 Perturbations start mode:                             restart                                    restart                                    restart
 
-Perturbations restart output interval:                1da 1da 1da
+Perturbations restart output interval:                12hr 12hr 12hr
 Perturbations restart filename:                       ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin
 Apply perturbation bias correction:                   1                                          1                                          1
 
@@ -371,7 +370,7 @@ Template open water timestep:             "15mn"
 
 #-----------------------LAND SURFACE MODELS--------------------------
 JULES.5.0 model timestep:                 15mn
-JULES.5.0 restart output interval:        1da
+JULES.5.0 restart output interval:        12hr
 JULES.5.0 restart file:                   ./input/SURFACEMODEL/LIS_RST_JULES50_202302282345.d01.nc
 JULES.5.0 namelist directory:             ./JULES/ps41_nml_15min
 JULES.5.0 reference height for forcing T and q:  2
@@ -395,10 +394,10 @@ Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.jul
 #Sub-models
 Routing model:                               "RAPID router"
 
-RAPID routing model time step:               "1da"
+RAPID routing model time step:               "12hr"
 RAPID river routing time step:               "15mn"   # less than routing model time step
 RAPID routing model output interval:         "3hr"
-RAPID routing model restart interval:        "1da"
+RAPID routing model restart interval:        "12hr"
 
 RAPID routing model start mode:         restart
 RAPID routing model restart file:       ./input/ROUTING/LIS_RST_RAPID_router_202302282345.d01.nc
