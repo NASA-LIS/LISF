@@ -1,5 +1,4 @@
 #Overall driver options
-#Running mode:                           "retrospective"
 Running mode:                           "AGRMET ops"
 Map projection of the LIS domain:       latlon
 Number of nests:                        1
@@ -95,7 +94,7 @@ Bias estimation restart file:                         none                      
 
 #Perturbation options
 Perturbations start mode:                             restart                                    restart                                    restart
-Perturbations restart output interval:                1da                                        1da                                        1da
+Perturbations restart output interval:                12hr                                        12hr                                        12hr
 Perturbations restart filename:  ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin
 Apply perturbation bias correction:                   1                                          1                                          1
 
@@ -366,7 +365,7 @@ AGRMET PPT Background bias correction option: 0
 
 #-----------------------LAND SURFACE MODELS--------------------------
 JULES.5.0 model timestep:                 15mn
-JULES.5.0 restart output interval:        1da
+JULES.5.0 restart output interval:        12hr
 JULES.5.0 restart file:                   ./input/SURFACEMODEL/LIS_RST_JULES50_202302282345.d01.nc
 JULES.5.0 namelist directory:             ./JULES/ps41_nml_15min
 JULES.5.0 reference height for forcing T and q:  2
@@ -391,9 +390,8 @@ Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.jul
 Routing model:                                "HYMAP2 router"
 
 HYMAP2 routing model time step:               "15mn"
-TEMPLATE model timestep:                      "15mn"
 HYMAP2 routing model output interval:         "3hr"
-HYMAP2 routing model restart interval:        "1da"
+HYMAP2 routing model restart interval:        "12hr"
 
 # method:                         enter "kinematic", "diffusive" or "local inertia"
 # linear reservoir flag:          enter 1 - use; or 0 - do not use linear reservoirs
