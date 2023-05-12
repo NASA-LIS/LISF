@@ -243,9 +243,9 @@ subroutine NoahMP401_main(n)
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
    
-    real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
-    real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
-    real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
     ! TML: Debugging term to print model variables if set to 1.
     integer                 :: tmp_printdebug              ! print model output if true
@@ -930,13 +930,13 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
-            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt
-            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt
             !SW
             noahmp401_struc(n)%noahmp401(t)%subsnow    = tmp_subsnow
             noahmp401_struc(n)%noahmp401(t)%qsnbot     = tmp_qsnbot
             noahmp401_struc(n)%noahmp401(t)%pah        = tmp_pah
             noahmp401_struc(n)%noahmp401(t)%relsmc(:)  = tmp_relsmc(:)
+            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt(1,1)
+            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt(1,1)
 
             
             ! EMK Update RHMin for 557WW
