@@ -86,7 +86,7 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Get ID for model forcing for LIS
-    model_forcing = sys.argv[6]
+    model_forcing = sys.argv[6].upper()
 
     return configfile, input_dir, output_dir, startdate, enddate, model_forcing
 

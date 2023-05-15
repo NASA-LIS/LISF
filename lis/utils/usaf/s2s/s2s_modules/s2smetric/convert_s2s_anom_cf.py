@@ -149,12 +149,15 @@ def _driver():
     nc4["latitude"].long_name = 'latitude'
     nc4["latitude"].standard_name = 'latitude'
     nc4["latitude"].units = 'degree_north'
+    nc4["latitude"].axis = 'Y'
 
     nc4["longitude"].long_name = 'longitude'
     nc4["longitude"].standard_name = 'longitude'
     nc4["longitude"].units = 'degree_east'
+    nc4["longitude"].axis = 'X'
 
     nc4["ens"].long_name = 'Ensemble members'
+    nc4["ens"].axis = 'E'
     nc4["ens"].units = '1'
 
     nc4["lead"].long_name = 'Forecast month'

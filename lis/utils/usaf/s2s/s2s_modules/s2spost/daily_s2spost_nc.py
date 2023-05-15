@@ -186,7 +186,7 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Get ID of model forcing
-    model_forcing = sys.argv[6]
+    model_forcing = sys.argv[6].upper()
 
     return configfile, noahmp_file, hymap2_file, output_dir, curdt, \
         model_forcing
