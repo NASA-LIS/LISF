@@ -20,34 +20,30 @@ import subprocess
 import sys
 import time
 
-# _VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
-#         'SoilMoist_inst', 'SoilMoist_tavg',
-#         'SoilTemp_inst', 'SoilTemp_tavg',
-#         'RHMin_inst',
-#         'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg',
-#         'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
-#         'LWdown_f_inst', 'LWdown_f_tavg',
-#         'Landcover_inst', 'Landmask_inst',
-#         'Psurf_f_inst', 'Psurf_f_tavg',
-#         'Qair_f_inst', 'Qair_f_tavg',
-#         'Qh_tavg', 'Qle_tavg',
-#         'Qs_acc', 'Qsb_acc',
-#         'SWE_inst',
-#         'SWdown_f_inst', 'SWdown_f_tavg',
-#         'SnowDepth_inst', 'Snowcover_inst',
-#         'Tair_f_inst', 'Tair_f_max',
-#         'Tair_f_tavg',
-#         'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
-#          "ActSnowNL_inst", "GrndSnow_inst",
-#          "LayerSnowDensity_inst", "LayerSnowDepth_inst",
-#          "LayerSnowGrain_inst", "SnowDensity_inst",
-#          "SnowGrain_inst", "SnowIce_inst",
-#          "SnowLiq_inst", "SnowTProf_inst",
-#          "SurftSnow_inst"]
-
-# EMK GALWEM TESTING
-_VARS = ["AvgSurfT_inst", "PS41Snow_inst",
-         "SoilMoist_inst","SoilTemp_inst"]
+_VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
+        'SoilMoist_inst', 'SoilMoist_tavg',
+        'SoilTemp_inst', 'SoilTemp_tavg',
+        'RHMin_inst',
+        'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg',
+        'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
+        'LWdown_f_inst', 'LWdown_f_tavg',
+        'Landcover_inst', 'Landmask_inst',
+        'Psurf_f_inst', 'Psurf_f_tavg',
+        'Qair_f_inst', 'Qair_f_tavg',
+        'Qh_tavg', 'Qle_tavg',
+        'Qs_acc', 'Qsb_acc',
+        'SWE_inst',
+        'SWdown_f_inst', 'SWdown_f_tavg',
+        'SnowDepth_inst', 'Snowcover_inst',
+        'Tair_f_inst', 'Tair_f_max',
+        'Tair_f_tavg',
+        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+#         "ActSnowNL_inst", "GrndSnow_inst",
+#         "LayerSnowDensity_inst", "LayerSnowDepth_inst",
+#         "LayerSnowGrain_inst", "SnowDensity_inst",
+#         "SnowGrain_inst", "SnowIce_inst",
+#         "SnowLiq_inst", "SnowTProf_inst",
+#         "SurftSnow_inst"]
 
 def _main():
     """Main driver"""
@@ -65,15 +61,17 @@ def _main():
 #SBATCH --account s1189
 #SBATCH --output {var}.3hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint="cas|sky|hasw"
+#SBATCH --ntasks=1 --constraint="[cas|sky]"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
 
 module purge
-module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
-module load lisf_7_intel_2021.4.0_petsc
+#module use --append /discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf75_lvt_grib_filenames/LISF/env/discover
+#module load lisf_7_intel_2021.4.0_petsc
+module use --append ~/privatemodules
+module load lisf_7.5_intel_2021.4.0_s2s
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

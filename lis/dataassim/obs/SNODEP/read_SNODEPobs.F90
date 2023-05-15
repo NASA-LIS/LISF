@@ -96,6 +96,8 @@ subroutine read_SNODEPobs(n, k, OBS_State,OBS_Pert_State)
 
   file_exists1 = .false.
   file_exists2 = .false.
+  name_nh = ''
+  name_sh = ''
 
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "SNODEP read alarm")    
 
