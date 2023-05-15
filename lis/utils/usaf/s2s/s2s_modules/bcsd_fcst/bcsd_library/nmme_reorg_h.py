@@ -13,15 +13,17 @@ import sys
 from time import ctime as t_ctime
 from time import time as t_time
 import numpy as np
+import xarray as xr
+import xesmf as xe
+import yaml
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
+# pylint: disable=import-error
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import get_domain_info
-import xarray as xr
-import xesmf as xe
-#import yaml
+# pylint: enable=import-error
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -55,13 +57,17 @@ def write_3d_netcdf(infile, var, varname, description, source, \
 
 CMDARGS = str(sys.argv)
 CMN = int(sys.argv[1])  ##
-NMME_DOWNLOAD_DIR = str(sys.argv[2])
-NMME_OUTPUT_DIR = str(sys.argv[3])
-SUPPLEMENTARY_DIR = str(sys.argv[4])
-NMME_MODEL = str(sys.argv[5])
-ENS_NUM = int(sys.argv[6])
-LEAD_MON = int(sys.argv[7])
-CONFIGFILE = str(sys.argv[8])
+NMME_OUTPUT_DIR = str(sys.argv[2])
+NMME_MODEL = str(sys.argv[3])
+CONFIGFILE = str(sys.argv[4])
+# Load config file
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
+NMME_DOWNLOAD_DIR = config['BCSD']['nmme_download_dir']
+SUPPLEMENTARY_DIR = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+ensemble_sizes = config['EXP']['ensemble_sizes'][0]
+ENS_NUM = ensemble_sizes[NMME_MODEL]
+LEAD_MON = config['EXP']['lead_months']
 
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
        'Sep', 'Oct', 'Nov', 'Dec']

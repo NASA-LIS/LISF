@@ -13,14 +13,15 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: customize_lis_config_nafpa.py
+# SCRIPT: customize_lis_config.py
 #
 # PURPOSE: Customizes lis.config file for 1-day run of LIS in AGRMET Ops mode,
 # single ensemble member, over global domain.  This will extend the AGRMET
-# forcing used by the LIS S2S system.
+# forcing used by the LIS S2S system; based on the NAFPA forcing generation
+# (Kemp et al., 2022).
 #
-# REQUIREMENTS as of 21 Sep 2021:
-# * Python 3.8 or higher.
+# REQUIREMENTS as of 21 Nov 2022:
+# * Python 3.9 or higher.
 #
 # REVISION HISTORY:
 # 21 Sep 2021: Eric Kemp (SSAI), first version.
