@@ -3270,9 +3270,8 @@ contains
 #endif
                 endif
              else ! 1 vertical level
-                ! The latlon fields for the mercator and latlon projection may be labeled as 1D  
+                ! lat/lon fields will write in 1D  
                 if(LIS_rc%nlatlon_dimensions == '1D') then
-                !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
                    if(nmodel_status.eq.1) then
                       call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                            nf90_float,&
@@ -3292,7 +3291,7 @@ contains
                            'nf90_def_var for '//trim(short_name)//&
                            'failed in defineNETCDFheadervar')
                    endif
-                ! The latlon fields for other projections are labeled as 2D
+                ! lat/lon fields will write in 2D
                 else
                    call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                         nf90_float,&
@@ -3438,9 +3437,8 @@ contains
 
 !EMK END
              else  ! 1 vertical level
-                ! The latlon fields for the mercator and latlon projection may be labeled as 1D
+                ! lat/lon field output will write in 1D 
                 if(LIS_rc%nlatlon_dimensions == '1D') then
-                !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
                    if(nmodel_status.eq.1) then
                       call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                            nf90_float,&
@@ -3460,7 +3458,7 @@ contains
                            'nf90_def_var for '//trim(dataEntry%short_name)//&
                            'failed in defineNETCDFheadervar')
                    endif
-                ! The latlon fields for other projections are labeled as 2D
+                ! latlon field output will write in 2D
                 else
                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                          nf90_float,&
@@ -3619,9 +3617,8 @@ contains
                         'nf90_def_var for '//trim(short_name)//&
                         'failed in defineNETCDFheadervar')                     
                 else
-                   ! The latlon fields for the mercator and latlon projection may be labeled as 1D
+                   ! lat/lon field output will write in 1D
                    if(LIS_rc%nlatlon_dimensions == '1D') then
-                   !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
                       if(nmodel_status.eq.1) then
                          call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                               nf90_float,&
@@ -3641,7 +3638,7 @@ contains
                               'nf90_def_var for '//trim(short_name)//&
                               'failed in defineNETCDFheadervar')
                       endif
-                   ! The latlon fields for other projections are labeled as 2D
+                   ! lat/lon field output will write in 2D
                    else
                       call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                            nf90_float,&
@@ -6740,9 +6737,8 @@ contains
              enddo
           enddo
 
-          ! The latlon fields for the latlon and mercator projection can be 1D
+          ! The latlon fields are written to 1D
           if(LIS_rc%nlatlon_dimensions == '1D') then
-          !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
              if(nmodel_status.eq.1) then   ! lat
                 allocate(gtmplat(LIS_rc%gnr(n)))
                 gtmplat = LIS_rc%udef
@@ -6783,7 +6779,7 @@ contains
                 endif
              endif
 
-          ! The latlon fields for other projections are 2D
+          ! The latlon fields are written to 2D
           else 
              if(PRESENT(dim1)) then
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
@@ -6871,9 +6867,8 @@ contains
                 enddo
              enddo
 
-             ! The latlon fields for the latlon and mercator projection can be 1D
+             ! The lat/lon fields are written to 1D
              if(LIS_rc%nlatlon_dimensions == '1D') then             
-             !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
                 if(nmodel_status.eq.1) then   ! lat
                    allocate(gtmplat(LIS_rc%gnr(n)))
                    gtmplat = LIS_rc%udef
@@ -6914,7 +6909,7 @@ contains
                    endif
                 endif
 
-             ! The latlon fields for other projections are 2D
+             ! The latlon fields are written to 2D
              else 
                 if(PRESENT(dim1)) then
                    iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
@@ -6925,7 +6920,6 @@ contains
                 endif
              endif
              
-
              if(ftn_stats.ne.-1) then
                 if ( LIS_rc%sout ) then
                    call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&

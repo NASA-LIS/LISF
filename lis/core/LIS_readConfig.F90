@@ -140,7 +140,7 @@ subroutine LIS_readConfig()
 !       label="Map projection of the LIS domain:",rc=rc)
 !  call LIS_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
 
-  ! CM Grabs new lis.config entry for number of dimensinos of the lat/on fields
+  ! CM Grabs new lis.config entry for number of dimensinos of the lat/lon fields
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nlatlon_dimensions,&
        label="Number of dimensions in the lat/lon output fields:",rc=rc)
   call LIS_warning(rc, 'Number of dimensions in the lat/lon output fields: option not specified in the config file. Assigning value to "1D"')

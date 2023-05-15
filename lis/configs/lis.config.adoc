@@ -10282,8 +10282,8 @@ Acceptable values are:
 |====
 |Value    | Description
 
-|"1D"     | 1 dimensional latitude and longitude output
-|         | (Note: only specific projections can be written in 1D. e.g. latlon, mercator
+|"1D"     | 1 dimensional latitude and longitude output 
+            (Note: only specific projections can be written in 1D. e.g. latlon, mercator
 |"2D"     | 2 dimensional latitude and longitude output
 |====
 
