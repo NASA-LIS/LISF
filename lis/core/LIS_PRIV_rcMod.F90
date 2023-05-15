@@ -67,6 +67,8 @@ module LIS_PRIV_rcMod
 !  Total number of land tiles in the catchment-based parameter files per nest.
 !  \item[lis\_map\_proj]
 !   Choice of map projection used in LIS. 
+!  \item[nlatlon\_dimensions]
+!   Choice of the dimension for output lat/lon variables ('1D' or '2D') 
 !  \item[lsm]
 !   Choice of the land surface model in LIS. 
 !  \item[param\_proj]
@@ -613,6 +615,7 @@ module LIS_PRIV_rcMod
 !  14 Oct 2003; Sujay Kumar; Removed LSM specific variables. 
 !  19 Jan 2007; Chuck Alonge; Added Flag to output parameters
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!  02 May 2023: Sujay Kumar; Add lat/lon dimension variable
 !
 !EOP
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -675,6 +678,7 @@ module LIS_PRIV_rcMod
      integer, allocatable       :: obs_haloy(:)
 
      character*50               :: lis_map_proj
+     character*50               :: nlatlon_dimensions
      character*50, allocatable  :: lis_obs_map_proj(:)
      character*50               :: lsm
      character*50               :: lakemodel

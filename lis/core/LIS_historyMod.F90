@@ -3270,25 +3270,38 @@ contains
 #endif
                 endif
              else ! 1 vertical level
-                if(nmodel_status.eq.1) then
-                   call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                        nf90_float,&
-                        dimids = dimID(2), varID=dataEntry%varId_def),&
-                        'nf90_def_var for '//trim(short_name)//&
-                        'failed in defineNETCDFheadervar')                     
-                elseif(nmodel_status.eq.2) then
-                   call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                        nf90_float,&
-                        dimids = dimID(1), varID=dataEntry%varId_def),&
-                        'nf90_def_var for '//trim(short_name)//&
-                        'failed in defineNETCDFheadervar')                     
+                ! The latlon fields for the mercator and latlon projection may be labeled as 1D  
+                if(LIS_rc%nlatlon_dimensions == '1D') then
+                !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
+                   if(nmodel_status.eq.1) then
+                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                           nf90_float,&
+                           dimids = dimID(2), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(short_name)//&
+                           'failed in defineNETCDFheadervar')                     
+                   elseif(nmodel_status.eq.2) then
+                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                           nf90_float,&
+                           dimids = dimID(1), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(short_name)//&
+                           'failed in defineNETCDFheadervar')                     
+                   else
+                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                           nf90_float,&
+                           dimids = dimID(1:2), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(short_name)//&
+                           'failed in defineNETCDFheadervar')
+                   endif
+                ! The latlon fields for other projections are labeled as 2D
                 else
                    call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                         nf90_float,&
-                        dimids = dimID(1:2), varID=dataEntry%varId_def),&
+                        dimids = dimID(1:2), varID=dataEntry%varID_def),&
                         'nf90_def_var for '//trim(short_name)//&
                         'failed in defineNETCDFheadervar')
                 endif
+               
+
 #if(defined USE_NETCDF4)
                 call LIS_verify(nf90_def_var_fill(ftn,&
                      dataEntry%varId_def, &
@@ -3425,25 +3438,39 @@ contains
 
 !EMK END
              else  ! 1 vertical level
-                if(nmodel_status.eq.1) then
-                   call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                        nf90_float,&
-                        dimids = dimID(2), varID=dataEntry%varId_def),&
-                        'nf90_def_var for '//trim(short_name)//&
-                        'failed in defineNETCDFheadervar')                     
-                elseif(nmodel_status.eq.2) then
-                   call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                        nf90_float,&
-                        dimids = dimID(1), varID=dataEntry%varId_def),&
-                        'nf90_def_var for '//trim(short_name)//&
-                        'failed in defineNETCDFheadervar')                     
-                else                
-                   call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name)//'_tavg',&
-                        nf90_float,&
-                        dimids = dimID(1:3), varID=dataEntry%varId_def),&
-                        'nf90_def_var for '//trim(dataEntry%short_name)//&
-                        'failed in defineNETCDFheadervar')
-                endif
+                ! The latlon fields for the mercator and latlon projection may be labeled as 1D
+                if(LIS_rc%nlatlon_dimensions == '1D') then
+                !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
+                   if(nmodel_status.eq.1) then
+                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                           nf90_float,&
+                           dimids = dimID(2), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(short_name)//&
+                           'failed in defineNETCDFheadervar')                     
+                   elseif(nmodel_status.eq.2) then
+                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                           nf90_float,&
+                           dimids = dimID(1), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(short_name)//&
+                           'failed in defineNETCDFheadervar')                     
+                   else                
+                      call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name)//'_tavg',&
+                           nf90_float,&
+                           dimids = dimID(1:3), varID=dataEntry%varId_def),&
+                           'nf90_def_var for '//trim(dataEntry%short_name)//&
+                           'failed in defineNETCDFheadervar')
+                   endif
+                ! The latlon fields for other projections are labeled as 2D
+                else
+                     call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                         nf90_float,&
+                         dimids = dimID(1:2), varID=dataEntry%varID_def),&
+                         'nf90_def_var for '//trim(short_name)//&
+                         'failed in defineNETCDFheadervar')
+                endif 
+
+
+
 #if(defined USE_NETCDF4)
 
                 call LIS_verify(nf90_def_var_fill(ftn,&
@@ -3592,22 +3619,33 @@ contains
                         'nf90_def_var for '//trim(short_name)//&
                         'failed in defineNETCDFheadervar')                     
                 else
-                   if(nmodel_status.eq.1) then
+                   ! The latlon fields for the mercator and latlon projection may be labeled as 1D
+                   if(LIS_rc%nlatlon_dimensions == '1D') then
+                   !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
+                      if(nmodel_status.eq.1) then
+                         call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                              nf90_float,&
+                              dimids = dimID(2), varID=dataEntry%varId_def),&
+                              'nf90_def_var for '//trim(short_name)//&
+                              'failed in defineNETCDFheadervar')                     
+                      elseif(nmodel_status.eq.2) then
+                         call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                              nf90_float,&
+                              dimids = dimID(1), varID=dataEntry%varId_def),&
+                              'nf90_def_var for '//trim(short_name)//&
+                              'failed in defineNETCDFheadervar')                     
+                      else 
+                         call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                              nf90_float,&
+                              dimids = dimID(1:2), varID=dataEntry%varId_def),&
+                              'nf90_def_var for '//trim(short_name)//&
+                              'failed in defineNETCDFheadervar')
+                      endif
+                   ! The latlon fields for other projections are labeled as 2D
+                   else
                       call LIS_verify(nf90_def_var(ftn,trim(short_name),&
                            nf90_float,&
-                           dimids = dimID(2), varID=dataEntry%varId_def),&
-                           'nf90_def_var for '//trim(short_name)//&
-                           'failed in defineNETCDFheadervar')                     
-                   elseif(nmodel_status.eq.2) then
-                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                           nf90_float,&
-                           dimids = dimID(1), varID=dataEntry%varId_def),&
-                           'nf90_def_var for '//trim(short_name)//&
-                           'failed in defineNETCDFheadervar')                     
-                   else 
-                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
-                           nf90_float,&
-                           dimids = dimID(1:2), varID=dataEntry%varId_def),&
+                           dimids = dimID(1:2), varID=dataEntry%varID_def),&
                            'nf90_def_var for '//trim(short_name)//&
                            'failed in defineNETCDFheadervar')
                    endif
@@ -6566,6 +6604,7 @@ contains
     integer, intent(in) :: form
     integer, intent(in) :: nmodel_status
     integer, intent(in), optional :: dim1
+    integer             :: gindex
 !
 ! !DESCRIPTION:
 !  Write a real variable to a netcdf output file with some diagnostic 
@@ -6700,42 +6739,62 @@ contains
                 enddo
              enddo
           enddo
-          if(nmodel_status.eq.1) then   ! lat
-             allocate(gtmplat(LIS_rc%gnr(n)))
-             gtmplat = LIS_rc%udef
-             
-             do r=1,LIS_rc%gnr(n)
-                do c=1,LIS_rc%gnc(n)
-                   gtmplat(r) = gtmp(c,r)
-                enddo
-             enddo
-             
-             iret = nf90_put_var(ftn,varid,gtmplat,(/1/),&
-                  (/LIS_rc%gnr(n)/))
-             deallocate(gtmplat)
-             
-          elseif(nmodel_status.eq.2) then !lon
-             allocate(gtmplon(LIS_rc%gnc(n)))
-             gtmplon = LIS_rc%udef
 
-             do r=1,LIS_rc%gnr(n)
-                do c=1,LIS_rc%gnc(n)
-                   gtmplon(c) = gtmp(c,r)
-                enddo
-             enddo             
+          ! The latlon fields for the latlon and mercator projection can be 1D
+          if(LIS_rc%nlatlon_dimensions == '1D') then
+          !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
+             if(nmodel_status.eq.1) then   ! lat
+                allocate(gtmplat(LIS_rc%gnr(n)))
+                gtmplat = LIS_rc%udef
              
-             iret = nf90_put_var(ftn,varid,gtmplon,(/1/),&
-                  (/LIS_rc%gnc(n)/))
-             deallocate(gtmplon)
-          else
-             if(PRESENT(dim1)) then 
+                do r=1,LIS_rc%gnr(n)
+                   do c=1,LIS_rc%gnc(n)
+                     gindex = c+(r-1)*LIS_rc%gnc(n) 
+                     gtmplat(r) = LIS_domain(n)%glat(gindex)
+                   enddo
+                enddo
+             
+                iret = nf90_put_var(ftn,varid,gtmplat,(/1/),&
+                     (/LIS_rc%gnr(n)/))
+                deallocate(gtmplat) 
+
+             elseif(nmodel_status.eq.2) then !lon
+                allocate(gtmplon(LIS_rc%gnc(n)))
+                gtmplon = LIS_rc%udef
+
+                do r=1,LIS_rc%gnr(n)
+                   do c=1,LIS_rc%gnc(n)
+                      gindex = c+(r-1)*LIS_rc%gnc(n)
+                      gtmplon(c) = LIS_domain(n)%glon(gindex)
+                   enddo
+                enddo             
+             
+                iret = nf90_put_var(ftn,varid,gtmplon,(/1/),&
+                     (/LIS_rc%gnc(n)/))
+                deallocate(gtmplon)
+
+             else
+                if(PRESENT(dim1)) then 
+                   iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                        (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+                else            
+                   iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                        (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+                endif
+             endif
+
+          ! The latlon fields for other projections are 2D
+          else 
+             if(PRESENT(dim1)) then
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
-                     (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
-             else            
+                   (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+             else
                 iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
-                     (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+                   (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
              endif
           endif
+
+
           if(ftn_stats.ne.-1) then
              if ( LIS_rc%sout ) then
                 call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&
@@ -6812,42 +6871,61 @@ contains
                 enddo
              enddo
 
-             if(nmodel_status.eq.1) then   ! lat
-                allocate(gtmplat(LIS_rc%gnr(n)))
-                gtmplat = LIS_rc%udef
+             ! The latlon fields for the latlon and mercator projection can be 1D
+             if(LIS_rc%nlatlon_dimensions == '1D') then             
+             !if(LIS_rc%lis_map_proj.eq."latlon" .OR. LIS_rc%lis_map_proj.eq."mecator" ) then
+                if(nmodel_status.eq.1) then   ! lat
+                   allocate(gtmplat(LIS_rc%gnr(n)))
+                   gtmplat = LIS_rc%udef
                 
-                do r=1,LIS_rc%gnr(n)
-                   do c=1,LIS_rc%gnc(n)
-                      gtmplat(r) = gtmp(c,r)
+                   do r=1,LIS_rc%gnr(n)
+                      do c=1,LIS_rc%gnc(n)
+                         gindex = c+(r-1)*LIS_rc%gnc(n)
+                         gtmplat(r) = LIS_domain(n)%glat(gindex)
+                      enddo
                    enddo
-                enddo
                 
-                iret = nf90_put_var(ftn,varid,gtmplat,(/1/),&
-                     (/LIS_rc%gnr(n)/))
-                deallocate(gtmplat)
+                   iret = nf90_put_var(ftn,varid,gtmplat,(/1/),&
+                        (/LIS_rc%gnr(n)/))
+                   deallocate(gtmplat)
                 
-             elseif(nmodel_status.eq.2) then !lon
-                allocate(gtmplon(LIS_rc%gnc(n)))
-                gtmplon = LIS_rc%udef
+                elseif(nmodel_status.eq.2) then !lon
+                   allocate(gtmplon(LIS_rc%gnc(n)))
+                   gtmplon = LIS_rc%udef
                 
-                do r=1,LIS_rc%gnr(n)
-                   do c=1,LIS_rc%gnc(n)
-                      gtmplon(c) = gtmp(c,r)
+                   do r=1,LIS_rc%gnr(n)
+                      do c=1,LIS_rc%gnc(n)
+                         gindex = c+(r-1)*LIS_rc%gnc(n)
+                         gtmplon(c) = LIS_domain(n)%glon(gindex)
+                      enddo
                    enddo
-                enddo
                 
-                iret = nf90_put_var(ftn,varid,gtmplon,(/1/),&
-                     (/LIS_rc%gnc(n)/))
-                deallocate(gtmplon)
-             else             
-                if(PRESENT(dim1)) then 
+                   iret = nf90_put_var(ftn,varid,gtmplon,(/1/),&
+                        (/LIS_rc%gnc(n)/))
+                   deallocate(gtmplon) 
+
+                else             
+                   if(PRESENT(dim1)) then 
+                      iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
+                           (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
+                   else            
+                      iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
+                           (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
+                   endif
+                endif
+
+             ! The latlon fields for other projections are 2D
+             else 
+                if(PRESENT(dim1)) then
                    iret = nf90_put_var(ftn,varid,gtmp,(/1,1,dim1/),&
                         (/LIS_rc%gnc(n),LIS_rc%gnr(n),1/))
-                else            
+                else
                    iret = nf90_put_var(ftn,varid,gtmp,(/1,1/),&
                         (/LIS_rc%gnc(n),LIS_rc%gnr(n)/))
                 endif
              endif
+             
+
              if(ftn_stats.ne.-1) then
                 if ( LIS_rc%sout ) then
                    call stats(gtmp,LIS_rc%udef,LIS_rc%gnc(n)*LIS_rc%gnr(n),&

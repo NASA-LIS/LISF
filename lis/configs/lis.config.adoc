@@ -10275,6 +10275,24 @@ Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
 
 
+`Number of dimensions in the lat/lon output fields:` specifies the number of dimensions
+to use when writing the latitude and longitude fields of the LIS output.
+Acceptable values are:
+
+|====
+|Value    | Description
+
+|"1D"     | 1 dimensional latitude and longitude output
+|         | (Note: only specific projections can be written in 1D. e.g. latlon, mercator
+|"2D"     | 2 dimensional latitude and longitude output
+|====
+
+.Example _lis.config_ entry
+....
+Number of dimensions in the lat/lon output fields:          "1D"
+....
+
+
 [[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval
 
