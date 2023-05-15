@@ -95,7 +95,7 @@ for var_name in METRIC_VARS:
 
         INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
                                              FCST_INIT_MON, NMME_MODEL,
-                                             NMME_MODEL, \
+                                             NMME_MODEL.upper(), \
                                              smon.month, emon.month)
 
         print(f"[INFO] reading forecast climatology {INFILE}")
@@ -127,7 +127,7 @@ for var_name in METRIC_VARS:
 
         INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS, \
                                                TARGET_YEAR, FCST_INIT_MON, NMME_MODEL, \
-                                               NMME_MODEL, \
+                                               NMME_MODEL.upper(), \
                                                smon1.year, smon1.month, \
                                                emon1.year, emon1.month)
 
