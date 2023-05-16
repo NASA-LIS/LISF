@@ -33,6 +33,8 @@
 #               raster fields.  Also changed numbering of soil layers from
 #               0-3 to 1-4.
 # 06 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
+# 16 May 2023:  Eric Kemp (SSAI), updates to use 557 WW file convention for
+#               output.
 #
 #------------------------------------------------------------------------------
 """
@@ -54,29 +56,28 @@ _MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
            "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
 _SOIL_LAYERS = {
-    "noah39" :    ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "noahmp401" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "jules50" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
+    "NOAH" :    ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "NOAHMP" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "JULES" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
 }
+
 
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {sys.argv[0]} ldtfile tsfile finalfile"
-    txt += " anomaly_gt_prefix climo_gt_prefix LSM yyyymmddhh"
+    txt += " LSM yyyymmddhh"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]   ldtfile: LDT parameter file with full lat/lon data")
     print("[INFO]   tsfile: LVT 'TS' soil moisture anomaly file")
     print("[INFO]   finalfile: LVT 'FINAL' soil moisture anomaly file")
-    print("[INFO]   anomaly_gt_prefix: prefix for new anomaly GeoTIFF files")
-    print("[INFO]   climo_gt_prefix: prefix for new climatology GeoTIFF files")
     print("[INFO]   LSM: land surface model")
     print("[INFO]   yyyymmddhh: Valid date and time (UTC)")
 
 def _read_cmd_args():
     """Read command line arguments."""
     # Check if argument count is correct
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -96,22 +97,18 @@ def _read_cmd_args():
     ncid_lvt = nc4_dataset(finalfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_lvt.close()
 
-    outfile_anomaly_prefix = sys.argv[4]
-    outfile_climo_prefix = sys.argv[5]
-    lsm = sys.argv[6]
-    yyyymmddhh = sys.argv[7]
+    lsm = sys.argv[4]
+    yyyymmddhh = sys.argv[5]
 
-    if lsm not in ["noah39", "noahmp401", "jules50"]:
+    if lsm not in ["NOAH", "NOAHMP", "JULES"]:
         print(f"[ERR] Unknown LSM {lsm}")
-        print("Options are noah39, noahmp401, jules50")
+        print("Options are NOAH, NOAHMP, JULES")
         sys.exit(1)
 
     cmd_args = {
         "ldtfile" : ldtfile,
         "tsfile" : tsfile,
         "finalfile" : finalfile,
-        "outfile_anomaly_prefix" : outfile_anomaly_prefix,
-        "outfile_climo_prefix" : outfile_climo_prefix,
         "lsm" : lsm,
         "yyyymmddhh" : yyyymmddhh,
     }
@@ -174,6 +171,16 @@ def _set_metadata(varname, soil_layer, model, \
 
     return metadata
 
+def _make_outfile_anomaly(lsm, i, yyyymmddhh):
+    """Create anomaly filename"""
+    filename = "PS.557WW_SC.U_DI.C"
+    filename += f"_GP.LIS-{lsm}"
+    filename += "_GR.C0P09DEG_AR.GLOBAL"
+    filename += f"_PA.LIS-SM-ANOMALY-LAYER{i+1}"
+    filename += f"_DD.{yyyymmddhh[0:8]}"
+    filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
+    return filename
+
 def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
     """Process soil moisture anomalies"""
     # Next, fetch the soil moisture anomalies from the LVT 'TS' file.
@@ -187,8 +194,9 @@ def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
         # Write soil moisture anomalies to GeoTIFF
         sm1 = sm_anomalies[::-1, :]
         geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-        outfile_anomaly = f"{cmd_args['outfile_anomaly_prefix']}"
-        outfile_anomaly += f".layer{i+1}.tif"
+        outfile_anomaly = \
+            _make_outfile_anomaly(cmd_args["lsm"], i,
+                                  cmd_args["yyyymmddhh"])
         varname = "Soil Moisture Anomaly"
         output_raster = _create_output_raster(outfile_anomaly,
                                               ncols, nrows, geotransform,
@@ -202,6 +210,16 @@ def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
         del output_raster
     ncid.close()
 
+def _make_outfile_climo(lsm, i, month, yyyymmddhh):
+    """Create climatology filename"""
+    filename = "PS.557WW_SC.U_DI.C"
+    filename += f"_GP.LIS-{lsm}"
+    filename += "_GR.C0P09DEG_AR.GLOBAL"
+    filename += f"_PA.LIS-SM-CLIMO-{month}-LAYER{i+1}"
+    filename += f"_DD.{yyyymmddhh[0:8]}"
+    filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
+    return filename
+
 def _proc_sm_climo(cmd_args, longitudes, latitudes):
     """Process soil moisture climatology data"""
     ncid = nc4_dataset(cmd_args["finalfile"], 'r', format='NETCDF4')
@@ -214,8 +232,9 @@ def _proc_sm_climo(cmd_args, longitudes, latitudes):
             # Write soil moisture climatology to GeoTIFF
             geotransform = _make_geotransform(longitudes, latitudes,
                                               ncols, nrows)
-            outfile_climo = f"{cmd_args['outfile_climo_prefix']}"
-            outfile_climo += f".{month}.layer{i+1}.tif"
+            outfile_climo = \
+                _make_outfile_climo(cmd_args["lsm"], i,
+                                    month, cmd_args["yyyymmddhh"])
             varname = "Climatological Soil Moisture"
             output_raster = \
                 _create_output_raster(outfile_climo,
