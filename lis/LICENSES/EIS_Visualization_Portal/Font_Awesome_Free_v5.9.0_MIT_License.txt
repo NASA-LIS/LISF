@@ -1,0 +1,29 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: Font Awesome Free
+
+POC:
+
+https://fontawesome.com
+https://github.com/FortAwesome/Font-Awesome
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/all.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/all.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/brands.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/brands.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/fontawesome.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/fontawesome.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/regular.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/regular.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/solid.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/solid.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/svg-with-js.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/svg-with-js.min.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/v4-shims.css
+lis/utils/eis_visualization_portal/eis-toplanding/vendor/fontawesome-free/css/v4-shims.min.css
+
+License:
+
+MIT License (https://opensource.org/licenses/MIT)

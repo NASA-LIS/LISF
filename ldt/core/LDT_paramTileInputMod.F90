@@ -109,7 +109,9 @@ contains
                 if( t == water_class ) then
                    fgrd(c,r,t) = 0.
                 else
-                   if(varcnt(c,r,t)+1 > LDT_rc%udef) fgrd(c,r,t) = varcnt(c,r,t)/isum
+                   if(varcnt(c,r,t)+1 > LDT_rc%udef) then
+                      fgrd(c,r,t) = varcnt(c,r,t)/isum
+                   endif
                 endif
               endif
 

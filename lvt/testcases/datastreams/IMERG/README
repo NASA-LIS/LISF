@@ -1,0 +1,19 @@
+IMERG Reader Test Case
+
+This test case performs an LVT run over Africa from Jan 01, 2019 to
+Jan 05, 2019 that reads in IMERG data and outputs the average daily 
+precipitation fields.
+
+This directory contains:
+
+- This README file.
+- The lvt.config file used for this test case.
+- Sample GrADS data descriptor files that can be used to
+  visualize the output. (output.ctl, testcase.ctl).
+
+To run this test case:
+
+* Generate the LVT executable.
+* Run the LVT executable using the lvt.config file.
+* View the output using the sample GrADS ctl files.
+

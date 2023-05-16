@@ -53,10 +53,14 @@ subroutine read_gdas_elev(n, findex, change)
   integer :: c,r
   real :: go(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
-! EMK TEST
-!  if ( LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then
+! KRA - previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then
+! Addition of Micromet topographic downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
+
      write(LIS_logunit,*) 'Reading the GDAS elevation'
      if ( change == 0 ) then ! period 1980--1991
         ! Note that for this time period we have a difference file

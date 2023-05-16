@@ -1,0 +1,88 @@
+---
+
+#######################################################################
+#    System Settings and Architecture Specific Environment Variables
+#######################################################################
+
+SETUP:
+  E2ESDIR: /discover/nobackup/projects/usaf_lis/smahanam/E2ES_AFRICOM/
+  METFORC: /discover/nobackup/projects/usaf_lis/GHI_S2S/USAF_FORCING/
+  supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
+  LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/LISF-1/
+  LISFMOD: lisf_7.5_intel_2021.4.0_s2s
+  SPCODE:  s1189
+  CONSTRAINT: cssro
+  DATATYPE: forecast
+  ldtinputfile: lis_input.s2s_africom.noahmp401_hymap2.merit.25km.nc
+   
+#######################################################################
+#                       Experiment Configuration
+#######################################################################
+
+EXP:
+  DOMAIN: AFRICOM
+  lsmdir: NOAHMP
+  lsm:    noahmp401
+  routing_name: hymap2
+  pertmode: coldstart
+  lead_months: 9
+  NMME_ALL: [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]
+  NMME_models: [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]
+  ensemble_sizes:
+  - CCM4: 10
+    CCSM4: 10
+    GNEMO5: 10
+    GEOSv2: 10
+    CFSv2: 24
+    GFDL: 15
+  NMME_scalings:
+  - CCM4: downscale
+    CCSM4: downscale
+    GNEMO5: downscale
+    GEOSv2: downscale
+    CFSv2: upscale
+    GFDL: upscale
+
+#######################################################################
+#              Bias Correction and Spatial Downscaling (BCSD)
+#######################################################################
+
+BCSD:
+  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/
+  nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/AFRICOM/E2ES/NRT/bcsd_fcst/input/data/forecast/NMME/raw/download/
+  clim_start_year: 2008
+  clim_end_year: 2020
+  nof_raw_ens: 12
+  fcst_data_type: CFSv2
+  nmme_data_type: nmme
+  
+#######################################################################
+#                            LIS Forecast
+#######################################################################
+
+FCST:
+  numprocx: 1
+  numprocy: 28
+  JOB_SEGMENTS:
+  - CCM4: 1
+    CCSM4: 1
+    GNEMO5: 1
+    GEOSv2: 1
+    CFSv2: 2
+    GFDL: 2 
+  
+#######################################################################
+#                          Post-processor
+#######################################################################
+
+POST:
+  var_acc_list: [Qs_acc, Qsb_acc, TotalPrecip_acc]
+  var_tavg_land_list: [Evap_tavg, AvgSurfT_tavg, SoilMoist_tavg, SoilTemp_tavg, RelSMC_tavg, SWE_tavg, SnowDepth_tavg,
+                       Snowcover_tavg, Streamflow_tavg, FloodedFrac_tavg, SWS_tavg, RiverStor_tavg, FloodStor_tavg, FloodedArea_tavg]
+  var_tavg_f_list: [Wind_f_tavg, Tair_f_tavg, Qair_f_tavg, Psurf_f_tavg, SWdown_f_tavg, LWdown_f_tavg]
+  var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
+  var_tair_max_list: [Tair_f_max]
+  var_tair_min_list: [Tair_f_min]
+  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, Landmask_inst, LANDMASK, Landcover_inst, Soiltype_inst, Elevation_inst, Greenness_inst]
+  metric_vars: [RootZone-SM, Surface-SM, TWS, Precip, Air-T, ET, Streamflow]
+

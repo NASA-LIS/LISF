@@ -1,0 +1,21 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: W3.CSS
+
+POC:
+
+https://www.w3schools.com/w3css/default.asp
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-fire/css/w3.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/w3.css
+lis/utils/eis_visualization_portal/eis-sealevel/css/w3.css
+
+License:
+
+From website https://www.w3schools.com/w3css/default.asp:
+
+W3.CSS is Free
+
+W3.CSS is free to use. No license is necessary.

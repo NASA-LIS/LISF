@@ -1,0 +1,12 @@
+&jules_initial
+const_val=0.0,276.78,12.1,0.0,50.0,0.759,3.0,0.0,0.0,0.0,
+dump_file=.false.,
+file='./JULES/ps41_nml_15min/initial_conditions.dat',
+nvars=10,
+total_snow=.true.,
+!!tpl_name=10*'',
+use_file=7*.false.,.true.,.true.,.true.,
+var='canopy','tstar_tile','cs','gs','rgrain','sthzw','zw',
+'sthuf','t_soil','snow_tile',
+var_name=10*'',
+/
