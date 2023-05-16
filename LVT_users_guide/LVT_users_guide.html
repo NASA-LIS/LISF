@@ -440,8 +440,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>Land surface Verification Toolkit (LVT): LVT 7.4 Users&#8217; Guide</h1>
 <div class="details">
-<span id="revnumber">version 2.1,</span>
-<span id="revdate">30 Nov 2022</span>
+<span id="revnumber">version 2.2,</span>
+<span id="revdate">5 May 2023</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -521,6 +521,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
@@ -2184,6 +2189,10 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;COAMPSout&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">COAMPS forcing data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;OPL E SMAP soil moisture retrieval&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Operational enhanced SMAP soil moisture retrieval data</p></td>
 </tr>
 </tbody>
 </table>
@@ -5525,7 +5534,19 @@ LPRM vegetation optical depth data designation:      X-band</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_wg_swrc">7.4.67. WG SWRC</h4>
+<h4 id="_smap_e_opl_soil_moisture_retrieval">7.4.67. SMAP-E-OPL soil moisture retrieval</h4>
+<div class="paragraph">
+<p><code>SMAP_E_OPL soil moisture data directory:</code> specifies the location of the Operational enhanced SMAP soil moisture retrieval data directory.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>SMAP_E_OPL soil moisture data directory: ./SM_retrieval</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_wg_swrc">7.4.68. WG SWRC</h4>
 <div class="paragraph">
 <p><code>WG SWRC observation directory:</code> specifies the location of the WG SWRC observation directory.</p>
 </div>
@@ -5541,7 +5562,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ua_snow_observations">7.4.68. UA SNOW observations</h4>
+<h4 id="_ua_snow_observations">7.4.69. UA SNOW observations</h4>
 <div class="paragraph">
 <p><code>UA SNOW observation directory:</code> specifies the location of the University of Arizona SWE data.</p>
 </div>
@@ -5553,7 +5574,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ozflux_soil_moisture">7.4.69. OzFlux soil moisture</h4>
+<h4 id="_ozflux_soil_moisture">7.4.70. OzFlux soil moisture</h4>
 <div class="paragraph">
 <p><code>OzFlux observation directory:</code> specifies the location of the OzFlux data directory.</p>
 </div>
@@ -5588,7 +5609,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_jasmin_soil_moisture">7.4.70. JASMIN soil moisture</h4>
+<h4 id="_jasmin_soil_moisture">7.4.71. JASMIN soil moisture</h4>
 <div class="paragraph">
 <p><code>JASMIN soil moisture data directory:</code> specifies the location of the JASMIN soil moisture data directory.</p>
 </div>
@@ -5600,7 +5621,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fluxsat_gpp">7.4.71. FluxSat GPP</h4>
+<h4 id="_fluxsat_gpp">7.4.72. FluxSat GPP</h4>
 <div class="paragraph">
 <p><code>FluxSat data directory:</code> specifies the location of the FluxSat GPP data directory.</p>
 </div>
@@ -5612,7 +5633,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_thysm_soil_moisture">7.4.72. THySM soil moisture</h4>
+<h4 id="_thysm_soil_moisture">7.4.73. THySM soil moisture</h4>
 <div class="paragraph">
 <p><code>THySM data directory:</code> specifies the location of the THySM data directory.</p>
 </div>
@@ -5624,7 +5645,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mcd15a2h_lai">7.4.73. MCD15A2H LAI</h4>
+<h4 id="_mcd15a2h_lai">7.4.74. MCD15A2H LAI</h4>
 <div class="paragraph">
 <p><code>MCD15A2H data directory:</code> specifies the location of the MCD15A2H data directory.</p>
 </div>
@@ -5636,7 +5657,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="ssec-optue">7.4.74. COAMPS forcing data</h4>
+<h4 id="ssec-optue">7.4.75. COAMPS forcing data</h4>
 <div class="paragraph">
 <p><code>COAMPS output forcing directory:</code> specifies the location of the COAMPS output forcing data directory.</p>
 </div>
@@ -7102,8 +7123,8 @@ rmse_qle_ensSTD rmse_qle_CI
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1<br>
-Last updated 2023-04-26 13:55:06 UTC
+Version 2.2<br>
+Last updated 2023-05-16 20:01:05 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

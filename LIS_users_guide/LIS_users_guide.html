@@ -440,8 +440,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>Land Information System (LIS): LIS 7.4 Users&#8217; Guide</h1>
 <div class="details">
-<span id="revnumber">version 2.1,</span>
-<span id="revdate">30 Nov 2022</span>
+<span id="revnumber">version 2.2,</span>
+<span id="revdate">5 May 2023</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -560,6 +560,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.4 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">May 5, 2023</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2.1</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.0 release</p></td>
@@ -6492,6 +6497,10 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;WMO convention&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">WMO convention for weather codes</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;557WW streamflow convention&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">557WW convention for streamflow output</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -6499,6 +6508,45 @@ Acceptable values are:</p>
 <div class="content">
 <pre>Output naming style: "3 level hierarchy"</pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>The &#8220;557WW streamflow convention&#8221; has 4 additional settings:</p>
+</div>
+<div class="paragraph">
+<p><code>AGRMET security classification:</code> used with 557WW streamflow convention or AGRMET Ops runmode.</p>
+</div>
+<div class="paragraph">
+<p><code>AGRMET distribution classification:</code> used with 557WW streamflow convention or AGRMET Ops runmode.</p>
+</div>
+<div class="paragraph">
+<p><code>AGRMET data category:</code> used with 557WW streamflow convention or AGRMET Ops runmode.</p>
+</div>
+<div class="paragraph">
+<p><code>AGRMET area of data:</code> used with 557WW streamflow convention or AGRMET Ops runmode.</p>
+</div>
+<div class="paragraph">
+<p>See Section <a href="#sssec_forcings_afwa">AFWA/AGRMET</a> for more information.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>Output naming style: "557WW streamflow convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               ANLYS
+AGRMET area of data:                GLOBAL</pre>
+</div>
+</div>
+</td>
+</tr>
+</table>
 </div>
 <div class="paragraph">
 <p><code>Enable output statistics:</code> specifies whether to write the ASCII
@@ -23399,8 +23447,8 @@ Program stopping..</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.1<br>
-Last updated 2023-04-26 13:55:06 UTC
+Version 2.2<br>
+Last updated 2023-05-16 20:01:05 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
