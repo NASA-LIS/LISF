@@ -773,11 +773,12 @@ subroutine LIS_readConfig()
   
   call LIS_parseTimeString(time,LIS_rc%pertrestartInterval)
 
-  if(npert_forc.ne.0.or.npert_state.ne.0) then 
-     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
-          label="Apply perturbation bias correction:",rc=rc)
-     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
-  endif
+  LIS_rc%pert_bias_corr = 1
+!  if(npert_forc.ne.0.or.npert_state.ne.0) then 
+!     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
+!          label="Apply perturbation bias correction:",rc=rc)
+!     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
+!  endif
 
 !  if(npert_forc.ne.0.or.npert_state.ne.0.or.npert_obs.ne.0) then 
   call ESMF_ConfigFindLabel(LIS_config,"Perturbations restart filename:",rc=rc)

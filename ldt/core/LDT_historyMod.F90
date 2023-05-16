@@ -244,6 +244,7 @@ module LDT_historyMod
      module procedure writevar_gridded_real_2d
      module procedure writevar_gridded_real_3d
      module procedure writevar_gridded_real_4d
+     module procedure writevar_gridded_integer_1d  !Y.Kwon
 
 ! !DESCRIPTION:
 ! This interface provides routines for writing variables (real)
@@ -1660,6 +1661,57 @@ contains
 
 
   end subroutine writevar_gridded_real_2d
+
+!Y.Kwon
+!BOP
+! !ROUTINE: writevar_gridded_integer_1d
+! \label{writevar_gridded_integer_1d}
+! 
+! !INTERFACE:
+! Private name: call LDT_writevar_gridded
+  subroutine writevar_gridded_integer_1d(n,ftn, var, varid )
+! !USES:
+    use LDT_coreMod, only : LDT_rc,LDT_domain, &
+         LDT_localPet, LDT_masterproc, LDT_npes, &
+         LDT_nss_ind,LDT_nse_ind,LDT_ews_ind,LDT_ewe_ind, &
+         LDT_nss_halo_ind,LDT_nse_halo_ind,LDT_ews_halo_ind,LDT_ewe_halo_ind, &
+         LDT_gdeltas, LDT_goffsets
+
+    implicit none
+! !ARGUMENTS: 
+    integer, intent(in) :: n
+    integer, intent(in)             :: ftn
+    integer                         :: var(LDT_rc%ngrid(n))
+    integer                         :: varid
+
+! !DESCRIPTION:
+!  Writes an integer variable to a binary 
+!  sequential access, gridded file as either 1-dimensional gridded field. 
+!  (The 1-d gridded field consists of a vector of valid land points)
+!  After reading the global data, the routine subroutine subsets
+!  the data for each processor's domain.
+!
+!  The arguments are: 
+!  \begin{description}
+!   \item [n]
+!     index of the domain or nest.
+!   \item [ftn]
+!     unit number of the binary output file
+!   \item [var]
+!     variables being written, dimensioned in the tile space
+!  \end{description}
+!EOP
+    integer       :: iret
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4) 
+
+    iret = nf90_put_var(ftn,varid,var,(/1/),&
+         (/LDT_rc%glbngrid(n)/))
+    call LDT_verify(iret, 'nf90_put_var failed in writevar_gridded_integer_1d')
+
+#endif
+
+end subroutine writevar_gridded_integer_1d
 
 !BOP
 ! !ROUTINE: LDT_tile2grid

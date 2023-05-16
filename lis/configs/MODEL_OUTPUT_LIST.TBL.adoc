@@ -414,5 +414,27 @@ mleaf:        1  kg/m2   -    0 0 0 2 0 1 # leaf biomass for each hru
 s0_avg:       1  mm      -    0 0 0 1 0 1 # water storage in the surface soil layer
 ss_avg:       1  mm      -    0 0 0 1 0 1 # water content of the shallow soil store
 sd_avg:       1  mm      -    0 0 0 1 0 1 # water content of the deep soil store
+
+# SnowModel-specific fields:
+SM_SWE:          1  m       -    0 0 0 1  65 1000    # Snow Water Equivalent (kg/m2)
+SM_SnowDepth:    1  m       -    0 0 0 1  66 1000    # Snow depth (m)
+SM_SnowDensity:  1  kg/m3   -    0 0 0 1 900 10      # Snow density (kg/m3) 
+SM_Snowcover:    0  -       -    0 0 0 1 238 100     # Snow cover (-)
+SM_SLiqFrac:     0  -       -    0 0 0 1 185 1000    # Fraction of SWE in the liquid phase
+SM_SWEVeg:       0  kg/m2   -    1 0 0 1 139 1000    # SWE intercepted by vegetation (kg/m2)
+SM_Albedo:       1  -       -    1 0 0 1  84 100     # Surface albedo (-)
+SM_SAlbedo:      0  -       -    0 0 0 1 184 1000    # Albedo of the snow-covered area (-)
+# Other fields -- summed output:
+SM_Qs:           0  m       OUT  3 0 0 1 235 10000   # Surface runoff from snowpack / top-soil (m/timestep)
+SM_Qsm:          0  m       S2L  3 0 0 1  99 10000   # Snowmelt (kg/m2s)
+SM_SubSnow:      0  m       -    3 0 0 1 198 1000    # Snow sublimation (m)
+SM_Snowf:        1  m       DN   3 0 0 1 161 10000   # Snowfall rate (m/timestep)
+SM_Rainf:        1  m       DN   3 0 0 1 162 10000   # Rainfall rate (m/timestep)
+SM_TotalPrecip:  1  m       DN   3 0 0 1  61 10000   # Total precipitation rate (m/timestep)
+# SnowModel-modified forcings:
+SM_SWdown:    1  W/m2    DN   1 0 0 1 204 10         # SnowModel-modified SWdown
+SM_LWdown:    1  W/m2    DN   1 0 0 1 205 10         # SnowModel-modified LWdown
+SM_NWind:     1  m/s     N    1 0 0 1  34 10         # SnowModel-modified NWind
+SM_EWind:     1  m/s     E    1 0 0 1  33 10         # SnowModel-modified EWind
 ....
 

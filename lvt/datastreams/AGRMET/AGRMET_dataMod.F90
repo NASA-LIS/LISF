@@ -51,7 +51,7 @@ module AGRMET_dataMod
   PUBLIC :: AGRMETdata
 !EOP
   type, public :: agrmetdatadec
-     character*100           :: odir
+     character*255           :: odir
      real*8                  :: changetime1,changetime2
      real, allocatable           :: rlat(:)
      real, allocatable           :: rlon(:)
