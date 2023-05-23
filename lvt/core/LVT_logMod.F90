@@ -258,7 +258,7 @@ contains
     
     call LVT_releaseUnitNumber(ftn)
     
-    call abort ()
+    call LVT_endrun
       
 !     ----------------------------------------------------------------
 !     format statements.
@@ -280,7 +280,7 @@ contains
 
 9000 write (6, 8000) iofunc, istat
       
-    call abort ()
+    call LVT_endrun
   
   end subroutine LVT_abort
 
@@ -562,7 +562,7 @@ contains
 #if (defined SPMD) 
     call mpi_abort (MPI_COMM_WORLD, 1)  
 #else
-    stop
+    error stop 1
 #endif   
   end subroutine LVT_endrun
 
