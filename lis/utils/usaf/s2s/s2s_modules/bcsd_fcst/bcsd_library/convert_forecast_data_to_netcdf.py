@@ -67,7 +67,7 @@ def _check_replace_missing (args):
     # read patch_files_list.txt
     patch_list = args['patchdir'] + '/patch_files_list.txt'
     df_ = pd.read_csv(patch_list, sep=',', engine='python',
-                     header=None, names=['Time','Bad','Replace'])
+                     header=0, names=['Time','Bad','Replace'])
     df_sort = df_.sort_values(by=['Time'])
     df_sort['Time'] = pd.to_datetime(df_sort['Time'],format='%Y%m%d%H')
 
