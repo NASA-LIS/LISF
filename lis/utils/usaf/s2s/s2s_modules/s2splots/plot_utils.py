@@ -90,15 +90,26 @@ def dicts(dic_name, key):
         'TWS': 'mm',
         'ET': 'mm/d'
     }
+    anom_tables = {
+        'Streamflow': 'CB11W',
+        'Precip': 'CB11W',
+        'Precip_AF': 'CB11W',
+        'Air-T': 'CB11W_',
+        'Air_T': 'CB11W_',
+        'Air_T_AF': 'CB11W',
+        'TWS': 'CB11W',
+        'ET': 'CB11W'
+    }
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
-
     if dic_name == 'boundary':
         ret = boundary.get(key)
     elif dic_name == 'anom_levels':
         ret = anom_levels.get(key, default_levels)
     elif dic_name == 'units':
         ret = units.get(key, default_units)
+    elif dic_name == 'anom_tables':
+        ret = anom_tables.get(key, 'CB11W')
     return ret
 
 def cartopy_dir(data_dir):
