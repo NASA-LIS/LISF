@@ -160,10 +160,10 @@ if __name__ == "__main__":
     nrows = 3
     ncols = 1
     domain = plot_utils.dicts('boundary', 'GLOBAL')
-    load_table = 'CB11W_' #color_table.get(variable, default =  'CB11W_')
+    load_table = 'CB11W_'
+    under_over = plot_utils.dicts('lowhigh', load_table)
     levels = levels = plot_utils.dicts('anom_levels', 'standardized')
     plot_title = ['CFSv2', 'BCSD', 'AF10km']
-    under_over = ['black', '#B404AE']
     stitle = variable + ' Forecast'
     clabel = 'Standardized Anomaly'
     clabel2 = 'Monthly ' + variable 

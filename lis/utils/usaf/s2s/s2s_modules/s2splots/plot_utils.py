@@ -100,6 +100,14 @@ def dicts(dic_name, key):
         'TWS': 'CB11W',
         'ET': 'CB11W'
     }
+    lowhigh = {
+        'CB11W': ['black','indigo'],
+        'CB11W_': ['indigo','black'],
+        '14WT2M': ['#68228B','black'],     # darkorchid4','black']
+        '14WPR': ['#8B4500','blueviolet'], # darkorange4','blueviolet']
+        'L21': ['blueviolet','#8B4500']
+    }
+
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
     if dic_name == 'boundary':
@@ -110,6 +118,8 @@ def dicts(dic_name, key):
         ret = units.get(key, default_units)
     elif dic_name == 'anom_tables':
         ret = anom_tables.get(key, 'CB11W')
+    elif dic_name == 'lowhigh':
+        ret = lowhigh.get(key)
     return ret
 
 def cartopy_dir(data_dir):

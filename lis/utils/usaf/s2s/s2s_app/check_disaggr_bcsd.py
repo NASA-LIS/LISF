@@ -101,8 +101,8 @@ if __name__ == "__main__":
     bcsd_path =  'bcsd_fcst/'
     if cfg['SETUP']['DATATYPE'] == 'hindcast':
         bcsd_path =  'hindcast/bcsd_fcst/'
-    
-    under_over = ['black', '#B404AE']
+    load_table = 'L21'
+    under_over = plot_utils.dicts('lowhigh', load_table)
     plot_title = ['Monthly', 'Monthly mean from 6-hourly']
     domain = plot_utils.dicts('boundary', 'GLOBAL')
     
@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     plot_arr[0,] = mon_arr.to_numpy()*86400.
                     plot_arr[1,] = six_arr.to_numpy()*86400.
                     plot_utils.contours (monthly_xr['longitude'].values, monthly_xr['latitude'].values, 2,
-                                         1, plot_arr, 'L21', plot_title, domain, figname, under_over,
+                                         1, plot_arr, load_table, plot_title, domain, figname, under_over,
                                          fscale=1.1, stitle=stitle, clabel=clabel2, levels=rainf_levels)
                     six_xr.close()            
             monthly_xr.close()
