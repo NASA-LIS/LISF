@@ -193,9 +193,9 @@ if __name__ == "__main__":
     ncols = 2
     domain = plot_utils.dicts('boundary', 'GLOBAL')
     load_table = '14WPR'
+    under_over = plot_utils.dicts('lowhigh', load_table)
     levels = plot_utils.dicts('anom_levels','Precip_AF')
     plot_title = ['NMME',  'NOAA-NMME', 'BCSD', 'AF10km']
-    under_over = ['black', '#B404AE']
     var_name = 'Precip_AF'
     stitle = var_name + ' Forecast'
     clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'

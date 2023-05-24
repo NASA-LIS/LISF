@@ -56,14 +56,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in config_["POST"]["metric_vars"]:
-        load_table = plot_utils.dicts('anom_tables', var_name)
-        if standardized_anomaly  == 'Y':            
-            levels = plot_utils.dicts('anom_levels', 'standardized')
-        else:
-            levels = plot_utils.dicts('anom_levels', var_name)
-            
-        under_over = ['black', '#B404AE']
-        
+        # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
@@ -71,6 +64,16 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             ldt_crop = plot_utils.crop(domain, ldt.lat, ldt.lon, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
+        # levels defaults 
+        if standardized_anomaly  == 'Y':            
+            levels = plot_utils.dicts('anom_levels', 'standardized')
+        else:
+            levels = plot_utils.dicts('anom_levels', var_name)
+
+        # colors defualts
+        load_table = plot_utils.dicts('anom_tables', var_name)   
+
+        # special cases
         if USAF_COLORS and standardized_anomaly is None:            
             if var_name in {'Air-T', 'Air_T'}:            
                 load_table = '14WT2M'
@@ -80,8 +83,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
                 load_table = '14WPR'
                 levels = plot_utils.dicts('anom_levels','Precip_AF')
 
-            if USAF_COLORS and standardized_anomaly is None:
-                under_over = ['gray', 'blue']
+        under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
