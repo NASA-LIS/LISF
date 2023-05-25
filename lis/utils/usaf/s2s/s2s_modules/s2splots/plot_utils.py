@@ -126,25 +126,25 @@ def cartopy_dir(data_dir):
     '''
     configuring cartopy
     '''
-    global bodr, coastlines, land, ocean, lakes, rivers
+    global BODR, COASTLINES, land, OCEAN, lakes, rivers
     if data_dir is not None:
         cartopy.config['data_dir'] = data_dir
 
-    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
+    BODR = cartopy.feature.NaturalEarthFeature(category='cultural',
                                                name='admin_0_boundary_lines_land',
                                                scale=RESOL, facecolor='none', alpha=0.7)
-    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+    COASTLINES = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
                                                      scale=RESOL, edgecolor='black',
                                                      facecolor='none')
     land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
                                                facecolor=cfeature.COLORS['land'])
-    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+    OCEAN = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
                                                 facecolor=cfeature.COLORS['water'])
     lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
                                                 facecolor=cfeature.COLORS['water'])
     rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
                                              scale=RESOL, edgecolor='b', facecolor='none')
-    
+
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -508,9 +508,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if (nplots - count_plot -1) < ncols:
             gl_.bottom_labels = True
         ax_.coastlines(alpha=0.1, zorder=3)
-        ax_.add_feature(ocean, linewidth=0.2, zorder=3 )
-        ax_.add_feature(coastlines, edgecolor='black', alpha=1, zorder=3)
-        ax_.add_feature(bodr, linestyle='--', edgecolor='k', alpha=1, zorder=3)        
+        ax_.add_feature(OCEAN, linewidth=0.2, zorder=3 )
+        ax_.add_feature(COASTLINES, edgecolor='black', alpha=1, zorder=3)
+        ax_.add_feature(BODR, linestyle='--', edgecolor='k', alpha=1, zorder=3)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
 
         cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
@@ -562,8 +562,7 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
-            if this_col < 0:
-                this_col = 0
+            this_col = max(this_col, 0)
             if this_col >= len(style_color):
                 this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.

@@ -116,7 +116,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in ['RootZone-SM', 'Surface-SM', 'Precip', 'Air-T']:
-        # Streamflow specifics         
+        # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
@@ -129,9 +129,9 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
             levels = plot_utils.dicts('anom_levels', 'standardized')
 
         # colors defualts
-        load_table = plot_utils.dicts('anom_tables', var_name)   
-        if USAF_COLORS and standardized_anomaly is None:            
-            if var_name in {'Air-T', 'Air_T'}:            
+        load_table = plot_utils.dicts('anom_tables', var_name)
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'Air-T', 'Air_T'}:  
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 

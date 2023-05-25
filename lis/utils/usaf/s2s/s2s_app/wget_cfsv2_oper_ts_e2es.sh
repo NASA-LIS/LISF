@@ -106,7 +106,6 @@ export E2ESROOT=`grep E2ESDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 
 if [ $DATATYPE == "hindcast" ]; then
     export E2ESDIR=`grep E2ESDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"
-    export LISDADIR=`grep LISDADIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 else
     export E2ESDIR=`grep E2ESDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 fi
@@ -161,24 +160,24 @@ echo " #########################################################################
 echo "                                  MISSING/CORRUPTED CFSv2 FILES                       " >> $CFSV2_LOG
 echo " #####################################################################################" >> $CFSV2_LOG
 echo "                         " >> $CFSV2_LOG
-echo "  Each missing or corrupted file needs a replacement file. CFSv2 replacement files are saved in:" >> $CFSV2_LOG
+echo "  A replacement file is required for each missing or corrupted file. CFSv2 replacement files are saved in:" >> $CFSV2_LOG
 echo "  ${patchdir}, "                   >> $CFSV2_LOG 
 echo "  and comma-delimited lines in:  " >> $CFSV2_LOG
 echo "  ${patchfile} "                   >> $CFSV2_LOG
-echo "  provide corresponding replacement file name for each bad file. The 3 columns in the table are:  " >> $CFSV2_LOG
+echo "  lists the replacement file names for each corrupted file. The table has three columns:  " >> $CFSV2_LOG
 echo "  YYYYMMDDHH, bad_file_name, replacement_file_name.     " >> $CFSV2_LOG
 echo "                         " >> $CFSV2_LOG
 echo " (1) cd ${patchdir}      " >> $CFSV2_LOG
-echo " (2) In the section below, each bad file name is followed by a list of wget commands to download a suitable replacement file in order of preference." >> $CFSV2_LOG
+echo " (2) Each problematic file name in the section below is followed by a list of wget commands to download a suitable replacement file in order of preference." >> $CFSV2_LOG
 echo "     Download the first suggested replacement file and add a new entry to: " >> $CFSV2_LOG
 echo "     ${patchfile} " >> $CFSV2_LOG
 echo " (3) Repeat the same procedure to download replacements and update: " >> $CFSV2_LOG
 echo "     ${patchfile} " >> $CFSV2_LOG
 echo "     for every missing/corrupted file." >> $CFSV2_LOG
-echo " (4) Kick off the forecast again: s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIGFILE" >> $CFSV2_LOG
-echo " (5) Should any of the replacement files turns out bad, you will be directed again to this file." >> $CFSV2_LOG
+echo " (4) Relaunch the forecast: s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIGFILE" >> $CFSV2_LOG
+echo " (5) If any of the replacement files fail, you will be redirected to this file." >> $CFSV2_LOG
 echo "     $CFSV2_LOG" >> $CFSV2_LOG
-echo " (6) You will repeat above (2) and (3) with a different replacement file for the original bad file.">> $CFSV2_LOG
+echo " (6) Repeat steps (2) and (3) using a different replacement file for the original bad file.">> $CFSV2_LOG
 echo "                         " >> $CFSV2_LOG
 
 # Loop over and download each date for given forecast initial date and cycle:
@@ -366,7 +365,12 @@ if [ $ret_code -gt 0 ]; then
 else
     echo "**************************************************************">> $CFSV2_LOG
     echo " SUCCESS ! All CFSv2 forcings files passed the file check."    >> $CFSV2_LOG
-    echo "**************************************************************">> $CFSV2_LOG 
+    echo "**************************************************************">> $CFSV2_LOG
+
+    echo "**************************************************************"
+    echo " SUCCESS ! All CFSv2 forcings files passed the file check."    
+    echo "**************************************************************"
+    
 fi  
 echo " -- Done downloading CFSv2 Reforecast files -- "
 exit $ret_code

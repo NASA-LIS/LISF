@@ -64,18 +64,18 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             ldt_crop = plot_utils.crop(domain, ldt.lat, ldt.lon, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
-        # levels defaults 
-        if standardized_anomaly  == 'Y':            
+        # levels defaults
+        if standardized_anomaly  == 'Y':
             levels = plot_utils.dicts('anom_levels', 'standardized')
         else:
             levels = plot_utils.dicts('anom_levels', var_name)
 
         # colors defualts
-        load_table = plot_utils.dicts('anom_tables', var_name)   
+        load_table = plot_utils.dicts('anom_tables', var_name)
 
         # special cases
-        if USAF_COLORS and standardized_anomaly is None:            
-            if var_name in {'Air-T', 'Air_T'}:            
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'Air-T', 'Air_T'}:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
