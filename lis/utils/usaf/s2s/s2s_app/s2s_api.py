@@ -1,13 +1,11 @@
 '''
 This script writes SLURM job files.
 '''
-import os
 import sys
 import argparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
-import xarray as xr
 import yaml
 #pylint: disable=wrong-import-position
 #pylint: disable=import-error
@@ -25,25 +23,26 @@ PARSER.add_argument('-s', '--SCHEDULE_FILE', required=False, help='schedule file
 PARSER.add_argument('-r', '--REPORT', required=False, help='print report')
 PARSER.add_argument('-d', '--YYYYMMDIR', required=False, help='yyyymm directory')
 PARSER.add_argument('-L', '--RUN_LIS', required=False, help='running LISF executables')
-PARSER.add_argument('-i', '--CFSV2_FILE', required=False, help='check whether CFSv2 forcing file is corrupted')
+PARSER.add_argument('-i', '--CFSV2_FILE', required=False, help='run CFSv2 file-checker')
 
 ARGS = PARSER.parse_args()
-REPORT = ARGS.REPORT
-if REPORT is not None:
-    CWD = ARGS.CWD
-    YYYYMMDIR = ARGS.YYYYMMDIR
-    utils.print_status_report (CWD, YYYYMMDIR)
-    sys.exit()
-
 if ARGS.CONFIGFILE is not None:
     CONFIGFILE = ARGS.CONFIGFILE
     with open(CONFIGFILE, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    
+
+REPORT = ARGS.REPORT
+if REPORT is not None:
+    from s2s_modules.shared import utils
+    CWD = ARGS.CWD
+    YYYYMMDIR = ARGS.YYYYMMDIR
+    utils.print_status_report (CWD, YYYYMMDIR)
+    sys.exit()
+
 if ARGS.CFSV2_FILE is not None:
-    from s2s_modules.bcsd_fcst.bcsd_library import convert_forecast_data_to_netcdf as cfdn    
-    ds = cfdn._wgrib2_to_netcdf(ARGS.CFSV2_FILE)
+    from s2s_modules.bcsd_fcst.bcsd_library import convert_forecast_data_to_netcdf as cfdn
+    ds = cfdn.wgrib2_to_netcdf(ARGS.CFSV2_FILE)
     date_str = np.datetime_as_string(ds['valid_time'][-1].values, unit='s')
     grib_lastdate = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
     fcst_lastdate = datetime.strptime(ARGS.YYYYMMDIR, "%Y%m") + relativedelta(months=9)
@@ -76,4 +75,3 @@ else:
     JOBNAME = ARGS.JOBNAME
     CWD = ARGS.CWD
     utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, str(HOURS), CWD)
-
