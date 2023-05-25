@@ -379,6 +379,7 @@ contains
          'ESMF_FieldGet failed for rainf in alltypes_irrigation')
 
     allocate(lcfrac(LIS_rc%nsurfacetypes))
+    lcfrac = LIS_rc%udef
 
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
@@ -398,37 +399,36 @@ contains
      ! Write out irrigation input rate (input /= irrigated for drip & flood)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGWATERINPUT,&
                value=irrigRate(t),unit="kg m-2 s-1",direction="-",vlevel=1)
-     ! additional fields for checking (time constant fields)
+     ! irrigation rate by type
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGSCALE,&
                value=irrigScale(t),unit="-",direction="-",vlevel=1)
          if ( irrigType(t) .eq. 1 ) then  ! sprinkler
-           itype1 = 1.0
+           itype1 = irrigAppRate(t)
            itype2 = 0.0
            itype3 = 0.0
          elseif ( irrigType(t) .eq. 2 ) then  ! drip
            itype1 = 0.0
-           itype2 = 1.0
+           itype2 = irrigAppRate(t)
            itype3 = 0.0
          elseif ( irrigType(t) .eq. 3 ) then  ! flood
            itype1 = 0.0
            itype2 = 0.0
-           itype3 = 1.0
+           itype3 = irrigAppRate(t)
          else
            itype1 = 0.0
            itype2 = 0.0
            itype3 = 0.0
          endif
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGTSP,&
-               value=itype1,unit="-",direction="-",vlevel=1)
+               value=itype1,unit="kg m-2 s-1",direction="-",vlevel=1)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGTDP,&
-               value=itype2,unit="-",direction="-",vlevel=1)
+               value=itype2,unit="kg m-2 s-1",direction="-",vlevel=1)
          call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRIGTFD,&
-               value=itype3,unit="-",direction="-",vlevel=1)
+               value=itype3,unit="kg m-2 s-1",direction="-",vlevel=1)
          ! 3D land cover fractions 
          i = LIS_domain(n)%tile(t)%vegt
          row = LIS_domain(n)%tile(t)%row
          col = lIS_domain(n)%tile(t)%col
-         lcfrac = LIS_rc%udef
          lcfrac(i) = LIS_LMLC(n)%landcover(col, row, i)
 ! limit printing this out to frst time stemp
 !         write(*,101) t,i,col,row,lcfrac(i),irrigType(t),irrigScale(t),&
@@ -439,6 +439,9 @@ contains
           call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRLCFRAC,&
                vlevel=k,value=lcfrac(k),unit="-",direction="-")
          enddo
+     ! NEW! paddy fraction (time constant fields)
+         call LIS_diagnoseIrrigationOutputVar(n,t,LIS_MOC_IRRPADDY,&
+               value=LIS_irrig_struc(n)%paddyf(t),unit="-",direction="-",vlevel=1)
 
     enddo   ! t
     deallocate(lcfrac)

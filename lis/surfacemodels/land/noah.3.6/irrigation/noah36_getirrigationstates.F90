@@ -20,6 +20,8 @@ subroutine noah36_getirrigationstates(nest,irrigState)
   use ESMF
   use LIS_coreMod
   use LIS_logMod
+  use LIS_FORC_AttributesMod
+  use LIS_metforcingMod, only : LIS_FORC_State
   use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use noah36_lsmMod
   use LIS_irrigationMod
@@ -56,6 +58,9 @@ subroutine noah36_getirrigationstates(nest,irrigState)
 ! Dec 2021: Sarith Mahanama; Separated into general irrigation model and LSM 
 !                            dependant components.
 ! Feb 2022: Hiroko Beaudoing; Added irrigation application section.
+! May 2023: Hiroko Beaudoing; Adopted Wanshu's implementations in NoahMP4.0.1 
+!                             using ensemble mean when running with DA
+!                             for frozen soil temperature check.
 !                             
 !EOP
   implicit none
@@ -71,8 +76,15 @@ subroutine noah36_getirrigationstates(nest,irrigState)
   integer              :: lroot,veg_index1,veg_index2, nlctypes
   integer              :: croptype
   real                 :: gsthresh
-  logical              :: irrig_check_frozen_soil
   real                 :: amount,added,totamount
+  integer              :: i, m
+  real                 :: tempcheck
+  real                 :: sfctmp
+  real                 :: sfctemp_avg
+  real                 :: shdfac_avg
+  type(ESMF_Field)   :: tmpField
+  real,pointer       :: tmp(:)
+  integer            :: status
   type(irrigation_model) :: IM 
 
   ! _______________________________________________________
@@ -95,40 +107,51 @@ subroutine noah36_getirrigationstates(nest,irrigState)
   zdpth(3) = sldpth(1) + sldpth(2) + sldpth(3)
   zdpth(4) = sldpth(1) + sldpth(2) + sldpth(3) + sldpth(4)
   
+  ! Set frozen soil temperature threshold (currently experimental at 2.5 C)
+  tempcheck = 273.16 + 2.5
+
+  call ESMF_StateGet(LIS_FORC_State(nest),(LIS_FORC_Tair%varname(1)),tmpField,&
+       rc=status)
+  call LIS_verify(status,'noah36_getirrigationstates: error getting Tair')
+  call ESMF_FieldGet(tmpField, localDE=0, farrayPtr= tmp,rc=status)
+  call LIS_verify(status,'noah36_getirrigationstates: error retrieving tmp')
+
   !---------------------------------------------------------------
   ! Main tile loop
   !---------------------------------------------------------------
-  
-  TILE_LOOP: do TileNo = 1,LIS_rc%npatch(nest,LIS_rc%lsm_index)
-     
-     gid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%index
-     tid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%tile_id
 
-     ! frozen tile check
-     irrig_check_frozen_soil = .false.
-     
-     if((noah36_struc(nest)%noah(TileNo)%smc(1) - &
-          noah36_struc(nest)%noah(TileNo)%sh2o(1)).gt.0.0001) then 
-        irrig_check_frozen_soil = .true. 
-     elseif((noah36_struc(nest)%noah(TileNo)%smc(2) - &
-          noah36_struc(nest)%noah(TileNo)%sh2o(2)).gt.0.0001) then 
-        irrig_check_frozen_soil = .true. 
-     elseif((noah36_struc(nest)%noah(TileNo)%smc(3) - &
-          noah36_struc(nest)%noah(TileNo)%sh2o(3)).gt.0.0001) then 
-        irrig_check_frozen_soil = .true. 
-     elseif((noah36_struc(nest)%noah(TileNo)%smc(4) - &
-          noah36_struc(nest)%noah(TileNo)%sh2o(4)).gt.0.0001) then 
-        irrig_check_frozen_soil = .true. 
-     elseif(noah36_struc(nest)%noah(TileNo)%stc(2).le.LIS_CONST_TKFRZ) then
-        irrig_check_frozen_soil = .true. 
-     elseif(noah36_struc(nest)%noah(TileNo)%stc(3).le.LIS_CONST_TKFRZ) then
-        irrig_check_frozen_soil = .true. 
-     elseif(noah36_struc(nest)%noah(TileNo)%stc(4).le.LIS_CONST_TKFRZ) then
-        irrig_check_frozen_soil = .true. 
-     endif
-     
-     ! Process only non-frozen tiles
-     FROZEN: if(.not.irrig_check_frozen_soil) then
+  TILE_LOOP: do i=1,LIS_rc%npatch(nest,LIS_rc%lsm_index)/LIS_rc%nensem(nest)
+
+     sfctemp_avg = 0.
+     shdfac_avg  = 0.
+
+     do m=1,LIS_rc%nensem(nest)
+
+        TileNo=(i-1)*LIS_rc%nensem(nest)+m
+ 
+        if ( tmp(TileNo) .gt. 330 ) then
+        !HKB: commented out below because forc_count is zero before calling noah36_f2t.
+        !tair needs to be divided by forc_count if using more than one forcing sources (i.e. tair is a sum)
+        !sfctmp = noah36_struc(nest)%noah(TileNo)%tair/noah36_struc(nest)%forc_count
+         write(LIS_logunit, *) "[ERR] need to account for forc_count stopping"
+                call LIS_endrun()
+        endif
+        sfctemp_avg=sfctemp_avg+tmp(TileNo)
+        shdfac_avg=shdfac_avg+noah36_struc(nest)%noah(TileNo)%shdfac
+
+     end do
+
+     sfctemp_avg=sfctemp_avg/LIS_rc%nensem(nest)
+     shdfac_avg=shdfac_avg/LIS_rc%nensem(nest)
+
+     ENS_LOOP: do m=1,LIS_rc%nensem(nest)
+
+       TileNo = (i-1)*LIS_rc%nensem(nest)+m 
+       gid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%index
+       tid = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%tile_id
+
+       ! Process only non-frozen tiles
+       FROZEN: if(sfctemp_avg.gt.tempcheck) then
         
         ! Process only irrigated tiles
         IRRF: if(IM%irrigFrac(TileNo).gt.0) then
@@ -215,12 +238,15 @@ subroutine noah36_getirrigationstates(nest,irrigState)
               endif VEGIF
            endif IRRS
         endif IRRF
-     endif FROZEN
+       endif FROZEN
+    end do ENS_LOOP
   end do TILE_LOOP
 
   ! Update land surface model's moisture state
   ! ------------------------------------------
-  TILE_LOOP2: do TileNo = 1,LIS_rc%npatch(nest,LIS_rc%lsm_index)
+  TILE_LOOP2: do i=1,LIS_rc%npatch(nest,LIS_rc%lsm_index)/LIS_rc%nensem(nest)
+   ENS_LOOP2: do m=1,LIS_rc%nensem(nest)
+        TileNo = (i-1)*LIS_rc%nensem(nest)+m 
         vegt = LIS_surface(nest,LIS_rc%lsm_index)%tile(TileNo)%vegt  
         croptype = vegt - nlctypes
         ! Process only irrigated tiles
@@ -291,6 +317,7 @@ subroutine noah36_getirrigationstates(nest,irrigState)
               endif   IRRON
            endif IRRS2
         endif IRRF2
+   end do ENS_LOOP2
   end do TILE_LOOP2
     
 end subroutine noah36_getirrigationstates

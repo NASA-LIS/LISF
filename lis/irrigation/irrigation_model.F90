@@ -92,6 +92,7 @@
 !                             Flood assumes furrow field, thus rate is cut by a half.
 !                             Pass TileNo to trigger and rate subtourines for easier
 !                             debugging.
+! May 2023: Hiroko Beaudoing; Fixed a bug in the schedule option for sprinkler
 
 !EOP
 
@@ -145,8 +146,9 @@ contains
     type(ESMF_State)                        :: irrigState
     type(ESMF_Field)                        :: irrigRateField,irrigFracField,irrigTypeField,prcpField
     type(ESMF_Field)                        :: irrigRootDepthField,irrigScaleField,irriggwratioField
-    type(ESMF_Field)                        :: irrigScheduleTimerField,irrigScheduleStartField
     type(ESMF_Field)                        :: irrigAppRateField
+    type(ESMF_Field)                        :: irrigScheduleTimerField
+    type(ESMF_Field)                        :: irrigScheduleStartField
     integer                                 :: rc
     
     call ESMF_StateGet(irrigState, "Irrigation rate",irrigRateField,rc=rc)
@@ -285,6 +287,13 @@ contains
         TileNo,tsmcref,tsmcwlt,IM%IrrigScale(TileNo),size(rdpth),rdpth(:)
        !call LIS_endrun()
        endif
+    endif
+    LIS_irrig_struc(nest)%irrigma(TileNo) = ma
+    if(croptype == LIS_rc%ricecrop .and. &
+                 IM%irrigType(TileNo) == 3 ) then
+          LIS_irrig_struc(nest)%paddyf(TileNo) = 1.0   ! save paddy flag
+    else
+          LIS_irrig_struc(nest)%paddyf(TileNo) = 0.0   ! save paddy flag
     endif
 
     ! --------
@@ -508,12 +517,7 @@ contains
               ! is it during the revolution?
               if ( timer <= sprinklerFreq ) then
                 timer = timer + LIS_rc%ts
-                ! keep irrigStartTime unchanged
-                if ( curtime < H2 ) then 
                   sprinklerOn = .true.
-                else
-                  sprinklerOn = .false.
-                endif
               else
                 timer = -1
                 irrigStartTime = -1
@@ -534,11 +538,7 @@ contains
             if ( timer <= sprinklerFreq .and. timer .gt. -1.0 ) then
               timer = timer + LIS_rc%ts
               ! keep irrigStartTime unchanged
-              if ( curtime < H2 ) then 
                 sprinklerOn = .true.
-              else
-                sprinklerOn = .false.
-              endif
             else
               timer = -1
               irrigStartTime = -1
@@ -569,7 +569,8 @@ contains
              else
                irrigStart = .false.
              endif
-           elseif( ma > 0.99 ) then ! at field capacity, shut off
+!           elseif( ma > 0.99 ) then ! at field capacity, shut off
+           elseif( ma > 0.90 ) then ! at field capacity, shut off
              dripOn = .false.
              irrigStart = .false.
            else
@@ -597,7 +598,7 @@ contains
             call LIS_time2date(irrigStartTime,doy,gmt,yr,mo,da,hr,mn)
             irrDays = int(timer/86400.)
             ! duration in sec
-            duration = LIS_irrig_struc(nest)%flood_duration * 3600. + &
+            duration = LIS_irrig_struc(nest)%drip_duration * 3600. + &
                        irrDays * 86400.
             ss=0
          endif

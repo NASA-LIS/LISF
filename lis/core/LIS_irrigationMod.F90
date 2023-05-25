@@ -86,6 +86,8 @@ module LIS_irrigationMod
      real               :: flood_rate
      real               :: flood_frequency
      character*50       :: soiltextscheme
+     real, allocatable  :: irrigma(:)   ! moisture availability
+     real, allocatable  :: paddyf(:)    ! paddy flag
 
   end type irrig_type_dec
 
@@ -332,6 +334,11 @@ contains
           LIS_irrig_struc(n)%plantDay = 0.0
           LIS_irrig_struc(n)%harvestDay = 0.0
        endif
+!HKB save moisture avaiability
+          allocate(LIS_irrig_struc(n)%irrigma(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+          LIS_irrig_struc(n)%irrigma = 0.0
+          allocate(LIS_irrig_struc(n)%paddyf(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+          LIS_irrig_struc(n)%paddyf = 0.0
      enddo    ! n
          
      ! Register irrigation output interval:
