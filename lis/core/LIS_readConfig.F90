@@ -467,6 +467,22 @@ subroutine LIS_readConfig()
        label="Output naming style:",&
        rc=rc)
   call LIS_verify(rc,'Output naming style: not defined')
+  !EMK Extra info required
+  if (LIS_rc%wstyle == "557WW streamflow convention") then
+     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%security_class, &
+          label="AGRMET security classification:", rc=rc)
+     call LIS_verify(rc, 'AGRMET security classification: option not specified in the config file')
+     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%distribution_class, &
+          label="AGRMET distribution classification:", rc=rc)
+     call LIS_verify(rc, 'AGRMET distribution classification: option not specified in the config file')
+     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%data_category, &
+          label="AGRMET data category:", rc=rc)
+     call LIS_verify(rc, 'AGRMET data category: option not specified in the config file')
+     call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%area_of_data, &
+          label="AGRMET area of data:", rc=rc)
+     call LIS_verify(rc, 'AGRMET area of data: option not specified in the config file')
+  endif
+
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%sout,&
        label="Enable output statistics:",default=.false.,&
        rc=rc)
@@ -754,11 +770,12 @@ subroutine LIS_readConfig()
   
   call LIS_parseTimeString(time,LIS_rc%pertrestartInterval)
 
-  if(npert_forc.ne.0.or.npert_state.ne.0) then 
-     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
-          label="Apply perturbation bias correction:",rc=rc)
-     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
-  endif
+  LIS_rc%pert_bias_corr = 1
+!  if(npert_forc.ne.0.or.npert_state.ne.0) then 
+!     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
+!          label="Apply perturbation bias correction:",rc=rc)
+!     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
+!  endif
 
 !  if(npert_forc.ne.0.or.npert_state.ne.0.or.npert_obs.ne.0) then 
   call ESMF_ConfigFindLabel(LIS_config,"Perturbations restart filename:",rc=rc)

@@ -351,6 +351,7 @@ Acceptable values for the sources are:
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
 |"`MERRA2`"                    | MERRA2
+|"`GEOS-IT`"                   | GEOS-IT
 |"`CMAP`"                      | CMAP
 |"`TRMM 3B42RT`"               | TRMM 3B42RT
 |"`TRMM 3B42RTV7`"             | TRMM 3B42RTV7
@@ -632,12 +633,37 @@ Acceptable values are:
 |"`3 level hierarchy`" | 3 levels of hierarchy
 |"`4 level hierarchy`" | 4 levels of hierarchy
 |"`WMO convention`"    | WMO convention for weather codes
+|"`557WW streamflow convention`" | 557WW convention for streamflow output
 |====
-
 .Example _lis.config_ entry
 ....
 Output naming style: "3 level hierarchy"
 ....
+
+[NOTE]
+====
+The "`557WW streamflow convention`" has 4 additional settings:
+
+`AGRMET security classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET distribution classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET data category:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+`AGRMET area of data:` used with 557WW streamflow convention or AGRMET Ops runmode.
+
+See Section <<sssec_forcings_afwa,AFWA/AGRMET>> for more information.
+
+.Example _lis.config_ entry
+....
+Output naming style: "557WW streamflow convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               ANLYS
+AGRMET area of data:                GLOBAL
+....
+====
+
 
 `Enable output statistics:` specifies whether to write the ASCII
 statistics file for the output data.
@@ -5580,7 +5606,6 @@ GFS domain y-dimension size:      256
 GFS number of forcing variables:  10
 ....
 
-
 [[sssec_forcings_MERRA2,MERRA2]]
 ==== MERRA2
 
@@ -5634,6 +5659,50 @@ MERRA2 forcing directory:              ./MERRA2/
 MERRA2 use lowest model level forcing:     1
 MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
+....
+
+[[sssec_forcings_GEOS-IT,GEOS-IT]]
+==== GEOS-IT
+
+`GEOS-IT forcing directory:` specifies the location of
+the GEOS-IT forcing files.
+
+Please note that GEOS-IT is currently in production and is
+not complete for all calendar years.  Also, it is not yet
+available outside of NASA`'s NCCS computing platforms.
+Also, the topographic or elevation correction option is
+supported through the MERRA-2 geopotential terrain height
+file.  Please also see the latest LDT notes for updates on
+how to use this option.
+
+`GEOS-IT use lowest model level forcing:` specifies whether
+to use the lowest model level forcing.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the lowest model level forcing.
+|1     | Use the lowest model level forcing.
+|====
+
+`GEOS-IT use 2m wind fields:` specifies whether to use the
+2m diagnosed wind fields.  This option will only work if
+the lowest model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the 2m diagnosed wind speed fields.
+|1     | Use the 2m diagnosed wind speed fields.
+|====
+
+.Example _lis.config_ entry
+....
+GEOS-IT forcing directory:                  ./GEOS-IT
+GEOS-IT use lowest model level forcing:     1
+GEOS-IT use 2m wind fields:                 0 
 ....
 
 [[sssec_forcings_ERA5,ERA5]]

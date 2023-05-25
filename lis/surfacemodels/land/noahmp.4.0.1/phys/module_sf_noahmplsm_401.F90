@@ -1101,7 +1101,12 @@ ENDIF   ! CROPTYPE == 0
 
      IF(parameters%HVT> 0. .AND. parameters%HVT <= 1.0) THEN          !MB: change to 1.0 and 0.2 to reflect
        SNOWHC = parameters%HVT*EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
+       IF(SNOWHC>1.E-06) THEN      !Wanshu: avoid very small SNOWHC induced floating invalid
        FB     = MIN(SNOWH,SNOWHC)/SNOWHC
+       ELSE
+       !print *,"small snowh in phenology=",snowh
+       FB = 1
+       END IF
      ENDIF
 
      ELAI =  LAI*(1.-FB)
@@ -1824,7 +1829,12 @@ ENDIF   ! CROPTYPE == 0
      IF(SNOWH.GT.0.)  THEN       
          BDSNO    = SNEQV / SNOWH
          FMELT    = (BDSNO/100.)**parameters%MFSNO
+         if (FMELT<0.000001) then !Bailing Li, added this for GRACE DA to catch smaller values
+         FSNO = 1
+         !print *,"small FMELT due to snowh,fmelt,bdsno,para_mfsno",snowh,fmelt,bdsno,parameters%MFSNO
+         else
          FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))
+         end if
      ENDIF
 
 ! ground roughness length

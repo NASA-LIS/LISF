@@ -1,0 +1,139 @@
+#!/bin/bash
+
+SELF=$(readlink -f "${0}")
+HERE=${SELF%/*}
+
+LISF_LIBS_OPENJPEG=${HERE}/usr/lib/openjpeg/2.4.0_gnu-11.2.0
+LISF_LIBS_ECCODES=${HERE}/usr/lib/eccodes/2.22.0_gnu-11.2.0
+LISF_LIBS_NETCDF=${HERE}/usr/lib/netcdf/4.7.4_gnu-11.2.0
+LISF_LIBS_HDF4=${HERE}/usr/lib/hdf4/4.2.15_gnu-11.2.0
+LISF_LIBS_HDFEOS=${HERE}/usr/lib/hdfeos2/3.0_gnu-11.2.0
+LISF_LIBS_HDF5=${HERE}/usr/lib/hdf5/1.12.0_gnu-11.2.0
+LISF_LIBS_ESMF=${HERE}/usr/lib/esmf/8.1.1_gnu-11.2.0_mpich-3.4
+LISF_LIBS_GDAL=${HERE}/usr/lib/gdal/3.5.2_gnu-11.2.0
+LISF_LIBS_FORTRANGIS=${HERE}/usr/lib/fortrangis/2.6-6_gnu-11.2.0
+LISF_LIBS_LIBGEOTIFF=${HERE}/usr/lib/geotiff/1.7.0_gnu-11.2.0
+LISF_LIBS_PROJ=${HERE}/usr/lib/proj/9.1.0_gnu-11.2.0
+LISF_LIBS_TIFF=${HERE}/usr/lib/tiff/4.0.9_gnu-11.2.0
+
+LISF_LIBS_PATH=""
+LISF_LIBS_PATH+=":${LISF_LIBS_ECCODES}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_NETCDF}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_ESMF}/lib/libO/Linux.gfortran.64.mpich3.default"
+LISF_LIBS_PATH+=":${LISF_LIBS_HDF5}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_HDF4}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_GDAL}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_LIBGEOTIFF}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_FORTRANGIS}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_OPENJPEG}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_PROJ}/lib"
+LISF_LIBS_PATH+=":${LISF_LIBS_TIFF}/lib"
+export LISF_LIBS_PATH
+
+export LANG=C
+export LD_LIBRARY_PATH=${LISF_LIBS_PATH}:${LD_LIBRARY_PATH}
+export ECCODES_DEFINITION_PATH=${LISF_LIBS_ECCODES}/share/eccodes/definitions
+export ECCODES_SAMPLES_PATH=${LISF_LIBS_ECCODES}/share/eccodes/samples
+
+export PATH=${HERE}/usr/bin:${PATH}
+
+function lisf_usage {
+   NAME="LISF-x86_64.AppImage"
+   echo "Usage: $NAME [options] [-- LISF options]"
+   echo ""
+   echo "   where [options] are:"
+   echo "   -h               show this help message"
+   echo "   -v               show revision info about LISF"
+   echo "   -i               show configuration info about LISF"
+   echo "   -a <LDT|LIS|LVT> specify which app to run"
+   echo ""
+   echo "   where [LISF options] are options to pass to LISF;"
+   echo "   these must be preceeded by --"
+   echo ""
+   echo "   Examples:"
+   echo "      $NAME -a LDT ldt.config"
+   echo "      mpirun -n N $NAME -a LIS -- --file lis.config"
+   echo "      $NAME -a LVT lvt.config"
+}
+
+function lisf_version {
+   echo "## Revision info"
+   echo ""
+   cat "${HERE}/info/revision.log"
+}
+
+function lisf_info {
+   lisf_version
+   echo ""
+   echo "## LDT info"
+   echo ""
+   echo "### LDT_NetCDF_inc.h"
+   cat "${HERE}/info/ldt/LDT_NetCDF_inc.h"
+   echo ""
+   echo "### LDT_misc.h"
+   cat "${HERE}/info/ldt/LDT_misc.h"
+   echo ""
+   echo "### configure.ldt"
+   cat "${HERE}/info/ldt/configure.ldt"
+   echo ""
+   echo "## LIS info"
+   echo ""
+   echo "### LIS_NetCDF_inc.h"
+   cat "${HERE}/info/lis/LIS_NetCDF_inc.h"
+   echo ""
+   echo "### LIS_misc.h"
+   cat "${HERE}/info/lis/LIS_misc.h"
+   echo ""
+   echo "### LIS_plugins.h"
+   cat "${HERE}/info/lis/LIS_plugins.h"
+   echo ""
+   echo "### configure.lis"
+   cat "${HERE}/info/lis/configure.lis"
+   echo ""
+   echo "## LVT info"
+   echo ""
+   echo "### LVT_misc.h"
+   cat "${HERE}/info/lvt/LVT_NetCDF_inc.h"
+   echo ""
+   echo "### LVT_misc.h"
+   cat "${HERE}/info/lvt/LVT_misc.h"
+   echo ""
+   echo "### configure.lvt"
+   cat "${HERE}/info/lvt/configure.lvt"
+}
+
+if [[ ${#} -eq 0 ]]
+then
+   lisf_usage
+fi
+
+optstring=":hvia:"
+while getopts ${optstring} arg
+do
+   case ${arg} in
+      h)
+         lisf_usage
+         exit 0
+         ;;
+      v)
+         lisf_version
+         exit 0
+         ;;
+      i)
+         lisf_info
+         exit 0
+         ;;
+      a)
+         APP="${OPTARG}"
+         ;;
+      ?)
+         echo "Invalid option: -${OPTARG}"
+         echo ""
+         lisf_usage
+         exit 1
+         ;;
+   esac
+done
+
+shift $((${OPTIND} - 1))
+exec "${HERE}/usr/bin/${APP}" "${@}"
