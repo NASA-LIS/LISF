@@ -35,6 +35,8 @@
 # 06 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
 # 16 May 2023:  Eric Kemp (SSAI), updates to use 557 WW file convention for
 #               output.
+# 02 Jun 2023:  Eric Kemp (SSAI), further updates for 557 WW file
+#               convention for output.
 #
 #------------------------------------------------------------------------------
 """
@@ -61,6 +63,14 @@ _SOIL_LAYERS = {
     "JULES" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
 }
 
+_557WW_SOIL_LAYERS = {
+    "NOAH" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+              "D100CM-D200CM"],
+    "NOAHMP" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                "D100CM-D200CM"],
+    "JULES" : ["D0CM-D10CM", "D10CM-D35CM", "D35CM-D100CM",
+                "D100CM-D300CM"],
+}
 
 def _usage():
     """Print command line usage."""
@@ -176,7 +186,8 @@ def _make_outfile_anomaly(lsm, i, yyyymmddhh):
     filename = "PS.557WW_SC.U_DI.C"
     filename += f"_GP.LIS-{lsm}"
     filename += "_GR.C0P09DEG_AR.GLOBAL"
-    filename += f"_PA.LIS-SM-ANOMALY-LAYER{i+1}"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_PA.SM-ANOMALY"
     filename += f"_DD.{yyyymmddhh[0:8]}"
     filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
     return filename
@@ -212,12 +223,13 @@ def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
 
 def _make_outfile_climo(lsm, i, month, yyyymmddhh):
     """Create climatology filename"""
-    filename = "PS.557WW_SC.U_DI.C"
+    filename = "PS.557WW_SC.U_DI.C_DC.CLIMO"
     filename += f"_GP.LIS-{lsm}"
     filename += "_GR.C0P09DEG_AR.GLOBAL"
-    filename += f"_PA.LIS-SM-CLIMO-{month}-LAYER{i+1}"
-    filename += f"_DD.{yyyymmddhh[0:8]}"
-    filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_PA.SM-{month}"
+    filename += f"_DP.20080101-{yyyymmddhh[0:8]}"
+    filename += f"_DF.TIF"
     return filename
 
 def _proc_sm_climo(cmd_args, longitudes, latitudes):
