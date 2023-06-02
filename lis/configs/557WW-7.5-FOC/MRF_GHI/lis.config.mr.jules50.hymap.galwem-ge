@@ -22,7 +22,7 @@ Forcing variables list file:            ./input/forcing_variables.txt
 Output methodology:                     "2d ensemble gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
-Output naming style:                    "557WW streamflow convention"
+Output naming style:      "557WW medium range forecast convention"
 AGRMET security classification:            U
 AGRMET distribution classification:        C
 AGRMET data category:                      FCST
