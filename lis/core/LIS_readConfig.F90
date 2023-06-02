@@ -468,7 +468,8 @@ subroutine LIS_readConfig()
        rc=rc)
   call LIS_verify(rc,'Output naming style: not defined')
   !EMK Extra info required
-  if (LIS_rc%wstyle == "557WW streamflow convention") then
+  if (LIS_rc%wstyle == "557WW streamflow convention" .or. &
+       LIS_rc%wstyle == "557WW medium range forecast convention") then
      call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%security_class, &
           label="AGRMET security classification:", rc=rc)
      call LIS_verify(rc, 'AGRMET security classification: option not specified in the config file')
