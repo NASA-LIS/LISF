@@ -738,7 +738,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       dname = trim(dname) &
            //'_GR.'//trim(fproj)//trim(fres2) &
            //'_AR.'//trim(LIS_rc%area_of_data) &
-           //'_PA.'//'LIS-'//trim(model_name) &
+           //'_PA.'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
@@ -755,7 +755,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       case ("grib1")
          out_fname = trim(dname)//'.GR1'
       case ("netcdf")
-         out_fname = trim(dname)//'.nc'
+         out_fname = trim(dname)//'.NC'
       case ("grib2")
          out_fname = trim(dname)//'.GR2'
       case default            
@@ -1285,7 +1285,7 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       dname = trim(dname) &
            //'_GR.'//trim(fproj)//trim(fres2) &
            //'_AR.'//trim(LIS_rc%area_of_data) &
-           //'_PA.'//'LIS-'//trim(model_name) &
+           //'_PA.'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
@@ -1302,7 +1302,7 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       case ("grib1")
          out_fname = trim(dname)//'.GR1'
       case ("netcdf")
-         out_fname = trim(dname)//'.nc'
+         out_fname = trim(dname)//'.NC'
       case ("grib2")
          out_fname = trim(dname)//'.GR2'
       case default
