@@ -22,7 +22,7 @@ Forcing variables list file:            ./input/forcing_variables.txt
 Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
-Output naming style:                    "3 level hierarchy"
+Output naming style:         "557WW medium range forecast convention"
 Start mode:                             restart
 Starting year:                          2022
 Starting month:                            8
@@ -32,9 +32,9 @@ Starting minute:                           0
 Starting second:                           0
 Ending year:                            2022
 Ending month:                              8
-Ending day:                               28
-Ending hour:                              23
-Ending minute:                            45
+Ending day:                               29
+Ending hour:                               0
+Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
 Output directory:                       "output/2022082300Z/hymap/noahmp401/"
