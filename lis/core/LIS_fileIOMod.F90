@@ -749,7 +749,7 @@ subroutine create_output_filename(n, fname, model_name, odir, writeint)
       dname = trim(dname) &
            //'_GR.'//trim(fproj)//trim(fres2) &
            //'_AR.'//trim(LIS_rc%area_of_data) &
-           //'_PA.'//'LIS-'//trim(model_name) &
+           //'_PA.'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
@@ -1441,7 +1441,7 @@ subroutine create_output_filename_expected(n, fname, wout, flag, model_name, odi
       dname = trim(dname) &
            //'_GR.'//trim(fproj)//trim(fres2) &
            //'_AR.'//trim(LIS_rc%area_of_data) &
-           //'_PA.'//'LIS-'//trim(model_name) &
+           //'_PA.'//trim(model_name) &
            //'_DD.'//trim(cdate1) &
            //'_DT.'//trim(cdate) &
            //'_DF'
