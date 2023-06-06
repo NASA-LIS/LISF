@@ -138,7 +138,7 @@ ulimit -s unlimited
   echo ""
 
   # Make local year directory to download files into:
-  mon=$((mon+0))
+  mon=$(expr "$mon" + 0)
   if [ $mon -lt 10 ]; then
       mon="0"$mon
   else

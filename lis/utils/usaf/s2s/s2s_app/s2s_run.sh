@@ -809,7 +809,7 @@ s2spost(){
 	else
 	    /bin/ln -s ${E2ESDIR}/s2spost/${YYYY}${MM}/$model
 	fi
-	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
+	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
     done
     
     job_list=`ls $jobname*.j`
