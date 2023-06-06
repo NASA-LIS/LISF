@@ -1,6 +1,7 @@
 ! PET from Sujay has been added by Shugong 08/31/2021
 MODULE MODULE_SF_NOAHMPLSM_401
 
+  use LIS_coreMod
   use module_sf_gecros_401, only : gecros
 
   IMPLICIT NONE
@@ -688,7 +689,7 @@ contains
            DZSNSO(IZ) = - ZSNSO(IZ)
          ELSE
            DZSNSO(IZ) = ZSNSO(IZ-1) - ZSNSO(IZ)
-         END IF
+        END IF
      END DO
 
 ! root-zone temperature
@@ -740,6 +741,14 @@ contains
                      QINTR  ,QDRIPR ,QTHROR ,QINTS  ,QDRIPS ,QTHROS , & !out
                      PAHV   ,PAHG   ,PAHB   ,QRAIN  ,QSNOW  ,SNOWHIN, & !out
 	             FWET   ,CMC                                    )   !out
+
+    ! KRA ADDED HERE THIS CHECK FOR VALUES BEFORE CALL TO ENERGY ...
+    IF(SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN  
+      SNOWH = 0.0
+      SNEQV = 0.0
+    END IF
+    ! KRA
+
 
 ! compute energy budget (momentum & energy fluxes and phase changes) 
 
@@ -915,6 +924,10 @@ contains
   REAL                                        :: PRCP_FROZEN   !total frozen precipitation [mm/s] ! MB/AN : v3.7
   REAL, PARAMETER                             :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
   REAL, PARAMETER                             :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
+! JP added for new precip partitioning
+  REAL, PARAMETER                             :: TAIR_C_CENTER = 274.26 ! center temperature where FPICE = 0.5
+  REAL, PARAMETER                             :: SLP = -0.30 ! change in FPICE per degree-change
+  REAL                                        :: BINT !y-intercept, relationship btween air temperature and FPICE
 ! --------------------------------------------------------------------------------------------------
 
 !jref: seems like PAIR should be P1000mb??
@@ -985,6 +998,17 @@ contains
        ELSE
            FPICE = 1.0
        ENDIF
+     ENDIF
+
+     ! JP -- Adding precip partitioning option
+     ! Linear fit to Dai (2008), used in Liston's SnowModel
+     IF(OPT_SNF == 5) THEN
+     ! intercept, where 0.5 is the fraction for TAIR_C_CENTER
+       BINT = 0.5 - SLP * TAIR_C_CENTER
+     ! solve the equation in form y=mx+b
+       FPICE = SLP * SFCTMP + BINT
+       FPICE = MAX(0.0,FPICE)
+       FPICE = MIN(1.0,FPICE)
      ENDIF
 
 ! Hedstrom NR and JW Pomeroy (1998), Hydrol. Processes, 12, 1611-1625
@@ -1100,13 +1124,12 @@ ENDIF   ! CROPTYPE == 0
      FB = DB / MAX(1.E-06,parameters%HVT-parameters%HVB)
 
      IF(parameters%HVT> 0. .AND. parameters%HVT <= 1.0) THEN          !MB: change to 1.0 and 0.2 to reflect
-       SNOWHC = parameters%HVT*EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
-       IF(SNOWHC>1.E-06) THEN      !Wanshu: avoid very small SNOWHC induced floating invalid
-       FB     = MIN(SNOWH,SNOWHC)/SNOWHC
-       ELSE
-       !print *,"small snowh in phenology=",snowh
-       FB = 1
-       END IF
+        SNOWHC = parameters%HVT*EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
+        if(snowh.lt.5) then 
+           FB     = MIN(SNOWH,SNOWHC)/SNOWHC
+        else
+           FB = 1.0
+        endif
      ENDIF
 
      ELAI =  LAI*(1.-FB)
@@ -1826,15 +1849,11 @@ ENDIF   ! CROPTYPE == 0
 ! ground snow cover fraction [Niu and Yang, 2007, JGR]
 
      FSNO = 0.
-     IF(SNOWH.GT.0.)  THEN       
+!     IF(SNOWH.GT.0.)  THEN       
+     IF(SNOWH.GT.(0.001))  THEN  ! Update by KRA when have very small snowdepth values
          BDSNO    = SNEQV / SNOWH
          FMELT    = (BDSNO/100.)**parameters%MFSNO
-         if (FMELT<0.000001) then !Bailing Li, added this for GRACE DA to catch smaller values
-         FSNO = 1
-         !print *,"small FMELT due to snowh,fmelt,bdsno,para_mfsno",snowh,fmelt,bdsno,parameters%MFSNO
-         else
          FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))
-         end if
      ENDIF
 
 ! ground roughness length
@@ -2134,7 +2153,7 @@ ENDIF   ! CROPTYPE == 0
 
     IF(FIRE <=0.) THEN
        WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-       WRITE(6,*) 'input of SHDFAC with LAI'
+       WRITE(6,*) 'input of SHDFAC with LAI', LIS_localPet
        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'VAI=',VAI,'TV=',TV,'TG=',TG
        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'SNOWH=',SNOWH
        call wrf_error_fatal("STOP in Noah-MP")
@@ -6819,9 +6838,9 @@ ENDIF   ! CROPTYPE == 0
 
 !to obtain equilibrium state of snow in glacier region
        
-   IF(SNEQV > 2000.) THEN   ! 2000 mm -> maximum water depth
+   IF(SNEQV > 10000.) THEN   ! 2000 mm -> maximum water depth
       BDSNOW      = SNICE(0) / DZSNSO(0)
-      SNOFLOW     = (SNEQV - 2000.)
+      SNOFLOW     = (SNEQV - 10000.)
       SNICE(0)    = SNICE(0)  - SNOFLOW 
       DZSNSO(0)   = DZSNSO(0) - SNOFLOW/BDSNOW
       SNOFLOW     = SNOFLOW / DT
@@ -6976,22 +6995,31 @@ ENDIF   ! CROPTYPE == 0
        ISNOW_OLD = ISNOW
 
        DO J = ISNOW_OLD+1,0
+!          print *,'H1'
           IF (SNICE(J) <= .1) THEN
+!             print *,'H2'
              IF(J /= 0) THEN
+!                print *,'H3'
                 SNLIQ(J+1) = SNLIQ(J+1) + SNLIQ(J)
                 SNICE(J+1) = SNICE(J+1) + SNICE(J)
              ELSE
+!               print *,'H4'
                IF (ISNOW_OLD < -1) THEN    ! MB/KM: change to ISNOW
+!                print *,'H5'
                 SNLIQ(J-1) = SNLIQ(J-1) + SNLIQ(J)
                 SNICE(J-1) = SNICE(J-1) + SNICE(J)
                ELSE
+!                 print *,'H6'
 	         IF(SNICE(J) >= 0.) THEN
+!                  print *,'H7'
                   PONDING1 = SNLIQ(J)    ! ISNOW WILL GET SET TO ZERO BELOW; PONDING1 WILL GET 
                   SNEQV = SNICE(J)       ! ADDED TO PONDING FROM PHASECHANGE PONDING SHOULD BE
                   SNOWH = DZSNSO(J)      ! ZERO HERE BECAUSE IT WAS CALCULATED FOR THIN SNOW
 		 ELSE   ! SNICE OVER-SUBLIMATED EARLIER
+!                  print *,'H8'
 		  PONDING1 = SNLIQ(J) + SNICE(J)
 		  IF(PONDING1 < 0.) THEN  ! IF SNICE AND SNLIQ SUBLIMATES REMOVE FROM SOIL
+!                   print *,'H9'
 		   SICE(1) = MAX(0.0,SICE(1)+PONDING1/(DZSNSO(1)*1000.))
                    PONDING1 = 0.0
 		  END IF
@@ -7008,6 +7036,7 @@ ENDIF   ! CROPTYPE == 0
 
              ! shift all elements above this down by one.
              IF (J > ISNOW+1 .AND. ISNOW < -1) THEN
+!                print *,'H10'
                 DO I = J, ISNOW+2, -1
                    STC(I)   = STC(I-1)
                    SNLIQ(I) = SNLIQ(I-1)
@@ -7022,6 +7051,7 @@ ENDIF   ! CROPTYPE == 0
 ! to conserve water in case of too large surface sublimation
 
        IF(SICE(1) < 0.) THEN
+!          print *,'H11'
           SH2O(1) = SH2O(1) + SICE(1)
           SICE(1) = 0.
        END IF
@@ -7034,6 +7064,7 @@ ENDIF   ! CROPTYPE == 0
        ZWLIQ  = 0.
 
        DO J = ISNOW+1,0
+!             print *,'H12'
              SNEQV = SNEQV + SNICE(J) + SNLIQ(J)
              SNOWH = SNOWH + DZSNSO(J)
              ZWICE = ZWICE + SNICE(J)
@@ -7045,6 +7076,7 @@ ENDIF   ! CROPTYPE == 0
 
        IF (SNOWH < 0.025 .AND. ISNOW < 0 ) THEN ! MB: change limit
 !       IF (SNOWH < 0.05 .AND. ISNOW < 0 ) THEN
+!          print *,'H13'
           ISNOW  = 0
           SNEQV = ZWICE
           PONDING2 = ZWLIQ           ! LIMIT OF ISNOW < 0 MEANS INPUT PONDING
@@ -7061,12 +7093,14 @@ ENDIF   ! CROPTYPE == 0
 ! check the snow depth - snow layers combined
 
        IF (ISNOW < -1) THEN
+!          print *,'H14'
 
           ISNOW_OLD = ISNOW
           MSSI     = 1
 
           DO I = ISNOW_OLD+1,0
              IF (DZSNSO(I) < DZMIN(MSSI)) THEN
+!                print *,'H15'
 
                 IF (I == ISNOW+1) THEN
                    NEIBOR = I + 1

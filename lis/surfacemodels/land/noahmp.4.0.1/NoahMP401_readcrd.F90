@@ -283,7 +283,7 @@ subroutine NoahMP401_readcrd()
                               NOAHMP401_struc(n)%alb_opt
     enddo
  
-    ! rainfall & snowfall (1->Jordan91; 2->BATS; 3->Noah)
+    ! rainfall & snowfall (1->Jordan91; 2->BATS; 3->Noah; 5->SnowModel+Dai(2008))
     call ESMF_ConfigFindLabel(LIS_config, &
          "Noah-MP.4.0.1 rainfall & snowfall option:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -424,7 +424,7 @@ subroutine NoahMP401_readcrd()
         NOAHMP401_struc(n)%rformat = "netcdf"
     enddo
     ! restart run, read restart file
-    if (trim(LIS_rc%startcode) == "restart") then 
+!    if (trim(LIS_rc%startcode) == "restart") then 
         Call ESMF_ConfigFindLabel(LIS_config, &
              "Noah-MP.4.0.1 restart file:", rc=rc)
         do n=1,LIS_rc%nnest
@@ -442,7 +442,7 @@ subroutine NoahMP401_readcrd()
         enddo
 
     ! coldstart run, read initial state variables
-    else
+!    else
         ! skin temperature
         call ESMF_ConfigFindLabel(LIS_config, &
              "Noah-MP.4.0.1 initial surface skin temperature:", rc = rc)
@@ -563,7 +563,7 @@ subroutine NoahMP401_readcrd()
                    " not defined")
           enddo
         endif
-    endif
+!    endif
      
     deallocate(nids)
 

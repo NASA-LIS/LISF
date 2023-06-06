@@ -98,7 +98,7 @@ module NoahMP401_lsmMod
 ! \item[alb\_opt]
 !   snow surface albedo (1->BATS; 2->CLASS)
 ! \item[snf\_opt]
-!   rainfall \& snowfall (1->Jordan91; 2->BATS; 3->Noah)
+!   rainfall \& snowfall (1->Jordan91; 2->BATS; 3->Noah; 5->SnowModel+Dai(2008))
 ! \item[tbot\_opt]
 !   lower boundary of soil temperature
 ! \item[stc\_opt]

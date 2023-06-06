@@ -111,7 +111,8 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   integer, intent(in) :: snf_opt              ! precipitation partitioning between snow and rain
                                               ! (1-Jordan91; 2->BATS: Snow when SFCTMP < TFRZ+2.2;
                                               !  3->Noah: Snow when SFCTMP < TFRZ;
-                                              !  4->Use WRF precipitation partitioning )
+                                              !  4->Use WRF precipitation partitioning;
+                                              !  5->Use linear relationship from SnowModel, based on Dai (2008))
   integer, intent(in) :: tbot_opt             ! lower boundary of soil temperature (1->zero-flux; 2->Noah)
   integer, intent(in) :: stc_opt              ! snow/soil temperature time scheme (1->semi-implicit; 2->fully implicit)
 
@@ -742,7 +743,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   fldfrcin(1,1)=fldfrc
 
 
-  call noahmplsm_401  (LIS_rc%udef,  & ! in : LIS undefined value (David Mocko)
+  call noahmplsm_401  (ttile,LIS_rc%udef,  & ! in : LIS undefined value (David Mocko)
        itimestep,yearlen , julian  , coszin    , latin   , lonin  , & ! in : time/space-related
        dz8w3d(1), dt      , zsoil   , nsoil   , dx      ,           & ! in : model configuration 
        vegetypein, soiltypein, vegfrain, vegmaxin, tbotin  ,        & ! in : Vegetation/Soil characteristics
