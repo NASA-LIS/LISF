@@ -252,3 +252,22 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
         lat = np.array(ldt['lat'])
         return lat[:,0], lon[0,:]
     return None
+
+def tiff_to_da(file):
+    import xarray as xr
+    import rasterio
+    dataset = rasterio.open(file)
+    # Read the data from the GeoTIFF using rasterio
+    data = dataset.read(1)  # Read the first band, adjust if necessary
+
+    # Extract the metadata
+    transform = dataset.transform
+    crs = dataset.crs
+    x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
+    y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
+    
+    # Create an xarray DataArray
+    da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    
+    return da
+
