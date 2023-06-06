@@ -227,7 +227,7 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
            dzsnso(-nsnow+1:isnow) = 0 
            dzsnso(isnow+1) = snowh -dzsnso(0)
            ! scale swe in layers by ratio of depth to pack
-           do snl_idx=-snow+1,0
+           do snl_idx=-nsnow+1,0
               snice(snl_idx) = sneqv*(dzsnso(snl_idx)/snowh)
            enddo
            snliq(-nsnow+1:isnow) = 0
@@ -236,7 +236,7 @@ subroutine noahmp401_snow_update(n, t, dsneqv, dsnowh)
            isnow = -3
            dzsnso(isnow+1) = snowh -dzsnso(-1) -dzsnso(0)
            ! scale swe in layers by ratio of depth to pack
-           do snl_idx=-snow+1,0
+           do snl_idx=-nsnow+1,0
               snice(snl_idx) = sneqv*(dzsnso(snl_idx)/snowh)
            enddo
            snliq(-nsnow+1:isnow) = 0
