@@ -6995,31 +6995,22 @@ ENDIF   ! CROPTYPE == 0
        ISNOW_OLD = ISNOW
 
        DO J = ISNOW_OLD+1,0
-!          print *,'H1'
           IF (SNICE(J) <= .1) THEN
-!             print *,'H2'
              IF(J /= 0) THEN
-!                print *,'H3'
                 SNLIQ(J+1) = SNLIQ(J+1) + SNLIQ(J)
                 SNICE(J+1) = SNICE(J+1) + SNICE(J)
              ELSE
-!               print *,'H4'
                IF (ISNOW_OLD < -1) THEN    ! MB/KM: change to ISNOW
-!                print *,'H5'
                 SNLIQ(J-1) = SNLIQ(J-1) + SNLIQ(J)
                 SNICE(J-1) = SNICE(J-1) + SNICE(J)
                ELSE
-!                 print *,'H6'
 	         IF(SNICE(J) >= 0.) THEN
-!                  print *,'H7'
                   PONDING1 = SNLIQ(J)    ! ISNOW WILL GET SET TO ZERO BELOW; PONDING1 WILL GET 
                   SNEQV = SNICE(J)       ! ADDED TO PONDING FROM PHASECHANGE PONDING SHOULD BE
                   SNOWH = DZSNSO(J)      ! ZERO HERE BECAUSE IT WAS CALCULATED FOR THIN SNOW
 		 ELSE   ! SNICE OVER-SUBLIMATED EARLIER
-!                  print *,'H8'
 		  PONDING1 = SNLIQ(J) + SNICE(J)
 		  IF(PONDING1 < 0.) THEN  ! IF SNICE AND SNLIQ SUBLIMATES REMOVE FROM SOIL
-!                   print *,'H9'
 		   SICE(1) = MAX(0.0,SICE(1)+PONDING1/(DZSNSO(1)*1000.))
                    PONDING1 = 0.0
 		  END IF
@@ -7036,7 +7027,6 @@ ENDIF   ! CROPTYPE == 0
 
              ! shift all elements above this down by one.
              IF (J > ISNOW+1 .AND. ISNOW < -1) THEN
-!                print *,'H10'
                 DO I = J, ISNOW+2, -1
                    STC(I)   = STC(I-1)
                    SNLIQ(I) = SNLIQ(I-1)
@@ -7051,7 +7041,6 @@ ENDIF   ! CROPTYPE == 0
 ! to conserve water in case of too large surface sublimation
 
        IF(SICE(1) < 0.) THEN
-!          print *,'H11'
           SH2O(1) = SH2O(1) + SICE(1)
           SICE(1) = 0.
        END IF
@@ -7064,7 +7053,6 @@ ENDIF   ! CROPTYPE == 0
        ZWLIQ  = 0.
 
        DO J = ISNOW+1,0
-!             print *,'H12'
              SNEQV = SNEQV + SNICE(J) + SNLIQ(J)
              SNOWH = SNOWH + DZSNSO(J)
              ZWICE = ZWICE + SNICE(J)
@@ -7076,7 +7064,6 @@ ENDIF   ! CROPTYPE == 0
 
        IF (SNOWH < 0.025 .AND. ISNOW < 0 ) THEN ! MB: change limit
 !       IF (SNOWH < 0.05 .AND. ISNOW < 0 ) THEN
-!          print *,'H13'
           ISNOW  = 0
           SNEQV = ZWICE
           PONDING2 = ZWLIQ           ! LIMIT OF ISNOW < 0 MEANS INPUT PONDING
@@ -7093,14 +7080,12 @@ ENDIF   ! CROPTYPE == 0
 ! check the snow depth - snow layers combined
 
        IF (ISNOW < -1) THEN
-!          print *,'H14'
 
           ISNOW_OLD = ISNOW
           MSSI     = 1
 
           DO I = ISNOW_OLD+1,0
              IF (DZSNSO(I) < DZMIN(MSSI)) THEN
-!                print *,'H15'
 
                 IF (I == ISNOW+1) THEN
                    NEIBOR = I + 1

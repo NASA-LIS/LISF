@@ -280,11 +280,10 @@ contains
        FGEV = EDIR * LATHEA
      END IF
 
-! MLW remove message
-!     IF(MAXVAL(SICE) < 0.0001) THEN
-!       WRITE(message,*) "GLACIER HAS MELTED AT:",ILOC,JLOC," ARE YOU SURE THIS SHOULD BE A GLACIER POINT?"
-!       CALL wrf_debug(10,TRIM(message))
-!     END IF
+     IF(MAXVAL(SICE) < 0.0001) THEN
+       WRITE(message,*) "GLACIER HAS MELTED AT:",ILOC,JLOC," ARE YOU SURE THIS SHOULD BE A GLACIER POINT?"
+       CALL wrf_debug(10,TRIM(message))
+     END IF
      
 ! water and energy balance check
 
@@ -3044,7 +3043,7 @@ END IF   ! OPT_GLA == 1
       call wrf_message(trim(message))
       WRITE(message,'(i6,1x,i6,1x,5F10.4)')ILOC,JLOC,SAG,FIRA,FSH,FGEV,SSOIL
       call wrf_message(trim(message))
-!      call wrf_error_fatal("Energy budget problem in NOAHMP GLACIER")
+      call wrf_error_fatal("Energy budget problem in NOAHMP GLACIER")
    END IF
 
    END_WB = SNEQV

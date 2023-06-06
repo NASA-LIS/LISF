@@ -11,7 +11,7 @@ public noahmplsm_401
 !
 CONTAINS
 ! The subroutine name has been modifed for LIS implemenation Oct 22 2018
-  SUBROUTINE noahmplsm_401(tid,LIS_undef_value,                                       & ! IN : LIS undefined value
+  SUBROUTINE noahmplsm_401(LIS_undef_value,                                       & ! IN : LIS undefined value
              ITIMESTEP,        YR,   JULIAN,   COSZIN,XLAT,XLONG,                 & ! IN : Time/Space-related
                   DZ8W,       DT,       DZS,    NSOIL,       DX,                  & ! IN : Model configuration 
 	        IVGTYP,   ISLTYP,    VEGFRA,   VEGMAX,      TMN,                  & ! IN : Vegetation/Soil characteristics
@@ -72,8 +72,7 @@ CONTAINS
 
 ! IN only
 
-    ! Added LIS undefined value as an input - David Mocko
-    integer :: tid
+! Added LIS undefined value as an input - David Mocko
     REAL,    INTENT(IN   ) ::  LIS_undef_value
     INTEGER,                                         INTENT(IN   ) ::  ITIMESTEP ! timestep number
     INTEGER,                                         INTENT(IN   ) ::  YR        ! 4-digit year
@@ -103,7 +102,7 @@ CONTAINS
     INTEGER,                                         INTENT(IN   ) ::  IOPT_INF  ! frozen soil permeability (1-> NY06; 2->Koren99)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_RAD  ! radiation transfer (1->gap=F(3D,cosz); 2->gap=0; 3->gap=1-Fveg)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_ALB  ! snow surface albedo (1->BATS; 2->CLASS)
-    INTEGER,                                         INTENT(IN   ) ::  IOPT_SNF  ! rainfall & snowfall (1-Jordan91; 2->BATS;3->Noah; 5->SnowModel+Dai(2008))
+    INTEGER,                                         INTENT(IN   ) ::  IOPT_SNF  ! rainfall & snowfall (1-Jordan91; 2->BATS; 3->Noah)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_TBOT ! lower boundary of soil temperature (1->zero-flux; 2->Noah)
     INTEGER,                                         INTENT(IN   ) ::  IOPT_STC  ! snow/soil temperature time scheme
     INTEGER,                                         INTENT(IN   ) ::  IOPT_GLA  ! glacier option (1->phase change; 2->simple)
@@ -879,7 +878,7 @@ CONTAINS
 
          ICE=0                              ! Neither sea ice or land ice.
          CALL NOAHMP_SFLX (parameters, &
-            tid      , J       , LAT     , YEARLEN , JULIAN  , COSZ    , & ! IN : Time/Space-related
+            I       , J       , LAT     , YEARLEN , JULIAN  , COSZ    , & ! IN : Time/Space-related
             DT      , DX      , DZ8W1D  , NSOIL   , ZSOIL   , NSNOW   , & ! IN : Model configuration 
             FVEG    , FVGMAX  , VEGTYP  , ICE     , IST     , CROPTYPE, & ! IN : Vegetation/Soil characteristics
             SMCEQ   ,                                                   & ! IN : Vegetation/Soil characteristics
@@ -1603,9 +1602,9 @@ SUBROUTINE PEDOTRANSFER_SR2006(nsoil,sand,clay,orgm,parameters)
                                      ,i,j,snow(i,j),snowh(i,j)
                CALL wrf_message(err_message)
              ENDIF
-             IF ( SNOW( i,j ) > 10000. ) THEN
-               SNOWH(I,J) = SNOWH(I,J) * 10000. / SNOW(I,J)      ! SNOW in mm and SNOWH in m
-               SNOW (I,J) = 10000.                               ! cap SNOW at 2000, maintain density
+             IF ( SNOW( i,j ) > 2000. ) THEN
+               SNOWH(I,J) = SNOWH(I,J) * 2000. / SNOW(I,J)      ! SNOW in mm and SNOWH in m
+               SNOW (I,J) = 2000.                               ! cap SNOW at 2000, maintain density
              ENDIF
           ENDDO
        ENDDO
