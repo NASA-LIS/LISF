@@ -1,7 +1,6 @@
 ! PET from Sujay has been added by Shugong 08/31/2021
 MODULE MODULE_SF_NOAHMPLSM_401
 
-  use LIS_coreMod
   use module_sf_gecros_401, only : gecros
 
   IMPLICIT NONE
@@ -689,7 +688,7 @@ contains
            DZSNSO(IZ) = - ZSNSO(IZ)
          ELSE
            DZSNSO(IZ) = ZSNSO(IZ-1) - ZSNSO(IZ)
-        END IF
+         END IF
      END DO
 
 ! root-zone temperature
@@ -742,11 +741,13 @@ contains
                      PAHV   ,PAHG   ,PAHB   ,QRAIN  ,QSNOW  ,SNOWHIN, & !out
 	             FWET   ,CMC                                    )   !out
 
-    ! KRA ADDED HERE THIS CHECK FOR VALUES BEFORE CALL TO ENERGY ...
-    IF(SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN  
-      SNOWH = 0.0
-      SNEQV = 0.0
-    END IF
+    IF(OPT_SNF == 5) THEN
+       ! KRA ADDED HERE THIS CHECK FOR VALUES BEFORE CALL TO ENERGY ...
+       IF(SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN  
+          SNOWH = 0.0
+          SNEQV = 0.0
+       END IF
+    ENDIF
     ! KRA
 
 
@@ -6838,9 +6839,9 @@ ENDIF   ! CROPTYPE == 0
 
 !to obtain equilibrium state of snow in glacier region
        
-   IF(SNEQV > 10000.) THEN   ! 2000 mm -> maximum water depth
+   IF(SNEQV > 2000.) THEN   ! 2000 mm -> maximum water depth
       BDSNOW      = SNICE(0) / DZSNSO(0)
-      SNOFLOW     = (SNEQV - 10000.)
+      SNOFLOW     = (SNEQV - 2000.)
       SNICE(0)    = SNICE(0)  - SNOFLOW 
       DZSNSO(0)   = DZSNSO(0) - SNOFLOW/BDSNOW
       SNOFLOW     = SNOFLOW / DT

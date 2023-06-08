@@ -1208,7 +1208,7 @@ contains
     REAL,              INTENT(INOUT) :: FH2    !sen heat stability correction, weighted by prior iters
 
 ! outputs
-    REAL,                INTENT(OUT) :: FV     !friction velocity (m/s)
+    REAL,                INTENT(INOUT) :: FV     !friction velocity (m/s)
     REAL,                INTENT(OUT) :: CM     !drag coefficient for momentum
     REAL,                INTENT(OUT) :: CH     !drag coefficient for heat
     REAL,                INTENT(OUT) :: CH2    !drag coefficient for heat
