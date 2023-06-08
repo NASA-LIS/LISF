@@ -103,14 +103,6 @@ EX_NMME_FILENAME = '/ex_raw_nmme_download.nc'
 GE1 = SUPPLEMENTARY_DIR + EX_NMME_FILENAME
 LONI = read_nc_files(GE1, 'X')
 LATI = read_nc_files(GE1, 'Y')
-LON1 = LONI.copy()
-for n, l in enumerate(LON1):
-    if l >= 180:
-        LON1[n] = LON1[n]-360.
-LONI = LON1
-LON1 = LONI[0:180]
-LON2 = LONI[180:]
-LONI = np.hstack((LON2, LON1))
 
 ## Read all forecast files
 MM = CMN-1
@@ -246,11 +238,6 @@ for y in range(0, 40):
     YR = YR+1
     for m in range(0, ENS_NUM):
         for l in range(0, 9):
-            #x = XPREC[y, l, m, :, :]
-            #x1 = x[:, 0:180]
-            #x2 = x[:, 180:]
-            #x = np.hstack((x2, x1))
-            #x = XPREC[y, l, m, :, :]
             XPRECI[0, :, :] = ds_out["XPREC"].values[y,l,m,:,:]
             jy = YR+LDYR[MM, l]
             l1 = LEADS1[MM, l]

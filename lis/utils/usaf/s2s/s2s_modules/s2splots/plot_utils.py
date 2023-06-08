@@ -65,7 +65,7 @@ def dicts(dic_name, key):
         'AFRICA':(-40, 40, -20, 55),
         'GLOBAL':(-89, 89, -179, 179),
         'TUNISIA':(30, 38, 7, 12),
-        'MENA':(21, 39, 24, 62)
+        'ME_CRES':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -90,39 +90,61 @@ def dicts(dic_name, key):
         'TWS': 'mm',
         'ET': 'mm/d'
     }
+    anom_tables = {
+        'Streamflow': 'CB11W',
+        'Precip': 'CB11W',
+        'Precip_AF': 'CB11W',
+        'Air-T': 'CB11W_',
+        'Air_T': 'CB11W_',
+        'Air_T_AF': 'CB11W',
+        'TWS': 'CB11W',
+        'ET': 'CB11W'
+    }
+    lowhigh = {
+        'CB11W': ['black','indigo'],
+        'CB11W_': ['indigo','black'],
+        '14WT2M': ['#68228B','black'],     # darkorchid4','black']
+        '14WPR': ['#8B4500','blueviolet'], # darkorange4','blueviolet']
+        'L21': ['blueviolet','#8B4500']
+    }
+
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
-
     if dic_name == 'boundary':
         ret = boundary.get(key)
     elif dic_name == 'anom_levels':
         ret = anom_levels.get(key, default_levels)
     elif dic_name == 'units':
         ret = units.get(key, default_units)
+    elif dic_name == 'anom_tables':
+        ret = anom_tables.get(key, 'CB11W')
+    elif dic_name == 'lowhigh':
+        ret = lowhigh.get(key)
     return ret
 
 def cartopy_dir(data_dir):
     '''
     configuring cartopy
     '''
+    global BODR, COASTLINES, land, OCEAN, lakes, rivers
     if data_dir is not None:
         cartopy.config['data_dir'] = data_dir
 
-    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
+    BODR = cartopy.feature.NaturalEarthFeature(category='cultural',
                                                name='admin_0_boundary_lines_land',
                                                scale=RESOL, facecolor='none', alpha=0.7)
-    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+    COASTLINES = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
                                                      scale=RESOL, edgecolor='black',
                                                      facecolor='none')
     land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
                                                facecolor=cfeature.COLORS['land'])
-    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+    OCEAN = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
                                                 facecolor=cfeature.COLORS['water'])
     lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
                                                 facecolor=cfeature.COLORS['water'])
     rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
                                              scale=RESOL, edgecolor='b', facecolor='none')
-    
+
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -201,7 +223,18 @@ def load_table (table_key):
                 [233, 23,  0],
                 [197,  0,  0],
                 [158,  0,  0]],
-         'L11W':[[  0,  0,130],
+        'CB11W':[[103,0,31],
+                [178,24,43],
+                [214,96,77],
+                [244,165,130],
+                [253,219,199],
+                [247,247,247],
+                [209,229,240],
+                [146,197,222],
+                [67,147,195],
+                [33,102,172],
+                [5,48,97]],
+        'L11W':[[  0,  0,130],
                 [  0,  0,255],
                 [  0,115,255],
                 [  0,195,255],
@@ -474,8 +507,10 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
                          color='Blue', fontsize=fscale*FONT_SIZE1, rotation=90)
         if (nplots - count_plot -1) < ncols:
             gl_.bottom_labels = True
-        ax_.coastlines()
-        ax_.add_feature(cfeature.BORDERS)
+        ax_.coastlines(alpha=0.1, zorder=3)
+        ax_.add_feature(OCEAN, linewidth=0.2, zorder=3 )
+        ax_.add_feature(COASTLINES, edgecolor='black', alpha=1, zorder=3)
+        ax_.add_feature(BODR, linestyle='--', edgecolor='k', alpha=1, zorder=3)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
 
         cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
@@ -527,8 +562,7 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
-            if this_col < 0:
-                this_col = 0
+            this_col = max(this_col, 0)
             if this_col >= len(style_color):
                 this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.

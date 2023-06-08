@@ -74,7 +74,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
 
     cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
-                          ncols, plot_arr, 'L11W_', titles, boundary, figure, under_over,
+                          ncols, plot_arr, 'CB11W_', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
                           clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
     del anom
@@ -115,11 +115,8 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
 
-    if standardized_anomaly:
-        load_table = 'L11W_'
-
     for var_name in ['RootZone-SM', 'Surface-SM', 'Precip', 'Air-T']:
-        under_over = ['black', '#B404AE']
+        # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
@@ -131,21 +128,18 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         if standardized_anomaly == 'Y':
             levels = plot_utils.dicts('anom_levels', 'standardized')
 
-        if var_name in {'Air-T', 'Air_T'}:
-            load_table = 'L11W'
-            if USAF_COLORS and standardized_anomaly is None:
+        # colors defualts
+        load_table = plot_utils.dicts('anom_tables', var_name)
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'Air-T', 'Air_T'}:  
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
-        elif var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            load_table = '14WPR'
-            levels = plot_utils.dicts('anom_levels','Precip_AF')
+            elif var_name == 'Precip':
+                load_table = '14WPR'
+                levels = plot_utils.dicts('anom_levels','Precip_AF')
 
-            if USAF_COLORS and standardized_anomaly is None:
-                under_over = ['gray', 'blue']
-
-        else:
-            load_table = 'L11W_'
+        under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
@@ -244,7 +238,7 @@ if __name__ == '__main__':
     rnetwork_ =  Dataset (config_['SETUP']['supplementarydir'] + \
                           '/s2splots/RiverNetwork_information.nc4', mode='r')
 
-    for region_ in ['TUNISIA', 'MENA']:
+    for region_ in ['TUNISIA', 'ME_CRES']:
         process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, region_)
         plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_)
         plot_anoms(fcst_year_, fcst_mon_, cwd_, config_, region_, standardized_anomaly = 'Y')

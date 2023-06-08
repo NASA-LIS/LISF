@@ -12,11 +12,11 @@ SOURCE_ONLY='N'
 submit_job(){
     if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
+	python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -c $BWD/$CFILE
     else
 	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
 	c2c=`echo $1 | sed "s|:|,|g"`
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c`
+	python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c` -c $BWD/$CFILE
     fi
     echo $submit_ID
 }
@@ -201,13 +201,12 @@ export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-export S2STOOL=$LISHDIR/
 export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"
-    export ICSDIR=`grep ICSDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+    export LISDADIR=`grep LISDADIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 else
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 fi
@@ -307,13 +306,12 @@ download_forecasts(){
     #######################################################################
 
     # CFSv2 forecast
-    cfsv2datadir=`grep fcst_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${cfsv2datadir}
+    sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
-	exit
+     	exit
     fi
-    
+
     # NMME Precipitation
     Mmm=`date -d "${YYYY}-${MM}-01" +%b`
     NMME_RAWDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -407,7 +405,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/s2s_app/s2s_api.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 	COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
     else
@@ -469,7 +467,11 @@ ldt_ics(){
     cd ${SCRDIR}/ldt_ics
     CWD=`pwd`
     /bin/ln -s ${LISFDIR}/ldt/LDT
-    /bin/ln -s ${E2ESDIR}/lis_darun/output lisda_output
+    if [ $DATATYPE  == "forecast" ]; then
+	/bin/ln -s ${E2ESDIR}/lis_darun/output lisda_output
+    else
+	/bin/ln -s ${LISDADIR} lisda_output
+    fi
     /bin/ln -s ${E2ESDIR}/ldt_ics/input
     
     for model in $MODELS
@@ -482,7 +484,7 @@ ldt_ics(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ldtics_run.j -t 1 -H 2 -j ldtics_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ldtics_run.j -t 1 -H 2 -j ldtics_ -w ${CWD}
     COMMAND="python ${LISHDIR}/s2s_modules/ldt_ics/generate_ldtconfig_files_ensrst_nrt.py -y ${YYYY} -m ${mon} -i ./lisda_output -w $CWD -s $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ldtics_run.j
     
@@ -564,7 +566,7 @@ bcsd_fcst(){
 	done
 	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
     fi
-    
+
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
@@ -634,7 +636,7 @@ bcsd_fcst(){
     jobname=bcsd08
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -M $model -j $jobname    
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -M $model -j $jobname    
     done
     
     unset job_list
@@ -651,7 +653,7 @@ bcsd_fcst(){
     #         (forecast_task_09.py: after 8)
     # ---------------------------------------------------------------------------
     jobname=bcsd09
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -j $jobname -t 1 -H 4
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
 
     bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
     
@@ -759,7 +761,7 @@ lis_fcst(){
 		    prevID=$thisID		
 		fi
 	    else
-		thisID=$(submit_job "$bcsd11_ID,$bcsd12_ID" "$jfile")
+		thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
 		lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 	    fi	
 	    ((FileNo++))
@@ -807,7 +809,7 @@ s2spost(){
 	else
 	    /bin/ln -s ${E2ESDIR}/s2spost/${YYYY}${MM}/$model
 	fi
-	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
+	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
     done
     
     job_list=`ls $jobname*.j`
@@ -860,7 +862,7 @@ s2smetrics(){
     s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     
     # write tiff file
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
     COMMAND="python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_tiff_run.j
 
@@ -889,7 +891,7 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
     
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD}
     COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" s2splots_run.j
     
@@ -919,10 +921,13 @@ SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+	#python $LISHDIR/s2s_app/s2s_api.py -r Y  -c $BWD/$CFILE -w ${E2ESDIR} -d ${YYYY}${MM}
+	print_walltimes
     else
 	print_walltimes
     fi
+    exit
+elif [ "$REPORT" = 'N' ] || [ "$REPORT" = 'n' ]; then
     exit
 fi
 
@@ -943,7 +948,6 @@ fi
 #######################################################################
 
 setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
-mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
@@ -951,6 +955,7 @@ mkdir -p -m 775 ${SCRDIR}/s2spost
 chmod 775 ${E2ESDIR}/scratch/
 
 if [ $DATATYPE  == "forecast" ]; then
+    mkdir -p -m 775 ${SCRDIR}/lis_darun
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
@@ -964,14 +969,6 @@ if [ $DATATYPE  == "forecast" ]; then
     fi
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
-if [ $DATATYPE == "hindcast" ]; then
-    mkdir -p ${E2ESDIR}/ldt_ics/
-    cd ${E2ESDIR}/ldt_ics
-    for model in $MODELS
-    do
-	/bin/ln -s ${ICSDIR}/$model
-    done
-fi
 
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
@@ -981,7 +978,7 @@ echo "#######################################################################" >
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         " >> $JOB_SCHEDULE
-python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER"
+python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER"  -c $BWD/$CFILE
 
 #######################################################################
 #                               Submit jobs
@@ -1094,8 +1091,8 @@ case $STEP in
     *)
 	if [ $DATATYPE == "forecast" ]; then
 	    lis_darun
-	    ldt_ics
 	fi
+	ldt_ics
 	bcsd_fcst
 	lis_fcst
 	s2spost
