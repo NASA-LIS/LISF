@@ -38,9 +38,9 @@ while getopts ":m:c:s:r:" opt; do
        echo "with OPTIONAL flags:"
        echo "--------------------"
        echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag can be used to check the progress of SLURM jobs (valid inputs: Y or N)"
-       echo "  STEP:     The E2ES process includes seven steps that are run sequentially DOWNLOAD, REORG, CLIM"
+       echo "  STEP:     The E2ES process includes three steps that are run sequentially DOWNLOAD (or DOWNLOADNMME), REORG, CLIM"
        echo "            However, the STEP option allows the user to kick start the process from the last completed step."
-       echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: DOWNLOAD, REORG, CLIM)."
+       echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: DOWNLOAD, DOWNLOADNMME, REORG, CLIM)."
        echo "     "                       
        exit 1 
        ;;    
@@ -70,7 +70,6 @@ export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-export S2STOOL=$LISHDIR/
 export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"    
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
@@ -114,53 +113,12 @@ download_nmme(){
     #######################################################################
     #                     Download NMME forecasts
     #######################################################################
-    for ((YEAR=clim_syr; YEAR<=clim_eyr; YEAR++)); do
-        
-        # NMME Precipitation
-        Mmm=`date -d "${YEAR}-${MM}-01" +%b`
-        NMME_RAWDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-        prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YEAR}.nc`
-        all_models=`grep -n NMME_ALL: $CFILE | cut -d':' -f3`
-        LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
-        new_line="  NMME_models: "`echo ${all_models}`
-        
-        sed -i "${LINE2}s/.*/${new_line}/1" $CFILE
-        
-        declare -A nmme_models=( ["CanSIPS-IC3"]="GNEMO5, CCM4" ["COLA-RSMAS-CCSM4"]="CCSM4" ["GFDL-SPEAR"]="GFDL" ["NASA-GEOSS2S"]="GEOSv2" ["NCEP-CFSv2"]="CFSv2" )
-        have_model="["
-        
-        # download NMME precip forecasts
-        if [ `echo $prec_files | wc -w` -lt 5 ]; then
-            s2s_app/download_nmme_hindcasts.sh ${YEAR} ${Mmm} ${CFILE}
-            prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YEAR}.nc`
             
-            for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
-            do
-                fdown=$NMME_RAWDIR/$dir/prec.$dir.mon_${Mmm}.${YEAR}.nc
-                if [ `file $fdown | rev | cut -d' ' -f1 | rev` == "data" ]; then
-                have_model=${have_model}${nmme_models[$dir]}', '
-                else
-                /bin/rm ${fdown}
-                fi
-            done
-
-            have_model=${have_model}"]"
-            if [ `echo ${have_model} | wc -w` -lt 7 ]; then
-                NAVAIL=`echo ${have_model} | wc -w`
-                ((NAVAIL--))
-                echo 
-                read -p "Precipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
-                
-                if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
-                LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
-                new_line="  NMME_models: "`echo ${have_model}`
-                sed -i "${LINE2}s/.*/${new_line}/1" $CFILE
-                else
-                exit
-                fi    
-            fi
-        fi
-    done
+    # NMME Precipitation
+    Mmm=`date -d "2001-${MM}-01" +%b`
+        
+    # download NMME precip forecasts
+    s2s_app/download_nmme_hindcasts.sh ${Mmm} ${CFILE}    
 }
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -210,7 +168,7 @@ reorg_nmme(){
     nmme_output_dir=${E2ESDIR}/bcsd_fcst/NMME/raw/Monthly/
     mkdir -p -m 775 $nmme_output_dir
         
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
     this_model=0
     for nmme_model in $MODELS; do	
 	COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/nmme_reorg_h.py $MM $nmme_output_dir $nmme_model $BWD/$CFILE"
@@ -244,7 +202,7 @@ clim_nafpa(){
     outdir=${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     mkdir -p -m 775 $outdir
      
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
     this_var=0
     for var in LWdown_f_tavg Rainf_f_tavg Psurf_f_tavg  Qair_f_tavg SWdown_f_tavg Tair_f_tavg Wind_f_tavg; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir"
@@ -280,7 +238,7 @@ clim_cfsv2(){
     outdir=${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Climatology/${mmm}01/
     mkdir -p -m 775 ${outdir}
  
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
     this_var=0
     for var in PRECTOT  LWS  PS  Q2M  SLRSF  T2M  WIND10M; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir"
@@ -317,7 +275,7 @@ clim_nmme(){
     mkdir -p -m 775 $MODELS
     cd ${SCRDIR}/clim/
  
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}
     this_model=0
     for model in $MODELS; do
 
@@ -363,7 +321,7 @@ echo "#######################################################################" >
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         " >> $JOB_SCHEDULE
-python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER"
+python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER" -c $BWD/$CFILE
 
 #######################################################################
 #                               Submit jobs
@@ -376,6 +334,9 @@ clim_nafpa_ID=
 case $STEP in
     DOWNLOAD)
         download_cfsv2
+	download_nmme
+        ;;
+    DOWNLOADNMME)
 	download_nmme
         ;;
     REORG)
