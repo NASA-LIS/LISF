@@ -111,8 +111,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   integer, intent(in) :: snf_opt              ! precipitation partitioning between snow and rain
                                               ! (1-Jordan91; 2->BATS: Snow when SFCTMP < TFRZ+2.2;
                                               !  3->Noah: Snow when SFCTMP < TFRZ;
-                                              !  4->Use WRF precipitation partitioning 
-                                              !  5->Use linear relationship from SnowModel, based on Dai (2008))
+                                              !  4->Use WRF precipitation partitioning )
   integer, intent(in) :: tbot_opt             ! lower boundary of soil temperature (1->zero-flux; 2->Noah)
   integer, intent(in) :: stc_opt              ! snow/soil temperature time scheme (1->semi-implicit; 2->fully implicit)
 

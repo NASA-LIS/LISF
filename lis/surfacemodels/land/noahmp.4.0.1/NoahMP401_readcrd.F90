@@ -283,7 +283,7 @@ subroutine NoahMP401_readcrd()
                               NOAHMP401_struc(n)%alb_opt
     enddo
  
-    ! rainfall & snowfall (1->Jordan91; 2->BATS; 3->Noah; 5->SnowModel+Dai(2008))
+    ! rainfall & snowfall (1->Jordan91; 2->BATS; 3->Noah)
     call ESMF_ConfigFindLabel(LIS_config, &
          "Noah-MP.4.0.1 rainfall & snowfall option:", rc = rc)
     do n=1, LIS_rc%nnest

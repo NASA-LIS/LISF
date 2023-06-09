@@ -33,7 +33,7 @@ MODULE NOAHMP_GLACIER_GLOBALS_401
   INTEGER :: OPT_ALB != 2    !(suggested 2)
 
 ! options for partitioning  precipitation into rainfall & snowfall
-! 1 -> Jordan (1991); 2 -> BATS: when SFCTMP<TFRZ+2.2 ; 3-> SFCTMP<TFRZ ; 5->SnowModel+Dai(2008)
+! 1 -> Jordan (1991); 2 -> BATS: when SFCTMP<TFRZ+2.2 ; 3-> SFCTMP<TFRZ
 
   INTEGER :: OPT_SNF != 1    !(suggested 1)
 
@@ -2065,10 +2065,6 @@ END IF   ! OPT_GLA == 1
   REAL, DIMENSION(       1:NSOIL)                :: SH2O_SAVE  !soil liquid water content [m3/m3]
   INTEGER :: ILEV
 
-! JP added new precip partitioning
-  REAL, PARAMETER                             :: TAIR_C_CENTER = 274.26 ! center temperature [k] where FPICE = 0.5
-  REAL, PARAMETER                             :: SLP = -0.30 ! change in FPICE per degree-change
-  REAL                                        :: BINT !y-intercept, relationship btween air temperature and FPICE
 #ifdef WRF_HYDRO
   REAL                           , INTENT(INOUT)    :: sfcheadrt
 #endif
@@ -2115,17 +2111,6 @@ END IF   ! OPT_GLA == 1
        ELSE
            FPICE = 1.0
        ENDIF
-     ENDIF
-     
-     ! JP -- Adding precip partitioning option
-     ! Linear fit to Dai (2008), used in Liston's SnowModel
-     IF(OPT_SNF == 5) THEN
-     ! intercept, where 0.5 is the fraction for TAIR_C_CENTER
-       BINT = 0.5 - SLP * TAIR_C_CENTER
-     ! solve the equation in form y=mx+b
-       FPICE = SLP * SFCTMP + BINT
-       FPICE = MAX(0.0,FPICE)
-       FPICE = MIN(1.0,FPICE)
      ENDIF
 !     print*, 'fpice: ',fpice
 

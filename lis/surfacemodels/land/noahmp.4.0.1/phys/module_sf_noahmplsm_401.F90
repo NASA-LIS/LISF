@@ -741,16 +741,6 @@ contains
                      PAHV   ,PAHG   ,PAHB   ,QRAIN  ,QSNOW  ,SNOWHIN, & !out
 	             FWET   ,CMC                                    )   !out
 
-    IF(OPT_SNF == 5) THEN
-       ! KRA ADDED HERE THIS CHECK FOR VALUES BEFORE CALL TO ENERGY ...
-       IF(SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN  
-          SNOWH = 0.0
-          SNEQV = 0.0
-       END IF
-    ENDIF
-    ! KRA
-
-
 ! compute energy budget (momentum & energy fluxes and phase changes) 
 
     CALL ENERGY (parameters,ICE    ,VEGTYP ,IST    ,NSNOW  ,NSOIL  , & !in
@@ -925,10 +915,6 @@ contains
   REAL                                        :: PRCP_FROZEN   !total frozen precipitation [mm/s] ! MB/AN : v3.7
   REAL, PARAMETER                             :: RHO_GRPL = 500.0  ! graupel bulk density [kg/m3] ! MB/AN : v3.7
   REAL, PARAMETER                             :: RHO_HAIL = 917.0  ! hail bulk density [kg/m3]    ! MB/AN : v3.7
-! JP added for new precip partitioning
-  REAL, PARAMETER                             :: TAIR_C_CENTER = 274.26 ! center temperature where FPICE = 0.5
-  REAL, PARAMETER                             :: SLP = -0.30 ! change in FPICE per degree-change
-  REAL                                        :: BINT !y-intercept, relationship btween air temperature and FPICE
 ! --------------------------------------------------------------------------------------------------
 
 !jref: seems like PAIR should be P1000mb??
@@ -999,17 +985,6 @@ contains
        ELSE
            FPICE = 1.0
        ENDIF
-     ENDIF
-
-     ! JP -- Adding precip partitioning option
-     ! Linear fit to Dai (2008), used in Liston's SnowModel
-     IF(OPT_SNF == 5) THEN
-     ! intercept, where 0.5 is the fraction for TAIR_C_CENTER
-       BINT = 0.5 - SLP * TAIR_C_CENTER
-     ! solve the equation in form y=mx+b
-       FPICE = SLP * SFCTMP + BINT
-       FPICE = MAX(0.0,FPICE)
-       FPICE = MIN(1.0,FPICE)
      ENDIF
 
 ! Hedstrom NR and JW Pomeroy (1998), Hydrol. Processes, 12, 1611-1625
@@ -1125,12 +1100,13 @@ ENDIF   ! CROPTYPE == 0
      FB = DB / MAX(1.E-06,parameters%HVT-parameters%HVB)
 
      IF(parameters%HVT> 0. .AND. parameters%HVT <= 1.0) THEN          !MB: change to 1.0 and 0.2 to reflect
-        SNOWHC = parameters%HVT*EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
-        if(snowh.lt.5) then 
-           FB     = MIN(SNOWH,SNOWHC)/SNOWHC
-        else
-           FB = 1.0
-        endif
+       SNOWHC = parameters%HVT*EXP(-SNOWH/0.2)             !      changes to HVT in MPTABLE
+       IF(SNOWHC>1.E-06) THEN      !Wanshu: avoid very small SNOWHC induced floating invalid
+       FB     = MIN(SNOWH,SNOWHC)/SNOWHC
+       ELSE
+       !print *,"small snowh in phenology=",snowh
+       FB = 1
+       END IF
      ENDIF
 
      ELAI =  LAI*(1.-FB)
@@ -1850,11 +1826,15 @@ ENDIF   ! CROPTYPE == 0
 ! ground snow cover fraction [Niu and Yang, 2007, JGR]
 
      FSNO = 0.
-!     IF(SNOWH.GT.0.)  THEN       
-     IF(SNOWH.GT.(0.001))  THEN  ! Update by KRA when have very small snowdepth values
+     IF(SNOWH.GT.0.)  THEN       
          BDSNO    = SNEQV / SNOWH
          FMELT    = (BDSNO/100.)**parameters%MFSNO
+         if (FMELT<0.000001) then !Bailing Li, added this for GRACE DA to catch smaller values
+         FSNO = 1
+         !print *,"small FMELT due to snowh,fmelt,bdsno,para_mfsno",snowh,fmelt,bdsno,parameters%MFSNO
+         else
          FSNO     = TANH( SNOWH /(2.5* Z0 * FMELT))
+         end if
      ENDIF
 
 ! ground roughness length
@@ -2154,7 +2134,7 @@ ENDIF   ! CROPTYPE == 0
 
     IF(FIRE <=0.) THEN
        WRITE(6,*) 'emitted longwave <0; skin T may be wrong due to inconsistent'
-       WRITE(6,*) 'input of SHDFAC with LAI', LIS_localPet
+       WRITE(6,*) 'input of SHDFAC with LAI'
        WRITE(6,*) ILOC, JLOC, 'SHDFAC=',FVEG,'VAI=',VAI,'TV=',TV,'TG=',TG
        WRITE(6,*) 'LWDN=',LWDN,'FIRA=',FIRA,'SNOWH=',SNOWH
        call wrf_error_fatal("STOP in Noah-MP")
