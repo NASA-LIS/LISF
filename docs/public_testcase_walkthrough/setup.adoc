@@ -37,12 +37,14 @@ IMPORTANT: The `{compatible-lisf-branch}` branch is known to be compatible with 
 
 For information about configuration settings and detailed compilation instructions, see the {url-lisf-docs}[LISF Users' Guides,window=_blank]. In general, the compilation process for each component is as follows:
 
+NOTE: The TARGET_OUTPUT files or "solutions" to this testcase were created using default compile configuration settings.  It is recommended that default compile comfiguration settings are used.  Other settings may be used, but this may result in difference between your output and the provided TARGET_OUTPUT. 
+
 [#compile-example]
 [source,shell,subs="attributes"]
 ----
 % cd ldt
 % ./configure
-> # Select compile configuration settings (see Docs)...
+> # Select compile configuration settings (Default settings recommended. See docs for more)...
 % ./compile
 > # Compilation output...
 % mv LDT ../../            # move executable up into $WORKING_DIR
