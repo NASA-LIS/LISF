@@ -42,19 +42,6 @@ RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
 cbar_axes = [0.15, 0.04, 0.65, 0.03]
 
-bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
-                                           name='admin_0_boundary_lines_land',
-                                           scale=RESOL, facecolor='none', alpha=0.7)
-coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                 scale=RESOL, edgecolor='black', facecolor='none')
-land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
-                                           facecolor=cfeature.COLORS['land'])
-ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
-                                            facecolor=cfeature.COLORS['water'])
-lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
-                                            facecolor=cfeature.COLORS['water'])
-rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
-                                             scale=RESOL, edgecolor='b', facecolor='none')
 mpl.use('pdf')
 mpl.style.use('bmh')
 COL_UNDER = 'black'
@@ -76,7 +63,9 @@ def dicts(dic_name, key):
         'SOUTH_AMERICA':(-55, 10, -85, -35),
         'NORTH_AMERICA':(9, 72, -165, -58),
         'AFRICA':(-40, 40, -20, 55),
-        'GLOBAL':(-89, 89, -179, 179)
+        'GLOBAL':(-89, 89, -179, 179),
+        'TUNISIA':(30, 38, 7, 12),
+        'MENA':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -111,6 +100,29 @@ def dicts(dic_name, key):
     elif dic_name == 'units':
         ret = units.get(key, default_units)
     return ret
+
+def cartopy_dir(data_dir):
+    '''
+    configuring cartopy
+    '''
+    if data_dir is not None:
+        cartopy.config['data_dir'] = data_dir
+
+    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
+                                               name='admin_0_boundary_lines_land',
+                                               scale=RESOL, facecolor='none', alpha=0.7)
+    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+                                                     scale=RESOL, edgecolor='black',
+                                                     facecolor='none')
+    land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
+                                               facecolor=cfeature.COLORS['land'])
+    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+                                                facecolor=cfeature.COLORS['water'])
+    lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
+                                                facecolor=cfeature.COLORS['water'])
+    rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
+                                             scale=RESOL, edgecolor='b', facecolor='none')
+    
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -294,12 +306,12 @@ def load_table (table_key):
                  [255,159,  0],
                  [255,187,  0],
                  [255,255,255],
-                 [ 47,255, 67],
-                 [ 60,230, 15],
-                 [  0,219,  0],
-                 [  0,187,  0],
-                 [  0,159,  0],
-                 [  0,131,  0]],
+                 [  0,167,255],
+                 [  0,115,255],
+                 [  0, 83,255],
+                 [  0,  0,255],
+                 [  0,  0,200],
+                 [  0,  0,130]],
         '14WT2M':[[179, 66,245],
                   [  0,  0,255],
                   [  0,115,255],
@@ -313,7 +325,12 @@ def load_table (table_key):
                   [196,159,128]],
         }
 
-    return tables[table_key]
+    if table_key[-1] == '_':
+        ct_ = tables[table_key[:-1]]
+        ct_.reverse()
+    else:
+        ct_ = tables[table_key]
+    return ct_
 
 def compute_radius(ortho, radius_degrees, lon, lat):
     ''' compute radius '''
@@ -355,6 +372,8 @@ def map2pfaf (anom, lats, lons, dlat, dlon, ulat, ulon, carea, levels):
         iy_ = min(range(len(lats)), key=lambda j: abs(lats[j] - dlat[i]))
         ix_ = min(range(len(lons)), key=lambda j: abs(lons[j] - dlon[i]))
         ad_ = anom[iy_,ix_]
+        if ad_ == -9999. or au_ == -9999.:
+            continue
 
         if au_ and ad_:
             this_val = 0.5*(au_+ad_)
@@ -403,9 +422,9 @@ class CachedTiler(object):
 
 def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
               under_over, min_val=None, max_val=None, fscale=None, levels=None, \
-              stitle=None, clabel=None):
+              stitle=None, clabel=None, cartopy_datadir=None):
     ''' plot contour maps'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 
@@ -469,9 +488,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
 def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
                under_over, dlat, dlon, ulat, ulon, carea, google_path, min_val=None, \
                max_val=None, fscale=None, levels=None, \
-               stitle=None, clabel=None):
+               stitle=None, clabel=None, cartopy_datadir=None):
     ''' plots streams using google map as the background image'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 
@@ -508,6 +527,10 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
+            if this_col < 0:
+                this_col = 0
+            if this_col >= len(style_color):
+                this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.
             track = sgeom.LineString(zip([xx1[pfaf_cnt],xx2[pfaf_cnt]],
                                          [yy1[pfaf_cnt], yy2[pfaf_cnt]]))
