@@ -75,7 +75,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
 
         # special cases
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:
+            if var_name in {'AirT'}:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
@@ -96,7 +96,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
 
-        if (var_name in {'Air-T', 'Air_T'}) and \
+        if (var_name in {'AirT'}) and \
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
@@ -122,7 +122,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
 
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:
+            if var_name in {'AirT'}:
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
             elif var_name == 'Precip':
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'
