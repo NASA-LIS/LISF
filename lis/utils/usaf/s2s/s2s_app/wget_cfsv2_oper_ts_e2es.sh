@@ -36,10 +36,10 @@ neighb_days(){
     count_days=1
     while [ $count_days -le 4 ];do
 	nwdate=`date -d"$icdate -$count_days Day" +%Y%m%d`
-	echo "${wget_command}/${nwdate}/${nwdate}${cycle}/${vartype}.01.${nwdate}${cycle}.daily.grb2" >> $CFSV2_LOG
+	echo "wget ${srcdir}/cfs.${nwdate}/${cycle}/time_grib_01/${vartype}.01.${nwdate}${cycle}.daily.grb2" >> $CFSV2_LOG
 	nwdate=`date -d"$icdate +$count_days Day" +%Y%m%d`
 	if [ `date -d"$nwdate" +%m` != ${mon} ];then
-	    echo "${wget_command}/${nwdate}/${nwdate}${cycle}/${vartype}.01.${nwdate}${cycle}.daily.grb2" >> $CFSV2_LOG
+	    echo "wget ${srcdir}/cfs.${nwdate}/${cycle}/time_grib_01/${vartype}.01.${nwdate}${cycle}.daily.grb2" >> $CFSV2_LOG
 	fi
 	((count_days++))
     done
@@ -127,8 +127,8 @@ fi
 umask 022
 ulimit -s unlimited
   
-# Source data server and directory:
-  srcdir=https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/
+# Source data server and directory (Microsoft planetary_computer):
+  srcdir=https://noaacfs.blob.core.windows.net/cfs
 
 # _______________________________________________
 
@@ -306,12 +306,11 @@ for prevmondays in ${day1} ${day2} ${day3}; do
 	# Forecast cycle (00,06,12,18):
 	for cycle in 00 06 12 18; do
             #echo "Cycle :: "${cycle}
-	    wget_command="wget --no-check-certificate -nc -nv ${srcdir}/${year2}/${year2}${prevmon}/"
             # File to be downloaded:
 	    if [ "$download" = 'Y' ] || [ "$download" = 'y' ]; then
-		file=${srcdir}/${year2}/${year2}${prevmon}/${icdate}/${icdate}${cycle}/${vartype}.01.${icdate}${cycle}.daily.grb2
+		file=${srcdir}/cfs.${icdate}/${cycle}/time_grib_01/${vartype}.01.${icdate}${cycle}.daily.grb2
 		if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		    wget --no-check-certificate -nc -nv ${file}
+		    wget ${file}
 		fi
 	    fi
 	    
@@ -377,8 +376,7 @@ exit $ret_code
 # ____________________________
 
 
-# Some example website documentation for wget downloads:
-#
+
 #  https://oceanobservatories.org/knowledgebase/how-can-i-download-all-files-at-once-from-a-data-request/
 #  url=https://www.ncei.noaa.gov/thredds/catalog/model-cfs_refor_6h_9m_flx/2007/200711/20071127/catalog.html
 #  wget -r -l2 -nd -nc -np -e robots=off -A.grb2 --no-check-certificate  ${url}
