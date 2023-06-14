@@ -2689,6 +2689,15 @@ end subroutine LIS_quilt_b_domain
 
           elseif(map_proj.eq."MERCATOR") then              
 
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The MERCATOR map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
+
              ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',LIS_domain(n)%truelat1)
              call LIS_verify(ios, 'Error in nf90_get_att: TRUELAT1')
 
