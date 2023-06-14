@@ -13,7 +13,7 @@
 !
 ! !REVISION HISTORY:
 ! 14 Mar 2017: Sujay Kumar; Initial Specification
-! 29 May 2020: Bailing Li; Created for Noah-MP4.0.1 
+! 29 May 2020: Bailing Li; Created for Noah-MP4.0.1
 !
 ! !INTERFACE:
 subroutine noahmp401_qctws(n, LSM_State)
@@ -27,7 +27,7 @@ subroutine noahmp401_qctws(n, LSM_State)
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE,SMCWLT_TABLE
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
@@ -35,8 +35,8 @@ subroutine noahmp401_qctws(n, LSM_State)
 !
 !  Returns the soilmoisture related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -50,7 +50,7 @@ subroutine noahmp401_qctws(n, LSM_State)
   real, pointer          :: soilm4(:)
   real                   :: smmax
   real                   :: smmin
-  
+
   type(ESMF_Field)       :: sm1Field
   type(ESMF_Field)       :: sm2Field
   type(ESMF_Field)       :: sm3Field
@@ -70,8 +70,8 @@ subroutine noahmp401_qctws(n, LSM_State)
   real                   :: swemin,snodmin
 
   real                   :: sndens
-  logical                :: update_flag(LIS_rc%ngrid(n))  
-!------- 
+  logical                :: update_flag(LIS_rc%ngrid(n))
+!-------
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -96,7 +96,7 @@ subroutine noahmp401_qctws(n, LSM_State)
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm3,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet for Soil Moisture Layer 3 failed in noahmp401_qctws")
-  
+
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateGet for Soil Moisture Layer 4 failed in noahmp401_qctws")
@@ -108,7 +108,7 @@ subroutine noahmp401_qctws(n, LSM_State)
   !Wanshu
   call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for gw in noahmp401_qctws')
-  
+
   call ESMF_FieldGet(gwField,localDE=0,farrayPtr=gws,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmp401_qctws')
 
@@ -122,38 +122,31 @@ subroutine noahmp401_qctws(n, LSM_State)
 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status)
 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status)
+
 
   call ESMF_AttributeGet(sweField,"Max Value",swemax,rc=status)
   call LIS_verify(status)
   call ESMF_AttributeGet(sweField,"Min Value",swemin,rc=status)
   call LIS_verify(status)
-  call ESMF_AttributeGet(snodField,"Max Value",snodmax,rc=status)
-  call LIS_verify(status)
-  call ESMF_AttributeGet(snodField,"Min Value",snodmin,rc=status)
-  call LIS_verify(status)
-  
+
   !-------
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
   !Bailing Li: max min soil moisture should be retrieved based on soil type
      SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
-     MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP) 
-     MIN_THRESHOLD = SMCWLT_TABLE(SOILTYP) 
+     MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP)
+     MIN_THRESHOLD = SMCWLT_TABLE(SOILTYP)
      sm_threshold = MAX_THRESHOLD - 0.02
 
 
      if(soilm1(t).gt.sm_threshold) then
         soilm1(t) = sm_threshold
      endif
-     
+
      if(soilm1(t).lt.MIN_THRESHOLD) then
         soilm1(t) = MIN_THRESHOLD
      endif
@@ -185,50 +178,11 @@ subroutine noahmp401_qctws(n, LSM_State)
      if(gws(t).lt.gwsmin) then
         gws(t) = gwsmin
      endif
+
+     if(swe(t).lt.swemin) then
+        swe(t) = swemin
+     endif
      !------
   enddo
 
-
-    update_flag    = .true.
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     if((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
-        update_flag(gid) = .false.
-     endif
-
-  enddo
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-!Use the model's snow density from the previous timestep
-     sndens = 0.0
-     if(noahmp401_struc(n)%noahmp401(t)%snowh.gt.0) then
-       sndens = noahmp401_struc(n)%noahmp401(t)%sneqv/noahmp401_struc(n)%noahmp401(t)%snowh
-     endif
-
-!If the update is unphysical, do not update.
-     if(update_flag(gid)) then
-        snod(t) = snod(t)
-        swe(t)  = snod(t)*sndens
-     else ! do not update
-        snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
-        swe(t)  = noahmp401_struc(n)%noahmp401(t)%sneqv
-     end if
-
-     if(swe(t).gt.swemax) then
-        swe(t) = swemax
-     endif
-     if(snod(t).gt.snodmax) then
-        snod(t) = snodmax
-     endif
-
-  end do
-  
 end subroutine noahmp401_qctws
