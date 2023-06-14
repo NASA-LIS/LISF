@@ -100,6 +100,11 @@ subroutine read_maskfile(n, vegtype, fgrd, localmask )
       call LDT_endrun
    endif
 
+   if(LDT_rc%mask_source(n) =="MCD12Q1") then
+      call read_maskfile_MCD12Q1(n,vegtype, fgrd, localmask)
+      return
+   endif
+   
 ! -------------------------------------------------------------------
 !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN NEEDED DATA
 ! -------------------------------------------------------------------

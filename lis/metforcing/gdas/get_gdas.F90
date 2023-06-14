@@ -224,10 +224,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 95
      gridDesci(20) = 0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 1)
      endif
 
@@ -260,10 +263,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 128
      gridDesci(20) = 0.0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 2)
      endif
 
@@ -296,10 +302,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 192
      gridDesci(20) = 0.0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 3)
      endif
 
@@ -332,10 +341,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 288
      gridDesci(20) = 0.0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 4)
      endif
 
@@ -368,10 +380,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 440
      gridDesci(20) = 0.0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then 
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 5)
      endif
 
@@ -403,10 +418,13 @@ subroutine get_gdas(n, findex)
      gridDesci(10) = 768.0
      gridDesci(20) = 0.0
 
-! EMK Bug fix
-!     if(LIS_rc%met_ecor(findex).eq."lapse-rate") then
-     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
-          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! KRA - Previous:
+!     if(LIS_rc%met_ecor(findex).eq."lapse-rate" .or. &
+!          LIS_rc%met_ecor(findex) .eq. "lapse-rate and slope-aspect") then 
+! Including MicroMet downscaling:
+     if(LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+          LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+          LIS_rc%met_ecor(findex) == "micromet" ) then
         call read_gdas_elev(n,findex, 6)
      endif
 
