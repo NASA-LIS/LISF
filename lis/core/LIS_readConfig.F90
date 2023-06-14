@@ -140,12 +140,12 @@ subroutine LIS_readConfig()
 !       label="Map projection of the LIS domain:",rc=rc)
 !  call LIS_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
 
-  ! CM Grabs new lis.config entry for number of dimensinos of the lat/lon fields
+  ! CM Grabs new optional lis.config entry for the number of dimensions of the lat/lon fields
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nlatlon_dimensions,&
        label="Number of dimensions in the lat/lon output fields:",rc=rc)
   call LIS_warning(rc, 'Number of dimensions in the lat/lon output fields: option not specified in the config file. Assigning value to "1D"')
 
-    ! CM If the user did not specify the number of dimension for the lat/lon fields, use 1D. In LIS_domainMod, this will switch to 2D if the map projection can not be written with 1D. 
+    ! CM If the user did not specify the number of dimension for the lat/lon fields, use 1D. In LIS_domainMod, this will switch to 2D for all projections except latlon. 
     if ( rc /= 0 ) then
       LIS_rc%nlatlon_dimensions = "1D"
     endif   
