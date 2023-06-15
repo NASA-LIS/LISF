@@ -291,6 +291,10 @@ elif [ ${mon} -eq "12" ]; then
     day3=27
 fi
 echo "Previous mon,days 1-2-3 :: "${prevmon}", "${day1}"-"${day2}"-"${day3}
+echo " "
+echo "=============================================================================================================="
+echo "Please wait. CFSv2 file checker is running  to ensure all forcings files are available and not corrupted......"
+echo "=============================================================================================================="
 
 # Initial forecast dates:
 for prevmondays in ${day1} ${day2} ${day3}; do
