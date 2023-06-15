@@ -15,8 +15,10 @@ from datetime import datetime
 import xarray as xr
 import numpy as np
 from dateutil.relativedelta import relativedelta
+import yaml
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
+from bcsd_stats_functions import get_domain_info
 # pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values
@@ -37,23 +39,28 @@ def create_sorted_ts(data_ts):
 # Directory and file addresses
 CMDARGS = str(sys.argv)
 VAR = str(sys.argv[1])
-lat1, lat2, lon1, lon2 = int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
-INIT_FCST_MON = int(sys.argv[6])
+INIT_FCST_MON = int(sys.argv[2])
+CONFIGFILE=str(sys.argv[3])
+INDIR=str(sys.argv[4])
+OUTDIR = str(sys.argv[5])
+
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
+
+lat1, lat2, lon1, lon2 = get_domain_info(CONFIGFILE, extent=True)
+LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
+CLIM_SYR = config['BCSD']['clim_start_year']
+CLIM_EYR = config['BCSD']['clim_end_year']
+LEAD_FINAL = config['EXP']['lead_months']
+ENS_NUM = config['BCSD']['nof_raw_ens']
+
 print("INIT FCST MON:", INIT_FCST_MON)
-FCST_SYR, FCST_EYR = int(sys.argv[7]), int(sys.argv[8])
-LEAD_FINAL = int(sys.argv[9])
-ENS_NUM = int(sys.argv[10])
 MONTH_NAME = calendar.month_abbr[INIT_FCST_MON].lower() + "01"
 print("month name is:",MONTH_NAME)
-CLIM_SYR, CLIM_EYR = int(sys.argv[11]), int(sys.argv[12])
 
-INDIR=str(sys.argv[13])
 INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
 OUTFILE_TEMPLATE = '{}/{}_fcst_clim.nc'
-MASK_FILE = str(sys.argv[14])
-LATS = read_nc_files(MASK_FILE, 'lat')
-LONS = read_nc_files(MASK_FILE, 'lon')
-OUTDIR = str(sys.argv[15])
+
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR)
 
@@ -75,19 +82,17 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
 
 CLIM_ARRAY = np.empty((LEAD_FINAL+1, ((CLIM_EYR-CLIM_SYR)+1)*ENS_NUM, len(LATS), len(LONS)))
 ## Now generating forecast climatology for all grid cells in the mask
-CLIM_ARRAY[0:,:,:,:] = FCST_TS.sort(axis=1)
-len_ts = ((CLIM_EYR-CLIM_SYR)+1)*ENS_NUM
-CLIM_ARRAY[0,:,:,:] = np.arange(1, len_ts+1)/(len_ts+1)
-
-#for lat_num in range(0, len(LATS)):
-#	for lon_num in range(0, len(LONS)):
-#		## Only work with grid cells that are within the given mask
-#		if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and (lon1<=LONS[lon_num]) and (LONS[lon_num]<=lon2)):
-			# 1st column is for sorted quantile array
-      # The other twelve columns have sorted climatology values for all year
-#			for LEAD_NUM in range(0, LEAD_FINAL):
-#				## Now sorting climtology time series for the given lead time
-#				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] = create_sorted_ts(FCST_TS[LEAD_NUM, :, lat_num, lon_num])
+for lat_num in range(0, len(LATS)):
+	for lon_num in range(0, len(LONS)):
+		## Only work with grid cells that are within the given mask
+		if ((lat1<=LATS[lat_num]) and (LATS[lat_num]<=lat2) and (lon1<=LONS[lon_num])
+                       and (LONS[lon_num]<=lon2)):
+       		# 1st column is for sorted quantile array
+     # The other twelve columns have sorted climatology values for all year
+			for LEAD_NUM in range(0, LEAD_FINAL):
+				## Now sorting climtology time series for the given lead time
+				CLIM_ARRAY[LEAD_NUM+1, :, lat_num, lon_num], CLIM_ARRAY[0, :, lat_num, lon_num] =\
+                                  create_sorted_ts(FCST_TS[LEAD_NUM, :, lat_num, lon_num])
 
 ## finished storing climatology for all months
 OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, VAR)
