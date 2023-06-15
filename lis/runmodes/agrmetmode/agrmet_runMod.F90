@@ -22,7 +22,7 @@ module agrmet_runMod
 !  08Nov07    Yudong Tian  Simplified precipitation processing logic. 
 !			   No adjustment of cycle time here. It just marches along, 
 !			   and metforcing controls when to do precip processing. 
-!
+!  25 Apr 2023 Eric Kemp  Add routing support.
   implicit none
   
   PRIVATE
@@ -52,6 +52,8 @@ contains
     use LIS_perturbMod,        only : LIS_perturb_init, LIS_perturb_readrestart
     use LIS_dataAssimMod,      only : LIS_dataassim_init
     use LIS_paramsMod,         only : LIS_param_init
+    use LIS_routingMod,        only : LIS_routing_init, &
+         LIS_routing_readrestart ! EMK
 
 ! !DESCRIPTION:
 !  This is the initialize method for LIS in the AGRMET running mode. 
@@ -90,6 +92,8 @@ contains
     call LIS_surfaceModel_init
     call LIS_metforcing_init
     call LIS_initDAObservations
+    call LIS_routing_init ! EMK
+    call LIS_routing_readrestart ! EMK
     call LIS_dataassim_init
     call LIS_surfaceModel_setup
     call LIS_surfaceModel_readrestart
@@ -116,6 +120,8 @@ contains
                                       LIS_perturb_DAobservations
     use LIS_dataAssimMod,      only : LIS_dataassim_run, LIS_dataassim_output
     use LIS_logMod,            only : LIS_logunit
+    use LIS_routingMod,        only : LIS_routing_run, &
+         LIS_routing_writeoutput, LIS_routing_writerestart ! EMK
 !
 ! !DESCRIPTION:
 ! 
@@ -174,6 +180,9 @@ contains
              call LIS_dataassim_output(n)
              call LIS_surfaceModel_output(n)
              call LIS_surfaceModel_writerestart(n)
+             call LIS_routing_run(n) ! EMK
+             call LIS_routing_writeoutput(n) ! EMK
+             call LIS_routing_writerestart(n) ! EMK
           endif
        enddo
        call LIS_ticktime 

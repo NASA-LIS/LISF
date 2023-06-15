@@ -272,6 +272,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_UASMAPobsId = "UA SMAP"
    character*50, public,  parameter :: LVT_GRUNobsId = "GRUN runoff"
    character*50, public,  parameter :: LVT_COAMPSoutId = "COAMPSout"
+   character*50, public,  parameter :: LVT_SMAP_E_OPLId = "OPL E SMAP soil moisture retrieval"  
 !-------------------------------------------------------------------------
 ! Training algorithms
 !------------------------------------------------------------------------- 

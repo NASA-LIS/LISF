@@ -17,6 +17,7 @@
 # Standard modules
 import os
 import sys
+import platform
 import argparse
 import datetime
 import shutil
@@ -210,9 +211,13 @@ def _driver(config):
             jobfile = JOB_NAME + '_' + nmme_model + '_run.j'
             jobname = JOB_NAME + '_' + nmme_model + '_'
 
+            if 'discover' in platform.node() or 'borg' in platform.node():
+                mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
+            else:
+                mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
+
             utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
-                                      in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
-                                      lisconfig_target)
+                                      in_command=mpi_cmd)
         else:
             # The forecast is divided to nseg number of jobs
             slen = np.ones (nseg, dtype = np.int32)*lseg
@@ -242,12 +247,16 @@ def _driver(config):
                                          ic_date = dates[0], jobid = '_{:02d}'.format(i))
 
                 jobfile = JOB_NAME + '_' + nmme_model + jno + '_run.j'
-                jobname = JOB_NAME + '_' + nmme_model + '_' + jno + '_'
+                jobname = JOB_NAME + '_' + nmme_model + jno + '_'
                 print(lisconfig_target)
 
+                if 'discover' in platform.node() or 'borg' in platform.node():
+                    mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
+                else:
+                    mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
+
                 utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
-                                 in_command='mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' +
-                                 lisconfig_target)
+                                 in_command=mpi_cmd)
 
     print("[INFO] Done generating LIS config files and SLURM script files.")
 

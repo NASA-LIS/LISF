@@ -31,5 +31,5 @@ o store_lis_output.py will copy most GRIB1 output files to a new, semi-permanent
    directory for subsequent use by S2S land DA LIS runs.  (The first GRIB1 file
    valid at the start of the LIS run is skipped, since it has no precipitation
    data.) Also, the restart file produced at t=24 hrs is copied to a ./restart
-   directory, for use by the next LIS forcing run.
+   directory (e.g., input/restarts/), for use by the next LIS forcing run.
 

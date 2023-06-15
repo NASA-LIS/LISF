@@ -59,9 +59,8 @@ def _driver():
 
     # import local module
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
+#pylint: disable=import-outside-toplevel
     from s2s_modules.shared import utils
-    s2spath = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/'
-    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config['SETUP']['ldtinputfile']
 
     # Path of the main project directory
     projdir = cwd
@@ -71,9 +70,8 @@ def _driver():
 
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-    
+
     # List of NMME models and ensemble sizes to use
-    nmme_models = config['EXP']['NMME_models']
     ensemble_sizes = config['EXP']['ensemble_sizes'][0]
 
     # Path for where raw and bias corrected forecast files are located:

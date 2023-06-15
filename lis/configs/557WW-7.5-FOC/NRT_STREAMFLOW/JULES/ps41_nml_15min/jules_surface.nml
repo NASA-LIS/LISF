@@ -1,0 +1,17 @@
+&jules_surface
+all_tiles=0,
+cor_mo_iter=3,
+!!fd_stab_dep=0,
+formdrag=0,
+i_aggregate_opt=1,
+i_modiscopt=0,
+iscrntdiag=0,
+l_aggregate=.true.,
+l_anthrop_heat_src=.false.,
+l_elev_land_ice=.false.,
+l_elev_lw_down=.false.,
+l_epot_corr=.true.,
+l_land_ice_imp=.true.,
+l_point_data=.false.,
+!!orog_drag_param=0.15,
+/

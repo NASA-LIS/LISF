@@ -19,6 +19,7 @@ module galwemge_forcingMod
 
 ! REVISION HISTORY:
 ! 09 May 2022; Yeosang Yoon; Initial Specification
+! 05 Apr 2023; Yeosang Yoon; Update code to fit new format
 
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -125,8 +126,8 @@ contains
     enddo
 
     do n=1, LIS_rc%nnest
-       galwemge_struc(:)%nc = 640  ! galwem-ge
-       galwemge_struc(:)%nr = 480
+       galwemge_struc(:)%nc = 720  ! galwem-ge
+       galwemge_struc(:)%nr = 361
     enddo
 
     ! 8 - key met field
@@ -165,13 +166,13 @@ contains
        gridDesci(n,1)  = 0
        gridDesci(n,2)  = galwemge_struc(n)%nc !gnc
        gridDesci(n,3)  = galwemge_struc(n)%nr !gnr
-       gridDesci(n,4)  = -89.8125    !lat(1,1)
-       gridDesci(n,5)  = -179.7188   !lon(1,1)
+       gridDesci(n,4)  = -89.750    !lat(1,1)
+       gridDesci(n,5)  = -179.750   !lon(1,1)
        gridDesci(n,6)  = 128
-       gridDesci(n,7)  = 89.8125     !lat(gnc,gnr)
-       gridDesci(n,8)  = 179.7188    !lon(gnc,gnr)
-       gridDesci(n,9)  = 0.5625      !dx
-       gridDesci(n,10) = 0.3750      !dy
+       gridDesci(n,7)  = 89.750     !lat(gnc,gnr)
+       gridDesci(n,8)  = 179.750    !lon(gnc,gnr)
+       gridDesci(n,9)  = 0.500      !dx
+       gridDesci(n,10) = 0.500      !dy
        gridDesci(n,20) = 0           !for 0 to 360?
 
        galwemge_struc(n)%mi = galwemge_struc(n)%nc*galwemge_struc(n)%nr

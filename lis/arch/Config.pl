@@ -857,8 +857,8 @@ if($use_petsc eq ""){
 }
 
 if($use_petsc == 1) {
-   if(defined($ENV{LIS_PETSc})){
-      $sys_petsc_path = $ENV{LIS_PETSc};
+   if(defined($ENV{LIS_PETSC})){
+      $sys_petsc_path = $ENV{LIS_PETSC};
       $inc = "/include/";
       $lib = "/lib/";
       $inc_petsc=$sys_petsc_path.$inc;
@@ -867,7 +867,7 @@ if($use_petsc == 1) {
    else {
       print "--------------ERROR---------------------\n";
       print "Please specify the PETSc path using\n";
-      print "the LIS_PETsc variable.\n";
+      print "the LIS_PETSC variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -1069,8 +1069,8 @@ if($use_mkllapack == 1){
 }
 
 if($use_petsc == 1){
-   $fflags = $fflags." -I\$(INC_PETSc)";
-   $ldflags = $ldflags." -L\$(LIB_PETSc) -Wl,-rpath,\$(LIB_PETSc) -lpetsc -lm";
+   $fflags = $fflags." -I\$(INC_PETSC)";
+   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm";
 }
 
 if($use_esmf_trace == 1){
@@ -1159,8 +1159,8 @@ printf conf_file "%s%s\n","LIB_PROF_UTIL   = $lib_crtm_prof";
 printf conf_file "%s%s\n","INC_CMEM        = $inc_cmem";
 printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
-printf conf_file "%s%s\n","INC_PETSc       = $inc_petsc";
-printf conf_file "%s%s\n","LIB_PETSc       = $lib_petsc";
+printf conf_file "%s%s\n","INC_PETSC       = $inc_petsc";
+printf conf_file "%s%s\n","LIB_PETSC       = $lib_petsc";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
