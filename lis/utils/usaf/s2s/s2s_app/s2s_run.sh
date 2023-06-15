@@ -903,11 +903,11 @@ s2splots(){
     THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
     ((PLINE++))
-    #FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
-    #sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
-    #((PLINE++))
-    #FIFTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_ccdi.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
-    #sed -i "${PLINE}i ${FIFTH_COMMAND}" s2splots_run.j
+    FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1"
+    sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
+    ((PLINE++))
+    FIFTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2"
+    sed -i "${PLINE}i ${FIFTH_COMMAND}" s2splots_run.j
 
     s2splots_ID=$(submit_job "$s2smetric_tiff_ID" "${jobname}_run.j")
 }
