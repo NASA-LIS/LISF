@@ -132,7 +132,7 @@ if [ $SOURCE_ONLY == 'N' ]; then
 ONE="N"
 REPORT=
 DELETE=
-STEP=
+STEP="E2E"
 
 while getopts ":y:m:c:d:r:s:o:" opt; do
     case $opt in
@@ -162,7 +162,7 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "---------------------------------"
 	   echo "  YEAR:        forecast start year"
 	   echo "  MONTH:       forecast start month [1 to 12]"
-	   echo "  CONFIG_FILE: E2E main config file (for hindcast or forecast)"
+	   echo "  CONFIG_FILE: E2ES main config file (for hindcast or forecast)"
 	   echo "  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH."
 	   echo "     "
 	   echo "with OPTIONAL flags:"
@@ -959,9 +959,17 @@ if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	download_forecasts
+	if [[ $STEP == "E2E" ]] || [[ $STEP == "BCSD" ]]; then
+	    download_forecasts
+	fi
     else
-	echo 
+	echo
+	# CFSv2 forecast
+	sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
+	ret_code=$?
+	if [ $ret_code -gt 0 ]; then
+     	    exit
+	fi
 	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
 	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
 	    exit
@@ -1088,7 +1096,7 @@ case $STEP in
 	set_permission $s2splots_ID
 	exit
     ;;
-    *)
+    E2E)
 	if [ $DATATYPE == "forecast" ]; then
 	    lis_darun
 	fi
