@@ -115,7 +115,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
 
-    for var_name in ['RootZone-SM', 'Surface-SM', 'Precip', 'Air-T']:
+    for var_name in ['RZSM', 'SFCSM', 'Precip', 'AirT']:
         # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
@@ -131,7 +131,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         # colors defualts
         load_table = plot_utils.dicts('anom_tables', var_name)
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:  
+            if var_name in {'AirT', 'Air-T', 'Air_T'}:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
@@ -152,7 +152,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
 
-        if (var_name in {'Air-T', 'Air_T'}) and \
+        if (var_name in {'AirT', 'Air-T', 'Air_T'}) and \
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
@@ -178,7 +178,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
         clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
 
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:
+            if var_name in {'AirT', 'Air-T', 'Air_T'}:
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
             elif var_name == 'Precip':
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'

@@ -74,6 +74,9 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   - Cartopy    0.21.0      0.21.0
   - Matplotlib 3.6.1       3.6.2
 
+  ** Note:  Future tests and any code updates will be
+       made when we upgrade to Python 3.10.
+
 
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
 
@@ -327,6 +330,9 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   4.1 DOWNLOADING FORECAST INPUT FORCINGS
 
+    * NOTE: Aim to have all forecast files downloaded by the 9th
+            of each month.  More information below.
+
     4.1.1 Downloading CFSv2 forcing files
 
     - To download the CFSv2 forecast files used for the forecast
@@ -334,11 +340,11 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
  
        s2s_app/wget_cfsv2_oper_ts_e2es.sh   
 
-    * Note: We have observed on occasion that some CFSv2 files
-        posted by NCEP/NCEI could be missing or corrupted. If this occurs
-        for a given initial forecast month, we have provided a full suite
-        of instructions on our approach to "patching" those missing and/or
-        corrupt files by using neighboring CFSv2 dates.
+    * Note:  In the case that any files that are downloaded are found
+        to actually be missing from the cloud servers or may only contain
+        partial records, we have provided a set of instructions on
+        our approach to "patching" those missing and/or corrupt files
+        by using neighboring CFSv2 dates.
 
       For our current solution, please follow the steps outlined in our
         accompanying README file:
@@ -365,7 +371,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
        Do you want to continue (Y/N)?
 
       We recommend the user to wait until all files are available on the IRI/Columbia
-       University server before trying to complete the remaining E2E steps. 
+       University server before proceeding with the remaining E2E steps. 
 
 
   4.2 GLOBAL USAF FORCING (Stand-alone step from E2ES)
@@ -661,3 +667,4 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  End of document.
 
  * * * * * * * 
+
