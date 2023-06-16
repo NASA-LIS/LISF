@@ -1,8 +1,11 @@
 README - What to do when CFSv2 files are missing or corrupted
 -------------------------------------------------------------------------------
 
-Occasionally, the raw CFSv2 forecast files that are downloaded from NCEI and
-used as input to the S2S system are either missing and/or corrupted.
+There may be a rare occasion when the "raw" CFSv2 forecast files may be missing
+or are incomplete. The latest cloud-based services of the CFSv2 downloads 
+should help to mitigate this issue. However, if an occasion occurs when files
+are missing, we provide the below guidance and steps to help "patch" those
+files.
 
 SECTION 1: Identifying missing or corrupted CFSv2 files
 -------------------------------------------------------------------------------

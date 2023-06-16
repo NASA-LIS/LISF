@@ -10,6 +10,7 @@
 # REVISION HISTORY:
 # 22 Oct 2021: Eric Kemp/SSAI, first version
 # 29 Oct 2021: Eric Kemp/SSAI, add config file
+# 02 Jun 2023: K. Arsenault + S. Mahanama, updated 557 WW filename conventions.
 #
 #------------------------------------------------------------------------------
 """
@@ -42,9 +43,9 @@ def _run_convert_s2s_anom_cf(config, currentdate, baseoutdir):
     cfoutdir = \
         f"{baseoutdir}" + \
         f"/metrics_cf/{config['EXP']['lsmdir']}"
-
     if not os.path.exists(cfoutdir):
         os.makedirs(cfoutdir)
+
     year = currentdate.year
     month = currentdate.month
     metric_vars = config["POST"]["metric_vars"]
@@ -56,9 +57,9 @@ def _run_convert_s2s_anom_cf(config, currentdate, baseoutdir):
             touchfile += f"/{config['EXP']['lsmdir']}"
             touchfile += f"/{anom_type}.{config['EXP']['lsmdir']}"
             touchfile += f".{nmme_model}.done"
-    #while not os.path.exists(touchfile):
-    #    print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
-    #    time.sleep(30)
+           #while not os.path.exists(touchfile):
+           #    print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
+           #    time.sleep(30)
             rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/'
             for metric_var in metric_vars:
                 metricfile = os.path.dirname(touchfile)

@@ -9,6 +9,7 @@
 #
 # REVISION HISTORY:
 # 25 Oct 2021: Eric Kemp/SSAI, first version
+# 02 Jun 2023: K. Arsenault + S. Mahanama, updated 557 WW file conventions.
 #
 #------------------------------------------------------------------------------
 """
@@ -43,7 +44,7 @@ def _get_streamflow(sel_cim_data):
 
 def sel_var(sel_cim_data, var_name, model):
     """Selects climatology for the given variable."""
-    if var_name == "RootZone-SM":
+    if var_name == "RZSM":
         if model == "CLSM":
             # for clsm the layer-2 is rootzone soil moisture
             var_sel_clim_data = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1)
@@ -80,11 +81,10 @@ def sel_var(sel_cim_data, var_name, model):
         # python dictionary of functions, and call the appropriate function
         # based on the variable name.
         selections = {
-            "Surface-SM" : _get_surface_sm,
+            "SFCSM" : _get_surface_sm,
             "TWS" : _get_tws,
             "Precip" : _get_precip,
-            "Air_T" : _get_air_t,
-            "Air-T" : _get_air_t,
+            "AirT" : _get_air_t,
             "ET" : _get_et,
             "Streamflow" : _get_streamflow,
         }
