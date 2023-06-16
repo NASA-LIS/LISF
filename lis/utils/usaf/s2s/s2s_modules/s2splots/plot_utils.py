@@ -569,8 +569,10 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if (domain[3] - domain[2]) < 180.:
             ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
                             edgecolor='black', facecolor='none')
-
-        cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
+        if under_over[0] == "white" and under_over[1] == "white":
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
+        else:
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
         cbar.ax.tick_params(labelsize=fscale*20, labelrotation=90)
         if clabel is not None:
             cbar.set_label(clabel, fontsize=fscale*30)
