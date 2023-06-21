@@ -31,8 +31,8 @@ TARGETDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 # Variable is precipitation
 var='prec'
 
-#for model in 'NCEP-CFSv2' 'NASA-GEOSS2S' 'CanSIPS-IC3' 'COLA-RSMAS-CCSM4' 'GFDL-SPEAR'
-for model in 'NCEP-CFSv2'
+for model in 'NCEP-CFSv2' 'NASA-GEOSS2S' 'CanSIPS-IC3' 'COLA-RSMAS-CCSM4' 'GFDL-SPEAR'
+#for model in 'NCEP-CFSv2'
 do
     OUTDIR=$TARGETDIR"/"$model
     mkdir -p $OUTDIR

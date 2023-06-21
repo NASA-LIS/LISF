@@ -1,0 +1,207 @@
+#Overall driver options
+Running mode:                           "retrospective"
+Map projection of the LIS domain:       latlon
+Number of nests:                        1
+Number of surface model types:          2
+Surface model types:                    "LSM"  "Openwater"
+Surface model output interval:          3hr
+Land surface model:                     "JULES.5.0"
+Open water model:                       "template open water"
+Number of met forcing sources:          1
+Blending method for forcings:           overlay
+Met forcing sources:                    "GALWEM-GE forecast"
+Met forcing chosen ensemble member:     1
+Topographic correction method (met forcing):  "none"
+Enable spatial downscaling of precipitation:  0
+Spatial upscaling method (met forcing):       average
+Spatial interpolation method (met forcing):   bilinear
+Temporal interpolation method (met forcing):  linear
+
+#Runtime options
+Forcing variables list file:            ./input/forcing_variables.txt
+Output methodology:                     "2d ensemble gridspace"
+Output model restart files:             1
+Output data format:                     netcdf
+Output naming style:    "557WW medium range forecast convention"
+AGRMET security classification:            U
+AGRMET distribution classification:        C
+AGRMET data category:                      FCST
+AGRMET area of data:                       GLOBAL
+Start mode:                             restart
+Starting year:                          2023 
+Starting month:                            3
+Starting day:                             27
+Starting hour:                            12
+Starting minute:                           0
+Starting second:                           0
+Ending year:                            2023
+Ending month:                              4       # End of 16-day forecast
+Ending day:                               12
+Ending hour:                               0
+Ending minute:                             0
+Ending second:                             0
+Undefined value:                       -9999
+Output directory:                       "output/2023032712Z/rapid/jules50/"
+Diagnostic output file:                 "output/2023032712Z/rapid/jules50/log/lislog"
+
+# Number of forecast ensemble members:
+Number of ensembles per tile:             18    
+
+#The following options are used for subgrid tiling based on vegetation
+Maximum number of surface type tiles per grid:    1
+Minimum cutoff percentage (surface type tiles):   0.05
+Maximum number of soil texture tiles per grid:    1
+Minimum cutoff percentage (soil texture tiles):   0.05
+Maximum number of soil fraction tiles per grid:   1
+Minimum cutoff percentage (soil fraction tiles):  0.05
+Maximum number of elevation bands per grid:       1
+Minimum cutoff percentage (elevation bands):      0.05
+Maximum number of slope bands per grid:           1
+Minimum cutoff percentage (slope bands):          0.05
+Maximum number of aspect bands per grid:          1
+Minimum cutoff percentage (aspect bands):         0.05
+
+#Processor layout
+#Should match the total number of processors used
+Number of processors along x:         256
+Number of processors along y:           1
+Halo size along x:                      0
+Halo size along y:                      0
+
+#Sub-models
+Radiative transfer model:               none
+Number of application models:           0
+
+#---------------------DATA ASSIMILATION ----------------------------------
+#Data assimilation options
+Number of data assimilation instances:  0
+Data assimilation algorithm:                        none  none
+Data assimilation set:                              none  none
+Data assimilation exclude analysis increments:      0     0
+Data assimilation number of observation types:      0     0
+Data assimilation output interval for diagnostics:  1da   1da
+Data assimilation output ensemble members:          0     0
+Data assimilation output processed observations:    0     0
+Data assimilation output innovations:               0     0
+
+Data assimilation use a trained forward model:        0
+Data assimilation trained forward model output file:  none
+
+#Bias estimation options
+Bias estimation algorithm:                         none   none
+Bias estimation attributes file:                   none   none
+Bias estimation restart output frequency:          1da    1da
+Bias estimation start mode:                        none   none
+Bias estimation restart file:                      none   none
+
+#Perturbation options
+Perturbations start mode:                          coldstart  coldstart
+Perturbations restart output interval:             1mo    1mo
+Perturbations restart filename:                    none   none
+Apply perturbation bias correction:                0      0
+
+Forcing perturbation algorithm:                    none   none
+Forcing perturbation frequency:                    1hr    1hr
+Forcing attributes file:                           none   none
+Forcing perturbation attributes file:              none   none
+
+State perturbation algorithm:                      none   none
+State perturbation frequency:                      3hr    3hr
+State attributes file:                             none   none
+State perturbation attributes file:                none   none
+
+Observation perturbation algorithm:                none   none
+Observation perturbation frequency:                6hr    6hr
+Observation attributes file:                       none   none
+Observation perturbation attributes file:          none   none
+
+#------------------------DOMAIN SPECIFICATION--------------------------
+#The following options list the choice of parameter maps to be used
+LIS domain and parameter data file:     ./input/lis_input.global.jules50.nc
+Landmask data source:                   LDT
+Landcover data source:                  LDT
+Soil texture data source:               none
+Soil fraction data source:              none
+Soil color data source:                 none
+Elevation data source:                  LDT
+Slope data source:                      LDT
+Aspect data source:                     LDT
+Curvature data source:                  none
+LAI data source:                        none
+SAI data source:                        none
+Albedo data source:                     LDT
+Max snow albedo data source:            LDT
+Greenness data source:                  LDT
+Roughness data source:                  none
+Porosity data source:                   none
+Ksat data source:                       none
+B parameter data source:                none
+Quartz data source:                     none
+Emissivity data source:                 none
+
+TBOT lag skin temperature update option:  0
+TBOT skin temperature lag days:           0
+
+#--------------------------------FORCINGS----------------------------------
+# GALWEM-GE forecast
+GALWEM-GE forecast forcing directory:          ./input/GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast
+GALWEM-GE forecast number of ensemble members: 18
+
+#-----------------------LAND SURFACE MODELS--------------------------
+JULES.5.0 model timestep:                 15mn
+JULES.5.0 restart output interval:        1mo
+JULES.5.0 restart file:                   ./rstfile/2023032712Z/jules50/LIS_RST_JULES50_202303271200_EN18.d01.nc
+JULES.5.0 namelist directory:             ./JULES/ps41_nml_15min
+JULES.5.0 reference height for forcing T and q:  2
+JULES.5.0 reference height for forcing u and v: 10
+
+Template open water timestep:             15mn
+
+#---------------------------MODEL OUTPUT CONFIGURATION-----------------------
+#Specify the list of ALMA variables that need to be featured in the
+#LSM model output
+Output start year:
+Output start month:
+Output start day:
+Output start hour:
+Output start minutes:
+Output start seconds:
+
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.jules50
+
+#------------------------ ROUTING ----------------------------------
+# ROUTING MODEL:  RAPID
+Routing model:                               "RAPID router"
+
+RAPID routing model time step:               "1da"
+RAPID river routing time step:               "15mn"   # less than routing model time step
+RAPID routing model output interval:         "3hr"
+RAPID routing model restart interval:        "1mo"
+
+RAPID routing model start mode:         restart
+RAPID routing model restart file:       ./rstfile/2023032712Z/jules50/LIS_RST_RAPID_router_202303271200.d01.nc
+RAPID run in ensemble mode:             1 # 0=open loop; 1=ensemble mean; 2(not support)=ensemble
+
+# Runtime option
+RAPID run option:                       1 # 1=regular run
+RAPID routing option:                   1 # 1=matrix-based Muskingum; 2=traditional Muskingum; 3=Transbnd. matrix-based; 4=Muskingum operator
+RAPID cost function phi option:         1 # 1=phi1; 2=phi2
+
+RAPID initial flow:                     .false.
+RAPID write final flow:                 .false.
+RAPID compute volume:                   .false.
+RAPID human-induced flow:               .false.
+RAPID upstream forcing:                 .false.
+RAPID dam model used:                   .false.
+RAPID output influence:                 .false.
+RAPID uncertainty quantification:       .false.
+
+RAPID river connectivity file:          ./input/rapid_prameters/rapid_connect.csv
+RAPID max number of upstream reaches:   3
+RAPID river weight table:               ./input/rapid_prameters/weight_lis.csv
+RAPID river basin ID file:              ./input/rapid_prameters/riv_bas_id.csv
+RAPID Muskingum parameter k file:       ./input/rapid_prameters/k.csv
+RAPID Muskingum parameter x file:       ./input/rapid_prameters/x.csv
+
+RAPID namelist file:                    ./input/rapid_prameters/rapid_namelist

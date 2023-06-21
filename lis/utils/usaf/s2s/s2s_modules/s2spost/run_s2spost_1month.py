@@ -11,6 +11,7 @@
 # 23 Sep 2021: Eric Kemp (SSAI), first version.
 # 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
 # 29 Oct 2021: Eric Kemp/SSAI, add config file.
+# 02 Jun 2023: K. Arsenault, updated the s2spost filenaming conventions
 #
 #------------------------------------------------------------------------------
 """
@@ -29,19 +30,20 @@ import yaml
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {sys.argv[0]}"
-    txt += " configfile topdatadir YYYYMM model_forcing"
+    txt += " configfile topdatadir fcstyyyymm YYYYMM model_forcing"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]   configfile is path to LDT parameter file")
     print("[INFO]   topdatadir is top-level directory for LIS data")
-    print("[INFO]   YYYYMM is month to process")
+    print("[INFO]   fcstyyyymm is the initial forecast year and month [YYYYMM]")
+    print("[INFO]   YYYYMM is the lead month to process")
     print("[INFO]   model_forcing is ID for atmospheric forcing for LIS")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -58,23 +60,36 @@ def _read_cmd_args():
         print(f"[ERR] LIS data directory {topdatadir} does not exist!")
         sys.exit(1)
 
-    # Get valid year and month
-    yyyymm = sys.argv[3]
+    # Get initial year and month
+    fcstyyyymm = sys.argv[3]
+    if len(fcstyyyymm) != 6:
+        print("[ERR] Invalid length of initial forecast yyyymm, must be 6 characters!")
+        sys.exit(1)
+    fcstyear = int(fcstyyyymm[0:4])
+    fcstmonth = int(fcstyyyymm[4:6])
+    try:
+        fcstdate = datetime.datetime(fcstyear, fcstmonth, day=1)
+    except ValueError:
+        print("[ERR] Invalid initial forecast yyyymm passed to script!")
+        sys.exit(1)
+
+    # Get valid lead year and month
+    yyyymm = sys.argv[4]
     if len(yyyymm) != 6:
-        print("[ERR] Invalid length of YYYYMM, must be 6 characters!")
+        print("[ERR] Invalid length of lead YYYYMM, must be 6 characters!")
         sys.exit(1)
     year = int(yyyymm[0:4])
     month = int(yyyymm[4:6])
     try:
         startdate = datetime.datetime(year, month, day=1)
     except ValueError:
-        print("[ERR] Invalid YYYYMM passed to script!")
+        print("[ERR] Invalid lead YYYYMM passed to script!")
         sys.exit(1)
 
     # Get model forcing ID
-    model_forcing = sys.argv[4]
+    model_forcing = sys.argv[5]
 
-    return configfile, topdatadir, startdate, model_forcing
+    return configfile, topdatadir, fcstdate, startdate, model_forcing
 
 def _move_files(topdatadir, startdate, model_forcing):
     """Move CF files into common directory for single model forcing."""
@@ -101,7 +116,7 @@ def _is_lis_output_missing(curdate, model_forcing):
             return True
     return False
 
-def _loop_daily(config, configfile, topdatadir, startdate, model_forcing):
+def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing):
     """Automate daily processing for given month."""
 
     delta = datetime.timedelta(days=1)
@@ -134,6 +149,8 @@ def _loop_daily(config, configfile, topdatadir, startdate, model_forcing):
         cmd += f" {topdatadir}/cf_{model_forcing}_"
         cmd += f"{startdate.year:04d}{startdate.month:02d}"
 
+        cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
+
         cmd += f" {curdate.year:04d}{curdate.month:02d}{curdate.day:02d}00"
 
         cmd += f" {model_forcing}"
@@ -146,7 +163,7 @@ def _loop_daily(config, configfile, topdatadir, startdate, model_forcing):
 
         curdate += delta
 
-def _proc_month(config, configfile, topdatadir, startdate, model_forcing):
+def _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forcing):
     """Create the monthly CF file."""
 
     scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
@@ -170,6 +187,7 @@ def _proc_month(config, configfile, topdatadir, startdate, model_forcing):
 
     cmd += f" {workdir}"
     cmd += f" {workdir}" # Use same directory
+    cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
     cmd += f" {firstdate.year:04d}{firstdate.month:02d}{firstdate.day:02d}"
     cmd += f" {enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
     cmd += f" {model_forcing}"
@@ -188,13 +206,13 @@ def _create_done_file(topdatadir, startdate, model_forcing):
 
 def _driver():
     """Main driver"""
-    configfile, topdatadir, startdate, model_forcing = _read_cmd_args()
+    configfile, topdatadir, fcstdate, startdate, model_forcing = _read_cmd_args()
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    _loop_daily(config, configfile, topdatadir, startdate, model_forcing)
-    _proc_month(config, configfile, topdatadir, startdate, model_forcing)
+    _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
+    _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forcing)
     _create_done_file(topdatadir, startdate, model_forcing)
     _move_files(topdatadir, startdate, model_forcing)
 

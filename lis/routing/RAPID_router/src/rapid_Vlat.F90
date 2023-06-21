@@ -66,7 +66,11 @@ do i=1,n_weight_table
 
      ! check if all npoints points correspond to the same streamID
      if (npt(i) > 1) then
-        if (i > 1 .AND. (rivid(i-1) == rivid(i)))  CYCLE
+        ! EMK Avoid array bounds read error
+        !if (i > 1 .AND. (rivid(i-1) == rivid(i)))  CYCLE
+        if (i > 1) then
+           if (rivid(i-1) == rivid(i)) cycle
+        end if
 
         do j=1,npt(i)
            col=idx_i(i+j-1)+1

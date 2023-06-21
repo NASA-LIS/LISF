@@ -3,7 +3,7 @@
  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 01 February 2023
+  Last Modified 24 May 2023
 
 		TABLE OF CONTENTS
 		_________________
@@ -55,6 +55,9 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 * LIS 7.5, compiled with GRIB2 support (ecCodes and AFWA-specific
     grib configuration settings), and netCDF4 with compression.
 
+* For running on Discover, you will load the following module:
+  LISF/env/discover/lisf_7.5_intel_2021.4.0_s2s
+
 * Python 3.9, with the following extra libraries installed:
                NCCS        HPC
   - xarray     2022.10.0   2022.11.0
@@ -64,11 +67,15 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   - dateutil   2.8.2       2.8.2
   - pandas     1.5.1       1.5.1
   - numpy      1.23.4      1.23.4
-  - numba      0.56.3      0.56.3
-  - pyyaml     6.0         6.0
-  - scipy      1.9.3       1.9.3
+  - PyYAML     6.0         6.0
   - GDAL       3.5.2       3.5.2
-  - NetCDF4    1.6.1       
+  - OSGEO      3.5.2       3.5.2
+  - NetCDF4    1.6.1       1.6.1
+  - Cartopy    0.21.0      0.21.0
+  - Matplotlib 3.6.1       3.6.2
+
+  ** Note:  Future tests and any code updates will be
+       made when we upgrade to Python 3.10.
 
 
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
@@ -127,13 +134,13 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   nmme_download_dir: [DIRECTORY_PATH_WHERE_NMME_FORECAST_FILES_ARE_DOWNLOADED]
   ... 
 
- Currently, the climatology-based years are set from 1991-2021, 
+ Currently, the climatology-based years are set from 1991-2020, 
   which will be reflected in the climatology input files that
   will be part of the supplementary input file package.
 
  Note: CFSv2 does have up to 24 members in the seasonal forecast
-  files but for our S2S setup, we use the first 12 members up to
-  the start of the 1st of the month.
+  files (for the NMME configuration), but for our S2S setup, we use 
+  the first 12 members up to the start of the 1st of the month.
  
 
 3. RUNNING THE GHI S2S SUBSYSTEM
@@ -211,7 +218,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
                           STATUS OF SLURM JOBS                         
 #######################################################################
   
-            JOB FILE                          WALLTIME 
+            JOB FILE                 WALLTIME (HH:MM:SS)
   
   1/105  lisda_run.j                         1h 12m  0s
   2/105  ldtics_run.j                        0h 11m  4s
@@ -230,8 +237,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 104/105  s2spost_GNEMO5_202304_run.j         0h 29m 23s
 105/105  s2spost_GNEMO5_202305_run.j         0h 29m 58s
   
- TOTAL SBUs        : 1484.81
- ELAPSED TIME      : 60.05 hours
+ ELAPSED TIME :  1d 08h 14m 52s
  -------------------------------
 
  The above example report output will show all the E2ES
@@ -254,7 +260,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
  ├── download_nmme_precip.sh
  ├── wget_cfsv2_oper_ts_e2es.sh
  ├── nctool.py
- └── write_to_file.py
+ └── s2s_api.py
 
  lis/utils/usaf/s2s/s2s_modules/
  ------------------------------
@@ -324,6 +330,9 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   4.1 DOWNLOADING FORECAST INPUT FORCINGS
 
+    * NOTE: Aim to have all forecast files downloaded by the 9th
+            of each month.  More information below.
+
     4.1.1 Downloading CFSv2 forcing files
 
     - To download the CFSv2 forecast files used for the forecast
@@ -331,22 +340,18 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
  
        s2s_app/wget_cfsv2_oper_ts_e2es.sh   
 
-    * Note: We have observed on a rare occasion that some CFSv2 files
-        posted by NCEP/NCEI could be corrupted. Currently, the approach
-        we have used is to run the below steps, and if a file may be corrupted,
-        then the download will stop or crash the E2E runtime. 
-        Here is a solution that we have tested for such situations:
-  
-       a) Delete the month that just crashed
+    * Note:  In the case that any files that are downloaded are found
+        to actually be missing from the cloud servers or may only contain
+        partial records, we have provided a set of instructions on
+        our approach to "patching" those missing and/or corrupt files
+        by using neighboring CFSv2 dates.
 
-           s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE -d Y
+      For our current solution, please follow the steps outlined in our
+        accompanying README file:
 
-       b) Apply criterion to choose an appropriate file to be used for patch,
-         and add a line to:
-
-           supplementary_files/bcsd_fcst/patch_files/patch_files_list.txt
-
-       c) Rerun E2ES.
+        s2s_app/README_CFSv2_PATCHING
+ 
+      More examples and details are provided in that file.
 
  
     4.1.2 Downloading NMME precipitation forcing files
@@ -357,15 +362,16 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
        s2s_app/download_nmme_precip.sh
 
     * Note: Based on experience, we have found that IRI/Columbia University
-         can take about 8-10 days to upload all NMME model-based files. When running
-         the above script and if not all precipitation files are available yet,
-         a message will be given be along with the following option, for example:
+         try to have all NMME model-based files uploaded by the 8th or 9th of 
+         each month.  When running the above script and if not all precipitation 
+         files are available yet, a message will be given be along with the 
+         following option, for example:
 
        Precipitation forecasts are available for only 2 NMME models (GEOS5v2 CCM4). 
        Do you want to continue (Y/N)?
 
-     We recommend the user to wait until all files are available on the IRI/Columbia
-      University server before trying to complete the remaining E2E steps. 
+      We recommend the user to wait until all files are available on the IRI/Columbia
+       University server before proceeding with the remaining E2E steps. 
 
 
   4.2 GLOBAL USAF FORCING (Stand-alone step from E2ES)
@@ -447,7 +453,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   4.6 LIS FORECAST
     lis_fcst:  Running the LIS forecast step
 
-  - This step runs the Noah-MP-4.0.1 land surface model and the
+  - This step runs the Noah-MP-4.0.1 land surface model (LSM) and the
     HyMAP2 routing model in LIS using 12-member bias-corrected CFSv2 forcing
     (one of the six NMME models) for the ~25KM S2S global domain in
     "forecast" run-mode, and NMME models' precipitation ensembles.
@@ -523,7 +529,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
 
  A python script designed to support the following options:
 
-(1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial layer separately for each variable:
+(1) Print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial layer, separately for each variable:
 
      nctool.py file_name
 
@@ -534,7 +540,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
      b) check whether the 2 files are identical:
          nctool.py file1 file2 zero_diff
 
-(3) Compare all netcdf files with similar names in two directories (including sub directories):
+(3) Compare all netcdf files with similar names in two directories (including sub-directories):
      a) check closeness at absolute tolerance of 1.e-3:
          nctool.py directory1 directory2
 
@@ -570,7 +576,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  ├── download_nmme_precip.sh
  ├── wget_cfsv2_oper_ts_e2es.sh
  ├── nctool.py
- └── write_to_file.py
+ └── s2s_api.py
 
  lis/utils/usaf/s2s/s2s_modules/
  ------------------------------
@@ -585,7 +591,6 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── calc_and_write_observational_climatology.py
  │   │   ├── combine_sub_daily_downscaled_forcings.py
  │   │   ├── convert_forecast_data_to_netcdf.py
- │   │   ├── NMME_CFSv2reorg_H.py
  │   │   ├── nmme_reorg_f.py
  │   │   ├── nmme_reorg_h.py
  │   │   ├── process_forecast_data.py
@@ -626,6 +631,7 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  │   │   ├── SOILPARM.TBL
  │   │   └── URBPARM.TBL
  │   ├── tables
+ │   │   ├── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2
  │   │   └── MODEL_OUTPUT_LIST.TBL.noahmp401_hymap2_s2s_lisda
  │   └── template_files
  │       └── lis.config_template.GLOBAL
@@ -661,3 +667,4 @@ THIS COMPLETES ALL STEPS IN THE E2ES SEQUENCE.
  End of document.
 
  * * * * * * * 
+

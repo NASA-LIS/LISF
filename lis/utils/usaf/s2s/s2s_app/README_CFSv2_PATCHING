@@ -1,0 +1,121 @@
+README - What to do when CFSv2 files are missing or corrupted
+-------------------------------------------------------------------------------
+
+There may be a rare occasion when the "raw" CFSv2 forecast files may be missing
+or are incomplete. The latest cloud-based services of the CFSv2 downloads 
+should help to mitigate this issue. However, if an occasion occurs when files
+are missing, we provide the below guidance and steps to help "patch" those
+files.
+
+SECTION 1: Identifying missing or corrupted CFSv2 files
+-------------------------------------------------------------------------------
+
+We have put an internal file-check program to make sure the system functions
+without a hitch. It checks the status of all CFSv2 forecast files before 
+initiating a forecast.
+
+The internal CFSv2 forecast download routine used by the E2ES is as follows:
+
+    wget_cfsv2_oper_ts_e2es.sh
+
+The CFSv2 file-check utility is also integrated in wget_cfsv2_oper_ts_e2es.sh.
+
+Consequently, the file-check tool is called by the E2ES master script 
+(s2s_run.sh) via wget_cfsv2_oper_ts_e2es.sh before a forecast is launched. If a
+faulty file was discovered after the file check, a WARNING message will be 
+displayed in the terminal and s2s_run.sh will halt the launch. The WARNING 
+message, for example, for the forecast for May 2023:
+
+    Missing or Corrupted CFSv2 forcing files were found
+    Please follow the instructions in:
+    scratch/202305/CFSv2_missing_corrupted_files
+    
+"CFSv2_missing_corrupted_files" contains instructions for patching the system 
+and is particular to your current run. The instructions include: 
+    (1) which files need to be patched;
+    (2) where the replacement files should be kept 
+        CONFIG_FILE:SETUP;supplementarydir/bcsd_fcst/patch_files/
+    (3) a list of wget commands to download potential replacement files in 
+        order of preference
+    (4) how to update the supplementarydir/bcsd_fcst/patch_files/patch_files_list.txt file.
+
+For information on the process that was employed to provide a list of wget commands to
+download  potential replacements, see SECTION 2 below.
+
+After downloading replacement files to the "patch_files" directory, updating 
+"patch_files_list.txt" with the replacement information and rerunning the E2ES,
+a message of success will be displayed on the terminal, and s2s_run.sh will 
+continue with the forecast (e.g. again for May 2023 forecast):
+
+      SUCCESS ! All CFSv2 forcings files passed the file check.
+
+
+SECTION 2: S2S's selection process for potential replacements
+-------------------------------------------------------------------------------
+
+The S2S system will handle extracting the correct data from these files
+automatically. However, you will need to mark when these patch files need
+to be used. To do so, you will need to append the neccesary information to the
+provided text file: "patch_files_list.txt". The information needed will be:
+
+    1) The filedate of missing/corrupted data
+    2) The name of the missing/corrupted file
+    3) The name of the replacement (patch) file
+
+and needs to be separated by a ",". This file holds the information for all
+patch files used within the system for forecasts and hindcasts. Please see
+example use case below.
+
+We recommend using data from another initial forecast date. These "patch files"
+are chosen via the following method:
+
+1) Starting with the previous forecast day, look to see if there is available
+data at the same forecast hour. If not, consequtively look at data at days
+closest to the forecast day, but to not exceed + or - 4 days (as this would
+overlap with the next forecast pentad), or the first day of lead month 0 (as
+this would lead to loss of data).
+
+2) If data is not available following above rule, see if data at a different
+forecast hour is available on those same dates.
+
+3) If data is not available following above rules, see if data at a different
+forecast hour on the original forecast day is available. This will overlap
+with another ensemble, but if used sparringly is completely fine for the
+system.
+ 
+SECTION 3: EXAMPLE CASE
+-------------------------------------------------------------------------------
+
+As an example, consider the CFSv2 forecast files needed for May 2023. Files for
+0Z, 6Z, 12Z, and 18Z will be needed for the dates: 
+      
+    2023-04-16
+    2023-04-21
+    2023-04-26
+
+This will result in 12 distinct files (4 forecast hours per 3 days). In the
+situation where (for example) temperature at 12Z is missing for the date
+2023-04-21, the "CFSv2_missing_corrupted_files" text file will contain specific
+suggestions for file replacements (along with commands to download directly).
+You would then check the availability in this list (from the top):
+
+    tmp2m.01.2023042012.daily.grb2
+    tmp2m.01.2023042212.daily.grb2
+    tmp2m.01.2023041912.daily.grb2
+    tmp2m.01.2023042312.daily.grb2
+    tmp2m.01.2023041812.daily.grb2
+    tmp2m.01.2023042412.daily.grb2
+    tmp2m.01.2023041712.daily.grb2
+    tmp2m.01.2023042512.daily.grb2
+
+When available data is found, you will use this file instead of the file for
+the missing and/or corrupted data file. Download the file to the "patch_files"
+directory (set in the s2s config) and then add the information to the included
+"patch_files_list.txt" text file. Following the above example, if temperature
+was missing and the "tmp2m.01.2023042012.daily.grb2" file was available, you 
+would append this information to the bottom of the text file:
+
+    2023042112, tmp2m.01.2023042112.daily.grb2, tmp2m.01.2023042012.daily.grb2
+
+Once this information is placed within this file, the S2S system will handle 
+replacing the data automatically.

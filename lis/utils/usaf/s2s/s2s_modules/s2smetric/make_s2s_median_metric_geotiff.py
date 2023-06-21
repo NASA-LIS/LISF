@@ -7,9 +7,9 @@
 # PURPOSE: Generates GeoTIFF files of medians of S2S metrics.  Only a single
 # metric is processed per invocation of this script.
 #
-# REQUIREMENTS as of 18 Oct 2021:
-# * Python 3.8 or higher
-# * NumPy Python library 1.19 or higher
+# REQUIREMENTS as of 28 May 2023:
+# * Python 3.9 or higher
+# * NumPy Python library 1.23.4 or higher
 # * UNIDATA NetCDF4 Python library
 # * GDAL Python library (bundled in osgeo package)
 #
@@ -19,6 +19,7 @@
 #   to calculate single median across entire ensemble collection, per metric
 #   per month.
 # * 30 Oct 2021: Eric Kemp/SSAI, added support for s2smetric config.
+# * 02 Jun 2023: K. Arsenault + S. Mahanama, Updated the 557 WW file names.
 #
 #------------------------------------------------------------------------------
 """
@@ -64,7 +65,7 @@ class _MetricGeoTiff:
                     f"[WARN] Cannot find directory {subdir} for S2S metrics!"
                 print(txt)
                 continue
-            regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}-ANOM*DF.NC"
+            regex = f"{subdir}/PS.*GP.LIS-S2S-{nmme.upper()}*DF.NC"
             files = glob.glob(regex)
             if len(files) == 0:
                 print(f"[WARN] Cannot find metric file in {subdir}")
@@ -204,16 +205,19 @@ class _MetricGeoTiff:
         filename += f"/PS.{filename_elements['PS']}"
         filename += f"_SC.{filename_elements['SC']}"
         filename += f"_DI.{filename_elements['DI']}"
-        filename += "_GP.LIS-S2S-ANOM"
+        metricname = metric.split("_")[1]
+        filename += "_GP.LIS-S2S-"+metricname
         filename += f"_GR.{filename_elements['GR']}"
         filename += f"_AR.{filename_elements['AR']}"
+
+        variable = metric.split("_")[0]
+        filename += f"_PA.{variable.upper()}"
+        filename += f"_DD.{filename_elements['DD']}"
         filename += \
-            f"_PA.LIS-S2S-{metric.replace('_','-').upper()}-ENS-MEDIAN"
-        filename += \
-            f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+            f"_FP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
         filename += \
             f"-{enddate.year:4d}{enddate.month:02d}{enddate.day:02d}"
-        filename += f"_TP.{filename_elements['TP']}"
+
         filename += "_DF.TIF"
         return filename
 
@@ -299,7 +303,7 @@ def _find_nmme_in_filename(config, filename):
 def _get_first_startdate(filename_elements):
     """Get start date from name of metric file"""
     try:
-        yyyymmdd = filename_elements["DP"].split("_")[0]
+        yyyymmdd = filename_elements["FP"].split("_")[0]
     except KeyError:
         print("[ERR] Cannot resolve data period from NMME files!")
         sys.exit(1)

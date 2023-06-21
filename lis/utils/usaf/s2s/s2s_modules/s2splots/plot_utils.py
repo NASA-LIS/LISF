@@ -40,7 +40,7 @@ ADD_LAND = True
 ADD_RIVERS = True
 RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
-cbar_axes = [0.15, 0.04, 0.65, 0.03]
+cbar_axes = [0.15, 0.04, 0.7, 0.02]
 
 mpl.use('pdf')
 mpl.style.use('bmh')
@@ -65,7 +65,7 @@ def dicts(dic_name, key):
         'AFRICA':(-40, 40, -20, 55),
         'GLOBAL':(-89, 89, -179, 179),
         'TUNISIA':(30, 38, 7, 12),
-        'MENA':(21, 39, 24, 62)
+        'ME_CRES':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -75,6 +75,7 @@ def dicts(dic_name, key):
         'Precip': [-10, -6, -4, -2, -1, -0.25, 0.25, 1., 2., 4., 6., 10.],
         'Air-T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
         'Air_T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
+        'AirT': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
         'Air_T_AF': [-5., -4., -3., -2., -1., -0.5, 0.5, 1., 2., 3., 4., 5.],
         'TWS': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*500.,
         'ET': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*2.,
@@ -86,43 +87,67 @@ def dicts(dic_name, key):
         'Precip_AF': 'in/mon',
         'Air-T': 'K',
         'Air_T': 'K',
+        'AirT': 'K',
         'Air_T_AF': 'F',
         'TWS': 'mm',
         'ET': 'mm/d'
     }
+    anom_tables = {
+        'Streamflow': 'CB11W',
+        'Precip': 'CB11W',
+        'Precip_AF': 'CB11W',
+        'Air-T': 'CB11W_',
+        'Air_T': 'CB11W_',
+        'AirT': 'CB11W_',
+        'Air_T_AF': 'CB11W',
+        'TWS': 'CB11W',
+        'ET': 'CB11W'
+    }
+    lowhigh = {
+        'CB11W': ['black','indigo'],
+        'CB11W_': ['indigo','black'],
+        '14WT2M': ['#68228B','black'],     # darkorchid4','black']
+        '14WPR': ['#8B4500','blueviolet'], # darkorange4','blueviolet']
+        'L21': ['blueviolet','#8B4500']
+    }
+
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
-
     if dic_name == 'boundary':
         ret = boundary.get(key)
     elif dic_name == 'anom_levels':
         ret = anom_levels.get(key, default_levels)
     elif dic_name == 'units':
         ret = units.get(key, default_units)
+    elif dic_name == 'anom_tables':
+        ret = anom_tables.get(key, 'CB11W')
+    elif dic_name == 'lowhigh':
+        ret = lowhigh.get(key)
     return ret
 
 def cartopy_dir(data_dir):
     '''
     configuring cartopy
     '''
+    global BODR, COASTLINES, land, OCEAN, lakes, rivers
     if data_dir is not None:
         cartopy.config['data_dir'] = data_dir
 
-    bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
+    BODR = cartopy.feature.NaturalEarthFeature(category='cultural',
                                                name='admin_0_boundary_lines_land',
                                                scale=RESOL, facecolor='none', alpha=0.7)
-    coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+    COASTLINES = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
                                                      scale=RESOL, edgecolor='black',
                                                      facecolor='none')
     land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
                                                facecolor=cfeature.COLORS['land'])
-    ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+    OCEAN = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
                                                 facecolor=cfeature.COLORS['water'])
     lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
                                                 facecolor=cfeature.COLORS['water'])
     rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
                                              scale=RESOL, edgecolor='b', facecolor='none')
-    
+
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -132,7 +157,12 @@ def figure_size(figwidth, domain, nrows, ncols):
     return this_size
 
 def load_table (table_key):
-    ''' loads RGB based color tables '''
+    '''
+    loads RGB based color tables
+    some good plettes can be found:
+    https://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml
+    '''
+
     tables = {
         'DROUGHT':[[  0,  0,  0],
                    [  0,115,  0],
@@ -201,7 +231,18 @@ def load_table (table_key):
                 [233, 23,  0],
                 [197,  0,  0],
                 [158,  0,  0]],
-         'L11W':[[  0,  0,130],
+        'CB11W':[[103,0,31],
+                [178,24,43],
+                [214,96,77],
+                [244,165,130],
+                [253,219,199],
+                [247,247,247],
+                [209,229,240],
+                [146,197,222],
+                [67,147,195],
+                [33,102,172],
+                [5,48,97]],
+        'L11W':[[  0,  0,130],
                 [  0,  0,255],
                 [  0,115,255],
                 [  0,195,255],
@@ -323,6 +364,52 @@ def load_table (table_key):
                   [255,  0,  0],
                   [128, 48,  9],
                   [196,159,128]],
+        'NCV_gebco':[[ 18,  10,  58],
+                     [ 23,  49, 110],
+                     [ 19,  89, 140],
+                     [ 26, 103, 164],
+                     [ 30, 114, 178],
+                     [ 29, 139, 196],
+                     [ 26, 165, 210],
+                     [ 27, 184, 223],
+                     [ 26, 204, 235],
+                     [ 26, 216, 241],
+                     [ 38, 223, 241],
+                     [ 49, 229, 235],
+                     [104, 242, 233],
+                     [160, 255, 229],
+                     [195, 209,  80],
+                     [225, 224, 102],
+                     [223, 196,  91],
+                     [210, 178,  81],
+                     [189, 150,  46],
+                     [163, 127,  46],
+                     [153, 118,  43],
+                     [142, 109,  38],
+                     [134, 103,  36],
+                     [116,  88,  29]],
+        'VERIFY' :[[255,187,  0],
+                   [  0,115,255],
+                   [255,  0,  0]],
+        'srip_reanalysis':[[226,  31,  38],
+                           [246, 153, 153],
+                           [ 41,  95, 138],
+                           [ 95, 152, 198],
+                           [175, 203, 227],
+                           [114,  59, 122],
+                           [173, 113, 181],
+                           [214, 184, 218],
+                           [245, 126,  32],
+                           [253, 191, 110],
+                           [236,   0, 140],
+                           [247, 153, 209],
+                           [  0, 174, 239],
+                           [ 96, 200, 232],
+                           [ 52, 160,  72],
+                           [179,  91,  40],
+                           [255, 215,   0],
+                           [  0,   0,   0],
+                           [119, 119, 119]],
         }
 
     if table_key[-1] == '_':
@@ -456,7 +543,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
-                             cmap=cmap,zorder=3)
+                             cmap=cmap,zorder=3, alpha=0.8)
         gl_ = ax_.gridlines(draw_labels=True)
         gl_.top_labels = False
         gl_.bottom_labels = False
@@ -474,12 +561,19 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
                          color='Blue', fontsize=fscale*FONT_SIZE1, rotation=90)
         if (nplots - count_plot -1) < ncols:
             gl_.bottom_labels = True
-        ax_.coastlines()
-        ax_.add_feature(cfeature.BORDERS)
+        ax_.coastlines(alpha=0.1, zorder=3)
+        ax_.add_feature(OCEAN, linewidth=0.2, zorder=3 )
+        ax_.add_feature(COASTLINES, edgecolor='black', alpha=1, zorder=3)
+        ax_.add_feature(BODR, linestyle='--', edgecolor='k', alpha=1, zorder=3)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
-
-        cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
-        cbar.ax.tick_params(labelsize=fscale*20)
+        if (domain[3] - domain[2]) < 180.:
+            ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
+                            edgecolor='black', facecolor='none')
+        if under_over[0] == "white" and under_over[1] == "white":
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
+        else:
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
+        cbar.ax.tick_params(labelsize=fscale*20, labelrotation=90)
         if clabel is not None:
             cbar.set_label(clabel, fontsize=fscale*30)
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
@@ -527,8 +621,7 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
-            if this_col < 0:
-                this_col = 0
+            this_col = max(this_col, 0)
             if this_col >= len(style_color):
                 this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.
