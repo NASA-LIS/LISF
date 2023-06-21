@@ -57,7 +57,7 @@ int FTN(create_filelist) (const char *regexp,
     /* Use the POSIX glob function to assemble list of files matching the
        provided regular expression. */
     globbuf.gl_offs = 0;
-    ierr = glob(regexp, NULL, NULL, &globbuf);
+    ierr = glob(regexp, 0, NULL, &globbuf);
 
     if (ierr == GLOB_NOMATCH) {
 	/* No files were found by glob.  So just create an empty outfile. */
