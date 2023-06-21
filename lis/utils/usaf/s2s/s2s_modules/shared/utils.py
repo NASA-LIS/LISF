@@ -55,6 +55,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        #    _f.write('#SBATCH --reservation=SP5_test' + '\n')
         else:
             _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
@@ -190,6 +191,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        #    _f.write('#SBATCH --reservation=SP5_test' + '\n')
         else:
             _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
@@ -250,3 +252,22 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
         lat = np.array(ldt['lat'])
         return lat[:,0], lon[0,:]
     return None
+
+def tiff_to_da(file):
+    import xarray as xr
+    import rasterio
+    dataset = rasterio.open(file)
+    # Read the data from the GeoTIFF using rasterio
+    data = dataset.read(1)  # Read the first band, adjust if necessary
+
+    # Extract the metadata
+    transform = dataset.transform
+    crs = dataset.crs
+    x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
+    y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
+    
+    # Create an xarray DataArray
+    da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    
+    return da
+

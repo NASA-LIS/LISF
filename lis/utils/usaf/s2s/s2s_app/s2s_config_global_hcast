@@ -5,17 +5,17 @@
 #######################################################################
 
 SETUP:
-  LISFDIR: /discover/nobackup/projects/usaf_lis/smahanam/LISF-1/
-  E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_HINDCASTS/
+  E2ESDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/E2ES_557ww-7.5/
+  LISFDIR: /discover/nobackup/projects/ghilis/S2S/LISF/
+  LISFMOD: lisf_7.5_intel_2021.4.0_s2s  
   METFORC: /discover/nobackup/projects/usaf_lis/USAF_FORCING/
-  AF10KM: /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL/
-  ICSDIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/hindcast_ics/
-  LISFMOD: lisf_7.5_intel_2021.4.0_s2s
+  supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
+  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
   SPCODE:  s1189
   CONSTRAINT: cas|sky 
   DATATYPE: hindcast
-  supplementarydir: /discover/nobackup/projects/usaf_lis/GHI_S2S/supplementary_files/
-  ldtinputfile: lis_input.s2s_global.noahmp401_hymap2.25km.nc
+  AF10KM: /discover/nobackup/projects/ghilis/S2S/GLOBAL/Forcing_Merge/M2CH2BC_USAFNAFPAMod_S2S_Mon/SURFACEMODEL/
+  LISDADIR: /discover/nobackup/projects/ghilis/S2S/GLOBAL/DA_Run_Hist/output/
    
 #######################################################################
 #                       Experiment Configuration
@@ -50,16 +50,17 @@ EXP:
 #######################################################################
 
 BCSD:
-  fcst_download_dir: /discover/nobackup/projects/usaf_lis/smahanam/CFSv2/
-  nmme_download_dir: /discover/nobackup/projects/usaf_lis/razamora/GHI_S2S/E2ES-GLOBAL/download/NMME/
+  fcst_download_dir: /discover/nobackup/projects/lis/MET_FORCING/CFSv2/
+  nmme_download_dir: /discover/nobackup/projects/usaf_lis/GHI_S2S/NMME/
   clim_start_year: 1991
-  clim_end_year: 2021
+  clim_end_year: 2020
   nof_raw_ens: 12
   fcst_data_type: CFSv2
   nmme_data_type: nmme
   
 #######################################################################
 #                            LIS Forecast
+# Note: Acceptable JOB_SEGMENTS for 9-year forecast are 1,2,3,5,and 9
 #######################################################################
 
 FCST:
@@ -86,5 +87,5 @@ POST:
   var_tair_max_list: [Tair_f_max]
   var_tair_min_list: [Tair_f_min]
   const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, LANDMASK]
-  metric_vars: [RootZone-SM, Surface-SM, TWS, Precip, Air-T, ET, Streamflow]
+  metric_vars: [RZSM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
 

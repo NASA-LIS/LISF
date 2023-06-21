@@ -20,11 +20,11 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.jules50"
 
-_STARTDT = datetime.datetime(2007, 12, 1, 12)
-_ENDDT = datetime.datetime(2007, 12, 2, 12)
+_STARTDT = datetime.datetime(2022, 8, 1, 12)
+_ENDDT = datetime.datetime(2022, 8, 2, 12)
 
-_OUTPUT = "netcdf"
-#_OUTPUT = "grib2"
+#_OUTPUT = "netcdf"
+_OUTPUT = "grib2"
 
 # Most variables are processed independently, and are listed below.
 _VAR_ATTRIBUTES = {
@@ -122,7 +122,7 @@ def _main():
                 line = 'Metrics output frequency: "24hr"\n'
             elif "LIS output attributes file:" in line:
                 line = "LIS output attributes file:"
-                line += f" ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.24hr\n"
+                line += f" ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.24hr\n"
 
             newlines.append(line)
 
