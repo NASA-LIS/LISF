@@ -26,17 +26,18 @@ Output naming style:                    "557WW streamflow convention"
 Enable output statistics:               .false.
 Start mode:                             restart
 Starting year:                          2023
-Starting month:                            2
-Starting day:                             28
-Starting hour:                            23
-Starting minute:                          45
-Starting second:                           0
+Starting month:                           05
+Starting day:                             31
+Starting hour:                            12
+Starting minute:                          00
+Starting second:                          00
 Ending year:                            2023
-Ending month:                             03
+Ending month:                             06
 Ending day:                               01
-Ending hour:                              12
+Ending hour:                              00
 Ending minute:                            05
 Ending second:                            00
+
 Undefined value:                       -9999
 Output directory:                       "./output/jules50/"
 Diagnostic output file:                 "./output/jules50/logs/lislog"
@@ -94,8 +95,8 @@ Bias estimation restart file:                         none                      
 
 #Perturbation options
 Perturbations start mode:                             restart                                    restart                                    restart
-Perturbations restart output interval:                12hr                                        12hr                                        12hr
-Perturbations restart filename:  ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin ./input/DAPERT/LIS_DAPERT_202302282345.d01.bin
+Perturbations restart output interval: 12hr 12hr 12hr
+Perturbations restart filename:  ./input/rstfiles/LIS_DAPERT_202305311200.d01.bin ./input/rstfiles/LIS_DAPERT_202305311200.d01.bin ./input/rstfiles/LIS_DAPERT_202305311200.d01.bin
 Apply perturbation bias correction:                   1                                          1                                          1
 
 Forcing perturbation algorithm:                       "GMAO scheme"                              "GMAO scheme"                              "GMAO scheme"
@@ -113,14 +114,10 @@ Observation perturbation frequency:                   6hr                       
 Observation attributes file:                          ./input/attribs/usafsi_attribs.txt          ./input/attribs/smops_attribs.txt         ./input/attribs/smap_attribs.txt
 Observation perturbation attributes file:             ./input/attribs/usafsi_pertattribs.txt      ./input/attribs/smops_pertattribs.txt     ./input/attribs/smap_pertattribs.txt
 
-SNODEP data directory:                                ./input/MET_FORCING/AFWA_SNODEP
-SNODEP mesh resolution:                               16
-SNODEP naming convention:                             LIS
-
-USAFSI data directory:                                ./input/USAF_FORCING/USAFSI
+USAFSI data directory:                                ./input/USAFSI
 USAFSI netcdf filename prefix:                        USAFSI
 
-SMOPS ASCAT soil moisture data directory:             ./input/USAF_FORCING/SMOPS
+SMOPS ASCAT soil moisture data directory:             ./input/SMOPS
 SMOPS ASCAT naming convention:                        "AGRMET ops"
 SMOPS ASCAT version:                                  "date-based"
 SMOPS ASCAT model CDF file:                           ./input/cdf/jules50_cdf_200obs.nc
@@ -175,12 +172,12 @@ AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
 
 # Input settings
-#AGRMET forcing directory:                  ./usaf_lis75s2s_gfs2galwem # Change as appropriate
-AGRMET forcing directory:                  ./USAF_FORCING_input
+#AGRMET forcing directory:                  input/usaf_lis75s2s_gfs2galwem # Change as appropriate
+AGRMET forcing directory:                input/AGRMET
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
 
 # Output settings
-AGRMET analysis directory:                 ./input/Analysis_UMFG_1 # Change as appropriate
+AGRMET analysis directory:                 Analysis_UMFG_1 # Change as appropriate
 AGRMET surface fields directory:           SFCALC          # Legacy, will eventually remove
 AGRMET merged precip directory:            PRECIP          # Legacy, will eventually remove
 AGRMET security classification:            U
@@ -366,7 +363,7 @@ AGRMET PPT Background bias correction option: 0
 #-----------------------LAND SURFACE MODELS--------------------------
 JULES.5.0 model timestep:                 15mn
 JULES.5.0 restart output interval:        12hr
-JULES.5.0 restart file:                   ./input/SURFACEMODEL/LIS_RST_JULES50_202302282345.d01.nc
+JULES.5.0 restart file:                   ./input/rstfiles/LIS_RST_JULES50_202305311200.d01.nc
 JULES.5.0 namelist directory:             ./JULES/ps41_nml_15min
 JULES.5.0 reference height for forcing T and q:  2
 JULES.5.0 reference height for forcing u and v: 10
@@ -390,6 +387,7 @@ Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.jul
 Routing model:                                "HYMAP2 router"
 
 HYMAP2 routing model time step:               "15mn"
+TEMPLATE model timestep:                      "15mn"
 HYMAP2 routing model output interval:         "3hr"
 HYMAP2 routing model restart interval:        "12hr"
 
@@ -408,7 +406,7 @@ HYMAP2 run in ensemble mode:                 0
 HYMAP2 routing model linear reservoir flag:  0
 HYMAP2 routing model evaporation option:     none # "penman"
 HYMAP2 routing model start mode:      restart
-HYMAP2 routing model restart file:    ./input/ROUTING/LIS_RST_HYMAP2_router_202302282345.d01.nc
+HYMAP2 routing model restart file:    ./input/rstfiles/LIS_RST_HYMAP2_router_202305311200.d01.nc
 HYMAP2 floodplain dynamics: 1
 
 HYMAP2 reservoir operation option: 0
