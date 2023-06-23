@@ -23,22 +23,26 @@ Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:              "557WW medium range forecast convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               FCST
+AGRMET area of data:                GLOBAL
 Start mode:                             restart
-Starting year:                          2022
-Starting month:                            8
-Starting day:                             23
+Starting year:                          2023
+Starting month:                           06
+Starting day:                             01
 Starting hour:                             0
 Starting minute:                           0
 Starting second:                           0
-Ending year:                            2022
-Ending month:                              8
-Ending day:                               29
+Ending year:                            2023
+Ending month:                             06
+Ending day:                               11
 Ending hour:                               0
 Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
-Output directory:                       "output/2022082300Z/hymap/noah39/"
-Diagnostic output file:                 "output/2022082300Z/hymap/noah39/log/lislog"
+Output directory:                       "output/"
+Diagnostic output file:                 "output/log/lislog"
 Number of ensembles per tile:           1
 
 #The following options are used for subgrid tiling based on vegetation
@@ -111,7 +115,7 @@ Observation perturbation attributes file:          none   none
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
-LIS domain and parameter data file:     ./input/lis_input.global.noah39.nc
+LIS domain and parameter data file:     ./input/lis_input.mr.noah39.nc
 Landmask data source:                   LDT
 Landcover data source:                  LDT
 Soil texture data source:               LDT
@@ -138,14 +142,14 @@ TBOT skin temperature lag days:           0
 
 #--------------------------------FORCINGS----------------------------------
 # GALWEM forecast
-GALWEM forecast forcing directory:         ./input/GALWEM_0p25deg
+GALWEM forecast forcing directory:         ./input/GALWEM_GD
 GALWEM forecast resolution:                25            # 17(=17km) or 25(=25 deg)
 GALWEM forecast run mode:                  forecast
 
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         1mo
-Noah.3.9 restart file:                    ./rstfile/2022082300Z/noah39/LIS_RST_NOAH39_202208230000.d01.nc
+Noah.3.9 restart file:           ./input/rstfiles/LIS_RST_NOAH39_202306010000_EN01.d01.nc
 Noah.3.9 restart file format:             netcdf
 Noah.3.9 vegetation parameter table:      ./input/LS_PARAMETERS/noah39_parms/VEGPARM.TBL
 Noah.3.9 soil parameter table:            ./input/LS_PARAMETERS/noah39_parms/SOILPARM.TBL
@@ -192,7 +196,7 @@ Output start hour:
 Output start minutes:
 Output start seconds:
 
-Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noahmp401
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noah39
 
 #------------------------ ROUTING ----------------------------------
 # ROUTING MODEL:  HYMAP
@@ -219,7 +223,7 @@ HYMAP2 floodplain dynamics:              1
 HYMAP2 routing model dwi flag:           0
 
 HYMAP2 routing model start mode:         restart
-HYMAP2 routing model restart file:       ./rstfile/2022082300Z/noah39/LIS_RST_HYMAP2_router_202208230000.d01.nc
+HYMAP2 routing model restart file: ./input/rstfiles/LIS_RST_HYMAP2_router_202306010000.d01.nc
 
 HYMAP2 routing model evaporation option:      none     # "penman"
 HYMAP2 routing model linear reservoir flag:   0

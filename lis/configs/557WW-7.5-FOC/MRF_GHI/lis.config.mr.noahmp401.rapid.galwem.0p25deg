@@ -23,22 +23,26 @@ Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
 Output naming style:     "557WW medium range forecast convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               FCST
+AGRMET area of data:                GLOBAL
 Start mode:                             restart
-Starting year:                          2022
-Starting month:                            8
-Starting day:                             23
+Starting year:                          2023
+Starting month:                           06
+Starting day:                             01
 Starting hour:                             0
 Starting minute:                           0
 Starting second:                           0
-Ending year:                            2022
-Ending month:                              8
-Ending day:                               29
+Ending year:                            2023
+Ending month:                             06
+Ending day:                               11
 Ending hour:                               0
 Ending minute:                             0
 Ending second:                             0
 Undefined value:                       -9999
-Output directory:                       "output/2022082300Z/rapid/noahmp401/"
-Diagnostic output file:                 "output/2022082300Z/rapid/noahmp401/log/lislog"
+Output directory:                       "output/"
+Diagnostic output file:                 "output/log/lislog"
 Number of ensembles per tile:           1
 
 #The following options are used for subgrid tiling based on vegetation
@@ -111,7 +115,7 @@ Observation perturbation attributes file:          none   none
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
-LIS domain and parameter data file:     ./input/lis_input.global.noahmp401.nc
+LIS domain and parameter data file:     ./input/lis_input.mr.noahmp401.nc
 Landmask data source:                   LDT
 Landcover data source:                  LDT
 Soil texture data source:               LDT
@@ -138,14 +142,14 @@ TBOT skin temperature lag days:           0
 
 #--------------------------------FORCINGS----------------------------------
 # GALWEM forecast
-GALWEM forecast forcing directory:         ./input/GALWEM_0p25deg
+GALWEM forecast forcing directory:         ./input/GALWEM_GD
 GALWEM forecast resolution:                25            # 17(=17km) or 25(=25 deg)
 GALWEM forecast run mode:                  forecast
 
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah-MP.4.0.1 model timestep:                15mn
 Noah-MP.4.0.1 restart output interval:       1mo
-Noah-MP.4.0.1 restart file:                  ./rstfile/2022082300Z/noahmp401/LIS_RST_NOAHMP401_202208230000.d01.nc
+Noah-MP.4.0.1 restart file:   ./input/rstfiles/LIS_RST_NOAHMP401_202306010000_EN01.d01.nc
 Noah-MP.4.0.1 restart file format:           netcdf
 Noah-MP.4.0.1 soil parameter table:          ./input/LS_PARAMETERS/noahmp401_parms/SOILPARM.TBL
 Noah-MP.4.0.1 general parameter table:       ./input/LS_PARAMETERS/noahmp401_parms/GENPARM.TBL
@@ -206,7 +210,7 @@ RAPID routing model output interval:         "3hr"
 RAPID routing model restart interval:        "1mo"
 
 RAPID routing model start mode:         restart
-RAPID routing model restart file:       ./rstfile/2022082300Z/noahmp401/LIS_RST_RAPID_router_202208230000.d01.nc
+RAPID routing model restart file:  ./input/rstfiles/LIS_RST_RAPID_router_202306010000.d01.nc
 RAPID run in ensemble mode:             0 # 0=open loop; 1=ensemble mean; 2(not support)=ensemble
 
 # Runtime option
@@ -223,11 +227,11 @@ RAPID dam model used:                   .false.
 RAPID output influence:                 .false.
 RAPID uncertainty quantification:       .false.
 
-RAPID river connectivity file:          ./input/rapid_prameters/rapid_connect.csv
+RAPID river connectivity file:          ./input/rapid_parameters/rapid_connect.csv
 RAPID max number of upstream reaches:   3
-RAPID river weight table:               ./input/rapid_prameters/weight_lis.csv
-RAPID river basin ID file:              ./input/rapid_prameters/riv_bas_id.csv
-RAPID Muskingum parameter k file:       ./input/rapid_prameters/k.csv
-RAPID Muskingum parameter x file:       ./input/rapid_prameters/x.csv
+RAPID river weight table:               ./input/rapid_parameters/weight_lis.csv
+RAPID river basin ID file:              ./input/rapid_parameters/riv_bas_id.csv
+RAPID Muskingum parameter k file:       ./input/rapid_parameters/k.csv
+RAPID Muskingum parameter x file:       ./input/rapid_parameters/x.csv
 
-RAPID namelist file:                    ./input/rapid_prameters/rapid_namelist
+RAPID namelist file:                    ./input/rapid_parameters/rapid_namelist
