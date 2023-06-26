@@ -1,7 +1,7 @@
 = LIS Public Testcase Walkthrough
-:revnumber: 1.0
-:revdate: June 1, 2023
-:revremark: Updated for LISF Public 7.5 release
+:revnumber: 1.1
+:revdate: June 26, 2023
+:revremark: Updated for LISF Public 7.4 release
 :imagesdir: ./images
 :title-page:
 :title-page-background-image: image:lisf_logo.png[fit=none,pdfwidth=50%,position=top]
@@ -12,7 +12,7 @@
 :figure-caption!:                       // disable figure captions
 
 // github commit known to be compatible with this walkthrough
-:compatible-lisf-branch: support/lisf-public-7.5
+:compatible-lisf-branch: support/lisf-public-7.4
 
 // urls
 :url-lis-website: https://lis.gsfc.nasa.gov
