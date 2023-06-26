@@ -1,9 +1,9 @@
 = Step 6: LSM Data Assimilation (DA) Experiment (LIS)
 
 :step-label: Step 6
-:download-filename: testcase6_lis_da_2020.tar.gz
+:download-filename: testcase6_lis_da_2023.tar.gz
 :input-filesize-compressed: 80MB
-:input-filesize-unpacked: 220MB
+:input-filesize-unpacked: 327MB
 
 == Overview
 

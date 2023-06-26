@@ -1,9 +1,9 @@
 = Step 5: Generate Observations CDF-based Files (LDT)
 
 :step-label: Step 5
-:download-filename: testcase5_ldt_obscdf_2020.tar.gz
-:input-filesize-compressed: 4.5GB
-:input-filesize-unpacked: 5.3GB
+:download-filename: testcase5_ldt_obscdf_2023.tar.gz
+:input-filesize-compressed: 4.6GB
+:input-filesize-unpacked: 9.1GB
 :ldt-run-dir: DA_proc_SMAP
 :ldt-config-filename: ldt.config.smapobs_cdf
 

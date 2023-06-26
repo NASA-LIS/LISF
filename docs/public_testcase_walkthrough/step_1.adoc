@@ -1,9 +1,9 @@
 = Step 1: LSM Parameter Processing Run (LDT)
 
 :step-label: Step 1
-:download-filename: testcase1_ldt_parms_2020.tar.gz
+:download-filename: testcase1_ldt_parms_2023.tar.gz
 :input-filesize-compressed: 350MB
-:input-filesize-unpacked: 4.1GB
+:input-filesize-unpacked: 4.2GB
 :ldt-run-dir: 
 :ldt-config-filename: ldt.config.noah36_params
 
@@ -130,7 +130,7 @@ NOTE: The output filenames for `lis_input.nldas.noah36.d01.nc` and `ldtlog.0000`
 
 === The LIS Parameter File
 
-The contents of the LIS parameter input file produced by LDT can be examined visually using a command-line program such as http://meteora.ucsd.edu/~pierce/ncview_home_page.html[`ncview`,window=_blank] or a desktop application like NASA's https://www.giss.nasa.gov/tools/panoply/[Panoply,window=_blank]. For this walkthrough we will be using `ncview`.
+The contents of the LIS parameter input file produced by LDT can be examined visually using a command-line program such as http://meteora.ucsd.edu/~pierce/ncview_home_page.html[`ncview`,window=_blank] or a desktop application like NASA's https://www.giss.nasa.gov/tools/panoply/[Panoply,window=_blank]. For this walkthrough we will be using `ncview`. If needed, add `ncview` to your environment by running, `module load ncview`.
 
 Open the LIS input file using `ncview`:
 
