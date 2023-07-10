@@ -280,7 +280,7 @@ subroutine noah36_getirrigationstates(nest,irrigState)
                      noah36_struc(nest)%noah(TileNo)%smc(1) =  &
                            IM%IrrigScale(TileNo)*noah36_struc(nest)%noah(TileNo)%smcmax + &
                            (1-IM%IrrigScale(TileNo))*noah36_struc(nest)%noah(TileNo)%smc(1)
-                     IM%irrigAppRate(TileNo) = (noah36_struc(nest)%noah(TileNo)%smcmax-noah36_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
+                     IM%irrigAppRate(TileNo) = IM%IrrigScale(TileNo)*(noah36_struc(nest)%noah(TileNo)%smcmax-noah36_struc(nest)%noah(TileNo)%smc(1))*sldpth(1)*1000./LIS_rc%ts
                    else
                    ! NON-PADDY -- surface only or  multiple layers
                    ! BZ modification 4/2/2015 to account for ippix and all soil layers:
@@ -301,6 +301,7 @@ subroutine noah36_getirrigationstates(nest,irrigState)
                       else
                         !bring to saturation 
                         totamount = totamount + &
+                           IM%IrrigScale(TileNo)* &
                            (noah36_struc(nest)%noah(TileNo)%smcmax - noah36_struc(nest)%noah(TileNo)%smc(l)) &
                            *sldpth(l)*1000.       ! mm
                         noah36_struc(nest)%noah(TileNo)%smc(l) =  &

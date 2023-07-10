@@ -103,9 +103,8 @@ contains
     call ESMF_ConfigFindLabel(LDT_config,"Irrigation fraction data source:",rc=rc)
     do n=1,LDT_rc%nnest
        call ESMF_ConfigGetAttribute(LDT_config,source,rc=rc)
-!       call LDT_warning(rc,"Irrigation fraction data source: not defined")
        call LDT_set_param_attribs(rc,LDT_irrig_struc(n)%irrigfrac,&
-            "IRRIGFRAC",source)
+            "IRRIGATEDAREA",source)
        if( LDT_rc%assimcropinfo(n) .and. rc /= 0 ) then
          call LDT_warning(rc,"WARNING: Irrigation fraction data source: not defined")
        endif

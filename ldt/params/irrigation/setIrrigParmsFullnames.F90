@@ -68,16 +68,16 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
       select case( source )
         case( "GRIPC" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "GRIPC (Salmon,2013) Irrig gridcell fraction"
+              "GRIPC (Salmon,2013) Irrigated gridcell area"
         case( "MODIS_OG" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "MODIS (Ozdogan+Gutman,2008) Irrig gridcell fraction"
+              "MODIS (Ozdogan+Gutman,2008) Irrigated gridcell area"
         case( "GIA" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "GIA (Meier et al, 2018) Irrig gridcell fraction"
+              "GIA (Meier et al, 2018) Irrigated gridcell area"
         case( "UserDerived" )
           LDT_irrig_struc(n)%irrigfrac%standard_name =&
-              "User Derived Irrig gridcell fraction"
+              "User Derived Irrigated gridcell area"
       end select
 
     case( "irriggwratio" )

@@ -69,7 +69,7 @@ module LDT_LSMCropModifier_Mod
      character(len=LDT_CONST_PATH_LEN)     :: croptfile
    ! LSM/Crop-specific entries:
      character*20      :: config_croptype
-     character*100     :: croplib_dir
+     character(len=LDT_CONST_PATH_LEN)     :: croplib_dir
    ! Merge Crop-Irrigation entries:
      character*20      :: assign_cropvalue
      logical           :: mergecropirr
@@ -83,7 +83,6 @@ module LDT_LSMCropModifier_Mod
      character*140     :: cropcalendarfile
      character*50      :: cropcalendar_gridtransform
      character*20      :: crop_classification
-     character(len=LDT_CONST_PATH_LEN)     :: croplib_dir
 
      type(LDT_paramEntry) :: croptype    ! Crop type land cover
      type(LDT_paramEntry) :: irrigcrop    ! irrigated crop type

@@ -278,7 +278,9 @@ contains
     !---------------------------------------------------------------
     
     if(tsmcref > tsmcwlt)then
-       ma = (asmc - tsmcwlt) /(tsmcref - tsmcwlt) / IM%IrrigScale(TileNo)
+       !ma = (asmc - tsmcwlt) /(tsmcref - tsmcwlt) / IM%IrrigScale(TileNo)
+       !HKB: test
+       ma = (asmc - tsmcwlt) /(tsmcref - tsmcwlt)
     else
        ma = -1.     
        ! HKB: keep running with warning, do not stop
@@ -330,6 +332,15 @@ contains
        NOF_SEASONS: do season = 1, SIZE(LIS_irrig_struc(nest)%plantDay(TileNo,:))
           IF(IS_WITHIN_SEASON(LIS_rc%doy,NINT(LIS_irrig_struc(nest)%PLANTDAY(TileNo, season)), &
                NINT(LIS_irrig_struc(nest)%harvestDay(TileNo, season)))) season_active = .true.
+          ! HKB: drain rice field 10 days before harvest (assume harvestDay > plantDay)
+          IF(LIS_irrig_struc(nest)%paddyf(TileNo) .eq. 1.0 ) THEN
+             IF(NINT(LIS_irrig_struc(nest)%PLANTDAY(TileNo, season)) .ne. -9999 .and. &
+                NINT(LIS_irrig_struc(nest)%harvestDay(TileNo, season)) .ne. -9999 ) THEN
+                IF(LIS_rc%doy >= 1 .and.  &
+                   LIS_rc%doy > (NINT(LIS_irrig_struc(nest)%harvestDay(TileNo, season))-10) ) &
+                   season_active = .false.
+             ENDIF
+          ENDIF
        END do NOF_SEASONS
        
     endif CALENDAR
@@ -503,7 +514,6 @@ contains
             ss=0
             call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,sprinklerFreq)
          endif
-         H2 = time2   ! real*8 -> real
          ! check rootzone soil moisture each time
          if( ma <= IT ) then
             ! is it first DOY irrigation or after shutoff?

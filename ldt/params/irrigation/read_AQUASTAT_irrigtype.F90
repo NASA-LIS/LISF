@@ -307,7 +307,7 @@
 !- County 3220 over US
    allocate( fid(input_cols,input_rows) )
    fid = LDT_rc%udef
-   input_rows2 = input_rows / 2  ! 0-90N latitude
+   input_rows2 = input_rows / 2   ! 0-90N latitude
    ncstatus = nf90_open(trim(countyfile), NF90_NOWRITE, ncid)
    if (ncstatus /= nf90_noerr) write(LDT_logunit,*) "[INFO] cannot open ", trim(polfile)
    ncstatus = nf90_inq_varid(ncid, "POLYID", varid)
@@ -472,19 +472,32 @@
          do nr = 1, LDT_rc%lnr(n)
            do nc = 1, LDT_rc%lnc(n)
              if ((lis_cnt_mask(nc,nr) .ne. LDT_rc%udef).and. &
-                 (LDT_LSMparam_struc(n)%landmask%value(nc,nr,1) > 0.5)) then
+                 (LDT_LSMparam_struc(n)%landmask%value(nc,nr,1) >= 0.5)) then
                  SS = geoid(lis_cnt_mask(nc,nr)) / 1000
                  CCC= geoid(lis_cnt_mask(nc,nr)) - SS*1000
                  fgrd(nc,nr,1) = sprinklerfr(CCC,SS)
                  fgrd(nc,nr,2) = dripfr(CCC,SS)
                  fgrd(nc,nr,3) = floodfr(CCC,SS)
                  LDT_irrig_struc(n)%county%value(nc,nr,1) = float(geoid(lis_cnt_mask(nc,nr)))
+             else
+                 LDT_irrig_struc(n)%county%value(nc,nr,1) = 0.0
              end if
            enddo
          enddo
    endif  ! j == 1, 2, or 3
 
    end do   ! j 
+!HKB check
+         do nr = 1, LDT_rc%lnr(n)
+           do nc = 1, LDT_rc%lnc(n)
+            if ( LDT_irrig_struc(n)%county%value(nc,nr,1) > 0 .and. & 
+                 LDT_irrig_struc(n)%county%value(nc,nr,1) < 1000 .and. &
+                 LDT_irrig_struc(n)%county%value(nc,nr,1) .ne. LDT_rc%udef) then
+              print*,'bad county: ',nc,nr,LDT_irrig_struc(n)%county%value(nc,nr,1),&
+                     lis_cnt_mask(nc,nr),geoid(lis_cnt_mask(nc,nr)),fgrd(nc,nr,:)
+            endif
+           enddo
+         enddo
 
    deallocate ( gi, li, n11 )
    deallocate ( var_in )
