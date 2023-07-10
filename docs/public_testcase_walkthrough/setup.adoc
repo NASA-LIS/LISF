@@ -54,3 +54,5 @@ NOTE: As you run these testcases, you will have the opportunity to compare your 
 Repeat the above process in the `lis/` and `lvt/` directories to generate the _LIS_ and _LVT_ executables.
 
 Change directories back into your `$WORKING_DIR` which should now contain three executable files: `LDT`, `LIS`, `LVT`.
+
+If you ever wish to generate new executable files, `cd` into `/LISF/l??/make` and run `gmake realclean`.  This will clear all dependency files and allow you to cleanly define new compile configuration settings and recompile. 
