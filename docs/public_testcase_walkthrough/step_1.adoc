@@ -2,6 +2,7 @@
 
 :step-label: Step 1
 :download-filename: testcase1_ldt_parms_2023.tar.gz
+:download-batch-scripts-filename: testcase_batch_scripts.tar.gz
 :input-filesize-compressed: 350MB
 :input-filesize-unpacked: 4.2GB
 :ldt-run-dir: 
@@ -113,6 +114,21 @@ image::step_1_domain_radar.jpeg[align=center]
 == Run LDT - The Parameter Processing Step
 
 include::running_ldt.adoc[]
+
+[NOTE]
+--
+ldt, lis, and lvt can also be run by submitting batch jobs using SLURM (**S**imple **L**inux **U**tility for **R**esource **M**anagement).  If you are running this tutorial on Discover, you can download example batch scripts for all steps from the {url-lis-testcases-page}[LIS Testcase website] using the following command:
+
+[source,shell,subs="attributes"]
+----
+% curl -O {url-lis-testcases-data}{download-batch-scripts-filename}
+% tar -xzf {download-batch-scripts-filename} -C .
+----
+
+The batch scripts (`step*.job`) will unpack into the appropriate directories. To submit a job to discover using a batch script, use the command `sbatch [BATCH SCRIPT]` from the same directory as the job you wish to run.  The command `squeue -u [YOUR USER ID]` will provide updates on your job. If the job crashes, troubleshoot using any `slurm.out` files. 
+
+See the {url-nccs-discover-jobs-page}[NCCS Discover Jobs Users' Guide] for more information.
+--
 
 == LDT Output Files
 
