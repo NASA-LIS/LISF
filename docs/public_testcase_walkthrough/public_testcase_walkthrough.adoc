@@ -20,6 +20,7 @@
 :url-lis-testcases-data: https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/
 :url-lisf-docs: https://github.com/NASA-LIS/LISF/tree/master/docs
 :url-lisf-github: https://github.com/NASA-LIS/LISF
+:url-nccs-discover-jobs-page: https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm/submit-jobs
 :ssh-lisf-github: github:NASA-LIS/LISF.git
 
 // begin document
