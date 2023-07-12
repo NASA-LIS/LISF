@@ -1,7 +1,7 @@
-ActSnowNL:        1  "-"      - 0 0 0 1 255 1000 0 1 # Actual number of snow layers
+ActSnowNL:        1  "-"      - 0 0 0 1 198 1000 0 1 # Actual number of snow layers
 LayerSnowDepth:   1  "m"      - 0 0 0 3 11 1000 0 1  # Snow depth for each layer
-LayerSnowGrain:   1  "micron" - 0 0 0 3 255 1000 0 1 # Snow grain size for each layer
-SnowIce:          1  "kg/m2"  - 0 0 0 3 255 1000 0 1 # Snow layer ice
+LayerSnowGrain:   1  "micron" - 0 0 0 3 199 1000 0 1 # Snow grain size for each layer
+SnowIce:          1  "kg/m2"  - 0 0 0 3 200 1000 0 1 # Snow layer ice
 SnowLiq:          1  "kg/m2"  - 0 0 0 3 16 1000 0 1  # Snow layer liquid water
-SnowTProf:        1  "K"      - 0 0 0 3 1 1000 0 1   # Snow temperature profile
+SnowTProf:        1  "K"      - 0 0 0 3 201 1000 0 1 # Snow temperature profile
 

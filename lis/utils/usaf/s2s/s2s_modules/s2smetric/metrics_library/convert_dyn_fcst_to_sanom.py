@@ -29,8 +29,10 @@ import numpy as np
 import xarray as xr
 
 # Local modules
+# pylint: disable=import-error
 from metricslib import sel_var, compute_sanomaly
-
+# pylint: enable=import-error
+# pylint: disable=consider-using-f-string
 # Start reading from command line.
 FCST_INIT_MON = int(sys.argv[1])
 TARGET_YEAR = int(sys.argv[2])
@@ -61,11 +63,13 @@ OUTFILE_TEMPLATE = '{}/{}_{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
 # name of variable, forecast initial month and forecast year is in the file
 # name
 if DOMAIN_NAME == 'AFRICOM':
-    TARGET_INFILE_TEMPLATE1 = '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
+    TARGET_INFILE_TEMPLATE1 = \
+        '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
     CLIM_INFILE_TEMPLATE1 = \
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
 elif DOMAIN_NAME == 'GLOBAL':
-    TARGET_INFILE_TEMPLATE1 = '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
+    TARGET_INFILE_TEMPLATE1 = \
+        '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
     CLIM_INFILE_TEMPLATE1 = \
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
 
@@ -87,11 +91,7 @@ for var_name in METRIC_VARS:
         emon = datetime(CLIM_SYR, FCST_INIT_MON, FCST_INIT_DAY) + \
                     relativedelta(months=lead+1)
         ## Adding 1 to lead to make sure the file read is from the month after
-        if DOMAIN_NAME == 'AFRICOM':
-            mon_arg = smon.month
-        elif DOMAIN_NAME == 'GLOBAL':
-            mon_arg = FCST_INIT_MON
-            
+
         INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
                                              FCST_INIT_MON, NMME_MODEL,
                                              NMME_MODEL, \
@@ -124,7 +124,7 @@ for var_name in METRIC_VARS:
             relativedelta(months=lead+1)
 
         INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
-                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,                                 
+                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
                                                NMME_MODEL, \
                                                smon1.year, smon1.month, \
                                                emon1.year, emon1.month)
@@ -157,9 +157,14 @@ for var_name in METRIC_VARS:
         all_clim_mean = all_clim_data.mean (dim = ['time','ensemble'], skipna = True)
         all_clim_std  = all_clim_data.std (dim = ['time','ensemble'], skipna = True)
 
-        if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
-            all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values, "lat": target_fcst_data.lat.values})
-            all_clim_std = all_clim_std.assign_coords({"lon": target_fcst_data.lon.values, "lat": target_fcst_data.lat.values})
+        if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
+           (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
+            all_clim_mean = \
+                all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
+                                             "lat": target_fcst_data.lat.values})
+            all_clim_std = \
+                all_clim_std.assign_coords({"lon": target_fcst_data.lon.values,
+                                            "lat": target_fcst_data.lat.values})
 
         this_anom = xr.apply_ufunc(
             compute_sanomaly,
@@ -175,7 +180,7 @@ for var_name in METRIC_VARS:
 
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens]
-        
+
         del all_clim_data, target_fcst_data, all_clim_mean, all_clim_std
 
     ### Step-4 Writing output file
@@ -190,20 +195,13 @@ for var_name in METRIC_VARS:
                      (lon_count*0.25), 0.25)
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, \
                                       var_name, FCST_INIT_MON, TARGET_YEAR)
-    
+
     anom_xr = xr.Dataset()
-    #if var_name == 'Streamflow':
-    #    anom_extr = all_anom[0,:,:,:]
-    #    print(np.nanmin(anom_extr),np.nanmax(anom_extr))
-    #    anom_extr = anom_extr[np.newaxis,...]
-    #    anom_xr['anom'] = (('ens', 'lead', 'latitude', 'longitude'), anom_extr)
-    #    anom_xr.coords['ens'] = (('ens'), np.arange(0, 1, dtype=int))
-    #else:
     anom_xr['anom'] = (('ens', 'lead', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
-    anom_xr.coords['lead'] = (('lead'), np.arange(0, LEAD_NUM, dtype=int))    
+    anom_xr.coords['lead'] = (('lead'), np.arange(0, LEAD_NUM, dtype=int))
     print(f"[INFO] Writing {OUTFILE}")
     anom_xr.to_netcdf(OUTFILE)
 

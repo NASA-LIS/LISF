@@ -23,6 +23,7 @@
 #
 # REVISION HISTORY:
 # 15 Jul 2021: Eric Kemp (SSAI), first version.
+# 06 Dec 2022: Eric Kemp (SSAI), changes to boost pylint score.
 #
 #------------------------------------------------------------------------------
 """
@@ -34,14 +35,13 @@ import sys
 
 def _usage():
     """Prints usage statement for script."""
-    print("USAGE: %s template YYYYMMDDHH" %(sys.argv[0]))
+    print(f"USAGE: {sys.argv[0]} template YYYYMMDDHH")
     print("  where:")
     print("    template is path to lvt.config template file")
     print("    YYYYMMDDHH is valid date/time of USAFSI analysis in UTC")
 
-# Main driver
-if __name__ == "__main__":
-
+def _main():
+    """Main driver"""
     # Check command-line arguments
     if (len(sys.argv)) != 3:
         _usage()
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     template = sys.argv[1]
     if not os.path.exists(template):
-        print("[ERR] %s does not exist!" %(template))
+        print(f"[ERR] {template} does not exist!")
         sys.exit(1)
 
     yyyymmddhh = sys.argv[2]
@@ -61,44 +61,36 @@ if __name__ == "__main__":
 
     # Open the template lvt.config file, read in the contents, and update as
     # needed.
-    lines = open(template, 'r').readlines()
+    with open(template, 'r', encoding="ascii") as file:
+        lines = file.readlines()
     newlines = []
+    config_dict = {
+        "Starting year:" : f"Starting year: {rundt.year}\n",
+        "Starting month:" : f"Starting month: {rundt.month}\n",
+        "Starting day:" : f"Starting day: {rundt.day}\n",
+        "Starting hour:" : f"Starting hour: {rundt.hour}\n",
+        "Starting minute:" : "Starting minute: 00\n",
+        "Starting second:" : "Starting second: 00\n",
+        "Ending year:" : f"Ending year: {rundt.year}\n",
+        "Ending month:" : f"Ending month: {rundt.month}\n",
+        "Ending day:" : f"Ending day: {rundt.day}\n",
+        "Ending minute:" : "Ending minute: 00\n",
+        "Ending second:" : "Ending second: 00\n"
+    }
     for line in lines:
-        # NOTE:  pylint insists that NEWLINE is a constant and should have
-        # UPPER_CASE naming style.  This is likely a bug in pylint, but we
-        # will humor it.
-        if "Starting year:" in line:
-            NEWLINE = "Starting year: %s\n" %(rundt.year)
-        elif "Starting month:" in line:
-            NEWLINE = "Starting month: %s\n" %(rundt.month)
-        elif "Starting day:" in line:
-            NEWLINE = "Starting day: %s\n" %(rundt.day)
-        elif "Starting hour:" in line:
-            NEWLINE = "Starting hour: %s\n" %(rundt.hour)
-        elif "Starting minute:" in line:
-            NEWLINE = "Starting minute: 00\n"
-        elif "Starting second:" in line:
-            NEWLINE = "Starting second: 00\n"
-        # For simplicity, we set the end date/time same as the start
-        elif "Ending year:" in line:
-            NEWLINE = "Ending year: %s\n" %(rundt.year)
-        elif "Ending month:" in line:
-            NEWLINE = "Ending month: %s\n" %(rundt.month)
-        elif "Ending day:" in line:
-            NEWLINE = "Ending day: %s\n" %(rundt.day)
-        elif "Ending hour:" in line:
-            NEWLINE = "Ending hour: %s\n" %(rundt.hour)
-        elif "Ending minute:" in line:
-            NEWLINE = "Ending minute: 00\n"
-        elif "Ending second:" in line:
-            NEWLINE = "Ending second: 00\n"
-        else:
-            NEWLINE = line
-        newlines.append(NEWLINE)
+        newline = line
+        for _, key in enumerate(config_dict):
+            if key in line:
+                newline = config_dict[key]
+                break
+        newlines.append(newline)
 
     # Create the new, customized lvt.config file
-    NEWFILE = "lvt.config.usafsipost"
-    f = open(NEWFILE, "w")
-    for line in newlines:
-        f.write(line)
-    f.close()
+    newline = "lvt.config.usafsipost"
+    with open(newline, "w", encoding="ascii") as file:
+        for line in newlines:
+            file.write(line)
+
+# Main driver
+if __name__ == "__main__":
+    _main()

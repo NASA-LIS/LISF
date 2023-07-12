@@ -10,20 +10,24 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
+Sample script to customize lvt.config files for jules50 postprocessing for
+557WW.
+"""
+
 import datetime
 import os
-import sys
 
-template = "templates/lvt.config.template.jules50"
+_TEMPLATE = "templates/lvt.config.template.jules50"
 
-startdt = datetime.datetime(2021, 4, 13,  9)
-enddt = datetime.datetime(2021, 4, 13,  12)
+_STARTDT = datetime.datetime(2022, 8, 2,  6)
+_ENDDT = datetime.datetime(2022, 8, 2,  12)
 
-output = "netcdf" # For 557 Ops (Fields file)
-#output = "grib2"
+#_OUTPUT = "netcdf" # For 557 Ops (Fields file)
+_OUTPUT = "grib2"
 
 # Most variables are processed independently, and are listed below.
-var_attributes = {
+_VAR_ATTRIBUTES = {
     "AvgSurfT_inst":
     "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
     "AvgSurfT_tavg":
@@ -95,67 +99,41 @@ var_attributes = {
     "Wind_f_tavg":
         "Wind_f      1  1  m/s    -  1  1 Wind_f      1  1  m/s    -  1  1",
 
-    "ActSnowNL_inst":
-        "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
-    "GrndSnow_inst":
-        "GrndSnow    1  1  kg/m2  -  0  1 GrndSnow    1  1  kg/m2  -  0  1",
-    "LayerSnowDensity_inst":
-        "LayerSnowDensity 1 1 kg/m3 - 0 3 LayerSnowDensity 1 1 kg/m3 - 0 3",
-    "LayerSnowDepth_inst":
-        "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
-    "LayerSnowGrain_inst":
-        "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
-    "SnowDensity_inst":
-        "SnowDensity 1  1  kg/m3  -  0  1 SnowDensity 1  1 kg/m3   -  0  1",
-    "SnowGrain_inst":
-        "SnowGrain   1  1 microns -  0  1 SnowGrain   1  1 microns -  0  1",
-    "SnowIce_inst":
-        "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
-    "SnowLiq_inst":
-        "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
-    "SnowTProf_inst":
-        "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
-    "SurftSnow_inst":
-        "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
-}
-
-# EMK FOR GALWEM TESTING
-var_attributes = {
-    "AvgSurfT_inst":
-        "AvgSurfT    1  1  K      -  0  1 AvgSurfT    1  1  K      -  0  1",
-    "SoilMoist_inst":
-        "SoilMoist   1  4  m3/m3  -  0  4 SoilMoist   1  4  m3/m3  -  0  4",
-    "SoilTemp_inst":
-        "SoilTemp    1  4  K      -  0  4 SoilTemp    1  4  K      -  0  4",
+    # "ActSnowNL_inst":
+    #     "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
+    # "GrndSnow_inst":
+    #     "GrndSnow    1  1  kg/m2  -  0  1 GrndSnow    1  1  kg/m2  -  0  1",
+    # "LayerSnowDensity_inst":
+    #     "LayerSnowDensity 1 1 kg/m3 - 0 3 LayerSnowDensity 1 1 kg/m3 - 0 3",
+    # "LayerSnowDepth_inst":
+    #     "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
+    # "LayerSnowGrain_inst":
+    #     "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
+    # "SnowDensity_inst":
+    #     "SnowDensity 1  1  kg/m3  -  0  1 SnowDensity 1  1 kg/m3   -  0  1",
+    # "SnowGrain_inst":
+    #     "SnowGrain   1  1 microns -  0  1 SnowGrain   1  1 microns -  0  1",
+    # "SnowIce_inst":
+    #     "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
+    # "SnowLiq_inst":
+    #     "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
+    # "SnowTProf_inst":
+    #     "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
+    # "SurftSnow_inst":
+    #     "SurftSnow   1  1  kg/m2  -  0  1 SurftSnow   1  1  kg/m2  -  0  1",
 }
 
 # RHMin must be processed with Tair_f_min, so these are listed together
-var_attributes_special = {
+_VAR_ATTRIBUTES_SPECIAL = {
     "Tair_f_min":
     "Tair_f_min  1  1  K      -  1  1 Tair_f_min  1  1  K      -  1  1",
     "RHMin_inst":
         "RHMin       1  1  %      -  0  1 RHMin       1  1  %      -  0  1",
 }
 
-# PS41 snow variables must be processed together.
-var_attributes_ps41_snow = {
-    "ActSnowNL_inst":
-        "ActSnowNL   1  1    -    -  0  1 ActSnowNL   1  1   -     -  0  1",
-    "LayerSnowDepth_inst":
-        "LayerSnowDepth   1 1 m   -  0  3 LayerSnowDepth  1 1 m    -  0  3",
-    "LayerSnowGrain_inst":
-        "LayerSnowGrain 1 1 microns - 0 3 LayerSnowGrain 1 1 microns - 0 3",
-    "SnowIce_inst":
-        "SnowIce     1  1  kg/m2  -  0  3 SnowIce     1  1 kg/m2   -  0  3",
-    "SnowLiq_inst":
-        "SnowLiq     1  1  kg/m2  -  0  3 SnowLiq     1  1 kg/m2   -  0  3",
-    "SnowTProf_inst":
-        "SnowTProf   1  1    K    -  0  3 SnowTProf   1  1   K     -  0  3",
-}
-
 # Smooth variables that are perturbed, derived from perturbed variables,
 # or are LSM outputs that are affected by perturbed variables via physics.
-smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
+_SMOOTH_VARS = ["AvgSurfT_inst", "AvgSurfT_tavg",
                "Albedo_tavg", "CanopInt_inst",
                "Evap_tavg", "LWdown_f_inst",
                "LWdown_f_tavg", "Qh_tavg", "Qle_tavg",
@@ -167,88 +145,83 @@ smooth_vars = ["AvgSurfT_inst", "AvgSurfT_tavg",
                "SWdown_f_tavg", "SWE_inst",
                "Tair_f_inst", "Tair_f_max",
                "Tair_f_tavg", "TotalPrecip_acc",
-               "Tair_f_min", "RHMin_inst",
+               "Tair_f_min", "RHMin_inst"]
 
-               "GrndSnow_inst", "LayerSnowDensity_inst",
-               "LayerSnowDepth_inst", "LayerSnowGrain_inst",
-               "SnowDensity_inst", "SnowGrain_inst",
-               "SnowIce_inst", "SnowLiq_inst",
-               "SnowTProf_inst", "SurftSnow_inst"]
+#               "GrndSnow_inst", "LayerSnowDensity_inst",
+#               "LayerSnowDepth_inst", "LayerSnowGrain_inst",
+#               "SnowDensity_inst", "SnowGrain_inst",
+#               "SnowIce_inst", "SnowLiq_inst",
+#               "SnowTProf_inst", "SurftSnow_inst"]
 
-# EMK for GALWEM...No smoothing
-smooth_vars = []
+def _main():
+    """Main driver"""
 
-lines = open(template, 'r').readlines()
+    with open(_TEMPLATE, 'r', encoding="ascii") as file:
+        lines = file.readlines()
 
-vars = list(var_attributes.keys())
-#vars.append("RHMin_inst")  # RHMin will be handled specially below
-vars.append("PS41Snow_inst") # PS41 snow vars handled specially below
-vars.sort()
-firstVar = True
-for var in vars:
-    newlines = []
-    for line in lines:
-        if "LVT output format:" in line:
-            line = "LVT output format: %s\n" % (output)
-        elif "Process HYCOM data:" in line:
-            if firstVar:
-                line = "Process HYCOM data: 1\n"
-            else:
-                line = "Process HYCOM data: 0\n"
-        elif "Apply noise reduction filter:" in line:
-            if var in smooth_vars:
-                line = "Apply noise reduction filter: 1\n"
-            else:
-                line = "Apply noise reduction filter: 0\n"
-        elif "Starting year:" in line:
-            line = "Starting year: %s\n" % (startdt.year)
-        elif "Starting month:" in line:
-            line = "Starting month: %s\n" % (startdt.month)
-        elif "Starting day:" in line:
-            line = "Starting day: %s\n" % (startdt.day)
-        elif "Starting hour:" in line:
-            line = "Starting hour: %s\n" % (startdt.hour)
-        elif "Ending year:" in line:
-            line = "Ending year: %s\n" % (enddt.year)
-        elif "Ending month:" in line:
-            line = "Ending month: %s\n" % (enddt.month)
-        elif "Ending day:" in line:
-            line = "Ending day: %s\n" % (enddt.day)
-        elif "Ending hour:" in line:
-            line = "Ending hour: %s\n" % (enddt.hour)
-        elif "LVT diagnostic file:" in line:
-            line = "LVT diagnostic file: logs/lvtlog.%s.3hr" % (var)
-        elif "LVT datastream attributes table::" in line:
-            line = "LVT datastream attributes table::\n"
-            # Special handling for RHMin_inst, which must be processed with
-            # Tair_f_min
-            if var == "RHMin_inst":
-                keys = sorted(list(var_attributes_special.keys()))
-                for key in keys:
-                    line += "%s\n" % (var_attributes_special[key])
-            # Special handling for PS41 snow physics
-            if var == "PS41Snow_inst":
-                keys = sorted(list(var_attributes_ps41_snow.keys()))
-                for key in keys:
-                    line += "%s\n" % (var_attributes_ps41_snow[key])
-            # The general case
-            else:
-                line += "%s\n" % (var_attributes[var])
-        elif "Metrics output directory:" in line:
-            line = "Metrics output directory: OUTPUT/STATS.%s.3hr\n" % (var)
-        elif "LIS output attributes file:" in line:
-            line = "LIS output attributes file:"
-            line += " ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.%s.3hr\n" \
-                % (var)
+    varlist = list(_VAR_ATTRIBUTES.keys())
+    varlist.append("RHMin_inst")  # RHMin will be handled specially below
+    varlist.sort()
+    first_var = True
+    for var in varlist:
+        newlines = []
+        for line in lines:
+            if "LVT output format:" in line:
+                line = f"LVT output format: {_OUTPUT}\n"
+            elif "Process HYCOM data:" in line:
+                if first_var:
+                    line = "Process HYCOM data: 1\n"
+                else:
+                    line = "Process HYCOM data: 0\n"
+            elif "Apply noise reduction filter:" in line:
+                if var in _SMOOTH_VARS:
+                    line = "Apply noise reduction filter: 1\n"
+                else:
+                    line = "Apply noise reduction filter: 0\n"
+            elif "Starting year:" in line:
+                line = f"Starting year: {_STARTDT.year}\n"
+            elif "Starting month:" in line:
+                line = f"Starting month: {_STARTDT.month}\n"
+            elif "Starting day:" in line:
+                line = f"Starting day: {_STARTDT.day}\n"
+            elif "Starting hour:" in line:
+                line = f"Starting hour: {_STARTDT.hour}\n"
+            elif "Ending year:" in line:
+                line = f"Ending year: {_STARTDT.year}\n"
+            elif "Ending month:" in line:
+                line = f"Ending month: {_ENDDT.month}\n"
+            elif "Ending day:" in line:
+                line = f"Ending day: {_ENDDT.day}\n"
+            elif "Ending hour:" in line:
+                line = f"Ending hour: {_ENDDT.hour}\n"
+            elif "LVT diagnostic file:" in line:
+                line = f"LVT diagnostic file: logs/lvtlog.{var}.3hr"
+            elif "LVT datastream attributes table::" in line:
+                line = "LVT datastream attributes table::\n"
+                # Special handling for RHMin_inst, which must be processed with
+                # Tair_f_min
+                if var == "RHMin_inst":
+                    keys = sorted(list(_VAR_ATTRIBUTES_SPECIAL.keys()))
+                    for key in keys:
+                        line += f"{_VAR_ATTRIBUTES_SPECIAL[key]}\n"
+                else:
+                    line += f"{_VAR_ATTRIBUTES[var]}\n"
+            elif "Metrics output directory:" in line:
+                line = f"Metrics output directory: OUTPUT/STATS.{var}.3hr\n"
+            elif "LIS output attributes file:" in line:
+                line = "LIS output attributes file:"
+                line += f" ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.3hr\n"
 
-        newlines.append(line)
+            newlines.append(line)
 
-    firstVar = False
-    if not os.path.exists("configs"):
-        os.mkdir("configs")
-    newfile = "configs/lvt.config.%s.3hr" % (var)
-    print("Writing %s" % (newfile))
-    f = open(newfile, "w")
-    for line in newlines:
-        f.write(line)
-    f.close()
+        first_var = False
+        if not os.path.exists("configs"):
+            os.mkdir("configs")
+        newfile = f"configs/lvt.config.{var}.3hr"
+        print(f"Writing {newfile}")
+        with open(newfile, "w", encoding="ascii") as file:
+            for line in newlines:
+                file.write(line)
+
+if __name__ == "__main__":
+    _main()
