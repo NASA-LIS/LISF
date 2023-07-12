@@ -20,11 +20,13 @@ import numpy as np
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
-from Shrad_modules import read_nc_files
-from BCSD_stats_functions import get_domain_info
 import xarray as xr
 import xesmf as xe
 import yaml
+# pylint: disable=import-error
+from shrad_modules import read_nc_files
+from bcsd_stats_functions import get_domain_info
+# pylint: enable=import-error
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -66,10 +68,9 @@ NMME_MODEL = str(sys.argv[6])
 ENS_NUM = int(sys.argv[7])
 CONFIGFILE = str(sys.argv[8])
 with open(CONFIGFILE, 'r', encoding="utf-8") as file:
-        config = yaml.safe_load(file)
+    config = yaml.safe_load(file)
 LEAD_MONS = config['EXP']['lead_months']
-        
-#MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanCM4i', 'GEM-NEMO', \
+
 MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
        'Sep', 'Oct', 'Nov', 'Dec']
@@ -212,4 +213,3 @@ for m in range(0, ENS_NUM):
         write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
         'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
         print(f"Writing {OUTFILE}")
-

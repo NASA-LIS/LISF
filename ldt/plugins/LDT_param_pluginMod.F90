@@ -383,6 +383,7 @@ contains
 
     external set_MODISNative_lc_attribs
     external read_MODISNative_lc
+    external read_MCD12Q1_lc
     external read_MODISNative_PFT
     external read_UKMO_IGBP_PFT
     external read_UM_ancillary
@@ -432,6 +433,7 @@ contains
 
   ! MODIS-IGBP/NCEP (LIS-based):
     call registerreadlc(trim(LDT_modislcLISId)//char(0), read_MODIS_lc)
+    call registerreadlc(trim(LDT_mcd12q1Id)//char(0), read_MCD12Q1_lc)
 
   ! USGS (Native):
     call registerreadlc(trim(LDT_usgslcNATId)//char(0), read_USGSNative_lc)

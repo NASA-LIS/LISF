@@ -1,0 +1,1231 @@
+! snowmodel.par file.
+!
+! Define any required constants specific to this model run.
+!
+! The following must be true:
+!
+!   All comment lines start with a ! in the first position.
+!
+!   Blank lines are permitted.
+!
+!   All parameter statements start with the parameter name, followed
+!   by a space, followed by an =, followed by a space, followed by
+!   the actual value, with nothing after that.  These statements can
+!   have leading blanks, and must fit within 120 columns, and the
+!   parameter value cannot be longer than 80 characters (so, for
+!   example, your paths/file_names to the right of the "=" sign
+!   cannot be longer than 80 characters).
+!
+!   Also note that all of the input numbers follow standard
+!   fortran_77 convention where anything starting with the letters
+!   "i" through "n" are integers, and all others are real numbers.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  GENERAL MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Number of x and y cells in the computational grid.
+!!! (recommended default value: nx = user input required)
+!!! (recommended default value: ny = user input required)
+      nx = 578
+      ny = 541
+
+! deltax = grid increment in x direction.  Meters.
+! deltay = grid increment in y direction.  Meters.
+!!! (recommended default value: deltax = user input required)
+!!! (recommended default value: deltay = user input required)
+      deltax = 100.0
+      deltay = 100.0
+
+! Location (like UTM, in meters) value of lower-left grid point.
+!   xmn = value of x coordinate in center of lower left grid cell.
+!     Meters.
+!   ymn = value of y coordinate in center of lower left grid cell.
+!     Meters.
+!!! (recommended default value: xmn = user input required)
+!!! (recommended default value: ymn = user input required)
+      xmn = 251450.00
+      ymn = 4176850.00
+
+! Model time step, dt.  Should be the same increment as in the input
+!   data file.  In seconds.  For what it is worth, I almost always
+!   run the model using 3-hour time steps or daily time steps.  The
+!   3-hour time step resolves the diurnal cycle, and the daily time
+!   step is 8 times faster.  While other time steps can be used,
+!   there would need to be a good reason to (for example, it has
+!   been years since I have run the model on a daily time step;
+!   with no apparent loss in quality).
+!!! (recommended default value: dt = user input required)
+!   One day.
+!     dt = 86400.0
+!   Three hours.
+!      dt = 10800.0
+!   One hour.
+     dt = 3600.0
+
+! Start year of input data file.  Four digit year.  Integer.
+!!! (recommended default value: iyear_init = user input required)
+      iyear_init = 2009
+
+! Start month of input data file.  One or two digit month.  Integer.
+!!! (recommended default value: imonth_init = user input required)
+      imonth_init = 9
+
+! Start day of input data file.  One or two digit day.  Integer.
+!!! (recommended default value: iday_init = user input required)
+      iday_init = 1
+
+! Start hour of input data file.  Local time, like in solar time.
+!   Decimal hour.  Each day the clock runs from 0.00 through 23.99.
+!   Real.
+!!! (recommended default value: xhour_init = user input required)
+      xhour_init = 1.0
+!      xhour_init = 3.0
+!      xhour_init = 12.0
+
+! Number of model iterations defines how many times to process.
+!!! (recommended default value: max_iter = user input required)
+!      max_iter = 1
+!      max_iter = 365
+!      max_iter = 2920
+      max_iter = 8760
+
+! MicroMet requires a met input file that has data in a specific
+!   format (see the MicroMet documentation).  For the case of
+!   inputs from more than a single station, the input met file
+!   requires an initial number indicating the number of valid
+!   stations at a given time step.  For the case of a single
+!   station, this number can be dropped (it doesn't have to be
+!   though).  Identify whether to process as a single station
+!   without the valid station count (isingle_stn_flag = 1), or
+!   or to process with the count included (for multi stations
+!   and single stations with the number of stations included;
+!   isingle_stn_flag = 0).
+!!! (recommended default value: isingle_stn_flag = user input
+!!! required)
+      isingle_stn_flag = 0
+
+! For the case of isingle_stn_flag = 1, the input file can be a GrADS
+!   binary file.  Identify whether that is the case (= 1, else = 0).
+!!! (recommended default value: igrads_metfile = 0)
+      igrads_metfile = 0
+
+! (New) Meteorological forcing option to help specify whether
+!   forcing fields will be read in from the options selected in
+!   this snowmodel.par input file (including the forcing file
+!   read and station or gridcell interpolation), OR that 2-D
+!   meteorological fields are passed on the Snowmodel model
+!   grid space into MicroMet and utilize just the topographic
+!   downscaling operations and routines.
+!!! (recommended default value:  metforce_opt = 0 )
+!!! (0 = Read in SnowModel forcing specific file and perform
+!!!      interplation in MicroMet routines)
+!!! (1 = Pass in 2D meteorological forcing fields, already
+!!!      interpolated to the model space grid, to MicroMet)
+      metforce_opt = 0
+
+
+! Define the meteorologial input file name.  Note that this input
+!   file has very specific input format requirements (see the
+!   MicroMet preprocessor).  The required met variables are:
+!   Tair (deg C or K), rh (%), wind speed (m/s), wind direction
+!   (0-360 True N), and precipitation (mm/time_step).
+!!! (recommended default value: met_input_fname = user input required)
+      met_input_fname = SnowModel_Inputs/uppertuo_100m/mm_3hrly_wys2010-2020.dat
+
+! The number used as an undefined value for both inputs and outputs.
+!!! (recommended default value: undef = -9999.0)
+      undef = -9999.0
+
+! Define whether the topography and vegetation input files will
+!   be ARC/INFO ascii text (grid) files, or a GrADS binary file
+!  (ascii = 1.0, GrADS = 0.0).
+!!! (recommended default value: ascii_topoveg = 1.0)
+      ascii_topoveg = 0.0
+
+! Define the GrADS topography and vegetation input file name
+!   (record 1 = topo, record 2 = veg).  Note that if you are using
+!     ascii files, you still cannot comment this line out (it is okay
+!     for it to point to something that doesn't exist) or you will
+!     an error message.
+!!! (recommended default value: topoveg_fname = xxxxxx)
+      topoveg_fname = SnowModel_Inputs/topo_vege/topo_vege.gdat
+
+! For the case of using ascii text topography and vegetation files,
+!   provide the file names.  Note that if you are using a grads
+!     file, you still cannot comment these two lines out (it is okay
+!     for it to point to something that doesn't exist) or you will
+!     an error message.
+!!! (recommended default value: topo_ascii_fname = user input required)
+!!! (recommended default value: veg_ascii_fname = user input required)
+      topo_ascii_fname = xxxxxx
+      veg_ascii_fname = xxxxxx
+
+! The vegetation types are assumed to range from 1 through 30.  The
+!   last 6 types are available to be user-defined vegetation types
+!   and vegetation snow-holding depths.  The first 24 vegetation
+!   types, and the associated vegetation snow-holding depths
+!   (meters), are hard-coded to be:
+!
+! code description           veg_shd  example                    class
+!
+!  1  coniferous forest       15.00  spruce-fir/taiga/lodgepole  forest
+!  2  deciduous forest        12.00  aspen forest                forest
+!  3  mixed forest            14.00  aspen/spruce-fir/low taiga  forest
+!  4  scattered short-conifer  8.00  pinyon-juniper              forest
+!  5  clearcut conifer         4.00  stumps and regenerating     forest
+! 
+!  6  mesic upland shrub       0.50  deeper soils, less rocky    shrub
+!  7  xeric upland shrub       0.25  rocky, windblown soils      shrub
+!  8  playa shrubland          1.00  greasewood, saltbush        shrub
+!  9  shrub wetland/riparian   1.75  willow along streams        shrub
+! 10  erect shrub tundra       0.65  arctic shrubland            shrub
+! 11  low shrub tundra         0.30  low to medium arctic shrubs shrub
+! 
+! 12  grassland rangeland      0.15  graminoids and forbs        grass
+! 13  subalpine meadow         0.25  meadows below treeline      grass
+! 14  tundra (non-tussock)     0.15  alpine, high arctic         grass
+! 15  tundra (tussock)         0.20  graminoid and dwarf shrubs  grass
+! 16  prostrate shrub tundra   0.10  graminoid dominated         grass
+! 17  arctic gram. wetland     0.20  grassy wetlands, wet tundra grass
+! 
+! 18  bare                     0.01                              bare
+!
+! 19  water/possibly frozen    0.01                              water
+! 20  permanent snow/glacier   0.01                              water
+! 
+! 21  residential/urban        0.01                              human
+! 22  tall crops               0.40  e.g., corn stubble          human
+! 23  short crops              0.25  e.g., wheat stubble         human
+! 24  ocean                    0.01                              water
+!
+! 25  user defined (see below)
+! 26  user defined (see below)
+! 27  user defined (see below)
+! 28  user defined (see below)
+! 29  user defined (see below)
+! 30  user defined (see below)
+!
+! Define the vegetation snow-holding depths (in meters) for each
+!   of the user-defined vegetation types.  The numbers in the
+!   list below correspond to the vegetation-type numbers in the
+!   vegetation-type data array (veg type 25.0 -> veg_shd_25).  Note
+!   that even if these are not used, they cannot be commented out
+!   or you will get an error message.
+!!! (recommended default value: veg_shd_25 = 0.10)
+!!! (recommended default value: veg_shd_26 = 0.10)
+!!! (recommended default value: veg_shd_27 = 0.10)
+!!! (recommended default value: veg_shd_28 = 0.10)
+!!! (recommended default value: veg_shd_29 = 0.10)
+!!! (recommended default value: veg_shd_30 = 0.10)
+      veg_shd_25 = 0.10
+      veg_shd_26 = 0.10
+      veg_shd_27 = 0.10
+      veg_shd_28 = 0.10
+      veg_shd_29 = 0.10
+      veg_shd_30 = 0.10
+
+! Define whether the vegetation will be constant or defined by the
+!   topography/vegetation input file name (0.0 means use the file,
+!   1.0 or greater means use a constant vegetation type equal to
+!   the number that is used).  This will define the associated
+!   veg_shd that will be used.  The reason you might use a constant
+!   vegetation type is to avoid generating a veg-distribution file.
+!!! (recommended default value: const_veg_flag = 0.0)
+!     const_veg_flag = 12.0
+      const_veg_flag = 0.0
+
+! For the case where you have vegetation height data, and want to
+!   use that instead of the tables above, you must also provide a
+!   file that defines the vegetation height (m) of each grid cell.
+!   iveg_ht_flag = 0 means the file is not provided and the required
+!   array will be generated by filling it with the values listed in
+!   the above vegetation summary.  iveg_ht_flag = -1 means the data
+!   file is a grads binary file with the name veg_ht.gdat.
+!   iveg_ht_flag = 1 means the data file is an ascii text file with
+!   the same format that ascii topo and veg files would have and
+!   with a name of veg_ht.asc.  Note that this .asc file is
+!   y-reversed (see ascii topo/veg notes), and the .gdat file is
+!   not.  It is assumed that the file, if provided, is located in
+!   the same directory as the topo and vege files listed above (in
+!   topoveg_fname or topo_ascii_fname and veg_ascii_fname).  Note
+!   that this height information is primarily used as the vegetation
+!   snow-holding depth, thus the model is expecting average
+!   vegetation heights for each grid cell, not maximum heights.
+!!! (recommended default value: iveg_ht_flag = 0)
+      iveg_ht_flag = 0
+
+! The latitude of domain center (decimal degrees).  This only needs
+!   to be approximate, since it is used to define some of the solar
+!   radiation calculations.
+!!! (recommended default value: xlat = user input required)
+      xlat = 40.0
+
+! For the case where your domain spans enough latitude that there
+!   is significant variation in solar radiation from the top to
+!   the bottom of the domain, you must also provide a file that
+!   defines the latitude (in decimal degrees) of the center of
+!   each grid cell.  lat_solar_flag = 0 means the file is not
+!   provided and the required array will be generated by filling
+!   it with the constant xlat value listed above.  lat_solar_flag
+!   = -1 means the data file is a grads binary file with the name
+!   grid_lat.gdat.  lat_solar_flag = 1 means the data file is an
+!   ascii text file with the same format that ascii topo and veg
+!   files would have and with a name of grid_lat.asc.  Note that
+!   the .gdat and .asc files are y-reversed (see ascii topo/veg
+!   notes).  It is assumed that the file, if provided, is located
+!   in an 'extra_met/' directory off of the main model directory. 
+!!! (recommended default value: lat_solar_flag = 0)
+      lat_solar_flag = 0
+
+! For the case where your domain spans enough longitude that there
+!   is significant variation in solar radiation from the side to
+!   the side of the domain, you must also provide a file that
+!   defines the lonitude (in decimal degrees) of the center of
+!   each grid cell.  In this case it also no longer makes sense
+!   to be running the model in local time, and UTC (or GMT) time
+!   is required.  UTC_flag = 0.0 means the the model will be run
+!   in local time.  UTC_flag = -1.0 means the longitude data file
+!   is a grads binary file with the name grid_lon.gdat.  UTC_flag
+!   = 1 means the longitude data file is an ascii text file with
+!   the same format that ascii topo and veg files would have and
+!   with a name of grid_lon.asc.  Note that the .gdat and .asc
+!   files are y-reversed from each other (see ascii topo/veg
+!   notes).  It is assumed that the file, if provided, is located
+!   in an 'extra_met/' directory off of the main model directory. 
+!   Note that if UTC_flag is non-zero, lat_solar_flag should
+!   probably also be non-zero.
+!!! (recommended default value: UTC_flag = 0.0)
+      UTC_flag = 0.0
+
+! Define which models that are going to run.  A value of 1.0 means
+!   that you want to run the model (0.0 means don't run it).
+!   Currently the model is only configured to run the following
+!   combinations (micromet), (micromet, enbal), (micromet, enbal,
+!   snowpack), (micromet, snowtran), or (micromet, enbal, snowpack,
+!   snowtran).
+!!! (recommended default value: run_micromet = user input required)
+!!! (recommended default value: run_enbal = user input required)
+!!! (recommended default value: run_snowpack = user input required)
+!!! (recommended default value: run_snowtran = user input required)
+      run_micromet = 1.0
+      run_enbal = 1.0
+      run_snowpack = 1.0
+      run_snowtran = 1.0
+
+! Define whether you are doing a standard model simulation, or a
+!   DATA ASSIMILATION RUN where you are going to assimilate
+!   observed snow water equivalent observations as part of the
+!   model integration.  A data assimilation run can be used to
+!   correct precipitation inputs and/or melt rates to force the
+!   model towards your observed swe distributions.  For a standard
+!   simulation, use irun_data_assim = 0, for a data assimilation
+!   run, use irun_data_assim = 1.  Note that irun_data_assim = 1
+!   requires swe data and some extra input files.  See the
+!   dataassim_user.f subroutine for details (read the comments in
+!   that subroutine to learn how to set up a data assimilation
+!   run).  If you are using this feature, you will also need to
+!   run the model with "print_user = 1.0" defined below in this
+!   .par file; there are three output files/variables that you
+!   must turn on (as noted below) to do a data assimilation run.
+!   Data assimilation works for single-layer runs and multi-layer
+!   runs (multilayer_snowpack = 1).  The snow water equivalent
+!   assimilation input file must be placed in this directory and
+!   be called: /sm/swe_assim/swe_obs.dat.
+!!! (recommended default value: irun_data_assim = user input
+!!! required)
+      irun_data_assim = 0
+!     irun_data_assim = 1
+
+! In addition to the SWE data assimilation described above,
+!   you can also assimilate snow density observations as a
+!   post-processing step at the end of the model run.  See the
+!   /post_process/density_assim/ directory for additional
+!   details.  Assimilating both SWE and density will help
+!   reproduce the observed SWE, depth, and density (all three,
+!   not just one of them).
+
+! Define whether want to implement the history restart option.
+!   This creates periodic output files that allow you to restart
+!   the simulation from somewhere other than the beginning.  All
+!   of the required data arrays are saved to a grads file that is
+!   read back in when the simulation is restarted.  The new
+!   simulation starts at the history restart iteration, with the
+!   initial conditions defined by the saved data arrays.  The
+!   new simulation starts in the micromet file where the original
+!   simulation ended.  This is also true of the output files,
+!   if the run has been set up to write continuously to a given
+!   output file.  This option also assumes that you have not made
+!   any changes to the model setup; it does no error checking.
+!   ihrestart_flag = -2 turns this option off, ihrestart_flag = -1
+!   does the restart saves, and ihrestart_flag >= 0 runs a history
+!   restart where the number defines the restart iteration (e.g.,
+!   ihrestart = 720 will set iteration 720 as the intitial
+!   condition for the start of the new simulation.  For the case
+!   where ihrestart_flag = 0, and i_dataassim_loop <= -1, the
+!   run will start at the begining of the second data assimilation
+!   loop.  NOTE: HISTORY RESTARTS NO LONGER WORK; THIS WILL BE
+!   CORRECTED IN THE COMING MONTHS.
+!!! (recommended default value: ihrestart_flag = -2)
+      ihrestart_flag = -2
+!     ihrestart_flag = -1
+!     ihrestart_flag = 3444
+!     ihrestart_flag = 0
+
+! For the case where you are running a history restart, define
+!   whether you want to restart the run during a standard run or
+!   the first loop of a data assimilation model run
+!   (i_dataassim_loop = 1) or during the second loop of a data
+!   assimilation run (i_dataassim_loop < 0).  The value of this
+!   negative number is used to define how many obervation dates
+!   you have in your data assimilation run (e.g., -3 would mean
+!   you have 3 observation dates and nobs_dates = 3 in
+!   dataassim_user.f).  Also note that to correctly run the history
+!   restart function for the case of a data assimilation run, you
+!   need to first set i_corr_factor = 0 and save a history restart
+!   at the end of that run before going on to the second half of
+!   the assimilation run.
+!!! (recommended default value: i_dataassim_loop = 1)
+      i_dataassim_loop = 1
+!     i_dataassim_loop = -1
+
+! If ihrestart_flag = -1, then define how often the restart
+!   files are generated.  This is in iteration units (e.g., every
+!   30 days for the model running at hourly time steps would be
+!   ihrestart_inc = 720).  The history restart files will be
+!   placed in an 'hrestart/' directory off of the main model
+!   directory.  In addition to this time increment, if the
+!   ihrestart_flag = -1, the last model iteration is always saved
+!   (so if you just want to save the last iteration, just set
+!   ihrestart_inc to a number bigger than your maximum iteration).
+!   Note that if you want to do history restarts with data
+!   assimilation this increment must be evenly divisible into
+!   the maximum interation; in other words, the simulation must
+!   at least do a write at the end of the first data assimilation
+!   loop.
+!!! (recommended default value: ihrestart_inc = 0)
+      ihrestart_inc = 0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  MICROMET MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define which fields you want to process/distribute. 1 = do it,
+!   0 = don't do it.  As an example, if you are running SnowTran-3D
+!   with no melting, you don't need solar radiation.  Also, MicroMet
+!   provides the ability to to read in an alternate wind dataset
+!   that has been previously generated with another program, like
+!   winds from NUATMOS.  To do that set the flag to -1.  See
+!   i_wind_flag = -1 in the code for an example of how to do this.
+!!! (recommended default value: i_tair_flag = 1)
+!!! (recommended default value: i_rh_flag = 1)
+!!! (recommended default value: i_wind_flag = 1)
+!!! (recommended default value: i_solar_flag = 1)
+!!! (recommended default value: i_longwave_flag = 1)
+!!! (recommended default value: i_prec_flag = 1)
+      i_tair_flag = 1
+      i_rh_flag = 1
+      i_wind_flag = 1
+      i_solar_flag = 1
+      i_longwave_flag = 1
+      i_prec_flag = 1
+
+! Force the model to determine a value for every grid cell (= 1), or
+!   just define values for some specified "radius of influence" (= 0). 
+!!! (recommended default value: ifill = 1)
+      ifill = 1
+
+! Let the model determine an appropriate "radius of influence" (= 0),
+!   or define the "radius of influence" you want the model to use (= 1).
+!   1 = use obs interval below, 0 = use model generated interval.
+!!! (recommended default value: iobsint = 0)
+      iobsint = 0
+
+! The "radius of influence" or "observation interval" you want the
+!   model to use for the interpolation.  In units of deltax, deltay.
+!!! (recommended default value: dn = 1.0)
+      dn = 1.0
+
+! The barnes station interpolation can be done two different ways:
+!   First, barnes_oi does the interpolation by processing all of
+!     the available station data for each model grid cell.
+!   Second, barnes_oi_ij does the interpolation by processing only
+!     the "n_stns_used" number of stations for each model grid cell.
+!   For small domains, with relatively few met stations (100's),
+!   the first way is best.  For large domains (like the
+!   United States, Globe, Pan-Arctic, North America, Greenland)
+!   and many met stations (like 1000's), the second approach is the
+!   most efficient.  But, the second approach carries the following
+!   restrictions: 1) there can be no missing data for the fields of
+!   interest; 2) there can be no missing stations (all stations
+!   must exist throughout the simulation period); and 3) the
+!   station met file must list the stations in the same order for
+!   all time steps.  This second method works well for regridding
+!   atmospheric analyses/model datasets.  Also, the MicroMet
+!   preprocessor can be used to fill in missing data segments.
+!   The second option now has the option to calculate the nearest
+!   "stations" at every time step.  This is useful if you have
+!   stations (instead of just reanalyis grid points) in your model
+!   domain.  It works with either line (snowmodel_line_flag = 1.0)
+!   or rectangular domain (snowmodel_line_flag = 0.0) configurations
+!   (see below).  Use barnes_lg_domain = 0.0 for the first method,
+!   barnes_lg_domain = 1.0 for the second method with all of the
+!   restrictions listed above, and barnes_lg_domain = 2.0 for the
+!   second method with stations that come and go with valid data
+!   during the model simulation.
+!!! (recommended default value: barnes_lg_domain = 0.0)
+      barnes_lg_domain = 1.0
+
+! For the case where barnes_lg_domain = 1.0, define the number
+!   of nearest stations to be used in the interpolation (9 or
+!   less).  If barnes_lg_domain = 0.0, n_stns_used is not used, but
+!   n_stns_used still needs to have some value.  Note that these
+!   station interpolations are very costly, and thus, very
+!   sensitive to the value of n_stns_used.  So, it needs to be
+!   big enough to create smooth fields, but not so big as to
+!   waste CPU time (the CPU cost is something like nstns^2).  Using
+!   a test run as an example, 4 stns = 33 mins, 5 stns = 40 mins, 
+!   6 stns = 49 mins, and 9 stns = 84 mins.  In general, a value
+!   of 4 stns seems to be adequate, but if you see interpolation
+!   artifacts in our spatial fields, you may want to use a higher
+!   value.
+!!! (recommended default value: n_stns_used = 4)
+      n_stns_used = 4
+
+! The code has also been configured to run the model with all of
+!   grid cells of interest concatenated into a single line of grid
+!   cells.  This is useful when large parts of a rectangular domain
+!   are not of interest in your simulation, for example, when you
+!   want to simulate snow processes over all of the glaciers in
+!   the Northern Hemisphere or all of the ice-free grid cells in
+!   Greenland.  Because the grid cells in this configuration are
+!   not realistically connected on the x-y grid anymore, the blowing
+!   snow model (SnowTran-3D) cannot be used in this configuration.
+!   Also, the implementation assumes that you are running with
+!   barnes_lg_domain = 1.0 (see the notes above).  To define the
+!   relationship between this line of grid cells and the original
+!   rectangular x-y domain, an indexing file is required.  This
+!   is assumed to be called snowmodel_line_pts.dat, and to be
+!   located in the /extra_met/ directory.  This data file has five
+!   columns: 1) a grid cell counter, 2) and 3) the i and j
+!   locations within the rectangular grid, and 4) and 5) the x and
+!   y SnowModel coordinates within the rectangular version of the
+!   domain.  The number of rows in this file equals the number of
+!   grid cells in the line of grid cells.  In addition to the
+!   requirements listed above, several preprocessing steps are
+!   required to generate the appropriate indexing for this
+!   implementation.  These steps are highlighted in the
+!   /readme_docs/readme_snowmodel_line.txt file.  1.0 = run with a
+!   line domain, 0.0 = run with a standard rectangular domain.
+!!! (recommended default value: snowmodel_line_flag = 0.0)
+      snowmodel_line_flag = 0.0
+
+! Define whether you want to check the met input file to make sure
+!   it contains (some) valid data for every time step.  While this
+!   is generally a good idea to do, if you are running, for example,
+!   the model with 30 years of reanalysis data, it can take a very
+!   long time and may not be necessary.  1.0 = do the check, 0.0 =
+!   skip the check.
+!!! (recommended default value: check_met_data = 1.0)
+      check_met_data = 1.0
+
+! The curvature is used as part of the wind model.  Define a length
+!   scale that the curvature calculation will be performed on.  This
+!   has units of meters, and should be approximately one-half the
+!   wavelength of the topographic features within the domain.
+!!! (recommended default value: curve_len_scale = 500.0)
+      curve_len_scale = 300.0
+
+! The curvature and wind_slope values range between -0.5 and +0.5.
+!   Valid slopewt and curvewt values are between 0 and 1, with
+!   values of 0.5 giving approximately equal weight to slope and
+!   curvature.  I suggest that slopewt and curvewt be set such
+!   that slopewt + curvewt = 1.0.  This will limit the total
+!   wind weight to between 0.5 and 1.5 (but this is not required).
+!!! (recommended default value: slopewt = 0.58)
+!!! (recommended default value: curvewt = 0.42)
+      slopewt = 0.58
+      curvewt = 0.42
+!     slopewt = 0.25
+!     curvewt = 0.75
+
+! Impose a second, larger length scale, curvature affect on the
+!   snow distribution.  Turning this flag on (= 1.0) will reduce the
+!   Utau_t threshold in regions of positive curvature in big
+!   mountains.  The net effect of this is to increase the wind-
+!   related snow erosion on high, steep, mountain slopes.  If = 1.0
+!   then the model will look in an 'extra_met/' directory off of
+!   the main model directory for a .gdat file of the weighing
+!   distribution (that has been created in preparation for the
+!   model run using the external program called make_lg_curve_wt.f).
+!   Turning this flag off (= 0.0) produces the default model and
+!   snow resistance to wind shear.
+!!! (recommended default value: curve_lg_scale_flag = 0.0)
+      curve_lg_scale_flag = 0.0
+
+! Avoid problems of zero (low) winds (for example, turbulence
+!   theory, log wind profile, etc., says that we must have some
+!   wind.  Thus, some equations blow up when the wind speed gets
+!   very small).  This number defines the value that any wind speed
+!   below this gets set to.
+!!! (recommended default value: windspd_min = 0.1)
+      windspd_min = 0.1
+
+! Define whether the model is to use the default monthly lapse
+!   rates (= 0) or user supplied monthly lapse rates (= 1).  To use
+!   user supplied lapse rates, you have to edit the user lapse rate
+!   data array in micromet_code.f (subroutine get_lapse_rates).
+!   Note that this implementation currently only defines
+!   average-monthly lapse rates.
+!!! (recommended default value: lapse_rate_user_flag = 0)
+      lapse_rate_user_flag = 0
+
+! Define whether the precipitation adjustment factor, with units of
+!   km^-1 (kind of a precipitation lapse rate, used to adjust the
+!   precipitation for locations above and below the precipitation
+!   observing station(s)), is to use the default monthly lapse
+!   rates (= 0) or user supplied monthly lapse rates (= 1).  To use
+!   user supplied lapse rates, you have to edit the user lapse rate
+!   data array in micromet_code.f (subroutine get_lapse_rates).
+!!! (recommended default value: iprecip_lapse_rate_user_flag = 0)
+      iprecip_lapse_rate_user_flag = 0
+
+! There are two different precipitation-increase-with-elevation
+!   schemes implemented in MicroMet.  The first is described in
+!   Liston and Elder 2006; the original MicroMet paper.  The
+!   second is described in the van Pelt et al. (2006) Svalbard
+!   paper.  I used the original in everything except Svalbard
+!   simulations, but it is an option to expore.  The parameter
+!   above, iprecip_lapse_rate_user_flag, only affects the original
+!   scheme.  iprecip_scheme = 1 is the original scheme, and = 2
+!   is the van Pelt scheme.
+!!! (recommended default value: iprecip_scheme = 1)
+      iprecip_scheme = 1
+
+! Define how the rain-snow fraction of the water-equivalent
+!   precipitation forcing is calculated.  snowfall_frac = 1.0
+!   uses Auer (1974) where rain occurs at air temperatures above
+!   +2 C and snow occurs below that threshold; snowfall_frac =
+!   2.0 uses Dai (2008); and snowfall_frac = 3.0 uses Liston's
+!   linear fit to Dai's curve.  Note that what options 2.0 and 3.0
+!   are doing is causing a mix of rain and snow to occur during
+!   the time step when air temperatures are around freezing.
+!!! (recommended default value: snowfall_frac = 3.0)
+!     snowfall_frac = 1.0
+      snowfall_frac = 3.0
+
+! The model can also impose a wind speed increase with elevation,
+!   called here the "wind_lapse_rate".  If wind_lapse_rate = 0.0,
+!   then nothing is done.  Or you can define a wind_lapse_rate to
+!   equal the wind multiplier per km.  So, for example, a rate = 1.5
+!   would give wind speeds at 1-km elevation above the wind speed
+!   observations that are 1.5 times those observations.  Where this
+!   is useful is when you have all of your met stations in the
+!   valley bottoms, but you want higher wind speeds on the tops of
+!   the higher ridges.  The elevation correction formulation follows
+!   that of precipitation (although there is no seasonal variation
+!   implemented).  So this will have the effect of also making the
+!   wind speeds at lower elevations than the met stations less than
+!   the met station values.
+!!! (recommended default value: wind_lapse_rate = 0.0)
+      wind_lapse_rate = 0.0
+
+! Define whether you want the model to calculate, use, and output
+!   sub-forest-canopy windspeed, incoming solar and longwave
+!   radiation (= 1.0), or above canopy values (= 0.0).
+!!! (recommended default value: calc_subcanopy_met = 1.0)
+      calc_subcanopy_met = 1.0
+
+! Define the canopy gap fraction (0-1).  This parameter accounts
+!   for solar radiation reaching the snow surface below the canopy,
+!   beyond that defined by the canopy transmissivity calculation.
+!   In effect, it allows additional solar radiation to penetrate
+!   the canopy (e.g., through gaps in the forest), thus inceasing
+!   melt rates, etc.  A gap_frac = 0.0 produces the sub-canopy
+!   solar radiation using the default transmissivity calculation,
+!   a gap_frac = 1.0 (all gaps) produces sub_canopy radiation equal
+!   to the top-of-canopy radiation.  If you want the snow in the
+!   forest to melt faster, increasing this value will do it.
+!!! (recommended default value: gap_frac = 0.2)
+      gap_frac = 0.2
+
+! To handle the case, for example, of a met station located in
+!   an inversion layer recording high relative humidity, and the
+!   model producing anomolously high cloud-cover fractions, the
+!   cloud_frac_factor can be used to decrease the simulated cloud
+!   fraction.  This number is multiplied by the calculated cloud
+!   fraction.  For example, a cloud_frac_factor = 1.0 produces the
+!   simulated cloud fraction, a cloud_frac_factor = 0.5 produces
+!   the half the simulated cloud fraction, and a cloud_frac_factor
+!   = 0.0 forces the simulated cloud fraction to be zero.
+!!! (recommended default value: cloud_frac_factor = 1.0)
+      cloud_frac_factor = 1.0
+
+! Define whether the simulation will assimilate shortwave radiation
+!   observations (no = 0.0, yes = 1.0).  If yes, the model assumes
+!   there is a shortwave radation station data file, called
+!   shortwave.dat, in an 'extra_met/' directory off of the main
+!   model directory.  See the micromet code for file format details.
+!!! (recommended default value: use_shortwave_obs = 0.0)
+      use_shortwave_obs = 0.0
+
+! Define whether the simulation will assimilate longwave radiation
+!   observations (no = 0.0, yes = 1.0).  If yes, the model assumes
+!   there is a longwave radation station data file, called
+!   longwave.dat, in an 'extra_met/' directory off of the main model
+!   directory.  See the micromet code for file format details.
+!!! (recommended default value: use_longwave_obs = 0.0)
+      use_longwave_obs = 0.0
+
+! Define whether the simulation will assimilate surface pressure
+!   observations (no = 0.0, yes = 1.0).  If yes, the model assumes
+!   there is a surface pressure station data file, called
+!   sfc_pressure.dat, in an 'extra_met/' directory off of the main
+!   model directory.  See the micromet code for file format details.
+!!! (recommended default value: use_sfc_pressure_obs = 0.0)
+      use_sfc_pressure_obs = 0.0
+
+! Define whether you want to use a user-defined precipitation
+!   correction factor.  This can be either a 2-D grads file (=1.0),
+!   an ascii text file (=2.0), or a scalar (=3.0).  Or it can be
+!   turned off by setting cf_precip_flag = 0.0.  The file that
+!   contains the cf data must be in the /snowmodel/precip_cf/
+!   directory, and they are assumed to be called: cf_precip.gdat,
+!   cf_precip.asc, and cf_precip.dat, for 1.0, 2.0, and 3.0,
+!   respectively.
+!!! (recommended default value: cf_precip_flag = 0.0)
+      cf_precip_flag = 0.0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  SNOWTRAN-3D MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define whether the threshold surface shear velocity will be
+!   constant during the simulation (Utau_t_flag = 0.0), or whether
+!   it will evolve as a funtion of air temperature and wind speed
+!   (Utau_t_flag = 1.0).
+!!! (recommended default value: Utau_t_flag = 0.0)
+      Utau_t_flag = 0.0
+!     Utau_t_flag = 1.0
+
+! For the case of Utau_t_flag = 0.0, define what the threshold
+!   surface shear velocity (m/s) will be during the simulation.
+!!! (recommended default value: Utau_t_const = 0.25)
+      Utau_t_const = 0.25
+
+! Define whether you want to apply the Tabler subgrid algorithm.
+!   Flag = 0.0 is the original model (no subgrid redistribution, as
+!   in the original model), flag = 1.0 uses Tabler (1975) to define
+!   equilibrium profiles for topographic drift catchments.  Note
+!   that the model has not been tested for grid increments less than
+!   1.0 m deltax and deltay.  Also note that this subgrid algorithm
+!   is not really appropriate for grid increments greater than
+!   30.0 m.  There is also a computational penalty for running with
+!   this turned on: the simulations can take as much as 35% longer
+!   when subgrid_flag = 1.0 (but it does produce more realistic
+!   drift profiles at the higher resolutions).  Note that as of June
+!   2018 this version of subgrid_flag = 1.0 is different than that in
+!   previous years/versions.  The old version has been replaced and
+!   is no longer supported.  If subgrid_flag = 1.0, you need to set
+!   topoflag = 1.0.
+!!! (recommended default value: subgrid_flag = 0.0 for resolutions
+!    >= 30 m, subgrid_flag = 1.0 for resolutions < 30 m)
+      subgrid_flag = 0.0
+!     subgrid_flag = 1.0
+
+! For subgrid_flag = 1.0, you can either define the dominant wind
+!   direction (one of the 8 primary wind directions) you want
+!   Tabler surfaces and drifts to be generated for.  In this case,
+!   the blowing snow transport direction is constant during the
+!   entire simulation.  Or you can let the code calculate the
+!   direction of the dominant blowing snow flux, and use that.  In
+!   this case, the direction may be different at each time step,
+!   depending on the wind directions and transport fluxes.  This
+!   second option is obtained by setting the tabler_dir = to a
+!   non-zero, negative wind direction (the number can't be -0.0).
+!   The second approach appears to be the best option for most
+!   simulations.  Also note that the resulting direction is
+!   constant over the entire simulation domain; another code
+!   change will be required to relax this assumption.
+!!! (recommended default value: user input required, or -270.0)
+      tabler_dir = -270.0
+!     tabler_dir = 0.0
+!     tabler_dir = 45.0
+!     tabler_dir = 90.0
+!     tabler_dir = 135.0
+!     tabler_dir = 180.0
+!     tabler_dir = 225.0
+!     tabler_dir = 270.0
+!     tabler_dir = 315.0
+
+! You can make adjustments to the slopes of the Tabler surfaces
+!   using the 'slope_adjust' parameter.  This factor is multiplied by
+!   the calculated Tabler equilibrium drift surface slope to get the
+!   simulated slope.  So, for example, if you want the simulated
+!   slope to be 50% of what Tabler calculated, use a value of 0.5; a
+!   value of 1.5 would give half again steeper than Tabler's original
+!    model.
+!!! (recommended default value: slope_adjust = 1.0)
+      slope_adjust = 1.0
+
+! Define whether you want two-layer accounting for soft (movable)
+!   and hard (unmovable) layers (flag = 0.0 = off, flag = 1.0 = on).
+!!! (recommended default value: twolayer_flag = 1.0)
+!     twolayer_flag = 0.0
+      twolayer_flag = 1.0
+
+! Define whether you want the upwind boundaries to have zero
+!   incoming transport flux, or the equilibrium transport flux.
+!   bc_flag = 0.0 corresponds to a zero flux, and bc_flag = 1.0
+!   corresponds to the equilibrium flux.
+!!! (recommended default value: bc_flag = 0.0)
+      bc_flag = 0.0
+
+! Input the height of the wind and rh observations.  The model does
+!   not need an air temperature height and is not very sensitive to
+!   the relative humidity observation height.
+!!! (recommended default value: ht_windobs = user input required)
+!!! (recommended default value: ht_rhobs = user input required)
+      ht_windobs = 10.0
+      ht_rhobs = 10.0
+
+! Snow density used in SnowTran-3D if you are running SnowTran-3D
+!   without SnowPack.  This is required because without SnowPack,
+!   SnowTran-3D does not know what the snow density is.  It should
+!   be defined to be a typical snow density for your simulation
+!   domain.  This is also used to initialize the SWE if you have
+!   set snow_d_init_const (see below) to be non-zero.
+!!! (recommended default value: ro_snow = 300.0)
+      ro_snow = 300.0
+
+! Define the initial snow-depth distributions.
+!!! (recommended default value: snow_d_init_const = 0.0)
+      snow_d_init_const = 0.0
+
+! Define whether the simulation will use a surface topography
+!   equal to ground topography (topoflag = 0.0), or equal to the
+!   snow surface (topoflag = 1.0).
+!!! (recommended default value: topoflag = 1.0)
+      topoflag = 1.0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  ENBAL-2D MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Identify whether the surface energy balance calculation for
+!   this simulation will include a non-zero conduction term
+!   (icond_flag = 0 = no conduction, 1 = conduction).  Note that
+!   icond_flag = 1 requires running the multi-layer snowpack model
+!   with at least 2 snow layers.
+!!! (recommended default value: icond_flag = 0)
+      icond_flag = 0
+!     icond_flag = 1
+
+! Define the albedo for a melting snowcover under the forest
+!   canopy.  This allows the user to control, to some degree, the
+!   melt rates in the forests.  Note that adjusting the gap-frac
+!   parameter is also an effective way to do this.  The non-melting
+!   snow albedo is set to 0.8 in the code.
+!!! (recommended default value: albedo_snow_forest = 0.45)
+      albedo_snow_forest = 0.45
+
+! Define the albedo for a melting snowcover in non-forested areas.
+!   This allows the user to control, to some degree, the melt
+!   rates in non-forested areas.  The non-melting snow albedo is
+!   set to 0.8 in the code.
+!!! (recommended default value: albedo_snow_clearing = 0.60)
+      albedo_snow_clearing = 0.60
+
+! Define the albedo for a glacier surface (dry and melting).
+!!! (recommended default value: albedo_glacier = 0.40)
+      albedo_glacier = 0.40
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  SNOWPACK MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define whether static-surface (non-blowing snow) sublimation will
+!   be included in the model calculations (sfc_sublim_flag = 1.0).
+!   To turn this off, set sfc_sublim_flag = 0.0.  If sfc_sublim_flag
+!   is turned on, the latent heat flux (Qe) calculated in ENBAL is
+!   used to add/remove snow from the snowpack.
+!!! (recommended default value: sfc_sublim_flag = 1.0)
+      sfc_sublim_flag = 1.0
+
+! Define whether this is going to be a multi-layer snowpack run
+!   (multilayer_snowpack = 1, else 0).  This option does not work
+!   with the history restart or data assimilation functions.
+!!! (recommended default value: multilayer_snowpack = 0)
+!     multilayer_snowpack = 1
+      multilayer_snowpack = 0
+
+! Define the time since last snowfall threshold, in hours.  This
+!   sets how long you have to go without snow precipitation to
+!   start a new snow layer in the multi-layer snowpack model.
+!   Periods with zero snowfall at time gaps less than this threshold
+!   do not create a new snow layer.  To force a single layer using
+!   this parameter, set tsls_threshold >= the number of hours in
+!   the simulation.  Note the equation below can be used to
+!   calculate this number.
+!     tsls_threshold = dt * real(max_iter) / 3600.0
+!!! (recommended default value: tsls_threshold = 24.0)
+!     tsls_threshold = 1.0
+      tsls_threshold = 24.0
+!     tsls_threshold = 12.0
+!     tsls_threshold = 144.0
+!     tsls_threshold = 8000.0
+
+! Define the maximum number of snow layers you want to allow in
+!   the multi-layer snowpack model.  Note that nz_max in the
+!   snowmodel.inc file must be at least 1 greater than max_layers.
+!   So, if you want to run the multi-layer snowpack model with a
+!   single snow layer, set nz_max = 2.  If you want to run the
+!   original single-layer snowpack model, you can set nz_max = 1 in
+!   snowmodel.inc.
+!!! (recommended default value: max_layers = 6)
+!     max_layers = 12
+!     max_layers = 6
+      max_layers = 1
+
+! Define the minimum snow layer thickness (m) for the multi-layer
+!   snowpack model.  0.001 is an appropriate number.  It is also
+!   okay to set this to be 0.0 which will allow the tracking of
+!   thin layers in the simulation.
+!!! (recommended default value: dz_snow_min = 0.001)
+      dz_snow_min = 0.001
+!     dz_snow_min = 0.01
+!     dz_snow_min = 0.0
+
+! For multi-year simulations, sometimes it is desirable to zero
+!   out the snow cover arrays on a certain summer date.  For
+!   example, to prevent glaciers from forming.  Input that date
+!   here, in the form: mmddhh.  I recommend setting this to be the
+!   last time step of the year in a multi-year simulation.  For a
+!   simulation that starts on YYYY 09 01, with a 3-hour time step,
+!   090100 is the last time step of the year (the first one is
+!   090103).  For the same simulation with a 1-day time step,
+!   083112 is the last time step of the year (the first one is
+!   090112).  Set this to 999999 if you would like to disable this
+!   feature.  
+!!! (recommended default value: izero_snow_date = 090100 or 083112,
+!!!  depending on the model configuration details)
+!     izero_snow_date = 999999
+      izero_snow_date = 090100
+!     izero_snow_date = 083112
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  SEAICE MODEL SETUP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! Define whether you want to simulate snow on sea ice.  A land-only
+!   run (seaice_run = 0.0) means any snow on ocean grid cells
+!   (vegtype.eq.24.0) will be set to zero.  A sea-ice-only run
+!   (seaice_run = 1.0) means any snow on land grid cells
+!   (vegtype.ne.24.0) will be set to zero.  For a combined land
+!   and sea-ice run, seaice_run = 2.0.  For a sea-ice-only run
+!   with incremental remapping to handle the ice motion, seaice_run
+!   = 3.0; this option is no longer supported (see the notes in:
+!   /sm/misc_programs/Eulerian_seaice_incremental_remapper/ if you
+!   want to reimplement and run this option).  seaice_run = 4.0 is
+!   a Lagrangian parcel-tracking sea-ice only simulation (no land)
+!   where the following is required: barnes_lg_domain = 1.0,
+!   n_stns_used = 1, and snowmodel_line_flag = 1.0.
+!!! (recommended default value: seaice_run = 0.0)
+!    seaice_run = 4.0
+     seaice_run = 0.0
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!  PRINTING OUTPUT FILES
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+! There are two kinds of GrADS .gdat output data files that the
+!   model is set up to automatically write out as part of the model
+!   simulation (see descriptions [1] and [2] below).  GrADS
+!   control (.ctl), or data description, files are automatically
+!   created for any of the output files you elect to create.  These
+!   .ctl files describe what is in the .gdat files and allow you to
+!   plot the outputs with GrADS (see: http://cola.gmu.edu/grads/).
+!   All of the .ctl files are written to the "ctl_files" directory,
+!   and they point to the .gdat file locations you define below.
+!   Note that any paths or directories that you list here must
+!   exist on your workstation (you have to make those directories
+!   before you start the model run).
+
+! The output file options are:
+ 
+![1] Individual data files for each sub-model (MicroMet, EnBal,
+!    SnowPack, SnowTran-3D, etc.).  These typically have several
+!    output variables in them, so the files can be huge.  In
+!    addition, these can only be written out at every model time
+!    step (e.g., you cannot write out daily data when you are
+!    running the model on hourly or 3-hourly time steps; to do
+!    that requires you to use the second output option described
+!    below).  Also note that if you are saving with this option
+!    and running the data assimilation routines, during the
+!    second assimilation loop the code will write over the data
+!    that where written out in the first loop (so the first loop's
+!    data will be lost).  I only use this output option for model
+!    development applications where I want to look at many
+!    interrelated variables and where I am typically
+!    troubleshooting problems with my model runs.  I really do
+!    not recommend this output option except for special
+!    situations; maybe the multi-layer output file is an
+!    exception to this general rule, because output option 2)
+!    described below is not set up to handle multi-layer output
+!    variables.
+
+!    For these files you have to define whether you want the data
+!    written out (print_name = 1.0) or if you do not want these
+!    files written out (print_name = 0.0), and the name of the
+!    output file.
+
+! MicroMet output file.
+!!! (recommended default value: print_micromet = 0.0)
+!!! (recommended default value: micromet_output_fname =
+!!! outputs/micromet.gdat)
+      print_micromet = 0.0
+      micromet_output_fname = outputs/micromet.gdat
+
+! SnowTran-3D output file.
+!!! (recommended default value: print_snowtran = 0.0)
+!!! (recommended default value: snowtran_output_fname =
+!!! outputs/snowtran.gdat)
+      print_snowtran = 0.0
+      snowtran_output_fname = outputs/snowtran.gdat
+
+! SnowTran-3D TABLER-SURFACE output files.  There are two
+!   additional Tabler surface output files that can be output.
+
+!   The first one is Tabler equilibrium surface distributions for
+!   each of the 8 Tabler directions (0, 45, 90, etc.), for the
+!   snow-free topographic distribution.  These data distributions
+!   are saved with Tabler_1_flag = 1.0, and they are not saved
+!   with Tabler_1_flag = 0.0.  You also have to define the path
+!   or directory you want this file saved in.
+!!! (recommended default value: Tabler_1_flag = user input
+!!! required)
+!!! (recommended default value: tabler_sfc_path_name = outputs/)
+      Tabler_1_flag = 0.0
+      tabler_sfc_path_name = outputs/
+
+!   The second one saves the Tabler equilibrium surface that was
+!   used at each time step.  The file will be located according
+!   to "output_path_wo_assim" and "output_path_wi_assim" defined
+!   below, and the file name will be "tabler_sfcs_iter.gdat".  So
+!   all that is required here is to define whether you want the
+!   data saved or not.  Tabler_1_flag = 0.0 means don't save the
+!   data, and Tabler_1_flag = 1.0 means the data will be saved.
+!!! (recommended default value: Tabler_1_flag = user input
+!!! required)
+      Tabler_2_flag = 0.0
+
+! EnBal output file.
+!!! (recommended default value: print_enbal = 0.0)
+!!! (recommended default value: enbal_output_fname =
+!!! outputs/enbal.gdat)
+      print_enbal = 0.0
+      enbal_output_fname = outputs/enbal.gdat
+
+! SnowPack output file.
+!!! (recommended default value: print_snowpack = 0.0)
+!!! (recommended default value: snowpack_output_fname =
+!!! outputs/snowpack.gdat)
+      print_snowpack = 0.0
+      snowpack_output_fname = outputs/snowpack.gdat
+
+! MultiLayer output file (s).  print_multilayer = 1.0
+!   prints a suite of multilayer variables to a single
+!   file called multilayer.gdat to the directory defined
+!   in 'multilayer_output_fname'.  print_multilayer = 2.0
+!   prints each of these variables to their own file
+!   located in the directories called 'output_path_wo_assim'
+!   and 'output_path_wi_assim' defined below.  See
+!   snowmodel_main.f for a listing of the output variables.
+!!! (recommended default value: print_multilayer = 0.0)
+!!! (recommended default value: multilayer_output_fname =
+!!! outputs/multilayer.gdat)
+      print_multilayer = 0.0
+      multilayer_output_fname = outputs/multilayer.gdat
+
+![2] Individual data files for individual variables.  These data
+!    outputs are controlled in the outputs_user.f subroutine.
+!    In the lines below you can define which of the most common
+!    variables you want to write out, and you can define the
+!    write interval in time-step units (e.g., for a 3-hour dt,
+!    a write interval of 8 time steps (print_inc = 8.0) will
+!    give you a data write at the end of each day).  Note that
+!    this code will write the average, sum, or the instantanious
+!    value, depending on the variable of interest (see below).
+!    You have to define whether you want these kinds of data
+!    files to be written (print_user = 1.0) or not (print_user
+!    = 0.0).  And you have to define the directory they will be
+!    written to.  Two directories are required: one is for non-
+!    data assimilation outputs, and one is for data assimilation
+!    outputs.
+
+! Define whether you want to write individual files for each
+!   variable.
+!!! (recommended default value: print_user = 1.0)
+      print_user = 1.0
+
+! Define the print increment, in time-step units.
+!!! (recommended default value: print_inc = 1.0 or 8.0)
+     print_inc = 1.0
+!      print_inc = 8.0
+
+! Define the directory (the path) where the data will be stored.
+!   This requires a path for "without" assimilation, and a path
+!   "with" assimilation.
+!!! (recommended default value:
+!!!  output_path_wo_assim = user input required)
+!!!  output_path_wi_assim = user input required)
+      output_path_wo_assim = outputs/wo_assim/
+      output_path_wi_assim = outputs/wi_assim/
+
+! Individual data files can be output for each variable of
+!   interest.  The code is set up to output 21 variables that
+!   are commonly used in SnowModel simulations.  There are 9
+!   empty variable names assigned for the user to add new
+!   variables of interest for their application.  Listed below
+!   are the variable names as they are defined and used in the
+!   code, and the corresponding 4-character name that is used in
+!   the output file for that variable.
+
+! Define which variables you want to save by using a yes = y or
+!   no = n.
+
+! These data outputs are configured to mask out ocean points
+!   (vegtype.eq.24.0) if this is a land run (seaice_run = 0.0);
+!   mask out all land points (vegtype.ne.24.0) if this is an
+!   ocean/sea ice run (seaice_run = 1.0 or 3.0); and to not mask
+!   out anything if this is a combined land and sea ice run
+!   (seaice_run = 2.0).
+
+! If you want to do something different than this general output
+!   file setup, you can make changes to the outputs_user.f file.
+
+! VALUES AVERAGED OVER THE PERIOD.
+
+! air temperature (degrees C)
+! 01 = tair(i,j) = Tair_grid(i,j) - 273.16
+      print_var_01 = y
+
+! relative humidity (%)
+! 02 = relh(i,j) = rh_grid(i,j)
+      print_var_02 = n
+
+! wind speed (m/s)
+! 03 = wspd(i,j) = windspd_grid(i,j)
+      print_var_03 = n
+
+! incoming solar radiation reaching the surface (W/m2)
+! 04 = qsin(i,j) = Qsi_grid(i,j)
+      print_var_04 = n
+
+! incoming longwave radiation reaching the surface (W/m2)
+! 05 = qlin(i,j) = Qli_grid(i,j)
+      print_var_05 = n
+
+! emitted longwave radiation (W/m2)
+! 06 = qlem(i,j) = Qle(i,j)
+      print_var_06 = n
+
+! albedo (0-1)
+! 07 = albd(i,j) = albedo(i,j)
+      print_var_07 = n
+
+! wind direction (0-360, true N)
+! 08 = wdir(i,j) = from uwind_grid(i,j) and vwind_grid(i,j)
+      print_var_08 = n
+
+! VALUES SUMMED OVER THE PERIOD.
+
+! water-equivalent precipitation (m/time_step)
+! 09 = prec(i,j) = prec_grid(i,j)
+      print_var_09 = y
+
+! liquid precipitation (m/time_step)
+! 10 = rpre(i,j) = rain(i,j)
+      print_var_10 = y
+
+! solid precipitation (m/time_step)
+! 11 = spre(i,j) = sprec(i,j)
+      print_var_11 = y
+
+! snow-water-equivalent melt (m)
+! 12 = smlt(i,j) = swemelt(i,j)
+      print_var_12 = n
+
+! static-surface sublimation (m)
+! 13 = ssub(i,j) = swesublim(i,j)
+      print_var_13 = n
+
+! runoff from base of snowpack (m/time_step)
+! 14 = roff(i,j) = runoff(i,j)
+      print_var_14 = n
+
+! snow-water-equivalent melt from glacier ice (m)
+! 15 = glmt(i,j) = glacier_melt(i,j)
+      print_var_15 = n
+
+! VALUES SAVED AT THE END OF THE PERIOD.
+
+! snow depth (m)
+! 16 = snod(i,j) = snow_depth(i,j)
+      print_var_16 = y
+
+! snow density (kg/m3) (if snod is zero, sden is undef)
+! 17 = sden(i,j) = xro_snow(i,j)
+      print_var_17 = y
+
+! snow-water-equivalent depth (m)
+!   This is required if you are doing swe assimilation.
+! 18 = swed(i,j) = swe_depth(i,j)
+      print_var_18 = y
+
+! summed snow precipitation during simulation year (m)
+!   This is required if you are doing swe assimilation.
+! 19 = sspr(i,j) = sum_sprec(i,j)
+      print_var_19 = n
+
+! summed snow-water-equivalent melt during simulation year (m)
+!   This is required if you are doing swe assimilation.
+! 20 = ssmt(i,j) = sum_swemelt(i,j)
+      print_var_20 = n
+
+! NEW VARIABLES ADDED TO THE OUTPUT DATA FILE OPTIONS.
+
+! cloud fraction (0-1) (averaged over the write period)
+! 21 = cldf(i,j) = cloud_fraction_grid(i,j)
+      print_var_21 = n
+
+! These are extra variables that the user can add as needed.
+!   You have to modify the code in outputs_user.f to do the
+!   processing you want for these variables.
+      print_var_22 = n
+      print_var_23 = n
+      print_var_24 = n
+      print_var_25 = n
+      print_var_26 = n
+      print_var_27 = n
+      print_var_28 = n
+      print_var_29 = n
+      print_var_30 = n
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+

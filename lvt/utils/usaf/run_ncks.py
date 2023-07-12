@@ -10,6 +10,7 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_ncks.py
@@ -48,8 +49,12 @@
 # 05 Feb 2021:  Eric Kemp (SSAI), added JULES multi-layer snow variables.
 # 23 Mar 2021:  Eric Kemp (SSAI), revised JULES multi-layer snow variables
 #               for PS41 physics.
+# 05 Dec 2022:  Eric Kemp (SSAI), revised to improve pylint score.
+# 24 Jan 2023:  Eric Kemp (SSAI), updated filenames.
+# 30 Mar 2023:  Eric Kemp (SSAI), restored older JULES postprocessing.
 #
 #------------------------------------------------------------------------------
+"""
 
 # Standard modules
 import datetime
@@ -60,8 +65,6 @@ import sys
 #------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-# _NCKS_PATH = "/app/nco/4.5.2-gnu/bin/ncks" # On Conrad
-# _NCKS_PATH = "/app/nco/4.7.7-gnu/bin/ncks" # On Koehr
 _NCKS_PATH = "/usr/local/other/nco/4.8.1/bin/ncks" # On Discover
 
 # Supported LIS LSMs
@@ -155,27 +158,27 @@ _LVT_JULES_INVOCATIONS_3HR = ['Albedo_tavg',
                               'SoilTemp_inst', 'SoilTemp_tavg',
                               'Tair_f_inst', 'Tair_f_max',
                               'Tair_f_tavg',
-                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg',
-                              'ActSnowNL_inst', 'GrndSnow_inst',
-                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-                              'LayerSnowGrain_inst', 'SnowDensity_inst',
-                              'SnowGrain_inst', 'SnowIce_inst',
-                              'SnowLiq_inst',
-                              'SnowTProf_inst', 'SurftSnow_inst']
+                              'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+#                              'ActSnowNL_inst', 'GrndSnow_inst',
+#                              'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+#                              'LayerSnowGrain_inst', 'SnowDensity_inst',
+#                              'SnowGrain_inst', 'SnowIce_inst',
+#                              'SnowLiq_inst',
+#                              'SnowTProf_inst', 'SurftSnow_inst']
 
-# EMK for RECON
-_LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
-                              "SoilMoist_inst","SoilTemp_inst",
-                              "PS41Snow_inst"]
+# # EMK for RECON
+# _LVT_JULES_INVOCATIONS_3HR = ["AvgSurfT_inst",
+#                               "SoilMoist_inst","SoilTemp_inst",
+#                               "PS41Snow_inst"]
 
-# JULES PS41 snow variables are in a unique netCDF file.
-_LVT_JULES_PS41_SNOW_3HR = ["SnowDepth_inst", "SWE_inst",
-                            'ActSnowNL_inst', 'GrndSnow_inst',
-                            'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
-                            'LayerSnowGrain_inst', 'SnowDensity_inst',
-                            'SnowGrain_inst', 'SnowIce_inst',
-                            'SnowLiq_inst',
-                            'SnowTProf_inst', 'SurftSnow_inst']
+# # JULES PS41 snow variables are in a unique netCDF file.
+# _LVT_JULES_PS41_SNOW_3HR = ["SnowDepth_inst", "SWE_inst",
+#                             'ActSnowNL_inst', 'GrndSnow_inst',
+#                             'LayerSnowDensity_inst', 'LayerSnowDepth_inst',
+#                             'LayerSnowGrain_inst', 'SnowDensity_inst',
+#                             'SnowGrain_inst', 'SnowIce_inst',
+#                             'SnowLiq_inst',
+#                             'SnowTProf_inst', 'SurftSnow_inst']
 
 _LVT_JULES_INVOCATIONS_24HR = ['Evap_tavg', 'LWdown_f_tavg',
                                'RHMin_inst',
@@ -279,11 +282,9 @@ _OTHER_VARIABLES = ["latitude", "longitude",
                     "time", "water_temp", "aice", "hi"]
 
 #------------------------------------------------------------------------------
-# Print command line usage
-
-
-def usage():
-    print("Usage: %s yyyymmddhh lsm period [--nospread]" % (sys.argv[0]))
+def _usage():
+    """Print command line usage"""
+    print(f"Usage: {sys.argv[0]} yyyymmddhh lsm period [--nospread]")
     print("   where:")
     print("           yyyymmddhh is valid year/month/day/hour in UTC")
     print("           lsm is name of land surface model used by LIS")
@@ -291,14 +292,12 @@ def usage():
     print("           --nospread is optional flag to skip ensemble spread")
 
 #------------------------------------------------------------------------------
-# Read command line arguments
-
-def read_cmd_args():
-
+def _read_cmd_args():
+    """Read command line arguments"""
     # Check if argument count is correct
     if len(sys.argv) not in [4, 5]:
         print("[ERR] Invalid number of command line arguments!")
-        usage()
+        _usage()
         sys.exit(1)
 
     # Convert yyyymmddhh argument to a datetime object
@@ -309,36 +308,33 @@ def read_cmd_args():
         day = int(yyyymmddhh[6:8])
         hour = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year, month, day, hour)
-    except:
+    except ValueError:
         print("[ERR] Cannot process yyyymmddhh argument!")
-        usage()
+        _usage()
         sys.exit(1)
 
     # Get lsm name
     lsm = None
-    for i in range(0, len(_LIS_LSMS)):
-        if sys.argv[2] == _LIS_LSMS[i]:
-            lsm = _LIS_LSMS[i]
-            break
-    if lsm == None:
+    if sys.argv[2] in _LIS_LSMS:
+        lsm = sys.argv[2]
+    if lsm is None:
         print("[ERR] Invalid lsm selection!")
-        print(" lsm value is %s" % (sys.argv[2]))
+        print(f" lsm value is {sys.argv[2]}")
         text = " Supported lsms:"
         for lsm in _LIS_LSMS:
-            text += " %s" % (lsm)
+            text += f" {lsm}"
         print(text)
         sys.exit(1)
 
     # Get period
     period_options = [3, 24]
     period = None
-    for i in range(0, len(period_options)):
-        if int(sys.argv[3]) == period_options[i]:
-            period = period_options[i]
-            break
-    if period == None:
+    tmp_int = int(sys.argv[3])
+    if tmp_int in period_options:
+        period = tmp_int
+    if period is None:
         print("[ERR] Invalid time period selected!")
-        print("  Read in %s" % (sys.argv[3]))
+        print(f"  Read in {sys.argv[3]}")
         print("  Only supports 3 or 24!")
         sys.exit(1)
 
@@ -348,30 +344,33 @@ def read_cmd_args():
         if sys.argv[4] == "--nospread":
             skip_ens_spread = True
         else:
-            print("[ERR] Invalid argument %s" % (sys.argv[4]))
-            usage()
+            print(f"[ERR] Invalid argument {sys.argv[4]}")
+            _usage()
 
     # See if ncks exists and is executable by current user (the script)
     # This used to be specified on the command line, but is now hardwired
     # to better comply with Air Force security requirements.
     ncks = _NCKS_PATH
-    if not os.path.isfile(ncks):
-        print("[ERR] Binary %s does not exist!" % (ncks))
-        print("[ERR] Modify %s to correct the path to ncks!" % (sys.argv[0]))
-        sys.exit(1)
-    if not os.access(ncks, os.X_OK):
-        print("[ERR] %s cannot be executed by current user!" % (ncks))
-        print("[ERR] Modify %s to correct the path to ncks!" % (sys.argv[0]))
-        sys.exit(1)
+    _check_ncks_path(ncks)
 
-    return validdt, lsm, ncks, period, skip_ens_spread
+    return validdt, lsm, period, skip_ens_spread
 
 #------------------------------------------------------------------------------
-# Collect netCDF mean files
+def _check_ncks_path(ncks):
+    """Check if ncks works"""
+    if not os.path.isfile(ncks):
+        print(f"[ERR] Binary {ncks} does not exist!")
+        print(f"[ERR] Modify {sys.argv[0]} to correct the path to ncks!")
+        sys.exit(1)
+    if not os.access(ncks, os.X_OK):
+        print(f"[ERR] {ncks} cannot be executed by current user!")
+        print(f"[ERR] Modify {sys.argv[0]} to correct the path to ncks!")
+        sys.exit(1)
 
-def get_nc_mean_files(validdt, lsm, period):
-
-    key = "%s_%dHR" % (lsm, period)
+#------------------------------------------------------------------------------
+def _get_nc_mean_files(validdt, lsm, period):
+    """Collect netCDF mean files"""
+    key = f"{lsm}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     mean_nc_infiles = {}
@@ -379,42 +378,34 @@ def get_nc_mean_files(validdt, lsm, period):
     # Collect input files
     for invocation in invocation_list:
 
-        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
+        path = f"OUTPUT/STATS.{invocation}.{period}hr"
 
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24_DD."
         else:
             path += ".LIS_DD."
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
         mean_path = path + ".nc"
         if not os.path.exists(mean_path):
-            print("[ERR], %s does not exist!" % (mean_path))
+            print(f"[ERR], {mean_path} does not exist!")
             sys.exit(1)
 
         mean_nc_infiles[invocation] = mean_path
 
     # Get output file
-    # FIXME -- Let user configure output directory prefix
-    path = "OUTPUT/STATS_merged_%shr" % (period)
+    path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-
-    # FIXME -- Let user configure file name
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
         path += ".LIS_DD."
-    path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                    validdt.month,
-                                    validdt.day)
-    path += ".%2.2d00_DF" % (validdt.hour)
+    path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+    path += f".{validdt.hour:02}00_DF"
 
     mean_nc_outfile = path + ".nc"
 
@@ -422,86 +413,67 @@ def get_nc_mean_files(validdt, lsm, period):
     return mean_nc_infiles, mean_nc_outfile
 
 #------------------------------------------------------------------------------
-# Collect netCDF ssdev files
-
-def get_nc_ssdev_files(validdt, lsm, period):
-
-    key = "%s_%dHR" % (lsm, period)
+def _get_nc_ssdev_files(validdt, lsm, period):
+    """Collect netCDF ssdev files"""
+    key = f"{lsm}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     ssdev_nc_infiles = {}
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
-        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
-
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path = f"OUTPUT/STATS.{invocation}.{period}hr"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
-            path += ".LIS24_DD."
+            path += ".LIS24-SSDEV_DD."
         else:
-            path += ".LIS_DD."
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+            path += ".SSDEV_DD."
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
-        ssdev_path = path + "_SSDEV.nc"
+        ssdev_path = path + ".nc"
         if not os.path.exists(ssdev_path):
-            print("[ERR], %s does not exist!" % (ssdev_path))
+            print(f"[ERR], {ssdev_path} does not exist!")
             sys.exit(1)
 
         ssdev_nc_infiles[invocation] = ssdev_path
 
     # Get output file
-    # FIXME -- Let user configure output directory prefix
-    path = "OUTPUT/STATS_merged_%shr" % (period)
+    path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-
-    # FIXME -- Let user configure file name
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
-        path += ".LIS24_DD."
+        path += ".LIS24-SSDEV_DD."
     else:
-        path += ".LIS_DD."
-    path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                    validdt.month,
-                                    validdt.day)
-    path += ".%2.2d00_DF" % (validdt.hour)
+        path += ".SSDEV_DD."
+    path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+    path += f".{validdt.hour:02}00_DF"
 
-    ssdev_nc_outfile = path + "_SSDEV.nc"
+    ssdev_nc_outfile = path + ".nc"
 
     # All done
     return ssdev_nc_infiles, ssdev_nc_outfile
 
 #------------------------------------------------------------------------------
-# Collect netCDF latest files
-
-def get_nc_latest_files(validdt, lsm):
-
-    key = "%s_24HR_LATEST" % (lsm)
+def _get_nc_latest_files(validdt, lsm):
+    """Collect netCDF latest files"""
+    key = f"{lsm}_24HR_LATEST"
     invocation_list = _INVOCATIONS[key]
 
     latest_nc_infiles = {}
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
-        path = "OUTPUT/STATS.%s.3hr" % (invocation) # Always use 3hr processing
-
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path = f"OUTPUT/STATS.{invocation}.3hr"# Always use 3hr processing
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         path += ".LIS_DD."  # Always use 3-hr output for latest fields
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
         latest_path = path + ".nc"
         if not os.path.exists(latest_path):
-            print("[ERR], %s does not exist!" % (latest_path))
+            print(f"[ERR], {latest_path} does not exist!")
             sys.exit(1)
 
         latest_nc_infiles[invocation] = latest_path
@@ -510,19 +482,19 @@ def get_nc_latest_files(validdt, lsm):
     return latest_nc_infiles
 
 #------------------------------------------------------------------------------
-# Use ncks to merge netCDF fields together
-
-def merge_nc_files(lsm, ncks, period, nc_infiles,
+def _merge_nc_files(lsm, period, nc_infiles,
                    nc_outfile, latest_nc_infiles=None):
+    """Use ncks to merge netCDF fields together"""
 
-    key = "%s_%dHR" % (lsm, period)
+    ncks = _NCKS_PATH
+
+    key = f"{lsm}_{period}HR"
 
     # Start with ensemble mean
-    cmd = "cp %s %s" % (nc_infiles[_INVOCATIONS[key][0]],
-                        nc_outfile)
+    cmd = f"cp {nc_infiles[_INVOCATIONS[key][0]]} {nc_outfile}"
     print(cmd)
-    rc = subprocess.call(cmd, shell=True)
-    if rc != 0:
+    err = subprocess.call(cmd, shell=True)
+    if err != 0:
         print("[ERR] Problem with cp!")
         sys.exit(1)
 
@@ -536,56 +508,61 @@ def merge_nc_files(lsm, ncks, period, nc_infiles,
             variables = _LIS_VARIABLES[key][invocation]
 
         for variable in variables:
-            cmd = "%s -A -v %s %s %s" \
-                % (ncks, variable, nc_infiles[invocation], nc_outfile)
+            cmd = f"{ncks} -A -v {variable} {nc_infiles[invocation]} "
+            cmd += f"{nc_outfile}"
             print(cmd)
-            rc = subprocess.call(cmd, shell=True)
-            if rc != 0:
+            err = subprocess.call(cmd, shell=True)
+            if err != 0:
                 print("[ERR] Problem with ncks!")
                 sys.exit(1)
 
     # For 24-hr postprocessing, we also must concatenate several 3-hr fields
-    if latest_nc_infiles != None:
-        key = "%s_24HR_LATEST" % (lsm)
+    if latest_nc_infiles is not None:
+        key = f"{lsm}_24HR_LATEST"
         invocations = _INVOCATIONS[key][:]
         for invocation in invocations:
             variables = _LIS_VARIABLES[key][invocation]
             for variable in variables:
-                cmd = "%s -A -v %s %s %s" \
-                    % (ncks, variable,
-                       latest_nc_infiles[invocation], nc_outfile)
+                cmd = f"{ncks} -A -v "
+                cmd += f"{variable} {latest_nc_infiles[invocation]} "
+                cmd += f"{nc_outfile}"
                 print(cmd)
-                rc = subprocess.call(cmd, shell=True)
-                if rc != 0:
+                err = subprocess.call(cmd, shell=True)
+                if err != 0:
                     print("[ERR] Problem with ncks!")
                     sys.exit(1)
 
 #------------------------------------------------------------------------------
 # Main Driver.
 
-if __name__ == "__main__":
-
+def _main():
+    """Main driver"""
     # Process command line arguments
-    validdt, lsm, ncks, period, skip_ens_spread = read_cmd_args()
+    validdt, lsm, period, skip_ens_spread = _read_cmd_args()
 
     # Collect netCDF files
     (mean_nc_infiles, mean_nc_outfile) = \
-        get_nc_mean_files(validdt, lsm, period)
+        _get_nc_mean_files(validdt, lsm, period)
+
     # 3-hr postprocessing includes ensemble spread files
     if period == 3 and not skip_ens_spread:
         (ssdev_nc_infiles, ssdev_nc_outfile) = \
-            get_nc_ssdev_files(validdt, lsm, period)
+            _get_nc_ssdev_files(validdt, lsm, period)
+
     # 24-hr postprocessing includes several latest 3-hr fields
     if period == 24:
-        latest_nc_infiles = get_nc_latest_files(validdt, lsm)
+        latest_nc_infiles = _get_nc_latest_files(validdt, lsm)
 
     # Merge the input netCDF files together
     if period == 3:
-        merge_nc_files(lsm, ncks, period, mean_nc_infiles, mean_nc_outfile)
+        _merge_nc_files(lsm, period, mean_nc_infiles, mean_nc_outfile)
         if not skip_ens_spread:
-            merge_nc_files(lsm, ncks, period,
-                           ssdev_nc_infiles, ssdev_nc_outfile)
+            _merge_nc_files(lsm, period,
+                            ssdev_nc_infiles, ssdev_nc_outfile)
     else:
         # 24-hr processing
-        merge_nc_files(lsm, ncks, period, mean_nc_infiles,
-                       mean_nc_outfile, latest_nc_infiles)
+        _merge_nc_files(lsm, period, mean_nc_infiles,
+                        mean_nc_outfile, latest_nc_infiles)
+
+if __name__ == "__main__":
+    _main()

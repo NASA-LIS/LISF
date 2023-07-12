@@ -1,0 +1,21 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: Geovation/Labelgun
+
+
+POC:
+
+https://github.com/Geovation/labelgun
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-fire/js/labelgun.min.js
+lis/utils/eis_visualization_portal/eis-fire/js/labels.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/labelgun.min.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/labels.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/labelgun.min.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/labels.js
+
+License:
+
+MIT License (https://opensource.org/licenses/MIT)

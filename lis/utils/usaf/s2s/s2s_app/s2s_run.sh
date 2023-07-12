@@ -1,7 +1,130 @@
 #!/bin/bash
+#
+# Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
+#
+#  Date: 02-01-2023;  Latest version
+#
 
-# LIS-Hydro_S2S subsystem run script 
+######################################################################
+#                              SHARED FUNCTIONS
+######################################################################
+SOURCE_ONLY='N'
+submit_job(){
+    if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
+	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
+	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
+    else
+	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
+	c2c=`echo $1 | sed "s|:|,|g"`
+	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c`
+    fi
+    echo $submit_ID
+}
 
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+set_permission(){
+    exit
+    cd ${SCRDIR}/
+    /bin/rm -f set_permission.j
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	line1=
+	line2=
+    else
+	line1="#SBATCH --cluster-constraint=green"
+	line2="#SBATCH --partition=batch"
+    fi
+	
+    cat << EOF > ${SCRDIR}/set_permission.j
+#!/bin/bash
+
+#######################################################################
+#                        Set Read/Write permission 
+#######################################################################
+
+#SBATCH --account=${SPCODE}
+#SBATCH --ntasks=1
+#SBATCH --time=00:15:00
+#SBATCH --job-name=set_permission_
+#SBATCH --output ${SCRDIR}/set_permission_%j.out
+#SBATCH --error ${SCRDIR}/set_permission_%j.err
+`echo "${line1}"`
+`echo "${line2}"`
+
+cd ${E2ESDIR}
+
+find . -type d \( -path ./hindcast -o -path ./bcsd_fcst/CFSv2_25km/raw/Climatology -o -path ./bcsd_fcst/NMME/raw/Climatology -path ./bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology \) -prune -o -exec chmod 0775 {} \;
+find . -name "*.nc" -exec chmod 0644 {} \;
+find . -path ./hindcast -prune -o -name "*.NC" -exec chmod 0644 {} \;
+find . -name "*.NC4" -exec chmod 0644 {} \;
+find . -name "*.nc4" -exec chmod 0644 {} \;
+find . -name "*.TIF" -exec chmod 0644 {} \;
+find . -name "*.png" -exec chmod 0644 {} \;
+
+EOF
+   chmod 777 set_permission.j
+   perm_ID=$(submit_job $1 "set_permission.j") 
+}
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+print_walltimes(){
+    
+    #######################################################################
+    #                     Print Walltimes in HPC-11
+    #######################################################################
+
+    echo "#######################################################################"
+    echo "                          STATUS OF SLURM JOBS"
+    echo "#######################################################################"
+    echo " "
+    echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
+    echo " "
+    
+    jobids=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f1`)
+    jobfiles=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f2`)
+    tLen=${#jobids[@]}
+    ((tLen--))
+    if [[ ${jobfiles[$tLen]} !=  'set_permission.j' ]]; then
+	((tLen++))
+    fi
+    
+    cjobs=0
+    fmt="%7s %-36s %3s %3s %3s\n"
+    for jid in ${!jobids[@]}
+    do
+	if [[ ${jobfiles[$cjobs]} !=  'set_permission.j' ]]; then
+	    times=`sacct -j ${jobids[$cjobs]} --format=start,end,elapsed | tail -1`
+	    start_job=`echo $times | cut -d' ' -f1`
+	    end_job=`echo $times | cut -d' ' -f2`
+	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
+		elapse=`echo $times | cut -d' ' -f3`
+		ehms=`echo $elapse| cut -d':' -f1`'h '`echo $elapse| cut -d':' -f2`'m '`echo $elapse| cut -d':' -f3`'s'
+		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $ehms
+		if [ ${cjobs} -eq 0 ]; then
+		    strart_time=$start_job
+		fi
+		((cjobs++))
+	    else
+		exit
+	    fi
+	fi
+    done
+    tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
+    hms=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f5`
+    echo ' '
+    echo 'ELAPSED TIME : ' $(($tdays-1))'d' `echo $hms| cut -d':' -f1`'h '`echo $hms| cut -d':' -f2`'m '`echo $hms| cut -d':' -f3`'s' 
+}
+
+if [ "${1}" == "--source-only" ]; then
+    SOURCE_ONLY='Y'
+fi
+
+# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# continue s2s_run.sh forecast
+
+if [ $SOURCE_ONLY == 'N' ]; then
+    
 ######################################################################
 #                     PROCESS COMMAND LINE ARGUMENTS
 ######################################################################
@@ -37,19 +160,19 @@ while getopts ":y:m:c:d:r:s:o:" opt; do
 	   echo "     "
 	   echo "where MANDATORY input parameters:"
 	   echo "---------------------------------"
-	   echo "  YEAR:        start year"
-	   echo "  MONTH:       start month [1 to 12]"
-	   echo "  CONFIG_FILE: config file (for hindcast or forecast)"
+	   echo "  YEAR:        forecast start year"
+	   echo "  MONTH:       forecast start month [1 to 12]"
+	   echo "  CONFIG_FILE: E2E main config file (for hindcast or forecast)"
 	   echo "  Thus, s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIG_FILE is good to run the complete E2ES process for YEAR/MONTH."
 	   echo "     "
 	   echo "with OPTIONAL flags:"
 	   echo "--------------------"
-	   echo "  DELETE:   delete YEAR/MONTH (valid inputs: Y or N)"
-	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag is good to check the progress of SLURM jobs (valid inputs: Y or N)"
+	   echo "  DELETE:   Delete YEAR/MONTH directory (valid inputs: Y or N)"
+	   echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag can be used to check the progress of SLURM jobs (valid inputs: Y or N)"
 	   echo "  STEP:     The E2ES process includes seven steps that are run sequentially LISDA, LDTICS, BCSD, FCST, POST, METRICS, PLOTS."
-	   echo "            However, the STEP option allows user to kick start the process from the last completed step."
-	   echo "            -s STEP is good to ask s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
-           echo "  ONE_STEP: flag is good to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
+	   echo "            However, the STEP option allows the user to kick start the process from the last completed step."
+	   echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS)."
+           echo "  ONE_STEP: Flag used to run only the above -s STEP (valid inputs: Y or N). If ONE_STEP is set to Y, the process will exit upon completion of above STEP"  	      	   	      	   
 	   exit 1 
 	   ;;	 
     esac
@@ -76,7 +199,6 @@ export ARCH=`uname`
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
-export AF10KM=`grep AF10KM  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export S2STOOL=$LISHDIR/
@@ -84,68 +206,36 @@ export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 if [ $DATATYPE == "hindcast" ]; then
-    export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"    
+    export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`"/hindcast/"
+    export ICSDIR=`grep ICSDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 else
     export E2ESDIR=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 fi
 export SUPDIR=`grep supplementarydir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LDTFILE=`grep ldtinputfile $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export NODE_NAME=`uname -n`
 
-unset LD_LIBRARY_PATH
-source /etc/profile.d/modules.sh
-module use -a $LISFDIR/env/discover/
-module --ignore-cache load $LISFMOD
+if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+    unset LD_LIBRARY_PATH
+    source /etc/profile.d/modules.sh
+fi
+
+if [ -e $LISFDIR/env/discover/$LISFMOD ]; then
+    # Discover: LISFMOD is in LISF repository
+    module use -a $LISFDIR/env/discover/
+    module --ignore-cache load $LISFMOD
+else
+    # non-Discover: LISFMOD is in ${supplementary}/env/
+    module use -a $SUPDIR/env/
+    module load $LISFMOD
+fi
 
 BWD=`pwd`
 
 #**********************************************************************
-#                           FUNCTIONS
+#                           S2S FORECAST FUNCTIONS
 #**********************************************************************
 
-submit_job(){
-    if [[ $1 == "" ]] || [[ $1 == "," ]]; then
-	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2
-    else
-	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/write_to_file.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $1`
-    fi
-    echo $submit_ID
-}
-
-# +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-set_permission(){
-
-    cd ${E2ESDIR}
-    /bin/rm -f set_permission.j
-    cat << EOF > ${E2ESDIR}/set_permission.j
-#!/bin/bash
-
-#######################################################################
-#                        Set Read/Write permission 
-#######################################################################
-
-#SBATCH --account=${SPCODE}
-#SBATCH --ntasks=1
-#SBATCH --time=00:15:00
-#SBATCH --job-name=set_permission_
-#SBATCH --output ${SCRDIR}/set_permission_%j.out
-#SBATCH --error ${SCRDIR}/set_permission_%j.err
-
-cd ${E2ESDIR}
-
-find . -type d -exec chmod 0775 {} \;
-find . -name "*.nc" -exec chmod 0644 {} \;
-find . -name "*.NC" -exec chmod 0644 {} \;
-find . -name "*.NC4" -exec chmod 0644 {} \;
-find . -name "*.nc4" -exec chmod 0644 {} \;
-find . -name "*.TIF" -exec chmod 0644 {} \;
-find . -name "*.png" -exec chmod 0644 {} \;
-
-EOF
-   perm_ID=$(submit_job $1 "set_permission.j") 
-}
 
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -169,7 +259,7 @@ delete_forecast(){
     Mon=`echo ${mon_names[$mon-1]}`
     
     # delete scratch
-    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
+    /bin/rm -rf ${E2ESDIR}/scratch/${YYYY}${MM}/
     
     # delete LISDA
     delete_files ${E2ESDIR}/lis_darun/output/ROUTING/${YYYY}${MM}/
@@ -180,7 +270,7 @@ delete_forecast(){
     
     # delete LDTICS
     delete_files ${E2ESDIR}/ldt_ics/ldt.config_files/ldt.config_noahmp401_nmme_\*_${YYYY}${MM}
-    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}*\
+    delete_files ${E2ESDIR}/ldt_ics/\*/\*${Mon^}${YYYY}\*
     
     # delete BCSD
     delete_files ${E2ESDIR}/bcsd_fcst/CFSv2_25km/bcsd/6-Hourly/${Mon}01/${YYYY}
@@ -257,7 +347,7 @@ download_forecasts(){
 	    NAVAIL=`echo ${have_model} | wc -w`
 	    ((NAVAIL--))
 	    echo 
-	    read -p "Prpecipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
+	    read -p "Precipitation forecasts are available for only ${NAVAIL} NMME models (${have_model}). Do you want to continue (Y/N)?" YESORNO
 	    
 	    if [ "$YESORNO" = 'Y' ] || [ "$YESORNO" = 'y' ]; then
 		LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
@@ -270,13 +360,14 @@ download_forecasts(){
     fi
 }
 
+
 # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 lis_darun(){
 
     #######################################################################
-    # (1) LIS DA run starts on the 1st of the previous month to generate
-    #     initial conditions
+    # (1) LIS DA run starts on the 1st of the previous month to the 1st
+    #      of current month to generate the initial conditions
     #######################################################################
     
     echo "                         " >> $JOB_SCHEDULE
@@ -286,6 +377,7 @@ lis_darun(){
 
     # set up input directory
     mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
+    mkdir -p -m 775 ${E2ESDIR}/lis_darun/output/lis.config_files/
     cd ${E2ESDIR}/lis_darun/input/
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
     /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
@@ -309,14 +401,18 @@ lis_darun(){
     /bin/ln -s ${LISFDIR}/lis/LIS
     /bin/ln -s ${E2ESDIR}/lis_darun/input
     /bin/ln -s ${E2ESDIR}/lis_darun/output
-    mkdir -p -m 775 output/lis.config_files/
+    /bin/ln -s ${METFORC}
     mkdir -p -m 775 ${CWD}/logs_${YYYYP}${MMP}
     
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 2 -j lisda_ -w ${CWD} -L Y
-    COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+    python $LISHDIR/s2s_app/write_to_file.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+    else
+	COMMAND='srun ./LIS'
+    fi
     sed -i "s|COMMAND|${COMMAND}|g" lisda_run.j
     
     # configure lis.config
@@ -327,7 +423,7 @@ lis_darun(){
     HYMAP2RSTFILE=./output/ROUTING/${YYYYP}${MMP}/LIS_RST_HYMAP2_router_${YYYYP}${MMP}010000.d01.nc
     LSMLISLOGFILE=${CWD}/logs_${YYYYP}${MMP}'/lislog'
     
-    #sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
+    sed -i "s|DAPERTRSTFILE|${DAPERTRSTFILE}|g" lis.config
     sed -i "s|NOAHMP401RSTFILE|${NOAHMP401RSTFILE}|g" lis.config
     sed -i "s|HYMAP2RSTFILE|${HYMAP2RSTFILE}|g" lis.config
     sed -i "s|STARTYR|${YYYYP}|g" lis.config
@@ -352,7 +448,7 @@ lis_darun(){
 ldt_ics(){
     
     #######################################################################
-    # (2) LDT ICS run to LIS input files
+    # (2) LDT-based Initial Condition(IC) run to generate LIS input files
     #######################################################################
 
     echo "              " >> $JOB_SCHEDULE
@@ -401,7 +497,7 @@ ldt_ics(){
 bcsd_fcst(){
     
     #######################################################################
-    # (3) BCSD 
+    # (3) BCSD step
     #######################################################################
     
     echo "              " >> $JOB_SCHEDULE
@@ -422,13 +518,13 @@ bcsd_fcst(){
     
     # link Climatology directories
     cd ${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw
-    /bin/ln -s $obs_clim_dir Climatology
+    /bin/ln -s $obs_clim_dir 
     
     cd ${E2ESDIR}/bcsd_fcst/NMME/raw
-    /bin/ln -s $nmme_clim_dir Climatology
+    /bin/ln -s $nmme_clim_dir 
     
     cd ${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw
-    /bin/ln -s $usaf_25km Climatology
+    /bin/ln -s $usaf_25km 
     
     # manage jobs from SCRATCH
     cd ${SCRDIR}/bcsd_fcst
@@ -437,25 +533,37 @@ bcsd_fcst(){
     
     mmm=`date -d "$YYYY-$MM-01" +%b | tr '[:upper:]' '[:lower:]'`
     
-    # Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
-    # --------------------------------------------------------------------------
-    jobname=bcsd01
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -e $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j $jobname
-    bcsd01_ID=$(submit_job "" "${jobname}_run.j")
-    
-    # Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
-    # --------------------------------------------------------------
-    jobname=bcsd03
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
-
-    job_list="$jobname*.j"
-    bcsd03_ID=
-    for jfile in $job_list
-    do
-	thisID=$(submit_job "" "${jfile}")
-	bcsd03_ID=`echo $bcsd03_ID`' '$thisID
-    done
-    bcsd03_ID=`echo $bcsd03_ID | sed "s| |,|g"`
+    if [ $DATATYPE == "forecast" ]; then
+	# hindcast does not run bcsd01 and bcsd03 since they have been preprocessed.
+	# Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
+	# --------------------------------------------------------------------------
+	jobname=bcsd01
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	
+	job_list="$jobname*.j"
+	bcsd01_ID=
+	for jfile in $job_list
+	do
+	    thisID=$(submit_job "" "${jfile}")
+	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	done
+	bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
+	
+	# Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
+	# --------------------------------------------------------------
+	jobname=bcsd03
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	
+	unset job_list
+	job_list="$jobname*.j"
+	bcsd03_ID=
+	for jfile in $job_list
+	do
+	    thisID=$(submit_job "" "${jfile}")
+	    bcsd03_ID=`echo $bcsd03_ID`' '$thisID
+	done
+	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
+    fi
     
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
@@ -467,10 +575,14 @@ bcsd_fcst(){
     bcsd04_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	if [ $DATATYPE == "forecast" ]; then
+	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	else
+	    thisID=$(submit_job "" "${jfile}")
+	fi
 	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
     done
-    bcsd04_ID=`echo $bcsd04_ID | sed "s| |,|g"`
+    bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
     
     # Task 5: Monthly "BC" step applied to NMME (forecast_task_05.py: after 1 and 3)
     # ------------------------------------------------------------------------------
@@ -485,10 +597,14 @@ bcsd_fcst(){
     bcsd05_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd01_ID,$bcsd03_ID" "${jfile}")
+	if [ $DATATYPE == "forecast" ]; then
+	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	else
+	    thisID=$(submit_job "" "${jfile}")
+	fi
 	bcsd05_ID=`echo $bcsd05_ID`' '$thisID
     done
-    bcsd05_ID=`echo $bcsd05_ID | sed "s| |,|g"`
+    bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
     
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
@@ -500,10 +616,10 @@ bcsd_fcst(){
     bcsd06_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd04_ID,$bcsd05_ID" "${jfile}")
+	thisID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jfile}")
 	bcsd06_ID=`echo $bcsd06_ID`' '$thisID
     done
-    bcsd06_ID=`echo $bcsd06_ID | sed "s| |,|g"` 
+    bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"` 
     
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
     # temporal disaggregation due to an uneven number of ensembles between the datasets
@@ -529,7 +645,7 @@ bcsd_fcst(){
 	thisID=$(submit_job "$bcsd06_ID" "${jfile}")
 	bcsd08_ID=`echo $bcsd08_ID`' '$thisID
     done
-    bcsd08_ID=`echo $bcsd08_ID | sed "s| |,|g"`
+    bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
     
     # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
     #         (forecast_task_09.py: after 8)
@@ -555,7 +671,7 @@ bcsd_fcst(){
 	thisID=$(submit_job "$bcsd08_ID" "${jfile}")
 	bcsd10_ID=`echo $bcsd10_ID`' '$thisID
     done
-    bcsd10_ID=`echo $bcsd10_ID | sed "s| |,|g"`
+    bcsd10_ID=`echo $bcsd10_ID | sed "s| |:|g"`
     
     # Task 11: Copy 9th forecast lead file as 10th forecast lead for LIS runs
     #         (forecast_task_11.py: after 9 and 10)
@@ -563,7 +679,7 @@ bcsd_fcst(){
     jobname=bcsd11
     # NOTE : Task 11  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd11_ID=$(submit_job "$bcsd09_ID,$bcsd10_ID" "${jobname}_run.j")
+    bcsd11_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
     
     # Task 12:  Task to introduce an all-zero variable V10M due to the way wind
     #           is handled in the USAF forcing
@@ -572,7 +688,7 @@ bcsd_fcst(){
     jobname=bcsd12
     # NOTE : Task 12  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd12_ID=$(submit_job "$bcsd09_ID,$bcsd10_ID" "${jobname}_run.j")
+    bcsd12_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
     
     cd ${BWD}
 }
@@ -587,7 +703,7 @@ lis_fcst(){
     jobname=lis_fcst
     
     echo "              " >> $JOB_SCHEDULE
-    echo "(4) LIS Forecast                           " >> $JOB_SCHEDULE
+    echo "(4) LIS Forecast Runs                      " >> $JOB_SCHEDULE
     echo "-------------------------------------------" >> $JOB_SCHEDULE
     echo "                                           " >> $JOB_SCHEDULE
     
@@ -634,7 +750,7 @@ lis_fcst(){
 	do
 	    if [ $nFiles -gt 1 ]; then
 		if [ $FileNo  -eq 1 ]; then
-		    thisID=$(submit_job "$bcsd11_ID,$bcsd12_ID" "$jfile")
+		    thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
 		    lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 		    prevID=$thisID
 		else
@@ -649,7 +765,7 @@ lis_fcst(){
 	    ((FileNo++))
 	done
     done
-    lisfcst_ID=`echo $lisfcst_ID | sed "s| |,|g"`
+    lisfcst_ID=`echo $lisfcst_ID | sed "s| |:|g"`
 
     cd ${BWD}
 }
@@ -701,7 +817,7 @@ s2spost(){
 	thisID=$(submit_job "$lisfcst_ID" "$jfile")
 	s2spost_ID=`echo $s2spost_ID`' '$thisID
     done
-    s2spost_ID=`echo $s2spost_ID | sed "s| |,|g"`    
+    s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`    
     cd ${BWD}
 }
 
@@ -731,7 +847,7 @@ s2smetrics(){
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 12 -M $model
+	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     
     job_list=`ls $jobname*.j`
@@ -741,7 +857,7 @@ s2smetrics(){
 	thisID=$(submit_job "$s2spost_ID" "$jfile")
 	s2smetric_ID=`echo $s2smetric_ID`' '$thisID
     done
-    s2smetric_ID=`echo $s2smetric_ID | sed "s| |,|g"`
+    s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     
     # write tiff file
     python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
@@ -773,18 +889,18 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
     
-    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 12 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/write_to_file.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD}
     COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" s2splots_run.j
     
     PLINE=`grep -n plot_s2smetrics.py s2splots_run.j | cut -d':' -f1`
     ((PLINE++))
-    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_streamflow_anom.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
+    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${SEC_COMMAND}" s2splots_run.j
     ((PLINE++))
-    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
-    #((PLINE++))
+    ((PLINE++))
     #FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_precip.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
     #sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
     #((PLINE++))
@@ -799,9 +915,14 @@ s2splots(){
 #                           MAIN SCRIPT
 #**********************************************************************
 
+SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
-    python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	python $LISHDIR/s2s_app/write_to_file.py -r Y -w ${E2ESDIR} -d ${YYYY}${MM}
+    else
+	print_walltimes
+    fi
     exit
 fi
 
@@ -820,26 +941,38 @@ fi
 #######################################################################
 #                        Set up scratch directory
 #######################################################################
-   
-SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
-mkdir -p -m 775 ${SCRDIR}/global_usaf_forc
+
+setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
 mkdir -p -m 775 ${SCRDIR}/lis_darun
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
 mkdir -p -m 775 ${SCRDIR}/s2spost
+chmod 775 ${E2ESDIR}/scratch/
 
 if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
-    download_forecasts
+    if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
+	download_forecasts
+    else
+	echo 
+	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
+	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
+	    exit
+	fi
+    fi
 fi
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
+if [ $DATATYPE == "hindcast" ]; then
+    mkdir -p ${E2ESDIR}/ldt_ics/
+    cd ${E2ESDIR}/ldt_ics
+    for model in $MODELS
+    do
+	/bin/ln -s ${ICSDIR}/$model
+    done
+fi
 
-cd ${SCRDIR}/global_usaf_forc
-/bin/ln -s $AF10KM usaf_lis73rc8_10km
-cd ${SCRDIR}
-/bin/ln -s $METFORC
 cd ${BWD}
 JOB_SCHEDULE=${SCRDIR}/SLURM_JOB_SCHEDULE
 /bin/rm -f $JOB_SCHEDULE
@@ -959,8 +1092,10 @@ case $STEP in
 	exit
     ;;
     *)
-	lis_darun
-	ldt_ics
+	if [ $DATATYPE == "forecast" ]; then
+	    lis_darun
+	    ldt_ics
+	fi
 	bcsd_fcst
 	lis_fcst
 	s2spost
@@ -973,5 +1108,5 @@ case $STEP in
 	set_permission $s2spost_ID
     ;;
 esac
-    
+fi
 
