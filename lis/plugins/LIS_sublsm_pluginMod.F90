@@ -154,6 +154,11 @@ contains
    external NoahMP401_setCROCUSimport
 #endif
 
+#if ( defined SM_NOAHMP_NEW )
+   external NoahMPnew_getCROCUSexport
+   external NoahMPnew_setCROCUSimport
+#endif
+
 #if ( defined SM_NOAH_3_9 )
    external Noah39_getCROCUSexport
    external Noah39_setCROCUSimport
@@ -177,6 +182,11 @@ contains
 #if ( defined SM_NOAHMP_4_0_1 )
    external NoahMP401_getSnowModelexport
    external NoahMP401_setSnowModelimport
+#endif
+
+#if ( defined SM_NOAHMP_NEW )
+   external NoahMPnew_getSnowModelexport
+   external NoahMPnew_setSnowModelimport
 #endif
 
 #endif
@@ -207,6 +217,15 @@ contains
         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
 
+#if ( defined SM_NOAHMP_NEW )
+   call registerlsm2sublsmgetexport(trim(LIS_noahmpnewId)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),NoahMPnew_getCROCUSexport)
+   call registerlsmsetsublsmimport(trim(LIS_noahmpnewId)//char(0),&
+        NoahMPnew_setCROCUSimport)
+   call registersublsm2lsmgetexport(trim(LIS_noahmpnewId)//"+"//&
+        trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
+#endif
+
 #if ( defined SM_NOAH_3_9 )
    call registerlsm2sublsmgetexport(trim(LIS_noah39Id)//"+"//&
         trim(LIS_Crocus81Id)//char(0),Noah39_getCROCUSexport)
@@ -215,7 +234,6 @@ contains
    call registersublsm2lsmgetexport(trim(LIS_noah39Id)//"+"//&
         trim(LIS_Crocus81Id)//char(0),Crocus81_getLSMexport)
 #endif
-
 
 #endif
 
@@ -244,6 +262,15 @@ contains
    call registerlsmsetsublsmimport(trim(LIS_noahmp401Id)//char(0),&
         NoahMP401_setSnowModelimport)
    call registersublsm2lsmgetexport(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
+#endif
+
+#if ( defined SM_NOAHMP_NEW )
+   call registerlsm2sublsmgetexport(trim(LIS_noahmpnewId)//"+"//&
+        trim(LIS_snowmodelId)//char(0),NoahMPnew_getSnowModelexport)
+   call registerlsmsetsublsmimport(trim(LIS_noahmpnewId)//char(0),&
+        NoahMPnew_setSnowModelimport)
+   call registersublsm2lsmgetexport(trim(LIS_noahmpnewId)//"+"//&
         trim(LIS_snowmodelId)//char(0),SnowModel_getLSMexport)
 #endif
 #endif
