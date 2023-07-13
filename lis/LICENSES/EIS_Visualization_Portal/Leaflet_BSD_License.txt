@@ -1,0 +1,93 @@
+Component name(s): EIS Freshwater Visualization Portal support files
+
+Contributing organization/individuals: Leaflet
+
+POC:
+
+https://leafletjs.com
+https://github.com/Leaflet/Leaflet
+
+Files:
+
+lis/utils/eis_visualization_portal/eis-fire/css/styledLayerControl.css
+lis/utils/eis_visualization_portal/eis-fire/js/Autolinker.min.js
+lis/utils/eis_visualization_portal/eis-fire/js/Control.Opacity.js
+lis/utils/eis_visualization_portal/eis-fire/js/OSMBuildings-Leaflet.js
+lis/utils/eis_visualization_portal/eis-fire/js/createLayersList.js
+lis/utils/eis_visualization_portal/eis-fire/js/multi-style-layer.js
+lis/utils/eis_visualization_portal/eis-fire/js/slidercontrol.js
+lis/utils/eis_visualization_portal/eis-fire/js/spin.min.js
+lis/utils/eis_visualization_portal/eis-fire/js/styledLayerControl.js
+lis/utils/eis_visualization_portal/eis-freshwater/css/L.Control.Opacity.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/Leaflet.Coordinates-0.1.3.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/MarkerCluster.Default.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/MarkerCluster.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/leaflet-panel-layers.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/leaflet-search.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/leaflet.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/leaflet.fullscreen.css
+lis/utils/eis_visualization_portal/eis-freshwater/css/styledLayerControl.css
+lis/utils/eis_visualization_portal/eis-freshwater/js/Autolinker.min.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/Control.Opacity.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/L.Control.HtmlLegend.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/L.Control.Opacity.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/Leaflet.Coordinates-0.1.3.min.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/Leaflet.VectorGrid.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/OSMBuildings-Leaflet.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/createLayersList.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-hash.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-heat.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-search.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-side-by-side.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-side-by-side_overlays.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-svg-shape-markers.min.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet-tilelayer-wmts.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.canvaslayer.field.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.markercluster.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.pattern.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.rotatedMarker.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/leaflet.wms.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/multi-style-layer.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/slidercontrol.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/spin.min.js
+lis/utils/eis_visualization_portal/eis-freshwater/js/styledLayerControl.js
+lis/utils/eis_visualization_portal/eis-sealevel/css/styledLayerControl.css
+lis/utils/eis_visualization_portal/eis-sealevel/js/Autolinker.min.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/Control.Opacity.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/OSMBuildings-Leaflet.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/createLayersList.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/multi-style-layer.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/slidercontrol.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/spin.min.js
+lis/utils/eis_visualization_portal/eis-sealevel/js/styledLayerControl.js
+
+License:
+
+BSD 2-Clause License
+
+Copyright (c) 2010-2023, Volodymyr Agafonkin
+Copyright (c) 2010-2011, CloudMade
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

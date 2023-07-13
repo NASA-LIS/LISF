@@ -1,0 +1,7 @@
+&jules_soil
+dzsoil_io=0.1000,0.2500,0.6500,2.0000
+l_dpsids_dsdz=.true.
+l_soil_sat_down=.true.
+l_vg_soil=.true.
+soilhc_method=2
+/
