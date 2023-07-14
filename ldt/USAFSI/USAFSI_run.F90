@@ -69,6 +69,8 @@ subroutine USAFSI_run(n)
   !**  28 Jan 21  Updated messages for PMW snow retrievals
   !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
   !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
+  !**  27 Jun 23  Removed LDT_endrun for normal termination, to avoid error
+  !               code 1.........................................Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -517,7 +519,8 @@ subroutine USAFSI_run(n)
 #endif
 
   write (LDT_logunit,*) '[INFO] NORMAL TERMINATION'
-  call LDT_endrun()
+  !call LDT_endrun() ! EMK...Avoid error code 1
+  return
 
   ! ERROR HANDLING SECTION.
 4200 continue

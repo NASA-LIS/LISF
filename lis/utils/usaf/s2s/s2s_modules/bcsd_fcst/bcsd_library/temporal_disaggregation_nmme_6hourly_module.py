@@ -33,7 +33,7 @@ def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     output_bc_data = np.ones(len(input_raw_data))*-999
 
     if bc_var == 'PRCP':
-        if mon_raw_value <= 1.e-4:
+        if mon_raw_value == 0.:
             correction_factor = mon_bc_value
             ## HACK## for when input monthly value is 0
             output_bc_data[:] = correction_factor
