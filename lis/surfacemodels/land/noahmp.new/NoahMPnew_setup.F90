@@ -55,7 +55,7 @@ subroutine NoahMPnew_setup()
 !  \begin{description}
 !  \item[LIS\_read\_param](\ref{LIS_read_param}) \\ 
 !    retrieves LIS parameter data from NetCDF file
-!  \item[NOAHMP401\_read\_MULTILEVEL\_param](\ref{NOAHMP401_read_MULTILEVEL_param}) \\ 
+!  \item[NOAHMPnew\_read\_MULTILEVEL\_param](\ref{NOAHMPnew_read_MULTILEVEL_param}) \\ 
 !    retrieves MULTILEVEL spatial parameter from NetCDF file
 !  \end{description}
 !EOP
@@ -304,11 +304,12 @@ subroutine NoahMPnew_setup()
                              trim(NOAHMPnew_struc(n)%noahmp_tbl_name))
 
         do t=1,LIS_rc%npatch(n,mtype)
-           soiltyp = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
-           vegtyp  = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
-           
+           SOILTYP = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
+           VEGTYP  = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
            SLOPETYP     = 1          ! set underground runoff slope term
            SOILCOLOR    = 4          ! soil color: assuming a middle color category ?????????      
+           ! if (NOAHMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
+           !    CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
            CROPTYPE     = 0 
            CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
                 NoahMPnew_struc(n)%noahmpnew(t)%param)
@@ -324,7 +325,7 @@ end subroutine NoahMPnew_setup
 
 !BOP
 !
-! !ROUTINE: NOAHMP401_read_MULTILEVEL_param
+! !ROUTINE: NOAHMPnew_read_MULTILEVEL_param
 !  \label{read_MULTILEVEL_param}
 !
 ! !REVISION HISTORY:
@@ -435,7 +436,7 @@ subroutine NOAHMPnew_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         call LIS_endrun
     endif
 
- end subroutine NOAHMP401_read_MULTILEVEL_param
+ end subroutine NOAHMPnew_read_MULTILEVEL_param
                                           
 SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
@@ -451,8 +452,6 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     
   type (LisNoahmpParam_type), intent(inout) :: parameters
     
-  REAL    :: REFDK
-  REAL    :: REFKDT
   REAL    :: FRZK
   REAL    :: FRZFACT
   INTEGER :: ISOIL
@@ -472,74 +471,76 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
 ! Transfer veg parameters
 !------------------------------------------------------------------------------------------!
 
-  parameters%CH2OP  =  NoahmpIO%CH2OP_TABLE(VEGTYPE)       !maximum intercepted h2o per unit lai+sai (mm)
-  parameters%DLEAF  =  NoahmpIO%DLEAF_TABLE(VEGTYPE)       !characteristic leaf dimension (m)
-  parameters%Z0MVT  =  NoahmpIO%Z0MVT_TABLE(VEGTYPE)       !momentum roughness length (m)
-  parameters%HVT    =    NoahmpIO%HVT_TABLE(VEGTYPE)       !top of canopy (m)
-  parameters%HVB    =    NoahmpIO%HVB_TABLE(VEGTYPE)       !bottom of canopy (m)
-  parameters%DEN    =    NoahmpIO%DEN_TABLE(VEGTYPE)       !tree density (no. of trunks per m2)
-  parameters%RC     =     NoahmpIO%RC_TABLE(VEGTYPE)       !tree crown radius (m)
-  parameters%MFSNO  =  NoahmpIO%MFSNO_TABLE(VEGTYPE)       !snowmelt m parameter ()
-  parameters%SCFFAC = NoahmpIO%SCFFAC_TABLE(VEGTYPE)       !snow cover factor (m) (replace original hard-coded 2.5*z0 in SCF formulation)
-  parameters%CBIOM  =  NoahmpIO%CBIOM_TABLE(VEGTYPE)       !canopy biomass heat capacity parameter (m)
-  parameters%SAIM   =   NoahmpIO%SAIM_TABLE(VEGTYPE,:)     !monthly stem area index, one-sided
-  parameters%LAIM   =   NoahmpIO%LAIM_TABLE(VEGTYPE,:)     !monthly leaf area index, one-sided
-  parameters%SLA    =    NoahmpIO%SLA_TABLE(VEGTYPE)       !single-side leaf area per Kg [m2/kg]
-  parameters%DILEFC = NoahmpIO%DILEFC_TABLE(VEGTYPE)       !coeficient for leaf stress death [1/s]
-  parameters%DILEFW = NoahmpIO%DILEFW_TABLE(VEGTYPE)       !coeficient for leaf stress death [1/s]
-  parameters%FRAGR  =  NoahmpIO%FRAGR_TABLE(VEGTYPE)       !fraction of growth respiration  !original was 0.3 
-  parameters%LTOVRC = NoahmpIO%LTOVRC_TABLE(VEGTYPE)       !leaf turnover [1/s]
-
-  parameters%C3PSN  =  NoahmpIO%C3PSN_TABLE(VEGTYPE)       !photosynthetic pathway: 0. = c4, 1. = c3
-  parameters%KC25   =   NoahmpIO%KC25_TABLE(VEGTYPE)       !co2 michaelis-menten constant at 25c (pa)
-  parameters%AKC    =    NoahmpIO%AKC_TABLE(VEGTYPE)       !q10 for kc25
-  parameters%KO25   =   NoahmpIO%KO25_TABLE(VEGTYPE)       !o2 michaelis-menten constant at 25c (pa)
-  parameters%AKO    =    NoahmpIO%AKO_TABLE(VEGTYPE)       !q10 for ko25
-  parameters%VCMX25 = NoahmpIO%VCMX25_TABLE(VEGTYPE)       !maximum rate of carboxylation at 25c (umol co2/m**2/s)
-  parameters%AVCMX  =  NoahmpIO%AVCMX_TABLE(VEGTYPE)       !q10 for vcmx25
-  parameters%BP     =     NoahmpIO%BP_TABLE(VEGTYPE)       !minimum leaf conductance (umol/m**2/s)
-  parameters%MP     =     NoahmpIO%MP_TABLE(VEGTYPE)       !slope of conductance-to-photosynthesis relationship
-  parameters%QE25   =   NoahmpIO%QE25_TABLE(VEGTYPE)       !quantum efficiency at 25c (umol co2 / umol photon)
-  parameters%AQE    =    NoahmpIO%AQE_TABLE(VEGTYPE)       !q10 for qe25
-  parameters%RMF25  =  NoahmpIO%RMF25_TABLE(VEGTYPE)       !leaf maintenance respiration at 25c (umol co2/m**2/s)
-  parameters%RMS25  =  NoahmpIO%RMS25_TABLE(VEGTYPE)       !stem maintenance respiration at 25c (umol co2/kg bio/s)
-  parameters%RMR25  =  NoahmpIO%RMR25_TABLE(VEGTYPE)       !root maintenance respiration at 25c (umol co2/kg bio/s)
-  parameters%ARM    =    NoahmpIO%ARM_TABLE(VEGTYPE)       !q10 for maintenance respiration
-  parameters%FOLNMX = NoahmpIO%FOLNMX_TABLE(VEGTYPE)       !foliage nitrogen concentration when f(n)=1 (%)
-  parameters%TMIN   =   NoahmpIO%TMIN_TABLE(VEGTYPE)       !minimum temperature for photosynthesis (k)
-
-  parameters%XL     =     NoahmpIO%XL_TABLE(VEGTYPE)       !leaf/stem orientation index
-  parameters%RHOL   =   NoahmpIO%RHOL_TABLE(VEGTYPE,:)     !leaf reflectance: 1=vis, 2=nir
-  parameters%RHOS   =   NoahmpIO%RHOS_TABLE(VEGTYPE,:)     !stem reflectance: 1=vis, 2=nir
-  parameters%TAUL   =   NoahmpIO%TAUL_TABLE(VEGTYPE,:)     !leaf transmittance: 1=vis, 2=nir
-  parameters%TAUS   =   NoahmpIO%TAUS_TABLE(VEGTYPE,:)     !stem transmittance: 1=vis, 2=nir
-
-  parameters%MRP    =    NoahmpIO%MRP_TABLE(VEGTYPE)       !microbial respiration parameter (umol co2 /kg c/ s)
-  parameters%CWPVT  =  NoahmpIO%CWPVT_TABLE(VEGTYPE)       !empirical canopy wind parameter
-
-  parameters%WRRAT  =  NoahmpIO%WRRAT_TABLE(VEGTYPE)       !wood to non-wood ratio
-  parameters%WDPOOL = NoahmpIO%WDPOOL_TABLE(VEGTYPE)       !wood pool (switch 1 or 0) depending on woody or not [-]
-  parameters%TDLEF  =  NoahmpIO%TDLEF_TABLE(VEGTYPE)       !characteristic T for leaf freezing [K]
-
-  parameters%NROOT  =  NoahmpIO%NROOT_TABLE(VEGTYPE)       !number of soil layers with root present
-  parameters%RGL    =    NoahmpIO%RGL_TABLE(VEGTYPE)       !Parameter used in radiation stress function
-  parameters%RSMIN  =     NoahmpIO%RS_TABLE(VEGTYPE)       !Minimum stomatal resistance [s m-1]
-  parameters%HS     =     NoahmpIO%HS_TABLE(VEGTYPE)       !Parameter used in vapor pressure deficit function
-  parameters%TOPT   =   NoahmpIO%TOPT_TABLE(VEGTYPE)       !Optimum transpiration air temperature [K]
-  parameters%RSMAX  =  NoahmpIO%RSMAX_TABLE(VEGTYPE)       !Maximal stomatal resistance [s m-1]
+  parameters%CH2OP   =  NoahmpIO%CH2OP_TABLE(VEGTYPE)       !maximum intercepted h2o per unit lai+sai (mm)
+  parameters%DLEAF   =  NoahmpIO%DLEAF_TABLE(VEGTYPE)       !characteristic leaf dimension (m)
+  parameters%Z0MVT   =  NoahmpIO%Z0MVT_TABLE(VEGTYPE)       !momentum roughness length (m)
+  parameters%HVT     =    NoahmpIO%HVT_TABLE(VEGTYPE)       !top of canopy (m)
+  parameters%HVB     =    NoahmpIO%HVB_TABLE(VEGTYPE)       !bottom of canopy (m)
+  parameters%DEN     =    NoahmpIO%DEN_TABLE(VEGTYPE)       !tree density (no. of trunks per m2)
+  parameters%RC      =     NoahmpIO%RC_TABLE(VEGTYPE)       !tree crown radius (m)
+  parameters%MFSNO   =  NoahmpIO%MFSNO_TABLE(VEGTYPE)       !snowmelt m parameter ()
+  parameters%SCFFAC  = NoahmpIO%SCFFAC_TABLE(VEGTYPE)       !snow cover factor (m) (replace original hard-coded 2.5*z0 in SCF formulation)
+  parameters%CBIOM   =  NoahmpIO%CBIOM_TABLE(VEGTYPE)       !canopy biomass heat capacity parameter (m)
+  parameters%SAIM    =   NoahmpIO%SAIM_TABLE(VEGTYPE,:)     !monthly stem area index, one-sided
+  parameters%LAIM    =   NoahmpIO%LAIM_TABLE(VEGTYPE,:)     !monthly leaf area index, one-sided
+  parameters%SLA     =    NoahmpIO%SLA_TABLE(VEGTYPE)       !single-side leaf area per Kg [m2/kg]
+  parameters%DILEFC  = NoahmpIO%DILEFC_TABLE(VEGTYPE)       !coeficient for leaf stress death [1/s]
+  parameters%DILEFW  = NoahmpIO%DILEFW_TABLE(VEGTYPE)       !coeficient for leaf stress death [1/s]
+  parameters%FRAGR   =  NoahmpIO%FRAGR_TABLE(VEGTYPE)       !fraction of growth respiration  !original was 0.3 
+  parameters%LTOVRC  = NoahmpIO%LTOVRC_TABLE(VEGTYPE)       !leaf turnover [1/s]
+  parameters%C3PSN   =  NoahmpIO%C3PSN_TABLE(VEGTYPE)       !photosynthetic pathway: 0. = c4, 1. = c3
+  parameters%KC25    =   NoahmpIO%KC25_TABLE(VEGTYPE)       !co2 michaelis-menten constant at 25c (pa)
+  parameters%AKC     =    NoahmpIO%AKC_TABLE(VEGTYPE)       !q10 for kc25
+  parameters%KO25    =   NoahmpIO%KO25_TABLE(VEGTYPE)       !o2 michaelis-menten constant at 25c (pa)
+  parameters%AKO     =    NoahmpIO%AKO_TABLE(VEGTYPE)       !q10 for ko25
+  parameters%VCMX25  = NoahmpIO%VCMX25_TABLE(VEGTYPE)       !maximum rate of carboxylation at 25c (umol co2/m**2/s)
+  parameters%AVCMX   =  NoahmpIO%AVCMX_TABLE(VEGTYPE)       !q10 for vcmx25
+  parameters%BP      =     NoahmpIO%BP_TABLE(VEGTYPE)       !minimum leaf conductance (umol/m**2/s)
+  parameters%MP      =     NoahmpIO%MP_TABLE(VEGTYPE)       !slope of conductance-to-photosynthesis relationship
+  parameters%QE25    =   NoahmpIO%QE25_TABLE(VEGTYPE)       !quantum efficiency at 25c (umol co2 / umol photon)
+  parameters%AQE     =    NoahmpIO%AQE_TABLE(VEGTYPE)       !q10 for qe25
+  parameters%RMF25   =  NoahmpIO%RMF25_TABLE(VEGTYPE)       !leaf maintenance respiration at 25c (umol co2/m**2/s)
+  parameters%RMS25   =  NoahmpIO%RMS25_TABLE(VEGTYPE)       !stem maintenance respiration at 25c (umol co2/kg bio/s)
+  parameters%RMR25   =  NoahmpIO%RMR25_TABLE(VEGTYPE)       !root maintenance respiration at 25c (umol co2/kg bio/s)
+  parameters%ARM     =    NoahmpIO%ARM_TABLE(VEGTYPE)       !q10 for maintenance respiration
+  parameters%FOLNMX  = NoahmpIO%FOLNMX_TABLE(VEGTYPE)       !foliage nitrogen concentration when f(n)=1 (%)
+  parameters%TMIN    =   NoahmpIO%TMIN_TABLE(VEGTYPE)       !minimum temperature for photosynthesis (k)
+  parameters%XL      =     NoahmpIO%XL_TABLE(VEGTYPE)       !leaf/stem orientation index
+  parameters%RHOL    =   NoahmpIO%RHOL_TABLE(VEGTYPE,:)     !leaf reflectance: 1=vis, 2=nir
+  parameters%RHOS    =   NoahmpIO%RHOS_TABLE(VEGTYPE,:)     !stem reflectance: 1=vis, 2=nir
+  parameters%TAUL    =   NoahmpIO%TAUL_TABLE(VEGTYPE,:)     !leaf transmittance: 1=vis, 2=nir
+  parameters%TAUS    =   NoahmpIO%TAUS_TABLE(VEGTYPE,:)     !stem transmittance: 1=vis, 2=nir
+  parameters%MRP     =    NoahmpIO%MRP_TABLE(VEGTYPE)       !microbial respiration parameter (umol co2 /kg c/ s)
+  parameters%CWPVT   =  NoahmpIO%CWPVT_TABLE(VEGTYPE)       !empirical canopy wind parameter
+  parameters%WRRAT   =  NoahmpIO%WRRAT_TABLE(VEGTYPE)       !wood to non-wood ratio
+  parameters%WDPOOL  = NoahmpIO%WDPOOL_TABLE(VEGTYPE)       !wood pool (switch 1 or 0) depending on woody or not [-]
+  parameters%TDLEF   =  NoahmpIO%TDLEF_TABLE(VEGTYPE)       !characteristic T for leaf freezing [K]
+  parameters%NROOT   =  NoahmpIO%NROOT_TABLE(VEGTYPE)       !number of soil layers with root present
+  parameters%RGL     =    NoahmpIO%RGL_TABLE(VEGTYPE)       !Parameter used in radiation stress function
+  parameters%RSMIN   =     NoahmpIO%RS_TABLE(VEGTYPE)       !Minimum stomatal resistance [s m-1]
+  parameters%HS      =     NoahmpIO%HS_TABLE(VEGTYPE)       !Parameter used in vapor pressure deficit function
+  parameters%TOPT    =   NoahmpIO%TOPT_TABLE(VEGTYPE)       !Optimum transpiration air temperature [K]
+  parameters%RSMAX   =  NoahmpIO%RSMAX_TABLE(VEGTYPE)       !Maximal stomatal resistance [s m-1]
+  parameters%RTOVRC  = NoahmpIO%RTOVRC_TABLE(VEGTYPE)       !root turnover coefficient [1/s]
+  parameters%RSWOODC = NoahmpIO%RSWOODC_TABLE(VEGTYPE)     !wood respiration coeficient [1/s]
+  parameters%BF      =     NoahmpIO%BF_TABLE(VEGTYPE)       !parameter for present wood allocation [-]
+  parameters%WSTRC   =  NoahmpIO%WSTRC_TABLE(VEGTYPE)       !water stress coeficient [-]
+  parameters%LAIMIN  = NoahmpIO%LAIMIN_TABLE(VEGTYPE)       !minimum leaf area index [m2/m2]
+  parameters%XSAMIN  = NoahmpIO%XSAMIN_TABLE(VEGTYPE)       !minimum stem area index [m2/m2]
 
 !------------------------------------------------------------------------------------------!
 ! Transfer rad parameters
 !------------------------------------------------------------------------------------------!
 
-   parameters%ALBSAT    = NoahmpIO%ALBSAT_TABLE(SOILCOLOR,:)
-   parameters%ALBDRY    = NoahmpIO%ALBDRY_TABLE(SOILCOLOR,:)
-   parameters%ALBICE    = NoahmpIO%ALBICE_TABLE
-   parameters%ALBLAK    = NoahmpIO%ALBLAK_TABLE               
-   parameters%OMEGAS    = NoahmpIO%OMEGAS_TABLE
-   parameters%BETADS    = NoahmpIO%BETADS_TABLE
-   parameters%BETAIS    = NoahmpIO%BETAIS_TABLE
-   parameters%EG        = NoahmpIO%EG_TABLE
+   parameters%ALBSAT = NoahmpIO%ALBSAT_TABLE(SOILCOLOR,:)
+   parameters%ALBDRY = NoahmpIO%ALBDRY_TABLE(SOILCOLOR,:)
+   parameters%ALBICE = NoahmpIO%ALBICE_TABLE
+   parameters%ALBLAK = NoahmpIO%ALBLAK_TABLE               
+   parameters%OMEGAS = NoahmpIO%OMEGAS_TABLE
+   parameters%BETADS = NoahmpIO%BETADS_TABLE
+   parameters%BETAIS = NoahmpIO%BETAIS_TABLE
+   parameters%EG     = NoahmpIO%EG_TABLE
+   parameters%EICE   = NoahmpIO%EICE_TABLE
 
 !------------------------------------------------------------------------------------------!
 ! Transfer crop parameters
@@ -557,7 +558,17 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
    parameters%GDDS3     =     NoahmpIO%GDDS3_TABLE(CROPTYPE)    ! GDD from seeding to post vegetative 
    parameters%GDDS4     =     NoahmpIO%GDDS4_TABLE(CROPTYPE)    ! GDD from seeding to intial reproductive
    parameters%GDDS5     =     NoahmpIO%GDDS5_TABLE(CROPTYPE)    ! GDD from seeding to pysical maturity 
-   parameters%C3C4      =      NoahmpIO%C3C4_TABLE(CROPTYPE)    ! photosynthetic pathway:  1. = c3 2. = c4
+   parameters%C3PSN     =    NoahmpIO%C3PSNI_TABLE(CROPTYPE)
+   parameters%KC25      =     NoahmpIO%KC25I_TABLE(CROPTYPE)
+   parameters%AKC       =      NoahmpIO%AKCI_TABLE(CROPTYPE)
+   parameters%KO25      =     NoahmpIO%KO25I_TABLE(CROPTYPE)
+   parameters%AKO       =      NoahmpIO%AKOI_TABLE(CROPTYPE)
+   parameters%AVCMX     =    NoahmpIO%AVCMXI_TABLE(CROPTYPE)
+   parameters%VCMX25    =   NoahmpIO%VCMX25I_TABLE(CROPTYPE)
+   parameters%BP        =       NoahmpIO%BPI_TABLE(CROPTYPE)
+   parameters%MP        =       NoahmpIO%MPI_TABLE(CROPTYPE)
+   parameters%FOLNMX    =   NoahmpIO%FOLNMXI_TABLE(CROPTYPE)
+   parameters%QE25      =     NoahmpIO%QE25I_TABLE(CROPTYPE)   
    parameters%AREF      =      NoahmpIO%AREF_TABLE(CROPTYPE)    ! reference maximum CO2 assimulation rate 
    parameters%PSNRF     =     NoahmpIO%PSNRF_TABLE(CROPTYPE)    ! CO2 assimulation reduction factor(0-1) (caused by non-modeling part,e.g.pest,weeds)
    parameters%I2PAR     =     NoahmpIO%I2PAR_TABLE(CROPTYPE)    ! Fraction of incoming solar radiation to photosynthetically active radiation
@@ -567,7 +578,6 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
    parameters%K         =         NoahmpIO%K_TABLE(CROPTYPE)    ! light extinction coefficient
    parameters%EPSI      =      NoahmpIO%EPSI_TABLE(CROPTYPE)    ! initial light use efficiency
    parameters%Q10MR     =     NoahmpIO%Q10MR_TABLE(CROPTYPE)    ! q10 for maintainance respiration
-   parameters%FOLN_MX   =   NoahmpIO%FOLN_MX_TABLE(CROPTYPE)    ! foliage nitrogen concentration when f(n)=1 (%)
    parameters%LEFREEZ   =   NoahmpIO%LEFREEZ_TABLE(CROPTYPE)    ! characteristic T for leaf freezing [K]
    parameters%DILE_FC   =   NoahmpIO%DILE_FC_TABLE(CROPTYPE,:)  ! coeficient for temperature leaf stress death [1/s]
    parameters%DILE_FW   =   NoahmpIO%DILE_FW_TABLE(CROPTYPE,:)  ! coeficient for water leaf stress death [1/s]
@@ -583,6 +593,9 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
    parameters%STPT      =      NoahmpIO%STPT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate flux to stem
    parameters%RTPT      =      NoahmpIO%RTPT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate flux to root
    parameters%GRAINPT   =   NoahmpIO%GRAINPT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate flux to grain
+   parameters%LFCT      =      NoahmpIO%LFCT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate translocation from leaf to grain
+   parameters%STCT      =      NoahmpIO%STCT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate translocation from stem to grain
+   parameters%RTCT      =      NoahmpIO%RTCT_TABLE(CROPTYPE,:)  ! fraction of carbohydrate translocation from root to grain
    parameters%BIO2LAI   =   NoahmpIO%BIO2LAI_TABLE(CROPTYPE)    ! leaf are per living leaf biomass [m^2/kg]
   END IF
 
@@ -590,14 +603,74 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
 ! Transfer global parameters
 !------------------------------------------------------------------------------------------!
 
-   parameters%CO2        =         NoahmpIO%CO2_TABLE
-   parameters%O2         =          NoahmpIO%O2_TABLE
-   parameters%TIMEAN     =      NoahmpIO%TIMEAN_TABLE
-   parameters%FSATMX     =      NoahmpIO%FSATMX_TABLE
-   parameters%Z0SNO      =       NoahmpIO%Z0SNO_TABLE
-   parameters%SSI        =         NoahmpIO%SSI_TABLE
-   parameters%SWEMX      =       NoahmpIO%SWEMX_TABLE
-   parameters%RSURF_SNOW =  NoahmpIO%RSURF_SNOW_TABLE
+   parameters%CO2              =              NoahmpIO%CO2_TABLE
+   parameters%O2               =               NoahmpIO%O2_TABLE
+   parameters%TIMEAN           =           NoahmpIO%TIMEAN_TABLE
+   parameters%FSATMX           =           NoahmpIO%FSATMX_TABLE
+   parameters%Z0SNO            =            NoahmpIO%Z0SNO_TABLE
+   parameters%SSI              =              NoahmpIO%SSI_TABLE
+   parameters%SNOW_RET_FAC     =     NoahmpIO%SNOW_RET_FAC_TABLE
+   parameters%SNOW_EMIS        =        NoahmpIO%SNOW_EMIS_TABLE
+   parameters%SWEMX            =            NoahmpIO%SWEMX_TABLE
+   parameters%RSURF_SNOW       =       NoahmpIO%RSURF_SNOW_TABLE
+   parameters%TAU0             =             NoahmpIO%TAU0_TABLE
+   parameters%GRAIN_GROWTH     =     NoahmpIO%GRAIN_GROWTH_TABLE
+   parameters%EXTRA_GROWTH     =     NoahmpIO%EXTRA_GROWTH_TABLE
+   parameters%DIRT_SOOT        =        NoahmpIO%DIRT_SOOT_TABLE
+   parameters%BATS_COSZ        =        NoahmpIO%BATS_COSZ_TABLE
+   parameters%BATS_VIS_NEW     =     NoahmpIO%BATS_VIS_NEW_TABLE
+   parameters%BATS_NIR_NEW     =     NoahmpIO%BATS_NIR_NEW_TABLE
+   parameters%BATS_VIS_AGE     =     NoahmpIO%BATS_VIS_AGE_TABLE
+   parameters%BATS_NIR_AGE     =     NoahmpIO%BATS_NIR_AGE_TABLE
+   parameters%BATS_VIS_DIR     =     NoahmpIO%BATS_VIS_DIR_TABLE
+   parameters%BATS_NIR_DIR     =     NoahmpIO%BATS_NIR_DIR_TABLE
+   parameters%RSURF_EXP        =        NoahmpIO%RSURF_EXP_TABLE
+   parameters%C2_SNOWCOMPACT   =   NoahmpIO%C2_SNOWCOMPACT_TABLE
+   parameters%C3_SNOWCOMPACT   =   NoahmpIO%C3_SNOWCOMPACT_TABLE 
+   parameters%C4_SNOWCOMPACT   =   NoahmpIO%C4_SNOWCOMPACT_TABLE 
+   parameters%C5_SNOWCOMPACT   =   NoahmpIO%C5_SNOWCOMPACT_TABLE
+   parameters%DM_SNOWCOMPACT   =   NoahmpIO%DM_SNOWCOMPACT_TABLE
+   parameters%ETA0_SNOWCOMPACT = NoahmpIO%ETA0_SNOWCOMPACT_TABLE
+   parameters%NLIQMAXFRAC      =     NoahmpIO%SNLIQMAXFRAC_TABLE
+   parameters%SWEMAXGLA        =        NoahmpIO%SWEMAXGLA_TABLE
+   parameters%WSLMAX           =           NoahmpIO%WSLMAX_TABLE
+   parameters%ROUS             =             NoahmpIO%ROUS_TABLE
+   parameters%CMIC             =             NoahmpIO%CMIC_TABLE
+   parameters%SNOWDEN_MAX      =      NoahmpIO%SNOWDEN_MAX_TABLE
+   parameters%CLASS_ALB_REF    =    NoahmpIO%CLASS_ALB_REF_TABLE
+   parameters%CLASS_SNO_AGE    =    NoahmpIO%CLASS_SNO_AGE_TABLE
+   parameters%CLASS_ALB_NEW    =    NoahmpIO%CLASS_ALB_NEW_TABLE
+   parameters%PSIWLT           =           NoahmpIO%PSIWLT_TABLE
+   parameters%Z0SOIL           =           NoahmpIO%Z0SOIL_TABLE
+   parameters%Z0LAKE           =           NoahmpIO%Z0LAKE_TABLE
+
+! ----------------------------------------------------------------------
+!  Transfer irrigation parameters
+! ----------------------------------------------------------------------
+   parameters%IRR_HAR     =    NoahmpIO%IRR_HAR_TABLE
+   parameters%IRR_FRAC    =   NoahmpIO%IRR_FRAC_TABLE
+   parameters%IRR_LAI     =    NoahmpIO%IRR_LAI_TABLE
+   parameters%IRR_MAD     =    NoahmpIO%IRR_MAD_TABLE 
+   parameters%FILOSS      =     NoahmpIO%FILOSS_TABLE 
+   parameters%SPRIR_RATE  = NoahmpIO%SPRIR_RATE_TABLE
+   parameters%MICIR_RATE  = NoahmpIO%MICIR_RATE_TABLE
+   parameters%FIRTFAC     =    NoahmpIO%FIRTFAC_TABLE
+   parameters%IR_RAIN     =    NoahmpIO%IR_RAIN_TABLE
+
+! ----------------------------------------------------------------------
+!  Transfer tile drainage parameters
+! ----------------------------------------------------------------------
+   parameters%DRAIN_LAYER_OPT = NoahmpIO%DRAIN_LAYER_OPT_TABLE
+   parameters%TD_DEPTH        =        NoahmpIO%TD_DEPTH_TABLE(SOILTYPE(1))
+   parameters%TDSMC_FAC       =       NoahmpIO%TDSMC_FAC_TABLE(SOILTYPE(1))
+   parameters%TD_DC           =           NoahmpIO%TD_DC_TABLE(SOILTYPE(1))
+   parameters%TD_DCOEF        =        NoahmpIO%TD_DCOEF_TABLE(SOILTYPE(1))
+   parameters%TD_D            =            NoahmpIO%TD_D_TABLE(SOILTYPE(1))
+   parameters%TD_ADEPTH       =       NoahmpIO%TD_ADEPTH_TABLE(SOILTYPE(1))
+   parameters%TD_RADI         =         NoahmpIO%TD_RADI_TABLE(SOILTYPE(1))
+   parameters%TD_SPAC         =         NoahmpIO%TD_SPAC_TABLE(SOILTYPE(1))
+   parameters%TD_DDRAIN       =       NoahmpIO%TD_DDRAIN_TABLE(SOILTYPE(1))
+   parameters%KLAT_FAC        =        NoahmpIO%KLAT_FAC_TABLE(SOILTYPE(1))
 
 ! ----------------------------------------------------------------------
 !  Transfer soil parameters
@@ -615,9 +688,13 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
       parameters%SMCWLT(isoil) = NoahmpIO%SMCWLT_TABLE (SOILTYPE(isoil))
     end do
     
-    parameters%F1     = NoahmpIO%F1_TABLE(SOILTYPE(1))
-    parameters%REFDK  = NoahmpIO%REFDK_TABLE
-    parameters%REFKDT = NoahmpIO%REFKDT_TABLE
+    parameters%BVIC   = BVIC_TABLE(SOILTYPE(1))
+    parameters%AXAJ   = AXAJ_TABLE(SOILTYPE(1))
+    parameters%BXAJ   = BXAJ_TABLE(SOILTYPE(1))
+    parameters%XXAJ   = XXAJ_TABLE(SOILTYPE(1))
+    parameters%BDVIC  = BDVIC_TABLE(SOILTYPE(1))
+    parameters%GDVIC  = GDVIC_TABLE(SOILTYPE(1))
+    parameters%BBVIC  = BBVIC_TABLE(SOILTYPE(1))
 
 ! ----------------------------------------------------------------------
 ! Transfer GENPARM parameters
@@ -625,7 +702,8 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     parameters%CSOIL  = NoahmpIO%CSOIL_TABLE
     parameters%ZBOT   = NoahmpIO%ZBOT_TABLE
     parameters%CZIL   = NoahmpIO%CZIL_TABLE
-
+    parameters%REFDK  = NoahmpIO%REFDK_TABLE
+    parameters%REFKDT = NoahmpIO%REFKDT_TABLE
     FRZK              = NoahmpIO%FRZK_TABLE
     parameters%KDT    = parameters%REFKDT * parameters%DKSAT(1) / parameters%REFDK
     parameters%SLOPE  = NoahmpIO%SLOPE_TABLE(SLOPETYPE)
@@ -639,7 +717,6 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     ENDIF
 
 ! adjust FRZK parameter to actual soil type: FRZK * FRZFACT
-
     IF(SOILTYPE(1) /= 14) then
       FRZFACT = (parameters%SMCMAX(1) / parameters%SMCREF(1)) * (0.412 / 0.468)
       parameters%FRZX = FRZK * FRZFACT
@@ -648,7 +725,6 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     parameters%mxsnalb = 0.84
     parameters%mnsnalb = 0.55
     parameters%sndecayexp = 0.01
-
     parameters%t_ulimit = 2.5
     parameters%t_mlimit = 2.0
     parameters%t_llimit = 0.5
