@@ -9,8 +9,8 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 !BOP
-! !ROUTINE: NoahMP401_f2t
-! \label{NoahMP401_f2t}
+! !ROUTINE: NoahMPnew_f2t
+! \label{NoahMPnew_f2t}
 !
 ! !REVISION HISTORY:
 !  This subroutine is generated with the Model Implementation Toolkit developed
@@ -18,16 +18,17 @@
 !  specification of the subroutine is defined by Sujay Kumar. 
 !  
 !  10/25/18: Shugong Wang, Zhuo Wang; Initial implementation for LIS 7 and NoahMP401
-!
+!  May 2023: Cenlin He; updated for Noah-MP v5 (refactored) and later
+
 ! !INTERFACE:
-subroutine NoahMP401_f2t(n)
+subroutine NoahMPnew_f2t(n)
 ! !USES:
     use ESMF
     use LIS_coreMod, only       : LIS_rc , LIS_surface
     use LIS_metforcingMod, only : LIS_FORC_State
     use LIS_logMod, only        : LIS_verify
     use LIS_FORC_AttributesMod   
-    use NoahMP401_lsmMod
+    use NoahMPnew_lsmMod
 
     implicit none
 ! !ARGUMENTS:
@@ -89,109 +90,109 @@ subroutine NoahMP401_f2t(n)
     !!! GET FORCING FIELDS FROM LIS
     ! get near surface air temperature
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Tair")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Tair")
 
     call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Tair")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Tair")
     
     ! get near surface specific humidity
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Qair%varname(1)), q2Field, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Qair")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Qair")
 
     call ESMF_FieldGet(q2Field, localDE = 0, farrayPtr = q2, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Qair")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Qair")
     
     ! get incident shortwave radiation
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_SWdown%varname(1)), swdField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Swdown")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Swdown")
 
     call ESMF_FieldGet(swdField, localDE = 0, farrayPtr = swd, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Swdown")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Swdown")
     
     ! get incident longwave radiation
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_LWdown%varname(1)), lwdField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Lwdown")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Lwdown")
 
     call ESMF_FieldGet(lwdField, localDE = 0, farrayPtr = lwd, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Lwdown")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Lwdown")
     
     ! get eastward wind
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Wind_E%varname(1)), uField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Wind_E")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Wind_E")
 
     call ESMF_FieldGet(uField, localDE = 0, farrayPtr = uwind, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Wind_E")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Wind_E")
     
     ! get northward wind
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Wind_N%varname(1)), vField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Wind_N")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Wind_N")
 
     call ESMF_FieldGet(vField, localDE = 0, farrayPtr = vwind, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Wind_N")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Wind_N")
     
     ! get surface pressure
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Psurf%varname(1)), psurfField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Psurf")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Psurf")
 
     call ESMF_FieldGet(psurfField, localDE = 0, farrayPtr = psurf, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Psurf")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Psurf")
     
     ! get rainfall rate
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Rainf%varname(1)), pcpField, rc=status)
-    call LIS_verify(status, "NoahMP401_f2t: error getting Rainf")
+    call LIS_verify(status, "NoahMPnew_f2t: error getting Rainf")
 
     call ESMF_FieldGet(pcpField, localDE = 0, farrayPtr = pcp, rc = status)
-    call LIS_verify(status, "NoahMP401_f2t: error retrieving Rainf")
+    call LIS_verify(status, "NoahMPnew_f2t: error retrieving Rainf")
     
     ! get snowfall rate
     if(LIS_Forc_Snowf%selectOpt .eq. 1) then 
         call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Snowf%varname(1)), snowField, rc=status)
-        call LIS_verify(status, "NoahMP401_f2t: error getting Snowf")
+        call LIS_verify(status, "NoahMPnew_f2t: error getting Snowf")
 
         call ESMF_FieldGet(snowField, localDE = 0, farrayPtr = snowf, rc = status)
-        call LIS_verify(status, "NoahMP401_f2t: error retrieving Snowf")
+        call LIS_verify(status, "NoahMPnew_f2t: error retrieving Snowf")
     endif 
     
  
     !!! set the forcing counter
-    NOAHMP401_struc(n)%forc_count = NOAHMP401_struc(n)%forc_count + 1
+    NOAHMPnew_struc(n)%forc_count = NOAHMPnew_struc(n)%forc_count + 1
  
     !!! pass forcing data to tiles
     do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
 
         ! TAIR
-        NOAHMP401_struc(n)%noahmp401(t)%tair = NOAHMP401_struc(n)%noahmp401(t)%tair + tmp(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%tair = NoahMPnew_struc(n)%noahmpnew(t)%tair + tmp(tid)
 
         ! QAIR
-        NOAHMP401_struc(n)%noahmp401(t)%qair = NOAHMP401_struc(n)%noahmp401(t)%qair + q2(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%qair = NoahMPnew_struc(n)%noahmpnew(t)%qair + q2(tid)
 
         ! SWDOWN
-        NOAHMP401_struc(n)%noahmp401(t)%swdown = NOAHMP401_struc(n)%noahmp401(t)%swdown + swd(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%swdown = NoahMPnew_struc(n)%noahmpnew(t)%swdown + swd(tid)
 
         ! LWDOWN
-        NOAHMP401_struc(n)%noahmp401(t)%lwdown = NOAHMP401_struc(n)%noahmp401(t)%lwdown + lwd(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%lwdown = NoahMPnew_struc(n)%noahmpnew(t)%lwdown + lwd(tid)
 
         ! WIND_E
-        NOAHMP401_struc(n)%noahmp401(t)%wind_e = NOAHMP401_struc(n)%noahmp401(t)%wind_e + uwind(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%wind_e = NoahMPnew_struc(n)%noahmpnew(t)%wind_e + uwind(tid)
 
         ! WIND_N
-        NOAHMP401_struc(n)%noahmp401(t)%wind_n = NOAHMP401_struc(n)%noahmp401(t)%wind_n + vwind(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%wind_n = NoahMPnew_struc(n)%noahmpnew(t)%wind_n + vwind(tid)
 
         ! PSURF
-        NOAHMP401_struc(n)%noahmp401(t)%psurf = NOAHMP401_struc(n)%noahmp401(t)%psurf + psurf(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%psurf = NoahMPnew_struc(n)%noahmpnew(t)%psurf + psurf(tid)
 
         ! RAINF
-        NOAHMP401_struc(n)%noahmp401(t)%prcp = NOAHMP401_struc(n)%noahmp401(t)%prcp + pcp(tid)
+        NoahMPnew_struc(n)%noahmpnew(t)%prcp = NoahMPnew_struc(n)%noahmpnew(t)%prcp + pcp(tid)
 
         ! SNOWF
-        ! If there is snowf add it to precipitation.  Noah-MP-4.0.1 does not use
+        ! If there is snowf add it to precipitation.  Noah-MP does not use
         ! separate rainf and snowf.  It determines what to do with precipitation.
         if (LIS_Forc_Snowf%selectOpt.eq.1) then
             if (snowf(tid) .ne. LIS_rc%udef) then
-              NOAHMP401_struc(n)%noahmp401(t)%prcp = NOAHMP401_struc(n)%noahmp401(t)%prcp + snowf(tid)
+              NoahMPnew_struc(n)%noahmpnew(t)%prcp = NoahMPnew_struc(n)%noahmpnew(t)%prcp + snowf(tid)
             endif
         endif
     enddo
  
-end subroutine NoahMP401_f2t
+end subroutine NoahMPnew_f2t

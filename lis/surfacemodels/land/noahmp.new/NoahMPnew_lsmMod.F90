@@ -238,6 +238,7 @@ module NoahMPnew_lsmMod
         integer            :: irr_opt
         integer            :: irrm_opt
         integer            :: tdrn_opt
+        integer            :: infdv_opt
         integer            :: urban_opt
         type(NoahMPnewdec), pointer :: noahmpnew(:)
     end type NoahMPnew_type_dec

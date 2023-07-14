@@ -22,6 +22,7 @@
 !  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
 !
 ! !INTERFACE:
+
 subroutine NoahMPnew_coldstart(mtype)
 ! !USES:
 !   use LIS_coreMod, only: LIS_rc
@@ -176,8 +177,6 @@ subroutine NoahMPnew_coldstart(mtype)
    integer :: isnowxy(1,1)
    integer :: tmp_isnowxy(1,1)
 
-   real, dimension(1,60,1) :: gecros_state  ! Optional gecros crop
-  
 !  PLANTING(1,1)   = 126     ! default planting date
 !  HARVEST(1,1)    = 290     ! default harvest date
 !  SEASON_GDD(1,1) = 1605    ! default total seasonal growing degree days
@@ -231,7 +230,7 @@ subroutine NoahMPnew_coldstart(mtype)
 !----------------------------------------------------------------------
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
             write(LIS_logunit,*) &
-             "[INFO] NoahMP401_coldstart -- cold-starting Noah-MP.4.0.1"
+             "[INFO] NoahMPnew_coldstart -- cold-starting Noah-MP.New"
 
            do t=1, LIS_rc%npatch(n,mtype)
 
@@ -267,14 +266,6 @@ subroutine NoahMPnew_coldstart(mtype)
              enddo
 
              cropcatxy(1,1) = LIS_rc%cropclass
-
-             if (NoahmpNew_struc(n)%crop_opt.eq.2) then
-                do l=1, 60      ! TODO: check loop
-                   gecros_state(1,l,1) = NoahmpNew_struc(n)%init_gecros_state(l)
-                enddo
-             else
-                gecros_state(1,l,1) = 0.0
-             endif
 
              canwatxy(1,1) = NoahmpNew_struc(n)%init_canwat
              IVGTYP(1,1) = NoahmpNew_struc(n)%noahmpnew(t)%vegetype
@@ -439,10 +430,6 @@ subroutine NoahMPnew_coldstart(mtype)
                 NoahmpNew_struc(n)%noahmpnew(t)%gdd = gddxy(1,1)
                 NoahmpNew_struc(n)%noahmpnew(t)%pgs = pgsxy(1,1)
 
-                do l=1, 60 ! TODO: check loop
-                   NoahmpNew_struc(n)%noahmpnew(t)%gecros_state(l) = gecros_state(1,l,1)
-                enddo
-
                NoahmpNew_struc(n)%noahmpnew(t)%snowice(1:NoahmpNew_struc(n)%nsnow) = snicexy(1,-NoahmpNew_struc(n)%nsnow+1:0,1)
                NoahmpNew_struc(n)%noahmpnew(t)%snowliq(1:NoahmpNew_struc(n)%nsnow) = snliqxy(1,-NoahmpNew_struc(n)%nsnow+1:0,1)
                NoahmpNew_struc(n)%noahmpnew(t)%zss(1:NoahmpNew_struc(n)%nsnow+NoahmpNew_struc(n)%nsoil) = zsnsoxy(1,-NoahmpNew_struc(n)%nsnow+1:NoahmpNew_struc(n)%nsoil,1) 
@@ -474,7 +461,8 @@ subroutine NoahMPnew_coldstart(mtype)
         
         call LIS_date2time(LIS_rc%time, LIS_rc%doy, LIS_rc%gmt, LIS_rc%yr,      &
                            LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss)
-        write(LIS_logunit,*) "[INFO] NoahMP401_coldstart -- ",     &
+        write(LIS_logunit,*) "[INFO] NoahMPnew_coldstart -- ",     &
                              "Using the specified start time ", LIS_rc%time
        enddo        ! nnest
-end subroutine NoahMP401_coldstart
+
+end subroutine NoahMPnew_coldstart

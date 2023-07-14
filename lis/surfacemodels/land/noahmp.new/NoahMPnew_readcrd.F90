@@ -21,6 +21,7 @@
 !  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
 !
 ! !INTERFACE:
+
 subroutine NoahMPnew_readcrd()
 ! !USES:
     use ESMF
@@ -227,6 +228,17 @@ subroutine NoahMPnew_readcrd()
                                NoahmpNew_struc(n)%runsub_opt
     enddo
 
+    ! infiltration options for dynamic VIC (1->Philip; 2-> Green-Ampt;3->Smith-Parlange)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "Noah-MP.New dynamic VIC infiltration option:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, NoahmpNew_struc(n)%infdv_opt, rc=rc)
+        call LIS_verify(rc, &
+             "Noah-MP.New dynamic VIC infiltration option: not defined")
+        write(LIS_logunit,33) "dynamic VIC infiltration:", &
+                               NoahmpNew_struc(n)%infdv_opt
+    enddo
+
     ! surface layer drag coeff (CH & CM) (1->M-O; 2->Chen97)
     call ESMF_ConfigFindLabel(LIS_config, &
          "Noah-MP.New surface layer drag coefficient option:", rc = rc)
@@ -333,9 +345,9 @@ subroutine NoahMPnew_readcrd()
          "Noah-MP.New snow depth glacier model option:", rc = rc)
     if(rc /= 0) then
         write(LIS_logunit,33) "[WARN] Max snow depth not defined."
-        write(LIS_logunit,33) "[WARN] Setting to default value of 2000."
+        write(LIS_logunit,33) "[WARN] Setting to default value of 5000."
         do n=1, LIS_rc%nnest
-            NoahmpNew_struc(n)%sndpth_gla_opt = 2000
+            NoahmpNew_struc(n)%sndpth_gla_opt = 5000
             write(LIS_logunit,33) "snow depth for glacier model: ",NoahmpNew_struc(n)%sndpth_gla_opt
         enddo
     else
@@ -457,6 +469,11 @@ subroutine NoahMPnew_readcrd()
         NoahmpNew_struc(n)%LDT_ncvar_soilcL2 = 'SOILCL2'            !'NOAHMPnew_SOILCL2'
         NoahmpNew_struc(n)%LDT_ncvar_soilcL3 = 'SOILCL3'            !'NOAHMPnew_SOILCL3'
         NoahmpNew_struc(n)%LDT_ncvar_soilcL4 = 'SOILCL4'            !'NOAHMPnew_SOILCL4'
+        NoahmpNew_struc(n)%LDT_ncvar_irfract = 'IRFRACT'
+        NoahmpNew_struc(n)%LDT_ncvar_sifract = 'SIFRACT'
+        NoahmpNew_struc(n)%LDT_ncvar_mifract = 'MIFRACT'
+        NoahmpNew_struc(n)%LDT_ncvar_fifract = 'FIFRACT'
+        NoahmpNew_struc(n)%LDT_ncvar_tdfract = 'TD_FRACTION'
     enddo
 
 !------------------------------------------------------------------------------------------

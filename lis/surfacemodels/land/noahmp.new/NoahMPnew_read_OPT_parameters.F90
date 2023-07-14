@@ -10,8 +10,8 @@
 #include "LIS_misc.h"
 !BOP
 !
-! !ROUTINE: NoahMP401_read_OPT_parameters
-! \label{NoahMP401_read_OPT_parameters}
+! !ROUTINE: NoahMPnew_read_OPT_parameters
+! \label{NoahMPnew_read_OPT_parameters}
 !
 ! !REVISION HISTORY:
 !
@@ -20,13 +20,14 @@
 !  to overwrite the default lookup table values that the model uses. 
 ! 
 !   5 May 2020: Sujay Kumar; Initial specification
-!
+!   May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+
 ! !INTERFACE:
 !
-subroutine NoahMP401_read_OPT_parameters()
+subroutine NoahMPnew_read_OPT_parameters()
 ! !USES:
   use LIS_coreMod
-  use NoahMP401_lsmMod
+  use NoahMPnew_lsmMod
 
   implicit none
 
@@ -41,281 +42,281 @@ subroutine NoahMP401_read_OPT_parameters()
   do n=1,LIS_rc%nnest
      allocate(placeholder(LIS_rc%lnc(n), LIS_rc%lnr(n)))
 
-     call NOAHMP401_read_OPT_param(n, "ALBDRY1",  placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBDRY1",  placeholder, var_found)
 
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albdry(1) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albdry(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
      
-     call NOAHMP401_read_OPT_param(n, "ALBDRY2",  placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBDRY2",  placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albdry(2) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albdry(2) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "ALBICE1", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBICE1", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albice(1) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albice(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "ALBICE2", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBICE2", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albice(2) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albice(2) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "ALBSAT1", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBSAT1", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albsat(1) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albsat(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "ALBSAT2", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "ALBSAT2", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%albsat(2) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%albsat(2) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "BETADS", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "BETADS", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%betads =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%betads =&
                    placeholder(col, row)
            endif
         enddo
      endif
      
-     call NOAHMP401_read_OPT_param(n, "BETAIS", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "BETAIS", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%betais =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%betais =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "EG1", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "EG1", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%eg(1) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%eg(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "EG2", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "EG2", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%eg(2) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%eg(2) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "MFSNO", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "MFSNO", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%mfsno =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%mfsno =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "OMEGAS1", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "OMEGAS1", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%omegas(1) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%omegas(1) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "OMGEAS2", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "OMGEAS2", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%omegas(2) =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%omegas(2) =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "RSURF_SNOW", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "RSURF_SNOW", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%rsurf_snow =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%rsurf_snow =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "SSI", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "SSI", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%ssi =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%ssi =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "Z0SNO", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "Z0SNO", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%z0sno =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%z0sno =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "MXSNALB", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "MXSNALB", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%mxsnalb =&
-                   placeholder(col, row)
-           endif
-        enddo
-     endif
-
-
-     call NOAHMP401_read_OPT_param(n, "MNSNALB", placeholder, var_found)
-     if(var_found) then 
-        do t = 1, LIS_rc%npatch(n, mtype)
-           col = LIS_surface(n, mtype)%tile(t)%col
-           row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%mnsnalb =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%mxsnalb =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
 
-     call NOAHMP401_read_OPT_param(n, "SNDECAYEXP", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "MNSNALB", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%sndecayexp =&
-                   placeholder(col, row)
-           endif
-        enddo
-     endif
-
-     call NOAHMP401_read_OPT_param(n, "T_ULIMIT", placeholder, var_found)
-     if(var_found) then 
-        do t = 1, LIS_rc%npatch(n, mtype)
-           col = LIS_surface(n, mtype)%tile(t)%col
-           row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%t_ulimit =&
-                   placeholder(col, row)
-           endif
-        enddo
-     endif
-
-     call NOAHMP401_read_OPT_param(n, "T_MLIMIT", placeholder, var_found)
-     if(var_found) then 
-        do t = 1, LIS_rc%npatch(n, mtype)
-           col = LIS_surface(n, mtype)%tile(t)%col
-           row = LIS_surface(n, mtype)%tile(t)%row
-           if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%t_mlimit =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%mnsnalb =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
 
-     call NOAHMP401_read_OPT_param(n, "T_LLIMIT", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "SNDECAYEXP", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%t_llimit =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%sndecayexp =&
                    placeholder(col, row)
            endif
         enddo
      endif
 
-     call NOAHMP401_read_OPT_param(n, "SNOWF_SCALEF", placeholder, var_found)
+     call NoahMPnew_read_OPT_param(n, "T_ULIMIT", placeholder, var_found)
      if(var_found) then 
         do t = 1, LIS_rc%npatch(n, mtype)
            col = LIS_surface(n, mtype)%tile(t)%col
            row = LIS_surface(n, mtype)%tile(t)%row
            if(placeholder(col,row).ne.LIS_rc%udef) then 
-              NOAHMP401_struc(n)%noahmp401(t)%param%snowf_scalef =&
+              NoahMPnew_struc(n)%noahmpnew(t)%param%t_ulimit =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
+
+     call NoahMPnew_read_OPT_param(n, "T_MLIMIT", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NoahMPnew_struc(n)%noahmpnew(t)%param%t_mlimit =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
+
+
+     call NoahMPnew_read_OPT_param(n, "T_LLIMIT", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NoahMPnew_struc(n)%noahmpnew(t)%param%t_llimit =&
+                   placeholder(col, row)
+           endif
+        enddo
+     endif
+
+     call NoahMPnew_read_OPT_param(n, "SNOWF_SCALEF", placeholder, var_found)
+     if(var_found) then 
+        do t = 1, LIS_rc%npatch(n, mtype)
+           col = LIS_surface(n, mtype)%tile(t)%col
+           row = LIS_surface(n, mtype)%tile(t)%row
+           if(placeholder(col,row).ne.LIS_rc%udef) then 
+              NoahMPnew_struc(n)%noahmpnew(t)%param%snowf_scalef =&
                    placeholder(col, row)
            endif
         enddo
@@ -324,19 +325,19 @@ subroutine NoahMP401_read_OPT_parameters()
      deallocate(placeholder)
     
   end do
-end subroutine NoahMP401_read_OPT_parameters
+end subroutine NoahMPnew_read_OPT_parameters
 
 !BOP
 !
-! !ROUTINE: NOAHMP401_read_OPT_param
-!  \label{NOAHMP401_read_OPT_param}
+! !ROUTINE: NoahMPnew_read_OPT_param
+!  \label{NoahMPnew_read_OPT_param}
 !
 ! !REVISION HISTORY:
 !  03 Sept 2004: Sujay Kumar; Initial Specification for read_laiclimo
 !  30 Oct  2013: Shugong Wang; Generalization for reading OPT spatial parameter
 !
 ! !INTERFACE:
-subroutine NOAHMP401_read_OPT_param(n, ncvar_name, placeholder,var_found)
+subroutine NoahMPnew_read_OPT_param(n, ncvar_name, placeholder,var_found)
 ! !USES:
   use netcdf
   use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_localPet,   &   
@@ -381,27 +382,27 @@ subroutine NOAHMP401_read_OPT_param(n, ncvar_name, placeholder,var_found)
      ! open NetCDF parameter file
      ios = nf90_open(path=trim(LIS_rc%paramfile(n)), &
           mode=NF90_NOWRITE, ncid=nid)
-     call LIS_verify(ios, 'Error in nf90_open in NOAHMP401_read_OPT_param')
+     call LIS_verify(ios, 'Error in nf90_open in NoahMPnew_read_OPT_param')
      
      ! inquire the ID of east-west dimension
      ios = nf90_inq_dimid(nid, 'east_west', nc_ID)
      call LIS_verify(ios, &
-          'Error in nf90_inq_dimid in NOAHMP401_read_OPT_param')
+          'Error in nf90_inq_dimid in NoahMPnew_read_OPT_param')
      
      ! inquire the ID of north-south dimension
      ios = nf90_inq_dimid(nid, 'north_south', nr_ID)
      call LIS_verify(ios, &
-          'Error in nf90_inq_dimid in NOAHMP401_read_OPT_param')
+          'Error in nf90_inq_dimid in NoahMPnew_read_OPT_param')
      
      ! inquire the length of east-west dimension
      ios = nf90_inquire_dimension(nid, nc_ID, len=nc)
      call LIS_verify(ios, &
-          'Error in nf90_inquire_dimension in NOAHMP401_read_OPT_param')
+          'Error in nf90_inquire_dimension in NoahMPnew_read_OPT_param')
      
      ! inquire the length of north-south dimension
      ios = nf90_inquire_dimension(nid, nr_ID, len=nr)
      call LIS_verify(ios, &
-          'Error in nf90_inquire_dimension in NOAHMP401_read_OPT_param')
+          'Error in nf90_inquire_dimension in NoahMPnew_read_OPT_param')
      
      ! inquire the ID of parameter. 
      ios = nf90_inq_varid(nid, Trim(ncvar_name), param_ID)
@@ -420,7 +421,7 @@ subroutine NOAHMP401_read_OPT_param(n, ncvar_name, placeholder,var_found)
         
         ! read parameter 
         ios = nf90_get_var(nid, param_ID, level_data)
-        call LIS_verify(ios, 'Error in nf90_get_var in NOAHMP401_read_OPT_param')
+        call LIS_verify(ios, 'Error in nf90_get_var in NoahMPnew_read_OPT_param')
         
         ! grab parameter at specific level
         placeholder(:, :) = & 
@@ -437,8 +438,8 @@ subroutine NOAHMP401_read_OPT_param(n, ncvar_name, placeholder,var_found)
 
         ! close netcdf file 
      ios = nf90_close(nid)
-     call LIS_verify(ios, 'Error in nf90_close in NOAHMP401_read_OPT_param')
+     call LIS_verify(ios, 'Error in nf90_close in NoahMPnew_read_OPT_param')
      
   endif
-end subroutine NOAHMP401_read_OPT_param
-                                         
+
+end subroutine NoahMPnew_read_OPT_param             
