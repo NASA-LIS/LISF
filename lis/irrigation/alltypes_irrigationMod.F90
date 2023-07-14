@@ -24,6 +24,8 @@ module alltypes_irrigationMod
 !               Matt). Updated IrrigScale determination.
 !  14 Apr 2021: Wanshu Nie; Add support for GW/SW irrigation partitioning.
 !  29 Oct 2021: Sarith Mahanama; Added mapping croptypes to irrigation types.
+!  14 Jul 2023: Hiroko Beaudoing; Changed from IRRIGFRAC to IRRIGATEDAREA
+!                   
 !
 ! !USES: 
   use ESMF
@@ -479,8 +481,10 @@ contains
        
        allocate(glb_frac(LIS_rc%gnc(n),LIS_rc%gnr(n)))
 
-       ios = nf90_inq_varid(nid,'IRRIGFRAC',fracId)
-       call LIS_verify(ios,'nf90_inq_varid failed for IRRIGFRAC')
+!       ios = nf90_inq_varid(nid,'IRRIGFRAC',fracId)
+!       call LIS_verify(ios,'nf90_inq_varid failed for IRRIGFRAC')
+       ios = nf90_inq_varid(nid,'IRRIGATEDAREA',fracId)
+       call LIS_verify(ios,'nf90_inq_varid failed for IRRIGATEDAREA')
        
        ios = nf90_get_var(nid,fracId, glb_frac)
        call LIS_verify(ios,'nf90_get_var failed for in alltypes_irrigationMod')
