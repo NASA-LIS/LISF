@@ -20,7 +20,7 @@
 # single, CF-compliant netCDF4 file for distribution.  Rewritten to use
 # NetCDF4 Python library instead of NCO software, to reduce runtime.
 #
-# REQUIREMENTS as of 08 Sep 2022:
+# REQUIREMENTS as of 02 Jun 2023:
 # * Python 3.9 or higher.
 # * UNIDATA NetCDF4 Python library
 # * Numpy Python library
@@ -34,6 +34,7 @@
 # REVISION HISTORY:
 # 09 Sep 2022: Eric Kemp/SSAI, first version.
 # 14 Nov 2022: K. Arsenault/SAIC, removed fields for FOC.
+# 02 Jun 2023: K. Arsenault, updated the s2spost filenaming conventions
 #------------------------------------------------------------------------------
 """
 
@@ -127,7 +128,7 @@ def _usage():
     """Print command line usage."""
     txt = \
         f"[INFO] Usage: {sys.argv[0]} configfile noahmp_file hymap2_file"
-    txt += " output_dir YYYYMMDDHH model_forcing"
+    txt += " output_dir fcst_date YYYYMMDDHH model_forcing"
     print(txt)
     print("[INFO] where:")
     print("[INFO] configfile: Path to s2spost config file")
@@ -135,14 +136,15 @@ def _usage():
     txt = "[INFO] hymap2_file: LIS-HYMAP2 netCDF file (2d ensemble gridspace)"
     print(txt)
     print("[INFO] output_dir: Directory to write merged output")
-    print("[INFO] YYYYMMDDHH is valid year,month,day,hour of data (in UTC)")
+    print("[INFO] fcst_yyyymmdd: Initial forecast date of daily files")
+    print("[INFO] YYYYMMDDHH: Valid lead year,month,day,hour of data (in UTC)")
     print("[INFO] model_forcing: ID for atmospheric forcing for LIS")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 7:
+    if len(sys.argv) != 8:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -168,8 +170,24 @@ def _read_cmd_args():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Get valid date and time of data.
-    yyyymmddhh = sys.argv[5]
+    # Get valid initial forecast date.
+    fcst_yyyymmdd = sys.argv[5]
+
+    if len(fcst_yyyymmdd) != 8:
+        print("[ERR] Invalid length for fcst_yyyymmdd, must be 8 characters!")
+        sys.exit(1)
+    fcstyear = int(fcst_yyyymmdd[0:4])
+    fcstmonth = int(fcst_yyyymmdd[4:6])
+    fcstday = int(fcst_yyyymmdd[6:8])
+
+    try:
+        fcst_date = datetime.datetime(fcstyear, fcstmonth, fcstday)
+    except ValueError:
+        print("[ERR] Invalid fcst_yyyymmdd passed to script!")
+        sys.exit(1)
+
+    # Get valid lead date and time of data.
+    yyyymmddhh = sys.argv[6]
 
     if len(yyyymmddhh) != 10:
         print("[ERR] Invalid length for YYYYMMDDHH, must be 10 characters!")
@@ -186,10 +204,10 @@ def _read_cmd_args():
         sys.exit(1)
 
     # Get ID of model forcing
-    model_forcing = sys.argv[6]
+    model_forcing = sys.argv[7].upper()
 
-    return configfile, noahmp_file, hymap2_file, output_dir, curdt, \
-        model_forcing
+    return configfile, noahmp_file, hymap2_file, output_dir, fcst_date, \
+        curdt, model_forcing
 
 def _read_config(configfile):
     """Read from s2spost config file."""
@@ -197,7 +215,7 @@ def _read_config(configfile):
     config.read(configfile)
     return config
 
-def _create_final_filename(output_dir, curdt, model_forcing, domain):
+def _create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
     """Create final filename, following 557 convention."""
     name = f"{output_dir}"
     name += "/PS.557WW"
@@ -210,8 +228,10 @@ def _create_final_filename(output_dir, curdt, model_forcing, domain):
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
 
-    name += "_PA.LIS-S2S"
-    name += f"_DD.{curdt.year:04d}{curdt.month:02d}{curdt.day:02d}"
+    name += "_PA.ALL"
+    name += f"_DD.{fcst_date.year:04d}{fcst_date.month:02d}{fcst_date.day:02d}"
+    name += f"_DT.{curdt.hour:02d}00"
+    name += f"_FD.{curdt.year:04d}{curdt.month:02d}{curdt.day:02d}"
     name += f"_DT.{curdt.hour:02d}00"
     name += "_DF.NC"
     if len(os.path.basename(name)) > 128:
@@ -293,6 +313,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             attrs["axis"] = "Y"
         elif name == "lon":
             attrs["axis"] = "X"
+        elif name == "ensemble":
+            attrs["axis"] = "E"
         elif name in ["SoilMoist_tavg"]:
             attrs["long_name"] = "volumetric soil moisture content"
         elif name == "Soiltype_inst":
@@ -326,7 +348,7 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         dst[name].setncatts(attrs)
 
     # Add select variables and attributes from src2
-    # KRA -- CHECK THE RUNOFF AND BASEFLOW STORE TERMS ... ?? -- KRA
+    # In future, may want to blend RunoffStor and BaseflowStor with above (KRA)
     src2_excludes = ["lat", "lon", "time", "ensemble", "RunoffStor_tavg",
                      "BaseflowStor_tavg"]
     for name, variable in src2.variables.items():
@@ -458,13 +480,13 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
 if __name__ == "__main__":
 
     # Get the file and directory names
-    _configfile, _noahmp_file, _hymap2_file, _output_dir, _curdt, _model_forcing \
+    _configfile, _noahmp_file, _hymap2_file, _output_dir, _fcst_date, _curdt, _model_forcing \
         = _read_cmd_args()
     # load config file
     with open(_configfile, 'r', encoding="utf-8") as file:
         _config = yaml.safe_load(file)
 
-    _final_file = _create_final_filename(_output_dir, _curdt, _model_forcing,
+    _final_file = _create_final_filename(_output_dir, _fcst_date, _curdt, _model_forcing,
                                         _config["EXP"]["DOMAIN"])
 
     _ldtfile = _config['SETUP']['supplementarydir'] + '/lis_darun/' + \

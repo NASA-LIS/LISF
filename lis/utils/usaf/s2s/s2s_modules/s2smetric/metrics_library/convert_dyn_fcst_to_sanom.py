@@ -11,6 +11,7 @@
 # ?? ??? 2019: Abheera Hazra/UMD, second version.
 # 22 Oct 2021: Eric Kemp/SSAI, updated for 557WW.
 # 30 Oct 2021: Eric Kemp/SSAI, updated to use s2smetric CONFIG file.
+# 02 Jun 2023: K. Arsenault + S. Mahanama, updated 557 WW file conventions.
 #
 #------------------------------------------------------------------------------
 """
@@ -61,7 +62,6 @@ if not os.path.exists(OUTDIR):
 
 OUTFILE_TEMPLATE = '{}/{}_{}_SANOM_init_monthly_{:02d}_{:04d}.nc'
 # name of variable, forecast initial month and forecast year is in the file
-# name
 if DOMAIN_NAME == 'AFRICOM':
     TARGET_INFILE_TEMPLATE1 = \
         '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.AFRICA_'
@@ -74,9 +74,11 @@ elif DOMAIN_NAME == 'GLOBAL':
         '{}/????{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.GLOBAL_'
 
 TARGET_INFILE_TEMPLATE2 = \
-    'PA.LIS-S2S_DP.{:04d}{:02d}??-{:04d}{:02d}??_TP.0000-0000_DF.NC'
+    'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FP.{:04d}{:02d}??-{:04d}{:02d}??_DF.NC'
 TARGET_INFILE_TEMPLATE = TARGET_INFILE_TEMPLATE1 + TARGET_INFILE_TEMPLATE2
-CLIM_INFILE_TEMPLATE2 = 'PA.LIS-S2S_DP.*{:02d}??-*{:02d}??_TP.0000-0000_DF.NC'
+
+CLIM_INFILE_TEMPLATE2 = 'PA.ALL_DD.*{:02d}01_DT.0000_FP.*{:02d}??-*{:02d}??_DF.NC'
+
 CLIM_INFILE_TEMPLATE = CLIM_INFILE_TEMPLATE1 + CLIM_INFILE_TEMPLATE2
 ## String in this format allows the select all the files for the given month
 
@@ -92,10 +94,12 @@ for var_name in METRIC_VARS:
                     relativedelta(months=lead+1)
         ## Adding 1 to lead to make sure the file read is from the month after
 
-        INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS,
-                                             FCST_INIT_MON, NMME_MODEL,
-                                             NMME_MODEL, \
+        INFILE = CLIM_INFILE_TEMPLATE.format(HINDCASTS, \
+                                             FCST_INIT_MON, NMME_MODEL, \
+                                             NMME_MODEL.upper(), \
+                                             FCST_INIT_MON, \
                                              smon.month, emon.month)
+
         infile1 = glob.glob(INFILE)
         print("[INFO] Reading forecast climatology")
 
@@ -123,9 +127,10 @@ for var_name in METRIC_VARS:
         emon1 = datetime(TARGET_YEAR, FCST_INIT_MON, FCST_INIT_DAY) + \
             relativedelta(months=lead+1)
 
-        INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS,
-                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL,
-                                               NMME_MODEL, \
+        INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS, \
+                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL, \
+                                               NMME_MODEL.upper(), \
+                                               TARGET_YEAR, FCST_INIT_MON, \
                                                smon1.year, smon1.month, \
                                                emon1.year, emon1.month)
 

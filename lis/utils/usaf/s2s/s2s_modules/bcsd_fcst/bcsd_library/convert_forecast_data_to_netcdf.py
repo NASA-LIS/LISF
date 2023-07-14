@@ -46,7 +46,7 @@ def _make_settings_dict(patched_timestring,
     }
     return settings
 
-def _wgrib2_to_netcdf(grib2_file):
+def wgrib2_to_netcdf(grib2_file):
     new_name = {
         'prate':'PRECTOT','sp':'PS','t2m':'T2M',
         'dlwrf':'LWS','dswrf':'SLRSF','sh2':'Q2M',
@@ -67,7 +67,7 @@ def _check_replace_missing (args):
     # read patch_files_list.txt
     patch_list = args['patchdir'] + '/patch_files_list.txt'
     df_ = pd.read_csv(patch_list, sep=',', engine='python',
-                     header=None, names=['Time','Bad','Replace'])
+                     header=0, names=['Time','Bad','Replace'])
     df_sort = df_.sort_values(by=['Time'])
     df_sort['Time'] = pd.to_datetime(df_sort['Time'],format='%Y%m%d%H')
 
@@ -85,7 +85,7 @@ def _check_replace_missing (args):
     # read replace file if need be
     if replace_file is not None:
         patch_file = args['patchdir'] + '/' + replace_file.strip()
-        ds_ = _wgrib2_to_netcdf (patch_file)
+        ds_ = wgrib2_to_netcdf (patch_file)
         print(f"[INFO] File not available: {args['subdaily_file']}")
         print(f"[INFO] Using alternate data: {patch_file}")
 
@@ -118,7 +118,7 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
         # If we reach this point, we assume the file is fine.
         print("[INFO] " + args['subdaily_file'])
         print("[INFO] File is normal.")
-        ds_ = _wgrib2_to_netcdf(args['subdaily_file'])
+        ds_ = wgrib2_to_netcdf(args['subdaily_file'])
 
     if args["varname"] == "wnd10m":
         u10 = magnitude(ds_.U10M, ds_.V10M)

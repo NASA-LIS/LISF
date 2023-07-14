@@ -11,6 +11,7 @@
 # 24 Sep 2021: Eric Kemp (SSAI), first version.
 # 27 Oct 2021: Eric Kemp/SSAI, address pylint string objections.
 # 29 Oct 2021: Eric Kemp/SSAI, add config file.
+# 02 Jun 2023: K. Arsenault, updated the s2spost filenaming conventions
 #
 #------------------------------------------------------------------------------
 """
@@ -74,7 +75,8 @@ def _submit_batch_jobs(args):
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
     from s2s_modules.shared import utils
 
-    # One batch job per month
+    # One batch job per month (call to run_s2spost_1month.py):
+    fcstdate = startdate
     curdate = startdate
     for _ in range(0, total_months):
         txt = "[INFO] Submitting batch job for"
@@ -83,6 +85,7 @@ def _submit_batch_jobs(args):
         cmd = "python"
         cmd += f" {scriptdir}/run_s2spost_1month.py"
         cmd += f" {configfile} {topdatadir}"
+        cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}"
         cmd += f" {curdate.year:04d}{curdate.month:02d} {model_forcing}"
         jobfile = job_name + '_' + model_forcing +  '_' + curdate.strftime("%Y") \
             + curdate.strftime("%m")+  '_run.j'
@@ -97,13 +100,13 @@ def _driver():
     """Main driver."""
     parser = argparse.ArgumentParser()
     parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
-    parser.add_argument('-m', '--fcst_mon', required=True, help='forecast end year')
+    parser.add_argument('-m', '--fcst_mon', required=True, help='initial forecast month')
     parser.add_argument('-c', '--configfile', required=True, help='config file name')
-    parser.add_argument('-j', '--jobname', required=True, help='job_name')
-    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
-    parser.add_argument('-H', '--hours', required=True, help='hours')
+    parser.add_argument('-j', '--jobname', required=True, help='SLURM job name')
+    parser.add_argument('-t', '--ntasks', required=True, help='number of SLURM tasks')
+    parser.add_argument('-H', '--hours', required=True, help='SLURM job hours')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
+    parser.add_argument('-M', '--nmme_model', required=True, help='NMME model')
 
     args = parser.parse_args()
     _submit_batch_jobs(args)

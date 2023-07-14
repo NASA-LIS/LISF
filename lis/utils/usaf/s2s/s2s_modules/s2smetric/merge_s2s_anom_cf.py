@@ -6,16 +6,15 @@
 #
 # PURPOSE:  Merge CF-convention S2S anomaly files into single file for sharing.
 #
-# REQUIREMENTS as of 27 Sep 2021:
-# * Python 3.8 or higher
-# * netCDF Operator (NCO) binaries version 5.0.1 or later.
+# REQUIREMENTS as of 28 May 2023:
+# * Python 3.9 or higher
 #
 # REFERENCES:
-# https://nco.sourceforge.net for NCO utilities documentation and source code.
 #
 # REVISION HISTORY:
 # 27 Sep 2021: Eric Kemp (SSAI), first version.
 # 30 Oct 2021: Eric Kemp/SSAI, added support for s2smetric config file.
+# 02 Jun 2023: K. Arsenault + S. Mahanama, updated 557 WW file names.
 #
 #------------------------------------------------------------------------------
 """
@@ -124,16 +123,16 @@ def _create_merged_metric_filename(output_dir, startdate, enddate,
     name += "/PS.557WW"
     name += "_SC.U"
     name += "_DI.C"
-    name += f"_GP.LIS-S2S-{model_forcing.upper()}-ANOM"
+    name += f"_GP.LIS-S2S-{model_forcing.upper()}"
     name += "_GR.C0P25DEG"
     if domain == 'AFRICOM':
         name += "_AR.AFRICA"
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
-    name += "_PA.LIS-S2S-ANOM"
-    name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+    name += "_PA.S2SMETRICS"
+    name += f"_DD.{startdate.year:04d}{startdate.month:02d}01"
+    name += f"_FP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
     name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-    name += "_TP.0000-0000"
     name += "_DF.NC"
     _check_filename_size(name)
     return name

@@ -55,11 +55,8 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     ncols = 3
     domain = plot_utils.dicts('boundary', region)
 
-    if standardized_anomaly:
-        load_table = 'L11W_'
-
     for var_name in config_["POST"]["metric_vars"]:
-        under_over = ['black', '#B404AE']
+        # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
@@ -67,25 +64,26 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             ldt_crop = plot_utils.crop(domain, ldt.lat, ldt.lon, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
-        levels = plot_utils.dicts('anom_levels', var_name)
-        if standardized_anomaly == 'Y':
+        # levels defaults
+        if standardized_anomaly  == 'Y':
             levels = plot_utils.dicts('anom_levels', 'standardized')
+        else:
+            levels = plot_utils.dicts('anom_levels', var_name)
 
-        if var_name in {'Air-T', 'Air_T'}:
-            load_table = 'L11W'
-            if USAF_COLORS and standardized_anomaly is None:
+        # colors defualts
+        load_table = plot_utils.dicts('anom_tables', var_name)
+
+        # special cases
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'AirT'}:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
-        elif var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            load_table = '14WPR'
-            levels = plot_utils.dicts('anom_levels','Precip_AF')
+            elif var_name == 'Precip':
+                load_table = '14WPR'
+                levels = plot_utils.dicts('anom_levels','Precip_AF')
 
-            if USAF_COLORS and standardized_anomaly is None:
-                under_over = ['gray', 'blue']
-
-        else:
-            load_table = 'L11W_'
+        under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
@@ -98,7 +96,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
 
-        if (var_name in {'Air-T', 'Air_T'}) and \
+        if (var_name in {'AirT'}) and \
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
@@ -124,13 +122,14 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
 
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:
+            if var_name in {'AirT'}:
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
             elif var_name == 'Precip':
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'
 
         if standardized_anomaly == 'Y':
             clabel = 'Standardized Anomaly'
+
         cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
         plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
