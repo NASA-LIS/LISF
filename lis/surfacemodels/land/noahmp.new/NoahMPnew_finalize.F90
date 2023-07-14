@@ -10,8 +10,8 @@
 
 !BOP
 !
-! !ROUTINE: NoahMP401_finalize
-! \label{NoahMP401_finalize}
+! !ROUTINE: NoahMPnew_finalize
+! \label{NoahMPnew_finalize}
 !
 ! !REVISION HISTORY:
 !  This subroutine is generated with the Model Implementation Toolkit developed
@@ -19,16 +19,17 @@
 !  specification of the subroutine is defined by Sujay Kumar. 
 !
 !   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP401 with LIS-7
-!
+!  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+
 ! !INTERFACE:
-subroutine NoahMP401_finalize()
+subroutine NoahMPnew_finalize()
 ! !USES:
     use LIS_coreMod, only : LIS_rc
-    use NoahMP401_lsmMod
+    use NoahMPnew_lsmMod
 !
 ! !DESCRIPTION:
 !
-!  This routine cleans up the allocated memory structures in NoahMP401
+!  This routine cleans up the allocated memory structures in NoahMPnew
 !
 !EOP
     implicit none   
@@ -38,33 +39,31 @@ subroutine NoahMP401_finalize()
     do n=1, LIS_rc%nnest
         ! free memory allocated for each tile
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%shdfac_monthly)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%soilcomp)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%smc)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%sh2o)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%tslb)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%tsno)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%zss)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%snowice)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%snowliq)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%smoiseq)
-            deallocate(NOAHMP401_struc(n)%noahmp401(t)%gecros_state)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%shdfac_monthly)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%soilcomp)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%smc)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%sh2o)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%tslb)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%tsno)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%zss)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%snowice)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%snowliq)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%smoiseq)
         end do  ! tile loop
  
-        ! free memory for noahmp401, the data at tile level
-        deallocate(NOAHMP401_struc(n)%noahmp401)
+        ! free memory for noahmpnew, the data at tile level
+        deallocate(NoahMPnew_struc(n)%noahmpnew)
 
         ! free momory for constant parameter 
-        deallocate(NOAHMP401_struc(n)%sldpth)
+        deallocate(NoahMPnew_struc(n)%sldpth)
 
         ! free momory for initial state variable
-        deallocate(NOAHMP401_struc(n)%init_smc)
-        deallocate(NOAHMP401_struc(n)%init_tslb)
-        deallocate(NOAHMP401_struc(n)%init_gecros_state)
+        deallocate(NoahMPnew_struc(n)%init_smc)
+        deallocate(NoahMPnew_struc(n)%init_tslb)
         
     end do ! nest loop
   
-    deallocate(NOAHMP401_struc)
+    deallocate(NoahMPnew_struc)
  
-end subroutine NoahMP401_finalize
+end subroutine NoahMPnew_finalize
 

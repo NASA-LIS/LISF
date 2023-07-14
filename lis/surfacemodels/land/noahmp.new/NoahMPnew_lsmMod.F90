@@ -310,6 +310,7 @@ contains
                 allocate(NoahmpNew_struc(n)%noahmpnew(t)%snowice(NoahmpNew_struc(n)%nsnow))
                 allocate(NoahmpNew_struc(n)%noahmpnew(t)%snowliq(NoahmpNew_struc(n)%nsnow))
                 allocate(NoahmpNew_struc(n)%noahmpnew(t)%smoiseq(NoahmpNew_struc(n)%nsoil))
+                allocate(NoahmpNew_struc(n)%noahmpnew(t)%accetrani(NoahmpNew_struc(n)%nsoil))
             enddo
 
             ! initialize forcing variables to zeros

@@ -404,15 +404,15 @@ subroutine NoahMPnew_main(n)
             NoahmpIO%fastcpxy(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%fastcp
 
             ! additional accumulated variables
-            NoahmpIO%ACC_SSOILXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accssoil
-            NoahmpIO%ACC_QINSURXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accqinsur
-            NoahmpIO%ACC_QSEVAXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accqseva
-            NoahmpIO%ACC_ETRANIXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accetrani
-            NoahmpIO%ACC_DWATERXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accdwater
-            NoahmpIO%ACC_PRCPXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accprcp
-            NoahmpIO%ACC_ECANXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accecan
-            NoahmpIO%ACC_ETRANXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accetran
-            NoahmpIO%ACC_EDIRXY (1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accedir
+            NoahmpIO%ACC_SSOILXY(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%accssoil
+            NoahmpIO%ACC_QINSURXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accqinsur
+            NoahmpIO%ACC_QSEVAXY(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%accqseva
+            NoahmpIO%ACC_ETRANIXY(1,:,1) = NoahMPnew_struc(n)%noahmpnew(t)%accetrani(:)
+            NoahmpIO%ACC_DWATERXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accdwater
+            NoahmpIO%ACC_PRCPXY(1,1)     = NoahMPnew_struc(n)%noahmpnew(t)%accprcp
+            NoahmpIO%ACC_ECANXY(1,1)     = NoahMPnew_struc(n)%noahmpnew(t)%accecan
+            NoahmpIO%ACC_ETRANXY(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%accetran
+            NoahmpIO%ACC_EDIRXY (1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%accedir
 
 ! DMM - If dynamic vegetation option DVEG = 7, 8, or 9 for "input LAI",
 ! then send LAI/SAI from input to the Noah-MP physics.  If any
@@ -583,15 +583,15 @@ subroutine NoahMPnew_main(n)
             NoahMPnew_struc(n)%noahmpnew(t)%sfcheadrt = NoahmpIO%sfcheadrt(1,1)
 
             ! additional accumulated variables
-            NoahMPnew_struc(n)%noahmpnew(t)%accssoil  = NoahmpIO%ACC_SSOILXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accqinsur = NoahmpIO%ACC_QINSURXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accqseva  = NoahmpIO%ACC_QSEVAXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accetrani = NoahmpIO%ACC_ETRANIXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accdwater = NoahmpIO%ACC_DWATERXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accprcp   = NoahmpIO%ACC_PRCPXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accecan   = NoahmpIO%ACC_ECANXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accetran  = NoahmpIO%ACC_ETRANXY(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%accedir   = NoahmpIO%ACC_EDIRXY (1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accssoil     = NoahmpIO%ACC_SSOILXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accqinsur    = NoahmpIO%ACC_QINSURXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accqseva     = NoahmpIO%ACC_QSEVAXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accetrani(:) = NoahmpIO%ACC_ETRANIXY(1,:,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accdwater    = NoahmpIO%ACC_DWATERXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accprcp      = NoahmpIO%ACC_PRCPXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accecan      = NoahmpIO%ACC_ECANXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accetran     = NoahmpIO%ACC_ETRANXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accedir      = NoahmpIO%ACC_EDIRXY (1,1)
 
             ! for irrigation
             if (NoahmpIO%IOPT_IRR > 0) then

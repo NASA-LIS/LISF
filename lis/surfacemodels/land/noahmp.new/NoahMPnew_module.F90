@@ -489,7 +489,7 @@ module NoahMPnew_module
         real               :: accssoil
         real               :: accqinsur
         real               :: accqseva
-        real               :: accetrani
+        real, pointer      :: accetrani(:)
         real               :: accdwater
         real               :: accprcp
         real               :: accecan
