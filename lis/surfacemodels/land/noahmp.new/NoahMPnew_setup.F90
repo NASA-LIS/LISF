@@ -264,6 +264,53 @@ subroutine NoahMPnew_setup()
             enddo 
         endif 
 
+        ! CH 05/01/2023: for MMF groundwater
+        if(NOAHMPnew_struc(n)%runsub_opt == 5) then
+            ! read: efolding depth for transmissivity (m)
+            write(LIS_logunit,*) &
+             "[INFO] Noah-MP.New reading parameter FDEPTH from ", &
+             trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_fdepth), placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMPnew_struc(n)%noahmpnew(t)%fdepth = placeholder(col, row)
+            enddo
+
+            ! read: equilibrium water table depth (m)
+            write(LIS_logunit,*) &
+             "[INFO] Noah-MP.New reading parameter EQZWT from ", &
+             trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_eqzwt), placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMPnew_struc(n)%noahmpnew(t)%eqzwt = placeholder(col, row)
+            enddo
+
+            ! read: riverbed depth (m)
+            write(LIS_logunit,*) &
+             "[INFO] Noah-MP.New reading parameter RIVERBED from ", &
+             trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_riverbed), placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMPnew_struc(n)%noahmpnew(t)%riverbed = placeholder(col, row)
+            enddo
+
+            ! read: climatology recharge
+            write(LIS_logunit,*) &
+             "[INFO] Noah-MP.New reading parameter RECHCLIM from ", &
+             trim(LIS_rc%paramfile(n))
+            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_rechclim), placeholder)
+            do t = 1, LIS_rc%npatch(n, mtype)
+                col = LIS_surface(n, mtype)%tile(t)%col
+                row = LIS_surface(n, mtype)%tile(t)%row
+                NOAHMPnew_struc(n)%noahmpnew(t)%rechclim = placeholder(col, row)
+            enddo
+        endif
+
         !----------------------------------------------!
         ! MULTILEVEL reading spatial spatial parameters !
         !----------------------------------------------!

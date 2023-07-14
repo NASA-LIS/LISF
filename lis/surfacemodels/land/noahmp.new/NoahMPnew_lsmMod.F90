@@ -181,6 +181,10 @@ module NoahMPnew_lsmMod
         character*128      :: LDT_ncvar_mifract
         character*128      :: LDT_ncvar_fifract
         character*128      :: LDT_ncvar_tdfract
+        character*128      :: LDT_ncvar_fdepth
+        character*128      :: LDT_ncvar_eqzwt
+        character*128      :: LDT_ncvar_rechclim
+        character*128      :: LDT_ncvar_riverbed
 
         !-------------------------------------------------------------------------
         ! ts, Count, rstInterval, outInterval
@@ -310,16 +314,46 @@ contains
 
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                NoahmpNew_struc(n)%noahmpnew(t)%lwdown = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%swdown = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%psurf  = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%prcp   = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%tair   = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%qair   = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%wind_e = 0.0
-                NoahmpNew_struc(n)%noahmpnew(t)%wind_n = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%lwdown    = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%swdown    = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%psurf     = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%prcp      = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%tair      = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%qair      = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%wind_e    = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%wind_n    = 0.0
                 NoahmpNew_struc(n)%noahmpnew(t)%sfcheadrt = 0.0
-
+                NoahmpNew_struc(n)%noahmpnew(t)%irnumsi   = 0
+                NoahmpNew_struc(n)%noahmpnew(t)%irnummi   = 0
+                NoahmpNew_struc(n)%noahmpnew(t)%irnumfi   = 0
+                NoahmpNew_struc(n)%noahmpnew(t)%irwatsi   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irwatmi   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irwatfi   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irsivol   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irmivol   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irfivol   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%ireloss   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irrsplh   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%qtdrain   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accssoil  = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accqinsur = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accqseva  = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accetrani = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accdwater = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accprcp   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accecan   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accetran  = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%accedir   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%sfcrunoff = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%udrrunoff = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%deeprech  = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%rech      = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%acsnom    = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%acsnow    = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%irfract   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%sifract   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%mifract   = 0.0
+                NoahmpNew_struc(n)%noahmpnew(t)%fifract   = 0.0
                 !ag(05Jan2021)
                 NoahmpNew_struc(n)%noahmpnew(t)%rivsto = 0.0
                 NoahmpNew_struc(n)%noahmpnew(t)%fldsto = 0.0

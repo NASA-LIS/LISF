@@ -103,7 +103,8 @@ subroutine noahmp_driver_new(n, NoahmpIO, LISparam)
   call calc_declin(nowdate(1:4)//"-"//nowdate(5:6)//"-"//nowdate(7:8)//"_"//nowdate(9:10)//":"//nowdate(11:12)//":00", &
        NoahmpIO%xlat(1,1), NoahmpIO%xlon(1,1), NoahmpIO%coszen(1,1), NoahmpIO%yearlen, NoahmpIO%julian)
 
-  NoahmpIO%YR = locyr
+  read(nowdate(1:4), '(I4)') NoahmpIO%YR
+
   if ((NoahmpIO%IOPT_DVEG .eq. 1).or.(NoahmpIO%IOPT_DVEG .eq. 6).or.(NoahmpIO%IOPT_DVEG .eq. 7)) then
     ! with dveg_opt==1/6/7, shdfac is fed directly to fveg
     NoahmpIO%vegfra(1,1) = month_d_new(shdfac_monthly(1,:,1), nowdate)
@@ -150,143 +151,9 @@ subroutine noahmp_driver_new(n, NoahmpIO, LISparam)
   ! main NoahMP driver physics
   call NoahmpDriverMain(NoahmpIO,LISparam)
 
-  
-  ! Added by Zhuo Wang and Shugong on 10/30/2018
-  tsk = tskinout(1,1)
-  hfx = hfxinout(1,1)
-  qfx = qfxinout(1,1)
-  lh  = lhinout(1,1)
-  grdflx = grdflxinout(1,1)
-  smstav = smstavinout(1,1)
-  smstot = smstotinout(1,1)
-  sfcrunoff = sfcrunoffinout(1,1)
-  udrunoff  = udrunoffinout(1,1)
-! albedo    = albedoinout(1,1)
-  albedo    = albedoout(1,1)
-  snowc  = snowcinout(1,1)
-  smc(:) = smcinout(1,:,1) 
-  sh2o(:) = sh2oinout(1,:,1)
-  tslb(:) = tslbinout(1,:,1)
-  sneqv = sneqvinout(1,1)
-  snowh = snowhinout(1,1)
-  canwat = canwatinout(1,1)
-  acsnom = acsnominout(1,1)
-  acsnow = acsnowinout(1,1)
-  emiss = emissinout(1,1)
-  qsfc = qsfcinout(1,1)
-  isnow = isnowinout(1,1)
-  tv = tvinout(1,1)
-  tg = tginout(1,1)
-  canice = caniceinout(1,1)
-  canliq = canliqinout(1,1)
-  eah = eahinout(1,1)
-  tah = tahinout(1,1)
-  cm = cminout(1,1)
-  ch = chinout(1,1)
-  fwet = fwetinout(1,1)
-  sneqvo = sneqvoinout(1,1)
-  albold = alboldinout(1,1)
-  qsnow = qsnowinout(1,1)
-  wslake = wslakeinout(1,1)
-  zwt = zwtinout(1,1)
-  wa = wainout(1,1)
-  wt = wtinout(1,1)
+end subroutine noahmp_driver_new
 
-  ! Modified by Zhuo Wang on 12/31/2018 
-  tsnow(-nsnow+1:0) = tsnowinout(1,-nsnow+1:0,1)
-  zsnso(-nsnow+1:nsoil) = zsnsoinout(1,-nsnow+1:nsoil,1)
-  snice(-nsnow+1:0) = sniceinout(1,-nsnow+1:0,1)
-  snliq(-nsnow+1:0) = snliqinout(1,-nsnow+1:0,1)
-  tsno(1:nsnow)       = tsnow(-nsnow+1:0) 
-  zss(1:nsnow+nsoil)  = zsnso(-nsnow+1:nsoil) 
-  snowice(1:nsnow)    = snice(-nsnow+1:0)     
-  snowliq(1:nsnow)    = snliq(-nsnow+1:0)   
-
-  lfmass = lfmassinout(1,1)
-  rtmass = rtmassinout(1,1)
-  stmass = stmassinout(1,1)
-  wood = woodinout(1,1)
-  stblcp = stblcpinout(1,1)
-  fastcp = fastcpinout(1,1)
-  lai = laiinout(1,1)
-  sai = saiinout(1,1)
-  tauss = taussinout(1,1)
-  smoiseq(:) = smoiseqinout(1,:,1)
-  smcwtd = smcwtdinout(1,1)
-  deeprech = deeprechinout(1,1)
-  rech = rechinout(1,1)
-  grain = graininout(1,1)
-  gdd = gddinout(1,1)
-  pgs = pgsinout(1,1)
-  gecros_state(:) = gecros_stateinout(1,:,1)
-  t2mv = t2mvout(1,1)
-  t2mb = t2mbout(1,1)
-  q2mv = q2mvout(1,1)
-  q2mb = q2mbout(1,1)
-  trad = tradout(1,1)
-  nee = neeout(1,1)
-  gpp = gppout(1,1)
-  npp = nppout(1,1)
-  fveg = fvegout(1,1)
-  runsf = runsfout(1,1)
-  runsb = runsbout(1,1)
-  ecan = ecanout(1,1)
-  edir = edirout(1,1)
-  etran = etranout(1,1)
-  fsa = fsaout(1,1)
-  fira = firaout(1,1)
-  apar = aparout(1,1)
-  psn = psnout(1,1)
-  sav = savout(1,1)
-  sag = sagout(1,1)
-  rssun = rssunout(1,1)
-  rssha = rsshaout(1,1)
-  bgap = bgapout(1,1)
-  wgap = wgapout(1,1)
-  tgv = tgvout(1,1)
-  tgb = tgbout(1,1)
-  chv = chvout(1,1)
-  chb = chbout(1,1)
-  shg = shgout(1,1)
-  shc = shcout(1,1)
-  shb = shbout(1,1)
-  evg = evgout(1,1)
-  evb = evbout(1,1)
-  ghv = ghvout(1,1)
-  ghb = ghbout(1,1)
-  irg = irgout(1,1)
-  irc = ircout(1,1)
-  irb = irbout(1,1)
-  tr = trout(1,1)
-  evc = evcout(1,1)
-  chleaf = chleafout(1,1)
-  chuc = chucout(1,1)
-  chv2 = chv2out(1,1)
-  chb2 = chb2out(1,1)
-  relsmc(:) = relsmcout(1,:,1)
-  rs = rsout(1,1)
-
-  rainf = prcp * (1.0 - fpice)/dt  ! added by Shugong for LIS output 
-  snowf = prcp * fpice/dt          ! added by Shugong for LIS output 
-  fgev_pet = fgev_petout(1,1)      ! 08/30/2021 Shugong 
-  fcev_pet = fcev_petout(1,1)
-  fctr_pet = fctr_petout(1,1)
-
-#ifndef WRF_HYDRO
-  INFXSRT  = 0.0
-  soldrain = 0.0
-#endif
-
-  deallocate(zsoil)
-  deallocate(zsnso)
-
-  deallocate(snice)
-  deallocate(snliq)
-  deallocate(tsnow)   ! Added by Zhuo Wang and Shugong Wang on 10/30/2018
-
-end subroutine noahmp_driver_401
-
-real function month_d_401(a12, nowdate) result (nowval)
+real function month_d_new(a12, nowdate) result (nowval)
   !
   ! Given a set of 12 values, taken to be valid on the fifteenth of each month (Jan through Dec)
   ! and a date in the form <YYYYMMDD[HHmmss]> ....
@@ -294,7 +161,7 @@ real function month_d_401(a12, nowdate) result (nowval)
   ! Return a value valid for the day given in <nowdate>, as an interpolation from the 12
   ! monthly values.
   !
-  use kwm_date_utilities_401
+  use kwm_date_utilities_new
   implicit none
   real, dimension(12), intent(in) :: a12 ! 12 monthly values, taken to be valid on the 15th of
   !                                      ! the month
@@ -329,10 +196,10 @@ real function month_d_401(a12, nowdate) result (nowval)
 
   nowval = a12(prevm)*(1.0-factor) + a12(postm)*factor
 
-end function month_d_401 
+end function month_d_new 
 
-SUBROUTINE calc_declin_401 ( nowdate, latitude, longitude, cosz, yearlen, julian)
-  use kwm_date_utilities_401 
+SUBROUTINE calc_declin ( nowdate, latitude, longitude, cosz, yearlen, julian)
+  use kwm_date_utilities_new 
 !---------------------------------------------------------------------
   IMPLICIT NONE
 !---------------------------------------------------------------------
@@ -419,10 +286,10 @@ SUBROUTINE calc_declin_401 ( nowdate, latitude, longitude, cosz, yearlen, julian
 !KWM10 FORMAT(1X,'*** SOLAR DECLINATION ANGLE = ',F6.2,' DEGREES.',' ***')
 !KWM   CALL wrf_debug (50, wrf_err_message)
 
-END SUBROUTINE calc_declin_401 
+END SUBROUTINE calc_declin
 
 ! Subroutine SNOW_INIT grabbed from NOAH-MP-WRF
-SUBROUTINE SNOW_INIT_401 ( jts, jtf, its, itf, ims, ime, jms, jme, NSNOW, NSOIL, ZSOIL,  &
+SUBROUTINE SNOW_INIT_new ( jts, jtf, its, itf, ims, ime, jms, jme, NSNOW, NSOIL, ZSOIL,  &
      SWE, tgxy, SNODEP, ZSNSOXY, TSNOXY, SNICEXY, SNLIQXY, ISNOWXY)
 
 ! ------------------------------------------------------------------------------------------
@@ -507,4 +374,4 @@ SUBROUTINE SNOW_INIT_401 ( jts, jtf, its, itf, ims, ime, jms, jme, NSNOW, NSOIL,
      END DO
   END DO
 
-END SUBROUTINE SNOW_INIT_401
+END SUBROUTINE SNOW_INIT_new

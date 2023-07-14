@@ -7,7 +7,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-module kwm_date_utilities_401
+module kwm_date_utilities_new
 contains
   subroutine geth_newdate (ndate, odate, idt)
     implicit none
@@ -819,4 +819,4 @@ contains
        nmdays = ndays(month)
     endif
   end function nmdays
-end module kwm_date_utilities_401
+end module kwm_date_utilities_new

@@ -443,13 +443,58 @@ module NoahMPnew_module
         real               :: lai
         real               :: sai
         real               :: tauss
+        real               :: grain
+        real               :: gdd
+        integer            :: pgs
+        ! for mmf groundwater
         real, pointer      :: smoiseq(:)
         real               :: smcwtd
         real               :: deeprech
         real               :: rech
-        real               :: grain
-        real               :: gdd
-        integer            :: pgs
+        real               :: pexp
+        real               :: area
+        real               :: qrf
+        real               :: qspring
+        real               :: qslat
+        real               :: qrfs
+        real               :: qsprings
+        real               :: fdepth
+        real               :: rivercond
+        real               :: riverbed
+        real               :: eqzwt
+        real               :: rechclim
+        real               :: rivermask
+        real               :: nonriver
+        ! for irrigation
+        integer            :: irnumsi
+        integer            :: irnummi
+        integer            :: irnumfi
+        real               :: irfract
+        real               :: sifract
+        real               :: mifract
+        real               :: fifract
+        real               :: irwatsi
+        real               :: irwatmi
+        real               :: irwatfi
+        real               :: ireloss
+        real               :: irrsplh
+        real               :: irsivol
+        real               :: irmivol
+        real               :: irfivol
+        ! for tile drainage
+        real               :: tdfract
+        real               :: qtdrain
+        real               :: qtdrainflx
+        ! for water budget with different soil time step
+        real               :: accssoil
+        real               :: accqinsur
+        real               :: accqseva
+        real               :: accetrani
+        real               :: accdwater
+        real               :: accprcp
+        real               :: accecan
+        real               :: accetran
+        real               :: accedir
         !ag (05Jan2021)
         ! 2-way coupling parameters
         real               :: rivsto

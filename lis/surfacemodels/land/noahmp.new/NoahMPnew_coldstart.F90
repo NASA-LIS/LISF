@@ -244,7 +244,7 @@ subroutine NoahMPnew_coldstart(mtype)
             tgxy(1,1) = NoahmpNew_struc(n)%init_tskin
             tmp_snodep(1,1) = NoahmpNew_struc(n)%init_snowh
 
-            call snow_init_401(1, 1, 1, 1, 1, 1, 1, 1,           & !input 
+            call snow_init_new(1, 1, 1, 1, 1, 1, 1, 1,           & !input 
                               NoahmpNew_struc(n)%nsnow,          & !input 
                               NoahmpNew_struc(n)%nsoil,          & !input 
                               zsoil,                             & !input

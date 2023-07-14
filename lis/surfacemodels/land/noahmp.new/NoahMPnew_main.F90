@@ -318,6 +318,52 @@ subroutine NoahMPnew_main(n)
                NoahmpIO%soilcomp(1,:,1) = NoahMPnew_struc(n)%noahmpnew(t)%soilcomp(:)
             endif
 
+            ! for irrigation
+            if (NoahmpIO%IOPT_IRR > 0) then
+               NoahmpIO%irnumsi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irnumsi
+               NoahmpIO%irnummi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irnummi
+               NoahmpIO%irnumfi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irnumfi
+               NoahmpIO%irfract(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irfract
+               NoahmpIO%sifract(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%sifract
+               NoahmpIO%mifract(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%mifract
+               NoahmpIO%fifract(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%fifract
+               NoahmpIO%irwatsi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irwatsi
+               NoahmpIO%irwatmi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irwatmi
+               NoahmpIO%irwatfi(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irwatfi
+               NoahmpIO%ireloss(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%ireloss
+               NoahmpIO%irrsplh(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irrsplh
+               NoahmpIO%irsivol(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irsivol
+               NoahmpIO%irmivol(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irmivol
+               NoahmpIO%irfivol(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%irfivol
+            endif
+
+            ! for tile drainage
+            if (NoahmpIO%IOPT_TDRN > 0) then
+               NoahmpIO%tdfract(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%tdfract
+               NoahmpIO%qtdrain(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%qtdrain
+               NoahmpIO%qtdrainflx(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx
+            endif
+
+            ! for MMF groundwater
+            if (NoahmpIO%IOPT_RUNSUB == 5) then
+               NoahmpIO%fdepthxy(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%fdepth
+               NoahmpIO%msftx(1,1)       = 1.0
+               NoahmpIO%msfty(1,1)       = 1.0
+               NoahmpIO%eqzwt(1,1)       = NoahMPnew_struc(n)%noahmpnew(t)%eqzwt
+               NoahmpIO%riverbedxy(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%riverbed
+               NoahmpIO%rivercondxy(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%rivercond
+               NoahmpIO%pexpxy(1,1)      = NoahMPnew_struc(n)%noahmpnew(t)%pexp
+               NoahmpIO%areaxy(1,1)      = NoahMPnew_struc(n)%noahmpnew(t)%area
+               NoahmpIO%qrfsxy(1,1)      = NoahMPnew_struc(n)%noahmpnew(t)%qrfs
+               NoahmpIO%qspringxy(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%qspring
+               NoahmpIO%qrfxy(1,1)       = NoahMPnew_struc(n)%noahmpnew(t)%qrf
+               NoahmpIO%qspringsxy(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%qsprings
+               NoahmpIO%qslatxy(1,1)     = NoahMPnew_struc(n)%noahmpnew(t)%qslat
+               NoahmpIO%rechclim(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%rechclim
+               NoahmpIO%rivermask(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%rivermask
+               NoahmpIO%nonriverxy(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%nonriver 
+            endif
+
             ! get state variables
             NoahmpIO%sfcrunoff(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%sfcrunoff
             NoahmpIO%udrunoff(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%udrrunoff
@@ -356,6 +402,18 @@ subroutine NoahMPnew_main(n)
             NoahmpIO%woodxy(1,1)      = NoahMPnew_struc(n)%noahmpnew(t)%wood
             NoahmpIO%stblcpxy(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%stblcp
             NoahmpIO%fastcpxy(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%fastcp
+
+            ! additional accumulated variables
+            NoahmpIO%ACC_SSOILXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accssoil
+            NoahmpIO%ACC_QINSURXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accqinsur
+            NoahmpIO%ACC_QSEVAXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accqseva
+            NoahmpIO%ACC_ETRANIXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accetrani
+            NoahmpIO%ACC_DWATERXY(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%accdwater
+            NoahmpIO%ACC_PRCPXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accprcp
+            NoahmpIO%ACC_ECANXY(1,1)   = NoahMPnew_struc(n)%noahmpnew(t)%accecan
+            NoahmpIO%ACC_ETRANXY(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accetran
+            NoahmpIO%ACC_EDIRXY (1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%accedir
+
 ! DMM - If dynamic vegetation option DVEG = 7, 8, or 9 for "input LAI",
 ! then send LAI/SAI from input to the Noah-MP physics.  If any
 ! tile has an undefined LAI/SAI value, instead use the value from the
@@ -520,8 +578,56 @@ subroutine NoahMPnew_main(n)
             NoahMPnew_struc(n)%noahmpnew(t)%chuc      = NoahmpIO%chucxy(1,1)
             NoahMPnew_struc(n)%noahmpnew(t)%chv2      = NoahmpIO%chv2xy(1,1)
             NoahMPnew_struc(n)%noahmpnew(t)%chb2      = NoahmpIO%chb2xy(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%infxs1rt  = NoahmpIO%infxs1rt(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%soldrain1rt  = NoahmpIO%soldrain1rt(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%infxs1rt  = NoahmpIO%infxsrt(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%soldrain1rt  = NoahmpIO%soldrain(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%sfcheadrt = NoahmpIO%sfcheadrt(1,1)
+
+            ! additional accumulated variables
+            NoahMPnew_struc(n)%noahmpnew(t)%accssoil  = NoahmpIO%ACC_SSOILXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accqinsur = NoahmpIO%ACC_QINSURXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accqseva  = NoahmpIO%ACC_QSEVAXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accetrani = NoahmpIO%ACC_ETRANIXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accdwater = NoahmpIO%ACC_DWATERXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accprcp   = NoahmpIO%ACC_PRCPXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accecan   = NoahmpIO%ACC_ECANXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accetran  = NoahmpIO%ACC_ETRANXY(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%accedir   = NoahmpIO%ACC_EDIRXY (1,1)
+
+            ! for irrigation
+            if (NoahmpIO%IOPT_IRR > 0) then
+               NoahMPnew_struc(n)%noahmpnew(t)%irnumsi = NoahmpIO%irnumsi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irnummi = NoahmpIO%irnummi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irnumfi = NoahmpIO%irnumfi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irwatsi = NoahmpIO%irwatsi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irwatmi = NoahmpIO%irwatmi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irwatfi = NoahmpIO%irwatfi(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%ireloss = NoahmpIO%ireloss(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irrsplh = NoahmpIO%irrsplh(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irsivol = NoahmpIO%irsivol(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irmivol = NoahmpIO%irmivol(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%irfivol = NoahmpIO%irfivol(1,1)
+            endif
+
+            ! for tile drainage
+            if (NoahmpIO%IOPT_TDRN > 0) then
+               NoahMPnew_struc(n)%noahmpnew(t)%qtdrain    = NoahmpIO%qtdrain(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx = NoahmpIO%qtdrainflx(1,1)  
+            endif
+
+            ! for MMF groundwater
+            if (NoahmpIO%IOPT_RUNSUB == 5) then
+               NoahMPnew_struc(n)%noahmpnew(t)%fdepth    = NoahmpIO%fdepthxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%eqzwt     = NoahmpIO%eqzwt(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%riverbed  = NoahmpIO%riverbedxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%rivercond = NoahmpIO%rivercondxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%pexp      = NoahmpIO%pexpxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%area      = NoahmpIO%areaxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%qrfs      = NoahmpIO%qrfsxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%qspring   = NoahmpIO%qspringxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%qrf       = NoahmpIO%qrfxy(1,1)  
+               NoahMPnew_struc(n)%noahmpnew(t)%qsprings  = NoahmpIO%qspringsxy(1,1)
+               NoahMPnew_struc(n)%noahmpnew(t)%qslat     = NoahmpIO%qslatxy(1,1)
+            endif
 
             ! EMK Update RHMin for 557WW
             if (NoahmpIO%T_PHY(1,1,1) .lt. &
