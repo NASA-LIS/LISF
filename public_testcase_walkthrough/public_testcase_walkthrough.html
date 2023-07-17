@@ -438,8 +438,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <div id="header">
 <h1>LIS Public Testcase Walkthrough</h1>
 <div class="details">
-<span id="revnumber">version 1.0,</span>
-<span id="revdate">September 23, 2022</span>
+<span id="revnumber">version 1.1,</span>
+<span id="revdate">June 26, 2023</span>
 <br><span id="revremark">Updated for LISF Public 7.4 release</span>
 </div>
 </div>
@@ -527,7 +527,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </div>
 <div id="clone-lis" class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% git clone -b support/lisf-public-7.3 git@github.com:NASA-LIS/LISF.git
+<pre class="highlight"><code class="language-shell" data-lang="shell">% git clone -b support/lisf-public-7.4 github:NASA-LIS/LISF.git
 % cd LISF</code></pre>
 </div>
 </div>
@@ -538,7 +538,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-The <code>support/lisf-public-7.3</code> branch is known to be compatible with the testcase files. The <code>master</code> branch may contain changes to the LISF source code that break compatibility with the testcase files. We therefore recommend using the support branch while working through these testcases.
+The <code>support/lisf-public-7.4</code> branch is known to be compatible with the testcase files. The <code>master</code> branch may contain changes to the LISF source code that break compatibility with the testcase files. We therefore recommend using the support branch while working through these testcases.
 </td>
 </tr>
 </table>
@@ -549,11 +549,23 @@ The <code>support/lisf-public-7.3</code> branch is known to be compatible with t
 <div class="paragraph">
 <p>For information about configuration settings and detailed compilation instructions, see the <a href="https://github.com/NASA-LIS/LISF/tree/master/docs" target="_blank" rel="noopener">LISF Users' Guides</a>. In general, the compilation process for each component is as follows:</p>
 </div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+As you run these testcases, you will have the opportunity to compare your output to TARGET_OUTPUT files or "solutions".  The TARGET_OUTPUT files were created by running ldt, lis, and lvt compiled with <strong>default</strong> compile configuration settings.  For this walkthrough, it is recommended that you also use default compiler configuration settings.
+</td>
+</tr>
+</table>
+</div>
 <div id="compile-example" class="listingblock">
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">% cd ldt
 % ./configure
-> # Select compile configuration settings (see Docs)...
+> # Select compile configuration settings (Default settings recommended.)
 % ./compile
 > # Compilation output...
 % mv LDT ../../            # move executable up into $WORKING_DIR
@@ -565,6 +577,9 @@ The <code>support/lisf-public-7.3</code> branch is known to be compatible with t
 </div>
 <div class="paragraph">
 <p>Change directories back into your <code>$WORKING_DIR</code> which should now contain three executable files: <code>LDT</code>, <code>LIS</code>, <code>LVT</code>.</p>
+</div>
+<div class="paragraph">
+<p>If you ever wish to generate new executable files, <code>cd</code> into <code>/LISF/l??/make</code> and run <code>gmake realclean</code>.  This will clear all dependency files and allow you to cleanly define new compile configuration settings and recompile.</p>
 </div>
 </div>
 </div>
@@ -618,7 +633,7 @@ These testcases were designed to be run in sequential order and later steps requ
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>350MB</strong> compressed and <strong>4.1GB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>350MB</strong> compressed and <strong>4.2GB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -628,8 +643,8 @@ The tar file for this step is approximately <strong>350MB</strong> compressed an
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase1_ldt_parms_2020.tar.gz
-% tar -xzf testcase1_ldt_parms_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase1_ldt_parms_2023.tar.gz
+% tar -xzf testcase1_ldt_parms_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -738,7 +753,7 @@ Landcover spatial transform:       tile
 </td>
 <td class="content">
 <div class="paragraph">
-<p>LISF configuration files use relative paths to describe file locations. Keep this in mind if you encounter any file not found errors.</p>
+<p>LISF configuration files use relative paths to describe file locations. Keep this in mind if you encounter any "file not found" errors.</p>
 </div>
 </td>
 </tr>
@@ -826,7 +841,19 @@ Landcover spatial transform:       tile
 </div>
 </div>
 <div class="paragraph">
-<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>:</p>
+<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the terminal reports the error "./LDT: symbol lookup error:", this may be due extraneous modules loaded into your environement that do not allow lis to run properly. View your modules using the command <code>module list</code>.  If extraneous modules are loaded, run <code>module purge</code> to clear your environment and then <code>module load [lisf module file]</code> to load an environment suitable to running LISF.  See the "discover_quick_start" document in the <a href="https://github.com/NASA-LIS/LISF/tree/master/docs" target="_blank" rel="noopener">LISF Users' Guides</a> for more information.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -836,6 +863,32 @@ Landcover spatial transform:       tile
   Finished LDT run
  --------------------------------</code></pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>ldt, lis, and lvt can also be run by submitting batch jobs using SLURM (<strong>S</strong>imple <strong>L</strong>inux <strong>U</strong>tility for <strong>R</strong>esource <strong>M</strong>anagement).  If you are running this tutorial on Discover, you can download example batch scripts for all steps from the <a href="https://lis.gsfc.nasa.gov/tests/lis">LIS Testcase website</a> using the following command:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase_batch_scripts.tar.gz
+% tar -xzf testcase_batch_scripts.tar.gz -C .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The batch scripts (<code>step*.job</code>) will unpack into the appropriate directories. To submit a job to discover using a batch script, use the command <code>sbatch [BATCH SCRIPT]</code> from the same directory as the job you wish to run.  The command <code>squeue -u [YOUR USER ID]</code> will provide updates on your job. If the job crashes, troubleshoot using any <code>slurm.out</code> files.</p>
+</div>
+<div class="paragraph">
+<p>See the <a href="https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm/submit-jobs">NCCS Discover Jobs Users' Guide</a> for more information.</p>
+</div>
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect2">
@@ -855,11 +908,11 @@ Landcover spatial transform:       tile
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>ldtlog.0000</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The runtime configuration file read by LDT in this stepThe output diagnostic file that provides runtime messages, including warnings and error messages. This file is useful for verifying successful run completion and troubleshooting unsuccessful runs.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">The output diagnostic file that provides runtime messages, including warnings and error messages. This file is useful for verifying successful run completion and troubleshooting unsuccessful runs.</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>MaskParamFill.log</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">The "target" NetCDF file generated by LDT in this step. This diagnostic file informs of any disagreements between an LSM-based parameter and the landmask, and whether any parameter gridcells were "filled" to agree with the landmask.</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">This diagnostic file informs of any disagreements between an LSM-based parameter and the landmask, and whether any parameter gridcells were "filled" to agree with the landmask.</p></td>
 </tr>
 </tbody>
 </table>
@@ -878,7 +931,7 @@ The output filenames for <code>lis_input.nldas.noah36.d01.nc</code> and <code>ld
 <div class="sect3">
 <h4 id="_the_lis_parameter_file">The LIS Parameter File</h4>
 <div class="paragraph">
-<p>The contents of the LIS parameter input file produced by LDT can be examined visually using a command-line program such as <a href="http://meteora.ucsd.edu/~pierce/ncview_home_page.html" target="_blank" rel="noopener"><code>ncview</code></a> or a desktop application like NASA&#8217;s <a href="https://www.giss.nasa.gov/tools/panoply/" target="_blank" rel="noopener">Panoply</a>. For this walkthrough we will be using <code>ncview</code>.</p>
+<p>The contents of the LIS parameter input file produced by LDT can be examined visually using a command-line program such as <a href="http://meteora.ucsd.edu/~pierce/ncview_home_page.html" target="_blank" rel="noopener"><code>ncview</code></a> or a desktop application like NASA&#8217;s <a href="https://www.giss.nasa.gov/tools/panoply/" target="_blank" rel="noopener">Panoply</a>. For this walkthrough we will be using <code>ncview</code>. If needed, add <code>ncview</code> to your environment by running, <code>module load ncview</code>.</p>
 </div>
 <div class="paragraph">
 <p>Open the LIS input file using <code>ncview</code>:</p>
@@ -1042,7 +1095,7 @@ global attributes:
 <i class="fa icon-note" title="Note"></i>
 </td>
 <td class="content">
-The <code>nccmp</code> command will be used in future steps. Going forward, some files may not be identical, but any differences reported <em>should</em> be small.
+The <code>nccmp</code> command will be used in future steps. Going forward, some files may not be identical, but any differences reported <em>should</em> be small. Also note: in this step, the target lis input file was generated using <code>Soil texture spatial transform: mode</code>
 </td>
 </tr>
 </table>
@@ -1094,7 +1147,7 @@ The <code>nccmp</code> command will be used in future steps. Going forward, some
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>67MB</strong> compressed and <strong>250MB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>65MB</strong> compressed and <strong>343MB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -1104,8 +1157,8 @@ The tar file for this step is approximately <strong>67MB</strong> compressed and
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase2_lis_ol_2020.tar.gz
-% tar -xzf testcase2_lis_ol_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase2_lis_ol_2023.tar.gz
+% tar -xzf testcase2_lis_ol_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1191,13 +1244,13 @@ The tar file for this step is approximately <strong>67MB</strong> compressed and
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>If needed, install <code>wget</code>.</p>
+<p>If needed, install <code>wget</code></p>
 </li>
 <li>
-<p>Create a <a href="https://urs.earthdata.nasa.gov/users/new">NASA Earthdata</a> account if you do not already have one.</p>
+<p>Create a <a href="https://urs.earthdata.nasa.gov/users/new">NASA Earthdata</a> account if you do not already have one</p>
 </li>
 <li>
-<p>Follow steps 1-4 in <a href="https://disc.gsfc.nasa.gov/data-access#mac_linux_wget">these instructions</a> to save your NASA Earthdata login credentials locally.</p>
+<p>Follow steps 1-3 in <a href="https://disc.gsfc.nasa.gov/data-access#mac_linux_wget">these instructions</a> to save your NASA Earthdata login credentials locally</p>
 </li>
 </ol>
 </div>
@@ -1280,7 +1333,7 @@ The tar file for this step is approximately <strong>67MB</strong> compressed and
 </table>
 </div>
 <div class="paragraph">
-<p>With a single processor the run should take approximately 20 minutes to complete. If the run fails, diagnose the issue by reviewing any errors that have printed to the terminal and by viewing the contents of <code>lislog</code> files (if any are present). If no errors appear and the run appears to have completed successfully, examine the end of any <code>lislog</code> files present to check for a confirmation message:</p>
+<p>With a single processor the run should take approximately 20 minutes to complete. If the run fails, diagnose the issue by reviewing any errors that have printed to the terminal and by viewing the contents of <code>lislog</code> files (located in the <code>log</code> directory as defined by line 42 of <code>lis.config_noah36_ol</code>). If no errors appear and the run appears to have completed successfully, examine the end of any <code>lislog</code> files present to check for a confirmation message:</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1385,7 +1438,7 @@ The tar file for this step is approximately <strong>67MB</strong> compressed and
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>77KB</strong> compressed and <strong>180KB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>97KB</strong> compressed and <strong>100KB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -1395,8 +1448,8 @@ The tar file for this step is approximately <strong>77KB</strong> compressed and
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase3_ldt_ensrst_2020.tar.gz
-% tar -xzf testcase3_ldt_ensrst_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase3_ldt_ensrst_2023.tar.gz
+% tar -xzf testcase3_ldt_ensrst_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1495,7 +1548,19 @@ Number of ensembles per tile (output restart):  12</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>:</p>
+<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the terminal reports the error "./LDT: symbol lookup error:", this may be due extraneous modules loaded into your environement that do not allow lis to run properly. View your modules using the command <code>module list</code>.  If extraneous modules are loaded, run <code>module purge</code> to clear your environment and then <code>module load [lisf module file]</code> to load an environment suitable to running LISF.  See the "discover_quick_start" document in the <a href="https://github.com/NASA-LIS/LISF/tree/master/docs" target="_blank" rel="noopener">LISF Users' Guides</a> for more information.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1513,7 +1578,7 @@ Number of ensembles per tile (output restart):  12</code></pre>
 <p>During this run, LDT produced one output file named <code>LIS_EnRST_NOAH36_201801010000.d01.nc</code> and placed it into the <code>$WORKING_DIR/DA_ensrst</code> directory.</p>
 </div>
 <div class="paragraph">
-<p>Use <code>ncview</code>, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the <em>target</em> version of this output file, also located in <code>$WORKING_DIR/D_ensrst</code>. Additionally, you can use <code>nccmp</code> to directly compare the contents of the file created by your LDT run and the target.</p>
+<p>Use <code>ncview</code>, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the <em>target</em> version of this output file, also located in <code>$WORKING_DIR/DA_ensrst</code>. Additionally, you can use <code>nccmp</code> to directly compare the contents of the file created by your LDT run and the target. If there are differences between your file and the target file, you can use <code>ncdiff</code> to create a new NetCDF file to visualize the differences.</p>
 </div>
 </div>
 </div>
@@ -1568,7 +1633,7 @@ Number of ensembles per tile (output restart):  12</code></pre>
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>362KB</strong> compressed and <strong>815KB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>384KB</strong> compressed and <strong>803KB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -1578,8 +1643,8 @@ The tar file for this step is approximately <strong>362KB</strong> compressed an
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase4_ldt_lsmcdf_2020.tar.gz
-% tar -xzf testcase4_ldt_lsmcdf_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase4_ldt_lsmcdf_2023.tar.gz
+% tar -xzf testcase4_ldt_lsmcdf_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1696,7 +1761,19 @@ LIS soil moisture domain resolution (dy):   0.25</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>:</p>
+<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the terminal reports the error "./LDT: symbol lookup error:", this may be due extraneous modules loaded into your environement that do not allow lis to run properly. View your modules using the command <code>module list</code>.  If extraneous modules are loaded, run <code>module purge</code> to clear your environment and then <code>module load [lisf module file]</code> to load an environment suitable to running LISF.  See the "discover_quick_start" document in the <a href="https://github.com/NASA-LIS/LISF/tree/master/docs" target="_blank" rel="noopener">LISF Users' Guides</a> for more information.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -1744,7 +1821,7 @@ LIS soil moisture domain resolution (dy):   0.25</code></pre>
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>4.5GB</strong> compressed and <strong>5.3GB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>4.6GB</strong> compressed and <strong>9.1GB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -1754,8 +1831,8 @@ The tar file for this step is approximately <strong>4.5GB</strong> compressed an
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase5_ldt_obscdf_2020.tar.gz
-% tar -xzf testcase5_ldt_obscdf_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase5_ldt_obscdf_2023.tar.gz
+% tar -xzf testcase5_ldt_obscdf_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1884,7 +1961,7 @@ SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <i class="conum" 
 </tr>
 <tr>
 <td><i class="conum" data-value="4"></i><b>4</b></td>
-<td>Averaging interval used while computing CDF. In this case, one day.</td>
+<td>Averaging interval used while computing the CDF. In this case, one day.</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="5"></i><b>5</b></td>
@@ -1929,7 +2006,19 @@ SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <i class="conum" 
 </div>
 </div>
 <div class="paragraph">
-<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>:</p>
+<p>The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of <code>ldtlog.0000</code>. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the <code>ldtlog.0000</code>.</p>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<i class="fa icon-note" title="Note"></i>
+</td>
+<td class="content">
+If the terminal reports the error "./LDT: symbol lookup error:", this may be due extraneous modules loaded into your environement that do not allow lis to run properly. View your modules using the command <code>module list</code>.  If extraneous modules are loaded, run <code>module purge</code> to clear your environment and then <code>module load [lisf module file]</code> to load an environment suitable to running LISF.  See the "discover_quick_start" document in the <a href="https://github.com/NASA-LIS/LISF/tree/master/docs" target="_blank" rel="noopener">LISF Users' Guides</a> for more information.
+</td>
+</tr>
+</table>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2041,7 +2130,7 @@ Files "cdf_smapobs_domain.nc" and "target_cdf_smapobs_domain.nc" are identical.<
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>80MB</strong> compressed and <strong>220MB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>80MB</strong> compressed and <strong>327MB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -2051,8 +2140,8 @@ The tar file for this step is approximately <strong>80MB</strong> compressed and
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase6_lis_da_2020.tar.gz
-% tar -xzf testcase6_lis_da_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase6_lis_da_2023.tar.gz
+% tar -xzf testcase6_lis_da_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2135,7 +2224,7 @@ The tar file for this step is approximately <strong>80MB</strong> compressed and
 <p>Review the contents of <code>lis.config_noah36_smapda</code> to view the configuration settings used for the DA run:</p>
 </div>
 <div class="listingblock">
-<div class="title">Restart options</div>
+<div class="title">Restart options:</div>
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">...
 Start mode:                                restart <i class="conum" data-value="1"></i><b>(1)</b>
@@ -2150,7 +2239,7 @@ Noah.3.6 restart file:                    ./DA_ensrst/LIS_EnRST_NOAH36_201801010
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Select "restart" mode to use a restart file (compare with coldstart mode).</td>
+<td>Select "restart" mode to use a restart file (as opposed to "coldstart" mode).</td>
 </tr>
 <tr>
 <td><i class="conum" data-value="2"></i><b>2</b></td>
@@ -2163,7 +2252,7 @@ Noah.3.6 restart file:                    ./DA_ensrst/LIS_EnRST_NOAH36_201801010
 </table>
 </div>
 <div class="listingblock">
-<div class="title">Data assimilation options</div>
+<div class="title">Data assimilation options:</div>
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">...
 Number of data assimilation instances:               1
@@ -2183,7 +2272,7 @@ Data assimilation output innovations:                1
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Scaling strategy options</div>
+<div class="title">Scaling strategy options:</div>
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">...
 Data assimilation scaling strategy:         "CDF matching"
@@ -2198,7 +2287,7 @@ Bias estimation restart file:
 </div>
 </div>
 <div class="listingblock">
-<div class="title">Perturbation options</div>
+<div class="title">Perturbation options:</div>
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">...
 Perturbations start mode:                 "coldstart"
@@ -2239,7 +2328,7 @@ Observation perturbation attributes file: ./DA_INPUT/smap_pertattribs.txt</code>
 </table>
 </div>
 <div class="listingblock">
-<div class="title">Observation data options</div>
+<div class="title">Observation data options:</div>
 <div class="content">
 <pre class="highlight"><code class="language-shell" data-lang="shell">SMAP(NASA) soil moisture data designation:       SPL3SMP
 SMAP(NASA) soil moisture data directory:        ./RS_DATA/SMAP/SPL3SMP.005
@@ -2414,6 +2503,7 @@ LIS Run completed.</code></pre>
 <div class="content">
 <img src="./images/step_6_output_example.png" alt="step 6 output example">
 </div>
+<div class="title"><code>SoilMoist_tavg</code> variable in <code>LIS_HIST_201701010600.d01.nc</code></div>
 </div>
 </div>
 <div class="sect2">
@@ -2442,7 +2532,7 @@ LIS Run completed.</code></pre>
 <i class="fa icon-caution" title="Caution"></i>
 </td>
 <td class="content">
-The tar file for this step is approximately <strong>150KB</strong> compressed and <strong>700KB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
+The tar file for this step is approximately <strong>481KB</strong> compressed and <strong>7.2MB</strong> unpacked. Ensure that you have enough storage available before downloading testcase files.
 </td>
 </tr>
 </table>
@@ -2452,8 +2542,8 @@ The tar file for this step is approximately <strong>150KB</strong> compressed an
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase7_lvt_expcomp_2020.tar.gz
-% tar -xzf testcase7_lvt_expcomp_2020.tar.gz -C .</code></pre>
+<pre class="highlight"><code class="language-shell" data-lang="shell">% curl -O https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/testcase7_lvt_expcomp_2023.tar.gz
+% tar -xzf testcase7_lvt_expcomp_2023.tar.gz -C .</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -2662,8 +2752,8 @@ LIS DAOBS observation type:   "soil moisture"
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 1.0<br>
-Last updated 2023-07-14 22:28:43 UTC
+Version 1.1<br>
+Last updated 2023-07-17 19:01:17 UTC
 </div>
 </div>
 </body>
