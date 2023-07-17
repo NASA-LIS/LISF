@@ -1,9 +1,9 @@
 = Step 3: Ensemble Restart File Generation (LDT)
 
 :step-label: Step 3
-:download-filename: testcase3_ldt_ensrst_2020.tar.gz
-:input-filesize-compressed: 77KB
-:input-filesize-unpacked: 180KB
+:download-filename: testcase3_ldt_ensrst_2023.tar.gz
+:input-filesize-compressed: 97KB
+:input-filesize-unpacked: 100KB
 
 :ldt-run-dir: DA_ensrst
 :ldt-config-filename: ldt.config
@@ -85,6 +85,6 @@ include::running_ldt.adoc[]
 
 During this run, LDT produced one output file named `LIS_EnRST_NOAH36_201801010000.d01.nc` and placed it into the `$WORKING_DIR/DA_ensrst` directory.
 
-Use `ncview`, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the _target_ version of this output file, also located in `$WORKING_DIR/D_ensrst`. Additionally, you can use `nccmp` to directly compare the contents of the file created by your LDT run and the target.
+Use `ncview`, Panoply, Matlab or any other viewing package that supports NetCDF files. Compare what you see with the _target_ version of this output file, also located in `$WORKING_DIR/DA_ensrst`. Additionally, you can use `nccmp` to directly compare the contents of the file created by your LDT run and the target. If there are differences between your file and the target file, you can use `ncdiff` to create a new NetCDF file to visualize the differences. 
 
 // TODO: ADD EXAMPLES HERE

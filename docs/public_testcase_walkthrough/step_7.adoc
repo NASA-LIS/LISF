@@ -1,9 +1,9 @@
 = Step 7: Comparison of OL and DA Experiments (LVT)
 
 :step-label: Step 7
-:download-filename: testcase7_lvt_expcomp_2020.tar.gz
-:input-filesize-compressed: 150KB
-:input-filesize-unpacked: 700KB
+:download-filename: testcase7_lvt_expcomp_2023.tar.gz
+:input-filesize-compressed: 481KB
+:input-filesize-unpacked: 7.2MB
 
 == Overview
 
