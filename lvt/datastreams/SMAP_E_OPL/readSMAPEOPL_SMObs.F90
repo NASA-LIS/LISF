@@ -321,7 +321,7 @@ subroutine read_SMAPEOPLsm_data(n, fname, smobs_inp, time)
      do c = 1, nlon
         if (tmp(c,r,1) >= 0 .and. &
              tmp(c,r,1) <= 1) then
-           sm_in(c + (r-1)*nc) = tmp(c,r,1)*100
+           sm_in(c + (r-1)*nc) = tmp(c,r,1) !*100  multiplying by 100 was a bug  
            sm_data_b(c + (r-1)*nc) = .true.
         end if
      end do

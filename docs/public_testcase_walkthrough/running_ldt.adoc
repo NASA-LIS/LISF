@@ -8,7 +8,9 @@ You're now ready to run LDT:
 % ./LDT {ldt-config-filename}
 ----
 
-The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of `ldtlog.0000`. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the `ldtlog.0000`:
+The run should take a few minutes to complete. If the run aborts, troubleshoot the issue by reviewing any errors printed to the terminal and by viewing the contents of `ldtlog.0000`. If no errors print to the terminal, verify that the run completed successfully by checking for the following confirmation at the end of the `ldtlog.0000`. 
+
+NOTE: If the terminal reports the error "./LDT: symbol lookup error:", this may be due extraneous modules loaded into your environement that do not allow lis to run properly. View your modules using the command `module list`.  If extraneous modules are loaded, run `module purge` to clear your environment and then `module load [lisf module file]` to load an environment suitable to running LISF.  See the "discover_quick_start" document in the {url-lisf-docs}[LISF Users' Guides,window=_blank] for more information.  
 
 [source,shell]
 ----

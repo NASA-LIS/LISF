@@ -218,7 +218,7 @@ contains
 
 9000 write (6, 8000) iofunc, istat
       
-    call abort ()
+    call LIS_endrun
   
   end subroutine LIS_abort
 
@@ -474,7 +474,7 @@ contains
 #if (defined SPMD) 
     call mpi_abort (LIS_mpi_comm, 1, ierr)
 #else
-    call abort
+    error stop 1
 #endif   
   end subroutine LIS_endrun
   end module LIS_logMod
