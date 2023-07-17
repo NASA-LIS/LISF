@@ -1,9 +1,9 @@
 = Step 5: Generate Observations CDF-based Files (LDT)
 
 :step-label: Step 5
-:download-filename: testcase5_ldt_obscdf_2020.tar.gz
-:input-filesize-compressed: 4.5GB
-:input-filesize-unpacked: 5.3GB
+:download-filename: testcase5_ldt_obscdf_2023.tar.gz
+:input-filesize-compressed: 4.6GB
+:input-filesize-unpacked: 9.1GB
 :ldt-run-dir: DA_proc_SMAP
 :ldt-config-filename: ldt.config.smapobs_cdf
 
@@ -83,7 +83,7 @@ SMAP(NASA) soil moisture Composite Release ID (e.g., R16): R16 <8>
 <1> _DA preprocessing_ mode is used to generate the observation domain and scaling parameters.
 <2> Prefix of output files (e.g., `cdf_smapobs_domain.nc`).
 <3> Temporal resolution of resultant CDF. Specifies whether to generate lumped (i.e., considering all years and all seasons) CDFs or to stratify CDFs for each calendar month.
-<4> Averaging interval used while computing CDF. In this case, one day.
+<4> Averaging interval used while computing the CDF. In this case, one day.
 <5> Relative path to the directory containing SMAP observation data.
 <6> Specifies which SMAP data product is being used.
 <7> Specifies the radius in which LDT searches to detect open water. Then removes all pixels within the radius in the CDF calculations.
