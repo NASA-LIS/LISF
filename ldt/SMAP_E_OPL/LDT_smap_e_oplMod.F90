@@ -18,7 +18,10 @@
 !  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
 !  14 Feb 2023: Eric Kemp, now uses USAFSI and USAF LIS output.
 !  22 Feb 2023: Eric Kemp, ensemble size now in ldt.config file.
-!
+!  01 Jul 2023: Mahdi Navari,This edit generates a separate SMAP_filelist  
+!                     for each LDT job based on user input. 
+!                     Now we can run several LDT jobs in the same directory.  
+!                             
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
@@ -41,7 +44,7 @@ module LDT_smap_e_oplMod
                             CLAYfile, Hfile, LCfile
     character*100        :: dailystats_ref, dailystats_lis
     character*10         :: date_curr
-    integer              :: L1BresampWriteOpt, L1Btype
+    integer              :: L1BresampWriteOpt, L1Btype, SMAPfilelistSuffixNumber
     integer              :: Teffscale
     integer              :: ntimes,ngrid
     real, allocatable    :: mu_6am_ref(:), mu_6pm_ref(:) !(ngrid)
@@ -106,6 +109,12 @@ contains
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%L1BresampWriteOpt, rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    cfg_entry = "SMAP_E_OPL filelist suffix number:"   
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%SMAPfilelistSuffixNumber, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     if(SMAPeOPL%L1BresampWriteOpt.eq.1) then
@@ -254,6 +263,7 @@ contains
     character*2             :: hh_01, mm_01, dd_01
     character*2             :: hh_02, mm_02, dd_02
     character*2             :: hh_03, mm_03, dd_03
+    character*2             :: tmp
     character*1             :: Orbit
     integer                 :: yr, mo, da, hr
     integer                 :: yr_pre, mo_pre, da_pre, hh_pre
@@ -273,7 +283,7 @@ contains
     type(ESMF_TimeInterval) :: deltatime
     integer :: deltahr
     integer :: rc
-
+  integer               :: col, row
     external :: readUSAFSI
     external :: readLIS_Teff_usaf
 
@@ -281,7 +291,7 @@ contains
 
     ! Resample SMAP L1B to L1C
     call search_SMAPL1B_files(SMAPeOPL%L1Bdir,SMAPeOPL%date_curr,&
-                              SMAPeOPL%L1Btype)
+                              SMAPeOPL%L1Btype, SMAPeOPL%SMAPfilelistSuffixNumber)
 
     yyyymmdd = SMAPeOPL%date_curr(1:8)
     yyyy     = SMAPeOPL%date_curr(1:4)
@@ -297,10 +307,11 @@ contains
           trim(SMAPeOPL%L1Bresampledir_02))
     endif
 
-    ftn = LDT_getNextUnitNumber()
-    open(unit=ftn, file='./SMAP_L1B_filelist.dat',&
-         status='old', iostat=ierr)
+    write (tmp,'(I2.2)') SMAPeOPL%SMAPfilelistSuffixNumber
 
+    ftn = LDT_getNextUnitNumber()
+    open(unit=ftn, file='./SMAP_L1B_filelist_'//tmp//'.dat',&
+         status='old', iostat=ierr)
     fi = 0
     do while (ierr .eq. 0)
        read (ftn, '(a)', iostat=ierr) fname
@@ -367,7 +378,6 @@ contains
              call ESMF_TimeSet(curtime, yy=yr, mm=mo, dd=da, h=hr, m=0, s=0, &
                   calendar=calendar, rc=rc)
              call LDT_verify(rc, '[ERR] in ESMF_TimeSet in LDT_smap_e_oplRun')
-
              ! Go back 24 hours
              call ESMF_TimeIntervalSet(deltatime, d=1, rc=rc)
              call LDT_verify(rc, &
@@ -441,7 +451,6 @@ contains
              yyyymmdd_01 = trim(yyyy_01)//trim(mm_01)//trim(dd_01)
              write(unit=hh_01, fmt='(i2.2)') hh_pre
              !hh_01 = hh
-
              !call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
              call readLIS_Teff_usaf(n, yyyymmdd_01, hh_01, Orbit, teff_01, rc)
              if (rc .ne. 0) then
@@ -502,7 +511,6 @@ contains
              write(unit=dd_02, fmt='(i2.2)') da_02
              write(unit=hh_02, fmt='(i2.2)') hr_02
              yyyymmdd_02 = trim(yyyy_02)//trim(mm_02)//trim(dd_02)
-
              !call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
              call readLIS_Teff_usaf(n, yyyymmdd_02, hh_02, Orbit, teff_02, rc)
              if (rc .ne. 0) then
@@ -518,7 +526,6 @@ contains
              write(unit=dd_03, fmt='(i2.2)') da_03
              write(unit=hh_03, fmt='(i2.2)') hr_03
              yyyymmdd_03 = trim(yyyy_03)//trim(mm_03)//trim(dd_03)
-
              !call readLIS_Teff(n,yyyymmdd_03,hh_03,Orbit,teff_03)
              call readLIS_Teff_usaf(n, yyyymmdd_03, hh_03, Orbit, teff_03, rc)
              if (rc .ne. 0) then
@@ -528,7 +535,6 @@ contains
              ! Scale LIS teff to GEOS teff climatology
              ! get DOY
              call get_doy(mo_pre,da_pre,doy_pre)
-
              if(SMAPeOPL%Teffscale.eq.1) then
                 ! get getattributes
                 call getattributes(SMAPeOPL%dailystats_ref,&
@@ -547,7 +553,6 @@ contains
                 allocate(SMAPeOPL%grid_row(SMAPeOPL%ngrid))
 
                 call read_DailyTeffStats(doy_pre)
-
                 ! scale
                 write (LDT_logunit,*) '[INFO] Scaling LIS effective soil temperature'
                 call scale_teff(n, Orbit, teff_01, teff_02, teff_03)
@@ -564,7 +569,6 @@ contains
                 deallocate(SMAPeOPL%grid_col)
                 deallocate(SMAPeOPL%grid_row)
              endif
-
              read_L1Bdata = .false.
 
   ! Get snow information from LIS outputs
@@ -595,30 +599,34 @@ contains
   end subroutine LDT_smap_e_oplRun
 
 
-  subroutine search_SMAPL1B_files(ndir,date_curr,L1Btype)
+  subroutine search_SMAPL1B_files(ndir,date_curr,L1Btype,suffix)
 
     implicit none
 ! !ARGUMENTS:
     character (len=*) :: ndir
     character (len=*) :: date_curr
-    integer           :: L1Btype
+    integer           :: L1Btype,suffix
 
 ! !Local variables
     character*8       :: yyyymmdd
     character*2       :: hh
+    character*2       :: tmp
     character*200     :: list_files
 
     yyyymmdd = date_curr(1:8)
     hh       = date_curr(9:10)
 
+    write (tmp,'(I2.2)') suffix
     if(L1Btype.eq.1) then   !NRT
        list_files = 'ls '//trim(ndir)//'/SMAP_L1B_TB_NRT_*'//&
                     trim(yyyymmdd)//'T'//trim(hh) &
-                    //"*.h5 > SMAP_L1B_filelist.dat"
+                    //'*.h5 > SMAP_L1B_filelist_'//trim(tmp)//'.dat'
+!                    //"*.h5 > SMAP_L1B_filelist.dat"
     elseif(L1Btype.eq.2) then   !Historical
        list_files = 'ls '//trim(ndir)//'/SMAP_L1B_TB_*'//&
                     trim(yyyymmdd)//'T'//trim(hh) &
-                    //"*.h5 > SMAP_L1B_filelist.dat"
+                    //'*.h5 > SMAP_L1B_filelist_'//trim(tmp)//'.dat'
+!                    //"*.h5 > SMAP_L1B_filelist.dat"
     endif
 
     call system(trim(list_files))

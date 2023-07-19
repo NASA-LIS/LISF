@@ -18,7 +18,11 @@
 !
 ! !REVISION HISTORY:
 !  14 FEB 2023: Eric Kemp, Initial Specification
-!
+!  1 July 2023: Mahdi Navari, Modified the code to read the unperturbed 
+!        ensemble. This is a temporary fix to overcome the bias in 
+!        soil temperature from a bug in SMAP soil moisture DA
+!        PR#1385
+! 
 ! !INTERFACE:
 subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
 ! !USES:
@@ -252,11 +256,18 @@ subroutine read_LIStsoil_data_usaf(n, ntiles, str_tind, ntiles_pergrid, nens, &
 
   ! Calculate ensemble mean in 2d grid space, for each soil layer
   do k = 1, SoilTemp_profiles
-     call calc_gridded_ensmean_1layer(n, ntiles, str_tind, ntiles_pergrid, &
+     !call calc_gridded_ensmean_1layer(n, ntiles, str_tind, ntiles_pergrid, &
+     !     nens, &
+     !     SoilTemp_inst_tiles(:,k), &
+     !     SoilTemp_inst_ensmean_1layer)
+
+     call calc_gridded_lastens_1layer(n, ntiles, str_tind, ntiles_pergrid, &
           nens, &
           SoilTemp_inst_tiles(:,k), &
-          SoilTemp_inst_ensmean_1layer)
-     do r = 1, LDT_rc%lnr(n)
+          SoilTemp_inst_ensmean_1layer) ! Note to minimize the code chnage: SoilTemp_inst_ensmean_1layer is actually
+                                        ! SoilTemp_inst_lastens_1layer (ens #12) 
+
+  do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
            if (SoilTemp_inst_ensmean_1layer(c,r) > 0) then
               tsoil(c,r,k) = SoilTemp_inst_ensmean_1layer(c,r)
@@ -322,39 +333,45 @@ subroutine calc_gridded_ensmean_1layer(n, ntiles, str_tind, ntiles_pergrid, &
   end if
 end subroutine calc_gridded_ensmean_1layer
 
-! ! Subroutine for extracting last ensemble member for a single soil layer,
-! ! from tiled data.
-! subroutine calc_gridded_lastens_1layer(n, gvar_tile, gvar)
+! Subroutine for extracting last ensemble member for a single soil layer,
+! from tiled data.
+ subroutine calc_gridded_lastens_1layer(n, ntiles, str_tind, ntiles_pergrid, &
+            nens, gvar_tile, gvar)
 
-!   ! Imports
-!   use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
+   ! Imports
+   use LDT_coreMod, only: LDT_rc, LDT_domain, LDT_masterproc
 
-!   ! Defaults
-!   implicit none
+   ! Defaults
+   implicit none
 
-!   ! Arguments
-!   integer, intent(in) :: n
-!   real, intent(in) :: gvar_tile(LDT_rc%glbntiles_red(n))
-!   real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
+   ! Arguments
+   integer, intent(in) :: n
+   integer, intent(in) :: ntiles
+   !real, intent(in) :: gvar_tile(LDT_rc%glbntiles_red(n))
+   integer, intent(in) :: str_tind(LDT_rc%gnc(n) * LDT_rc%gnr(n))
+   integer, intent(in) :: ntiles_pergrid(LDT_rc%gnc(n) * LDT_rc%gnr(n))
+   real, intent(out) :: gvar(LDT_rc%gnc(n), LDT_rc%gnr(n))
+   real, intent(in)  :: gvar_tile(ntiles)
+   integer, intent(in) :: nens
 
-!   ! Locals
-!   integer :: m, r, c, gid, stid, tid
+   ! Locals
+   integer :: m, r, c, gid, stid, tid
 
-!   if (LDT_masterproc) then
-!      gvar = 0
-!      do r = 1, LDT_rc%gnr(n)
-!         do c = 1, LDT_rc%gnc(n)
-!            gid = c + ((r-1) * LDT_rc%gnc(n))
-!            stid = LDT_domain(n)%str_tind(gid)
-!            if (LDT_domain(n)%ntiles_pergrid(gid) > 0) then
-!               m = LDT_rc%nensem(n)
-!               tid = stid + m - 1
-!               gvar(c,r) = gvar_tile(tid)
-!            end if
-!         end do
-!      end do
-!   end if
-! end subroutine calc_gridded_lastens_1layer
+   if (LDT_masterproc) then
+      gvar = 0
+      do r = 1, LDT_rc%gnr(n)
+         do c = 1, LDT_rc%gnc(n)
+            gid = c + ((r-1) * LDT_rc%gnc(n))
+            stid = str_tind(gid)
+            if (ntiles_pergrid(gid) > 0) then
+                    m = nens      
+               tid = stid + m - 1
+               gvar(c,r) = gvar_tile(tid)
+            end if
+         end do
+      end do
+   end if
+ end subroutine calc_gridded_lastens_1layer
 
 !BOP
 ! !ROUTINE: create_LISsoilT_filename_usaf
