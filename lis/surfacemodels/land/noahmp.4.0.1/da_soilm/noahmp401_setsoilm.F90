@@ -27,7 +27,8 @@
 !    value of the ensemble (i.e. mean of the members that met the conditions)
 ! 3- If less then 50% of the ensemble members met the update conditions --> 
 !    adjust the states    
-
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix
+!                           (add check for frozen soil)
 
 ! !INTERFACE:
 subroutine NoahMP401_setsoilm(n, LSM_State)
@@ -39,7 +40,7 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   !use module_sf_noahlsm_36  !MN
   !use module_sf_noahmpdrv_401, only: parameters
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE,SMCWLT_TABLE
-
+  use LIS_constantsMod, only  : LIS_CONST_TKFRZ
 
   implicit none
 ! !ARGUMENTS: 
@@ -142,7 +143,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
           noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.lt.&
-          sm_threshold) then 
+          sm_threshold .and.&
+         noahmp401_struc(n)%noahmp401(t)%tslb(1) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         ! MN save the flag for each tile (col*row*ens)   (64*44)*20
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
@@ -151,7 +153,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(2) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -159,7 +162,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(3) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -167,7 +171,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(4) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
