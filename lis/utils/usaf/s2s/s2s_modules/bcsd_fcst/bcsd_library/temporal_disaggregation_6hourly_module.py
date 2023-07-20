@@ -26,14 +26,29 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
+PRECIP_THRES = limits.precip_thres
+
+CF2VAR = {
+    'PRECTOT': 'PRECTOT',
+    'LWGAB': 'LWS',
+    'SWGDN': 'SLRSF',
+    'PS': 'PS',
+    'QV2M':'Q2M',
+    'T2M': 'T2M',
+    'U10M': 'WIND',
+    }
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
+    global PRECIP_THRES
     output_bc_data = np.ones(len(input_raw_data))*-999
 
     if bc_var == 'PRCP':
-        if mon_raw_value == 0.:
+        if mon_raw_value < PRECIP_THRES:
             correction_factor = mon_bc_value
             ## HACK## for when input monthly value is 0
             output_bc_data[:] = correction_factor
@@ -237,6 +252,11 @@ for MON in [INIT_FCST_MON]:
 
             ### Finish correcting values for all timesteps in the given
             ### month and ensemble member
+            # clip limits
+            if OBS_VAR == 'PRECTOT':
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), missing=-999, precip=True)
+            else:
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), missing=-999)
             print(f"Now writing {OUTFILE}")
             OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
             mask=OUTPUT_BC_DATA == -999)
@@ -246,10 +266,10 @@ for MON in [INIT_FCST_MON]:
             if DOMAIN == 'AFRICOM':
                 write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 39.875, 59.875, -39.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 39.875, 59.875, -39.875, \
                                 -19.875, 0.25, 0.25, 21600)
             if DOMAIN == 'GLOBAL':
                 write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 89.875, 179.875, -89.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 89.875, 179.875, -89.875, \
                                 -179.875, 0.25, 0.25, 21600)

@@ -10,6 +10,60 @@ import numpy as np
 from bcsd_stats_functions import calc_stats, lookup
 # pylint: enable=import-error
 #
+
+class VarLimits:
+    '''
+    This function adjusts minimum and maximum values of a variable to recorded max and minimum.
+    Below limits are 6h based
+    '''
+    def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
+                    missing=None, min_thres=None, precip=None):
+        ''' Below limits are 6h based'''
+        min_limit={'PRECTOT': 1.e-8,
+                  'PS': 88000.,
+                  'T2M': 180.,
+                  'LWS': 10.,
+                  'SLRSF': 0.,
+                  'Q2M': 0.,
+                  'WIND': 0.
+        }
+
+        max_limit={'PRECTOT': 0.04,
+                  'PS': 110000.,
+                  'T2M': 332.,
+                  'LWS': 700.,
+                  'SLRSF': 1367.,
+                  'Q2M': 0.05,
+                  'WIND': 70.
+        }
+
+        if min_thres is not None:
+            return min_limit.get('PRECTOT')
+        if min_val is None:
+            min_val = min_limit.get(var_name)
+        if max_val is None:
+            max_val = max_limit.get(var_name)
+        if missing is None:
+            missing = -9999.
+
+        if precip is None:
+            clipped_array = np.where(data_array == missing, data_array,
+                                     np.clip(data_array, min_val, max_val))
+        else:
+            # mask identifies values that are less than min_val but not equal to missing
+            mask_lt_min = (data_array < min_val) & (data_array != missing)
+            data_array[mask_lt_min] = 0.
+
+            # mask identifies values that are greater than max_val but not equal to missing
+            mask_gt_max = (data_array > max_val) & (data_array != missing)
+            data_array[mask_gt_max] = max_val
+            clipped_array = data_array
+
+        return clipped_array
+
+    def __init__ (self):
+        self.precip_thres = self.clip_array(np.empty(1), 'PRECTOT', min_thres = True)
+
 def get_index(ref_array, my_value):
     """
       Function for extracting the index of a Numpy array (ref_array)

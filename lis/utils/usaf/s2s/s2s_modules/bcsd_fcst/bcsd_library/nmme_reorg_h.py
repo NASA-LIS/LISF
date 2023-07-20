@@ -23,7 +23,10 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -228,7 +231,7 @@ ds_out = xr.Dataset(
                 "lat": (["lat"], LATS),
                 "lon": (["lon"], LONS),
         })
-regridder = xe.Regridder(ds_in, ds_out, "bilinear", periodic=True)
+regridder = xe.Regridder(ds_in, ds_out, "conservative", periodic=True)
 ds_out = regridder(ds_in)
 
 YR = 1981
@@ -248,6 +251,7 @@ for y in range(0, 40):
                 os.makedirs(OUTDIR)
 
             XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
+            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.022, precip=True)
             LATS = np.nan_to_num(LATS, nan=-9999.)
             LONS = np.nan_to_num(LONS, nan=-9999.)
 
