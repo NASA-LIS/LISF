@@ -107,32 +107,32 @@ subroutine noahmp_driver_new(n, NoahmpIO, LISparam)
 
   if ((NoahmpIO%IOPT_DVEG .eq. 1).or.(NoahmpIO%IOPT_DVEG .eq. 6).or.(NoahmpIO%IOPT_DVEG .eq. 7)) then
     ! with dveg_opt==1/6/7, shdfac is fed directly to fveg
-    NoahmpIO%vegfra(1,1) = month_d_new(shdfac_monthly(1,:,1), nowdate)
+    NoahmpIO%vegfra(1,1) = month_d_new(NoahmpIO%shdfac_monthly(1,:,1), nowdate)
   else
     ! with dveg_opt==2/3/8, fveg is computed from lai and sai, and shdfac is unused
     ! with dveg_opt==4/5/9, fveg is set to the maximum shdfac, and shdfac is unused
     NoahmpIO%vegfra(1,1) = -1.E36   ! To match with HRLDAS initialization
   endif
-  NoahmpIO%gvfmax(1,1) = maxval(shdfac_monthly(1,:,1))
+  NoahmpIO%gvfmax(1,1) = maxval(NoahmpIO%shdfac_monthly(1,:,1))
 
   ! assign forcing variables 
-  NoahmpIO%dz8w(1,2,1)    = NoahmpIO%dz8w(1,1,1)
-  NoahmpIO%T_PHY(1,2,1)   = NoahmpIO%T_PHY(1,1,1)  
-  NoahmpIO%P8W(1,2,1)     = NoahmpIO%P8W(1,1,1)
-  NoahmpIO%QV_CURR(1,1,1) = NoahmpIO%QV_CURR(1,1,1)/&
-                            (1.0 - NoahmpIO%QV_CURR(1,1,1)) ! Convert specific humidity to water vapor mixing ratio
-  NoahmpIO%QV_CURR(1,2,1) = NoahmpIO%QV_CURR(1,1,1)
-  NoahmpIO%U_PHY(1,2,1)   = NoahmpIO%U_PHY(1,1,1)
-  NoahmpIO%V_PHY(1,2,1)   = NoahmpIO%V_PHY(1,1,1)
-  NoahmpIO%QSFC(1,1)      = NoahmpIO%QV_CURR(1,1,1)
-  NoahmpIO%SNOWBL         = 0.0
-  NoahmpIO%SR             = 0.0                              ! Will only use component if opt_snf=4
-  NoahmpIO%RAINCV         = 0.0
-  NoahmpIO%RAINNCV        = NoahmpIO%RAINBL
-  NoahmpIO%RAINSHV        = 0.0
-  NoahmpIO%SNOWNCV        = NoahmpIO%SNOWBL
-  NoahmpIO%GRAUPELNCV     = 0.0
-  NoahmpIO%HAILNCV        = 0.0
+  NoahmpIO%dz8w(1,2,1)     = NoahmpIO%dz8w(1,1,1)
+  NoahmpIO%T_PHY(1,2,1)    = NoahmpIO%T_PHY(1,1,1)  
+  NoahmpIO%P8W(1,2,1)      = NoahmpIO%P8W(1,1,1)
+  NoahmpIO%QV_CURR(1,1,1)  = NoahmpIO%QV_CURR(1,1,1)/&
+                             (1.0 - NoahmpIO%QV_CURR(1,1,1)) ! Convert specific humidity to water vapor mixing ratio
+  NoahmpIO%QV_CURR(1,2,1)  = NoahmpIO%QV_CURR(1,1,1)
+  NoahmpIO%U_PHY(1,2,1)    = NoahmpIO%U_PHY(1,1,1)
+  NoahmpIO%V_PHY(1,2,1)    = NoahmpIO%V_PHY(1,1,1)
+  NoahmpIO%QSFC(1,1)       = NoahmpIO%QV_CURR(1,1,1)
+  NoahmpIO%SNOWBL(1,1)     = 0.0
+  NoahmpIO%SR(1,1)         = 0.0                              ! Will only use component if opt_snf=4
+  NoahmpIO%RAINCV(1,1)     = 0.0
+  NoahmpIO%RAINNCV(1,1)    = NoahmpIO%RAINBL(1,1)
+  NoahmpIO%RAINSHV(1,1)    = 0.0
+  NoahmpIO%SNOWNCV(1,1)    = NoahmpIO%SNOWBL(1,1)
+  NoahmpIO%GRAUPELNCV(1,1) = 0.0
+  NoahmpIO%HAILNCV(1,1)    = 0.0
 
   ! If coupled to WRF, set these variables to realistic values,
   ! and then pass back to WRF after the call to noahmplsm_401.
@@ -288,90 +288,3 @@ SUBROUTINE calc_declin ( nowdate, latitude, longitude, cosz, yearlen, julian)
 
 END SUBROUTINE calc_declin
 
-! Subroutine SNOW_INIT grabbed from NOAH-MP-WRF
-SUBROUTINE SNOW_INIT_new ( jts, jtf, its, itf, ims, ime, jms, jme, NSNOW, NSOIL, ZSOIL,  &
-     SWE, tgxy, SNODEP, ZSNSOXY, TSNOXY, SNICEXY, SNLIQXY, ISNOWXY)
-
-! ------------------------------------------------------------------------------------------
-  IMPLICIT NONE
-! ------------------------------------------------------------------------------------------
-  INTEGER, INTENT(IN) :: jts,jtf,its,itf,ims,ime, jms,jme,NSNOW,NSOIL
-  REAL,    INTENT(IN), DIMENSION(ims:ime, jms:jme) :: SWE 
-  REAL,    INTENT(IN), DIMENSION(ims:ime, jms:jme) :: SNODEP
-  REAL,    INTENT(IN), DIMENSION(ims:ime, jms:jme) :: tgxy
-  REAL,    INTENT(IN), DIMENSION(1:NSOIL) :: ZSOIL
-
-  INTEGER, INTENT(OUT), DIMENSION(ims:ime, jms:jme) :: ISNOWXY
-  REAL,    INTENT(OUT), DIMENSION(ims:ime, -NSNOW+1:NSOIL,jms:jme) :: ZSNSOXY
-  REAL,    INTENT(OUT), DIMENSION(ims:ime, -NSNOW+1:    0,jms:jme) :: TSNOXY
-  REAL,    INTENT(OUT), DIMENSION(ims:ime, -NSNOW+1:    0,jms:jme) :: SNICEXY
-  REAL,    INTENT(OUT), DIMENSION(ims:ime, -NSNOW+1:    0,jms:jme) :: SNLIQXY
-
-!local
-  INTEGER :: I,J,IZ
-  REAL,                 DIMENSION(ims:ime, -NSNOW+1:    0,jms:jme) :: DZSNOXY
-  REAL,                 DIMENSION(ims:ime, -NSNOW+1:NSOIL,jms:jme) :: DZSNSOXY
-! ------------------------------------------------------------------------------------------
-
-
-  DO J = jts,jtf
-     DO I = its,itf
-        IF (SNODEP(I,J) < 0.025) THEN
-           ISNOWXY(I,J) = 0
-           DZSNOXY(I,-NSNOW+1:0,J) = 0.
-        ELSE
-           IF ((SNODEP(I,J) >= 0.025) .AND. (SNODEP(I,J) <= 0.05)) THEN
-              ISNOWXY(I,J)    = -1
-              DZSNOXY(I,0,J)  = SNODEP(I,J)
-           ELSE IF ((SNODEP(I,J) > 0.05) .AND. (SNODEP(I,J) <= 0.10)) THEN
-              ISNOWXY(I,J)    = -2
-              DZSNOXY(I,-1,J) = SNODEP(I,J)/2.
-              DZSNOXY(I, 0,J) = SNODEP(I,J)/2.
-           ELSE IF ((SNODEP(I,J) > 0.10) .AND. (SNODEP(I,J) <= 0.25)) THEN
-              ISNOWXY(I,J)    = -2
-              DZSNOXY(I,-1,J) = 0.05
-              DZSNOXY(I, 0,J) = SNODEP(I,J) - DZSNOXY(I,-1,J)
-           ELSE IF ((SNODEP(I,J) > 0.25) .AND. (SNODEP(I,J) <= 0.35)) THEN
-              ISNOWXY(I,J)    = -3
-              DZSNOXY(I,-2,J) = 0.05
-              DZSNOXY(I,-1,J) = 0.5*(SNODEP(I,J)-DZSNOXY(I,-2,J))
-              DZSNOXY(I, 0,J) = 0.5*(SNODEP(I,J)-DZSNOXY(I,-2,J))
-           ELSE IF (SNODEP(I,J) > 0.35) THEN
-              ISNOWXY(I,J)     = -3
-              DZSNOXY(I,-2,J) = 0.05
-              DZSNOXY(I,-1,J) = 0.10
-              DZSNOXY(I, 0,J) = SNODEP(I,J) - DZSNOXY(I,-1,J) - DZSNOXY(I,-2,J)
-           END IF
-        END IF
-     ENDDO
-  ENDDO
-
-  DO J = jts,jtf
-     DO I = its,itf
-        TSNOXY( I,-NSNOW+1:0,J) = 0.
-        SNICEXY(I,-NSNOW+1:0,J) = 0.
-        SNLIQXY(I,-NSNOW+1:0,J) = 0.
-        DO IZ = ISNOWXY(I,J)+1, 0
-           TSNOXY(I,IZ,J)  = tgxy(I,J)  ! [k]
-           SNLIQXY(I,IZ,J) = 0.00
-           SNICEXY(I,IZ,J) = 1.00 * DZSNOXY(I,IZ,J) * (SWE(I,J)/SNODEP(I,J))  ! [kg/m3]
-        END DO
-
-        DO IZ = ISNOWXY(I,J)+1, 0
-           DZSNSOXY(I,IZ,J) = -DZSNOXY(I,IZ,J)
-        END DO
-
-        DZSNSOXY(I,1,J) = ZSOIL(1)
-        DO IZ = 2,NSOIL
-           DZSNSOXY(I,IZ,J) = (ZSOIL(IZ) - ZSOIL(IZ-1))
-        END DO
-
-        ZSNSOXY(I,ISNOWXY(I,J)+1,J) = DZSNSOXY(I,ISNOWXY(I,J)+1,J)
-        DO IZ = ISNOWXY(I,J)+2 ,NSOIL
-           ZSNSOXY(I,IZ,J) = ZSNSOXY(I,IZ-1,J) + DZSNSOXY(I,IZ,J)
-        ENDDO
-
-     END DO
-  END DO
-
-END SUBROUTINE SNOW_INIT_new

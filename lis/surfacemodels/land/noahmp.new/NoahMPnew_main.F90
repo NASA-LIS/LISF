@@ -38,7 +38,6 @@ subroutine NoahMPnew_main(n)
     use LIS_FORC_AttributesMod
     use NoahMPnew_lsmMod
     use NoahmpIOVarType
-    use NoahmpIOVarInitMod, only : NoahmpIOVarInitDefault
 
     implicit none
 ! !ARGUMENTS:
@@ -83,35 +82,6 @@ subroutine NoahMPnew_main(n)
     ! check NoahMPnew alarm. If alarm is ring, run model.
 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMPnew model alarm")
-
-    ! initialize NoahmpIO 1-D variables
-    NoahmpIO%xstart = 1
-    NoahmpIO%xend   = 1
-    NoahmpIO%ystart = 1
-    NoahmpIO%yend   = 1
-    NoahmpIO%ids    = NoahmpIO%xstart
-    NoahmpIO%ide    = NoahmpIO%xend
-    NoahmpIO%jds    = NoahmpIO%ystart
-    NoahmpIO%jde    = NoahmpIO%yend
-    NoahmpIO%kds    = 1
-    NoahmpIO%kde    = 2
-    NoahmpIO%its    = NoahmpIO%xstart
-    NoahmpIO%ite    = NoahmpIO%xend
-    NoahmpIO%jts    = NoahmpIO%ystart
-    NoahmpIO%jte    = NoahmpIO%yend
-    NoahmpIO%kts    = 1
-    NoahmpIO%kte    = 2
-    NoahmpIO%ims    = NoahmpIO%xstart
-    NoahmpIO%ime    = NoahmpIO%xend
-    NoahmpIO%jms    = NoahmpIO%ystart
-    NoahmpIO%jme    = NoahmpIO%yend
-    NoahmpIO%kms    = 1
-    NoahmpIO%kme    = 2
-
-    NoahmpIO%NSOIL = NoahMPnew_struc(n)%nsoil
-    NoahmpIO%NSNOW = NoahMPnew_struc(n)%nsnow
-
-    call NoahmpIOVarInitDefault() ! initialize NoahmpIO to undefined/default value
 
     if (alarmCheck) Then
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -248,13 +218,13 @@ subroutine NoahMPnew_main(n)
             NoahmpIO%itimestep = LIS_rc%tscount(n)
 
             ! get parameters
-            NoahmpIO%dtbl         = NoahMPnew_struc(n)%ts
-            NoahmpIO%soiltstep    = NoahMPnew_struc(n)%ts_soil
-            NoahmpIO%dzs(:)       = NoahMPnew_struc(n)%sldpth(:)
-            NoahmpIO%nsoil        = NoahMPnew_struc(n)%nsoil
-            NoahmpIO%nsnow        = NoahMPnew_struc(n)%nsnow
-            NoahmpIO%ivgtyp(1,1)       = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
-            NoahmpIO%isltyp(1,1)       = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
+            NoahmpIO%dtbl               = NoahMPnew_struc(n)%ts
+            NoahmpIO%soiltstep          = NoahMPnew_struc(n)%ts_soil
+            NoahmpIO%dzs(:)             = NoahMPnew_struc(n)%sldpth(:)
+            NoahmpIO%nsoil              = NoahMPnew_struc(n)%nsoil
+            NoahmpIO%nsnow              = NoahMPnew_struc(n)%nsnow
+            NoahmpIO%ivgtyp(1,1)        = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
+            NoahmpIO%isltyp(1,1)        = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
             ! Multiply shdfac by 100.0 because noahmpdrv.f90
             ! expects it in units of percentage, not fraction.
             NoahmpIO%shdfac_monthly(1,:,1) = NoahMPnew_struc(n)%noahmpnew(t)%shdfac_monthly(:) * 100.0

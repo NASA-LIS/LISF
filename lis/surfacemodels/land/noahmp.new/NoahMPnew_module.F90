@@ -112,7 +112,7 @@ module NoahMPnew_module
 !   \item[pedo\_opt]
 !     soil pedotransfer function option. unit: -
 !   \item[crop\_opt]
-!     crop model option (0-$>$none; 1-$>$Liu et al.; 2-$>$Gecros). unit: -
+!     crop model option (0-$>$none; 1-$>$Liu et al.2016). unit: -
 !   \item[irr\_opt]
 !     irrigation scheme option (0->none; 1->always on; 2->trigger by planting/harvest dates; 3->trigger by LAI)
 !   \item[irrm\_opt]

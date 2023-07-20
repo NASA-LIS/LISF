@@ -31,6 +31,8 @@ subroutine NoahMPnew_setup()
     use LIS_fileIOMod, only: LIS_read_param!, LIS_convertParamDataToLocalDomain
     use LIS_coreMod,   only: LIS_rc, LIS_surface
     use NoahmpReadTableMod, only : NoahmpReadTable
+    use NoahmpIOVarInitMod, only : NoahmpIOVarInitDefault
+
 !
 ! !DESCRIPTION:
 !
@@ -81,18 +83,18 @@ subroutine NoahMPnew_setup()
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New retrieve parameter VEGETYPE from LIS"
             do t=1, LIS_rc%npatch(n, mtype)
-                NOAHMPnew_struc(n)%noahmpnew(t)%vegetype= LIS_surface(n, mtype)%tile(t)%vegt
+                NoahMPnew_struc(n)%noahmpnew(t)%vegetype= LIS_surface(n, mtype)%tile(t)%vegt
             enddo
         else 
             ! read: vegetype
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter VEGETYPE from ", &
                                    trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_vegetype), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_vegetype), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%vegetype = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%vegetype = placeholder(col, row)
             enddo
         endif
         ! soiltype takes value from the LIS built-in parameter soilt
@@ -101,213 +103,213 @@ subroutine NoahMPnew_setup()
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New retrieve parameter SOILTYPE from LIS"
             do t=1, LIS_rc%npatch(n, mtype)
-                NOAHMPnew_struc(n)%noahmpnew(t)%soiltype= LIS_surface(n, mtype)%tile(t)%soilt
+                NoahMPnew_struc(n)%noahmpnew(t)%soiltype= LIS_surface(n, mtype)%tile(t)%soilt
             enddo
         else 
             ! read: soiltype
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter SOILTYPE from ", &
                                    trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_soiltype), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_soiltype), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%soiltype = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%soiltype = placeholder(col, row)
             enddo 
         endif
         ! read: tbot
         write(LIS_logunit,*) &
          "[INFO] Noah-MP.New reading parameter TBOT from ", &
                                trim(LIS_rc%paramfile(n))
-        call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_tbot), placeholder)
+        call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_tbot), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
             col = LIS_surface(n, mtype)%tile(t)%col
             row = LIS_surface(n, mtype)%tile(t)%row
-            NOAHMPnew_struc(n)%noahmpnew(t)%tbot = placeholder(col, row)
+            NoahMPnew_struc(n)%noahmpnew(t)%tbot = placeholder(col, row)
         enddo
 
         !!! SW 11/06/2018 
-        if(NOAHMPnew_struc(n)%crop_opt .ne.0) then 
+        if(NoahMPnew_struc(n)%crop_opt > 0) then 
             ! read: planting
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter PLANTING from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_planting), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_planting), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%planting = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%planting = placeholder(col, row)
             enddo 
 
             ! read: harvest
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter HARVEST from ",&
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_harvest), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_harvest), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%harvest = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%harvest = placeholder(col, row)
             enddo 
 
             ! read: season_gdd
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SEASON_GDD from ", &
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_season_gdd), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_season_gdd), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%season_gdd = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%season_gdd = placeholder(col, row)
             enddo 
         endif
 
         ! CH 05/01/2023: for irrigation
-        if(NOAHMPnew_struc(n)%irr_opt > 0) then
+        if(NoahMPnew_struc(n)%irr_opt > 0) then
             ! read: total irrigation fraction
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter IRFRACT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_irfract), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_irfract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%irfract = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%irfract = placeholder(col, row)
             enddo
 
             ! read: sprinkler irrigation fraction
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter SIFRACT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_sifract), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_sifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%sifract = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%sifract = placeholder(col, row)
             enddo
 
             ! read: micro/drip irrigation fraction
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter MIFRACT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_mifract), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_mifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%mifract = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%mifract = placeholder(col, row)
             enddo
 
             ! read: flood irrigation fraction
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter FIFRACT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_fifract), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_fifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%fifract = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%fifract = placeholder(col, row)
             enddo
         endif
 
         ! CH 05/01/2023: for tile drainage
-        if(NOAHMPnew_struc(n)%tdrn_opt > 0) then
+        if(NoahMPnew_struc(n)%tdrn_opt > 0) then
             ! read: tile drainage fraction
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter TDFRACT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_tdfract), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_tdfract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%tdfract = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%tdfract = placeholder(col, row)
             enddo
         endif
  
         !!! SW 11/06/2018 
-        if(NOAHMPnew_struc(n)%soil_opt .eq. 2) then 
+        if(NoahMPnew_struc(n)%soil_opt .eq. 2) then 
             ! read: soilcL1
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SOILCL1 from ", &
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_soilcL1), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_soilcL1), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%soilcl1 = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%soilcl1 = placeholder(col, row)
             enddo 
 
             ! read: soilcL2
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SOILCL2 from ", &
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_soilcL2), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_soilcL2), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%soilcl2 = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%soilcl2 = placeholder(col, row)
             enddo 
 
             ! read: soilcL3
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SOILCL3 from ", &
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_soilcL3), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_soilcL3), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%soilcl3 = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%soilcl3 = placeholder(col, row)
             enddo 
 
             ! read: soilcL4
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SOILCL4 from ", &
                  trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_soilcL4), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_soilcL4), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%soilcl4 = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%soilcl4 = placeholder(col, row)
             enddo 
         endif 
 
         ! CH 05/01/2023: for MMF groundwater
-        if(NOAHMPnew_struc(n)%runsub_opt == 5) then
+        if(NoahMPnew_struc(n)%runsub_opt == 5) then
             ! read: efolding depth for transmissivity (m)
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter FDEPTH from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_fdepth), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_fdepth), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%fdepth = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%fdepth = placeholder(col, row)
             enddo
 
             ! read: equilibrium water table depth (m)
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter EQZWT from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_eqzwt), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_eqzwt), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%eqzwt = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%eqzwt = placeholder(col, row)
             enddo
 
             ! read: riverbed depth (m)
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter RIVERBED from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_riverbed), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_riverbed), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%riverbed = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%riverbed = placeholder(col, row)
             enddo
 
             ! read: climatology recharge
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.New reading parameter RECHCLIM from ", &
              trim(LIS_rc%paramfile(n))
-            call LIS_read_param(n, trim(NOAHMPnew_struc(n)%LDT_ncvar_rechclim), placeholder)
+            call LIS_read_param(n, trim(NoahMPnew_struc(n)%LDT_ncvar_rechclim), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%rechclim = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%rechclim = placeholder(col, row)
             enddo
         endif
 
@@ -317,55 +319,83 @@ subroutine NoahMPnew_setup()
         write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SHDFAC_MONTHLY from ",&
              trim(LIS_rc%paramfile(n))
         do k = 1, 12
-            call NOAHMPnew_read_MULTILEVEL_param(n, NOAHMPnew_struc(n)%LDT_ncvar_shdfac_monthly, k, placeholder)
+            call NOAHMPnew_read_MULTILEVEL_param(n, NoahMPnew_struc(n)%LDT_ncvar_shdfac_monthly, k, placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-                NOAHMPnew_struc(n)%noahmpnew(t)%shdfac_monthly(k) = placeholder(col, row)
+                NoahMPnew_struc(n)%noahmpnew(t)%shdfac_monthly(k) = placeholder(col, row)
             enddo 
         enddo 
         
-        if(NOAHMPnew_struc(n)%soil_opt .eq. 3) then
+        if(NoahMPnew_struc(n)%soil_opt .eq. 3) then
             ! read: soilcomp
             write(LIS_logunit,*) "[INFO] Noah-MP.New reading parameter SOILCOMP from ", &
                  trim(LIS_rc%paramfile(n))
             do k = 1, 8
-                call NOAHMPnew_read_MULTILEVEL_param(n, NOAHMPnew_struc(n)%LDT_ncvar_soilcomp, k, placeholder)
+                call NOAHMPnew_read_MULTILEVEL_param(n, NoahMPnew_struc(n)%LDT_ncvar_soilcomp, k, placeholder)
                 do t = 1, LIS_rc%npatch(n, mtype)
                     col = LIS_surface(n, mtype)%tile(t)%col
                     row = LIS_surface(n, mtype)%tile(t)%row
-                    NOAHMPnew_struc(n)%noahmpnew(t)%soilcomp(k) = placeholder(col, row)
+                    NoahMPnew_struc(n)%noahmpnew(t)%soilcomp(k) = placeholder(col, row)
                 enddo 
             enddo 
         endif
         deallocate(placeholder)
 
-    !!!! read Noah-MP parameter tables 
+        !!!! read Noah-MP parameter tables 
         write(LIS_logunit,*) "[INFO] Noah-MP.New parameter table (veg, soil, general): ", &
-             trim(NOAHMPnew_struc(n)%noahmp_tbl_name)     
+             trim(NoahMPnew_struc(n)%noahmp_tbl_name)     
         write(LIS_logunit,*) "[INFO] Noah-MP.New Landuse classification scheme: ", &
-             trim(NOAHMPnew_struc(n)%landuse_scheme_name) 
+             trim(NoahMPnew_struc(n)%landuse_scheme_name) 
         write(LIS_logunit,*) "[INFO] Noah-MP.New Soil classification scheme: ",  &
              "STAS (default, cannot change)" 
-        call NoahmpReadTable(trim(NOAHMPnew_struc(n)%landuse_scheme_name), &
-                             trim(NOAHMPnew_struc(n)%noahmp_tbl_name))
+        call NoahmpReadTable(trim(NoahMPnew_struc(n)%landuse_scheme_name), &
+                             trim(NoahMPnew_struc(n)%noahmp_tbl_name))
 
         do t=1,LIS_rc%npatch(n,mtype)
            SOILTYP = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
            VEGTYP  = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
            SLOPETYP     = 1          ! set underground runoff slope term
            SOILCOLOR    = 4          ! soil color: assuming a middle color category ?????????      
-           ! if (NOAHMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
+           ! if (NoahMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
            !    CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
            CROPTYPE     = 0 
-           CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
+           CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,NoahmpIO,&
                 NoahMPnew_struc(n)%noahmpnew(t)%param)
-
         enddo
    
-     !optional read of Optimized parameters
+        ! optional read of Optimized parameters
+        call NoahMPnew_read_OPT_parameters()
 
-        call NoahMPnew_read_OPT_parameters()     
+        !-------- initialize NoahmpIO 1-D interface variables
+        NoahmpIO%xstart = 1
+        NoahmpIO%xend   = 1
+        NoahmpIO%ystart = 1
+        NoahmpIO%yend   = 1
+        NoahmpIO%ids    = NoahmpIO%xstart
+        NoahmpIO%ide    = NoahmpIO%xend
+        NoahmpIO%jds    = NoahmpIO%ystart
+        NoahmpIO%jde    = NoahmpIO%yend
+        NoahmpIO%kds    = 1
+        NoahmpIO%kde    = 2
+        NoahmpIO%its    = NoahmpIO%xstart
+        NoahmpIO%ite    = NoahmpIO%xend
+        NoahmpIO%jts    = NoahmpIO%ystart
+        NoahmpIO%jte    = NoahmpIO%yend
+        NoahmpIO%kts    = 1
+        NoahmpIO%kte    = 2
+        NoahmpIO%ims    = NoahmpIO%xstart
+        NoahmpIO%ime    = NoahmpIO%xend
+        NoahmpIO%jms    = NoahmpIO%ystart
+        NoahmpIO%jme    = NoahmpIO%yend
+        NoahmpIO%kms    = 1
+        NoahmpIO%kme    = 2
+        NoahmpIO%nsoil  = NoahMPnew_struc(n)%nsoil
+        NoahmpIO%nsnow  = NoahMPnew_struc(n)%nsnow
+
+        call NoahmpIOVarInitDefault(NoahmpIO) ! initialize NoahmpIO to undefined/default value
+        !-------- NoahmpIO init complete
+
      enddo
 
 end subroutine NoahMPnew_setup
@@ -485,7 +515,7 @@ subroutine NOAHMPnew_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
  end subroutine NOAHMPnew_read_MULTILEVEL_param
                                           
-SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
+SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,NoahmpIO,parameters)
 
   use NoahmpIOVarType
 
@@ -497,7 +527,8 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
   INTEGER, INTENT(IN)    :: SOILCOLOR
   INTEGER, INTENT(IN)    :: CROPTYPE
     
-  type (LisNoahmpParam_type), intent(inout) :: parameters
+  type(NoahmpIO_type),       intent(in)    :: NoahmpIO
+  type(LisNoahmpParam_type), intent(inout) :: parameters
     
   REAL    :: FRZK
   REAL    :: FRZFACT

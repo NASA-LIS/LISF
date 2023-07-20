@@ -569,7 +569,7 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
     ! write the header for state variable qrf
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qrf_ID, "QRF", &
-                                 "groundwater baselow", &
+                                 "groundwater baseflow", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qspring
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
@@ -713,10 +713,10 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
                                  "accumulated soil surface evaporation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accetrani
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accetrani_ID, "ACC_ETRANI", &
-                                 "accumulated plant transpiration", &
-                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+                                 "accumulated plant transpiration each layer", &
+                                 "m/s", vlevels=NoahMPnew_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                 var_flag = "dim2")
     ! write the header for state variable accdwater
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accdwater_ID, "ACC_DWATER", &
@@ -743,9 +743,9 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
                                  "accumulated net soil evaporation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
 
- 
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, NoahMPnew_struc(n)%rstInterval)
+
 
     ! write state variables into restart file
     ! accumulated surface runoff
@@ -952,6 +952,9 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
         call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                                   varid=smoiseq_ID, dim=l, wformat=wformat)
     enddo
+
+    ! for MMF groundwater
+    if (NoahMPnew_struc(n)%runsub_opt == 5) then
     ! soil moisture content in the layer to the water table when deep
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%smcwtd, &
                               varid=smcwtd_ID, dim=1, wformat=wformat)
@@ -963,6 +966,107 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
     ! recharge to the water table (diagnostic)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%rech, &
                               varid=rech_ID, dim=1, wformat=wformat)
+
+    ! groundwater expotential parameter
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%pexp, &
+                              varid=pexp_ID, dim=1, wformat=wformat)
+
+    ! river area
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%area, &
+                              varid=area_ID, dim=1, wformat=wformat)
+
+    ! groundwater baseflow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qrf, &
+                              varid=qrf_ID, dim=1, wformat=wformat)
+
+    ! seeping water
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qspring, &
+                              varid=qspring_ID, dim=1, wformat=wformat)
+
+    ! accumulated lateral flow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qslat, &
+                              varid=qslat_ID, dim=1, wformat=wformat)
+
+    ! accumulated GW baseflow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qrfs, &
+                              varid=qrfs_ID, dim=1, wformat=wformat)
+
+    ! accumulated seeping water
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qsprings, &
+                              varid=qsprings_ID, dim=1, wformat=wformat)
+
+    ! depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%fdepth, &
+                              varid=fdepth_ID, dim=1, wformat=wformat)
+
+    ! river conductivity
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%rivercond, &
+                              varid=rivercond_ID, dim=1, wformat=wformat)
+
+    ! riverbed depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%riverbed, &
+                              varid=riverbed_ID, dim=1, wformat=wformat)
+
+    ! equilibrium water table depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%eqzwt, &
+                              varid=eqzwt_ID, dim=1, wformat=wformat)
+
+    endif
+
+    ! for irrigation
+    if (NoahMPnew_struc(n)%irr_opt >0) then
+    ! sprinkler irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irnumsi, &
+                              varid=irnumsi_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irnummi, &
+                              varid=irnummi_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irnumfi, &
+                              varid=irnumfi_ID, dim=1, wformat=wformat)
+
+    ! sprinkler irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irwatsi, &
+                              varid=irwatsi_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irwatmi, &
+                              varid=irwatmi_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irwatfi, &
+                              varid=irwatfi_ID, dim=1, wformat=wformat)
+
+    ! sprinkler irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irsivol, &
+                              varid=irsivol_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irmivol, &
+                              varid=irmivol_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irfivol, &
+                              varid=irfivol_ID, dim=1, wformat=wformat)
+
+    ! loss of irrigation water to evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%ireloss, &
+                              varid=ireloss_ID, dim=1, wformat=wformat)
+
+    ! latent heating from sprinkler evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%irrsplh, &
+                              varid=irrsplh_ID, dim=1, wformat=wformat)
+
+    endif
+
+    ! for tile drainage
+    if (NoahMPnew_struc(n)%tdrn_opt >0) then
+    ! accumulated tile drainage discharge
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%qtdrain, &
+                              varid=qtdrain_ID, dim=1, wformat=wformat)
+    endif
 
     ! mass of grain XING
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%grain, &
@@ -976,13 +1080,50 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%pgs, &
                               varid=pgs_ID, dim=1, wformat=wformat)
 
-    ! optional gecros crop
-!    do l=1, 60  ! TODO: check loop
-!        tmptilen = 0
-!        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-!            tmptilen(t) = NoahMPnew_struc(n)%noahmpnew(t)%gecros_state(l)
-!        enddo
-!        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
-!                                  varid=gecros_state_ID, dim=l, wformat=wformat)
-!    enddo
+    ! for additional variables
+    ! accumulated ground heat flux
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accssoil, &
+                              varid=accssoil_ID, dim=1, wformat=wformat)
+
+    ! accumulated soil surface water flux
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accqinsur, &
+                              varid=accqinsur_ID, dim=1, wformat=wformat)
+
+    ! accumulated soil surface evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accqseva, &
+                              varid=accqseva_ID, dim=1, wformat=wformat)
+
+    ! accumulated plant transpiration each layer
+    do l=1, NoahMPnew_struc(n)%nsoil   ! TODO: check loop
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMPnew_struc(n)%noahmpnew(t)%accetrani(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=accetrani_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! accumulated water storage change
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accdwater, &
+                              varid=accdwater_ID, dim=1, wformat=wformat)
+
+    ! accumulated precipitation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accprcp, &
+                              varid=accprcp_ID, dim=1, wformat=wformat)
+
+    ! accumulated canopy evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accecan, &
+                              varid=accecan_ID, dim=1, wformat=wformat)
+
+    ! accumulated transpiration
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accetran, &
+                              varid=accetran_ID, dim=1, wformat=wformat)
+
+    ! accumulated net soil evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accedir, &
+                              varid=accedir_ID, dim=1, wformat=wformat)
+
+
+    !!! END OF writing state variables
+
 end subroutine NoahMPnew_dump_restart

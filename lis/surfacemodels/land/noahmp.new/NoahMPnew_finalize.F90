@@ -49,6 +49,7 @@ subroutine NoahMPnew_finalize()
             deallocate(NoahMPnew_struc(n)%noahmpnew(t)%snowice)
             deallocate(NoahMPnew_struc(n)%noahmpnew(t)%snowliq)
             deallocate(NoahMPnew_struc(n)%noahmpnew(t)%smoiseq)
+            deallocate(NoahMPnew_struc(n)%noahmpnew(t)%accetrani)
         end do  ! tile loop
  
         ! free memory for noahmpnew, the data at tile level

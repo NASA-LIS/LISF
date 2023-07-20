@@ -515,9 +515,6 @@ subroutine NoahMPnew_readrst()
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accqseva, &
                                      varname="ACC_QSEVA", wformat=wformat)
 
-            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accetrani, &
-                                     varname="ACC_ETRANI", wformat=wformat)
-
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accdwater, &
                                      varname="ACC_DWATER", wformat=wformat)
 
@@ -533,6 +530,14 @@ subroutine NoahMPnew_readrst()
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%accedir, &
                                      varname="ACC_EDIR", wformat=wformat)
 
+            do l=1, NoahMPnew_struc(n)%nsoil ! TODO: check loop
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="ACC_ETRANI", &
+                                         dim=l, vlevels = NoahMPnew_struc(n)%nsoil, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                    NoahMPnew_struc(n)%noahmpnew(t)%accetrani(l) = tmptilen(t)
+                enddo
+            enddo
+
             ! close restart file
             if(wformat .eq. "binary") then
                 call LIS_releaseUnitNumber(ftn)
@@ -546,5 +551,4 @@ subroutine NoahMPnew_readrst()
             deallocate(tmptilen)
         endif    
     enddo
-end subroutine NoahMPnew_readrst
-        
+end subroutine NoahMPnew_readrst 
