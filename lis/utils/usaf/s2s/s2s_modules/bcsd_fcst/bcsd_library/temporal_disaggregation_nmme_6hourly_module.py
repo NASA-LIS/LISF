@@ -19,6 +19,7 @@ from time import ctime as t_ctime
 from time import time as t_time
 from dateutil.relativedelta import relativedelta
 import numpy as np
+from numpy import ma
 import xarray as xr
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
@@ -26,14 +27,94 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
+PRECIP_THRES = limits.precip_thres
+
+def add_6hourly_distribution (precip_data):
+    ''' a function to get sub-monthly distribution from a neighboring grid cell when NNMME has precip and CFSv2 doesn't'''
+    global PRECIP_THRES
+
+    # make a copy, update, and return
+    arrayb = np.copy(precip_data)
+
+    # total precipitation across time axis
+    total_precip = np.mean(precip_data, axis=0)
+
+    # Find grid cells with total precipitation greater than PRECIP_THRES
+    positive_total_mask = total_precip >= PRECIP_THRES
+    # set all positive_total_mask False data to zero in arrayb
+    for t in range (0,arrayb.shape[0]):
+        arrayb[t,~positive_total_mask]=0.
+
+    # Find grid cells with uniform precipitation values along the time axis
+    uniform_mask = np.all(precip_data == precip_data[0,:], axis=0)
+
+    # When both maks are TRUE, precip is positive and uniform
+    target_cells_mask = uniform_mask & positive_total_mask
+
+    # non-uniform and positive mask is where useful 6-hourly distributions are available
+    useful_cells_mask = ~uniform_mask & positive_total_mask
+
+    # mask out the cells that need to be massaged and where 6-hourly distributions are available
+    current_precip = ma.masked_array(total_precip, target_cells_mask)
+    useful_precip = ma.masked_array(total_precip, ~useful_cells_mask)
+
+    for zoom in range (1,20):
+        # starting from the 3x3 window from the location gradually increase upto 39x39 window
+        for direction in (-1,1):
+            shift = direction * zoom
+
+            # North-South direction
+            axis = 0
+            if not np.any(current_precip.mask): break
+            a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
+            arrayb_shifted = np.roll(arrayb ,shift=shift,axis=axis+1)
+            shifted_ratio = np.mean(arrayb, axis=0)/a_shifted
+            idx=~a_shifted.mask * current_precip.mask
+            # update return array and target_cells_mask
+            for t in range (0,arrayb.shape[0]):
+                arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
+            target_cells_mask = target_cells_mask & ~idx
+            current_precip = ma.masked_array(total_precip, target_cells_mask)
+
+            #  East-west direction
+            axis = 1
+            if not np.any(current_precip.mask): break
+            a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
+            arrayb_shifted = np.roll(arrayb ,shift=shift,axis=axis+1)
+            shifted_ratio = np.mean(arrayb, axis=0)/a_shifted
+            idx=~a_shifted.mask * current_precip.mask
+            # update return array and target_cells_mask
+            for t in range (0,arrayb.shape[0]):
+                arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
+
+            target_cells_mask = target_cells_mask & ~idx
+            current_precip = ma.masked_array(total_precip, target_cells_mask)
+
+            # Diagonal
+            axis = (0,1)
+            if not np.any(current_precip.mask): break
+            a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
+            arrayb_shifted = np.roll(arrayb ,shift=shift,axis=(1,2))
+            shifted_ratio = np.mean(arrayb, axis=0)/a_shifted
+            idx=~a_shifted.mask * current_precip.mask
+            # update return array and target_cells_mask
+            for t in range (0,arrayb.shape[0]):
+                arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
+            target_cells_mask = target_cells_mask & ~idx
+            current_precip = ma.masked_array(total_precip, target_cells_mask)
+    return arrayb
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
+    global PRECIP_THRES
     output_bc_data = np.ones(len(input_raw_data))*-999
 
     if bc_var == 'PRCP':
-        if mon_raw_value == 0.:
+        if mon_raw_value < PRECIP_THRES:
             correction_factor = mon_bc_value
             ## HACK## for when input monthly value is 0
             output_bc_data[:] = correction_factor
@@ -46,7 +127,7 @@ def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
 
     return output_bc_data
 
-def write_bc_netcdf(outfile, var, varname, description, source, var_units, \
+def write_bc_netcdf(outfile, var, obs_var, description, source, var_units, \
 var_standard_name, lons, lats, sdate, dates, sig_digit, north_east_corner_lat, \
 north_east_corner_lon, south_west_corner_lat, south_west_corner_lon, \
 resolution_x, resolution_y, time_increment):
@@ -61,7 +142,7 @@ resolution_x, resolution_y, time_increment):
     times = rootgrp.createVariable('time', 'f4', ('time', ))
 
     # two dimensions unlimited.
-    varname = rootgrp.createVariable(varname, 'f4', ('time', 'latitude', \
+    varname = rootgrp.createVariable(obs_var, 'f4', ('time', 'latitude', \
     'longitude',), fill_value=-9999, zlib=True, \
     least_significant_digit=sig_digit)
     rootgrp.missing_value = -9999
@@ -213,21 +294,27 @@ for MON in [INIT_FCST_MON]:
             correct2 = np.moveaxis(correct.values,2,0)
             OUTPUT_BC_DATA[:,JJ1:JJ2+1, II1:II2+1] = correct2[:,:,:]
 
+            # massage OUTPUT_BC_DATA to add sub-monthly distribution
+            OUTPUT_BC_REVISED = add_6hourly_distribution (OUTPUT_BC_DATA)
+
+            # clip limits
+            OUTPUT_BC_REVISED = limits.clip_array(OUTPUT_BC_REVISED, var_name="PRECTOT", missing=-999, precip=True)
+
             ### Finish correcting values for all timesteps in the given
             ### month and ensemble member
-            print("Now writing {OUTFILE}")
-            OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
-            mask=OUTPUT_BC_DATA == -999)
+            print(f"Now writing {OUTFILE}")
+            OUTPUT_BC_REVISED = np.ma.masked_array(OUTPUT_BC_REVISED, \
+            mask=OUTPUT_BC_REVISED == -999)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
             range(NUM_TIMESTEPS)]
 
             if DOMAIN == 'AFRICOM':
-                write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
+                write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 39.875, 59.875, -39.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 39.875, 59.875, -39.875, \
                                 -19.875, 0.25, 0.25, 21600)
             if DOMAIN == 'GLOBAL':
-                write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
+                write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 89.875, 179.875, -89.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 89.875, 179.875, -89.875, \
                                 -179.875, 0.25, 0.25, 21600)
