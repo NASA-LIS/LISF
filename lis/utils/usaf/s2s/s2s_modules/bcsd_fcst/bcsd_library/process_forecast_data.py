@@ -160,10 +160,6 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
                                                  var_name = "Q2M")
     ds_out2["WIND10M"].values[:] = limits.clip_array(np.array(ds_out2["WIND10M"].values[:]),
                                                      var_name = "WIND")
-    ds_out2["U10M"].values[:] = limits.clip_array(np.array(ds_out2["U10M"].values[:]),
-                                                  var_name = "WIND")
-    ds_out2["V10M"].values[:] = limits.clip_array(np.array(ds_out2["V10M"].values[:]),
-                                                  var_name = "WIND")
 
     for month in range(1,10):
         file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
