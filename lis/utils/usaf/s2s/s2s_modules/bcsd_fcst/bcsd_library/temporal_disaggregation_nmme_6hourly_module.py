@@ -33,7 +33,7 @@ from bcsd_function import VarLimits as lim
 limits = lim()
 PRECIP_THRES = limits.precip_thres
 
-def add_6hourly_distribution (precip_data):
+def use_neighbors_diurnal_cycle (precip_data):
     ''' a function to get sub-monthly distribution from a neighboring grid cell when NNMME has precip and CFSv2 doesn't'''
     global PRECIP_THRES
 
@@ -45,9 +45,6 @@ def add_6hourly_distribution (precip_data):
 
     # Find grid cells with total precipitation greater than PRECIP_THRES
     positive_total_mask = total_precip >= PRECIP_THRES
-    # set all positive_total_mask False data to zero in arrayb
-    for t in range (0,arrayb.shape[0]):
-        arrayb[t,~positive_total_mask]=0.
 
     # Find grid cells with uniform precipitation values along the time axis
     uniform_mask = np.all(precip_data == precip_data[0,:], axis=0)
@@ -61,6 +58,7 @@ def add_6hourly_distribution (precip_data):
     # mask out the cells that need to be massaged and where 6-hourly distributions are available
     current_precip = ma.masked_array(total_precip, target_cells_mask)
     useful_precip = ma.masked_array(total_precip, ~useful_cells_mask)
+    tgt_cells_beg = np.sum(target_cells_mask)
 
     for zoom in range (1,20):
         # starting from the 3x3 window from the location gradually increase upto 39x39 window
@@ -106,7 +104,9 @@ def add_6hourly_distribution (precip_data):
                 arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
             target_cells_mask = target_cells_mask & ~idx
             current_precip = ma.masked_array(total_precip, target_cells_mask)
-    return arrayb
+
+    tgt_cells_end = np.sum(target_cells_mask)
+    return arrayb, tgt_cells_beg, tgt_cells_end
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
@@ -295,7 +295,8 @@ for MON in [INIT_FCST_MON]:
             OUTPUT_BC_DATA[:,JJ1:JJ2+1, II1:II2+1] = correct2[:,:,:]
 
             # massage OUTPUT_BC_DATA to add sub-monthly distribution
-            OUTPUT_BC_REVISED = add_6hourly_distribution (OUTPUT_BC_DATA)
+            OUTPUT_BC_REVISED, cnt_beg, cnt_end = use_neighbors_diurnal_cycle (OUTPUT_BC_DATA)
+            print (f'NOF cells without precip diurnal cycle : {cnt_beg} (before) {cnt_end} (after)')
 
             # clip limits
             OUTPUT_BC_REVISED = limits.clip_array(OUTPUT_BC_REVISED, var_name="PRECTOT", missing=-999, precip=True)
