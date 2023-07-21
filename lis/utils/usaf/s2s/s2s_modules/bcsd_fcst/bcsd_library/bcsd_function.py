@@ -20,7 +20,7 @@ class VarLimits:
                     missing=None, min_thres=None, precip=None):
         ''' Below limits are 6h based'''
         min_limit={'PRECTOT': 1.e-8,
-                  'PS': 88000.,
+                  'PS': 30000.,
                   'T2M': 180.,
                   'LWS': 10.,
                   'SLRSF': 0.,
