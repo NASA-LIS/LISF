@@ -717,7 +717,7 @@ contains
           elseif(trim(model%short_name).eq."TWS") then 
              min_value = -10000
           else
-             min_value = 0.0 !soil moisture
+             min_value = -100.0 
           endif
 
           do t=1,LVT_rc%ngrid
@@ -926,7 +926,7 @@ contains
           elseif(trim(model%short_name).eq."TWS") then
              min_value = -10000
           else
-             min_value = 0.0 !soil moisture
+             min_value = -100.0
           endif
           
           do t=1,LVT_rc%ngrid
