@@ -357,10 +357,10 @@ subroutine NoahMPnew_setup()
            VEGTYP  = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
            SLOPETYP     = 1          ! set underground runoff slope term
            SOILCOLOR    = 4          ! soil color: assuming a middle color category ?????????      
-           ! if (NoahMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
-           !    CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
            CROPTYPE     = 0 
-           CALL TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,NoahmpIO,&
+           if (NoahMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
+               CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
+           call TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,NoahmpIO,&
                 NoahMPnew_struc(n)%noahmpnew(t)%param)
         enddo
    
