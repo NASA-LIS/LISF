@@ -203,21 +203,17 @@ subroutine NoahMPnew_main(n)
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
-            !
-
-            NoahmpIO%latitude  = lat
-            NoahmpIO%longitude = lon
-            NoahmpIO%year      = LIS_rc%yr
-            NoahmpIO%month     = LIS_rc%mo
-            NoahmpIO%day       = LIS_rc%da
-            NoahmpIO%hour      = LIS_rc%hr
-            NoahmpIO%minute    = LIS_rc%mn
-
-            ! Added by Zhuo Wang on 11/13/2018
-            NoahmpIO%ttile     = t
-            NoahmpIO%itimestep = LIS_rc%tscount(n)
 
             ! get parameters
+            NoahmpIO%latitude           = lat
+            NoahmpIO%longitude          = lon
+            NoahmpIO%year               = LIS_rc%yr
+            NoahmpIO%month              = LIS_rc%mo
+            NoahmpIO%day                = LIS_rc%da
+            NoahmpIO%hour               = LIS_rc%hr
+            NoahmpIO%minute             = LIS_rc%mn
+            NoahmpIO%ttile              = t
+            NoahmpIO%itimestep          = LIS_rc%tscount(n)
             NoahmpIO%dtbl               = NoahMPnew_struc(n)%ts
             NoahmpIO%soiltstep          = NoahMPnew_struc(n)%ts_soil
             NoahmpIO%dzs(:)             = NoahMPnew_struc(n)%sldpth(:)
@@ -225,8 +221,7 @@ subroutine NoahMPnew_main(n)
             NoahmpIO%nsnow              = NoahMPnew_struc(n)%nsnow
             NoahmpIO%ivgtyp(1,1)        = NoahMPnew_struc(n)%noahmpnew(t)%vegetype
             NoahmpIO%isltyp(1,1)        = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
-            ! Multiply shdfac by 100.0 because noahmpdrv.f90
-            ! expects it in units of percentage, not fraction.
+            ! Multiply shdfac by 100.0 because noahmpdrv.f90, expects it in units of percentage, not fraction.
             NoahmpIO%shdfac_monthly(1,:,1) = NoahMPnew_struc(n)%noahmpnew(t)%shdfac_monthly(:) * 100.0
             NoahmpIO%tmn(1,1)           = NoahMPnew_struc(n)%noahmpnew(t)%tbot
             NoahmpIO%urban_vegtype(1,1) = LIS_rc%urbanclass
@@ -415,8 +410,8 @@ subroutine NoahMPnew_main(n)
                   NoahmpIO%xsaixy(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%sai
                endif
             else
-               NoahmpIO%lai(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%lai
-               NoahmpIO%xsaixy(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%sai
+               NoahmpIO%lai(1,1)     = NoahMPnew_struc(n)%noahmpnew(t)%lai
+               NoahmpIO%xsaixy(1,1)  = NoahMPnew_struc(n)%noahmpnew(t)%sai
             endif
             NoahmpIO%taussxy(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%tauss
             NoahmpIO%smoiseq(1,:,1)  = NoahMPnew_struc(n)%noahmpnew(t)%smoiseq(:)
@@ -549,8 +544,8 @@ subroutine NoahMPnew_main(n)
             NoahMPnew_struc(n)%noahmpnew(t)%chv2      = NoahmpIO%chv2xy(1,1)
             NoahMPnew_struc(n)%noahmpnew(t)%chb2      = NoahmpIO%chb2xy(1,1)
             NoahMPnew_struc(n)%noahmpnew(t)%infxs1rt  = NoahmpIO%infxsrt(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%soldrain1rt  = NoahmpIO%soldrain(1,1)
-            NoahMPnew_struc(n)%noahmpnew(t)%sfcheadrt = NoahmpIO%sfcheadrt(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%soldrain1rt = NoahmpIO%soldrain(1,1)
+            NoahMPnew_struc(n)%noahmpnew(t)%sfcheadrt    = NoahmpIO%sfcheadrt(1,1)
 
             ! additional accumulated variables
             NoahMPnew_struc(n)%noahmpnew(t)%accssoil     = NoahmpIO%ACC_SSOILXY(1,1)
@@ -1130,14 +1125,14 @@ subroutine NoahMPnew_main(n)
             enddo
 
             ! reset forcing variables to zeros
-            NoahMPnew_struc(n)%noahmpnew(t)%tair = 0.0
-            NoahMPnew_struc(n)%noahmpnew(t)%psurf = 0.0
+            NoahMPnew_struc(n)%noahmpnew(t)%tair   = 0.0
+            NoahMPnew_struc(n)%noahmpnew(t)%psurf  = 0.0
             NoahMPnew_struc(n)%noahmpnew(t)%wind_e = 0.0
             NoahMPnew_struc(n)%noahmpnew(t)%wind_n = 0.0
-            NoahMPnew_struc(n)%noahmpnew(t)%qair = 0.0
+            NoahMPnew_struc(n)%noahmpnew(t)%qair   = 0.0
             NoahMPnew_struc(n)%noahmpnew(t)%swdown = 0.0
             NoahMPnew_struc(n)%noahmpnew(t)%lwdown = 0.0
-            NoahMPnew_struc(n)%noahmpnew(t)%prcp = 0.0
+            NoahMPnew_struc(n)%noahmpnew(t)%prcp   = 0.0
 
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero

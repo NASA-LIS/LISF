@@ -8,18 +8,16 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !ROUTINE: noahmpnew_usafsi_update
-! \label{noahmpnew_usafsi_update}
+! !ROUTINE: noahmpnew_snodep_update
+! \label{noahmpnew_snodep_update}
 !
 ! !REVISION HISTORY:
 !  13 Aug 2017: Sujay Kumar; Initial specification
-!  14 Dec 2018: Yeosang Yoon; Modified code for NoahMP 4.0.1 and SNODEP
-!  15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-!  13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-!  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
+!  14 Dec 2018: Yeosang Yoon; Modified code for NoahMP 4.0.1
+!  May 2023:    Cenlin He; Modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE
-subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
+subroutine noahmpnew_snodep_update(n, t, dsneqv, dsnowh)
 
   use LIS_coreMod
   use NoahMPnew_lsmMod
@@ -39,7 +37,6 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   integer, intent(in)  :: t
   real                 :: dsneqv !mm
   real                 :: dsnowh !m
-
 !EOP
   real, parameter :: tfrz = 273.16    !freezing/melting point (k)
   real, parameter :: hfus = 0.3336E06 !latent heat of fusion (j/kg) 
@@ -73,9 +70,9 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
 ! local
   real    :: SNOFLOW, BDSNOW
 
-  isnow = NoahmpNew_struc(n)%noahmpnew(t)%isnow
-  nsoil = NoahmpNew_struc(n)%nsoil
-  nsnow = NoahmpNew_struc(n)%nsnow
+  isnow = NoahMPnew_struc(n)%noahmpnew(t)%isnow
+  nsoil = NoahMPnew_struc(n)%nsoil
+  nsnow = NoahMPnew_struc(n)%nsnow
 
   allocate(ficeold(-nsnow+1:0))
   allocate(snice(-nsnow+1:0))
@@ -104,17 +101,17 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   enddo
 
   ! initialize the variables
-  soiltype = NoahmpNew_struc(n)%noahmpnew(t)%soiltype
+  soiltype = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
   do isoil = 1, size(soiltype)
     BEXP(isoil)   = NoahmpNew_struc(n)%noahmpnew(t)%param%BEXP(isoil)
     PSISAT(isoil) = NoahmpNew_struc(n)%noahmpnew(t)%param%PSISAT(isoil)
     SMCMAX(isoil) = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCMAX(isoil)
   end do
 
-  sneqv = NoahmpNew_struc(n)%noahmpnew(t)%sneqv
-  snowh = NoahmpNew_struc(n)%noahmpnew(t)%snowh
+  sneqv = NoahMPnew_struc(n)%noahmpnew(t)%sneqv
+  snowh = NoahMPnew_struc(n)%noahmpnew(t)%snowh
 
-  zsnso(-nsnow+1:nsoil) = NoahmpNew_struc(n)%noahmpnew(t)%zss(1:nsnow+nsoil) 
+  zsnso(-nsnow+1:nsoil) = NoahMPnew_struc(n)%noahmpnew(t)%zss(1:nsnow+nsoil) 
 
 ! snow/soil layer thickness (m)
   do iz = isnow+1, nsoil
@@ -128,22 +125,22 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   ! set ZSOIL 
   allocate(zsoil(nsoil))
   ! zsoil is negative.
-  zsoil(1) = -NoahmpNew_struc(n)%sldpth(1)
+  zsoil(1) = -NoahMPnew_struc(n)%sldpth(1)
   do i = 2, nsoil
-     zsoil(i) = zsoil(i-1) - NoahmpNew_struc(n)%sldpth(i)
+     zsoil(i) = zsoil(i-1) - NoahMPnew_struc(n)%sldpth(i)
   enddo
 
 
   ! state variables 
   snice(-nsnow+1:0) = &
-       NoahmpNew_struc(n)%noahmpnew(t)%snowice(1:nsnow)
+       NoahMPnew_struc(n)%noahmpnew(t)%snowice(1:nsnow)
   snliq(-nsnow+1:0) = &
-       NoahmpNew_struc(n)%noahmpnew(t)%snowliq(1:nsnow) 
+       NoahMPnew_struc(n)%noahmpnew(t)%snowliq(1:nsnow) 
   stc(-nsnow+1:0) = &
-       NoahmpNew_struc(n)%noahmpnew(t)%tsno(1:nsnow)
+       NoahMPnew_struc(n)%noahmpnew(t)%tsno(1:nsnow)
   ! soil temperature
   stc(1:nsoil) = &
-       NoahmpNew_struc(n)%noahmpnew(t)%tslb(1:nsoil)    
+       NoahMPnew_struc(n)%noahmpnew(t)%tslb(1:nsoil)    
 
 
   ! from snowfall routine
@@ -161,7 +158,7 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
      NEWNODE  =  1
      DZSNSO(0)= SNOWH
      SNOWH    = 0.
-     STC(0)   = MIN(273.16, NoahmpNew_struc(n)%noahmpnew(t)%sfctmp)   ! temporary setup
+     STC(0)   = MIN(273.16, NoahMPnew_struc(n)%noahmpnew(t)%sfctmp)   ! temporary setup
      SNICE(0) = SNEQV
      SNLIQ(0) = 0.
   END IF
@@ -206,8 +203,8 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
     endif
   enddo
 
-  sice(:) = max(0.0, NoahmpNew_struc(n)%noahmpnew(t)%smc(:)&
-                     - NoahmpNew_struc(n)%noahmpnew(t)%sh2o(:))   
+  sice(:) = max(0.0, NoahMPnew_struc(n)%noahmpnew(t)%smc(:)&
+                     - NoahMPnew_struc(n)%noahmpnew(t)%sh2o(:))   
 
   !imelt
   do j = -nsnow+1, nsoil
@@ -220,9 +217,9 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   end do
   
   do j = 1, nsoil         ! soil
-     mliq(j) =  NoahmpNew_struc(n)%noahmpnew(t)%sh2o(j) * dzsnso(j) * 1000.
-     mice(j) = (NoahmpNew_struc(n)%noahmpnew(t)%smc(j) - &
-                NoahmpNew_struc(n)%noahmpnew(t)%sh2o(j))  * dzsnso(j) * 1000.
+     mliq(j) =  NoahMPnew_struc(n)%noahmpnew(t)%sh2o(j) * dzsnso(j) * 1000.
+     mice(j) = (NoahMPnew_struc(n)%noahmpnew(t)%smc(j) - &
+                NoahMPnew_struc(n)%noahmpnew(t)%sh2o(j))  * dzsnso(j) * 1000.
   end do
   
   do j = isnow+1,nsoil    ! all layers
@@ -240,9 +237,9 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
 !     end if
 !     if (opt_frz == 2) then
 !        call frh2o (supercool(j),&
-!             NoahmpNew_struc(n)%noahmpnew(t)%sstc(j),&
-!             NoahmpNew_struc(n)%noahmpnew(t)%smc(j),&
-!             NoahmpNew_struc(n)%noahmpnew(t)%sh2o(j))
+!             NoahMPnew_struc(n)%noahmpnew(t)%sstc(j),&
+!             NoahMPnew_struc(n)%noahmpnew(t)%smc(j),&
+!             NoahMPnew_struc(n)%noahmpnew(t)%sh2o(j))
 !        supercool(j) = supercool(j)*dzsnso(j)*1000.        !(mm)
 !     end if
   enddo
@@ -269,19 +266,18 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   ponding1 = 0.0
   ponding2 = 0.0  
 
-  ! based on Noah-MP v4.5 physics
-  if(isnow < 0) &
+  if(isnow < 0) &     ! when multi-layer
        call compact (NoahmpNew_struc(n)%noahmpnew(t)%param, &
-                     nsnow, nsoil, noahmpnew_struc(n)%ts,     & !in
+                     nsnow, nsoil, NoahMPnew_struc(n)%ts,     & !in
                      stc, snice, snliq, zsoil, imelt, ficeold, iloc, jloc, & !in
                      isnow, dzsnso ,zsnso)                                   !inout
   if(isnow < 0) &
        call combine (NoahmpNew_struc(n)%noahmpnew(t)%param, &
                      nsnow, nsoil ,iloc, jloc,          & !in
-                     isnow, noahmpnew_struc(n)%noahmpnew(t)%sh2o,   & !inout
+                     isnow, NoahMPnew_struc(n)%noahmpnew(t)%sh2o,   & !inout
                      stc, snice, snliq, dzsnso, sice, snowh, sneqv, & !inout
                      ponding1, ponding2)                              !out
-  if(isnow < 0) &
+  if(isnow < 0) &        
        call divide (NoahmpNew_struc(n)%noahmpnew(t)%param, nsnow, nsoil,      & !in
                    isnow, stc, snice, snliq, dzsnso) !inout
 
@@ -347,14 +343,15 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
    END IF
 
   ! update state vars
-  NoahmpNew_struc(n)%noahmpnew(t)%isnow = isnow
-  NoahmpNew_struc(n)%noahmpnew(t)%sneqv = sneqv
-  NoahmpNew_struc(n)%noahmpnew(t)%snowh = snowh 
-  NoahmpNew_struc(n)%noahmpnew(t)%zss(1:nsnow+nsoil) = zsnso(-nsnow+1:nsoil)
-  NoahmpNew_struc(n)%noahmpnew(t)%snowice(1:nsnow)   = snice(-nsnow+1:0) 
-  NoahmpNew_struc(n)%noahmpnew(t)%snowliq(1:nsnow)   = snliq(-nsnow+1:0) 
-  NoahmpNew_struc(n)%noahmpnew(t)%tsno(1:nsnow)      = stc(-nsnow+1:0)
-  NoahmpNew_struc(n)%noahmpnew(t)%tslb(1:nsoil)      = stc(1:nsoil)
+  NoahMPnew_struc(n)%noahmpnew(t)%isnow = isnow
+  NoahMPnew_struc(n)%noahmpnew(t)%sneqv = sneqv
+  NoahMPnew_struc(n)%noahmpnew(t)%snowh = snowh 
+
+  NoahMPnew_struc(n)%noahmpnew(t)%zss(1:nsnow+nsoil) = zsnso(-nsnow+1:nsoil)
+  NoahMPnew_struc(n)%noahmpnew(t)%snowice(1:nsnow)   = snice(-nsnow+1:0) 
+  NoahMPnew_struc(n)%noahmpnew(t)%snowliq(1:nsnow)   = snliq(-nsnow+1:0) 
+  NoahMPnew_struc(n)%noahmpnew(t)%tsno(1:nsnow)      = stc(-nsnow+1:0)
+  NoahMPnew_struc(n)%noahmpnew(t)%tslb(1:nsoil)      = stc(1:nsoil)
 
   deallocate(ficeold)
   deallocate(snice)
@@ -371,5 +368,5 @@ subroutine noahmpnew_usafsi_update(n, t, dsneqv, dsnowh)
   deallocate(psisat)
   deallocate(smcmax)
 
-end subroutine noahmpnew_usafsi_update
+end subroutine noahmpnew_snodep_update
 

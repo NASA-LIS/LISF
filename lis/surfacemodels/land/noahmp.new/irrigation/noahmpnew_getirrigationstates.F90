@@ -20,9 +20,9 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
   use ESMF
   use LIS_coreMod
   use LIS_logMod
-  use NoahMP401_lsmMod
+  use NoahMPnew_lsmMod
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
-  use NoahmpIOVarType
+  !use NoahmpIOVarType
 
 ! !DESCRIPTION:        
 !
@@ -165,15 +165,15 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
 !----------------------------------------------------------------------
   if(LIS_rc%irrigation_type.eq."Sprinkler") then
      otimes = otimess
-     irrhr = irrhrs
+     irrhr  = irrhrs
      otimee = otimess + irrhrs
   elseif(LIS_rc%irrigation_type.eq."Drip") then
      otimes = otimeds
-     irrhr = irrhrd
+     irrhr  = irrhrd
      otimee = otimeds + irrhrd
   elseif(LIS_rc%irrigation_type.eq."Flood") then
      otimes = otimefs
-     irrhr = irrhrf
+     irrhr  = irrhrf
      otimee = otimefs + irrhrf
   endif
   
@@ -181,41 +181,41 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
 
-     sfctemp_avg = 0.
-     shdfac_avg  = 0.
-     smc_avg     = 0.
+     sfctemp_avg = 0.0
+     shdfac_avg  = 0.0
+     smc_avg     = 0.0
 
      do m=1,LIS_rc%nensem(n)
 
         t=(i-1)*LIS_rc%nensem(n)+m
         
-        sfctemp_avg=sfctemp_avg+NoahmpNew_struc(n)%noahmpnew(t)%sfctmp        
-        shdfac_avg=shdfac_avg+NoahmpNew_struc(n)%noahmpnew(t)%fveg            
+        sfctemp_avg = sfctemp_avg + NoahmpNew_struc(n)%noahmpnew(t)%sfctmp        
+        shdfac_avg  = shdfac_avg + NoahmpNew_struc(n)%noahmpnew(t)%fveg            
         
         do k=1,nsoil
            
-           smc_avg(k)=smc_avg(k)+NoahmpNew_struc(n)%noahmpnew(t)%smc(k)
+           smc_avg(k) = smc_avg(k) + NoahmpNew_struc(n)%noahmpnew(t)%smc(k)
         
         end do
   
      end do
 
-     sfctemp_avg=sfctemp_avg/LIS_rc%nensem(n)
-     shdfac_avg=shdfac_avg/LIS_rc%nensem(n)
+     sfctemp_avg = sfctemp_avg/LIS_rc%nensem(n)
+     shdfac_avg = shdfac_avg/LIS_rc%nensem(n)
 
      do k=1,nsoil
   
-        smc_avg(k)=smc_avg(k)/LIS_rc%nensem(n)
+        smc_avg(k) = smc_avg(k)/LIS_rc%nensem(n)
     
      end do
 
 
      do m=1,LIS_rc%nensem(n)
 
-        t=(i-1)*LIS_rc%nensem(n)+m
+        t = (i-1)*LIS_rc%nensem(n)+m
 
      timestep = NoahmpNew_struc(n)%dt
-     soiltyp = NoahmpNew_struc(n)%noahmpnew(t)%soiltype
+     soiltyp  = NoahmpNew_struc(n)%noahmpnew(t)%soiltype
     
  
      ! Adjust bounds by timestep to account for the fact that LIS_rc%hr, etc. 
@@ -246,9 +246,9 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
      zdpth(3) = sldpth(1) + sldpth(2) + sldpth(3)
      zdpth(4) = sldpth(1) + sldpth(2) + sldpth(3) + sldpth(4)
 
-     smcmax = NoahmpIO%SMCMAX_TABLE(soiltyp)
-     smcref = NoahmpIO%SMCREF_TABLE(soiltyp)
-     smcwlt = NoahmpIO%SMCWLT_TABLE(soiltyp)
+     smcmax = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCMAX(1) !NoahmpIO%SMCMAX_TABLE(soiltyp)
+     smcref = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCREF(1) !NoahmpIO%SMCREF_TABLE(soiltyp)
+     smcwlt = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCWLT(1) !NoahmpIO%SMCWLT_TABLE(soiltyp)
 
   !   sfctemp = NoahmpNew_struc(n)%noahmpnew(t)%sfctmp
      tempcheck = 273.16 + 2.5
@@ -313,8 +313,8 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
               if( IrrigScale(t).gt.0.0 ) then ! irrigated tile
 !                if(ippix.gt.0.0) then  ! irrigated tile
                  
-                 !shdmin = minval(NOAHMP36_struc(n)%noahmp36(t)%shdfac_monthly)
-                 !shdmax = maxval(NOAHMP36_struc(n)%noahmp36(t)%shdfac_monthly)
+                 !shdmin = minval(NoahmpNew_struc(n)%noahmpnew(t)%shdfac_monthly)
+                 !shdmax = maxval(NoahmpNew_struc(n)%noahmpnew(t)%shdfac_monthly)
                  shdmin =placeshdmin(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,     &
                                                        LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
                  shdmax =placeshdmax(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,     &
@@ -455,9 +455,6 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
                                  else
                                  ! BZ modification 4/2/2015 to saturate entire column and apply ippix 
                                    twater = twater + (smcmax - NoahmpNew_struc(n)%noahmpnew(t)%smc(l))*sldpth(l)*1000.0
-!                                 twater = twater + (smcmax - noah33_struc(n)%noah(t)%smc(2))*sldpth(2)*1000.0
-!                                 twater = twater + (smcmax - noah33_struc(n)%noah(t)%smc(3))*sldpth(3)*1000.0
-!                                 twater = twater + (smcmax - noah33_struc(n)%noah(t)%smc(4))*sldpth(4)*1000.0
                                  endif
                               end do
 

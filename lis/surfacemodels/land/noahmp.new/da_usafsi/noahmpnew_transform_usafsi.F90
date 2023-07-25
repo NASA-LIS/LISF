@@ -19,7 +19,7 @@
 !  14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
 ! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
 ! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
+!  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
 !
 ! !INTERFACE:
 subroutine noahmpnew_transform_usafsi(n,OBS_State)

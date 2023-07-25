@@ -1,0 +1,233 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: noahmpnew_qctws
+! \label{noahmpnew_qctws}
+!
+! !REVISION HISTORY:
+! 14 Mar 2017: Sujay Kumar; Initial Specification
+! 29 May 2020: Bailing Li; Created for Noah-MP4.0.1 
+! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
+! !INTERFACE:
+subroutine noahmpnew_qctws(n, LSM_State)
+
+! !USES:
+  use ESMF
+  use LIS_coreMod
+  use LIS_logMod,  only  : LIS_verify
+  use noahmpnew_lsmMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)    :: n
+  type(ESMF_State)       :: LSM_State
+!
+! !DESCRIPTION:
+!
+!  Returns the soilmoisture related state prognostic variables for
+!  data assimilation
+! 
+!  The arguments are: 
+!  \begin{description}
+!  \item[n] index of the nest \newline
+!  \item[LSM\_State] ESMF State container for LSM state variables \newline
+!  \end{description}
+!EOP
+  integer                :: t,gid
+  integer                :: status
+  real, pointer          :: soilm1(:)
+  real, pointer          :: soilm2(:)
+  real, pointer          :: soilm3(:)
+  real, pointer          :: soilm4(:)
+  real                   :: smmax
+  real                   :: smmin
+  
+  type(ESMF_Field)       :: sm1Field
+  type(ESMF_Field)       :: sm2Field
+  type(ESMF_Field)       :: sm3Field
+  type(ESMF_Field)       :: sm4Field
+
+!Wanshu
+  type(ESMF_Field)       :: gwField, sweField, snodField
+  real, pointer          :: gws(:)
+  real                   :: gwsmax, gwsmin
+  real                   :: MIN_THRESHOLD,MAX_threshold,sm_threshold
+  integer                :: SOILTYP
+
+  real, pointer          :: swe(:)
+  real, pointer          :: snod(:)
+
+  real                   :: swemax,snodmax
+  real                   :: swemin,snodmin
+
+  real                   :: sndens
+  logical                :: update_flag(LIS_rc%ngrid(n))  
+!------- 
+
+  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
+  call LIS_verify(status,&
+       "ESMF_StateGet for Soil Moisture Layer 1 failed in noahmpnew_qctws")
+
+  call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
+  call LIS_verify(status,&
+       "ESMF_FieldGet for Soil Moisture Layer 1 failed in noahmpnew_qctws")
+
+  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 2",sm2Field,rc=status)
+  call LIS_verify(status,&
+       "ESMF_StateGet for Soil Moisture Layer 2 failed in noahmpnew_qctws")
+
+  call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm2,rc=status)
+  call LIS_verify(status,&
+       "ESMF_FieldGet for Soil Moisture Layer 2 failed in noahmpnew_qctws")
+
+  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 3",sm3Field,rc=status)
+  call LIS_verify(status,&
+       "ESMF_StateGet for Soil Moisture Layer 3 failed in noahmpnew_qctws")
+
+  call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm3,rc=status)
+  call LIS_verify(status,&
+       "ESMF_FieldGet for Soil Moisture Layer 3 failed in noahmpnew_qctws")
+  
+  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
+  call LIS_verify(status,&
+       "ESMF_StateGet for Soil Moisture Layer 4 failed in noahmpnew_qctws")
+
+  call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm4,rc=status)
+  call LIS_verify(status,&
+       "ESMF_FieldGet for Soil Moisture Layer 4 failed in noahmpnew_qctws")
+
+  !Wanshu
+  call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for gw in noahmpnew_qctws')
+  
+  call ESMF_FieldGet(gwField,localDE=0,farrayPtr=gws,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmpnew_qctws')
+
+  call ESMF_AttributeGet(gwField,"Max Value",gwsmax,rc=status)
+  call LIS_verify(status,&
+       "ESMF_AttributeGet: Max Value failed in noahmpnew_qctws")
+
+  call ESMF_AttributeGet(gwField,"Min Value",gwsmin,rc=status)
+  call LIS_verify(status,&
+       "ESMF_AttributeGet: Min Value failed in noahmpnew_qctws")
+
+  call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
+  call LIS_verify(status)
+  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
+  call LIS_verify(status)
+  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
+  call LIS_verify(status)
+
+  call ESMF_AttributeGet(sweField,"Max Value",swemax,rc=status)
+  call LIS_verify(status)
+  call ESMF_AttributeGet(sweField,"Min Value",swemin,rc=status)
+  call LIS_verify(status)
+  call ESMF_AttributeGet(snodField,"Max Value",snodmax,rc=status)
+  call LIS_verify(status)
+  call ESMF_AttributeGet(snodField,"Min Value",snodmin,rc=status)
+  call LIS_verify(status)
+  
+  !-------
+
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+  !Bailing Li: max min soil moisture should be retrieved based on soil type
+     SOILTYP       = NoahMPnew_struc(n)%noahmpnew(t)%soiltype
+     MAX_THRESHOLD = NoahMPnew_struc(n)%noahmpnew(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP) 
+     MIN_THRESHOLD = NoahMPnew_struc(n)%noahmpnew(t)%param%SMCWLT(1)  !SMCWLT_TABLE(SOILTYP) 
+     sm_threshold  = MAX_THRESHOLD - 0.02
+
+
+     if(soilm1(t).gt.sm_threshold) then
+        soilm1(t) = sm_threshold
+     endif
+     
+     if(soilm1(t).lt.MIN_THRESHOLD) then
+        soilm1(t) = MIN_THRESHOLD
+     endif
+
+     if(soilm2(t).gt.sm_threshold) then
+        soilm2(t) = sm_threshold
+     endif
+     if(soilm2(t).lt.MIN_THRESHOLD) then
+        soilm2(t) = MIN_THRESHOLD
+     endif
+
+     if(soilm3(t).gt.sm_threshold) then
+        soilm3(t) = sm_threshold
+     endif
+     if(soilm3(t).lt.MIN_THRESHOLD) then
+        soilm3(t) = MIN_THRESHOLD
+     endif
+
+     if(soilm4(t).gt.sm_threshold) then
+        soilm4(t) = sm_threshold
+     endif
+     if(soilm4(t).lt.MIN_THRESHOLD) then
+        soilm4(t) = MIN_THRESHOLD
+     endif
+     !Wanshu
+     if(gws(t).gt.gwsmax) then
+        gws(t) = gwsmax
+     endif
+     if(gws(t).lt.gwsmin) then
+        gws(t) = gwsmin
+     endif
+     !------
+  enddo
+
+
+    update_flag    = .true.
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+
+     if((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
+        update_flag(gid) = .false.
+     endif
+
+  enddo
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+
+!Use the model's snow density from the previous timestep
+     sndens = 0.0
+     if(NoahMPnew_struc(n)%noahmpnew(t)%snowh.gt.0) then
+       sndens = NoahMPnew_struc(n)%noahmpnew(t)%sneqv/NoahMPnew_struc(n)%noahmpnew(t)%snowh
+     endif
+
+!If the update is unphysical, do not update.
+     if(update_flag(gid)) then
+        snod(t) = snod(t)
+        swe(t)  = snod(t)*sndens
+     else ! do not update
+        snod(t) = NoahMPnew_struc(n)%noahmpnew(t)%snowh
+        swe(t)  = NoahMPnew_struc(n)%noahmpnew(t)%sneqv
+     end if
+
+     if(swe(t).gt.swemax) then
+        swe(t) = swemax
+     endif
+     if(snod(t).gt.snodmax) then
+        snod(t) = snodmax
+     endif
+
+  end do
+  
+end subroutine noahmpnew_qctws

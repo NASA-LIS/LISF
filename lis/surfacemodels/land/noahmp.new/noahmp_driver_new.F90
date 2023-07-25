@@ -135,7 +135,7 @@ subroutine noahmp_driver_new(n, NoahmpIO, LISparam)
   NoahmpIO%HAILNCV(1,1)    = 0.0
 
   ! If coupled to WRF, set these variables to realistic values,
-  ! and then pass back to WRF after the call to noahmplsm_401.
+  ! and then pass back to WRF after the call to noahmp.
   NoahmpIO%z0(1,1)     = 0.0
   NoahmpIO%znt(1,1)    = 0.0
   ! z0 and znt should be passed to WRF, if coupled. - dmm
