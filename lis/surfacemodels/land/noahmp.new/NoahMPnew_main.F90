@@ -205,8 +205,8 @@ subroutine NoahMPnew_main(n)
             endif
 
             ! get parameters
-            NoahmpIO%latitude           = lat
-            NoahmpIO%longitude          = lon
+            NoahmpIO%xlat(1,1)          = lat
+            NoahmpIO%xlon(1,1)          = lon
             NoahmpIO%year               = LIS_rc%yr
             NoahmpIO%month              = LIS_rc%mo
             NoahmpIO%day                = LIS_rc%da
@@ -304,9 +304,9 @@ subroutine NoahMPnew_main(n)
 
             ! for tile drainage
             if (NoahmpIO%IOPT_TDRN > 0) then
-               NoahmpIO%tdfract(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%tdfract
+               NoahmpIO%TD_FRACTION(1,1)= NoahMPnew_struc(n)%noahmpnew(t)%tdfract
                NoahmpIO%qtdrain(1,1)    = NoahMPnew_struc(n)%noahmpnew(t)%qtdrain
-               NoahmpIO%qtdrainflx(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx
+               NoahmpIO%qtiledrain(1,1) = NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx
             endif
 
             ! for MMF groundwater
@@ -434,7 +434,7 @@ subroutine NoahMPnew_main(n)
             startgw  = NoahmpIO%waxy(1,1)
 
             ! call model physics
-            call noahmp_driver_new(n, NoahmpIO, NoahMPnew_struc(n)%noahmpnew(t)%param)
+            call noahmp_driver_new(n, NoahMPnew_struc(n)%noahmpnew(t)%param)
 
             ! save state variables from NoahmpIO 1-D variables to global variables
             NoahMPnew_struc(n)%noahmpnew(t)%sfcrunoff       = NoahmpIO%sfcrunoff(1,1)
@@ -576,7 +576,7 @@ subroutine NoahMPnew_main(n)
             ! for tile drainage
             if (NoahmpIO%IOPT_TDRN > 0) then
                NoahMPnew_struc(n)%noahmpnew(t)%qtdrain    = NoahmpIO%qtdrain(1,1)
-               NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx = NoahmpIO%qtdrainflx(1,1)  
+               NoahMPnew_struc(n)%noahmpnew(t)%qtdrainflx = NoahmpIO%qtiledrain(1,1)  
             endif
 
             ! for MMF groundwater
@@ -902,12 +902,12 @@ subroutine NoahMPnew_main(n)
                                               vlevel=1, unit="umol m-2 s-1", direction="IN", surface_type = LIS_rc%lsm_index)
 
             ![ 62] output variable: sav (unit=W/m2 ). ***  solar radiation absorbed by vegetation
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAV, value = NoahMPnew_struc(n)%noahmpnew(t)%sav, &
-                                              vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAV, value = NoahMPnew_struc(n)%noahmpnew(t)%sav, &
+            !                                  vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
 
             ![ 63] output variable: sag (unit=W/m2 ). ***  solar radiation absorbed by ground
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAQ, value = NoahMPnew_struc(n)%noahmpnew(t)%sag, &
-                                              vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAQ, value = NoahMPnew_struc(n)%noahmpnew(t)%sag, &
+            !                                  vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
 
             ![ 64] output variable: rssun (unit=s/m). ***  sunlit leaf stomatal resistance
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RSSUN, value = NoahMPnew_struc(n)%noahmpnew(t)%rssun, &
@@ -986,8 +986,8 @@ subroutine NoahMPnew_main(n)
                                               vlevel=1, unit="W m-2", direction="UP", surface_type = LIS_rc%lsm_index)
 
             ![ 83] output variable: evc (unit=W/m2 ). ***  canopy evaporation heat [to atm]
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVC, value = NoahMPnew_struc(n)%noahmpnew(t)%evc, &
-                                              vlevel=1, unit="W/m2 ", direction="UP", surface_type = LIS_rc%lsm_index)
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVC, value = NoahMPnew_struc(n)%noahmpnew(t)%evc, &
+            !                                  vlevel=1, unit="W/m2 ", direction="UP", surface_type = LIS_rc%lsm_index)
 
             ![ 84] output variable: chleaf (unit=m/s). ***  leaf exchange coefficient
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CHLEAF, value = NoahMPnew_struc(n)%noahmpnew(t)%chleaf, &
@@ -1110,7 +1110,7 @@ subroutine NoahMPnew_main(n)
 
 ! J.Case (9/11/2014) -- Set relative soil moisture to missing (LIS_rc%udef)
 ! if the vegetation type is urban class.
-              if (NoahmpIO%ivgtyp .eq. NoahmpIO%urban_vegtype) then
+              if (NoahmpIO%ivgtyp(1,1) .eq. NoahmpIO%urban_vegtype(1,1)) then
                  NoahmpIO%relsmc(1,i,1) = LIS_rc%udef
               endif
               call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_RELSMC,vlevel=i, &

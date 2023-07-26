@@ -360,7 +360,7 @@ subroutine NoahMPnew_setup()
            CROPTYPE     = 0 
            if (NoahMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
                CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
-           call TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,NoahmpIO,&
+           call TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
                 NoahMPnew_struc(n)%noahmpnew(t)%param)
         enddo
    
@@ -515,9 +515,10 @@ subroutine NOAHMPnew_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
  end subroutine NOAHMPnew_read_MULTILEVEL_param
                                           
-SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,NoahmpIO,parameters)
+SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
   use NoahmpIOVarType
+  use LisNoahmpParamType
 
   implicit none
 
@@ -527,10 +528,8 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
   INTEGER, INTENT(IN)    :: SOILCOLOR
   INTEGER, INTENT(IN)    :: CROPTYPE
     
-  type(NoahmpIO_type),       intent(in)    :: NoahmpIO
   type(LisNoahmpParam_type), intent(inout) :: parameters
     
-  REAL    :: FRZK
   REAL    :: FRZFACT
   INTEGER :: ISOIL
 
@@ -709,7 +708,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
    parameters%C5_SNOWCOMPACT   =   NoahmpIO%C5_SNOWCOMPACT_TABLE
    parameters%DM_SNOWCOMPACT   =   NoahmpIO%DM_SNOWCOMPACT_TABLE
    parameters%ETA0_SNOWCOMPACT = NoahmpIO%ETA0_SNOWCOMPACT_TABLE
-   parameters%NLIQMAXFRAC      =     NoahmpIO%SNLIQMAXFRAC_TABLE
+   parameters%SNLIQMAXFRAC     =     NoahmpIO%SNLIQMAXFRAC_TABLE
    parameters%SWEMAXGLA        =        NoahmpIO%SWEMAXGLA_TABLE
    parameters%WSLMAX           =           NoahmpIO%WSLMAX_TABLE
    parameters%ROUS             =             NoahmpIO%ROUS_TABLE
@@ -766,13 +765,13 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
       parameters%SMCWLT(isoil) = NoahmpIO%SMCWLT_TABLE (SOILTYPE(isoil))
     end do
     
-    parameters%BVIC   = BVIC_TABLE(SOILTYPE(1))
-    parameters%AXAJ   = AXAJ_TABLE(SOILTYPE(1))
-    parameters%BXAJ   = BXAJ_TABLE(SOILTYPE(1))
-    parameters%XXAJ   = XXAJ_TABLE(SOILTYPE(1))
-    parameters%BDVIC  = BDVIC_TABLE(SOILTYPE(1))
-    parameters%GDVIC  = GDVIC_TABLE(SOILTYPE(1))
-    parameters%BBVIC  = BBVIC_TABLE(SOILTYPE(1))
+    parameters%BVIC   = NoahmpIO%BVIC_TABLE(SOILTYPE(1))
+    parameters%AXAJ   = NoahmpIO%AXAJ_TABLE(SOILTYPE(1))
+    parameters%BXAJ   = NoahmpIO%BXAJ_TABLE(SOILTYPE(1))
+    parameters%XXAJ   = NoahmpIO%XXAJ_TABLE(SOILTYPE(1))
+    parameters%BDVIC  = NoahmpIO%BDVIC_TABLE(SOILTYPE(1))
+    parameters%GDVIC  = NoahmpIO%GDVIC_TABLE(SOILTYPE(1))
+    parameters%BBVIC  = NoahmpIO%BBVIC_TABLE(SOILTYPE(1))
 
 ! ----------------------------------------------------------------------
 ! Transfer GENPARM parameters
@@ -782,7 +781,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     parameters%CZIL   = NoahmpIO%CZIL_TABLE
     parameters%REFDK  = NoahmpIO%REFDK_TABLE
     parameters%REFKDT = NoahmpIO%REFKDT_TABLE
-    FRZK              = NoahmpIO%FRZK_TABLE
+    parameters%FRZK   = NoahmpIO%FRZK_TABLE
     parameters%KDT    = parameters%REFKDT * parameters%DKSAT(1) / parameters%REFDK
     parameters%SLOPE  = NoahmpIO%SLOPE_TABLE(SLOPETYPE)
 
@@ -797,7 +796,7 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
 ! adjust FRZK parameter to actual soil type: FRZK * FRZFACT
     IF(SOILTYPE(1) /= 14) then
       FRZFACT = (parameters%SMCMAX(1) / parameters%SMCREF(1)) * (0.412 / 0.468)
-      parameters%FRZX = FRZK * FRZFACT
+      parameters%FRZX = parameters%FRZK * FRZFACT
     END IF
 
     parameters%mxsnalb = 0.84

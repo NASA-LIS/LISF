@@ -13,7 +13,7 @@
 
 #undef LIS_NoahMP_TEST 
 ! !INTERFACE
-subroutine noahmp_driver_new(n, NoahmpIO, LISparam)   
+subroutine noahmp_driver_new(n, LISparam)   
 
   use LIS_coreMod, only    : LIS_rc
   use LIS_logMod,  only    : LIS_logunit, LIS_endrun
@@ -24,7 +24,6 @@ subroutine noahmp_driver_new(n, NoahmpIO, LISparam)
 
   implicit none 
   integer,                   intent(in)    :: n          ! nest id 
-  type(NoahmpIO_type),       intent(inout) :: NoahmpIO   ! noahmp IO data type
   type(LisNoahmpParam_type), intent(in)    :: LISparam   ! lis/noahmp parameter
 
 !--------------------------------------------------------------------------------

@@ -339,6 +339,7 @@ contains
     INTEGER                                        :: J     !indices
     INTEGER                                        :: MSNO  !number of layer (top) to MSNO (bot)
     REAL                                           :: DRR   !thickness of the combined [m]
+    real, parameter                                :: TFRZ = 273.16    !freezing/melting point (k)
     REAL, DIMENSION(       1:NSNOW)                :: DZ    !snow layer thickness [m]
     REAL, DIMENSION(       1:NSNOW)                :: SWICE !partial volume of ice [m3/m3]
     REAL, DIMENSION(       1:NSNOW)                :: SWLIQ !partial volume of liquid water [m3/m3]

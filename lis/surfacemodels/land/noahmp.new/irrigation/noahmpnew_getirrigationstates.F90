@@ -15,14 +15,13 @@
 ! \label{noahmpnew_getirrigationstates}
 ! 
 ! !INTERFACE:
-subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
+subroutine noahmpnew_getirrigationstates(n,irrigState)
 ! !USES:
   use ESMF
   use LIS_coreMod
   use LIS_logMod
   use NoahMPnew_lsmMod
   use LIS_vegDataMod, only: LIS_read_shdmin, LIS_read_shdmax
-  !use NoahmpIOVarType
 
 ! !DESCRIPTION:        
 !
@@ -87,8 +86,6 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
   type(ESMF_State)     :: irrigState
   type(ESMF_Field)     :: irrigRateField,irrigFracField
   type(ESMF_Field)     :: irrigRootDepthField,irrigScaleField
-  type(NoahmpIO_type) , intent(in) :: NoahmpIO
-
  
   real,  pointer       :: irrigRate(:), irrigFrac(:)
   real,  pointer       :: irrigRootDepth(:), irrigScale(:)
@@ -246,9 +243,9 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
      zdpth(3) = sldpth(1) + sldpth(2) + sldpth(3)
      zdpth(4) = sldpth(1) + sldpth(2) + sldpth(3) + sldpth(4)
 
-     smcmax = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCMAX(1) !NoahmpIO%SMCMAX_TABLE(soiltyp)
-     smcref = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCREF(1) !NoahmpIO%SMCREF_TABLE(soiltyp)
-     smcwlt = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCWLT(1) !NoahmpIO%SMCWLT_TABLE(soiltyp)
+     smcmax = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCMAX(1) !SMCMAX_TABLE(soiltyp)
+     smcref = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCREF(1) !SMCREF_TABLE(soiltyp)
+     smcwlt = NoahmpNew_struc(n)%noahmpnew(t)%param%SMCWLT(1) !SMCWLT_TABLE(soiltyp)
 
   !   sfctemp = NoahmpNew_struc(n)%noahmpnew(t)%sfctmp
      tempcheck = 273.16 + 2.5
@@ -264,7 +261,9 @@ subroutine noahmpnew_getirrigationstates(n,irrigState,NoahmpIO)
                 
      ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
     
-     if((DVEG == 2 .OR. DVEG == 5 .OR. DVEG == 6) .AND. LIS_rc%irrigation_dveg == 1) then
+     if((NoahmpNew_struc(n)%dveg_opt == 2 .OR. &
+         NoahmpNew_struc(n)%dveg_opt == 5 .OR. &
+         NoahmpNew_struc(n)%dveg_opt == 6) .AND. LIS_rc%irrigation_dveg == 1) then
         shdfac = shdfac_avg
 
      else

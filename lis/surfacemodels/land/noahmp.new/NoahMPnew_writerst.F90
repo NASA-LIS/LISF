@@ -619,17 +619,17 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnumsi_ID, "IRNUMSI", &
                                  "sprinkler irrigation count", &
-                                 "-", vlevels=1, valid_min=-99999, valid_max=99999)
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irnummi
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnummi_ID, "IRNUMMI", &
                                  "micro irrigation count", &
-                                 "-", vlevels=1, valid_min=-99999, valid_max=99999)
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irnumfi
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnumfi_ID, "IRNUMFI", &
                                  "flood irrigation count", &
-                                 "-", vlevels=1, valid_min=-99999, valid_max=99999)
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irwatsi
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irwatsi_ID, "IRWATSI", &
