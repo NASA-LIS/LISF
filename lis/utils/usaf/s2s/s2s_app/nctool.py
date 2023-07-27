@@ -110,6 +110,10 @@ def print_var(latp, lonp, latname, lonname, varname, filename):
     if len (darr.shape) == 4:
         for i in range (darr.shape[1]):
             print (i, darr [:,i, _iy,_ix])
+    if len (darr.shape) == 5:
+        for j in range (darr.shape[1]):
+            for i in range (darr.shape[2]):
+                print (j, i, darr [:, j, i, _iy,_ix])
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
