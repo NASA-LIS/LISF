@@ -186,13 +186,17 @@ ds_out_unmasked = xr.Dataset(
         })
 regridder = xe.Regridder(ds_in, ds_out_unmasked, "conservative", periodic=True)
 ds_out_unmasked = regridder(ds_in)
+ds_out = ds_out_unmasked.copy()
 
 # LDT mask
 ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         config['SETUP']['ldtinputfile'])
-ds_out = ds_out_unmasked.copy()
-for da_name, da in ds_out_unmasked.data_vars.items():
-    ds_out[da_name] = xr.where(ldt_xr['LANDMASK'] == 0, -9999, da)
+mask_2d = np.array(ldt_xr['LANDMASK'].values)
+mask_exp = mask_2d[np.newaxis, np.newaxis,:,:]
+darray = np.array(ds_out_unmasked['XPREC'].values)
+mask = np.broadcast_to(mask_exp, darray.shape)
+darray[mask == 0] = -9999.
+ds_out['XPREC'].values = darray
 
 ## Reorganize and write
 YR = CYR
