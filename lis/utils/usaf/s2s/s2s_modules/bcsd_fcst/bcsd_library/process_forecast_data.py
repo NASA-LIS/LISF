@@ -73,6 +73,8 @@ def _read_cmd_args():
                              ic2, ic2, ic2, ic2, \
                              ic3, ic3, ic3, ic3]
     args['config'] = config
+    args['ldtfile'] = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile']
     return args
 
 def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
@@ -160,7 +162,12 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
                                                  var_name = "Q2M")
     ds_out2["WIND10M"].values[:] = limits.clip_array(np.array(ds_out2["WIND10M"].values[:]),
                                                      var_name = "WIND")
-
+    # get LDT mask LANDMASK
+    ldt_xr = xr.open_dataset(args["ldtfile"])
+    ds_out2_masked = ds_out2.copy()
+    for da_name, da in ds_out2.data_vars.items():
+        ds_out2_masked[da_name] = xr.where(ldt_xr['LANDMASK'] == 0, -9999, da)
+    
     for month in range(1,10):
         file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
         file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
@@ -168,8 +175,8 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        this_6h1 = ds_out2.sel(step = (ds_out2['valid_time']  >= dt1s) &
-                                (ds_out2['valid_time']  < dt2s), drop=True)
+        this_6h1 = ds_out2_masked.sel(step = (ds_out2_masked['valid_time']  >= dt1s) &
+                                (ds_out2_masked['valid_time']  < dt2s), drop=True)
         this_6h2 = this_6h1.rename_vars({"time": "time_step"})
         this_6h = this_6h2.rename_dims({"step": "time"})
         this_6h.to_netcdf(

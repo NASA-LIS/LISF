@@ -179,13 +179,20 @@ ds_in["XPREC"] = xr.DataArray(
         lat=(["lat"], LATI),
         lon=(["lon"], LONI))
     )
-ds_out = xr.Dataset(
+ds_out_unmasked = xr.Dataset(
             {
                 "lat": (["lat"], LATS),
                 "lon": (["lon"], LONS),
         })
-regridder = xe.Regridder(ds_in, ds_out, "conservative", periodic=True)
-ds_out = regridder(ds_in)
+regridder = xe.Regridder(ds_in, ds_out_unmasked, "conservative", periodic=True)
+ds_out_unmasked = regridder(ds_in)
+
+# LDT mask
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+ds_out = ds_out_unmasked.copy()
+for da_name, da in ds_out_unmasked.data_vars.items():
+    ds_out[da_name] = xr.where(ldt_xr['LANDMASK'] == 0, -9999, da)
 
 ## Reorganize and write
 YR = CYR
