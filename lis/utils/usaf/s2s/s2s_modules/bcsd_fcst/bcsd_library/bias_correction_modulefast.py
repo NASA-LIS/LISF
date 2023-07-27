@@ -165,7 +165,7 @@ def monthly_calculations(mon):
                 read_nc_files(infile, FCST_VAR)[:]
     # Defining array to store bias-corrected monthly forecasts
     correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
-    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-999
+    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.
     print("shape of fcst_coarse: ", fcst_coarse.shape)
 
     # Get the lat/lon indexes for the ranges
@@ -192,7 +192,7 @@ def monthly_calculations(mon):
     TINY, fcst_coarse, correct_fcst_coarse)
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \
-                          mask=correct_fcst_coarse == -999)
+                                             mask=correct_fcst_coarse == -9999.)
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \
               TARGET_FCST_SYR, TARGET_FCST_EYR)
     print(f"Now writing {outfile}")
