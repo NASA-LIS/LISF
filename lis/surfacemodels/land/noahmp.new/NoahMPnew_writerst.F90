@@ -943,6 +943,9 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%tauss, &
                               varid=tauss_ID, dim=1, wformat=wformat)
 
+    ! for MMF groundwater
+    if (NoahMPnew_struc(n)%runsub_opt == 5) then
+
     ! equilibrium volumetric soil moisture content
     do l=1, NoahMPnew_struc(n)%nsoil   ! TODO: check loop
         tmptilen = 0
@@ -953,8 +956,6 @@ subroutine NoahMPnew_dump_restart(n, ftn, wformat)
                                   varid=smoiseq_ID, dim=l, wformat=wformat)
     enddo
 
-    ! for MMF groundwater
-    if (NoahMPnew_struc(n)%runsub_opt == 5) then
     ! soil moisture content in the layer to the water table when deep
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMPnew_struc(n)%noahmpnew%smcwtd, &
                               varid=smcwtd_ID, dim=1, wformat=wformat)

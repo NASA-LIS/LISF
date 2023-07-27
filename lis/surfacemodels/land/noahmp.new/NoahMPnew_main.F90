@@ -634,10 +634,11 @@ subroutine NoahMPnew_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = NoahMPnew_struc(n)%noahmpnew(t)%albedo, &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
-            if (NoahmpIO%albedo(1,1) .ne. LIS_rc%udef) NoahmpIO%albedo(1,1) = NoahmpIO%albedo(1,1) * 100.0
+            !if (NoahMPnew_struc(n)%noahmpnew(t)%albedo .ne. LIS_rc%udef) &
+            !   NoahMPnew_struc(n)%noahmpnew(t)%albedo = NoahMPnew_struc(n)%noahmpnew(t)%albedo * 100.0
 
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = NoahmpIO%albedo(1,1), &
-                                              vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = NoahMPnew_struc(n)%noahmpnew(t)%albedo, &
+            !                                  vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
 
             ![ 6] output variable: snowc (unit=-). ***  snow cover fraction
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOWCOVER, value = NoahMPnew_struc(n)%noahmpnew(t)%snowc, &
@@ -906,7 +907,7 @@ subroutine NoahMPnew_main(n)
             !                                  vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
 
             ![ 63] output variable: sag (unit=W/m2 ). ***  solar radiation absorbed by ground
-            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAQ, value = NoahMPnew_struc(n)%noahmpnew(t)%sag, &
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SAG, value = NoahMPnew_struc(n)%noahmpnew(t)%sag, &
             !                                  vlevel=1, unit="W/m2 ", direction="IN", surface_type = LIS_rc%lsm_index)
 
             ![ 64] output variable: rssun (unit=s/m). ***  sunlit leaf stomatal resistance
