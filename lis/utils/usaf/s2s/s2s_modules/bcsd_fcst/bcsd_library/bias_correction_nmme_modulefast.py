@@ -187,7 +187,7 @@ for MON in [INIT_FCST_MON]:
     FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
 
     CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
-    mask=CORRECT_FCST_COARSE == -999)
+                                             mask=CORRECT_FCST_COARSE == -9999.)
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, MODEL_NAME, \
     MONTH_NAME, TARGET_FCST_SYR, TARGET_FCST_EYR)
     print(f"Now writing {OUTFILE}")

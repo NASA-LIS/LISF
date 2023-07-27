@@ -83,7 +83,7 @@ def calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, target_fcst_val_arr, targ
               target_fcst_eyr, fcst_syr, ens_final, mon, bc_var, tiny):
 #pylint: enable=too-many-arguments
     """ calculates bias correction """
-    correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1, lead_final, ens_final))*-999
+    correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1, lead_final, ens_final))*-9999.
 
     for lead_num in range(0, lead_final): ## Loop from lead =0 to Final Lead
         target_month = mon + lead_num ## This is the target forecast month
@@ -138,7 +138,7 @@ def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons, \
     """ lat lon calculations """
 
     correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1, lead_final, ens_final, \
-                                    nlats, nlons))*-999
+                                    nlats, nlons))*-9999.
 
     num_lats = ilat_max-ilat_min+1
     num_lons = ilon_max-ilon_min+1

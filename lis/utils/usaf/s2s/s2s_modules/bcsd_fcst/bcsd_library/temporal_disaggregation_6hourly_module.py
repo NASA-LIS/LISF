@@ -45,7 +45,7 @@ CF2VAR = {
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
     global PRECIP_THRES
-    output_bc_data = np.ones(len(input_raw_data))*-999
+    output_bc_data = np.ones(len(input_raw_data))*-9999.
 
     if bc_var == 'PRCP':
         if mon_raw_value < PRECIP_THRES:
@@ -190,7 +190,7 @@ for MON in [INIT_FCST_MON]:
             # and define array to store output file
             OUTFILE = SUBDAILY_OUTFILE_TEMPLATE.format(OUTDIR, OBS_VAR, \
             FCST_YEAR, FCST_MONTH)
-            OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-999
+            OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-9999.
             # Monthly raw data
             if FCST_VAR != 'PRECTOT':
                 MONTHLY_INFILE = MONTHLY_RAW_INFILE_TEMPLATE.format(\
@@ -254,12 +254,12 @@ for MON in [INIT_FCST_MON]:
             ### month and ensemble member
             # clip limits
             if OBS_VAR == 'PRECTOT':
-                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), missing=-999, precip=True)
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), precip=True)
             else:
-                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), missing=-999)
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR))
             print(f"Now writing {OUTFILE}")
             OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
-            mask=OUTPUT_BC_DATA == -999)
+                                                mask=OUTPUT_BC_DATA == -9999.)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
             range(NUM_TIMESTEPS)]
 
