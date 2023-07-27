@@ -19,7 +19,7 @@ class VarLimits:
     def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
                     missing=None, min_thres=None, precip=None):
         ''' Below limits are 6h based'''
-        min_limit={'PRECTOT': 1.e-8,
+        min_limit={'PRECTOT': 1.e-6,
                   'PS': 30000.,
                   'T2M': 180.,
                   'LWS': 10.,

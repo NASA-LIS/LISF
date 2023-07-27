@@ -60,7 +60,7 @@ def use_neighbors_diurnal_cycle (precip_data):
     useful_precip = ma.masked_array(total_precip, ~useful_cells_mask)
     tgt_cells_beg = np.sum(target_cells_mask)
 
-    for zoom in range (1,20):
+    for zoom in range (1,10):
         # starting from the 3x3 window from the location gradually increase upto 39x39 window
         for direction in (-1,1):
             shift = direction * zoom
