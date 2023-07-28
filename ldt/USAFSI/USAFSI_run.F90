@@ -69,6 +69,7 @@ subroutine USAFSI_run(n)
   !**  28 Jan 21  Updated messages for PMW snow retrievals
   !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
   !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
+  !**  28 Jun 23  Extended station names to 31 characters........Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -107,8 +108,10 @@ subroutine USAFSI_run(n)
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
   character*255              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
   character*255              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
+  integer :: sfcobsfmt ! Format of sfcobs file
   character*255              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
-  character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
+  !character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
+  character*31,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*255              ::  static               ! STATIC FILE DIRECTORY PATH
   character*255              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
   character*255 :: sstdir ! EMK 20220113
@@ -129,7 +132,8 @@ subroutine USAFSI_run(n)
   real,       allocatable    ::  stadep     (:)       ! OBSERVATION SNOW DEPTH (METERS)
   character*12 :: routine_name
   type(LDT_bratseth_t) :: bratseth
-  character*10 :: network10, platform10
+  character*10 :: network10
+  character*31 :: platform31
   real :: rob, rlat, rlon, relev
   integer :: nc,nr
   real, allocatable :: landmask(:,:)
@@ -176,6 +180,8 @@ subroutine USAFSI_run(n)
      fracdir = trim(usafsi_settings%fracdir)
      modif = trim(usafsi_settings%modif)
      sfcobs = trim(usafsi_settings%sfcobs)
+     sfcobsfmt = usafsi_settings%sfcobsfmt ! EMK test
+
 !---------------------------------------------------------kyh20201118
      if (usafsi_settings%TB_option == 1) then             !SSMIS
         TB_product_path = trim(usafsi_settings%ssmis)
@@ -367,8 +373,16 @@ subroutine USAFSI_run(n)
         allocate (stalat           (maxsobs))
         allocate (stalon           (maxsobs))
 
-        call getobs (date10, month, sfcobs, netid, staid, stacnt, &
-             stalat, stalon, staelv, stadep)
+        if (sfcobsfmt == 1 .or. sfcobsfmt == 2) then
+           call getobs (date10, month, sfcobs, netid, staid, stacnt, &
+                stalat, stalon, staelv, stadep, sfcobsfmt)
+        else
+           write(LDT_logunit,*)'[ERR] Invalid sfcobs file format!'
+           write(LDT_logunit,*)'[ERR] Expected 1 (old) or 2 (new)'
+           write(LDT_logunit,*)'[ERR] Received ', sfcobsfmt
+           call LDT_endrun()
+        end if
+
         write(LDT_logunit,*) &
              '[INFO] TOTAL OBSERVATIONS RETURNED FROM GETOBS: ', &
              stacnt
@@ -376,12 +390,13 @@ subroutine USAFSI_run(n)
         ! EMK Copy observations to bratseth object
         do j = 1, stacnt
            network10 = trim(netid(j))
-           platform10 = trim(staid(j))
+           platform31 = trim(staid(j))
            rob = stadep(j)
            rlat = real(stalat(j)) * 0.01
            rlon = real(stalon(j)) * 0.01
            relev = real(staelv(j))
-           call bratseth%append_ob(network10, platform10, rob, rlat, rlon,&
+           call bratseth%append_ob(network10, platform31, rob, &
+                rlat, rlon,&
                 relev, &
                 usafsi_settings%ob_err_var, back=-1.)
         end do
