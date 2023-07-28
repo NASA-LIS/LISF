@@ -360,7 +360,7 @@ subroutine NoahMPnew_setup()
            CROPTYPE     = 0 
            if (NoahMPnew_struc(n)%crop_opt > 0 .and. VEGTYP == NoahmpIO%ISCROP_TABLE) &
                CROPTYPE = NoahmpIO%DEFAULT_CROP_TABLE
-           call TRANSFER_MP_PARAMETERS(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
+           call TRANSFER_MP_PARAMETERS_NEW(VEGTYP,SOILTYP,SLOPETYP,SOILCOLOR,CROPTYPE,&
                 NoahMPnew_struc(n)%noahmpnew(t)%param)
         enddo
    
@@ -515,7 +515,7 @@ subroutine NOAHMPnew_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
  end subroutine NOAHMPnew_read_MULTILEVEL_param
                                           
-SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
+SUBROUTINE TRANSFER_MP_PARAMETERS_NEW(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,parameters)
 
   use NoahmpIOVarType
   use LisNoahmpParamType
@@ -807,4 +807,4 @@ SUBROUTINE TRANSFER_MP_PARAMETERS(VEGTYPE,SOILTYPE,SLOPETYPE,SOILCOLOR,CROPTYPE,
     parameters%t_llimit = 0.5
     parameters%snowf_scalef = 1.0
    
- END SUBROUTINE TRANSFER_MP_PARAMETERS
+ END SUBROUTINE TRANSFER_MP_PARAMETERS_NEW
