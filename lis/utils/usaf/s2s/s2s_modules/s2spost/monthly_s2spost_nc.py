@@ -384,6 +384,7 @@ def _add_time_data(infile, outfile, startdate, enddate):
     var_out[:] = var_in[:]
     ncid_out["time"].setncattr('units', "minutes since " + startdate.strftime("%Y-%m-%d") + " 00:00:00")
     ncid_out["time"].setncattr('begin_date', startdate.strftime("%Y%m%d"))
+    ncid_out["time"].setncattr('time_increment', str((enddate - startdate).total_seconds()/60.))
 
     # Copy the time_bnds array from the last daily file.  But, we will change
     # the value to span one month of data.
@@ -395,8 +396,8 @@ def _add_time_data(infile, outfile, startdate, enddate):
                                       shuffle=True)
     var_out[:, :] = var_in[:, :]
     # Count number of minutes between start and end dates.
-    var_out[0, 0] = ((enddate - startdate).days)  * (-24*60) # Days to minutes
-    var_out[0, 1] = 0
+    var_out[0, 0] = 0
+    var_out[0, 1] = ((enddate - startdate).days)  * (24*60) # Days to minutes
 
     ncid_in.close()
     ncid_out.close()
