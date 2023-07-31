@@ -73,8 +73,6 @@ def _read_cmd_args():
                              ic2, ic2, ic2, ic2, \
                              ic3, ic3, ic3, ic3]
     args['config'] = config
-    args['ldtfile'] = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
-        config['SETUP']['ldtinputfile']
     return args
 
 def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
@@ -162,50 +160,7 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
                                                  var_name = "Q2M")
     ds_out2["WIND10M"].values[:] = limits.clip_array(np.array(ds_out2["WIND10M"].values[:]),
                                                      var_name = "WIND")
-    # get LDT mask LANDMASK
-    ldt_xr = xr.open_dataset(args["ldtfile"])
-    mask_2d = np.array(ldt_xr['LANDMASK'].values)
-    mask_exp = mask_2d[np.newaxis,:,:]
-    darray = np.array(ds_out2['PRECTOT'].values)
-    mask = np.broadcast_to(mask_exp, darray.shape)
 
-    # apply mask
-    ds_out2_masked = ds_out2.copy()
-    darray[mask == 0] = -9999.
-    ds_out2_masked['PRECTOT'].values = darray
-
-    darray = np.array(ds_out2['PS'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['PS'].values = darray
-
-    darray = np.array(ds_out2['T2M'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['T2M'].values = darray
-
-    darray = np.array(ds_out2['LWS'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['LWS'].values = darray
-
-    darray = np.array(ds_out2['SLRSF'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['SLRSF'].values = darray
-
-    darray = np.array(ds_out2['Q2M'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['Q2M'].values = darray
-
-    darray = np.array(ds_out2['U10M'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['U10M'].values = darray
-
-    darray = np.array(ds_out2['V10M'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['V10M'].values = darray
-
-    darray = np.array(ds_out2['WIND10M'].values)
-    darray[mask == 0] = -9999.
-    ds_out2_masked['WIND10M'].values = darray
-    
     for month in range(1,10):
         file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
         file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
@@ -213,8 +168,8 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
-        this_6h1 = ds_out2_masked.sel(step = (ds_out2_masked['valid_time']  >= dt1s) &
-                                (ds_out2_masked['valid_time']  < dt2s), drop=True)
+        this_6h1 = ds_out2.sel(step = (ds_out2['valid_time']  >= dt1s) &
+                                (ds_out2['valid_time']  < dt2s), drop=True)
         this_6h2 = this_6h1.rename_vars({"time": "time_step"})
         this_6h = this_6h2.rename_dims({"step": "time"})
         this_6h.to_netcdf(

@@ -382,6 +382,8 @@ def _add_time_data(infile, outfile, startdate, enddate):
             continue
         var_out.setncattr(attrname, var_in.__dict__[attrname])
     var_out[:] = var_in[:]
+    ncid_out["time"].setncattr('units', "minutes since " + startdate.strftime("%Y-%m-%d") + " 00:00:00")
+    ncid_out["time"].setncattr('begin_date', startdate.strftime("%Y%m%d"))
 
     # Copy the time_bnds array from the last daily file.  But, we will change
     # the value to span one month of data.
