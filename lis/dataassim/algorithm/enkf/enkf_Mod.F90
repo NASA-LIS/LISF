@@ -26,7 +26,9 @@ module enkf_Mod
 !  
 ! !REVISION HISTORY:
 !   27 Feb 2005: Sujay Kumar; Initial Specification
-! 
+!   30 Jun 2022: Michel Bechtold (MB); Enabling multiple observation types
+!   30 Jun 2022: Zdenko Heyaert, Michel Bechtold; bug fix for multiple DA instances
+
 ! !USES: 
   use ESMF
   use enkf_types
@@ -736,9 +738,10 @@ contains
           call LIS_verify(nf90_def_dim(ftn,&
                vardimname,LIS_rc%nobtypes(k),dimId(3)),&
                'nf90_def_dim failed for ninnov_'//trim(finst))
+          !MB add third dimension for multiple obstypes
           call LIS_verify(nf90_def_var(ftn,varname,&
                nf90_float,&
-               dimids = dimID(1:2), varID=ninnov_Id),&
+               dimids = dimID(1:3), varID=ninnov_Id),&
                'nf90_def_var failed for '//trim(varname)//' in enkf_mod')
           
 #if(defined USE_NETCDF4)
@@ -763,9 +766,10 @@ contains
                vardimname,LIS_rc%nobtypes(k),dimId(3)),&
                'nf90_def_dim failed for innov_'//trim(finst))
 
+          !MB add third dimension for multiple obstypes
           call LIS_verify(nf90_def_var(ftn,varname,&
                nf90_float,&
-               dimids = dimID(1:2), varID=innov_Id),&
+               dimids = dimID(1:3), varID=innov_Id),&
                'nf90_def_var failed for innov')
           
 #if(defined USE_NETCDF4)
@@ -791,9 +795,10 @@ contains
                vardimname,LIS_rc%nobtypes(k),dimId(3)),&
                'nf90_def_dim failed for analysis_residual_'//trim(finst))
 
+          !MB add third dimension for multiple obstypes
           call LIS_verify(nf90_def_var(ftn,varname,&
                nf90_float,&
-               dimids = dimID(1:2), varID=ares_Id),&
+               dimids = dimID(1:3), varID=ares_Id),&
                'nf90_def_var failed for '//trim(varname)//' in enkf_mod')
           
 #if(defined USE_NETCDF4)
@@ -818,9 +823,10 @@ contains
                vardimname,LIS_rc%nobtypes(k),dimId(3)),&
                'nf90_def_dim failed for forecast_sigma_'//trim(finst))
 
+          !MB add third dimension for multiple obstypes
           call LIS_verify(nf90_def_var(ftn,varname,&
                nf90_float,&
-               dimids = dimID(1:2), varID=forecast_sigma_Id),&
+               dimids = dimID(1:3), varID=forecast_sigma_Id),&
                'nf90_def_var for forecast_sigma failed in enkf_mod')
              
 #if(defined USE_NETCDF4)
@@ -985,7 +991,8 @@ contains
             LIS_rc%nstvars(k),state_size, stvar)
 
        do v=1,LIS_rc%nstvars(k)
-          call LIS_writevar_spread(ftn,n,k,ensspread_id(v), &
+       ! MB: bug fix for multiple DA instances      
+          call LIS_writevar_spread(ftn,n,LIS_rc%lsm_index,ensspread_id(v), &
                stvar(v,:),v)
        enddo
        
@@ -1117,7 +1124,8 @@ contains
        endif
        
        do v=1,LIS_rc%nstvars(k)
-          call LIS_writevar_incr(ftn,n,k,incr_id(v), &
+       ! MB: bug fix for multiple DA instances      
+          call LIS_writevar_incr(ftn,n,LIS_rc%lsm_index,incr_id(v), &
                enkf_struc(n,k)%anlys_incr(v,:),v)
        enddo
        
