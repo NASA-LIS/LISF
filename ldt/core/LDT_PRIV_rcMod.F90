@@ -360,6 +360,7 @@ module LDT_PRIV_rcMod
      real                   :: group_cdfs_min
      real                   :: group_cdfs_max
      integer                :: group_cdfs_nbins
+     integer                :: daily_interp_switch  !0:on; 1:off (Y.Kwon)
 
      integer                :: sp_sampl_cdfs
      integer                :: sp_sample_cdf_rad

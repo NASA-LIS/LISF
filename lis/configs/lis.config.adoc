@@ -235,6 +235,22 @@ land slide model:
 ....
 
 
+`Number of subLSMs:` specifies the number of subLSMs to run.
+Acceptable values are: 0 : no subLSM; 1 : One subLSM
+
+
+`subLSM models:` specifies the subLSMs to run.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| Crocus8.1 | Crocus snow model model
+|====
+
+Note: To run a standalone version of the Crocus, the user need to set 
+Land surface model:  "none"
+
 `Number of met forcing sources:` specifies the
 number of met forcing datasets to be used. Acceptable
 values are 0 or higher.
@@ -6119,11 +6135,17 @@ ensemble members desired for the user-generated ensemble forecast dataset.
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.
 
+`Generic ensemble forecast initial date:` specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.
+
 .Example _lis.config_ entry
 ....
 Generic ensemble forecast directory:     ./GEOS5_BiasCorrected/
 Generic ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5
+Name of base forecast model:               GEOS5
+Generic ensemble forecast initial date:    20200501
 ....
 
 
@@ -6140,11 +6162,17 @@ ensemble members desired for the user-generated precipitation ensemble forecast 
 the generated ensemble-based forecast forcing files being read in.
 Default setting is GEOS5, but options include GEOS5 and CFSv2.
 
+`Precipitation ensemble forecast initial date:` specifies the initial forecast
+date, such as YYYYMMDD. This option enables the user to be able to
+run from restart conditions if a forecast run stops or times out
+during runtime. This is an optional entry.
+
 .Example _lis.config_ entry
 ....
-Precipitation ensemble forecast directory:     ./GEOS5_BiasCorrected/
+Precipitation ensemble forecast directory:    ./GEOS5_BiasCorrected/
 Precipitation ensemble forecast number of ensemble members:  11
-Name of base forecast model:              GEOS5
+Name of base forecast model:                   GEOS5
+Precipitation ensemble forecast initial date:  20200501
 ....
 
 
@@ -10081,6 +10109,225 @@ NLDAS routing model start mode:
 NLDAS routing model restart file:
 ....
 
+
+[[sssec_lsm_Crocus8.1, from SURFEX8.1]]
+==== Crocus8.1
+
+`CROCUS81 model timestep:` specifies the timestep for the run.
+
+`CROCUS81 restart output interval:` defines the restart
+writing interval for Crocus8.1. The typical value is 1 month (1mo).
+
+
+`CROCUS81 nsnow:` total number of snow layer
+
+
+`CROCUS81 nimpur:` number of impurity types  Note: this option is not activated in the current version
+
+`CROCUS81 SNOWRES_opt:` turbulant exchange options ('DEF', 'RIL', 'M98' ) 
+                                      'DEF' = Default: Louis (ISBA: Noilhan and Mahfouf 1996)
+                                      'RIL' = Limit Richarson number under very stable
+                                              conditions (currently testing)
+                                      'M98'  = Martin et Lejeune 1998 : older computation for turbulent fluxes coefficents in Crocus
+
+`CROCUS81 OMEB_BOOL:`                 True = coupled to MEB. This means surface fluxes ae IMPOSED
+                                       as an upper boundary condition to the explicit snow schemes. 
+                                      If = False, then energy
+                                      budget and fluxes are computed herein.
+
+`CROCUS81 HIMPLICIT_WIND_opt:`  wind implicitation option
+                                      'OLD' = direct
+                                      'NEW' = Taylor serie, order 1 
+
+`ROCUS81 PTSTEP:` must set to 900s because it has been used to compute the amount of snowfall to triger the CALL_MODEL
+
+`CROCUS81 UREF:` reference height of the wind
+
+`CROCUS81 ZREF:` reference height of the first atmospheric level
+
+`CROCUS81 Z0NAT:` grid box average roughness length
+
+`CROCUS81 Z0EFF:` roughness length for momentum
+
+`CROCUS81 Z0HNAT:` grid box average roughness length for heat
+
+`CROCUS81 D_G:` Assumed first soil layer thickness (m)
+
+`CROCUS81 SNOWDRIFT_opt:` 
+                          'NONE': No snowdrift scheme 
+                          'DFLT': falling snow falls as purely dendritic
+                          'GA01': Gallee et al 2001
+                          'VI13': Vionnet et al 2013
+
+`CROCUS81 SNOWDRIFT_SUBLIM_BOOL:` activate sublimation during drift
+
+`CROCUS81 SNOW_ABS_ZENITH_BOOL:` activate parametrization of solar absorption for polar regions
+
+`CROCUS81 SNOWMETAMO_opt:`       Metamorphism scheme
+                                      HSNOWMETAMO=B92 Brun et al 1992
+                                      HSNOWMETAMO=C13 Carmagnola et al 2014
+                                      HSNOWMETAMO=T07 Taillandier et al 2007
+                                      HSNOWMETAMO=F06 Flanner et al 2006
+
+`CROCUS81 SNOWRAD_opt:`    Radiative transfer scheme
+                                      B92 Brun et al 1992
+                                      T17 (Tuzet et al. 2017) (Libois et al. 2013) 
+                                          TARTES with impurities content scheme (Currently not available)
+
+`CROCUS81 ATMORAD_BOOL:`   activate atmotartes scheme
+
+`CROCUS81 IMPWET:` Wet deposit impurity coefficient 
+
+`CROCUS81 IMPDRY:` Dry deposit impurity coefficient  
+
+`CROCUS81 SNOWFALL_opt:` Falling snow scheme              
+                                       V12 Vionnet et al. 2012 from Brun et al. 1989
+                                       A76 Anderson et al. 1976
+                                       S02 Lehning el al. 2002
+                                       P75 Pahaut 1975
+                                       NZE Constant density 200 kg/m3 (who knows ?) 
+`CROCUS81 SNOWCOND_opt:`   Thermal conductivity scheme
+                                       Y81 default Crocus from Yen et al. 1981
+                                       I02 ISBA_ES snow conductivity parametrization (Boone et al. 2002)
+                                       C11 Calonne et al. 2011 snow conductivity parametrization
+
+`CROCUS81 SNOWHOLD_opt:`  liquid water content scheme
+                                       B92 default Crocus from Brun et al. 1992 or Vionnet et al. 2012
+                                       B02 ISBA_ES  parametrization (Boone et al. 2002)
+                                       O04 CLM parametrization (Oleson et al 2004)
+                                       S02 SNOWPACK aprametrization (Lehning et al 2002)
+
+`CROCUS81 SNOWCOMP_opt:`  compaction option 
+                                       B92 snow compaction basis version 
+                                       B93 for slightly different parameters 
+ 
+`CROCUS81 SNOWZREF_opt:`  reference height is constant or variable from the snow surface
+                                       CST constant reference height from the snow surface
+                                       VAR variable reference height from the snow surface (i.e. constant from the ground)
+
+`CROCUS81 SNOWCOMPACT_BOOL:` activate snow comapction 
+
+`CROCUS81 SNOWMAK_BOOL:` activate snowmaking 
+
+`CROCUS81 SNOWTILLER_BOOL:` activate Tilling
+
+`CROCUS81 SELF_PROD_BOOL:` snow management option
+
+`CROCUS81 SNOWMAK_PROP_BOOL:` Additionnal boolean to use modified properties of machine made snow (MMS) or not 
+ 
+`CROCUS81 PRODSNOWMAK_BOOL:`  activate snowmaking daytime
+
+`CROCUS81 GLACIER_BOOL:`  True = Over permanent snow and ice, 
+                                 initialise WGI=WSAT,
+                                 Hsnow>=10m and allow 0.8<SNOALB<0.85
+                                 False = No specific treatment
+
+`CROCUS81 TG:` Surface soil temperature (effective temperature the of layer lying below snow)
+
+`CROCUS81 use monthly albedo map:` .TRUE. #use monthly climatology albedo  # .FALSE. use constant value of 0.2  
+
+`CROCUS81 boolean option to partition total precip:`  TRUE if forcing only provides total precip. FALSE if forcing contains snowfall and rainfall 
+
+`CROCUS81 restart file:` specifies the Crocus restart file. 
+
+`CROCUS81 restart file format:` specifies the format for the Crocus8.1 restart file.
+
+`CROCUS81 initial SNOWSWE:`  Initial snow SWE (kg/m2)
+
+`CROCUS81 initial SNOWRHO:` Initial snow layer(s) density (kg/m3)
+
+`CROCUS81 initial SNOWHEAT:` Initial snow layer(s) heat content (J/m2)
+
+`CROCUS81 initial SNOWALB:` Initial surface albedo  
+
+`CROCUS81 initial SNOWGRAN1:` Initial Snow layer(s) grain parameter 1
+
+`CROCUS81 initial SNOWGRAN2:` Initial Snow layer(s) grain parameter 1
+
+`CROCUS81 initial SNOWHIST:` Initial Snow layer(s) Historical parameter (-) in {0-5}
+
+`CROCUS81 initial SNOWLIQ:` Initial Snow layer(s) liquid water content (m)
+
+`ROCUS81 initial SNOWTEMP: Initial Snow layer(s) temperature (K)
+
+`CROCUS81 initial SNOWDZ:` Initial Snow layer(s) thickness (m)
+
+`CROCUS81 initial GRNDFLUX:` Initial Soil/snow interface heat flux (W/m2)
+
+`CROCUS81 initial SNDRIFT:` Initial Blowing snow sublimation (kg/m2/s) NOTE: Snow compaction and metamorphism due to drift, Mass is unchanged
+
+`CROCUS81 initial RI_n:` Initial Richardson number 
+
+`ROCUS81 initial CDSNOW:` Initial drag coefficient for momentum over snow
+ 
+`CROCUS81 initial USTARSNOW:` Initial  Friction velocity over snow (m/s)
+
+`CROCUS81 initial CHSNOW:` Initial Drag coefficient for heat over snow  (-)
+
+`CROCUS81 initial SNOWMAK_dz:` Initial depth from snow making process
+
+
+.Example _lis.config_ entry
+....
+
+CROCUS81 model timestep:                  15mn 
+CROCUS81 restart output interval:         1mo
+CROCUS81 nsnow:                           50
+CROCUS81 nimpur:                          2
+CROCUS81 SNOWRES_opt:                     "DEF" 
+CROCUS81 OMEB_BOOL:                      .FALSE. 
+CROCUS81 HIMPLICIT_WIND_opt:             "NEW"  
+CROCUS81 PTSTEP:                          900 
+CROCUS81 UREF:                            10
+CROCUS81 ZREF:                            1.5
+CROCUS81 Z0NAT:                           0.005 
+CROCUS81 Z0EFF:                           0.001 
+CROCUS81 Z0HNAT:                          0.0005 
+CROCUS81 D_G:                             0.01 
+CROCUS81 SNOWDRIFT_opt:                   "NONE"
+CROCUS81 SNOWDRIFT_SUBLIM_BOOL:           .FALSE.
+CROCUS81 SNOW_ABS_ZENITH_BOOL:            .FALSE.
+CROCUS81 SNOWMETAMO_opt:                  "C13"
+CROCUS81 SNOWRAD_opt:                     "B92"
+CROCUS81 ATMORAD_BOOL:                    .FALSE.
+CROCUS81 IMPWET:                          0.0 0.0   
+CROCUS81 IMPDRY:                          0.0 0.0
+CROCUS81 SNOWFALL_opt:                    "V12"
+CROCUS81 SNOWCOND_opt:                    "Y81"
+CROCUS81 SNOWHOLD_opt:                    "B92"
+CROCUS81 SNOWCOMP_opt:                    "B92"
+CROCUS81 SNOWZREF_opt:                    "CST" 
+CROCUS81 SNOWCOMPACT_BOOL:                .FALSE.
+CROCUS81 SNOWMAK_BOOL:                    .FALSE.
+CROCUS81 SNOWTILLER_BOOL:                 .FALSE.
+CROCUS81 SELF_PROD_BOOL:                  .FALSE.
+CROCUS81 SNOWMAK_PROP_BOOL:               .FALSE.
+CROCUS81 PRODSNOWMAK_BOOL:                .FALSE.
+CROCUS81 GLACIER_BOOL:                    .FALSE.
+CROCUS81 TG:                              273.15 
+CROCUS81 use monthly albedo map:          .TRUE.
+CROCUS81 boolean option to partition total precip: 
+CROCUS81 restart file:                    output/SURFACEMODEL/201708/LIS_RST_CROCUS81_201708312345.d01.nc
+CROCUS81 restart file format:             netcdf
+
+CROCUS81 initial SNOWSWE: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWRHO: 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000
+CROCUS81 initial SNOWHEAT: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWALB: 0.0
+CROCUS81 initial SNOWGRAN1: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWGRAN2: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWHIST: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWAGE: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWLIQ: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWTEMP: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial SNOWDZ: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
+CROCUS81 initial GRNDFLUX: 0.0
+CROCUS81 initial SNDRIFT: 0.0
+CROCUS81 initial RI_n: 0.0
+CROCUS81 initial CDSNOW: 0.0
+CROCUS81 initial USTARSNOW: 0.0
+CROCUS81 initial CHSNOW: 0.0
+CROCUS81 initial SNOWMAK_dz: 0.0
 
 === Runoff
 

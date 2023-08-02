@@ -113,6 +113,8 @@ variances are output to text files.
 
 (5) Reads a lis.config file, and generates a replacement with new Bratseth
 error covariance settings. This is performed by customize_lis_config.py.
+By default, the AGRMET GALWEM settings are updated, but AGRMET GFS can
+be specified instead in the autotune.cfg file (see below).
 
 Note that error checking is performed at each stage.  If an error occurs,
 the script is aborted (return code of 1), and no new lis.config file is
@@ -133,6 +135,10 @@ This is used to identify which variables or data sources (gage vs satellite
 data) are to be updated.  Possible values are rh2m, spd10m, t2m, gage,
 and imerg.  NOTE:  NO SPACES SHOULD BE USED FOR THE VALUES LISTED IN THE
 varlist: ENTRY.
+
+NOTE:  The 'gfs' entry will force the system to update the AGRMET GFS
+covariance settings for LIS instead of AGRMET GALWEM.  This is only expected
+to be used for future LIS reanalyses by NASA.
 
 (*) blacklist_gage.cfg: A Python config file used by customize_procoba_nwp.py.
 This specifies the maximum number of networks a gage platform (ID) is allowed
