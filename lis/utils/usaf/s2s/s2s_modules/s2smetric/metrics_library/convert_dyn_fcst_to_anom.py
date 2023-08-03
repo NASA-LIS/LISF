@@ -122,6 +122,7 @@ for var_name in METRIC_VARS:
         # First reading all available years for the given
         # forecast initialization month
         all_clim_data1 = xr.open_mfdataset(infile1, combine='by_coords')
+
         # Now selecting only the years that are within the climatology
         sel_cim_data = all_clim_data1.sel(time= \
                        (all_clim_data1.coords['time.year'] >= \
@@ -178,7 +179,6 @@ for var_name in METRIC_VARS:
            (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
             all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
                                                          "lat": target_fcst_data.lat.values})
-
         this_anom = xr.apply_ufunc(
             compute_anomaly,
             target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
@@ -191,7 +191,7 @@ for var_name in METRIC_VARS:
             output_dtypes=[np.float64])
 
         for ens in range(ens_count):
-            all_anom[ens, lead, :, :] = this_anom [:,:,ens]
+            all_anom[ens, lead, :, :] = this_anom [0,:,:,ens]
 
         del all_clim_data, target_fcst_data, all_clim_mean
 
@@ -208,10 +208,10 @@ for var_name in METRIC_VARS:
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, \
                                       var_name, FCST_INIT_MON, TARGET_YEAR)
     anom_xr = xr.Dataset()
-    anom_xr['anom'] = (('ens', 'lead', 'latitude', 'longitude'), all_anom)
+    anom_xr['anom'] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
-    anom_xr.coords['lead'] = (('lead'), np.arange(0, LEAD_NUM, dtype=int))
+    anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_NUM, dtype=int))
     anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
     print(f"[INFO] Writing {OUTFILE}")
     anom_xr.to_netcdf(OUTFILE)

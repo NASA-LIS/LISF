@@ -504,6 +504,26 @@ def load_table (table_key):
                     [ 74,  74,  74]],        
         }
 
+    # add a few 24-level monotone colors
+    start_brown = np.array([204, 153, 102])
+    end_brown = np.array([51, 25, 0]) 
+    start_green = np.array([255, 255, 152])
+    end_green = np.array([0, 51, 0]) 
+    
+    num_steps = 24
+    gradient_brown = np.linspace(start_brown, end_brown, num_steps, dtype=int)
+    gradient_green = np.linspace(start_green, end_green, num_steps, dtype=int)
+
+    rgb_list = []
+    for rgb in gradient_brown:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_brown'] = rgb_list
+
+    rgb_list = []
+    for rgb in gradient_green:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_green'] = rgb_list
+
     if table_key[-1] == '_':
         ct_ = tables[table_key[:-1]]
         ct_.reverse()
