@@ -23,7 +23,6 @@ All Rights Reserved.
     
 '''
 
-from __future__ import division
 from datetime import datetime
 import os
 import sys

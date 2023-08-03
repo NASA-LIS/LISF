@@ -170,8 +170,8 @@ def _driver():
     nc4["ens"].axis = 'E'
     nc4["ens"].units = '1'
 
-    nc4["lead"].long_name = 'Forecast month'
-    nc4["lead"].units = 'months'
+    nc4["time"].long_name = 'Forecast month'
+    nc4["time"].units = 'months'
 
     nc4["anom"].long_name = metric_long_name
     nc4["anom"].units = metric_units

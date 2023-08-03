@@ -198,7 +198,7 @@ for var_name in METRIC_VARS:
             output_dtypes=[np.float64])
 
         for ens in range(ens_count):
-            all_anom[ens, lead, :, :] = this_anom [:,:,ens]
+            all_anom[ens, lead, :, :] = this_anom [0,:,:,ens]
 
         del all_clim_data, target_fcst_data, all_clim_mean, all_clim_std
 
@@ -216,11 +216,11 @@ for var_name in METRIC_VARS:
                                       var_name, FCST_INIT_MON, TARGET_YEAR)
 
     anom_xr = xr.Dataset()
-    anom_xr['anom'] = (('ens', 'lead', 'latitude', 'longitude'), all_anom)
+    anom_xr['anom'] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
-    anom_xr.coords['lead'] = (('lead'), np.arange(0, LEAD_NUM, dtype=int))
+    anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_NUM, dtype=int))
     print(f"[INFO] Writing {OUTFILE}")
     anom_xr.to_netcdf(OUTFILE)
 

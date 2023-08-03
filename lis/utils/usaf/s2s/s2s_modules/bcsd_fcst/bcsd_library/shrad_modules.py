@@ -23,7 +23,6 @@ All Rights Reserved.
     
 '''
 
-from __future__ import division
 from datetime import datetime, timedelta
 # pylint: disable=no-name-in-module
 import netCDF4 as nc4
