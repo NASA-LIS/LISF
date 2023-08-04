@@ -86,6 +86,6 @@ POST:
   var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
   var_tair_max_list: [Tair_f_max]
   var_tair_min_list: [Tair_f_min]
-  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, LANDMASK]
+  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, atime, LANDMASK]
   metric_vars: [RZSM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
 
