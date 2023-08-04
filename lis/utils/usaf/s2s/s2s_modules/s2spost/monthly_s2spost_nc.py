@@ -258,6 +258,8 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
             var_out[:, :] = var_in[:, :]
         elif len(var_out.shape) == 1:
             var_out[:] = var_in[:]
+        else:
+            var_out[()] = var_in[()]
 
     ncid_out.close()
     ncid_in.close()
