@@ -178,20 +178,20 @@ for var_name in METRIC_VARS:
         if (not np.array_equal(all_clim_mean.lat.values, target_fcst_data.lat.values)) or \
            (not np.array_equal(all_clim_mean.lon.values, target_fcst_data.lon.values)):
             all_clim_mean = all_clim_mean.assign_coords({"lon": target_fcst_data.lon.values,
-                                                         "lat": target_fcst_data.lat.values})
+                                                         "lat": target_fcst_data.lat.values}) 
         this_anom = xr.apply_ufunc(
             compute_anomaly,
             target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
             all_clim_mean.chunk({"lat": "auto", "lon": "auto"}).compute(),
-            input_core_dims=[['ensemble'],[]],
-            exclude_dims=set(('ensemble',)),
-            output_core_dims=[['ensemble']],
+            input_core_dims=[['ensemble','time',],[]],
+            exclude_dims=set(('ensemble','time',)),
+            output_core_dims=[['ensemble','time',]],
             vectorize=True,  # loop over non-core dims
             dask="forbidden",
             output_dtypes=[np.float64])
 
         for ens in range(ens_count):
-            all_anom[ens, lead, :, :] = this_anom [0,:,:,ens]
+            all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
 
         del all_clim_data, target_fcst_data, all_clim_mean
 
