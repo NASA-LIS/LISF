@@ -77,7 +77,7 @@ def use_neighbors_diurnal_cycle (precip_data):
         for direction in (-1,1):
             shift = direction * zoom
 
-            # North-South direction
+            # North-South direction [|]
             axis = 0
             if not np.any(current_precip.mask): break
             a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
@@ -90,7 +90,7 @@ def use_neighbors_diurnal_cycle (precip_data):
             target_cells_mask = target_cells_mask & ~idx
             current_precip = ma.masked_array(total_precip, target_cells_mask)
 
-            #  East-west direction
+            #  East-west direction [-]
             axis = 1
             if not np.any(current_precip.mask): break
             a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
@@ -104,7 +104,7 @@ def use_neighbors_diurnal_cycle (precip_data):
             target_cells_mask = target_cells_mask & ~idx
             current_precip = ma.masked_array(total_precip, target_cells_mask)
 
-            # Diagonal
+            # Diagonal [\]
             axis = (0,1)
             if not np.any(current_precip.mask): break
             a_shifted = np.roll(useful_precip, shift=shift, axis=axis)
@@ -117,6 +117,25 @@ def use_neighbors_diurnal_cycle (precip_data):
             target_cells_mask = target_cells_mask & ~idx
             current_precip = ma.masked_array(total_precip, target_cells_mask)
 
+            # Diagonal [/]
+            axis = (0,1)
+            if not np.any(current_precip.mask): break
+            useful_precip_flip = np.flip(useful_precip,axis=1)
+            arrayb_flip = np.flip(arrayb, axis=2)
+            a_shifted_flip = np.roll(useful_precip_flip, shift=shift, axis=axis)
+            arrayb_shifted_flip = np.roll(arrayb_flip ,shift=shift,axis=(1,2))
+            shifted_ratio_flip = np.mean(arrayb_flip, axis=0)/a_shifted_flip
+            #unflip
+            arrayb_shifted = np.flip(arrayb_shifted_flip, axis=2)
+            shifted_ratio = np.flip(shifted_ratio_flip, axis=1)
+            a_shifted = np.flip(a_shifted_flip, axis=1)
+            idx=~a_shifted.mask * current_precip.mask
+            # update return array and target_cells_mask
+            for t in range (0,arrayb.shape[0]):
+                arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
+            target_cells_mask = target_cells_mask & ~idx
+            current_precip = ma.masked_array(total_precip, target_cells_mask)
+            
     tgt_cells_end = np.sum(target_cells_mask)
     return arrayb, tgt_cells_beg, tgt_cells_end
 
