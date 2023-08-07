@@ -92,7 +92,7 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
  if (file_exists) then
    if(LIS_masterproc) write(LIS_logunit,*) &
         "[INFO] Reading HDF5 IMERG precipitation data from ", trim(fname)
-   call read_imerghdf(fname, xd, yd, realprecip, ireaderr)
+   call read_imerghdf(n, fname, xd, yd, realprecip, ireaderr)
    if (ireaderr .ne. 0) then
      if(LIS_masterproc) write(LIS_logunit,*) &
         "[WARN] Error reading IMERG file ",trim(fname)
@@ -133,25 +133,27 @@ end subroutine read_imerg
 
 
 ! J.Case (3/9/2015) -- below will be the HDF5 reader subroutine.
-subroutine read_imerghdf(filename, xsize, ysize, precipout, istatus)
+subroutine read_imerghdf(n, filename, xsize, ysize, precipout, istatus)
 ! !USES:
 #if (defined USE_HDF5)
   use hdf5
 #endif
   use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber
+  use imerg_forcingMod, only : imerg_struc
 
   implicit none
 
 ! ARGUMENTS
   character(len=*)    :: filename
   integer, intent(in)  :: xsize, ysize
-
-  character(len=40) :: dsetname='/Grid/precipitationCal'
+  character(len=40) :: dsetname
   real :: precipin(ysize,xsize)
   real :: precipout(xsize,ysize)
   logical :: bIsError
   integer :: istatus,i
+  character(len=4) :: vlname
+  integer         :: vnum, n
 #if (defined USE_HDF5)
   integer(HSIZE_T), dimension(2) :: dims
   integer(HID_T) :: fileid,dsetid
@@ -160,6 +162,17 @@ subroutine read_imerghdf(filename, xsize, ysize, precipout, istatus)
   dims(2) = ysize
 
   bIsError=.false.
+
+  ! Variable names changed in IMERG V07
+
+  vlname = trim(imerg_struc(n)%imergver)
+  read( vlname(3:3), *) vnum
+
+  if(vnum.ge.7) then
+     dsetname='/Grid/precipitation'
+  else
+     dsetname='/Grid/precipitationCal'
+  endif
 !open fortran interface
   call h5open_f(istatus)
   if(istatus.ne.0) then
