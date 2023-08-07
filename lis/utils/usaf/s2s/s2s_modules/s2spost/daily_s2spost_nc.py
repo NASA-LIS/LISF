@@ -434,10 +434,12 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date):
         elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
                       "RelSMC_tavg"]:
             _ns = dst.dimensions["soil_layer"].size
-            for i in range(0, _ns):
-                dst[name][:,0,i,:,:] = src1[name][i,:,:,:]
-        elif len(variable.dimensions) == 4:
-            dst[name][:,0,:,:,:] = src1[name][:,:,:,:]
+            _es = dst.dimensions["ensemble"].size
+            for e in range(0, _es):
+                for i in range(0, _ns):
+                    dst[name][e,0,i,:,:] = src1[name][i,e,:,:]
+        #elif len(variable.dimensions) == 4:
+        #    dst[name][:,0,:,:,:] = src1[name][:,:,:,:]
         elif len(variable.dimensions) == 3:
             if name == "Landcover_inst" or name == "Soiltype_inst" or name == "Elevation_inst":
                 dst[name][:,:] = src1[name][0,:,:]
