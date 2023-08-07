@@ -174,11 +174,11 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         this_command = in_command
     if hours is None:
         if 'discover' in platform.node() or 'borg' in platform.node():
-            thours ='7'
+            thours ='7:15:00'
         else:
-            thours ='6'
+            thours ='6:00:00'
     else:
-        thours = hours
+        thours = hours + ':00:00'
 
     with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
@@ -201,7 +201,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        _f.write('#SBATCH --time=' + thours + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:

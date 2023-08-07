@@ -250,7 +250,9 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
             if attrname == "_FillValue":
                 continue
             var_out.setncattr(attrname, var_in.__dict__[attrname])
-        if len(var_out.shape) == 4:
+        if len(var_out.shape) == 5:
+            var_out[:, :, :, :, :] = var_in[:, :, :, :, :]
+        elif len(var_out.shape) == 4:
             var_out[:, :, :, :] = var_in[:, :, :, :]
         elif len(var_out.shape) == 3:
             var_out[:, :, :] = var_in[:, :, :]
@@ -286,7 +288,9 @@ def _read_second_daily_file(varlists, infile):
         varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
-        if len(var_in.shape) == 4:
+        if len(var_in.shape) == 5:
+            tavgs[varname] = var_in[:, :, :, :, :]
+        elif len(var_in.shape) == 4:
             tavgs[varname] = var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
             tavgs[varname] = var_in[:, :, :]
@@ -323,7 +327,9 @@ def _read_next_daily_file(varlists, infile, accs, tavgs):
         varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
-        if len(var_in.shape) == 4:
+        if len(var_in.shape) == 5:
+            tavgs[varname][:, :, :, :, :] += var_in[:, :, :, :, :]
+        elif len(var_in.shape) == 4:
             tavgs[varname][:, :, :, :] += var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
             tavgs[varname][:, :, :] += var_in[:, :, :]
@@ -348,7 +354,9 @@ def _finalize_tavgs(tavgs):
     for varname in tavgs:
         if varname == "counter":
             continue
-        if len(tavgs[varname].shape) == 4:
+        if len(tavgs[varname].shape) == 5:
+            tavgs[varname][:, :, :, :, :] /= count
+        elif len(tavgs[varname].shape) == 4:
             tavgs[varname][:, :, :, :] /= count
         elif len(tavgs[varname].shape) == 3:
             tavgs[varname][:, :, :] /= count
@@ -365,7 +373,9 @@ def _update_monthly_s2s_values(outfile, accs, tavgs):
     for dictionary in [accs, tavgs]:
         for varname in dictionary:
             var = ncid.variables[varname]
-            if len(var.shape) == 4:
+            if len(var.shape) == 5:
+                var[:, :, :, :, :] = dictionary[varname][:, :, :, :, :]
+            elif len(var.shape) == 4:
                 var[:, :, :, :] = dictionary[varname][:, :, :, :]
             elif len(var.shape) == 3:
                 var[:, :, :] = dictionary[varname][:, :, :]
