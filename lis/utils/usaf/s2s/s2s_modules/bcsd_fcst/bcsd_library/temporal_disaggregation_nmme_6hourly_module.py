@@ -7,7 +7,6 @@
 #This module bias corrects a forecasts following probability
 #mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -36,8 +35,8 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from bcsd_stats_functions import get_domain_info
 from bcsd_function import VarLimits as lim
+from bcsd_stats_functions import get_domain_info
 # pylint: enable=import-error
 
 limits = lim()
@@ -70,7 +69,7 @@ def use_neighbors_diurnal_cycle (precip_data):
     useful_precip = ma.masked_array(total_precip, ~useful_cells_mask)
     tgt_cells_beg = np.sum(target_cells_mask)
 
-    for zoom in range (1,2):
+    for zoom in range (1,3):
         # starting from the 3x3 window from the location gradually increase upto 39x39 window
         for direction in (-1,1):
             shift = direction * zoom
@@ -133,26 +132,28 @@ def use_neighbors_diurnal_cycle (precip_data):
                 arrayb[t,idx]=arrayb_shifted[t,idx]*shifted_ratio[idx]
             target_cells_mask = target_cells_mask & ~idx
             current_precip = ma.masked_array(total_precip, target_cells_mask)
-            
+
+    for t in range (0,arrayb.shape[0]):
+        arrayb[t,target_cells_mask]= 0.
+
     tgt_cells_end = np.sum(target_cells_mask)
     return arrayb, tgt_cells_beg, tgt_cells_end
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
-    global PRECIP_THRES
     output_bc_data = np.ones(len(input_raw_data))*-9999.
 
     if bc_var == 'PRCP':
-        if mon_raw_value < PRECIP_THRES:
-            correction_factor = mon_bc_value
-            ## HACK## for when input monthly value is 0
-            output_bc_data[:] = correction_factor
+        if mon_bc_value == -9999:
+            return output_bc_data
+        if mon_raw_value == 0.:
+            output_bc_data[:] = mon_bc_value
         else:
             correction_factor = mon_bc_value/mon_raw_value
             output_bc_data[:] = input_raw_data[:]*correction_factor
-    else:
-        correction_factor = mon_bc_value - mon_raw_value
-        output_bc_data[:] = input_raw_data[:] + correction_factor
+#    else:
+#        correction_factor = mon_bc_value - mon_raw_value
+#        output_bc_data[:] = input_raw_data[:] + correction_factor
 
     return output_bc_data
 
@@ -281,6 +282,7 @@ for MON in [INIT_FCST_MON]:
             OUTFILE = SUBDAILY_OUTFILE_TEMPLATE.format(OUTDIR, OBS_VAR, \
             FCST_YEAR, FCST_MONTH)
             OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-9999.
+
             # Sub-Daily raw data
             SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
             SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
@@ -289,6 +291,7 @@ for MON in [INIT_FCST_MON]:
             MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)
             INPUT_RAW_DATA = MONTHLY_INPUT_RAW_DATAG.sel(lon=slice(LON1,LON2),lat=slice(LAT1,LAT2))
             MONTHLY_INPUT_RAW_DATA = INPUT_RAW_DATA[FCST_VAR].mean(dim = 'time')
+
             # Bias corrected monthly value
             MON_BC_VALUE = MON_BC_DATA[FCST_VAR][INIT_FCST_YEAR-BC_FCST_SYR, LEAD_NUM, ens,:,:]
 
@@ -323,11 +326,11 @@ for MON in [INIT_FCST_MON]:
             correct2 = np.moveaxis(correct.values,2,0)
             OUTPUT_BC_DATA[:,JJ1:JJ2+1, II1:II2+1] = correct2[:,:,:]
 
-            # massage OUTPUT_BC_DATA to add sub-monthly distribution
+            # Find neighboring OUTPUT_BC_DATA to add sub-monthly distribution
             OUTPUT_BC_REVISED, cnt_beg, cnt_end = use_neighbors_diurnal_cycle (OUTPUT_BC_DATA)
             print (f'NOF cells without precip diurnal cycle : {cnt_beg} (before) {cnt_end} (after)')
 
-            # clip limits
+            # clip limits - 6hr NMME bcsd files:
             OUTPUT_BC_REVISED = limits.clip_array(OUTPUT_BC_REVISED, var_name="PRECTOT", precip=True)
 
             ### Finish correcting values for all timesteps in the given

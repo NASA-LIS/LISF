@@ -4,7 +4,6 @@
 #This module reorganizes
 #NMME preciptation forecasts
 #Date: May 06, 2021
-# In[28]:
 """
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -273,7 +272,7 @@ for y in range(0, 40):
                 os.makedirs(OUTDIR)
 
             XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
-            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.022, precip=True)
+            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.004, precip=True)
             LATS = np.nan_to_num(LATS, nan=-9999.)
             LONS = np.nan_to_num(LONS, nan=-9999.)
 
