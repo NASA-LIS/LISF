@@ -10,7 +10,7 @@
 # Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
-# -------------------------END NOTICE -- DO NOT EDIT-----------------------
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 
 import numpy as np
