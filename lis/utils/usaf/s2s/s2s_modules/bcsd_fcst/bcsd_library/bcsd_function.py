@@ -1,6 +1,7 @@
 """
 #
 """
+
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
@@ -10,6 +11,7 @@
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 
 import numpy as np
 #import calendar
