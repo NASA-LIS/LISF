@@ -7,7 +7,6 @@
 #  Removed basemap call and added xarray and xesmf
 #  module calls
 #  Date: Nov 07, 2022
-# In[28]:
 """
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -223,7 +222,7 @@ for m in range(0, ENS_NUM):
             os.makedirs(OUTDIR)
 
         XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
-        XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.022, precip=True)
+        XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.004, precip=True)
         LATS = np.nan_to_num(LATS, nan=-9999.)
         LONS = np.nan_to_num(LONS, nan=-9999.)
 
