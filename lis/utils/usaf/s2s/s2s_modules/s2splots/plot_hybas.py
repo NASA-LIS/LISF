@@ -4,19 +4,17 @@ This script plots streamflow anomalies along river pathways while using the Goog
 - Sarith Mahanama (2023-01-13
 '''
 # pylint: disable=no-value-for-parameter
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 import os
 import calendar

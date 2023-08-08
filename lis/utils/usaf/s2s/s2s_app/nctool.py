@@ -22,19 +22,17 @@ USAGE: (1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial lay
            when j, i indexes at the location is known
            python nctool.py j_index i_index lat lon Evap_tavg LIS_HIST_202204010000.d01.nc
 '''
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 
 import os
