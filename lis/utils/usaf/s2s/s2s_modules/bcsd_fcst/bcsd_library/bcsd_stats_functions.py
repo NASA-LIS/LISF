@@ -4,19 +4,17 @@
 # coding: utf-8
 #Author: Shrad Shukla
 """
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 from datetime import datetime
 import sys
@@ -61,8 +59,11 @@ def write_4d_netcdf(infile, var, varname, description, source, var_units, sig_di
     latitudes = rootgrp.createVariable('latitude','f4',('latitude',))
     times = rootgrp.createVariable('time','f8',('time',))
     # two dimensions unlimited.
+#    varname = rootgrp.createVariable(varname,'f4',('time', 'Lead', 'Ens', 'latitude','longitude'), \
+#                                     fill_value=nc4_default_fillvals['f4'], zlib=True, \
+#                                     complevel=6, shuffle=True)
     varname = rootgrp.createVariable(varname,'f4',('time', 'Lead', 'Ens', 'latitude','longitude'), \
-                                     fill_value=nc4_default_fillvals['f4'], zlib=True, \
+                                     fill_value=-9999., zlib=True, \
                                      complevel=6, shuffle=True)
     rootgrp.description = description
     rootgrp.history = 'Created ' + t_ctime(t_time())
