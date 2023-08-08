@@ -4,21 +4,18 @@
 #This module reorganizes
 #NMME preciptation forecasts
 #Date: May 06, 2021
-# In[28]:
 """
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 from datetime import datetime
 import os
@@ -275,7 +272,7 @@ for y in range(0, 40):
                 os.makedirs(OUTDIR)
 
             XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
-            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.022, precip=True)
+            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.004, precip=True)
             LATS = np.nan_to_num(LATS, nan=-9999.)
             LONS = np.nan_to_num(LONS, nan=-9999.)
 

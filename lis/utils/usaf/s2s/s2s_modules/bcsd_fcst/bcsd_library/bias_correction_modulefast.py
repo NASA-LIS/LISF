@@ -7,21 +7,18 @@
 #This module bias corrects a forecasts following
 #probability mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 import calendar
 import sys
@@ -34,7 +31,19 @@ import numpy as np
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import write_4d_netcdf, get_domain_info
 from bcsd_function import calc_bcsd
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
+CF2VAR = {
+    'PRECTOT': 'PRECTOT',
+    'LWS': 'LWS',
+    'SLRSF': 'SLRSF',
+    'PS': 'PS',
+    'Q2M':'Q2M',
+    'T2M': 'T2M',
+    'WIND10M': 'WIND',
+    }
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -205,6 +214,11 @@ def monthly_calculations(mon):
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \
                                              mask=correct_fcst_coarse == -9999.)
+
+    # clip limits - monthly BC NMME precip:
+    correct_fcst_coarse = limits.clip_array(correct_fcst_coarse, \
+            var_name=CF2VAR.get(FCST_VAR))
+
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \
               TARGET_FCST_SYR, TARGET_FCST_EYR)
     print(f"Now writing {outfile}")

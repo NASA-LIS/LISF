@@ -1,19 +1,15 @@
 """
 #
 """
-'''
-
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
-
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 import numpy as np
 #import calendar
@@ -32,7 +28,7 @@ class VarLimits:
     def clip_array (self, data_array, var_name=None, min_val=None, max_val=None,
                     missing=None, min_thres=None, precip=None):
         ''' Below limits are 6h based'''
-        min_limit={'PRECTOT': 1.e-6,
+        min_limit={'PRECTOT': 1.e-7,
                   'PS': 30000.,
                   'T2M': 180.,
                   'LWS': 10.,

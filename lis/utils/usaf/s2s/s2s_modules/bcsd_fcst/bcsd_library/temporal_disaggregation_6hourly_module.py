@@ -7,21 +7,18 @@
 #This module bias corrects a forecasts following probability
 #mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
-'''
 
------------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-NASA Goddard Space Flight Center
-Land Information System Framework (LISF)
-Version 7.4
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-Copyright (c) 2022 United States Government as represented by the
-Administrator of the National Aeronautics and Space Administration.
-All Rights Reserved.
--------------------------END NOTICE -- DO NOT EDIT-----------------------
-    
-'''
 
 import os
 import sys
@@ -42,7 +39,6 @@ from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
 limits = lim()
-PRECIP_THRES = limits.precip_thres
 
 CF2VAR = {
     'PRECTOT': 'PRECTOT',
@@ -56,14 +52,11 @@ CF2VAR = {
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
-    global PRECIP_THRES
     output_bc_data = np.ones(len(input_raw_data))*-9999.
 
     if bc_var == 'PRCP':
-        if mon_raw_value < PRECIP_THRES:
-            correction_factor = mon_bc_value
-            ## HACK## for when input monthly value is 0
-            output_bc_data[:] = correction_factor
+        if mon_raw_value == 0.:
+            output_bc_data[:] = mon_bc_value
         else:
             correction_factor = mon_bc_value/mon_raw_value
             output_bc_data[:] = input_raw_data[:]*correction_factor
@@ -269,6 +262,7 @@ for MON in [INIT_FCST_MON]:
                 OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), precip=True)
             else:
                 OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR))
+
             print(f"Now writing {OUTFILE}")
             OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
                                                 mask=OUTPUT_BC_DATA == -9999.)
