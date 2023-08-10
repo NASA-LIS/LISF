@@ -22,15 +22,6 @@
 # Specify start and end years to process:
 # Default should be 1982 to 2021:
 
-#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center
-# Land Information System Framework (LISF)
-# Version 7.4
-# 
-# Copyright (c) 2022 United States Government as represented by the
-# Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
-# -------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 month=$1
 CFILE=$2
