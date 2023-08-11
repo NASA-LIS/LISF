@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -11,6 +22,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 import glob
 import os
@@ -55,7 +67,6 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-        #    _f.write('#SBATCH --reservation=SP5_test' + '\n')
         else:
             _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
@@ -161,11 +172,11 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         this_command = in_command
     if hours is None:
         if 'discover' in platform.node() or 'borg' in platform.node():
-            thours ='7'
+            thours ='7:15:00'
         else:
-            thours ='6'
+            thours ='6:00:00'
     else:
-        thours = hours
+        thours = hours + ':00:00'
 
     with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
@@ -188,10 +199,9 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        _f.write('#SBATCH --time=' + thours + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-        #    _f.write('#SBATCH --reservation=SP5_test' + '\n')
         else:
             _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')

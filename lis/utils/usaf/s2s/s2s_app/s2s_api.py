@@ -1,6 +1,13 @@
-'''
-This script writes SLURM job files.
-'''
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 import sys
 import argparse
 from datetime import datetime
@@ -9,6 +16,10 @@ import numpy as np
 import yaml
 #pylint: disable=wrong-import-position
 #pylint: disable=import-error
+
+'''
+This script writes SLURM job files.
+'''
 
 PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--JOBFILE', required=False, help='job file name')

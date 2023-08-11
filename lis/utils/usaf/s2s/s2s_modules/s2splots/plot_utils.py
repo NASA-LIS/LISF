@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 plotting functions:
 (1) dicts contains all domain boundaries, colorbar levels, untis for all plotting variables
@@ -14,6 +25,7 @@ plotting functions:
 (11) stations : plots values using colors at each station depcting a small circle on a map.
 Sarith Mahanama 2023-01-13
 '''
+
 import os
 import types
 import matplotlib.pyplot as plt
@@ -410,7 +422,105 @@ def load_table (table_key):
                            [255, 215,   0],
                            [  0,   0,   0],
                            [119, 119, 119]],
+        'cb_9step':[[255,   0,   0],
+                    [255, 128,   0],
+                    [255, 255,   0],
+                    [  0, 255,   0],
+                    [  0,   0, 255],
+                    [128,   0, 255],
+                    [219, 219, 255],
+                    [194, 194, 250],
+                    [158, 158, 247],
+                    [130, 130, 255],
+                    [ 97,  97, 255],
+                    [ 64,  64, 232],
+                    [  0,   0, 194],
+                    [  0,   0, 148],
+                    [222, 250, 245],
+                    [194, 245, 237],
+                    [156, 230, 217],
+                    [112, 204, 191],
+                    [ 43, 184, 163],
+                    [  0, 156, 133],
+                    [  0, 120, 102],
+                    [  0,  92,  79],
+                    [219, 255, 219],
+                    [186, 245, 186],
+                    [140, 235, 140],
+                    [ 92, 209,  92],
+                    [  0, 184,   0],
+                    [  0, 145,   0],
+                    [  0, 105,   0],
+                    [  0,  77,   0],
+                    [235, 204, 255],
+                    [222, 176, 255],
+                    [199, 148, 237],
+                    [186, 112, 237],
+                    [171,  77, 237],
+                    [138,  51, 199],
+                    [107,   0, 186],
+                    [ 84,   0, 145],
+                    [250, 227, 240],
+                    [247, 204, 230],
+                    [245, 173, 214],
+                    [240, 138, 194],
+                    [217,  92, 163],
+                    [189,   0, 130],
+                    [153,   0, 107],
+                    [117,   0,  82],
+                    [255, 219, 219],
+                    [255, 189, 189],
+                    [255, 145, 145],
+                    [250,  97,  97],
+                    [214,  26,  26],
+                    [163,   0,   0],
+                    [125,   0,   0],
+                    [ 92,   0,   0],
+                    [255, 252, 214],
+                    [252, 242, 168],
+                    [252, 237, 128],
+                    [227, 209,   0],
+                    [199, 186,  43],
+                    [161, 150,   0],
+                    [120, 112,   0],
+                    [ 84,  82,   0],
+                    [255, 222, 199],
+                    [252, 199, 161],
+                    [250, 176, 125],
+                    [232, 143,  79],
+                    [209, 105,  31],
+                    [186,  77,   0],
+                    [153,  64,   0],
+                    [115,  48,   0],
+                    [240, 240, 240],
+                    [222, 222, 222],
+                    [199, 199, 199],
+                    [171, 171, 171],
+                    [145, 145, 145],
+                    [120, 120, 120],
+                    [ 94,  94,  94],
+                    [ 74,  74,  74]],        
         }
+
+    # add a few 24-level monotone colors
+    start_brown = np.array([204, 153, 102])
+    end_brown = np.array([51, 25, 0]) 
+    start_green = np.array([255, 255, 152])
+    end_green = np.array([0, 51, 0]) 
+    
+    num_steps = 24
+    gradient_brown = np.linspace(start_brown, end_brown, num_steps, dtype=int)
+    gradient_green = np.linspace(start_green, end_green, num_steps, dtype=int)
+
+    rgb_list = []
+    for rgb in gradient_brown:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_brown'] = rgb_list
+
+    rgb_list = []
+    for rgb in gradient_green:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_green'] = rgb_list
 
     if table_key[-1] == '_':
         ct_ = tables[table_key[:-1]]

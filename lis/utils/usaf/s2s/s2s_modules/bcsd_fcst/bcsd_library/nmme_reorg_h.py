@@ -1,12 +1,22 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 # Author: Abheera Hazra
 #This module reorganizes
 #NMME preciptation forecasts
 #Date: May 06, 2021
-# In[28]:
 """
-from __future__ import division
+
 from datetime import datetime
 import os
 import sys
@@ -23,7 +33,10 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
 
 def write_3d_netcdf(infile, var, varname, description, source, \
                     var_units, lons, lats, sdate):
@@ -223,13 +236,24 @@ ds_in["XPREC"] = xr.DataArray(
         lat=(["lat"], LATI),
         lon=(["lon"], LONI))
     )
-ds_out = xr.Dataset(
+ds_out_unmasked = xr.Dataset(
             {
                 "lat": (["lat"], LATS),
                 "lon": (["lon"], LONS),
         })
-regridder = xe.Regridder(ds_in, ds_out, "bilinear", periodic=True)
-ds_out = regridder(ds_in)
+regridder = xe.Regridder(ds_in, ds_out_unmasked, "conservative", periodic=True)
+ds_out_unmasked = regridder(ds_in)
+ds_out = ds_out_unmasked.copy()
+
+# LDT mask
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+mask_2d = np.array(ldt_xr['LANDMASK'].values)
+mask_exp = mask_2d[np.newaxis, np.newaxis, np.newaxis,:,:]
+darray = np.array(ds_out_unmasked['XPREC'].values)
+mask = np.broadcast_to(mask_exp, darray.shape)
+darray[mask == 0] = -9999.
+ds_out['XPREC'].values = darray
 
 YR = 1981
 print(XPREC.shape)
@@ -248,6 +272,7 @@ for y in range(0, 40):
                 os.makedirs(OUTDIR)
 
             XPRECI = np.nan_to_num(XPRECI, nan=-9999.)
+            XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.004, precip=True)
             LATS = np.nan_to_num(LATS, nan=-9999.)
             LONS = np.nan_to_num(LONS, nan=-9999.)
 

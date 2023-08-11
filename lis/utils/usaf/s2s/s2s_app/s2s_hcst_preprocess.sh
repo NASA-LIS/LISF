@@ -1,5 +1,15 @@
 #!/bin/bash
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+# 
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 # source and load shared functions from s2s_run.sh
 source s2s_app/s2s_run.sh --source-only
 # LIS-Hydro_S2S hindcast pre-processor

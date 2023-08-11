@@ -7,7 +7,9 @@
 # columns are just sorted climatology of forecasts for all lead times for a given forecast
 # initialization month
 """
-from __future__ import division
+
+
+
 import os
 import sys
 import calendar

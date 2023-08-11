@@ -14,6 +14,9 @@
 #------------------------------------------------------------------------------
 """
 
+
+
+
 # Standard modules
 import sys
 import numpy as np
@@ -103,7 +106,7 @@ def compute_anomaly (target_fcst_data, fcst_clim):
 
 def compute_sanomaly (target_fcst_data, fcst_clim, fcst_std):
     ''' computes standerdized anomaly'''
-    out_var = np.ones(len(target_fcst_data))*-99.
+    out_var = np.ones(target_fcst_data.shape)*-99.
     if fcst_std > 0.:
         out_var = (target_fcst_data - fcst_clim) / fcst_std
 

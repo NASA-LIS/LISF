@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -23,6 +34,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import os
@@ -106,7 +118,7 @@ class _MetricGeoTiff:
             rootgrp = nc4_dataset(metric_file, 'r',
                                   format="NETCDF4_CLASSIC")
             total_ens_size += rootgrp.dimensions["ens"].size
-            lead = rootgrp.dimensions["lead"].size
+            lead = rootgrp.dimensions["time"].size
             latitude = rootgrp.dimensions["latitude"].size
             longitude = rootgrp.dimensions["longitude"].size
 
@@ -132,7 +144,7 @@ class _MetricGeoTiff:
                 iens += ens
                 if not start_end_set:
                     self.median_data["num_months"] = \
-                        rootgrp.dimensions["lead"].size
+                        rootgrp.dimensions["time"].size
                     self.median_data["latitudes"] = \
                         rootgrp.variables["latitude"][:]
                     self.median_data["longitudes"] = \

@@ -16,6 +16,9 @@
 #------------------------------------------------------------------------------
 """
 
+
+
+
 # Standard modules
 from datetime import datetime, date
 import glob
@@ -176,15 +179,15 @@ for var_name in METRIC_VARS:
             target_fcst_data.chunk({"lat": "auto", "lon": "auto"}).compute(),
             all_clim_mean.chunk({"lat": "auto", "lon": "auto"}).compute(),
             all_clim_std.chunk({"lat": "auto", "lon": "auto"}).compute(),
-            input_core_dims=[['ensemble'],[],[]],
-            exclude_dims=set(('ensemble',)),
-            output_core_dims=[['ensemble']],
+            input_core_dims=[['ensemble','time',],[],[]],
+            exclude_dims=set(('ensemble','time',)),
+            output_core_dims=[['ensemble','time',]],
             vectorize=True,  # loop over non-core dims
             dask="forbidden",
             output_dtypes=[np.float64])
 
         for ens in range(ens_count):
-            all_anom[ens, lead, :, :] = this_anom [:,:,ens]
+            all_anom[ens, lead, :, :] = this_anom [:,:,ens,0]
 
         del all_clim_data, target_fcst_data, all_clim_mean, all_clim_std
 
@@ -202,11 +205,11 @@ for var_name in METRIC_VARS:
                                       var_name, FCST_INIT_MON, TARGET_YEAR)
 
     anom_xr = xr.Dataset()
-    anom_xr['anom'] = (('ens', 'lead', 'latitude', 'longitude'), all_anom)
+    anom_xr['anom'] = (('ens', 'time', 'latitude', 'longitude'), all_anom)
     anom_xr.coords['ens'] = (('ens'), np.arange(0, ens_count, dtype=int))
     anom_xr.coords['latitude'] = (('latitude'), lats)
     anom_xr.coords['longitude'] = (('longitude'), lons)
-    anom_xr.coords['lead'] = (('lead'), np.arange(0, LEAD_NUM, dtype=int))
+    anom_xr.coords['time'] = (('time'), np.arange(0, LEAD_NUM, dtype=int))
     print(f"[INFO] Writing {OUTFILE}")
     anom_xr.to_netcdf(OUTFILE)
 

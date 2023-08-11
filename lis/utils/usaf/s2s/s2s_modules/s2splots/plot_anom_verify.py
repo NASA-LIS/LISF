@@ -1,7 +1,3 @@
-'''
-This script derives monthly climatgology of the METFORCE uses in the LIS-DA step.
-'''
-
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
@@ -11,6 +7,10 @@ This script derives monthly climatgology of the METFORCE uses in the LIS-DA step
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+'''
+This script derives monthly climatgology of the METFORCE uses in the LIS-DA step.
+'''
 
 import os
 import sys
@@ -146,7 +146,7 @@ def grib2_xr(gfile, args):
 
     return ds_out
 
-def comp_monthly_galwem (config_file, year, month, flabel):
+def comp_monthly_nafpa (config_file, year, month, flabel):
     ''' The function regrid to output grid and compute monthly mean '''
 
     with open(config_file, 'r', encoding="utf-8") as file:
@@ -252,6 +252,10 @@ if __name__ == "__main__":
 
     flabel = 'usaf_lis75s2s_gfs2galwem'
     lead = lag - 1
+    clim_month = fmonth - lag
+    if clim_month <= 0.:
+        clim_month = clim_month + 12
+
     ic_date = date(fyear, fmonth, 1) - relativedelta(months=lag)
     year = ic_date.year
     month = ic_date.month
@@ -272,20 +276,18 @@ if __name__ == "__main__":
     from s2s_modules.s2splots import plot_utils
     plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth) + cfg["EXP"]["lsmdir"] + '/'
     cartopy.config['data_dir'] = cfg['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-    clim_years = cfg["POST"]["verification_clim"]
-    cyear_beg = clim_years[0]
-    cyear_end = clim_years[1]
     ndays = (date(year, month+1, 1) - date(year, month, 1)).days
 
     # (1) usaf_lis75s2s_gfs2galwem anomaly
-    climdir = cfg["SETUP"]["E2ESDIR"] + \
-        '/hindcast/bcsd_fcst/{}/Climatology_{:04d}-{:04d}/'.format(flabel, cyear_beg, cyear_end)
-    galvem_clim_xr = xr.open_dataset(glob.glob(climdir + '*{:02d}.nc4'.format(month))[0])
-    galvem_mon_xr =  comp_monthly_galwem(args.config_file, year, month, flabel)
-    #galvem_mon_xr.to_netcdf('galvem_05.nc4', format="NETCDF4",
+    #climdir = cfg["SETUP"]["E2ESDIR"] + \
+    #    '/hindcast/bcsd_fcst/{}/Climatology_{:04d}-{:04d}/'.format(flabel, cyear_beg, cyear_end)
+    # nafpa_clim_xr = xr.open_dataset(glob.glob(climdir + '*{:02d}.nc4'.format(month))[0])
+
+    nafpa_mon_xr =  comp_monthly_nafpa(args.config_file, year, month, flabel)
+    #nafpa_mon_xr.to_netcdf('nafpa_05.nc4', format="NETCDF4",
     #                  encoding = {'TMP':{"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
     #                              'APCP': {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
-    #galvem_mon_xr = xr.open_dataset('galvem_{:02d}.nc4'.format(month))
+    #nafpa_mon_xr = xr.open_dataset('nafpa_{:02d}.nc4'.format(month))
 
     # forcecast anomaly
     end_date = date(year, month, 1) + relativedelta(months=int(cfg["EXP"]["lead_months"]))
@@ -311,6 +313,15 @@ if __name__ == "__main__":
     cbar_axes_vertical = [0.9, 0.37, 0.03, 0.5] # [left, bottom, width, height]
 
     for var in OUT_VARS:
+        # read USAF-LIS7.3rc8_25km 30-year climatology
+        if var == 'AirT':
+            usaf_clim_xr =  xr.open_dataset(cfg["SETUP"]["E2ESDIR"] + \
+                                            '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/T2M_obs_clim.nc')
+        if var == 'Precip':
+            usaf_clim_xr =  xr.open_dataset(cfg["SETUP"]["E2ESDIR"] + \
+                                            '/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/PRECTOT_obs_clim.nc')
+        usaf_clim_var = np.mean(usaf_clim_xr['clim'].values[clim_month,:], axis=0)
+        usaf_clim_xr.close()
         # var specifics
         load_table = tables.get(var)
         levels = levels_dict.get(var)
@@ -319,12 +330,14 @@ if __name__ == "__main__":
         clabel = clabels.get(var)
         figure = plotdir + var + '_verification_F' + fdate.strftime("%Y%m%d") + '_V' + vdate_beg.strftime("%Y%m%d") + '-' + vdate_end.strftime("%Y%m%d") + '.png'
 
-        galwem_anom = np.array(galvem_mon_xr[usaf_vars.get(var)].values - galvem_clim_xr[usaf_vars.get(var)].values)*convf
+        if var == 'AirT':
+            nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values) - usaf_clim_var)*convf # nafpa_clim_xr[usaf_vars.get(var)].values)*convf
         if var == 'Precip':
-            galwem_anom = galwem_anom * 8. # galvem anoms are mm/[3hr] converted to per mm/[day]
-        plot_arr = np.zeros([3, galwem_anom.shape[0], galwem_anom.shape[1]],dtype=float)
-        plot_arr[1,:] = galwem_anom
-        tmp_arr = np.zeros([galwem_anom.shape[0], galwem_anom.shape[1]],dtype=float)
+            nafpa_anom = (np.array(nafpa_mon_xr[usaf_vars.get(var)].values)*8. - usaf_clim_var*86400.)*convf
+#            nafpa_anom = nafpa_anom * 8. # nafpa anoms are mm/[3hr] converted to per mm/[day]
+        plot_arr = np.zeros([3, nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
+        plot_arr[1,:] = nafpa_anom
+        tmp_arr = np.zeros([nafpa_anom.shape[0], nafpa_anom.shape[1]],dtype=float)
         # read NC files
         anoms = []
         print (s2smdir + 'PS.557WW_SC.U_DI.C_GP.LIS-S2S-*_GR.C0P25DEG_AR.GLOBAL_PA.S2SMETRICS_DD.{:04d}{:02d}01_FP.{:04d}{:02d}01-{}_DF.NC'.format(year, month, year, month, end_date.strftime("%Y%m%d")))
