@@ -23,6 +23,18 @@ USAGE: (1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial lay
            python nctool.py j_index i_index lat lon Evap_tavg LIS_HIST_202204010000.d01.nc
 '''
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+
+
 import os
 import sys
 import numpy as np
@@ -110,6 +122,10 @@ def print_var(latp, lonp, latname, lonname, varname, filename):
     if len (darr.shape) == 4:
         for i in range (darr.shape[1]):
             print (i, darr [:,i, _iy,_ix])
+    if len (darr.shape) == 5:
+        for j in range (darr.shape[1]):
+            for i in range (darr.shape[2]):
+                print (j, i, darr [:, j, i, _iy,_ix])
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

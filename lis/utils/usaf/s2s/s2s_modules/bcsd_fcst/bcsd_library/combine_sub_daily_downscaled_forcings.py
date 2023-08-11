@@ -10,7 +10,17 @@
 # In[28]:
 """
 
-from __future__ import division
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+
 import os
 import sys
 from datetime import datetime
@@ -179,5 +189,5 @@ for MON in [INIT_FCST_MON]:
             DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
             write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
             'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
-            UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 5, LATS[-1], \
+            UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
             LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)

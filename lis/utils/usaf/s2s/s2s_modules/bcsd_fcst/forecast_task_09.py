@@ -14,6 +14,18 @@
 """
 
 #
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+
 # Standard modules
 #
 
@@ -115,7 +127,7 @@ def driver():
         cmd += f" -c {config_file}"
         cmd += f" -s {year}"
         cmd += f" -m {month_abbr}"
-        cmd += f" -w {cwd}"
+        cmd += f" -w {projdir}"
         cmd += f" -n {month_num}"
         cmd += f" -M {nmme_model}"
         jobfile = 'bcsd10_' + nmme_model + '_run.j'
