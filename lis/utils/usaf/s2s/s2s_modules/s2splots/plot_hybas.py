@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-'''
-This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
-- Sarith Mahanama (2023-01-13
-'''
-# pylint: disable=no-value-for-parameter
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
@@ -15,6 +10,11 @@ This script plots streamflow anomalies along river pathways while using the Goog
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+'''
+This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
+- Sarith Mahanama (2023-01-13
+'''
+# pylint: disable=no-value-for-parameter
 
 import os
 import calendar
