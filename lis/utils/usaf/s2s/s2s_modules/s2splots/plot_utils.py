@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 plotting functions:
 (1) dicts contains all domain boundaries, colorbar levels, untis for all plotting variables
@@ -14,17 +25,6 @@ plotting functions:
 (11) stations : plots values using colors at each station depcting a small circle on a map.
 Sarith Mahanama 2023-01-13
 '''
-
-#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center
-# Land Information System Framework (LISF)
-# Version 7.4
-#
-# Copyright (c) 2022 United States Government as represented by the
-# Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
-#-------------------------END NOTICE -- DO NOT EDIT-----------------------
-
 
 import os
 import types

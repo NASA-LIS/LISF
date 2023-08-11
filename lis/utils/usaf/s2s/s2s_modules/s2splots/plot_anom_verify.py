@@ -1,7 +1,3 @@
-'''
-This script derives monthly climatgology of the METFORCE uses in the LIS-DA step.
-'''
-
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
@@ -11,6 +7,10 @@ This script derives monthly climatgology of the METFORCE uses in the LIS-DA step
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+'''
+This script derives monthly climatgology of the METFORCE uses in the LIS-DA step.
+'''
 
 import os
 import sys
