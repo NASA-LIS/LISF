@@ -1,5 +1,4 @@
 #!/bin/sh
-#
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center

@@ -1,11 +1,4 @@
 #!/usr/bin/env python
-'''
-This script plots OL anomalies at lead times 0,1,2,3,4 months
-for a given forecast start month and year. The script consolidated
-Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
-Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
-'''
-# pylint: disable=no-value-for-parameter
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
@@ -17,6 +10,13 @@ Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+'''
+This script plots OL anomalies at lead times 0,1,2,3,4 months
+for a given forecast start month and year. The script consolidated
+Abheera Hazra's two scripts Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_anom.py and
+Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
+'''
+# pylint: disable=no-value-for-parameter
 
 import os
 import calendar
