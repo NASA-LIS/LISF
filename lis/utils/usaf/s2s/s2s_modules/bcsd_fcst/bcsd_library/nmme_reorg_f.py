@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-"""
-# Author: Abheera Hazra
-#  This module reorganizes NMME preciptation forecasts
-#  Date: May 06, 2021
-# Updated: Sarith Mahanama
-#  Removed basemap call and added xarray and xesmf
-#  module calls
-#  Date: Nov 07, 2022
-"""
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
@@ -19,6 +10,15 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
+# Author: Abheera Hazra
+#  This module reorganizes NMME preciptation forecasts
+#  Date: May 06, 2021
+# Updated: Sarith Mahanama
+#  Removed basemap call and added xarray and xesmf
+#  module calls
+#  Date: Nov 07, 2022
+"""
 
 from datetime import datetime
 import os

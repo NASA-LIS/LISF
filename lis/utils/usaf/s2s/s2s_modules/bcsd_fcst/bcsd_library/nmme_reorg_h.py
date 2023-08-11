@@ -1,10 +1,4 @@
 #!/usr/bin/env python
-"""
-# Author: Abheera Hazra
-#This module reorganizes
-#NMME preciptation forecasts
-#Date: May 06, 2021
-"""
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
@@ -16,6 +10,12 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
+# Author: Abheera Hazra
+#This module reorganizes
+#NMME preciptation forecasts
+#Date: May 06, 2021
+"""
 
 from datetime import datetime
 import os

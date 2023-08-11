@@ -1,9 +1,4 @@
 #!/bin/bash
-#
-# Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
-#
-#  Date: 02-01-2023;  Latest version
-#
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
@@ -14,6 +9,11 @@
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
+#
+# Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
+#
+#  Date: 02-01-2023;  Latest version
+#
 
 ######################################################################
 #                              SHARED FUNCTIONS
