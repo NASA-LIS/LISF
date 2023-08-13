@@ -15,7 +15,7 @@
 #
 # SCRIPT:  process_forecast_data.py
 #
-# PURPOSE: Convert NNME GRIB2 files to netCDF.  Based on
+# PURPOSE: Convert CFSv2 GRIB2 files to netCDF.  Based on
 # process_forecast_data.scr by Ryan Zamora.
 #
 # REQUIREMENTS as of 04 Nov 2021:
