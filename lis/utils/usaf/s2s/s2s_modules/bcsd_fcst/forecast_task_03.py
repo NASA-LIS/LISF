@@ -15,7 +15,7 @@
 #
 # SCRIPT: forecast_task_03.py
 #
-# PURPOSE: Reorganizes the downloaded nmme data into a format for further
+# PURPOSE: Reorganizes the downloaded NMME data into a format for further
 # processing. Based on FORECAST_TASK_03.sh.
 #
 # REVISION HISTORY:
