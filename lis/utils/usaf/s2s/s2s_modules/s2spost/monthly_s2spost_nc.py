@@ -336,11 +336,11 @@ def _read_next_daily_file(varlists, infile, accs, tavgs):
     for varname in varlists["var_acc_list"]:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
-            accs[varname][:, :, :, :] = var_in[:, :, :, :]
+            accs[varname][:, :, :, :] += var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
-            accs[varname][:, :, :] = var_in[:, :, :]
+            accs[varname][:, :, :] += var_in[:, :, :]
         elif len(var_in.shape) == 2:
-            accs[varname][:, :] = var_in[:, :]
+            accs[varname][:, :] += var_in[:, :]
 
     ncid_in.close()
     return accs, tavgs
