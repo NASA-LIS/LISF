@@ -5973,8 +5973,18 @@ default to the "`final`" product of GPM IMERG.
 
 `IMERG version:` specifies the version of the GPM IMERG
 precipitation forcing files. If no version is specified, 
-the reader will default to the latest version of GPM IMERG.
-(Currently V06B).
+the reader will default to "`V06B`".
+
+The supported versions of GPM IMERG are:
+
+|====
+|Version  | Product
+
+|V06B     | early, late, final
+|V06C     | early, late, final
+|V06D     | early, late, final
+|V07A     | preliminary support for final
+|====
 
 .Example _lis.config_ entry
 ....
