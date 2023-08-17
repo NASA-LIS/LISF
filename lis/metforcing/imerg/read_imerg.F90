@@ -22,7 +22,7 @@
 ! !INTERFACE:
 subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
 ! !USES:
-  use LIS_coreMod,only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod,only : LIS_rc, LIS_domain
   use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber, &
                          LIS_releaseUnitNumber
   use LIS_metforcingMod,only : LIS_forc
@@ -93,16 +93,16 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
  ferror_imerg = 1
  inquire(file=fname, EXIST=file_exists)
  if (file_exists) then
-   if(LIS_masterproc) write(LIS_logunit,*) &
+   write(LIS_logunit,*) &
         "[INFO] Reading HDF5 IMERG precipitation data from ", trim(fname)
    call read_imerghdf(n, fname, xd, yd, realprecip, ireaderr)
    if (ireaderr .ne. 0) then
-     if(LIS_masterproc) write(LIS_logunit,*) &
+     write(LIS_logunit,*) &
         "[WARN] Error reading IMERG file ",trim(fname)
      ferror_imerg = 0
    endif
  else
-   if(LIS_masterproc) write(LIS_logunit,*) &
+   write(LIS_logunit,*) &
       "[WARN] Missing IMERG precipitation data:: ",trim(fname)
    ferror_imerg = 0
  endif
@@ -126,8 +126,7 @@ subroutine read_imerg (n, kk, name_imerg, findex, order, ferror_imerg )
           endif
        enddo
     enddo
-    if (LIS_masterproc) &
-      write(LIS_logunit,*) "Obtained IMERG precipitation data from ", trim(fname)
+    write(LIS_logunit,*) "Obtained IMERG precipitation data from ", trim(fname)
  endif
 
  deallocate (precip_regrid)
@@ -141,7 +140,7 @@ subroutine read_imerghdf(n, filename, xsize, ysize, precipout, istatus)
 #if (defined USE_HDF5)
   use hdf5
 #endif
-  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_masterproc
+  use LIS_coreMod, only : LIS_rc, LIS_domain
   use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber
   use imerg_forcingMod, only : imerg_struc
 
@@ -211,7 +210,7 @@ subroutine read_imerghdf(n, filename, xsize, ysize, precipout, istatus)
   call h5dread_f(dsetid, H5T_NATIVE_REAL, precipin, dims, istatus)
   if (istatus .ne. 0) then
      ! We can't read the dataset.  Close the dataset, the file, and
-     ! the Fortran interface.  Don't overwrite the istatus values.
+     ! the Fortran interface.  Don't overwrite the istatus value.
      write (LIS_logunit,*) '[WARN] Error reading IMERG dataset', &
              trim(dsetname)
      call h5dclose_f(dsetid, ierr)
