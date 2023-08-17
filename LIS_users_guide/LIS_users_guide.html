@@ -14787,9 +14787,41 @@ default to the &#8220;final&#8221; product of GPM IMERG.</p>
 <div class="paragraph">
 <p><code>IMERG version:</code> specifies the version of the GPM IMERG
 precipitation forcing files. If no version is specified,
-the reader will default to the latest version of GPM IMERG.
-(Currently V06B).</p>
+the reader will default to &#8220;V06B&#8221;.</p>
 </div>
+<div class="paragraph">
+<p>The supported versions of GPM IMERG are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Version</th>
+<th class="tableblock halign-left valign-top">Product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">V06B</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">early, late, final</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">V06C</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">early, late, final</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">V06D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">early, late, final</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">V07A</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">preliminary support for final</p></td>
+</tr>
+</tbody>
+</table>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
@@ -23495,7 +23527,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.5<br>
-Last updated 2023-07-17 19:01:17 UTC
+Last updated 2023-08-17 19:30:48 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
