@@ -182,6 +182,7 @@ contains
     use UASMAP_obsMod,          only : UASMAP_obsinit
     use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
     use COAMPSout_dataMod,      only : COAMPSout_datainit
+    use SMAPEOPLSMobsMod,       only : SMAPEOPLSMobsinit
 
     external readtemplateObs
     external readLISoutput
@@ -293,6 +294,7 @@ contains
     external readUASMAPobs
     external readGRUNrunoffobs
     external readCOAMPSoutdata
+    external readSMAPEOPL_SMObs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -745,6 +747,10 @@ contains
          COAMPSout_datainit)
     call registerobsread(trim(LVT_COAMPSoutId)//char(0),&
          readCOAMPSoutdata)    
+    call registerobssetup(trim(LVT_SMAP_E_OPLId)//char(0), &
+         SMAPEOPLSMobsinit)
+    call registerobsread(trim(LVT_SMAP_E_OPLId)//char(0),&
+         readSMAPEOPL_SMObs)    
     
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

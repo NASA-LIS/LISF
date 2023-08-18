@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 plotting functions:
 (1) dicts contains all domain boundaries, colorbar levels, untis for all plotting variables
@@ -14,6 +25,7 @@ plotting functions:
 (11) stations : plots values using colors at each station depcting a small circle on a map.
 Sarith Mahanama 2023-01-13
 '''
+
 import os
 import types
 import matplotlib.pyplot as plt
@@ -40,21 +52,8 @@ ADD_LAND = True
 ADD_RIVERS = True
 RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
-cbar_axes = [0.15, 0.04, 0.65, 0.03]
+cbar_axes = [0.15, 0.04, 0.7, 0.02]
 
-bodr = cartopy.feature.NaturalEarthFeature(category='cultural',
-                                           name='admin_0_boundary_lines_land',
-                                           scale=RESOL, facecolor='none', alpha=0.7)
-coastlines = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
-                                                 scale=RESOL, edgecolor='black', facecolor='none')
-land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
-                                           facecolor=cfeature.COLORS['land'])
-ocean = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
-                                            facecolor=cfeature.COLORS['water'])
-lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
-                                            facecolor=cfeature.COLORS['water'])
-rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
-                                             scale=RESOL, edgecolor='b', facecolor='none')
 mpl.use('pdf')
 mpl.style.use('bmh')
 COL_UNDER = 'black'
@@ -76,7 +75,9 @@ def dicts(dic_name, key):
         'SOUTH_AMERICA':(-55, 10, -85, -35),
         'NORTH_AMERICA':(9, 72, -165, -58),
         'AFRICA':(-40, 40, -20, 55),
-        'GLOBAL':(-89, 89, -179, 179)
+        'GLOBAL':(-89, 89, -179, 179),
+        'TUNISIA':(30, 38, 7, 12),
+        'ME_CRES':(21, 39, 24, 62)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -86,6 +87,7 @@ def dicts(dic_name, key):
         'Precip': [-10, -6, -4, -2, -1, -0.25, 0.25, 1., 2., 4., 6., 10.],
         'Air-T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
         'Air_T': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
+        'AirT': [-4., -3., -2., -1., -0.5, -0.25, 0.25, 0.5, 1., 2., 3., 4.],
         'Air_T_AF': [-5., -4., -3., -2., -1., -0.5, 0.5, 1., 2., 3., 4., 5.],
         'TWS': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*500.,
         'ET': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*2.,
@@ -97,20 +99,67 @@ def dicts(dic_name, key):
         'Precip_AF': 'in/mon',
         'Air-T': 'K',
         'Air_T': 'K',
+        'AirT': 'K',
         'Air_T_AF': 'F',
         'TWS': 'mm',
         'ET': 'mm/d'
     }
+    anom_tables = {
+        'Streamflow': 'CB11W',
+        'Precip': 'CB11W',
+        'Precip_AF': 'CB11W',
+        'Air-T': 'CB11W_',
+        'Air_T': 'CB11W_',
+        'AirT': 'CB11W_',
+        'Air_T_AF': 'CB11W',
+        'TWS': 'CB11W',
+        'ET': 'CB11W'
+    }
+    lowhigh = {
+        'CB11W': ['black','indigo'],
+        'CB11W_': ['indigo','black'],
+        '14WT2M': ['#68228B','black'],     # darkorchid4','black']
+        '14WPR': ['#8B4500','blueviolet'], # darkorange4','blueviolet']
+        'L21': ['blueviolet','#8B4500']
+    }
+
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
     default_units = 'm^3/m^3'
-
     if dic_name == 'boundary':
         ret = boundary.get(key)
     elif dic_name == 'anom_levels':
         ret = anom_levels.get(key, default_levels)
     elif dic_name == 'units':
         ret = units.get(key, default_units)
+    elif dic_name == 'anom_tables':
+        ret = anom_tables.get(key, 'CB11W')
+    elif dic_name == 'lowhigh':
+        ret = lowhigh.get(key)
     return ret
+
+def cartopy_dir(data_dir):
+    '''
+    configuring cartopy
+    '''
+    global BODR, COASTLINES, land, OCEAN, lakes, rivers
+    if data_dir is not None:
+        cartopy.config['data_dir'] = data_dir
+
+    BODR = cartopy.feature.NaturalEarthFeature(category='cultural',
+                                               name='admin_0_boundary_lines_land',
+                                               scale=RESOL, facecolor='none', alpha=0.7)
+    COASTLINES = cartopy.feature.NaturalEarthFeature('physical', 'coastline',
+                                                     scale=RESOL, edgecolor='black',
+                                                     facecolor='none')
+    land = cartopy.feature.NaturalEarthFeature('physical', 'land', scale=RESOL, edgecolor='k',
+                                               facecolor=cfeature.COLORS['land'])
+    OCEAN = cartopy.feature.NaturalEarthFeature('physical', 'ocean', scale=RESOL, edgecolor='none',
+                                                facecolor=cfeature.COLORS['water'])
+    lakes = cartopy.feature.NaturalEarthFeature('physical', 'lakes', scale=RESOL, edgecolor='b',
+                                                facecolor=cfeature.COLORS['water'])
+    rivers = cartopy.feature.NaturalEarthFeature('physical', 'rivers_lake_centerlines',
+                                             scale=RESOL, edgecolor='b', facecolor='none')
+
 
 def figure_size(figwidth, domain, nrows, ncols):
     ''' defines plotting figure size'''
@@ -120,7 +169,12 @@ def figure_size(figwidth, domain, nrows, ncols):
     return this_size
 
 def load_table (table_key):
-    ''' loads RGB based color tables '''
+    '''
+    loads RGB based color tables
+    some good plettes can be found:
+    https://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml
+    '''
+
     tables = {
         'DROUGHT':[[  0,  0,  0],
                    [  0,115,  0],
@@ -189,7 +243,18 @@ def load_table (table_key):
                 [233, 23,  0],
                 [197,  0,  0],
                 [158,  0,  0]],
-         'L11W':[[  0,  0,130],
+        'CB11W':[[103,0,31],
+                [178,24,43],
+                [214,96,77],
+                [244,165,130],
+                [253,219,199],
+                [247,247,247],
+                [209,229,240],
+                [146,197,222],
+                [67,147,195],
+                [33,102,172],
+                [5,48,97]],
+        'L11W':[[  0,  0,130],
                 [  0,  0,255],
                 [  0,115,255],
                 [  0,195,255],
@@ -294,12 +359,12 @@ def load_table (table_key):
                  [255,159,  0],
                  [255,187,  0],
                  [255,255,255],
-                 [ 47,255, 67],
-                 [ 60,230, 15],
-                 [  0,219,  0],
-                 [  0,187,  0],
-                 [  0,159,  0],
-                 [  0,131,  0]],
+                 [  0,167,255],
+                 [  0,115,255],
+                 [  0, 83,255],
+                 [  0,  0,255],
+                 [  0,  0,200],
+                 [  0,  0,130]],
         '14WT2M':[[179, 66,245],
                   [  0,  0,255],
                   [  0,115,255],
@@ -311,9 +376,158 @@ def load_table (table_key):
                   [255,  0,  0],
                   [128, 48,  9],
                   [196,159,128]],
+        'NCV_gebco':[[ 18,  10,  58],
+                     [ 23,  49, 110],
+                     [ 19,  89, 140],
+                     [ 26, 103, 164],
+                     [ 30, 114, 178],
+                     [ 29, 139, 196],
+                     [ 26, 165, 210],
+                     [ 27, 184, 223],
+                     [ 26, 204, 235],
+                     [ 26, 216, 241],
+                     [ 38, 223, 241],
+                     [ 49, 229, 235],
+                     [104, 242, 233],
+                     [160, 255, 229],
+                     [195, 209,  80],
+                     [225, 224, 102],
+                     [223, 196,  91],
+                     [210, 178,  81],
+                     [189, 150,  46],
+                     [163, 127,  46],
+                     [153, 118,  43],
+                     [142, 109,  38],
+                     [134, 103,  36],
+                     [116,  88,  29]],
+        'VERIFY' :[[255,187,  0],
+                   [  0,115,255],
+                   [255,  0,  0]],
+        'srip_reanalysis':[[226,  31,  38],
+                           [246, 153, 153],
+                           [ 41,  95, 138],
+                           [ 95, 152, 198],
+                           [175, 203, 227],
+                           [114,  59, 122],
+                           [173, 113, 181],
+                           [214, 184, 218],
+                           [245, 126,  32],
+                           [253, 191, 110],
+                           [236,   0, 140],
+                           [247, 153, 209],
+                           [  0, 174, 239],
+                           [ 96, 200, 232],
+                           [ 52, 160,  72],
+                           [179,  91,  40],
+                           [255, 215,   0],
+                           [  0,   0,   0],
+                           [119, 119, 119]],
+        'cb_9step':[[255,   0,   0],
+                    [255, 128,   0],
+                    [255, 255,   0],
+                    [  0, 255,   0],
+                    [  0,   0, 255],
+                    [128,   0, 255],
+                    [219, 219, 255],
+                    [194, 194, 250],
+                    [158, 158, 247],
+                    [130, 130, 255],
+                    [ 97,  97, 255],
+                    [ 64,  64, 232],
+                    [  0,   0, 194],
+                    [  0,   0, 148],
+                    [222, 250, 245],
+                    [194, 245, 237],
+                    [156, 230, 217],
+                    [112, 204, 191],
+                    [ 43, 184, 163],
+                    [  0, 156, 133],
+                    [  0, 120, 102],
+                    [  0,  92,  79],
+                    [219, 255, 219],
+                    [186, 245, 186],
+                    [140, 235, 140],
+                    [ 92, 209,  92],
+                    [  0, 184,   0],
+                    [  0, 145,   0],
+                    [  0, 105,   0],
+                    [  0,  77,   0],
+                    [235, 204, 255],
+                    [222, 176, 255],
+                    [199, 148, 237],
+                    [186, 112, 237],
+                    [171,  77, 237],
+                    [138,  51, 199],
+                    [107,   0, 186],
+                    [ 84,   0, 145],
+                    [250, 227, 240],
+                    [247, 204, 230],
+                    [245, 173, 214],
+                    [240, 138, 194],
+                    [217,  92, 163],
+                    [189,   0, 130],
+                    [153,   0, 107],
+                    [117,   0,  82],
+                    [255, 219, 219],
+                    [255, 189, 189],
+                    [255, 145, 145],
+                    [250,  97,  97],
+                    [214,  26,  26],
+                    [163,   0,   0],
+                    [125,   0,   0],
+                    [ 92,   0,   0],
+                    [255, 252, 214],
+                    [252, 242, 168],
+                    [252, 237, 128],
+                    [227, 209,   0],
+                    [199, 186,  43],
+                    [161, 150,   0],
+                    [120, 112,   0],
+                    [ 84,  82,   0],
+                    [255, 222, 199],
+                    [252, 199, 161],
+                    [250, 176, 125],
+                    [232, 143,  79],
+                    [209, 105,  31],
+                    [186,  77,   0],
+                    [153,  64,   0],
+                    [115,  48,   0],
+                    [240, 240, 240],
+                    [222, 222, 222],
+                    [199, 199, 199],
+                    [171, 171, 171],
+                    [145, 145, 145],
+                    [120, 120, 120],
+                    [ 94,  94,  94],
+                    [ 74,  74,  74]],        
         }
 
-    return tables[table_key]
+    # add a few 24-level monotone colors
+    start_brown = np.array([204, 153, 102])
+    end_brown = np.array([51, 25, 0]) 
+    start_green = np.array([255, 255, 152])
+    end_green = np.array([0, 51, 0]) 
+    
+    num_steps = 24
+    gradient_brown = np.linspace(start_brown, end_brown, num_steps, dtype=int)
+    gradient_green = np.linspace(start_green, end_green, num_steps, dtype=int)
+
+    rgb_list = []
+    for rgb in gradient_brown:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_brown'] = rgb_list
+
+    rgb_list = []
+    for rgb in gradient_green:
+        rgb_list.append([rgb[0],rgb[1], rgb[2]])
+    tables['mono_green'] = rgb_list
+
+    if table_key[-1] == '_':
+        ct_ = tables[table_key[:-1]]
+        ct_.reverse()
+    else:
+        ct_ = tables[table_key]
+    return ct_
 
 def compute_radius(ortho, radius_degrees, lon, lat):
     ''' compute radius '''
@@ -355,6 +569,8 @@ def map2pfaf (anom, lats, lons, dlat, dlon, ulat, ulon, carea, levels):
         iy_ = min(range(len(lats)), key=lambda j: abs(lats[j] - dlat[i]))
         ix_ = min(range(len(lons)), key=lambda j: abs(lons[j] - dlon[i]))
         ad_ = anom[iy_,ix_]
+        if ad_ == -9999. or au_ == -9999.:
+            continue
 
         if au_ and ad_:
             this_val = 0.5*(au_+ad_)
@@ -403,9 +619,9 @@ class CachedTiler(object):
 
 def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
               under_over, min_val=None, max_val=None, fscale=None, levels=None, \
-              stitle=None, clabel=None):
+              stitle=None, clabel=None, cartopy_datadir=None):
     ''' plot contour maps'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 
@@ -437,7 +653,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
-                             cmap=cmap,zorder=3)
+                             cmap=cmap,zorder=3, alpha=0.8)
         gl_ = ax_.gridlines(draw_labels=True)
         gl_.top_labels = False
         gl_.bottom_labels = False
@@ -455,12 +671,19 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
                          color='Blue', fontsize=fscale*FONT_SIZE1, rotation=90)
         if (nplots - count_plot -1) < ncols:
             gl_.bottom_labels = True
-        ax_.coastlines()
-        ax_.add_feature(cfeature.BORDERS)
+        ax_.coastlines(alpha=0.1, zorder=3)
+        ax_.add_feature(OCEAN, linewidth=0.2, zorder=3 )
+        ax_.add_feature(COASTLINES, edgecolor='black', alpha=1, zorder=3)
+        ax_.add_feature(BODR, linestyle='--', edgecolor='k', alpha=1, zorder=3)
         ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
-
-        cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
-        cbar.ax.tick_params(labelsize=fscale*20)
+        if (domain[3] - domain[2]) < 180.:
+            ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
+                            edgecolor='black', facecolor='none')
+        if under_over[0] == "white" and under_over[1] == "white":
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
+        else:
+            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
+        cbar.ax.tick_params(labelsize=fscale*20, labelrotation=90)
         if clabel is not None:
             cbar.set_label(clabel, fontsize=fscale*30)
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
@@ -469,9 +692,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
 def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
                under_over, dlat, dlon, ulat, ulon, carea, google_path, min_val=None, \
                max_val=None, fscale=None, levels=None, \
-               stitle=None, clabel=None):
+               stitle=None, clabel=None, cartopy_datadir=None):
     ''' plots streams using google map as the background image'''
-
+    cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
 
@@ -508,6 +731,9 @@ def google_map(_x, _y, nrows, ncols, var, color_palette, titles, domain, figure,
 
         for this_col in carr:
             #if cua[pfaf_cnt] >= 10000.:
+            this_col = max(this_col, 0)
+            if this_col >= len(style_color):
+                this_col = len(style_color) -1
             rgb = np.array(style_color[:][this_col])/255.
             track = sgeom.LineString(zip([xx1[pfaf_cnt],xx2[pfaf_cnt]],
                                          [yy1[pfaf_cnt], yy2[pfaf_cnt]]))
