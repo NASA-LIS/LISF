@@ -71,9 +71,16 @@ subroutine read_Precip_climo(ncol, nrow, filename, precip)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   inquire(file=trim(filename), exist=file_exists)
-  if(file_exists) then
 
-     write(LDT_logunit,*) '[INFO] Reading Precipitation climatology form CDF file ',trim(filename)
+     if (.not. file_exists) then
+        write(LDT_logunit,*) '[ERR] (',filename, &
+            ') does not exist. Please provide a monthly precipitation climatology in CDF format '
+        call LDT_endrun()     
+     end if
+
+  !if(file_exists) then
+
+     write(LDT_logunit,*) '[INFO] Reading Precipitation climatology from CDF file ',trim(filename)
      !if(ngrid.gt.0) then
         call LDT_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
              ncid=nid),'failed to open file '//trim(filename))
@@ -114,7 +121,7 @@ subroutine read_Precip_climo(ncol, nrow, filename, precip)
      ios = nf90_close(nid)
      call LDT_verify(ios,'Error in nf90_close in readldtparam_real_2d')
      write(LDT_logunit,*) '[INFO] Successfully read Precipitation climo file ',trim(filename)
-   endif
+   !endif
 
    precip = precip_climo
    deallocate(precip_climo)
