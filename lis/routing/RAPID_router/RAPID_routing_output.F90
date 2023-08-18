@@ -19,10 +19,11 @@
 ! 31 Jan 2022: Yeosang Yoon;  Initial implementation
 ! 08 Aug 2022: Yeosang Yoon;  Add code to check 'Output methodology' option
 ! 31 Aug 2022: Yeosang Yoon;  Fix to broadcast a message (output file)
-
+! 27 Apr 2023: Eric Kemp; Updated length of output file.
 subroutine RAPID_routing_output(n)
   
   use ESMF
+  use LIS_constantsMod
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
@@ -38,7 +39,8 @@ subroutine RAPID_routing_output(n)
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
+  !character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename ! EMK
   integer               :: ftn
   integer               :: status
   integer               :: mo, da

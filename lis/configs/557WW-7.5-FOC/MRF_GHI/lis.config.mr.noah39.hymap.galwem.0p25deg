@@ -1,0 +1,238 @@
+#Overall driver options
+Running mode:                           "retrospective"
+Map projection of the LIS domain:       latlon
+Number of nests:                        1
+Number of surface model types:          2
+Surface model types:                    "LSM"  "Openwater"
+Surface model output interval:          3hr
+Land surface model:                     "Noah.3.9"
+Open water model:                       "template open water"
+Number of met forcing sources:          1
+Blending method for forcings:           overlay
+Met forcing sources:                    "GALWEM forecast"
+Met forcing chosen ensemble member:     1
+Topographic correction method (met forcing):  "none"
+Enable spatial downscaling of precipitation:  0
+Spatial upscaling method (met forcing):       average
+Spatial interpolation method (met forcing):   bilinear
+Temporal interpolation method (met forcing):  linear
+
+#Runtime options
+Forcing variables list file:            ./input/forcing_variables.txt
+Output methodology:                     "2d gridspace"
+Output model restart files:             1
+Output data format:                     netcdf
+Output naming style:              "557WW medium range forecast convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               FCST
+AGRMET area of data:                GLOBAL
+Start mode:                             restart
+Starting year:                          2023
+Starting month:                           06
+Starting day:                             01
+Starting hour:                             0
+Starting minute:                           0
+Starting second:                           0
+Ending year:                            2023
+Ending month:                             06
+Ending day:                               11
+Ending hour:                               0
+Ending minute:                             0
+Ending second:                             0
+Undefined value:                       -9999
+Output directory:                       "output/"
+Diagnostic output file:                 "output/log/lislog"
+Number of ensembles per tile:           1
+
+#The following options are used for subgrid tiling based on vegetation
+Maximum number of surface type tiles per grid:    1
+Minimum cutoff percentage (surface type tiles):   0.05
+Maximum number of soil texture tiles per grid:    1
+Minimum cutoff percentage (soil texture tiles):   0.05
+Maximum number of soil fraction tiles per grid:   1
+Minimum cutoff percentage (soil fraction tiles):  0.05
+Maximum number of elevation bands per grid:       1
+Minimum cutoff percentage (elevation bands):      0.05
+Maximum number of slope bands per grid:           1
+Minimum cutoff percentage (slope bands):          0.05
+Maximum number of aspect bands per grid:          1
+Minimum cutoff percentage (aspect bands):         0.05
+
+#Processor layout
+#Should match the total number of processors used
+Number of processors along x:           4
+Number of processors along y:          96
+Halo size along x:                      0
+Halo size along y:                      0
+
+#Sub-models
+Radiative transfer model:               none
+Number of application models:           0
+
+#---------------------DATA ASSIMILATION ----------------------------------
+#Data assimilation options
+Number of data assimilation instances:  0
+Data assimilation algorithm:                        none  none
+Data assimilation set:                              none  none
+Data assimilation exclude analysis increments:      0     0
+Data assimilation number of observation types:      0     0
+Data assimilation output interval for diagnostics:  1da   1da
+Data assimilation output ensemble members:          0     0
+Data assimilation output processed observations:    0     0
+Data assimilation output innovations:               0     0
+
+Data assimilation use a trained forward model:        0
+Data assimilation trained forward model output file:  none
+
+#Bias estimation options
+Bias estimation algorithm:                         none   none
+Bias estimation attributes file:                   none   none
+Bias estimation restart output frequency:          1da    1da
+Bias estimation start mode:                        none   none
+Bias estimation restart file:                      none   none
+
+#Perturbation options
+Perturbations start mode:                          coldstart  coldstart
+Perturbations restart output interval:             1mo    1mo
+Perturbations restart filename:                    none   none
+Apply perturbation bias correction:                0      0
+
+Forcing perturbation algorithm:                    none   none
+Forcing perturbation frequency:                    1hr    1hr
+Forcing attributes file:                           none   none
+Forcing perturbation attributes file:              none   none
+
+State perturbation algorithm:                      none   none
+State perturbation frequency:                      3hr    3hr
+State attributes file:                             none   none
+State perturbation attributes file:                none   none
+
+Observation perturbation algorithm:                none   none
+Observation perturbation frequency:                6hr    6hr
+Observation attributes file:                       none   none
+Observation perturbation attributes file:          none   none
+
+#------------------------DOMAIN SPECIFICATION--------------------------
+#The following options list the choice of parameter maps to be used
+LIS domain and parameter data file:     ./input/lis_input.mr.noah39.nc
+Landmask data source:                   LDT
+Landcover data source:                  LDT
+Soil texture data source:               LDT
+Soil fraction data source:              none
+Soil color data source:                 none
+Elevation data source:                  LDT
+Slope data source:                      LDT
+Aspect data source:                     LDT
+Curvature data source:                  none
+LAI data source:                        none
+SAI data source:                        none
+Albedo data source:                     LDT
+Max snow albedo data source:            LDT
+Greenness data source:                  LDT
+Roughness data source:                  none
+Porosity data source:                   none
+Ksat data source:                       none
+B parameter data source:                none
+Quartz data source:                     none
+Emissivity data source:                 none
+
+TBOT lag skin temperature update option:  0
+TBOT skin temperature lag days:           0
+
+#--------------------------------FORCINGS----------------------------------
+# GALWEM forecast
+GALWEM forecast forcing directory:         ./input/GALWEM_GD
+GALWEM forecast resolution:                25            # 17(=17km) or 25(=25 deg)
+GALWEM forecast run mode:                  forecast
+
+#-----------------------LAND SURFACE MODELS--------------------------
+Noah.3.9 model timestep:                  15mn
+Noah.3.9 restart output interval:         1mo
+Noah.3.9 restart file:           ./input/rstfiles/LIS_RST_NOAH39_202306010000_EN01.d01.nc
+Noah.3.9 restart file format:             netcdf
+Noah.3.9 vegetation parameter table:      ./input/LS_PARAMETERS/noah39_parms/VEGPARM.TBL
+Noah.3.9 soil parameter table:            ./input/LS_PARAMETERS/noah39_parms/SOILPARM.TBL
+Noah.3.9 general parameter table:         ./input/LS_PARAMETERS/noah39_parms/GENPARM.TBL
+Noah.3.9 use PTF for mapping soil properties: 0
+Noah.3.9 soils scheme:                    2
+Noah.3.9 number of soil layers:           4
+Noah.3.9 layer thicknesses:               0.1  0.3  0.6  1.0
+Noah.3.9 use distributed soil depth map:  0
+Noah.3.9 use distributed root depth map:  0
+Noah.3.9 initial skin temperature:        288.0000                                 # Kelvin
+Noah.3.9 initial soil temperatures:       288.0000  288.0000  288.0000  288.0000   # Kelvin
+Noah.3.9 initial total soil moistures:    0.2000000 0.2000000 0.2000000 0.2000000  # volumetric (m3 m-3)
+Noah.3.9 initial liquid soil moistures:   0.2000000 0.2000000 0.2000000 0.2000000  # volumetric (m3 m-3)
+Noah.3.9 initial canopy water:            0.0                                      # depth (m)
+Noah.3.9 initial snow depth:              0.0                                      # depth (m)
+Noah.3.9 initial snow equivalent:         0.0                                      # also known swe - depth (mm)
+Noah.3.9 fixed max snow albedo:           0.0                                      # fraction; 0.0 - do not fix
+Noah.3.9 fixed deep soil temperature:     0.0                                      # Kelvin; 0.0 - do not fix
+Noah.3.9 fixed vegetation type:           0                                        # 0 - do not fix
+Noah.3.9 fixed soil type:                 0                                        # 0 - do not fix
+Noah.3.9 fixed slope type:                1                                        # 0 - do not fix
+Noah.3.9 sfcdif option:                   1
+Noah.3.9 z0 veg-type dependence option:   0
+Noah.3.9 Run UA snow-physics option:      .true.
+Noah.3.9 greenness fraction:  0.01  0.02  0.07  0.17  0.27  0.58  0.93  0.96  0.65  0.24  0.11  0.02
+Noah.3.9 background albedo:   0.18  0.17  0.16  0.15  0.15  0.15  0.15  0.16  0.16  0.17  0.17  0.18
+Noah.3.9 background roughness length: 0.020 0.020 0.025 0.030 0.035 0.036 0.035 0.030 0.027 0.025 0.020 0.020
+Noah.3.9 reference height for forcing T and q:    2.0      # (m) - negative=use height from forcing data
+Noah.3.9 reference height for forcing u and v:   10.0      # (m) - negative=use height from forcing data
+# The following lines are added for new options in Noah 3.9.1 (Z. Wang and S. Wang on 08/28/2018)
+Noah.3.9 thermal conductivity option:     1
+Noah.3.9 FASDAS option (0 or 1):          0
+
+Template open water timestep:             15mn
+
+#---------------------------MODEL OUTPUT CONFIGURATION-----------------------
+#Specify the list of ALMA variables that need to be featured in the
+#LSM model output
+Output start year:
+Output start month:
+Output start day:
+Output start hour:
+Output start minutes:
+Output start seconds:
+
+Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noah39
+
+#------------------------ ROUTING ----------------------------------
+# ROUTING MODEL:  HYMAP
+Routing model:                          "HYMAP2 router"
+
+HYMAP2 routing model time step:         "15mn"
+HYMAP2 routing model output interval:   "3hr"
+HYMAP2 routing model restart interval:  "1mo"
+HYMAP2 enable 2-way coupling:            0
+HYMAP2 run in ensemble mode:             0      # Run HYMAP in single member mode
+
+# method:                         enter "kinematic", "diffusive" or "local inertia"
+# linear reservoir flag:          enter 1 - use; or 0 - do not use linear reservoirs
+# evaporation option:             enter "penman" - compute; or "none" - do not compute evapotation in floodplains;
+# floodplain dynamics option:     enter 1 - compute floodplain dynamics; or 0 - do not compute floodplain dynamics
+# time step method:      enter "constant" or "adaptive"
+# if "adaptive" time step, provide alfa coefficient value
+#
+#
+HYMAP2 routing method:                   "kinematic"  #"local inertia"
+HYMAP2 routing model time step method:   "constant"   # "adaptive"
+HYMAP2 routing model adaptive time step alfa coefficient: 1.0
+HYMAP2 floodplain dynamics:              1
+HYMAP2 routing model dwi flag:           0
+
+HYMAP2 routing model start mode:         restart
+HYMAP2 routing model restart file: ./input/rstfiles/LIS_RST_HYMAP2_router_202306010000.d01.nc
+
+HYMAP2 routing model evaporation option:      none     # "penman"
+HYMAP2 routing model linear reservoir flag:   0
+HYMAP2 reservoir operation option:            0
+HYMAP2 number of reservoirs:                  1
+HYMAP2 reservoir operation input time series size: 2
+HYMAP2 reservoir operation input directory:  ./
+HYMAP2 reservoir operation header filename: ./header_test.txt
+HYMAP2 reservoir operation input data type: "water level" # "streamflow" #
+
+TEMPLATE model timestep:               "15mn"
+

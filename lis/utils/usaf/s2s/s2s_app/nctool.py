@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 A python script to print the summary of a netCDF file OR compare netCDF files in all subdirectories
 (or just 2 individual netCDF files).
@@ -23,21 +34,22 @@ USAGE: (1) print Mean, Maximum (Maxloc) and Minimum (Minloc) of each spatial lay
            python nctool.py j_index i_index lat lon Evap_tavg LIS_HIST_202204010000.d01.nc
 '''
 
+
 import os
 import sys
 import numpy as np
-import xarray as xr
 from numpy import unravel_index
+import xarray as xr
 #pylint: disable=too-many-arguments, line-too-long
 ZERO_DIFF = False
 ATOL = 1.e-03
-
+RTOL = 1e-05
 def file_info(infile):
     ''' read file info. '''
     def print_summary (arr):
         str_out =  'Mean :' + str(np.nanmean(arr)) + ' Max:' + str(np.nanmax(arr)) + \
-            str(unravel_index(arr.argmax(), arr.shape)) + \
-            ' Min :' + str(np.nanmin(arr)) + str(unravel_index(arr.argmin(), arr.shape))
+            str(unravel_index(np.nanargmax(arr), arr.shape)) + \
+            ' Min :' + str(np.nanmin(arr)) + str(unravel_index(np.nanargmin(arr), arr.shape))
         return str_out
 
     _a = xr.open_dataset(infile)
@@ -74,8 +86,8 @@ def diff_nc(file1, file2):
             xr.testing.assert_equal(_a, _b)
             print (file1,': is identical.')
         else:
-            xr.testing.assert_allclose(_a, _b, atol=1.e-03)
-            print (file1,': is close at absolute tolerance of ' + str(ATOL) + '.')
+            xr.testing.assert_allclose(_a, _b, rtol=RTOL)
+            print (file1,': is close at relative tolerance of ' + str(RTOL) + '.')
 
 def print_var(latp, lonp, latname, lonname, varname, filename):
     ''' print selected variables. '''
@@ -94,6 +106,7 @@ def print_var(latp, lonp, latname, lonname, varname, filename):
     # find indeces closest to latp/lonp
     if latp.find('.') == -1:
         _iy, _ix = int(latp), int(lonp)
+        print('cell location [LAT/LON]:', lats[_iy],lons[_ix])
     else:
         if len(lats.shape) == 2:
             _iy, _ix = getclosest_ij(lats.astype(np.float), lons.astype(np.float),
@@ -109,6 +122,10 @@ def print_var(latp, lonp, latname, lonname, varname, filename):
     if len (darr.shape) == 4:
         for i in range (darr.shape[1]):
             print (i, darr [:,i, _iy,_ix])
+    if len (darr.shape) == 5:
+        for j in range (darr.shape[1]):
+            for i in range (darr.shape[2]):
+                print (j, i, darr [:, j, i, _iy,_ix])
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:

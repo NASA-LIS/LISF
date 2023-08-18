@@ -1,9 +1,9 @@
 = Step 2: LSM "Open-loop" (OL) Experiment (LIS)
 
 :step-label: Step 2
-:download-filename: testcase2_lis_ol_2020.tar.gz
-:input-filesize-compressed: 67MB
-:input-filesize-unpacked: 250MB
+:download-filename: testcase2_lis_ol_2023.tar.gz
+:input-filesize-compressed: 65MB
+:input-filesize-unpacked: 343MB
 
 == Overview
 
@@ -53,9 +53,9 @@ Jump to the <<The LIS Configuration File,next step>>.
 ====
 Before running the download script:
 
-. If needed, install `wget`.
-. Create a link:https://urs.earthdata.nasa.gov/users/new[NASA Earthdata] account if you do not already have one.
-. Follow steps 1-4 in link:https://disc.gsfc.nasa.gov/data-access#mac_linux_wget[these instructions] to save your NASA Earthdata login credentials locally.
+. If needed, install `wget`
+. Create a link:https://urs.earthdata.nasa.gov/users/new[NASA Earthdata] account if you do not already have one
+. Follow steps 1-3 in link:https://disc.gsfc.nasa.gov/data-access#mac_linux_wget[these instructions] to save your NASA Earthdata login credentials locally
 ====
 
 When you are ready to run the script, change directories into `INPUT/` and run the following command:
@@ -98,7 +98,7 @@ In your `$WORKING_DIR`, execute the following command:
 LIS can also be run in parallel. The examples in this walkthrough, however, demonstrate how to run LIS on a single processor. See Chapter 6 in link:{url-lisf-docs}[the LIS Users' Guide] for instructions for running LIS in parallel.
 ====
 
-With a single processor the run should take approximately 20 minutes to complete. If the run fails, diagnose the issue by reviewing any errors that have printed to the terminal and by viewing the contents of `lislog` files (if any are present). If no errors appear and the run appears to have completed successfully, examine the end of any `lislog` files present to check for a confirmation message:
+With a single processor the run should take approximately 20 minutes to complete. If the run fails, diagnose the issue by reviewing any errors that have printed to the terminal and by viewing the contents of `lislog` files (located in the `log` directory as defined by line 42 of `lis.config_noah36_ol`). If no errors appear and the run appears to have completed successfully, examine the end of any `lislog` files present to check for a confirmation message:
 
 [source,shell]
 ----

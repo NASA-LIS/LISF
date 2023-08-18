@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -12,8 +23,10 @@
 #------------------------------------------------------------------------------
 """
 
+
 import glob
 import os
+import platform
 import re
 import datetime
 import numpy as np
@@ -39,6 +52,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
     lisf_module = cfg['SETUP']['LISFMOD']
+    supd = cfg['SETUP']['supplementarydir']
 
     with open(jobfile, 'w', encoding="utf-8") as _f:
 
@@ -51,7 +65,11 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
         _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
-        _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        else:
+            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --partition=batch' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -60,10 +78,15 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
-        _f.write('source /etc/profile.d/modules.sh' + '\n')
-        _f.write('module purge' + '\n')
-        _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
-        _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            _f.write('source /etc/profile.d/modules.sh' + '\n')
+            _f.write('module purge' + '\n')
+        if os.path.isfile(lisf + '/env/discover/' + lisf_module):
+            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        else:
+            _f.write('module use -a ' + supd + '/env/' + '\n')
+            _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
@@ -148,15 +171,19 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     else:
         this_command = in_command
     if hours is None:
-        thours ='12'
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            thours ='7:15:00'
+        else:
+            thours ='6:00:00'
     else:
-        thours = hours
+        thours = hours + ':00:00'
 
     with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
     sponsor_code = cfg['SETUP']['SPCODE']
     lisf = cfg['SETUP']['LISFDIR']
     lisf_module = cfg['SETUP']['LISFMOD']
+    supd = cfg['SETUP']['supplementarydir']
     domain=cfg['EXP']['DOMAIN']
     datatype=cfg['SETUP']['DATATYPE']
     numprocx=cfg['FCST']['numprocx']
@@ -172,8 +199,12 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        _f.write('#SBATCH --time=' + thours + '\n')
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+        else:
+            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --partition=batch' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         else:
@@ -192,10 +223,15 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
-        _f.write('source /etc/profile.d/modules.sh' + '\n')
-        _f.write('module purge' + '\n')
-        _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
-        _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            _f.write('source /etc/profile.d/modules.sh' + '\n')
+            _f.write('module purge' + '\n')
+        if os.path.isfile(lisf + '/env/discover/' + lisf_module):
+            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('module --ignore-cache load ' + lisf_module + '\n')
+        else:
+            _f.write('module use -a ' + supd + '/env/' + '\n')
+            _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
@@ -226,3 +262,22 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
         lat = np.array(ldt['lat'])
         return lat[:,0], lon[0,:]
     return None
+
+def tiff_to_da(file):
+    import xarray as xr
+    import rasterio
+    dataset = rasterio.open(file)
+    # Read the data from the GeoTIFF using rasterio
+    data = dataset.read(1)  # Read the first band, adjust if necessary
+
+    # Extract the metadata
+    transform = dataset.transform
+    crs = dataset.crs
+    x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
+    y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
+    
+    # Create an xarray DataArray
+    da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    
+    return da
+

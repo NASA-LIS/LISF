@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
 # SCRIPT: forecast_task_03.py
 #
-# PURPOSE: Reorganizes the downloaded nmme data into a format for further
+# PURPOSE: Reorganizes the downloaded NMME data into a format for further
 # processing. Based on FORECAST_TASK_03.sh.
 #
 # REVISION HISTORY:
@@ -12,6 +23,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import sys
@@ -59,9 +71,8 @@ def _driver():
 
     # import local module
     sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
+#pylint: disable=import-outside-toplevel
     from s2s_modules.shared import utils
-    s2spath = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/'
-    ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + config['SETUP']['ldtinputfile']
 
     # Path of the main project directory
     projdir = cwd
@@ -71,9 +82,8 @@ def _driver():
 
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
-    
+
     # List of NMME models and ensemble sizes to use
-    nmme_models = config['EXP']['NMME_models']
     ensemble_sizes = config['EXP']['ensemble_sizes'][0]
 
     # Path for where raw and bias corrected forecast files are located:

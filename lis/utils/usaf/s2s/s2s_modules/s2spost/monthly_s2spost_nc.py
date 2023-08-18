@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+
 """
 #------------------------------------------------------------------------------
 #
@@ -8,8 +19,8 @@
 # PURPOSE: Read daily S2S CF-convention netCDF files, calculate monthly
 # averages and accumulations, and write to new CF-convention netCDF file.
 #
-# REQUIREMENTS as of 16 Sep 2021:
-# * Python 3.8 or higher
+# REQUIREMENTS as of 02 Jun 2023:
+# * Python 3.9 or higher
 # * UNIDATA NetCDF4 Python library
 #
 # REVISION HISTORY:
@@ -19,8 +30,10 @@
 # 27 Oct 2021: Eric Kemp/SSAI, addressed pylint string format complaints.
 # 29 Oct 2021: Eric Kemp/SSAI, added config file.
 # 15 Nov 2022: K. Arsenault/SAIC, removed fields for FOC.
+# 02 Jun 2023: K. Arsenault, updated the s2spost filenaming conventions
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import os
@@ -40,21 +53,22 @@ from netCDF4 import Dataset as nc4_dataset
 def _usage():
     """Print command line usage."""
     txt = f"[INFO] Usage: {sys.argv[0]} configfile input_dir output_dir"
-    txt += " start_yyyymmdd end_yyyymmdd model_forcing"
+    txt += " fcst_yyyymmdd start_yyyymmdd end_yyyymmdd model_forcing"
     print(txt)
     print("[INFO] where:")
     print("[INFO]  configfile: path to s2spost config file")
     print("[INFO]  input_dir: directory with daily S2S files in CF convention")
     print("[INFO]  output_dir: directory for output file")
-    print("[INFO]  start_yyyymmdd: Starting date/time of daily files")
-    print("[INFO]  end_yyyymmdd: Ending date/time of daily files")
+    print("[INFO]  fcst_yyyymmdd: Initial forecast date/time of daily files")
+    print("[INFO]  start_yyyymmdd: Starting lead date/time of daily files")
+    print("[INFO]  end_yyyymmdd: Ending lead date/time of daily files")
     print("[INFO]  model_forcing: ID for atmospheric forcing for LIS")
 
 def _read_cmd_args():
     """Read command line arguments."""
 
     # Check if argument count is correct.
-    if len(sys.argv) != 7:
+    if len(sys.argv) != 8:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
@@ -76,19 +90,23 @@ def _read_cmd_args():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Get valid starting and ending dates of data.
-    start_yyyymmdd = sys.argv[4]
+    # Get valid initial forecast date.
+    fcst_yyyymmdd = sys.argv[4]
+    fcstdate = _proc_date(fcst_yyyymmdd)
+
+    # Get valid lead starting and ending dates of data.
+    start_yyyymmdd = sys.argv[5]
     startdate = _proc_date(start_yyyymmdd)
-    end_yyyymmdd = sys.argv[5]
+    end_yyyymmdd = sys.argv[6]
     enddate = _proc_date(end_yyyymmdd)
     if startdate > enddate:
         print("[ERR] Start date is after end date!")
         sys.exit(1)
 
     # Get ID for model forcing for LIS
-    model_forcing = sys.argv[6]
+    model_forcing = sys.argv[7].upper()
 
-    return configfile, input_dir, output_dir, startdate, enddate, model_forcing
+    return configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing
 
 def _make_varlists(config):
     """Build lists of variables."""
@@ -130,7 +148,7 @@ def _check_filename_size(name):
         print(f"[ERR] {os.path.basename(name)} exceeds 128 characters!")
         sys.exit(1)
 
-def _create_daily_s2s_filename(input_dir, curdate, model_forcing, domain):
+def _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing, domain):
     """Create path to daily S2S netCDF file."""
     name = f"{input_dir}"
     name += "/PS.557WW"
@@ -144,14 +162,16 @@ def _create_daily_s2s_filename(input_dir, curdate, model_forcing, domain):
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
 
-    name += "_PA.LIS-S2S"
-    name += f"_DD.{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
+    name += "_PA.ALL"
+    name += f"_DD.{fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
+    name += "_DT.0000"
+    name += f"_FD.{curdate.year:04d}{curdate.month:02d}{curdate.day:02d}"
     name += "_DT.0000"
     name += "_DF.NC"
     _check_filename_size(name)
     return name
 
-def _create_monthly_s2s_filename(output_dir, startdate, enddate,
+def _create_monthly_s2s_filename(output_dir, fcstdate, startdate, enddate,
                                  model_forcing, domain):
     """Create path to monthly S2S netCDF file."""
     name = f"{output_dir}"
@@ -166,10 +186,11 @@ def _create_monthly_s2s_filename(output_dir, startdate, enddate,
     if domain == 'GLOBAL':
         name += "_AR.GLOBAL"
 
-    name += "_PA.LIS-S2S"
-    name += f"_DP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
+    name += "_PA.ALL"
+    name += f"_DD.{fcstdate.year:04d}{fcstdate.month:02d}{fcstdate.day:02d}"
+    name += "_DT.0000"
+    name += f"_FP.{startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
     name += f"-{enddate.year:04d}{enddate.month:02d}{enddate.day:02d}"
-    name += "_TP.0000-0000"
     name += "_DF.NC"
     _check_filename_size(name)
     return name
@@ -227,7 +248,9 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
             if attrname == "_FillValue":
                 continue
             var_out.setncattr(attrname, var_in.__dict__[attrname])
-        if len(var_out.shape) == 4:
+        if len(var_out.shape) == 5:
+            var_out[:, :, :, :, :] = var_in[:, :, :, :, :]
+        elif len(var_out.shape) == 4:
             var_out[:, :, :, :] = var_in[:, :, :, :]
         elif len(var_out.shape) == 3:
             var_out[:, :, :] = var_in[:, :, :]
@@ -235,6 +258,8 @@ def _create_firstguess_monthly_file(varlists, infile, outfile):
             var_out[:, :] = var_in[:, :]
         elif len(var_out.shape) == 1:
             var_out[:] = var_in[:]
+        else:
+            var_out[()] = var_in[()]
 
     ncid_out.close()
     ncid_in.close()
@@ -261,7 +286,9 @@ def _read_second_daily_file(varlists, infile):
         varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
-        if len(var_in.shape) == 4:
+        if len(var_in.shape) == 5:
+            tavgs[varname] = var_in[:, :, :, :, :]
+        elif len(var_in.shape) == 4:
             tavgs[varname] = var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
             tavgs[varname] = var_in[:, :, :]
@@ -298,7 +325,9 @@ def _read_next_daily_file(varlists, infile, accs, tavgs):
         varnames += varlists[listname]
     for varname in varnames:
         var_in = ncid_in.variables[varname]
-        if len(var_in.shape) == 4:
+        if len(var_in.shape) == 5:
+            tavgs[varname][:, :, :, :, :] += var_in[:, :, :, :, :]
+        elif len(var_in.shape) == 4:
             tavgs[varname][:, :, :, :] += var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
             tavgs[varname][:, :, :] += var_in[:, :, :]
@@ -307,11 +336,11 @@ def _read_next_daily_file(varlists, infile, accs, tavgs):
     for varname in varlists["var_acc_list"]:
         var_in = ncid_in.variables[varname]
         if len(var_in.shape) == 4:
-            accs[varname][:, :, :, :] = var_in[:, :, :, :]
+            accs[varname][:, :, :, :] += var_in[:, :, :, :]
         elif len(var_in.shape) == 3:
-            accs[varname][:, :, :] = var_in[:, :, :]
+            accs[varname][:, :, :] += var_in[:, :, :]
         elif len(var_in.shape) == 2:
-            accs[varname][:, :] = var_in[:, :]
+            accs[varname][:, :] += var_in[:, :]
 
     ncid_in.close()
     return accs, tavgs
@@ -323,7 +352,9 @@ def _finalize_tavgs(tavgs):
     for varname in tavgs:
         if varname == "counter":
             continue
-        if len(tavgs[varname].shape) == 4:
+        if len(tavgs[varname].shape) == 5:
+            tavgs[varname][:, :, :, :, :] /= count
+        elif len(tavgs[varname].shape) == 4:
             tavgs[varname][:, :, :, :] /= count
         elif len(tavgs[varname].shape) == 3:
             tavgs[varname][:, :, :] /= count
@@ -340,7 +371,9 @@ def _update_monthly_s2s_values(outfile, accs, tavgs):
     for dictionary in [accs, tavgs]:
         for varname in dictionary:
             var = ncid.variables[varname]
-            if len(var.shape) == 4:
+            if len(var.shape) == 5:
+                var[:, :, :, :, :] = dictionary[varname][:, :, :, :, :]
+            elif len(var.shape) == 4:
                 var[:, :, :, :] = dictionary[varname][:, :, :, :]
             elif len(var.shape) == 3:
                 var[:, :, :] = dictionary[varname][:, :, :]
@@ -373,6 +406,8 @@ def _add_time_data(infile, outfile, startdate, enddate):
             continue
         var_out.setncattr(attrname, var_in.__dict__[attrname])
     var_out[:] = var_in[:]
+    ncid_out["time"].setncattr('units', "minutes since " + startdate.strftime("%Y-%m-%d") + " 00:00:00")
+    ncid_out["time"].setncattr('begin_date', startdate.strftime("%Y%m%d"))
 
     # Copy the time_bnds array from the last daily file.  But, we will change
     # the value to span one month of data.
@@ -384,8 +419,8 @@ def _add_time_data(infile, outfile, startdate, enddate):
                                       shuffle=True)
     var_out[:, :] = var_in[:, :]
     # Count number of minutes between start and end dates.
-    var_out[0, 0] = ((enddate - startdate).days)  * (-24*60) # Days to minutes
-    var_out[0, 1] = 0
+    var_out[0, 0] = 0
+    var_out[0, 1] = ((enddate - startdate).days)  * (24*60) # Days to minutes
 
     ncid_in.close()
     ncid_out.close()
@@ -453,7 +488,7 @@ def _driver():
     """Main driver."""
 
     # Get the directories and dates
-    configfile, input_dir, output_dir, startdate, enddate, model_forcing \
+    configfile, input_dir, output_dir, fcstdate, startdate, enddate, model_forcing \
         = _read_cmd_args()
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
@@ -465,7 +500,7 @@ def _driver():
     curdate = startdate
     seconddate = startdate + datetime.timedelta(days=1)
     while curdate <= enddate:
-        infile = _create_daily_s2s_filename(input_dir, curdate, model_forcing,
+        infile = _create_daily_s2s_filename(input_dir, fcstdate, curdate, model_forcing,
                                             config["EXP"]["DOMAIN"])
         #print("[INFO] Reading %s" %(infile))
         if curdate == startdate:
@@ -485,13 +520,14 @@ def _driver():
     del tavgs
 
     # Clean up a few details.
-    infile = _create_daily_s2s_filename(input_dir, enddate, model_forcing, config["EXP"]["DOMAIN"])
+    infile = _create_daily_s2s_filename(input_dir, fcstdate, \
+             enddate, model_forcing, config["EXP"]["DOMAIN"])
     _add_time_data(infile, tmp_outfile, startdate, enddate)
     _update_cell_methods(varlists, tmp_outfile)
     _cleanup_global_attrs(tmp_outfile)
 
     # Rename the output file
-    outfile = _create_monthly_s2s_filename(output_dir, startdate,
+    outfile = _create_monthly_s2s_filename(output_dir, fcstdate, startdate,
                                            enddate, model_forcing, config["EXP"]["DOMAIN"])
     os.rename(tmp_outfile, outfile)
 

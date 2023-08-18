@@ -44,7 +44,7 @@ def _main():
 #SBATCH --account s1189
 #SBATCH --output {var}.24hr.slurm.out
 #Adjust node, core, and hardware constraints here
-#SBATCH --ntasks=1 --constraint="cas|sky|hasw"
+#SBATCH --ntasks=1 --constraint="[cas|sky]"
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
@@ -52,7 +52,8 @@ fi
 
 module purge
 module use --append ~/privatemodules
-module load lisf_7.5_intel_2021.4.0
+#module load lisf_7.5_intel_2021.4.0
+module load lisf_7.5_intel_2021.4.0_s2s
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

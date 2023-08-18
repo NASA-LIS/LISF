@@ -1,9 +1,9 @@
 = Step 4: Generate LSM OL Cumulative Density Function-based Files (LDT)
 
 :step-label: Step 4
-:download-filename: testcase4_ldt_lsmcdf_2020.tar.gz
-:input-filesize-compressed: 362KB
-:input-filesize-unpacked: 815KB
+:download-filename: testcase4_ldt_lsmcdf_2023.tar.gz
+:input-filesize-compressed: 384KB
+:input-filesize-unpacked: 803KB
 :ldt-run-dir: DA_proc_LSM
 :ldt-config-filename: ldt.config.noah36_cdf
 

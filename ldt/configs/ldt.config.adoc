@@ -765,10 +765,10 @@ endif::devonly[]
 
 |AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: https://doi.org/10.3334/ORNLDAAC/969
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
-|MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: https://ral.ucar.edu/model/noah-multiparameterization-land-surface-model-noah-mp-lsm
 |MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
 |MCD12Q1 |Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in "`Landcover file`" option.
-|USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|USGS_Native |The 24-category USGS native landcover map. See: https://ral.ucar.edu/model/noah-multiparameterization-land-surface-model-noah-mp-lsm
 |USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LISF-team.
 |ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
 |CLSMF2.5 |CLSM Fortuna 2.5 landcover dataset.
