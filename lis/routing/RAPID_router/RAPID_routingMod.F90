@@ -332,10 +332,13 @@ contains
     enddo
 
     ! ensemble mode 0: open loop, ensemble mode 1: ensemble mean 
-    if(RAPID_routing_struc(n)%useens>1) then
-       write(LIS_logunit,*) "[ERR] Currently RAPID only supports ensemble modes 0 or 1" 
-       call LIS_endrun()
-    endif
+    ! EMK...Add do loop
+    do n=1, LIS_rc%nnest
+       if(RAPID_routing_struc(n)%useens>1) then
+          write(LIS_logunit,*) "[ERR] Currently RAPID only supports ensemble modes 0 or 1" 
+          call LIS_endrun()
+       endif
+    end do
 
     ! checks the size of static data for RAPID
     do n=1, LIS_rc%nnest

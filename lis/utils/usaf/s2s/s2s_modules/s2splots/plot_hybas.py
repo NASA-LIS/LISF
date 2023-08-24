@@ -1,11 +1,21 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 This script plots streamflow anomalies along river pathways while using the Google map as a canvas.
 - Sarith Mahanama (2023-01-13
 '''
 # pylint: disable=no-value-for-parameter
 
-from __future__ import division
 import os
 import calendar
 import argparse
@@ -25,7 +35,7 @@ STANDARDIZED_ANOMALY = 'Y'
 DEFCOMS = ['INDOPACOM', 'CENTCOM', 'AFRICOM', 'EUCOM', 'SOUTHCOM']
 
 def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
-               carea, boundary, region, google_path):
+               carea, boundary, region, google_path, hybas_mask):
     '''
     This function processes arguments and make plots.
     '''
@@ -50,7 +60,6 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     var_name = "Streamflow"
     if STANDARDIZED_ANOMALY == 'Y':
         levels = plot_utils.dicts('anom_levels', 'standardized')
-    under_over = ['gray', 'blue']
 
     infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
     print("Reading infile {}".format(infile))
@@ -60,6 +69,9 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     anom_crop = plot_utils.crop(boundary, anom.latitude, anom.longitude, anom)
     median_anom = np.nanmedian(anom_crop.anom.values, axis=0)
     plot_arr = median_anom[lead_month, ]
+    for i in range (0, len(lead_month)):
+        plot_arr[i,:,:] = np.where(hybas_mask > 0, plot_arr[i,:,:],-9999.)
+
     figure = figure_template.format(plotdir, region, var_name)
 
     titles = []
@@ -75,10 +87,12 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     if STANDARDIZED_ANOMALY == 'Y':
         clabel = 'Standardized Anomaly'
 
+    under_over = plot_utils.dicts('lowhigh', 'CB11W')
+    cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     plot_utils.google_map(anom_crop.longitude.values, anom_crop.latitude.values, nrows,
-                          ncols, plot_arr, 'DROUGHT_INV', titles, boundary, figure, under_over,
+                          ncols, plot_arr, 'CB11W', titles, boundary, figure, under_over,
                           dlat, dlon, ulat, ulon, carea, google_path, fscale=0.8, stitle=stitle,
-                          clabel=clabel, levels=levels)
+                          clabel=clabel, levels=levels, cartopy_datadir=cartopy_dir)
     del anom
     del anom_crop
 
@@ -105,10 +119,11 @@ def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, plot_domain):
                     math.floor(tx_.min()), math.ceil(tx_.max())]
         vmask = (((upstream_lon >= boundary[2]) & (upstream_lon <= boundary[3])) &
              ((upstream_lat >= boundary[0]) & (upstream_lat <= boundary[1])))
+        sub_mask = plot_utils.crop(boundary, bmask.lat, bmask.lon, bmask.basin_mask)
         region = "{:10d}".format(bid)
         plot_anoms(fcst_year, fcst_mon, cwd, config, downstream_lon[vmask],
                    downstream_lat[vmask], upstream_lon[vmask],upstream_lat[vmask],
-                   cum_area[vmask], boundary, region, google_path)
+                   cum_area[vmask], boundary, region, google_path, sub_mask.values[bas,:,:])
         bas += 1
 
 if __name__ == '__main__':
