@@ -23,7 +23,7 @@ import yaml
 def compute_median (anom, lead):
     da_slice=[]
     for da in anom:
-        da_slice.append(da.isel(lead=lead))
+        da_slice.append(da.isel(time=lead))
     da_conc = xr.concat(da_slice, dim = 'ens')
     return da_conc.median(dim = 'ens')
 

@@ -3,7 +3,7 @@
  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 24 May 2023
+  Last Modified 24 Aug 2023
 
 		TABLE OF CONTENTS
 		_________________
@@ -437,10 +437,10 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
                scripts on the NMME and CFSv2 forecast datasets
 
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
-    precipitation forecast model data for driving the models offline in LIS.
-    The forecasts are for the 557WW ~25KM global domain, bias-corrected
-    using the USAF-LIS7.5-S2S (NAFPA precipitation) dataset, and covers
-    up to 9 months of forecast input data to LIS.
+    forecast model precipitation data for driving the models offline in LIS.
+    The forecasts are for the 557 WW ~25KM global domain, bias-corrected
+    using the USAF-LIS7.5-S2S (e.g., NAFPA precipitation) dataset, and covers
+    up to 9 months of forecast as input data to LIS.
 
   - 13 high-level scripts (1 main and 12 individual task scripts) to create
     bias-corrected and downscaled forecast forcings. They are also driven
@@ -481,10 +481,9 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   - Scripts located in:  s2spost
      run_s2spost_9months.py:   <== Top-level python script
-       run_s2spost_1month.sh:   <== Batch job script
-         run_s2spost_1month.py:
-           daily_s2spost_nc.py
-             monthly_s2spost_nc.py
+       run_s2spost_1month.py:
+         daily_s2spost_nc.py
+           monthly_s2spost_nc.py
 
   4.8 S2S METRICS COMPUTATION
     s2smetric:  S2S forecast metric post-process step
@@ -507,13 +506,13 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
    - postprocess_nmme_job.py:
      calls:
-     - run_generate_metrics.sh:   <== Batch job script
-       lib_bcsd_metrics/convert_dyn_fcst_to_anom.py:
-       lib_bcsd_metrics/convert_dyn_fcst_to_sanom.py:
-           lib_bcsd_metrics/metricslib.py
+     - lib_bcsd_metrics/convert_dyn_fcst_to_anom.py:
+     - lib_bcsd_metrics/convert_dyn_fcst_to_sanom.py:
+         - lib_bcsd_metrics/metricslib.py
      - convert_s2s_anom_cf.py
      - merge_s2s_anom_cf.py
      - make_s2s_median_metric_geotiff.py
+
 
   4.9 S2S PLOTS
 

@@ -70,14 +70,16 @@ def dicts(dic_name, key):
         'SA1':(-31, -24, 24, 33),
         'FAME':(-40, 40, -20, 55),
         'EUROPE': (35, 70, -10, 50),
-        'CENTRAL_ASIA': (14, 55, 35, 90),
-        'SOUTH_EAST_ASIA': (-15, 30, 75, 140),
-        'SOUTH_AMERICA':(-55, 10, -85, -35),
+        'CENTRAL_ASIA': (5, 55, 33, 95),
+        'SOUTH_EAST_ASIA': (-10, 50, 90, 150),
+        'SOUTH_AMERICA':(-58, 16, -85, -33),
         'NORTH_AMERICA':(9, 72, -165, -58),
-        'AFRICA':(-40, 40, -20, 55),
+        'AFRICA':(-40, 40, -20, 60),
         'GLOBAL':(-89, 89, -179, 179),
         'TUNISIA':(30, 38, 7, 12),
-        'ME_CRES':(21, 39, 24, 62)
+        'ME_CRES':(21, 39, 24, 62),
+        'KOREA':(30, 45, 115, 140),
+        'ROMANIA':(40, 55, 18, 45)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
