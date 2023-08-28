@@ -109,12 +109,20 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         if (var_name in {'AirT'}) and \
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
-        if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            median_anom = median_anom*30./25.4
+#           In units of deg F
 
-        if var_name in {'Total-Runoff', 'ET'}:
+#       Already monthly accumulated values
+        if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
+            median_anom = median_anom/25.4
+
+        if var_name in {'ET'}:
             if standardized_anomaly is None:
                 median_anom = median_anom * 86400.
+
+#       Runoff = accumulated monthly values ...
+        if var_name in {'Total-Runoff'}:
+            if standardized_anomaly is None:
+                median_anom = median_anom * 1.
 
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
