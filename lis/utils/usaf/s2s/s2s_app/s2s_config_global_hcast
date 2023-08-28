@@ -60,7 +60,7 @@ BCSD:
   
 #######################################################################
 #                            LIS Forecast
-# Note: Acceptable JOB_SEGMENTS for 9-year forecast are 1,2,3,5,and 9
+# Note: Acceptable JOB_SEGMENTS for 9-month forecasts are 1,2,3,5,and 9
 #######################################################################
 
 FCST:
