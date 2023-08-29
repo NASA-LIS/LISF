@@ -87,6 +87,10 @@ module LIS_coreMod
 !
 ! !REVISION HISTORY:
 !  14 Nov 2002    Sujay Kumar  Initial Specification
+!  13 Aug 2023    Jules Kouatchou Declare and allocate variables needed by PFIO.
+!                                 Do not finalize ESMF if PFIO is used.
+!                                 Add preprocessing directives.
+!                                 
 !
 ! !USES:
   use ESMF
@@ -97,6 +101,10 @@ module LIS_coreMod
   use LIS_logMod
   use LIS_mpiMod
   use map_utils
+
+#ifdef USE_PFIO
+      use LIS_PFIO_varsMod
+#endif
 
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -158,6 +166,10 @@ module LIS_coreMod
   public :: LIS_routing
   public :: LIS_routing_gdeltas, LIS_routing_goffsets
 
+#ifdef USE_PFIO
+      public :: PFIO_bundle
+#endif
+
   integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
 
   type, public :: routing_type_dec
@@ -198,6 +210,9 @@ module LIS_coreMod
   end type lis_domain_sf_type
 
   type(lisrcdec), save           :: LIS_rc
+#ifdef USE_PFIO
+  type(pfio_t),   save           :: PFIO_bundle
+#endif
   type(lis_domain_type), allocatable :: LIS_domain(:)
   type(lis_domain_sf_type), allocatable :: LIS_surface(:,:)
   logical                        :: LIS_initialized = .false.
@@ -399,6 +414,16 @@ contains
     LIS_rc%reset_flag = .false.
     LIS_rc%run_model  = .true.
 
+#ifdef USE_PFIO
+    allocate(PFIO_bundle%fmd_rst(LIS_rc%nnest))
+    allocate(PFIO_bundle%rst_id(LIS_rc%nnest))
+    allocate(PFIO_bundle%fmd(LIS_rc%nnest, LIS_rc%n_vcollections))
+    allocate(PFIO_bundle%hist_id(LIS_rc%nnest, LIS_rc%n_vcollections))
+    allocate(PFIO_bundle%first_time(LIS_rc%nnest, LIS_rc%n_vcollections))
+    allocate(PFIO_bundle%counter(LIS_rc%nnest))
+    PFIO_bundle%counter(:)      = 1
+    PFIO_bundle%first_time(:,:) = .TRUE.
+#endif
   end subroutine lisconfig_generic
 
 !BOP
@@ -869,13 +894,17 @@ contains
     deallocate(LIS_npatches)
     deallocate(LIS_patch_offsets)
     deallocate(LIS_patch_deltas)
+#ifndef USE_PFIO
     if ( fin_esmf ) then
        call ESMF_Finalize(endflag=ESMF_END_KEEPMPI, rc=ierr)
     endif
+#endif
 #if ( defined COUPLED)
 #else
 #if ( defined SPMD )
+#ifndef USE_PFIO
     call MPI_FINALIZE(ierr)
+#endif
 #endif
 #endif
   end subroutine spmd_finalize

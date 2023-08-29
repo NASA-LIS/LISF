@@ -616,6 +616,8 @@ module LIS_PRIV_rcMod
 !  19 Jan 2007; Chuck Alonge; Added Flag to output parameters
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
 !  02 May 2023: Sujay Kumar; Add lat/lon dimension variable
+!  13 Aug 2023: Jules Kouatchou; Define the variables: do_ftiming, n_vcollections,
+!               nc_shuffle, nc_deflate, nc_deflate_lvl.
 !
 !EOP
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -636,6 +638,9 @@ module LIS_PRIV_rcMod
      integer                :: glacier_index 
      integer                :: wetland_index 
      integer                :: openwater_index 
+
+     logical                :: do_ftiming     ! do code profiling?
+     integer                :: n_vcollections ! num PFIO virtual collections
 
      integer, allocatable       :: ntiles(:)
      integer, allocatable       :: glbntiles(:)
@@ -730,6 +735,8 @@ module LIS_PRIV_rcMod
      real                   :: aspect_minp    
 
      logical                :: decompose_by_processes
+     integer                :: procLayoutx ! number of processor columns - determined if decompose_by_processes is true         
+     integer                :: procLayouty ! number of processor rows    - determined if decompose_by_processes is true
      integer                :: npesx
      integer                :: npesy
      integer                :: halox
@@ -828,6 +835,9 @@ module LIS_PRIV_rcMod
      real*8                 :: saitime  
      character*50           :: wopt     
      integer                :: wopt_rst
+     integer                :: nc_shuffle
+     integer                :: nc_deflate
+     integer                :: nc_deflate_lvl
      character*50           :: wout           
      integer                :: wsingle
      character*50           :: wstyle

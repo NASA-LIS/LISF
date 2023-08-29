@@ -66,6 +66,8 @@ module LIS_historyMod
 !                   used in GRIB1 & GRIB2 format
 !  18 Oct 2018: David Mocko: Check lis.config entry for option to turn off
 !                   writing ASCII stats files with netCDF output format
+!  13 Aug 2023: Jules Kouatchou; Set the variables shuffle, deflate, and deflate_level
+!               to values determined at run time in the lis.confile file.
 !
 ! !USES: 
   use LIS_coreMod
@@ -2720,9 +2722,9 @@ contains
 
     data_index = dataEntry%index
 
-    shuffle = NETCDF_shuffle
-    deflate = NETCDF_deflate
-    deflate_level =NETCDF_deflate_level
+    shuffle       = LIS_rc%nc_shuffle        ! NETCDF_shuffle
+    deflate       = LIS_rc%nc_deflate        ! NETCDF_deflate
+    deflate_level = LIS_rc%nc_deflate_lvl    ! NETCDF_deflate_level
 
     if(dataEntry%selectOpt.eq.1)then 
        if(LIS_rc%wopt.eq."1d tilespace") then 
@@ -4367,9 +4369,9 @@ contains
     character*50 :: var_flag_tmp
     integer :: fill_value
 
-    shuffle = NETCDF_shuffle
-    deflate = NETCDF_deflate
-    deflate_level =NETCDF_deflate_level
+    shuffle       = LIS_rc%nc_shuffle        ! NETCDF_shuffle
+    deflate       = LIS_rc%nc_deflate        ! NETCDF_deflate
+    deflate_level = LIS_rc%nc_deflate_lvl    ! NETCDF_deflate_level
 
     if(present(var_flag)) then 
        var_flag_tmp = var_flag
@@ -4550,9 +4552,9 @@ contains
     xlong%unittypes(1) = "degree_east"
 
 !lat header
-    shuffle = NETCDF_shuffle
-    deflate = NETCDF_deflate
-    deflate_level =NETCDF_deflate_level
+    shuffle       = LIS_rc%nc_shuffle        ! NETCDF_shuffle
+    deflate       = LIS_rc%nc_deflate        ! NETCDF_deflate
+    deflate_level = LIS_rc%nc_deflate_lvl    ! NETCDF_deflate_level
 
     if(LIS_masterproc) then 
        call LIS_verify(nf90_def_var(ftn,trim(xlat%short_name),&

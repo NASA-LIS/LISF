@@ -29,6 +29,10 @@ module LIS_surfaceModelMod
   use LIS_timeMgrMod
   use LIS_logMod
   use LIS_RTMMod
+  use LIS_ftimingMod
+#ifdef USE_PFIO 
+      use LIS_PFIO_historyMod
+#endif 
 
   implicit none
 
@@ -82,6 +86,10 @@ module LIS_surfaceModelMod
 ! to a different model component such as an atmospheric model. 
 !EOP
   end interface
+!
+! !HISTORY:
+! 13 Aug 2023 Jules Kouatchou; Introduce preprocessing directives for calls
+!             of HISTORY related subroutines with and without PFIO components.
 
 contains
 
@@ -175,6 +183,7 @@ contains
     integer             :: m
  
     TRACE_ENTER("sf_setup")
+    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_init/sf_setup")
     do m=1,LIS_rc%nsf_model_types
        if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
           call LIS_setuplsm()
@@ -186,6 +195,7 @@ contains
           call LIS_setupopenwatermodel()
        endif
     enddo
+    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init/sf_setup")
     TRACE_EXIT("sf_setup")
     
   end subroutine LIS_surfaceModel_setup
@@ -243,6 +253,7 @@ contains
     integer             :: m
 
     TRACE_ENTER("sf_run")
+    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run/sf_run")
     do m=1,LIS_rc%nsf_model_types
        if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
           call LIS_lsm_run(n)
@@ -254,6 +265,7 @@ contains
           call LIS_openwatermodel_run(n)
        endif
     enddo
+    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_run/sf_run")
     TRACE_EXIT("sf_run")
 
   end subroutine LIS_surfaceModel_run
@@ -331,8 +343,10 @@ contains
     integer             :: mo, da
     logical             :: open_stats
     character*3         :: fnest
+    integer             :: vcol_id
 
     TRACE_ENTER("sf_output")
+    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run/sf_output")
     alarmCheck = .false. 
     if(LIS_rc%time .ge. LIS_histData(n)%time) then 
 
@@ -368,9 +382,28 @@ contains
              endif
           endif
        
+#ifdef USE_PFIO
+          IF (PFIO_bundle%first_time(n, 1)) THEN
+             call PFIO_create_file_metadata(n, LIS_sfmodel_struc(n)%outInterval, &
+                                  LIS_sfmodel_struc(n)%nsm_layers, &
+                                  LIS_sfmodel_struc(n)%lyrthk, &
+                                  LIS_sfmodel_struc(n)%models_used)
+             PFIO_bundle%first_time(n, :) = .FALSE.
+          ENDIF
+#endif
+
           if(alarmCheck) then 
              open_stats = .false.
              call LIS_create_output_directory('SURFACEMODEL')             
+#ifdef USE_PFIO
+             call LIS_create_output_filename(n, outfile,&
+                              model_name = 'SURFACEMODEL',&
+                              writeint=LIS_sfmodel_struc(n)%outInterval)
+             vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
+             CALL PFIO_write_data(n, vcol_id, outfile, LIS_sfmodel_struc(n)%outInterval) !<--- PFIO
+
+             PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+#else
              if(LIS_masterproc) then 
                 if (LIS_sfmodel_struc(n)%stats_file_open) then
                    call LIS_create_stats_filename(n,statsfile,'SURFACEMODEL')
@@ -401,9 +434,11 @@ contains
                      model_name=LIS_sfmodel_struc(n)%models_used,          &
                      lyrthk2 = LIS_sfmodel_struc(n)%lyrthk2)
              endif
+#endif
           endif
        end if
     endif
+    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_run/sf_output")
     TRACE_EXIT("sf_output")
   end subroutine LIS_surfaceModel_output
 
@@ -430,6 +465,7 @@ contains
     integer             :: m
 
     TRACE_ENTER("sf_writerst")
+    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run/sf_writerst")
     if(LIS_rc%wopt_rst.ne.0) then 
        do m=1,LIS_rc%nsf_model_types
           if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
@@ -448,6 +484,7 @@ contains
        write(LIS_logunit,*) "MSG: 'Output model restart files' to '1'."
        write(LIS_logunit,*) " "
     endif
+    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_run/sf_writerst")
     TRACE_EXIT("sf_writerst")
 
   end subroutine LIS_surfaceModel_writerestart

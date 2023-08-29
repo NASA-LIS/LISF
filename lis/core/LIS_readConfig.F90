@@ -30,6 +30,9 @@
 !  29 Dec 2007: Marv Freimund; Used trim on filenames
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
 !  15 May 2023  Sujay Kumar, added support for 1D lat/lon output for latlon and merc projections
+!  13 Aug 2023: Jules Kouatchou Added calls to read rc file variables for profiling or not, 
+!               the number virtual collections (only need is PFIO used) and 
+!               data compression parameters.
 !
 ! !INTERFACE:
 subroutine LIS_readConfig()
@@ -42,6 +45,7 @@ subroutine LIS_readConfig()
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod
   use LIS_mpiMod, only: LIS_mpi_comm ! EMK
+  use LIS_rcFileReading_mod, only: read_rc_variables
 !
 ! !DESCRIPTION:
 !
@@ -506,6 +510,49 @@ subroutine LIS_readConfig()
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%sout,&
        label="Enable output statistics:",default=.false.,&
        rc=rc)
+
+!--------------------------------------------------------------------
+!---- Set the netCDF-4 data compression parameters
+!--------------------------------------------------------------------
+  CALL read_rc_variables(LIS_config, LIS_rc%nc_shuffle, &
+                         "netCDF shuffle filter:", &
+                         default=0, rc=rc)
+  
+  CALL read_rc_variables(LIS_config, LIS_rc%nc_deflate, &
+                         "netCDF deflate filter:", &
+                         default=1, rc=rc)
+
+  CALL read_rc_variables(LIS_config, LIS_rc%nc_deflate_lvl, &
+                         "netCDF deflate level:", &
+                         default=1, rc=rc)
+  
+  write(LIS_logunit,'(a,3i3)') '[INFO] netCDF shuffle filter/deflate filter/deflate level: ',&
+                        LIS_rc%nc_shuffle,LIS_rc%nc_deflate,LIS_rc%nc_deflate_lvl
+  IF (LIS_rc%nc_deflate_lvl < 1) THEN
+     write(LIS_logunit,*) '[INFO] Not doing any netCDF data compression '
+     LIS_rc%nc_shuffle     = 0
+     LIS_rc%nc_deflate     = 0
+     LIS_rc%nc_deflate_lvl = 0
+  ENDIF
+
+!--------------------------------------------------------------------
+!---- Determine the number of PFIO Virtual Collections
+!--------------------------------------------------------------------
+
+  CALL read_rc_variables(LIS_config, LIS_rc%n_vcollections, &
+                         "num PFIO virtual collections:", &
+                         default=1, rc=rc)
+
+!--------------------------------------------------------------------
+!---- Check if profiling the code or not
+!--------------------------------------------------------------------
+      call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%do_ftiming, &
+                               label = "Profiling Tool:", &
+                               default = .FALSE., rc=rc)
+      call LIS_verify(rc, 'Issue reading the Profiling Tool: value')
+
+      write(LIS_logunit,*) '[INFO] Do code profiling? ', LIS_rc%do_ftiming
+!--------------------------------------------------------------------
 
   if (LIS_rc%wout.eq."grib1" .or. LIS_rc%wout.eq."grib2") then
      call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%grib_table,&
