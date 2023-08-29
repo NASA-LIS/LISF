@@ -70,6 +70,7 @@ subroutine USAFSI_run(n)
   !**             and cleaned some unused codes..................Yeosang Yoon/NASA GSFC/SAIC
   !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
   !**  28 Jun 23  Extended station names to 31 characters........Eric Kemp/SSAI
+  !**  24 Aug 23  Changed station names to 32 characters.........Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -111,7 +112,7 @@ subroutine USAFSI_run(n)
   integer :: sfcobsfmt ! Format of sfcobs file
   character*255              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
   !character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
-  character*31,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
+  character*32,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*255              ::  static               ! STATIC FILE DIRECTORY PATH
   character*255              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
   character*255 :: sstdir ! EMK 20220113
@@ -133,7 +134,7 @@ subroutine USAFSI_run(n)
   character*12 :: routine_name
   type(LDT_bratseth_t) :: bratseth
   character*10 :: network10
-  character*31 :: platform31
+  character*32 :: platform32
   real :: rob, rlat, rlon, relev
   integer :: nc,nr
   real, allocatable :: landmask(:,:)
@@ -390,12 +391,12 @@ subroutine USAFSI_run(n)
         ! EMK Copy observations to bratseth object
         do j = 1, stacnt
            network10 = trim(netid(j))
-           platform31 = trim(staid(j))
+           platform32 = trim(staid(j))
            rob = stadep(j)
            rlat = real(stalat(j)) * 0.01
            rlon = real(stalon(j)) * 0.01
            relev = real(staelv(j))
-           call bratseth%append_ob(network10, platform31, rob, &
+           call bratseth%append_ob(network10, platform32, rob, &
                 rlat, rlon,&
                 relev, &
                 usafsi_settings%ob_err_var, back=-1.)
