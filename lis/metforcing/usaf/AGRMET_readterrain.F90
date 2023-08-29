@@ -52,7 +52,7 @@ subroutine AGRMET_readterrain(n)
   integer       :: hemi
   logical       :: exists
   character*100 :: name
-  character*100 :: message(20)
+  character*255 :: message(20)
   character*30  :: routine_name
 
   data routine_name     / 'AGRMET_readterrain' /
