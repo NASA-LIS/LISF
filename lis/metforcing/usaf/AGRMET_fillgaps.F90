@@ -43,7 +43,7 @@ subroutine AGRMET_fillgaps(n,ip,varfield)
   logical                :: foundPt
   integer                :: i,j,str,enr,stc,enc,kk
   integer                :: try
-  character*100                 :: message     (20)
+  character*255                 :: message     (20)
 
 
   try = 0 
