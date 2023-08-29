@@ -22,6 +22,8 @@
 ! Module for processing NASA half-hourly IMERG 30-min precipitation data.
 ! Updated 26 Apr 2022 by Eric Kemp/SSAI, to reduce memory footprint.
 ! Updated 14 Jul 2022 by Eric Kemp/SSAI, to support IMERG V07
+! Updated 24 Aug 2023 by Eric Kemp/SSAI, to add alert files if problem
+!   occurs with fetching IMERG.
 module USAF_ImergHHMod
 
    ! Imports
@@ -60,7 +62,7 @@ contains
    function newImergHHPrecip() result(this)
       implicit none
       type(ImergHHPrecip) :: this
-      integer :: nlats,nlons,ntimes
+      integer :: nlats, nlons, ntimes
       TRACE_ENTER("newImergHHPrecip")
       nlats = 1800
       nlons = 3600
@@ -69,7 +71,7 @@ contains
       this%nlons = nlons
       this%ntimes = ntimes
       !NOTE:  IMERG HDF5 grids are dimensioned lat,lon
-      allocate(this%precip_cal_3hr(nlats,nlons))
+      allocate(this%precip_cal_3hr(nlats, nlons))
       this%precip_cal_3hr(:,:) = 0
       this%swlat =  -89.95
       this%swlon = -179.95
@@ -96,8 +98,8 @@ contains
    end subroutine destroyImergHHPrecip
 
    ! Copy to obsData
-   subroutine copyToObsDataImergHHPrecip(this, sigmaOSqr, oErrScaleLength, &
-        net, platform, obsData_struc)
+   subroutine copyToObsDataImergHHPrecip(this, sigmaOSqr, &
+        oErrScaleLength, net, platform, obsData_struc)
 
       ! Modules
       use USAF_bratsethMod, only: USAF_obsData, USAF_assignObsData
@@ -173,12 +175,14 @@ contains
       integer*2, allocatable :: tmp_prob_liq_precip(:,:,:)
       integer*2, allocatable :: tmp_ir_kalman_weights(:,:,:)
       integer :: icount
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
       integer :: ierr
       logical :: saved_good
       logical :: version_good
       character(22) :: varname
       logical :: apply_irkalman_test
+      integer, save :: alert_number = 1
+      logical :: file_exists
 
       TRACE_ENTER("update30minImergHHPrecip")
 
@@ -198,15 +202,18 @@ contains
          write(LIS_logunit,*)&
               '[ERR] update30minImergHHPrecip Invalid IMERG Version  ', &
               trim(version)
-         write(LIS_logunit,*) 'Only version generations 6 and 7 supported! '
+         write(LIS_logunit,*) &
+              'Only version generations 6 and 7 supported! '
          flush(LIS_logunit)
          message(:) = ''
          message(1) = '[ERR] Program:  LIS'
          message(2) = '  Routine: update30minImergHHPrecip.'
-         message(3) = '  Invalid IMERG Version '//trim(version)
+         message(3) = '  Invalid IMERG Version ' // trim(version)
          if(LIS_masterproc) then
-            call LIS_alert( 'LIS.update30minImergHHPrecip', 1, &
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
                  message )
+            alert_number = alert_number + 1
             call LIS_abort( message)
          endif
 #if (defined SPMD)
@@ -226,8 +233,10 @@ contains
          message(2) = '  Routine: update30minImergHHPrecip.'
          message(3) = '  Invalid time level selected'
          if(LIS_masterproc) then
-            call LIS_alert( 'LIS.update30minImergHHPrecip', 1, &
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
                  message )
+            alert_number = alert_number + 1
             call LIS_abort( message)
          endif
 #if (defined SPMD)
@@ -242,11 +251,42 @@ contains
 
       ! Initialize HDF5 Fortran interface.
       call open_hdf5_f_interface(fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot open HDF5 interface'
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot open HDF5 interface'
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
 
       ! Open the file
       call open_imerg_file(trim(filename), file_id, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot open IMERG file', &
+              trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot open IMERG file ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
 
       ! Open the precipitationCal dataset; sanity check the data type,
       ! dimensions, and units; then read it in.
@@ -258,25 +298,122 @@ contains
       end if
       call open_imerg_dataset(file_id, trim(varname), &
            dataset_id, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot open dataset ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot open dataset in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
 
       call get_imerg_datatype(dataset_id, datatype_id, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot get datatype ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot get datatype in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       call check_imerg_type(datatype_id, H5T_IEEE_F32LE, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Found bad datatype ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Found bad datatype in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       dims(1) = this%nlats
       dims(2) = this%nlons
       dims(3) = 1
       call check_imerg_dims(dataset_id, 3, dims, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Found bad dimension ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Found bad dimension in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       call check_imerg_units(dataset_id, "mm/hr", fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Found bad units ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Found bad units in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       allocate(tmp_precip_cal(dims(1), dims(2), dims(3)))
       tmp_precip_cal = 0
-      call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_precip_cal, dims, hdferr)
+      call h5dread_f(dataset_id, H5T_IEEE_F32LE, tmp_precip_cal, dims, &
+           hdferr)
       if (hdferr .ne. 0) then
-         write(LIS_logunit,*)'[ERR] update30minImergHHPrecip cannot read ', &
-              'dataset ', trim(varname)
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Bad data read from ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Bad data read from ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
          goto 100
       end if
 
@@ -284,33 +421,114 @@ contains
       if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
       if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
 
-      ! Open the probabilityLiquidPrecipitation dataset; sanity check the data
-      ! type and dimensions; then read it in.
+      ! Open the probabilityLiquidPrecipitation dataset; sanity check
+      ! the data type and dimensions; then read it in.
       call open_imerg_dataset(file_id, &
            "/Grid/probabilityLiquidPrecipitation", &
            dataset_id, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot open dataset ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot open dataset in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       call get_imerg_datatype(dataset_id, datatype_id, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Cannot get datetype ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Cannot get datatype in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       call check_imerg_type(datatype_id, H5T_STD_I16LE, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Found bad datetype ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Found bad datatype in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       dims(1) = this%nlats
       dims(2) = this%nlons
       dims(3) = 1
       call check_imerg_dims(dataset_id, 3, dims, fail)
-      if (fail) goto 100
+      if (fail) then
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Found bad dimension ', &
+              'in ', trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Found bad dimension in ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
+         goto 100
+      end if
+
       allocate(tmp_prob_liq_precip(dims(1), dims(2), dims(3)))
       tmp_prob_liq_precip = 0
-      call h5dread_f(dataset_id, H5T_STD_I16LE, tmp_prob_liq_precip, dims, &
-           hdferr)
+      call h5dread_f(dataset_id, H5T_STD_I16LE, tmp_prob_liq_precip, &
+           dims, hdferr)
       if (hdferr .ne. 0) then
-         write(LIS_logunit,*)'[ERR] update30minImergHHPrecip cannot read', &
-              'dataset /Grid/probabilityLiquidPrecipitation'
+         write(LIS_logunit,*)&
+              '[WARN] update30minImergHHPrecip Bad data read from ', &
+              trim(filename)
+         flush(LIS_logunit)
+         message(:) = ''
+         message(1) = '[ERR] Program:  LIS'
+         message(2) = '  Routine: update30minImergHHPrecip.'
+         message(3) = '  Bad data read from ' // trim(filename)
+         if(LIS_masterproc) then
+            call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                 alert_number, &
+                 message )
+         endif
+         alert_number = alert_number + 1
          goto 100
       end if
 
       ! Close the probabilityLiquidPrecipitation types.
-      if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
+      if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, &
+           fail)
       if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
 
       ! Open the /Grid/IRkalmanFilterWeight dataset; sanity check the data
@@ -320,36 +538,118 @@ contains
       if (index(version, "V06") .ne. 0) then
          call open_imerg_dataset(file_id, "/Grid/IRkalmanFilterWeight", &
               dataset_id, fail)
-         if (fail) goto 100
+         if (fail) then
+            write(LIS_logunit,*)&
+                 '[WARN] update30minImergHHPrecip Cannot open dataset ', &
+                 'from ', trim(filename)
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program:  LIS'
+            message(2) = '  Routine: update30minImergHHPrecip.'
+            message(3) = '  Cannot open dataset from ' // trim(filename)
+            if(LIS_masterproc) then
+               call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                    alert_number, &
+                    message )
+            endif
+            alert_number = alert_number + 1
+            goto 100
+         end if
+
          call get_imerg_datatype(dataset_id, datatype_id, fail)
-         if (fail) goto 100
+         if (fail) then
+            write(LIS_logunit,*)&
+                 '[WARN] update30minImergHHPrecip Cannot get datatype ', &
+                 'from ', trim(filename)
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program:  LIS'
+            message(2) = '  Routine: update30minImergHHPrecip.'
+            message(3) = '  Cannot get datatype from ' // trim(filename)
+            if(LIS_masterproc) then
+               call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                    alert_number, &
+                    message )
+            endif
+            alert_number = alert_number + 1
+            goto 100
+         end if
+
          call check_imerg_type(datatype_id, H5T_STD_I16LE, fail)
-         if (fail) goto 100
+         if (fail) then
+            write(LIS_logunit,*)&
+                 '[WARN] update30minImergHHPrecip Found bad datatype ', &
+                 'in ', trim(filename)
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program:  LIS'
+            message(2) = '  Routine: update30minImergHHPrecip.'
+            message(3) = '  Found bad datatype in ' // trim(filename)
+            if(LIS_masterproc) then
+               call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                    alert_number, &
+                    message )
+            endif
+            alert_number = alert_number + 1
+            goto 100
+         end if
+
          dims(1) = this%nlats
          dims(2) = this%nlons
          dims(3) = 1
          call check_imerg_dims(dataset_id, 3, dims, fail)
-         if (fail) goto 100
-         allocate(tmp_ir_kalman_weights(dims(1), dims(2), dims(3)))
-         tmp_ir_kalman_weights = 0
-         call h5dread_f(dataset_id, H5T_STD_I16LE, tmp_ir_kalman_weights, &
-              dims, hdferr)
-         if (hdferr .ne. 0) then
-            write(LIS_logunit,*) &
-                 '[ERR] update30minImergHHPrecip cannot read ', &
-                 'dataset /Grid/IRkalmanFilterWeight'
+         if (fail) then
+            write(LIS_logunit,*)&
+                 '[WARN] update30minImergHHPrecip Found bad dimension ', &
+                 'in ', trim(filename)
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program:  LIS'
+            message(2) = '  Routine: update30minImergHHPrecip.'
+            message(3) = '  Found bad dimension in ' // trim(filename)
+            if(LIS_masterproc) then
+               call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                    alert_number, &
+                    message )
+            endif
+            alert_number = alert_number + 1
             goto 100
          end if
+
+         allocate(tmp_ir_kalman_weights(dims(1), dims(2), dims(3)))
+         tmp_ir_kalman_weights = 0
+         call h5dread_f(dataset_id, H5T_STD_I16LE, &
+              tmp_ir_kalman_weights, dims, hdferr)
+         if (hdferr .ne. 0) then
+            write(LIS_logunit,*) &
+                 '[WARN] update30minImergHHPrecip Cannot read data ', &
+                 'from ', trim(filename)
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[ERR] Program:  LIS'
+            message(2) = '  Routine: update30minImergHHPrecip.'
+            message(3) = '  Cannot read data from ' // trim(filename)
+            if(LIS_masterproc) then
+               call LIS_alert( 'LIS.update30minImergHHPrecip', &
+                    alert_number, &
+                    message )
+            endif
+            alert_number = alert_number + 1
+            goto 100
+         end if
+
          ! Close the IRkalmanFilterWeight types.
-         if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
-         if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
+         if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, &
+              fail)
+         if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, &
+              fail)
       else
          apply_irkalman_test = .false. ! EMK for IMERG V07
       end if
 
       ! Save the "good" precipitationCal data.
-      ! Precipitation units are converted from rate (mm/hr) to accumulation
-      ! (mm).
+      ! Precipitation units are converted from rate (mm/hr) to
+      ! accumulation (mm).
       saved_good = .true.
       icount = 0
       do j = 1,this%nlons
@@ -386,12 +686,14 @@ contains
            ' good 30-min calibrated estimates'
 
       ! Clean up before returning.
-      100 continue
+100   continue
       if (.not. saved_good) this%precip_cal_3hr = -9999
       if (allocated(tmp_precip_cal)) deallocate(tmp_precip_cal)
       if (allocated(tmp_prob_liq_precip)) deallocate(tmp_prob_liq_precip)
-      if (allocated(tmp_ir_kalman_weights)) deallocate(tmp_ir_kalman_weights)
-      if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, fail)
+      if (allocated(tmp_ir_kalman_weights)) &
+           deallocate(tmp_ir_kalman_weights)
+      if (datatype_id .gt. -1) call close_imerg_datatype(datatype_id, &
+           fail)
       if (dataset_id .gt. -1) call close_imerg_dataset(dataset_id, fail)
       if (file_id .gt. -1) call close_imerg_file(file_id, fail)
       call close_hdf5_f_interface(fail)
@@ -410,7 +712,9 @@ contains
       message(2) = '  Routine update30minImergHHPrecip.'
       message(3) = '  LIS was not compiled with HDF5 support'
       if (LIS_masterproc) then
-         call LIS_alert('LIS.update30minImergHHPrecip', 1, message)
+         call LIS_alert('LIS.update30minImergHHPrecip', alert_number, &
+              message)
+         alert_number = alert_number + 1
          call LIS_abort(message)
       end if
 #if (defined SPMD)
@@ -464,7 +768,8 @@ contains
       end subroutine open_imerg_file
 
       ! Internal subroutine.  Open HDF5 dataset.
-      subroutine open_imerg_dataset(file_id, dataset_name, dataset_id, fail)
+      subroutine open_imerg_dataset(file_id, dataset_name, dataset_id, &
+           fail)
          use HDF5
          use LIS_logMod, only: LIS_logunit
          implicit none
@@ -944,8 +1249,10 @@ contains
       type(ESMF_TIME) :: start_time, end_time, start_of_day
       type(ESMF_TIMEINTERVAL) :: half_hour
       type(ESMF_TIMEINTERVAL) :: time_diff
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
       integer :: ierr
+      integer, save :: alert_number = 1
+      logical :: file_exists
       integer :: rc
 
       TRACE_ENTER("create_Imerg_HH_filename")
@@ -1034,8 +1341,10 @@ contains
          message(3) = '  Invalid IMERG product selected'
 
          if (LIS_masterproc) then
-            call LIS_alert( 'LIS.create_imerg_HH_filename', 1, &
+            call LIS_alert( 'LIS.create_imerg_HH_filename', &
+                 alert_number, &
                  message )
+            alert_number = alert_number + 1
             call LIS_abort( message)
          end if
 
@@ -1055,8 +1364,10 @@ contains
         precipObsData)
 
       ! Modules
-      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
+      use LIS_coreMod, only: LIS_masterproc
+      use LIS_logMod, only: LIS_logunit, LIS_alert
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
+      use USAF_bratsethMod, only: USAF_ObsData, USAF_createObsData
 
       ! Defaults
       implicit none
@@ -1081,6 +1392,9 @@ contains
       integer :: yr, mo, da, hr, mn
       integer :: itime
       character(len=255) :: filename
+      character(255) :: message(20)
+      integer, save :: alert_number = 1
+      logical :: file_exists
       integer :: icount
       integer :: rc
 
@@ -1126,8 +1440,29 @@ contains
          call create_Imerg_HH_filename(datadir, product, version, &
               yr,mo,da,hr,mn,filename)
 
-         ! Process the 30HH file
-         call update30minImergHHPrecip(imerg,itime,filename,plp_thresh,version)
+         ! Report if the file doesn't exist
+         inquire(file=trim(filename), exist=file_exists)
+         if (.not. file_exists) then
+            write(LIS_logunit,*)'[WARN] Cannot find IMERG file ', &
+                 trim(filename)
+            write(LIS_logunit,*) &
+                 '[WARN] No IMERG data will be assimilated'
+            flush(LIS_logunit)
+            message(:) = ''
+            message(1) = '[WARN] Program: LIS'
+            message(2) = '  Routine fetch3hrImergHH.'
+            message(3) = '  Cannot find IMERG file ' // trim(filename)
+            if (LIS_masterproc) then
+               call LIS_alert('LIS.fetch3hrImergHH', alert_number, &
+                    message)
+            end if
+            alert_number = alert_number + 1
+            imerg%precip_cal_3hr = -9999
+         else
+            ! Process the 30HH file
+            call update30minImergHHPrecip(imerg, itime, filename, &
+                 plp_thresh, version)
+         end if
 
          ! Next cycle
          itime = itime + 1
@@ -1142,7 +1477,8 @@ contains
       call USAF_createObsData(precipObsData, nest, maxobs=icount)
 
       ! Copy the good values into the ObsData object
-      call copyToObsDataImergHHPrecip(imerg, sigmaOSqr, oErrScaleLength, &
+      call copyToObsDataImergHHPrecip(imerg, sigmaOSqr, &
+           oErrScaleLength, &
            net, platform, precipObsData)
 
       ! Clean up

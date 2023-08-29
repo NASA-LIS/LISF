@@ -32,13 +32,15 @@
 !    7 Feb 11  Enable use of either JMOBS or CDMS obs......Chris Franks/16WS/WXE/SEMS
 !   11 May 11  Store obs from 3,9,15,& 21Z for India and Sri Lanka in a 
 !              new array and pass to processobs............Chris Franks/16WS/WXE/SEMS
-! !INTERFACE:    
+!   29 Aug 23  Call LIS_alert if a preobs file is missing..............Eric Kemp/NASA
+!
+! !INTERFACE:
 subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
      use_twelve, p6, p12, alert_number, precip6, precip12,pcp_src)
 ! !USES:
-  use LIS_coreMod,       only : LIS_rc
+  use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod, only    : LIS_tick, LIS_julhr_date
-  use LIS_logMod, only        : LIS_logunit
+  use LIS_logMod, only        : LIS_logunit, LIS_alert
   use AGRMET_forcingMod, only : agrmet_struc
   use USAF_bratsethMod, only: USAF_ObsData, USAF_setbratsethprecipstats
 
@@ -173,10 +175,9 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
   integer                      :: nsize3
   integer                      :: yr,mo,da,hr
   integer                      :: ierr1, ierr2, ierr3
-  integer                      :: k 
+  integer                      :: k
   logical                      :: cdms_flag
-
-
+  character(255) :: message(20)
 
   type rain_obs
      sequence
@@ -279,9 +280,31 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                  write(LIS_logunit,*)"* OBSERVATIONS BEYOND ARRAY SIZE WILL BE IGNORED."
                  write(LIS_logunit,*)"******************************************************"
                  write(LIS_logunit,*)' '
- 
+
+                 !EMK 20230829...Create alert file.
+                 message(:) = ''
+                 message(1) = '[WARN] Program:  LIS'
+                 message(2) = '  Routine: AGRMET_getpcpobs'
+                 message(3) = '  Too many rain gage reports in '// &
+                      trim(filename)
+!                 message(4) = '  Number of rain gage reports is '// nsize
+                 write(message(5),'(A, I6)') &
+                      '  Number of rain gage reports is ', nsize
+                 !message(5) = '  Array size is '// &
+                 !     agrmet_struc(n)%max_pcpobs
+                 write(message(5),'(A, I6)') '  Array size is ', &
+                      agrmet_struc(n)%max_pcpobs
+                 message(6) = '  Observations beyond array size will be ignored'
+                 message(7) = '  Increase number of AGRMET maximum precip obs in lis.config file!'
+                 if (LIS_masterproc) then
+                    call LIS_alert('LIS.AGRMET_getpcpobs', &
+                         alert_number, message)
+                    alert_number = alert_number + 1
+                 end if
+
                  nsize = agrmet_struc(n)%max_pcpobs
 
+     
               end if
 
               cdms_count = 0
@@ -367,7 +390,17 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                  write(LIS_logunit,*)'*** ERROR ON DATABASE READ.  ISTAT IS '
                  write(LIS_logunit,*)'**********************************************'
                  write(LIS_logunit,*)' '
-              
+
+                 !EMK 20230829...Create alert file.
+                 message(:) = ''
+                 message(1) = '[WARN] Program:  LIS'
+                 message(2) = '  Routine: AGRMET_getpcpobs'
+                 message(3) = '  Problem reading '// trim(filename)
+                 if (LIS_masterproc) then
+                    call LIS_alert('LIS.AGRMET_getpcpobs', &
+                         alert_number, message)
+                    alert_number = alert_number + 1
+                 end if
               end if
            else
               write(LIS_logunit,*)' '
@@ -376,6 +409,18 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
               write(LIS_logunit,*) trim(filename)
               write(LIS_logunit,*)'**********************************************'
               write(LIS_logunit,*)' '
+
+              !EMK 20230829...Create alert file.
+              message(:) = ''
+              message(1) = '[WARN] Program:  LIS'
+              message(2) = '  Routine: AGRMET_getpcpobs'
+              message(3) = '  Missing rain gage file '// trim(filename)
+              if (LIS_masterproc) then
+                 call LIS_alert('LIS.AGRMET_getpcpobs', &
+                      alert_number, message)
+                 alert_number = alert_number + 1
+              end if
+
            endif
         
 !-----------------------------------------------------------------------
