@@ -820,7 +820,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
     integer :: kprs
     byte, allocatable :: buffer(:,:,:) 
     character*9                   :: cstat
-    character*100                 :: file_name,file_nam,message     (20)
+    character*100                 :: file_name,file_nam
+    character*255                 :: message(20)
     integer                       :: rec_length
     integer                       :: istat
     integer                       :: istat1

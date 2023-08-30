@@ -62,7 +62,7 @@ subroutine AGRMET_julhr_date10( julhr, date10)
 !   convert julian hour to hour,day,month and year
 !  \end{description}
 !EOP
-  character*100                  :: message ( 20 )
+  character*255                  :: message ( 20 )
   integer                        :: dd     
   integer                        :: hh     
   integer                        :: j      
