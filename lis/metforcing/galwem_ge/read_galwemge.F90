@@ -69,7 +69,7 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
   character*100   :: gtype
   integer         :: file_julhr
   integer         :: yr1, mo1, da1, hr1
-  character*100   :: message     ( 20 )
+  character*255   :: message     ( 20 )
   integer         :: iginfo      ( 40 )
   real            :: gridres_dlat, gridres_dlon
   integer         :: ifguess, jfguess
@@ -282,7 +282,7 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 !
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character*255                 :: message     ( 20 )
   character(len=7)              :: grib_msg
   character(len=7)              :: check_galwemge_message
   integer                       :: count_tair, count_qair

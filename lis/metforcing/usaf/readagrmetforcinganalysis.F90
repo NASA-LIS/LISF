@@ -83,7 +83,7 @@ subroutine readagrmetforcinganalysis(n,findex, order, agrfile, month)
   integer, save          :: step_count=1
   character(len=10)       :: str_count
   character(len=128)     :: dump_name
-  character(len=100) :: message(20)
+  character(len=255) :: message(20)
   integer :: mo
 #if(defined USE_GRIBAPI) 
 !--------------------------------------------------------------------------

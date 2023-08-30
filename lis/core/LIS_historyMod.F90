@@ -7466,7 +7466,7 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*100        :: message(20)
+  character*255        :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1
@@ -7821,7 +7821,7 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*100        :: message(20)
+  character*255        :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1
