@@ -26,12 +26,18 @@ module LIS_RTMMod
 ! !REVISION HISTORY:
 !
 !  21 Mar 2009: Sujay Kumar; Initial implementation
+!  01 Sep 2023 Jules Kouatchou; Introduce preprocessing directives for calls
+ !             of HISTORY related subroutines with and without PFIO components.
 !
 !EOP
   use ESMF 
   use LIS_coreMod
   use LIS_timeMgrMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
+#ifdef USE_PFIO 
+      use LIS_PFIO_historyMod
+#endif
 
   implicit none
   
@@ -326,6 +332,7 @@ contains
     logical             :: alarmCheck
     integer             :: mo, da
     logical             :: open_stats
+    integer             :: vcol_id
 
     TRACE_ENTER("rtm_out")
     if(LIS_rc%rtm.ne."none") then 
@@ -356,9 +363,29 @@ contains
                 alarmCheck = LIS_isAlarmRinging(LIS_rc,&
                      "RTM output alarm")
              endif
+
+#ifdef USE_PFIO
+             IF (PFIO_bundle%first_time(n, 1)) THEN
+                call PFIO_create_file_metadata(n, LIS_rtm_struc(n)%rtmoutInterval, &
+                                  1, (/1.0/), &
+                                  model_name = LIS_rtm_struc(n)%models_used,           &
+                                  group = 3)
+                PFIO_bundle%first_time(n, :) = .FALSE.
+             ENDIF
+#endif
              
              if(alarmCheck) then 
                 open_stats = .false.
+#ifdef USE_PFIO
+                call LIS_create_output_directory('RTM')
+                call LIS_create_output_filename(n, outfile,&
+                                 model_name = 'RTM',&
+                                 writeint=LIS_rtm_struc(n)%rtmoutInterval)
+                vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
+                CALL PFIO_write_data(n, vcol_id, outfile, LIS_rtm_struc(n)%rtmoutInterval) !<--- PFIO
+    
+                PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+#else
                 if(LIS_masterproc) then 
                    call LIS_create_output_directory('RTM')
                    if (LIS_rtm_struc(n)%stats_file_open) then
@@ -379,6 +406,7 @@ contains
                      nsoillayers2 = 1,                                    &
                      model_name = LIS_rtm_struc(n)%models_used,           &
                      group = 3)
+#endif
              endif
           end if
        endif
