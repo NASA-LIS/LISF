@@ -96,6 +96,7 @@ This script will prompt the user with a series of questions regarding support to
 | `LIS_CRTM_PROF` | path to LIS-CRTM Profile library | optional
 | `LIS_CMEM`      | path to LIS-CMEM library         | optional
 | `LIS_LAPACK`    | path to LAPACK library           | optional
+| `LIS_PETSC`     | path to PETSc library            | optional
 | `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
 |====
 
@@ -137,8 +138,7 @@ Use HDFEOS? (1-yes, 0-no, default=1):
 Use MINPACK? (1-yes, 0-no, default=0):
 Use LIS-CRTM? (1-yes, 0-no, default=0):
 Use LIS-CMEM? (1-yes, 0-no, default=0):
-Use LIS-LAPACK? (1-yes, 0-no, default=0):
-Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0):
+Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
@@ -174,6 +174,20 @@ if you wish to enable LIS-CRTM2EM support, then you must also enable LIS-CMEM su
 
 * for `Use LIS-CMEM? (1-yes, 0-no, default=0):`,
 if you wish to enable LIS-CMEM support, then you must also enable LIS-CRTM.  So for `Use LIS-CRTM? (1-yes, 0-no, default=0):`, you must also select 1.
+
+* for `Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):`,
+select the type of LAPACK library that you have installed.  This is used with `Use PETSc? (1-yes, 0-no, default=0):`.  If you select 0 for `Use PETSc?`, then select 0 for `Use LIS-LAPACK?`.  If you select 1 for `Use PETSc?`, then select `Use LIS-LAPACK?` according to the following table:
++
+|====
+| Selection | Description
+
+| 0         | No LAPACK needed / Use system LAPACK
+| 1         | LAPACK in Intel MKL
+| 2         | liblapack / libblas
+| 3         | liblapack / librefblas
+|====
++
+For example, on a Cray system using the Cray compilers, select 0 because the linker will find Cray's LAPACK libraries.
 
 Note that due to an issue involving multiple definitions within the NetCDF 3 and HDF 4 libraries, you cannot compile LIS with support for both NetCDF 3 and HDF 4 together.
 
