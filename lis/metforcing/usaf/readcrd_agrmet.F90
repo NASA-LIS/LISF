@@ -62,6 +62,10 @@ subroutine readcrd_agrmet()
   integer, external :: LIS_create_subdirs
   integer :: tmp_imerg_plp_thresh
   integer :: ierr
+  logical :: use_nrt_bias_files ! EMK
+
+  external :: MPI_Barrier
+  external :: sleep
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
@@ -1091,16 +1095,59 @@ subroutine readcrd_agrmet()
      call LIS_verify(rc, &
           "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
      if (agrmet_struc(n)%back_bias_corr .lt. 0 .or. &
-          agrmet_struc(n)%back_bias_corr .gt. 1) then
+          agrmet_struc(n)%back_bias_corr .gt. 2) then
         call LIS_verify(rc, &
-             "[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 1")
+             "[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0, 1, or 2")
      end if
      if (agrmet_struc(n)%back_bias_corr .eq. 1) then
         allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
         agrmet_struc(n)%pcp_back_bias_ratio = 1.
         agrmet_struc(n)%pcp_back_bias_ratio_month = 0
+     else if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+
+        allocate(agrmet_struc(n)%gfs_nrt_bias_ratio( &
+             LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        allocate(agrmet_struc(n)%galwem_nrt_bias_ratio( &
+             LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%gfs_nrt_bias_ratio = 1.
+        agrmet_struc(n)%galwem_nrt_bias_ratio = 1.
+        agrmet_struc(n)%pcp_back_bias_ratio_month = 0
      end if
-  enddo ! n
+  end do
+
+  ! EMK Add support for NRT bias files for GFS and GALWEM
+  use_nrt_bias_files = .false.
+  do n = 1, LIS_rc%nnest
+     if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+        use_nrt_bias_files = .true.
+        exit
+     end if
+  end do
+
+  if (use_nrt_bias_files) then
+     call ESMF_ConfigFindLabel(LIS_config, &
+          "AGRMET PPT GFS NRT bias file:", rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT GFS NRT bias file: not specified in config file")
+
+     do n = 1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, &
+             agrmet_struc(n)%gfs_nrt_bias_ratio_file, rc=rc)
+        call LIS_verify(rc, &
+             "[ERR] AGRMET PPT GFS NRT bias file: not specified in config file")
+     end do
+
+     call ESMF_ConfigFindLabel(LIS_config, &
+          "AGRMET PPT GALWEM NRT bias file:", rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT GALWEM NRT bias file: not specified in config file")
+     do n = 1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, &
+             agrmet_struc(n)%galwem_nrt_bias_ratio_file, rc=rc)
+        call LIS_verify(rc, &
+             "[ERR] AGRMET PPT GALWEM NRT bias file: not specified in config file")
+     end do
+  end if
 
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1

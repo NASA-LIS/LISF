@@ -719,6 +719,12 @@ integer, allocatable   :: n112_sh4(:)
      ! EMK Add GFS-to-GALWEM bias correction
      integer :: back_bias_corr
      real, allocatable :: pcp_back_bias_ratio(:,:)
+     ! EMK Add NRT bias correction toward IMERG-Final Run
+     ! (back_bias_corr == 2)
+     character(255) :: gfs_nrt_bias_ratio_file
+     character(255) :: galwem_nrt_bias_ratio_file
+     real, allocatable :: gfs_nrt_bias_ratio(:,:)
+     real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
   end type agrmet_type_dec
 
@@ -747,7 +753,7 @@ contains
   subroutine init_AGRMET(findex)
 
 ! !USES: 
-    use LIS_coreMod,    only : LIS_rc, LIS_domain
+    use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
     use LIS_snowMod,    only : LIS_snow_setup
@@ -826,6 +832,21 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
     integer                       :: istat
     integer                       :: istat1
     integer                       :: ftn
+
+    external :: readcrd_agrmet
+    external :: AGRMET_readmask
+    external :: AGRMET_readterrain
+    external :: AGRMET_readpcpcntm
+    external :: AGRMET_read_sfcalccntm
+    external :: polarToLatLon
+    external :: bilinear_interp_input_withgrid
+    external :: neighbor_interp_input_withgrid
+    external :: AGRMET_read_pcpclimodata
+    external :: gfs_reset_interp_input
+    external :: galwem_reset_interp_input
+    external :: conserv_interp_input
+    external :: bilinear_interp_input
+    external :: upscaleByAveraging_input
 
     allocate(agrmet_struc(LIS_rc%nnest))
     call readcrd_agrmet()
