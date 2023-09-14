@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -7,23 +18,23 @@
 # PURPOSE: Updates attributes of S2S monthly anomaly/standardized anomaly
 # netCDF files to conform with CF-1.8 convention.
 #
-# REQUIREMENTS as of 26 Sep 2021:
-# * Python 3.8 or higher
-# * netCDF Operator (NCO) binaries version 5.0.1 or later.
+# REQUIREMENTS as of 28 May 2023:
+# * Python 3.9 or higher
 #
 # REFERENCES:
 # https://cfconventions.org for specifications of NetCDF Climate and Forecast
 #   (CF) Metadata Conventions.
-# https://nco.sourceforge.net for NCO utilities documentation and source code.
 # https://unidata.ucar.edu/software/udunits for documentation on UDUNITS2
 #   library, which CF is generally consistent with for unit specifications.
 #
 # REVISION HISTORY:
 # 26 Sep 2021: Eric Kemp (SSAI), first version.
 # 30 Oct 2021: Eric Kemp/SSAI, now uses s2smetric config file.
+# 02 Jun 2023: K. Arsenault + S. Mahanama, Updated the 557 WW file names.
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 
@@ -35,34 +46,31 @@ from netCDF4 import Dataset #pylint: disable=no-name-in-module
 # Local constants
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
 _UNITS_ANOM = {
-    "RootZone-SM" : "m3 m-3",
-    "Streamflow" : "m3 s-1",
-    "Surface-SM" : "m3 m-3",
+    "RZSM" : "m3 m-3",
+    "SFCSM" : "m3 m-3",
     "TWS" : "mm",
     "Precip" : "kg m-2",
-    "Air_T" : "K",
+    "AirT" : "K",
     "ET" : "kg m-2 s-1",
-    "Air-T" : "K",
+    "Streamflow" : "m3 s-1",
 }
 _LONG_NAMES_SANOM = {
-    "RootZone-SM" : "Root zone soil moisture standardized anomaly",
-    "Streamflow" : "Streamflow standardized anomaly",
-    "Surface-SM" : "Surface soil moisture standardized anomaly",
+    "RZSM" : "Root zone soil moisture standardized anomaly",
+    "SFCSM" : "Surface soil moisture standardized anomaly",
     "TWS" : "Terrestrial water storage standardized anomaly",
     "Precip" : "Total precipitation amount standardized anomaly",
-    "Air_T" : "Air temperature standardized anomaly",
+    "AirT" : "Air temperature standardized anomaly",
     "ET" : "Total evapotranspiration standardized anomaly",
-    "Air-T" : "Air temperature standardized anomaly",
+    "Streamflow" : "Streamflow standardized anomaly",
 }
 _LONG_NAMES_ANOM = {
-    "RootZone-SM" : "Root zone soil moisture anomaly",
-    "Streamflow" : "Streamflow anomaly",
-    "Surface-SM" : "Surface soil moisture anomaly",
+    "RZSM" : "Root zone soil moisture anomaly",
+    "SFCSM" : "Surface soil moisture anomaly",
     "TWS" : "Terrestrial water storage anomaly",
     "Precip" : "Total precipitation amount anomaly",
-    "Air_T" : "Air temperature anomaly",
+    "AirT" : "Air temperature anomaly",
     "ET" : "Total evapotranspiration anomaly",
-    "Air-T" : "Air temperature anomaly",
+    "Streamflow" : "Streamflow anomaly",
 }
 
 def _usage():
@@ -149,16 +157,19 @@ def _driver():
     nc4["latitude"].long_name = 'latitude'
     nc4["latitude"].standard_name = 'latitude'
     nc4["latitude"].units = 'degree_north'
+    nc4["latitude"].axis = 'Y'
 
     nc4["longitude"].long_name = 'longitude'
     nc4["longitude"].standard_name = 'longitude'
     nc4["longitude"].units = 'degree_east'
+    nc4["longitude"].axis = 'X'
 
     nc4["ens"].long_name = 'Ensemble members'
+    nc4["ens"].axis = 'E'
     nc4["ens"].units = '1'
 
-    nc4["lead"].long_name = 'Forecast month'
-    nc4["lead"].units = 'months'
+    nc4["time"].long_name = 'Forecast month'
+    nc4["time"].units = 'months'
 
     nc4["anom"].long_name = metric_long_name
     nc4["anom"].units = metric_units

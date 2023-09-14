@@ -7,7 +7,9 @@
 # columns are just sorted climatology of forecasts for all lead times for a given forecast
 # initialization month
 """
-from __future__ import division
+
+
+
 import os
 import sys
 import calendar
@@ -77,7 +79,7 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             INFILE = INFILE_TEMPLATE.format(INDIR, MONTH_NAME, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
                                             FCST_YEAR, FCST_MONTH)
             print(INFILE)
-            FCST_TS[LEAD_NUM, COUNT_DATA, ] = read_nc_files(INFILE, VAR)[0,]
+            FCST_TS[LEAD_NUM, COUNT_DATA, ] = read_nc_files(INFILE, VAR)[:]
             COUNT_DATA+=1
 
 CLIM_ARRAY = np.empty((LEAD_FINAL+1, ((CLIM_EYR-CLIM_SYR)+1)*ENS_NUM, len(LATS), len(LONS)))

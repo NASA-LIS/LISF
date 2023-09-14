@@ -634,6 +634,8 @@ Acceptable values are:
 |"`4 level hierarchy`" | 4 levels of hierarchy
 |"`WMO convention`"    | WMO convention for weather codes
 |"`557WW streamflow convention`" | 557WW convention for streamflow output
+|"`557WW medium range forecast convention`" | 557WW convention for medium range forecast output
+
 |====
 .Example _lis.config_ entry
 ....
@@ -642,15 +644,15 @@ Output naming style: "3 level hierarchy"
 
 [NOTE]
 ====
-The "`557WW streamflow convention`" has 4 additional settings:
+The "`557WW streamflow convention`" and "`557WW medium range forecast convention`" have 4 additional settings:
 
-`AGRMET security classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+`AGRMET security classification:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
 
-`AGRMET distribution classification:` used with 557WW streamflow convention or AGRMET Ops runmode.
+`AGRMET distribution classification:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
 
-`AGRMET data category:` used with 557WW streamflow convention or AGRMET Ops runmode.
+`AGRMET data category:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
 
-`AGRMET area of data:` used with 557WW streamflow convention or AGRMET Ops runmode.
+`AGRMET area of data:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
 
 See Section <<sssec_forcings_afwa,AFWA/AGRMET>> for more information.
 
@@ -5971,8 +5973,18 @@ default to the "`final`" product of GPM IMERG.
 
 `IMERG version:` specifies the version of the GPM IMERG
 precipitation forcing files. If no version is specified, 
-the reader will default to the latest version of GPM IMERG.
-(Currently V06B).
+the reader will default to "`V06B`".
+
+The supported versions of GPM IMERG are:
+
+|====
+|Version  | Product
+
+|V06B     | early, late, final
+|V06C     | early, late, final
+|V06D     | early, late, final
+|V07A     | preliminary support for final
+|====
 
 .Example _lis.config_ entry
 ....
