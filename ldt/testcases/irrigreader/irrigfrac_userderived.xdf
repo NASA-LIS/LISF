@@ -1,6 +1,0 @@
-DSET ^./lis_input_testcase.d01.nc
-UNDEF 0.
-XDEF east_west     381  LINEAR    20.975     0.05
-YDEF north_south   281  LINEAR    20.975     0.05
-ZDEF sfctypes       20  LINEAR      1.0       1.0
-*TDEF month          12  LINEAR 00Z01jan2000    1mo

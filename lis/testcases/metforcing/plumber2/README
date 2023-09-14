@@ -1,0 +1,29 @@
+The Plumber2 Reader Test Case
+
+This test case performas a 2 day simulation from 2009-12-31 to 2010-01-02 to tests the plumber2 metforcing reader. 
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case to reproduce the lis_input file. (This file should be edited to make sure that the locations of the parameter and forcing files are specified correctly.)
+* the input.ctl GrADS descrptor file used to display the input parameter file for lis prodcued by LDT. 
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+
+To run this test case: 
+* Generate the LDT executable. 
+* Run the LDT executble using the ldt config file and your sample input data. 
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+
+Notes:
+
+This feature was added in pull request #943:
+http://github.com/nasa-lis/lisf/pull/943 

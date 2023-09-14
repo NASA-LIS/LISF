@@ -36,7 +36,7 @@
 *'draw xlab ldt-orig'
 *'draw ylab ldt-cro'
 
-*say 'Hit tnter to continue'
+*say 'Hit enter to continue'
 *pull args
 
 
