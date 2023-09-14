@@ -1,0 +1,27 @@
+The extendDA Test Case
+
+The testcase demonstrates support for DA capabilities beyond land surface models (routing, glacier, etc.) The testcases employees the HYMAP 2 router to run a 2 day, 0.25 deg test.
+
+This directory contains:
+* this README file
+* the lis.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+* a sample grads control file that can be used to visualize the 
+  output. (output.ctl)
+* a sample grads control file that can be used to visualize the 
+  test case output. (testcase.ctl)
+* output-routing.ctl
+* testcase-routing.ctl
+
+To run this test case: 
+
+* Generate the LIS executable. 
+* Run the LIS executable using the lis.config file and your sample 
+  input data. 
+
+Notes:
+
+This feature was added in pull request #544:
+http://github.com/nasa-lis/lisf/pull/544
