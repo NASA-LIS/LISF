@@ -94,7 +94,7 @@ subroutine read_ISRIC_texture( n, num_bins, fgrd, texture_layers )
 
 ! ___________________________________________________________________
   
-   water_class = 13    ! Water class for ISRIC soil texture class
+   water_class = 14    ! Water class for ISRIC soil texture class
 
    temp = LDT_rc%udef
    gridcnt = 0.
