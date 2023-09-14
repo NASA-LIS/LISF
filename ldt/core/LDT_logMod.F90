@@ -186,7 +186,7 @@ contains
     
     call LDT_releaseUnitNumber(ftn)
     
-    call abort ()
+    call LDT_endrun
       
 !     ----------------------------------------------------------------
 !     format statements.
@@ -208,7 +208,7 @@ contains
 
 9000 write (6, 8000) iofunc, istat
       
-    call abort ()
+    call LDT_endrun
   
   end subroutine LDT_abort
 
@@ -464,7 +464,7 @@ contains
 !    call mpi_abort (MPI_COMM_WORLD, 1)         ! LDT
     call mpi_abort (MPI_COMM_WORLD, 1, ierr)   ! LIS-7
 #else
-    stop
+    error stop 1
 #endif   
    end subroutine LDT_endrun
 

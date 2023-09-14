@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
 # SCRIPT:  process_forecast_data.py
 #
-# PURPOSE: Convert NNME GRIB2 files to netCDF.  Based on
+# PURPOSE: Convert CFSv2 GRIB2 files to netCDF.  Based on
 # process_forecast_data.scr by Ryan Zamora.
 #
 # REQUIREMENTS as of 04 Nov 2021:
@@ -15,6 +26,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import os
@@ -28,8 +40,10 @@ import yaml
 # pylint: disable=import-error
 from convert_forecast_data_to_netcdf import read_wgrib
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
+limits = lim()
 # Internal functions
 def _usage():
     """Print command line usage."""
@@ -100,7 +114,21 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
         file_sfx = "daily.grb2"
     return subdir, file_pfx, file_sfx
 
-def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
+def _regrid_precip(cfsv2, args):
+    # build regridder
+    # resample to the S2S grid
+    cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
+    lats, lons = get_domain_info(args["configfile"], coord=True)
+    ds_out = xr.Dataset(
+        {
+            "lat": (["lat"], lats),
+            "lon": (["lon"], lons),
+        })
+    prgridder = xe.Regridder(cfsv2, ds_out, "conservative", periodic=True)
+    ds_out = prgridder(cfsv2)
+    return ds_out["PRECTOT"]
+
+def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.cfsv2."
@@ -110,25 +138,41 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args):
 
     if args["run_regrid"] is True:
         # resample to the S2S grid
-        cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
-
         # build regridder
         lats, lons = get_domain_info(args["configfile"], coord=True)
         ds_out = xr.Dataset(
             {
                 "lat": (["lat"], lats),
                 "lon": (["lon"], lons),
-        }
+            }
         )
+
         args["regridder"] = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
         args["run_regrid"] = False
 
     # apply to the entire data set
     ds_out = args["regridder"](cfsv2)
     ds_out2 = ds_out.drop_vars('slice', errors="ignore")
+    ds_out2["PRECTOT"] = reg_precip
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    # clip limits
+    ds_out2["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out2["PRECTOT"].values[:]),
+                                                     var_name = "PRECTOT", precip=True)
+    ds_out2["PS"].values[:] = limits.clip_array(np.array(ds_out2["PS"].values[:]),
+                                                var_name = "PS")
+    ds_out2["T2M"].values[:] = limits.clip_array(np.array(ds_out2["T2M"].values[:]),
+                                                 var_name = "T2M")
+    ds_out2["LWS"].values[:] = limits.clip_array(np.array(ds_out2["LWS"].values[:]),
+                                                 var_name = "LWS")
+    ds_out2["SLRSF"].values[:] = limits.clip_array(np.array(ds_out2["SLRSF"].values[:]),
+                                                   var_name = "SLRSF")
+    ds_out2["Q2M"].values[:] = limits.clip_array(np.array(ds_out2["Q2M"].values[:]),
+                                                 var_name = "Q2M")
+    ds_out2["WIND10M"].values[:] = limits.clip_array(np.array(ds_out2["WIND10M"].values[:]),
+                                                     var_name = "WIND")
+
     for month in range(1,10):
         file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
         file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
@@ -246,9 +290,10 @@ def _driver():
         cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
     cfsv2 = xr.merge (cfsv2, compat='override')
+    reg_precip = _regrid_precip(cfsv2, args)
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
                                          (cfsv2['valid_time']  < dt2)),
-                              outdirs, fcst_init, args)
+                              outdirs, fcst_init, args, reg_precip)
 
     print("[INFO] Done processing CFSv2 forecast files")
 

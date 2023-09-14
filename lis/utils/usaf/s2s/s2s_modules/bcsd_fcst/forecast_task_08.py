@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -56,6 +67,7 @@ def _driver():
     parser.add_argument('-H', '--hours', required=True, help='hours')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
     parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
+    parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
 
     args = parser.parse_args()
     config_file = args.config_file
@@ -78,7 +90,7 @@ def _driver():
     from s2s_modules.shared import utils
 
     # Path of the main project directory
-    projdir = cwd
+    projdir = args.project_directory
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'

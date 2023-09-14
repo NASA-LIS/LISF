@@ -1,9 +1,9 @@
 = Step 6: LSM Data Assimilation (DA) Experiment (LIS)
 
 :step-label: Step 6
-:download-filename: testcase6_lis_da_2020.tar.gz
+:download-filename: testcase6_lis_da_2023.tar.gz
 :input-filesize-compressed: 80MB
-:input-filesize-unpacked: 220MB
+:input-filesize-unpacked: 327MB
 
 == Overview
 
@@ -61,7 +61,7 @@ This step relies on files downloaded or generated in the previous steps. In addi
 
 Review the contents of `lis.config_noah36_smapda` to view the configuration settings used for the DA run:
 
-.Restart options
+.Restart options:
 [source,shell]
 ----
 ...
@@ -72,11 +72,11 @@ Number of ensembles per tile:              12 <2>
 Noah.3.6 restart file:                    ./DA_ensrst/LIS_EnRST_NOAH36_201801010000.d01.nc <3>
 ...
 ----
-<1> Select "restart" mode to use a restart file (compare with coldstart mode).
+<1> Select "restart" mode to use a restart file (as opposed to "coldstart" mode).
 <2> # of ensemble members to use (matches ensemble restart file).
 <3> Filepath of the 12 member ensemble restart file generated in Step 3.
 
-.Data assimilation options
+.Data assimilation options:
 [source,shell]
 ----
 ...
@@ -96,7 +96,7 @@ Data assimilation output innovations:                1
 ...
 ----
 
-.Scaling strategy options
+.Scaling strategy options:
 [source,shell]
 ----
 ...
@@ -111,7 +111,7 @@ Bias estimation restart file:
 ...
 ----
 
-.Perturbation options
+.Perturbation options:
 [source,shell]
 ----
 ...
@@ -139,7 +139,7 @@ Observation perturbation attributes file: ./DA_INPUT/smap_pertattribs.txt
 <2> State perturbation options
 <3> Observation perturbation options
 
-.Observation data options
+.Observation data options:
 [source,shell]
 ----
 SMAP(NASA) soil moisture data designation:       SPL3SMP
@@ -283,6 +283,7 @@ View the output of the run using `GrADS`, `ncview`, Matlab, or other software. C
 
 // TODO: ADD VISUALIZATION OF OUTPUT
 
+.`SoilMoist_tavg` variable in `LIS_HIST_201701010600.d01.nc`
 image::step_6_output_example.png[pdfwidth=50%,align="center"]
 
 == Wrap Up
