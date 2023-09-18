@@ -29,7 +29,7 @@ rm -rf mpich
 
 cd /home/workdir/LISF.AppDir
 patchelf --clear-symbol-version expf --clear-symbol-version logf --clear-symbol-version powf usr/bin/LDT
-patchelf --clear-symbol-version expf --clear-symbol-version glob --clear-symbol-version logf --clear-symbol-version powf usr/bin/LIS
+patchelf --clear-symbol-version expf --clear-symbol-version glob --clear-symbol-version logf --clear-symbol-version powf --clear-symbol-version lgamma usr/bin/LIS
 patchelf --clear-symbol-version expf --clear-symbol-version logf --clear-symbol-version powf usr/bin/LVT
 patchelf --clear-symbol-version powf usr/lib/hdf5/1.12.0_gnu-11.2.0/lib/libhdf5.so
 patchelf --clear-symbol-version logf usr/lib/esmf/8.1.1_gnu-11.2.0_mpich-3.4/lib/libO/Linux.gfortran.64.mpich3.default/libesmf.so

@@ -52,12 +52,11 @@ printf '%s\n' "0" "2" "2" "2" "4" "1" "1" "1" "1" "1" "1" "1" "1" "1" | ./config
 # Use MINPACK? (1-yes, 0-no, default=0): 0
 # Use LIS-CRTM? (1-yes, 0-no, default=0): 0
 # Use LIS-CMEM? (1-yes, 0-no, default=0): 0
-# Use LIS-LAPACK? (1-yes, 0-no, default=0): 0
-# Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): 0
+# Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0): 0
 # Use PETSc? (1-yes, 0-no, default=0): 0
 
 cd ../lis
-printf '%s\n' "1" "2" "2" "2" "0" "1" "4" "1" "1" "1" "1" "1" "1" "0" "0" "0" "0" "0" "0" | ./configure
+printf '%s\n' "1" "2" "2" "2" "0" "1" "4" "1" "1" "1" "1" "1" "1" "0" "0" "0" "0" "0" | ./configure
 ./compile -j 2
 
 #
