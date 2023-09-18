@@ -1001,6 +1001,12 @@ if($use_hdf4 == 1){
    $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
    $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
+
+if($use_petsc == 1){
+   $fflags = $fflags." -I\$(INC_PETSC)";
+   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm -ldl";
+}
+
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
    $fflags = $fflags." -I\$(INC_HDF5)";
@@ -1032,11 +1038,6 @@ if($use_minpack == 1){
    $ldflags = $ldflags." -L\$(LIB_MINPACK) -lminpack";
    $lib_flags= $lib_flags." -lminpack";
    $lib_paths= $lib_paths." -L\$(LIB_MINPACK)";
-}
-
-if($use_petsc == 1){
-   $fflags = $fflags." -I\$(INC_PETSC)";
-   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm";
 }
 
 if($use_lapack == 1){
