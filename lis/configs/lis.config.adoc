@@ -3253,6 +3253,7 @@ endif::devonly[]
 |CRTM2EM       | CRTM2EM
 |CMEM          | CMEM
 |"`Tau Omega`" | "`Tau Omega`"
+|"WCM"         | World Cloud Model. Note: "LIS_CRTM" and "LIS-CMEM" must be enabled.
 |====
 
 `RTM invocation frequency:` specifies the invocation frequency
