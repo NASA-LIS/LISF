@@ -1,0 +1,5 @@
+#nfields
+1  
+#varmin  varmax 
+USAFSI obs                            
+0.	  10000.0

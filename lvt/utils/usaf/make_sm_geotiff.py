@@ -32,6 +32,11 @@
 # 09 July 2021: Eric Kemp (SSAI), added metadata to GeoTIFF files describing
 #               raster fields.  Also changed numbering of soil layers from
 #               0-3 to 1-4.
+# 06 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
+# 16 May 2023:  Eric Kemp (SSAI), updates to use 557 WW file convention for
+#               output.
+# 02 Jun 2023:  Eric Kemp (SSAI), further updates for 557 WW file
+#               convention for output.
 #
 #------------------------------------------------------------------------------
 """
@@ -49,55 +54,75 @@ from netCDF4 import Dataset as nc4_dataset
 # pylint: enable=no-name-in-module
 from osgeo import gdal, osr
 
+_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+_SOIL_LAYERS = {
+    "NOAH" :    ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "NOAHMP" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
+    "JULES" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
+}
+
+_557WW_SOIL_LAYERS = {
+    "NOAH" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+              "D100CM-D200CM"],
+    "NOAHMP" : ["D0CM-D10CM", "D10CM-D40CM", "D40CM-D100CM",
+                "D100CM-D200CM"],
+    "JULES" : ["D0CM-D10CM", "D10CM-D35CM", "D35CM-D100CM",
+                "D100CM-D300CM"],
+}
+
 def _usage():
     """Print command line usage."""
-    txt = "[INFO] Usage: %s ldtfile tsfile finalfile" %(sys.argv[0])
-    txt += " anomaly_gt_prefix climo_gt_prefix LSM yyyymmddhh"
+    txt = f"[INFO] Usage: {sys.argv[0]} ldtfile tsfile finalfile"
+    txt += " LSM yyyymmddhh"
     print(txt)
     print("[INFO]  where:")
     print("[INFO]   ldtfile: LDT parameter file with full lat/lon data")
     print("[INFO]   tsfile: LVT 'TS' soil moisture anomaly file")
     print("[INFO]   finalfile: LVT 'FINAL' soil moisture anomaly file")
-    print("[INFO]   anomaly_gt_prefix: prefix for new anomaly GeoTIFF files")
-    print("[INFO]   climo_gt_prefix: prefix for new climatology GeoTIFF files")
     print("[INFO]   LSM: land surface model")
     print("[INFO]   yyyymmddhh: Valid date and time (UTC)")
 
 def _read_cmd_args():
     """Read command line arguments."""
     # Check if argument count is correct
-    if len(sys.argv) != 8:
+    if len(sys.argv) != 6:
         print("[ERR] Invalid number of command line arguments!")
         _usage()
         sys.exit(1)
 
     # Check if LDT parameter file can be opened.
-    _ldtfile = sys.argv[1]
-    ncid_ldt = nc4_dataset(_ldtfile, mode='r', format='NETCDF4_CLASSIC')
+    ldtfile = sys.argv[1]
+    ncid_ldt = nc4_dataset(ldtfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_ldt.close()
 
     # Check of LVT TS anomaly file can be opened
-    _tsfile = sys.argv[2]
-    ncid_lvt = nc4_dataset(_tsfile, mode='r', format='NETCDF4_CLASSIC')
+    tsfile = sys.argv[2]
+    ncid_lvt = nc4_dataset(tsfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_lvt.close()
 
     # Check of LVT FINAL anomaly file can be opened
-    _finalfile = sys.argv[3]
-    ncid_lvt = nc4_dataset(_finalfile, mode='r', format='NETCDF4_CLASSIC')
+    finalfile = sys.argv[3]
+    ncid_lvt = nc4_dataset(finalfile, mode='r', format='NETCDF4_CLASSIC')
     ncid_lvt.close()
 
-    _outfile_anomaly_prefix = sys.argv[4]
-    _outfile_climo_prefix = sys.argv[5]
-    _lsm = sys.argv[6]
-    _yyyymmddhh = sys.argv[7]
+    lsm = sys.argv[4]
+    yyyymmddhh = sys.argv[5]
 
-    if _lsm not in ["noah39", "noahmp401", "jules50"]:
-        print("[ERR] Unknown LSM %s" %(_lsm))
-        print("Options are noah39, noahmp401, jules50")
+    if lsm not in ["NOAH", "NOAHMP", "JULES"]:
+        print(f"[ERR] Unknown LSM {lsm}")
+        print("Options are NOAH, NOAHMP, JULES")
         sys.exit(1)
 
-    return _ldtfile, _tsfile, _finalfile, \
-        _outfile_anomaly_prefix, _outfile_climo_prefix, _lsm, _yyyymmddhh
+    cmd_args = {
+        "ldtfile" : ldtfile,
+        "tsfile" : tsfile,
+        "finalfile" : finalfile,
+        "lsm" : lsm,
+        "yyyymmddhh" : yyyymmddhh,
+    }
+    return cmd_args
 
 def _make_geotransform(lon, lat, nxx, nyy):
     """Set affine transformation from image coordinate space to georeferenced
@@ -108,143 +133,156 @@ def _make_geotransform(lon, lat, nxx, nyy):
     ymax = lat.max()
     xres = (xmax - xmin) / float(nxx)
     yres = (ymax - ymin) / float(nyy)
-    # Sujay's original code
-    #geotransform = (xmax, xres, 0, ymin, 0, -yres)
-    # Eric's code...Based on gdal.org/tutorials/geotransforms_tut.html
+    # Based on gdal.org/tutorials/geotransforms_tut.html
     # xmin is x-coordinate of upper-left corner of upper-left pixel
     # ymax is y-coordinate of upper-left corner of upper-left pixel
     # Third variable is row rotation, set to zero for north-up image
     # Fourth variable is column rotation, set to zero
     # Sixth variable is n-s pixel resolution (negative for north-up image)
-    _geotransform = (xmin, xres, 0, ymax, 0, -1*yres)
-    #print(_geotransform)
-    return _geotransform
+    geotransform = (xmin, xres, 0, ymax, 0, -1*yres)
+    return geotransform
 
-def _create_output_raster(outfile, nxx, nyy, _geotransform, var1):
+def _create_output_raster(outfile, nxx, nyy, geotransform, var1):
     """Create the output raster file (the GeoTIFF), including map projection"""
-    _output_raster = gdal.GetDriverByName('GTiff').Create(outfile,
-                                                          nxx, nyy, 1,
-                                                          gdal.GDT_Float32)
+    output_raster = gdal.GetDriverByName('GTiff').Create(outfile,
+                                                         nxx, nyy, 1,
+                                                         gdal.GDT_Float32)
 
-    _output_raster.SetGeoTransform(_geotransform)
+    output_raster.SetGeoTransform(geotransform)
     srs = osr.SpatialReference()
     srs.ImportFromEPSG(4326) # Corresponds to WGS 84
-    _output_raster.GetRasterBand(1).SetNoDataValue(-9999)
-    _output_raster.SetProjection(srs.ExportToWkt())
-    _output_raster.GetRasterBand(1).WriteArray(var1)
+    output_raster.GetRasterBand(1).SetNoDataValue(-9999)
+    output_raster.SetProjection(srs.ExportToWkt())
+    output_raster.GetRasterBand(1).WriteArray(var1)
 
-    return _output_raster
+    return output_raster
 
-def _set_metadata(varname_arg, soil_layer, model, \
-                  yyyymmddhh_arg, \
+def _set_metadata(varname, soil_layer, model, \
+                  yyyymmddhh, \
                   climomonth=None):
     """Create metadata dictionary for output to GeoTIFF file"""
-    validdt = datetime.datetime(year=int(yyyymmddhh_arg[0:4]),
-                                month=int(yyyymmddhh_arg[4:6]),
-                                day=int(yyyymmddhh_arg[6:8]),
-                                hour=int(yyyymmddhh_arg[8:10]))
-    _metadata = { 'varname' : '%s' %(varname_arg),
-                  'units' : 'm3/m3',
-                  'soil_layer' : '%s' %(soil_layer),
-                  'land_surface_model' : '%s' %(model) }
+    validdt = datetime.datetime(year=int(yyyymmddhh[0:4]),
+                                month=int(yyyymmddhh[4:6]),
+                                day=int(yyyymmddhh[6:8]),
+                                hour=int(yyyymmddhh[8:10]))
+    metadata = { 'varname' : f'{varname}',
+                 'units' : 'm3/m3',
+                 'soil_layer' : f'{soil_layer}',
+                 'land_surface_model' : f'{model}' }
     if climomonth is None:
-        time_string = "Valid %2.2dZ %d %s %4.4d" \
-            %(validdt.hour,
-              validdt.day,
-              _MONTHS[validdt.month-1],
-              validdt.year)
-        _metadata["valid_date_time"] = time_string
+        time_string = f"Valid {validdt.hour:02}Z {validdt.day} "
+        time_string += f"{_MONTHS[validdt.month-1]} {validdt.year:04}"
+        metadata["valid_date_time"] = time_string
     else:
-        time_string = "Updated %2.2dZ %d %s %4.4d" \
-            %(validdt.hour,
-              validdt.day,
-              _MONTHS[validdt.month-1],
-              validdt.year)
-        _metadata["update_date_time"] = time_string
-        _metadata["climo_month"] = climomonth
+        time_string = f"Updated {validdt.hour:02}Z {validdt.day} "
+        time_string += f"{_MONTHS[validdt.month-1]} {validdt.year:04}"
+        metadata["update_date_time"] = time_string
+        metadata["climo_month"] = climomonth
 
-    return _metadata
+    return metadata
 
-_MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+def _make_outfile_anomaly(lsm, i, yyyymmddhh):
+    """Create anomaly filename"""
+    filename = "PS.557WW_SC.U_DI.C"
+    filename += f"_GP.LIS-{lsm}"
+    filename += "_GR.C0P09DEG_AR.GLOBAL"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_PA.SM-ANOMALY"
+    filename += f"_DD.{yyyymmddhh[0:8]}"
+    filename += f"_DT.{yyyymmddhh[8:10]}00_DF.TIF"
+    return filename
 
-_SOIL_LAYERS = {
-    "noah39" :    ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "noahmp401" : ["0-0.1 m", "0.1-0.4 m",  "0.4-1.0 m",  "1.0-2.0 m"],
-    "jules50" :   ["0-0.1 m", "0.1-0.35 m", "0.35-1.0 m", "1.0-3.0 m"],
-}
-
-# Main driver
-if __name__ == "__main__":
-
-    # Get the file names for this invocation.
-    ldtfile, tsfile, finalfile, anomaly_gt_prefix, \
-    climo_gt_prefix, lsm, yyyymmddhh = \
-        _read_cmd_args()
-
-    # First, fetch latitude/longitudes.  This is pulled from the LDT parameter
-    # file, since LVT output has data voids over water.
-    ncid = nc4_dataset(ldtfile, 'r', format='NETCDF4')
-    longitudes = ncid.variables["lon"][:,:]
-    latitudes = ncid.variables["lat"][:,:]
-    ncid.close()
-
+def _proc_sm_anomalies(cmd_args, longitudes, latitudes):
+    """Process soil moisture anomalies"""
     # Next, fetch the soil moisture anomalies from the LVT 'TS' file.
-    ncid = nc4_dataset(tsfile, 'r', format='NETCDF4')
+    ncid = nc4_dataset(cmd_args["tsfile"], 'r', format='NETCDF4')
     for i in range(0, 4): # Loop across four LSM layers
         sm_anomalies = ncid.variables["SoilMoist"][i,:,:]
         nrows, ncols = sm_anomalies.shape
 
-        _soil_layer = _SOIL_LAYERS[lsm][i]
+        soil_layer = _SOIL_LAYERS[cmd_args["lsm"]][i]
 
         # Write soil moisture anomalies to GeoTIFF
         sm1 = sm_anomalies[::-1, :]
         geotransform = _make_geotransform(longitudes, latitudes, ncols, nrows)
-        outfile_anomaly = "%s.layer%d.tif" %(anomaly_gt_prefix,
-                                             i+1)
-        VARNAME = "Soil Moisture Anomaly"
+        outfile_anomaly = \
+            _make_outfile_anomaly(cmd_args["lsm"], i,
+                                  cmd_args["yyyymmddhh"])
+        varname = "Soil Moisture Anomaly"
         output_raster = _create_output_raster(outfile_anomaly,
                                               ncols, nrows, geotransform,
                                               sm1)
-        metadata = _set_metadata(varname_arg=VARNAME,
-                                 soil_layer=_soil_layer,
-                                 model=lsm,
-                                 yyyymmddhh_arg=yyyymmddhh)
+        metadata = _set_metadata(varname=varname,
+                                 soil_layer=soil_layer,
+                                 model=cmd_args["lsm"],
+                                 yyyymmddhh=cmd_args["yyyymmddhh"])
         output_raster.GetRasterBand(1).SetMetadata(metadata)
         output_raster.FlushCache() # Write to disk
         del output_raster
     ncid.close()
 
-    # Next, fetch the monthly soil moisture climatologies from the LVT 'FINAL'
-    # file.
-    ncid = nc4_dataset(finalfile, 'r', format='NETCDF4')
+def _make_outfile_climo(lsm, i, month, yyyymmddhh):
+    """Create climatology filename"""
+    filename = "PS.557WW_SC.U_DI.C_DC.CLIMO"
+    filename += f"_GP.LIS-{lsm}"
+    filename += "_GR.C0P09DEG_AR.GLOBAL"
+    filename += f"_LY.{_557WW_SOIL_LAYERS[lsm][i]}"
+    filename += f"_PA.SM-{month}"
+    filename += f"_DP.20080101-{yyyymmddhh[0:8]}"
+    filename += f"_DF.TIF"
+    return filename
+
+def _proc_sm_climo(cmd_args, longitudes, latitudes):
+    """Process soil moisture climatology data"""
+    ncid = nc4_dataset(cmd_args["finalfile"], 'r', format='NETCDF4')
     for imonth in range(0, 12):
         month = _MONTHS[imonth]
-        climo_name = "SoilMoist_%s_climo" %(month)
+        climo_name = f"SoilMoist_{month}_climo"
         for i in range(0, 4): # Loop across four LSM layers
-            sm_climo = ncid.variables[climo_name][i,:,:]
-            nrows, ncols = sm_climo.shape
-
-            _soil_layer = _SOIL_LAYERS[lsm][i]
+            nrows, ncols = ncid.variables[climo_name][i,:,:].shape
 
             # Write soil moisture climatology to GeoTIFF
-            sm1 = sm_climo[::-1, :]
             geotransform = _make_geotransform(longitudes, latitudes,
                                               ncols, nrows)
-            outfile_climo = "%s.%s.layer%d.tif" %(climo_gt_prefix,
-                                                  month,
-                                                  i+1)
-            VARNAME = "Climatological Soil Moisture"
-            output_raster = _create_output_raster(outfile_climo,
-                                                  ncols, nrows, geotransform,
-                                                  sm1)
-            metadata = _set_metadata(varname_arg=VARNAME,
-                                     soil_layer=_soil_layer,
-                                     model=lsm,
-                                     yyyymmddhh_arg=yyyymmddhh,
-                                     climomonth=month)
+            outfile_climo = \
+                _make_outfile_climo(cmd_args["lsm"], i,
+                                    month, cmd_args["yyyymmddhh"])
+            varname = "Climatological Soil Moisture"
+            output_raster = \
+                _create_output_raster(outfile_climo,
+                                      ncols, nrows, geotransform,
+                                      ncid.variables[climo_name][i,::-1,:])
+            metadata = \
+                _set_metadata(varname=varname,
+                              soil_layer=_SOIL_LAYERS[cmd_args["lsm"]][i],
+                              model=cmd_args["lsm"],
+                              yyyymmddhh=cmd_args["yyyymmddhh"],
+                              climomonth=month)
             output_raster.GetRasterBand(1).SetMetadata(metadata)
 
             output_raster.FlushCache() # Write to disk
             del output_raster
     ncid.close()
+
+def _main():
+    """Main driver"""
+    # Get the file names for this invocation.
+    cmd_args = _read_cmd_args()
+
+    # First, fetch latitude/longitudes.  This is pulled from the LDT parameter
+    # file, since LVT output has data voids over water.
+    ncid = nc4_dataset(cmd_args["ldtfile"], 'r', format='NETCDF4')
+    longitudes = ncid.variables["lon"][:,:]
+    latitudes = ncid.variables["lat"][:,:]
+    ncid.close()
+
+    # Next, fetch the soil moisture anomalies from the LVT 'TS' file.
+    _proc_sm_anomalies(cmd_args, longitudes, latitudes)
+
+    # Next, fetch the monthly soil moisture climatologies from the LVT 'FINAL'
+    # file.
+    _proc_sm_climo(cmd_args, longitudes, latitudes)
+
+# Main driver
+if __name__ == "__main__":
+    _main()

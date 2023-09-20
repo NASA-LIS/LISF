@@ -1,0 +1,169 @@
+[[sec_doctitle,Quick “How To” for Setting up and Running SnowModel in LIS]]
+== Quick “How To” for Setting up and Running SnowModel in LIS
+
+March.10.2023 
+ 
+[[ssec_overview,Overview]]
+=== Overview
+ 
+Glen Liston’s SnowModel (Liston and Elder, 2006a), a spatially 
+distributed snow modeling system with several submodels, including 
+MicroMet (Liston and Elder, 2006b), SnowPack and a 3-D wind-snow 
+transport scheme, SnowTran-3D (Liston and Sturm, 1998), is now 
+available in the latest Land Information System Framework (LISF; 
+Kumar et al., 2006), available from our GitHub page (under the 
+“master” branch):  https://github.com/NASA-LIS/LISF   
+ 
+The version of SnowModel that was implemented is based on the 
+NCAR/CSU GitHub “candidate-changes” branch, that is an early 
+Fortran-90 update of the model and based on Glen Liston’s code 
+from April-2021. SnowModel in the LISF can utilize the same input 
+files and model parameter files as used in the offline version, 
+with a few updates to note for running in this newer model driver 
+environment.   
+ 
+LISF has three main components:  the Land surface Data Toolkit (LDT; 
+Arsenault et al., 2018), Land Information System (LIS; Kumar et al., 2006), 
+and the Land Verification Toolkit (LVT, Kumar et al., 2012).  To run 
+SnowModel in LISF, you will need LDT and LIS components to prepare 
+parameters and run the model, respectively.  Please find below the 
+quick “How to” steps for setting up and running SnowModel in LISF. 
+ 
+[[ssec_purpose,Purpose]]
+=== Purpose
+
+Running the SnowModel model within the LIS Framework. 
+ 
+[[ssec_prerequisites,Prerequisites]]
+=== Prerequisites
+
+* SnowModel input files, including snowmodel.par, topo_vege file, GrADS descriptor files (“ctl_files”) and optional forcing input file.
+* Compiled LDT and LIS executables.
+* LDT and LIS config files, LDT output parameter file, and LIS input forcing and model output tables.
+ 
+
+[[ssec_snowmodelsteps,A. Outline of SnowModel Steps]]
+=== A. Outline of SnowModel Steps
+ 
+. Define and generate your model domain and native binary input parameter file (“topo_vege.gdat”) using Glen Liston’s SnowModel topo_vege tools and scripts. For access to these scripts, you can reach out to Dr. Glen Liston at CSU (glen.liston@colostate.edu). We recommend using Lambert conformal type grids when setting up your domain for running with LDT and LIS.  LIS can handle also UTM and Mercator domains, but additional code updates would be needed to support these grids for SnowModel in LISF. 
+ 
+. LIS is able to support running SnowModel with either its original native ASCII- or binary-formatted “station-based” meteorological forcing files (found in “met/[forcing_dataset]/7_mk_mm/”), or you can use any of the meteorological forcing data readers available in LIS (e.g., NLDAS2, GDAS, MERRA2), which allows the user to bypass all the main SnowModel preprocessing steps.  For running with the SnowModel’s native ASCII-formatted files, for example, this option can allow the user to run with in situ station observations as before. 
+ 
+. For large domains, we recommend also setting up the “extra_met” grid_lon.gdat and grid_lat.gdat files for handling of UTC time changes for the solar radiation calculations in SnowModel. 
+ 
+. Next, you will want to set up your SnowModel parameter text-based input file:  snowmodel.par, as you normally would to run the model. This input parameter file is read in by LIS and “loads” the variety of options available to run the SnowModel system. Note:  With the LIS version, one new option was included in the snowmodel.par file, which an example is provided within this “docs” directory with this “How To”. The default option is: 
+ 
+[subs="attributes+,-callouts"]
+....
+ metforce_opt = 0 
+....
+ 
+Finally, for the LIS-SnowModel model output, output fields and files are written in and follow the LIS output standards (e.g., ALMA standards).  The native SnowModel output files are not currently supported in LIS (e.g., “outputs/wo_assim/snod.gdat”). 
+ 
+
+[[ssec_ldtsteps,B. Outline of LDT Steps:  Generating the LIS-SnowModel input parameter file]]
+=== B. Outline of LDT Steps:  Generating the LIS-SnowModel input parameter file
+ 
+[NOTE]
+====
+Check out the latest “master” branch from the LISF GitHub page.
+====
+ 
+. In the LDT directory, run the configure script and make sure to select the “little-endian” option (“1-little"), if running on a little-endian based operating system.  Also note, the SnowModel parameter readers in LDT and LIS support parallel reads of the input topo_vege.gdat file, so you could also select “1-dmpar” for the “Parallelism” option. 
+ 
+. Then run the compile script to generate the LDT executable file. 
+ 
+. Set up your LDT input config file (e.g., ldt.config) to match the run domain of your SnowModel grid that you generated in step A1 (above).  You will point the SnowModel-based parameter readers to your single SnowModel input file, e.g., topo_vege.gdat.   
+
+The main points that are specific to SnowModel are:  
+
+* Set the Land Surface Model to “SnowModel”;  
+* Set the landcover data source to "NALCMS_SM_IGBPNCEP" and point to your topo_vege.gdat file.  Make sure all the landcover lat/lon/dimensions match the extent of your SnowModel domain. 
+* Set your landmask to "NALCMS_SM_IGBPNCEP";  
+* Set all your elevation data to "NED_SM" and point to your topo_vege.gdat file (including the curvature data source). Make sure your topograph lat/lon/dimensions match the extent of your SnowModel domain. 
+* Point your SnowModel input map to your topo_vege.gdat file. 
+
+For more information on all the options supported for SnowModel parameters in LDT, please see the full LDT instructions and documentation:  
+ 
+ https://github.com/NASA-LIS/LISF/blob/master/ldt/configs/ldt.config.adoc 
+ 
+[start=4]
+. Run your LDT executable with your ldt.config to generate the model parameter input file used in your LIS-SnowModel run. 
+ 
+    ./LDT ldt.config 
+     Output file: lis_input.d01.nc   (example filename)  
+ 
+
+[[ssec_lissteps,C. Outline of LIS Steps:  Running LIS-SnowModel]]
+=== C. Outline of LIS Steps:  Running LIS-SnowModel
+
+. In the LIS directory, you will first go into “make” directory and you will do the following: 
+ 
+a) Open the file: default.cfg    (with an editor of choice) 
+
+b) Go to the “SNOWMODEL” section and turn on the model with “True”: 
+ 
+ [SNOWMODEL] 
+enabled:  True 
+ 
+c) Save and close the file, and return to the main LIS directory. 
+
+d) Run the LIS configure script.  Here, you can select all the default options. 
+
+e) Before compiling the LIS code, you will need to include the following Fortran compilation flag:   
+     -mcmodel=medium 
+ to the FFLAGS77 and FFLAGS in the make/configure.lis file. 
+
+f) Once you add that flag, you are now ready to run the LIS compile script and generate the LIS executable file (“LIS”).  
+
+[start=2]
+. Set up your LIS input config file (e.g., lis.config) for the SnowModel setup, as a “subLSM” (and not as one of the LSMs). 
+    Main things to pay attention to: 
++
+* Land surface model should be set to "none" 
+* Number of subLSMs set to 1 
+* subLSM model set to "SnowModel" 
+* Look at the options under the DOMAIN SPECIFICATION section. Most will be set to none, but make sure you do have these six options set to LDT, including curvature data source: 
++
+[subs="attributes+,-callouts"]
+....
+Landmask data source:                 LDT 
+Landcover data source:                LDT 
+Elevation data source:                LDT     
+Slope data source:                    LDT 
+Aspect data source:                   LDT 
+Curvature data source:                LDT 
+....
++
+
+* Check out the SnowModel specific options under “LAND SURFACE MODELS” section header. This is where where you will specify your model timestep and point to your snowmodel.par file, for example. For further details and options, please check out: https://github.com/NASA-LIS/LISF/blob/master/lis/configs/lis.config.adoc 
+
+* Since SnowModel is a subLSM in LIS, this setup has some model-specific variable names, where we added an “SM” prefix to SWE, SnowDepth, and other fields, as designated in the MODEL_OUTPUT.TBL.  This setup was in support of being able to run semi-coupled with other LSMs in LIS, e.g., Noah or Noah-MP (Niu et al., 2011 and Yang et al., 2011), allowing the user to be able to look at both the LSM and this subLSM-based output fields in the LIS output files.  Output field specifications for SnowModel can be found here: https://github.com/NASA-LIS/LISF/blob/master/lis/configs/MODEL_OUTPUT_LIST.TBL.adoc 
+
+.  Place your LDT and LIS executables along with your input config files within the same working directory, running LDT first to generate your LIS input parameter file. Then run LIS to generate your LIS-SnowModel based simulation and output.   
+
+.  For additional options, please check the lis.config.adoc file within the “configs” directory in your checked out repository or on the LISF GitHub page.  You can see the options of running SnowModel coupled with an LSM (currently only setup to run with NoahMP4.0.1 version), or using different forcing and output options. 
+
+
+[[ssec_lissteps,References]]
+=== References
+ 
+Arsenault, K.R., S.V. Kumar, J.V. Geiger, S. Wang, E. Kemp, D.M. Mocko, H.K. Beaudoing, A. Getirana, M. Navari, B. Li, J. Jacob, J. Wegiel, and C.D. Peters-Lidard (2018), The Land surface Data Toolkit (LDT v7.2) – a data fusion environment for land data assimilation systems. Geosci. Model Dev., 11, 3605-3621, doi:10.5194/gmd-11-3605-2018 
+ 
+Liston, G., & Sturm, M. (1998), A snow-transport model for complex terrain. Journal of Glaciology, 44(148), 498-516. doi:10.3189/S0022143000002021 
+ 
+Liston, G. E., & Elder, K. (2006a), A distributed snow-evolution modeling system (SnowModel). Journal of Hydrometeorology, 7(6): 1259-1276 
+ 
+Liston, G. E., & Elder, K. (2006b), A meteorological distribution system for high-resolution terrestrial modeling (MicroMet). Journal of Hydrometeorology, 7(2), 217-234 
+ 
+Liston, G., Haehnel, R., Sturm, M., Hiemstra, C., Berezovskaya, S., & Tabler, R. (2007), Simulating complex snow distributions in windy environments using SnowTran-3D. Journal of Glaciology, 53(181), 241-256. doi:10.3189/172756507782202865 
+ 
+Liston, G. E., Polashenski, C., Rösel, A., Itkin, P., King, J., Merkouriadi, I., & Haapala, J. (2018), A distributed snow-evolution model for sea-ice applications (SnowModel). https://doi.org/10.1002/2017JC013706 
+ 
+Kumar, S.V., C.D. Peters-Lidard, Y. Tian, P.R. Houser, J. Geiger, S. Olden, L. Lighty, J.L. Eastman, B. Doty, P. Dirmeyer, J. Adams, K. Mitchell, E. F. Wood, and J. Sheffield (2006), Land Information System - An Interoperable Framework for High Resolution Land Surface Modeling. Environ. Modelling & Software, 21, 1402-1415, doi:10.1016/j.envsoft.2005.07.004 
+ 
+Kumar, S.V., et al. (2012), Land surface Verification Toolkit (LVT) - a generalized framework for land surface model evaluation. Geosci. Model Dev., 5, 869-886, doi:10.5194/gmd-5-869-2012 
+ 
+Niu, G.-Y., et al. (2011), The community Noah land surface model with multiparameterization options (Noah-MP): 1. Model description and evaluation with local-scale measurements. J. Geophys. Res., 116, D12109, doi: 10.1029/2010JD015139 
+ 
+Yang, Z.-L., G.-Y. Niu, K. E. Mitchell, F. Chen, M. B. Ek, M. Barlage, K. Manning, D. Niyogi, M. Tewari, & Y. Xia (2011), The Community Noah Land Surface Model with Multi-Parameterization Options (Noah-MP): 2. Evaluation over Global River Basins. J. Geophys. Res., doi:10.1029/2010JD015140 

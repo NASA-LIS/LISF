@@ -10,6 +10,7 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+"""
 #------------------------------------------------------------------------------
 #
 # SCRIPT: cat_lvt_grib2.py
@@ -32,8 +33,11 @@
 #               for JULES.  Added support for NoahMP.
 # 05 Aug 2020:  Eric Kemp (SSAI), added Albedo_tavg and SmLiqFrac_inst for
 #               JULES.
+# 05 Dec 2022:  Eric Kemp (SSAI), updates to improve pylint score.
+# 24 Jan 2023:  Eric Kemp (SSAI), updates to GRIB file names.
 #
 #------------------------------------------------------------------------------
+"""
 
 # Standard modules
 import datetime
@@ -155,28 +159,23 @@ _INVOCATIONS = {
     "JULES_24HR_LATEST": _LVT_JULES_INVOCATIONS_24HR_LATEST,
 }
 
-# ------------------------------------------------------------------------------
-# Print command line usage
-
-
-def usage():
-    print("Usage: %s yyyymmddhh lsm period [--nospread]" % (sys.argv[0]))
+# -----------------------------------------------------------------------------
+def _usage():
+    """Print command line usage"""
+    print(f"Usage: {sys.argv[0]} yyyymmddhh lsm period [--nospread]")
     print("   where:")
-    print("         yyyymmddhh is valid year/month/day/hour in UTC")
-    print("         lsm is name of land surface model used by LIS")
-    print("         period is time period (hours) for postprocessing (3 or 24)")
-    print("         --nospread is optional flag to skip ensemble spread")
+    print("        yyyymmddhh is valid year/month/day/hour in UTC")
+    print("        lsm is name of land surface model used by LIS")
+    print("        period is time period (hours) for postprocessing (3 or 24)")
+    print("        --nospread is optional flag to skip ensemble spread")
 
-# ------------------------------------------------------------------------------
-# Read command line arguments
-
-
-def read_cmd_args():
-
+# -----------------------------------------------------------------------------
+def _read_cmd_args():
+    """Read command line arguments"""
     # Check if argument count is correct
     if len(sys.argv) not in [4, 5]:
         print("[ERR] Invalid number of command line arguments!")
-        usage()
+        _usage()
         sys.exit(1)
 
     # Convert yyyymmddhh argument to a datetime object
@@ -187,37 +186,33 @@ def read_cmd_args():
         day = int(yyyymmddhh[6:8])
         hour = int(yyyymmddhh[8:10])
         validdt = datetime.datetime(year, month, day, hour)
-    except:
+    except ValueError:
         print("[ERR] Cannot process yyyymmddhh argument!")
-        usage()
+        _usage()
         sys.exit(1)
 
     # Get lsm name
     lsm = None
-    for i in range(0, len(_LIS_LSMS)):
-        if sys.argv[2] == _LIS_LSMS[i]:
-            lsm = _LIS_LSMS[i]
-            break
-    if lsm == None:
+    if sys.argv[2] in _LIS_LSMS:
+        lsm = sys.argv[2]
+    if lsm is None:
         print("[ERR] Invalid lsm selection!")
-        print(" lsm value is %s" % (sys.argv[2]))
+        print(f" lsm value is {sys.argv[2]}")
         text = " Supported lsms:"
         for lsm in _LIS_LSMS:
-            text += " %s" % (lsm)
+            text += f" {lsm}"
         print(text)
         sys.exit(1)
 
     # Get processing hour
     period_options = [3, 24]
     period = None
-    tmp_int = sys.argv[3]
-    for i in range(0, len(period_options)):
-        if int(sys.argv[3]) == period_options[i]:
-            period = period_options[i]
-            break
-    if period == None:
+    tmp_int = int(sys.argv[3])
+    if tmp_int in period_options:
+        period = tmp_int
+    if period is None:
         print("[ERR] Invalid period selection!")
-        print(" period value is %s" % (sys.argv[3]))
+        print(f" period value is {sys.argv[3]}")
         print(" Supported time periods are: 3 and 24")
         sys.exit(1)
 
@@ -227,205 +222,172 @@ def read_cmd_args():
         if sys.argv[4] == "--nospread":
             skip_ens_spread = True
         else:
-            print("[ERR] Invalid argument %s" % (sys.argv[4]))
-            usage()
+            print(f"[ERR] Invalid argument {sys.argv[4]}")
+            _usage()
 
     return validdt, lsm, period, skip_ens_spread
 
-# ------------------------------------------------------------------------------
-# Collect GRIB2 mean files
-
-
-def get_gr2_mean_files(validdt, lsm, period):
-
-    key = "%s_%dHR" % (lsm, period)
+# -----------------------------------------------------------------------------
+def _get_gr2_mean_files(validdt, lsm, period):
+    """Collect GRIB2 mean files"""
+    key = f"{lsm}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     mean_gr2_infiles = {}
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
-        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
-
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path = f"OUTPUT/STATS.{invocation}.{period}hr"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
             path += ".LIS24_DD."
         else:
             path += ".LIS_DD."
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
         mean_path = path + ".GR2"
         if not os.path.exists(mean_path):
-            print("[ERR], %s does not exist!" % (mean_path))
+            print(f"[ERR], {mean_path} does not exist!")
             sys.exit(1)
         mean_gr2_infiles[invocation] = mean_path
 
     # Get output files
-    # FIXME -- Let user configure output directory prefix
-    path = "OUTPUT/STATS_merged_%shr" % (period)
+    path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-
-    # FIXME -- Let user configure file name
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
         path += ".LIS24_DD."
     else:
         path += ".LIS_DD."
-    path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                    validdt.month,
-                                    validdt.day)
-    path += ".%2.2d00_DF" % (validdt.hour)
+    path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+    path += f".{validdt.hour:02}00_DF"
 
     mean_gr2_outfile = path + ".GR2"
 
     # All done
     return mean_gr2_infiles, mean_gr2_outfile
 
-# ------------------------------------------------------------------------------
-# Collect GRIB2 ssdev files
-
-
-def get_gr2_ssdev_files(validdt, lsm, period):
-
-    key = "%s_%dHR" % (lsm, period)
+# -----------------------------------------------------------------------------
+def _get_gr2_ssdev_files(validdt, lsm, period):
+    """Collect GRIB2 ssdev files"""
+    key = f"{lsm}_{period}HR"
     invocation_list = _INVOCATIONS[key]
 
     ssdev_gr2_infiles = {}
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
-        path = "OUTPUT/STATS.%s.%shr" % (invocation, period)
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path = f"OUTPUT/STATS.{invocation}.{period}hr"
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         if period == 24:
-            path += ".LIS24_DD."
+            path += ".LIS24-SSDEV_DD."
         else:
-            path += ".LIS_DD."
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+            path += ".SSDEV_DD."
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
-        ssdev_path = path + "_SSDEV.GR2"
+        ssdev_path = path + ".GR2"
         if not os.path.exists(ssdev_path):
-            print("[ERR], %s does not exist!" % (ssdev_path))
+            print(f"[ERR], {ssdev_path} does not exist!")
             sys.exit(1)
         ssdev_gr2_infiles[invocation] = ssdev_path
 
     # Get output file
-    # FIXME -- Let user configure output directory prefix
-    path = "OUTPUT/STATS_merged_%shr" % (period)
+    path = f"OUTPUT/STATS_merged_{period}hr"
     if not os.path.exists(path):
         os.mkdir(path)
-
-    # FIXME -- Let user configure file name
-    path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+    path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
     if period == 24:
-        path += ".LIS24_DD."
+        path += ".LIS24-SSDEV_DD."
     else:
-        path += ".LIS_DD."
-    path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                    validdt.month,
-                                    validdt.day)
-    path += ".%2.2d00_DF" % (validdt.hour)
+        path += ".SSDEV_DD."
+    path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+    path += f".{validdt.hour:02}00_DF"
 
-    ssdev_gr2_outfile = path + "_SSDEV.GR2"
+    ssdev_gr2_outfile = path + ".GR2"
 
     # All done
     return ssdev_gr2_infiles, ssdev_gr2_outfile
 
-# ------------------------------------------------------------------------------
-# Collect GRIB2 latest files
+# -----------------------------------------------------------------------------
+def _get_gr2_latest_files(validdt, lsm):
+    """Collect GRIB2 latest files"""
 
-
-def get_gr2_latest_files(validdt, lsm):
-
-    key = "%s_24HR_LATEST" % (lsm)
+    key = f"{lsm}_24HR_LATEST"
     invocation_list = _INVOCATIONS[key]
 
     latest_gr2_infiles = {}
 
     # Collect input files
     for invocation in invocation_list:
-        # FIXME -- Let user configure output directory prefix
-        path = "OUTPUT/STATS.%s.3hr" % (invocation)  # Always use 3hr processing
-
-        # FIXME -- Let user configure file name
-        path += "/PS.557WW_SC.U_DI.C_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA"
+        path = f"OUTPUT/STATS.{invocation}.3hr" # Always use 3hr processing
+        path += f"/PS.557WW_SC.U_DI.C_GP.LIS-{lsm}_GR.C0P09DEG_AR.GLOBAL_PA"
         path += ".LIS_DD."
-        path += "%4.4d%2.2d%2.2d_DT" % (validdt.year,
-                                        validdt.month,
-                                        validdt.day)
-        path += ".%2.2d00_DF" % (validdt.hour)
+        path += f"{validdt.year:04}{validdt.month:02}{validdt.day:02}_DT"
+        path += f".{validdt.hour:02}00_DF"
 
         latest_path = path + ".GR2"
         if not os.path.exists(latest_path):
-            print("[ERR], %s does not exist!" % (latest_path))
+            print(f"[ERR], {latest_path} does not exist!")
             sys.exit(1)
         latest_gr2_infiles[invocation] = latest_path
 
     # All done
     return latest_gr2_infiles
 
-# ------------------------------------------------------------------------------
-# Use cat to merge GRIB2 fields together
-
-
-def merge_gr2_files(lsm, period, gr2_infiles, gr2_outfile,
+# -----------------------------------------------------------------------------
+def _merge_gr2_files(lsm, period, gr2_infiles, gr2_outfile,
                     latest_gr2_infiles=None):
-
-    key = "%s_%dHR" % (lsm, period)
+    """Use cat to merge GRIB2 fields together"""
+    key = f"{lsm}_{period}HR"
     invocations = _INVOCATIONS[key][0:]
     cmd = "cat"
     for invocation in invocations:
-        cmd += " %s" % (gr2_infiles[invocation])
+        cmd += f" {gr2_infiles[invocation]}"
     # For 24-hr postprocessing, we also must concatenate several 3-hr fields
-    if latest_gr2_infiles != None:
-        key = "%s_24HR_LATEST" % (lsm)
+    if latest_gr2_infiles is not None:
+        key = f"{lsm}_24HR_LATEST"
         invocations = _INVOCATIONS[key][:]
         for invocation in invocations:
-            cmd += " %s" % (latest_gr2_infiles[invocation])
-    cmd += " > %s" % (gr2_outfile)
+            cmd += f" {latest_gr2_infiles[invocation]}"
+    cmd += f" > {gr2_outfile}"
 
     print(cmd)
-    rc = subprocess.call(cmd, shell=True)
-    if rc != 0:
+    err = subprocess.call(cmd, shell=True)
+    if err != 0:
         print("[ERR] Problem with cat!")
         sys.exit(1)
 
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Main Driver.
 
-
-if __name__ == "__main__":
-
+def _main():
+    """Main driver"""
     # Process command line arguments
-    validdt, lsm, period, skip_ens_spread = read_cmd_args()
+    validdt, lsm, period, skip_ens_spread = _read_cmd_args()
 
     # Collect GRIB2 files
     (mean_gr2_infiles, mean_gr2_outfile) = \
-        get_gr2_mean_files(validdt, lsm, period)
+        _get_gr2_mean_files(validdt, lsm, period)
     # 3-hr postprocessing includes ensemble spread files
     if period == 3 and not skip_ens_spread:
         (ssdev_gr2_infiles, ssdev_gr2_outfile) = \
-            get_gr2_ssdev_files(validdt, lsm, period)
+            _get_gr2_ssdev_files(validdt, lsm, period)
     # 24-hr postprocessing includes several latest 3-hr fields
     if period == 24:
-        latest_gr2_infiles = get_gr2_latest_files(validdt, lsm)
+        latest_gr2_infiles = _get_gr2_latest_files(validdt, lsm)
 
     # Merge the input GRIB2 files together
     if period == 3:
-        merge_gr2_files(lsm, period, mean_gr2_infiles, mean_gr2_outfile)
+        _merge_gr2_files(lsm, period, mean_gr2_infiles, mean_gr2_outfile)
         if not skip_ens_spread:
-            merge_gr2_files(lsm, period, ssdev_gr2_infiles, ssdev_gr2_outfile)
+            _merge_gr2_files(lsm, period, ssdev_gr2_infiles, ssdev_gr2_outfile)
     else:
         # 24-hr processing
-        merge_gr2_files(lsm, period, mean_gr2_infiles,
-                        mean_gr2_outfile, latest_gr2_infiles)
+        _merge_gr2_files(lsm, period, mean_gr2_infiles,
+                         mean_gr2_outfile, latest_gr2_infiles)
+
+if __name__ == "__main__":
+    _main()

@@ -90,11 +90,12 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_cableId     = "CABLE"
    character*50, public,  parameter :: LIS_fasstId     = "FASST"
    !character*50, public,  parameter :: LIS_sheelsId    = "SHEELS"
-   character*50, public,  parameter :: LIS_clsmf25Id   = "CLSM F2.5"
-   character*50, public,  parameter :: LIS_geowrsi2Id  = "GeoWRSI.2"
+   character*50, public,  parameter :: LIS_clsmf25Id    = "CLSM F2.5"
+   character*50, public,  parameter :: LIS_geowrsi2Id   = "GeoWRSI.2"
    character*50, public,  parameter :: LIS_rdhm356lsmId = "RDHM.3.5.6"
    character*50, public,  parameter :: LIS_summa1Id     = "SUMMA.1.0"
-   character*50, public,  parameter :: LIS_Crocus81Id     = "Crocus8.1"  
+   character*50, public,  parameter :: LIS_Crocus81Id   = "Crocus8.1"  
+   character*50, public,  parameter :: LIS_snowmodelId  = "SnowModel"
 
 !-------------------------------------------------------------------------
 ! Lake models
@@ -135,6 +136,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
+   character*50, public,  parameter :: LIS_geositId          = "GEOS-IT"
 
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
    character*50, public,  parameter :: LIS_chirps2Id         = "CHIRPS2"
@@ -173,7 +175,10 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
    character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
-   character*50, public,  parameter :: LIS_gddpId        = "GDDP"
+   character*50, public,  parameter :: LIS_gddpId            = "GDDP"
+   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
+   character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
+
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -365,6 +370,7 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_NLDASrouterId = "NLDAS router"
    character*50, public, parameter :: LIS_HYMAProuterId = "HYMAP router"
    character*50, public, parameter :: LIS_HYMAP2routerId = "HYMAP2 router"
+   character*50, public, parameter :: LIS_RAPIDrouterId = "RAPID router"
 !-------------------------------------------------------------------------
 ! Runoff data support
 !-------------------------------------------------------------------------

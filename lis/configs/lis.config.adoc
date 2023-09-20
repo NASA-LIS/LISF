@@ -189,6 +189,33 @@ Land surface model: Noah.2.7.1
 ....
 
 
+`Number of subLSMs:` specifies the number of sub-level LSMs
+or specialized models that may interface with other LSMs in LIS.
+Entry here can be set to 1 with having a surface model type
+specified, such as "LSM", and set to 1.
+
+.Example _lis.config_ entry
+....
+Number of subLSMs:             1
+....
+
+`subLSM models:` specifies the sub-level land surface model to run.
+Acceptable values are:
+
+|====
+|Value       | Description
+
+|none        | template lsm
+|Crocus8.1   | Crocus version 8.1 snow model
+|SnowModel   | Glen Liston's SnowModel snow model
+|====
+
+.Example _lis.config_ entry
+....
+subLSM models:            "Crocus8.1"
+....
+
+
 `Lake model:` specifies the lake model to run.
 Acceptable values are:
 
@@ -248,8 +275,8 @@ Acceptable values are:
 | Crocus8.1 | Crocus snow model model
 |====
 
-Note: To run a standalone version of the Crocus, the user need to set 
-Land surface model:  "none"
+Note: To run a standalone version of the Crocus, the user needs to set:
+`Land surface model:  "none"`
 
 `Number of met forcing sources:` specifies the
 number of met forcing datasets to be used. Acceptable
@@ -324,6 +351,7 @@ Acceptable values for the sources are:
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
 |"`MERRA2`"                    | MERRA2
+|"`GEOS-IT`"                   | GEOS-IT
 |"`CMAP`"                      | CMAP
 |"`TRMM 3B42RT`"               | TRMM 3B42RT
 |"`TRMM 3B42RTV7`"             | TRMM 3B42RTV7
@@ -366,6 +394,8 @@ endif::devonly[]
 |"`PLUMBER2`"                  | PLUMBER2 forcing
 |"`GDDP`"                      | NEX GDDP forcing
 |"`COAMPSout`"                 | COAMPS output forcing
+|"`GALWEM forecast`"           | GALWEM 17km or 0.25deg deterministic forecast reader
+|"`GALWEM-GE forecast`"        | GALWEM-GE forecast reader
 |====
 
 .Example _lis.config_ entry
@@ -384,6 +414,8 @@ Acceptable values are:
 |"`none`"         | Do not apply topographic correction for forcing
 |"`lapse-rate`"   | Use lapse rate correction for forcing
 |"`slope-aspect`" | Apply slope-aspect correction for forcing
+|"`lapse-rate and slope-aspect`" | Apply both lapse-rate and slope-aspect corrections
+|"`micromet`"     | Apply Glen Liston's MicroMet corrections to forcing fields
 |====
 
 .Example _lis.config_ entry
@@ -601,11 +633,50 @@ Acceptable values are:
 |"`3 level hierarchy`" | 3 levels of hierarchy
 |"`4 level hierarchy`" | 4 levels of hierarchy
 |"`WMO convention`"    | WMO convention for weather codes
-|====
+|"`557WW streamflow convention`" | 557WW convention for streamflow output
+|"`557WW medium range forecast convention`" | 557WW convention for medium range forecast output
 
+|====
 .Example _lis.config_ entry
 ....
 Output naming style: "3 level hierarchy"
+....
+
+[NOTE]
+====
+The "`557WW streamflow convention`" and "`557WW medium range forecast convention`" have 4 additional settings:
+
+`AGRMET security classification:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
+
+`AGRMET distribution classification:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
+
+`AGRMET data category:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
+
+`AGRMET area of data:` used with 557WW streamflow convention, 557WW medium range forecast convention, or AGRMET Ops runmode.
+
+See Section <<sssec_forcings_afwa,AFWA/AGRMET>> for more information.
+
+.Example _lis.config_ entry
+....
+Output naming style: "557WW streamflow convention"
+AGRMET security classification:     U
+AGRMET distribution classification: C
+AGRMET data category:               ANLYS
+AGRMET area of data:                GLOBAL
+....
+====
+
+`Number of dimensions in the lat/lon output fields:` specifies the number of dimensions to use when writing the latitude and longitude fields of the LIS output. This is an optional entry. If this entry is not used, LIS will attempt to write the lat/lon fields in 1D.  If the projection being used is not compatible with 1D, LIS will write in 2D.
+Acceptable values are:
+|====
+|Value    | Description
+|"1D"     | 1 dimensional latitude and longitude output 
+            (Note: Only the latlon projection supports 1D output)
+|"2D"     | 2 dimensional latitude and longitude output
+|====
+.Example _lis.config_ entry
+....
+Number of dimensions in the lat/lon output fields:          "1D"
 ....
 
 `Enable output statistics:` specifies whether to write the ASCII
@@ -982,6 +1053,7 @@ Acceptable values are:
 |"`NLDAS router`"  | use the NLDAS router
 |"`HYMAP router`"  | use the HyMAP router
 |"`HYMAP2 router`" | use the HyMAP2 router
+|"`RAPID router`" | use the RAPID router
 |====
 
 
@@ -5563,7 +5635,6 @@ GFS domain y-dimension size:      256
 GFS number of forcing variables:  10
 ....
 
-
 [[sssec_forcings_MERRA2,MERRA2]]
 ==== MERRA2
 
@@ -5617,6 +5688,50 @@ MERRA2 forcing directory:              ./MERRA2/
 MERRA2 use lowest model level forcing:     1
 MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
+....
+
+[[sssec_forcings_GEOS-IT,GEOS-IT]]
+==== GEOS-IT
+
+`GEOS-IT forcing directory:` specifies the location of
+the GEOS-IT forcing files.
+
+Please note that GEOS-IT is currently in production and is
+not complete for all calendar years.  Also, it is not yet
+available outside of NASA`'s NCCS computing platforms.
+Also, the topographic or elevation correction option is
+supported through the MERRA-2 geopotential terrain height
+file.  Please also see the latest LDT notes for updates on
+how to use this option.
+
+`GEOS-IT use lowest model level forcing:` specifies whether
+to use the lowest model level forcing.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the lowest model level forcing.
+|1     | Use the lowest model level forcing.
+|====
+
+`GEOS-IT use 2m wind fields:` specifies whether to use the
+2m diagnosed wind fields.  This option will only work if
+the lowest model level forcing option is turned off.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not use the 2m diagnosed wind speed fields.
+|1     | Use the 2m diagnosed wind speed fields.
+|====
+
+.Example _lis.config_ entry
+....
+GEOS-IT forcing directory:                  ./GEOS-IT
+GEOS-IT use lowest model level forcing:     1
+GEOS-IT use 2m wind fields:                 0 
 ....
 
 [[sssec_forcings_ERA5,ERA5]]
@@ -5873,8 +5988,18 @@ default to the "`final`" product of GPM IMERG.
 
 `IMERG version:` specifies the version of the GPM IMERG
 precipitation forcing files. If no version is specified, 
-the reader will default to the latest version of GPM IMERG.
-(Currently V06B).
+the reader will default to "`V06B`".
+
+The supported versions of GPM IMERG are:
+
+|====
+|Version  | Product
+
+|V06B     | early, late, final
+|V06C     | early, late, final
+|V06D     | early, late, final
+|V07A     | preliminary support for final
+|====
 
 .Example _lis.config_ entry
 ....
@@ -6036,7 +6161,7 @@ WRF nest id:                          1
 
 
 [[sssec_supp_wrfoutv2,WRFoutv2]]
-==== NAM242
+==== WRFoutv2
 
 `WRF output v2 forcing directory:` specifies the location of the
 "`NCAR-WRF 4km metforcing output`" forcing files
@@ -6048,7 +6173,7 @@ WRF output v2 forcing directory: ./input/MET_FORCING/conus_wrf
 
 
 [[sssec_supp_wrfakdom,WRFAKdom]]
-==== NAM242
+==== WRF AK domain
 
 `WRF AK forcing directory:` specifies the location of the
 "`NCAR-WRF Alaska domain 4km metforcing output`" files
@@ -6455,6 +6580,49 @@ GDDP forcing directory:                      ./input/MET_FORCING/NEX-GDDP-CMIP6/
 GDDP forcing scenario:                       historical
 GDDP reference daily climatology directory:  ./input/MET_FORCING/M2CLIMO/DAILY/
 GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
+....
+
+[[sssec_galwemforecast,GALWEM forecast]]
+==== GALWEM Forecast
+
+`GALWEM forecast forcing directory:` specifies the location
+of the GALWEM forecast forcing files.
+
+`GALWEM forecast resolution:` specifies the resolution of 
+the GALWEM forecast data. The current resolutions supported are:
+17(=17km) or 25(=0.25deg)
+
+`GALWEM forecast run mode:` specifies the run mode related
+to the GALWEM dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+.Example _lis.config_ entry
+....
+GALWEM forecast forcing directory: ./GALWEM_17km
+GALWEM forecast grid resolution:   17          # 17(=17km) or 25(=0.25 deg)
+GALWEM forecast run mode:          forecast    # forecast | analysis
+....
+
+[[sssec_galwemgeforecast,GALWEM-GE forecast]]
+==== GALWEM-GE Forecast
+
+`GALWEM-GE forecast forcing directory:` specifies the location
+of the GALWEM-GE forecast forcing files.
+
+`GALWEM-GE forecast run mode:` specifies the run mode related
+to the GALWEM-GE dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`GALWEM-GE forecast number of ensemble members:` specifies the number of ensembles
+of the GALWEM-GE forecast forcing data.
+
+.Example _lis.config_ entry
+....
+GALWEM-GE forecast forcing directory:          ./GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
+GALWEM-GE forecast number of ensemble members: 21
+
+
 ....
 
 [[ssec_lsm,Land surface models]]
@@ -9459,6 +9627,103 @@ AWRAL600 initial sd: 0.5 0.5
 AWRAL600 initial mleaf: 0.67 0.2
 ....
 
+
+[[ssec_sublsm,Sublevel land surface models]]
+=== Sublevel land surface models
+
+
+[[sssec_sublsm_snowmodel,SnowModel]]
+==== SnowModel, Liston
+
+`SnowModel model timestep:` specifies the timestep for the run.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`SnowModel restart output interval:` defines the restart
+writing  interval for Glen Liston's SnowModel model. The typical
+value used in the LIS runs is 24 hours (1da).
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`SnowModel restart file:` specifies the SnowModel active
+restart file.
+
+`SnowModel restart file format:` specifies the restart file 
+format for SnowModel.
+
+`SnowModel parameter file:` specifies the main SnowModel-specific
+input and option parameter configuration file, which is needed
+to run SnowModel.
+
+`SnowModel parameters source option:` specifies if SnowModel will
+read in its native binary parameter files from within the SnowModel
+code or what is preprocessed in LDT. LDT option supports parallel runs
+Acceptable values are:
+
+|====
+|Value | Description
+
+|SnowModel | Use SnowModel built-in routines to read in
+|LDT       | Use the LIS SnowModel main driver to load parameters from LDT.
+|====
+
+`SnowModel MicroMet input source:` specifies if SnowModel will
+read in its own specifically formatted binary or ASCII table forcing
+files, or if LIS meteorological forcing fields will be passed in,
+with the option to turn on MicroMet topographic-downscaling options
+on the LIS metforcing layer side. To turn on "micromet" option in LIS,
+set Topographic correction method (met forcing) to micromet. 
+Acceptable values are:
+
+|====
+|Value | Description
+
+|SnowModel | Readin specific SnowModel forcing files
+|LIS       | LIS-based meteorological forcing fields 
+|====
+
+`SnowModel preprocess code option:` specifies the turning on
+of the SnowModel built-in preprocess code module, which performs
+initial preprocessing of gridded data for running the model.
+Currently, only option supported is 1 (on).
+
+`Write out SnowModel forcing file fields:` specifies if you
+want to write out SnowModel forcing fields generated by reading
+in SnowModel-specific forcing files. This option is mainly
+used when SnowModel MicroMet input source is set to SnowModel
+and you run SnowModel in offline subLSM mode (no other LSMs or models
+run with this submodel). Selecting 1 activates this option, and
+0 indicates off.
+
+`SnowModel number of snow layers:` specifies the number of snow
+layers that would be allowed to build within the SnowModel runtime.
+This option is currently set to 1 within LIS, and must also be
+activated and increased by setting the multiple layer snow model
+scheme in the SnowModel option parameter file (snowmodel.par).
+
+`SnowModel initial snow water equivalent:` specifies the initial
+snow water equivalent (SWE) value.  This is currently set to 
+default values found in the coldstart mode for model restart reads, 
+based on a SnowModel initialization approach.
+
+.Example _lis.config_ entry
+....
+SnowModel model timestep:                1hr
+SnowModel restart file:                ./none
+SnowModel restart output interval:       1mo 
+SnowModel restart file format:          "netcdf"    
+SnowModel parameter file:              ./snowmodel.par
+SnowModel parameters source option:       LDT
+SnowModel MicroMet input source:          LIS
+Write out SnowModel forcing file fields:  1
+SnowModel preprocess code option:         1
+SnowModel number of snow layers:          1
+SnowModel initial snow water equivalent:  0.0
+....
+
+
 [[ssec_lakes,Lake models]]
 === Lake models
 
@@ -10111,7 +10376,131 @@ NLDAS routing model restart file:
 ....
 
 
-[[sssec_lsm_Crocus8.1, from SURFEX8.1]]
+[[sssec_rapidrouting,RAPID routing]]
+==== RAPID routing
+
+`RAPID routing model time step:` specifies the timestep for
+the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID river routing time step:` specifies the timestep for
+RAPID river routing precedure.
+
+`RAPID routing model output interval:` defines the output
+writing interval for the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID routing model restart interval:` defines the restart output
+writing interval for the RAPID router.
+
+See Section <<ssec_timeinterval>> for a description
+of how to specify a time interval.
+
+`RAPID routing model start mode:` specifies the restart mode
+to be used for the RAPID router.
+Acceptable values are:
+
+|====
+|Value     | Description
+
+|restart   | A restart mode is being used; read a RAPID restart file
+|coldstart | A cold start mode is being used; no restart file read
+|====
+
+`RAPID run in ensemble mode:` specifies whether to run the
+RAPID router in ensemble mode.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not run in ensemble mode
+|1     | Run in ensemble mean mode
+|2     | Run in ensemble mode (not support)
+|====
+
+`RAPID run option:` is set to 1 for a regular run. The other options are not
+supported yet.
+
+`RAPID routing option:` is set to 1 for applying matrix-based
+Mukingum algorithm. The other options are not supported yet.
+
+`RAPID cost function phi option:` is set to 1 for phi1. The other options
+are not supported yet.
+
+`RAPID initial flow:` use initial instantaneous flow file. This option
+is not supported. Set to `.false.`.
+
+`RAPID write final flow:` save final instantaneous flow file. This option
+is not supported. Set to `.false.`.
+
+`RAPID compute volume:` compute flow volume. This option
+is not supported. Set to `.false.`.
+
+`RAPID human-induced flow:` apply human-induced flow. This option
+is not supported. Set to `.false.`.
+
+`RAPID upstream forcing:` use upstrem forcing. This option
+is not supported. Set to `.false.`.
+
+`RAPID dam model used:` use dam model. This option
+is not supported. Set to `.false.`.
+
+`RAPID output influence:` use output influence. This option
+is not supported. Set to `.false.`.
+
+`RAPID uncertainty quantification:` use uncertainty quantification. This option
+is not supported. Set to `.false.`.
+
+`RAPID river connectivity file:` specifies river connectivity file.
+
+`RAPID max number of upstream reaches:` specifies maximum number of upstream
+reaches.
+
+`RAPID river weight table:` specifies river weight table file.
+
+`RAPID river basin ID file:` specifies river basin ID file.
+
+`RAPID Muskingum parameter k file:` specifies Muskingum parameter k file.
+
+`RAPID Muskingum parameter x file:` specifies Muskingum parameter x file.
+
+`RAPID namelist file:` specifies namelist file.
+
+.Example _lis.config_ entry
+....
+RAPID routing model time step: "1da"
+RAPID river routing time step: "15mn"  
+RAPID routing model output interval: "1da"
+RAPID routing model restart interval: "1mo"
+RAPID routing model start mode: restart
+RAPID routing model restart file: ./output/ol/ROUTING/200801/LIS_RST_RAPID_router_200801150000.d01.nc
+RAPID run in ensemble mode: 0
+RAPID run option: 1
+RAPID routing option: 1
+RAPID cost function phi option: 1
+RAPID initial flow: .false.
+RAPID write final flow: .false.
+RAPID compute volume: .false.
+RAPID human-induced flow: .false.
+RAPID upstream forcing: .false.
+RAPID dam model used: .false.
+RAPID output influence: .false.
+RAPID uncertainty quantification: .false.
+RAPID river connectivity file: ./rapid_params/rapid_connect.csv
+RAPID max number of upstream reaches:   3
+RAPID river weight table: ./rapid_params/weight_lis.csv
+RAPID river basin ID file: ./rapid_params/riv_bas_id.csv
+RAPID Muskingum parameter k file: ./rapid_params/k.csv
+RAPID Muskingum parameter x file: ./rapid_params/x.csv
+RAPID namelist file: ./rapid_params/rapid_namelist
+....
+
+[[sssec_lsm_Crocus8.1,from SURFEX8.1]]
 ==== Crocus8.1
 
 `CROCUS81 model timestep:` specifies the timestep for the run.
@@ -10120,184 +10509,272 @@ NLDAS routing model restart file:
 writing interval for Crocus8.1. The typical value is 1 month (1mo).
 
 
-`CROCUS81 nsnow:` total number of snow layer
+`CROCUS81 nsnow:` specifies the total number of snow layers.
 
 
-`CROCUS81 nimpur:` number of impurity types  Note: this option is not activated in the current version
+`CROCUS81 nimpur:` specifies the number of impurity types  Note: this option is not activated in the current version.
 
-`CROCUS81 SNOWRES_opt:` turbulant exchange options ('DEF', 'RIL', 'M98' ) 
-                                      'DEF' = Default: Louis (ISBA: Noilhan and Mahfouf 1996)
-                                      'RIL' = Limit Richarson number under very stable
-                                              conditions (currently testing)
-                                      'M98'  = Martin et Lejeune 1998 : older computation for turbulent fluxes coefficents in Crocus
+`CROCUS81 SNOWRES_opt:` specifies the turbulant exchange option.
+Acceptable values are:
 
-`CROCUS81 OMEB_BOOL:`                 True = coupled to MEB. This means surface fluxes ae IMPOSED
-                                       as an upper boundary condition to the explicit snow schemes. 
-                                      If = False, then energy
-                                      budget and fluxes are computed herein.
+|====
+|Value      | Description
 
-`CROCUS81 HIMPLICIT_WIND_opt:`  wind implicitation option
-                                      'OLD' = direct
-                                      'NEW' = Taylor serie, order 1 
+| DEF | Default: Louis (ISBA: Noilhan and Mahfouf 1996)
+| RIL | Limit Richarson number under very stable conditions (currently testing)
+| M98 | Martin et Lejeune 1998: older computation for turbulent fluxes coefficents in Crocus
+|====
 
-`ROCUS81 PTSTEP:` must set to 900s because it has been used to compute the amount of snowfall to triger the CALL_MODEL
+`CROCUS81 OMEB_BOOL:`
+Acceptable values are:
 
-`CROCUS81 UREF:` reference height of the wind
+|====
+|Value      | Description
 
-`CROCUS81 ZREF:` reference height of the first atmospheric level
+| .true. | Coupled to MEB. This means surface fluxes ae IMPOSED as an upper boundary condition to the explicit snow schemes.
+| .false. | Then energy budget and fluxes are computed herein.
+|====
 
-`CROCUS81 Z0NAT:` grid box average roughness length
+`CROCUS81 HIMPLICIT_WIND_opt:`  specifies the wind implicitation option.
+Acceptable values are:
 
-`CROCUS81 Z0EFF:` roughness length for momentum
+|====
+|Value      | Description
 
-`CROCUS81 Z0HNAT:` grid box average roughness length for heat
+| OLD | direct
+| NEW | Taylor series, order 1
+|====
 
-`CROCUS81 D_G:` Assumed first soil layer thickness (m)
+`CROCUS81 PTSTEP:` must set to 900s because it has been used to compute the amount of snowfall to triger the CALL_MODEL.
 
-`CROCUS81 SNOWDRIFT_opt:` 
-                          'NONE': No snowdrift scheme 
-                          'DFLT': falling snow falls as purely dendritic
-                          'GA01': Gallee et al 2001
-                          'VI13': Vionnet et al 2013
+`CROCUS81 UREF:` specifies the reference height of the wind.
 
-`CROCUS81 SNOWDRIFT_SUBLIM_BOOL:` activate sublimation during drift
+`CROCUS81 ZREF:` specifies the reference height of the first atmospheric level.
 
-`CROCUS81 SNOW_ABS_ZENITH_BOOL:` activate parametrization of solar absorption for polar regions
+`CROCUS81 Z0NAT:` specifies the grid box average roughness length.
 
-`CROCUS81 SNOWMETAMO_opt:`       Metamorphism scheme
-                                      HSNOWMETAMO=B92 Brun et al 1992
-                                      HSNOWMETAMO=C13 Carmagnola et al 2014
-                                      HSNOWMETAMO=T07 Taillandier et al 2007
-                                      HSNOWMETAMO=F06 Flanner et al 2006
+`CROCUS81 Z0EFF:` specifies the roughness length for momentum.
 
-`CROCUS81 SNOWRAD_opt:`    Radiative transfer scheme
-                                      B92 Brun et al 1992
-                                      T17 (Tuzet et al. 2017) (Libois et al. 2013) 
-                                          TARTES with impurities content scheme (Currently not available)
+`CROCUS81 Z0HNAT:` specifies the grid box average roughness length for heat.
 
-`CROCUS81 ATMORAD_BOOL:`   activate atmotartes scheme
+`CROCUS81 D_G:` specifies the assumed first soil layer thickness (m).
 
-`CROCUS81 IMPWET:` Wet deposit impurity coefficient 
+`CROCUS81 SNOWDRIFT_opt:`
+Acceptable values are:
 
-`CROCUS81 IMPDRY:` Dry deposit impurity coefficient  
+|====
+|Value      | Description
 
-`CROCUS81 SNOWFALL_opt:` Falling snow scheme              
-                                       V12 Vionnet et al. 2012 from Brun et al. 1989
-                                       A76 Anderson et al. 1976
-                                       S02 Lehning el al. 2002
-                                       P75 Pahaut 1975
-                                       NZE Constant density 200 kg/m3 (who knows ?) 
-`CROCUS81 SNOWCOND_opt:`   Thermal conductivity scheme
-                                       Y81 default Crocus from Yen et al. 1981
-                                       I02 ISBA_ES snow conductivity parametrization (Boone et al. 2002)
-                                       C11 Calonne et al. 2011 snow conductivity parametrization
+| NONE      | No snowdrift scheme
+| DFLT      | falling snow falls as purely dendritic
+| GA01      | Gallee et al 2001
+| VI13      | Vionnet et al 2013
+|====
 
-`CROCUS81 SNOWHOLD_opt:`  liquid water content scheme
-                                       B92 default Crocus from Brun et al. 1992 or Vionnet et al. 2012
-                                       B02 ISBA_ES  parametrization (Boone et al. 2002)
-                                       O04 CLM parametrization (Oleson et al 2004)
-                                       S02 SNOWPACK aprametrization (Lehning et al 2002)
+`CROCUS81 SNOWDRIFT_SUBLIM_BOOL:` activate sublimation during drift.
 
-`CROCUS81 SNOWCOMP_opt:`  compaction option 
-                                       B92 snow compaction basis version 
-                                       B93 for slightly different parameters 
- 
-`CROCUS81 SNOWZREF_opt:`  reference height is constant or variable from the snow surface
-                                       CST constant reference height from the snow surface
-                                       VAR variable reference height from the snow surface (i.e. constant from the ground)
+`CROCUS81 SNOW_ABS_ZENITH_BOOL:` activate parametrization of solar absorption for polar regions.
 
-`CROCUS81 SNOWCOMPACT_BOOL:` activate snow comapction 
+`CROCUS81 SNOWMETAMO_opt:` specifies the metamorphism scheme.
+Acceptable values are:
 
-`CROCUS81 SNOWMAK_BOOL:` activate snowmaking 
+|====
+|Value      | Description
 
-`CROCUS81 SNOWTILLER_BOOL:` activate Tilling
+| B92       | Brun et al 1992
+| C13       | Carmagnola et al 2014
+| T07       | Taillandier et al 2007
+| F06       | Flanner et al 2006
+|====
 
-`CROCUS81 SELF_PROD_BOOL:` snow management option
+`CROCUS81 SNOWRAD_opt:` specifies the radiative transfer scheme.
+Acceptable values are:
 
-`CROCUS81 SNOWMAK_PROP_BOOL:` Additionnal boolean to use modified properties of machine made snow (MMS) or not 
- 
-`CROCUS81 PRODSNOWMAK_BOOL:`  activate snowmaking daytime
+|====
+|Value      | Description
 
-`CROCUS81 GLACIER_BOOL:`  True = Over permanent snow and ice, 
-                                 initialise WGI=WSAT,
-                                 Hsnow>=10m and allow 0.8<SNOALB<0.85
-                                 False = No specific treatment
+| B92       | Brun et al 1992
+| T17       | (Tuzet et al. 2017) (Libois et al. 2013)
+| TARTES    | with impurities content scheme (Currently not available)
+|====
 
-`CROCUS81 TG:` Surface soil temperature (effective temperature the of layer lying below snow)
+`CROCUS81 ATMORAD_BOOL:` activate atmotartes scheme.
 
-`CROCUS81 use monthly albedo map:` .TRUE. #use monthly climatology albedo  # .FALSE. use constant value of 0.2  
+`CROCUS81 IMPWET:` specifies the wet deposit impurity coefficient.
 
-`CROCUS81 boolean option to partition total precip:`  TRUE if forcing only provides total precip. FALSE if forcing contains snowfall and rainfall 
+`CROCUS81 IMPDRY:` specifies the dry deposit impurity coefficient.
 
-`CROCUS81 restart file:` specifies the Crocus restart file. 
+`CROCUS81 SNOWFALL_opt:` specifies the falling snow scheme.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| V12       | Vionnet et al. 2012 from Brun et al. 1989
+| A76       | Anderson et al. 1976
+| S02       | Lehning el al. 2002
+| P75       | Pahaut 1975
+| NZE       | Constant density 200 kg/m3 (who knows ?)
+|====
+
+`CROCUS81 SNOWCOND_opt:` specifies the thermal conductivity scheme.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| Y81       | default Crocus from Yen et al. 1981
+| I02       | ISBA_ES snow conductivity parametrization (Boone et al. 2002)
+| C11       | Calonne et al. 2011 snow conductivity parametrization
+|====
+
+`CROCUS81 SNOWHOLD_opt:` specifies the liquid water content scheme.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| B92       | default Crocus from Brun et al. 1992 or Vionnet et al. 2012
+| B02       | ISBA_ES  parametrization (Boone et al. 2002)
+| O04       | CLM parametrization (Oleson et al 2004)
+| S02       | SNOWPACK aprametrization (Lehning et al 2002)
+|====
+
+`CROCUS81 SNOWCOMP_opt:` specifies the compaction option.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| B92       | snow compaction basis version
+| B93       | for slightly different parameters
+|====
+
+`CROCUS81 SNOWZREF_opt:` specifies the reference height is constant or variable from the snow surface.
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| CST       | constant reference height from the snow surface
+| VAR       | variable reference height from the snow surface (i.e. constant from the ground)
+|====
+
+`CROCUS81 SNOWCOMPACT_BOOL:` activate snow comapction.
+
+`CROCUS81 SNOWMAK_BOOL:` activate snowmaking.
+
+`CROCUS81 SNOWTILLER_BOOL:` activate Tilling.
+
+`CROCUS81 SELF_PROD_BOOL:` snow management option.
+
+`CROCUS81 SNOWMAK_PROP_BOOL:` Additionnal boolean to use modified properties of machine made snow (MMS) or not.
+
+`CROCUS81 PRODSNOWMAK_BOOL:` activate snowmaking daytime.
+
+`CROCUS81 GLACIER_BOOL:`
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| .true.    | Over permanent snow and ice,
+              initialise WGI=WSAT,
+              Hsnow>=10m and allow 0.8<SNOALB<0.85
+| .false.   | No specific treatment
+|====
+
+
+
+`CROCUS81 TG:` specifies the surface soil temperature (effective temperature the of layer lying below snow).
+
+`CROCUS81 use monthly albedo map:`
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| .true.    | use monthly climatology albedo
+| .false.   | use constant value of 0.2
+|====
+
+`CROCUS81 boolean option to partition total precip:`
+Acceptable values are:
+
+|====
+|Value      | Description
+
+| .true.    | forcing only provides total precip
+| .false.   | forcing contains snowfall and rainfall
+|====
+
+`CROCUS81 restart file:` specifies the Crocus restart file.
 
 `CROCUS81 restart file format:` specifies the format for the Crocus8.1 restart file.
 
-`CROCUS81 initial SNOWSWE:`  Initial snow SWE (kg/m2)
+`CROCUS81 initial SNOWSWE:` specifies the initial snow SWE (kg/m2).
 
-`CROCUS81 initial SNOWRHO:` Initial snow layer(s) density (kg/m3)
+`CROCUS81 initial SNOWRHO:` specifies the initial snow layer(s) density (kg/m3).
 
-`CROCUS81 initial SNOWHEAT:` Initial snow layer(s) heat content (J/m2)
+`CROCUS81 initial SNOWHEAT:` specifies the initial snow layer(s) heat content (J/m2).
 
-`CROCUS81 initial SNOWALB:` Initial surface albedo  
+`CROCUS81 initial SNOWALB:` specifies the initial surface albedo.
 
-`CROCUS81 initial SNOWGRAN1:` Initial Snow layer(s) grain parameter 1
+`CROCUS81 initial SNOWGRAN1:` specifies the initial Snow layer(s) grain parameter 1.
 
-`CROCUS81 initial SNOWGRAN2:` Initial Snow layer(s) grain parameter 1
+`CROCUS81 initial SNOWGRAN2:` specifies the initial Snow layer(s) grain parameter 1.
 
-`CROCUS81 initial SNOWHIST:` Initial Snow layer(s) Historical parameter (-) in {0-5}
+`CROCUS81 initial SNOWHIST:` specifies the initial Snow layer(s) Historical parameter (-) in [0-5].
 
-`CROCUS81 initial SNOWLIQ:` Initial Snow layer(s) liquid water content (m)
+`CROCUS81 initial SNOWLIQ:` specifies the initial Snow layer(s) liquid water content (m).
 
-`ROCUS81 initial SNOWTEMP: Initial Snow layer(s) temperature (K)
+`ROCUS81 initial SNOWTEMP: specifies the initial Snow layer(s) temperature (K).
 
-`CROCUS81 initial SNOWDZ:` Initial Snow layer(s) thickness (m)
+`CROCUS81 initial SNOWDZ:` specifies the initial Snow layer(s) thickness (m).
 
-`CROCUS81 initial GRNDFLUX:` Initial Soil/snow interface heat flux (W/m2)
+`CROCUS81 initial GRNDFLUX:` specifies the initial Soil/snow interface heat flux (W/m2).
 
-`CROCUS81 initial SNDRIFT:` Initial Blowing snow sublimation (kg/m2/s) NOTE: Snow compaction and metamorphism due to drift, Mass is unchanged
+`CROCUS81 initial SNDRIFT:` specifies the initial Blowing snow sublimation (kg/m2/s). Note: Snow compaction and metamorphism due to drift, Mass is unchanged.
 
-`CROCUS81 initial RI_n:` Initial Richardson number 
+`CROCUS81 initial RI_n:` specifies the initial Richardson number.
 
-`ROCUS81 initial CDSNOW:` Initial drag coefficient for momentum over snow
- 
-`CROCUS81 initial USTARSNOW:` Initial  Friction velocity over snow (m/s)
+`ROCUS81 initial CDSNOW:` specifies the initial drag coefficient for momentum over snow.
 
-`CROCUS81 initial CHSNOW:` Initial Drag coefficient for heat over snow  (-)
+`CROCUS81 initial USTARSNOW:` specifies the initial Friction velocity over snow (m/s).
 
-`CROCUS81 initial SNOWMAK_dz:` Initial depth from snow making process
+`CROCUS81 initial CHSNOW:` specifies the initial Drag coefficient for heat over snow (-).
 
+`CROCUS81 initial SNOWMAK_dz:` specifies the initial depth from snow making process.
 
 .Example _lis.config_ entry
 ....
-
-CROCUS81 model timestep:                  15mn 
+CROCUS81 model timestep:                  15mn
 CROCUS81 restart output interval:         1mo
 CROCUS81 nsnow:                           50
 CROCUS81 nimpur:                          2
-CROCUS81 SNOWRES_opt:                     "DEF" 
-CROCUS81 OMEB_BOOL:                      .FALSE. 
-CROCUS81 HIMPLICIT_WIND_opt:             "NEW"  
-CROCUS81 PTSTEP:                          900 
+CROCUS81 SNOWRES_opt:                     "DEF"
+CROCUS81 OMEB_BOOL:                      .FALSE.
+CROCUS81 HIMPLICIT_WIND_opt:             "NEW"
+CROCUS81 PTSTEP:                          900
 CROCUS81 UREF:                            10
 CROCUS81 ZREF:                            1.5
-CROCUS81 Z0NAT:                           0.005 
-CROCUS81 Z0EFF:                           0.001 
-CROCUS81 Z0HNAT:                          0.0005 
-CROCUS81 D_G:                             0.01 
+CROCUS81 Z0NAT:                           0.005
+CROCUS81 Z0EFF:                           0.001
+CROCUS81 Z0HNAT:                          0.0005
+CROCUS81 D_G:                             0.01
 CROCUS81 SNOWDRIFT_opt:                   "NONE"
 CROCUS81 SNOWDRIFT_SUBLIM_BOOL:           .FALSE.
 CROCUS81 SNOW_ABS_ZENITH_BOOL:            .FALSE.
 CROCUS81 SNOWMETAMO_opt:                  "C13"
 CROCUS81 SNOWRAD_opt:                     "B92"
 CROCUS81 ATMORAD_BOOL:                    .FALSE.
-CROCUS81 IMPWET:                          0.0 0.0   
+CROCUS81 IMPWET:                          0.0 0.0
 CROCUS81 IMPDRY:                          0.0 0.0
 CROCUS81 SNOWFALL_opt:                    "V12"
 CROCUS81 SNOWCOND_opt:                    "Y81"
 CROCUS81 SNOWHOLD_opt:                    "B92"
 CROCUS81 SNOWCOMP_opt:                    "B92"
-CROCUS81 SNOWZREF_opt:                    "CST" 
+CROCUS81 SNOWZREF_opt:                    "CST"
 CROCUS81 SNOWCOMPACT_BOOL:                .FALSE.
 CROCUS81 SNOWMAK_BOOL:                    .FALSE.
 CROCUS81 SNOWTILLER_BOOL:                 .FALSE.
@@ -10305,12 +10782,11 @@ CROCUS81 SELF_PROD_BOOL:                  .FALSE.
 CROCUS81 SNOWMAK_PROP_BOOL:               .FALSE.
 CROCUS81 PRODSNOWMAK_BOOL:                .FALSE.
 CROCUS81 GLACIER_BOOL:                    .FALSE.
-CROCUS81 TG:                              273.15 
+CROCUS81 TG:                              273.15
 CROCUS81 use monthly albedo map:          .TRUE.
-CROCUS81 boolean option to partition total precip: 
+CROCUS81 boolean option to partition total precip:
 CROCUS81 restart file:                    output/SURFACEMODEL/201708/LIS_RST_CROCUS81_201708312345.d01.nc
 CROCUS81 restart file format:             netcdf
-
 CROCUS81 initial SNOWSWE: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 CROCUS81 initial SNOWRHO: 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000 10000000000
 CROCUS81 initial SNOWHEAT: 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
@@ -10329,6 +10805,7 @@ CROCUS81 initial CDSNOW: 0.0
 CROCUS81 initial USTARSNOW: 0.0
 CROCUS81 initial CHSNOW: 0.0
 CROCUS81 initial SNOWMAK_dz: 0.0
+....
 
 === Runoff
 
@@ -10549,7 +11026,6 @@ sample MODEL_OUTPUT_LIST.TBL file for the complete specification.
 ....
 Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
-
 
 [[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval

@@ -52,6 +52,7 @@ module LIS_domainMod
 !  17 Feb 2004    Sujay Kumar  Initial Specification
 !  24 Aug 2008    Sujay Kumar  Implemented halo support 
 !   3 Aug 2012    Sujay Kumar  Added support for flexible tiling
+!   3 Mar 2022    Kristi Arsenault  Added support for curvature tiles
 ! 
   use ESMF
   use LIS_coreMod
@@ -171,6 +172,10 @@ contains
           deallocate(LIS_topo(n)%aspect)
           deallocate(LIS_topo(n)%aspectfgrd)
        endif          
+       if(LIS_rc%usecurvaturemap(n).ne."none") then
+          deallocate(LIS_topo(n)%curvature)
+          deallocate(LIS_topo(n)%curvfgrd)
+       endif
     enddo
 
     do n=1,LIS_rc%nnest
@@ -881,6 +886,7 @@ end subroutine LIS_quilt_b_domain
     logical :: elev_selected
     logical :: slope_selected
     logical :: aspect_selected
+    logical :: curvature_selected
     
     do n=1,LIS_rc%nnest
        if(LIS_rc%usetexturemap(n).ne."none") then 
@@ -917,6 +923,13 @@ end subroutine LIS_quilt_b_domain
        else
           aspect_selected = .false. 
        endif
+
+       if(LIS_rc%usecurvaturemap(n).ne."none") then
+          curvature_selected = .true.
+       else
+          curvature_selected = .false.
+       endif
+
 !-----------------------------------------------------------------------
 ! normalize the parameter data distributions
 !-----------------------------------------------------------------------
@@ -957,8 +970,8 @@ end subroutine LIS_quilt_b_domain
                LIS_rc%aspect_minp, LIS_rc%aspect_maxt, LIS_topo(n)%aspectfgrd)
        endif
 
-       call create_tilespace(n,soilt_selected, soilf_selected, elev_selected, &
-            slope_selected, aspect_selected)
+       call create_tilespace(n, soilt_selected, soilf_selected, elev_selected, &
+            slope_selected, aspect_selected, curvature_selected)
     enddo
 
   end subroutine make_domain
@@ -1268,7 +1281,7 @@ end subroutine LIS_quilt_b_domain
 !
 ! !INTERFACE:
   subroutine create_tilespace(n,soilt_selected, soilf_selected, elev_selected,&
-       slope_selected, aspect_selected)
+       slope_selected, aspect_selected, curvature_selected)
 
     implicit none
 ! !ARGUMENTS: 
@@ -1278,6 +1291,7 @@ end subroutine LIS_quilt_b_domain
     logical, intent(in)   :: elev_selected
     logical, intent(in)   :: slope_selected
     logical, intent(in)   :: aspect_selected
+    logical, intent(in)   :: curvature_selected
 
 ! !DESCRIPTION: 
 !  This routine creates the tilespace based on the specified dimensions
@@ -1294,23 +1308,23 @@ end subroutine LIS_quilt_b_domain
 !    flag to indicate if soil texture based tiling is used
 !   \item[soilf\_selected]
 !    flag to indicate if soil fraction based tiling is used
-!   \item[soilf\_selected]
-!    flag to indicate if soil fraction based tiling is used
 !   \item[elev\_selected]
 !    flag to indicate if elevation based tiling is used
 !   \item[slope\_selected]
 !    flag to indicate if slope based tiling is used
 !   \item[aspect\_selected]
 !    flag to indicate if aspect based tiling is used
+!   \item[curvature\_selected]
+!    flag to indicate if curvature based tiling is used
 !  \end{description}
 !EOP
     real          :: locallat, locallon
     integer       :: c, r, t, m
-    integer       :: iv, it, ie, is, ia
+    integer       :: iv, it, ie, is, ia, ic
     integer       :: vegt
     integer       :: soilt
     real          :: sand, clay, silt
-    real          :: elev, slope, aspect
+    real          :: elev, slope, aspect, curvature
     integer       :: sf_index
     integer       :: gnc, gnr
     integer       :: kk
@@ -1324,6 +1338,7 @@ end subroutine LIS_quilt_b_domain
     integer       :: ntiles_elev
     integer       :: ntiles_slope
     integer       :: ntiles_aspect
+    integer       :: ntiles_curvature
     integer       :: ntiles_land_landmask
     integer       :: gid
     real          :: temp
@@ -1331,6 +1346,7 @@ end subroutine LIS_quilt_b_domain
     integer       :: elev_index
     integer       :: slope_index
     integer       :: aspect_index
+    integer       :: curvature_index
     
 
     gnc = LIS_rc%lnc(n)
@@ -1349,6 +1365,7 @@ end subroutine LIS_quilt_b_domain
                 ntiles_elev = compute_ntiles_elev(n,c,r,elev_selected)
                 ntiles_slope = compute_ntiles_slope(n,c,r,slope_selected)
                 ntiles_aspect = compute_ntiles_aspect(n,c,r,aspect_selected)
+                ntiles_curvature = compute_ntiles_curvature(n,c,r,curvature_selected)
 
                 if(soilf_selected) then 
                    LIS_rc%ntiles(n) = LIS_rc%ntiles(n)+&
@@ -1364,7 +1381,6 @@ end subroutine LIS_quilt_b_domain
                         ntiles_elev*&
                         ntiles_slope*& 
                         ntiles_aspect
-
                 endif
                    
                 do t=1,LIS_rc%nsurfacetypes
@@ -1531,6 +1547,7 @@ end subroutine LIS_quilt_b_domain
                 ntiles_elev = compute_ntiles_elev(n,c,r,elev_selected)
                 ntiles_slope = compute_ntiles_slope(n,c,r,slope_selected)
                 ntiles_aspect = compute_ntiles_aspect(n,c,r,aspect_selected)
+                ntiles_curvature = compute_ntiles_curvature(n,c,r,curvature_selected)
 
                 if(soilf_selected) then 
                    ntiles_soil = ntiles_soilf
@@ -1564,6 +1581,8 @@ end subroutine LIS_quilt_b_domain
                             do ia=1, ntiles_aspect
                                call get_aspect_value(n,c,r,ia,aspect_selected,&
                                     aspect, aspect_index)
+                               call get_curvature_value(n,c,r,ia,curvature_selected,&
+                                    curvature, curvature_index)
                             
                                kk = kk+1
 
@@ -1585,6 +1604,8 @@ end subroutine LIS_quilt_b_domain
                                     slope
                                LIS_domain(n)%tile(kk)%aspect = &
                                     aspect
+                               LIS_domain(n)%tile(kk)%curvature = &
+                                    curvature
                                LIS_domain(n)%tile(kk)%fgrd = &
                                     LIS_LMLC(n)%landcover(c,r,vegt)
                                
@@ -1615,6 +1636,12 @@ end subroutine LIS_quilt_b_domain
                                        LIS_domain(n)%tile(kk)%fgrd*&
                                        LIS_topo(n)%aspectfgrd(c,r,aspect_index)
                                endif
+
+!                               if(curvature_selected) then
+!                                  LIS_domain(n)%tile(kk)%fgrd=&
+!                                       LIS_domain(n)%tile(kk)%fgrd*&
+!                                       LIS_topo(n)%curvfgrd(c,r,curvature_index)
+!                               endif
                                
                                if(sf_index.gt.0) then 
                                   kk_sf(sf_index) = kk_sf(sf_index) + 1
@@ -1649,6 +1676,7 @@ end subroutine LIS_quilt_b_domain
                                   LIS_surface(n,sf_index)%tile(&
                                        kk_sf(sf_index))%fgrd=&
                                        LIS_LMLC(n)%landcover(c,r,vegt)
+
                                   if(soilt_selected) then 
                                      LIS_surface(n,sf_index)%tile(&
                                           kk_sf(sf_index))%fgrd = & 
@@ -1684,6 +1712,14 @@ end subroutine LIS_quilt_b_domain
                                           kk_sf(sf_index))%fgrd * & 
                                           LIS_topo(n)%aspectfgrd(c,r,aspect_index)
                                   endif                                  
+                                  if(curvature_selected) then
+                                     LIS_surface(n,sf_index)%tile(&
+                                          kk_sf(sf_index))%fgrd = &
+                                          LIS_surface(n,sf_index)%tile(&
+                                          kk_sf(sf_index))%fgrd * &
+                                          LIS_topo(n)%curvfgrd(c,r,curvature_index)
+                                  endif
+
                                endif
 
                             enddo
@@ -2043,6 +2079,42 @@ end subroutine LIS_quilt_b_domain
   end function compute_ntiles_aspect
 
 !BOP
+!
+! !ROUTINE: compute_ntiles_curvature
+! \label{compute_ntiles_curvature}
+! 
+! !INTERFACE: 
+  function compute_ntiles_curvature(n,c,r,flag)
+! !ARGUMENTS: 
+    integer :: n
+    integer :: c
+    integer :: r
+    logical :: flag
+!
+! !DESCRIPTION: 
+!  This function computes the number of tiles based on the 
+!  distribution of curvature tiles in a given grid cell
+!EOP
+    integer :: kk
+    integer :: compute_ntiles_curvature
+    integer :: t
+
+    kk = 0
+
+    if(flag) then
+!       do t=1,LIS_rc%ncurvbands
+       do t=1,1
+          if(LIS_topo(n)%curvfgrd(c,r,t).gt.0.0) then
+             kk = kk + 1
+          endif
+       enddo
+    endif
+    compute_ntiles_curvature = max(1,kk)
+
+  end function compute_ntiles_curvature
+
+
+!BOP
 ! 
 ! !ROUTINE: get_vegt_value
 ! \label{get_vegt_value}
@@ -2312,6 +2384,47 @@ end subroutine LIS_quilt_b_domain
     endif
 
   end subroutine get_aspect_value
+
+!BOP
+! !ROUTINE: get_curvature_value
+! \label{get_curvature_value}
+! 
+! !INTERFACE: 
+  subroutine get_curvature_value(n,c,r,i,curvature_selected,curvature,curvature_index)
+! !ARGUMENTS: 
+    integer  :: n
+    integer  :: c
+    integer  :: r
+    integer  :: i
+    logical  :: curvature_selected
+    real     :: curvature 
+    integer  :: curvature_index
+! 
+! !DESCRIPTION: 
+!  This routine computes the curvature value for given tile number
+!  and grid cell. 
+!EOP
+    integer  :: t
+    integer  :: kk
+
+    curvature = -1
+    curvature = -1
+    if(curvature_selected) then
+       kk = 0
+!       do t=1, LIS_rc%naspectbands
+       do t=1, 1
+          if(LIS_topo(n)%curvfgrd(c,r,t).gt.0.0) then
+             kk = kk + 1
+             if(kk.eq.i) then
+                curvature = LIS_topo(n)%curvature(c,r,t)
+                curvature_index = t
+                return
+             endif
+          end if
+       enddo
+    endif
+
+  end subroutine get_curvature_value
 
 !BOP
 ! !ROUTINE: readDomainInput
@@ -2649,6 +2762,15 @@ end subroutine LIS_quilt_b_domain
           elseif(map_proj.eq."LAMBERT CONFORMAL") then      
              LIS_rc%lis_map_proj = "lambert"
              
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The lambert map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
+
              ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',LIS_domain(n)%truelat1)
              call LIS_verify(ios, 'Error in nf90_get_att: TRUELAT1')
 
@@ -2680,6 +2802,15 @@ end subroutine LIS_quilt_b_domain
 
           elseif(map_proj.eq."MERCATOR") then              
 
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The MERCATOR map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
+
              ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',LIS_domain(n)%truelat1)
              call LIS_verify(ios, 'Error in nf90_get_att: TRUELAT1')
 
@@ -2706,6 +2837,15 @@ end subroutine LIS_quilt_b_domain
                   0.0,LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_domain(n)%lisproj)
              
           elseif(map_proj.eq."POLAR STEREOGRAPHIC") then              
+
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection 
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The polar stereographic map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
 
              ios = nf90_get_att(ftn, NF90_GLOBAL, 'TRUELAT1',LIS_domain(n)%truelat1)
              call LIS_verify(ios, 'Error in nf90_get_att: TRUELAT1')
@@ -2736,6 +2876,15 @@ end subroutine LIS_quilt_b_domain
              
           elseif(map_proj.eq."GAUSSIAN") then 
 
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The gaussian map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
+
              ios = nf90_get_att(ftn, NF90_GLOBAL, 'NUMBER OF LAT CIRCLES',&
                   LIS_domain(n)%nlatcircles)
              call LIS_verify(ios, 'Error in nf90_get_att: NUMBER_OF_LAT_CIRCLES')
@@ -2758,6 +2907,15 @@ end subroutine LIS_quilt_b_domain
              LIS_rc%gridDesc(n,20) = 64
 
           elseif(map_proj.eq."HRAP") then 
+   
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The HRAP map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if
 
              LIS_rc%gridDesc(n,1) = 8
              LIS_rc%gridDesc(n,2) = LIS_rc%lnc(n)
@@ -2778,6 +2936,16 @@ end subroutine LIS_quilt_b_domain
                   0.0,LIS_rc%lnc(n),LIS_rc%lnr(n),LIS_domain(n)%lisproj)
              
           elseif(map_proj.eq."UTM") then 
+        
+             ! CM Ensure that the number of lat/lon dimensions is 2D for this projection
+             if(LIS_rc%nlatlon_dimensions == '1D') then
+               write(LIS_logunit,*) &
+                  '[ERR] The UTM map projection cannot be written with 1D lat/lon fields.'
+               write(LIS_logunit,*) &
+                  '[WARN] The lat/lon fields will be written in 2D'
+               LIS_rc%nlatlon_dimensions = '2D'
+             end if 
+
 
              LIS_rc%gridDesc(n,1) = 7
              LIS_rc%gridDesc(n,2) = LIS_rc%lnc(n)
