@@ -499,8 +499,8 @@ contains
           endif
 
         case( "ISRIC")
-          if (nt.ne.13) then 
-            write(LDT_logunit,*) "Param_Check: ISRIC has 13 types (includes water) for tiling."
+          if (nt.ne.16) then
+            write(LDT_logunit,*) "Param_Check: ISRIC has 16 types (includes water) for tiling."
             write(LDT_logunit,*) "             The current value is: ",nt
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun
