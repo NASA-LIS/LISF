@@ -59,8 +59,8 @@ subroutine readIMERGmonthlydata(source)
   external :: upscaleByAveraging
 
   ! Initialize variables
-  prcp(:) = LVT_rc%udef
-  prcp_final(:,:) = LVT_rc%udef
+  prcp = LVT_rc%udef
+  prcp_final = LVT_rc%udef
   currTime = float(LVT_rc%dhr(source))*3600 + &
        60*LVT_rc%dmn(source) + LVT_rc%dss(source)
 
@@ -77,8 +77,8 @@ subroutine readIMERGmonthlydata(source)
   hr1 = LVT_rc%dhr(source)
   mn1 = LVT_rc%dmn(source)
   ss1 = 0
-  call ESMF_TimeSet(time1,yy=yr1, mm=mo1, dd=da1, &
-       h=hr1,m=mn1,s=ss1,calendar=LVT_calendar,rc=status)
+  call ESMF_TimeSet(time1, yy=yr1, mm=mo1, dd=da1, &
+       h=hr1, m=mn1, s=ss1, calendar=LVT_calendar, rc=status)
   call LVT_verify(status)
 
   ! Use previous month file.
@@ -92,7 +92,7 @@ subroutine readIMERGmonthlydata(source)
   call LVT_verify(status)
 
   if (alarmCheck) then
-     call create_IMERG_monthly_filename(source, yr1, mo1, filename)
+     call create_IMERG_monthly_filename(source, yr2, mo2, filename)
      inquire(file=trim(filename), exist=file_exists)
 
      if (file_exists) then
@@ -105,8 +105,8 @@ subroutine readIMERGmonthlydata(source)
            ! Use budget-bilinear interpolation if IMERG data are at
            ! coarser resolution than the analysis grid; otherwise, use
            ! upscale averaging.
-           prcp_in1(:) = 0
-           lb(:) = .false.
+           prcp_in1 = LVT_rc%udef
+           lb = .false.
            t = 1
            do r = 1, imergmonthlydata(source)%nr
               do c = 1,imergmonthlydata(source)%nc
@@ -117,6 +117,12 @@ subroutine readIMERGmonthlydata(source)
                  t = t + 1
               end do ! c
            end do ! r
+
+           write(LVT_logunit,*)'EMK: maxval(prcp_in1) = ', &
+                maxval(prcp_in1)
+           write(LVT_logunit,*)'EMK: minval(prcp_in1) = ', &
+                minval(prcp_in1)
+           flush(LVT_logunit)
 
            if (LVT_isAtAFinerResolution( &
                 imergmonthlydata(source)%datares)) then
@@ -181,10 +187,9 @@ subroutine readIMERGmonthlydata(source)
   lis_ts = time1 - time2
   call ESMF_TimeIntervalGet(lis_ts, d=days_in_month, rc=status)
   call LVT_verify(status)
-  write(LVT_logunit,*)'EMK: days_in_month = ', days_in_month
   do r = 1, LVT_rc%lnr
      do c = 1, LVT_rc%lnc
-        if (prcp_final(c,r) .ge. 0) then
+        if (prcp_final(c,r) >= 0) then
            prcp_final(c,r) = &
                 prcp_final(c,r) * days_in_month * 86400 ! kg/m2
         else
@@ -195,11 +200,17 @@ subroutine readIMERGmonthlydata(source)
   call LVT_logSingleDataStreamVar(LVT_MOC_totalprecip, source, &
        prcp_final, vlevel=1, units='kg/m2')
 
+  write(LVT_logunit,*)'EMK: LVT_rc%udef = ', LVT_rc%udef
+  write(LVT_logunit,*)'EMK: maxval(precip) = ', maxval(prcp_final)
+  write(LVT_logunit,*)'EMK: minval(precip) = ', minval(prcp_final)
+  flush(LVT_logunit)
+
 end subroutine readIMERGmonthlydata
 
 subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
 
   ! Imports
+  use LVT_coreMod, only: LVT_rc
   use LVT_logMod, only: LVT_logunit
 
 #if (defined USE_HDF5)
@@ -217,13 +228,20 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
 
   ! Local variables
   integer :: xsize, ysize
-  character(len=40) :: dsetname='/Grid/precipitation'
+  character(len=40) :: dsetname = '/Grid/precipitation'
+  character(len=40) :: dsetname_qi = '/Grid/precipitationQualityIndex'
+  real :: qiin(row,col)
   real :: precipin(row,col)
   integer :: istatus
+  integer :: i, j
 #if (defined USE_HDF5)
   integer(HSIZE_T), dimension(2) :: dims
   integer(HID_T) :: fileid, dsetid
 #endif
+
+  qiin = LVT_rc%udef
+  precipin = LVT_rc%udef
+  precipout = LVT_rc%udef
 
 #if (defined USE_HDF5)
   xsize = col
@@ -250,7 +268,42 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
      return
   end if
 
-  ! Open dataset
+  ! Open quality index dataset
+  call h5dopen_f(fileid, dsetname_qi, dsetid, istatus)
+  if (istatus .ne. 0) then
+     write(LVT_logunit,*) 'Error opening IMERG dataset', &
+          trim(dsetname_qi)
+     ireaderr = istatus
+     call h5fclose_f(fileid, istatus) ! Close HDF5 file
+     call h5close_f(istatus) ! Close HDF5 interface
+     return
+  end if
+
+  ! Read quality index dataset
+  call h5dread_f(dsetid, H5T_NATIVE_REAL, &
+       qiin, dims, istatus)
+  if (istatus .ne. 0) then
+     write(LVT_logunit,*) 'Error reading IMERG dataset', &
+          trim(dsetname_qi)
+     ireaderr = istatus
+     call h5dclose_f(dsetid, istatus) ! Close dataset
+     call h5fclose_f(fileid, istatus) ! Close HDF5 file
+     call h5close_f(istatus) ! Close HDF5 interface
+     return
+  end if
+
+  ! Close quality index dataset
+  call h5dclose_f(dsetid, istatus)
+  if (istatus .ne. 0) then
+     write(LVT_logunit,*) 'Error closing IMERG dataset', &
+          trim(dsetname_qi)
+     ireaderr = istatus
+     call h5fclose_f(fileid, istatus) ! Close HDF5 file
+     call h5close_f(istatus) ! Close HDF5 interface
+     return
+  end if
+
+  ! Open precip dataset
   call h5dopen_f(fileid, dsetname, dsetid, istatus)
   if (istatus .ne. 0) then
      write(LVT_logunit,*) 'Error opening IMERG dataset', trim(dsetname)
@@ -270,6 +323,17 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
      call h5close_f(istatus) ! Close HDF5 interface
      return
   end if
+
+  ! Flag precipin values where quality index is less then 2.5 (interpreted
+  ! as less than 2.5 gauges used in analysis).  Note that polar regions
+  ! have values ~2.1.
+  do j = 1, col
+    do i = 1, row
+       if (qiin(i,j) < 2.5) then
+          precipin(i,j) = LVT_rc%udef
+       end if
+    end do
+  end do
 
   ! Put the real(1:,1:) on the precipout(0:,0:)
   ! precipin is (ysize,xsize) starting at (lon=-179.9,lat=-89.9)
@@ -321,7 +385,8 @@ subroutine create_IMERG_monthly_filename(source, yr, mo, filename)
      call LVT_endrun()
   endif
 
-  filename = trim(odir) // "/" // cyr // cmo // trim(fstem) // &
-       cyr // cmo // "01-S000000-E235959." // cmo // trim(imVer) // fext
+  filename = trim(odir) // "/" // cyr // trim(fstem) // &
+       cyr // cmo // "01-S000000-E235959." // cmo // "." // &
+       trim(imVer) // fext
 
 end subroutine create_IMERG_monthly_filename

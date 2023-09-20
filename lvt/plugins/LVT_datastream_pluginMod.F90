@@ -706,7 +706,7 @@ contains
 
     call registerobssetup(trim(LVT_IMERGmonthlydataId)//char(0), &
          IMERG_monthly_datainit)
-    call registerobsread(trim(LVT_IMERGdataId)//char(0), &
+    call registerobsread(trim(LVT_IMERGmonthlydataId)//char(0), &
          readIMERGmonthlydata)
 
     call registerobssetup(trim(LVT_UASNOWdataId)//char(0), UASNOW_obsinit)
