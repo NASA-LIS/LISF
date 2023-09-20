@@ -80,7 +80,7 @@ contains
     call LVT_verify(status, 'IMERG monthly data directory: not defined')
 
     ! Get IMERG product
-    call ESMF_ConfigFindLabel(LVT_config," IMERG monthly product:", &
+    call ESMF_ConfigFindLabel(LVT_config,"IMERG monthly product:", &
          rc=status)
     call LVT_verify(status, 'IMERG monthly product: not defined')
     call ESMF_ConfigGetAttribute(LVT_config, &
