@@ -30,7 +30,8 @@ module LIS_pluginIndices
 !  27 Jan 2014: Shugong Wang, added HRAP projection
 !   4 Nov 2014: Jonathan Case, added support for daily NESDIS/VIIRS GVF for Noah
 !  16 Aug 2016: Mahdi Navari, added PILDAS  
-!
+!  28 Aug 2020: Sara Modanesi, added WCM in Radiative Transfer Models
+!  30 Jun 2021: Sara Modanesi, Michel Bechtold, added Sentinel-1 DA cases for SM and LAI updating
 !EOP
   PRIVATE
    
@@ -243,6 +244,8 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_ANSASCFsnowobsId    = "ANSA SCF"
    character*50, public,  parameter :: LIS_ANSASNWDsnowobsId   = "ANSA snow depth"
    character*50, public,  parameter :: LIS_SMMRSNWDsnowobsId   = "SMMR snow depth"
+   character*50, public,  parameter :: LIS_S1_sigmaVVSM_obsId      = "S1 backscatter VVSM"
+   character*50, public,  parameter :: LIS_S1_sigmaVVVHSMLAI_obsId      = "S1 backscatter VVVHSMLAI"
    character*50, public,  parameter :: LIS_SSMISNWDsnowobsId   = "SSMI snow depth"
    character*50, public,  parameter :: LIS_AMSREsweobsId       = "AMSR-E SWE"
 !   character*50, public,  parameter :: LIS_AMSREsnowobsId      = "AMSR-E snow" !yliu
@@ -355,6 +358,7 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_crtm2EMId = "CRTM2EM"
    character*50, public, parameter :: LIS_cmem3Id = "CMEM"
    character*50, public, parameter :: LIS_tauomegaRTMId = "Tau Omega"
+   character*50, public, parameter :: LIS_wcmRTMId = "WCM"
 !-------------------------------------------------------------------------
 ! Land Slide Models
 !-------------------------------------------------------------------------

@@ -1,0 +1,9 @@
+#nfields
+3
+#varmin  varmax 
+Incident Shortwave Radiation Level 001
+0.	 1600.
+Incident Longwave Radiation Level 001
+-500.     1000.
+Rainfall Rate Level 001
+0.0      1.0

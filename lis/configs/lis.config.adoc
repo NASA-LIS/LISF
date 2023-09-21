@@ -1229,6 +1229,8 @@ Acceptable values are:
 |"`ANSA snow depth`"            | ANSA snow depth
 |"`SMMR snow depth`"            | SMMR snow depth
 |"`SMMI snow depth`"            | SMMI snow depth
+|"`S1 backscatter VVSM`"        | S1 backscatter VV for SM
+|"`S1 backscatter VVVHSMLAI`"   | S1 backscatter VV and VH joint assim for SM and LAI
 |"`AMSR-E SWE`"                 | AMSR-E SWE
 |"`PMW snow`"                   | PMW-based SWE or snow depth
 |"`MODIS SCF`"                  | MODIS SCF
@@ -2312,6 +2314,18 @@ SMMR snow depth data.
 .Example _lis.config_ entry
 ....
 SMMR snow depth data directory:                  ./SMMR
+....
+
+
+[[sssec_s1backscatterda,S1 backscatter Assimilation]]
+==== S1 backscatter Assimilation
+
+`S1 backscatter data directory:` specifies the directory for the
+S1 backscatter data.
+
+.Example _lis.config_ entry
+.... 
+S1 backscatter data directory:                  ./S1 
 ....
 
 

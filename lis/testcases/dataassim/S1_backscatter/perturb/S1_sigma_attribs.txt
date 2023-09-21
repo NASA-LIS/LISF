@@ -1,0 +1,7 @@
+#nfields vv and vh
+2
+#varmin varmax
+s_vv
+-20   0
+s_vh
+-25  -5
