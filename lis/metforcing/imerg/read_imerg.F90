@@ -165,7 +165,7 @@ subroutine read_imerghdf(n, filename, xsize, ysize, precipout, istatus)
 
   ! Variable names changed in IMERG V07
   vlname = trim(imerg_struc(n)%imergver)
-  read( vlname(3:3), '(I)') vnum
+  read( vlname(2:3), '(I2)') vnum
   if (vnum .ge. 7) then
      dsetname='/Grid/precipitation'
   else
