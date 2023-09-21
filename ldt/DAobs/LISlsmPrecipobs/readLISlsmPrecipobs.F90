@@ -102,20 +102,6 @@ subroutine readLISlsmPrecipobs(n)
         write(LDT_logunit,*) '[ERR] currently supported. Program stopping....'
         call LDT_endrun()
   
-#if 0 
-        ftn = LDT_getNextUnitNumber()
-        open(ftn,file=trim(fname), form='unformatted')
-        if(file_exists) then 
-           do index=1,LDT_MOC_COUNT
-              call LDT_readLISSingleBinaryVar(n,ftn,LDT_DAobsDataPtr(n,index)%dataEntryPtr)
-           enddo
-        else
-           print*, 'LSM file ',trim(fname),' does not exist'
-           print*, 'Program stopping.. '
-           stop
-        endif
-        call LDT_releaseUnitNumber(ftn)
-#endif
      elseif(lsmprecipobs%format.eq."grib1") then 
         if(lsmprecipobs%wstyle.ne."WMO convention") then 
            write(LDT_logunit,*) '[ERR] LDT currently does not support this style of grib output'
