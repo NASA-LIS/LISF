@@ -34,7 +34,7 @@ subroutine set_ISRIC_texture_attribs()
 !  \end{description}
 !EOP      
 !
-  LDT_LSMparam_struc(:)%texture%num_bins = 13
+  LDT_LSMparam_struc(:)%texture%num_bins = 16
   LDT_LSMparam_struc(:)%texture%vlevels = 1
 
   LDT_soils_struc(:)%texture_nlyrs%num_bins = 1

@@ -9,7 +9,7 @@
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 '''
-This script derives monthly climatgology of the METFORCE uses in the LIS-DA step.
+This script derives monthly climatology of the METFORCE used in the LIS-DA step.
 '''
 
 import os

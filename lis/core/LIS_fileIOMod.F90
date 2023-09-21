@@ -2966,7 +2966,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 !EOP
 
       character*9                   :: cstat
-      character*100                 :: message     (20)
+      character*255                 :: message     (20)
       integer                       :: rec_length
       integer                       :: istat
       integer                       :: istat1
@@ -3108,7 +3108,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 !  \end{description}
 !EOP      
 
-      character*100                 :: message     (20)
+      character*255                 :: message     (20)
       integer                       :: rec_length
       character*9                   :: cstat
       integer                       :: istat
