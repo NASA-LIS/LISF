@@ -2739,7 +2739,7 @@ subroutine LIS_julhr_date( julhr, yyyy,mm,dd,hh)
 ! \end{description}
 !
 !EOP
-  character*100                  :: message ( 20 )  
+  character*255                  :: message ( 20 )  
 
 !     ------------------------------------------------------------------
 !     executable code begins here... use LIS_tmjul4 to convert julhr to 

@@ -1,5 +1,15 @@
 #!/bin/sh
-#
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+# 
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #  Title:  CFSv2 Operational Timeseries (Oper_TS) Download Script
 #
 #  Source:  NOAA NCEI Data Archive Center
@@ -51,6 +61,70 @@ print_message(){
     echo ""  >> $CFSV2_LOG
 }
 
+main_loop() {
+    # Initial forecast dates:
+    for prevmondays in ${day1} ${day2} ${day3}; do
+    
+	icdate=${year2}${prevmon}${prevmondays}
+	#echo ${icdate}
+	mkdir -p ${icdate}
+	cd ${icdate}
+    
+	# Loop over variable type:
+	for vartype in dlwsfc dswsfc q2m wnd10m prate tmp2m pressfc; do
+	
+	    # Forecast cycle (00,06,12,18):
+	    for cycle in 00 06 12 18; do
+		#echo "Cycle :: "${cycle}
+		# File to be downloaded:
+		if [ "$download" = 'Y' ] || [ "$download" = 'y' ]; then
+		    file=${srcdir}/cfs.${icdate}/${cycle}/time_grib_01/${vartype}.01.${icdate}${cycle}.daily.grb2
+		    if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+			wget ${file}
+		    fi
+		fi
+	    
+		# File check 1: missing file
+		if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+		    have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
+		    if [[ $have_patch == "" ]]; then
+			echo "${vartype}.01.${icdate}${cycle}.daily.grb2:  MISSING " >> $CFSV2_LOG
+			echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
+			neighb_days ${vartype} $icdate ${cycle} ${mon}
+			ret_code=1
+		    fi
+		fi
+	    
+		# File check 2: corrupted file
+		if [ -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+		    python $LISHDIR/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
+		    py_code=$?
+		
+		    if [ $py_code -gt 0 ]; then
+			have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
+			if [[ $have_patch == "" ]]; then
+			    echo "${vartype}.01.${icdate}${cycle}.daily.grb2: CORRUPTED ">> $CFSV2_LOG
+			    echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
+			    neighb_days ${vartype} $icdate ${cycle} ${mon}
+			    ret_code=1
+			else
+			    supfile=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}  | cut -d',' -f3 | tr -d ' '`
+			    python $LISHDIR/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
+			    py_code=$?
+			    if [ $py_code -gt 0 ]; then
+				echo "${vartype}.01.${icdate}${cycle}.daily.grb2: Replacement ${supfile} is also CORRUPTED!" >> $CFSV2_LOG
+				echo "Try downloading the next file (DON'T forget to update ${patchfile}"                    >> $CFSV2_LOG
+				neighb_days ${vartype} $icdate ${cycle} ${mon}
+				ret_code=1
+			    fi		    
+			fi
+		    fi
+		fi
+	    done
+	done
+	cd ../
+    done    
+}
 # ________________________________________________________________
 # Main script
 # ________________________________________________________________
@@ -292,74 +366,22 @@ elif [ ${mon} -eq "12" ]; then
 fi
 echo "Previous mon,days 1-2-3 :: "${prevmon}", "${day1}"-"${day2}"-"${day3}
 echo " "
-echo "=============================================================================================================="
-echo "Please wait. CFSv2 file checker is running  to ensure all forcings files are available and not corrupted......"
-echo "=============================================================================================================="
+echo "=================================================================================================="
+echo " CFSv2 file checker is running  to ensure all forcings files are available and not corrupted......"
+echo "=================================================================================================="
 
-# Initial forecast dates:
-for prevmondays in ${day1} ${day2} ${day3}; do
-    
-    icdate=${year2}${prevmon}${prevmondays}
-    #echo ${icdate}
-    mkdir -p ${icdate}
-    cd ${icdate}
-    
-    # Loop over variable type:
-    for vartype in dlwsfc dswsfc q2m wnd10m prate tmp2m pressfc; do
-	
-	# Forecast cycle (00,06,12,18):
-	for cycle in 00 06 12 18; do
-            #echo "Cycle :: "${cycle}
-            # File to be downloaded:
-	    if [ "$download" = 'Y' ] || [ "$download" = 'y' ]; then
-		file=${srcdir}/cfs.${icdate}/${cycle}/time_grib_01/${vartype}.01.${icdate}${cycle}.daily.grb2
-		if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		    wget ${file}
-		fi
-	    fi
-	    
-	    # File check 1: missing file
-	    if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
-		if [[ $have_patch == "" ]]; then
-		    echo "${vartype}.01.${icdate}${cycle}.daily.grb2:  MISSING " >> $CFSV2_LOG
-		    echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
-		    neighb_days ${vartype} $icdate ${cycle} ${mon}
-		    ret_code=1
-		fi
-	    fi
-	    
-	    # File check 2: corrupted file
-	    if [ -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		python $LISHDIR/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
-		py_code=$?
-		
-		if [ $py_code -gt 0 ]; then
-		    have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
-		    if [[ $have_patch == "" ]]; then
-			echo "${vartype}.01.${icdate}${cycle}.daily.grb2: CORRUPTED ">> $CFSV2_LOG
-			echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
-			neighb_days ${vartype} $icdate ${cycle} ${mon}
-			ret_code=1
-		    else
-			supfile=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}  | cut -d',' -f3 | tr -d ' '`
-			python $LISHDIR/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
-			py_code=$?
-			if [ $py_code -gt 0 ]; then
-			    echo "${vartype}.01.${icdate}${cycle}.daily.grb2: Replacement ${supfile} is also CORRUPTED!" >> $CFSV2_LOG
-			    echo "Try downloading the next file (DON'T forget to update ${patchfile}"                    >> $CFSV2_LOG
-			    neighb_days ${vartype} $icdate ${cycle} ${mon}
-			    ret_code=1
-			fi		    
-		    fi
-		fi
-	    fi
-	done
+# Run the main loop
+main_loop &
+
+# Display the rotating hyphen animation
+animation="-\|/"
+while kill -0 $! >/dev/null 2>&1; do
+    for (( i=0; i<${#animation}; i++ )); do
+        echo -ne "\rPlease wait... ${animation:$i:1}"
+        sleep 0.1
     done
-    cd ../
 done
 
-cd ${cfsv2datadir}
 if [ $ret_code -gt 0 ]; then
     echo "*** Missing or Corrupted CFSv2 forcing files were found ***."
     echo "Please follow the instructions in:"
