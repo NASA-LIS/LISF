@@ -802,7 +802,7 @@ if($use_cmem == 1) {
    }
 }
 
-print "Use LIS-LAPACK? (1-yes, 0-no, default=0): ";
+print "Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0): ";
 $use_lapack=<stdin>;
 $use_lapack=~s/ *#.*$//;
 chomp($use_lapack);
@@ -810,7 +810,7 @@ if($use_lapack eq ""){
    $use_lapck=0;
 }
 
-if($use_lapack == 1) {
+if($use_lapack != 0) {
    if(defined($ENV{LIS_LAPACK})){
       $sys_lapack_path = $ENV{LIS_LAPACK};
       $lib = "/";
@@ -820,29 +820,6 @@ if($use_lapack == 1) {
       print "--------------ERROR---------------------\n";
       print "Please specify the LAPACK path using\n";
       print "the LIS_LAPACK variable.\n";
-      print "Configuration exiting ....\n";
-      print "--------------ERROR---------------------\n";
-      exit 1;
-   }
-}
-
-print "Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): ";
-$use_mkllapack=<stdin>;
-chomp($use_mkllapack);
-if($use_mkllapack eq ""){
-   $use_mkllapck=0;
-}
-
-if($use_mkllapack == 1) {
-   if(defined($ENV{LIS_MKL_LAPACK})){
-      $sys_lapack_path = $ENV{LIS_MKL_LAPACK};
-      $lib = "/";
-      $lib_lapack=$sys_lapack_path.$lib;
-   }
-   else {
-      print "--------------ERROR---------------------\n";
-      print "Please specify the MKL-LAPACK path using\n";
-      print "the LIS_MKL_LAPACK variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -1024,6 +1001,12 @@ if($use_hdf4 == 1){
    $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
    $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
+
+if($use_petsc == 1){
+   $fflags = $fflags." -I\$(INC_PETSC)";
+   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm -ldl";
+}
+
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
    $fflags = $fflags." -I\$(INC_HDF5)";
@@ -1058,19 +1041,19 @@ if($use_minpack == 1){
 }
 
 if($use_lapack == 1){
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
+   $lib_flags= $lib_flags." -lmkl_rt";
+   $lib_paths= $lib_paths." -L\$(LIB_LAPACK)";
+}
+elsif($use_lapack == 2){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
    $lib_flags= $lib_flags." -llapack -lblas";
    $lib_paths= $lib_paths." -L\$(LIB_LAPACK)";
 }
-
-if($use_mkllapack == 1){
-   #Changed to be able to use mkl Wendy Sharples
-   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
-}
-
-if($use_petsc == 1){
-   $fflags = $fflags." -I\$(INC_PETSC)";
-   $ldflags = $ldflags." -L\$(LIB_PETSC) -lpetsc -lm";
+elsif($use_lapack == 3){
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lrefblas";
+   $lib_flags= $lib_flags." -llapack -lrefblas";
+   $lib_paths= $lib_paths." -L\$(LIB_LAPACK)";
 }
 
 if($use_esmf_trace == 1){
@@ -1239,20 +1222,6 @@ if($use_crtm == 1 || $use_cmem == 1) {
 }
 else{
    printf misc_file "%s\n","#undef RTMS ";
-}
-
-if($use_lapack == 1) {
-   printf misc_file "%s\n","#define LAPACK ";
-}
-else{
-   printf misc_file "%s\n","#undef LAPACK ";
-}
-
-if($use_mkllapack == 1) {
-   printf misc_file "%s\n","#define MKL_LAPACK ";
-}
-else{
-   printf misc_file "%s\n","#undef MKL_LAPACK ";
 }
 
 if($use_petsc == 1) {
