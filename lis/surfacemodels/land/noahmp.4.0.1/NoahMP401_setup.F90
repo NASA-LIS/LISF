@@ -340,7 +340,7 @@ subroutine NoahMP401_setup()
             
             write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter TEXTURE from ", &
                  trim(LIS_rc%paramfile(n))
-            do k = 1, 16 ! 16 is hardcoded temporarily 
+            do k = 1, LIS_rc%nsoiltypes ! 16 is hardcoded temporarily 
                 call NOAHMP401_read_MULTILEVEL_param(n, "TEXTURE", k, placeholder)
                 ! 2-D array  
                 do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
@@ -357,7 +357,7 @@ subroutine NoahMP401_setup()
             do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                    
-                   do k=2, 16
+                   do k=2, LIS_rc%nsoiltypes
                         if(NOAHMP401_struc(n)%soil3d(cidx, ridx, k) >  NOAHMP401_struc(n)%soil3d(cidx, ridx, NOAHMP401_struc(n)%soil2d(cidx,ridx))) then 
                             NOAHMP401_struc(n)%soil2d(cidx,ridx) = k
                         endif
@@ -367,7 +367,7 @@ subroutine NoahMP401_setup()
             
             write(LIS_logunit,*) "[INFO] Noah-MP.4.0.1 reading parameter LANDCOVER from ", &
                  trim(LIS_rc%paramfile(n))
-            do k = 1, 20 ! 20 is hardcoded temporarily 
+            do k = 1, LIS_rc%nsurfacetypes ! 20 is hardcoded temporarily 
                 call NOAHMP401_read_MULTILEVEL_param(n, "LANDCOVER", k, placeholder)
                 ! 2-D array  
                 do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
@@ -383,7 +383,7 @@ subroutine NoahMP401_setup()
             do ridx = NOAHMP401_struc(n)%row_min, NOAHMP401_struc(n)%row_max
                 do cidx = NOAHMP401_struc(n)%col_min, NOAHMP401_struc(n)%col_max
                     
-                    do k=2, 20
+                    do k=2, LIS_rc%nsurfacetypes
                         if(NOAHMP401_struc(n)%vege3d(cidx, ridx, k) >  NOAHMP401_struc(n)%vege3d(cidx, ridx, NOAHMP401_struc(n)%vege2d(cidx,ridx))) then 
                             NOAHMP401_struc(n)%vege2d(cidx,ridx) = k
                         endif

@@ -341,7 +341,7 @@ jteh=jte
        DO I=itsh,iteh
            IF(FDEPTH(I,J).GT.0.)THEN
                  KLAT = DKSAT_TABLE(ISLTYP(I,J)) * KLATFACTOR(ISLTYP(I,J))
-                 IF(WTD(I,J) < -1.5)THEN
+                 IF(WTD(I,J) .LT. -1.5)THEN
                      KCELL(I,J) = FDEPTH(I,J) * KLAT * EXP( (WTD(I,J) + 1.5) / FDEPTH(I,J) )
                  ELSE
                      KCELL(I,J) = KLAT * ( WTD(I,J) + 1.5 + FDEPTH(I,J) )  
