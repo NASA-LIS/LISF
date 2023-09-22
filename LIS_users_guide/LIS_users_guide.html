@@ -3829,6 +3829,11 @@ included components</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_PETSC</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to PETSc library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_JPEG</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to JPEG library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system libjpeg by default)</p></td>
@@ -3878,8 +3883,7 @@ Use HDFEOS? (1-yes, 0-no, default=1):
 Use MINPACK? (1-yes, 0-no, default=0):
 Use LIS-CRTM? (1-yes, 0-no, default=0):
 Use LIS-CMEM? (1-yes, 0-no, default=0):
-Use LIS-LAPACK? (1-yes, 0-no, default=0):
-Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0):
+Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
@@ -3934,6 +3938,43 @@ if you wish to enable LIS-CRTM2EM support, then you must also enable LIS-CMEM su
 <li>
 <p>for <code>Use LIS-CMEM? (1-yes, 0-no, default=0):</code>,
 if you wish to enable LIS-CMEM support, then you must also enable LIS-CRTM.  So for <code>Use LIS-CRTM? (1-yes, 0-no, default=0):</code>, you must also select 1.</p>
+</li>
+<li>
+<p>for <code>Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):</code>,
+select the type of LAPACK library that you have installed.  This is used with <code>Use PETSc? (1-yes, 0-no, default=0):</code>.  If you select 0 for <code>Use PETSc?</code>, then select 0 for <code>Use LIS-LAPACK?</code>.  If you select 1 for <code>Use PETSc?</code>, then select <code>Use LIS-LAPACK?</code> according to the following table:</p>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Selection</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">No LAPACK needed / Use system LAPACK</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LAPACK in Intel MKL</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">liblapack / libblas</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">liblapack / librefblas</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>For example, on a Cray system using the Cray compilers, select 0 because the linker will find Cray&#8217;s LAPACK libraries.</p>
+</div>
 </li>
 </ul>
 </div>
@@ -23527,7 +23568,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 2.5<br>
-Last updated 2023-08-17 19:30:48 UTC
+Last updated 2023-09-22 18:03:27 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
