@@ -166,7 +166,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            median_anom = median_anom*30./25.4
+            median_anom = median_anom/25.4
 
         if var_name in {'Total-Runoff', 'ET'}:
             if standardized_anomaly is None:
