@@ -1893,7 +1893,7 @@ These instructions assume that you have already cloned LISF from your GitHub wor
 <p>Now you have a repository (for the restricted-access component) within a repository (for LISF).  To carry out your work for the restricted-access component, follow the instructions in <a href="#sec_step5a">Step 5A. Adding a new feature</a> and/or <a href="#sec_step5b">Step 5B. Fixing a bug</a>.</p>
 </div>
 <div class="paragraph">
-<p>Yes, you may two sets of commits and two sets of pull requests for your work.</p>
+<p>Yes, you may have two sets of commits and two sets of pull requests for your work.</p>
 </div>
 <div class="admonitionblock warning">
 <table>
@@ -1903,7 +1903,7 @@ These instructions assume that you have already cloned LISF from your GitHub wor
 </td>
 <td class="content">
 <div class="paragraph">
-<p>In general, do not run <code>git add --all</code>; this always ends up adding files to your commit that do not belong.  And, in particular, do not run <code>git add --all</code> when working with private/restricted repositories.  If you accidentally do, then you will see the following warning.  Follow the hint for running <code>git rm</code>.</p>
+<p>In general, do not run <code>git add --all</code>; this always ends up adding files to your commit that do not belong.  (See Section <a href="#_explicitly_add_files">Explicitly add files</a>.)  And, in particular, do not run <code>git add --all</code> when working with private/restricted repositories.  If you accidentally do, then you will see the following warning.  Follow the hint for running <code>git rm</code>.</p>
 </div>
 <div class="literalblock">
 <div class="title">Accidental <code>git add --all</code></div>
@@ -1935,7 +1935,26 @@ add 'RESTRICTED/restricted-ua-lsm/'</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_useful_commands">8. Useful commands</h2>
+<h2 id="_explicitly_add_files">8. Explicitly add files</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Do not run commands like <code>git add .</code> or <code>git add --all</code>.  These commands will add files to your commit that do not belong.  For example, you may end up adding restricted code, backup files, temporary build scripts, and executables — files that do not belong in the repository.</p>
+</div>
+<div class="paragraph">
+<p>Add files to a commit explicitly.  For example, you added a new output variable to NoahMP 4.0.1:</p>
+</div>
+<div class="literalblock">
+<div class="content">
+<pre>% git add core/LIS_histDataMod.F90 surfacemodels/land/noahmp.4.0.1/NoahMP401_main.F90</pre>
+</div>
+</div>
+<div class="paragraph">
+<p>See <code>git help add</code> for more information about adding files to a commit.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_useful_commands">9. Useful commands</h2>
 <div class="sectionbody">
 <div class="literalblock">
 <div class="content">
@@ -1948,7 +1967,7 @@ add 'RESTRICTED/restricted-ua-lsm/'</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_creating_a_release">9. Creating a release</h2>
+<h2 id="_creating_a_release">10. Creating a release</h2>
 <div class="sectionbody">
 <div class="admonitionblock note">
 <table>
@@ -2040,7 +2059,7 @@ Pushing a tag automatically adds an entry under releases on GitHub.
 <div id="footer">
 <div id="footer-text">
 Version 14<br>
-Last updated 2023-09-22 18:03:27 UTC
+Last updated 2023-10-02 14:21:49 UTC
 </div>
 </div>
 </body>
