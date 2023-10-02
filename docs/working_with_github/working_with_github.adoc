@@ -942,7 +942,7 @@ Again, the specific command will depend on which private repository you need to 
 
 Now you have a repository (for the restricted-access component) within a repository (for LISF).  To carry out your work for the restricted-access component, follow the instructions in <<sec_step5a>> and/or <<sec_step5b>>.
 
-Yes, you may two sets of commits and two sets of pull requests for your work.
+Yes, you may have two sets of commits and two sets of pull requests for your work.
 
 [WARNING]
 ====
