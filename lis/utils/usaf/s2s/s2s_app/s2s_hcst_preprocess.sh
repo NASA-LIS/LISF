@@ -212,7 +212,7 @@ clim_nafpa(){
     outdir=${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     mkdir -p -m 775 $outdir
      
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}    
     this_var=0
     for var in LWdown_f_tavg Rainf_f_tavg Psurf_f_tavg  Qair_f_tavg SWdown_f_tavg Tair_f_tavg Wind_f_tavg; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir"
@@ -248,7 +248,7 @@ clim_cfsv2(){
     outdir=${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Climatology/${mmm}01/
     mkdir -p -m 775 ${outdir}
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD}
     this_var=0
     for var in PRECTOT  LWS  PS  Q2M  SLRSF  T2M  WIND10M; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir"
@@ -285,7 +285,7 @@ clim_nmme(){
     mkdir -p -m 775 $MODELS
     cd ${SCRDIR}/clim/
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
     this_model=0
     for model in $MODELS; do
 

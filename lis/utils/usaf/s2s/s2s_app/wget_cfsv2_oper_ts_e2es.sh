@@ -61,6 +61,7 @@ print_message(){
     echo ""  >> $CFSV2_LOG
 }
 
+ret_code_pipe=$(mktemp)
 main_loop() {
     # Initial forecast dates:
     for prevmondays in ${day1} ${day2} ${day3}; do
@@ -123,7 +124,8 @@ main_loop() {
 	    done
 	done
 	cd ../
-    done    
+    done
+    echo $ret_code > $ret_code_pipe
 }
 # ________________________________________________________________
 # Main script
@@ -381,6 +383,8 @@ while kill -0 $! >/dev/null 2>&1; do
         sleep 0.1
     done
 done
+ret_code=$(cat $ret_code_pipe)
+/bin/rm $ret_code_pipe
 
 if [ $ret_code -gt 0 ]; then
     echo "*** Missing or Corrupted CFSv2 forcing files were found ***."
@@ -398,6 +402,7 @@ else
     
 fi  
 echo " -- Done downloading CFSv2 Reforecast files -- "
+
 exit $ret_code
 # ____________________________
 

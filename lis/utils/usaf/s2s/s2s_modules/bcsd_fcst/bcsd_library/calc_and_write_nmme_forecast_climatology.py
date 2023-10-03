@@ -111,4 +111,7 @@ CLIM_XR.coords['longitude'] = (('longitude'), LONS)
 
 #Now selecting only the data over the given lat lon box
 SLICED_CLIM_XR = CLIM_XR.sel(longitude=slice(lon1, lon2), latitude=slice(lat1, lat2))
-SLICED_CLIM_XR.to_netcdf(OUTFILE)
+edict = {}
+for var in SLICED_CLIM_XR.data_vars:
+    edict[var] = {"zlib":True, "complevel":6, "shuffle":True, "missing_value": np.nan, "_FillValue": np.nan}
+SLICED_CLIM_XR.to_netcdf(OUTFILE, format="NETCDF4", encoding=edict)
