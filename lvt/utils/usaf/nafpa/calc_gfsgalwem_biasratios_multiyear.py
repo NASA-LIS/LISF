@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
 
+"""
+SCRIPT: calc_gfsgalwem_biasratios_multiyear.py
+
+Calculates bias ratio fields using monthly IMERG-FR V07A, GFS, and GALWEM
+data, all already interpolated to the NAFPA grid and summed to monthly
+totals via LVT.  Outputs 12 fields total, each covering a month based
+on multiple years of data.
+
+REVISION HISTORY:
+04 Oct 2023:  Eric Kemp:  Initial specification.
+"""
+
+import configparser
 import datetime
 import os
 import sys
@@ -34,8 +47,64 @@ timedelta = datetime.timedelta(days=1)
 topdir_imergf = "/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_imergf_biascorr/data/IMERGF_V07A_NAFPA_Monthly"
 topdir_biasratio = f"testdir_{back_source}"
 
-def _main():
-    """Main driver"""
+def _usage():
+    """Print usage message for this script."""
+    print(f"Usage: {sys.argv[0]} CFGFILE BACKSOURCE STARTDATE ENDDATE")
+    print("   CFGFILE is path to config file")
+    print("   BACKSOURCE is GFS or GALWEM")
+    print("   STARTDATE is start date of calculation (YYYYMM)")
+    print("   ENDDATE is end date of calculateion (YYYYMM)")
+
+def _process_cmd_line():
+    """Process command line arguments."""
+    if len(sys.argv) != 5:
+        _usage()
+        sys.exit(1)
+
+    cfgfile = sys.argv[1]
+    if not os.path.exists(cfgfile):
+        print(f"[ERR] {cfgfile} does not exist!")
+        sys.exit(1)
+
+    backsource = sys.argv[2]
+    if backsource not in ["GFS", "GALWEM"]:
+        print(f"[ERR] {backsource} is not a valid background source")
+        print("[ERR] Only GFS and GALWEM recognized")
+        sys.exit(1)
+
+    yyyymm = sys.argv[3]
+    year = int(yyyymm[0:4])
+    month = int(yyyymm[4:6])
+    startdate = datetime.datetime(year, month, 1)
+
+    yyyymm = sys.argv[4]
+    year = int(yyyymm[0:4])
+    month = int(yyyymm[4:6])
+    enddate = datetime.datetime(year, month, 1)
+
+    if startdate > enddate:
+        print("[ERR] STARTDATE is beyond ENDDATE!")
+        sys.exit(1)
+
+    return cfgfile, backsource, startdate, enddate
+
+def _process_cfg_file(cfgfile, backsource):
+    """Processes config file for this script."""
+    config = configparser.ConfigParser()
+    config.read(cfgfile)
+
+    if backsource == "GFS":
+        backindir = config.get('Input', 'gfsdir')
+        backoutdir = config.get('Output', 'gfsdir')
+    elif backsource == "GALWEM":
+        backindir = config.get('Input', 'galwemdir')
+        backoutdir = config.get('Output', 'galwemdir')
+    imergdir = config.get('Input', 'imergdir')
+
+    return backindir, backoutdir, imergdir
+
+def _calc_biasratios(imergdir, backindir, startdate, enddate):
+    """Calculate the bias ratios from the input data files."""
 
     ny = 1920
     nx = 2560
@@ -45,22 +114,25 @@ def _main():
     sum_back = np.zeros([nmon,ny,nx])
     precip_ratio = np.zeros([nmon,ny,nx])
 
+    timedelta = datetime.timedelta(days=1)
+
     # Loop through each month
-    curdt = startdt
-    while curdt <= enddt:
+    curdate = startdate
+    while curdate <= enddate:
 
         # LVT output files have data from the prior month, so we must
-        # advance one month to find the appropriate file.  Python's
+        # advance one month to find the appropriate file, e.g., data
+        # for May 2020 will be in SUM_TS.202006010000.d01.nc.  Python's
         # timedelta object isn't smart enough to jump a whole month, so
         # we loop through each day instead.
-        nextdt = curdt + timedelta
-        while nextdt.day != 1:
-            nextdt += timedelta
+        nextdate = curdate + timedelta
+        while nextdate.day != 1:
+            nextdate += timedelta
 
         # First, the IMERG file
-        filename = f"{topdir_imergf}/SUM_TS."
-        filename += f"{nextdt.year:04d}{nextdt.month:02d}{nextdt.day:02d}"
-        filename += "0000.d01.nc"
+        filename = f"{imergdir}/SUM_TS."
+        filename += f"{nextdate.year:04d}{nextdate.month:02d}"
+        filename += f"{nextdate.day:02d}0000.d01.nc"
         ncid_imerg = nc4_dataset(filename, mode='r', \
                                  format="NETCDF4_CLASSIC")
         precip_imerg = ncid_imerg.variables['TotalPrecip'][:,:]
@@ -70,23 +142,23 @@ def _main():
         east_west = ncid_imerg.dimensions['east_west'].size
         del ncid_imerg
 
-        # Next, the GFS or GALWEM file
-        filename = f"{topdir_back}/SUM_TS."
-        filename += f"{nextdt.year:04d}{nextdt.month:02d}{nextdt.day:02d}"
-        filename += "0000.d01.nc"
+        # Next, the background data (GFS or GALWEM)
+        filename = f"{backindir}/SUM_TS."
+        filename += f"{nextdate.year:04d}{nextdate.month:02d}"
+        filename += f"{nextdate.day:02d}0000.d01.nc"
         ncid_back = nc4_dataset(filename, mode='r', \
                                format="NETCDF4_CLASSIC")
         precip_back = ncid_back.variables['TotalPrecip'][:,:]
         del ncid_back
 
-        # Use IMERG from 40S to 40N, use linear tapers from 40S to 60S,
-        # and 40N to 60N, and don't use IMERG poleward of 60N and 60S.
-        # RATIONALE:  No IR data is available poleward of 60N and 60S,
-        # and PMW data has diminished performance over frozen surfaces.
-        # Also, GPCC gage coverage tends to thin out in poleward regions,
-        # (no GPCC gages at all in Antarctica), so we screen out these
-        # areas for simplicity.  Finally, the 20 degree linear taper
-        # mimicks MERRA-2 usage of CPCU gauge analyses.
+        # Use IMERG from 40S to 71N; use linear tapers from 40S to 60S,
+        # and 51N to 71N; and don't use IMERG south of 60S and north of
+        # 71N.  Rationale:  No IR and little gauge data is available
+        # south of 60S, so we don't expect IMERG to be useful here.
+        # In the northern hemisphere, there is no IR data north of 60N,
+        # but there is good GPCC gauge density in Scandinavia up to 71N.
+        # Finally, the 20 degree latitude linear taper mimicks MERRA-2
+        # usage of CPCU gauge analyses.
         precip_imerg_weights = np.ones(np.shape(lats_imerg))
         precip_imerg_weights = np.where(lats_imerg < -60,
                                         0,
@@ -95,16 +167,6 @@ def _main():
                                          (lats_imerg <  -40),
                                          ( (lats_imerg + 60.) / 20.),
                                          precip_imerg_weights)
-        #precip_imerg_weights = np.where( (lats_imerg >  40) &
-        #                                (lats_imerg <= 60),
-        #                                ( (60. - lats_imerg) / 20.),
-        #                                precip_imerg_weights)
-        #precip_imerg_weights = np.where(lats_imerg > 60,
-        #                              0,
-        #                              precip_imerg_weights)
-        # EMK Alternative...Move the northern linear taper region to
-        # 51N to 71N.  Rationale is to leverage the relatively high
-        # GPCC gauge density in the Scandinavian Peninsula.
         precip_imerg_weights = np.where( (lats_imerg >  51) &
                                           (lats_imerg <= 71),
                                          ( (71. - lats_imerg) / 20.),
@@ -113,26 +175,58 @@ def _main():
                                         0,
                                         precip_imerg_weights)
 
+        # Conservative alternative:  Linear taper from 40N to 60N, and
+        # screen out everything north of 60N.  We'll do this as a backup
+        # if we find unphysical IMERG patterns north of 60N
+        #precip_imerg_weights = np.where( (lats_imerg >  40) &
+        #                                (lats_imerg <= 60),
+        #                                ( (60. - lats_imerg) / 20.),
+        #                                precip_imerg_weights)
+        #precip_imerg_weights = np.where(lats_imerg > 60,
+        #                              0,
+        #                              precip_imerg_weights)
+
         precip_blended = precip_imerg_weights[:,:]*precip_imerg[:,:] + \
             (1. - precip_imerg_weights[:,:])*precip_back[:,:]
 
-        sum_blended[(curdt.month-1),:,:] += precip_blended[:,:] + 0.05
-        sum_back[(curdt.month-1),:,:] += precip_back[:,:] + 0.05
+        # Add trace precipitation every month to prevent undefined
+        # ratios in deserts.
+        sum_blended[(curdate.month-1),:,:] += precip_blended[:,:] + 0.05
+        sum_back[(curdate.month-1),:,:] += precip_back[:,:] + 0.05
 
         # Move on to next month
-        curdt = nextdt
+        curdate = nextdate
 
-    # Output to file
-    filename = f"{topdir_biasratio}/{back_source}_pcp_biasratio.nc"
+    # Finish calculation
+    precip_ratio[:,:,:] = sum_blended[:,:,:] / sum_back[:,:,:]
+    precip_ratio[:,:,:] = np.where(precip_ratio == 0, 1, precip_ratio)
 
-    rootgrp = nc4_dataset(filename, "w", format="NETCDF4")
-    rootgrp.missing_value = np.float32("-9999.")
-    rootgrp.title = f"Monthly bias ratio for IMERG / {back_source}"
-    rootgrp.institution = "NASA GSFC"
+    return lats_imerg, lons_imerg, precip_ratio, east_west, north_south
+
+def _create_output_filename(backoutdir, backsource, startdate, enddate):
+    """Create output netCDF file name"""
+    filename = f"{backoutdir}"
+    filename += f"/{backsource}_pcp_biasratios_"
+    filename += f"{startdate.year:04d}{startdate.month:02d}_"
+    filename += f"{enddate.year:04d}{enddate.month:02d}.nc"
+    return filename
+
+def _write_biasratios(args):
+    """Write out bias ratios to netCDF file"""
+
+    os.makedirs(args['backoutdir'], exist_ok=True)
+
     now = datetime.datetime.utcnow()
+
     history = "created on date: "
     history += f"{now.year:04d}-{now.month:02d}-{now.day:02d}"
     history += f"T{now.hour:02d}:{now.minute:02d}:{now.second:02d}"
+
+    rootgrp = nc4_dataset(args['outfile'], "w", format="NETCDF4")
+    rootgrp.missing_value = np.float32("-9999.")
+    rootgrp.title = f"Monthly bias ratio for IMERG / {args['backsource']}"
+    rootgrp.institution = "NASA GSFC"
+
     rootgrp.history = f"created on date: {history}"
     rootgrp.comment = "website: http://lis.gsfc.nasa.gov/"
     rootgrp.MAP_PROJECTION = "EQUIDISTANT CYLINDRICAL"
@@ -143,8 +237,10 @@ def _main():
 
     # Define dimensions
     months = rootgrp.createDimension("months", 12)
-    north_south = rootgrp.createDimension("north_south", north_south)
-    east_west = rootgrp.createDimension("east_west", east_west)
+    north_south = rootgrp.createDimension("north_south", \
+                                          args['north_south'])
+    east_west = rootgrp.createDimension("east_west", \
+                                        args['east_west'])
 
     # Define latitude
     latitude = rootgrp.createVariable("latitude", "f4", \
@@ -170,20 +266,40 @@ def _main():
     biasRatio = rootgrp.createVariable("biasRatio", "f4", \
                               ("months", "north_south", "east_west",))
     biasRatio.units = "-"
-    biasRatio.long_name = f"bias_ratio_for_{back_source}_precipitation"
+    biasRatio.long_name = \
+        f"bias_ratio_for_{args['backsource']}_precipitation"
     biasRatio.scale_factor = np.float32("1.")
     biasRatio.add_offset = np.float32("0.")
     biasRatio.missing_value = np.float32("-9999.")
 
-    latitude[:,:] = lats_imerg[:,:]
-    longitude[:,:] = lons_imerg[:,:]
-
-    precip_ratio[:,:,:] = sum_blended[:,:,:] / sum_back[:,:,:]
-    precip_ratio[:,:,:] = np.where(precip_ratio == 0, 1, precip_ratio)
-    biasRatio[:,:,:] = precip_ratio[:,:,:]
+    latitude[:,:] = args['lats_imerg'][:,:]
+    longitude[:,:] = args['lons_imerg'][:,:]
+    biasRatio[:,:,:] = args['precip_ratio'][:,:,:]
 
     rootgrp.close()
 
+def _main():
+    """Main driver"""
+
+    cfgfile, backsource, startdate, enddate = _process_cmd_line()
+    backindir, backoutdir, imergdir = \
+        _process_cfg_file(cfgfile, backsource)
+    lats_imerg, lons_imerg, precip_ratio, east_west, north_south = \
+        _calc_biasratios(imergdir, backindir, startdate, enddate)
+    outfile = _create_output_filename(backoutdir, backsource,
+                                      startdate, enddate)
+    # To satisfy pylint....
+    args = {
+        "outfile" : outfile,
+        "backoutdir" : backoutdir,
+        "backsource" : backsource,
+        "north_south" : north_south,
+        "east_west" : east_west,
+        "lats_imerg" : lats_imerg,
+        "lons_imerg" : lons_imerg,
+        "precip_ratio" : precip_ratio,
+    }
+    _write_biasratios(args)
 
 if __name__ == "__main__":
     _main()
