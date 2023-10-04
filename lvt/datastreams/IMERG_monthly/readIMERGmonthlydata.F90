@@ -229,8 +229,10 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
   ! Local variables
   integer :: xsize, ysize
   character(len=40) :: dsetname = '/Grid/precipitation'
-  character(len=40) :: dsetname_qi = '/Grid/precipitationQualityIndex'
-  real :: qiin(row,col)
+  !character(len=40) :: dsetname_qi = '/Grid/precipitationQualityIndex'
+  character(len=40) :: dsetname_wgt = '/Grid/gaugeRelativeWeighting'
+  !real :: qiin(row,col)
+  real :: wgtin(row,col)
   real :: precipin(row,col)
   integer :: istatus
   integer :: i, j
@@ -239,7 +241,8 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
   integer(HID_T) :: fileid, dsetid
 #endif
 
-  qiin = LVT_rc%udef
+  !qiin = LVT_rc%udef
+  wgtin = LVT_rc%udef
   precipin = LVT_rc%udef
   precipout = LVT_rc%udef
 
@@ -268,23 +271,58 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
      return
   end if
 
-  ! Open quality index dataset
-  call h5dopen_f(fileid, dsetname_qi, dsetid, istatus)
+  ! ! Open quality index dataset
+  ! call h5dopen_f(fileid, dsetname_qi, dsetid, istatus)
+  ! if (istatus .ne. 0) then
+  !    write(LVT_logunit,*) 'Error opening IMERG dataset', &
+  !         trim(dsetname_qi)
+  !    ireaderr = istatus
+  !    call h5fclose_f(fileid, istatus) ! Close HDF5 file
+  !    call h5close_f(istatus) ! Close HDF5 interface
+  !    return
+  ! end if
+
+  ! ! Read quality index dataset
+  ! call h5dread_f(dsetid, H5T_NATIVE_REAL, &
+  !      qiin, dims, istatus)
+  ! if (istatus .ne. 0) then
+  !    write(LVT_logunit,*) 'Error reading IMERG dataset', &
+  !         trim(dsetname_qi)
+  !    ireaderr = istatus
+  !    call h5dclose_f(dsetid, istatus) ! Close dataset
+  !    call h5fclose_f(fileid, istatus) ! Close HDF5 file
+  !    call h5close_f(istatus) ! Close HDF5 interface
+  !    return
+  ! end if
+
+  ! ! Close quality index dataset
+  ! call h5dclose_f(dsetid, istatus)
+  ! if (istatus .ne. 0) then
+  !    write(LVT_logunit,*) 'Error closing IMERG dataset', &
+  !         trim(dsetname_qi)
+  !    ireaderr = istatus
+  !    call h5fclose_f(fileid, istatus) ! Close HDF5 file
+  !    call h5close_f(istatus) ! Close HDF5 interface
+  !    return
+  ! end if
+
+  ! Open gauge relative weight dataset
+  call h5dopen_f(fileid, dsetname_wgt, dsetid, istatus)
   if (istatus .ne. 0) then
      write(LVT_logunit,*) 'Error opening IMERG dataset', &
-          trim(dsetname_qi)
+          trim(dsetname_wgt)
      ireaderr = istatus
      call h5fclose_f(fileid, istatus) ! Close HDF5 file
      call h5close_f(istatus) ! Close HDF5 interface
      return
   end if
 
-  ! Read quality index dataset
+  ! Read gauge relative weight dataset
   call h5dread_f(dsetid, H5T_NATIVE_REAL, &
-       qiin, dims, istatus)
+       wgtin, dims, istatus)
   if (istatus .ne. 0) then
      write(LVT_logunit,*) 'Error reading IMERG dataset', &
-          trim(dsetname_qi)
+          trim(dsetname_wgt)
      ireaderr = istatus
      call h5dclose_f(dsetid, istatus) ! Close dataset
      call h5fclose_f(fileid, istatus) ! Close HDF5 file
@@ -292,11 +330,11 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
      return
   end if
 
-  ! Close quality index dataset
+  ! Close gauge relative weight dataset
   call h5dclose_f(dsetid, istatus)
   if (istatus .ne. 0) then
      write(LVT_logunit,*) 'Error closing IMERG dataset', &
-          trim(dsetname_qi)
+          trim(dsetname_wgt)
      ireaderr = istatus
      call h5fclose_f(fileid, istatus) ! Close HDF5 file
      call h5close_f(istatus) ! Close HDF5 interface
@@ -324,16 +362,29 @@ subroutine read_imergmonthly_hdf(filename, col, row, precipout, ireaderr)
      return
   end if
 
-  ! Flag precipin values where quality index is less then 2.5 (interpreted
-  ! as less than 2.5 gauges used in analysis).  Note that polar regions
-  ! have values ~2.1.
-  do j = 1, col
-    do i = 1, row
-       if (qiin(i,j) < 2.5) then
-          precipin(i,j) = LVT_rc%udef
-       end if
-    end do
-  end do
+  ! ! Flag precipin values where quality index is less then 2.5 (interpreted
+  ! ! as less than 2.5 gauges used in analysis).  Note that polar regions
+  ! ! have values ~2.1.
+  ! do j = 1, col
+  !   do i = 1, row
+  !      if (qiin(i,j) < 2.5) then
+  !         precipin(i,j) = LVT_rc%udef
+  !      end if
+  !   end do
+  ! end do
+
+  ! Flag precipin values where gauge relative weighting is less then
+  ! 0.5 (meaning raw IMERG was weighted at least 50% of final product)
+  ! do j = 1, col
+  !    do i = 1, row
+  !      if (wgtin(i,j) < 0.50) then
+  !      !if (wgtin(i,j) < 0.25) then
+  !      !if (wgtin(i,j) < 0.1) then
+  !      !if (wgtin(i,j) < 0.01) then
+  !         precipin(i,j) = LVT_rc%udef
+  !      end if
+  !   end do
+  ! end do
 
   ! Put the real(1:,1:) on the precipout(0:,0:)
   ! precipin is (ysize,xsize) starting at (lon=-179.9,lat=-89.9)
