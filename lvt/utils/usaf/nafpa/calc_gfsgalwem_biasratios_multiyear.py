@@ -95,13 +95,12 @@ def _process_cfg_file(cfgfile, backsource):
 
     if backsource == "GFS":
         backindir = config.get('Input', 'gfsdir')
-        backoutdir = config.get('Output', 'gfsdir')
     elif backsource == "GALWEM":
         backindir = config.get('Input', 'galwemdir')
-        backoutdir = config.get('Output', 'galwemdir')
     imergdir = config.get('Input', 'imergdir')
+    outdir = config.get('Output', 'outdir')
 
-    return backindir, backoutdir, imergdir
+    return backindir, imergdir, outdir
 
 def _calc_biasratios(imergdir, backindir, startdate, enddate):
     """Calculate the bias ratios from the input data files."""
@@ -203,9 +202,9 @@ def _calc_biasratios(imergdir, backindir, startdate, enddate):
 
     return lats_imerg, lons_imerg, precip_ratio, east_west, north_south
 
-def _create_output_filename(backoutdir, backsource, startdate, enddate):
+def _create_output_filename(outdir, backsource, startdate, enddate):
     """Create output netCDF file name"""
-    filename = f"{backoutdir}"
+    filename = f"{outdir}"
     filename += f"/{backsource}_pcp_biasratios_"
     filename += f"{startdate.year:04d}{startdate.month:02d}_"
     filename += f"{enddate.year:04d}{enddate.month:02d}.nc"
@@ -214,7 +213,7 @@ def _create_output_filename(backoutdir, backsource, startdate, enddate):
 def _write_biasratios(args):
     """Write out bias ratios to netCDF file"""
 
-    os.makedirs(args['backoutdir'], exist_ok=True)
+    os.makedirs(args['outdir'], exist_ok=True)
 
     now = datetime.datetime.utcnow()
 
@@ -282,16 +281,16 @@ def _main():
     """Main driver"""
 
     cfgfile, backsource, startdate, enddate = _process_cmd_line()
-    backindir, backoutdir, imergdir = \
+    backindir, imergdir, outdir = \
         _process_cfg_file(cfgfile, backsource)
     lats_imerg, lons_imerg, precip_ratio, east_west, north_south = \
         _calc_biasratios(imergdir, backindir, startdate, enddate)
-    outfile = _create_output_filename(backoutdir, backsource,
+    outfile = _create_output_filename(outdir, backsource,
                                       startdate, enddate)
     # To satisfy pylint....
     args = {
         "outfile" : outfile,
-        "backoutdir" : backoutdir,
+        "outdir" : outdir,
         "backsource" : backsource,
         "north_south" : north_south,
         "east_west" : east_west,
