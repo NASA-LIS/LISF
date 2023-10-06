@@ -11,6 +11,7 @@ on multiple years of data.
 REVISION HISTORY:
 04 Oct 2023:  Eric Kemp:  Initial specification.
 06 Oct 2023:  Eric Kemp:  Added log10 transform to output for plotting.
+                          Refactored to please pylint.
 """
 
 import configparser
@@ -90,12 +91,103 @@ def _create_arrays():
     precip_ratio = np.zeros([nmon,nlat,nlon])
     return sum_blended, sum_back, precip_ratio
 
-def _calc_biasratios(imergdir, backindir, startdate, enddate):
+def _read_imerg_file(imergdir, nextdate):
+    """Read the interpolated monthly IMERG file."""
+    filename = f"{imergdir}/SUM_TS."
+    filename += f"{nextdate.year:04d}{nextdate.month:02d}"
+    filename += f"{nextdate.day:02d}0000.d01.nc"
+    ncid_imerg = nc4_dataset(filename, mode='r', \
+                             format="NETCDF4_CLASSIC")
+    precip_imerg = ncid_imerg.variables['TotalPrecip'][:,:]
+    del ncid_imerg
+    return precip_imerg
+
+def _read_imerg_file_latlondims(imergdir, startdate):
+    """Read the interpolated monthly IMERG file."""
+    nextdate = _get_nextdate(startdate)
+    filename = f"{imergdir}/SUM_TS."
+    filename += f"{nextdate.year:04d}{nextdate.month:02d}"
+    filename += f"{nextdate.day:02d}0000.d01.nc"
+    ncid_imerg = nc4_dataset(filename, mode='r', \
+                             format="NETCDF4_CLASSIC")
+    lats_imerg = ncid_imerg.variables["latitude"][:,:]
+    lons_imerg = ncid_imerg.variables["longitude"][:,:]
+    north_south = ncid_imerg.dimensions['north_south'].size
+    east_west = ncid_imerg.dimensions['east_west'].size
+    del ncid_imerg
+    return lats_imerg, lons_imerg, north_south, east_west
+
+def _read_background_file(backindir, nextdate):
+    """Read interpolated monthly background file."""
+    filename = f"{backindir}/SUM_TS."
+    filename += f"{nextdate.year:04d}{nextdate.month:02d}"
+    filename += f"{nextdate.day:02d}0000.d01.nc"
+    ncid_back = nc4_dataset(filename, mode='r', \
+                            format="NETCDF4_CLASSIC")
+    precip_back = ncid_back.variables['TotalPrecip'][:,:]
+    del ncid_back
+    return precip_back
+
+def _calc_precip_blended(lats_imerg, precip_imerg, precip_back):
+    """Calculate weighted blend of IMERG and background precip"""
+
+    # Use IMERG from 40S to 71N; use linear tapers from 40S to 60S,
+    # and 51N to 71N; and don't use IMERG south of 60S and north of
+    # 71N.  Rationale:  No IR and little gauge data is available
+    # south of 60S, so we don't expect IMERG to be useful here for
+    # bias correction.  In the northern hemisphere, there is no IR data
+    # north of 60N, but there is good GPCC gauge density in Scandinavia
+    # up to 71N.  Finally, the 20 degree latitude linear tapers mimicks
+    # MERRA-2 usage of CPCU gauge analyses.
+    precip_imerg_weights = np.ones(np.shape(lats_imerg))
+    precip_imerg_weights = np.where(lats_imerg < -60,
+                                    0,
+                                    precip_imerg_weights)
+    precip_imerg_weights = np.where( (lats_imerg >= -60) &
+                                     (lats_imerg <  -40),
+                                     ( (lats_imerg + 60.) / 20.),
+                                     precip_imerg_weights)
+    precip_imerg_weights = np.where( (lats_imerg >  51) &
+                                     (lats_imerg <= 71),
+                                     ( (71. - lats_imerg) / 20.),
+                                     precip_imerg_weights)
+    precip_imerg_weights = np.where(lats_imerg > 71,
+                                    0,
+                                    precip_imerg_weights)
+
+    # Conservative alternative:  Linear taper from 40N to 60N, and
+    # screen out everything north of 60N.  We'll do this as a backup
+    # if we find unphysical IMERG patterns north of 60N
+    #precip_imerg_weights = np.where( (lats_imerg >  40) &
+    #                                (lats_imerg <= 60),
+    #                                ( (60. - lats_imerg) / 20.),
+    #                                precip_imerg_weights)
+    #precip_imerg_weights = np.where(lats_imerg > 60,
+    #                              0,
+    #                              precip_imerg_weights)
+
+    precip_blended = precip_imerg_weights[:,:]*precip_imerg[:,:] + \
+        (1. - precip_imerg_weights[:,:])*precip_back[:,:]
+
+    return precip_blended
+
+def _get_nextdate(curdate):
+    """Determine next date (first of next month)"""
+    # LVT output files have data from the prior month, so we must
+    # advance one month to find the appropriate file, e.g., data
+    # for May 2020 will be in SUM_TS.202006010000.d01.nc.  Python's
+    # timedelta object isn't smart enough to jump a whole month, so
+    # we loop through each day instead.
+    timedelta = datetime.timedelta(days=1)
+    nextdate = curdate + timedelta
+    while nextdate.day != 1:
+        nextdate += timedelta
+    return nextdate
+
+def _calc_biasratios(imergdir, backindir, startdate, enddate, lats_imerg):
     """Calculate the bias ratios from the input data files."""
 
     sum_blended, sum_back, precip_ratio = _create_arrays()
-
-    timedelta = datetime.timedelta(days=1)
 
     # Loop through each month
     curdate = startdate
@@ -103,75 +195,23 @@ def _calc_biasratios(imergdir, backindir, startdate, enddate):
 
         # LVT output files have data from the prior month, so we must
         # advance one month to find the appropriate file, e.g., data
-        # for May 2020 will be in SUM_TS.202006010000.d01.nc.  Python's
-        # timedelta object isn't smart enough to jump a whole month, so
-        # we loop through each day instead.
-        nextdate = curdate + timedelta
-        while nextdate.day != 1:
-            nextdate += timedelta
+        # for May 2020 will be in SUM_TS.202006010000.d01.nc.
+        nextdate = _get_nextdate(curdate)
 
         # First, the IMERG file
-        filename = f"{imergdir}/SUM_TS."
-        filename += f"{nextdate.year:04d}{nextdate.month:02d}"
-        filename += f"{nextdate.day:02d}0000.d01.nc"
-        ncid_imerg = nc4_dataset(filename, mode='r', \
-                                 format="NETCDF4_CLASSIC")
-        precip_imerg = ncid_imerg.variables['TotalPrecip'][:,:]
-        lats_imerg = ncid_imerg.variables["latitude"][:,:]
-        lons_imerg = ncid_imerg.variables["longitude"][:,:]
-        north_south = ncid_imerg.dimensions['north_south'].size
-        east_west = ncid_imerg.dimensions['east_west'].size
-        del ncid_imerg
+        precip_imerg = \
+            _read_imerg_file(imergdir, nextdate)
 
         # Next, the background data (GFS or GALWEM)
-        filename = f"{backindir}/SUM_TS."
-        filename += f"{nextdate.year:04d}{nextdate.month:02d}"
-        filename += f"{nextdate.day:02d}0000.d01.nc"
-        ncid_back = nc4_dataset(filename, mode='r', \
-                               format="NETCDF4_CLASSIC")
-        precip_back = ncid_back.variables['TotalPrecip'][:,:]
-        del ncid_back
+        precip_back = _read_background_file(backindir, nextdate)
 
-        # Use IMERG from 40S to 71N; use linear tapers from 40S to 60S,
-        # and 51N to 71N; and don't use IMERG south of 60S and north of
-        # 71N.  Rationale:  No IR and little gauge data is available
-        # south of 60S, so we don't expect IMERG to be useful here.
-        # In the northern hemisphere, there is no IR data north of 60N,
-        # but there is good GPCC gauge density in Scandinavia up to 71N.
-        # Finally, the 20 degree latitude linear taper mimicks MERRA-2
-        # usage of CPCU gauge analyses.
-        precip_imerg_weights = np.ones(np.shape(lats_imerg))
-        precip_imerg_weights = np.where(lats_imerg < -60,
-                                        0,
-                                        precip_imerg_weights)
-        precip_imerg_weights = np.where( (lats_imerg >= -60) &
-                                         (lats_imerg <  -40),
-                                         ( (lats_imerg + 60.) / 20.),
-                                         precip_imerg_weights)
-        precip_imerg_weights = np.where( (lats_imerg >  51) &
-                                          (lats_imerg <= 71),
-                                         ( (71. - lats_imerg) / 20.),
-                                          precip_imerg_weights)
-        precip_imerg_weights = np.where(lats_imerg > 71,
-                                        0,
-                                        precip_imerg_weights)
+        # Calculate blended precipitation (weighted average of IMERG
+        # and background, varying by latitude).
+        precip_blended = \
+            _calc_precip_blended(lats_imerg, precip_imerg, precip_back)
 
-        # Conservative alternative:  Linear taper from 40N to 60N, and
-        # screen out everything north of 60N.  We'll do this as a backup
-        # if we find unphysical IMERG patterns north of 60N
-        #precip_imerg_weights = np.where( (lats_imerg >  40) &
-        #                                (lats_imerg <= 60),
-        #                                ( (60. - lats_imerg) / 20.),
-        #                                precip_imerg_weights)
-        #precip_imerg_weights = np.where(lats_imerg > 60,
-        #                              0,
-        #                              precip_imerg_weights)
-
-        precip_blended = precip_imerg_weights[:,:]*precip_imerg[:,:] + \
-            (1. - precip_imerg_weights[:,:])*precip_back[:,:]
-
-        # Add trace precipitation every month to prevent undefined
-        # ratios in deserts.
+        # Updated precip sums.  Add trace precipitation every month to
+        # prevent undefined ratios in deserts.
         sum_blended[(curdate.month-1),:,:] += precip_blended[:,:] + 0.05
         sum_back[(curdate.month-1),:,:] += precip_back[:,:] + 0.05
 
@@ -182,7 +222,7 @@ def _calc_biasratios(imergdir, backindir, startdate, enddate):
     precip_ratio[:,:,:] = sum_blended[:,:,:] / sum_back[:,:,:]
     precip_ratio[:,:,:] = np.where(precip_ratio == 0, 1, precip_ratio)
 
-    return lats_imerg, lons_imerg, precip_ratio, east_west, north_south
+    return precip_ratio
 
 def _create_output_filename(outdir, backsource, startdate, enddate):
     """Create output netCDF file name"""
@@ -291,8 +331,11 @@ def _main():
     cfgfile, backsource, startdate, enddate = _process_cmd_line()
     backindir, imergdir, outdir = \
         _process_cfg_file(cfgfile, backsource)
-    lats_imerg, lons_imerg, precip_ratio, east_west, north_south = \
-        _calc_biasratios(imergdir, backindir, startdate, enddate)
+    lats_imerg, lons_imerg, north_south, east_west = \
+        _read_imerg_file_latlondims(imergdir, startdate)
+    precip_ratio = \
+        _calc_biasratios(imergdir, backindir, startdate, enddate, \
+                         lats_imerg)
     outfile = _create_output_filename(outdir, backsource,
                                       startdate, enddate)
     # To satisfy pylint....
