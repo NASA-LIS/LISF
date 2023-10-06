@@ -6464,9 +6464,7 @@ contains
 
      ! Imports
      use AGRMET_forcingMod, only: agrmet_struc
-     use LIS_coreMod, only: LIS_rc!, LIS_localPet, &
-          !LIS_ews_halo_ind, LIS_ewe_halo_ind, &
-          !LIS_nss_halo_ind, LIS_nse_halo_ind
+     use LIS_coreMod, only: LIS_rc
      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
      use netcdf
@@ -6598,6 +6596,9 @@ contains
           start=(/1,1,imonth/), &
           count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)), &
           'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GFS bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%gfs_nrt_bias_ratio_file)
      call LIS_verify(nf90_close(ncid),&
           'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
 
@@ -6620,6 +6621,9 @@ contains
           start=(/1,1,imonth/), &
           count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
           'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GALWEM bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%galwem_nrt_bias_ratio_file)
      call LIS_verify(nf90_close(ncid),&
           'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
 
