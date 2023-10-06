@@ -10,6 +10,7 @@ on multiple years of data.
 
 REVISION HISTORY:
 04 Oct 2023:  Eric Kemp:  Initial specification.
+06 Oct 2023:  Eric Kemp:  Added log10 transform to output for plotting.
 """
 
 import configparser
@@ -244,9 +245,20 @@ def _write_biasratios(args):
     biasRatio.add_offset = np.float32("0.")
     biasRatio.missing_value = np.float32("-9999.")
 
+    # Define log10BiasRatio
+    log10BiasRatio = rootgrp.createVariable("log10BiasRatio", "f4", \
+                                ("months", "north_south", "east_west",))
+    log10BiasRatio.units = "-"
+    log10BiasRatio.long_name = \
+        f"log10_bias_ratio_for_{args['backsource']}_precipitation"
+    log10BiasRatio.scale_factor = np.float32("1.")
+    log10BiasRatio.add_offset = np.float32("0.")
+    log10BiasRatio.missing_value = np.float32("-9999.")
+
     latitude[:,:] = args['lats_imerg'][:,:]
     longitude[:,:] = args['lons_imerg'][:,:]
     biasRatio[:,:,:] = args['precip_ratio'][:,:,:]
+    log10BiasRatio[:,:,:] = np.log10(args['precip_ratio'][:,:,:])
 
     rootgrp.close()
 
