@@ -18,7 +18,11 @@ import datetime
 import os
 import sys
 
+# Disable false alarm in pylint (Dataset is not visible in netCDF4 module
+# because it is not implemented in python)
+# pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
+# pylint: enable=no-name-in-module
 import numpy as np
 
 def _usage():
@@ -76,16 +80,20 @@ def _process_cfg_file(cfgfile, backsource):
 
     return backindir, imergdir, outdir
 
+def _create_arrays():
+    """Allocate and zero out numpy arrays"""
+    nlat = 1920
+    nlon = 2560
+    nmon = 12
+    sum_blended = np.zeros([nmon,nlat,nlon])
+    sum_back = np.zeros([nmon,nlat,nlon])
+    precip_ratio = np.zeros([nmon,nlat,nlon])
+    return sum_blended, sum_back, precip_ratio
+
 def _calc_biasratios(imergdir, backindir, startdate, enddate):
     """Calculate the bias ratios from the input data files."""
 
-    ny = 1920
-    nx = 2560
-    nmon = 12
-
-    sum_blended = np.zeros([nmon,ny,nx])
-    sum_back = np.zeros([nmon,ny,nx])
-    precip_ratio = np.zeros([nmon,ny,nx])
+    sum_blended, sum_back, precip_ratio = _create_arrays()
 
     timedelta = datetime.timedelta(days=1)
 
@@ -184,6 +192,54 @@ def _create_output_filename(outdir, backsource, startdate, enddate):
     filename += f"{enddate.year:04d}{enddate.month:02d}.nc"
     return filename
 
+def _create_latitude(rootgrp):
+    """Create latitude dataset in output file"""
+    latitude = rootgrp.createVariable("latitude", "f4", \
+                                      ("north_south", "east_west",))
+    latitude.units = "degree_north"
+    latitude.standard_name = "latitude"
+    latitude.long_name = "latitude"
+    latitude.scale_factor = np.float32("1.")
+    latitude.add_offset = np.float32("0.")
+    latitude.missing_value = np.float32("-9999.")
+    return latitude
+
+def _create_longitude(rootgrp):
+    """Create longitude dataset in output file."""
+    longitude = rootgrp.createVariable("longitude", "f4", \
+                                       ("north_south", "east_west",))
+    longitude.units = "degree_east"
+    longitude.standard_name = "longitude"
+    longitude.long_name = "longitude"
+    longitude.scale_factor = np.float32("1.")
+    longitude.add_offset = np.float32("0.")
+    longitude.missing_value = np.float32("-9999.")
+    return longitude
+
+def _create_bias_ratio(rootgrp, backsource):
+    """Create the biasRatio dataset in the output file."""
+    bias_ratio = rootgrp.createVariable("biasRatio", "f4", \
+                              ("months", "north_south", "east_west",))
+    bias_ratio.units = "-"
+    bias_ratio.long_name = \
+        f"bias_ratio_for_{backsource}_precipitation"
+    bias_ratio.scale_factor = np.float32("1.")
+    bias_ratio.add_offset = np.float32("0.")
+    bias_ratio.missing_value = np.float32("-9999.")
+    return bias_ratio
+
+def _create_log10_bias_ratio(rootgrp, backsource):
+    """Create the log10BiasRatio dataset in the output file."""
+    log10_bias_ratio = rootgrp.createVariable("log10BiasRatio", "f4", \
+                                ("months", "north_south", "east_west",))
+    log10_bias_ratio.units = "-"
+    log10_bias_ratio.long_name = \
+        f"log10_bias_ratio_for_{backsource}_precipitation"
+    log10_bias_ratio.scale_factor = np.float32("1.")
+    log10_bias_ratio.add_offset = np.float32("0.")
+    log10_bias_ratio.missing_value = np.float32("-9999.")
+    return log10_bias_ratio
+
 def _write_biasratios(args):
     """Write out bias ratios to netCDF file"""
 
@@ -209,56 +265,23 @@ def _write_biasratios(args):
     rootgrp.DY = np.float32("0.09375")
 
     # Define dimensions
-    months = rootgrp.createDimension("months", 12)
-    north_south = rootgrp.createDimension("north_south", \
-                                          args['north_south'])
-    east_west = rootgrp.createDimension("east_west", \
-                                        args['east_west'])
+    rootgrp.createDimension("months", 12)
+    rootgrp.createDimension("north_south", \
+                            args['north_south'])
+    rootgrp.createDimension("east_west", \
+                            args['east_west'])
 
-    # Define latitude
-    latitude = rootgrp.createVariable("latitude", "f4", \
-                                      ("north_south", "east_west",))
-    latitude.units = "degree_north"
-    latitude.standard_name = "latitude"
-    latitude.long_name = "latitude"
-    latitude.scale_factor = np.float32("1.")
-    latitude.add_offset = np.float32("0.")
-    latitude.missing_value = np.float32("-9999.")
-
-    # Define longitude
-    longitude = rootgrp.createVariable("longitude", "f4", \
-                                       ("north_south", "east_west",))
-    longitude.units = "degree_east"
-    longitude.standard_name = "longitude"
-    longitude.long_name = "longitude"
-    longitude.scale_factor = np.float32("1.")
-    longitude.add_offset = np.float32("0.")
-    longitude.missing_value = np.float32("-9999.")
-
-    # Define biasRatio
-    biasRatio = rootgrp.createVariable("biasRatio", "f4", \
-                              ("months", "north_south", "east_west",))
-    biasRatio.units = "-"
-    biasRatio.long_name = \
-        f"bias_ratio_for_{args['backsource']}_precipitation"
-    biasRatio.scale_factor = np.float32("1.")
-    biasRatio.add_offset = np.float32("0.")
-    biasRatio.missing_value = np.float32("-9999.")
-
-    # Define log10BiasRatio
-    log10BiasRatio = rootgrp.createVariable("log10BiasRatio", "f4", \
-                                ("months", "north_south", "east_west",))
-    log10BiasRatio.units = "-"
-    log10BiasRatio.long_name = \
-        f"log10_bias_ratio_for_{args['backsource']}_precipitation"
-    log10BiasRatio.scale_factor = np.float32("1.")
-    log10BiasRatio.add_offset = np.float32("0.")
-    log10BiasRatio.missing_value = np.float32("-9999.")
+    # Define output variables
+    latitude = _create_latitude(rootgrp)
+    longitude = _create_longitude(rootgrp)
+    bias_ratio = _create_bias_ratio(rootgrp, args['backsource'])
+    log10_bias_ratio = _create_log10_bias_ratio(rootgrp,
+                                                args['backsource'])
 
     latitude[:,:] = args['lats_imerg'][:,:]
     longitude[:,:] = args['lons_imerg'][:,:]
-    biasRatio[:,:,:] = args['precip_ratio'][:,:,:]
-    log10BiasRatio[:,:,:] = np.log10(args['precip_ratio'][:,:,:])
+    bias_ratio[:,:,:] = args['precip_ratio'][:,:,:]
+    log10_bias_ratio[:,:,:] = np.log10(args['precip_ratio'][:,:,:])
 
     rootgrp.close()
 
