@@ -20,33 +20,6 @@ import sys
 from netCDF4 import Dataset as nc4_dataset
 import numpy as np
 
-# Start and end date of GFS period for NAFPA
-back_source = "GFS"
-#startdt = datetime.datetime(2008, 1, 1, 0, 0, 0) # GFS-Spectral
-#enddt   = datetime.datetime(2019, 6, 1, 0, 0, 0) # GFS-Spectral
-#startdt = datetime.datetime(2019, 7, 1, 0, 0, 0) # GFS-FV3
-#enddt   = datetime.datetime(2023, 4, 1, 0, 0, 0) # GFS-FV3
-#startdt = datetime.datetime(2008, 1, 1, 0, 0, 0) # All GFS
-#enddt   = datetime.datetime(2023, 4, 1, 0, 0, 0) # All GFS
-#startdt = datetime.datetime(2008, 1, 1, 0, 0, 0) # Pre-GALWEM
-#enddt   = datetime.datetime(2017, 9, 1, 0, 0, 0) # Pre-GALWEM
-startdt = datetime.datetime(2017, 10, 1, 0, 0, 0) # GALWEM Era
-enddt   = datetime.datetime(2023,  4, 1, 0, 0, 0) # GALWEM Era
-
-topdir_back = "/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_imergf_biascorr/data/GFS_NAFPA_Monthly_all"
-
-# Start and end date of GALWEM period for NAFPA
-#back_source = "GALWEM"
-#startdt = datetime.datetime(2017, 10, 1, 0, 0, 0)
-#enddt = datetime.datetime(2023, 4, 1, 0, 0, 0)
-#topdir_back = "/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_imergf_biascorr/data/GALWEM_NAFPA_Monthly_all"
-
-timedelta = datetime.timedelta(days=1)
-
-# Other data
-topdir_imergf = "/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_imergf_biascorr/data/IMERGF_V07A_NAFPA_Monthly"
-topdir_biasratio = f"testdir_{back_source}"
-
 def _usage():
     """Print usage message for this script."""
     print(f"Usage: {sys.argv[0]} CFGFILE BACKSOURCE STARTDATE ENDDATE")
