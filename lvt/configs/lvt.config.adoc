@@ -118,6 +118,7 @@ LVT output methodology:                 "2d gridspace"
 | "`ANSA SWE`"                      | ANSA SWE retrievals
 | "`CPC precipitation`"             | CPC unified precipitation product
 | "`GPM IMERG`"                     | IMERG precipitation data product
+| "`GPM IMERG Monthly`"             | IMERG-Monthly precipitation product
 | "`USGS streamflow`"               | USGS streamflow observations
 | "`Naturalized streamflow`"        | Naturalized streamflow estimates
 | "`FLUXNET MTE`"                   | Gridded FLUXNET MTE data from MPI
@@ -1274,6 +1275,21 @@ CPC PCP use real time data:               0
 IMERG data directory:            ../IMERG
 IMERG version:                   V06B
 IMERG product:                   final
+....
+
+==== GPM IMERG Monthly precipitation data
+
+`IMERG monthly data directory:` specifies the location of the GPM IMERG Monthly precipitation product
+
+`IMERG monthly version:` specifies the version of the GPM IMERG Monthly precipitation product. Most current version is V07A.
+
+`IMERG monthly product:` specifies the GPM IMERG Monthly precipitation product. Current option is: final.  (early and late will be added later)
+
+.Example _lvt.config_ entry
+....
+IMERG monthly data directory:            input/IMERGF_V07A_Monthly
+IMERG monthly version:                   V07A
+IMERG monthly product:                   final
 ....
 
 ==== ESA CCI soil moisture data
