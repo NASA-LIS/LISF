@@ -163,8 +163,10 @@ If you wish to enable LIS' RTM support, then you must manually compile an includ
 
 ....
 % cd $WORKING/lib/lis-cmem3
-% gmake
+% LIS_ARCH=linux_ifc make
 ....
+
+NOTE: If using the GNU compilers, set `LIS_ARCH` to linux_gfortran.
 
 ==== LIS-CRTM-PROFILE-UTILITY library
 
@@ -174,9 +176,11 @@ If you wish to enable LIS' RTM support, then you must manually compile an includ
 
 ....
 % cd $WORKING/lib/lis-crtm-profile-utility
-% gmake
-% gmake install
+% LIS_ARCH=linux_ifc make
+% LIS_ARCH=linux_ifc make install
 ....
+
+NOTE: If using the GNU compilers, set `LIS_ARCH` to linux_gfortran.
 
 === Second order dependencies
 
