@@ -68,7 +68,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
@@ -203,7 +204,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
