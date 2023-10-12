@@ -984,8 +984,8 @@ if [ $DATATYPE  == "forecast" ]; then
     else
 	echo
 	# CFSv2 forecast
-	sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
-	ret_code=$?
+#	sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
+#	ret_code=$?
 	if [ $ret_code -gt 0 ]; then
      	    exit
 	fi
