@@ -1041,7 +1041,6 @@ contains
     real                :: model_cdf(n_strat_bins,ntimes, nbins)
     real                :: obs_cdf(n_strat_bins,ntimes, nbins)
     real                :: obs_value(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k))
-    !real                :: ref_precip_climo(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k),ntimes)
     real                :: ref_precip_climo_maxval(ntimes)
     real                :: target_precip_climo(LIS_rc%obs_lnc(k),LIS_rc%obs_lnr(k),ntimes)
 !
@@ -1078,7 +1077,6 @@ contains
     integer, dimension (1)      :: index_25 , index_75
     real                :: Lb_xrange, Ub_xrange, iqr_obs, iqr_model
 
-
     if(ntimes.gt.1) then
        kk = LIS_rc%mo
     else
@@ -1090,87 +1088,83 @@ contains
     enddo
     do t=1,LIS_rc%obs_ngrid(k)
 
-        col = LIS_obs_domain(n,k)%col(t)
-        row = LIS_obs_domain(n,k)%row(t)
+       col = LIS_obs_domain(n,k)%col(t)
+       row = LIS_obs_domain(n,k)%row(t)
 
-    ! find the reference CDF stratification bin value for each grid cell
-        if(target_precip_climo(col,row,kk).ne.-9999.0) then
-           ref_p_min = 0. !minval returns -9999.  minval(ref_precip_climo(:,:,j)) ! min value over the entire domain  
-           !ref_p_max = maxval(ref_precip_climo(:,:,kk)) ! max value over the entire domain 
-           ref_p_max = ref_precip_climo_maxval(kk) ! max value over the entire domain 
-           delta_p_ref = (ref_p_max-ref_p_min)/&
-                n_strat_bins
-           strat_binval = nint( (target_precip_climo(col,row,kk)-ref_p_min)/&
+       ! find the reference CDF stratification bin value for each grid cell
+       if(target_precip_climo(col,row,kk).ne.-9999.0) then
+          ref_p_min = 0. !minval returns -9999.  minval(ref_precip_climo(:,:,j)) ! min value over the entire domain  
+          ref_p_max = ref_precip_climo_maxval(kk) ! max value over the entire domain 
+          delta_p_ref = (ref_p_max-ref_p_min)/&
+               n_strat_bins
+          strat_binval = nint( (target_precip_climo(col,row,kk)-ref_p_min)/&
                                delta_p_ref)+1
-           if(strat_binval.gt.n_strat_bins) strat_binval = n_strat_bins
-              if(strat_binval.le.0) strat_binval = 1
-        endif
+          if(strat_binval.gt.n_strat_bins) strat_binval = n_strat_bins
+          if(strat_binval.le.0) strat_binval = 1
+       endif
 
-        index_25 = minloc(abs(obs_cdf(strat_binval,kk,:) - 0.25))
-        index_75 = minloc(abs(obs_cdf(strat_binval,kk,:) - 0.75))
-        Lb_xrange = obs_xrange(strat_binval,kk,index_25(1))
-        Ub_xrange = obs_xrange(strat_binval,kk,index_75(1))
-        iqr_obs = Ub_xrange - Lb_xrange
+       index_25 = minloc(abs(obs_cdf(strat_binval,kk,:) - 0.25))
+       index_75 = minloc(abs(obs_cdf(strat_binval,kk,:) - 0.75))
+       Lb_xrange = obs_xrange(strat_binval,kk,index_25(1))
+       Ub_xrange = obs_xrange(strat_binval,kk,index_75(1))
+       iqr_obs = Ub_xrange - Lb_xrange
 
-        index_25 = minloc(abs(model_cdf(strat_binval,kk,:) - 0.25))
-        index_75 = minloc(abs(model_cdf(strat_binval,kk,:) - 0.75))
-        Lb_xrange = model_xrange(strat_binval,kk,index_25(1))
-        Ub_xrange = model_xrange(strat_binval,kk,index_75(1))
-        iqr_model = Ub_xrange - Lb_xrange
+       index_25 = minloc(abs(model_cdf(strat_binval,kk,:) - 0.25))
+       index_75 = minloc(abs(model_cdf(strat_binval,kk,:) - 0.75))
+       Lb_xrange = model_xrange(strat_binval,kk,index_25(1))
+       Ub_xrange = model_xrange(strat_binval,kk,index_75(1))
+       iqr_model = Ub_xrange - Lb_xrange
 
-        if( iqr_obs .lt. 0.05 * (obs_xrange(strat_binval,kk,nbins)-obs_xrange(strat_binval,kk,1)) .or. &
+       if( iqr_obs .lt. 0.05 * (obs_xrange(strat_binval,kk,nbins)-obs_xrange(strat_binval,kk,1)) .or. &
             iqr_model .lt. 0.05 * (model_xrange(strat_binval,kk,nbins)-model_xrange(strat_binval,kk,1)) ) then
-           obs_delta(strat_binval) = 0
-        endif
+          obs_delta(strat_binval) = 0
+       endif
 
+       if(obs_value(col,row).ne.-9999.0) then
+          obs_in = obs_value(col,row)
+          if(obs_delta(strat_binval).gt.0) then
+             binval = nint((obs_value(col,row)-obs_xrange(strat_binval,kk,1))/&
+                  obs_delta(strat_binval))+1
+             if(binval.gt.nbins) binval = nbins
+             if(binval.le.0) binval = 1
+             cdf_obsval = obs_cdf(strat_binval,kk,binval)
+             if(cdf_obsval.gt.1.0) cdf_obsval = 1.0
+             if(cdf_obsval .gt.0)then
+                i=1
+                do while((model_cdf(strat_binval,kk,i).lt.cdf_obsval).and.&
+                     (i.le.nbins))
+                   i = i+1
+                   if(i.gt.nbins) exit
+                enddo
+                if(i.gt.nbins) i = i-1
+                obs_tmp = model_xrange(strat_binval,kk,i)
 
-        if(obs_value(col,row).ne.-9999.0) then
-           obs_in = obs_value(col,row)
-           if(obs_delta(strat_binval).gt.0) then
-              binval = nint((obs_value(col,row)-obs_xrange(strat_binval,kk,1))/&
-                   obs_delta(strat_binval))+1
-              if(binval.gt.nbins) binval = nbins
-              if(binval.le.0) binval = 1
-              cdf_obsval = obs_cdf(strat_binval,kk,binval)
-              if(cdf_obsval.gt.1.0) cdf_obsval = 1.0
-                 if(cdf_obsval .gt.0)then
-                    i=1
-                    do while((model_cdf(strat_binval,kk,i).lt.cdf_obsval).and.&
-                         (i.le.nbins))
-                       i = i+1
-                       if(i.gt.nbins) exit
-                    enddo
-                    if(i.gt.nbins) i = i-1
-                    obs_tmp = model_xrange(strat_binval,kk,i)
+                if(obs_tmp.gt.max_obs_value) then
+                   obs_tmp = LIS_rc%udef
+                endif
 
-                    if(obs_tmp.gt.max_obs_value) then
-!                       obs_tmp = max_obs_value
-                       obs_tmp = LIS_rc%udef
-                    endif
-
-                    if(obs_tmp.le.min_obs_value) then
-!                       obs_tmp = obs_value(col,row)
-                       obs_tmp = LIS_rc%udef
-                    endif
-                    obs_value(col,row) = obs_tmp
-                 else
-                    obs_value(col,row) = LIS_rc%udef 
-                 endif
-           else
-              obs_value(col,row) = LIS_rc%udef
-           endif
-           if(obs_value(col,row).le.min_obs_value.and.&
-                obs_value(col,row).ne.-9999.0) then
-              write(LIS_logunit,*) '[ERR] Problem in CDF scaling of observations in the DA instance ',k
-              write(LIS_logunit,*) '[ERR] ',col,row,obs_value(col,row), obs_in
-              call LIS_endrun()
-           endif
-        else
-           obs_value(col,row) = LIS_rc%udef
-        endif
-     enddo
-     !TRACE_EXIT("DA_rescaleCDF")
-   end subroutine LIS_rescale_with_stratified_CDF
+                if(obs_tmp.le.min_obs_value) then
+                   obs_tmp = LIS_rc%udef
+                endif
+                obs_value(col,row) = obs_tmp
+             else
+                obs_value(col,row) = LIS_rc%udef
+             endif
+          else
+             obs_value(col,row) = LIS_rc%udef
+          endif
+          if(obs_value(col,row).le.min_obs_value.and.&
+               obs_value(col,row).ne.-9999.0) then
+             write(LIS_logunit,*) '[ERR] Problem in CDF scaling of observations in the DA instance ',k
+             write(LIS_logunit,*) '[ERR] ',col,row,obs_value(col,row), obs_in
+             call LIS_endrun()
+          endif
+       else
+          obs_value(col,row) = LIS_rc%udef
+       endif
+    enddo
+    !TRACE_EXIT("DA_rescaleCDF")
+  end subroutine LIS_rescale_with_stratified_CDF
 !MN 2022.02.24
 
 
@@ -1721,7 +1715,7 @@ contains
         filename, varname, xrange, cdf)
 
      implicit none
-! !ARGUMENTS:      
+! !ARGUMENTS:
      integer,   intent(in)    :: n
      integer,   intent(in)    :: k
      integer,   intent(in)    :: nbins
@@ -1758,60 +1752,56 @@ contains
      !TRACE_ENTER("DA_readCDF")
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
      write(LIS_logunit,*) '[INFO] Reading stratified geolocation independent reference CDF file ',trim(filename)
-     !if(ngrid.gt.0) then
-        call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
-             ncid=nid),'failed to open file '//trim(filename))
+     call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
+          ncid=nid),'failed to open file '//trim(filename))
 
-        call LIS_verify(nf90_inq_dimid(nid,"n_strat_bins",nstratbinId), &
-             'nf90_inq_dimid failed for n_strat_bins')
-        call LIS_verify(nf90_inq_dimid(nid,"nbins",nbinsId), &
-             'nf90_inq_dimid failed for nbins')
-        call LIS_verify(nf90_inq_dimid(nid,trim(varname)//"_levels",nlevsId), &
-             'nf90_inq_dimid failed for '//trim(varname)//"_levels")
+     call LIS_verify(nf90_inq_dimid(nid,"n_strat_bins",nstratbinId), &
+          'nf90_inq_dimid failed for n_strat_bins')
+     call LIS_verify(nf90_inq_dimid(nid,"nbins",nbinsId), &
+          'nf90_inq_dimid failed for nbins')
+     call LIS_verify(nf90_inq_dimid(nid,trim(varname)//"_levels",nlevsId), &
+          'nf90_inq_dimid failed for '//trim(varname)//"_levels")
 
-        call LIS_verify(nf90_inquire_dimension(nid,nstratbinId, len=nstratbin_file),&
-             'nf90_inquire_dimension failed for n_strat_bins')
-        call LIS_verify(nf90_inquire_dimension(nid,nbinsId, len=nbins_file),&
-             'nf90_inquire_dimension failed for nbins')
-        call LIS_verify(nf90_inquire_dimension(nid,nlevsId, len=nlevs_file),&
-             'nf90_inquire_dimension failed for nlevels')
+     call LIS_verify(nf90_inquire_dimension(nid,nstratbinId, len=nstratbin_file),&
+          'nf90_inquire_dimension failed for n_strat_bins')
+     call LIS_verify(nf90_inquire_dimension(nid,nbinsId, len=nbins_file),&
+          'nf90_inquire_dimension failed for nbins')
+     call LIS_verify(nf90_inquire_dimension(nid,nlevsId, len=nlevs_file),&
+          'nf90_inquire_dimension failed for nlevels')
 
-        if(nbins.ne.nbins_file) then
-           write(LIS_logunit,*) '[ERR] The number of bins specified in the file '//&
-                trim(filename)
-           write(LIS_logunit,*) '[ERR] (',nbins_file, &
-                ') is different from the number of bins specified'
-           write(LIS_logunit,*) '[ERR] in the lis.config file (',nbins,')'
-           call LIS_endrun()
-        endif
+     if(nbins.ne.nbins_file) then
+        write(LIS_logunit,*) '[ERR] The number of bins specified in the file '//&
+             trim(filename)
+        write(LIS_logunit,*) '[ERR] (',nbins_file, &
+             ') is different from the number of bins specified'
+        write(LIS_logunit,*) '[ERR] in the lis.config file (',nbins,')'
+        call LIS_endrun()
+     endif
 
-        allocate(xrange_file(nstratbin_file,ntimes,nlevs_file,nbins))
-        allocate(cdf_file(nstratbin_file,ntimes,nlevs_file,nbins))
+     allocate(xrange_file(nstratbin_file,ntimes,nlevs_file,nbins))
+     allocate(cdf_file(nstratbin_file,ntimes,nlevs_file,nbins))
 
-        !do j=1,ntimes
-           call LIS_verify(nf90_inq_varid(nid,trim(varname)//'_xrange_stratified',xid),&
-                'nf90_inq_varid failed for for '//trim(varname)//'_xrange_stratified')
-           call LIS_verify(nf90_inq_varid(nid,trim(varname)//'_CDF_stratified',cdfid),&
-                'nf90_inq_varid failed for '//trim(varname)//'_CDF_stratified')
+     call LIS_verify(nf90_inq_varid(nid,trim(varname)//'_xrange_stratified',xid),&
+          'nf90_inq_varid failed for for '//trim(varname)//'_xrange_stratified')
+     call LIS_verify(nf90_inq_varid(nid,trim(varname)//'_CDF_stratified',cdfid),&
+          'nf90_inq_varid failed for '//trim(varname)//'_CDF_stratified')
 
-           call LIS_verify(nf90_get_var(nid,xid,xrange_file, &
-                start=(/1,1,1,1/), count=(/nstratbin_file,ntimes,nlevs_file,nbins/)),&
-                'nf90_get_var failed for '//trim(varname)//'_xrange_stratified')
-           call LIS_verify(nf90_get_var(nid,cdfid,cdf_file,&
-                start=(/1,1,1,1/), count=(/nstratbin_file,ntimes,nlevs_file,nbins/)),&
-                'nf90_get_var failed for '//trim(varname)//'_CDF_stratified')
+     call LIS_verify(nf90_get_var(nid,xid,xrange_file, &
+          start=(/1,1,1,1/), count=(/nstratbin_file,ntimes,nlevs_file,nbins/)),&
+          'nf90_get_var failed for '//trim(varname)//'_xrange_stratified')
+     call LIS_verify(nf90_get_var(nid,cdfid,cdf_file,&
+          start=(/1,1,1,1/), count=(/nstratbin_file,ntimes,nlevs_file,nbins/)),&
+          'nf90_get_var failed for '//trim(varname)//'_CDF_stratified')
 
-        !enddo
-           xrange = xrange_file(:,:,1,:)
-           cdf = cdf_file(:,:,1,:)
+     xrange = xrange_file(:,:,1,:)
+     cdf = cdf_file(:,:,1,:)
 
-        deallocate(xrange_file)
-        deallocate(cdf_file)
+     deallocate(xrange_file)
+     deallocate(cdf_file)
 
-        call LIS_verify(nf90_close(nid),&
-             'failed to close file '//trim(filename))
-        write(LIS_logunit,*) '[INFO] Successfully read CDF file ',trim(filename)
-     !endif
+     call LIS_verify(nf90_close(nid),&
+          'failed to close file '//trim(filename))
+     write(LIS_logunit,*) '[INFO] Successfully read CDF file ',trim(filename)
 #endif
     ! TRACE_EXIT("DA_readCDF")
    end subroutine read_CDFtransferdata_all
@@ -1820,11 +1810,10 @@ contains
 ! !ROUTINE: read_Precip_climo
 ! \label{read_Precip_climo}
 
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 ! 28 Feb 2022: Mahdi Navari ; Initial Specification
 !
-! !INTERFACE: 
-!subroutine read_Precip_climo(n,k,ncol, nrow, filename, precip)
+! !INTERFACE:
 subroutine read_Precip_climo(n,k, filename, precip)
   use LIS_coreMod
   use LIS_logMod
@@ -1833,40 +1822,37 @@ subroutine read_Precip_climo(n,k, filename, precip)
   use netcdf
 #endif
 
-     implicit none
-! !ARGUMENTS:      
-     integer,   intent(in)    :: n
-     integer,   intent(in)    :: k
-     !integer,   intent(in)    :: ncol, nrow
-     character(len=*), intent(in)  :: filename
-     real, allocatable, intent(inout) :: precip(:,:,:)
-     logical                  :: file_exists
-! 
-! !DESCRIPTION: 
+  implicit none
+! !ARGUMENTS:
+  integer,   intent(in)    :: n
+  integer,   intent(in)    :: k
+  character(len=*), intent(in)  :: filename
+  real, allocatable, intent(inout) :: precip(:,:,:)
+  logical                  :: file_exists
+!
+! !DESCRIPTION:
 !  This routine reads the input CDF file (generated by LVT in NETCDF format)
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[filename]      name of the CDF file
 !  \item[varname]       name of the variable being extracted.
 ! \end{description}
 !EOP
-     !real, allocatable        :: precip_climo(:,:,:), gtmp1d(:),gtmp2d(:,:)
-     integer                  :: ios,nid,ncId,nrId,varId
-     integer                  :: gnc,gnr,gr,gc,nc,nr,i,c,r
-     character*3              :: month_name(12)
-     integer                  :: gindex,gid
-     integer :: ierr
+  integer                  :: ios,nid,ncId,nrId,varId
+  integer                  :: gnc,gnr,gr,gc,nc,nr,i,c,r
+  character*3              :: month_name(12)
+  integer                  :: gindex,gid
+  integer :: ierr
 
-      month_name = (/"JAN","FEB","MAR","APR","MAY","JUN",&
-           "JUL","AUG","SEP","OCT","NOV","DEC"/)
-
+  month_name = (/"JAN","FEB","MAR","APR","MAY","JUN",&
+       "JUL","AUG","SEP","OCT","NOV","DEC"/)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   inquire(file=trim(filename), exist=file_exists)
   if(file_exists) then
      write(LIS_logunit,*) '[INFO] Reading Precipitation climatology form CDF file ',trim(filename)
-     !if(ngrid.gt.0) then
+
      call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
           ncid=nid),'failed to open file '//trim(filename))
 
@@ -1888,7 +1874,6 @@ subroutine read_Precip_climo(n,k, filename, precip)
         call LIS_endrun()
      endif
 
-     !allocate(precip_climo(gnc,gnr,12))
      allocate(precip(gnc,gnr,12))
      do i=1,12
         ios = nf90_inq_varid(nid,'TotalPrecip_'//trim(month_name(i)),varId)
@@ -1903,29 +1888,6 @@ subroutine read_Precip_climo(n,k, filename, precip)
      write(LIS_logunit,*) '[INFO] Successfully read Precipitation climo file ',trim(filename)
   endif
 
-   !precip = precip_climo
-   !deallocate(precip_climo)
-      ! subset from the global 2-d space to the local 2-d space
-!     do i=1,12
-!      precip(:,:,i) = precip_climo(&
-!                 LIS_ews_halo_ind(n,LIS_localPet+1):&
-!                 LIS_ewe_halo_ind(n,LIS_localPet+1), &
-!                 LIS_nss_halo_ind(n,LIS_localPet+1): &
-!                 LIS_nse_halo_ind(n,LIS_localPet+1),i)
-!     enddo
-!     deallocate(precip_climo)
-
-#if 0 
-           if(ngrid.gt.0) then
-              do kk=1,nbins
-                 call LIS_convertObsVarToLocalSpace(n,k,xrange_file(:,1,kk), &
-                      xrange(:,j,kk))
-                 call LIS_convertObsVarToLocalSpace(n,k,cdf_file(:,1,kk), &
-                      cdf(:,j,kk))
-              enddo
-           endif
-#endif  
-
 ! end USE_NETCDF4
 #endif
 
@@ -1938,7 +1900,7 @@ end subroutine read_Precip_climo
 ! !REVISION HISTORY: 
 ! 28 Feb 2022: Mahdi Navari ; Initial Specification
 !
-! !INTERFACE: 
+! !INTERFACE:
 subroutine read_Precip_climo_maxval(n,filename, strat_cdfs_max)
 
   use LIS_coreMod
@@ -1948,39 +1910,36 @@ subroutine read_Precip_climo_maxval(n,filename, strat_cdfs_max)
   use netcdf
 #endif
 
-     implicit none
-! !ARGUMENTS:      
-     integer,   intent(in)    :: n
-!     integer,   intent(in)    :: k
-     !integer,   intent(in)    :: ncol, nrow
-     character(len=*), intent(in)  :: filename
-     real                     :: strat_cdfs_max(12)
-     logical                  :: file_exists
-! 
-! !DESCRIPTION: 
+  implicit none
+! !ARGUMENTS:
+  integer,   intent(in)    :: n
+  character(len=*), intent(in)  :: filename
+  real                     :: strat_cdfs_max(12)
+  logical                  :: file_exists
+!
+! !DESCRIPTION:
 !  This routine reads the input CDF file (generated by LVT in NETCDF format)
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[filename]      name of the CDF file
 !  \item[varname]       name of the variable being extracted.
 ! \end{description}
 !EOP
-     real, allocatable        :: precip_climo(:,:,:)
-     integer                  :: ios,nid,ncId,nrId,varId
-     integer                  :: gnc,gnr,gr,gc,nc,nr,i,c,r
-     character*3              :: month_name(12)
-     integer                  :: gindex
+  real, allocatable        :: precip_climo(:,:,:)
+  integer                  :: ios,nid,ncId,nrId,varId
+  integer                  :: gnc,gnr,gr,gc,nc,nr,i,c,r
+  character*3              :: month_name(12)
+  integer                  :: gindex
 
-      month_name = (/"JAN","FEB","MAR","APR","MAY","JUN",&
-           "JUL","AUG","SEP","OCT","NOV","DEC"/)
-
+  month_name = (/"JAN","FEB","MAR","APR","MAY","JUN",&
+       "JUL","AUG","SEP","OCT","NOV","DEC"/)
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   inquire(file=trim(filename), exist=file_exists)
   if(file_exists) then
      write(LIS_logunit,*) '[INFO] Reading Precipitation climatology form CDF file ',trim(filename)
-     !if(ngrid.gt.0) then
+
      call LIS_verify(nf90_open(path=trim(filename),mode=NF90_NOWRITE,&
           ncid=nid),'failed to open file '//trim(filename))
 
@@ -2011,15 +1970,12 @@ subroutine read_Precip_climo_maxval(n,filename, strat_cdfs_max)
      write(LIS_logunit,*) '[INFO] Successfully read Precipitation climo file ',trim(filename)
   endif
 
-   !precip = precip_climo
-   !deallocate(precip_climo)
-
    ! Note: we just need Max and min values for each month (Min is zero)
    do i=1,12 ! number of month
       strat_cdfs_max(i) = maxval(precip_climo(:,:,i)) ! max value over the entire domain
    enddo
 
-      deallocate(precip_climo)
+   deallocate(precip_climo)
 
 ! end USE_NETCDF4
 #endif

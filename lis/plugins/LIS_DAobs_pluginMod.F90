@@ -249,9 +249,8 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_NASA_SMAPSM )
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
-!    use cdfTransfer_Mod,         only : cdfTransfer_setup
 #endif
- 
+
 #if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
     use cdfTransfer_NASASMAPsm_Mod,         only : cdfTransfer_NASASMAPsm_setup
 #endif
