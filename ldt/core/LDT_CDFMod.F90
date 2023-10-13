@@ -350,7 +350,6 @@ contains
              enddo
 
              do t=1,LDT_rc%ngrid(n)
-!                if(datamask(t).gt.0) then 
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
@@ -359,7 +358,6 @@ contains
                       enddo
                    enddo
                 enddo
-!                endif
              enddo
              ! MN: save stratified CDF 
              metrics%strat_cdf = strat_cdf
@@ -414,7 +412,6 @@ contains
              enddo
 
              do t=1,LDT_rc%ngrid(n)
-!                if(datamask(t).gt.0) then 
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
                       do i=1,LDT_rc%cdf_nbins
@@ -425,10 +422,9 @@ contains
                       enddo
                    enddo
                 enddo
-!                endif
              enddo
 
-             ! MN: save stratified CDF 
+             ! MN: save stratified CDF
              metrics%strat_cdf = strat_cdf
              deallocate(strat_bincounts)
              deallocate(strat_cdf)

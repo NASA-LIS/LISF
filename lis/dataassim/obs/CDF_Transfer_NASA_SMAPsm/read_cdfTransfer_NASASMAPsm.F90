@@ -381,37 +381,6 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
             enddo
          enddo
 
-#if 0
-!-------------------------------------------------------------------------
-!  From the SMAP documentation:
-!  The current approach for the SPL3SMP product is to use the nearest
-!  6:00 a.m. LST criterion to perform Level-3 compositing for the
-!  descending passes. According to this criterion, for a given grid cell,
-!  an L2 data point acquired closest to 6:00 a.m. local solar time will
-!  make its way to the final Level-3 file; other late-coming L2 data
-!  points falling into the same grid cell will be ignored. For a given
-!  file whose time stamp (yyyy-mm-ddThh:mm:ss) is expressed in UTC, only
-!  the hh:mm:ss part is converted into local solar time.
-!  (O'Neill et al. 2012)
-!-------------------------------------------------------------------------
-         do r = 1, LIS_rc%obs_lnr(k)
-            do c = 1, LIS_rc%obs_lnc(k)
-               grid_index = LIS_obs_domain(n, k)%gindex(c, r)
-               if (grid_index .ne. -1) then
-
-                  if (smobs(c + (r - 1)*LIS_rc%obs_lnc(k)) .ne. -9999.0) then
-                     cdfT_SMAPsm_struc(n)%smobs(c, r) = &
-                        smobs(c + (r - 1)*LIS_rc%obs_lnc(k))
-                     lon = LIS_obs_domain(n, k)%lon(c + (r - 1)*LIS_rc%obs_lnc(k))
-                     lhour = 6.0
-                     call LIS_localtime2gmt(gmt, lon, lhour, zone)
-                     cdfT_SMAPsm_struc(n)%smtime(c, r) = gmt
-                  endif
-               endif
-            enddo
-         enddo
-#endif
-
       endif ! sensor
    endif ! alram
 
@@ -477,30 +446,29 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 
 
 !-------------------------------------------------------------------------
-!  Transform data to the LSM climatology using a geolocation independent 
+!  Transform data to the LSM climatology using a geolocation independent
 !  CDF-scaling approach
 !-------------------------------------------------------------------------
    if (cdfT_SMAPsm_struc(n)%useCDFtransfer .gt. 0) then
       if (LIS_rc%da .eq. 1 .and. LIS_rc%hr .eq. 0 .and. &
           LIS_rc%mn .eq. 0 .and. LIS_rc%ss .eq. 0) then
-      call read_CDFtransferdata_all(n,k,&
-           cdfT_SMAPsm_struc(n)%nbins,&
-           cdfT_SMAPsm_struc(n)%ntimes,&
-           cdfT_SMAPsm_struc(n)%n_strat_bins, &
-           cdfT_SMAPsm_struc(n)%modelcdffile, &
-           "SoilMoist",&
-           cdfT_SMAPsm_struc(n)%model_xrange,&
-           cdfT_SMAPsm_struc(n)%model_cdf)
+         call read_CDFtransferdata_all(n,k,&
+              cdfT_SMAPsm_struc(n)%nbins,&
+              cdfT_SMAPsm_struc(n)%ntimes,&
+              cdfT_SMAPsm_struc(n)%n_strat_bins, &
+              cdfT_SMAPsm_struc(n)%modelcdffile, &
+              "SoilMoist",&
+              cdfT_SMAPsm_struc(n)%model_xrange,&
+              cdfT_SMAPsm_struc(n)%model_cdf)
 
-      call read_CDFtransferdata_all(n,k,&
-           cdfT_SMAPsm_struc(n)%nbins,&
-           cdfT_SMAPsm_struc(n)%ntimes,&
-           cdfT_SMAPsm_struc(n)%n_strat_bins, &
-           cdfT_SMAPsm_struc(n)%obscdffile, &
-           "SoilMoist",&
-           cdfT_SMAPsm_struc(n)%obs_xrange,&
-           cdfT_SMAPsm_struc(n)%obs_cdf)
-
+         call read_CDFtransferdata_all(n,k,&
+              cdfT_SMAPsm_struc(n)%nbins,&
+              cdfT_SMAPsm_struc(n)%ntimes,&
+              cdfT_SMAPsm_struc(n)%n_strat_bins, &
+              cdfT_SMAPsm_struc(n)%obscdffile, &
+              "SoilMoist",&
+              cdfT_SMAPsm_struc(n)%obs_xrange,&
+              cdfT_SMAPsm_struc(n)%obs_cdf)
       endif
       if (fnd .ne. 0) then
 
@@ -518,8 +486,8 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
               cdfT_SMAPsm_struc(n)%ref_p_climo_maxval, &
               cdfT_SMAPsm_struc(n)%target_p_climo,&
               cdfT_SMAPsm_struc(n)%n_strat_bins,&
-              sm_current) 
-       endif 
+              sm_current)
+       endif
    endif
 
    obsl = LIS_rc%udef
@@ -588,40 +556,6 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
          write(LIS_logunit,*) '[ERR] for CDF transfer method'
          call LIS_endrun()
       endif
-#if 0
-      if (LIS_rc%dascaloption(k) .eq. "CDF matching") then
-         if (cdfT_SMAPsm_struc(n)%useSsdevScal .eq. 1) then
-            call ESMF_StateGet(OBS_Pert_State, "Observation01", pertfield, &
-                               rc=status)
-            call LIS_verify(status, 'Error: StateGet Observation01')
-
-            allocate (ssdev(LIS_rc%obs_ngrid(k)))
-            ssdev = cdfT_SMAPsm_struc(n)%ssdev_inp
-
-            if (cdfT_SMAPsm_struc(n)%ntimes .eq. 1) then
-               jj = 1
-            else
-               jj = LIS_rc%mo
-            endif
-            do t = 1, LIS_rc%obs_ngrid(k)
-               if (cdfT_SMAPsm_struc(n)%obs_sigma(t, jj) .gt. 0) then
-                  ssdev(t) = ssdev(t)*cdfT_SMAPsm_struc(n)%model_sigma(t, jj)/ &
-                             cdfT_SMAPsm_struc(n)%obs_sigma(t, jj)
-                  if (ssdev(t) .lt. minssdev) then
-                     ssdev(t) = minssdev
-                  endif
-               endif
-            enddo
-
-            if (LIS_rc%obs_ngrid(k) .gt. 0) then
-               call ESMF_AttributeSet(pertField, "Standard Deviation", &
-                                      ssdev, itemCount=LIS_rc%obs_ngrid(k), rc=status)
-               call LIS_verify(status)
-            endif
-            deallocate (ssdev)
-         endif
-      endif
-#endif
    else
       call ESMF_AttributeSet(OBS_State, "Data Update Status", &
                              .false., rc=status)
@@ -631,28 +565,28 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 end subroutine read_cdfTransfer_NASASMAPsm
 
 !BOP
-! 
+!
 ! !ROUTINE: read_SMAPL2sm_data_cdfTransfer
 ! \label{read_SMAPL2sm_data_cdfTransfer}
 !
 ! !INTERFACE:
 subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
-! 
-! !USES:   
+!
+! !USES:
 
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
   use cdfTransfer_NASASMAPsm_Mod, only : cdfT_SMAPsm_struc
 
-#if (defined USE_HDF5) 
+#if (defined USE_HDF5)
   use hdf5
 #endif
 
   implicit none
 !
-! !INPUT PARAMETERS: 
-! 
+! !INPUT PARAMETERS:
+!
   integer                  :: n
   integer                  :: k
   character (len=*)        :: fname
@@ -662,7 +596,7 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
 ! !OUTPUT PARAMETERS:
 !
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !
 !
 !EOP
@@ -718,7 +652,7 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
   call h5dopen_f(sm_gr_id, sm_qa_name,sm_qa_id, status)
   call LIS_verify(status, 'Error opening QA field in SMAP L2 file')
 
-!YK 
+!YK
   call h5dopen_f(sm_gr_id, vwc_field_name,vwc_field_id, status)
   call LIS_verify(status, 'Error opening Veg water content field in SMAP L2 file')
 
@@ -726,7 +660,7 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
   call LIS_verify(status, 'Error in h5dget_space_f: reaSMAP L2Obs')
 
 ! Size of the arrays
-! This routine returns -1 on failure, rank on success. 
+! This routine returns -1 on failure, rank on success.
   call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, status)
   if(status.eq.-1) then
      call LIS_verify(status, 'Error in h5sget_simple_extent_dims_f: readSMAP L2Obs')
@@ -759,7 +693,7 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
   call h5dclose_f(sm_qa_id,status)
   call LIS_verify(status,'Error in H5DCLOSE call')
 
-!YK 
+!YK
   call h5dclose_f(vwc_field_id,status)
   call LIS_verify(status,'Error in H5DCLOSE call')
 
@@ -783,19 +717,6 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
 
   sm_data = LIS_rc%udef
   sm_data_b = .false.
-
-!-------------------------------------------------------------------original
-!!grid the data in EASE projection
-!  do t=1,maxdims(1)
-!     if(ease_col(t).gt.0.and.ease_row(t).gt.0) then
-!        sm_data(ease_col(t) + &
-!             (ease_row(t)-1)*cdfT_SMAPsm_struc(n)%nc) = sm_field(t)
-!        if(sm_field(t).ne.-9999.0) then
-!           sm_data_b(ease_col(t) + &
-!                (ease_row(t)-1)*cdfT_SMAPsm_struc(n)%nc) = .true.
-!        endif
-!     endif
-!  enddo
 
 !--------------------------------------------------------------------YK
 !grid the data in EASE projection
@@ -828,10 +749,9 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
   enddo
 !-----------------------------------------------------------------------
 
-  !t = 1
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
-!-------------------------------------------------------------------------- 
+!--------------------------------------------------------------------------
   call neighbor_interp(LIS_rc%obs_gridDesc(k,:), sm_data_b, sm_data, &
        smobs_b_ip, smobs_ip, &
        cdfT_SMAPsm_struc(n)%nc*cdfT_SMAPsm_struc(n)%nr, &
@@ -841,11 +761,10 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
 
 
   deallocate(sm_field)
-!  deallocate(sm_qa)
   deallocate(ease_row)
   deallocate(ease_col)
 
-!overwrite the input data 
+!overwrite the input data
   do r=1,LIS_rc%obs_lnr(k)
      do c=1,LIS_rc%obs_lnc(k)
         if(smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then
@@ -862,28 +781,28 @@ subroutine read_SMAPL2sm_data_cdfTransfer(n, k,fname, smobs_inp, time)
 end subroutine read_SMAPL2sm_data_cdfTransfer
 
 !BOP
-! 
+!
 ! !ROUTINE: read_NASASMAP_E_data_cdfTransfer
 ! \label{read_NASASMAP_E_data_cdfTransfer}
 !
 ! !INTERFACE:
 subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
-! 
-! !USES:   
+!
+! !USES:
 
   use LIS_coreMod,  only : LIS_rc, LIS_domain
   use LIS_logMod
   use LIS_timeMgrMod
   use cdfTransfer_NASASMAPsm_Mod, only : cdfT_SMAPsm_struc
-#if (defined USE_HDF5) 
+#if (defined USE_HDF5)
   use hdf5
 #endif
 
   implicit none
 !
-! !INPUT PARAMETERS: 
-! 
-  integer                       :: n 
+! !INPUT PARAMETERS:
+!
+  integer                       :: n
   integer                       :: k
   character (len=*)             :: pass
   character (len=*)             :: fname
@@ -893,20 +812,20 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 ! !OUTPUT PARAMETERS:
 !
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine reads the SMOS NESDIS binary file and applies the data
 !  quality flags to filter the data. !\normalsize
 !
 !  tb_time_seconds
-!  Arithmetic average of the same parameters found in the 
-!  fore- and aft-looking groups in the input SPL1CTB granule. 
-!  The resulting parameter thus describes the average of UTC 
-!  acquisition times of SPL1BTB observations whose boresights 
-!  fall within a 36 km EASE-Grid 2.0 cell. The result is then 
-!  expressed in J2000 seconds (the number of seconds since 
+!  Arithmetic average of the same parameters found in the
+!  fore- and aft-looking groups in the input SPL1CTB granule.
+!  The resulting parameter thus describes the average of UTC
+!  acquisition times of SPL1BTB observations whose boresights
+!  fall within a 36 km EASE-Grid 2.0 cell. The result is then
+!  expressed in J2000 seconds (the number of seconds since
 !  11:58:55.816 on January 1, 2000 UT).
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[n]            index of the nest
 !  \item[fname]        name of the RTNASASMAP AMSR-E file
@@ -924,7 +843,7 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
   character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
   character*100,    parameter    :: sm_qa_name_A = "retrieval_qual_flag_pm"
-! MN 
+! MN
   character*100,    parameter    :: vwc_field_name_D = "vegetation_water_content"
   character*100,    parameter    :: vwc_field_name_A = "vegetation_water_content_pm"
 
@@ -940,7 +859,7 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   integer(hid_t)                 :: file_id
   integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D,sm_qa_id_D
   integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A,sm_qa_id_A
-  integer(hid_t)                 :: vwc_field_id_D ! MN 
+  integer(hid_t)                 :: vwc_field_id_D ! MN
   integer(hid_t)                 :: vwc_field_id_A ! MN
   real,             allocatable  :: sm_field(:,:)
   real,             allocatable  :: vwc_field(:,:)! MN
@@ -954,7 +873,7 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   dimsm      = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
   count_file = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
   count_mem  = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
-  
+
   allocate(sm_field(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
   allocate(sm_qa(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
   allocate(vwc_field(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
@@ -965,31 +884,31 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
   call h5open_f(status)
   call LIS_verify(status, 'Error opening HDF fortran interface')
-  
-  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
+
+  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status)
   call LIS_verify(status, 'Error opening NASASMAP file ')
-  
-  if(pass.eq.'D') then 
+
+  if(pass.eq.'D') then
      call h5gopen_f(file_id,sm_gr_name_D,sm_gr_id_D, status)
      call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-     
+
      call h5dopen_f(sm_gr_id_D,sm_field_name_D,sm_field_id_D, status)
      call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-     
+
      call h5dget_space_f(sm_field_id_D, dataspace, status)
      call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-     
+
      call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
           start=offset_file, count=count_file, hdferr=status)
      call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-     
+
      call h5screate_simple_f(memrank,dimsm, memspace, status)
      call LIS_verify(status, 'Error in h5create_simple_f; read_cdfTransfer_NASASMAPsm')
-     
+
      call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
           start=offset_mem, count=count_mem, hdferr=status)
      call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_cdfTransfer_NASASMAPsm')
-     
+
      call h5dread_f(sm_field_id_D, H5T_NATIVE_REAL,sm_field,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
@@ -999,15 +918,15 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
      call h5dopen_f(sm_gr_id_D,sm_qa_name_D,sm_qa_id_D, status)
      call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
-     
+
      call h5dread_f(sm_qa_id_D, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
-     
+
      call h5dclose_f(sm_qa_id_D,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
-! MN get the vegetation water contnent 
+! MN get the vegetation water contnent
      call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
      call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
 
@@ -1024,34 +943,34 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   else
      call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
      call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-     
+
      call h5dopen_f(sm_gr_id_A,sm_field_name_A,sm_field_id_A, status)
      call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-     
+
      call h5dget_space_f(sm_field_id_A, dataspace, status)
      call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-     
+
      call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
           start=offset_file, count=count_file, hdferr=status)
      call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-     
+
      call h5screate_simple_f(memrank,dimsm, memspace, status)
      call LIS_verify(status, 'Error in h5create_simple_f; read_cdfTransfer_NASASMAPsm')
-     
+
      call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
           start=offset_mem, count=count_mem, hdferr=status)
      call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_cdfTransfer_NASASMAPsm')
-     
+
      call h5dread_f(sm_field_id_A, H5T_NATIVE_REAL,sm_field,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
 
      call h5dclose_f(sm_field_id_A,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
-     
+
      call h5dopen_f(sm_gr_id_A,sm_qa_name_A,sm_qa_id_A, status)
      call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
-     
+
      call h5dread_f(sm_qa_id_A, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
@@ -1059,7 +978,7 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
      call h5dclose_f(sm_qa_id_A,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
-! MN get the vegetation water contnent 
+! MN get the vegetation water contnent
      call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
      call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
 
@@ -1072,35 +991,34 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
      call h5gclose_f(sm_gr_id_A,status)
      call LIS_verify(status,'Error in H5GCLOSE call')
-     
+
   endif
-  
+
   call h5fclose_f(file_id,status)
   call LIS_verify(status,'Error in H5FCLOSE call')
-  
+
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
-
-  sm_data_b = .false. 
+  sm_data_b = .false.
   t = 1
 
 ! The retrieval_quality_field variable's binary representation consists of bits
-! that indicate whether retrieval is performed or not at a given grid cell. 
-! When retrieval is performed, it contains additional bits to further 
-! indicate the exit status and quality of the retrieval. The first bit 
+! that indicate whether retrieval is performed or not at a given grid cell.
+! When retrieval is performed, it contains additional bits to further
+! indicate the exit status and quality of the retrieval. The first bit
 ! indicates the recommended quality (0-means retrieval has recommended quality).
 
   do r=1,cdfT_SMAPsm_struc(n)%nr
-     do c=1,cdfT_SMAPsm_struc(n)%nc        
+     do c=1,cdfT_SMAPsm_struc(n)%nc
         sm_data(t) = sm_field(c,r)
 
-        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2
            sm_data(t) = LIS_rc%udef
-	 else 
+	 else
 
-           if(sm_data(t).ne.-9999.0) then 
-              if(ibits(sm_qa(c,r),0,1).eq.0) then 
+           if(sm_data(t).ne.-9999.0) then
+              if(ibits(sm_qa(c,r),0,1).eq.0) then
                  sm_data_b(t) = .true.
               else
                  sm_data(t) = -9999.0
@@ -1116,7 +1034,7 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
-!-------------------------------------------------------------------------- 
+!--------------------------------------------------------------------------
   call neighbor_interp(LIS_rc%obs_gridDesc(k,:),&
        sm_data_b, sm_data, smobs_b_ip, smobs_ip, &
        cdfT_SMAPsm_struc(n)%nc*cdfT_SMAPsm_struc(n)%nr, &
@@ -1131,32 +1049,32 @@ subroutine read_NASASMAP_E_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
 end subroutine read_NASASMAP_E_data_cdfTransfer
 
-! MN: the data structure in both 36 km and 9 km products is the same therefore  
+! MN: the data structure in both 36 km and 9 km products is the same therefore
 !         read_NASASMAP_E_data_cdfTransfer is similar to read_NASASMAP_data_cdfTransfer
 
 !BOP
-! 
+!
 ! !ROUTINE: read_NASASMAP_data_cdfTransfer
 ! \label{read_NASASMAP_data_cdfTransfer}
 !
 ! !INTERFACE:
 subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
-! 
-! !USES:   
+!
+! !USES:
 
   use LIS_coreMod,  only : LIS_rc, LIS_domain
   use LIS_logMod
   use LIS_timeMgrMod
   use cdfTransfer_NASASMAPsm_Mod, only : cdfT_SMAPsm_struc
-#if (defined USE_HDF5) 
+#if (defined USE_HDF5)
   use hdf5
 #endif
 
   implicit none
 !
-! !INPUT PARAMETERS: 
-! 
-  integer                       :: n 
+! !INPUT PARAMETERS:
+!
+  integer                       :: n
   integer                       :: k
   character (len=*)             :: pass
   character (len=*)             :: fname
@@ -1166,20 +1084,20 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 ! !OUTPUT PARAMETERS:
 !
 !
-! !DESCRIPTION: 
+! !DESCRIPTION:
 !  This subroutine reads the SMOS NESDIS binary file and applies the data
 !  quality flags to filter the data. !\normalsize
 !
 !  tb_time_seconds
-!  Arithmetic average of the same parameters found in the 
-!  fore- and aft-looking groups in the input SPL1CTB granule. 
-!  The resulting parameter thus describes the average of UTC 
-!  acquisition times of SPL1BTB observations whose boresights 
-!  fall within a 36 km EASE-Grid 2.0 cell. The result is then 
-!  expressed in J2000 seconds (the number of seconds since 
+!  Arithmetic average of the same parameters found in the
+!  fore- and aft-looking groups in the input SPL1CTB granule.
+!  The resulting parameter thus describes the average of UTC
+!  acquisition times of SPL1BTB observations whose boresights
+!  fall within a 36 km EASE-Grid 2.0 cell. The result is then
+!  expressed in J2000 seconds (the number of seconds since
 !  11:58:55.816 on January 1, 2000 UT).
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !  \item[n]            index of the nest
 !  \item[fname]        name of the RTNASASMAP AMSR-E file
@@ -1197,7 +1115,7 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   character*100,    parameter    :: sm_gr_name_A = "Soil_Moisture_Retrieval_Data_PM"
   character*100,    parameter    :: sm_field_name_A = "soil_moisture_pm"
   character*100,    parameter    :: sm_qa_name_A = "retrieval_qual_flag_pm"
-! MN 
+! MN
   character*100,    parameter    :: vwc_field_name_D = "vegetation_water_content"
   character*100,    parameter    :: vwc_field_name_A = "vegetation_water_content_pm"
 
@@ -1213,7 +1131,7 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   integer(hid_t)                 :: file_id
   integer(hid_t)                 :: sm_gr_id_D,sm_field_id_D,sm_qa_id_D
   integer(hid_t)                 :: sm_gr_id_A,sm_field_id_A,sm_qa_id_A
-  integer(hid_t)                 :: vwc_field_id_D ! MN 
+  integer(hid_t)                 :: vwc_field_id_D ! MN
   integer(hid_t)                 :: vwc_field_id_A ! MN
   real,             allocatable  :: sm_field(:,:)
   real,             allocatable  :: vwc_field(:,:)! MN
@@ -1227,7 +1145,7 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   dimsm      = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
   count_file = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
   count_mem  = (/cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr/)
-  
+
   allocate(sm_field(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
   allocate(sm_qa(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
   allocate(vwc_field(cdfT_SMAPsm_struc(n)%nc, cdfT_SMAPsm_struc(n)%nr))
@@ -1238,31 +1156,31 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
   call h5open_f(status)
   call LIS_verify(status, 'Error opening HDF fortran interface')
-  
-  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status) 
+
+  call h5fopen_f(trim(fname),H5F_ACC_RDONLY_F, file_id, status)
   call LIS_verify(status, 'Error opening NASASMAP file ')
-  
-  if(pass.eq.'D') then 
+
+  if(pass.eq.'D') then
      call h5gopen_f(file_id,sm_gr_name_D,sm_gr_id_D, status)
      call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-     
+
      call h5dopen_f(sm_gr_id_D,sm_field_name_D,sm_field_id_D, status)
      call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-     
+
      call h5dget_space_f(sm_field_id_D, dataspace, status)
      call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-     
+
      call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
           start=offset_file, count=count_file, hdferr=status)
      call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-     
+
      call h5screate_simple_f(memrank,dimsm, memspace, status)
      call LIS_verify(status, 'Error in h5create_simple_f; read_cdfTransfer_NASASMAPsm')
-     
+
      call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
           start=offset_mem, count=count_mem, hdferr=status)
      call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_cdfTransfer_NASASMAPsm')
-     
+
      call h5dread_f(sm_field_id_D, H5T_NATIVE_REAL,sm_field,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
@@ -1272,15 +1190,15 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
      call h5dopen_f(sm_gr_id_D,sm_qa_name_D,sm_qa_id_D, status)
      call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
-     
+
      call h5dread_f(sm_qa_id_D, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
-     
+
      call h5dclose_f(sm_qa_id_D,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
-! MN get the vegetation water contnent 
+! MN get the vegetation water contnent
      call h5dopen_f(sm_gr_id_D,vwc_field_name_D,vwc_field_id_D, status)
      call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
 
@@ -1297,34 +1215,34 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
   else
      call h5gopen_f(file_id,sm_gr_name_A,sm_gr_id_A, status)
      call LIS_verify(status, 'Error opening SM group in NASASMAP file')
-     
+
      call h5dopen_f(sm_gr_id_A,sm_field_name_A,sm_field_id_A, status)
      call LIS_verify(status, 'Error opening SM field in NASASMAP file')
-     
+
      call h5dget_space_f(sm_field_id_A, dataspace, status)
      call LIS_verify(status, 'Error in h5dget_space_f: readNASASMAPObs')
-     
+
      call h5sselect_hyperslab_f(dataspace, H5S_SELECT_SET_F, &
           start=offset_file, count=count_file, hdferr=status)
      call LIS_verify(status, 'Error setting hyperslab dataspace in readNASASMAPObs')
-     
+
      call h5screate_simple_f(memrank,dimsm, memspace, status)
      call LIS_verify(status, 'Error in h5create_simple_f; read_cdfTransfer_NASASMAPsm')
-     
+
      call h5sselect_hyperslab_f(memspace, H5S_SELECT_SET_F, &
           start=offset_mem, count=count_mem, hdferr=status)
      call LIS_verify(status, 'Error in h5sselect_hyperslab_f: read_cdfTransfer_NASASMAPsm')
-     
+
      call h5dread_f(sm_field_id_A, H5T_NATIVE_REAL,sm_field,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM field from NASASMAPfile')
 
      call h5dclose_f(sm_field_id_A,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
-     
+
      call h5dopen_f(sm_gr_id_A,sm_qa_name_A,sm_qa_id_A, status)
      call LIS_verify(status, 'Error opening SM QA field in NASASMAP file')
-     
+
      call h5dread_f(sm_qa_id_A, H5T_NATIVE_INTEGER,sm_qa,dims,status, &
           memspace, dataspace)
      call LIS_verify(status, 'Error extracting SM QA field from NASASMAPfile')
@@ -1332,7 +1250,7 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
      call h5dclose_f(sm_qa_id_A,status)
      call LIS_verify(status,'Error in H5DCLOSE call')
 
-! MN get the vegetation water contnent 
+! MN get the vegetation water contnent
      call h5dopen_f(sm_gr_id_A,vwc_field_name_A,vwc_field_id_A, status)
      call LIS_verify(status, 'Error opening Veg water content field in NASASMAP file')
 
@@ -1345,34 +1263,34 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
      call h5gclose_f(sm_gr_id_A,status)
      call LIS_verify(status,'Error in H5GCLOSE call')
-     
+
   endif
-  
+
   call h5fclose_f(file_id,status)
   call LIS_verify(status,'Error in H5FCLOSE call')
-  
+
   call h5close_f(status)
   call LIS_verify(status,'Error in H5CLOSE call')
 
-  sm_data_b = .false. 
+  sm_data_b = .false.
   t = 1
 
 ! The retrieval_quality_field variable's binary representation consists of bits
-! that indicate whether retrieval is performed or not at a given grid cell. 
-! When retrieval is performed, it contains additional bits to further 
-! indicate the exit status and quality of the retrieval. The first bit 
+! that indicate whether retrieval is performed or not at a given grid cell.
+! When retrieval is performed, it contains additional bits to further
+! indicate the exit status and quality of the retrieval. The first bit
 ! indicates the recommended quality (0-means retrieval has recommended quality).
 
   do r=1,cdfT_SMAPsm_struc(n)%nr
-     do c=1,cdfT_SMAPsm_struc(n)%nc        
+     do c=1,cdfT_SMAPsm_struc(n)%nc
         sm_data(t) = sm_field(c,r)
 
-        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2 
+        if(vwc_field(c,r).gt. 5 ) then !MN Aply QC : if VWC > 5 kg/m2
            sm_data(t) = LIS_rc%udef
-	 else 
+	 else
 
-           if(sm_data(t).ne.-9999.0) then 
-              if(ibits(sm_qa(c,r),0,1).eq.0) then 
+           if(sm_data(t).ne.-9999.0) then
+              if(ibits(sm_qa(c,r),0,1).eq.0) then
                  sm_data_b(t) = .true.
               else
                  sm_data(t) = -9999.0
@@ -1388,7 +1306,7 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
-!-------------------------------------------------------------------------- 
+!--------------------------------------------------------------------------
   call neighbor_interp(LIS_rc%obs_gridDesc(k,:),&
        sm_data_b, sm_data, smobs_b_ip, smobs_ip, &
        cdfT_SMAPsm_struc(n)%nc*cdfT_SMAPsm_struc(n)%nr, &
@@ -1402,77 +1320,6 @@ subroutine read_NASASMAP_data_cdfTransfer(n, k, pass, fname, smobs_ip)
 #endif
 
 
-
 end subroutine read_NASASMAP_data_cdfTransfer
-
-#if 0 
-!BOP
-! !ROUTINE: create_cdfTransfer_NASASMAPsm_filename
-! \label{create_cdfTransfer_NASASMAPsm_filename}
-! 
-! !INTERFACE: 
-subroutine create_cdfTransfer_NASASMAPsm_filename(ndir, designation, yr, mo,da, filename)
-! !USES:   
-
-  implicit none
-! !ARGUMENTS: 
-  character(len=*)  :: filename
-  character(len=*)  :: designation
-  integer           :: yr, mo, da
-  character (len=*) :: ndir
-! 
-! !DESCRIPTION: 
-!  This subroutine creates the SMAP filename (from NSIDC)
-!  based on the time and date 
-! 
-!  The arguments are: 
-!  \begin{description}
-!  \item[ndir] name of the SMAP soil moisture data directory
-!  \item[yr]  current year
-!  \item[mo]  current month
-!  \item[da]  current day
-!  \item[filename] Generated SMAP filename
-! \end{description}
-!EOP
-
-  character (len=4) :: fyr
-  character (len=2) :: fmo,fda
-  
-  write(unit=fyr, fmt='(i4.4)') yr
-  write(unit=fmo, fmt='(i2.2)') mo
-  write(unit=fda, fmt='(i2.2)') da
-
-  if(designation.eq."SPL3SMAP") then 
-     filename = trim(ndir)//'/'//trim(fyr)//'.'//trim(fmo)//'.'//&
-          trim(fda)//'/SMAP_L3_SM_AP_'&
-          //trim(fyr)//trim(fmo)//trim(fda)//&
-          '_R12170_001.h5'
-! MN:   
-! The SMAP file names contain components that change in a way that
-! is difficult to programatically generate. So after downloading
-! a SMAP data file, a symbolic link was created to it which make it 
-! easier to generate file name.
-!   For example:
-!   SMAP_L3_SM_P_20170902.h5 -> SMAP_L3_SM_P_20170902_R15152_001.h5
-  elseif(designation.eq."SPL3SMP") then 
-     filename = trim(ndir)//'/'//trim(fyr)//'.'//trim(fmo)//'.'//&
-          trim(fda)//'/SMAP_L3_SM_P_'&
-          //trim(fyr)//trim(fmo)//trim(fda)//&
-         '.h5'
-! For example:
-! SMAP_L3_SM_P_E_20180811.h5 -> SMAP_L3_SM_P_E_20180811_R16010_001.h5
-! MN for sake of convenience instead of real name the symbolic link was used
-  elseif(designation.eq."SPL3SMP_E") then 
-     filename = trim(ndir)//'/'//trim(fyr)//'.'//trim(fmo)//'.'//&
-          trim(fda)//'/SMAP_L3_SM_P_E_'&
-          //trim(fyr)//trim(fmo)//trim(fda)//&
-          '.h5'
-
-  endif
-
-end subroutine create_cdfTransfer_NASASMAPsm_filename
-
-#endif
-
 
 
