@@ -23,7 +23,7 @@ contains
 
   ! Read preobs files, perform simple preprocessing, and store
   ! in database.
-  subroutine USAF_read_preobs(rootdir, preobsdir, presavdir, &
+  subroutine USAF_read_preobs(preobsdir, presavdir, &
        use_timestamp, &
        year, month, day, hour, use_expanded_station_ids)
 
@@ -36,7 +36,6 @@ contains
     implicit none
 
     ! Arguments
-    character(*), intent(in) :: rootdir
     character(*), intent(in) :: preobsdir
     character(*), intent(in) :: presavdir
     integer, intent(in) :: use_timestamp
@@ -123,7 +122,7 @@ contains
     nsize_total = 0
     do ihemi = 1, 2
 
-       call get_preobs_filename(filename, rootdir, preobsdir, &
+       call get_preobs_filename(filename, preobsdir, &
             use_timestamp, &
             ihemi, year, month, day, hour, use_expanded_station_ids)
 
@@ -202,7 +201,7 @@ contains
     ! along the way.
     stncnt = 0
     do ihemi = 1, 2
-       call get_preobs_filename(filename, rootdir, preobsdir, &
+       call get_preobs_filename(filename, preobsdir, &
             use_timestamp, &
             ihemi, year, month, day, hour, use_expanded_station_ids)
 
@@ -636,8 +635,8 @@ contains
        prevtime = curtime - deltatime
        call esmf_timeget(prevtime, yy=prevyear, mm=prevmonth, &
             dd=prevday, h=prevhour, rc=rc)
-       write(presav_filename,'(A,A,A,A,i4.4,i2.2,i2.2,i2.2)') &
-            trim(rootdir), '/', trim(presavdir), '/presav2.03hr.', &
+       write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
+            trim(presavdir), '/presav2.03hr.', &
             prevyear, prevmonth, prevday, prevhour
        inquire(file=presav_filename, exist=file_exists)
        if (file_exists) then
@@ -676,8 +675,8 @@ contains
     call obscur%correct_region3_12z()
 
     ! Write the final presave file
-    write(presav_filename,'(A,A,A,A,i4.4,i2.2,i2.2,i2.2)') &
-         trim(rootdir), '/', trim(presavdir), '/presav2.03hr.', &
+    write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
+         trim(presavdir), '/presav2.03hr.', &
          year, month, day, hour
     write(LIS_logunit,*)'[INFO] Writing to ', trim(presav_filename)
     call obscur%write_data(presav_filename)
@@ -686,7 +685,7 @@ contains
   end subroutine USAF_read_preobs
 
   ! Generate name of preobs file.  Based on code in AGRMET_getpcpobs.F90
-  subroutine get_preobs_filename(filename, rootdir, preobsdir, &
+  subroutine get_preobs_filename(filename, preobsdir, &
        use_timestamp, &
        ihemi, year, month, day, hour, use_expanded_station_ids)
 
@@ -695,7 +694,6 @@ contains
 
     ! Arguments
     character(*), intent(out) :: filename
-    character(*), intent(in) :: rootdir
     character(*), intent(in) :: preobsdir
     integer, intent(in) :: use_timestamp
     integer, intent(in) :: ihemi
@@ -713,22 +711,22 @@ contains
 
     if (use_expanded_station_ids == 0) then
        if (use_timestamp == 1) then
-          write(ftime1, '(a1, i4.4, i2.2, i2.2, a1)') '/', &
+          write(ftime1, '(i4.4, i2.2, i2.2)') &
                year, month, day, '/'
-          filename = trim(rootdir) // ftime1 // trim(preobsdir) // &
+          filename = ftime1 // '/' // trim(preobsdir) // &
                '/preobs_' // FHEMI(ihemi) // '.03hr.' // ftime2
        else
-          filename = trim(rootdir) // '/' // trim(preobsdir) // &
+          filename = trim(preobsdir) // &
                '/preobs_' // FHEMI(ihemi) // '.03hr.' // ftime2
        endif
     else if (use_expanded_station_ids == 1) then
        if (use_timestamp == 1) then
-          write(ftime1, '(a1, i4.4, i2.2, i2.2, a1)') '/', &
-               year, month, day, '/'
-          filename = trim(rootdir) // ftime1 // trim(preobsdir) // &
+          write(ftime1, '(i4.4, i2.2, i2.2)') &
+               year, month, day
+          filename = ftime1 // '/' // trim(preobsdir) // &
                '/preobs_03hr_' // ftime2 // ".txt"
        else
-          filename = trim(rootdir) // '/' // trim(preobsdir) // &
+          filename = trim(preobsdir) // &
                '/preobs_03hr_' // ftime2 // ".txt"
        endif
     end if
