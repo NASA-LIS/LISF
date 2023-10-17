@@ -2071,6 +2071,9 @@ contains
   ! from AGRMET_processobs.
   subroutine set_unique_networks(this)
 
+    ! Imports
+    use LIS_logMod, only: LIS_logunit, LIS_endrun
+
     ! Defaults
     implicit none
 
@@ -2108,10 +2111,9 @@ contains
        else if (this%networks(i) .ne. prior_net) then
           this%lasts(net_count) = i - 1
           net_count = net_count + 1
-          ! FIXME...Update for LIS_logunit and LIS_endrun
           if (net_count .gt. MAX_UNIQUE_NETWORKS) then
-             print*,'[ERR] Too many unique networks!'
-             stop
+             write(LIS_logunit,*) '[ERR] Too many unique networks!'
+             call LIS_endrun
           end if
           this%firsts(net_count) = i
           this%unique_networks(net_count) = this%networks(i)
