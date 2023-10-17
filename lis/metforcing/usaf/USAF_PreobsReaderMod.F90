@@ -17,9 +17,6 @@ module USAF_PreobsReaderMod
   ! Public routines
   public :: USAF_read_preobs
 
-  ! FIXME:  Replace this with LIS_logMod.F90
-  integer, parameter :: LIS_logunit = 6
-
   integer, parameter :: MISSING = -99999999
 
 contains
@@ -32,7 +29,8 @@ contains
 
     ! Imports
     use ESMF
-    use USAF_GagesMod, only : USAF_Gages_t
+    use LIS_logMod, only:  LIS_logunit
+    use USAF_GagesMod, only: USAF_Gages_t
 
     ! Defaults
     implicit none
