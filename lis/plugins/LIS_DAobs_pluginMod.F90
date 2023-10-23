@@ -251,6 +251,10 @@ subroutine LIS_DAobs_plugin
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
 #endif
 
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+    use cdfTransfer_NASASMAPsm_Mod,         only : cdfTransfer_NASASMAPsm_setup
+#endif
+
 !YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
     use SMOSNRTNNL2sm_Mod,       only : SMOSNRTNNL2sm_setup
@@ -449,6 +453,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_NASA_SMAPSM )
     external read_NASASMAPsm, write_NASASMAPsmobs
+#endif
+
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+    external read_cdfTransfer_NASASMAPsm, write_cdfTransfer_NASASMAPsmobs
 #endif
 
 !YK
@@ -836,6 +844,16 @@ subroutine LIS_DAobs_plugin
         read_NASASMAPsm)
    call registerwritedaobs(trim(LIS_NASASMAPsmobsId)//char(0),&
         write_NASASMAPsmobs)
+#endif
+
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+   call registerdaobsclass(trim(LIS_CDFTRANSFERNASASMAPsmobsId),"LSM")
+   call registerdaobssetup(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        cdfTransfer_NASASMAPsm_setup)
+   call registerreaddaobs(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        read_cdfTransfer_NASASMAPsm)
+   call registerwritedaobs(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        write_cdfTransfer_NASASMAPsmobs)
 #endif
 
 !YK

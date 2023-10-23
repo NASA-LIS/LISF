@@ -17,6 +17,7 @@ module LDT_DrangeMod
 !
 !  !REVISION HISTORY: 
 !  2 Oct 2008    Sujay Kumar  Initial Specification
+!  16 Feb 2022   Mahdi Navari; modified to save stratify CDF
 !
 !EOP
   use LDT_DAobsDataMod
@@ -209,7 +210,7 @@ contains
     type(DAmetricsEntry) :: metrics
 
     integer  :: t,i,j,k,c,r
-    integer  :: sindex
+    integer  :: sindex,sindex0,sindex1
     real, allocatable :: strat_xrange(:,:,:,:)
     real, allocatable :: strat_delta(:,:,:)
     real, allocatable :: strat_mask(:,:,:)
@@ -221,7 +222,7 @@ contains
     if(LDT_rc%endtime.eq.1) then 
        
        if(obs%selectOpt.eq.1.and.metrics%selectOpt.eq.1) then 
-          if(LDT_rc%group_cdfs.eq.0) then 
+          if(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.0) then 
              do t=1,LDT_rc%ngrid(n)
                 do j=1,LDT_rc%cdf_ntimes
                    do k=1,obs%vlevels
@@ -246,7 +247,7 @@ contains
                    enddo
                 enddo
              enddo
-          elseif(LDT_rc%group_cdfs.eq.1) then 
+          elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.0) then 
              allocate(strat_drange_total(LDT_rc%group_cdfs_nbins, &
                   LDT_rc%cdf_ntimes, &
                   obs%vlevels))
@@ -337,12 +338,219 @@ contains
                    enddo
                 enddo
              enddo
-
+             metrics%strat_xrange = strat_xrange
              deallocate(strat_drange_total)
              deallocate(strat_maxval)
              deallocate(strat_minval)
              deallocate(strat_mask)
              deallocate(strat_delta)
+
+!MN: Startification based on monthly precipitation climatology 
+!    monthly total precipitation climatology for each pixel are stored in LDT_rc%stratification_data
+
+          elseif(LDT_rc%group_cdfs.eq.0 .and. LDT_rc%strat_cdfs.eq.1) then
+             allocate(strat_drange_total(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_maxval(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_minval(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_mask(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_delta(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_xrange(LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels, &
+                  LDT_rc%cdf_nbins))
+
+             strat_drange_total = 0
+             strat_maxval = -1000000.0
+             strat_minval = 1000000.0
+             strat_mask = 0
+             strat_delta = 0
+             strat_xrange = 0 
+
+             do t=1,LDT_rc%ngrid(n)
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      sindex = LDT_rc%stratification_data(t,j)
+                      strat_drange_total(sindex,j,k) = &
+                           strat_drange_total(sindex,j,k) + &
+                           metrics%count_drange_total(t,j,k)
+                      if(metrics%maxval(t,j,k).gt.&
+                           strat_maxval(sindex,j,k)) then
+                           strat_maxval(sindex,j,k) = metrics%maxval(t,j,k)
+                      endif
+                      if(metrics%minval(t,j,k).lt.&
+                           strat_minval(sindex,j,k)) then
+                           strat_minval(sindex,j,k) = metrics%minval(t,j,k)
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%strat_cdfs_nbins
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      if(strat_drange_total(t,j,k).le.&
+                           LDT_rc%obsCountThreshold) then
+                         strat_maxval(t,j,k) = LDT_rc%udef
+                         strat_minval(t,j,k) = LDT_rc%udef
+                         strat_mask(t,j,k) = LDT_rc%udef
+                      else
+                         strat_mask(t,j,k) = strat_drange_total(t,j,k)
+                         strat_delta(t,j,k) = &
+                              (strat_maxval(t,j,k) - &
+                              strat_minval(t,j,k))/&
+                              (LDT_rc%cdf_nbins-1)
+                         strat_xrange(t,j,k,1) = strat_minval(t,j,k)
+                         do i=2, LDT_rc%cdf_nbins
+                            strat_xrange(t,j,k,i) = &
+                                 strat_xrange(t,j,k,i-1) + &
+                                 strat_delta(t,j,k)
+
+                         enddo
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%ngrid(n)
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      sindex = LDT_rc%stratification_data(t,j)
+                      if(strat_mask(sindex,j,k).eq.LDT_rc%udef) then
+                         metrics%maxval(t,j,k) = LDT_rc%udef
+                         metrics%minval(t,j,k) = LDT_rc%udef
+                         metrics%mask(t,j,k) = LDT_rc%udef
+                      else
+                         metrics%mask(t,j,k) = strat_mask(sindex,j,k)
+                         metrics%delta(t,j,k) = strat_delta(sindex,j,k)
+                         metrics%xrange(t,j,k,:) =strat_xrange(sindex,j,k,:)
+
+                         metrics%maxval(t,j,k) = strat_maxval(sindex,j,k)
+                         metrics%minval(t,j,k) = strat_minval(sindex,j,k)
+                      endif
+                   enddo
+                enddo
+             enddo
+             metrics%strat_xrange = strat_xrange
+             deallocate(strat_drange_total)
+             deallocate(strat_maxval)
+             deallocate(strat_minval)
+             deallocate(strat_mask)
+             deallocate(strat_delta)
+             deallocate(strat_xrange)
+
+          elseif(LDT_rc%group_cdfs.eq.1 .and. LDT_rc%strat_cdfs.eq.1) then
+             allocate(strat_drange_total(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_maxval(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_minval(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_mask(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_delta(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels))
+             allocate(strat_xrange(LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins, &
+                  LDT_rc%cdf_ntimes, &
+                  obs%vlevels, &
+                  LDT_rc%cdf_nbins))
+
+             strat_drange_total = 0
+             strat_maxval = -1000000.0
+             strat_minval = 1000000.0
+             strat_mask = 0
+             strat_delta = 0
+             strat_xrange = 0
+
+             do t=1,LDT_rc%ngrid(n)
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      sindex0  = LDT_rc%stratification_data(t,j)
+                      sindex1 = LDT_rc%cdf_strat_data(t)
+                      sindex = sindex0 + (sindex1 - 1)*LDT_rc%strat_cdfs_nbins
+                      strat_drange_total(sindex,j,k) = &
+                           strat_drange_total(sindex,j,k) + &
+                           metrics%count_drange_total(t,j,k)
+                      if(metrics%maxval(t,j,k).gt.&
+                           strat_maxval(sindex,j,k)) then
+                         strat_maxval(sindex,j,k) = metrics%maxval(t,j,k)
+                      endif
+                      if(metrics%minval(t,j,k).lt.&
+                           strat_minval(sindex,j,k)) then
+                         strat_minval(sindex,j,k) = metrics%minval(t,j,k)
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%group_cdfs_nbins*LDT_rc%strat_cdfs_nbins
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      if(strat_drange_total(t,j,k).le.&
+                           LDT_rc%obsCountThreshold) then
+                         strat_maxval(t,j,k) = LDT_rc%udef
+                         strat_minval(t,j,k) = LDT_rc%udef
+                         strat_mask(t,j,k) = LDT_rc%udef
+                      else
+                         strat_mask(t,j,k) = strat_drange_total(t,j,k)
+                         strat_delta(t,j,k) = &
+                              (strat_maxval(t,j,k) - &
+                              strat_minval(t,j,k))/&
+                              (LDT_rc%cdf_nbins-1)
+                         strat_xrange(t,j,k,1) = strat_minval(t,j,k)
+                         do i=2, LDT_rc%cdf_nbins
+                            strat_xrange(t,j,k,i) = &
+                                 strat_xrange(t,j,k,i-1) + &
+                                 strat_delta(t,j,k)
+
+                         enddo
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             do t=1,LDT_rc%ngrid(n)
+                do j=1,LDT_rc%cdf_ntimes
+                   do k=1,obs%vlevels
+                      sindex0  = LDT_rc%stratification_data(t,j)
+                      sindex1 = LDT_rc%cdf_strat_data(t)
+                      sindex = sindex0 + (sindex1 - 1)*LDT_rc%strat_cdfs_nbins
+                      if(strat_mask(sindex,j,k).eq.LDT_rc%udef) then
+                         metrics%maxval(t,j,k) = LDT_rc%udef
+                         metrics%minval(t,j,k) = LDT_rc%udef
+                         metrics%mask(t,j,k) = LDT_rc%udef
+                      else
+                         metrics%mask(t,j,k) = strat_mask(sindex,j,k)
+                         metrics%delta(t,j,k) = strat_delta(sindex,j,k)
+                         metrics%xrange(t,j,k,:) =strat_xrange(sindex,j,k,:)
+
+                         metrics%maxval(t,j,k) = strat_maxval(sindex,j,k)
+                         metrics%minval(t,j,k) = strat_minval(sindex,j,k)
+                      endif
+                   enddo
+                enddo
+             enddo
+             metrics%strat_xrange = strat_xrange
+             deallocate(strat_drange_total)
+             deallocate(strat_maxval)
+             deallocate(strat_minval)
+             deallocate(strat_mask)
+             deallocate(strat_delta)
+             deallocate(strat_xrange)
 
           endif
        endif

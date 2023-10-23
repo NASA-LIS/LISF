@@ -363,6 +363,18 @@ module LDT_PRIV_rcMod
      integer                :: group_cdfs_nbins
      integer                :: daily_interp_switch  !0:on; 1:off (Y.Kwon)
 
+     integer                :: strat_cdfs
+     integer                :: write_strat_cdfs
+     character*50           :: strat_src
+     character*50           :: strat_file
+     !character*50           :: strat_cdfs_attrib_file
+     integer                :: strat_cdfs_nbins
+     integer                :: stratified_cdfs_nbins
+     real                   :: strat_cdfs_min
+     real                   :: strat_cdfs_max
+     integer, allocatable   :: stratification_data(:,:)
+
+
      integer                :: sp_sampl_cdfs
      integer                :: sp_sample_cdf_rad
 
@@ -377,6 +389,7 @@ module LDT_PRIV_rcMod
      integer                :: pass_id
 
      integer                :: ftn_cdf
+     integer                :: ftn_strat_cdf
      integer                :: ftn_DAobs_domain
      character*100          :: institution = 'NASA GSFC'     
 
