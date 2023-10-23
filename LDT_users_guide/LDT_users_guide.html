@@ -8103,6 +8103,76 @@ landcover.1gd4r<br>
 </div>
 </div>
 <div class="paragraph">
+<p><code>Stratify CDFs by external data:</code> specifies whether to stratify CDFs for each pixel by an externally specified categorical map; for example, by precipitation climatology.
+This option generates a stratified CDF for each grid cell. That means if the domain contains 10000 grid cells, the CDF file also has 10000 CDFs. But CDFs in grid cells with a similar precipitation climatology are the same.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not stratify by external data</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">stratify by external data</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Stratify CDFs by external data:    1</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Number of bins to use for stratification:</code>  specifies the number of stratification bins to use for computing the CDF.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Number of bins to use for stratification: 15</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Stratification data source:</code> specifies the name of the stratification data source</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Stratification data source:  "LIS LSM total precipitation"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>External stratification file:</code> Specifies the name of a NetCDF file that contains the monthly precipitation climatology. The user needs to run an LSM and generate daily total precipitation output for a long period. Then the user needs to run LVT to generate monthly precipitation climatology.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>External stratification file:              "LVT_MEAN_FINAL.202201010000.d01.nc"</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>Write stratified geolocation independent CDFs:</code> specifies whether to write the stratified CDF or not.
+This option eliminates the similar CDFs and collapses the stratified CDFs into a number of stratified bins.  For example, if the domain contains 10000 grid cells and you chose to stratify the CDFs to 15 precipitation bins. This option collapses the 10000 CDFs to 15 CDFs. This CDF is a geolocation independent CDFs.</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>Write stratified geolocation independent CDFs: 1</pre>
+</div>
+</div>
+<div class="paragraph">
 <p><code>Temporal averaging interval:</code> specifies temporal averaging interval to be used while computing the CDF.</p>
 </div>
 <div class="literalblock">
@@ -17762,7 +17832,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 2.4<br>
-Last updated 2023-10-04 13:33:15 UTC
+Last updated 2023-10-23 15:50:48 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
