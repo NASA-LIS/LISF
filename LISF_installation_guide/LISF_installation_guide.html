@@ -956,7 +956,7 @@ LIS-only dependency
 </table>
 </div>
 <div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to <a href="http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/" class="bare">http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/</a> and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.</p>
+<p>If you wish to enable LIS&#8217; RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to <a href="http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/" class="bare">http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/</a> and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.</p>
 </div>
 <div class="paragraph">
 <p>Please create a directory outside of the LIS source code to checkout the CRTM library into.  Then, within that new directory, run:</p>
@@ -999,13 +999,37 @@ LIS-only dependency
 </table>
 </div>
 <div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must manually compile an included library.</p>
+<p>If you wish to enable LIS&#8217; RTM support, then you must manually compile an included library.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>% cd $WORKING/lib/lis-cmem3
-% gmake</pre>
+% LIS_ARCH=linux_ifc make</pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+If using the GNU compilers, set <code>LIS_ARCH</code> to linux_gfortran.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+linux_ifc and linux_gfortran are the only supported architectures.
+</td>
+</tr>
+</table>
 </div>
 </div>
 <div class="sect3">
@@ -1023,14 +1047,38 @@ LIS-only dependency
 </table>
 </div>
 <div class="paragraph">
-<p>If you wish to enable LIS' RTM support, then you must manually compile an included library.</p>
+<p>If you wish to enable LIS&#8217; RTM support, then you must manually compile an included library.</p>
 </div>
 <div class="literalblock">
 <div class="content">
 <pre>% cd $WORKING/lib/lis-crtm-profile-utility
-% gmake
-% gmake install</pre>
+% LIS_ARCH=linux_ifc make
+% LIS_ARCH=linux_ifc make install</pre>
 </div>
+</div>
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+If using the GNU compilers, set <code>LIS_ARCH</code> to linux_gfortran.
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock important">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Important</div>
+</td>
+<td class="content">
+linux_ifc and linux_gfortran are the only supported architectures.
+</td>
+</tr>
+</table>
 </div>
 </div>
 </div>
@@ -2505,7 +2553,7 @@ Required to use GDAL</p>
 <div id="footer">
 <div id="footer-text">
 Version 1.1<br>
-Last updated 2023-10-23 15:50:48 UTC
+Last updated 2023-10-23 17:07:55 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
