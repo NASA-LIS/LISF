@@ -72,6 +72,7 @@ contains
     use LPRMvod_obsMod,            only : LPRMvod_obsinit
     use MCD15A2Hlai_obsMod,        only : MCD15A2Hlai_obsinit
     use THySM_obsMod,              only : THySM_obsinit
+    use LISlsmPrecip_obsMod,       only : LISlsmPrecip_obsInit 
     use VIIRSGVFobsMod,            only : VIIRSGVFobsinit        !Y.Kwon   
     use CDFSGVFobsMod,             only : CDFSGVFobsinit         !Y.Kwon
     use GEOSTEFF_obsMod,           only : GEOSTeffobsinit        !Y.Kwon    
@@ -104,6 +105,7 @@ contains
     external readLPRMvodObs
     external readMCD15A2HlaiObs
     external readTHySMobs
+    external readLISlsmPrecipObs
     external readVIIRS_GVFObs       !Y.Kwon
     external readCDFS_GVFObs        !Y.Kwon
     external readGEOSTEFFObs        !Y.Kwon
@@ -111,6 +113,9 @@ contains
 
     call registerdaobssetup(trim(LDT_LISlsmSMobsId)//char(0), LISlsmSM_obsInit)
     call registerdaobsread(trim(LDT_LISlsmSMobsId)//char(0), readLISlsmSMObs)
+
+    call registerdaobssetup(trim(LDT_LISlsmPrecipobsId)//char(0), LISlsmPrecip_obsInit)
+    call registerdaobsread(trim(LDT_LISlsmPrecipobsId)//char(0), readLISlsmPrecipObs)
 
     !Y.Kwon
     call registerdaobssetup(trim(LDT_LISlsmTEFFobsId)//char(0), LISlsmTEFF_obsInit)

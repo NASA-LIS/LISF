@@ -272,6 +272,8 @@ module LIS_pluginIndices
         "SMOS(NESDIS) soil moisture"
    character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
         "SMAP(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_CDFTRANSFERNASASMAPsmobsId = &
+        "SMAP(NASA) soil moisture with CDF Transfer"                 !MN 
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
    character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
