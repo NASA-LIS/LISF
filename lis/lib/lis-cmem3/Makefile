@@ -7,7 +7,7 @@ else ifeq ($(LIS_ARCH),linux_gfortran)
 FC = gfortran
 LD = gfortran
 else
-$(error "Please specify the compiler via the LIS_ARCH env variable.  Only linux_ifc and linux_gfortran supported. See the LISF Installation Guide for more information.")
+$(error "Please specify the compiler via the LIS_ARCH env variable.  Only linux_ifc and linux_gfortran are supported. See the LISF Installation Guide for more information.")
 endif
 
 # compiler/linker flags
