@@ -401,7 +401,7 @@ else
     echo "**************************************************************"
     
 fi  
-echo " -- Done downloading CFSv2 Reforecast files -- "
+echo " -- Done checking (and/or downloading) CFSv2 Forecast files -- "
 
 exit $ret_code
 # ____________________________
