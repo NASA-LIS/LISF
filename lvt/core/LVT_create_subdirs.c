@@ -7,6 +7,7 @@
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 /*****************************************************************************/
 /* NASA/GSFC, Software Systems Support Office, Code 610.3                    */
 /*****************************************************************************/
@@ -24,6 +25,7 @@
 
 /* ANSI C Standard Headers */
 #include <errno.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
