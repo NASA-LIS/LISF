@@ -897,7 +897,7 @@ if ($ENV{MPDECOMP2} eq '1') {
 }
 
 if(defined($ENV{LIS_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LIS_RPC};
 }
 else{
    $librpc = "";

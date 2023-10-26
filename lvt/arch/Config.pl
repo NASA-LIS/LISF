@@ -521,7 +521,7 @@ else{
 }
 
 if(defined($ENV{LVT_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LVT_RPC};
 }
 else{
    $librpc = "";

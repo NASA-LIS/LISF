@@ -599,7 +599,7 @@ else{
 }
 
 if(defined($ENV{LDT_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LDT_RPC};
 }
 else{
    $librpc = "";
