@@ -977,6 +977,8 @@ if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/lis_darun
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
+
+#   Check for CFSv2 files being ready to read in:
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 	if [[ $STEP == "E2E" ]] || [[ $STEP == "BCSD" ]]; then
 	    download_forecasts
@@ -984,17 +986,24 @@ if [ $DATATYPE  == "forecast" ]; then
     else
 	echo
 	# CFSv2 forecast
-#	sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
-#	ret_code=$?
+        sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
+        ret_code=$?
+
 	if [ $ret_code -gt 0 ]; then
+            echo " Error return code from the CFSv2 file download checker :: "${ret_code}
+            echo " > 0 :: Exiting from s2s_run.sh --"
      	    exit
 	fi
-	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
-	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
-	    exit
-	fi
+# -----------------
+#  NOTE: Turned off user-specified check below since run from cron env for operations ...
+#	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecasts is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)? " YESORNO
+#	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
+#	    exit
+#	fi
+# -----------------
     fi
 fi
+
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
 cd ${BWD}
