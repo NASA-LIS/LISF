@@ -50,7 +50,7 @@ module USAF_GagesMod
      character(10) :: date10
      integer :: nobs
      character(14), allocatable :: YYYYMMDDhhmmss(:)
-     character(10), allocatable :: networks(:)
+     character(32), allocatable :: networks(:)
      character(32), allocatable :: platforms(:)
      character(2), allocatable :: wmocode_id(:)
      character(2), allocatable :: fipscode_id(:)
@@ -84,7 +84,7 @@ module USAF_GagesMod
      integer, allocatable :: preswx(:)
      integer, allocatable :: pastwx(:)
      integer, allocatable :: pastwx_durations(:)
-     character(10), allocatable :: unique_networks(:)
+     character(32), allocatable :: unique_networks(:)
      integer, allocatable :: firsts(:) ! Starting indices for each network
      integer, allocatable :: lasts(:)  ! Ending indices for each network
      integer :: num_unique_networks
@@ -110,6 +110,7 @@ module USAF_GagesMod
      procedure :: fill_gaps => USAF_gages_fill_gaps
      procedure :: write_data => USAF_gages_write_data
      procedure :: set_pastwx_durations => USAF_gages_set_pastwx_durations
+     procedure :: copy_to_usaf_obsdata => USAF_copy_to_usaf_obsdata
   end type USAF_Gages_t
 
   ! Local parameters
@@ -199,7 +200,7 @@ contains
     character(10), intent(in) :: date10
     integer, intent(in) :: nobs
     character(14), intent(in) :: YYYYMMDDhhmmss(nobs)
-    character(10), intent(in) :: networks(nobs)
+    character(32), intent(in) :: networks(nobs)
     character(32), intent(in) :: platforms(nobs)
     character(2), intent(in) :: wmocode_id(nobs)
     character(2), intent(in) :: fipscode_id(nobs)
@@ -548,6 +549,8 @@ contains
   ! Reconciles different accumulations from the same report.
   subroutine USAF_gages_reconcile_self(this)
 
+    use LIS_logMod, only: LIS_logunit
+
     ! Defaults
     implicit none
 
@@ -633,6 +636,8 @@ contains
 
   ! Fill gaps in precip record if bookend accumulations are identical.
   subroutine USAF_gages_fill_gaps(this)
+
+    use LIS_logmod, only:  LIS_logunit
 
     ! Defaults
     implicit none
@@ -1565,6 +1570,8 @@ contains
   ! (South America).  Based on logic in AGRMET_processobs.
   subroutine USAF_gages_correct_region3_12Z(this)
 
+    use LIS_logmod, only:  LIS_logunit
+    
     ! Defaults
     implicit none
 
@@ -1660,6 +1667,9 @@ contains
   ! Write gage data to output file.
   subroutine USAF_gages_write_data(this, filename)
 
+    ! Imports
+    use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_logunit
+
     ! Defaults
     implicit none
 
@@ -1671,6 +1681,7 @@ contains
     integer :: istat
     integer :: nobs, nobs_good
     integer :: i
+    integer :: iunit
 
     nobs = this%nobs
 
@@ -1691,9 +1702,11 @@ contains
        nobs_good = nobs_good + 1
     end do
 
-    open(11, file=trim(filename), iostat=istat, err=300)
-    write(11, *, iostat=istat, err=300) nobs_good
+    iunit = LIS_getNextUnitNumber()
+    open(iunit, file=trim(filename), iostat=istat, err=300)
+    write(iunit, *, iostat=istat, err=300) nobs_good
     do i = 1, nobs
+
        if (this%amts24(i) .eq. MISSING .and. &
             this%amts21(i) .eq. MISSING .and. &
             this%amts18(i) .eq. MISSING .and. &
@@ -1704,7 +1717,7 @@ contains
             this%amts03(i) .eq. MISSING .and. &
             this%amts02(i) .eq. MISSING .and. &
             this%amts01(i) .eq. MISSING) cycle
-       write(11, 6000, iostat=istat, err=300) &
+       write(iunit, 6000, iostat=istat, err=300) &
             this%YYYYMMDDhhmmss(i), &
             this%networks(i), this%platforms(i), &
             this%wmocode_id(i), this%fipscode_id(i), &
@@ -1717,7 +1730,7 @@ contains
             this%amts00(i), this%durations(i), &
             this%preswx(i), this%pastwx(i)
 6000   format (a14, 1x, &
-            a10, 1x, a32, 1x, &
+            a32, 1x, a32, 1x, &
             a2, 1x, a2, 1x, &
             i6, 1x, i6, 1x, &
             i9, 1x, i9, 1x, &
@@ -1727,15 +1740,20 @@ contains
             i9, 1x, i9, 1x, &
             i9, 1x, i9, 1x &
             i9, 1x, i9)
+
     end do
 
     300 continue
-    close(11)
+    close(iunit)
+    call LIS_releaseUnitNumber(iunit)
 
   end subroutine USAF_gages_write_data
 
   ! Read gage data from file.  Acts as an alternative constructor.
   subroutine USAF_gages_read_data(this, filename, date10)
+
+    ! Imports
+    use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber
 
     ! Defaults
     implicit none
@@ -1748,7 +1766,7 @@ contains
     ! Locals
     integer :: nobs
     character(14), allocatable :: YYYYMMDDhhmmss(:)
-    character(10), allocatable :: networks(:)
+    character(32), allocatable :: networks(:)
     character(32), allocatable :: platforms(:)
     character(2), allocatable :: wmocode_id(:)
     character(2), allocatable :: fipscode_id(:)
@@ -1773,17 +1791,21 @@ contains
     integer :: istat
     logical :: found
     integer :: i
+    integer :: iunit
 
     call this%delete() ! Make sure structure is empty
 
     inquire(file=trim(filename), exist=found)
     if (.not. found) return
 
-    open(11, file=trim(filename), iostat=istat, err=300)
-    read(11, *, iostat=istat, err=300, end=300) nobs
+    iunit = LIS_getNextUnitNumber()
+
+    open(iunit, file=trim(filename), iostat=istat, err=300)
+    read(iunit, *, iostat=istat, err=300, end=300) nobs
 
     if (nobs .le. 0) then
-       close(11)
+       close(iunit)
+       call LIS_releaseUnitNumber(iunit)
        return
     end if
 
@@ -1812,7 +1834,7 @@ contains
     allocate(pastwx(nobs))
 
     do i = 1, nobs
-       read(11, 6000, iostat=istat, err=300, end=300) &
+       read(iunit, 6000, iostat=istat, err=300, end=300) &
             YYYYMMDDhhmmss(i), &
             networks(i), platforms(i), &
             wmocode_id(i), fipscode_id(i), &
@@ -1825,7 +1847,7 @@ contains
             amts00(i), durations(i), &
             preswx(i), pastwx(i)
 6000   format (a14, 1x, &
-            a10, 1x, a32, 1x, &
+            a32, 1x, a32, 1x, &
             a2, 1x, a2, 1x, &
             i6, 1x, i6, 1x, &
             i9, 1x, i9, 1x, &
@@ -1837,8 +1859,9 @@ contains
             i9, 1x, i9)
     end do
 
-    close(11)
-    300 continue
+    close(iunit)
+    call LIS_releaseUnitNumber(iunit)
+300 continue
 
     ! If read was successful, copy to USAF_gages_t structure.
     if (istat .eq. 0) then
@@ -2081,7 +2104,7 @@ contains
     class(USAF_gages_t), intent(inout) :: this
 
     ! Locals
-    character(10) :: prior_net
+    character(32) :: prior_net
     integer :: net_count
     integer :: nobs
     integer :: i
@@ -2143,7 +2166,7 @@ contains
 
     ! Arguments
     class(USAF_gages_t), intent(in) :: this
-    character(10), intent(in) :: network
+    character(32), intent(in) :: network
     character(32), intent(in) :: plat_id
     character(2), intent(in) :: wmocode_id
     character(2), intent(in) :: fipscode_id
@@ -2480,4 +2503,59 @@ contains
 
   end function set_india_precip_threshold
 
+  ! Method for copying appropriate data to a USAF_ObsData structure
+  ! for use in data assimilation.
+  subroutine USAF_copy_to_usaf_obsdata(this, hr, gage_sigma_o_sqr, &
+       precipObs)
+
+    ! Imports
+    use LIS_logMod, only: LIS_logunit, LIS_endrun
+    use USAF_bratsethMod, only: USAF_ObsData, USAF_assignObsData
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    class(USAF_Gages_t), intent(in) :: this
+    integer, intent(in) :: hr
+    real, intent(in) :: gage_sigma_o_sqr
+    type(USAF_ObsData), intent(inout) :: precipObs
+
+    ! Locals
+    integer :: i
+
+    ! Sanity checks
+    if (this%nobs == 0) return
+    if (hr .ne. 6 .and. hr .ne. 12) then
+       write(LIS_logunit,*) &
+            '[ERR] Invalid hour passed to USAF_copy_to_usaf_obsdata'
+       write(LIS_logunit,*) &
+            '[ERR] Should be 6 or 12, received ', hr
+       call LIS_endrun()
+    end if
+
+    if (hr == 6) then
+       do i = 1, this%nobs
+          if (this%amts06(i) < 0) cycle
+          call USAF_assignObsData(precipObs, &
+               this%networks(i), &
+               this%platforms(i), &
+               real(this%amts06(i)) * 0.1, &
+               real(this%lats(i)) * 0.01, &
+               real(this%lons(i)) * 0.01, &
+               gage_sigma_o_sqr, 0.)
+       end do
+    else if (hr == 12) then
+       do i = 1, this%nobs
+          if (this%amts12(i) < 0) cycle
+          call USAF_assignObsData(precipObs, &
+               this%networks(i), &
+               this%platforms(i), &
+               real(this%amts12(i)) * 0.1, &
+               real(this%lats(i)) * 0.01, &
+               real(this%lons(i)) * 0.01, &
+               gage_sigma_o_sqr, 0.)
+       end do
+    end if
+  end subroutine USAF_copy_to_usaf_obsdata
 end module USAF_GagesMod

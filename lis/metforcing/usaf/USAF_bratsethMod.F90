@@ -96,8 +96,8 @@ module USAF_bratsethMod
    type USAF_obsData
       private
       integer :: nobs
-      character*10, allocatable :: net(:)
-      character*10, allocatable :: platform(:)
+      character*32, allocatable :: net(:)
+      character*32, allocatable :: platform(:)
       real, allocatable :: obs(:) ! Observed variable
       real, allocatable :: lat(:) ! Latitude of observation (deg N)
       real, allocatable :: lon(:) ! Longitude of observation (deg E)
@@ -280,8 +280,8 @@ contains
 
       ! Arguments
       type(USAF_ObsData),intent(inout) :: this
-      character(len=10), intent(in) :: net
-      character(len=10), intent(in) :: platform
+      character(len=32), intent(in) :: net
+      character(len=32), intent(in) :: platform
       real, intent(in) :: ob
       real, intent(in) :: lat
       real, intent(in) :: lon
@@ -622,7 +622,8 @@ contains
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
-      character(len=10) :: net, platform
+      character(len=32) :: net
+      character(len=32) :: platform
       integer :: icount
       integer :: i,j
       integer :: count_good_ssmi
@@ -1128,7 +1129,8 @@ contains
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
-      character(len=10) :: net, platform
+      character(len=32) :: net
+      character(len=32) :: platform
       integer :: count_good_geo_precip, icount
       integer :: npts
       integer :: i,j,jj
@@ -1460,7 +1462,7 @@ contains
       integer,intent(in) :: imax
       integer,intent(in) :: jmax
       real, intent(in) :: back(imax,jmax)
-      character(len=10),intent(in) :: type
+      character(len=32),intent(in) :: type
 
       ! Local variables
       integer :: nobs
@@ -1566,7 +1568,7 @@ contains
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
       integer :: r
-      character(len=10) :: new_name,type
+      character(len=32) :: new_name,type
       real :: convergeThresh
       real :: sigmaBSqr
       integer :: good_obs
@@ -2043,7 +2045,7 @@ contains
       integer :: imaxabsdiff
       real :: maxabsdiff, y_prev, y_new, normdev
       integer :: icount, num_high_dev
-      integer :: c,r,i,j,iob,job
+      integer :: c,r,i,j,iob,job,ii
       integer :: ierr
       double precision :: t0,t1, t2
       logical :: verbose
@@ -2317,6 +2319,21 @@ contains
                mad_ana = mad_ana / real(icount)
             end if
          end if
+
+         !EMK TEST
+         ! do ii = 1, nobs
+         !    write(LIS_logunit,*) &
+         !         '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
+         !         ii,
+         !         trim(this%net(ii)), ' ',&
+         !         trim(this%platform(ii)), &
+         !         ' ',this%obs(ii),&
+         !         ' ',this%back(ii),&
+         !         ' ',pnew_ana(ii),&
+         !         ' ',pnew_est(ii),&
+         !         ' ',1./invDataDensities(ii)
+
+         ! end do
 
          if (done) exit ! No more iterations!
 
@@ -3176,7 +3193,7 @@ contains
       ! Arguments
       type(USAF_ObsData), intent(inout) :: this
       integer,intent(in) :: nest
-      character(len=10), intent(in) :: new_name
+      character(len=32), intent(in) :: new_name
       character(len=*), optional :: network
       logical,optional,intent(in) :: silent_rejects
 
@@ -3186,7 +3203,8 @@ contains
       real :: dlat, dlon
       integer :: c,r,j
       real :: ctrlat, ctrlon
-      character(len=10) :: net_new, platform_new
+      character(len=32) :: net_new
+      character(len=32) :: platform_new
       integer, allocatable :: actions(:), actions_pet(:)
       real, allocatable :: superobs_pet(:),superlat_pet(:),superlon_pet(:)
       real, allocatable :: means(:)
@@ -3608,7 +3626,8 @@ contains
       integer :: count_dups
       integer :: total_reject_count, total_merge_count, total_create_count
       real :: mean,back,newlat,newlon,sigmaOSqr,oErrScaleLength
-      character(len=10) :: net,platform
+      character(len=32) :: net
+      character(len=32) :: platform
       real :: diff
       integer :: r,c,i
       integer :: nobs
@@ -4069,7 +4088,7 @@ contains
    ! Checks if observation network is recognized as a gauge.
    logical function is_gauge(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "AMIL") answer = .true.
@@ -4092,7 +4111,7 @@ contains
    ! surface stations, all observations should have uncorrelated errors.
    logical function is_stn(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .true.
       is_stn = answer
@@ -4102,7 +4121,7 @@ contains
    ! Checks if observation "network" is recognized as SSMI retrievals.
    logical function is_ssmi(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "SSMI") answer = .true.
@@ -4113,7 +4132,7 @@ contains
    ! Checks if observation "network" is recognized as GEOPRECIP retrievals.
    logical function is_geoprecip(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "GEOPRECIP") answer = .true.
@@ -4124,7 +4143,7 @@ contains
    ! Checks if observation "network" is recognized as CMORPH estimate.
    logical function is_cmorph(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "CMORPH") answer = .true.
@@ -4135,7 +4154,7 @@ contains
    ! Checks if observation "network" is recognized as IMERG retrievals.
    logical function is_imerg(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "IMERG") answer = .true.
@@ -5440,7 +5459,7 @@ contains
       real, allocatable :: invDataDensities(:)
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
-      character(len=10) :: new_name,type
+      character(len=32) :: new_name,type
       real :: convergeThresh
       integer :: i,j
 
@@ -5603,7 +5622,7 @@ contains
       integer, parameter :: YD = 1649
       integer, parameter :: NCMOR = XD*YD
       real :: precip(XD,YD)
-      character(len=10) :: net, platform
+      character(len=32) :: net, platform
       real :: sigmaOSqr, oErrScaleLength
       integer :: count_good_obs
       character(len=120) :: fname

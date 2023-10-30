@@ -174,7 +174,7 @@ subroutine AGRMET_sfcalc(n)
   character(len=10) :: yyyymmddhh
   integer :: ierr
   integer :: r,c, L
-  character(len=10) :: type
+  character(len=32) :: type
   integer :: gdeltas, gid, ntiles
   integer :: count1
   logical :: found_inq
