@@ -55,7 +55,7 @@ subroutine readcrd_agrmet()
 !EOP
   integer:: n,rc
   character(len=10)       :: cdate
-  character(len=100) :: message(20) ! EMK
+  character(len=255) :: message(20) ! EMK
   real :: tmp_max_dist ! EMK
   character(len=201) :: c_string ! EMK
   integer :: ios ! EMK

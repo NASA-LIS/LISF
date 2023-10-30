@@ -770,7 +770,7 @@ contains
       integer :: j3hr
       integer :: fc_hr
       character(len=6) :: src
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
       integer :: rc,ierr
       character(len=10) :: yyyymmddhh
       integer :: c, r
@@ -940,7 +940,7 @@ contains
       integer :: yr,mo,da,hr
       character(len=100) :: ifil
       logical :: exists
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
       character(len=30) :: routine_name
       logical :: use_zeros
       integer :: local_global_or_hemi
@@ -1124,7 +1124,7 @@ contains
       character(len=100) :: ifil
       integer :: k
       integer :: alert_number
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
       character(len=30) :: routine_name
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
@@ -3014,7 +3014,7 @@ contains
       character(len=100) :: gtype
       logical :: found_inq
 #if (!defined USE_GRIBAPI)
-      character(len=100) :: message(20)
+      character(len=255) :: message(20)
 #endif
       found = .false.
       ! Dummy values, replaced by GRIB data contents below

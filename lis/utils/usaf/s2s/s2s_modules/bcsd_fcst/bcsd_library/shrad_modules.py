@@ -9,7 +9,9 @@ Updated by Abheera Hazra feb2018
 ## This function reads netcdf files.
 ## It accepts netcdf file name and variable name to be read and returns data
 ## to an array
-from __future__ import division
+
+
+
 from datetime import datetime, timedelta
 # pylint: disable=no-name-in-module
 import netCDF4 as nc4

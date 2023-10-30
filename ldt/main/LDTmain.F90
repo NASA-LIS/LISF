@@ -38,7 +38,7 @@ program LDTmain
   if(i.ne.1) then 
      print*, 'Usage: '
      print*, 'LDT <ldtconfigfile>'
-     stop
+     error stop 1
   endif
   
   call getarg(1, configfile)

@@ -509,8 +509,15 @@ LINUX_FLAGS_ABSOFT_PROD  = $(LINUX_FLAGS_ABSOFT)
 
 #LINUX_FLAGS = $(LINUX_FLAGS_LAHEY)
 #LINUX_FLAGS = $(LINUX_FLAGS_PGI)
-LINUX_FLAGS = $(LINUX_FLAGS_INTEL)
+#LINUX_FLAGS = $(LINUX_FLAGS_INTEL)
 #LINUX_FLAGS = $(LINUX_FLAGS_G95)
 #LINUX_FLAGS = $(LINUX_FLAGS_GFORTRAN)
 #LINUX_FLAGS = $(LINUX_FLAGS_ABSOFT)
 
+ifeq ($(LIS_ARCH),linux_ifc)
+LINUX_FLAGS = $(LINUX_FLAGS_INTEL)
+else ifeq ($(LIS_ARCH),linux_gfortran)
+LINUX_FLAGS = $(LINUX_FLAGS_GFORTRAN)
+else
+$(error "Please specify the compiler via the LIS_ARCH env variable.  Only linux_ifc and linux_gfortran are supported. See the LISF Installation Guide for more information.")
+endif

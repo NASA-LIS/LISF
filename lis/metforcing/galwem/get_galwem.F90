@@ -16,7 +16,11 @@
 ! !REVISION HISTORY:
 ! 15 Mar 2022: Yeosang Yoon, initial code
 ! 08 Sep 2022; Yeosang Yoon, Add codes to read GALWEM 25 DEG dataset
-!
+! 25 May 2023: Eric Kemp, extended GALWEM 0.25 deg to 240 hours.
+! 01 Jun 2023: Eric Kemp, fixes to time code to support runs other than
+!              00Z, to correct time intervals between GALWEM-GD files,
+!              and to stop searching for (nonexistent) GALWEM-GD file
+!              when LIS reaches it's end time.
 ! !INTERFACE:
 subroutine get_galwem(n, findex)
 ! !USES:
@@ -53,7 +57,7 @@ subroutine get_galwem(n, findex)
   integer           :: openfile
 
   ! GALWEM cycles every 6 hours; each cycle provide up to 168 hours (7 days) forecast for GALWEM-17km;
-  ! each cycle provide up to 144 hours (6 days) forecast for GALWEM-25deg;
+  ! each cycle provide up to 240 hours (10 days) forecast for GALWEM-25deg;
   ! <=42 (every 1-hour); > 42 (every 3-hour)
 
   if(LIS_rc%ts.gt.10800) then
@@ -62,6 +66,19 @@ subroutine get_galwem(n, findex)
      call LIS_endrun()
   endif
 
+  ! EMK...Return if LIS has reached the end time (meaning a new GALWEM
+  ! file does not need to be read).
+  if (LIS_rc%yr == LIS_rc%eyr .and. &
+       LIS_rc%mo == LIS_rc%emo .and. &
+       LIS_rc%da == LIS_rc%eda .and. &
+       LIS_rc%hr == LIS_rc%ehr .and. &
+       LIS_rc%mn == LIS_rc%emn .and. &
+       LIS_rc%ss == LIS_rc%ess) then
+     write(LIS_logunit,*) &
+          '[INFO] LIS run has reached end time, will not read more GALWEM'
+     return
+  end if
+  
   openfile=0
 
   if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then  !beginning of run
@@ -71,35 +88,46 @@ subroutine get_galwem(n, findex)
   ! First timestep of run
   if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then
     ! Bookend-time record 1
-     yr1 = LIS_rc%yr
-     mo1=LIS_rc%mo
-     da1=LIS_rc%da
-     hr1=LIS_rc%hr
+     yr1 = LIS_rc%syr
+     mo1=LIS_rc%smo
+     da1=LIS_rc%sda
+     hr1=LIS_rc%shr
      mn1=0
      ss1=0
      ts1=0
      call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
 
      ! Bookend-time record 2
-     yr2=LIS_rc%yr    !next hour
-     mo2=LIS_rc%mo
-     da2=LIS_rc%da
-     hr2=1            !1 hour in first 42 hours
+     yr2=LIS_rc%syr
+     mo2=LIS_rc%smo
+     da2=LIS_rc%sda
+     hr2=LIS_rc%shr
      mn2=0
      ss2=0
-     ts2=0
+     ts2=3600 ! Advance 1 hour
      call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
 
      !movetime = 1
      openfile=1
+
+     !write(LIS_logunit,*)'EMK: time1,yr1,mo1,da1,hr1,ts1 = ', &
+     !     time1,yr1,mo1,da1,hr1,ts1
+     !write(LIS_logunit,*)'EMK: time2,yr2,mo2,da2,hr2,ts2 = ', &
+     !     time2,yr2,mo2,da2,hr2,ts2
+
   endif
-  
+
   ! Determine valid times when forecasts are available to be read in:
+  ! EMK...Revised based on sample forecast runs for 20230523.
   if(galwem_struc(n)%fcst_hour < 42) then
      fcsthr_intv = 1
      valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
-  elseif(galwem_struc(n)%fcst_hour >= 42) then
+  elseif(galwem_struc(n)%fcst_hour >= 42 .and. &
+       galwem_struc(n)%fcst_hour < 168) then
      fcsthr_intv = 3
+     valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
+  else
+     fcsthr_intv = 6
      valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
   endif
 
@@ -125,7 +153,7 @@ subroutine get_galwem(n, findex)
      endif
      ! Check if local forecast hour exceeds max grib file forecast hour (GALWEM-25deg):
      if(galwem_struc(n)%resol == 25) then
-        if(galwem_struc(n)%fcst_hour > 144 ) then
+        if(galwem_struc(n)%fcst_hour > 240 ) then
            write(LIS_logunit,*) &
                  "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
            write(LIS_logunit,*) &
@@ -139,23 +167,35 @@ subroutine get_galwem(n, findex)
         galwem_struc(n)%fcsttime1=galwem_struc(n)%fcsttime2
         galwem_struc(n)%metdata1=galwem_struc(n)%metdata2
 
-        yr2=LIS_rc%yr
-        mo2=LIS_rc%mo
-        da2=LIS_rc%da
-        hr2=valid_hour
-        mn2=fcsthr_intv*60    ! Backward looking
+        yr2=LIS_rc%syr
+        mo2=LIS_rc%smo
+        da2=LIS_rc%sda
+        hr2=LIS_rc%shr
+        mn2=0
         ss2=0
-        ts2=0
+        ts2=3600 * galwem_struc(n)%fcst_hour
         call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
       endif
 
       ! Read in file contents:
       if(LIS_rc%tscount(n) == 1) then  ! Read in first two book-ends 
+
+         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_yr = ', &
+         !     galwem_struc(n)%init_yr
+         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_mo = ', &
+         !     galwem_struc(n)%init_mo
+         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_da = ', &
+         !     galwem_struc(n)%init_da
+         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_hr = ', &
+         !     galwem_struc(n)%init_hr
+         !write(LIS_logunit,*)'EMK: galwem_struc(n)%fcst_hour = ', &
+         ! galwem_struc(n)%fcst_hour
+
          ferror=0
          order=1   
          call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
               galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
-              hr1,fname)
+              0,fname)
 
          write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file1 ... ',trim(fname)
          call read_galwem(n, findex, order, fname, ferror)
@@ -183,6 +223,11 @@ subroutine get_galwem(n, findex)
       endif
   endif
   openfile=0
+
+  !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime1 = ", &
+  !     galwem_struc(n)%fcsttime1
+  !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime2 = ", &
+  !     galwem_struc(n)%fcsttime2
 
 end subroutine get_galwem
 

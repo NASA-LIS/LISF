@@ -7,10 +7,10 @@
 #This module bias corrects a forecasts following
 #probability mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
 
-from __future__ import division
+
+
 import os
 import sys
 import calendar
@@ -19,10 +19,14 @@ import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
 # pylint: disable=import-error
+import yaml
 import bcsd_function
 from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from bcsd_function import VarLimits as lim
 from shrad_modules import read_nc_files
 # pylint: enable=import-error
+
+limits = lim()
 
 def get_index(ref_array, my_value):
     """
@@ -55,7 +59,7 @@ def slice_latlon(lat, lon, lat_range: list, lon_range: list):
     return indexlat, indexlon
 
 # Small number
-EPS = 1.0e-5
+#EPS = 1.0e-5
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -96,9 +100,9 @@ MONTH_NAME_TEMPLATE = '{}01'
 # GEOS5 filename TEMPLATE:
 FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 
-CONFIG_FILE = str(sys.argv[16])
-LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
-LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
+CONFIGFILE = str(sys.argv[16])
+LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIGFILE, extent=True)
+LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -118,6 +122,13 @@ TINY = ((1/(NUM_YRS))/ENS_NUM)/2
 ## forecasted value happened to be an outlier of the
 ## reforecast climatology
 
+# Read in LDT landmask - impose on precip field prior to BC:
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+mask_2d = np.array(ldt_xr['LANDMASK'].values)
+mask_exp = mask_2d[np.newaxis, np.newaxis, np.newaxis,:,:]
 
 ##### Starting bias-correction from here
 
@@ -186,8 +197,16 @@ for MON in [INIT_FCST_MON]:
     np_FCST_CLIM_ARRAY, LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, \
     FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
 
+    mask = np.broadcast_to(mask_exp, CORRECT_FCST_COARSE.shape)
+    CORRECT_FCST_COARSE[mask == 0] = -9999.
+
     CORRECT_FCST_COARSE = np.ma.masked_array(CORRECT_FCST_COARSE, \
-    mask=CORRECT_FCST_COARSE == -999)
+                                             mask=CORRECT_FCST_COARSE == -9999.)
+
+   # clip limits - monthly BC NMME precip:
+    CORRECT_FCST_COARSE = limits.clip_array(CORRECT_FCST_COARSE, var_name="PRECTOT", \
+                                             max_val=0.004, precip=True)
+
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, MODEL_NAME, \
     MONTH_NAME, TARGET_FCST_SYR, TARGET_FCST_EYR)
     print(f"Now writing {OUTFILE}")
