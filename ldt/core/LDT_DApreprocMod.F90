@@ -16,6 +16,7 @@ module LDT_DApreprocMod
 ! 
 ! !REVISION HISTORY: 
 !  24 Nov 2008    Sujay Kumar  Initial Specification
+!  2 Dec 2021:   Mahdi Navari; modified to save stratify CDF
 ! 
   use ESMF
 
@@ -53,13 +54,13 @@ contains
     character*20         :: tres
     integer              :: rc
     integer              :: n
-    integer              :: c,r
+    integer              :: c,r,j
     integer              :: ios1
     integer              :: ftn
     character*50         :: preprocMethod
     real                 :: delta
     real, allocatable    :: cdf_strat_data(:,:)
-
+    real, allocatable    :: stratification_data(:,:,:)
     n = 1
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%obs_src,&
          label="DA observation source:",rc=rc)
@@ -86,7 +87,7 @@ contains
     call LDT_verify(rc,'Name of the preprocessed DA file: not defined')
 
     if(LDT_rc%comp_cdf.gt.0) then 
-       
+
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%cdf_nbins,&
             label="Number of bins to use in the CDF:",rc=rc)
        call LDT_verify(rc,'Number of bins to use in the CDF: not defined')
@@ -166,11 +167,17 @@ contains
 
           do r=1,LDT_rc%lnr(n)
              do c=1,LDT_rc%lnc(n)
-                if(LDT_domain(n)%gindex(c,r).ne.-1) then 
-                   
-                   LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = & 
+                if(LDT_domain(n)%gindex(c,r).ne.-1) then
+
+                    LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = & 
                         nint((cdf_strat_data(c,r) - LDT_rc%group_cdfs_min)/&
                         delta)+1
+                    if (LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) .gt. LDT_rc%group_cdfs_nbins) then
+                       write(LDT_logunit,*) '[INFO] Group bins is larger then Max Group bins',&
+                            LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)), 'vs.', LDT_rc%group_cdfs_nbins ,&
+                            'Value adjusted the Max Group bins'
+                       LDT_rc%cdf_strat_data(LDT_domain(n)%gindex(c,r)) = LDT_rc%group_cdfs_nbins
+                    endif
                 endif
              enddo
           enddo
@@ -179,49 +186,108 @@ contains
           write(LDT_logunit,*) '[INFO] Finished reading ',&
                trim(LDT_rc%group_cdfs_strat_file)
        endif
+
+!This part reads the monthly total precipitation climatology and generates
+!  stratification input data LDT_rc%stratification_data(LDT_rc%ngrid(n),LDT_rc%cdf_ntimes).
+
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs,&
+            label="Stratify CDFs by external data:",default=0, rc=rc)
+       call LDT_verify(rc,"Stratify CDFs by external data: not defined")
+
+       call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%write_strat_cdfs,&
+            label="Write stratified geolocation independent CDFs:",default=0, rc=rc)
+       call LDT_verify(rc,"Write stratify geolocation independent CDFs:: not defined")
+
+       if(LDT_rc%strat_cdfs.gt.0) then
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_src,&
+               label="Stratification data source:", rc=rc)
+          call LDT_verify(rc,"Stratification data source: not defined")
+
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_cdfs_nbins,&
+               label="Number of bins to use for stratification:",rc=rc)
+          call LDT_verify(rc,"Number of bins to use for stratification: not defined")
+
+          call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%strat_file,&
+               label="External stratification file:",rc=rc)
+          call LDT_verify(rc,"External stratification file: not defined")
+
+          allocate(LDT_rc%stratification_data(LDT_rc%ngrid(n),LDT_rc%cdf_ntimes))
+          allocate(stratification_data(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_rc%cdf_ntimes))
+
+          call read_Precip_climo (LDT_rc%lnc(n), LDT_rc%lnr(n), LDT_rc%strat_file, stratification_data) !
+
+          do j=1,LDT_rc%cdf_ntimes
+             LDT_rc%strat_cdfs_min = 0. !minval returns -9999.  minval(stratification_data(:,:,j)) ! min value over the entire domain  
+             LDT_rc%strat_cdfs_max = maxval(stratification_data(:,:,j)) ! max value over the entire domain 
+             delta = (LDT_rc%strat_cdfs_max-LDT_rc%strat_cdfs_min)/&
+                  LDT_rc%strat_cdfs_nbins               
+             do r=1,LDT_rc%lnr(n)
+                do c=1,LDT_rc%lnc(n)
+                   if(LDT_domain(n)%gindex(c,r).ne.-1) then
+                      if(stratification_data(c,r,j) .gt. 0) then 
+                         LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = &
+                              nint((stratification_data(c,r,j) - LDT_rc%strat_cdfs_min)/&
+                              delta)+1
+                         if (LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) .gt. LDT_rc%strat_cdfs_nbins) then
+                            write(LDT_logunit,*) '[INFO] Startification bins is larger then Max Startification bins',&
+                                 LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) , 'vs.', LDT_rc%strat_cdfs_nbins,&
+                                 'Value adjusted to the Max Startification bins'
+                            LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = LDT_rc%strat_cdfs_nbins
+                         endif
+                      else
+                         write(LDT_logunit,*) '[INFO] Total precip is zero or undefined',&
+                              stratification_data(c,r,j) ,c,r,j,&
+                              'Value adjusted to the Min Startification bins'
+                         LDT_rc%stratification_data(LDT_domain(n)%gindex(c,r), j) = 1
+                      endif
+                   endif
+                enddo
+             enddo
+          enddo
+       endif
     endif
-    
-    if(LDT_rc%comp_obsgrid.eq.1) then 
+
+    if(LDT_rc%comp_obsgrid.eq.1) then
        LDT_rc%pass = 0
     else
-       
-       if(LDT_rc%tavgInterval.lt.LDT_rc%ts) then 
+
+       if(LDT_rc%tavgInterval.lt.LDT_rc%ts) then
           write(LDT_logunit,*) '[ERR] Temporal averaging interval must be greater than'
           write(LDT_logunit,*) '[ERR] or equal to the LIS output timestep. '
           write(LDT_logunit,*) '[ERR] Program stopping....'
           call LDT_endrun()
        endif
-       
+
        call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%obsCountThreshold,&
             label="Observation count threshold:",&
             rc=rc)
-       call LDT_verify(rc,'Observation count threshold: not defined')             
-       
-       if(LDT_rc%comp_cdf.eq.1) then 
+       call LDT_verify(rc,'Observation count threshold: not defined')
+
+       if(LDT_rc%comp_cdf.eq.1) then
           LDT_rc%pass = 2
-       elseif(LDT_rc%anomalyObsProc.eq.1) then 
+       elseif(LDT_rc%anomalyObsProc.eq.1) then
           LDT_rc%pass = 2
        endif
-       
+
     endif
 
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%applyMask,&
          label="Apply external mask:",&
          rc=rc)
     call LDT_verify(rc,'Apply external mask: not defined')
-    
+
     call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%maskdir,&
          label="External mask directory:",&
          rc=rc)
     call LDT_verify(rc,'External mask directory: not defined')
-    
+
     call LDT_DAobs_plugin
-    
+
     LDT_rc%nobs = 1
-    
+
 ! This flag is set to prompt the writing of the domain file
-    if(LDT_rc%anomalyObsProc.eq.1) then 
-       LDT_rc%comp_obsgrid = 1       
+    if(LDT_rc%anomalyObsProc.eq.1) then
+       LDT_rc%comp_obsgrid = 1
     endif
 
   end subroutine LDT_DApreprocInit

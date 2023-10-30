@@ -1,0 +1,25 @@
+Noah-MP.4.0.1 SMAP Assimilation with Relocated CDF
+
+This case demonstrates EnKF-based assimilation of NASA SMAP data into
+Noah-MP.4.0.1 LSM using relocated CDFs
+
+It uses:
+* MERRA2
+* Retrospective run mode
+* Noah-MP.4.0.1 LSM
+* Regional domain over Europe
+* Time period from 1 June 2020 to 1 Jan 2022.
+
+This directory contains:
+* This README file
+* The lis.config file used for this test case
+* The NOAHMP36_OUTPUT_LIST.TBL.dyn.full file used by lis.config to select
+  the output variables.
+
+Note that lis.config should be edited to make sure the locations of the
+parameter and forcing files are specified correctly.
+
+To run this testcase:
+* Compile LIS
+* Run the LIS executable using the lis.config file and the testcase input
+  data.

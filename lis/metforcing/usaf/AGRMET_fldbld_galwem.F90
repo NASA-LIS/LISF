@@ -51,7 +51,7 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
   integer                 :: ftn, igrib
   character*120           :: gribfile
   integer                 :: yr1, mo1, da1, hr1
-  character*100           :: message     ( 20 )
+  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: gridres_dlat, gridres_dlon
   integer                 :: ifguess, jfguess
@@ -448,7 +448,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
 !     
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character*255                 :: message     ( 20 )
   character(len=4)              :: grib_msg
   character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt

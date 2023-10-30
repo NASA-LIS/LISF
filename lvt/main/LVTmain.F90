@@ -45,7 +45,7 @@ program LVTmain
   if(i.ne.1) then 
      print*, 'Usage: '
      print*, 'LVT <lvtconfigfile>'
-     stop
+     error stop 1
   endif
   
   call getarg(1, configfile)
