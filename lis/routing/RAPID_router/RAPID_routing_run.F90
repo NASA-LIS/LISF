@@ -197,6 +197,7 @@ subroutine RAPID_routing_run(n)
              writeint=RAPID_routing_struc(n)%outInterval)
 
      ! run RAPID
+#ifdef PETSc
      call RAPID_model_main (n,RAPID_routing_struc(n)%bQinit,RAPID_routing_struc(n)%bQfinal,RAPID_routing_struc(n)%bV,             &
                             RAPID_routing_struc(n)%bhum,RAPID_routing_struc(n)%bfor,RAPID_routing_struc(n)%bdam,                  &
                             RAPID_routing_struc(n)%binfluence,RAPID_routing_struc(n)%buq,                                         &
@@ -208,7 +209,7 @@ subroutine RAPID_routing_run(n)
                             RAPID_routing_struc(n)%nmlfile,qout_filename,                                                         &
                             LIS_rc%gnc(n),LIS_rc%gnr(n),surface_runoff,baseflow,RAPID_routing_struc(n)%initCheck,                 &
                             RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval)
-
+#endif
      deallocate(surface_runoff)
      deallocate(baseflow)
      

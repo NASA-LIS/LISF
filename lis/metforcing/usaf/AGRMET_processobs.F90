@@ -289,7 +289,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
   type(rain_obs), allocatable   :: obs_cur(:)
   type(rain_obs), allocatable   :: obs_6(:)
   type(rain_obs), allocatable   :: obs_12(:)
-  
+
+  character*32 :: net32, platform32
+
   data chemi / '_nh.', '_sh.' /
   
   sumsqr(a,b,c,d) = ((a-b)**2) + ((c-d)**2)
@@ -1142,8 +1144,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                     obs_cur(i)%lat, obs_cur(i)%lon,ri,rj)
 
                ! EMK...Add observation
+               net32 = obs_cur(i)%net
+               platform32 = obs_cur(i)%platform
                call USAF_assignObsData(precip6, &
-                    obs_cur(i)%net, obs_cur(i)%platform, &
+                    net32, platform32, &
                     float(obs_cur(i)%amt6) * 0.1, &
                     obs_cur(i)%lat, obs_cur(i)%lon,&
                     agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1209,8 +1213,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                  obs_cur(i)%lon,ri,rj)
 
             ! EMK...Add observation
+            net32 = obs_cur(i)%net
+            platform32 = obs_cur(i)%platform
             call USAF_assignObsData(precip12, &
-                 obs_cur(i)%net, obs_cur(i)%platform, &
+                 net32, platform32, &
                  float(obs_cur(i)%amt12) * 0.1, &
                  obs_cur(i)%lat, obs_cur(i)%lon, &
                  agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1275,8 +1281,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                    obs_cur(i)%lon,ri,rj)
 
               ! EMK...Add observation
+              net32 = obs_cur(i)%net
+              platform32 = obs_cur(i)%platform
               call USAF_assignObsData(precip12, &
-                   obs_cur(i)%net, obs_cur(i)%platform, &
+                   net32, platform32, &
                    0.0, &
                    obs_cur(i)%lat, obs_cur(i)%lon, &
                    agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1326,8 +1334,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                       ri,rj)
 
                  ! EMK...Add observation
+                 net32 = obs_cur(i)%net
+                 platform32 = obs_cur(i)%platform
                  call USAF_assignObsData(precip12, &
-                      obs_cur(i)%net, obs_cur(i)%platform, &
+                      net32, platform32, &
                       float(obs_cur(i)%amtmsc) * 0.1, &
                       obs_cur(i)%lat, obs_cur(i)%lon, &
                       agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1382,8 +1392,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                         ri,rj)
 
                    ! EMK...Add observation
+                   net32 = obs_6(i)%net
+                   platform32 = obs_6(i)%platform
                    call USAF_assignObsData(precip12, &
-                        obs_6(i)%net, obs_6(i)%platform, &
+                        net32, platform32, &
                         float(obs_6(i)%amtmsc) * 0.1, &
                         obs_6(i)%lat, obs_6(i)%lon, &
                         agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &

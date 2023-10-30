@@ -29,7 +29,9 @@ contains
 
     ! Imports
     use ESMF
+    use LIS_coreMod, only: LIS_masterproc
     use LIS_logMod, only:  LIS_logunit
+    use LIS_mpiMod, only:  LIS_mpi_comm
     use USAF_GagesMod, only: USAF_Gages_t
 
     ! Defaults
@@ -54,7 +56,7 @@ contains
     integer, allocatable :: ilat(:)
     integer, allocatable :: ilon(:)
     integer, allocatable :: bsn(:)
-    character(10), allocatable :: network(:)
+    character(32), allocatable :: network(:)
     character(32), allocatable :: plat_id(:)
     character(2), allocatable :: wmocode_id(:)
     character(2), allocatable :: fipscode_id(:)
@@ -68,7 +70,7 @@ contains
     integer :: ilat_tmp
     integer :: ilon_tmp
     character(14) :: YYYYMMDDhhmmss_tmp
-    character(10) :: network_tmp
+    character(32) :: network_tmp
     character(32) :: plat_id_tmp
     character(2) :: wmocode_id_tmp, fipscode_id_tmp
     integer :: pastwx_tmp
@@ -464,6 +466,11 @@ contains
                 end if
              else
                 ! This isn't the same station, so save it.
+                !if (trim(network_tmp) == "AMIL" .and. &
+                !     trim(plat_id_tmp) == "KQTC") then
+                !   write(LIS_logunit,*)'EMK: KQTC, twfprc = ', twfprc_tmp
+                !end if
+
                 stncnt = stncnt + 1
                 twfprc(stncnt) = twfprc_tmp
                 duration(stncnt) = duration_tmp
@@ -505,7 +512,7 @@ contains
                 call swap_int(ilat(j), ilat(j+1))
                 call swap_int(ilon(j), ilon(j+1))
                 call swap_int(bsn(j), bsn(j+1))
-                call swap_char10(network(j), network(j+1))
+                call swap_char32(network(j), network(j+1))
                 call swap_char32(plat_id(j), plat_id(j+1))
                 call swap_char2(wmocode_id(j), wmocode_id(j+1))
                 call swap_char2(fipscode_id(j), fipscode_id(j+1))
@@ -534,7 +541,7 @@ contains
                 call swap_int(ilat(j), ilat(j+1))
                 call swap_int(ilon(j), ilon(j+1))
                 call swap_int(bsn(j), bsn(j+1))
-                call swap_char10(network(j), network(j+1))
+                call swap_char32(network(j), network(j+1))
                 call swap_char32(plat_id(j), plat_id(j+1))
                 call swap_char2(wmocode_id(j), wmocode_id(j+1))
                 call swap_char2(fipscode_id(j), fipscode_id(j+1))
@@ -674,12 +681,19 @@ contains
         '[INFO] Correcting overnight reporting in South America'
     call obscur%correct_region3_12z()
 
-    ! Write the final presave file
-    write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
-         trim(presavdir), '/presav2.03hr.', &
-         year, month, day, hour
-    write(LIS_logunit,*)'[INFO] Writing to ', trim(presav_filename)
-    call obscur%write_data(presav_filename)
+    ! Have the master process write the data to file.
+    if (LIS_masterproc) then
+       write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
+            trim(presavdir), '/presav2.03hr.', &
+            year, month, day, hour
+       write(LIS_logunit,*)'[INFO] Writing to ', trim(presav_filename)
+       call obscur%write_data(presav_filename)
+    end if
+#if (defined SPMD)
+    call MPI_Barrier(LIS_mpi_comm, ierr)
+#endif
+
+    ! Clean up
     call obscur%delete()
 
   end subroutine USAF_read_preobs
@@ -704,31 +718,32 @@ contains
     integer, intent(in) :: use_expanded_station_ids
 
     ! Locals
-    character(10) :: ftime1, ftime2
+    character(8) :: ftime1
+    character(10) :: ftime2
     character(2), parameter :: FHEMI(2) = (/'nh', 'sh'/)
 
     write(ftime2, '(i4.4, i2.2, i2.2, i2.2)') year, month, day, hour
 
     if (use_expanded_station_ids == 0) then
-       if (use_timestamp == 1) then
-          write(ftime1, '(i4.4, i2.2, i2.2)') &
-               year, month, day, '/'
-          filename = ftime1 // '/' // trim(preobsdir) // &
-               '/preobs_' // FHEMI(ihemi) // '.03hr.' // ftime2
-       else
+       !if (use_timestamp == 1) then
+       !   write(ftime1, '(i4.4, i2.2, i2.2)') &
+       !        year, month, day
+       !   filename = ftime1 // '/' // trim(preobsdir) // &
+       !        '/preobs_' // FHEMI(ihemi) // '.03hr.' // ftime2
+       !else
           filename = trim(preobsdir) // &
                '/preobs_' // FHEMI(ihemi) // '.03hr.' // ftime2
-       endif
+       !endif
     else if (use_expanded_station_ids == 1) then
-       if (use_timestamp == 1) then
-          write(ftime1, '(i4.4, i2.2, i2.2)') &
-               year, month, day
-          filename = ftime1 // '/' // trim(preobsdir) // &
-               '/preobs_03hr_' // ftime2 // ".txt"
-       else
+       !if (use_timestamp == 1) then
+       !   write(ftime1, '(i4.4, i2.2, i2.2)') &
+       !        year, month, day
+       !   filename = ftime1 // '/' // trim(preobsdir) // &
+       !        '/preobs_03hr_' // ftime2 // ".txt"
+       !else
           filename = trim(preobsdir) // &
                '/preobs_03hr_' // ftime2 // ".txt"
-       endif
+       !endif
     end if
   end subroutine get_preobs_filename
 

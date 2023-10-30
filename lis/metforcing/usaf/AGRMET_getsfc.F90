@@ -244,7 +244,10 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   integer :: rc
 
   real,        external          :: AGRMET_calcrh_dpt
-  character(len=10) :: net10, platform10
+  !character(len=10) :: net10, platform10
+  character(len=32) :: net32, platform32
+  character*32, parameter :: blank32 = "                                "
+
   data norsou  / 'NORTHERN', 'SOUTHERN' /
 
 !     ------------------------------------------------------------------
@@ -506,45 +509,51 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                        ! EMK...Add to data structures.  Handle reformated
                        ! CDMS data that is missing platform and network
                        if (rtmp .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
+                          net32 = blank32
+                          net32 = netyp(irecord)
+                          platform32 = blank32
+                          platform32 = platform(irecord)
+                          if (trim(net32) .eq. 'NULL') then
+                             net32 = 'CDMS'
                           end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
+                          if (trim(platform32) .eq. '-99999999') then
+                             platform32 = '00000000'
                           end if
-                          call USAF_assignObsData(t2mObs,net10, &
-                               platform10,rtmp,rlat,rlon, &
+                          call USAF_assignObsData(t2mObs,net32, &
+                               platform32,rtmp,rlat,rlon, &
                                agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
                                0.)
 
                        end if
                        if (rrelh .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
+                          net32 = blank32
+                          net32 = netyp(irecord)
+                          platform32 = blank32
+                          platform32 = platform(irecord)
+                          if (trim(net32) .eq. 'NULL') then
+                             net32 = 'CDMS'
                           end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
+                          if (trim(platform32) .eq. '-99999999') then
+                             platform32 = '00000000'
                           end if
-                          call USAF_assignObsData(rh2mObs,net10, &
-                               platform10,rrelh,rlat,rlon, &
+                          call USAF_assignObsData(rh2mObs,net32, &
+                               platform32,rrelh,rlat,rlon, &
                                agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
                                0.)
                        end if
                        if (rspd .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
+                          net32 = blank32
+                          net32 = netyp(irecord)
+                          platform32 = blank32
+                          platform32 = platform(irecord)
+                          if (trim(net32) .eq. 'NULL') then
+                             net32 = 'CDMS'
                           end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
+                          if (trim(platform32) .eq. '-99999999') then
+                             platform32 = '00000000'
                           end if
-                          call USAF_assignObsData(spd10mObs,net10, &
-                               platform10,rspd,rlat,rlon, &
+                          call USAF_assignObsData(spd10mObs,net32, &
+                               platform32,rspd,rlat,rlon, &
                                agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
                                0.)
 

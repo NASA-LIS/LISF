@@ -352,6 +352,7 @@ module AGRMET_forcingMod
      real*8                 :: agrmetpcptime1, agrmetpcptime2
      real*8                 :: cmortime
      integer                :: pcpobswch
+     integer :: pcpobsfmt ! EMK...File format for precip obs
      integer                :: pwswch
      integer                :: raswch
      integer                :: cdfs2swch

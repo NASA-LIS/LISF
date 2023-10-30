@@ -109,8 +109,8 @@ contains
       type(ImergHHPrecip), intent(in) :: this
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
-      character*10, intent(in) :: net
-      character*10, intent(in) :: platform
+      character*32, intent(in) :: net
+      character*32, intent(in) :: platform
       type(USAF_ObsData), intent(inout) :: obsData_struc
 
       ! Local variables
