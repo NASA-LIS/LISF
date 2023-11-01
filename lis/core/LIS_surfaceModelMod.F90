@@ -382,27 +382,27 @@ contains
              endif
           endif
        
-#ifdef USE_PFIO
-          IF (PFIO_bundle%first_time(n, 1)) THEN
-             call PFIO_create_file_metadata(n, LIS_sfmodel_struc(n)%outInterval, &
-                                  LIS_sfmodel_struc(n)%nsm_layers, &
-                                  LIS_sfmodel_struc(n)%lyrthk, &
-                                  LIS_sfmodel_struc(n)%models_used)
-             PFIO_bundle%first_time(n, :) = .FALSE.
-          ENDIF
-#endif
-
           if(alarmCheck) then 
              open_stats = .false.
              call LIS_create_output_directory('SURFACEMODEL')             
 #ifdef USE_PFIO
+             IF (PFIO_bundle%first_time(n, 1, PFIO_LSM_idx)) THEN
+                ! Create the file metadata ONCE.
+                call PFIO_create_file_metadata(n, PFIO_LSM_idx, &
+                                     LIS_sfmodel_struc(n)%outInterval, &
+                                     LIS_sfmodel_struc(n)%nsm_layers, &
+                                     LIS_sfmodel_struc(n)%lyrthk, &
+                                     model_name=LIS_sfmodel_struc(n)%models_used)
+                PFIO_bundle%first_time(n, :, PFIO_LSM_idx) = .FALSE.
+             ENDIF
              call LIS_create_output_filename(n, outfile,&
                               model_name = 'SURFACEMODEL',&
                               writeint=LIS_sfmodel_struc(n)%outInterval)
-             vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
-             CALL PFIO_write_data(n, vcol_id, outfile, LIS_sfmodel_struc(n)%outInterval) !<--- PFIO
+             vcol_id = MOD(PFIO_bundle%counter(n, PFIO_LSM_idx)-1, LIS_rc%n_vcollections) + 1
+             CALL PFIO_write_data(n, PFIO_LSM_idx, vcol_id, outfile, &
+                              LIS_sfmodel_struc(n)%outInterval) !<--- PFIO
 
-             PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+             PFIO_bundle%counter(n,PFIO_LSM_idx) = PFIO_bundle%counter(n,PFIO_LSM_idx) + 1
 #else
              if(LIS_masterproc) then 
                 if (LIS_sfmodel_struc(n)%stats_file_open) then

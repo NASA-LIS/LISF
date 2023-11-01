@@ -168,6 +168,11 @@ module LIS_coreMod
 
 #ifdef USE_PFIO
       public :: PFIO_bundle
+      public :: numPFIOcols
+      public :: PFIO_LSM_idx
+      public :: PFIO_RTM_idx
+      public :: PFIO_IRRIG_idx
+      public :: PFIO_ROUTING_idx
 #endif
 
   integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
@@ -209,9 +214,18 @@ module LIS_coreMod
      integer,       allocatable :: str_patch_ind(:)
   end type lis_domain_sf_type
 
-  type(lisrcdec), save           :: LIS_rc
+  type(lisrcdec), save          :: LIS_rc
 #ifdef USE_PFIO
-  type(pfio_t),   save           :: PFIO_bundle
+  type(pfio_t),   save          :: PFIO_bundle
+  integer                       :: numPFIOcols
+  integer                       :: pfioLIS_MOC_LSM_COUNT
+  integer                       :: pfioLIS_MOC_RTM_COUNT
+  integer                       :: pfioLIS_MOC_IRRIG_COUNT
+  integer                       :: pfioLIS_MOC_ROUTING_COUNT
+  integer                       :: PFIO_LSM_idx
+  integer                       :: PFIO_RTM_idx
+  integer                       :: PFIO_IRRIG_idx
+  integer                       :: PFIO_ROUTING_idx
 #endif
   type(lis_domain_type), allocatable :: LIS_domain(:)
   type(lis_domain_sf_type), allocatable :: LIS_surface(:,:)
@@ -414,16 +428,6 @@ contains
     LIS_rc%reset_flag = .false.
     LIS_rc%run_model  = .true.
 
-#ifdef USE_PFIO
-    allocate(PFIO_bundle%fmd_rst(LIS_rc%nnest))
-    allocate(PFIO_bundle%rst_id(LIS_rc%nnest))
-    allocate(PFIO_bundle%fmd(LIS_rc%nnest, LIS_rc%n_vcollections))
-    allocate(PFIO_bundle%hist_id(LIS_rc%nnest, LIS_rc%n_vcollections))
-    allocate(PFIO_bundle%first_time(LIS_rc%nnest, LIS_rc%n_vcollections))
-    allocate(PFIO_bundle%counter(LIS_rc%nnest))
-    PFIO_bundle%counter(:)      = 1
-    PFIO_bundle%first_time(:,:) = .TRUE.
-#endif
   end subroutine lisconfig_generic
 
 !BOP

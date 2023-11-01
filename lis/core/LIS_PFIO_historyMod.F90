@@ -58,10 +58,9 @@
       integer            :: idx_field2d        ! index of 2d field to ne written out
       integer            :: idx_field3d        ! index of 3d field to ne written out
       integer            :: idx_field4d        ! index of 4d field to ne written out
-      INTEGER            :: total_num_fields   ! total number of fields to be written out
-      INTEGER            :: total_num_2Dfields ! total number of 2D fields to be written out
-      INTEGER            :: total_num_3Dfields ! total number of 3D fields to be written out
-      INTEGER            :: total_num_4Dfields ! total number of 4D fields to be written out
+      INTEGER            :: total_num_2Dfields(10) ! total number of 2D fields to be written out
+      INTEGER            :: total_num_3Dfields(10) ! total number of 3D fields to be written out
+      INTEGER            :: total_num_4Dfields(10) ! total number of 4D fields to be written out
 
       ! Derived type to hold the values of the fields to be written
 
@@ -96,12 +95,13 @@ CONTAINS
 ! \label{PFIO_create_file_metadata}
 ! 
 ! !INTERFACE: PFIO_create_file_metadata
-      subroutine PFIO_create_file_metadata(n, outInterval, &
+      subroutine PFIO_create_file_metadata(n, PFIOmodel_idx, outInterval, &
                                   nsoillayers, lyrthk, model_name, group)
 ! !USES: 
 !
 ! !INPUTS PARAMETERS: 
       integer,          intent(in) :: n 
+      integer,          intent(in) :: PFIOmodel_idx 
       real,             intent(in) :: outInterval
       integer,          intent(in) :: nsoillayers
       real,             intent(in) :: lyrthk(nsoillayers)
@@ -161,6 +161,7 @@ CONTAINS
 !EOP
 !---------------------------------------------------------------------------------------------
 !BOC
+      write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Creating the file metadata [',PFIOmodel_idx,']'
       !--> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       !--> We need to STOP if the "1d tilespace" configuration is selected.
       !--> PFIO cannot handle the way local tiles are mapped into the global one.
@@ -264,8 +265,8 @@ CONTAINS
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
 
       COL_LOOPS: DO vcol_id = 1, LIS_rc%n_vcollections
-         write(LIS_logunit,'(a,i2,a1,i2)')'[INFO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
-         if(LIS_masterproc) write(*,'(a,i2,a1,i2)') '[INFO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
+         write(LIS_logunit,'(a,i2,a1,i2,a2,i2,a)')'[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections,' [',PFIOmodel_idx,']'
+         if(LIS_masterproc) write(*,'(a,i2,a1,i2,a2,i2,a)') '[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections,' [',PFIOmodel_idx,']'
          name_dims(:) = ''
 
          !------------------
@@ -273,27 +274,27 @@ CONTAINS
          !------------------
          if (LIS_rc%wopt.eq."1d tilespace") then 
             name_dims(1) = 'ntiles'
-            call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(1)), LIS_rc%glbntiles(n), rc=status)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(1)), LIS_rc%glbntiles(n), rc=status)
          elseif ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
             name_dims(1) = 'east_west'
             name_dims(2) = 'north_south'
-            call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(1)), LIS_rc%gnc(n), rc=status) 
-            call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(2)), LIS_rc%gnr(n), rc=status)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(1)), LIS_rc%gnc(n), rc=status) 
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(2)), LIS_rc%gnr(n), rc=status)
 
             if (LIS_rc%wopt.eq."2d ensemble gridspace") then 
                name_dims(3) = 'ensemble'
-               call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(3)), LIS_rc%nensem(n), rc=status)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(3)), LIS_rc%nensem(n), rc=status)
 
                v = Variable(type=PFIO_REAL32, dimensions='ensemble')
                call v%add_attribute("units", "ensemble number")
                call v%add_attribute("long_name", "Ensemble numbers")
                call v%add_const_value(UnlimitedEntity(ensval))
-               call PFIO_bundle%fmd(n,vcol_id)%add_variable('ensemble', v)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('ensemble', v)
             endif
          endif
 
          ! LIS output is always writing output for a single time record
-         call PFIO_bundle%fmd(n,vcol_id)%add_dimension('time', pFIO_UNLIMITED, rc=status)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension('time', pFIO_UNLIMITED, rc=status)
 
          !------------------------------------------
          ! Define variables and variables attributes
@@ -309,49 +310,52 @@ CONTAINS
          call v%add_attribute("begin_date", xtime_begin_date)
          call v%add_attribute("begin_time", xtime_begin_time)
          !call v%add_const_value(UnlimitedEntity( time_data ))
-         call PFIO_bundle%fmd(n,vcol_id)%add_variable('time', v)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
    
          ! Pointer to header information
          SELECT CASE (group_)
             CASE(1) ! LSM output
                dataEntry => LIS_histData(n)%head_lsm_list
+               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_LSM_LIST [',PFIOmodel_idx,']'
             CASE(2) ! ROUTING
                dataEntry => LIS_histData(n)%head_routing_list
+               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_ROUTING_LIST [',PFIOmodel_idx,']'
             CASE(3) ! RTM
                dataEntry => LIS_histData(n)%head_rtm_list
+               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_RTM_LIST [',PFIOmodel_idx,']'
             CASE(4) ! Irrigation
                dataEntry => LIS_histData(n)%head_irrig_list
+               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_IRRIG_LIST [',PFIOmodel_idx,']'
          END SELECT
          
-         total_num_fields = 0
-         total_num_2Dfields = 0
-         total_num_3Dfields = 0
-         total_num_4Dfields = 0
+         total_num_2Dfields(PFIOmodel_idx) = 0
+         total_num_3Dfields(PFIOmodel_idx) = 0
+         total_num_4Dfields(PFIOmodel_idx) = 0
 
          !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then
-            call PFIO_define_variable_header(n, vcol_id, xlat,  name_dims, non_model_fields = 1)
-            call PFIO_define_variable_header(n, vcol_id, xlong, name_dims, non_model_fields = 2)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
          !endif
 
          do while ( associated(dataEntry) )
-            call PFIO_define_variable_header(n, vcol_id, dataEntry, name_dims)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims)
             dataEntry => dataEntry%next
          enddo
  
          !------------------
          ! Global attributes
          !------------------
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("missing_value", pfio_missing_value) ! LIS_rc%udef)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("NUM_SOIL_LAYERS", nsoillayers)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOIL_LAYER_THICKNESSES", lyrthk)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("title", "LIS land surface model output")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("institution", trim(LIS_rc%institution))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("source", trim(model_name_))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("history",  & 
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("missing_value", pfio_missing_value) ! LIS_rc%udef)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("NUM_SOIL_LAYERS", nsoillayers)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOIL_LAYER_THICKNESSES", lyrthk)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("title", "LIS land surface model output")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("institution", trim(LIS_rc%institution))
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("source", trim(model_name_))
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("history",  & 
                    "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("conventions", "CF-1.6")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("conventions", "CF-1.6")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
 
          ! Grid information
 
@@ -371,41 +375,41 @@ CONTAINS
          call MPI_Bcast(SOUTH_WEST_CORNER_LON,1, MPI_REAL, 0, LIS_mpi_comm, ierr)
 
          if (LIS_rc%lis_map_proj.eq."latlon") then   ! latlon
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,9))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,10))       
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,10))       
          elseif (LIS_rc%lis_map_proj.eq."mercator") then 
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "MERCATOR")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "MERCATOR")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          elseif (LIS_rc%lis_map_proj.eq."lambert") then ! lambert conformal
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION",  "LAMBERT CONFORMAL")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT2", LIS_rc%gridDesc(n,7))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION",  "LAMBERT CONFORMAL")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT2", LIS_rc%gridDesc(n,7))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          elseif (LIS_rc%lis_map_proj.eq."polar") then ! polar stereographic
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "POLAR STEREOGRAPHIC")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("ORIENT", LIS_rc%gridDesc(n,7))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "POLAR STEREOGRAPHIC")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("ORIENT", LIS_rc%gridDesc(n,7))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          endif       
 
          ! Create the history collection
-         PFIO_bundle%hist_id(n,vcol_id) = o_Clients%add_hist_collection(PFIO_bundle%fmd(n,vcol_id))
+         PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx) = o_Clients%add_hist_collection(PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx))
       ENDDO COL_LOOPS
 
       ! ----> Done with the creation of the PFIO object
@@ -422,12 +426,13 @@ CONTAINS
 ! \label{PFIO_create_routing_metadata}
 ! 
 ! !INTERFACE: PFIO_create_routing_metadata
-      subroutine PFIO_create_routing_metadata(n, group, outInterval, &
+      subroutine PFIO_create_routing_metadata(n, PFIOmodel_idx, group, outInterval, &
                                   nsoillayers, lyrthk, model_name)
 ! !USES: 
 !
 ! !INPUTS PARAMETERS: 
       integer,          intent(in) :: n 
+      integer,          intent(in) :: PFIOmodel_idx 
       integer,          intent(in) :: group
       real,             intent(in) :: outInterval
       integer,          intent(in) :: nsoillayers
@@ -586,8 +591,8 @@ CONTAINS
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
 
       COL_LOOPS: DO vcol_id = 1, LIS_rc%n_vcollections
-         write(LIS_logunit,'(a,i2,a1,i2)')'[INFO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
-         if(LIS_masterproc) write(*,'(a,i2,a1,i2)') '[INFO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
+         write(LIS_logunit,'(a,i2,a1,i2)')'[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
+         if(LIS_masterproc) write(*,'(a,i2,a1,i2)') '[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
          name_dims(:) = ''
 
          !------------------
@@ -600,23 +605,23 @@ CONTAINS
          elseif ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
             name_dims(1) = 'east_west'
             name_dims(2) = 'north_south'
-            call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(1)), LIS_rc%gnc(n), rc=status) 
-            call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(2)), LIS_rc%gnr(n), rc=status)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(1)), LIS_rc%gnc(n), rc=status) 
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(2)), LIS_rc%gnr(n), rc=status)
 
             if (LIS_rc%wopt.eq."2d ensemble gridspace") then 
                name_dims(3) = 'ensemble'
-               call PFIO_bundle%fmd(n,vcol_id)%add_dimension(TRIM(name_dims(3)), LIS_rc%nensem(n), rc=status)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(TRIM(name_dims(3)), LIS_rc%nensem(n), rc=status)
 
                v = Variable(type=PFIO_REAL32, dimensions='ensemble')
                call v%add_attribute("units", "ensemble number")
                call v%add_attribute("long_name", "Ensemble numbers")
                call v%add_const_value(UnlimitedEntity(ensval))
-               call PFIO_bundle%fmd(n,vcol_id)%add_variable('ensemble', v)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('ensemble', v)
             endif
          endif
 
          ! LIS output is always writing output for a single time record
-         call PFIO_bundle%fmd(n,vcol_id)%add_dimension('time', pFIO_UNLIMITED, rc=status)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension('time', pFIO_UNLIMITED, rc=status)
 
          !------------------------------------------
          ! Define variables and variables attributes
@@ -632,40 +637,39 @@ CONTAINS
          call v%add_attribute("begin_date", xtime_begin_date)
          call v%add_attribute("begin_time", xtime_begin_time)
          !call v%add_const_value(UnlimitedEntity( time_data ))
-         call PFIO_bundle%fmd(n,vcol_id)%add_variable('time', v)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
    
          ! Pointer to header information
          dataEntry => LIS_histData(n)%head_routing_list
          
-         total_num_fields = 0
-         total_num_2Dfields = 0
-         total_num_3Dfields = 0
-         total_num_4Dfields = 0
+         total_num_2Dfields(PFIOmodel_idx) = 0
+         total_num_3Dfields(PFIOmodel_idx) = 0
+         total_num_4Dfields(PFIOmodel_idx) = 0
 
          !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then
-            call PFIO_define_variable_header(n, vcol_id, xlat,  name_dims, non_model_fields = 1)
-            call PFIO_define_variable_header(n, vcol_id, xlong, name_dims, non_model_fields = 2)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
          !endif
 
          do while ( associated(dataEntry) )
-            call PFIO_define_variable_header(n, vcol_id, dataEntry, name_dims)
+            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims)
             dataEntry => dataEntry%next
          enddo
  
          !------------------
          ! Global attributes
          !------------------
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("missing_value", pfio_missing_value) ! LIS_rc%udef)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("NUM_SOIL_LAYERS", nsoillayers)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOIL_LAYER_THICKNESSES", lyrthk)
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("title", "LIS land surface model output")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("institution", trim(LIS_rc%institution))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("source", trim(model_name_))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("history",  & 
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("missing_value", pfio_missing_value) ! LIS_rc%udef)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("NUM_SOIL_LAYERS", nsoillayers)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOIL_LAYER_THICKNESSES", lyrthk)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("title", "LIS land surface model output")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("institution", trim(LIS_rc%institution))
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("source", trim(model_name_))
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("history",  & 
                    "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("conventions", "CF-1.6")
-         call PFIO_bundle%fmd(n,vcol_id)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("conventions", "CF-1.6")
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
 
          ! Grid information
 
@@ -685,41 +689,41 @@ CONTAINS
          call MPI_Bcast(SOUTH_WEST_CORNER_LON,1, MPI_REAL, 0, LIS_mpi_comm, ierr)
 
          if (LIS_rc%lis_map_proj.eq."latlon") then   ! latlon
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,9))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,10))       
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "EQUIDISTANT CYLINDRICAL")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,10))       
          elseif (LIS_rc%lis_map_proj.eq."mercator") then 
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "MERCATOR")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "MERCATOR")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          elseif (LIS_rc%lis_map_proj.eq."lambert") then ! lambert conformal
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION",  "LAMBERT CONFORMAL")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT2", LIS_rc%gridDesc(n,7))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION",  "LAMBERT CONFORMAL")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT2", LIS_rc%gridDesc(n,7))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          elseif (LIS_rc%lis_map_proj.eq."polar") then ! polar stereographic
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("MAP_PROJECTION", "POLAR STEREOGRAPHIC")
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("ORIENT", LIS_rc%gridDesc(n,7))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DX", LIS_rc%gridDesc(n,8))
-            call PFIO_bundle%fmd(n,vcol_id)%add_attribute("DY", LIS_rc%gridDesc(n,9))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("MAP_PROJECTION", "POLAR STEREOGRAPHIC")
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LAT", SOUTH_WEST_CORNER_LAT)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("SOUTH_WEST_CORNER_LON", SOUTH_WEST_CORNER_LON)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("TRUELAT1", LIS_rc%gridDesc(n,10))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("ORIENT", LIS_rc%gridDesc(n,7))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("STANDARD_LON", LIS_rc%gridDesc(n,11))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DX", LIS_rc%gridDesc(n,8))
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("DY", LIS_rc%gridDesc(n,9))
          endif       
 
          ! Create the history collection
-         PFIO_bundle%hist_id(n,vcol_id) = o_Clients%add_hist_collection(PFIO_bundle%fmd(n,vcol_id))
+         PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx) = o_Clients%add_hist_collection(PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx))
       ENDDO COL_LOOPS
 
       ! ----> Done with the creation of the PFIO object
@@ -737,12 +741,13 @@ CONTAINS
 ! 
 ! !INTERFACE: 
 !
-      subroutine PFIO_define_variable_header(n, vcol_id, dataEntry, name_dims, non_model_fields)
+      subroutine PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims, non_model_fields)
 !
 ! !USES: 
 
 ! !ARGUMENTS:     
       integer, intent(in)               :: n
+      integer, intent(in)               :: PFIOmodel_idx
       integer, intent(in)               :: vcol_id
       type(LIS_metadataEntry), pointer  :: dataEntry
       character(len=*)                  :: name_dims(4)
@@ -800,17 +805,17 @@ CONTAINS
          if (LIS_rc%wopt.eq."1d tilespace") then              
             if (dataEntry%vlevels.gt.1) then 
                name_dims(2) = trim(dataEntry%short_name)//'_profiles'
-               call PFIO_bundle%fmd(n,vcol_id)%add_dimension(trim(name_dims(2)), dataEntry%vlevels, rc=status)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(trim(name_dims(2)), dataEntry%vlevels, rc=status)
             endif
          elseif(LIS_rc%wopt.eq."2d gridspace") then
             if(dataEntry%vlevels.gt.1) then
                name_dims(3) = trim(dataEntry%short_name)//'_profiles'
-               call PFIO_bundle%fmd(n,vcol_id)%add_dimension(trim(name_dims(3)), dataEntry%vlevels, rc=status)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(trim(name_dims(3)), dataEntry%vlevels, rc=status)
             endif
          elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then
             if(dataEntry%vlevels.gt.1) then
                name_dims(4) = trim(dataEntry%short_name)//'_profiles'
-               call PFIO_bundle%fmd(n,vcol_id)%add_dimension(trim(name_dims(4)), dataEntry%vlevels, rc=status)
+               call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_dimension(trim(name_dims(4)), dataEntry%vlevels, rc=status)
             endif
          endif
 
@@ -823,7 +828,7 @@ CONTAINS
                   dim_names = TRIM(name_dims(1))
                endif
 
-               total_num_2Dfields = total_num_2Dfields + 2
+               total_num_2Dfields(PFIOmodel_idx) = total_num_2Dfields(PFIOmodel_idx) + 2
 
                vname_def  = TRIM(dataEntry%short_name)//'_tavg'
                v_def  = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -832,7 +837,7 @@ CONTAINS
                v_opt1 = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                if (dataEntry%minMaxOpt.gt.0) then 
-                  total_num_2Dfields = total_num_2Dfields + 2
+                  total_num_2Dfields(PFIOmodel_idx) = total_num_2Dfields(PFIOmodel_idx) + 2
                   vname_min = trim(dataEntry%short_name)//"_min"
                   v_min = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
@@ -858,12 +863,12 @@ CONTAINS
                   dim_names = TRIM(name_dims(1))
                endif
 
-               total_num_2Dfields = total_num_2Dfields + 1
+               total_num_2Dfields(PFIOmodel_idx) = total_num_2Dfields(PFIOmodel_idx) + 1
                vname_def = trim(short_name)
                v_def     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                if (dataEntry%minMaxOpt.gt.0) then 
-                  total_num_2Dfields = total_num_2Dfields + 2
+                  total_num_2Dfields(PFIOmodel_idx) = total_num_2Dfields(PFIOmodel_idx) + 2
                   dim_names = TRIM(name_dims(1))
                   vname_min = trim(short_name)//"_min"
                   vname_max = trim(short_name)//"_max"
@@ -872,7 +877,7 @@ CONTAINS
                endif
             endif
          elseif (LIS_rc%wopt.eq."2d gridspace") then 
-            IF (LIS_masterproc) PRINT'(a,a5,i4)','DEF-->'//TRIM(dataEntry%short_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status
+            !IF (LIS_masterproc) PRINT'(a,a5,i4)','DEF-->'//TRIM(dataEntry%short_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status
             if (dataEntry%timeAvgOpt.eq.2) then 
                if (dataEntry%vlevels.gt.1) then 
                   dim_names  = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))
@@ -880,7 +885,7 @@ CONTAINS
                   dim_names = TRIM(name_dims(1))//','//TRIM(name_dims(2))
                endif
 
-               total_num_3Dfields = total_num_3Dfields + 2
+               total_num_3Dfields(PFIOmodel_idx) = total_num_3Dfields(PFIOmodel_idx) + 2
 
                vname_def  = TRIM(dataEntry%short_name)//'_tavg'
                v_def      = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -889,7 +894,7 @@ CONTAINS
                v_opt1     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                if (dataEntry%minMaxOpt.gt.0) then 
-                  total_num_3Dfields = total_num_3Dfields + 2
+                  total_num_3Dfields(PFIOmodel_idx) = total_num_3Dfields(PFIOmodel_idx) + 2
                   vname_min = trim(dataEntry%short_name)//"_min"
                   vname_max = trim(dataEntry%short_name)//"_max"
                   v_min     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -925,12 +930,12 @@ CONTAINS
                   endif
                endif
 
-               total_num_3Dfields = total_num_3Dfields + 1
+               total_num_3Dfields(PFIOmodel_idx) = total_num_3Dfields(PFIOmodel_idx) + 1
                vname_def = trim(short_name)
                v_def = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                if (dataEntry%minMaxOpt.gt.0) then 
-                  total_num_3Dfields = total_num_3Dfields + 2
+                  total_num_3Dfields(PFIOmodel_idx) = total_num_3Dfields(PFIOmodel_idx) + 2
                   vname_min = trim(short_name)//"_min"
                   vname_max = trim(short_name)//"_max"
 
@@ -946,14 +951,14 @@ CONTAINS
                if (dataEntry%vlevels.gt.1) then 
                   dim_names  = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))//','//TRIM(name_dims(4))
 
-                  total_num_4Dfields = total_num_4Dfields + 2
+                  total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 2
                   vname_def  = TRIM(dataEntry%short_name)//'_tavg'
                   vname_opt1 = TRIM(dataEntry%short_name)//'_inst'
                   v_def      = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
                   v_opt1     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                   if (dataEntry%minMaxOpt.gt.0) then 
-                     total_num_4Dfields = total_num_4Dfields + 2
+                     total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 2
                      vname_min = trim(dataEntry%short_name)//"_min"
                      vname_max = trim(dataEntry%short_name)//"_max"
                      v_min     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -964,7 +969,7 @@ CONTAINS
                   if (nmodel_status == 0) then
                      dim_names  = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))
 
-                     total_num_4Dfields = total_num_4Dfields + 2
+                     total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 2
                      vname_def  = TRIM(dataEntry%short_name)//'_tavg'
                      vname_opt1 = TRIM(dataEntry%short_name)//'_inst'
                      v_def      = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -987,7 +992,7 @@ CONTAINS
                      v_def = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
                   endif
                   if (dataEntry%minMaxOpt.gt.0) then 
-                     total_num_3Dfields = total_num_3Dfields + 2
+                     total_num_3Dfields(PFIOmodel_idx) = total_num_3Dfields(PFIOmodel_idx) + 2
                      vname_min = trim(dataEntry%short_name)//"_min"
                      vname_max = trim(dataEntry%short_name)//"_max"
                      v_min     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -1010,13 +1015,13 @@ CONTAINS
                vname_def = trim(short_name)
 
                if (dataEntry%vlevels.gt.1) then 
-                  total_num_4Dfields = total_num_4Dfields + 1
+                  total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 1
                   dim_names = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))//','//TRIM(name_dims(4))
                   v_def = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                else
                   if (nmodel_status == 0) then
-                     total_num_4Dfields = total_num_4Dfields + 1
+                     total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 1
                      dim_names = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))
                   else
                      vname_def = trim(short_name)
@@ -1034,7 +1039,7 @@ CONTAINS
                   v_def = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
 
                   if (dataEntry%minMaxOpt.gt.0) then 
-                     total_num_4Dfields = total_num_4Dfields + 2
+                     total_num_4Dfields(PFIOmodel_idx) = total_num_4Dfields(PFIOmodel_idx) + 2
                      vname_min = trim(short_name)//"_min"
                      vname_max = trim(short_name)//"_max"
                      v_min     = Variable(type=PFIO_REAL32, dimensions=TRIM(dim_names), deflation=deflate_level)
@@ -1054,7 +1059,7 @@ CONTAINS
          !call v_def%add_attribute('valid_range', pfio_valid_range)
          call v_def%add_attribute("vmin", pfio_vmin)
          call v_def%add_attribute("vmax", pfio_vmax)
-         call PFIO_bundle%fmd(n,vcol_id)%add_variable(TRIM(vname_def), v_def)
+         call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable(TRIM(vname_def), v_def)
 
          if (dataEntry%timeAvgOpt.eq.2) then
             call v_opt1%add_attribute("units", trim(dataEntry%units))
@@ -1067,7 +1072,7 @@ CONTAINS
             !call v_opt1%add_attribute('valid_range', pfio_valid_range)
             call v_opt1%add_attribute("vmin", pfio_vmin)
             call v_opt1%add_attribute("vmax", pfio_vmax)
-            call PFIO_bundle%fmd(n,vcol_id)%add_variable(TRIM(vname_opt1), v_opt1)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable(TRIM(vname_opt1), v_opt1)
          endif
 
          ! EMK...Add metadata for max/min variables
@@ -1083,7 +1088,7 @@ CONTAINS
             !call v_min%add_attribute('valid_range', pfio_valid_range)
             call v_min%add_attribute("vmin", pfio_vmin)
             call v_min%add_attribute("vmax", pfio_vmax)
-            call PFIO_bundle%fmd(n,vcol_id)%add_variable(TRIM(vname_min), v_min)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable(TRIM(vname_min), v_min)
 
             ! Max metadata
             call v_max%add_attribute("units", trim(dataEntry%units))
@@ -1096,7 +1101,7 @@ CONTAINS
             !call v_max%add_attribute('valid_range', pfio_valid_range)
             call v_max%add_attribute("vmin", pfio_vmin)
             call v_max%add_attribute("vmax", pfio_vmax)
-            call PFIO_bundle%fmd(n,vcol_id)%add_variable(TRIM(vname_max), v_max)
+            call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable(TRIM(vname_max), v_max)
          endif
       endif
 
@@ -1108,9 +1113,10 @@ CONTAINS
 ! \label{PFIO_write_data}
 !
 ! !INTERFACE: 
-      subroutine PFIO_write_data(n, vcol_id, file_name, outInterval, group)
+      subroutine PFIO_write_data(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
       integer,          intent(in) :: n 
+      integer,          intent(in) :: PFIOmodel_idx 
       integer,          intent(in) :: vcol_id 
       character(len=*), intent(in) :: file_name
       real,             intent(in) :: outInterval
@@ -1143,7 +1149,7 @@ CONTAINS
 !EOP
 !---------------------------------------------------------------------------------------------
 !BOC
-      write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', TRIM(file_name)
+      write(LIS_logunit,'(a,i2,a,a)')'[INFO-PFIO] Writing model output [',PFIOmodel_idx,'] to: ', TRIM(file_name)
 
       ! Update the time variable
       !-------------------------
@@ -1154,17 +1160,17 @@ CONTAINS
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
 
-      time_data = 1.0
+      time_data = (/ 1.0 /)
       v = Variable(type=PFIO_REAL32, dimensions='time')
       call v%add_attribute("units",trim(xtime_units))
       call v%add_attribute("long_name","time")
       call v%add_attribute("time_increment",trim(adjustl(xtime_timeInc)))
       call v%add_attribute("begin_date",xtime_begin_date)
       call v%add_attribute("begin_time",xtime_begin_time)
-      call v%add_const_value(UnlimitedEntity( time_data ))
-      call PFIO_bundle%fmd(n,vcol_id)%add_variable('time', v)
+      !call v%add_const_value(UnlimitedEntity( time_data ))
+      call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
       call var_map%insert('time', v)
-      call o_Clients%modify_metadata(PFIO_bundle%hist_id(n,vcol_id), var_map=var_map, rc=status)
+      call o_Clients%modify_metadata(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), var_map=var_map, rc=status)
 
       call o_Clients%set_optimal_server(nwriting=1)
 
@@ -1195,14 +1201,14 @@ CONTAINS
 
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-         ALLOCATE(local_var2D(total_num_2Dfields))
+         ALLOCATE(local_var2D(total_num_2Dfields(PFIOmodel_idx)))
       CASE("2d gridspace")
-         ALLOCATE(local_var3D(total_num_3Dfields))
+         ALLOCATE(local_var3D(total_num_3Dfields(PFIOmodel_idx)))
       CASE("2d ensemble gridspace")
-         ALLOCATE(local_var3D(total_num_3Dfields))
-         ALLOCATE(local_var4D(total_num_4Dfields))
+         ALLOCATE(local_var3D(total_num_3Dfields(PFIOmodel_idx)))
+         ALLOCATE(local_var4D(total_num_4Dfields(PFIOmodel_idx)))
       END SELECT
-      call allocate_local_var(n, local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+      call allocate_local_var(n, PFIOmodel_idx, local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
       idx_field2d = 0
       idx_field3d = 0
       idx_field4d = 0
@@ -1210,16 +1216,18 @@ CONTAINS
       ! Writing latitude/longitude
       !---------------------------
       !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
-         call PFIO_write_variable(n, vcol_id, xlat,  file_name, local_var2D, local_var3D, local_var4D, &
+         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  &
+                                  file_name, local_var2D, local_var3D, local_var4D, &
                                   i1, i2, j1, j2, non_model_fields=1)
-         call PFIO_write_variable(n, vcol_id, xlong, file_name, local_var2D, local_var3D, local_var4D, &
+         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, &
+                                  file_name, local_var2D, local_var3D, local_var4D, &
                                   i1, i2, j1, j2, non_model_fields=2)
       !endif
 
       ! Writing the model fields
       !-------------------------
       do while ( associated(dataEntry) )
-         call PFIO_write_variable(n, vcol_id, dataEntry, file_name, &
+         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
                                   local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
          dataEntry => dataEntry%next
       enddo
@@ -1232,26 +1240,26 @@ CONTAINS
       ! After writing reset the variables
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-         DO i= 1, total_num_2Dfields
+         DO i= 1, total_num_2Dfields(PFIOmodel_idx)
             deallocate(local_var2D(i)%var2d)
          ENDDO
          deallocate(local_var2D)
       CASE("2d gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          deallocate(local_var3D)
       CASE("2d ensemble gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          deallocate(local_var3D)
-         DO i= 1, total_num_4Dfields
+         DO i= 1, total_num_4Dfields(PFIOmodel_idx)
             deallocate(local_var4D(i)%var4d)
          ENDDO
          deallocate(local_var4D)
       END SELECT
-      !CALL deallocate_local_var(local_var2D, local_var3D, local_var4D)
+      !CALL deallocate_local_var(PFIOmodel_idx, local_var2D, local_var3D, local_var4D)
       !IF (ALLOCATED(local_var2D)) DEALLOCATE(local_var2D)
       !IF (ALLOCATED(local_var3D)) DEALLOCATE(local_var3D)
       !IF (ALLOCATED(local_var4D)) DEALLOCATE(local_var4D)
@@ -1266,11 +1274,12 @@ CONTAINS
 ! \label{PFIO_write_variable}
 !
 ! !INTERFACE: 
-  subroutine PFIO_write_variable(n, vcol_id, dataEntry, file_name, &
+  subroutine PFIO_write_variable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
                                  local_var2D, local_var3D, local_var4D, &
                                  i1, i2, j1, j2, non_model_fields)
 
     integer,   intent(in)   :: n 
+    integer,   intent(in)   :: PFIOmodel_idx 
     integer,   intent(in)   :: vcol_id 
     integer,   intent(in)   :: i1, i2, j1, j2
     type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
@@ -1352,14 +1361,14 @@ CONTAINS
        if (dataEntry%timeAvgOpt.eq.2) then 
           CALL increment_field_counter()
           var_name = trim(dataEntry%short_name)//"_tavg"
-          call PFIO_write_single_var(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(1,:,1:nlev),  &
                                      var_name, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_inst"
-          call PFIO_write_single_var(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(2,:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1367,7 +1376,7 @@ CONTAINS
        ! time-averaged values or instantaneous values
        else
           CALL increment_field_counter(nmodel_status)
-          call PFIO_write_single_var(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(1,:,1:nlev),  &
                                      var_name, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1375,14 +1384,14 @@ CONTAINS
        if (dataEntry%minmaxOpt.gt.0) then 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_min"
-          call PFIO_write_single_var(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%minimum(:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_max"
-          call PFIO_write_single_var(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%maximum(:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1398,13 +1407,14 @@ CONTAINS
 ! \label{PFIO_write_single_var}
 ! 
 ! !INTERFACE:
-  subroutine PFIO_write_single_var(n, vcol_id, file_name, var_data, var_name, &
+  subroutine PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
                                    local_var2D, local_var3D, local_var4D, &
                                    i1, i2, j1, j2, nlev, nmodel_status)
 ! !USES: 
 
 ! !ARGUMENTS: 
       integer, intent(in) :: n
+      integer, intent(in) :: PFIOmodel_idx
       integer, intent(in) :: vcol_id
       integer, intent(in) :: i1, i2, j1, j2
       integer, intent(in) :: nlev
@@ -1454,7 +1464,7 @@ CONTAINS
          !iret = nf90_put_var(ftn,varid,gtmp1,(/1,dim1/), (/LIS_rc%glbntiles_red(n),1/))
          call map_1dtile_to_1darray(n, var_data, local_var2D(idx_field2d)%var2d(:,1:nlev), i1, i2, nlev)
          ref =  ArrayReference(local_var2D(idx_field2d)%var2d(:,1:nlev))
-         call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+         call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                         TRIM(file_name), TRIM(var_name), ref, &
                         start        = [ i1, 1 ], &
                         global_start = [  1, 1 ], & 
@@ -1480,7 +1490,8 @@ CONTAINS
             enddo
          enddo
 
-         IF (LIS_masterproc) PRINT'(a,a5,3i4)','WRT-->'//TRIM(var_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status,nlev, idx_field3d
+         !IF (LIS_masterproc) PRINT'(a,a5,3i4)','WRT-->'//TRIM(var_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status,nlev, idx_field3d
+         !WRITE(LIS_logunit, '(a,3i4)'),'WRT-->'//TRIM(var_name), PFIOmodel_idx,nlev, idx_field3d
 
          ! The latlon fields are written to 1D
          if ((LIS_rc%nlatlon_dimensions == '1D') .AND. (nmodel_status > 0)) then
@@ -1496,7 +1507,7 @@ CONTAINS
                enddo
 
                ref = ArrayReference(loclat(:))
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ j1 ], &
                            global_start = [ 1  ], & 
@@ -1514,7 +1525,7 @@ CONTAINS
                enddo
 
                ref = ArrayReference(loclon(:))
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ i1 ], &
                            global_start = [ 1  ], & 
@@ -1527,7 +1538,7 @@ CONTAINS
                                        i1, i2, j1, j2, nlev)
             ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
-            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                         TRIM(file_name), TRIM(var_name), ref, &
                         start        = [ i1, j1, 1 ], &
                         global_start = [  1,  1, 1 ], & 
@@ -1572,7 +1583,7 @@ CONTAINS
                   enddo
 
                   ref = ArrayReference(loclat(:))
-                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ j1 ], &
                               global_start = [ 1  ], &
@@ -1590,7 +1601,7 @@ CONTAINS
                   enddo
 
                   ref = ArrayReference(loclon(:))
-                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ i1 ], &
                               global_start = [ 1  ], &
@@ -1602,7 +1613,7 @@ CONTAINS
                call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), i1, i2, j1, j2, nlev)
                ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ i1, j1, 1 ], &
                               global_start = [  1,  1, 1 ], &
@@ -1635,7 +1646,7 @@ CONTAINS
 
             m = LIS_rc%nensem(n)
             ref =  ArrayReference(local_var4D(idx_field4d)%var4d(:,:,:,1:nlev))
-            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ i1, j1, 1, 1 ], &
                            global_start = [  1,  1, 1, 1 ], & 
@@ -1655,9 +1666,9 @@ CONTAINS
 ! \label{PFIO_write_routingdata}
 !
 ! !INTERFACE: 
-      subroutine PFIO_write_routingdata(n, vcol_id, file_name, outInterval, group)
+      subroutine PFIO_write_routingdata(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
-      integer,          intent(in) :: n 
+      integer,          intent(in) :: n, PFIOmodel_idx
       integer,          intent(in) :: vcol_id 
       character(len=*), intent(in) :: file_name
       real,             intent(in) :: outInterval
@@ -1690,7 +1701,7 @@ CONTAINS
 !EOP
 !---------------------------------------------------------------------------------------------
 !BOC
-      write(LIS_logunit,*)'[INFO] Writing surface model output to:  ', TRIM(file_name)
+      write(LIS_logunit,'(a,i,a,a)')'[INFO-PFIO] Writing routing output [',PFIOmodel_idx,'] to:  ', TRIM(file_name)
 
       ! Update the time variable
       !-------------------------
@@ -1701,7 +1712,7 @@ CONTAINS
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
 
-      time_data = 1.0
+      time_data = (/ 1.0 /)
       v = Variable(type=PFIO_REAL32, dimensions='time')
       call v%add_attribute("units",trim(xtime_units))
       call v%add_attribute("long_name","time")
@@ -1709,9 +1720,9 @@ CONTAINS
       call v%add_attribute("begin_date",xtime_begin_date)
       call v%add_attribute("begin_time",xtime_begin_time)
       call v%add_const_value(UnlimitedEntity( time_data ))
-      call PFIO_bundle%fmd(n,vcol_id)%add_variable('time', v)
+      call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
       call var_map%insert('time', v)
-      call o_Clients%modify_metadata(PFIO_bundle%hist_id(n,vcol_id), var_map=var_map, rc=status)
+      call o_Clients%modify_metadata(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), var_map=var_map, rc=status)
 
       call o_Clients%set_optimal_server(nwriting=1)
 
@@ -1732,12 +1743,12 @@ CONTAINS
 
       SELECT CASE(LIS_rc%wopt)
       CASE("2d gridspace")
-         ALLOCATE(local_var3D(total_num_3Dfields))
+         ALLOCATE(local_var3D(total_num_3Dfields(PFIOmodel_idx)))
       CASE("2d ensemble gridspace")
-         ALLOCATE(local_var3D(total_num_3Dfields))
-         ALLOCATE(local_var4D(total_num_4Dfields))
+         ALLOCATE(local_var3D(total_num_3Dfields(PFIOmodel_idx)))
+         ALLOCATE(local_var4D(total_num_4Dfields(PFIOmodel_idx)))
       END SELECT
-      call allocate_local_var(n, local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+      call allocate_local_var(n, PFIOmodel_idx, local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
       idx_field2d = 0
       idx_field3d = 0
       idx_field4d = 0
@@ -1745,16 +1756,16 @@ CONTAINS
       ! Writing latitude/longitude
       !---------------------------
       !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
-         call PFIO_write_variable(n, vcol_id, xlat,  file_name, local_var2D, local_var3D, local_var4D, &
+         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  file_name, local_var2D, local_var3D, local_var4D, &
                                   i1, i2, j1, j2, non_model_fields=1)
-         call PFIO_write_variable(n, vcol_id, xlong, file_name, local_var2D, local_var3D, local_var4D, &
+         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, file_name, local_var2D, local_var3D, local_var4D, &
                                   i1, i2, j1, j2, non_model_fields=2)
       !endif
 
       ! Writing the model fields
       !-------------------------
       do while ( associated(dataEntry) )
-         call PFIO_write_routingvariable(n, vcol_id, dataEntry, file_name, &
+         call PFIO_write_routingvariable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
                                   local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
          dataEntry => dataEntry%next
       enddo
@@ -1767,21 +1778,21 @@ CONTAINS
       ! After writing reset the variables
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-         DO i= 1, total_num_2Dfields
+         DO i= 1, total_num_2Dfields(PFIOmodel_idx)
             deallocate(local_var2D(i)%var2d)
          ENDDO
          deallocate(local_var2D)
       CASE("2d gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          deallocate(local_var3D)
       CASE("2d ensemble gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          deallocate(local_var3D)
-         DO i= 1, total_num_4Dfields
+         DO i= 1, total_num_4Dfields(PFIOmodel_idx)
             deallocate(local_var4D(i)%var4d)
          ENDDO
          deallocate(local_var4D)
@@ -1797,11 +1808,12 @@ CONTAINS
 ! \label{PFIO_write_routingvariable}
 !
 ! !INTERFACE: 
-  subroutine PFIO_write_routingvariable(n, vcol_id, dataEntry, file_name, &
+  subroutine PFIO_write_routingvariable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
                                  local_var2D, local_var3D, local_var4D, &
                                  i1, i2, j1, j2, non_model_fields)
 
     integer,   intent(in)   :: n 
+    integer,   intent(in)   :: PFIOmodel_idx 
     integer,   intent(in)   :: vcol_id 
     integer,   intent(in)   :: i1, i2, j1, j2
     type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
@@ -1879,14 +1891,14 @@ CONTAINS
        if (dataEntry%timeAvgOpt.eq.2) then 
           CALL increment_field_counter()
           var_name = trim(dataEntry%short_name)//"_tavg"
-          call PFIO_write_single_routingvar(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(1,:,1:nlev),  &
                                      var_name, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_inst"
-          call PFIO_write_single_routingvar(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(2,:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1894,7 +1906,7 @@ CONTAINS
        ! time-averaged values or instantaneous values
        else
           CALL increment_field_counter(nmodel_status)
-          call PFIO_write_single_routingvar(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%modelOutput(1,:,1:nlev),  &
                                      var_name, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1902,14 +1914,14 @@ CONTAINS
        if (dataEntry%minmaxOpt.gt.0) then 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_min"
-          call PFIO_write_single_routingvar(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%minimum(:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
 
           CALL increment_field_counter()
           var_name2 = trim(dataEntry%short_name)//"_max"
-          call PFIO_write_single_routingvar(n, vcol_id, TRIM(file_name), &
+          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                                      dataEntry%maximum(:,1:nlev),  &
                                      var_name2, local_var2D, local_var3D, local_var4D, &
                                      i1, i2, j1, j2, nlev, nmodel_status)
@@ -1924,13 +1936,13 @@ CONTAINS
 ! \label{PFIO_write_single_var}
 ! 
 ! !INTERFACE:
-  subroutine PFIO_write_single_routingvar(n, vcol_id, file_name, var_data, var_name, &
+  subroutine PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
                                    local_var2D, local_var3D, local_var4D, &
                                    i1, i2, j1, j2, nlev, nmodel_status)
 ! !USES: 
 
 ! !ARGUMENTS: 
-      integer, intent(in) :: n
+      integer, intent(in) :: n, PFIOmodel_idx
       integer, intent(in) :: vcol_id
       integer, intent(in) :: i1, i2, j1, j2
       integer, intent(in) :: nlev
@@ -2007,7 +2019,7 @@ CONTAINS
                enddo
 
                ref = ArrayReference(loclat(:))
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ j1 ], &
                            global_start = [ 1  ], & 
@@ -2025,7 +2037,7 @@ CONTAINS
                enddo
 
                ref = ArrayReference(loclon(:))
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ i1 ], &
                            global_start = [ 1  ], & 
@@ -2038,7 +2050,7 @@ CONTAINS
                                        i1, i2, j1, j2, nlev)
             ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
-            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                         TRIM(file_name), TRIM(var_name), ref, &
                         start        = [ i1, j1, 1 ], &
                         global_start = [  1,  1, 1 ], & 
@@ -2082,7 +2094,7 @@ CONTAINS
                   enddo
 
                   ref = ArrayReference(loclat(:))
-                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ j1 ], &
                               global_start = [ 1  ], &
@@ -2100,7 +2112,7 @@ CONTAINS
                   enddo
 
                   ref = ArrayReference(loclon(:))
-                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+                  call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ i1 ], &
                               global_start = [ 1  ], &
@@ -2112,7 +2124,7 @@ CONTAINS
                call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), i1, i2, j1, j2, nlev)
                ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
-               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+               call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                               TRIM(file_name), TRIM(var_name), ref, &
                               start        = [ i1, j1, 1 ], &
                               global_start = [  1,  1, 1 ], &
@@ -2145,7 +2157,7 @@ CONTAINS
 
             m = LIS_rc%nensem(n)
             ref =  ArrayReference(local_var4D(idx_field4d)%var4d(:,:,:,1:nlev))
-            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+            call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
                            TRIM(file_name), TRIM(var_name), ref, &
                            start        = [ i1, j1, 1, 1 ], &
                            global_start = [  1,  1, 1, 1 ], & 
@@ -2480,8 +2492,9 @@ CONTAINS
 !  end subroutine set_field_index
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
-  subroutine allocate_local_var(n, local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
-      integer, intent(in) :: n
+  subroutine allocate_local_var(n, PFIOmodel_idx, &
+                                local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+      integer, intent(in) :: n, PFIOmodel_idx
       integer, intent(in) :: i1, i2, j1, j2
       type(local_2Dfield_var), intent(inout) :: local_var2D(:)
       type(local_3Dfield_var), intent(inout) :: local_var3D(:)
@@ -2490,21 +2503,21 @@ CONTAINS
    
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-         DO i= 1, total_num_2Dfields
+         DO i= 1, total_num_2Dfields(PFIOmodel_idx)
             allocate(local_var2D(i)%var2d(i1:i2,MAX_NUM_VLEVELS))
             local_var2D(i)%var2d = pfio_missing_value
          ENDDO
       CASE("2d gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             allocate(local_var3D(i)%var3d(i1:i2,j1:j2,MAX_NUM_VLEVELS))
             local_var3D(i)%var3d = pfio_missing_value
          ENDDO
       CASE("2d ensemble gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             allocate(local_var3D(i)%var3d(i1:i2,j1:j2,MAX_NUM_VLEVELS))
             local_var3D(i)%var3d = pfio_missing_value
          ENDDO
-         DO i= 1, total_num_4Dfields
+         DO i= 1, total_num_4Dfields(PFIOmodel_idx)
             allocate(local_var4D(i)%var4d(i1:i2,j1:j2,LIS_rc%nensem(n),MAX_NUM_VLEVELS))
             local_var4D(i)%var4d = pfio_missing_value
          ENDDO
@@ -2512,7 +2525,8 @@ CONTAINS
   end subroutine allocate_local_var
 ! -----------------------------------------------------------------------
 ! -----------------------------------------------------------------------
-  subroutine deallocate_local_var(local_var2D, local_var3D, local_var4D)
+  subroutine deallocate_local_var(PFIOmodel_idx, local_var2D, local_var3D, local_var4D)
+      integer,                 intent(in)    :: PFIOmodel_idx
       type(local_2Dfield_var), intent(inout) :: local_var2D(:)
       type(local_3Dfield_var), intent(inout) :: local_var3D(:)
       type(local_4Dfield_var), intent(inout) :: local_var4D(:)
@@ -2520,21 +2534,21 @@ CONTAINS
 
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-         DO i= 1, total_num_2Dfields
+         DO i= 1, total_num_2Dfields(PFIOmodel_idx)
             deallocate(local_var2D(i)%var2d)
          ENDDO
          !deallocate(local_var2D)
       CASE("2d gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          !deallocate(local_var3D)
       CASE("2d ensemble gridspace")
-         DO i= 1, total_num_3Dfields
+         DO i= 1, total_num_3Dfields(PFIOmodel_idx)
             deallocate(local_var3D(i)%var3d)
          ENDDO
          !deallocate(local_var3D)
-         DO i= 1, total_num_4Dfields
+         DO i= 1, total_num_4Dfields(PFIOmodel_idx)
             deallocate(local_var4D(i)%var4d)
          ENDDO
          !deallocate(local_var4D)

@@ -77,26 +77,25 @@ subroutine HYMAP_routing_output(n)
                 "HYMAP router output alarm")
         endif
 
-#ifdef USE_PFIO
-        IF (PFIO_bundle%first_time(n, 1)) THEN
-           call PFIO_create_file_metadata(n, HYMAP_routing_struc(n)%outInterval, &
-                                1, (/1.0/), group=2)
-           PFIO_bundle%first_time(n, :) = .FALSE.
-        ENDIF
-#endif
-
         if(alarmCheck) then 
 
 #ifdef USE_PFIO
            HYMAP_routing_struc(n)%numout=HYMAP_routing_struc(n)%numout+1    
+           IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
+              ! Create the file metadata ONCE.
+              call PFIO_create_file_metadata(n, PFIO_ROUTING_idx, HYMAP_routing_struc(n)%outInterval, &
+                                   1, (/1.0/), group=2)
+              PFIO_bundle%first_time(n, :, PFIO_ROUTING_idx) = .FALSE.
+           ENDIF
            call LIS_create_output_directory('ROUTING')
            call LIS_create_output_filename(n, outfile,&
                             model_name = 'ROUTING',&
                             writeint=HYMAP_routing_struc(n)%outInterval)
-           vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
-           CALL PFIO_write_data(n, vcol_id, outfile, HYMAP_routing_struc(n)%outInterval)
+           vcol_id = MOD(PFIO_bundle%counter(n, PFIO_ROUTING_idx)-1, LIS_rc%n_vcollections) + 1
+           CALL PFIO_write_data(n, PFIO_ROUTING_idx, vcol_id, &
+                                outfile, HYMAP_routing_struc(n)%outInterval)
     
-           PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+           PFIO_bundle%counter(n, PFIO_ROUTING_idx) = PFIO_bundle%counter(n, PFIO_ROUTING_idx) + 1
 #else
            open_stats = .false.
            if(LIS_masterproc) then 

@@ -324,6 +324,7 @@ contains
          LIS_create_output_filename,  &
          LIS_create_stats_filename
     use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+    use LIS_logMod, only : LIS_logunit
 
     integer, intent(in)   :: n 
 !EOP
@@ -364,16 +365,6 @@ contains
                      "RTM output alarm")
              endif
 
-#ifdef USE_PFIO
-             IF (PFIO_bundle%first_time(n, 1)) THEN
-                call PFIO_create_file_metadata(n, LIS_rtm_struc(n)%rtmoutInterval, &
-                                  1, (/1.0/), &
-                                  model_name = LIS_rtm_struc(n)%models_used,           &
-                                  group = 3)
-                PFIO_bundle%first_time(n, :) = .FALSE.
-             ENDIF
-#endif
-             
              if(alarmCheck) then 
                 open_stats = .false.
 #ifdef USE_PFIO
@@ -381,10 +372,21 @@ contains
                 call LIS_create_output_filename(n, outfile,&
                                  model_name = 'RTM',&
                                  writeint=LIS_rtm_struc(n)%rtmoutInterval)
-                vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
-                CALL PFIO_write_data(n, vcol_id, outfile, LIS_rtm_struc(n)%rtmoutInterval) !<--- PFIO
+                IF (PFIO_bundle%first_time(n, 1, PFIO_RTM_idx)) THEN
+                   ! Create the file metadata ONCE.
+                   call PFIO_create_file_metadata(n, PFIO_RTM_idx, &
+                                     LIS_rtm_struc(n)%rtmoutInterval, &
+                                     1, (/1.0/), &
+                                     model_name = LIS_rtm_struc(n)%models_used,           &
+                                     group = 3)
+                   PFIO_bundle%first_time(n, :, PFIO_RTM_idx) = .FALSE.
+                ENDIF
+                vcol_id = MOD(PFIO_bundle%counter(n, PFIO_RTM_idx)-1, LIS_rc%n_vcollections) + 1
+                CALL PFIO_write_data(n, PFIO_RTM_idx, vcol_id, &
+                                     outfile, LIS_rtm_struc(n)%rtmoutInterval, &
+                                     group = 3) !<--- PFIO
     
-                PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+                PFIO_bundle%counter(n,PFIO_RTM_idx) = PFIO_bundle%counter(n,PFIO_RTM_idx) + 1
 #else
                 if(LIS_masterproc) then 
                    call LIS_create_output_directory('RTM')

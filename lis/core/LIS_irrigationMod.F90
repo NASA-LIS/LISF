@@ -267,27 +267,31 @@ contains
     if(LIS_rc%irrigation_type.ne."none") then 
        alarmCheck = LIS_isAlarmRinging(LIS_rc,&
             "LIS irrigation output interval")
-#ifdef USE_PFIO
-          IF (PFIO_bundle%first_time(n, 1)) THEN
-             call PFIO_create_file_metadata(n, LIS_irrig_struc(n)%outInterval, &
-                                  1, (/1.0/), &
-                                  model_name=LIS_irrig_struc(n)%models_used, &
-                                  group=4)
-             PFIO_bundle%first_time(n, :) = .FALSE.
-          ENDIF
-#endif
        if(alarmCheck) then 
           open_stats = .false. 
-#ifdef USE_PFIO
-             call LIS_create_output_filename(n, outfile,&
-                              model_name = 'SURFACEMODEL',&
-                              writeint=LIS_irrig_struc(n)%outInterval)
-             vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
-             CALL PFIO_write_data(n, vcol_id, outfile, LIS_irrig_struc(n)%outInterval) !<--- PFIO
-    
-             PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
-#else
           if(LIS_rc%wopt.ne."none") then 
+#ifdef USE_PFIO
+             IF (PFIO_bundle%first_time(n, 1, PFIO_IRRIG_idx)) THEN
+                ! Create the file metadata ONCE.
+                call PFIO_create_file_metadata(n, PFIO_IRRIG_idx, &
+                                     LIS_irrig_struc(n)%outInterval, &
+                                     1, (/1.0/), &
+                                     model_name=LIS_irrig_struc(n)%models_used, &
+                                     group=4)
+                PFIO_bundle%first_time(n, :, PFIO_IRRIG_idx) = .FALSE.
+             ENDIF
+
+             call LIS_create_output_directory('IRRIGATION')
+             call LIS_create_output_filename(n, outfile,&
+                              model_name = 'IRRIGATION',&
+                              writeint=LIS_irrig_struc(n)%outInterval)
+             vcol_id = MOD(PFIO_bundle%counter(n, PFIO_IRRIG_idx)-1, LIS_rc%n_vcollections) + 1
+             CALL PFIO_write_data(n, PFIO_IRRIG_idx, vcol_id, &
+                                  outfile, LIS_irrig_struc(n)%outInterval, &
+                                  group=4) !<--- PFIO
+    
+             PFIO_bundle%counter(n, PFIO_IRRIG_idx) = PFIO_bundle%counter(n, PFIO_IRRIG_idx) + 1
+#else
              if(LIS_masterproc) then 
                 call LIS_create_output_directory('IRRIGATION')
                 if (LIS_irrig_struc(n)%stats_file_open) then
@@ -305,8 +309,8 @@ contains
                   nsoillayers=1, lyrthk = (/1.0/),                       &
                   nsoillayers2=1,                                        &
                   model_name=LIS_irrig_struc(n)%models_used,group=4)
-          endif
 #endif
+          endif
        endif
     endif
     

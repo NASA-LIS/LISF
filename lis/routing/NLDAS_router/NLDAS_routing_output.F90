@@ -76,26 +76,24 @@ subroutine NLDAS_routing_output(n)
                 "NLDAS router output alarm")
         endif
 
-#ifdef USE_PFIO
-        IF (PFIO_bundle%first_time(n, 1)) THEN
-           call PFIO_create_file_metadata(n, NLDAS_routing_struc(n)%outInterval, &
-                                1, (/1.0/), group=2)
-           PFIO_bundle%first_time(n, :) = .FALSE.
-        ENDIF
-#endif
-
         if(alarmCheck) then 
 
 #ifdef USE_PFIO
            NLDAS_routing_struc(n)%numout=NLDAS_routing_struc(n)%numout+1    
+           IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
+              call PFIO_create_file_metadata(n, PFIO_ROUTING_idx, NLDAS_routing_struc(n)%outInterval, &
+                                   1, (/1.0/), group=2)
+              PFIO_bundle%first_time(n, :, PFIO_ROUTING_idx) = .FALSE.
+           ENDIF
            call LIS_create_output_directory('ROUTING')
            call LIS_create_output_filename(n, filename,&
                             model_name = 'ROUTING',&
                             writeint=NLDAS_routing_struc(n)%outInterval)
-           vcol_id = MOD(PFIO_bundle%counter(n)-1, LIS_rc%n_vcollections) + 1
-           CALL PFIO_write_data(n, vcol_id, filename, NLDAS_routing_struc(n)%outInterval) !<--- PFIO
+           vcol_id = MOD(PFIO_bundle%counter(n, PFIO_ROUTING_idx)-1, LIS_rc%n_vcollections) + 1
+           CALL PFIO_write_data(n, PFIO_ROUTING_idx, vcol_id, &
+                                filename, NLDAS_routing_struc(n)%outInterval) !<--- PFIO
    
-           PFIO_bundle%counter(n) = PFIO_bundle%counter(n) + 1
+           PFIO_bundle%counter(n, PFIO_ROUTING_idx) = PFIO_bundle%counter(n, PFIO_ROUTING_idx) + 1
 #else
 
            open_stats = .false.

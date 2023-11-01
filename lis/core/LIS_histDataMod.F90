@@ -5850,6 +5850,50 @@ contains
     call LIS_resetOutputVars(n,3) !for RTM
     call LIS_resetOutputVars(n,4) !for Irrigation
 
+#ifdef USE_PFIO
+    PFIO_LSM_idx     = 0
+    PFIO_RTM_idx     = 0
+    PFIO_IRRIG_idx   = 0
+    PFIO_ROUTING_idx = 0
+    numPFIOcols        = 0
+
+!    IF (LIS_MOC_LSM_COUNT > 0) THEN
+       numPFIOcols = numPFIOcols + 1
+       PFIO_LSM_idx = numPFIOcols
+!    ENDIF
+
+    IF (LIS_MOC_ROUTING_COUNT > 0) THEN
+       numPFIOcols = numPFIOcols + 1
+       PFIO_ROUTING_idx = numPFIOcols
+    ENDIF
+
+    IF (LIS_MOC_RTM_COUNT > 0) THEN
+       numPFIOcols = numPFIOcols + 1
+       PFIO_RTM_idx = numPFIOcols
+    ENDIF
+
+    IF (LIS_MOC_IRRIG_COUNT > 0) THEN
+       numPFIOcols = numPFIOcols + 1
+       PFIO_IRRIG_idx = numPFIOcols
+    ENDIF
+
+    allocate(PFIO_bundle%fmd_rst(LIS_rc%nnest))
+    allocate(PFIO_bundle%rst_id(LIS_rc%nnest))
+    allocate(PFIO_bundle%fmd(LIS_rc%nnest, LIS_rc%n_vcollections, numPFIOcols))
+    allocate(PFIO_bundle%hist_id(LIS_rc%nnest, LIS_rc%n_vcollections, numPFIOcols))
+    allocate(PFIO_bundle%first_time(LIS_rc%nnest, LIS_rc%n_vcollections, numPFIOcols))
+    allocate(PFIO_bundle%counter(LIS_rc%nnest, numPFIOcols))
+    PFIO_bundle%counter(:,:)      = 1
+    PFIO_bundle%first_time(:,:,:) = .TRUE.
+
+    write(LIS_logunit,*) '[INFO-PFIO] ------ Output Collection Parameters -------'
+    write(LIS_logunit,'(a48,i4)') '[INFO-PFIO] Num LIS output collections', numPFIOcols
+    write(LIS_logunit,'(a48,i4)') '[INFO-PFIO] Idx LSM output collection', PFIO_LSM_idx
+    write(LIS_logunit,'(a48,i4)') '[INFO-PFIO] Idx RTM output collection', PFIO_RTM_idx
+    write(LIS_logunit,'(a48,i4)') '[INFO-PFIO] Idx IRRIG output collection', PFIO_IRRIG_idx
+    write(LIS_logunit,'(a48,i4)') '[INFO-PFIO] Idx ROUTING output collection', PFIO_ROUTING_idx
+    write(LIS_logunit,*) '[INFO-PFIO] -------------------------------------------'
+#endif
 
 end subroutine LIS_histDataInit
 

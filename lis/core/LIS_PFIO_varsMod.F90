@@ -13,10 +13,10 @@
 ! Defines global variables needed by MAPL/PFIO
 
       type pfio_t
-           type(FileMetadata), allocatable :: fmd(:,:)
-           integer,            allocatable :: hist_id(:,:)
-           integer,            allocatable :: counter(:)
-           logical,            allocatable :: first_time(:,:)
+           type(FileMetadata), allocatable :: fmd(:,:,:)
+           integer,            allocatable :: hist_id(:,:,:)
+           integer,            allocatable :: counter(:,:)
+           logical,            allocatable :: first_time(:,:,:)
            type(FileMetadata), allocatable :: fmd_rst(:)
            integer,            allocatable :: rst_id(:)
       end type pfio_t
