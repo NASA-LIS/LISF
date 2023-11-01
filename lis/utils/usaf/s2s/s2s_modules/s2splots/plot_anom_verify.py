@@ -381,7 +381,7 @@ if __name__ == "__main__":
             gl_.left_labels = False
             gl_.right_labels = False
 
-            plt.title('Monthly '+ var + ' Anomally : ' +titles[count_plot], fontsize=fscale*FONT_SIZE2)
+            plt.title('Monthly '+ var + ' Anomaly : ' +titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
             if np.mod (count_plot, ncols) == 0:
                 gl_.left_labels = True
