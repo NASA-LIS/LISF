@@ -885,6 +885,8 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_getBackNWP')
 #endif
             if(LIS_masterproc) then
                call LIS_alert( 'LIS.USAF_getBackNWP          ', 1, &
@@ -1848,6 +1850,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       t1 = MPI_Wtime()
 #endif
 
@@ -1954,8 +1958,12 @@ contains
       allocate(invDataDensities(nobs))
       invDataDensities(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       call MPI_ALLREDUCE(dataDensities_pet,invDataDensities,nobs,MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_ALLREDUCE call in calc_invDataDensities')
 #endif
 
       ! Clean up
@@ -1973,6 +1981,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       t2 = MPI_Wtime()
       if (verbose) then
          write(LIS_logunit,*) &
@@ -2078,6 +2088,12 @@ contains
          call LIS_endrun()
       end if
 
+      ! EMK TEST
+      !do ii = 1, nobs
+      !   write(LIS_logunit,*)'EMK: ii, invDataDensity: ', ii, &
+      !        invDataDensities(ii)
+      !end do
+
       ! Here we create a 2d hash table storing the index values of each ob
       ! in linked lists for each LIS grid box.  This can help us screen
       ! out obviously unnecessary ob comparisons later.
@@ -2113,6 +2129,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
       t0 = MPI_Wtime()
 #endif
 
@@ -2120,6 +2138,8 @@ contains
 
 #if (defined SPMD)
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
          t1 = MPI_Wtime()
 #endif
          pnew_est_pet(:) = 0
@@ -2222,11 +2242,19 @@ contains
          pnew_est(:) = 0
          pnew_ana(:) = 0
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(pnew_est_pet, pnew_est, nobs, MPI_REAL, &
               MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(pnew_ana_pet, pnew_ana, nobs, MPI_REAL, &
               MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
 #endif
 
          ! Finish analysis and observation estimates for this iteration
@@ -2250,8 +2278,12 @@ contains
          ! Share sumObsEstimates across all processors.
          sumObsEstimates(:) = 0
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(sumObsEstimates_pet, sumObsEstimates, nobs, &
               MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
 #else
          do j = 1, nobs
             sumObsEstimates(j) = sum(sumObsEstimates_pet)
@@ -2321,19 +2353,18 @@ contains
          end if
 
          !EMK TEST
-         ! do ii = 1, nobs
-         !    write(LIS_logunit,*) &
-         !         '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
-         !         ii,
-         !         trim(this%net(ii)), ' ',&
-         !         trim(this%platform(ii)), &
-         !         ' ',this%obs(ii),&
-         !         ' ',this%back(ii),&
-         !         ' ',pnew_ana(ii),&
-         !         ' ',pnew_est(ii),&
-         !         ' ',1./invDataDensities(ii)
-
-         ! end do
+         do ii = 1, nobs
+            write(LIS_logunit,*) &
+                 '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
+                 ii, &
+                 trim(this%net(ii)), ' ',&
+                 trim(this%platform(ii)), &
+                 ' ',this%obs(ii),&
+                 ' ',this%back(ii),&
+                 ' ',pnew_ana(ii),&
+                 ' ',pnew_est(ii),&
+                 ' ',1./invDataDensities(ii)
+         end do
 
          if (done) exit ! No more iterations!
 
@@ -2365,6 +2396,8 @@ contains
 
 #if (defined SPMD)
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          t2 = MPI_Wtime()
          if (verbose) then
             write(LIS_logunit,*) &
@@ -2402,6 +2435,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
       t2 = MPI_Wtime()
       if (verbose) then
          write(LIS_logunit,*) &
@@ -2534,6 +2569,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_gridAnalysis')
       t1 = MPI_Wtime()
 #endif
 
@@ -2619,9 +2656,13 @@ contains
       allocate(mrgp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       mrgp_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_gridAnalysis')
       call MPI_ALLREDUCE(mrgp_1d_pet,mrgp_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_ALLREDUCE call in calc_gridAnalysis')
       deallocate(mrgp_1d_pet)
 #endif
 
@@ -2648,6 +2689,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_gridAnalysis')
       t2 = MPI_Wtime()
       write(LIS_logunit,*)'[INFO] Elapsed time for grid analysis is ', &
            t2 - t1,' seconds'
@@ -3156,6 +3199,8 @@ contains
       message(3) = '  LIS was not compiled with GRIBAPI or ECCODES support!'
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in check_grib_file')
 #endif
       if(LIS_masterproc) then
          call LIS_alert( 'LIS.check_grib_file', 1, &
@@ -3249,6 +3294,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_superstatQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -3410,6 +3457,8 @@ contains
 #if (defined SPMD)
             call MPI_Allreduce(superobs_pet,means,glbcr,MPI_REAL, MPI_SUM, &
                  LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
 #else
             do j = 1, glbcr
                means(j) = sum(superobs_pet)
@@ -3420,6 +3469,8 @@ contains
 #if (defined SPMD)
             call MPI_Allreduce(superob_count_pet,superob_count,glbcr,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
 #else
             do j = 1, glbcr
                superob_count(j) = sum(superob_count_pet)
@@ -3444,35 +3495,49 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_superstatQC')
             superob_count(:) = 0
             call MPI_Allreduce(superob_count_pet, superob_count, glbcr,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superob_count_pet(:) = 0
 
             superobs(:) = 0
             call MPI_Allreduce(superobs_pet, superobs, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superobs_pet(:) = 0
 
             superlat(:) = 0
             call MPI_Allreduce(superlat_pet, superlat, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superlat_pet(:) = 0
 
             superlon(:) = 0
             call MPI_Allreduce(superlon_pet, superlon, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superlon_pet(:) = 0
 
             superSigmaOSqr(:) = 0
             call MPI_Allreduce(superSigmaOSqr_pet, superSigmaOSqr, glbcr, &
                  MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superSigmaOSqr_pet(:) = 0
 
             superOErrScaleLength(:) = 0
             call MPI_Allreduce(superOErrScaleLength_pet, &
                  superOErrScaleLength, glbcr, &
                  MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superOErrScaleLength_pet(:) = 0
 #endif
 
@@ -3505,9 +3570,13 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_superstatQC')
             actions(:) = 0
             call MPI_Allreduce(actions_pet, actions, nobs,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             actions_pet(:) = 0
 #endif
          end if ! ipass .eq. 3
@@ -3584,6 +3653,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_superstatQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in superstatQC is ',t2 - t1,' seconds'
@@ -3645,6 +3716,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -3933,6 +4006,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in dupQC is ',t2 - t1,' seconds'
@@ -4039,6 +4114,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_backQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -4077,6 +4154,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_backQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in backQC is ',t2 - t1,' seconds'
@@ -4823,6 +4902,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
 #endif
       do j = 1, nobs
 
@@ -4903,8 +4984,12 @@ contains
       cols = 0
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
       call MPI_ALLREDUCE(cols_pet,cols,nobs,MPI_INTEGER, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in find_LIS_cols_rows')
 #else
       cols(:) = cols_pet(:)
 #endif
@@ -4915,8 +5000,12 @@ contains
       rows = 0
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
       call MPI_ALLREDUCE(rows_pet,rows,nobs,MPI_INTEGER, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in find_LIS_cols_rows')
 #else
       rows(:) = rows_pet(:)
 #endif
@@ -4968,6 +5057,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_waterQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -5005,6 +5096,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_waterQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in waterQC is ',t2-t1,' seconds'
@@ -5065,6 +5158,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -5108,9 +5203,13 @@ contains
       allocate(sfctmp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       sfctmp_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       call MPI_ALLREDUCE(sfctmp_1d_pet,sfctmp_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in USAF_snowQC')
       deallocate(sfctmp_1d_pet)
 #endif
       allocate(sfctmp(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
@@ -5187,6 +5286,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in snowQC is ',t2-t1,' seconds'
@@ -5248,6 +5349,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -5299,9 +5402,13 @@ contains
       allocate(snowdepth_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       snowdepth_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       call MPI_ALLREDUCE(snowdepth_1d_pet,snowdepth_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in USAF_snowDepthQC')
       deallocate(snowdepth_1d_pet)
 #endif
       allocate(snowdepth(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
@@ -5369,6 +5476,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in snowDepthQC is ',t2-t1,' seconds'
@@ -6483,8 +6592,24 @@ contains
                'n90_get_var failed for PPT_ratio in LIS param file')
      call LIS_verify(nf90_close(ncid),&
           'nf90_close failed in USAF_pcpBackBiasRatio_s2s')
-
 #endif
 
    end subroutine USAF_pcpBackBiasRatio_s2s
-end module USAF_bratsethMod
+
+   subroutine handle_mpi_error(errorcode, msg)
+     use LIS_logMod, only:  LIS_logunit, LIS_endrun
+     use LIS_mpiMod
+     implicit none
+     integer, intent(in) :: errorcode
+     character(*), intent(in) :: msg
+     character*(MPI_MAX_ERROR_STRING) :: buf
+     integer :: resultlen, ierr
+     if (errorcode .ne. MPI_SUCCESS) then
+        write(LIS_logunit,*)'[ERR] ', trim(msg)
+        call MPI_error_string(errorcode, buf, resultlen, ierr)
+        write(LIS_logunit,*)'[ERR] MPI error: ', trim(buf)
+        flush(LIS_logunit)
+        call LIS_endrun()
+     end if
+   end subroutine handle_mpi_error
+ end module USAF_bratsethMod
