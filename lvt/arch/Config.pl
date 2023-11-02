@@ -521,7 +521,7 @@ else{
 }
 
 if(defined($ENV{LVT_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LVT_RPC};
 }
 else{
    $librpc = "";
@@ -530,13 +530,13 @@ else{
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
       $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
-      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    else {
       $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
-      $fflags77= "-c ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
+      $fflags77= "-c ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) ";
    }
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt ";
 }
