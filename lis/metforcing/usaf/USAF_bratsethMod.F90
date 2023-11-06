@@ -145,10 +145,10 @@ module USAF_bratsethMod
    real, parameter :: MISSING = -9999
 
    ! Quality control flags.  Should these be public?
-   real, parameter :: QC_UNKNOWN = 0
-   real, parameter :: QC_GOOD = 1
-   real, parameter :: QC_SUSPECT = 2
-   real, parameter :: QC_REJECT = 3
+   integer, parameter :: QC_UNKNOWN = 0
+   integer, parameter :: QC_GOOD = 1
+   integer, parameter :: QC_SUSPECT = 2
+   integer, parameter :: QC_REJECT = 3
 
 contains
 
@@ -1045,7 +1045,8 @@ contains
             ! Honor option to reset SSMI zero precip values to missing
             if (.not. use_zeros) then
                write(LIS_logunit,*)'- SSMI ZEROS NOT USED'
-               where ( ra(:,:,:) .eq. 0.0 )
+               where ( .not. ra(:,:,:) > 0.0 .and. &
+                    .not. ra(:,:,:) < 0)
                   ra(:,:,:) = MISSING
                end where
             end if
@@ -1916,7 +1917,8 @@ contains
                   else if (trim(this%net(iob)) .eq. trim(this%net(job))) then
                      ! Satellite observations have correlated errors.
                      if (.not. isUncorrObType(this%net(job))) then
-                        if (this%oErrScaleLength(job) .eq. 0) then
+                        if (.not. this%oErrScaleLength(job) > 0 .and. &
+                             .not. this%oErrScaleLength(job) < 0) then
                            write(LIS_logunit,*) &
                                 '[ERR]: job, network, oErrScaleLength: ', &
                                 job, trim(this%net(job)), &
@@ -2410,24 +2412,24 @@ contains
         ! production, we will allow the program to continue instead of
         ! aborting.
          !if (npasses .eq. 100) then
-	if (npasses .eq. 5) then ! For Ops
+         if (npasses .eq. 5) then ! For Ops
 
-	   write(LIS_logunit,*) &
-	      '[WARN] Bratseth failed to converge after ',npasses, &
-              ' iterations!'
-	   write(LIS_logunit,*) &
-	      '[WARN] Will stop iterating'
-           flush(LIS_logunit)
-	   exit
-	end if
+            write(LIS_logunit,*) &
+                 '[WARN] Bratseth failed to converge after ',npasses, &
+                 ' iterations!'
+            write(LIS_logunit,*) &
+                 '[WARN] Will stop iterating'
+            flush(LIS_logunit)
+            exit
+         end if
       end do ! Iterate until convergence
 
       if (verbose) then
          if (done) then
- 	    write(LIS_logunit,*) &
+            write(LIS_logunit,*) &
               '[INFO] Bratseth analysis converged after ',npasses, &
               ' iterations'
-	 endif
+         endif
          write(LIS_logunit,*) &
               '[INFO] Mean absolute difference against obs: ana: ',mad_ana, &
               ' est: ',mad_est
@@ -3784,9 +3786,11 @@ contains
             ptr => head
             do i = 1, count_dups
                diff = this%lat(ptr%ob_index) - this%lat(r)
-               if (diff .ne. 0) location_issue = .true.
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) location_issue = .true.
                diff = this%lon(ptr%ob_index) - this%lon(r)
-               if (diff .ne. 0) location_issue = .true.
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) location_issue = .true.
                if (location_issue) exit ! Get out of loop
                ptr => ptr%next
             end do ! i
@@ -3822,7 +3826,8 @@ contains
             reject_all = .false.
             do i = 1, count_dups
                diff = this%obs(ptr%ob_index) - this%obs(r)
-               if (diff .eq. 0) then
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) then
                   this%qc(ptr%ob_index) = QC_REJECT
                   total_reject_count = total_reject_count + 1
                   write(LIS_logunit,*) &
@@ -3883,7 +3888,8 @@ contains
          if (count_dups .eq. 1 .and. .not. location_issue) then
             ptr => head
             diff = this%obs(ptr%ob_index) - this%obs(r)
-            if (diff .eq. 0) then
+            if (.not. diff < 0 .and. &
+                 .not. diff > 0) then
                this%qc(ptr%ob_index) = QC_REJECT
                total_reject_count = total_reject_count + 1
                write(LIS_logunit,*) &
@@ -4118,6 +4124,9 @@ contains
            'MPI_Barrier call in USAF_backQC')
       t1 = MPI_Wtime()
 #endif
+
+      !write(LIS_logunit,*)'EMK: nobs, sigmaBSqr = ', nobs, sigmaBSqr
+      !flush(LIS_Logunit)
 
       reject_count = 0
       do r = 1,nobs
@@ -6460,6 +6469,11 @@ contains
               agrmet_struc(n)%galwem_t2m_back_err_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%galwem_t2m_back_sigma_b_sqr
+
+         !write(LIS_logunit,*)'EMK: n, GALWEM T2 err = ', n, &
+         !     agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr
+         !flush(LIS_logunit)
+
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_t2m_stn_sigma_o_sqr
          agrmet_struc(n)%bratseth_t2m_max_dist = &
@@ -6488,6 +6502,11 @@ contains
               agrmet_struc(n)%gfs_t2m_back_err_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%gfs_t2m_back_sigma_b_sqr
+
+         !write(LIS_logunit,*)'EMK: n, GFS T2 err = ', n, &
+         !     agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr
+         !flush(LIS_Logunit)
+
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_t2m_stn_sigma_o_sqr
          agrmet_struc(n)%bratseth_t2m_max_dist = &
