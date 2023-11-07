@@ -16,6 +16,8 @@
 #include "com_header.h"
 #include "models.h"
 
+extern void get_daily_pe(int, int, int, int, float *, float *, float *);
+
 void get_ped(int y, int m, int d, int npix, int dtm, 
 	     float *pe, float *pe_adj, float *ped)
 {
