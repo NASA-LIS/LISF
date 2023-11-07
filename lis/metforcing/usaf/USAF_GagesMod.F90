@@ -1750,10 +1750,12 @@ contains
   end subroutine USAF_gages_write_data
 
   ! Read gage data from file.  Acts as an alternative constructor.
-  subroutine USAF_gages_read_data(this, filename, date10)
+  subroutine USAF_gages_read_data(this, filename, date10, alert_number)
 
     ! Imports
-    use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_coreMod, only: LIS_masterproc
+    use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber, &
+         LIS_alert, LIS_logunit
 
     ! Defaults
     implicit none
@@ -1762,6 +1764,7 @@ contains
     class(USAF_gages_t), intent(out) :: this
     character(*), intent(in) :: filename
     character(10), intent(in) :: date10
+    integer, intent(inout) :: alert_number
 
     ! Locals
     integer :: nobs
@@ -1792,18 +1795,69 @@ contains
     logical :: found
     integer :: i
     integer :: iunit
+    character(255) :: message(20)
 
+    message = ''
     call this%delete() ! Make sure structure is empty
 
     inquire(file=trim(filename), exist=found)
-    if (.not. found) return
-
+    if (.not. found) then
+       write(LIS_logunit,*)'[WARN] Cannot find ', trim(filename)
+       message(1) = '[WARN] Program:  LIS'
+       message(2) = '  Routine: USAF_read_data'
+       message(3) = '  Cannot find presav2 file ' // &
+            trim(filename)
+       message(4) = ' Observation count will be reduced'
+       if (LIS_masterproc) then
+          call LIS_alert('LIS.USAF_read_data', &
+               alert_number, message)
+          alert_number = alert_number + 1
+       end if
+       return
+    end if
     iunit = LIS_getNextUnitNumber()
 
-    open(iunit, file=trim(filename), iostat=istat, err=300)
-    read(iunit, *, iostat=istat, err=300, end=300) nobs
+    open(iunit, file=trim(filename), iostat=istat)
+    if (istat .ne. 0) then
+       write(LIS_logunit,*)'[WARN] Problem opening ', trim(filename)
+       message(1) = '[WARN] Program:  LIS'
+       message(2) = '  Routine: USAF_gages_read_data'
+       message(3) = '  Cannot open file ' // trim(filename)
+       if (LIS_masterproc) then
+          call LIS_alert('LIS.USAF_gages_read_data', &
+               alert_number, message)
+          alert_number = alert_number + 1
+       end if
+       return
+    end if
+
+    read(iunit, *, iostat=istat) nobs
+    if (istat .ne. 0) then
+       write(LIS_logunit,*)'[WARN] Problem reading ', trim(filename)
+       message(1) = '[WARN] Program:  LIS'
+       message(2) = '  Routine: USAF_gages_read_data'
+       message(3) = '  Problem reading file ' // trim(filename)
+       if (LIS_masterproc) then
+          call LIS_alert('LIS.USAF_gages_read_data', &
+               alert_number, message)
+          alert_number = alert_number + 1
+       end if
+       close(iunit)
+       call LIS_releaseUnitNumber(iunit)
+       return
+    end if
 
     if (nobs .le. 0) then
+       write(LIS_logunit,*)'[WARN] No precip obs found in ', &
+            trim(filename)
+       message(1) = '[WARN] Program:  LIS'
+       message(2) = '  Routine: USAF_gages_read_data'
+       message(3) = '  No precip obs found in file ' // trim(filename)
+       if (LIS_masterproc) then
+          call LIS_alert('LIS.USAF_gages_read_data', &
+               alert_number, message)
+          alert_number = alert_number + 1
+       end if
        close(iunit)
        call LIS_releaseUnitNumber(iunit)
        return
@@ -1872,6 +1926,17 @@ contains
             amts24, amts21, amts18, amts15, amts12, amts09, amts06, &
             amts03, amts02, amts01, &
             amts00, durations, preswx, pastwx)
+    else
+       write(LIS_logunit,*)'[WARN] Problem reading from ', &
+            trim(filename)
+       message(1) = '[WARN] Program:  LIS'
+       message(2) = '  Routine: USAF_gages_read_data'
+       message(3) = '  Problem reading from file ' // trim(filename)
+       if (LIS_masterproc) then
+          call LIS_alert('LIS.USAF_gages_read_data', &
+               alert_number, message)
+          alert_number = alert_number + 1
+       end if
     end if
 
     ! Clean up
