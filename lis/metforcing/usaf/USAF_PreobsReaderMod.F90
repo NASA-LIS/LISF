@@ -25,12 +25,14 @@ contains
   ! in database.
   subroutine USAF_read_preobs(preobsdir, presavdir, &
        use_timestamp, &
-       year, month, day, hour, use_expanded_station_ids)
+       year, month, day, hour, use_expanded_station_ids, &
+       alert_number)
 
     ! Imports
     use ESMF
     use LIS_coreMod, only: LIS_masterproc
-    use LIS_logMod, only:  LIS_logunit
+    use LIS_logMod, only:  LIS_logunit, LIS_alert, LIS_getNextUnitNumber, &
+         LIS_releaseUnitNumber
     use LIS_mpiMod, only:  LIS_mpi_comm
     use USAF_GagesMod, only: USAF_Gages_t
 
@@ -46,6 +48,7 @@ contains
     integer, intent(in) :: day
     integer, intent(in) :: hour
     integer, intent(in) :: use_expanded_station_ids
+    integer, intent(inout) :: alert_number
 
     ! Locals
     character(255) :: filename
@@ -110,6 +113,10 @@ contains
     character(10) :: prevdate10
     integer :: yyyy, mm, dd, h, m, s
     character(255) :: timestring
+    integer :: iunit
+    character(255) :: message(20)
+
+    message = ''
 
     write(LIS_logunit,*)'---------------------------------------------'
 
@@ -131,29 +138,72 @@ contains
        inquire(file=trim(filename), exist=found_file)
        if (.not. found_file) then
           write(LIS_logunit,*) '[WARN] Cannot find ', trim(filename)
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  Cannot find file ' // trim(filename)
+          if (LIS_masterproc) then
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
+             alert_number = alert_number + 1
+          end if
+          if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
 
-       open(22, file=trim(filename), status='old', iostat=ierr)
+       iunit = LIS_getNextUnitNumber()
+       open(iunit, file=trim(filename), status='old', iostat=ierr)
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem opening ', trim(filename)
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  Cannot open file ' // trim(filename)
+          if (LIS_masterproc) then
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
+             alert_number = alert_number + 1
+          end if
+          if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
 
        nsize = 0
-       read(22, *, iostat=ierr) nsize
+       read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem reading ', trim(filename)
-          close(22)
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  Problem reading file ' // trim(filename)
+          if (LIS_masterproc) then
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
+             alert_number = alert_number + 1
+          end if
+          close(iunit)
+          call LIS_releaseUnitNumber(iunit)
+          if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
 
-       write(LIS_logunit,*) '[INFO] Will process ', trim(filename)
+       if (nsize == 0) then
+          write(LIS_logunit,*)'[WARN] No precip obs found in ', &
+               trim(filename)
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  No precip obs found in ' // trim(filename)
+          if (LIS_masterproc) then
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
+             alert_number = alert_number + 1
+          end if
+       else
+          write(LIS_logunit,*) '[INFO] Will process ', trim(filename)
+       end if
 
        nsize_total = nsize_total + nsize
-       close(22)
+       close(iunit)
+       call LIS_releaseUnitNumber(iunit)
 
-       if (use_expanded_station_ids == 1) cycle ! These files are global
+       if (use_expanded_station_ids == 1) exit ! These files are global
     end do
 
     if (nsize_total == 0) then
@@ -213,13 +263,15 @@ contains
           cycle
        end if
 
-       open(22, file=trim(filename), status='old', iostat=ierr)
+       iunit = LIS_getNextUnitNumber()
+       open(iunit, file=trim(filename), status='old', iostat=ierr)
        if (ierr .ne. 0) cycle
 
        nsize = 0
-       read(22, *, iostat=ierr) nsize
+       read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
-          close(22)
+          close(iunit)
+          call LIS_releaseUnitNumber(iunit)
           if (use_expanded_station_ids == 1) exit
           cycle
        end if
@@ -229,7 +281,7 @@ contains
           if (use_expanded_station_ids == 1) then
              twfprc_tmp = MISSING
              sixprc_tmp = MISSING
-             read(22, 6001, iostat=ierr) YYYYMMDDhhmmss_tmp, &
+             read(iunit, 6001, iostat=ierr) YYYYMMDDhhmmss_tmp, &
                   network_tmp, plat_id_tmp, ilat_tmp, ilon_tmp, &
                   wmocode_id_tmp, fipscode_id_tmp, wmoblk_tmp, &
                   mscprc_tmp, duration_tmp, pastwx_tmp, preswx_tmp
@@ -238,7 +290,7 @@ contains
              if (wmocode_id_tmp == "  ") wmocode_id_tmp = "??"
              if (fipscode_id_tmp == "  ") fipscode_id_tmp = "??"
           else
-             read(22, 6000, iostat=ierr) twfprc_tmp, duration_tmp, &
+             read(iunit, 6000, iostat=ierr) twfprc_tmp, duration_tmp, &
                   sixprc_tmp, &
                   mscprc_tmp, ilat_tmp, ilon_tmp, network_tmp, &
                   plat_id_tmp, &
@@ -651,7 +703,8 @@ contains
                trim(presav_filename)
           write(prevdate10,'(i4.4,i2.2,i2.2,i2.2)') &
                prevyear, prevmonth, prevday, prevhour
-          call obsprev%read_data(presav_filename, prevdate10)
+          call obsprev%read_data(presav_filename, prevdate10, &
+               alert_number)
           if (deltahr == 3) then
              call obscur%reconcile_gages03(obsprev)
           else if (deltahr == 6) then
@@ -673,6 +726,16 @@ contains
           write(LIS_logunit,*) &
                '[WARN] Will skip reconciling with obs from ', &
                abs(deltahr),' hours ago'
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  Cannot find earlier presav2 file ' // &
+               trim(presav_filename)
+          message(4) = ' Observation count will be reduced'
+          if (LIS_masterproc) then
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
+             alert_number = alert_number + 1
+          end if
        end if
     end do
 

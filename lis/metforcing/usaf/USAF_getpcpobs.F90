@@ -76,7 +76,7 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
      call USAF_read_preobs(preobsdir, &
           trim(agrmet_struc(n)%analysisdir), &
           agrmet_struc(n)%use_timestamp, yr, mo, da, hr, &
-          use_expanded_station_ids)
+          use_expanded_station_ids, alert_number)
 
      ! If this is a synoptic time, read the presav2 file back in and
      ! populate the appropriate USAF_ObsData object.
@@ -87,7 +87,7 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
      if (file_exists) then
         write(yyyymmddhh,'(i4.4,i2.2,i2.2,i2.2)') &
              yr, mo, da, hr
-        call obscur%read_data(presav_filename, yyyymmddhh)
+        call obscur%read_data(presav_filename, yyyymmddhh, alert_number)
         if (.not. use_twelve) then
            call obscur%copy_to_usaf_obsdata(6, &
                 agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
