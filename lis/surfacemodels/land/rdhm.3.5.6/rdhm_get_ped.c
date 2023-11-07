@@ -9,6 +9,9 @@
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
  /* wrapper for calling get_ped 
     Shugong Wang  10/25/2013  */
+
+extern void get_ped(int, int, int, int, int, float *, float *, float *);
+
  void rdhm_get_ped_(int *year,            /* */
                     int *month,           /* */
                     int *day,             /* */

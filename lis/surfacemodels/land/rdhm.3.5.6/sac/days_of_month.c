@@ -13,6 +13,8 @@
 #include "com_header.h"
 #include "models.h"
 
+extern int is_leap_year(int);
+
 int days_of_month(int m, int y)
 {
   int num_days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
