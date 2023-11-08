@@ -304,8 +304,10 @@ void FTN(setup_vic411)(int *NGRIDS, int *NTILES,
       if ( *vtscheme == VIC_BASED )
       {
          /** Read Grid Cell Vegetation Parameters **/
+      /* kluge
          vic411_lis_veg_con[t] = vic411_read_vegparam(vic411_filep.vegparam, vic411_lis_soil_con[t].gridcel,
                                         Nveg_type);
+      */
       }
       else
       {
