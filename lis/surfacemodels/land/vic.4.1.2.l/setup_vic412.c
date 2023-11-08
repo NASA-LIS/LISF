@@ -17,6 +17,10 @@
 #define VIC_BASED ( 0 )
 #define LIS_BASED ( 1 )
 
+extern void lis_scan_soilparam_flat_ascii(FILE *, float *, float *);
+
+extern void vic412_compute_treeline(double, double *, char *);
+
 soil_con_struct         *lis_soil_con;
 dmy_struct              *dmy;
 atmos_data_struct      **lis_atmos;

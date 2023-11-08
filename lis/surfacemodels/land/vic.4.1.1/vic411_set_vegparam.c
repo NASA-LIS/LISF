@@ -14,6 +14,8 @@
 
 #define BARETYPE ( 12 ) // UMD -- HARDCODED!
 
+extern int vic411_read_vegparam(FILE *, int, int, int, vic411_veg_con_struct *);
+
 int vic411_real_2_vic(int real_type, int Nveg_type)
 {
    extern vic411_veg_lib_struct *vic411_veg_lib;
