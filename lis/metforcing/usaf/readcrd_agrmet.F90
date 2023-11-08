@@ -224,6 +224,35 @@ subroutine readcrd_agrmet()
      end if
   enddo
 
+  ! EMK...Sfc observation file formats
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET sfc obs file format:", &
+       rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%sfcobsfmt, rc=rc)
+     if (agrmet_struc(n)%sfcobsfmt .ne. 1 .and. &
+          agrmet_struc(n)%sfcobsfmt .ne. 2) then
+        write(LIS_logunit,*) &
+             "[ERR] Bad 'AGRMET sfc obs file format:' option"
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 or 2, found ', agrmet_struc(n)%sfcobsfmt
+        write(LIS_logunit,*) '[ERR] Aborting...'
+
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] Illegal value for AGRMET sfc obs file format'
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+  enddo
+
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET native imax:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%imaxnative,rc=rc)

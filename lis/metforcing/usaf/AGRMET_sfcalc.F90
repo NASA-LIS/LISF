@@ -180,6 +180,7 @@ subroutine AGRMET_sfcalc(n)
   logical :: found_inq
   integer :: rc
   integer, external :: LIS_create_subdirs
+  logical :: use_wigos_sfcobs
 
   data lokspd     / 15, 25, 30, 40, 50 /
   data lokrlh     / 10, 15, 25, 35, 40 /
@@ -486,12 +487,17 @@ subroutine AGRMET_sfcalc(n)
         call USAF_createObsData(spd10mObs, n, &
              maxobs=agrmet_struc(n)%max_sfcobs)
 
+        if (agrmet_struc(n)%sfcobsfmt == 1) then
+           use_wigos_sfcobs = .false.
+        else
+           use_wigos_sfcobs = .true.
+        end if
         call AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
              ri, rj, obstmp, obsrlh, obsspd, &
              obscnt, agrmet_struc(n)%max_sfcobs, agrmet_struc(n)%minwnd, &
              alert_number, LIS_rc%lnc(n), LIS_rc%lnr(n),&
              agrmet_struc(n)%agrmetdir,agrmet_struc(n)%cdmsdir,&
-             agrmet_struc(n)%use_timestamp)
+             agrmet_struc(n)%use_timestamp, use_wigos_sfcobs)
 
 !        call MPI_Barrier(LIS_mpi_comm, ierr)
 !        stop
