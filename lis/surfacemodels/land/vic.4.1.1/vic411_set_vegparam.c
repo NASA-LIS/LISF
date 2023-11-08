@@ -14,7 +14,7 @@
 
 #define BARETYPE ( 12 ) // UMD -- HARDCODED!
 
-extern int vic411_read_vegparam(FILE *, int, int, int, vic411_veg_con_struct *);
+extern int vic411_read_vegparam_lis(FILE *, int, int, int, vic411_veg_con_struct *);
 
 int vic411_real_2_vic(int real_type, int Nveg_type)
 {
@@ -361,7 +361,7 @@ vic411_veg_con_struct *vic411_set_vegparam(int tile_idx,
          depth_sum = 0;
 
          // added by Shugong Wang to read in root zone information and update vic411_lis_veg_lib
-         vic411_flag = vic411_read_vegparam(fp_vegparam, gridcel , Nveg_type, vegclass, &(temp[i]));
+         vic411_flag = vic411_read_vegparam_lis(fp_vegparam, gridcel , Nveg_type, vegclass, &(temp[i]));
          if(vic411_flag==0) // cannot find veg parameters
          {
             // Since root zones are not defined they are copied from the last
