@@ -165,9 +165,11 @@ if($opt_lev == -3) {
        $sys_c_opt .= " -Wunused-function -Wunused-parameter";
        $sys_c_opt .= " -Wunused-variable -Wwrite-strings";
        # Run-time flags
-       $sys_c_opt .= " -check=conversions,stack,uninit";
+       #EMK 20231109...Disabled several flags that are rejected by the new ICX
+       #compiler on Narwhal.
+       #$sys_c_opt .= " -check=conversions,stack,uninit";
        $sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
-       $sys_c_opt .= " -ftrapuv";
+       #$sys_c_opt .= " -ftrapuv";
    }
    elsif($sys_arch eq "linux_pgi") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";

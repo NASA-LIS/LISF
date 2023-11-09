@@ -13,6 +13,9 @@
 #include "ftn.h"
 #define VIC_BASED 0  /** VIC based vegetation tiling  Added by Shugong Wang on 05/01/2012 **/
 #define LIS_BASED 1  /** LIS based vegetation tiling  Added by Shugong Wang on 05/01/2012 **/
+
+extern void pack_model_state(dist_prcp_struct *, global_param_struct *, int, int, filep_struct *, soil_con_struct *, char *, int *, float *, int *);
+
 //BOP
 //
 // !ROUTINE: vic412_write_state

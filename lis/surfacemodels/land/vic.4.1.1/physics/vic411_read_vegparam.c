@@ -359,7 +359,7 @@ vic411_veg_con_struct *vic411_read_vegparam(FILE *vegparam,
 
 
 
-
+#if 0
 /* trim trailing newlines */
 
 #define END '\0'
@@ -372,4 +372,4 @@ void vic411_ttrim( char *c )
   for( ; *--c == NEW; *c = END );
 
 }
-
+#endif
