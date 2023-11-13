@@ -503,8 +503,8 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !     ------------------------------------------------------------------
 
                  call latlon_to_ij(LIS_domain(n)%lisproj, rlat, rlon, &
-                      rigrid, rjgrid)                        
-                 
+                      rigrid, rjgrid)
+
                  !if(rigrid.ge.1.and.rigrid.le.imax.and. &
 !                      rjgrid.ge.1.and.rjgrid.le.jmax) then 
 ! EMK TEST
@@ -655,9 +655,6 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                           obstmp(obscnt) = rtmp
                           obsrlh(obscnt) = rrelh
                           obsspd(obscnt) = rspd
-                          !if(rspd.lt.0) then
-                          !   print*, 'probl ',rlat,rlon, rspd
-                          !endif
                        endif
 !     ------------------------------------------------------------------
 !         If we have reached the number of obs that our hard-wired
@@ -683,71 +680,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                  endif
               endif
            enddo
-           ! EMK...Handling ierr2 .ne. 0 is now handled above.
-!         else ! ierr2 .ne. 0
-! !     ------------------------------------------------------------------
-! !       There was an error retrieving obs for this Julhr and hemi.
-! !       Send an alert message, but don't abort.
-! !     ------------------------------------------------------------------
-
-!            ! EMK...Replace julhr with YYYYMMDD
-!            !write(cjulhr,'(i6)',iostat=istat1) julhr
-!            write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
-!                 yr, mo, da, hr
-!            write(LIS_logunit,*)' '
-!            if (use_wigos_sfcobs) then
-!               write(LIS_logunit,*) &
-!                    '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
-!               write(LIS_logunit,*)'[WARN] THE GLOBE'
-!               write(LIS_logunit,*)'[WARN} ISTAT IS ', ierr1
-!               message(1) = 'program:  LIS'
-!               message(2) = '  routine:  AGRMET_getsfc'
-!               message(3) = '  error retrieving sfc obs from database for'
-!               message(4) = '  the globe'
-!            else
-!               write(LIS_logunit,*) &
-!                    '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
-!               write(LIS_logunit,*) &
-!                    '[WARN] THE '//norsou(hemi)//' HEMISPHERE.'
-!               write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
-!               message(1) = 'program:  LIS'
-!               message(2) = '  routine:  AGRMET_getsfc'
-!               message(3) = '  error retrieving sfc obs from database for'
-!               message(4) = '  the '//norsou(hemi)//' hemisphere.'
-!            end if
-!            if( istat1 .eq. 0 ) then
-!               ! EMK...Replace julhr with YYYYMMDD
-!               !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-!               !message(5) = '  julhr is ' // trim(cjulhr) // '.'
-!               write(LIS_logunit,*)'[WARN] YYYYMMDDHH is ' // date10
-!               message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
-!            endif
-!            alert_number = alert_number + 1
-!            if(LIS_masterproc) then
-!               call lis_alert( 'sfcalc              ', alert_number, &
-!                    message )
-!            endif
-!            message = ''
         endif
-     ! EMK...ierr1 .ne. 0 case now handled above.
-     ! else ! ierr1 .ne. 0
-     !    ! EMK...Replace julhr with YYYYMMDD
-     !    !write(cjulhr,'(i6)',iostat=istat1) julhr
-     !    write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
-     !         yr, mo, da, hr
-     !    write(LIS_logunit,*)' '
-     !    write(LIS_logunit,*) &
-     !         '[WARN] ROUTINE AGRMET_GETSFC: ERROR OPENING ', &
-     !         trim(sfcobsfile)
-     !    write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
-     !    message(1) = 'program:  LIS'
-     !    message(2) = '  routine:  AGRMET_getsfc'
-     !    message(3) = '  error opening file ', trim(sfcobsfile)
-     !    alert_number = alert_number + 1
-     !    if(LIS_masterproc) then
-     !       call lis_alert( 'sfcalc              ', alert_number, message )
-     !    endif
-     !    message = ''
      endif
 
      if (use_wigos_sfcobs) exit ! New sfcobs file is global
