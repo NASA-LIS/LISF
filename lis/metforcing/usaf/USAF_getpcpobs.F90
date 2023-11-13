@@ -80,25 +80,27 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
 
      ! If this is a synoptic time, read the presav2 file back in and
      ! populate the appropriate USAF_ObsData object.
-     write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
-            trim(agrmet_struc(n)%analysisdir), '/presav2.03hr.', &
-            yr, mo, da, hr
-     inquire(file=presav_filename, exist=file_exists)
-     if (file_exists) then
-        write(yyyymmddhh,'(i4.4,i2.2,i2.2,i2.2)') &
+     if ( mod(j3hr, 6) == 0 ) then
+        write(presav_filename,'(A,A,i4.4,i2.2,i2.2,i2.2)') &
+             trim(agrmet_struc(n)%analysisdir), '/presav2.03hr.', &
              yr, mo, da, hr
-        call obscur%read_data(presav_filename, yyyymmddhh, alert_number)
-        if (.not. use_twelve) then
-           call obscur%copy_to_usaf_obsdata(6, &
-                agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                precip6)
-        else
-           call obscur%copy_to_usaf_obsdata(12, &
-                agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                precip12)
+        inquire(file=presav_filename, exist=file_exists)
+        if (file_exists) then
+           write(yyyymmddhh,'(i4.4,i2.2,i2.2,i2.2)') &
+                yr, mo, da, hr
+           call obscur%read_data(presav_filename, yyyymmddhh, &
+                alert_number)
+           if (use_twelve) then
+              call obscur%copy_to_usaf_obsdata(12, &
+                   agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
+                   precip12)
+           else
+              call obscur%copy_to_usaf_obsdata(6, &
+                   agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
+                   precip6)
+           end if
         end if
      end if
-
      k = k + 1
   end do
 
