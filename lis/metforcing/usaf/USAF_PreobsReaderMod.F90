@@ -142,9 +142,9 @@ contains
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot find file ' // trim(filename)
           if (LIS_masterproc) then
+             alert_number = alert_number + 1
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
-             alert_number = alert_number + 1
           end if
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
@@ -158,9 +158,9 @@ contains
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot open file ' // trim(filename)
           if (LIS_masterproc) then
+             alert_number = alert_number + 1
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
-             alert_number = alert_number + 1
           end if
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
@@ -174,9 +174,9 @@ contains
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Problem reading file ' // trim(filename)
           if (LIS_masterproc) then
+             alert_number = alert_number + 1
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
-             alert_number = alert_number + 1
           end if
           close(iunit)
           call LIS_releaseUnitNumber(iunit)
@@ -191,9 +191,9 @@ contains
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  No precip obs found in ' // trim(filename)
           if (LIS_masterproc) then
+             alert_number = alert_number + 1
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
-             alert_number = alert_number + 1
           end if
        else
           write(LIS_logunit,*) '[INFO] Will process ', trim(filename)
@@ -732,9 +732,9 @@ contains
                trim(presav_filename)
           message(4) = ' Observation count will be reduced'
           if (LIS_masterproc) then
+             alert_number = alert_number + 1
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
-             alert_number = alert_number + 1
           end if
        end if
     end do
