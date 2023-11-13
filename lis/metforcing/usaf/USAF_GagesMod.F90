@@ -1831,6 +1831,7 @@ contains
        return
     end if
 
+    write(LIS_logunit,*) '[INFO] Reading ', trim(filename)
     read(iunit, *, iostat=istat) nobs
     if (istat .ne. 0) then
        write(LIS_logunit,*)'[WARN] Problem reading ', trim(filename)
@@ -1969,6 +1970,8 @@ contains
     if (istat .eq. 0) then
        call set_unique_networks(this)
     end if
+
+    !write(LIS_logunit,*)'[INFO] Read in ', nobs, ' gage reports'
   end subroutine USAF_gages_read_data
 
   ! Search USAF_gages_t type for presumed erroneous accumulations.
@@ -2588,6 +2591,7 @@ contains
 
     ! Locals
     integer :: i
+    integer :: num_obs_copied
 
     ! Sanity checks
     if (this%nobs == 0) return
@@ -2599,6 +2603,7 @@ contains
        call LIS_endrun()
     end if
 
+    num_obs_copied = 0
     if (hr == 6) then
        do i = 1, this%nobs
           if (this%amts06(i) < 0) cycle
@@ -2609,7 +2614,10 @@ contains
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
                gage_sigma_o_sqr, 0.)
+          num_obs_copied = num_obs_copied + 1
        end do
+       write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &
+            ' 6-hr gage reports'
     else if (hr == 12) then
        do i = 1, this%nobs
           if (this%amts12(i) < 0) cycle
@@ -2620,7 +2628,12 @@ contains
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
                gage_sigma_o_sqr, 0.)
+          num_obs_copied = num_obs_copied + 1
        end do
+       write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &
+            ' 12-hr gage reports'
     end if
+
+
   end subroutine USAF_copy_to_usaf_obsdata
 end module USAF_GagesMod
