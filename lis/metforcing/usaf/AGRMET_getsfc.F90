@@ -258,8 +258,11 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   character(len=8) :: rptyp8
   character*32, parameter :: blank32 = "                                "
   integer :: iunit
+  logical :: found_file
 
   data norsou  / 'NORTHERN', 'SOUTHERN' /
+
+  message = ''
 
 !     ------------------------------------------------------------------
 !     Executable code begins here. Intialize observation counter to 0.
@@ -308,20 +311,76 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
      call getsfcobsfilename(sfcobsfile, rootdir, cdmsdir, &
           use_timestamp,hemi, yr, mo, da, hr, use_wigos_sfcobs)
 
-     write(LIS_logunit,*)'[INFO] Reading OBS: ',trim(sfcobsfile)
+     inquire(file=trim(sfcobsfile), exist=found_file)
+     if (.not. found_file) then
+        write(LIS_logunit,*) '[WARN] Cannot find ', trim(sfcobsfile)
+        message(1) = '[WARN] Program:  LIS'
+        message(2) = '  Routine: AGRMET_getsfc'
+        message(3) = '  Cannot find file ' // trim(sfcobsfile)
+        if (LIS_masterproc) then
+           call LIS_alert('LIS.AGRMET_getsfc', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        message = ''
+        if (use_wigos_sfcobs) exit ! These files are global
+        cycle
+     end if
 
+     write(LIS_logunit,*)'[INFO] Opening: ',trim(sfcobsfile)
      iunit = LIS_getNextUnitNumber()
      open(iunit,file=trim(sfcobsfile),status='old', iostat=ierr1)
+
+     if (ierr1 .ne. 0) then
+        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
+             yr, mo, da, hr
+        write(LIS_logunit,*)' '
+        write(LIS_logunit,*) &
+             '[WARN] ROUTINE AGRMET_GETSFC: ERROR OPENING ', &
+             trim(sfcobsfile)
+        write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
+        message(1) = 'program:  LIS'
+        message(2) = '  routine:  AGRMET_getsfc'
+        message(3) = '  error opening file ' // trim(sfcobsfile)
+        alert_number = alert_number + 1
+        if(LIS_masterproc) then
+           call lis_alert( 'LIS.AGRMET_getsfc', alert_number, message )
+        endif
+        message = ''
+        if (use_wigos_sfcobs) exit ! New WIGOS version is global
+        cycle
+     endif
+
      if(ierr1.eq.0) then
         read(iunit,*, iostat=ierr2) nsize
-        
+
+        if (ierr2 .ne. 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Problem reading total report count from ', &
+                trim(sfcobsfile)
+           message(1) = 'program:  LIS'
+           message(2) = '  routine:  AGRMET_getsfc'
+           message(3) = '  Cannot read total report count from ' // &
+                trim(sfcobsfile)
+           alert_number = alert_number + 1
+           if(LIS_masterproc) then
+              call lis_alert( 'LIS.AGRMET_getsfc', alert_number, &
+                   message )
+           endif
+           message = ''
+           close(iunit)
+           call LIS_releaseUnitNumber(iunit)
+           if (use_wigos_sfcobs) exit
+           cycle
+        end if
+
 !     ------------------------------------------------------------------
 !     If the number of obs in the file is greater than the array size
 !     write an alert to the log and set back the number to read to
 !     prevent a segfault.
 !     ------------------------------------------------------------------
 
-        if ( nsize .GT. isize ) then
+         if ( nsize .GT. isize ) then
 
            write(LIS_logunit,*)' '
            write(LIS_logunit,*)"******************************************************"
@@ -613,96 +672,82 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                           message(3) = '  reached maximum number of sfc obs to save memory in memory'
                           alert_number = alert_number + 1
                           if(LIS_masterproc) then
-                             call lis_alert( 'sfcalc              ', alert_number, &
+                             call lis_alert( 'LIS.AGRMET_getsfc', &
+                                  alert_number, &
                                   message )
                           endif
+                          message = ''
                           exit ! Jump out of hemi do loop
                        end if
                     endif
                  endif
               endif
            enddo
-        else
-!     ------------------------------------------------------------------
-!       There was an error retrieving obs for this Julhr and hemi.
-!       Send an alert message, but don't abort.
-!     ------------------------------------------------------------------
+           ! EMK...Handling ierr2 .ne. 0 is now handled above.
+!         else ! ierr2 .ne. 0
+! !     ------------------------------------------------------------------
+! !       There was an error retrieving obs for this Julhr and hemi.
+! !       Send an alert message, but don't abort.
+! !     ------------------------------------------------------------------
 
-           ! EMK...Replace julhr with YYYYMMDD
-           !write(cjulhr,'(i6)',iostat=istat1) julhr
-           write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
-                yr, mo, da, hr
-           write(LIS_logunit,*)' '
-           if (use_wigos_sfcobs) then
-              write(LIS_logunit,*) &
-                   '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
-              write(LIS_logunit,*)'[WARN] THE GLOBE'
-              write(LIS_logunit,*)'[WARN} ISTAT IS ', ierr1
-              message(1) = 'program:  LIS'
-              message(2) = '  routine:  AGRMET_getsfc'
-              message(3) = '  error retrieving sfc obs from database for'
-              message(4) = '  the globe'
-           else
-              write(LIS_logunit,*) &
-                   '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
-              write(LIS_logunit,*) &
-                   '[WARN] THE '//norsou(hemi)//' HEMISPHERE.'
-              write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
-              message(1) = 'program:  LIS'
-              message(2) = '  routine:  AGRMET_getsfc'
-              message(3) = '  error retrieving sfc obs from database for'
-              message(4) = '  the '//norsou(hemi)//' hemisphere.'
-           end if
-           if( istat1 .eq. 0 ) then
-              ! EMK...Replace julhr with YYYYMMDD
-              !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-              !message(5) = '  julhr is ' // trim(cjulhr) // '.'
-              write(LIS_logunit,*)'[WARN] YYYYMMDDHH is ' // date10
-              message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
-           endif
-           alert_number = alert_number + 1
-           if(LIS_masterproc) then
-              call lis_alert( 'sfcalc              ', alert_number, &
-                   message )
-           endif
+!            ! EMK...Replace julhr with YYYYMMDD
+!            !write(cjulhr,'(i6)',iostat=istat1) julhr
+!            write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
+!                 yr, mo, da, hr
+!            write(LIS_logunit,*)' '
+!            if (use_wigos_sfcobs) then
+!               write(LIS_logunit,*) &
+!                    '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
+!               write(LIS_logunit,*)'[WARN] THE GLOBE'
+!               write(LIS_logunit,*)'[WARN} ISTAT IS ', ierr1
+!               message(1) = 'program:  LIS'
+!               message(2) = '  routine:  AGRMET_getsfc'
+!               message(3) = '  error retrieving sfc obs from database for'
+!               message(4) = '  the globe'
+!            else
+!               write(LIS_logunit,*) &
+!                    '[WARN] ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
+!               write(LIS_logunit,*) &
+!                    '[WARN] THE '//norsou(hemi)//' HEMISPHERE.'
+!               write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
+!               message(1) = 'program:  LIS'
+!               message(2) = '  routine:  AGRMET_getsfc'
+!               message(3) = '  error retrieving sfc obs from database for'
+!               message(4) = '  the '//norsou(hemi)//' hemisphere.'
+!            end if
+!            if( istat1 .eq. 0 ) then
+!               ! EMK...Replace julhr with YYYYMMDD
+!               !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
+!               !message(5) = '  julhr is ' // trim(cjulhr) // '.'
+!               write(LIS_logunit,*)'[WARN] YYYYMMDDHH is ' // date10
+!               message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
+!            endif
+!            alert_number = alert_number + 1
+!            if(LIS_masterproc) then
+!               call lis_alert( 'sfcalc              ', alert_number, &
+!                    message )
+!            endif
+!            message = ''
         endif
-     else
-        ! EMK...Replace julhr with YYYYMMDD
-        !write(cjulhr,'(i6)',iostat=istat1) julhr
-        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
-             yr, mo, da, hr
-        if (use_wigos_sfcobs) then
-           write(LIS_logunit,*)' '
-           write(LIS_logunit,*) &
-                '[WARN] ROUTINE AGRMET_GETSFC: ERROR RETRIEVING SFC OBS FOR'
-           write(LIS_logunit,*)'[WARN] THE GLOBE'
-           write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
-           message(1) = 'program:  LIS'
-           message(2) = '  routine:  AGRMET_getsfc'
-           message(3) = '  error retrieving sfc obs from database for'
-           message(4) = '  the globe.'
-        else
-           write(LIS_logunit,*)' '
-           write(LIS_logunit,*) &
-                '[WARN] ROUTINE AGRMET_GETSFC: ERROR RETRIEVING SFC OBS FOR'
-           write(LIS_logunit,*)'[WARN] THE '//norsou(hemi)//' HEMISPHERE.'
-           write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
-           message(1) = 'program:  LIS'
-           message(2) = '  routine:  AGRMET_getsfc'
-           message(3) = '  error retrieving sfc obs from database for'
-           message(4) = '  the '//norsou(hemi)//' hemisphere.'
-        end if
-        if( istat1 .eq. 0 ) then
-           ! EMK...Replace julhr with YYYYMMDDHH
-           !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-           !message(5) = '  julhr is ' // trim(cjulhr) // '.'
-           write(LIS_logunit,*)'[WARN] YYYYMMDDHH is ' // date10
-           message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
-        endif
-        alert_number = alert_number + 1
-        if(LIS_masterproc) then
-           call lis_alert( 'sfcalc              ', alert_number, message )
-        endif
+     ! EMK...ierr1 .ne. 0 case now handled above.
+     ! else ! ierr1 .ne. 0
+     !    ! EMK...Replace julhr with YYYYMMDD
+     !    !write(cjulhr,'(i6)',iostat=istat1) julhr
+     !    write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
+     !         yr, mo, da, hr
+     !    write(LIS_logunit,*)' '
+     !    write(LIS_logunit,*) &
+     !         '[WARN] ROUTINE AGRMET_GETSFC: ERROR OPENING ', &
+     !         trim(sfcobsfile)
+     !    write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
+     !    message(1) = 'program:  LIS'
+     !    message(2) = '  routine:  AGRMET_getsfc'
+     !    message(3) = '  error opening file ', trim(sfcobsfile)
+     !    alert_number = alert_number + 1
+     !    if(LIS_masterproc) then
+     !       call lis_alert( 'sfcalc              ', alert_number, message )
+     !    endif
+     !    message = ''
      endif
 
      if (use_wigos_sfcobs) exit ! New sfcobs file is global
