@@ -2354,19 +2354,19 @@ contains
             end if
          end if
 
-         !EMK TEST
-         do ii = 1, nobs
-            write(LIS_logunit,*) &
-                 '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
-                 ii, &
-                 trim(this%net(ii)), ' ',&
-                 trim(this%platform(ii)), &
-                 ' ',this%obs(ii),&
-                 ' ',this%back(ii),&
-                 ' ',pnew_ana(ii),&
-                 ' ',pnew_est(ii),&
-                 ' ',1./invDataDensities(ii)
-         end do
+         ! !EMK TEST
+         ! do ii = 1, nobs
+         !    write(LIS_logunit,*) &
+         !         '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
+         !         ii, &
+         !         trim(this%net(ii)), ' ',&
+         !         trim(this%platform(ii)), &
+         !         ' ',this%obs(ii),&
+         !         ' ',this%back(ii),&
+         !         ' ',pnew_ana(ii),&
+         !         ' ',pnew_est(ii),&
+         !         ' ',1./invDataDensities(ii)
+         ! end do
 
          if (done) exit ! No more iterations!
 
