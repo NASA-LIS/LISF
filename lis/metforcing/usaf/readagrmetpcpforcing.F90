@@ -411,7 +411,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             ! Reject data over water
             write(LIS_logunit,*) &
-                 '[INFO] Running waterQC on 0-6 hr gauge observations'
+                 '[INFO] Running waterQC on 6 hr gauge observations'
             call USAF_waterQC(precip_6hr_gage_tmp,n)
             nobs_good = USAF_countGoodObs(precip_6hr_gage_tmp)
             nobs_good_extra = nint(nobs_good*1.10)
@@ -938,7 +938,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             ! Reject and filter out gage reports over water
             write(LIS_logunit,*) &
-                 '[INFO] Running waterQC on 6-12 hr gauge observations'
+                 '[INFO] Running waterQC on 12 hr gauge observations'
             call USAF_waterQC(precip_12hr_gage_tmp,n)
             nobs_good = USAF_countGoodObs(precip_12hr_gage_tmp)
             nobs_good_extra = nint(nobs_good*1.10)
