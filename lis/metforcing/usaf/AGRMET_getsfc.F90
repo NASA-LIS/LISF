@@ -420,7 +420,8 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
            ! EMK Patch Skip report if problem occurred reading it
            if (ierr3 .ne. 0) then
               write(LIS_logunit,*) &
-                   '[WARN] Problem reading report ', i, ' from file'
+                   '[WARN] Problem reading report ', i, &
+                   ' from sfcobs file, skipping line'
               skip(i) = .true.
               cycle
            end if
