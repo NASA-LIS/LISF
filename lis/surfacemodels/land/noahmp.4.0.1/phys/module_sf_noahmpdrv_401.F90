@@ -45,6 +45,7 @@ CONTAINS
 		 SHGXY,    SHCXY,    SHBXY,     EVGXY,    EVBXY,     GHVXY, & ! OUT Noah MP only
 		 GHBXY,    IRGXY,    IRCXY,     IRBXY,     TRXY,     EVCXY, & ! OUT Noah MP only
                  FGEV_PETXY, FCEV_PETXY, FCTR_PETXY,                & ! PET code from Sujay 
+              VPDXY, &
               CHLEAFXY,   CHUCXY,   CHV2XY,    CHB2XY, RS, FPICE,           & ! OUT Noah MP only
               parameters, &
 !                 BEXP_3D,SMCDRY_3D,SMCWLT_3D,SMCREF_3D,SMCMAX_3D,          & ! placeholders to activate 3D soil
@@ -272,6 +273,7 @@ CONTAINS
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FGEV_PETXY
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FCEV_PETXY
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  FCTR_PETXY
+    REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  VPDXY 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHLEAFXY  ! leaf exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHUCXY    ! under canopy exchange coefficient 
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT  ) ::  CHV2XY    ! veg 2m exchange coefficient 
@@ -415,6 +417,7 @@ CONTAINS
     REAL                                :: FGEV_PET
     REAL                                :: FCEV_PET
     REAL                                :: FCTR_PET
+    REAL                                :: VPD
     REAL                                :: CHLEAF       ! leaf exchange coefficient 
     REAL                                :: CHUC         ! under canopy exchange coefficient 
     REAL                                :: CHV2         ! veg 2m exchange coefficient 
@@ -864,6 +867,7 @@ CONTAINS
          FGEV_PET = LIS_undef_value
          FCEV_PET = LIS_undef_value
          FCTR_PET = LIS_undef_value
+         VPD    = LIS_undef_value 
          CHLEAF = LIS_undef_value 
          CHUC   = LIS_undef_value 
          CHV2   = LIS_undef_value 
@@ -908,6 +912,7 @@ CONTAINS
             SHG     , SHC     , SHB     , EVG     , EVB     , GHV     , & ! OUT :
 	    GHB     , IRG     , IRC     , IRB     , TR      , EVC     , & ! OUT :
             FGEV_PET, FCEV_PET, FCTR_PET,                          & 
+            VPD, &
 	    CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE   , PAHV    , & 
             PAHG    , PAHB    , PAH     , LAISUN  , LAISHA  , RB        &
             !ag (05Jan2021)
@@ -1051,6 +1056,7 @@ CONTAINS
              FGEV_PETXY(I,J)               = FGEV_PET
              FCEV_PETXY(I,J)               = FCEV_PET
              FCTR_PETXY(I,J)               = FCTR_PET
+             VPDXY(I,J)                    = VPD 
              CHLEAFXY (I,J)                = CHLEAF
              CHUCXY   (I,J)                = CHUC
              CHV2XY   (I,J)                = CHV2

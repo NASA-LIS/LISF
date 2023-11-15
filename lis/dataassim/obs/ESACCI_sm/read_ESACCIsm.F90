@@ -179,17 +179,35 @@ subroutine read_ESACCIsm(n,k,  OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
 !  Transform data to the LSM climatology using a CDF-scaling approach
 !-------------------------------------------------------------------------     
-  if(LIS_rc%dascaloption(k).ne."none".and.fnd.ne.0) then  
+  if(LIS_rc%dascaloption(k).eq."CDF matching".and.fnd.ne.0) then
      call LIS_rescale_with_CDF_matching(    &
-          n,k,                              & 
-          ESACCI_sm_struc(n)%nbins,         & 
-          ESACCI_sm_struc(n)%ntimes,        & 
-          MAX_SM_VALUE,                     & 
-          MIN_SM_VALUE,                     & 
+          n,k,                              &
+          ESACCI_sm_struc(n)%nbins,         &
+          ESACCI_sm_struc(n)%ntimes,        &
+          MAX_SM_VALUE,                     &
+          MIN_SM_VALUE,                     &
           ESACCI_sm_struc(n)%model_xrange,  &
           ESACCI_sm_struc(n)%obs_xrange,    &
           ESACCI_sm_struc(n)%model_cdf,     &
           ESACCI_sm_struc(n)%obs_cdf,       &
+          sm_current)
+  elseif(LIS_rc%dascaloption(k).eq."Linear scaling".and.fnd.ne.0) then
+     call LIS_rescale_with_linear_scaling(    &
+          n,                              &
+          k,                              &
+          ESACCI_sm_struc(n)%nbins,         &
+          ESACCI_sm_struc(n)%ntimes,        &
+          ESACCI_sm_struc(n)%obs_xrange,    &
+          ESACCI_sm_struc(n)%obs_cdf,       &
+          sm_current)
+  elseif(LIS_rc%dascaloption(k).eq."Anomaly scaling".and.fnd.ne.0) then
+     call LIS_rescale_with_anomaly(    &
+          n,                              &
+          k,                              &
+          ESACCI_sm_struc(n)%nbins,         &
+          ESACCI_sm_struc(n)%ntimes,        &
+          ESACCI_sm_struc(n)%obs_mu,    &
+          ESACCI_sm_struc(n)%model_mu,       &
           sm_current)
   endif
 

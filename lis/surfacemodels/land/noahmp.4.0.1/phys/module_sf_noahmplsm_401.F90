@@ -391,6 +391,7 @@ contains
 		   SHG     , SHC     , SHB     , EVG     , EVB     , GHV     , & ! OUT :
 		   GHB     , IRG     , IRC     , IRB     , TR      , EVC     , & ! OUT :
                    FGEV_PET, FCEV_PET, FCTR_PET,                       & ! PET code from Sujay 
+                   VPD, &
 		   CHLEAF  , CHUC    , CHV2    , CHB2    , FPICE   , PAHV    , &
                    PAHG    , PAHB    , PAH     , LAISUN  , LAISHA  , RB        & ! OUT
                    !ag (05Jan2021)
@@ -589,6 +590,7 @@ contains
   REAL,INTENT(OUT)                                              :: EVC    !canopy evap. heat [w/m2]  [+ to atm]
   REAL,INTENT(OUT)                                              :: FGEV_PET, FCEV_PET,FCTR_PET
   REAL,INTENT(OUT)                                              :: TR     !transpiration heat [w/m2] [+ to atm]
+  REAL,INTENT(OUT)                                              :: VPD
   REAL, INTENT(OUT)   :: FPICE   !snow fraction in precipitation
   REAL, INTENT(OUT)   :: PAHV    !precipitation advected heat - vegetation net (W/m2)
   REAL, INTENT(OUT)   :: PAHG    !precipitation advected heat - under canopy net (W/m2)
@@ -769,6 +771,7 @@ contains
                  EMISSI ,PAH    ,                                 &
 		 SHG,SHC,SHB,EVG,EVB,GHV,GHB,IRG,IRC,IRB,TR,EVC,CHLEAF,CHUC,CHV2,CHB2,&
                  FGEV_PET, FCEV_PET, FCTR_PET,                            & ! PET code from Sujay 
+                 VPD, &
                  JULIAN, SWDOWN, PRCP, FB, GECROS1D )        
 !jref:end
 
@@ -862,7 +865,122 @@ contains
     RELSMC(:) = (SMC(:)               - parameters%SMCWLT(:)) /        &
                 (parameters%SMCMAX(:) - parameters%SMCWLT(:))
 
+!using FGEV_PET to store the penman PET    
+    CALL COMPUTE_PET (parameters, ZLVL,SFCTMP,SFCPRS,CH,&
+         PRCP,SWDOWN*(1-ALBEDO) +LWDN,SSOIL, &
+         Q2,EMISSI,TRAD,ICE,FSNO,FGEV_PET)
+!  
+
   END SUBROUTINE NOAHMP_SFLX
+
+  SUBROUTINE COMPUTE_PET (parameters,ZLVL,SFCTMP,SFCPRS,CH,PRCP,FDOWN,SSOIL, &
+       Q2,EMISSI_IN,T1,ICE,SNCOVR,ETP)
+
+    IMPLICIT NONE
+
+! ----------------------------------------------------------------------
+! SUBROUTINE PENMAN, ADAPTED FROM NOAH
+! ----------------------------------------------------------------------
+! CALCULATE POTENTIAL EVAPORATION FOR THE CURRENT POINT.  VARIOUS
+! PARTIAL SUMS/PRODUCTS ARE ALSO CALCULATED AND PASSED BACK TO THE
+! CALLING ROUTINE FOR LATER USE.
+! ----------------------------------------------------------------------
+
+    type (noahmp_parameters), intent(in) :: parameters
+    REAL, INTENT(IN)        :: CH, FDOWN,PRCP
+    REAL, INTENT(IN)        :: Q2, SSOIL, SFCPRS, SFCTMP,EMISSI_IN
+    REAL, INTENT(IN)        :: T1 , SNCOVR
+    INTEGER, INTENT(IN)     :: ICE
+
+    REAL                    :: DQSDT2, Q2SAT,T2V,TH2
+    LOGICAL                 :: SNOWNG, FRZGRA
+
+    REAL                    :: ZLVL
+    REAL                    :: EPSCA,ETP,FLX2,RCH,RR,T24
+    REAL                    :: A, DELTA, FNET,RAD,RHO,EMISSI,ELCP1,LVS
+    REAL                    :: FFROZP
+
+    REAL, PARAMETER      :: ELCP = 2.4888E+3, LSUBC = 2.501000E+6,CP = 1004.6
+    REAL, PARAMETER      :: LVH2O = 2.501E+6
+    REAL, PARAMETER      :: LSUBS = 2.83E+6,T0 = 273.15, TFREEZ = 273.15
+    REAL, PARAMETER      :: RD = 287.04, SIGMA = 5.67E-8, CPH2O = 4.218E+3
+    REAL, PARAMETER      :: CPICE = 2.106E+3,LSUBF = 3.335E+5
+
+    SNOWNG = .FALSE.
+
+    FFROZP = 0.0
+    IF (PRCP .GT. 0.0) THEN
+       IF (SFCTMP .LT. T0) THEN
+          FFROZP = 1.0
+       ENDIF
+    ENDIF
+
+    IF (PRCP > 0.0) THEN
+       IF (FFROZP .GT. 0.5) THEN
+          SNOWNG = .TRUE.
+       ELSE
+          IF (T1 <= TFREEZ) FRZGRA = .TRUE.
+       END IF
+    END IF
+
+    CALL CALHUM(parameters,SFCTMP, SFCPRS, Q2SAT, DQSDT2)
+! CALC VIRTUAL TEMPS AND VIRTUAL POTENTIAL TEMPS NEEDED BY SUBROUTINES
+! PENMAN.
+    T2V = SFCTMP * (1.0+ 0.61 * Q2 )
+    TH2 = SFCTMP + (0.0098 * ZLVL)
+
+    EMISSI=EMISSI_IN
+    IF (ICE==0) THEN
+       ELCP1  = (1.0-SNCOVR)*ELCP  + SNCOVR*ELCP*LSUBS/LSUBC
+       LVS    = (1.0-SNCOVR)*LSUBC + SNCOVR*LSUBS
+    ELSE
+       IF ( T1 > 273.15 ) THEN
+          ELCP1=ELCP
+          LVS=LSUBC
+       ELSE
+          ELCP1  = ELCP*LSUBS/LSUBC
+          LVS    = LSUBS
+       ENDIF
+    ENDIF
+
+    FLX2 = 0.0
+    DELTA = ELCP1 * DQSDT2
+    T24 = SFCTMP * SFCTMP * SFCTMP * SFCTMP
+    RR = EMISSI*T24 * 6.48E-8 / (SFCPRS * CH) + 1.0
+    RHO = SFCPRS / (RD * T2V)
+
+    ! ----------------------------------------------------------------------
+    ! ADJUST THE PARTIAL SUMS / PRODUCTS WITH THE LATENT HEAT
+    ! EFFECTS CAUSED BY FALLING PRECIPITATION.
+    ! ----------------------------------------------------------------------
+    RCH = RHO * CP * CH
+    IF (.NOT. SNOWNG) THEN
+       IF (PRCP >  0.0) RR = RR + CPH2O * PRCP / RCH
+    ELSE
+       RR = RR + CPICE * PRCP / RCH
+    END IF
+
+    ! ----------------------------------------------------------------------
+    ! INCLUDE THE LATENT HEAT EFFECTS OF FRZNG RAIN CONVERTING TO ICE ON
+    ! IMPACT IN THE CALCULATION OF FLX2 AND FNET.
+    ! ----------------------------------------------------------------------
+    FNET = FDOWN -  EMISSI*SIGMA * T24- SSOIL
+    IF (FRZGRA) THEN
+       FLX2 = - LSUBF * PRCP
+       FNET = FNET - FLX2
+       ! ----------------------------------------------------------------------
+       ! FINISH PENMAN EQUATION CALCULATIONS.
+       ! ----------------------------------------------------------------------
+    END IF
+    RAD = FNET / RCH + TH2- SFCTMP
+    A = ELCP1 * (Q2SAT - Q2)
+    EPSCA = (A * RR + RAD * DELTA) / (DELTA + RR)
+    ETP = EPSCA * RCH / LVS
+
+    ETP = ETP*((1.-SNCOVR)*LVH2O + SNCOVR*LSUBS)
+
+  END SUBROUTINE COMPUTE_PET
+
 
 !== begin atm ======================================================================================
 
@@ -1522,6 +1640,7 @@ ENDIF   ! CROPTYPE == 0
                      Q1     ,Q2V    ,Q2B    ,Q2E    ,CHV  ,CHB, EMISSI,PAH  ,&
 		     SHG,SHC,SHB,EVG,EVB,GHV,GHB,IRG,IRC,IRB,TR,EVC,CHLEAF,CHUC,CHV2,CHB2, &
                      FGEV_PET, FCEV_PET, FCTR_PET, & ! PET code from Sujay 
+                     VPD, &
                      JULIAN, SWDOWN, PRCP, FB, GECROS1D )        
 !jref:end                            
 
@@ -1774,6 +1893,7 @@ ENDIF   ! CROPTYPE == 0
   REAL,INTENT(OUT)                                  :: CHV2    !sensible heat conductance, canopy air to ZLVL air (m/s)
   REAL,INTENT(OUT)                                  :: CHB2    !sensible heat conductance, canopy air to ZLVL air (m/s)
   REAL,INTENT(OUT)                                 :: FGEV_PET, FCEV_PET,FCTR_PET
+  REAL,INTENT(OUT)                                 :: VPD
   REAL                                  :: noahmpres
 
   REAL,                INTENT(IN)    :: JULIAN, SWDOWN, PRCP, FB
@@ -1790,6 +1910,8 @@ ENDIF   ! CROPTYPE == 0
   REAL :: SHC_T   ,EVG_T   ,EVC_T   ,TR_T    ,GHV_T  
   REAL :: T2MV_T  ,PSNSUN_T,PSNSHA_T
 ! initialize fluxes from veg. fraction
+
+  VPD = -9999.0
 
     TAUXV     = 0.    
     TAUYV     = 0.
@@ -2031,7 +2153,8 @@ ENDIF   ! CROPTYPE == 0
 !jref:start
                     QC      ,QSFC    ,PSFC    , & !in
                     Q2V     ,CHV2, CHLEAF, CHUC, &
-                    SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D)      ! Gecros 
+                    SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D, &
+                    VPD)      ! Gecros 
 !jref:end                            
         
         ! PET code from Sujay 
@@ -3396,7 +3519,8 @@ ENDIF   ! CROPTYPE == 0
                        T2MV    ,PSNSUN  ,PSNSHA  ,                   & !out
                        QC      ,QSFC    ,PSFC    ,                   & !in
                        Q2V     ,CAH2    ,CHLEAF  ,CHUC,              & !inout 
-                       SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D)      ! Gecros 
+                       SH2O,JULIAN, SWDOWN, PRCP, FB, FSR, GECROS1D, &         ! Gecros 
+                       VPD)
 
 ! --------------------------------------------------------------------------------------------------
 ! use newton-raphson iteration to solve for vegetation (tv) and
@@ -3504,6 +3628,7 @@ ENDIF   ! CROPTYPE == 0
   REAL,                           INTENT(OUT) :: CHUC   !under canopy exchange coefficient
 
   REAL,                           INTENT(OUT) :: Q2V
+  REAL,                           INTENT(OUT) :: VPD
   REAL :: CAH    !sensible heat conductance, canopy air to ZLVL air (m/s)
   REAL :: U10V    !10 m wind speed in eastward dir (m/s) 
   REAL :: V10V    !10 m wind speed in eastward dir (m/s) 
@@ -3850,6 +3975,8 @@ ENDIF   ! CROPTYPE == 0
 	ELSE
           EVC = MIN(CANICE*LATHEAV/DT,EVC)
 	END IF
+       !SVK: VPD diagnostic
+        VPD  = ESTV - EAH
 
         B   = SAV-IRC-SHC-EVC-TR+PAHV                          !additional w/m2
         A   = FVEG*(4.*CIR*TV**3 + CSH + (CEV+CTR)*DESTV) !volumetric heat capacity

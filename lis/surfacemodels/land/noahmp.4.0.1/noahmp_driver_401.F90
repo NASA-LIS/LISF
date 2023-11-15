@@ -49,6 +49,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
      shg     , shc     , shb     , evg     , evb     , ghv     , & ! out Noah MP only
      ghb     , irg     , irc     , irb     , tr      , evc     , & ! out Noah MP only
      fgev_pet, fcev_pet, fctr_pet,                               & ! PET 
+     vpd,                                                        & ! VPD
      chleaf  , chuc    , chv2    , chb2    , relsmc,             &
      !ag (12Sep2019)
      rivsto, fldsto, fldfrc,&
@@ -250,6 +251,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, intent(out) :: fgev_pet
   real, intent(out) :: fcev_pet
   real, intent(out) :: fctr_pet
+  real, intent(out) :: vpd  
   real, intent(out) :: chleaf                 ! leaf exchange coefficient
   real, intent(out) :: chuc                   ! under canopy exchange coefficient 
   real, intent(out) :: chv2                   ! veg 2m exchange coefficient
@@ -458,6 +460,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   real, dimension(1,1) :: fgev_petout
   real, dimension(1,1) :: fcev_petout
   real, dimension(1,1) :: fctr_petout
+  real, dimension(1,1) :: vpdout
   real, dimension(1,1) :: chleafout
   real, dimension(1,1) :: chucout
   real, dimension(1,1) :: chv2out
@@ -721,6 +724,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   fgev_petout(1,1) = fgev_pet
   fcev_petout(1,1) = fcev_pet
   fctr_petout(1,1) = fctr_pet
+  vpdout(1,1) = vpd
   chleafout(1,1) = chleaf
   chucout(1,1)  = chuc
   chv2out(1,1)  = chv2
@@ -780,6 +784,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
        shgout  , shcout  , shbout  , evgout  , evbout  , ghvout  , & ! out Noah MP only
        ghbout  , irgout  , ircout  , irbout  , trout   , evcout  , & ! out Noah MP only
        fgev_petout, fcev_petout, fctr_petout,                      & ! PET 
+       vpdout,     &
        chleafout  , chucout , chv2out , chb2out , rsout , fpice  , & ! out Noah MP only
        parameters, &
        rivstoin,fldstoin,fldfrcin,                                 &
@@ -910,6 +915,7 @@ subroutine noahmp_driver_401(n, ttile, itimestep, &
   fgev_pet = fgev_petout(1,1)      ! 08/30/2021 Shugong 
   fcev_pet = fcev_petout(1,1)
   fctr_pet = fctr_petout(1,1)
+  vpd = vpdout(1,1) 
 
 #ifndef WRF_HYDRO
   INFXSRT  = 0.0

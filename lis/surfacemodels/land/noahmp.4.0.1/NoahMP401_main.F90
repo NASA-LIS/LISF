@@ -227,6 +227,7 @@ subroutine NoahMP401_main(n)
     real                 :: tmp_tr                 ! transpiration [ to atm] [W/m2]
     real                 :: tmp_evc                ! canopy evaporation heat [to atm] [W/m2]
     real                 :: tmp_fgev_pet, tmp_fcev_pet,tmp_fctr_pet
+    real                 :: tmp_vpd
     real                 :: tmp_chleaf             ! leaf exchange coefficient [-]
     real                 :: tmp_chuc               ! under canopy exchange coefficient [-]
     real                 :: tmp_chv2               ! veg 2m exchange coefficient [-]
@@ -742,6 +743,7 @@ subroutine NoahMP401_main(n)
                                    tmp_tr                , & ! out   - transpiration [ to atm] [W/m2]
                                    tmp_evc               , & ! out   - canopy evaporation heat [to atm] [W/m2]
                                    tmp_fgev_pet, tmp_fcev_pet, tmp_fctr_pet, & !PET code from Sujay 
+                                   tmp_vpd, &
                                    tmp_chleaf            , & ! out   - leaf exchange coefficient [-]
                                    tmp_chuc              , & ! out   - under canopy exchange coefficient [-]
                                    tmp_chv2              , & ! out   - veg 2m exchange coefficient [-]
@@ -1287,12 +1289,23 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_EVAP, value = NOAHMP401_struc(n)%noahmp401(t)%qfx, &
                                               vlevel=1, unit="kg m-2 s-1", direction="UP", surface_type = LIS_rc%lsm_index)
             !PET
+!            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+!                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet), vlevel=1,unit="W m-2",&
+!                  direction="UP",surface_type=LIS_rc%lsm_index)
+!            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
+!                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
+!                  direction="UP",surface_type=LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
-                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet), vlevel=1,unit="W m-2",&
+                 value=(tmp_fgev_pet),&
+                 vlevel=1,unit="W m-2",&
                   direction="UP",surface_type=LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_POTEVAP, &
-                 value=(tmp_fgev_pet+tmp_fcev_pet+tmp_fctr_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
-                  direction="UP",surface_type=LIS_rc%lsm_index)
+                 value=(tmp_fgev_pet)/LVH2O, vlevel=1,unit="kg m-2 s-1",&
+                 direction="UP",surface_type=LIS_rc%lsm_index)
+            !VPD
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_VPD, &
+                 value=tmp_vpd, vlevel=1,unit="Pa",&
+                  direction="-",surface_type=LIS_rc%lsm_index)
 
             ![ 89] output variable: rainf (unit=kg/m2). ***  precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = NOAHMP401_struc(n)%noahmp401(t)%rainf, &
