@@ -102,13 +102,13 @@ subroutine noah39_readrst()
 
         if(.not.file_exists) then 
            write(LIS_logunit,*) '[ERR] Noah-3.9 restart file ',              &
-                noah39_struc(n)%rfile,' does not exist '
+                trim(noah39_struc(n)%rfile),' does not exist '
            write(LIS_logunit,*) '[ERR] Program stopping ...'
            call LIS_endrun()
            
         endif
         write(LIS_logunit,*)                        &
-             '[INFO] Noah-3.9 restart file used: ',noah39_struc(n)%rfile
+             '[INFO] Noah-3.9 restart file used: ',trim(noah39_struc(n)%rfile)
         
         if(wformat.eq."binary") then 
            ftn = LIS_getNextUnitNumber()
