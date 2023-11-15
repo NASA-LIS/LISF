@@ -66,8 +66,8 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%agrmetdir,rc=rc)
-     write(LIS_logunit,*)'Using AGRMET forcing'
-     write(LIS_logunit,*) 'AGRMET forcing directory :',agrmet_struc(n)%agrmetdir
+     write(LIS_logunit,*)'[INFO] Using AGRMET forcing'
+     write(LIS_logunit,*) '[INFO] AGRMET forcing directory: ', trim(agrmet_struc(n)%agrmetdir)
   enddo
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET first guess source:",rc=rc)
@@ -1185,7 +1185,7 @@ subroutine readcrd_agrmet()
      if (LIS_masterproc) then
         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
         if (ios .ne. 0) then
-           write(LIS_logunit,*)'ERR creating directory ', &
+           write(LIS_logunit,*)'[ERR] Cannot create directory ', &
                 trim(agrmet_struc(n)%analysisdir)
            flush(LIS_logunit)
         end if
