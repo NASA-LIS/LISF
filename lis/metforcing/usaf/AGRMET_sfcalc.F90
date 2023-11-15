@@ -368,7 +368,7 @@ subroutine AGRMET_sfcalc(n)
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'---------------------------- '
         !write(LIS_logunit,*)'- PROCESSING-SFC JULHR ', julhr
-        write(LIS_logunit,*)'- PROCESSING-SFC YYYYMMDDHH ', yyyymmddhh
+        write(LIS_logunit,*)'[INFO] PROCESSING-SFC YYYYMMDDHH ', yyyymmddhh
         write(LIS_logunit,*)'---------------------------- '
 
 !     ------------------------------------------------------------------
