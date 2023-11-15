@@ -657,8 +657,8 @@ contains
          continue
       else
          write(LIS_logunit,*)'[ERR] Invalid imax dimension for SSM/I!'
-         write(LIS_logunit,*)'Received ', imax
-         write(LIS_logunit,*)'Only support 512, 1024, or 1400'
+         write(LIS_logunit,*)'[ERR] Received ', imax
+         write(LIS_logunit,*)'[ERR] Only support 512, 1024, or 1400'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
@@ -725,7 +725,7 @@ contains
       if (imax .eq. 1440) then
 
          write(LIS_logunit,*)'[ERR] Lat/lon SSM/I data not supported yet!'
-         write(LIS_logunit,*)'Modify USAF_addSSMIObsData and recompile!'
+         write(LIS_logunit,*)'[ERR] Modify USAF_addSSMIObsData and recompile!'
          flush(LIS_logunit)
          call LIS_endrun()
 
@@ -875,7 +875,7 @@ contains
             call AGRMET_julhr_date10(j3hr, yyyymmddhh)
             write(LIS_logunit,*) &
                  '[ERR] No NWP background precipitation found for ',yyyymmddhh
-            write(LIS_logunit,*) ' ABORTING!'
+            write(LIS_logunit,*) '[ERR] ABORTING!'
             flush(LIS_logunit)
             message(:) = ''
             message(1) = '[ERR] Program:  LIS'
@@ -1017,9 +1017,9 @@ contains
                    write(LIS_logunit,*) ' '
                    write(LIS_logunit,*) &
                         '[WARN] precip/smiedr:  error opening file'
-                   write(LIS_logunit,*)'  SSMI data file ', trim(ifil), &
+                   write(LIS_logunit,*)'[WARN]  SSMI data file ', trim(ifil), &
                         ' does not exist.'
-                   write(LIS_logunit,*)'  SSMI estimates will not be used ',&
+                   write(LIS_logunit,*)'[WARN]  SSMI estimates will not be used ',&
                         'in precip analysis.'
                    write(LIS_logunit,*) ' '
                    message   =' '
@@ -1036,7 +1036,7 @@ contains
 
                    ra(hemi,:,:) = MISSING
                 else
-                   write(LIS_logunit,*) '- READING ',trim(ifil)
+                   write(LIS_logunit,*) '[INFO] READING ',trim(ifil)
                    call LIS_putget( ra(hemi,:,:), 'r', ifil, routine_name, &
                         imax, jmax)
                 end if ! .not. exists
@@ -1044,7 +1044,7 @@ contains
 
             ! Honor option to reset SSMI zero precip values to missing
             if (.not. use_zeros) then
-               write(LIS_logunit,*)'- SSMI ZEROS NOT USED'
+               write(LIS_logunit,*)'[INFO] SSMI ZEROS NOT USED'
                where ( .not. ra(:,:,:) > 0.0 .and. &
                     .not. ra(:,:,:) < 0)
                   ra(:,:,:) = MISSING
@@ -1189,7 +1189,7 @@ contains
                   else
                      write(LIS_logunit,*) &
                           '[ERR] Invalid dimension for GEO_PRECIP data!'
-                     write(LIS_logunit,*)'Read ', agrmet_struc(nest)%imax
+                     write(LIS_logunit,*)'[ERR] Read ', agrmet_struc(nest)%imax
                      call LIS_endrun()
                   end if
                end if
@@ -1219,8 +1219,8 @@ contains
             else
                write(LIS_logunit,*) &
                     '[ERR] Invalid imax dimension for GEO_PRECIP!'
-               write(LIS_logunit,*)'Received ',imax
-               write(LIS_logunit,*)'Only support 512, 1024, or 4096!'
+               write(LIS_logunit,*)'[ERR] Received ',imax
+               write(LIS_logunit,*)'[ERR] Only support 512, 1024, or 4096!'
                flush(LIS_logunit)
                call LIS_endrun()
             end if
@@ -1247,11 +1247,11 @@ contains
                inquire( file = trim(ifil), exist = exists)
                if ( .not. exists ) then
                   write(LIS_logunit,*) &
-                       'USAF_getGeoPrecipObsData:  error opening file ', &
+                       '[WARN] USAF_getGeoPrecipObsData:  error opening file ', &
                        trim(ifil)
-                  write(LIS_logunit,*) '  file does not exist'
+                  write(LIS_logunit,*) '[WARN]  file does not exist'
                   write(LIS_logunit,*) &
-                       '  geo precip estimate will not be performed'
+                       '[WARN]  geo precip estimate will not be performed'
                   message = ' '
                   message(1) = 'program:  LIS'
                   message(2) = '  routine:  USAF_getGeoPrecipObsData'
@@ -1266,7 +1266,7 @@ contains
                   TRACE_EXIT("bratseth_getGeopPrcp")
                   return
                endif
-               write(LIS_logunit,*) '- READING ', trim(ifil)
+               write(LIS_logunit,*) '[INFO] READING ', trim(ifil)
 
                allocate(geoprc(imax,jmax))
 
@@ -1285,10 +1285,10 @@ contains
                ! Check for anomalous geoprecip files
                if (is_geo_corrupted(geoprc, imax, jmax, mo, hemi)) then
                   write(LIS_logunit,*) &
-                       'USAF_getGeoPrecipObsData:  data corrupted - ', &
+                       '[WARN] USAF_getGeoPrecipObsData:  data corrupted - ', &
                        trim(ifil)
                   write(LIS_logunit,*) &
-                       '  geo precip estimate will not be performed'
+                       '[WARN]  geo precip estimate will not be performed'
                   message = ' '
                   message(1) = 'program:  LIS'
                   message(2) = '  routine:  USAF_getGeoPrecipObsData'
@@ -1426,7 +1426,7 @@ contains
                   write(LIS_logunit,*)&
                        '[ERR] Lat/lon GEO_PRECIP data not supported yet!'
                   write(LIS_logunit,*)&
-                       'Modify USAF_addGeoPrecipObsData and recompile!'
+                       '[ERR] Modify USAF_addGeoPrecipObsData and recompile!'
                   flush(LIS_logunit)
                   call LIS_endrun()
 
@@ -2565,7 +2565,7 @@ contains
 
       if (nobs .ne. this%nobs) then
          write(LIS_logunit,*)'[ERR] Array size mismatch in calc_gridAnalysis!'
-         write(LIS_logunit,*)'nobs, this%nobs = ',nobs, this%nobs
+         write(LIS_logunit,*)'[ERR] nobs, this%nobs = ',nobs, this%nobs
          call LIS_endrun()
       end if
 
@@ -4070,7 +4070,7 @@ contains
       if (ifix > 0) then
          write(LIS_logunit,6000) ifix
 6000     format (/, 1x, 55('-'), &
-              /, 3x, 'routine reset_negative_values:',&
+              /, 3x, '[INFO] routine reset_negative_values:',&
               /, 5x, '# of pts to which negative values were set to zero = ', &
               i6, /, 1x, 55('-'))
       end if
@@ -6436,9 +6436,9 @@ contains
          write(LIS_logunit,*) &
               '[ERR] Unknown source of background precipitation!'
          write(LIS_logunit,*) &
-              'Source is ',trim(src)
+              '[ERR] Source is ',trim(src)
          write(LIS_logunit, *) &
-              'ABORTING....'
+              '[ERR] ABORTING....'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
@@ -6534,9 +6534,9 @@ contains
          write(LIS_logunit,*) &
               '[ERR] Unknown source of background data!'
          write(LIS_logunit,*) &
-              'Source is ',trim(src)
+              '[ERR] Source is ',trim(src)
          write(LIS_logunit, *) &
-              'ABORTING....'
+              '[ERR] ABORTING....'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
