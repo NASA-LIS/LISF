@@ -1,4 +1,15 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
@@ -11,6 +22,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 import glob
 import os
@@ -56,7 +68,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
@@ -160,11 +173,11 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         this_command = in_command
     if hours is None:
         if 'discover' in platform.node() or 'borg' in platform.node():
-            thours ='7'
+            thours ='7:15:00'
         else:
-            thours ='6'
+            thours ='6:00:00'
     else:
-        thours = hours
+        thours = hours + ':00:00'
 
     with open(s2s_configfile, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
@@ -187,11 +200,12 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --time=' + thours + ':00:00' + '\n')
+        _f.write('#SBATCH --time=' + thours + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
+            _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
@@ -250,3 +264,22 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
         lat = np.array(ldt['lat'])
         return lat[:,0], lon[0,:]
     return None
+
+def tiff_to_da(file):
+    import xarray as xr
+    import rasterio
+    dataset = rasterio.open(file)
+    # Read the data from the GeoTIFF using rasterio
+    data = dataset.read(1)  # Read the first band, adjust if necessary
+
+    # Extract the metadata
+    transform = dataset.transform
+    crs = dataset.crs
+    x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
+    y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
+    
+    # Create an xarray DataArray
+    da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
+    
+    return da
+

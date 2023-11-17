@@ -22,6 +22,7 @@
 # Specify start and end years to process:
 # Default should be 1982 to 2021:
 
+
 month=$1
 CFILE=$2
 
@@ -31,8 +32,8 @@ TARGETDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 # Variable is precipitation
 var='prec'
 
-#for model in 'NCEP-CFSv2' 'NASA-GEOSS2S' 'CanSIPS-IC3' 'COLA-RSMAS-CCSM4' 'GFDL-SPEAR'
-for model in 'NCEP-CFSv2'
+for model in 'NCEP-CFSv2' 'NASA-GEOSS2S' 'CanSIPS-IC3' 'COLA-RSMAS-CCSM4' 'GFDL-SPEAR'
+#for model in 'NCEP-CFSv2'
 do
     OUTDIR=$TARGETDIR"/"$model
     mkdir -p $OUTDIR

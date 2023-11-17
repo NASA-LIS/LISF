@@ -4,7 +4,7 @@ Map projection of the LIS domain:       latlon
 Number of nests:                        1
 Number of surface model types:          2
 Surface model types:                    "LSM"  "Openwater"
-Surface model output interval:          1da
+Surface model output interval:          3hr
 Land surface model:                     "JULES.5.0"
 Open water model:                       "template open water"
 Number of met forcing sources:          1
@@ -22,7 +22,7 @@ Forcing variables list file:            ./input/forcing_variables.txt
 Output methodology:                     "2d ensemble gridspace"
 Output model restart files:             1
 Output data format:                     netcdf
-Output naming style:                    "557WW streamflow convention"
+Output naming style:    "557WW medium range forecast convention"
 AGRMET security classification:            U
 AGRMET distribution classification:        C
 AGRMET data category:                      FCST
@@ -176,7 +176,7 @@ Routing model:                               "RAPID router"
 
 RAPID routing model time step:               "1da"
 RAPID river routing time step:               "15mn"   # less than routing model time step
-RAPID routing model output interval:         "1da"
+RAPID routing model output interval:         "3hr"
 RAPID routing model restart interval:        "1mo"
 
 RAPID routing model start mode:         restart

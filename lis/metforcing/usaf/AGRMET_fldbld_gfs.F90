@@ -138,7 +138,7 @@ subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
 
   integer                 :: nunit
   integer                 :: ksec2       ( 10 )
-  character*100           :: message     ( 20 )
+  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: ginfo       ( 40 )
   real                    :: gridres
@@ -741,7 +741,7 @@ subroutine AGRMET_fldbld_read_gfs( fg_filename, ifguess, jfguess,&
 !  \end{description}
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character*255                 :: message     ( 20 )
   integer                       :: count_dpd
   integer                       :: count_hgt
   integer                       :: count_rh
@@ -1796,7 +1796,7 @@ integer function set_plevel(editionNumber,pds9,level)
    ! Locals
    integer :: plevel
    integer :: ierr
-   character(len=100) :: messages(20)
+   character(len=255) :: messages(20)
 
    if (editionNumber == 1) then
       plevel = pds9

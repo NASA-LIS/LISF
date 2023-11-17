@@ -235,9 +235,9 @@ AGRMET CMORPH minimum temperature threshold:      273
 # Use IMERG rainfall data
 AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG/Early_V06C
+AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG/Early_V06B
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-AGRMET IMERG version:                      V06C            # V06B released in 2019
+AGRMET IMERG version:                      V06E            # V06E released 8 Nov 2023
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings

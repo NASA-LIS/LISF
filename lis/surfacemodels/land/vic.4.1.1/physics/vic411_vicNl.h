@@ -395,7 +395,7 @@ void   read_snowmodel(vic411_atmos_data_struct *, FILE *, int, int, int, int);
 vic411_soil_con_struct vic411_read_soilparam(FILE *, int);
 //vic411_soil_con_struct vic411_read_soilparam_arc(FILE *, char *, int *, int *, int);
 vic411_veg_lib_struct *vic411_read_veglib(FILE *, int *);
-// vic411_veg_con_struct *vic411_read_vegparam(FILE *, int, int);
+vic411_veg_con_struct *vic411_read_vegparam(FILE *, int, int);
 int    vic411_redistribute_during_storm(vic411_cell_data_struct ***, vic411_veg_var_struct ***,
 				 int, int, int, double, double, double, 
 				 double *);
