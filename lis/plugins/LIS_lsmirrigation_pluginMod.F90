@@ -60,8 +60,8 @@ subroutine LIS_lsmirrigation_plugin
    external noahmp401_getirrigationstates
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   external noahmpnew_getirrigationstates
+#if ( defined SM_NOAHMP_5_0 )
+   external noahmp50_getirrigationstates
 #endif
 
 #if ( defined IRR_SPRINKLER )
@@ -90,9 +90,9 @@ subroutine LIS_lsmirrigation_plugin
         trim(LIS_sprinklerIrrigationId)//char(0),NoahMP401_getirrigationstates)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmirrigationgetstates(trim(LIS_noahmpnewId)//"+"//&
-        trim(LIS_sprinklerIrrigationId)//char(0),NoahMPnew_getirrigationstates)
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
+        trim(LIS_sprinklerIrrigationId)//char(0),NoahMP50_getirrigationstates)
 #endif
 #endif
 
@@ -122,9 +122,9 @@ subroutine LIS_lsmirrigation_plugin
         trim(LIS_floodIrrigationId)//char(0),NoahMP401_getirrigationstates)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmirrigationgetstates(trim(LIS_noahmpnewId)//"+"//&
-        trim(LIS_floodIrrigationId)//char(0),NoahMPnew_getirrigationstates)
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
+        trim(LIS_floodIrrigationId)//char(0),NoahMP50_getirrigationstates)
 #endif
 #endif
 
@@ -159,9 +159,9 @@ subroutine LIS_lsmirrigation_plugin
         trim(LIS_dripIrrigationId)//char(0),NoahMP401_getirrigationstates)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmirrigationgetstates(trim(LIS_noahmpnewId)//"+"//&
-        trim(LIS_dripIrrigationId)//char(0),NoahMPnew_getirrigationstates)
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmirrigationgetstates(trim(LIS_noahmp50Id)//"+"//&
+        trim(LIS_dripIrrigationId)//char(0),NoahMP50_getirrigationstates)
 #endif
 #endif
 

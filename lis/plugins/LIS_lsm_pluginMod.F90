@@ -151,8 +151,8 @@ subroutine LIS_lsm_plugin
    use NoahMP401_lsmMod, only : noahmp401_ini
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   use NoahMPnew_lsmMod, only : noahmpnew_ini
+#if ( defined SM_NOAHMP_5_0 )
+   use NoahMP50_lsmMod, only : noahmp50_ini
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -385,15 +385,15 @@ subroutine LIS_lsm_plugin
    external noahmp401_reset
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   external noahmpnew_main
-   external noahmpnew_setup
-   external noahmpnew_readrst
-   external noahmpnew_dynsetup
-   external noahmpnew_f2t
-   external noahmpnew_writerst
-   external noahmpnew_finalize
-   external noahmpnew_reset
+#if ( defined SM_NOAHMP_5_0 )
+   external noahmp50_main
+   external noahmp50_setup
+   external noahmp50_readrst
+   external noahmp50_dynsetup
+   external noahmp50_f2t
+   external noahmp50_writerst
+   external noahmp50_finalize
+   external noahmp50_reset
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -729,21 +729,21 @@ subroutine LIS_lsm_plugin
    call registerlsmreset(trim(LIS_noahmp401Id)//char(0),noahmp401_reset)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsminit(trim(LIS_noahmpnewId)//char(0),noahmpnew_ini)
-   call registerlsmsetup(trim(LIS_noahmpnewId)//char(0),noahmpnew_setup)
-   call registerlsmf2t(trim(LIS_noahmpnewId)//"+"&
-        //trim(LIS_retroId)//char(0),noahmpnew_f2t)
-   call registerlsmf2t(trim(LIS_noahmpnewId)//"+"//&
-        trim(LIS_agrmetrunId)//char(0),noahmpnew_f2t)
-   call registerlsmf2t(trim(LIS_noahmpnewId)//"+"//&
-        trim(LIS_smootherDAId)//char(0),noahmpnew_f2t)
-   call registerlsmrun(trim(LIS_noahmpnewId)//char(0),noahmpnew_main)
-   call registerlsmrestart(trim(LIS_noahmpnewId)//char(0),noahmpnew_readrst)
-   call registerlsmdynsetup(trim(LIS_noahmpnewId)//char(0),noahmpnew_dynsetup)
-   call registerlsmwrst(trim(LIS_noahmpnewId)//char(0),noahmpnew_writerst)
-   call registerlsmfinalize(trim(LIS_noahmpnewId)//char(0),noahmpnew_finalize)
-   call registerlsmreset(trim(LIS_noahmpnewId)//char(0),noahmpnew_reset)
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsminit(trim(LIS_noahmp50Id)//char(0),noahmp50_ini)
+   call registerlsmsetup(trim(LIS_noahmp50Id)//char(0),noahmp50_setup)
+   call registerlsmf2t(trim(LIS_noahmp50Id)//"+"&
+        //trim(LIS_retroId)//char(0),noahmp50_f2t)
+   call registerlsmf2t(trim(LIS_noahmp50Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),noahmp50_f2t)
+   call registerlsmf2t(trim(LIS_noahmp50Id)//"+"//&
+        trim(LIS_smootherDAId)//char(0),noahmp50_f2t)
+   call registerlsmrun(trim(LIS_noahmp50Id)//char(0),noahmp50_main)
+   call registerlsmrestart(trim(LIS_noahmp50Id)//char(0),noahmp50_readrst)
+   call registerlsmdynsetup(trim(LIS_noahmp50Id)//char(0),noahmp50_dynsetup)
+   call registerlsmwrst(trim(LIS_noahmp50Id)//char(0),noahmp50_writerst)
+   call registerlsmfinalize(trim(LIS_noahmp50Id)//char(0),noahmp50_finalize)
+   call registerlsmreset(trim(LIS_noahmp50Id)//char(0),noahmp50_reset)
 #endif
 
 #if ( defined SM_RUC_3_7 )

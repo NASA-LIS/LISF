@@ -98,12 +98,12 @@ subroutine LIS_lsmrouting_plugin
    external noahmp401_getrunoffs_rapid   
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   external noahmpnew_getrunoffs
-   external noahmpnew_getrunoffs_mm
-   external noahmpnew_getrunoffs_hymap2
-   external noahmpnew_getsws_hymap2
-   external noahmpnew_getrunoffs_rapid
+#if ( defined SM_NOAHMP_5_0 )
+   external noahmp50_getrunoffs
+   external noahmp50_getrunoffs_mm
+   external noahmp50_getrunoffs_hymap2
+   external noahmp50_getsws_hymap2
+   external noahmp50_getrunoffs_rapid
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -198,10 +198,10 @@ subroutine LIS_lsmrouting_plugin
         noahmp401_getrunoffs_mm)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmpnewId)//"+"//&
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
-        noahmpnew_getrunoffs_mm)
+        noahmp50_getrunoffs_mm)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -303,13 +303,13 @@ subroutine LIS_lsmrouting_plugin
         noahmp401_getsws_hymap2)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmpnewId)//"+"//&
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        noahmpnew_getrunoffs_hymap2)
-   call registerlsmroutinggetsws(trim(LIS_noahmpnewId)//"+"//&
+        noahmp50_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        noahmpnew_getsws_hymap2)
+        noahmp50_getsws_hymap2)
 #endif
 
 #if ( defined SM_RUC_3_7 )
@@ -386,10 +386,10 @@ subroutine LIS_lsmrouting_plugin
         noahmp401_getrunoffs)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmpnewId)//"+"//&
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_NLDASrouterId)//char(0), &
-        noahmpnew_getrunoffs)
+        noahmp50_getrunoffs)
 #endif
  
 #if ( defined SM_RUC_3_7 )
@@ -430,10 +430,10 @@ subroutine LIS_lsmrouting_plugin
         noahmp401_getrunoffs_rapid)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmroutinggetrunoff(trim(LIS_noahmpnewId)//"+"//&
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmroutinggetrunoff(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_RAPIDrouterId)//char(0), &
-        noahmpnew_getrunoffs_rapid)
+        noahmp50_getrunoffs_rapid)
 #endif
 
 #if ( defined SM_JULES_5_0 )

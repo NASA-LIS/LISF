@@ -109,8 +109,8 @@ subroutine LIS_lsmcpl_plugin
    external noahMP401_setwrfexport
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   external noahmpnew_setwrfexport
+#if ( defined SM_NOAHMP_5_0 )
+   external noahmp50_setwrfexport
 #endif
 
 #if 0
@@ -246,16 +246,16 @@ subroutine LIS_lsmcpl_plugin
                                  noahMP401_setwrfexport)
 #endif
 
-#if ( defined SM_NOAHMP_NEW )
-   call registerlsmcplsetexport(trim(LIS_noahmpnewId)//"+"//&
+#if ( defined SM_NOAHMP_5_0 )
+   call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
                                  trim(LIS_wrfcplId)//char(0), &
-                                 noahmpnew_setwrfexport)
-    call registerlsmcplsetexport(trim(LIS_noahmpnewId)//"+"//&
+                                 noahmp50_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
                                  trim(LIS_nuopccplId)//char(0), &
-                                 noahmpnew_setwrfexport)
-    call registerlsmcplsetexport(trim(LIS_noahmpnewId)//"+"//&
+                                 noahmp50_setwrfexport)
+    call registerlsmcplsetexport(trim(LIS_noahmp50Id)//"+"//&
                                  trim(LIS_retroId)//char(0), &
-                                 noahmpnew_setwrfexport)
+                                 noahmp50_setwrfexport)
 #endif
 
 #if ( defined SM_NOAH_3_6 )
