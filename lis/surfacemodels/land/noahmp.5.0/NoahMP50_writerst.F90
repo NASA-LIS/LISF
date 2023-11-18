@@ -103,7 +103,7 @@ subroutine NoahMP50_writerst(n)
 #endif
             endif
             write(LIS_logunit, *)&
-                 "[INFO] Noah-MP.New archive restart written: ",trim(filen)
+                 "[INFO] NoahMP.5.0 archive restart written: ",trim(filen)
         endif
     endif
 end subroutine NoahMP50_writerst

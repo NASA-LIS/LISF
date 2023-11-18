@@ -168,7 +168,7 @@ subroutine NoahMP50_readrst()
                 call LIS_endrun
             endif
             write(LIS_logunit,*) &
-                 "[INFO] Noah-MP.New restart file used: ",trim(NoahMP50_struc(n)%rfile)
+                 "[INFO] NoahMP.5.0 restart file used: ",trim(NoahMP50_struc(n)%rfile)
         
             ! open restart file
             if(wformat .eq. "binary") then
