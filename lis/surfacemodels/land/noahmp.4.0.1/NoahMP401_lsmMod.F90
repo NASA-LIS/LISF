@@ -304,18 +304,18 @@ contains
 
             call LIS_update_timestep(LIS_rc, n, NOAHMP401_struc(n)%ts)
 
-            call LIS_registerAlarm("NoahMP401 model alarm",&
+            write(fnest,'(i3.3)') n
+            call LIS_registerAlarm("NoahMP401 model alarm "//trim(fnest),&
                                    NOAHMP401_struc(n)%ts, &
                                    NOAHMP401_struc(n)%ts)
 
-            call LIS_registerAlarm("NoahMP401 restart alarm", &
+            call LIS_registerAlarm("NoahMP401 restart alarm "//trim(fnest), &
                                    NOAHMP401_struc(n)%ts,&
                                    NOAHMP401_struc(n)%rstInterval)
             
             ! EMK Add alarm to reset tair_agl_min for RHMin.  This should 
             ! match the output interval, since that is used for calculating 
             ! Tair_F_min.            
-            write(fnest,'(i3.3)') n
             call LIS_registerAlarm("NoahMP401 RHMin alarm "//trim(fnest),&
                  NOAHMP401_struc(n)%ts,&
                  LIS_sfmodel_struc(n)%outInterval)
