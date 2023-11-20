@@ -272,7 +272,8 @@ subroutine NoahMP401_main(n)
 
     ! check NoahMP401 alarm. If alarm is ring, run model.
 
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm")
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm "//trim(fnest))
 
     if (alarmCheck) Then
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
