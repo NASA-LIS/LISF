@@ -7,7 +7,9 @@
 # columns are just sorted climatology of forecasts for all lead times for a given forecast
 # initialization month
 """
-from __future__ import division
+
+
+
 import os
 import sys
 import calendar
@@ -77,7 +79,7 @@ for LEAD_NUM in range(0, LEAD_FINAL): ## Loop from lead =0 to Final Lead
             INFILE = INFILE_TEMPLATE.format(INDIR, MONTH_NAME, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
                                             FCST_YEAR, FCST_MONTH)
             print(INFILE)
-            FCST_TS[LEAD_NUM, COUNT_DATA, ] = read_nc_files(INFILE, VAR)[0,]
+            FCST_TS[LEAD_NUM, COUNT_DATA, ] = read_nc_files(INFILE, VAR)[:]
             COUNT_DATA+=1
 
 CLIM_ARRAY = np.empty((LEAD_FINAL+1, ((CLIM_EYR-CLIM_SYR)+1)*ENS_NUM, len(LATS), len(LONS)))
@@ -108,4 +110,7 @@ CLIM_XR.coords['longitude'] = (('longitude'), LONS)
 
 #Now selecting only the data over the given lat lon box
 SLICED_CLIM_XR = CLIM_XR.sel(longitude=slice(lon1, lon2), latitude=slice(lat1, lat2))
-SLICED_CLIM_XR.to_netcdf(OUTFILE)
+edict = {}
+for var in SLICED_CLIM_XR.data_vars:
+    edict[var] = {"zlib":True, "complevel":6, "shuffle":True, "missing_value": np.nan, "_FillValue": np.nan}
+SLICED_CLIM_XR.to_netcdf(OUTFILE, format="NETCDF4", encoding=edict)

@@ -29,6 +29,7 @@
 !               and added parameter output option (wparm)
 !  29 Dec 2007: Marv Freimund; Used trim on filenames
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!  15 May 2023  Sujay Kumar, added support for 1D lat/lon output for latlon and merc projections
 !
 ! !INTERFACE:
 subroutine LIS_readConfig()
@@ -134,9 +135,27 @@ subroutine LIS_readConfig()
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%runmode,&
        label="Running mode:",rc=rc)
   call LIS_verify(rc,'Running mode: option not specified in the config file')
+
 !  call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%lis_map_proj,&
 !       label="Map projection of the LIS domain:",rc=rc)
 !  call LIS_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
+
+  ! CM Grabs new optional lis.config entry for the number of dimensions of the lat/lon fields
+  call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nlatlon_dimensions,&
+       label="Number of dimensions in the lat/lon output fields:",rc=rc)
+  call LIS_warning(rc, 'Number of dimensions in the lat/lon output fields: option not specified in the config file. Assigning value to "1D"')
+
+    ! CM If the user did not specify the number of dimension for the lat/lon fields, use 1D. In LIS_domainMod, this will switch to 2D for all projections except latlon. 
+    if ( rc /= 0 ) then
+      LIS_rc%nlatlon_dimensions = "1D"
+    endif   
+  
+    ! CM If the user specified an invalid dimension option, assign to "1D"
+    if ( LIS_rc%nlatlon_dimensions /= "1D" .AND. LIS_rc%nlatlon_dimensions /= "2D" ) then
+      call LIS_warning(1,'Invalid lis.config entry, "Number of dimensions in the lat/lon output fields:" Assigning value to "1D"')
+      LIS_rc%nlatlon_dimensions = "1D"
+    endif
+
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nnest,&
        label="Number of nests:",rc=rc)
   call LIS_verify(rc,'Number of nests: option not specified in the config file')
@@ -468,7 +487,8 @@ subroutine LIS_readConfig()
        rc=rc)
   call LIS_verify(rc,'Output naming style: not defined')
   !EMK Extra info required
-  if (LIS_rc%wstyle == "557WW streamflow convention") then
+  if (LIS_rc%wstyle == "557WW streamflow convention" .or. &
+       LIS_rc%wstyle == "557WW medium range forecast convention") then
      call ESMF_ConfigGetAttribute(LIS_config, LIS_rc%security_class, &
           label="AGRMET security classification:", rc=rc)
      call LIS_verify(rc, 'AGRMET security classification: option not specified in the config file')

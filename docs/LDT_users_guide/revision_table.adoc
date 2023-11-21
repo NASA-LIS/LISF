@@ -2,6 +2,9 @@
 |====
 | Revision | Summary of Changes             | Date
 
+| 2.4      | LISF Public 7.4.3 release      | Oct 03, 2023
+| 2.3      | LISF 557WW 7.5.9 release       | Jul 05, 2023
+| 2.2      | LISF 557WW 7.5.8 release       | Jun 30, 2023
 | 2.1      | LISF 557WW 7.5.0 release       | Nov 30, 2022
 | 2.0      | LISF Public 7.4.0 release      | Jun 22, 2022
 | 1.18     | LISF Public 7.3.5 release      | Jun 10, 2022

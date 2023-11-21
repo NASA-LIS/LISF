@@ -204,7 +204,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !EOP
   character*10                      :: date10
   character*120                     :: ifil
-  character*100                     :: message(20)
+  character*255                     :: message(20)
   integer,       allocatable        :: times  ( :, : , : )
   integer*1,     allocatable        :: totalc ( :, : , : )
   real                              :: cldtim(LIS_rc%lnc(n), LIS_rc%lnr(n))

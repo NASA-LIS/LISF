@@ -765,10 +765,10 @@ endif::devonly[]
 
 |AVHRR |Univ. of Maryland 1992-93 AVHRR landcover map.  Please see: https://doi.org/10.3334/ORNLDAAC/969
 |AVHRR_GFS |Similar to "`AVHRR`" option above but on a GFS grid.
-|MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|MODIS_Native |Terra-MODIS sensor-based IGBP land classification map, modified by NCEP. For more info, please see: https://ral.ucar.edu/model/noah-multiparameterization-land-surface-model-noah-mp-lsm
 |MODIS_LIS |Similar dataset as "`MODIS_Native`" above but processed by LISF-team.
 |MCD12Q1 |Terra and Aqua combined MODIS landcover map, available at yearly intervals. Allows dynamic annual landcover maps in "`Landcover file`" option.
-|USGS_Native |The 24-category USGS native landcover map. See: http://www.ral.ucar.edu/research/land/technology/noahmp_lsm.php
+|USGS_Native |The 24-category USGS native landcover map. See: https://ral.ucar.edu/model/noah-multiparameterization-land-surface-model-noah-mp-lsm
 |USGS_LIS |Similar dataset as "`USGS_Native`" but processed by LISF-team.
 |ALMIPII |AMMA/ALMIP Phase-2 landcover input option. For more info: http://www.cnrm.meteo.fr/amma-moana/amma_surf/almip2/input.html
 |CLSMF2.5 |CLSM Fortuna 2.5 landcover dataset.
@@ -3701,6 +3701,54 @@ landcover.1gd4r +
 .Example _ldt.config_ entry
 ....
 CDF grouping attributes file:     cdf_grouping.txt
+....
+
+`Stratify CDFs by external data:` specifies whether to stratify CDFs for each pixel by an externally specified categorical map; for example, by precipitation climatology.
+This option generates a stratified CDF for each grid cell. That means if the domain contains 10000 grid cells, the CDF file also has 10000 CDFs. But CDFs in grid cells with a similar precipitation climatology are the same.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|0 |do not stratify by external data
+|1 |stratify by external data
+|===
+
+.Example _ldt.config_ entry
+....
+Stratify CDFs by external data:    1
+.... 
+
+`Number of bins to use for stratification:`  specifies the number of stratification bins to use for computing the CDF. 
+
+.Example _ldt.config_ entry
+....
+Number of bins to use for stratification: 15
+.... 
+
+`Stratification data source:` specifies the name of the stratification data source 
+
+.Example _ldt.config_ entry
+....
+Stratification data source:  "LIS LSM total precipitation"
+....
+
+`External stratification file:` Specifies the name of a NetCDF file that contains the monthly precipitation climatology. The user needs to run an LSM and generate daily total precipitation output for a long period. Then the user needs to run LVT to generate monthly precipitation climatology.  
+
+
+.Example _ldt.config_ entry
+....
+External stratification file:              "LVT_MEAN_FINAL.202201010000.d01.nc" 
+....
+
+
+`Write stratified geolocation independent CDFs:` specifies whether to write the stratified CDF or not. 
+This option eliminates the similar CDFs and collapses the stratified CDFs into a number of stratified bins.  For example, if the domain contains 10000 grid cells and you chose to stratify the CDFs to 15 precipitation bins. This option collapses the 10000 CDFs to 15 CDFs. This CDF is a geolocation independent CDFs. 
+
+.Example _ldt.config_ entry
+....
+Write stratified geolocation independent CDFs: 1
 ....
 
 `Temporal averaging interval:` specifies temporal averaging interval to be used while computing the CDF.
