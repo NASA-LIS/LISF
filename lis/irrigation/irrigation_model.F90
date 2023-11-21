@@ -71,9 +71,10 @@
 ! Schedule turns on at a frequency specified in the config file (eg. every 2.5 days). 
 ! It keeps going even when it rains unless the shutoff is triggerred--
 ! (using 90% RZSM for now, should test a)root zone fully saturated,
-! b) surface layer fully saturated). Sprinkler schedule keeps irrigating over the days to 
-! mimic revolution time of pivot system. On the other hand, Flood and Drip schedule is
-! the frequency of irrigation event (eg. once 10 days) and irrigated over the duration hours.
+! b) surface layer fully saturated). 
+! Sprinkler, Flood and Drip schedule is the frequency of irrigation event 
+! (eg. once 10 days) and irrigated over the duration hours.
+! 
 ! 
 ! Flood assumes furrow field where every other ditch is flooded, so the amount of irrigation
 ! is reduced by half.
@@ -93,6 +94,8 @@
 !                             Pass TileNo to trigger and rate subtourines for easier
 !                             debugging.
 ! May 2023: Hiroko Beaudoing; Fixed a bug in the schedule option for sprinkler
+! Nov 2023: Hiroko Beaudoing; Changed sprinkler schedule to irrigate only during 
+!                             the duration. 
 
 !EOP
 
@@ -502,7 +505,8 @@ contains
             irrigStart = .false.
          endif
       else  
-         ! SCHEDULE-- can trigger any time
+         ! SCHEDULE-- can trigger any time but applied only during the duration
+         ! sprinkler schedule is frequency of irrigation event (eg every 2.5-day)
          sprinklerFreq = LIS_irrig_struc(nest)%sprinkler_frequency * 86400.0
          ! set ending irrigation hour: irrigStart + duration in LIS time unites
          if ( irrigStartTime == -1 ) then   ! start a new cycle
@@ -512,8 +516,17 @@ contains
             hr=LIS_rc%hr
             mn=LIS_rc%mn
             ss=0
-            call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,sprinklerFreq)
+            duration = LIS_irrig_struc(nest)%sprinkler_duration * 3600.
+         else
+         ! set ending irrigation hour: irrigStart + duration in LIS time unites
+            call LIS_time2date(irrigStartTime,doy,gmt,yr,mo,da,hr,mn)
+            irrDays = int(timer/86400.)
+            ! duration in sec
+            duration = LIS_irrig_struc(nest)%sprinkler_duration * 3600. + &
+                       irrDays * 86400.
+            ss=0
          endif
+         call LIS_tick(time2,doy,gmt,yr,mo,da,hr,mn,ss,duration)
          ! check rootzone soil moisture each time
          if( ma <= IT ) then
             ! is it first DOY irrigation or after shutoff?
@@ -527,7 +540,12 @@ contains
               ! is it during the revolution?
               if ( timer <= sprinklerFreq ) then
                 timer = timer + LIS_rc%ts
+               ! irrigate only during the hours under scheduled dates
+                if ( curtime <= time2 ) then
                   sprinklerOn = .true.
+                else
+                  sprinklerOn = .false.
+                endif
               else
                 timer = -1
                 irrigStartTime = -1
@@ -545,10 +563,14 @@ contains
             irrigStart = .false.
             ! is it during the revolution?
             ! ensure the timer hasn't started
-            if ( timer <= sprinklerFreq .and. timer .gt. -1.0 ) then
+            if ( timer <= sprinklerFreq .and. timer > -1.0 ) then
               timer = timer + LIS_rc%ts
-              ! keep irrigStartTime unchanged
+              ! irrigate only during the hours under scheduled dates
+              if ( curtime <= time2 ) then
                 sprinklerOn = .true.
+              else
+                sprinklerOn = .false.
+              endif
             else
               timer = -1
               irrigStartTime = -1
