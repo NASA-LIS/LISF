@@ -1434,7 +1434,6 @@ subroutine NoahMP401_main(n)
 
     ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
     ! reset for calculating RHMin.  
-    write(fnest,'(i3.3)') n
     alarmCheck = LIS_isAlarmRinging(LIS_rc, &
          "NoahMP401 RHMin alarm "//trim(fnest))
     if (alarmCheck) then
