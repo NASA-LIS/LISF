@@ -68,7 +68,6 @@ subroutine NoahMP401_writerst(n)
     
     ! set restart file format (read from LIS configration file_
     wformat = trim(NOAHMP401_struc(n)%rformat)
-    wformat = "distributed binary"
 
     if(alarmCheck .or. (LIS_rc%endtime ==1)) then
        call LIS_create_output_directory("SURFACEMODEL")
@@ -794,10 +793,10 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable gecros_state
     !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
-    call LIS_writeHeader_restart(ftn, n, dimID, gecros_state_ID, "GECROS_STATE", &
-                                 "optional gecros crop", &
-                                 "-", vlevels=60, valid_min=-99999.0, valid_max=99999.0, &
-                                 var_flag = "dim4") 
+!    call LIS_writeHeader_restart(ftn, n, dimID, gecros_state_ID, "GECROS_STATE", &
+!                                 "optional gecros crop", &
+!                                 "-", vlevels=60, valid_min=-99999.0, valid_max=99999.0, &
+!                                 var_flag = "dim4") 
  
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, NOAHMP401_struc(n)%rstInterval)
