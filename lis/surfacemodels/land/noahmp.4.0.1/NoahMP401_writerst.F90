@@ -74,12 +74,12 @@ subroutine NoahMP401_writerst(n)
        call LIS_create_restart_filename(n, filen, "SURFACEMODEL", &
             "NOAHMP401",wformat=wformat)
        if(wformat .eq. "binary") then
-          if(LIS_masterproc) then 
+          if(LIS_masterproc) then
              ftn = LIS_getNextUnitNumber()
              open(ftn,file=filen,status="unknown", form="unformatted")
           endif
        elseif(wformat .eq. "netcdf") then
-          if(LIS_masterproc) then 
+          if(LIS_masterproc) then
 #if (defined USE_NETCDF4)
              status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
              call LIS_verify(status, &
@@ -93,13 +93,13 @@ subroutine NoahMP401_writerst(n)
           endif
        elseif(wformat.eq."distributed binary") then
           ftn = LIS_getNextUnitNumber()
-          
+
           write(temp1,'(i4.4)') LIS_localPet
           read(temp1,fmt='(4a1)') fproc
-          
+
           filenp = trim(filen)//'.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
           open(ftn,file=trim(filenp),&
-               form='unformatted')                                
+               form='unformatted')
        endif
 
        if(wformat.eq."distributed binary") then
@@ -109,13 +109,13 @@ subroutine NoahMP401_writerst(n)
        endif
         
        if(wformat .eq. "binary") then
-          if (LIS_masterproc) then          
+          if (LIS_masterproc) then
              call LIS_releaseUnitNumber(ftn)
           endif
        elseif(wformat.eq."distributed binary") then
           call LIS_releaseUnitNumber(ftn)
        elseif(wformat .eq. "netcdf") then
-          if(LIS_masterproc) then 
+          if(LIS_masterproc) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
              status = nf90_close(ftn)
              call LIS_verify(status, &
@@ -135,8 +135,8 @@ end subroutine NoahMP401_writerst
 !
 ! !REVISION HISTORY:
 !  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
+!  by Shugong Wang for the NASA Land Information System Version 7. The initial
+!  specification of the subroutine is defined by Sujay Kumar.
 !  10/25/18: Shugong Wang, Zhuo Wang, initial implementation for LIS 7 and NoahMP401
 ! !INTERFACE:
 subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
@@ -233,10 +233,10 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
 !   \item[LIS\_writevar\_restart](\ref{LIS_writevar_restart})\\
 !      writes a variable to the restart file
 ! \end{description}
-! 
-!EOP 
-               
-    integer :: l, t 
+!
+!EOP
+
+    integer :: l, t
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
 
     write(ftn) NOAHMP401_struc(n)%noahmp401%sfcrunoff
@@ -254,7 +254,7 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%sh2o(l)
        enddo
-       write(ftn) tmptilen         
+       write(ftn) tmptilen
     enddo
     ! soil temperature
     do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
@@ -262,7 +262,7 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%tslb(l)
        enddo
-       write(ftn) tmptilen         
+       write(ftn) tmptilen
     enddo
     write(ftn) NOAHMP401_struc(n)%noahmp401%sneqv
     write(ftn) NOAHMP401_struc(n)%noahmp401%snowh
@@ -313,7 +313,7 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%snowice(l)
        enddo
-       write(ftn) tmptilen         
+       write(ftn) tmptilen
     enddo
     ! snow layer liquid water
     do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
@@ -321,7 +321,7 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%snowliq(l)
        enddo
-       write(ftn) tmptilen         
+       write(ftn) tmptilen
     enddo
     write(ftn) NOAHMP401_struc(n)%noahmp401%lfmass
     write(ftn) NOAHMP401_struc(n)%noahmp401%rtmass
@@ -352,7 +352,7 @@ subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
        tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%pgs
     enddo
     write(ftn) tmptilen
-    
+
 !    do l=1, 60  ! TODO: check loop
 !      tmptilen = 0
 !       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
