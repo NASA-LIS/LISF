@@ -117,7 +117,8 @@ subroutine NoahMP401_readrst()
   real, allocatable :: tmptilen(:)
   logical           :: file_exists
   character*20      :: wformat
-  character(len=LIS_CONST_PATH_LEN)     :: filen,temp1,rfile
+  character(len=LIS_CONST_PATH_LEN)     :: filen,rfile
+  character*4       :: temp1
   character*1       :: fproc(4)
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
