@@ -155,7 +155,6 @@ subroutine NoahMP401_readrst()
                    'SURFACEMODEL','NOAHMP401', &
                    yr,mo,da,hr,mn,ss, wformat=wformat)
               NOAHMP401_struc(n)%rfile = filen
-              rfile = filen
            endif
         endif
 
@@ -168,6 +167,8 @@ subroutine NoahMP401_readrst()
 
            rfile = trim(NOAHMP401_struc(n)%rfile)//&
                 '.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
+        else
+           rfile = NOAHMP401_struc(n)%rfile
         endif
 
         inquire(file=rfile, exist=file_exists)
@@ -211,7 +212,7 @@ subroutine NoahMP401_readrst()
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
            status = nf90_open(path=rfile, &
                 mode=NF90_NOWRITE, ncid=ftn)
-           call LIS_verify(status, "Error opening file "//rfile)
+           call LIS_verify(status, "Error opening file "//trim(rfile))
 #endif
         endif
 
