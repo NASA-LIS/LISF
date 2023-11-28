@@ -130,7 +130,7 @@ subroutine NoahMP401_readrst()
      call NoahMP401_coldstart(LIS_rc%lsm_index)     
      ! coldstart
 !     wformat = "netcdf"
-!     if(LIS_rc%startcode .eq. "coldstart") then  
+!     if(LIS_rc%startcode .eq. "coldstart") then
 
         ! restart
      if(LIS_rc%startcode .eq. "restart") then
@@ -171,7 +171,7 @@ subroutine NoahMP401_readrst()
            rfile = trim(NOAHMP401_struc(n)%rfile)//&
                 '.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
         endif
-        
+
         inquire(file=rfile, exist=file_exists)
         If (.not. file_exists) then 
            write(LIS_logunit,*) "[ERR] NoahMP401 restart file: ", &
@@ -204,11 +204,11 @@ subroutine NoahMP401_readrst()
               write(LIS_logunit,*) "[ERR] Program stopping..."
               call LIS_endrun
            endif
-        elseif(wformat.eq."distributed binary") then 
+        elseif(wformat.eq."distributed binary") then
            ftn = LIS_getNextUnitNumber()
            open(ftn, file=rfile, &
                 form="unformatted")
-           
+
         elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
            status = nf90_open(path=rfile, &
@@ -218,234 +218,234 @@ subroutine NoahMP401_readrst()
         endif
 
         if(wformat.eq."distributed binary") then
-!           if(LIS_rc%npatch(n, LIS_rc%lsm_index).ne.0) then 
+!           if(LIS_rc%npatch(n, LIS_rc%lsm_index).ne.0) then
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff = tmptilen(t)
               endif
            enddo
-           
+
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%udrrunoff = tmptilen(t)
               endif
-           enddo           
-           
+           enddo
+
            do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
               read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%smc(l) = tmptilen(t)
                  endif
               enddo
            enddo
            do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
-              read(ftn) tmptilen         
+              read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%sh2o(l) = tmptilen(t)
                  endif
               enddo
            enddo
            ! soil temperature
            do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
-              read(ftn) tmptilen         
+              read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%tslb(l) = tmptilen(t)
                  endif
               enddo
            enddo
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%sneqv = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%snowh = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%canwat = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%acsnom = tmptilen(t)
               endif
            enddo
-           
+
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%acsnow = tmptilen(t)
               endif
            enddo
-           
+
            read(ftn) tmptilen
            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%isnow = nint(tmptilen(t))
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%tv = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%tg = tmptilen(t)
               endif
            enddo
-           
+
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%canice = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%canliq = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%eah = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%tah = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%cm = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%ch = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%fwet = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%sneqvo = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%albold = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%qsnow = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%wslake = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%zwt = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%wa = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%wt = tmptilen(t)
               endif
            enddo
-                     
+
            ! snow layer temperature
            do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
               read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%tsno(l) = tmptilen(t)
                  endif
               enddo
            enddo
            ! snow/soil layer depth from snow surface
-           do l=1, NOAHMP401_struc(n)%nsnow + NOAHMP401_struc(n)%nsoil          
+           do l=1, NOAHMP401_struc(n)%nsnow + NOAHMP401_struc(n)%nsoil
               read(ftn) tmptilen
-              
+
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                  if(tmptilen(t).ne.LIS_rc%udef.and.&
-                      tmptilen(t).ne.0) then 
+                      tmptilen(t).ne.0) then
                     NOAHMP401_struc(n)%noahmp401(t)%zss(l)= tmptilen(t)
                  endif
               enddo
            enddo
            ! snow layer ice
            do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
-              read(ftn) tmptilen         
+              read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%snowice(l)= tmptilen(t)
                  endif
               enddo
            enddo
            ! snow layer liquid water
            do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
-              read(ftn) tmptilen                       
+              read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%snowliq(l)= tmptilen(t)
                  endif
               enddo
@@ -453,63 +453,63 @@ subroutine NoahMP401_readrst()
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%lfmass = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%rtmass = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%stmass = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%wood = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%stblcp = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%fastcp = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%lai = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%sai = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%tauss = tmptilen(t)
               endif
            enddo
@@ -518,7 +518,7 @@ subroutine NoahMP401_readrst()
            do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
               read(ftn) tmptilen
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.LIS_rc%udef) then 
+                 if(tmptilen(t).ne.LIS_rc%udef) then
                     NOAHMP401_struc(n)%noahmp401(t)%smoiseq(l) = tmptilen(t)
                  endif
               enddo
@@ -526,50 +526,50 @@ subroutine NoahMP401_readrst()
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%smcwtd = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%deeprech = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%rech = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%grain = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%gdd = tmptilen(t)
               endif
            enddo
 
            read(ftn) tmptilen
            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-              if(tmptilen(t).ne.LIS_rc%udef) then 
+              if(tmptilen(t).ne.LIS_rc%udef) then
                  NOAHMP401_struc(n)%noahmp401(t)%pgs = nint(tmptilen(t))
               endif
-           enddo                      
-           
+           enddo
+
 !           do l=1, 60  ! TODO: check loop
 !              read(ftn) tmptilen
 !              do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-!                 if(tmptilen(t).ne.LIS_rc%udef) then 
+!                 if(tmptilen(t).ne.LIS_rc%udef) then
 !                    NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)= tmptilen(t!)
 !                 endif
 !              enddo
@@ -579,11 +579,11 @@ subroutine NoahMP401_readrst()
            ! read: accumulated surface runoff
            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%sfcrunoff, &
                 varname="SFCRUNOFF", wformat=wformat)
-           
+
            ! read: accumulated sub-surface runoff
            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%udrrunoff, &
                 varname="UDRRUNOFF", wformat=wformat)
-           
+
            ! read: volumtric soil moisture
            do l=1, NOAHMP401_struc(n)%nsoil ! TODO: check loop
               call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SMC", &
@@ -601,7 +601,7 @@ subroutine NoahMP401_readrst()
                  NOAHMP401_struc(n)%noahmp401(t)%sh2o(l) = tmptilen(t)
               enddo
            enddo
-           
+
            ! read: soil temperature
            do l=1, NOAHMP401_struc(n)%nsoil ! TODO: check loop
               call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="TSLB", &
@@ -610,11 +610,11 @@ subroutine NoahMP401_readrst()
                  NOAHMP401_struc(n)%noahmp401(t)%tslb(l) = tmptilen(t)
               enddo
            enddo
-           
+
            ! read: snow water equivalent
            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%sneqv, &
                 varname="SNEQV", wformat=wformat)
-           
+
            ! read: physical snow depth
            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%snowh, &
                 varname="SNOWH", wformat=wformat)
@@ -713,12 +713,12 @@ subroutine NoahMP401_readrst()
               call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="ZSS", &
                    dim=l, vlevels = NOAHMP401_struc(n)%nsnow + NOAHMP401_struc(n)%nsoil, wformat=wformat)
               do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                 if(tmptilen(t).ne.0) then                    
+                 if(tmptilen(t).ne.0) then
                     NOAHMP401_struc(n)%noahmp401(t)%zss(l) = tmptilen(t)
                  endif
               enddo
            enddo
-           
+
            ! read: snow layer ice
            do l=1, NOAHMP401_struc(n)%nsnow ! TODO: check loop
               call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWICE", &
@@ -727,7 +727,7 @@ subroutine NoahMP401_readrst()
                  NOAHMP401_struc(n)%noahmp401(t)%snowice(l) = tmptilen(t)
               enddo
            enddo
-           
+
            ! read: snow layer liquid water
            do l=1, NOAHMP401_struc(n)%nsnow ! TODO: check loop
               call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWLIQ", &
@@ -736,7 +736,7 @@ subroutine NoahMP401_readrst()
                  NOAHMP401_struc(n)%noahmp401(t)%snowliq(l) = tmptilen(t)
               enddo
            enddo
-           
+
            ! read: leaf mass
            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%lfmass, &
                 varname="LFMASS", wformat=wformat)
@@ -826,7 +826,7 @@ subroutine NoahMP401_readrst()
 #endif
         elseif(wformat.eq."distributed binary") then
            call LIS_releaseUnitNumber(ftn)
-           
+
         endif
         deallocate(tmptilen)
      endif
