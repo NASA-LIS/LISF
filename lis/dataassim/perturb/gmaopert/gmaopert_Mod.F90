@@ -1835,7 +1835,7 @@ module gmaopert_Mod
       integer, allocatable     :: pertdata1d_int(:)
       integer, allocatable     :: pertdata1d_patch_int(:)
       character(len=LIS_CONST_PATH_LEN) :: filen,filenp
-      character*100            :: temp1
+      character*4              :: temp1
       character*1              :: fproc(4)
       integer                  :: ftn
       character*20 :: wformat
@@ -2198,7 +2198,7 @@ module gmaopert_Mod
       integer                   :: yr,mo,da,hr,mn,ss, doy
       integer                   :: status
       character(len=LIS_CONST_PATH_LEN) :: filen
-      character*100             :: temp1
+      character*4               :: temp1
       real*8                    :: time
       real                      :: gmt
       character*1               :: fproc(4)
