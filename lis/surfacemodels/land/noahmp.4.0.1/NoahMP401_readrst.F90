@@ -129,9 +129,6 @@ subroutine NoahMP401_readrst()
   do n=1, LIS_rc%nnest
      wformat = trim(NOAHMP401_struc(n)%rformat)
      call NoahMP401_coldstart(LIS_rc%lsm_index)     
-     ! coldstart
-!     wformat = "netcdf"
-!     if(LIS_rc%startcode .eq. "coldstart") then
 
         ! restart
      if(LIS_rc%startcode .eq. "restart") then
