@@ -528,7 +528,8 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                                        dim1=NOAHMP401_struc(n)%nsoil+NOAHMP401_struc(n)%nsnow, &
                                        dim2=NOAHMP401_struc(n)%nsoil,                          &
                                        dim3=NOAHMP401_struc(n)%nsnow,                          &
-                                       dim4=60,                                                &
+!                                       dim4=60,                                                & ! GECROS
+                                       dim4=1,                                                 &
                                        dimID=dimID,                                            &
                                        output_format = trim(wformat))
 
@@ -1031,13 +1032,12 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                               varid=pgs_ID, dim=1, wformat=wformat)
 
     ! optional gecros crop
-  !  do l=1, 60  ! TODO: check loop
-  !      tmptilen = 0
-  !      do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-  !          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
-  !      enddo
-  !      call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
-  !                                varid=gecros_state_ID, dim=l, wformat=wformat)
-  !  enddo
+!    do l=1, 60  ! TODO: check loop
+!        tmptilen = 0
+!        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+!            tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
+!        enddo
+!        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+!                                  varid=gecros_state_ID, dim=l, wformat=wformat)
+!    enddo
 end subroutine NoahMP401_dump_restart
-
