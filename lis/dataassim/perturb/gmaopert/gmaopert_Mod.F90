@@ -1834,108 +1834,284 @@ module gmaopert_Mod
       real, allocatable        :: pertdata1d_patch(:)
       integer, allocatable     :: pertdata1d_int(:)
       integer, allocatable     :: pertdata1d_patch_int(:)
-      character(len=LIS_CONST_PATH_LEN) :: filen
-      integer                  :: ftn 
+      character(len=LIS_CONST_PATH_LEN) :: filen,filenp
+      character*4              :: temp1
+      character*1              :: fproc(4)
+      integer                  :: ftn
+      character*20 :: wformat
 
-      if ( LIS_masterproc ) then
-         
-         call LIS_create_output_directory('DAPERT')         
-         call LIS_create_dapert_filename(n,filen)
-         
-         ftn = LIS_getNextUnitNumber()
-         write(LIS_logunit,*) '[INFO] Writing Perturbations restart ', &
-              trim(filen)
-         open(ftn, file = trim(filen), form='unformatted')
-         
-      endif
-      if(LIS_rc%perturb_forcing .ne."none") then 
-         if(.not. f_xyCorr) then 
-            allocate(pertdata1d(LIS_rc%ntiles(n)))
+      wformat = "distributed binary"
+
+      if(wformat.eq."binary") then
+         if ( LIS_masterproc ) then
+
+            call LIS_create_output_directory('DAPERT')
+            call LIS_create_dapert_filename(n,filen)
+
+            ftn = LIS_getNextUnitNumber()
+            write(LIS_logunit,*) '[INFO] Writing Perturbations restart ', &
+                 trim(filen)
+            open(ftn, file = trim(filen), form='unformatted')
             
-            k = 1
-            do i=1,LIS_rc%nforcepert
+         endif
+         if(LIS_rc%perturb_forcing .ne."none") then
+            if(.not. f_xyCorr) then
+               allocate(pertdata1d(LIS_rc%ntiles(n)))
                
-               do t=1,LIS_rc%ntiles(n)
-                  col = LIS_domain(n)%tile(t)%col
-                  row = LIS_domain(n)%tile(t)%row
-                  ensem = LIS_domain(n)%tile(t)%ensem
-                  pertdata1d(t) = forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem)
+               k = 1
+               do i=1,LIS_rc%nforcepert
+
+                  do t=1,LIS_rc%ntiles(n)
+                     col = LIS_domain(n)%tile(t)%col
+                     row = LIS_domain(n)%tile(t)%row
+                     ensem = LIS_domain(n)%tile(t)%ensem
+                     pertdata1d(t) = forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem)
+                  enddo
+
+                  call LIS_writevar_restart(ftn,n,pertdata1d)
                enddo
-               
-               call LIS_writevar_restart(ftn,n,pertdata1d)         
-            enddo
-            deallocate(pertdata1d)
-            allocate(pertdata1d_int(LIS_rc%ntiles(n)))
-            
-            do i=1,NRANDSEED            
-               do t=1,LIS_rc%ntiles(n)
-                  col = LIS_domain(n)%tile(t)%col
-                  row = LIS_domain(n)%tile(t)%row
-                  ensem = LIS_domain(n)%tile(t)%ensem
-                  pertdata1d_int(t) = &
-                       forcpert(n,k)%forcepert_rseed(i,col,row,ensem)
+
+               deallocate(pertdata1d)
+               allocate(pertdata1d_int(LIS_rc%ntiles(n)))
+
+               do i=1,NRANDSEED
+                  do t=1,LIS_rc%ntiles(n)
+                     col = LIS_domain(n)%tile(t)%col
+                     row = LIS_domain(n)%tile(t)%row
+                     ensem = LIS_domain(n)%tile(t)%ensem
+                     pertdata1d_int(t) = &
+                          forcpert(n,k)%forcepert_rseed(i,col,row,ensem)
+                  enddo
+                  call LIS_writevar_restart(ftn,n,pertdata1d_int)
                enddo
-               call LIS_writevar_restart(ftn,n,pertdata1d_int)         
+               deallocate(pertdata1d_int)
+
+            else
+               if(LIS_masterproc) then
+                  k = 1
+                  do i=1,LIS_rc%nforcepert
+                     write(ftn) forcpert(n,k)%forcepert_ntrmdt(i,:,:,:)
+                  enddo
+
+                  do i=1,NRANDSEED
+                     write(ftn) forcpert(n,k)%forcepert_rseed(i,:,:,:)
+                  enddo
+               endif
+            endif
+         endif
+
+         if(.not. p_xyCorr) then
+
+            do k=1,LIS_rc%nperts
+               allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+               if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                  do i =1, LIS_rc%nstvars(k)
+                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                        pertdata1d_patch(t) =  &
+                             progpert(n,k)%progpert_ntrmdt(i,col,row,ensem)
+                     enddo
+
+                     call LIS_writevar_restart(ftn,n,1,pertdata1d_patch)
+                  enddo
+               endif
+
+               deallocate(pertdata1d_patch)
+               allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+               if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                  do i =1, NRANDSEED
+                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                        pertdata1d_patch_int(t) =  &
+                             progpert(n,k)%progpert_rseed(i,col,row,ensem)
+                     enddo
+
+                     call LIS_writevar_restart(ftn,n,1,pertdata1d_patch_int)
+                  enddo
+               endif
+
+               deallocate(pertdata1d_patch_int)
             enddo
-            deallocate(pertdata1d_int)
 
          else
-            if(LIS_masterproc) then 
-               k = 1
-               do i=1,LIS_rc%nforcepert               
-                  write(ftn) forcpert(n,k)%forcepert_ntrmdt(i,:,:,:)
-               enddo
-               
-               do i=1,NRANDSEED
-                  write(ftn) forcpert(n,k)%forcepert_rseed(i,:,:,:)
+            if(LIS_masterproc) then
+               do k=1,LIS_rc%nperts
+                  if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                     do i =1, LIS_rc%nstvars(k)
+                        write(ftn) &
+                             progpert(n,k)%progpert_ntrmdt(i,:,:,:)
+                     enddo
+
+                     do i =1, NRANDSEED
+                        write(ftn) &
+                             progpert(n,k)%progpert_rseed(i,:,:,:)
+                     enddo
+                  endif
                enddo
             endif
          endif
-      endif
 
-      if(.not. p_xyCorr) then 
+         if(.not. o_xyCorr) then
+            do k=1,LIS_rc%ndas
+               if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                  allocate(pertdata1d(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+                  do i=1, nobs(n,k)
+                     do t=1,LIS_rc%obs_ngrid(k)
+                        col = LIS_obs_domain(n,k)%col(t)
+                        row = LIS_obs_domain(n,k)%row(t)
+                        do kk=1,LIS_rc%nensem(n)
+                           pertdata1d(kk+(t-1)*LIS_rc%nensem(n)) =  &
+                                obspert(n,k)%obspert_ntrmdt(i,col,row,kk)
+                        enddo
+                     enddo
 
-         do k=1,LIS_rc%nperts
-            allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-
-            if(trim(LIS_rc%perturb_state(k)).ne."none") then 
-               do i =1, LIS_rc%nstvars(k)
-                  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-                     col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-                     row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-                     ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
-                     pertdata1d_patch(t) =  &
-                          progpert(n,k)%progpert_ntrmdt(i,col,row,ensem)
+                     call writevar_obspert_restart(ftn,n,k,pertdata1d)
                   enddo
-                  
-                  call LIS_writevar_restart(ftn,n,1,pertdata1d_patch)   
+                  deallocate(pertdata1d)
+
+                  allocate(pertdata1d_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+                  do i=1, NRANDSEED
+                     do t=1,LIS_rc%obs_ngrid(k)
+                        col = LIS_obs_domain(n,k)%col(t)
+                        row = LIS_obs_domain(n,k)%row(t)
+                        do kk=1,LIS_rc%nensem(n)
+                           pertdata1d_int(kk+(t-1)*LIS_rc%nensem(n)) =  &
+                                obspert(n,k)%obspert_rseed(i,col,row,kk)
+                        enddo
+                     enddo
+
+                     call writevar_obspert_restart_int(ftn,n,k,pertdata1d_int)
+                  enddo
+                  deallocate(pertdata1d_int)
+
+               endif
+            enddo
+         else
+            if(LIS_masterproc) then
+               do k=1,LIS_rc%ndas
+                  if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                     do i=1, nobs(n,k)
+                        write(ftn) obspert(n,k)%obspert_ntrmdt(i,:,:,:)
+                     enddo
+                     do i=1, NRANDSEED
+                        write(ftn) obspert(n,k)%obspert_rseed(i,:,:,:)
+                     enddo
+                  endif
                enddo
             endif
+         endif
+         if(LIS_masterproc) then
+            call LIS_releaseUnitNumber(ftn)
+            write(LIS_logunit,*) '[INFO] Done writing Perturbations restart ', &
+                 trim(filen)
+         endif
+      elseif(wformat.eq."distributed binary") then
 
-            deallocate(pertdata1d_patch)
-            allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+         call LIS_create_output_directory('DAPERT')
 
-            if(trim(LIS_rc%perturb_state(k)).ne."none") then 
-               do i =1, NRANDSEED
-                  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-                     col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-                     row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-                     ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
-                     pertdata1d_patch_int(t) =  &
-                          progpert(n,k)%progpert_rseed(i,col,row,ensem)
+         ftn = LIS_getNextUnitNumber()
+         call LIS_create_dapert_filename(n,filen)
+
+         write(temp1,'(i4.4)') LIS_localPet
+         read(temp1,fmt='(4a1)') fproc
+
+         filenp = trim(filen)//'.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
+
+         open(ftn,file=trim(filenp),form='unformatted')
+
+         if(LIS_rc%perturb_forcing .ne."none") then
+            if(.not. f_xyCorr) then
+               allocate(pertdata1d(LIS_rc%ntiles(n)))
+
+               k = 1
+               do i=1,LIS_rc%nforcepert
+
+                  do t=1,LIS_rc%ntiles(n)
+                     col = LIS_domain(n)%tile(t)%col
+                     row = LIS_domain(n)%tile(t)%row
+                     ensem = LIS_domain(n)%tile(t)%ensem
+                     pertdata1d(t) = forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem)
                   enddo
-                  
-                  call LIS_writevar_restart(ftn,n,1,pertdata1d_patch_int)   
+
+                  write(ftn) pertdata1d
                enddo
+
+               deallocate(pertdata1d)
+               allocate(pertdata1d_int(LIS_rc%ntiles(n)))
+
+               do i=1,NRANDSEED
+                  do t=1,LIS_rc%ntiles(n)
+                     col = LIS_domain(n)%tile(t)%col
+                     row = LIS_domain(n)%tile(t)%row
+                     ensem = LIS_domain(n)%tile(t)%ensem
+                     pertdata1d_int(t) = &
+                          forcpert(n,k)%forcepert_rseed(i,col,row,ensem)
+                  enddo
+                  write(ftn) pertdata1d_int
+               enddo
+               deallocate(pertdata1d_int)
+
+            else
+               k = 1
+               do i=1,LIS_rc%nforcepert
+                  write(ftn) forcpert(n,k)%forcepert_ntrmdt(i,:,:,:)
+               enddo
+
+               do i=1,NRANDSEED
+                  write(ftn) forcpert(n,k)%forcepert_rseed(i,:,:,:)
+               enddo
+
             endif
+         endif
+         if(.not. p_xyCorr) then
 
-            deallocate(pertdata1d_patch_int)
-         enddo
-
-      else
-         if(LIS_masterproc) then 
             do k=1,LIS_rc%nperts
-               if(trim(LIS_rc%perturb_state(k)).ne."none") then 
+               allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+               if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                  do i =1, LIS_rc%nstvars(k)
+                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                        pertdata1d_patch(t) =  &
+                             progpert(n,k)%progpert_ntrmdt(i,col,row,ensem)
+                     enddo
+
+                     write(ftn) pertdata1d_patch
+
+                  enddo
+               endif
+
+               deallocate(pertdata1d_patch)
+               allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+               if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                  do i =1, NRANDSEED
+                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                        pertdata1d_patch_int(t) =  &
+                             progpert(n,k)%progpert_rseed(i,col,row,ensem)
+                     enddo
+
+                     write(ftn) pertdata1d_patch_int
+                  enddo
+               endif
+
+               deallocate(pertdata1d_patch_int)
+            enddo
+
+         else
+            do k=1,LIS_rc%nperts
+               if(trim(LIS_rc%perturb_state(k)).ne."none") then
                   do i =1, LIS_rc%nstvars(k)
                      write(ftn) &
                           progpert(n,k)%progpert_ntrmdt(i,:,:,:)
@@ -1948,47 +2124,43 @@ module gmaopert_Mod
                endif
             enddo
          endif
-      endif
 
-      if(.not. o_xyCorr) then 
-         do k=1,LIS_rc%ndas
-            if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
-               allocate(pertdata1d(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
-               do i=1, nobs(n,k)
-                  do t=1,LIS_rc%obs_ngrid(k)
-                     col = LIS_obs_domain(n,k)%col(t)
-                     row = LIS_obs_domain(n,k)%row(t)
-                     do kk=1,LIS_rc%nensem(n)
-                        pertdata1d(kk+(t-1)*LIS_rc%nensem(n)) =  &
-                             obspert(n,k)%obspert_ntrmdt(i,col,row,kk)
-                     enddo
-                  enddo
-
-                  call writevar_obspert_restart(ftn,n,k,pertdata1d)   
-               enddo
-               deallocate(pertdata1d)
-
-               allocate(pertdata1d_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
-               do i=1, NRANDSEED
-                  do t=1,LIS_rc%obs_ngrid(k)
-                     col = LIS_obs_domain(n,k)%col(t)
-                     row = LIS_obs_domain(n,k)%row(t)
-                     do kk=1,LIS_rc%nensem(n)
-                        pertdata1d_int(kk+(t-1)*LIS_rc%nensem(n)) =  &
-                             obspert(n,k)%obspert_rseed(i,col,row,kk)
-                     enddo
-                  enddo
-
-                  call writevar_obspert_restart_int(ftn,n,k,pertdata1d_int)   
-               enddo
-               deallocate(pertdata1d_int)
-
-            endif
-         enddo
-      else
-         if(LIS_masterproc) then 
+         if(.not. o_xyCorr) then
             do k=1,LIS_rc%ndas
-               if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
+               if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                  allocate(pertdata1d(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+                  do i=1, nobs(n,k)
+                     do t=1,LIS_rc%obs_ngrid(k)
+                        col = LIS_obs_domain(n,k)%col(t)
+                        row = LIS_obs_domain(n,k)%row(t)
+                        do kk=1,LIS_rc%nensem(n)
+                           pertdata1d(kk+(t-1)*LIS_rc%nensem(n)) =  &
+                                obspert(n,k)%obspert_ntrmdt(i,col,row,kk)
+                        enddo
+                     enddo
+                     write(ftn) pertdata1d
+                  enddo
+                  deallocate(pertdata1d)
+
+                  allocate(pertdata1d_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+                  do i=1, NRANDSEED
+                     do t=1,LIS_rc%obs_ngrid(k)
+                        col = LIS_obs_domain(n,k)%col(t)
+                        row = LIS_obs_domain(n,k)%row(t)
+                        do kk=1,LIS_rc%nensem(n)
+                           pertdata1d_int(kk+(t-1)*LIS_rc%nensem(n)) =  &
+                                obspert(n,k)%obspert_rseed(i,col,row,kk)
+                        enddo
+                     enddo
+                     write(ftn) pertdata1d_int
+                  enddo
+                  deallocate(pertdata1d_int)
+
+               endif
+            enddo
+         else
+            do k=1,LIS_rc%ndas
+               if(trim(LIS_rc%perturb_obs(k)).ne."none") then
                   do i=1, nobs(n,k)
                      write(ftn) obspert(n,k)%obspert_ntrmdt(i,:,:,:)
                   enddo
@@ -1997,14 +2169,13 @@ module gmaopert_Mod
                   enddo
                endif
             enddo
+
          endif
-      endif
-      if(LIS_masterproc) then 
          call LIS_releaseUnitNumber(ftn)
          write(LIS_logunit,*) '[INFO] Done writing Perturbations restart ', &
-              trim(filen)
-      endif
+              trim(filenp)
 
+      endif
     end subroutine gmaopert_writerestart
 
 !BOP
@@ -2027,8 +2198,10 @@ module gmaopert_Mod
       integer                   :: yr,mo,da,hr,mn,ss, doy
       integer                   :: status
       character(len=LIS_CONST_PATH_LEN) :: filen
+      character*4               :: temp1
       real*8                    :: time
       real                      :: gmt
+      character*1               :: fproc(4)
       real, allocatable         :: pertdata1d(:)
       real, allocatable         :: pertdata1d_obs(:)
       real, allocatable         :: pertdata1d_patch(:)
@@ -2037,250 +2210,431 @@ module gmaopert_Mod
       integer, allocatable      :: pertdata1d_patch_int(:)
       real, allocatable         :: dummy_var(:,:,:)
       logical                   :: file_exists
+      character*20              :: wformat
 
-      do n = 1, LIS_rc%nnest
+      wformat = "distributed binary"
 
-         ftn = LIS_getNextUnitNumber()
+      if(wformat.eq."binary") then
+         do n = 1, LIS_rc%nnest
 
-         if(LIS_rc%runmode.eq."ensemble smoother") then 
-            if(LIS_rc%iterationid(n).gt.1) then 
-               if(LIS_rc%pertrestartInterval.eq.2592000) then
-                  call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
-                       dd=da,calendar=LIS_calendar,rc=status)
-                  hr = 0 
-                  mn = 0 
-                  ss = 0 
-                  call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
-               else
-                  call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
-                       dd=da,calendar=LIS_calendar,rc=status)
-                  hr = 0 
-                  mn = 0 
-                  ss = 0 
+            ftn = LIS_getNextUnitNumber()
+
+            if(LIS_rc%runmode.eq."ensemble smoother") then
+               if(LIS_rc%iterationid(n).gt.1) then
+                  if(LIS_rc%pertrestartInterval.eq.2592000) then
+                     call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                          dd=da,calendar=LIS_calendar,rc=status)
+                     hr = 0
+                     mn = 0
+                     ss = 0
+                     call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
+                  else
+                     call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                          dd=da,calendar=LIS_calendar,rc=status)
+                     hr = 0
+                     mn = 0
+                     ss = 0
+                  endif
+                  call LIS_create_dapert_filename(n,filen, yr, mo, da, hr, mn, ss)
+                  LIS_rc%pertRestartFile(n) = filen
                endif
-               call LIS_create_dapert_filename(n,filen, yr, mo, da, hr, mn, ss)
-               LIS_rc%pertRestartFile(n) = filen
             endif
-         endif
-         
-         inquire( file=trim(LIS_rc%pertRestartFile(n)), exist=file_exists ) 
-         if(file_exists .neqv. .true.) then
-            write(LIS_logunit,*) '[ERR] Reading perturbations restart file MISSING: ',&
-                  trim(LIS_rc%pertRestartFile(n))
-            call LIS_endrun()
-         endif
 
-         open(ftn,file=trim(LIS_rc%pertRestartFile(n)), form='unformatted')
-         write(LIS_logunit,*) '[INFO] Reading perturbations restart file ',&
-              trim(LIS_rc%pertRestartFile(n))
-         
-         if(LIS_rc%perturb_forcing .ne."none") then 
-            if(.not. f_xyCorr) then 
-               allocate(pertdata1d(LIS_rc%ntiles(n)))
-               
-               k = 1
-               do i=1,LIS_rc%nforcepert
-                  
-                  call LIS_readvar_restart(ftn,n,pertdata1d)
-                  
-                  do t=1,LIS_rc%ntiles(n)
-                     col = LIS_domain(n)%tile(t)%col
-                     row = LIS_domain(n)%tile(t)%row
-                     ensem = LIS_domain(n)%tile(t)%ensem
-                     forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem) = pertdata1d(t)
+            inquire( file=trim(LIS_rc%pertRestartFile(n)), exist=file_exists )
+            if(file_exists .neqv. .true.) then
+               write(LIS_logunit,*) '[ERR] Reading perturbations restart file MISSING: ',&
+                     trim(LIS_rc%pertRestartFile(n))
+               call LIS_endrun()
+            endif
+
+            open(ftn,file=trim(LIS_rc%pertRestartFile(n)), form='unformatted')
+            write(LIS_logunit,*) '[INFO] Reading perturbations restart file ',&
+                 trim(LIS_rc%pertRestartFile(n))
+
+            if(LIS_rc%perturb_forcing .ne."none") then
+               if(.not. f_xyCorr) then
+                  allocate(pertdata1d(LIS_rc%ntiles(n)))
+
+                  k = 1
+                  do i=1,LIS_rc%nforcepert
+
+                     call LIS_readvar_restart(ftn,n,pertdata1d)
+
+                     do t=1,LIS_rc%ntiles(n)
+                        col = LIS_domain(n)%tile(t)%col
+                        row = LIS_domain(n)%tile(t)%row
+                        ensem = LIS_domain(n)%tile(t)%ensem
+                        forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem) = pertdata1d(t)
+                     enddo
                   enddo
-               enddo
-               
-               deallocate(pertdata1d)
-               
-               allocate(pertdata1d_int(LIS_rc%ntiles(n)))
-               
-               do i=1,NRANDSEED
-                  
-                  call LIS_readvar_restart(ftn,n,pertdata1d_int)
-                  
-                  do t=1,LIS_rc%ntiles(n)
-                     col = LIS_domain(n)%tile(t)%col
-                     row = LIS_domain(n)%tile(t)%row
-                     ensem = LIS_domain(n)%tile(t)%ensem
-                     forcpert(n,k)%forcepert_rseed(i,col,row,ensem) = pertdata1d_int(t)
+
+                  deallocate(pertdata1d)
+
+                  allocate(pertdata1d_int(LIS_rc%ntiles(n)))
+
+                  do i=1,NRANDSEED
+
+                     call LIS_readvar_restart(ftn,n,pertdata1d_int)
+
+                     do t=1,LIS_rc%ntiles(n)
+                        col = LIS_domain(n)%tile(t)%col
+                        row = LIS_domain(n)%tile(t)%row
+                        ensem = LIS_domain(n)%tile(t)%ensem
+                        forcpert(n,k)%forcepert_rseed(i,col,row,ensem) = pertdata1d_int(t)
+                     enddo
                   enddo
+                  deallocate(pertdata1d_int)
+
+               else
+                  if(LIS_masterproc) then
+                     k = 1
+                     do i=1,LIS_rc%nforcepert
+                        read(ftn) forcpert(n,k)%forcepert_ntrmdt(i,:,:,:)
+                     enddo
+                     do i=1,NRANDSEED
+                        read(ftn) forcpert(n,k)%forcepert_rseed(i,:,:,:)
+                     enddo
+                  else
+! to keep the binary reading in sync when there is a mix of file reading that
+! happens only on one processor and across processors.
+                     allocate(dummy_var(&
+                          LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n)))
+                     do i =1, LIS_rc%nforcepert
+                        read(ftn) dummy_var
+                     enddo
+                     do i =1, NRANDSEED
+                        read(ftn) dummy_var
+                     enddo
+                     deallocate(dummy_var)
+                  endif
+
+               endif
+            endif
+            if(.not. p_xyCorr) then
+               do k=1, LIS_rc%nperts
+
+                  if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                     allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+                     do i =1, LIS_rc%nstvars(k)
+                        call LIS_readvar_restart(ftn,n,1,pertdata1d_patch)
+
+                        do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                           ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                           progpert(n,k)%progpert_ntrmdt(i,col,row,ensem) = &
+                                pertdata1d_patch(t)
+                        enddo
+
+                     enddo
+                     deallocate(pertdata1d_patch)
+
+                     allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+                     do i =1, NRANDSEED
+                        call LIS_readvar_restart(ftn,n,1,pertdata1d_patch_int)
+
+                        do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                           ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                           progpert(n,k)%progpert_rseed(i,col,row,ensem) = &
+                                pertdata1d_patch_int(t)
+                        enddo
+
+                     enddo
+                     deallocate(pertdata1d_patch_int)
+
+                  endif
                enddo
-               deallocate(pertdata1d_int)
-               
             else
                if(LIS_masterproc) then
-                  k = 1
-                  do i=1,LIS_rc%nforcepert                  
-                     read(ftn) forcpert(n,k)%forcepert_ntrmdt(i,:,:,:)
-                  enddo
-                  do i=1,NRANDSEED
-                     read(ftn) forcpert(n,k)%forcepert_rseed(i,:,:,:)
+                  do k=1, LIS_rc%nperts
+                     if(trim(LIS_rc%perturb_state(k)).ne."none") then
+
+                        do i =1, LIS_rc%nstvars(k)
+                           read(ftn) progPert(n,k)%progpert_ntrmdt(i,:,:,:)
+                        enddo
+                        do i =1, NRANDSEED
+                           read(ftn) progPert(n,k)%progpert_rseed(i,:,:,:)
+                        enddo
+                     endif
                   enddo
                else
 ! to keep the binary reading in sync when there is a mix of file reading that
-! happens only on one processor and across processors. 
+! happens only on one processor and across processors.
                   allocate(dummy_var(&
                        LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n)))
-                  do i =1, LIS_rc%nforcepert
-                     read(ftn) dummy_var
-                  enddo
-                  do i =1, NRANDSEED
-                     read(ftn) dummy_var
+                  do k=1, LIS_rc%nperts
+                     if(trim(LIS_rc%perturb_state(k)).ne."none") then 
+
+                        do i =1, LIS_rc%nstvars(k)
+                           read(ftn) dummy_var
+                        enddo
+                        do i =1, NRANDSEED
+                           read(ftn) dummy_var
+                        enddo
+                     endif
                   enddo
                   deallocate(dummy_var)
                endif
-               
             endif
-         endif
-         if(.not. p_xyCorr) then 
-            do k=1, LIS_rc%nperts
 
-               if(trim(LIS_rc%perturb_state(k)).ne."none") then 
-                  allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-                  
-                  do i =1, LIS_rc%nstvars(k)                  
-                     call LIS_readvar_restart(ftn,n,1,pertdata1d_patch)   
-                     
-                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
-                        progpert(n,k)%progpert_ntrmdt(i,col,row,ensem) = &
-                             pertdata1d_patch(t) 
-                     enddo
-                     
-                  enddo
-                  deallocate(pertdata1d_patch)
-                  
-                  allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
-
-                  do i =1, NRANDSEED
-                     call LIS_readvar_restart(ftn,n,1,pertdata1d_patch_int)   
-                     
-                     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-                        col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-                        row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-                        ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
-                        progpert(n,k)%progpert_rseed(i,col,row,ensem) = &
-                             pertdata1d_patch_int(t) 
-                     enddo
-                     
-                  enddo
-                  deallocate(pertdata1d_patch_int)
-
-               endif
-            enddo
-         else
-            if(LIS_masterproc) then 
-               do k=1, LIS_rc%nperts
-                  if(trim(LIS_rc%perturb_state(k)).ne."none") then 
-                  
-                     do i =1, LIS_rc%nstvars(k)                  
-                        read(ftn) progPert(n,k)%progpert_ntrmdt(i,:,:,:)
-                     enddo
-                     do i =1, NRANDSEED
-                        read(ftn) progPert(n,k)%progpert_rseed(i,:,:,:)
-                     enddo
-                  endif
-               enddo
-            else
-! to keep the binary reading in sync when there is a mix of file reading that
-! happens only on one processor and across processors. 
-               allocate(dummy_var(&
-                    LIS_rc%gnc(n),LIS_rc%gnr(n),LIS_rc%nensem(n)))
-               do k=1, LIS_rc%nperts
-                  if(trim(LIS_rc%perturb_state(k)).ne."none") then 
-                     
-                     do i =1, LIS_rc%nstvars(k)                  
-                        read(ftn) dummy_var
-                     enddo
-                     do i =1, NRANDSEED
-                        read(ftn) dummy_var
-                     enddo
-                  endif
-               enddo
-               deallocate(dummy_var)
-            endif
-         endif   
-
-         if(.not. o_xyCorr) then       
-            do k=1, LIS_rc%ndas
-
-               if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
-                  allocate(pertdata1d_obs(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
-
-                  do i=1, nobs(n,k)
-                     call readvar_obspert_restart(ftn,n,k,pertdata1d_obs)   
-
-                     do t=1,LIS_rc%obs_ngrid(k)
-                        col = LIS_obs_domain(n,k)%col(t)
-                        row = LIS_obs_domain(n,k)%row(t)
-                        do kk=1,LIS_rc%nensem(n)
-                           obspert(n,k)%obspert_ntrmdt(i,col,row,kk) = & 
-                                pertdata1d_obs(kk+(t-1)*LIS_rc%nensem(n))
-                               
-                        enddo
-                     enddo
-                  enddo
-                  deallocate(pertdata1d_obs)
-                  
-                  allocate(pertdata1d_obs_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
-                  
-
-                  do i=1, NRANDSEED
-                     call readvar_obspert_restart_int(ftn,n,k,pertdata1d_obs_int)   
-
-                     do t=1,LIS_rc%obs_ngrid(k)
-                        col = LIS_obs_domain(n,k)%col(t)
-                        row = LIS_obs_domain(n,k)%row(t)
-                        do kk=1,LIS_rc%nensem(n)
-                           obspert(n,k)%obspert_rseed(i,col,row,kk) = & 
-                                pertdata1d_obs_int(kk+(t-1)*LIS_rc%nensem(n))
-                               
-                        enddo
-                     enddo
-                  enddo
-               endif
-               deallocate(pertdata1d_obs_int)
-
-            enddo
-         else
-            if(LIS_masterproc) then 
+            if(.not. o_xyCorr) then
                do k=1, LIS_rc%ndas
-                  if(trim(LIS_rc%perturb_obs(k)).ne."none") then 
+
+                  if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                     allocate(pertdata1d_obs(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+
                      do i=1, nobs(n,k)
-                        read(ftn) obsPert(n,k)%obspert_ntrmdt(i,:,:,:)
+                        call readvar_obspert_restart(ftn,n,k,pertdata1d_obs)
+
+                        do t=1,LIS_rc%obs_ngrid(k)
+                           col = LIS_obs_domain(n,k)%col(t)
+                           row = LIS_obs_domain(n,k)%row(t)
+                           do kk=1,LIS_rc%nensem(n)
+                              obspert(n,k)%obspert_ntrmdt(i,col,row,kk) = &
+                                   pertdata1d_obs(kk+(t-1)*LIS_rc%nensem(n))
+
+                           enddo
+                        enddo
                      enddo
+                     deallocate(pertdata1d_obs)
+
+                     allocate(pertdata1d_obs_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+
+
                      do i=1, NRANDSEED
-                        read(ftn) obsPert(n,k)%obspert_rseed(i,:,:,:)
-                     enddo
-                  end if
-               enddo
-            else
-               do k=1, LIS_rc%nperts
-                  allocate(dummy_var(&
-                       LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k),LIS_rc%nensem(n)))
-                  if(trim(LIS_rc%perturb_obs(k)).ne."none") then  
-                     do i =1, nobs(n,k)
-                        read(ftn) dummy_var
-                     enddo
-                     do i =1, NRANDSEED
-                        read(ftn) dummy_var
+                        call readvar_obspert_restart_int(ftn,n,k,pertdata1d_obs_int)
+
+                        do t=1,LIS_rc%obs_ngrid(k)
+                           col = LIS_obs_domain(n,k)%col(t)
+                           row = LIS_obs_domain(n,k)%row(t)
+                           do kk=1,LIS_rc%nensem(n)
+                              obspert(n,k)%obspert_rseed(i,col,row,kk) = &
+                                   pertdata1d_obs_int(kk+(t-1)*LIS_rc%nensem(n))
+
+                           enddo
+                        enddo
                      enddo
                   endif
-                  deallocate(dummy_var)
+                  deallocate(pertdata1d_obs_int)
 
                enddo
+            else
+               if(LIS_masterproc) then
+                  do k=1, LIS_rc%ndas
+                     if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                        do i=1, nobs(n,k)
+                           read(ftn) obsPert(n,k)%obspert_ntrmdt(i,:,:,:)
+                        enddo
+                        do i=1, NRANDSEED
+                           read(ftn) obsPert(n,k)%obspert_rseed(i,:,:,:)
+                        enddo
+                     end if
+                  enddo
+               else
+                  do k=1, LIS_rc%nperts
+                     allocate(dummy_var(&
+                          LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k),LIS_rc%nensem(n)))
+                     if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                        do i =1, nobs(n,k)
+                           read(ftn) dummy_var
+                        enddo
+                        do i =1, NRANDSEED
+                           read(ftn) dummy_var
+                        enddo
+                     endif
+                     deallocate(dummy_var)
+
+                  enddo
+
+               endif
+            endif
+
+            call LIS_releaseUnitNumber(ftn)
+            write(LIS_logunit,*) '[INFO] Finished reading perturbations restart file ',&
+                 trim(LIS_rc%pertRestartFile(n))
+
+         enddo
+      elseif(wformat.eq."distributed binary") then
+         do n = 1, LIS_rc%nnest
+
+            ftn = LIS_getNextUnitNumber()
+
+            if(LIS_rc%runmode.eq."ensemble smoother") then
+               if(LIS_rc%iterationid(n).gt.1) then
+                  if(LIS_rc%pertrestartInterval.eq.2592000) then
+                     call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                          dd=da,calendar=LIS_calendar,rc=status)
+                     hr = 0
+                     mn = 0
+                     ss = 0
+                     call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,(-1)*LIS_rc%ts)
+                  else
+                     call ESMF_TimeGet(LIS_twStartTime,yy=yr,mm=mo,&
+                          dd=da,calendar=LIS_calendar,rc=status)
+                     hr = 0
+                     mn = 0
+                     ss = 0
+                  endif
+                  call LIS_create_dapert_filename(n,filen, yr, mo, da, hr, mn, ss)
+                  LIS_rc%pertRestartFile(n) = filen
+               endif
+            endif
+
+            write(temp1,'(i4.4)') LIS_localPet
+            read(temp1,fmt='(4a1)') fproc
+
+            open(ftn,file=trim(LIS_rc%pertRestartFile(n))//&
+                 '.'//fproc(1)//fproc(2)//fproc(3)//fproc(4), form='unformatted')
+            write(LIS_logunit,*) '[INFO] Reading perturbations restart file ',&
+                 trim(LIS_rc%pertRestartFile(n))
+
+            if(LIS_rc%perturb_forcing .ne."none") then
+               if(.not. f_xyCorr) then
+                  allocate(pertdata1d(LIS_rc%ntiles(n)))
+
+                  k = 1
+                  do i=1,LIS_rc%nforcepert
+
+                     read(ftn) pertdata1d
+
+                     do t=1,LIS_rc%ntiles(n)
+                        col = LIS_domain(n)%tile(t)%col
+                        row = LIS_domain(n)%tile(t)%row
+                        ensem = LIS_domain(n)%tile(t)%ensem
+                        forcpert(n,k)%forcepert_ntrmdt(i,col,row,ensem) = pertdata1d(t)
+                     enddo
+                  enddo
+
+                  deallocate(pertdata1d)
+
+                  allocate(pertdata1d_int(LIS_rc%ntiles(n)))
+
+                  do i=1,NRANDSEED
+
+                     read(ftn) pertdata1d_int
+
+                     do t=1,LIS_rc%ntiles(n)
+                        col = LIS_domain(n)%tile(t)%col
+                        row = LIS_domain(n)%tile(t)%row
+                        ensem = LIS_domain(n)%tile(t)%ensem
+                        forcpert(n,k)%forcepert_rseed(i,col,row,ensem) = pertdata1d_int(t)
+                     enddo
+                  enddo
+                  deallocate(pertdata1d_int)
+
+               else
+                  print*, 'Restart read with horizontal correlations not supported '
+                  print*, 'for distributed binary writing format '
+                  call LIS_endrun()
+
+               endif
+            endif
+            if(.not. p_xyCorr) then
+               do k=1, LIS_rc%nperts
+
+                  if(trim(LIS_rc%perturb_state(k)).ne."none") then
+                     allocate(pertdata1d_patch(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+                     do i =1, LIS_rc%nstvars(k)
+
+                        read(ftn) pertdata1d_patch
+
+                        do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                           ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                           progpert(n,k)%progpert_ntrmdt(i,col,row,ensem) = &
+                                pertdata1d_patch(t)
+                        enddo
+
+                     enddo
+                     deallocate(pertdata1d_patch)
+
+                     allocate(pertdata1d_patch_int(LIS_rc%npatch(n,LIS_rc%lsm_index)))
+
+                     do i =1, NRANDSEED
+
+                        read(ftn) pertdata1d_patch_int
+
+                        do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+                           col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+                           row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+                           ensem = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%ensem
+                           progpert(n,k)%progpert_rseed(i,col,row,ensem) = &
+                                pertdata1d_patch_int(t)
+                        enddo
+
+                     enddo
+                     deallocate(pertdata1d_patch_int)
+
+                  endif
+               enddo
+            else
+               print*, 'Restart read with horizontal correlations not supported '
+               print*, 'for distributed binary writing format '
+               call LIS_endrun()
 
             endif
-         endif
-         
-         call LIS_releaseUnitNumber(ftn)
-         write(LIS_logunit,*) '[INFO] Finished reading perturbations restart file ',&
-              trim(LIS_rc%pertRestartFile(n))
 
-      enddo
+            if(.not. o_xyCorr) then
+               do k=1, LIS_rc%ndas
+
+                  if(trim(LIS_rc%perturb_obs(k)).ne."none") then
+                     allocate(pertdata1d_obs(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+
+                     do i=1, nobs(n,k)
+                        read(ftn) pertdata1d_obs
+
+                        do t=1,LIS_rc%obs_ngrid(k)
+                           col = LIS_obs_domain(n,k)%col(t)
+                           row = LIS_obs_domain(n,k)%row(t)
+                           do kk=1,LIS_rc%nensem(n)
+                              obspert(n,k)%obspert_ntrmdt(i,col,row,kk) = &
+                                   pertdata1d_obs(kk+(t-1)*LIS_rc%nensem(n))
+
+                           enddo
+                        enddo
+                     enddo
+                     deallocate(pertdata1d_obs)
+
+                     allocate(pertdata1d_obs_int(LIS_rc%obs_ngrid(k)*LIS_rc%nensem(n)))
+
+
+                     do i=1, NRANDSEED
+                        read(ftn) pertdata1d_obs_int
+
+                        do t=1,LIS_rc%obs_ngrid(k)
+                           col = LIS_obs_domain(n,k)%col(t)
+                           row = LIS_obs_domain(n,k)%row(t)
+                           do kk=1,LIS_rc%nensem(n)
+                              obspert(n,k)%obspert_rseed(i,col,row,kk) = &
+                                   pertdata1d_obs_int(kk+(t-1)*LIS_rc%nensem(n))
+
+                           enddo
+                        enddo
+                     enddo
+                  endif
+                  deallocate(pertdata1d_obs_int)
+
+               enddo
+            else
+               print*, 'Restart read with horizontal correlations not supported '
+               print*, 'for distributed binary writing format '
+               call LIS_endrun()
+            endif
+
+            call LIS_releaseUnitNumber(ftn)
+            write(LIS_logunit,*) '[INFO] Finished reading perturbations restart file ',&
+                 trim(LIS_rc%pertRestartFile(n))
+
+         enddo
+
+      endif
+
     end subroutine gmaopert_readrestart
 
 !BOP
