@@ -7993,7 +7993,7 @@ of how to specify a time interval.
 `Noah-MP.4.0.1 restart file:` specifies the Noah-MP-4.0.1 LSM restart file.
  
 `Noah-MP.4.0.1 restart file format:` specifies the Noah-MP-4.0.1 restart
-file format (default = netcdf).
+file format.  Acceptable values are: "`binary`", "`netcdf`", or "`distributed binary`".
  
 `Noah-MP.4.0.1 soil parameter table:` specifies the filename of the
 Noah-MP-4.0.1 soil parameter table.
