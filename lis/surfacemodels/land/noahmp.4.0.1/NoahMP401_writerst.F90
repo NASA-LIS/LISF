@@ -56,7 +56,7 @@ subroutine NoahMP401_writerst(n)
 !EOP
 
     character(len=LIS_CONST_PATH_LEN) :: filen,filenp
-    character*100 :: temp1
+    character*4   :: temp1
     character*1   :: fproc(4)
     character*20  :: wformat
     logical       :: alarmCheck
