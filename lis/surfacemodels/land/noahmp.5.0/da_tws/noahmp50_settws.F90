@@ -253,7 +253,7 @@ subroutine noahmp50_settws(n, LSM_State)
      delta1 = soilm1(t)-NoahMP50_struc(n)%noahmp50(t)%smc(1)
 
      if(NoahMP50_struc(n)%noahmp50(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
-          MIN_THRESHOLD_struc(n)%noahmp50(t)%sh2o(1)+delta1.lt.&
+          NoahMP50_struc(n)%noahmp50(t)%sh2o(1)+delta1.lt.&
           sm_threshold) then
         update_flag(gid) = update_flag(gid).and.(.true.)
      else
