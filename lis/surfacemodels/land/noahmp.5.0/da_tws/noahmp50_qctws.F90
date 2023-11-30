@@ -56,17 +56,16 @@ subroutine noahmp50_qctws(n, LSM_State)
   type(ESMF_Field)       :: sm4Field
 
 !Wanshu
-  type(ESMF_Field)       :: gwField, sweField, snodField
+  type(ESMF_Field)       :: gwField, sweField
   real, pointer          :: gws(:)
   real                   :: gwsmax, gwsmin
   real                   :: MIN_THRESHOLD,MAX_threshold,sm_threshold
   integer                :: SOILTYP
 
   real, pointer          :: swe(:)
-  real, pointer          :: snod(:)
 
-  real                   :: swemax,snodmax
-  real                   :: swemin,snodmin
+  real                   :: swemax
+  real                   :: swemin
 
   real                   :: sndens
   logical                :: update_flag(LIS_rc%ngrid(n))  

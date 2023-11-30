@@ -47,7 +47,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   type(ESMF_Field)       :: sm4Field
   type(ESMF_Field)       :: gwField
   type(ESMF_Field)       :: sweField
-  type(ESMF_Field)       :: snodField
   integer                :: t
   integer                :: status
   real, pointer          :: soilm1(:)
@@ -56,7 +55,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   real, pointer          :: soilm4(:)
   real, pointer          :: gws(:)
   real, pointer          :: swe(:)
-  real, pointer          :: snod(:)
   character*100          :: lsm_state_objs(4)
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)

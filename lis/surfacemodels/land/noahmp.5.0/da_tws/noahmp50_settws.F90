@@ -52,7 +52,6 @@ subroutine noahmp50_settws(n, LSM_State)
   type(ESMF_Field)       :: sm4Field
   type(ESMF_Field)       :: gwField
   type(ESMF_Field)       :: sweField
-  type(ESMF_Field)       :: snodField
 
   real, pointer          :: soilm1(:)
   real, pointer          :: soilm2(:)
@@ -60,7 +59,6 @@ subroutine noahmp50_settws(n, LSM_State)
   real, pointer          :: soilm4(:)
   real, pointer          :: gws(:)
   real, pointer          :: swe(:)
-  real, pointer          :: snod(:)
 
   real                   :: delta
   logical                :: diffCheck(LIS_rc%ngrid(n))

@@ -46,7 +46,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   type(ESMF_Field)       :: sm3IncrField
   type(ESMF_Field)       :: sm4IncrField
   type(ESMF_Field)       :: sweField, sweIncrField
-  type(ESMF_Field)       :: snodField, snodIncrField
 
   !Wanshu
   type(ESMF_Field)     :: gwField
@@ -63,16 +62,12 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   real, pointer          :: soilmIncr3(:)
   real, pointer          :: soilmIncr4(:)
   real, pointer          :: swe(:), sweincr(:)
-  real, pointer          :: snod(:), snodincr(:)
   integer                :: t,i,m,gid
   integer                :: status
-  real                   :: swetmp, snodtmp,sndens
+  real                   :: swetmp, sndens
   logical                :: update_flag(LIS_rc%ngrid(n))
   real                   :: perc_violation(LIS_rc%ngrid(n))
 
-  real                   :: snodmean(LIS_rc%ngrid(n))
-  integer                :: nsnodmean(LIS_rc%ngrid(n))
-  
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
