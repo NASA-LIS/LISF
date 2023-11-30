@@ -81,7 +81,8 @@ subroutine NoahMP50_main(n)
 
     ! check NoahMP50 alarm. If alarm is ring, run model.
 
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP50 model alarm")
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP50 model alarm "//trim(fnest))
 
     if (alarmCheck) Then
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -1143,7 +1144,6 @@ subroutine NoahMP50_main(n)
 
     ! EMK...See if noahmp50_struc(n)%noahmp50(t)%tair_agl_min needs to be 
     ! reset for calculating RHMin.  
-    write(fnest,'(i3.3)') n
     alarmCheck = LIS_isAlarmRinging(LIS_rc, &
          "NoahMP50 RHMin alarm "//trim(fnest))
     if (alarmCheck) then

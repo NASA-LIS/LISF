@@ -368,23 +368,23 @@ contains
 
             call LIS_update_timestep(LIS_rc, n, Noahmp50_struc(n)%ts)
 
-            call LIS_registerAlarm("NoahMP50 model alarm",&
+            write(fnest,'(i3.3)') n
+            call LIS_registerAlarm("NoahMP50 model alarm "//trim(fnest),&
                                    Noahmp50_struc(n)%ts, &
                                    Noahmp50_struc(n)%ts)
 
             ! CH2023: add soil timestep that is allowed to be different from main timestep
-            call LIS_registerAlarm("NoahMP50 model alarm",&
+            call LIS_registerAlarm("NoahMP50 model alarm "//trim(fnest),&
                                    Noahmp50_struc(n)%ts, &
                                    Noahmp50_struc(n)%ts_soil)
 
-            call LIS_registerAlarm("NoahMP50 restart alarm", &
+            call LIS_registerAlarm("NoahMP50 restart alarm "//trim(fnest),& 
                                    Noahmp50_struc(n)%ts,&
                                    Noahmp50_struc(n)%rstInterval)
 
             ! EMK Add alarm to reset tair_agl_min for RHMin.  This should 
             ! match the output interval, since that is used for calculating 
             ! Tair_F_min.            
-            write(fnest,'(i3.3)') n
             call LIS_registerAlarm("NoahMP50 RHMin alarm "//trim(fnest),&
                  Noahmp50_struc(n)%ts,&
                  LIS_sfmodel_struc(n)%outInterval)
