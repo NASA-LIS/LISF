@@ -17,26 +17,26 @@ Temporal interpolation method (met forcing):  "linear"
 
 #Runtime options
 Forcing variables list file:               ./input/forcing_variables.txt
-Output forcing:                            0   #1-yes
+Output forcing:                            1   #1-yes
 Output parameters:                         0   #0- no 
 Output methodology:                        "2d gridspace"
 Output model restart files:                1
 Output data format:                        "netcdf"
 Output naming style:                       "3 level hierarchy"
-Start mode:                                coldstart
-Starting year:                             2010
+Start mode:                                coldstart #coldstart, restart
+Starting year:                             2013
 Starting month:                            1
 Starting day:                              1   # 30
 Starting hour:                             0
 Starting minute:                           0
 Starting second:                           0
-Ending year:                               2010
+Ending year:                               2013
 Ending month:                              1
-Ending day:                                5
+Ending day:                                30
 Ending hour:                               0
 Ending minute:                             0
 Ending second:                             0
-Undefined value:                          -9999
+Undefined value:                          -99999
 Output directory:                         './OUTPUT'
 Diagnostic output file:                   './logfiles/lislog'
 Number of ensembles per tile:              1
@@ -165,8 +165,8 @@ NLDAS2 use model based pressure:        0
 #-----------------------LAND SURFACE MODELS--------------------------
 NoahMP.5.0 model timestep:                30mn
 NoahMP.5.0 soil timestep:                 30mn
-NoahMP.5.0 restart output interval:       6hr
-NoahMP.5.0 restart file:                  none
+NoahMP.5.0 restart output interval:       1da
+NoahMP.5.0 restart file:                  none #./OUTPUT/SURFACEMODEL/201001/LIS_RST_NOAHMPnew_201001100000.d01.nc
 NoahMP.5.0 restart file format:           netcdf
 NoahMP.5.0 parameter table:               ./input/NoahmpTable.TBL
 NoahMP.5.0 number of soil layers:         4
@@ -181,7 +181,7 @@ NoahMP.5.0 surface layer drag coefficient option:          1  # 1=M-O; 2=Chen97
 NoahMP.5.0 supercooled liquid water option:                1  # 1=NY06; 2=Koren99
 NoahMP.5.0 frozen soil permeability option:                1  # 1=NY06; 2=Koren99
 NoahMP.5.0 canopy radiative transfer option:               3  # 1=gap=F(3D;cosz); 2=gap=0; 3=gap=1-Fveg
-NoahMP.5.0 snow surface albedo option:                     2  # 1=BATS; 2=CLASS
+NoahMP.5.0 snow surface albedo option:                     1  # 1=BATS; 2=CLASS
 NoahMP.5.0 rain-snow partition option:                     1  # 1=Jordan91; 2=BATS; 3=Noah; 4=WRF couple; 5=Wet-Bulb
 NoahMP.5.0 snow thermal conductivity option:               1  # 1=Yen1965; 2=Anderson1976; 3=constant; 4=Verseghy1991; 5=Yen1981
 NoahMP.5.0 lower boundary of soil temperature option:      1  # 1=zero-flux; 2=Noah
@@ -196,11 +196,11 @@ NoahMP.5.0 irrigation method option:                       0  # 0=method based o
 NoahMP.5.0 tile drainage option:                           0  # 0=No tile drainage; 1=Simple drainage; 2=Hooghoudt's scheme
 NoahMP.5.0 urban physics option:                           0  # 0=No; 1=Single-layer; 2=Multi-layer BEP scheme; 3=Multi-layer BEM scheme
 NoahMP.5.0 reference height of temperature and humidity:  10.0
-NoahMP.5.0 initial surface skin temperature:              273.7
+NoahMP.5.0 initial surface skin temperature:              273.15
 NoahMP.5.0 initial snow water equivalent:                 0.0
 NoahMP.5.0 initial snow depth:                            0.0
 NoahMP.5.0 initial total canopy surface water:            0.0
-NoahMP.5.0 initial soil temperatures:                     290.0  290.0  290.0  290.0
+NoahMP.5.0 initial soil temperatures:                     280.0  280.0  280.0  280.0
 #NoahMP.5.0 initial soil temperatures:                    274.0  274.0  274.0  274.0 #TML: start with low soil temp to permit snow DA
 NoahMP.5.0 initial total soil moistures:                  0.20  0.20  0.20  0.20
 NoahMP.5.0 initial leaf area index:                       0.5
