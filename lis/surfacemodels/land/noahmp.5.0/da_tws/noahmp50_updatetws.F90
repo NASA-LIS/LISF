@@ -93,8 +93,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
  
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status)
 
 
   call ESMF_StateGet(LSM_Incr_State,"Soil Moisture Layer 1",sm1IncrField,rc=status)
@@ -114,8 +112,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   call LIS_verify(status,&
        "ESMF_StateSet: Groundwater Storage failed in noahmp50_updatetws")
   call ESMF_StateGet(LSM_Incr_State,"SWE",sweIncrField,rc=status)
-  call LIS_verify(status)
-  call ESMF_StateGet(LSM_Incr_State,"Snowdepth",snodIncrField,rc=status)
   call LIS_verify(status)
 
 
@@ -137,8 +133,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
        "ESMF_FieldGet: Groundwater Storage failed in noahmp50_updatetws")
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status)
 
 
   call ESMF_FieldGet(sm1IncrField,localDE=0,farrayPtr=soilmIncr1,rc=status)
@@ -158,8 +152,6 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
        "ESMF_StateSet: Groundwater Storage failed in noahmp50_updatetws")
   call ESMF_FieldGet(sweIncrField,localDE=0,farrayPtr=sweincr,rc=status)
   call LIS_verify(status)
-  call ESMF_FieldGet(snodIncrField,localDE=0,farrayPtr=snodincr,rc=status)
-  call LIS_verify(status)
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -169,94 +161,7 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
      soilm3(t) = soilm3(t) + soilmIncr3(t)
      soilm4(t) = soilm4(t) + soilmIncr4(t)
      gws(t)    = gws(t)    + gwsIncr(t)
-  enddo
-
-  
-  update_flag    = .true.
-  perc_violation = 0.0
-  snodmean       = 0.0
-  nsnodmean      = 0
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)     
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     swetmp = swe(t) + sweincr(t)
-     snodtmp = snod(t) + snodincr(t)
-
-     if((snodtmp.lt.0 .or. swetmp.lt.0)) then
-        update_flag(gid) = .false.
-        perc_violation(gid) = perc_violation(gid) +1
-     endif
-
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     perc_violation(gid) = perc_violation(gid) / real(LIS_rc%nensem(n))
-  enddo
-
-! For ensembles that are unphysical, compute the ensemble average after excluding them. This
-! is done only if the majority of the ensemble members are good (>80%)
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     if(.not.update_flag(gid)) then         ! false
-        if(perc_violation(gid).lt.0.2) then
-           if(snod(t)+snodincr(t).ge.0) then
-              snodmean(gid) = snodmean(gid) + snod(t)+snodincr(t)
-              nsnodmean(gid) = nsnodmean(gid) + 1
-           else
-             snodmean(gid) = 0.0
-           endif
-        endif
-     endif
-  enddo
-
-  do gid=1,LIS_rc%ngrid(n)
-     if(nsnodmean(gid).gt.0) then
-        snodmean(gid) = snodmean(gid) / real(nsnodmean(gid))
-     endif
-  enddo
-
-! If the update is unphysical, simply set to the average of
-! the good ensemble members. If all else fails, do not update.
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-
-     snodtmp = snod(t) + snodincr(t)
-     swetmp  = swe(t) + sweincr(t)
-
-!Use the model's snow density from the previous timestep
-     sndens = 0.0
-     if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-       sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/NoahMP50_struc(n)%noahmp50(t)%snowh
-     endif
-
-     if(update_flag(gid)) then
-        snod(t) = snodtmp
-        swe(t) = swetmp
-     elseif(perc_violation(gid).lt.0.2) then
-       if(snodtmp.lt.0.0) then  ! average of the good ensemble members
-          snod(t) = snodmean(gid)
-          swe(t) =  snodmean(gid)*sndens
-       else
-          snod(t) = snodtmp
-          swe(t) = swetmp
-       endif
-     else            ! do not update
-       snod(t) = NoahMP50_struc(n)%noahmp50(t)%snowh
-       swe(t)  = NoahMP50_struc(n)%noahmp50(t)%sneqv
-     end if
-     
+     swe(t)    = swe(t)    + sweIncr(t)
   enddo
 
 end subroutine noahmp50_updatetws

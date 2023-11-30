@@ -71,8 +71,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   call LIS_verify(status,'ESMF_StateGet failed for gw in noahmp50_gettws')
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for SWE in noahmp50_gettws')
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for Snowdepth in noahmp50_gettws')
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sm1 in noahmp50_gettws')
@@ -86,8 +84,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmp50_gettws')
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for SWE in noahmp50_gettws')
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for Snowdepth in noahmp50_gettws')
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index) !to mm
@@ -97,7 +93,6 @@ subroutine noahmp50_gettws(n, LSM_State)
      soilm4(t) = NoahMP50_struc(n)%noahmp50(t)%smc(4)
      gws(t)    = NoahMP50_struc(n)%noahmp50(t)%wa
      swe(t)    = NoahMP50_struc(n)%noahmp50(t)%sneqv
-     snod(t)   = NoahMP50_struc(n)%noahmp50(t)%snowh
   enddo
 
 end subroutine noahmp50_gettws

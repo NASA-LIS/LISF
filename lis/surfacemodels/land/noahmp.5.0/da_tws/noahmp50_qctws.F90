@@ -121,21 +121,13 @@ subroutine noahmp50_qctws(n, LSM_State)
 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status)
 
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
-  call LIS_verify(status)
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
   call LIS_verify(status)
 
   call ESMF_AttributeGet(sweField,"Max Value",swemax,rc=status)
   call LIS_verify(status)
   call ESMF_AttributeGet(sweField,"Min Value",swemin,rc=status)
-  call LIS_verify(status)
-  call ESMF_AttributeGet(snodField,"Max Value",snodmax,rc=status)
-  call LIS_verify(status)
-  call ESMF_AttributeGet(snodField,"Min Value",snodmin,rc=status)
   call LIS_verify(status)
   
   !-------
@@ -184,50 +176,12 @@ subroutine noahmp50_qctws(n, LSM_State)
      if(gws(t).lt.gwsmin) then
         gws(t) = gwsmin
      endif
+
+     if(swe(t).lt.swemin) then
+        swe(t) = swemin
+     endif
+
      !------
   enddo
 
-
-    update_flag    = .true.
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     if((snod(t).lt.snodmin) .or. swe(t).lt.swemin) then
-        update_flag(gid) = .false.
-     endif
-
-  enddo
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-!Use the model's snow density from the previous timestep
-     sndens = 0.0
-     if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
-       sndens = NoahMP50_struc(n)%noahmp50(t)%sneqv/NoahMP50_struc(n)%noahmp50(t)%snowh
-     endif
-
-!If the update is unphysical, do not update.
-     if(update_flag(gid)) then
-        snod(t) = snod(t)
-        swe(t)  = snod(t)*sndens
-     else ! do not update
-        snod(t) = NoahMP50_struc(n)%noahmp50(t)%snowh
-        swe(t)  = NoahMP50_struc(n)%noahmp50(t)%sneqv
-     end if
-
-     if(swe(t).gt.swemax) then
-        swe(t) = swemax
-     endif
-     if(snod(t).gt.snodmax) then
-        snod(t) = snodmax
-     endif
-
-  end do
-  
 end subroutine noahmp50_qctws

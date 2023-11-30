@@ -21,6 +21,7 @@ subroutine noahmp50_settws(n, LSM_State)
 ! !USES:
   use ESMF
   use LIS_coreMod
+  use LIS_constantsMod
   use LIS_logMod
   use NoahMP50_lsmMod
 
@@ -65,11 +66,14 @@ subroutine noahmp50_settws(n, LSM_State)
   logical                :: diffCheck(LIS_rc%ngrid(n))
   logical                :: ensCheck(LIS_rc%ngrid(n))
   logical                :: largeSM(LIS_rc%ngrid(n))
-  integer                :: i, c,r,t,m
+  real                   :: snodens(LIS_rc%npatch(n,LIS_rc%lsm_index))
+  integer                :: i, c,r,t,m,gid
   integer                :: SOILTYP           ! soil type index [-]
   real                   :: sh2o_tmp, sh2o_rnd 
-  real                   :: dsneqv,dsnowh,swe_old, snowh_old
+  real                   :: dsneqv,dsnowh,snowh_new
+  real                   :: TWS1, TWS2, TWSd,delta1
   integer                :: status
+  logical                :: update_flag(LIS_rc%ngrid(n))
   logical                :: rc1,rc2,rc3,rc4,rc5
   
   
@@ -91,9 +95,6 @@ subroutine noahmp50_settws(n, LSM_State)
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: SWE failed in noahmp50_settws")
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Snowdepth failed in noahmp50_settws")
 
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
@@ -114,9 +115,6 @@ subroutine noahmp50_settws(n, LSM_State)
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet: SWE failed in noahmp50_settws")
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Snowdepth failed in noahmp50_settws")
 
 
   ensCheck = .true.
@@ -138,6 +136,14 @@ subroutine noahmp50_settws(n, LSM_State)
         NoahMP50_struc(n)%noahmp50(t)%smc(1).gt.0.50) then 
         largeSM(i) = .true.
      endif
+
+     if(NoahMP50_struc(n)%noahmp50(t)%snowh.gt.0) then
+        snodens(t) = NoahMP50_struc(n)%noahmp50(t)%sneqv/&
+             NoahMP50_struc(n)%noahmp50(t)%snowh
+     else
+        snodens(t) = 0.0
+     endif
+
   enddo
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
@@ -151,7 +157,6 @@ subroutine noahmp50_settws(n, LSM_State)
         soilm3(t) = NoahMP50_struc(n)%noahmp50(t)%smc(3)
         soilm4(t) = NoahMP50_struc(n)%noahmp50(t)%smc(4)
         gws(t)    = NoahMP50_struc(n)%noahmp50(t)%wa
-        snod(t)   = NoahMP50_struc(n)%noahmp50(t)%snowh 
         swe(t)    = NoahMP50_struc(n)%noahmp50(t)%sneqv
      endif
   enddo
@@ -230,53 +235,174 @@ subroutine noahmp50_settws(n, LSM_State)
            soilm3(t) = NoahMP50_struc(n)%noahmp50(t)%smc(3)
            soilm4(t) = NoahMP50_struc(n)%noahmp50(t)%smc(4)
            gws(t)    = NoahMP50_struc(n)%noahmp50(t)%wa
-           snod(t)   = NoahMP50_struc(n)%noahmp50(t)%snowh 
            swe(t)    = NoahMP50_struc(n)%noahmp50(t)%sneqv
         enddo
      endif
   enddo
         
-  
+  update_flag = .true.
+ 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     delta = soilm1(t) - NoahMP50_struc(n)%noahmp50(t)%smc(1)    
-     NoahMP50_struc(n)%noahmp50(t)%smc(1) = soilm1(t)
-     NoahMP50_struc(n)%noahmp50(t)%sh2o(1) = &
-          NoahMP50_struc(n)%noahmp50(t)%sh2o(1) + delta
 
-     delta = soilm2(t) - NoahMP50_struc(n)%noahmp50(t)%smc(2)    
-     NoahMP50_struc(n)%noahmp50(t)%smc(2) = soilm2(t)
-     NoahMP50_struc(n)%noahmp50(t)%sh2o(2) = &
-          NoahMP50_struc(n)%noahmp50(t)%sh2o(2) + delta
+     SOILTYP = NoahMP50_struc(n)%noahmp50(t)%soiltype
+     MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)   ! MAXSMC (SOILTYP)
+     sm_threshold = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1) - 0.02  ! MAXSMC (SOILTYP) - 0.02
 
-     delta = soilm3(t) - NoahMP50_struc(n)%noahmp50(t)%smc(3)    
-     NoahMP50_struc(n)%noahmp50(t)%smc(3) = soilm3(t)
-     NoahMP50_struc(n)%noahmp50(t)%sh2o(3) = &
-          NoahMP50_struc(n)%noahmp50(t)%sh2o(3) + delta
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
 
-     delta = soilm4(t) - NoahMP50_struc(n)%noahmp50(t)%smc(4)    
-     NoahMP50_struc(n)%noahmp50(t)%smc(4) = soilm4(t)
-     NoahMP50_struc(n)%noahmp50(t)%sh2o(4) = &
-          NoahMP50_struc(n)%noahmp50(t)%sh2o(4) + delta
-     
-     NoahMP50_struc(n)%noahmp50(t)%wa=gws(t)
-  enddo
-  
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     swe_old = NoahMP50_struc(n)%noahmp50(t)%sneqv
-     snowh_old = NoahMP50_struc(n)%noahmp50(t)%snowh
+     delta1 = soilm1(t)-NoahMP50_struc(n)%noahmp50(t)%smc(1)
 
-     dsneqv = swe(t) - NoahMP50_struc(n)%noahmp50(t)%sneqv !in mm
-     dsnowh = snod(t) - NoahMP50_struc(n)%noahmp50(t)%snowh  !in m
-
-     !alternate option
-     call noahmp50_snow_update(n, t, dsneqv, dsnowh)
-
-     if(NoahMP50_struc(n)%noahmp50(t)%sneqv.eq.0.or.&
-        NoahMP50_struc(n)%noahmp50(t)%snowh.eq.0) then
-        NoahMP50_struc(n)%noahmp50(t)%sneqv = 0
-        NoahMP50_struc(n)%noahmp50(t)%snowh = 0
+     if(NoahMP50_struc(n)%noahmp50(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
+          MIN_THRESHOLD_struc(n)%noahmp50(t)%sh2o(1)+delta1.lt.&
+          sm_threshold) then
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
      endif
+     delta1 = soilm2(t)-NoahMP50_struc(n)%noahmp50(t)%smc(2)
+
+     if(NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta1.gt.MIN_THRESHOLD .and.&
+          NoahMP50_struc(n)%noahmp50(t)%sh2o(2)+delta1.lt.&
+          sm_threshold) then
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+
+     delta1 = soilm3(t)-NoahMP50_struc(n)%noahmp50(t)%smc(3)
+
+     if(NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta1.gt.MIN_THRESHOLD .and.&
+          NoahMP50_struc(n)%noahmp50(t)%sh2o(3)+delta1.lt.&
+          sm_threshold) then
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+
+     delta1 = soilm4(t)-NoahMP50_struc(n)%noahmp50(t)%smc(4)
+
+     if(NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta1.gt.MIN_THRESHOLD .and.&
+          NoahMP50_struc(n)%noahmp50(t)%sh2o(4)+delta1.lt.&
+          sm_threshold) then
+        update_flag(gid) = update_flag(gid).and.(.true.)
+     else
+        update_flag(gid) = update_flag(gid).and.(.false.)
+     endif
+
   enddo
+
+!  if(LIS_localPet.eq.387) then
+!     gid = LIS_domain(n)%gindex(&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row)
+!     print*, 'tw1 ',NoahMP50_struc(n)%noahmp50(16068)%smc,&
+!          NoahMP50_struc(n)%noahmp50(16068)%sh2o,&
+!          NoahMP50_struc(n)%noahmp50(16068)%sneqv,&
+!          update_flag(gid)
+!  endif
+  
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+
+     gid = LIS_domain(n)%gindex(&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+
+     if(update_flag(gid)) then
+        delta = soilm1(t) - NoahMP50_struc(n)%noahmp50(t)%smc(1)
+        NoahMP50_struc(n)%noahmp50(t)%smc(1) = soilm1(t)
+        NoahMP50_struc(n)%noahmp50(t)%sh2o(1) = &
+             NoahMP50_struc(n)%noahmp50(t)%sh2o(1) + delta
+
+        delta = soilm2(t) - NoahMP50_struc(n)%noahmp50(t)%smc(2)
+        NoahMP50_struc(n)%noahmp50(t)%smc(2) = soilm2(t)
+        NoahMP50_struc(n)%noahmp50(t)%sh2o(2) = &
+             NoahMP50_struc(n)%noahmp50(t)%sh2o(2) + delta
+
+        delta = soilm3(t) - NoahMP50_struc(n)%noahmp50(t)%smc(3)
+        NoahMP50_struc(n)%noahmp50(t)%smc(3) = soilm3(t)
+        NoahMP50_struc(n)%noahmp50(t)%sh2o(3) = &
+             NoahMP50_struc(n)%noahmp50(t)%sh2o(3) + delta
+
+        delta = soilm4(t) - NoahMP50_struc(n)%noahmp50(t)%smc(4)
+        NoahMP50_struc(n)%noahmp50(t)%smc(4) = soilm4(t)
+        NoahMP50_struc(n)%noahmp50(t)%sh2o(4) = &
+             NoahMP50_struc(n)%noahmp50(t)%sh2o(4) + delta
+
+     else
+
+        TWS2 =(soilm1(t)*NoahMP50_struc(n)%sldpth(1)*&
+             soilm2(t)*NoahMP50_struc(n)%sldpth(2)*&
+             soilm3(t)*NoahMP50_struc(n)%sldpth(3)*&
+             soilm4(t)*NoahMP50_struc(n)%sldpth(4))*&
+             LIS_CONST_RHOFW
+
+
+        TWS1 =(NoahMP50_struc(n)%noahmp50(t)%smc(1)*&
+             NoahMP50_struc(n)%sldpth(1)*&
+             NoahMP50_struc(n)%noahmp50(t)%smc(2)*&
+             NoahMP50_struc(n)%sldpth(2)*&
+             NoahMP50_struc(n)%noahmp50(t)%smc(3)*&
+             NoahMP50_struc(n)%sldpth(3)*&
+             NoahMP50_struc(n)%noahmp50(t)%smc(4)*&
+             NoahMP50_struc(n)%sldpth(4))*&
+             LIS_CONST_RHOFW
+
+        TWSd = TWS1 - TWS2
+
+        if(NoahMP50_struc(n)%noahmp50(t)%sneqv > 5.and.&
+             swe(t)+TWSd.gt.0) then
+!only add snow if the increment is small
+           if(TWSd/NoahMP50_struc(n)%noahmp50(t)%sneqv < 0.10) then
+              swe(t) = swe(t)+TWSd
+           endif
+        else
+           swe(t) = 0.0
+        endif
+
+!        if(LIS_localPet.eq.387.and.t.eq.16068) then
+!           print*, 'swe ',LIS_localPet, t, swe(t), TWSd
+!           !since soil moisture update is not accepted, add this to snow
+!        endif
+
+     endif
+
+     NoahMP50_struc(n)%noahmp50(t)%wa=gws(t)
+
+  enddo
+
+!  if(LIS_localPet.eq.387) then
+!     gid = LIS_domain(n)%gindex(&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%col,&
+!          LIS_surface(n,LIS_rc%lsm_index)%tile(16068)%row)
+!     print*, 'tw2 ',NoahMP50_struc(n)%noahmp50(16068)%smc,&
+!          NoahMP50_struc(n)%noahmp50(16068)%sh2o,&
+!          NoahMP50_struc(n)%noahmp50(16068)%sneqv,&
+!          update_flag(gid)
+!  endif
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     if(snodens(t).eq.0) then
+        swe(t) = 0.0
+     endif
+     dsneqv =  swe(t) - NoahMP50_struc(n)%noahmp50(t)%sneqv
+
+     snowh_new = 0
+     if(snodens(t).gt.0) then
+        snowh_new = swe(t)/snodens(t)
+     endif
+
+     dsnowh = snowh_new - NoahMP50_struc(n)%noahmp50(t)%sneqv
+
+     call noahmp50_snow_update(n, t, dsneqv, dsnowh)
+  enddo
+
+
+
+!  write(101,fmt='(I4.4, 1x, I2.2, 1x, I2.2, 1x, I2.2, 1x, I2.2,1x,10E14.6)') &
+!       LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,LIS_rc%mn,&
+!       NoahMP50_struc(n)%noahmp50(991:1000)%sneqv
 
 end subroutine noahmp50_settws
 
