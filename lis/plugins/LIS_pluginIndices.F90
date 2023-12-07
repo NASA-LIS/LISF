@@ -131,6 +131,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_agrmetId          = "AGRMET"
    character*50, public,  parameter :: LIS_princetonId       = "PRINCETON"
    character*50, public,  parameter :: LIS_nldas2Id          = "NLDAS2"
+   character*50, public,  parameter :: LIS_geisId            = "Global EIS"
 
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
