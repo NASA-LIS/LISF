@@ -396,6 +396,7 @@ endif::devonly[]
 |"`COAMPSout`"                 | COAMPS output forcing
 |"`GALWEM forecast`"           | GALWEM 17km or 0.25deg deterministic forecast reader
 |"`GALWEM-GE forecast`"        | GALWEM-GE forecast reader
+|"`Global EIS`"                | Global Earth Information System (EIS) 5km forcing
 |====
 
 .Example _lis.config_ entry
@@ -6635,8 +6636,19 @@ of the GALWEM-GE forecast forcing data.
 GALWEM-GE forecast forcing directory:          ./GALWEM_GE
 GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
 GALWEM-GE forecast number of ensemble members: 21
+....
 
+[[sssec_geis,Global EIS]]
+==== Global EIS
 
+NOTE: There is no spatial interpolation support for this dataset.
+
+`Global EIS forcing directory:` specifies the location
+of the Global EIS forcing files.
+
+.Example _lis.config_ entry
+....
+Global EIS forcing directory: ./geis
 ....
 
 [[ssec_lsm,Land surface models]]
