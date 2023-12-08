@@ -145,6 +145,8 @@ module map_utils
 !               Brent L. Shaw, NOAA/FSL (CSU/CIRA)
 ! 09 Apr 2001 - Added compare\_projections routine to compare two
 !               sets of projection parameters.
+! 30 Jun 2021 - Michel Bechtold, Samuel Scherrer, bug fix for latlon projection
+!               occurred at edges of subdomains in parallel mode
 
 implicit none
 
@@ -681,6 +683,7 @@ CONTAINS
       slon360 = proj%lon1
     ENDIF
     deltalon = lon360 - slon360
+    IF (deltalon .LT. 0) deltalon = deltalon + 360.
 
     ! Compute i/j
     i = deltalon/proj%dlon + 1.
@@ -1131,7 +1134,7 @@ CONTAINS
 
     REAL                         :: deltalat
     REAL                         :: deltalon
-    REAL                         :: lon360
+    REAL                         :: lon360,slon360
 
 
     ! Compute deltalat and deltalon as the difference between the input 
@@ -1146,9 +1149,19 @@ CONTAINS
     ELSE 
       lon360 = lon
     ENDIF    
-    deltalon = lon360 - proj%lon1      
+    ! deltalon = lon360 - proj%lon1
+    ! IF (deltalon .LT. 0) deltalon = deltalon + 360.
+    ! MB: June,2021: deltalon+360 causes
+    ! bug at edges of subdomains in parallel mode.
+    ! Correct handling is like done in llij_gauss
+    IF (proj%lon1 .LT. 0) THEN
+       slon360 = proj%lon1 + 360.
+    ELSE
+       slon360 = proj%lon1
+    ENDIF
+    deltalon = lon360 - slon360
     IF (deltalon .LT. 0) deltalon = deltalon + 360.
- 
+
     ! Compute i/j
     i = deltalon/proj%dlon + 1.
     j = deltalat/proj%dlat + 1.

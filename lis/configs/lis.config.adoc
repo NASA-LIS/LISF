@@ -1247,6 +1247,7 @@ Acceptable values are:
 |"`USAFSI`"                     | USAF Snow and Ice Analysis
 |"`SMAP(NASA) vegetation optical depth`"  | NASA L-band vegetation optical depth 
 |"`MCD15A2H LAI`"               | MODIS MCD15A2H v006 LAI product
+|"`MCD15A3H LAI`"               | MODIS MCD15A3H v061 LAI product
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
 |"`SNODAS`"                     | SNODAS snow depth
@@ -2828,6 +2829,28 @@ MCD15A2H LAI data version:                                    "006"
 MCD15A2H LAI apply temporal smoother between 8-day intervals: 1
 MCD15A2H LAI apply climatological fill values:                1
 MCD15A2H LAI apply QC flags:                                  1
+....
+
+[[sssec_mcd15a3hlaida,MODIS MCD15A3H LAI assimilation]]
+==== MODIS MCD15A3H LAI assimilation
+
+`MCD15A3H LAI data directory:` specifies the location of the data directory containing the MODIS MCD15A3H LAI retrievals.          
+
+`MCD15A3H LAI data version:` specifies the version of the MCD15A3H LAI retrievals. The default version is "061".                   
+
+`MCD15A3H LAI apply temporal smoother between 4-day intervals:` specifies whether to apply temporal smoother between 4-day intervals of the LAI product.
+
+`MCD15A3H LAI apply climatological fill values:` specifies whether to fill in climatological LAI values if there are missing values. 
+
+`MCD15A3H LAI apply QC flags:` specifies whether to apply quality control flags for LAI retrievals.
+
+.Example _lis.config_ entry     
+....
+MCD15A3H LAI data directory:                                  ./MCD15A3H.061
+MCD15A3H LAI data version:                                    "061"
+MCD15A3H LAI apply temporal smoother between 4-day intervals: 1
+MCD15A3H LAI apply climatological fill values:                1
+MCD15A3H LAI apply QC flags:                                  1
 ....
 
 [[sssec_simgraceda,Simulated GRACE]]

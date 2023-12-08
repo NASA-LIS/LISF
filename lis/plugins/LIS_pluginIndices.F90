@@ -287,6 +287,8 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_MCD15A3HlaiobsId      = &
+        "MCD15A3H LAI"
    character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
         "VIIRS GVF"                                                  !YK
    character*50, public,  parameter :: LIS_CDFSgvfobsId          = &

@@ -276,6 +276,10 @@ subroutine LIS_DAobs_plugin
     use MCD15A2HLAI_Mod,       only : MCD15A2Hlai_setup
 #endif
 
+#if ( defined DA_OBS_MCD15A3H_LAI )
+    use MCD15A3HLAI_Mod,       only : MCD15A3Hlai_setup
+#endif
+
 !Y.Kwon
 #if ( defined DA_OBS_VIIRS_GVF )
     use VIIRSgvf_Mod,       only : VIIRSgvf_setup
@@ -479,6 +483,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_MCD15A2H_LAI)
     external read_MCD15A2Hlai, write_MCD15A2Hlai
+#endif
+
+#if ( defined DA_OBS_MCD15A3H_LAI)
+    external read_MCD15A3Hlai, write_MCD15A3Hlai
 #endif
 
 #if ( defined DA_OBS_GLASS_Albedo)
@@ -906,6 +914,16 @@ subroutine LIS_DAobs_plugin
         read_MCD15A2Hlai)
    call registerwritedaobs(trim(LIS_MCD15A2HlaiobsId)//char(0),&
         write_MCD15A2Hlai)
+#endif
+
+#if ( defined DA_OBS_MCD15A3H_LAI)
+   call registerdaobsclass(trim(LIS_MCD15A3HlaiobsId),"LSM")
+   call registerdaobssetup(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        MCD15A3Hlai_setup)
+   call registerreaddaobs(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        read_MCD15A3Hlai)
+   call registerwritedaobs(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        write_MCD15A3Hlai)
 #endif
 
 !Y.Kwon
