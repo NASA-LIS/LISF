@@ -192,22 +192,22 @@ subroutine read_ESACCIsm(n,k,  OBS_State, OBS_Pert_State)
           ESACCI_sm_struc(n)%obs_cdf,       &
           sm_current)
   elseif(LIS_rc%dascaloption(k).eq."Linear scaling".and.fnd.ne.0) then
-     call LIS_rescale_with_linear_scaling(    &
-          n,                              &
-          k,                              &
+     call LIS_rescale_with_linear_scaling(  &
+          n,                                &
+          k,                                &
           ESACCI_sm_struc(n)%nbins,         &
           ESACCI_sm_struc(n)%ntimes,        &
           ESACCI_sm_struc(n)%obs_xrange,    &
           ESACCI_sm_struc(n)%obs_cdf,       &
           sm_current)
   elseif(LIS_rc%dascaloption(k).eq."Anomaly scaling".and.fnd.ne.0) then
-     call LIS_rescale_with_anomaly(    &
-          n,                              &
-          k,                              &
+     call LIS_rescale_with_anomaly(         &
+          n,                                &
+          k,                                &
           ESACCI_sm_struc(n)%nbins,         &
           ESACCI_sm_struc(n)%ntimes,        &
-          ESACCI_sm_struc(n)%obs_mu,    &
-          ESACCI_sm_struc(n)%model_mu,       &
+          ESACCI_sm_struc(n)%obs_mu,        &
+          ESACCI_sm_struc(n)%model_mu,      &
           sm_current)
   endif
 
