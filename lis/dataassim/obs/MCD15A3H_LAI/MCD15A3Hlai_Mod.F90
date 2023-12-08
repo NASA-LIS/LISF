@@ -112,7 +112,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_ArraySpec)   ::  pertArrSpec
     character(len=LIS_CONST_PATH_LEN) ::  laiobsdir
-    character*100          ::  temp
+    character*2            ::  temp
     real,  allocatable         ::  ssdev(:)
     character*1            ::  vid(2)
     type(pert_dec_type)    ::  obs_pert
