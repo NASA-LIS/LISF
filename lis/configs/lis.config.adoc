@@ -2837,7 +2837,7 @@ MCD15A2H LAI apply QC flags:                                  1
 
 `MCD15A3H LAI data version:` specifies the version of the MCD15A3H LAI retrievals. The default version is "061".                   
 
-`MCD15A3H LAI apply temporal smoother between 4-day intervals:` specifies whether to apply temporal smoother between 4-day intervals of the LAI product
+`MCD15A3H LAI apply temporal smoother between 4-day intervals:` specifies whether to apply temporal smoother between 4-day intervals of the LAI product.
 
 `MCD15A3H LAI apply climatological fill values:` specifies whether to fill in climatological LAI values if there are missing values. 
 
