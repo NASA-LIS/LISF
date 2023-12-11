@@ -2010,6 +2010,10 @@ GeoTIFF means the GeoTIFF support provided by the GDAL library.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">IMERG precipitation data product</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GPM IMERG Monthly&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">IMERG-Monthly precipitation product</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;USGS streamflow&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">USGS streamflow observations</p></td>
 </tr>
@@ -4065,7 +4069,27 @@ IMERG product:                   final</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_esa_cci_soil_moisture_data">7.4.12. ESA CCI soil moisture data</h4>
+<h4 id="_gpm_imerg_monthly_precipitation_data">7.4.12. GPM IMERG Monthly precipitation data</h4>
+<div class="paragraph">
+<p><code>IMERG monthly data directory:</code> specifies the location of the GPM IMERG Monthly precipitation product</p>
+</div>
+<div class="paragraph">
+<p><code>IMERG monthly version:</code> specifies the version of the GPM IMERG Monthly precipitation product. Most current version is V07A.</p>
+</div>
+<div class="paragraph">
+<p><code>IMERG monthly product:</code> specifies the GPM IMERG Monthly precipitation product. Current option is: final.  (early and late will be added later)</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lvt.config</em> entry</div>
+<div class="content">
+<pre>IMERG monthly data directory:            input/IMERGF_V07A_Monthly
+IMERG monthly version:                   V07A
+IMERG monthly product:                   final</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_esa_cci_soil_moisture_data">7.4.13. ESA CCI soil moisture data</h4>
 <div class="paragraph">
 <p><code>ESA CCI soil moisture data directory:</code> specifies the location of the ESA CCI soil moisture data</p>
 </div>
@@ -4081,7 +4105,7 @@ ESA CCI soil moisture data version:    2</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gridded_fluxnet_mte_data">7.4.13. Gridded FLUXNET MTE data</h4>
+<h4 id="_gridded_fluxnet_mte_data">7.4.14. Gridded FLUXNET MTE data</h4>
 <div class="paragraph">
 <p><code>FLUXNET data directory:</code> specifies the location of the gridded FLUXNET MTE data</p>
 </div>
@@ -4093,7 +4117,7 @@ ESA CCI soil moisture data version:    2</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_global_change_observation_mission_water_gcomw">7.4.14. Global Change Observation Mission - Water (GCOMW)</h4>
+<h4 id="_global_change_observation_mission_water_gcomw">7.4.15. Global Change Observation Mission - Water (GCOMW)</h4>
 <div class="paragraph">
 <p><code>GCOMW AMSR2 L3 soil moisture observation directory:</code> specifies the location of the GCOMW AMSR2 L3 soil moisture observations.</p>
 </div>
@@ -4105,7 +4129,7 @@ ESA CCI soil moisture data version:    2</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_global_historic_climatology_network_ghcn_data">7.4.15. Global Historic Climatology Network (GHCN) data</h4>
+<h4 id="_global_historic_climatology_network_ghcn_data">7.4.16. Global Historic Climatology Network (GHCN) data</h4>
 <div class="paragraph">
 <p><code>GHCN observation directory:</code> specifies the location of the GHCN data</p>
 </div>
@@ -4133,7 +4157,7 @@ GHCN station file:                      ./GHCN/ghcnd-qc-stations.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_globsnow_data">7.4.16. GlobSnow data</h4>
+<h4 id="_globsnow_data">7.4.17. GlobSnow data</h4>
 <div class="paragraph">
 <p><code>GlobSnow data directory:</code> specifies the location of the GlobSnow data.</p>
 </div>
@@ -4145,7 +4169,7 @@ GHCN station file:                      ./GHCN/ghcnd-qc-stations.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ismn_soil_moisture_observations">7.4.17. ISMN soil moisture observations</h4>
+<h4 id="_ismn_soil_moisture_observations">7.4.18. ISMN soil moisture observations</h4>
 <div class="paragraph">
 <p><code>ISMN observation directory:</code> specifies the location of the ISMN (International Soil Moisture Network) soil moisture observation data</p>
 </div>
@@ -4157,7 +4181,7 @@ GHCN station file:                      ./GHCN/ghcnd-qc-stations.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lprm_amsr_e_soil_moisture_retrievals">7.4.18. LPRM AMSR-E soil moisture retrievals</h4>
+<h4 id="_lprm_amsr_e_soil_moisture_retrievals">7.4.19. LPRM AMSR-E soil moisture retrievals</h4>
 <div class="paragraph">
 <p><code>LPRM AMSR-E soil moisture observation directory:</code> specifies the location of the LPRM AMSR-E soil moisture retrievals.</p>
 </div>
@@ -4247,7 +4271,7 @@ LPRM AMSR-E use raw data:                        0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mod16a2_data">7.4.19. MOD16A2 data</h4>
+<h4 id="_mod16a2_data">7.4.20. MOD16A2 data</h4>
 <div class="paragraph">
 <p><code>MOD16A2 data directory:</code> specifies the location of the MOD16A2 - MODIS based ET data.</p>
 </div>
@@ -4259,7 +4283,7 @@ LPRM AMSR-E use raw data:                        0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_modis_lst">7.4.20. MODIS LST</h4>
+<h4 id="_modis_lst">7.4.21. MODIS LST</h4>
 <div class="paragraph">
 <p><code>MODIS LST data directory:</code> specifies the location of the MODIS LST data.</p>
 </div>
@@ -4271,7 +4295,7 @@ LPRM AMSR-E use raw data:                        0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_north_american_soil_moisture_database_nasmd">7.4.21. North American Soil Moisture Database (NASMD)</h4>
+<h4 id="_north_american_soil_moisture_database_nasmd">7.4.22. North American Soil Moisture Database (NASMD)</h4>
 <div class="paragraph">
 <p><code>NASMD observation directory:</code> specifies the location of the NASMD observation directory.</p>
 </div>
@@ -4291,7 +4315,7 @@ NASMD number of stations:      1289</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_naturalized_monthly_streamflow_data">7.4.22. Naturalized monthly streamflow data</h4>
+<h4 id="_naturalized_monthly_streamflow_data">7.4.23. Naturalized monthly streamflow data</h4>
 <div class="paragraph">
 <p><code>Naturalized streamflow observation directory:</code> specifies the location of the naturalized monthly streamflow observation data</p>
 </div>
@@ -4321,7 +4345,7 @@ Naturalized streamflow station list file:     ./Naturalized_StreamFlow/Naturaliz
 </div>
 </div>
 <div class="sect3">
-<h4 id="_nldas2">7.4.23. NLDAS2</h4>
+<h4 id="_nldas2">7.4.24. NLDAS2</h4>
 <div class="paragraph">
 <p><code>NLDAS2 data directory:</code> specifies the location of the NLDAS-2 data directory.</p>
 </div>
@@ -4441,7 +4465,7 @@ NLDAS2 VIC soil depth3 file:       ./vic_depth3.1gd4r</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_soil_moisture_operational_processing_system_smops">7.4.24. Soil Moisture Operational Processing System (SMOPS)</h4>
+<h4 id="_soil_moisture_operational_processing_system_smops">7.4.25. Soil Moisture Operational Processing System (SMOPS)</h4>
 <div class="paragraph">
 <p><code>SMOPS soil moisture observation directory:</code> specifies the location of the SMOPS soil moisture observation directory.</p>
 </div>
@@ -4531,7 +4555,7 @@ SMOPS soil moisture use SMOS data:         0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smos_l1_tb">7.4.25. SMOS L1 TB</h4>
+<h4 id="_smos_l1_tb">7.4.26. SMOS L1 TB</h4>
 <div class="paragraph">
 <p><code>SMOS L1 TB observation directory:</code> specifies the location of the SMOS L1 TB observation directory.</p>
 </div>
@@ -4543,7 +4567,7 @@ SMOPS soil moisture use SMOS data:         0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smos_l2_soil_moisture">7.4.26. SMOS L2 soil moisture</h4>
+<h4 id="_smos_l2_soil_moisture">7.4.27. SMOS L2 soil moisture</h4>
 <div class="paragraph">
 <p><code>SMOS L2 soil moisture observation directory:</code> specifies the location of the SMOS L2 soil moisture observation directory.</p>
 </div>
@@ -4555,7 +4579,7 @@ SMOPS soil moisture use SMOS data:         0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_snodep_metobs_snow_depth_data">7.4.27. SNODEP metobs snow depth data</h4>
+<h4 id="_snodep_metobs_snow_depth_data">7.4.28. SNODEP metobs snow depth data</h4>
 <div class="paragraph">
 <p><code>SNODEP metobs directory:</code> specifies the location of the SNODEP observation data (Note that this plugin handles the raw observations that go into the generation of the AFWA SNODEP product)</p>
 </div>
@@ -4567,7 +4591,7 @@ SMOPS soil moisture use SMOS data:         0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_snotel_swe_observations">7.4.28. SNOTEL SWE observations</h4>
+<h4 id="_snotel_swe_observations">7.4.29. SNOTEL SWE observations</h4>
 <div class="paragraph">
 <p><code>SNOTEL observation directory:</code> specifies the location of the SNOTEL SWE observation data</p>
 </div>
@@ -4592,7 +4616,7 @@ SNOTEL coord file:                      ./SNOTEL/SNOTEL_CONUS_list.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_surfrad_observations_radiation_wind_speed_pressure">7.4.29. SURFRAD observations (radiation, wind speed, pressure)</h4>
+<h4 id="_surfrad_observations_radiation_wind_speed_pressure">7.4.30. SURFRAD observations (radiation, wind speed, pressure)</h4>
 <div class="paragraph">
 <p><code>SURFRAD observation directory:</code> specifies the location of the SURFRAD radiation data</p>
 </div>
@@ -4604,7 +4628,7 @@ SNOTEL coord file:                      ./SNOTEL/SNOTEL_CONUS_list.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_scan_soil_moisture_observations">7.4.30. SCAN soil moisture observations</h4>
+<h4 id="_scan_soil_moisture_observations">7.4.31. SCAN soil moisture observations</h4>
 <div class="paragraph">
 <p><code>SCAN observation directory:</code> specifies the location of the SCAN soil moisture observation data (Note that the plugin handles the &#8220;reprocessed&#8221; SCAN data from NASA GMAO.</p>
 </div>
@@ -4635,7 +4659,7 @@ SCAN coord file:                        ./SCAN_coord.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_usgs_ground_water">7.4.31. USGS ground water</h4>
+<h4 id="_usgs_ground_water">7.4.32. USGS ground water</h4>
 <div class="paragraph">
 <p><code>USGS ground water (well data) observation directory:</code> specifies the location of the USGS ground water (well data) observation directory.</p>
 </div>
@@ -4651,7 +4675,7 @@ USGS ground water (well data) coord file:            ./USGS_GW_welldata/Well_mda
 </div>
 </div>
 <div class="sect3">
-<h4 id="_usgs_daily_streamflow_data">7.4.32. USGS daily streamflow data</h4>
+<h4 id="_usgs_daily_streamflow_data">7.4.33. USGS daily streamflow data</h4>
 <div class="paragraph">
 <p><code>USGS streamflow observation directory:</code> specifies the location of the USGS daily streamflow observation data</p>
 </div>
@@ -4686,7 +4710,7 @@ USGS streamflow station list file:      ./USGS_StreamFlow/USGS_stnlist_nldas.txt
 </div>
 </div>
 <div class="sect3">
-<h4 id="_university_of_washington_et_data">7.4.33. University of Washington ET data</h4>
+<h4 id="_university_of_washington_et_data">7.4.34. University of Washington ET data</h4>
 <div class="paragraph">
 <p><code>UW ET data directory:</code> specifies the location of the UWET ET data.</p>
 </div>
@@ -4698,7 +4722,7 @@ USGS streamflow station list file:      ./USGS_StreamFlow/USGS_stnlist_nldas.txt
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gimms_avhrr_ndvi_data">7.4.34. GIMMS AVHRR NDVI data</h4>
+<h4 id="_gimms_avhrr_ndvi_data">7.4.35. GIMMS AVHRR NDVI data</h4>
 <div class="paragraph">
 <p><code>GIMMS AVHRR NDVI data directory:</code> specifies the location of the GIMMS NDVI data.</p>
 </div>
@@ -4710,7 +4734,7 @@ USGS streamflow station list file:      ./USGS_StreamFlow/USGS_stnlist_nldas.txt
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gimms_modis_ndvi_data">7.4.35. GIMMS MODIS NDVI data</h4>
+<h4 id="_gimms_modis_ndvi_data">7.4.36. GIMMS MODIS NDVI data</h4>
 <div class="paragraph">
 <p><code>GIMMS MODIS NDVI data directory:</code> specifies the location of the GIMMS MODIS NDVI data.</p>
 </div>
@@ -4722,7 +4746,7 @@ USGS streamflow station list file:      ./USGS_StreamFlow/USGS_stnlist_nldas.txt
 </div>
 </div>
 <div class="sect3">
-<h4 id="_glass_modisavhrr_albedo_data">7.4.36. GLASS MODIS/AVHRR albedo data</h4>
+<h4 id="_glass_modisavhrr_albedo_data">7.4.37. GLASS MODIS/AVHRR albedo data</h4>
 <div class="paragraph">
 <p><code>GLASS ALBEDO data directory:</code> specifies the location of the GLASS albedo data.</p>
 </div>
@@ -4738,7 +4762,7 @@ GLASS ALBEDO data source:                       AVHRR</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gldas_version_2_data">7.4.37. GLDAS version 2 data</h4>
+<h4 id="_gldas_version_2_data">7.4.38. GLDAS version 2 data</h4>
 <div class="paragraph">
 <p><code>GLDAS2 data directory:</code> specifies the location of the GLDAS2 data.</p>
 </div>
@@ -4754,7 +4778,7 @@ GLDAS2 data model name:                  NOAH</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_merra_version_2_data">7.4.38. MERRA version 2 data</h4>
+<h4 id="_merra_version_2_data">7.4.39. MERRA version 2 data</h4>
 <div class="paragraph">
 <p><code>MERRA2 data directory:</code> specifies the location of the MERRA2 data.</p>
 </div>
@@ -4766,7 +4790,7 @@ GLDAS2 data model name:                  NOAH</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_era_interim_land_data">7.4.39. ERA Interim Land data</h4>
+<h4 id="_era_interim_land_data">7.4.40. ERA Interim Land data</h4>
 <div class="paragraph">
 <p><code>ERA interim land data directory:</code> specifies the location of the ERA Interim Land data.</p>
 </div>
@@ -4778,7 +4802,7 @@ GLDAS2 data model name:                  NOAH</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_era5_data">7.4.40. ERA5 data</h4>
+<h4 id="_era5_data">7.4.41. ERA5 data</h4>
 <div class="paragraph">
 <p><code>ERA5 data directory:</code> specifies the location of the ERA5 data.</p>
 </div>
@@ -4794,7 +4818,7 @@ ERA5 forcing tile to grid mapping file:     ./ERA5/mapping.nc</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_sseb_operational_data">7.4.41. SSEB operational data</h4>
+<h4 id="_sseb_operational_data">7.4.42. SSEB operational data</h4>
 <div class="paragraph">
 <p><code>SSEBop data directory:</code> specifies the location of the SSEB data.</p>
 </div>
@@ -4810,7 +4834,7 @@ SSEBop process anomaly data:             1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_grdc_data">7.4.42. GRDC data</h4>
+<h4 id="_grdc_data">7.4.43. GRDC data</h4>
 <div class="paragraph">
 <p><code>GRDC data directory:</code> specifies the location of the GRDC data.</p>
 </div>
@@ -4834,7 +4858,7 @@ GRDC file version:       1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_grun_data">7.4.43. GRUN data</h4>
+<h4 id="_grun_data">7.4.44. GRUN data</h4>
 <div class="paragraph">
 <p><code>GRUN data directory:</code> specifies the location of the GRUN data.</p>
 </div>
@@ -4846,7 +4870,7 @@ GRDC file version:       1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_daobs_output_as_the_observation">7.4.44. LIS DAOBS output as the observation</h4>
+<h4 id="_lis_daobs_output_as_the_observation">7.4.45. LIS DAOBS output as the observation</h4>
 <div class="paragraph">
 <p><code>LIS DAOBS output directory:</code> specifies the LIS DAOBS output directory</p>
 </div>
@@ -4889,7 +4913,7 @@ GRDC file version:       1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_isccp_land_surface_temperature_observations">7.4.45. ISCCP land surface temperature observations</h4>
+<h4 id="_isccp_land_surface_temperature_observations">7.4.46. ISCCP land surface temperature observations</h4>
 <div class="paragraph">
 <p><code>ISCCP Tskin data directory:</code> specifies the location of the ISCCP land surface temperature data</p>
 </div>
@@ -4901,7 +4925,7 @@ GRDC file version:       1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lswg_tb_observations">7.4.46. LSWG Tb observations</h4>
+<h4 id="_lswg_tb_observations">7.4.47. LSWG Tb observations</h4>
 <div class="paragraph">
 <p><code>LSWG Tb observation filename:</code> specifies the name of the LSWG filename containing Brightness Temperature (Tb) observations</p>
 </div>
@@ -4963,7 +4987,7 @@ LSWG Tb cloud mask threshold(%):        75</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fmi_swe_observations">7.4.47. FMI SWE observations</h4>
+<h4 id="_fmi_swe_observations">7.4.48. FMI SWE observations</h4>
 <div class="paragraph">
 <p><code>FMISWE observation directory:</code> specifies the location of the FMI snow course data</p>
 </div>
@@ -4975,7 +4999,7 @@ LSWG Tb cloud mask threshold(%):        75</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_cmc_daily_snow_depth_observations">7.4.48. CMC daily snow depth observations</h4>
+<h4 id="_cmc_daily_snow_depth_observations">7.4.49. CMC daily snow depth observations</h4>
 <div class="paragraph">
 <p><code>CMC snow depth observation directory:</code> specifies the location of the CMC snow depth observation data</p>
 </div>
@@ -4987,7 +5011,7 @@ LSWG Tb cloud mask threshold(%):        75</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_nasa_amsr_e_soil_moisture_retrievals">7.4.49. NASA AMSR-E soil moisture retrievals</h4>
+<h4 id="_nasa_amsr_e_soil_moisture_retrievals">7.4.50. NASA AMSR-E soil moisture retrievals</h4>
 <div class="paragraph">
 <p><code>NASA AMSR-E soil moisture observation directory:</code> specifies the location of the standard (NASA) AMSR-E soil moisture retrievals</p>
 </div>
@@ -4999,7 +5023,7 @@ LSWG Tb cloud mask threshold(%):        75</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_amma_station_observations">7.4.50. AMMA station observations</h4>
+<h4 id="_amma_station_observations">7.4.51. AMMA station observations</h4>
 <div class="paragraph">
 <p><code>AMMA observation directory:</code> specifies the location of the AMMA in-situ observations.</p>
 </div>
@@ -5065,7 +5089,7 @@ AMMA soil temperature layer weights:    0.1875 0.1875 0.625 0.0 0.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smosrex_in_situ_soil_moisture_observations">7.4.51. SMOSREX in-situ soil moisture observations</h4>
+<h4 id="_smosrex_in_situ_soil_moisture_observations">7.4.52. SMOSREX in-situ soil moisture observations</h4>
 <div class="paragraph">
 <p><code>SMOSREX observation filename:</code> specifies the name of the SMOSREX observation filename. Currently this plugin only handles a single observation location.</p>
 </div>
@@ -5077,7 +5101,7 @@ AMMA soil temperature layer weights:    0.1875 0.1875 0.625 0.0 0.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mod10a1_snow_cover_data">7.4.52. MOD10A1 snow cover data</h4>
+<h4 id="_mod10a1_snow_cover_data">7.4.53. MOD10A1 snow cover data</h4>
 <div class="paragraph">
 <p><code>MOD10A1 observation directory:</code> specifies the location of the 1km resolution MOD10A1 fractional snow cover data</p>
 </div>
@@ -5089,7 +5113,7 @@ AMMA soil temperature layer weights:    0.1875 0.1875 0.625 0.0 0.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mod10a1v6_snow_cover_data">7.4.53. MOD10A1V6 snow cover data</h4>
+<h4 id="_mod10a1v6_snow_cover_data">7.4.54. MOD10A1V6 snow cover data</h4>
 <div class="paragraph">
 <p><code>MOD10A1V6 observation directory:</code> specifies the location of the 1km resolution MOD10A1V6 fractional snow cover data</p>
 </div>
@@ -5101,7 +5125,7 @@ AMMA soil temperature layer weights:    0.1875 0.1875 0.625 0.0 0.0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_grace_processed_from_ldt_data">7.4.54. GRACE (processed from LDT) data</h4>
+<h4 id="_grace_processed_from_ldt_data">7.4.55. GRACE (processed from LDT) data</h4>
 <div class="paragraph">
 <p><code>GRACE data directory:</code> specifies the location of the GRACE data (note that this plugin handles the &#8220;processed&#8221; GRACE data, where the GRACE TWS anomalies have been added to the LIS model TWS).</p>
 </div>
@@ -5143,7 +5167,7 @@ GRACE configuration:   default</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ceop">7.4.55. CEOP</h4>
+<h4 id="_ceop">7.4.56. CEOP</h4>
 <div class="paragraph">
 <p><code>CEOP data directory:</code> specifies the location of the CEOP data.</p>
 </div>
@@ -5237,7 +5261,7 @@ CEOP read soil moisture and temperature data: 1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_coop">7.4.56. COOP</h4>
+<h4 id="_coop">7.4.57. COOP</h4>
 <div class="paragraph">
 <p><code>COOP data directory:</code> specifies the location of the COOP data.</p>
 </div>
@@ -5257,7 +5281,7 @@ COOP metadata file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_great_lakes_environmental_research_lab_glerl">7.4.57. Great Lakes Environmental Research Lab (GLERL)</h4>
+<h4 id="_great_lakes_environmental_research_lab_glerl">7.4.58. Great Lakes Environmental Research Lab (GLERL)</h4>
 <div class="paragraph">
 <p><code>GLERL hydro data directory:</code> specifies the location of the GLERL hydro data.</p>
 </div>
@@ -5273,7 +5297,7 @@ GLERL hydro lake locations file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gsod">7.4.58. GSOD</h4>
+<h4 id="_gsod">7.4.59. GSOD</h4>
 <div class="paragraph">
 <p><code>GSOD observation directory:</code> specifies the location of the GSOD observation data.</p>
 </div>
@@ -5293,7 +5317,7 @@ GSOD metadata file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_plate_boundary_observatory_h2o_pboh2o">7.4.59. Plate Boundary Observatory H2O (PBOH2O)</h4>
+<h4 id="_plate_boundary_observatory_h2o_pboh2o">7.4.60. Plate Boundary Observatory H2O (PBOH2O)</h4>
 <div class="paragraph">
 <p><code>PBOH2O observation directory:</code> specifies the location of the PBOH2O observation directory.</p>
 </div>
@@ -5309,7 +5333,7 @@ PBOH2O station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_wg_pbmr">7.4.60. WG PBMR</h4>
+<h4 id="_wg_pbmr">7.4.61. WG PBMR</h4>
 <div class="paragraph">
 <p><code>WG PBMR observation directory:</code> specifies the location of the WG PBMR observation directory.</p>
 </div>
@@ -5325,7 +5349,7 @@ WG PBMR site index:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_gleam">7.4.61. GLEAM</h4>
+<h4 id="_gleam">7.4.62. GLEAM</h4>
 <div class="paragraph">
 <p><code>GLEAM data directory:</code> specifies the location of the GLEAM data directory.</p>
 </div>
@@ -5387,7 +5411,7 @@ GLEAM data version:            "3.2a"</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fluxnet2015">7.4.62. FLUXNET2015</h4>
+<h4 id="_fluxnet2015">7.4.63. FLUXNET2015</h4>
 <div class="paragraph">
 <p><code>FLUXNET2015 observation directory:</code> specifies the location of the FLUXNET2015 data</p>
 </div>
@@ -5403,7 +5427,7 @@ FLUXNET2015 station list file:     ./FLUXNET2015_STN/STN_list.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_uscrn_soil_moisture">7.4.63. USCRN soil moisture</h4>
+<h4 id="_uscrn_soil_moisture">7.4.64. USCRN soil moisture</h4>
 <div class="paragraph">
 <p><code>USCRN soil moisture observation directory:</code> specifies the location of the USCRN soil moisture data</p>
 </div>
@@ -5419,7 +5443,7 @@ USCRN soil moisture station file:            ./USCRN/USCRN_stations.txt</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smap_soil_moisture">7.4.64. SMAP soil moisture</h4>
+<h4 id="_smap_soil_moisture">7.4.65. SMAP soil moisture</h4>
 <div class="paragraph">
 <p><code>SMAP soil moisture observation directory:</code> specifies the location of the SMAP soil moisture observation directory.</p>
 </div>
@@ -5465,7 +5489,7 @@ SMAP soil moisture data designation:      SPL3SMP</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smap_vegetation_optical_depth">7.4.65. SMAP vegetation optical depth</h4>
+<h4 id="_smap_vegetation_optical_depth">7.4.66. SMAP vegetation optical depth</h4>
 <div class="paragraph">
 <p><code>SMAP vegetation optical depth observation directory:</code> specifies the location of the SMAP vegetation optical depth (VOD) observation directory.</p>
 </div>
@@ -5503,7 +5527,7 @@ SMAP vegetation optical depth data designation:      SPL3SMP</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lprm_vegetation_optical_depth">7.4.66. LPRM vegetation optical depth</h4>
+<h4 id="_lprm_vegetation_optical_depth">7.4.67. LPRM vegetation optical depth</h4>
 <div class="paragraph">
 <p><code>LPRM vegetation optical depth observation directory:</code> specifies the location of the LPRM vegetation optical depth (VOD) observation directory.</p>
 </div>
@@ -5541,7 +5565,7 @@ LPRM vegetation optical depth data designation:      X-band</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_smap_e_opl_soil_moisture_retrieval">7.4.67. SMAP-E-OPL soil moisture retrieval</h4>
+<h4 id="_smap_e_opl_soil_moisture_retrieval">7.4.68. SMAP-E-OPL soil moisture retrieval</h4>
 <div class="paragraph">
 <p><code>SMAP_E_OPL soil moisture data directory:</code> specifies the location of the Operational enhanced SMAP soil moisture retrieval data directory.</p>
 </div>
@@ -5553,7 +5577,7 @@ LPRM vegetation optical depth data designation:      X-band</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_wg_swrc">7.4.68. WG SWRC</h4>
+<h4 id="_wg_swrc">7.4.69. WG SWRC</h4>
 <div class="paragraph">
 <p><code>WG SWRC observation directory:</code> specifies the location of the WG SWRC observation directory.</p>
 </div>
@@ -5569,7 +5593,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ua_snow_observations">7.4.69. UA SNOW observations</h4>
+<h4 id="_ua_snow_observations">7.4.70. UA SNOW observations</h4>
 <div class="paragraph">
 <p><code>UA SNOW observation directory:</code> specifies the location of the University of Arizona SWE data.</p>
 </div>
@@ -5581,7 +5605,7 @@ WG SWRC station list file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_ozflux_soil_moisture">7.4.70. OzFlux soil moisture</h4>
+<h4 id="_ozflux_soil_moisture">7.4.71. OzFlux soil moisture</h4>
 <div class="paragraph">
 <p><code>OzFlux observation directory:</code> specifies the location of the OzFlux data directory.</p>
 </div>
@@ -5616,7 +5640,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_jasmin_soil_moisture">7.4.71. JASMIN soil moisture</h4>
+<h4 id="_jasmin_soil_moisture">7.4.72. JASMIN soil moisture</h4>
 <div class="paragraph">
 <p><code>JASMIN soil moisture data directory:</code> specifies the location of the JASMIN soil moisture data directory.</p>
 </div>
@@ -5628,7 +5652,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_fluxsat_gpp">7.4.72. FluxSat GPP</h4>
+<h4 id="_fluxsat_gpp">7.4.73. FluxSat GPP</h4>
 <div class="paragraph">
 <p><code>FluxSat data directory:</code> specifies the location of the FluxSat GPP data directory.</p>
 </div>
@@ -5640,7 +5664,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_thysm_soil_moisture">7.4.73. THySM soil moisture</h4>
+<h4 id="_thysm_soil_moisture">7.4.74. THySM soil moisture</h4>
 <div class="paragraph">
 <p><code>THySM data directory:</code> specifies the location of the THySM data directory.</p>
 </div>
@@ -5652,7 +5676,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_mcd15a2h_lai">7.4.74. MCD15A2H LAI</h4>
+<h4 id="_mcd15a2h_lai">7.4.75. MCD15A2H LAI</h4>
 <div class="paragraph">
 <p><code>MCD15A2H data directory:</code> specifies the location of the MCD15A2H data directory.</p>
 </div>
@@ -5664,7 +5688,7 @@ OzFlux station list file:     ../OzFlux/stnlist.dat</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="ssec-optue">7.4.75. COAMPS forcing data</h4>
+<h4 id="ssec-optue">7.4.76. COAMPS forcing data</h4>
 <div class="paragraph">
 <p><code>COAMPS output forcing directory:</code> specifies the location of the COAMPS output forcing data directory.</p>
 </div>
@@ -7131,7 +7155,7 @@ rmse_qle_ensSTD rmse_qle_CI
 <div id="footer">
 <div id="footer-text">
 Version 2.4<br>
-Last updated 2023-10-23 17:07:55 UTC
+Last updated 2023-12-11 23:12:46 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
