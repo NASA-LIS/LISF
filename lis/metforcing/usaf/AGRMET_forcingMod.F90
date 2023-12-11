@@ -302,7 +302,9 @@ module AGRMET_forcingMod
 !   contains the previous and next forcing values, respectively
 !  \end{description}
 !
-! !USES: 
+! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -721,8 +723,8 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable :: pcp_back_bias_ratio(:,:)
      ! EMK Add NRT bias correction toward IMERG-Final Run
      ! (back_bias_corr == 2)
-     character(255) :: gfs_nrt_bias_ratio_file
-     character(255) :: galwem_nrt_bias_ratio_file
+     character(LIS_CONST_PATH_LEN) :: gfs_nrt_bias_ratio_file
+     character(LIS_CONST_PATH_LEN) :: galwem_nrt_bias_ratio_file
      real, allocatable :: gfs_nrt_bias_ratio(:,:)
      real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
