@@ -777,8 +777,6 @@ contains
       integer :: c, r
 
       external :: AGRMET_julhr_date10
-      external :: MPI_Barrier
-      external :: sleep
 
       TRACE_ENTER("bratseth_getBackNWP")
       rc = 0
@@ -1872,8 +1870,6 @@ contains
       integer :: imax,jmax
       logical :: verbose
 
-      external :: MPI_Barrier, MPI_ALLREDUCE
-
       verbose = .true.
       if (present(silent)) then
          if (silent) verbose = .false.
@@ -2097,8 +2093,6 @@ contains
       integer, allocatable :: jobs_cr_vector(:), iobs_neighbors_vector(:)
       real :: O, A
       integer :: good_obs
-
-      external :: MPI_Barrier, MPI_ALLREDUCE
 
       verbose = .true.
       if (present(silent)) then
@@ -2550,8 +2544,6 @@ contains
       real :: back1(1)
       integer :: r_local, c_local
       integer :: gindex
-
-      external :: MPI_Barrier, MPI_ALLREDUCE
 
       ! Sanity checks
       if (nobs .eq. 0) return
@@ -3254,8 +3246,6 @@ contains
       double precision :: t1, t2
       logical :: silent_rejects_local
 
-      external :: MPI_Barrier, MPI_Allreduce
-
       ! Sanity check
       nobs = this%nobs
       if (nobs .eq. 0) then
@@ -3670,8 +3660,6 @@ contains
       integer :: ierr
       logical :: location_issue
 
-      external :: MPI_Barrier
-
       nobs = this%nobs
       if (nobs .eq. 0) then
          write(LIS_logunit,*)&
@@ -4061,8 +4049,6 @@ contains
       double precision :: t1, t2
       logical :: silent_rejects_local
 
-      external :: MPI_Barrier
-      
       nobs = this%nobs
       if (nobs .eq. 0) then
          write(LIS_logunit,*)&
@@ -4839,8 +4825,6 @@ contains
       integer :: j,r,c,gindex
       integer :: ierr
 
-      external :: MPI_Barrier, MPI_ALLREDUCE
-
       nobs = this%nobs
       if (nobs .eq. 0) return
 
@@ -4987,8 +4971,6 @@ contains
       integer :: reject_count
       logical :: silent_rejects_local
 
-      external :: MPI_Barrier
-
       ! Sanity check
       nobs = this%nobs
       if (nobs .eq. 0) then
@@ -5090,8 +5072,6 @@ contains
       integer :: reject_count
       real :: threshold_local
       logical :: silent_rejects_local
-
-      external :: MPI_Barrier, MPI_ALLREDUCE
 
       ! Sanity check
       nobs = this%nobs
@@ -5275,8 +5255,6 @@ contains
       logical :: silent_rejects_local
       integer :: rglb,cglb
       integer :: gid
-
-      external :: MPI_Barrier, MPI_ALLREDUCE
 
       ! Sanity check
       nobs = this%nobs

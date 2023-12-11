@@ -40,7 +40,7 @@ subroutine readcrd_agrmet()
   use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_abort, &
        LIS_endrun
 #if (defined SPMD)
-  use LIS_mpiMod, only: LIS_MPI_COMM
+  use LIS_mpiMod
 #endif
   use LIS_pluginIndices, only : LIS_agrmetrunId
   use AGRMET_forcingMod, only : agrmet_struc
@@ -63,9 +63,6 @@ subroutine readcrd_agrmet()
   integer :: tmp_imerg_plp_thresh
   integer :: ierr
   logical :: use_nrt_bias_files ! EMK
-
-  external :: MPI_Barrier
-  external :: sleep
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
