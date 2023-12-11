@@ -628,6 +628,8 @@ contains
       integer :: count_good_ssmi
       real, parameter :: FILL = -9999.0
 
+      external :: polarToLatLon
+
       net = "SSMI"
       platform = "SSMI"
       sigmaOSqr = agrmet_struc(nest)%bratseth_precip_ssmi_sigma_o_sqr
@@ -774,6 +776,8 @@ contains
       character(len=10) :: yyyymmddhh
       integer :: c, r
 
+      external :: AGRMET_julhr_date10
+
       TRACE_ENTER("bratseth_getBackNWP")
       rc = 0
 
@@ -801,6 +805,8 @@ contains
          ! EMK...Fetch bias ratio if requested
          if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
             call USAF_pcpBackBiasRatio_s2s(nest, yyyymmddhh)
+         else if (agrmet_struc(nest)%back_bias_corr .eq. 2) then
+            call USAF_pcpBackBiasRatio_nrt(nest, yyyymmddhh)
          end if
 
          write(LIS_logunit,*) &
@@ -824,6 +830,20 @@ contains
             ! Use GALWEM Bratseth settings if we have the data
             if (rc .eq. 0) then
                pcp_src(k) = 'GALWEM'
+
+               ! Apply bias correction to background field
+               if (agrmet_struc(nest)%back_bias_corr .eq. 2) then
+                  write(LIS_logunit,*) &
+           '[INFO] Applying IMERG-based bias correction to GALWEM precip'
+                  do r = 1, LIS_rc%gnr(nest)
+                     do c = 1, LIS_rc%gnc(nest)
+                        fg_data_glb(c,r) = &
+                             fg_data_glb(c,r) * &
+                          agrmet_struc(nest)%galwem_nrt_bias_ratio(c,r)
+                     end do
+                  end do
+               end if
+
             end if
          endif
 
@@ -851,14 +871,28 @@ contains
             end if
 
             ! Apply bias correction to background field
-            if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
+            if (agrmet_struc(nest)%back_bias_corr .eq. 1 .and. &
+                 rc .eq. 0) then
                write(LIS_logunit,*) &
-                   '[INFO] Applying GALWEM-based bias correction to GFS precip'
+             '[INFO] Applying GALWEM-based bias correction to GFS precip'
                do r = 1, LIS_rc%gnr(nest)
                   do c = 1, LIS_rc%gnc(nest)
                      fg_data_glb(c,r) = &
                           fg_data_glb(c,r) * &
                           agrmet_struc(nest)%pcp_back_bias_ratio(c,r)
+                  end do
+               end do
+
+            else if (agrmet_struc(nest)%back_bias_corr .eq. 2 .and. &
+                 rc .eq. 0) then
+               ! New IMERG option for NRT
+               write(LIS_logunit,*) &
+             '[INFO] Applying IMERG-based bias correction to GFS precip'
+               do r = 1, LIS_rc%gnr(nest)
+                  do c = 1, LIS_rc%gnc(nest)
+                     fg_data_glb(c,r) = &
+                          fg_data_glb(c,r) * &
+                          agrmet_struc(nest)%gfs_nrt_bias_ratio(c,r)
                   end do
                end do
             end if
@@ -945,6 +979,8 @@ contains
       integer :: local_global_or_hemi
       integer :: local_diff_grid
       integer :: ii,jj,kk,count_good_ssmi ! EMK TEST
+
+      external :: agrmet_ssmiprec_filename
 
       TRACE_ENTER("bratseth_getSSMI")
       routine_name = 'USAF_getSSMIObsData'
@@ -1134,6 +1170,9 @@ contains
       integer :: i,j,jj
       logical, external :: is_geo_corrupted
       real, allocatable :: gest_temp(:,:,:)
+
+      external :: agrmet_geoprec_filename
+      external :: polarToLatLon
 
       TRACE_ENTER("bratseth_getGeopPrcp")
       net = "GEOPRECIP"
@@ -1546,7 +1585,6 @@ contains
       use AGRMET_forcingMod, only:  agrmet_struc
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
-      use LIS_logMod, only: LIS_logunit
       use USAF_OBAMod, only: OBA, createOBA,assignOBA
 
       ! Defaults
@@ -1565,8 +1603,6 @@ contains
       real, allocatable :: invDataDensities(:)
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
-      integer :: r
-      character(len=10) :: new_name,type
       real :: convergeThresh
       real :: sigmaBSqr
       integer :: good_obs
@@ -1687,6 +1723,9 @@ contains
       real :: glbGridDesc(50)
       integer, external :: get_fieldpos
       real, parameter :: FILL = MISSING
+
+      external :: compute_grid_coord
+      external :: bilinear_interp
 
       ! See if we have any observations available
       nobs = this%nobs
@@ -2765,6 +2804,11 @@ contains
       integer :: rc2
       logical :: first_time
 
+      external :: getAVNfilename
+      external :: AGRMET_getGALWEMfilename
+      external :: AGRMET_fg2lis_precip
+      external :: interp_galwem_first_guess
+
       rc = 0
 
       found = .false.
@@ -2974,7 +3018,6 @@ contains
 #if (defined USE_GRIBAPI)
       use grib_api
 #endif
-      use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
       use LIS_mpiMod
@@ -4093,7 +4136,9 @@ contains
    logical function is_stn(net)
       implicit none
       character(len=10), intent(in) :: net
+      character(len=10) :: net_local
       logical :: answer
+      net_local = net
       answer = .true.
       is_stn = answer
    end function is_stn
@@ -4367,8 +4412,7 @@ contains
    subroutine build_hash2d(this,nest,imax,jmax,hash2d)
 
       ! Imports
-      use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_localPet
-      use LIS_logMod, only: LIS_logunit
+      use LIS_coreMod, only: LIS_rc
       use LIS_mpiMod
 
       ! Defaults
@@ -4382,26 +4426,21 @@ contains
       type(hash_list), allocatable, intent(out) :: hash2d(:,:)
 
       ! Local variables
-      real :: dlat, dlon, ctrlat, ctrlon
       integer :: nobs
       integer, allocatable :: cols(:), rows(:)
-      integer :: pet, pet_incr
-      logical :: found
-      integer :: j,r,c,gindex
-      integer :: ierr
 
       nobs = this%nobs
       if (nobs .eq. 0) return
 
       ! Get the columns and rows of the observations in the LIS grid
-      call find_LIS_cols_rows(this,nest,cols,rows)
+      call find_LIS_cols_rows(this, nest, cols, rows)
 
       ! Loop through the collected col, row information and add to the
       ! hash2d table.
-      call init_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      call init_hash2d(LIS_rc%gnc(nest), LIS_rc%gnr(nest), hash2d)
       imax = LIS_rc%gnc(nest) ! Output
       jmax = LIS_rc%gnr(nest) ! Output
-      call insert_hash2d_array(imax,jmax,hash2d,nobs,cols,rows)
+      call insert_hash2d_array(imax, jmax, hash2d, nobs, cols, rows)
 !       do j = 1,nobs
 !          c = cols(j)
 !          if (c .eq. 0) cycle
@@ -4910,11 +4949,9 @@ contains
    subroutine USAF_waterQC(this,nest,silent_rejects)
 
       ! Imports
-      use LIS_coreMod, only: LIS_rc
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
-
 
       ! Defaults
       implicit none
@@ -5440,9 +5477,9 @@ contains
       real, allocatable :: invDataDensities(:)
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
-      character(len=10) :: new_name,type
+      character(len=10) :: new_name, type
       real :: convergeThresh
-      integer :: i,j
+      integer :: j
 
       TRACE_ENTER("bratseth_analyzeScrn")
       ! Initialize analysis field with the background first guess.  This will
@@ -5613,6 +5650,8 @@ contains
       integer :: j3hr
       integer :: ftn, ios
       integer :: i,j,k
+
+      external :: cmorfile_agrmet
 
       TRACE_ENTER("bratseth_getCMORPH")
       net = "CMORPH"
@@ -6397,14 +6436,13 @@ contains
 
    end subroutine USAF_setBratsethScreenStats
 
-   ! Read bias ratio for background field
+   ! Read bias ratio for background field (S2S version, which uses
+   ! data in the LDT parameter file)
    subroutine USAF_pcpBackBiasRatio_s2s(n, yyyymmddhh)
 
      ! Imports
      use AGRMET_forcingMod, only: agrmet_struc
-     use LIS_coreMod, only: LIS_rc, LIS_localPet, &
-          LIS_ews_halo_ind, LIS_ewe_halo_ind, &
-          LIS_nss_halo_ind, LIS_nse_halo_ind
+     use LIS_coreMod, only: LIS_rc
      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
      use netcdf
@@ -6468,4 +6506,107 @@ contains
 #endif
 
    end subroutine USAF_pcpBackBiasRatio_s2s
-end module USAF_bratsethMod
+
+   ! Read bias ratio for background field (NRT version, which uses
+   ! data in standalone netCDF file)
+   subroutine USAF_pcpBackBiasRatio_nrt(n, yyyymmddhh)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+     use LIS_coreMod, only: LIS_rc!, LIS_localPet, &
+          !LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+          !LIS_nss_halo_ind, LIS_nse_halo_ind
+
+     use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+     use netcdf
+#endif
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     integer, intent(in) :: n
+     character(len=10), intent(in) :: yyyymmddhh
+
+     ! Locals
+     integer :: imonth
+     logical :: file_exists
+     integer :: ncid, ppt_ratio_Id
+
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+
+     read(yyyymmddhh(5:6),'(i2.2)') imonth
+
+     ! Accumulations ending at 00Z first of month are part of the
+     ! *previous* month.  So decrement imonth by one in that situation,
+     ! and reset to 12 (December) at the year change.
+     if (agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) then
+        if (yyyymmddhh(9:10) .eq. '00' .and. &
+             yyyymmddhh(7:8) .eq. '01') then
+           imonth = imonth - 1
+           if (imonth .eq. 0) then
+              imonth = 12
+           end if
+        end if
+     end if
+     if (imonth .eq. agrmet_struc(n)%pcp_back_bias_ratio_month .and. &
+          agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) return
+
+     agrmet_struc(n)%pcp_back_bias_ratio_month = imonth
+
+     ! First, update the GFS ratios
+     inquire(file=agrmet_struc(n)%gfs_nrt_bias_ratio_file, &
+          exist=file_exists)
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[ERR] Cannot find ', &
+             trim(agrmet_struc(n)%gfs_nrt_bias_ratio_file)
+        call LIS_endrun()
+     end if
+     call LIS_verify( &
+          nf90_open(path=agrmet_struc(n)%gfs_nrt_bias_ratio_file, &
+          mode=NF90_NOWRITE, ncid=ncid), &
+          'Error in nf90_open in USAF_pcpBackBiasRatio_nrt')
+     call LIS_verify(nf90_inq_varid(ncid, "biasRatio", ppt_ratio_Id), &
+          'biasRatio field not found in bias file')
+     call LIS_verify(nf90_get_var(ncid, ppt_ratio_Id, &
+          agrmet_struc(n)%gfs_nrt_bias_ratio, &
+          start=(/1,1,imonth/), &
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)), &
+          'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GFS bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%gfs_nrt_bias_ratio_file)
+     call LIS_verify(nf90_close(ncid),&
+          'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
+
+     ! Repeat for GALWEM ratios
+     inquire(file=agrmet_struc(n)%galwem_nrt_bias_ratio_file, &
+          exist=file_exists)
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[ERR] Cannot find ', &
+             trim(agrmet_struc(n)%galwem_nrt_bias_ratio_file)
+        call LIS_endrun()
+     end if
+     call LIS_verify( &
+          nf90_open(path=agrmet_struc(n)%galwem_nrt_bias_ratio_file, &
+          mode=NF90_NOWRITE, ncid=ncid), &
+          'Error in nf90_open in USAF_pcpBackBiasRatio_nrt')
+     call LIS_verify(nf90_inq_varid(ncid, "biasRatio", ppt_ratio_Id), &
+          'biasRatio field not found in bias file')
+     call LIS_verify(nf90_get_var(ncid, ppt_ratio_Id, &
+          agrmet_struc(n)%galwem_nrt_bias_ratio, &
+          start=(/1,1,imonth/), &
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
+          'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GALWEM bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%galwem_nrt_bias_ratio_file)
+     call LIS_verify(nf90_close(ncid),&
+          'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
+
+#endif
+
+   end subroutine USAF_pcpBackBiasRatio_nrt
+
+ end module USAF_bratsethMod
