@@ -67,8 +67,8 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%agrmetdir,rc=rc)
-     write(LIS_logunit,*)'Using AGRMET forcing'
-     write(LIS_logunit,*) 'AGRMET forcing directory :',agrmet_struc(n)%agrmetdir
+     write(LIS_logunit,*)'[INFO] Using AGRMET forcing'
+     write(LIS_logunit,*) '[INFO] AGRMET forcing directory: ', trim(agrmet_struc(n)%agrmetdir)
   enddo
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET first guess source:",rc=rc)
@@ -195,6 +195,65 @@ subroutine readcrd_agrmet()
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%pcpobswch,rc=rc)
   enddo
+
+  ! EMK...Precip observation file formats
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET precip obs file format:", &
+       rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%pcpobsfmt, rc=rc)
+     if (agrmet_struc(n)%pcpobsfmt .ne. 1 .and. &
+          agrmet_struc(n)%pcpobsfmt .ne. 2) then
+        write(LIS_logunit,*) &
+             "[ERR] Bad 'AGRMET precip obs file format:' option"
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 or 2, found ', agrmet_struc(n)%pcpobsfmt
+        write(LIS_logunit,*) '[ERR] Aborting...'
+
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] Illegal value for AGRMET precip obs file format'
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+  enddo
+
+  ! EMK...Sfc observation file formats
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET sfc obs file format:", &
+       rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%sfcobsfmt, rc=rc)
+     if (agrmet_struc(n)%sfcobsfmt .ne. 1 .and. &
+          agrmet_struc(n)%sfcobsfmt .ne. 2) then
+        write(LIS_logunit,*) &
+             "[ERR] Bad 'AGRMET sfc obs file format:' option"
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 or 2, found ', agrmet_struc(n)%sfcobsfmt
+        write(LIS_logunit,*) '[ERR] Aborting...'
+
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] Illegal value for AGRMET sfc obs file format'
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+  enddo
+
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET native imax:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%imaxnative,rc=rc)
@@ -1170,7 +1229,7 @@ subroutine readcrd_agrmet()
      if (LIS_masterproc) then
         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
         if (ios .ne. 0) then
-           write(LIS_logunit,*)'ERR creating directory ', &
+           write(LIS_logunit,*)'[ERR] Cannot create directory ', &
                 trim(agrmet_struc(n)%analysisdir)
            flush(LIS_logunit)
         end if

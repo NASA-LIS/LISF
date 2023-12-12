@@ -289,7 +289,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
   type(rain_obs), allocatable   :: obs_cur(:)
   type(rain_obs), allocatable   :: obs_6(:)
   type(rain_obs), allocatable   :: obs_12(:)
-  
+
+  character*32 :: net32, platform32
+
   data chemi / '_nh.', '_sh.' /
   
   sumsqr(a,b,c,d) = ((a-b)**2) + ((c-d)**2)
@@ -486,7 +488,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
   if (sixyes) then
      
-     write(LIS_logunit,*)'- READING ', trim(filename_min6)
+     write(LIS_logunit,*)'[INFO] READING ', trim(filename_min6)
      
      iofunc = "OPEN "
      open(8, file=trim(filename_min6), iostat=istat, err=100)
@@ -533,9 +535,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
      
      write(LIS_logunit,*)' '
      write(LIS_logunit,*)"******************************************************"
-     write(LIS_logunit,*)"* PRECIP SAVE FILE FROM 6 HOURS AGO DOES NOT EXIST."
-     write(LIS_logunit,*)"* FILE NAME IS ", trim(filename_min6)
-     write(LIS_logunit,*)"* OBSERVATION COUNT WILL BE REDUCED."
+     write(LIS_logunit,*)"[WARN] PRECIP SAVE FILE FROM 6 HOURS AGO DOES NOT EXIST."
+     write(LIS_logunit,*)"[WARN] FILE NAME IS ", trim(filename_min6)
+     write(LIS_logunit,*)"[WARN] OBSERVATION COUNT WILL BE REDUCED."
      write(LIS_logunit,*)"******************************************************"
      write(LIS_logunit,*)' '
      
@@ -554,9 +556,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
      
      write(LIS_logunit,*)' '
      write(LIS_logunit,*)"*******************************************************"
-     write(LIS_logunit,*)"* BAD ", trim(iofunc), " ON FILE ",trim(filename_min6)
-     write(LIS_logunit,*)"* ISTAT = ", istat
-     write(LIS_logunit,*)"* OBSERVATION COUNT WILL BE REDUCED."
+     write(LIS_logunit,*)"[WARN] BAD ", trim(iofunc), " ON FILE ",trim(filename_min6)
+     write(LIS_logunit,*)"[WARN] ISTAT = ", istat
+     write(LIS_logunit,*)"[WARN] OBSERVATION COUNT WILL BE REDUCED."
      write(LIS_logunit,*)"*******************************************************"
      write(LIS_logunit,*)' '
      
@@ -598,7 +600,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
         iofunc = "OPEN "
         open(9, file=trim(filename_min12), iostat=istat, err=200)
         
-        write(LIS_logunit,*)'- READING ', trim(filename_min12) 
+        write(LIS_logunit,*)'[INFO] READING ', trim(filename_min12) 
         
         iofunc = "READ "
         read(9, *, iostat=istat, err=200, end=200) count12
@@ -643,9 +645,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
         
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)"*******************************************************"
-        write(LIS_logunit,*)"* PRECIP SAVE FILE FROM 12 HOURS AGO DOES NOT EXIST."
-        write(LIS_logunit,*)"* FILE NAME IS ", trim(filename_min12)
-        write(LIS_logunit,*)"* OBSERVATION COUNT WILL BE REDUCED."
+        write(LIS_logunit,*)"[WARN] PRECIP SAVE FILE FROM 12 HOURS AGO DOES NOT EXIST."
+        write(LIS_logunit,*)"[WARN] FILE NAME IS ", trim(filename_min12)
+        write(LIS_logunit,*)"[WARN] OBSERVATION COUNT WILL BE REDUCED."
         write(LIS_logunit,*)"*******************************************************"
         write(LIS_logunit,*)' '
         
@@ -664,9 +666,9 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
         
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)"*******************************************************"
-        write(LIS_logunit,*)"* BAD ", trim(iofunc), " ON FILE ",trim(filename_min12)
-        write(LIS_logunit,*)"* ISTAT = ", istat
-        write(LIS_logunit,*)"* OBSERVATION COUNT WILL BE REDUCED."
+        write(LIS_logunit,*)"[WARN] BAD ", trim(iofunc), " ON FILE ",trim(filename_min12)
+        write(LIS_logunit,*)"[WARN] ISTAT = ", istat
+        write(LIS_logunit,*)"[WARN] OBSERVATION COUNT WILL BE REDUCED."
         write(LIS_logunit,*)"*******************************************************"
         write(LIS_logunit,*)' '
 
@@ -698,7 +700,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
       if (sixyes) then
          
          write(LIS_logunit,*)' '
-         write(LIS_logunit,*)'- MAKING 12 HRLY AMTS FROM PREVIOUS 6 HRLY AMTS'
+         write(LIS_logunit,*)'[INFO] MAKING 12 HRLY AMTS FROM PREVIOUS 6 HRLY AMTS'
          
          MAKE12_FROM_6 : do i = 1, fltrcnt
             
@@ -757,7 +759,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
       if (twelveyes) then
          
-         write(LIS_logunit,*)'- MAKING 12 HRLY AMTS FROM CURRENT 24 AND OLD 12 HRLY AM  TS'
+         write(LIS_logunit,*)'[INFO] MAKING 12 HRLY AMTS FROM CURRENT 24 AND OLD 12 HRLY AM  TS'
 
          MAKE12_FROM_24 : do i = 1, fltrcnt
 
@@ -1046,7 +1048,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
          open (11, file=trim(filename), iostat=istat, err=300)
          
          write(LIS_logunit,*)' '
-         write(LIS_logunit,*)"- WRITING ",trim(filename)
+         write(LIS_logunit,*)"[INFO] WRITING ",trim(filename)
          
          iofunc = "WRITE"
          write(11,*, iostat=istat, err=300) fltrcnt
@@ -1068,7 +1070,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
          close (11)
          
          write(LIS_logunit,*)' '
-         write(LIS_logunit,*)'- NUMBER OF 12 AND 6 HOURLY OBS IS ',count12obs, count6obs
+         write(LIS_logunit,*)'[INFO] NUMBER OF 12 AND 6 HOURLY OBS IS ',count12obs, count6obs
          write(LIS_logunit,*)' '
       
 300      continue
@@ -1080,8 +1082,8 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
             
             write(LIS_logunit,*)' '
             write(LIS_logunit,*)"*******************************************************"
-            write(LIS_logunit,*)"* BAD ", trim(iofunc), " ON FILE ",trim(filename)
-            write(LIS_logunit,*)"* ISTAT = ", istat
+            write(LIS_logunit,*)"[WARN] BAD ", trim(iofunc), " ON FILE ",trim(filename)
+            write(LIS_logunit,*)"[WARN] ISTAT = ", istat
             write(LIS_logunit,*)"*******************************************************"
             write(LIS_logunit,*)' '
             
@@ -1116,7 +1118,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
       USE_6 : if ( .not. use_twelve ) then
          
-         write(LIS_logunit,*)"- PUTTING 6 HOURLY RAIN GAUGE OBSERVATIONS ON GRID."
+         write(LIS_logunit,*)"[INFO] PUTTING 6 HOURLY RAIN GAUGE OBSERVATIONS ON GRID."
          
          oldd = 999.0
          
@@ -1142,8 +1144,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                     obs_cur(i)%lat, obs_cur(i)%lon,ri,rj)
 
                ! EMK...Add observation
+               net32 = obs_cur(i)%net
+               platform32 = obs_cur(i)%platform
                call USAF_assignObsData(precip6, &
-                    obs_cur(i)%net, obs_cur(i)%platform, &
+                    net32, platform32, &
                     float(obs_cur(i)%amt6) * 0.1, &
                     obs_cur(i)%lat, obs_cur(i)%lon,&
                     agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1192,7 +1196,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
    USE_12 : if (use_twelve) then
 
-      write(LIS_logunit,*)"- PUTTING 12 HOURLY RAIN GAUGE OBSERVATIONS ON GRID."
+      write(LIS_logunit,*)"[INFO] PUTTING 12 HOURLY RAIN GAUGE OBSERVATIONS ON GRID."
       
       oldd = 999.0
       
@@ -1209,8 +1213,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                  obs_cur(i)%lon,ri,rj)
 
             ! EMK...Add observation
+            net32 = obs_cur(i)%net
+            platform32 = obs_cur(i)%platform
             call USAF_assignObsData(precip12, &
-                 obs_cur(i)%net, obs_cur(i)%platform, &
+                 net32, platform32, &
                  float(obs_cur(i)%amt12) * 0.1, &
                  obs_cur(i)%lat, obs_cur(i)%lon, &
                  agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1275,8 +1281,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                    obs_cur(i)%lon,ri,rj)
 
               ! EMK...Add observation
+              net32 = obs_cur(i)%net
+              platform32 = obs_cur(i)%platform
               call USAF_assignObsData(precip12, &
-                   obs_cur(i)%net, obs_cur(i)%platform, &
+                   net32, platform32, &
                    0.0, &
                    obs_cur(i)%lat, obs_cur(i)%lon, &
                    agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1326,8 +1334,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                       ri,rj)
 
                  ! EMK...Add observation
+                 net32 = obs_cur(i)%net
+                 platform32 = obs_cur(i)%platform
                  call USAF_assignObsData(precip12, &
-                      obs_cur(i)%net, obs_cur(i)%platform, &
+                      net32, platform32, &
                       float(obs_cur(i)%amtmsc) * 0.1, &
                       obs_cur(i)%lat, obs_cur(i)%lon, &
                       agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
@@ -1382,8 +1392,10 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                         ri,rj)
 
                    ! EMK...Add observation
+                   net32 = obs_6(i)%net
+                   platform32 = obs_6(i)%platform
                    call USAF_assignObsData(precip12, &
-                        obs_6(i)%net, obs_6(i)%platform, &
+                        net32, platform32, &
                         float(obs_6(i)%amtmsc) * 0.1, &
                         obs_6(i)%lat, obs_6(i)%lon, &
                         agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &

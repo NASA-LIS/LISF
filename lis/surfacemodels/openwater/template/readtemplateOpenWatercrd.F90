@@ -47,6 +47,6 @@ subroutine readtemplateOpenWatercrd()
      call LIS_parseTimeString(time,templateOpenWater_struc(n)%ts)
   enddo
 
-  write(LIS_logunit,*)'Running Template Open water Option:'
+  write(LIS_logunit,*)'[INFO] Running Template Open water Option:'
 
 end subroutine readtemplateOpenWatercrd
