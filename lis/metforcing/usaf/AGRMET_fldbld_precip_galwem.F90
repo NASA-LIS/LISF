@@ -550,7 +550,7 @@ subroutine AGRMET_fldbld_read_precip_galwem(fg_filename, ifguess, jfguess,&
      count_prec = 0
 
      write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'[MSG] Reading first guess precip ', trim(fg_filename)
+     write(LIS_logunit,*)'[INFO] Reading first guess precip ', trim(fg_filename)
 
      call grib_count_in_file(ftn,nvars,ierr)
      call LIS_verify(ierr, 'error in grib_count_in_file in ' // &

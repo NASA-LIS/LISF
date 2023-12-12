@@ -56,8 +56,8 @@ subroutine AGRMET_read_sfcalccntm(n)
   
   inquire( file = trim(agrmet_struc(n)%sfcntmfile), exist = exists)
   if ( exists ) then
-     write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'- READING ', trim(agrmet_struc(n)%sfcntmfile)
+     !write(LIS_logunit,*)' '
+     write(LIS_logunit,*)'[INFO] READING ', trim(agrmet_struc(n)%sfcntmfile)
      ftn= LIS_getNextUnitNumber()
      open(ftn, file=trim(agrmet_struc(n)%sfcntmfile), access='direct',&
           status='old', form="unformatted", recl=LIS_rc%gnr(n)*LIS_rc%gnc(n)*4)
@@ -73,10 +73,10 @@ subroutine AGRMET_read_sfcalccntm(n)
   else
      write(LIS_logunit,*)
      write(LIS_logunit,*) "*****************************************************"
-     write(LIS_logunit,*) "* LIS: ERROR OPENING FILE:" 
-     write(LIS_logunit,*) "* ", trim(agrmet_struc(n)%sfcntmfile)
-     write(LIS_logunit,*) "* FILE DOES NOT EXIST."
-     write(LIS_logunit,*) "* LIS WILL ABORT."
+     write(LIS_logunit,*) "[ERR] LIS: ERROR OPENING FILE:" 
+     write(LIS_logunit,*) "[ERR] ", trim(agrmet_struc(n)%sfcntmfile)
+     write(LIS_logunit,*) "[ERR] FILE DOES NOT EXIST."
+     write(LIS_logunit,*) "[ERR] LIS WILL ABORT."
      write(LIS_logunit,*) "*****************************************************"
      message    = ' '
      message(1) = 'program:  LIS'

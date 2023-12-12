@@ -19,6 +19,8 @@
 !                         errors.  Plus, added two new QC tests based on
 !                         Brasnett.  Plus, other bug fixes.
 ! 02 Nov 2020  Eric Kemp  Removed blacklist at request of 557WW.
+! 28 Jul 2023  Eric Kemp  Expanded station ID to 31 characters.
+! 24 Aug 2023  Eric Kemp  Expanded station ID to 32 characters.
 !
 ! DESCRIPTION:
 ! Source code for snow depth analysis using the Bratseth objective analysis
@@ -78,7 +80,7 @@ module LDT_bratsethMod
       real :: back_err_v_corr_len ! Background error vert correlation length
       integer :: nobs ! Number of observations
       character*10, allocatable :: networks(:)      ! Network name
-      character*10, allocatable :: platforms(:) ! Observation station ID
+      character*32, allocatable :: platforms(:) ! Observation station ID
       real, allocatable :: obs(:) ! Observed values
       real, allocatable :: lats(:) ! Latitude of observation (deg N)
       real, allocatable :: lons(:) ! Longitude of observation (deg E)
@@ -229,8 +231,8 @@ contains
    ! Append a single observation into a LDT_bratseth_t object.  Value of
    ! interpolated background value is optional (useful for adding
    ! "superobservations")
-   subroutine LDT_bratseth_append_ob(this, network, platform, ob, lat, lon, &
-        elev, ob_err_var, back)
+   subroutine LDT_bratseth_append_ob(this, network, platform, ob, &
+        lat, lon, elev, ob_err_var, back)
 
       ! Imports
       use LDT_logmod, only : LDT_logunit
@@ -241,7 +243,7 @@ contains
       ! Arguments
       class(LDT_bratseth_t),intent(inout) :: this
       character(len=10), intent(in) :: network
-      character(len=10), intent(in) :: platform
+      character(len=32), intent(in) :: platform
       real, intent(in) :: ob
       real, intent(in) :: lat
       real, intent(in) :: lon
@@ -838,7 +840,8 @@ contains
       integer :: count_dups
       real :: mean, back, newlat, newlon, newelev
       real :: ob_err_var, ob_err_corr_len
-      character(len=10) :: network, platform
+      character(len=10) :: network
+      character(len=32) :: platform
       real :: diff
       integer :: i,j
       logical :: reject_all
@@ -1239,8 +1242,8 @@ contains
    ! obs, and rejected if deviation is too high.  Superobs are considered
    ! "close" if they are in the same LIS grid box.  Based on Lespinas et al
    ! (2015).
-   subroutine LDT_bratseth_run_superstat_qc(this, n, new_name, ncols, nrows, &
-        silent_rejects)
+   subroutine LDT_bratseth_run_superstat_qc(this, n, new_name, &
+        ncols, nrows, silent_rejects)
 
       ! Imports
       use LDT_coreMod, only: LDT_domain, LDT_rc
@@ -1253,7 +1256,7 @@ contains
       ! Arguments
       class(LDT_bratseth_t), intent(inout) :: this
       integer, intent(in) :: n
-      character(len=10), intent(in) :: new_name
+      character(len=32), intent(in) :: new_name
       integer, intent(in) :: ncols
       integer, intent(in) :: nrows
       logical, optional, intent(in) :: silent_rejects
@@ -1262,7 +1265,8 @@ contains
       integer :: num_good_obs
       integer :: num_rejected_obs, num_merged_obs, num_superobs
       logical :: silent_rejects_local
-      character(len=10) :: network_new, platform_new
+      character(len=10) :: network_new
+      character(len=32) :: platform_new
       integer, allocatable :: actions(:)
       real, allocatable :: means(:,:)
       real, allocatable :: superobs(:,:), superbacks(:,:)
@@ -1817,7 +1821,7 @@ contains
       integer :: iob,job
       logical :: found_replacement
       character*10 :: network
-      character*10 :: platform
+      character*32 :: platform
       real :: ob, lat, lon, elev, ob_err_var, back
       integer :: qc
       character*80 :: failed_qc_test
@@ -2042,6 +2046,9 @@ contains
    ! See https://en.wikipedia.org/wiki/Comb_sort
    subroutine LDT_bratseth_sort_obs_by_id(this)
 
+      ! Imports
+      use LDT_logmod, only : LDT_logunit
+
       ! Defaults
       implicit none
 
@@ -2052,6 +2059,7 @@ contains
       integer :: gap
       integer :: switch
       character*10 :: ctemp10
+      character*32 :: ctemp32
       character*80 :: ctemp80
       real :: rtemp
       integer :: itemp
@@ -2078,9 +2086,9 @@ contains
                this%networks(i) = this%networks(j)
                this%networks(j) = ctemp10
 
-               ctemp10 = this%platforms(i)
+               ctemp32 = this%platforms(i)
                this%platforms(i) = this%platforms(j)
-               this%platforms(j) = ctemp10
+               this%platforms(j) = ctemp32
 
                rtemp = this%obs(i)
                this%obs(i) = this%obs(j)
@@ -2152,7 +2160,7 @@ contains
                  int(this%elevs(i)), this%obs(i), trim(this%reject_reasons(i))
          end if
       end do ! i
-7000  format (/,'[INFO] NETID = ',A5,' STATION ID = ',A9, &
+7000  format (/,'[INFO] NETID = ',A5,' STATION ID = ',A32, &
            '   LAT = ',F6.2,'   LON = ',F7.2, &
            '   ELEV(M) = ',I5,'   DEPTH(M) = ', F7.5, &
            '   QC VERDICT = ',A)
