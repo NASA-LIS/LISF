@@ -3080,6 +3080,7 @@ contains
 #if (defined USE_GRIBAPI)
       use grib_api
 #endif
+      use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
       use LIS_mpiMod
