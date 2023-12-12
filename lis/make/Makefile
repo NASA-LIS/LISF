@@ -8,7 +8,7 @@ RM := rm -f
 make-clean := $(RM) *.o *.mod LIS
 make-real-clean := $(RM) *.o *.mod LIS *.d Filepath
 COUPLED:=$(shell grep -E '^\#[[:space:]]*define[[:space:]]+COUPLED' LIS_misc.h)
-append_offline := $(if $(COUPLED),,vim -N -u NONE -i NONE -e -s -c '$$s;$$; ../offline;|wq' Filepath)
+append_offline := $(if $(COUPLED),,vim -X -N -u NONE -i NONE -e -s -c '$$s;$$; ../offline;|wq' Filepath)
 
 # Ensure that Filepath exists and/or is up to date.
 #

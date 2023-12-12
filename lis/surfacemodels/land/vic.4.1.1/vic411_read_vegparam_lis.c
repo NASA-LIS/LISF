@@ -13,9 +13,9 @@
 #include "vic411_vicNl.h" 
 #include <string.h>
 
-static char vcid[] = "$Id: vic411_read_vegparam.c,v 4.5.2.11 2009/10/01 21:12:16 vicadmin Exp $";
+static char vcid[] = "$Id: vic411_read_vegparam_lis.c,v 4.5.2.11 2009/10/01 21:12:16 vicadmin Exp $";
 // shugong: if cannot find entry for the gridid+vegetation class, return 0, other return 1
-int vic411_read_vegparam(FILE *vegparam,
+int vic411_read_vegparam_lis(FILE *vegparam,
                          int   gridcel,
                          int   Nveg_type,
                          int   lis_veg_class,

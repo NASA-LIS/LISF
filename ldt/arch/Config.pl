@@ -134,7 +134,7 @@ if($opt_lev == -3) {
     }
     elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
 	$sys_opt = "-g -Wall -Wcharacter-truncation";
-	$sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+	$sys_opt .= " -Wconversion-extra -Wextra -Wrealloc-lhs";
 	$sys_opt .= " -Wrealloc-lhs-all";
 	# Run-time options
 	$sys_opt .= " -ffpe-trap=invalid,zero,overflow";
@@ -599,7 +599,7 @@ else{
 }
 
 if(defined($ENV{LDT_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LDT_RPC};
 }
 else{
    $librpc = "";
@@ -608,25 +608,25 @@ else{
 if($sys_arch eq "linux_ifc") {
    if($use_omp == 1) {
       if($use_endian == 1) {
-         $fflags77= "-c -openmp ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags77= "-c -openmp ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $ldflags= " -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
       else {
-         $fflags77= "-c -openmp ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags77= "-c -openmp ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags =" -c -openmp ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $ldflags= " -openmp -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
    }
    else {
       if($use_endian == 1) {
-         $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert little_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
       else {
-         $fflags77= "-c ".$sys_opt."-nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-         $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed_str_len_arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags77= "-c ".$sys_opt."-nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par." -DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+         $fflags =" -c ".$sys_opt."-u -traceback -fpe0  -nomixed-str-len-arg -names lowercase -convert big_endian -assume byterecl ".$sys_par."-DIFC -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
          $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt -lz";
       }
    }

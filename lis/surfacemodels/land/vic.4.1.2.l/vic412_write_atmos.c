@@ -11,6 +11,8 @@
 #include <vicNl.h>
 #include "ftn.h"
 
+extern void write_atmosdata(atmos_data_struct *, int);
+
 //BOP
 //
 // !ROUTINE: vic412_write_atmos

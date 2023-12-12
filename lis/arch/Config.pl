@@ -165,9 +165,11 @@ if($opt_lev == -3) {
        $sys_c_opt .= " -Wunused-function -Wunused-parameter";
        $sys_c_opt .= " -Wunused-variable -Wwrite-strings";
        # Run-time flags
-       $sys_c_opt .= " -check=conversions,stack,uninit";
+       #EMK 20231109...Disabled several flags that are rejected by the new ICX
+       #compiler on Narwhal.
+       #$sys_c_opt .= " -check=conversions,stack,uninit";
        $sys_c_opt .= " -fp-stack-check -fp-trap=common -fp-trap-all=common";
-       $sys_c_opt .= " -ftrapuv";
+       #$sys_c_opt .= " -ftrapuv";
    }
    elsif($sys_arch eq "linux_pgi") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";
@@ -188,7 +190,7 @@ if($opt_lev == -3) {
       #print "Using '-g'\n";
       #$sys_opt = "-g";
       $sys_opt = "-g -Wall -Wcharacter-truncation";
-      $sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+      $sys_opt .= " -Wconversion-extra -Wextra -Wrealloc-lhs";
       $sys_opt .= " -Wrealloc-lhs-all";
       # Run-time options
       $sys_opt .= " -ffpe-trap=invalid,zero,overflow";
@@ -874,7 +876,7 @@ if ($ENV{MPDECOMP2} eq '1') {
 }
 
 if(defined($ENV{LIS_RPC})){
-   $librpc = "-ltirpc";
+   $librpc = $ENV{LIS_RPC};
 }
 else{
    $librpc = "";
@@ -887,8 +889,8 @@ else{
 
 if($sys_arch eq "linux_ifc") {
    $cflags = "-c ".$sys_omp." ".$sys_c_opt." -traceback -DIFC -DLINUX";
-   $fflags77= "-c ".$sys_omp." ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
-   $fflags ="-c ".$sys_omp." ".$sys_opt." -u -traceback -fpe0 -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
+   $fflags77= "-c ".$sys_omp." ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
+   $fflags ="-c ".$sys_omp." ".$sys_opt." -u -traceback -fpe0 -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
    $ldflags= $sys_omp." -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lrt";
    $lib_flags= "-lesmf -lstdc++ -limf -lrt";
    $lib_paths= "-L\$(LIB_ESMF)";

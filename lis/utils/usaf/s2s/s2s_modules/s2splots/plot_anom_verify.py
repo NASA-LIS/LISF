@@ -72,7 +72,7 @@ def compute_median (anom, lead):
     ''' compute median anomaly of the specified lad '''
     da_slice=[]
     for da in anom:
-        da_slice.append(da.isel(lead=lead))
+        da_slice.append(da.isel(time=lead))
     da_conc = xr.concat(da_slice, dim = 'ens')
     return da_conc.median(dim = 'ens')
 
@@ -349,6 +349,8 @@ if __name__ == "__main__":
 
         nc_med = compute_median (anoms, lead)
         plot_arr[0,:] = nc_med.values *convf
+        if var == 'Precip':
+           plot_arr[0,:] = plot_arr[0,:]/ndays 
 
         # plotting
         style_color = plot_utils.load_table(load_table)
@@ -381,7 +383,7 @@ if __name__ == "__main__":
             gl_.left_labels = False
             gl_.right_labels = False
 
-            plt.title('Monthly '+ var + ' Anomally : ' +titles[count_plot], fontsize=fscale*FONT_SIZE2)
+            plt.title('Monthly '+ var + ' Anomaly : ' +titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
             if np.mod (count_plot, ncols) == 0:
                 gl_.left_labels = True
