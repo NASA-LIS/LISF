@@ -17,6 +17,10 @@
 #define VIC_BASED ( 0 )
 #define LIS_BASED ( 1 )
 
+extern void vic411_lis_scan_soilparam_flat_ascii(FILE *, float *, float *);
+
+extern void vic411_compute_treeline_lis(double, double *, char *);
+
 vic411_soil_con_struct vic411_lis_read_soilparam_arc(FILE *, char *, float *, float *);
 vic411_veg_con_struct *vic411_set_vegparam(int tile_idx,       // index of current tile 
                              int vegclass,       // vegetation class determined by LIS

@@ -5,6 +5,8 @@
 
 static char vcid[] = "$Id$";
 
+extern void unpack_model_state(dist_prcp_struct *, global_param_struct *, int, int, int, soil_con_struct *, int, char *, int *, lake_con_struct, float *);
+
 int initialize_model_state(dist_prcp_struct    *prcp,
                            dmy_struct           dmy,
                            global_param_struct *global_param,
