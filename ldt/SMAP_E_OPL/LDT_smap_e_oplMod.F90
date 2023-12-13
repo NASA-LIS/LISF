@@ -335,7 +335,6 @@ contains
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
              ! EMK...Process subset of fields.
-             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
              call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
                   SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
 
@@ -349,7 +348,6 @@ contains
              write (LDT_logunit,*) '[INFO] Resampling ', trim(smap_L1B_filename(i))
              allocate(SMAPeOPL%ARFS_TBV_COR(LDT_rc%lnc(n),LDT_rc%lnr(n)))
              !EMK Process subset of fields.
-             !call SMAPL1BRESAMPLE(smap_L1B_filename(i),SMAPeOPL%L1Bdir,Orbit,TIMEsec,rc)
              call SMAPL1BRESAMPLE_subset(smap_L1B_filename(i), &
                   SMAPeOPL%L1Bdir, Orbit, TIMEsec, rc)
 
@@ -414,44 +412,11 @@ contains
              call ESMF_TimeGet(firsttime, yy=yr_pre, mm=mo_pre, dd=da_pre, &
                   h=hh_pre)
 
-             ! yr_pre = yr
-             ! mo_pre = mo
-             ! da_pre = da - 1
-             ! if(da_pre.eq.0) then
-             !    mo_pre = mo - 1
-
-             !    if(mo_pre.eq.0) then
-             !       yr_pre = yr - 1
-             !       mo_pre = 12
-             !       da_pre = 31
-             !    else
-             !       if(mo_pre.eq.1.or.&
-             !        mo_pre.eq.3.or.&
-             !        mo_pre.eq.5.or.&
-             !        mo_pre.eq.7.or.&
-             !        mo_pre.eq.8.or.&
-             !        mo_pre.eq.10.or.&
-             !        mo_pre.eq.12) then
-             !          da_pre = 31
-             !       elseif(mo_pre.eq.2) then
-             !          if(mod(yr,4).eq.0) then
-             !             da_pre = 29
-             !          else
-             !             da_pre = 28
-             !          endif
-             !       else
-             !          da_pre = 30
-             !       endif
-             !    endif
-             ! endif
-
              write(unit=yyyy_01, fmt='(i4.4)') yr_pre
              write(unit=mm_01, fmt='(i2.2)') mo_pre
              write(unit=dd_01, fmt='(i2.2)') da_pre
              yyyymmdd_01 = trim(yyyy_01)//trim(mm_01)//trim(dd_01)
              write(unit=hh_01, fmt='(i2.2)') hh_pre
-             !hh_01 = hh
-             !call readLIS_Teff(n,yyyymmdd_01,hh_01,Orbit,teff_01)
              call readLIS_Teff_usaf(n, yyyymmdd_01, hh_01, Orbit, teff_01, rc)
              if (rc .ne. 0) then
                 write(LDT_logunit,*)'[WARN] No Teff data available...'
@@ -461,57 +426,11 @@ contains
              call ESMF_TimeGet(secondtime, yy=yr_02, mm=mo_02, dd=da_02, &
                   h=hr_02)
 
-             ! yr_02 = yr_pre
-             ! mo_02 = mo_pre
-             ! da_02 = da_pre
-             ! hr_02 = hr + 1
-
-             ! if(hr_02.eq.24) then
-             !    hr_02 = 0
-             !    da_02 = da_pre + 1
-                
-             !    if(mo_pre.eq.1.or.&
-             !     mo_pre.eq.3.or.&
-             !     mo_pre.eq.5.or.&
-             !     mo_pre.eq.7.or.&
-             !     mo_pre.eq.8.or.&
-             !     mo_pre.eq.10.or.&
-             !     mo_pre.eq.12) then
-             !       if(da_02.gt.31) then
-             !          da_02 = 1
-             !          mo_02 = mo_pre + 1
-             !       endif
-             !    elseif(mo_pre.eq.2) then
-             !       if(mod(yr_02,4).eq.0) then
-             !          if(da_02.gt.29) then
-             !             da_02 = 1
-             !             mo_02 = mo_pre + 1
-             !          endif
-             !       else
-             !          if(da_02.gt.28) then
-             !             da_02 = 1
-             !             mo_02 = mo_pre + 1
-             !          endif
-             !      endif
-             !    else
-             !       if(da_02.gt.30) then
-             !          da_02 = 1
-             !          mo_02 = mo_pre + 1
-             !       endif
-             !    endif
-
-             !    if(mo_02.gt.12) then
-             !       mo_02 = 1
-             !       yr_02 = yr_pre + 1
-             !    endif
-             ! endif
-
              write(unit=yyyy_02, fmt='(i4.4)') yr_02
              write(unit=mm_02, fmt='(i2.2)') mo_02
              write(unit=dd_02, fmt='(i2.2)') da_02
              write(unit=hh_02, fmt='(i2.2)') hr_02
              yyyymmdd_02 = trim(yyyy_02)//trim(mm_02)//trim(dd_02)
-             !call readLIS_Teff(n,yyyymmdd_02,hh_02,Orbit,teff_02)
              call readLIS_Teff_usaf(n, yyyymmdd_02, hh_02, Orbit, teff_02, rc)
              if (rc .ne. 0) then
                 write(LDT_logunit,*)'[WARN] No Teff data available...'
@@ -526,7 +445,6 @@ contains
              write(unit=dd_03, fmt='(i2.2)') da_03
              write(unit=hh_03, fmt='(i2.2)') hr_03
              yyyymmdd_03 = trim(yyyy_03)//trim(mm_03)//trim(dd_03)
-             !call readLIS_Teff(n,yyyymmdd_03,hh_03,Orbit,teff_03)
              call readLIS_Teff_usaf(n, yyyymmdd_03, hh_03, Orbit, teff_03, rc)
              if (rc .ne. 0) then
                 write(LDT_logunit,*)'[WARN] No Teff data available...'
@@ -572,7 +490,6 @@ contains
              read_L1Bdata = .false.
 
   ! Get snow information from LIS outputs
-             !call readLIS_snow(n,yyyymmdd,hh,SnowDepth)
              call readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
              if (rc .ne. 0) then
                 write(LDT_logunit,*)'[WARN] No USAFSI data available!'
@@ -621,12 +538,10 @@ contains
        list_files = 'ls '//trim(ndir)//'/SMAP_L1B_TB_NRT_*'//&
                     trim(yyyymmdd)//'T'//trim(hh) &
                     //'*.h5 > SMAP_L1B_filelist_'//trim(tmp)//'.dat'
-!                    //"*.h5 > SMAP_L1B_filelist.dat"
     elseif(L1Btype.eq.2) then   !Historical
        list_files = 'ls '//trim(ndir)//'/SMAP_L1B_TB_*'//&
                     trim(yyyymmdd)//'T'//trim(hh) &
                     //'*.h5 > SMAP_L1B_filelist_'//trim(tmp)//'.dat'
-!                    //"*.h5 > SMAP_L1B_filelist.dat"
     endif
 
     call system(trim(list_files))
