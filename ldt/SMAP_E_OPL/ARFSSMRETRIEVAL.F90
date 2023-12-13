@@ -153,8 +153,6 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     call ESMF_TimeGet(thirdtime, yy=thirdUTCyr, mm=thirdUTCmo, dd=thirdUTCdy, &
          h=thirdUTChr)
 
-!    DO i=1,nrow !ROW LON
-!       DO j=1,mcol !COL LAT
     DO j=1,mcol !COL LAT
        DO i=1,nrow !ROW LON
 
@@ -190,44 +188,9 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
           end if
           if (TS_A > 0 .and. TS_B > 0) then
              TS = ((wgt)*TS_A) + ((1. - wgt)*TS_B)
-             ! write(LDT_logunit,*) &
-             !      'EMK: i,j,UTChr,firstUTChr,secondUTChr,thirdUTChr,wgt:', &
-             !      i,j,UTChr(i,j),firstUTChr,secondUTChr,thirdUTChr,wgt
           else
              cycle
           end if
-
-!           if(UTChr(i,j).ge.0) then
-!              !utc_check = UTChr(i,j) - floor(UTChr(i,j))
-!              !if(utc_check.le.0.5) then
-!              !    Ts  = ARFS_TS_01(i,j)
-!              ! else
-!              !    Ts  = ARFS_TS_02(i,j)
-!              ! endif
-
-!              ! EMK Use linear interpolation between two time periods
-!              if (firstUTChr == 21 .and. (UTChr(i,j) > 21)) then
-!                 deltasec = ( UTChr(i,j) - firstUTChr ) * 3600
-!                 wgt = (10800. - deltasec) / 10800.
-!              else if (UTChr(i,j) < (firstUTChr + 3)) then
-!                 deltasec = ( UTChr(i,j) - firstUTChr ) * 3600
-!                 wgt = (10800. - deltasec) / 10800.
-! !                write(LDT_logunit,*)'EMK: i,j, firstUTChr, UTChr, deltasec, wgt = ', &
-! !                     i,j,firstUTChr,UTChr(i,j),deltasec,wgt
-
-!              else
-!                 wgt = 0
-!                 write(LDT_logunit,*)'EMK: i,j, firstUTChr, UTChr, wgt = ', &
-!                      i,j,firstUTChr,UTChr(i,j),wgt
-
-!              end if
-!              if (ARFS_TS_01(i,j) > 0 .and. ARFS_TS_02(i,j) > 0) then
-!                 TS = ((wgt)*ARFS_TS_01(i,j)) + ((1. - wgt)*ARFS_TS_02(i,j))
-!              else
-!                 TS = -9999
-!              end if
-
-!           endif
 
           IF (tbv.GT.0.0.AND.Ts.GT.0.AND.ARFS_SNOW(i,j).LE.SMAPeOPL%SD_thold.AND.ARFS_BD(i,j).NE.-9999.AND.ARFS_LC(i,j).NE.0.AND.&
             UTChr(i,j).GE.0) THEN
@@ -241,11 +204,8 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
              CALL algo_vpol(real(i),real(j),sm_retrieval, tau_return, retrieval_flag)
              ARFS_SM(i,j)=sm_retrieval
              ARFS_SM_FLAG(i,j)=retrieval_flag
-          ELSE
-             !PRINT*,i, j, "NO RETRIEVAL"
+
           END IF
-!       END DO !jj=1,mcol !COL LAT
-!    END DO !ii=1,nrow !ROW LON
        END DO !ii=1,nrow !ROW LON
     END DO !jj=1,mcol !COL LAT
 
@@ -254,15 +214,11 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     L1B_fname_len = len_trim(SMAPFILE)
 
     if(SMAPeOPL%L1Btype.eq.1) then  !NRT
-       !retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
-       !                  trim(SMAPFILE(L1B_dir_len+18:L1B_fname_len-3))//".dat"
        retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
                          trim(SMAPFILE(L1B_dir_len+18:L1B_fname_len-3))//".nc"
        yyyymmdd = trim(SMAPFILE(L1B_fname_len-28:L1B_fname_len-20))
        hhmmss = trim(SMAPFILE(L1B_fname_len-19:L1B_fname_len-13))
     elseif(SMAPeOPL%L1Btype.eq.2) then  !Historical
-       !retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
-       !     trim(SMAPFILE(L1B_dir_len+14:L1B_fname_len-3))//".dat"
        retrieval_fname = trim(SMAPeOPL%SMoutdir)//"/"//"ARFS_SM_V_"//&
             trim(SMAPFILE(L1B_dir_len+14:L1B_fname_len-3))//".nc"
        yyyymmdd = trim(SMAPFILE(L1B_fname_len-28:L1B_fname_len-20))
@@ -270,10 +226,6 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     endif
 
     write (LDT_logunit,*) '[INFO] Writing soil moisture retrieval file ', trim(retrieval_fname)
-!    OPEN(UNIT=151, FILE=retrieval_fname,FORM='UNFORMATTED',ACCESS='DIRECT', RECL=nrow*mcol*4)
-!    WRITE(UNIT=151, REC = 1) ARFS_SM
-!    CLOSE(151)
-
 
     ! NOTE: nrow is actually number of columns, mcol is actually number of
     ! rows
