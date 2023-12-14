@@ -52,6 +52,10 @@ module LISlsmTEFF_obsMod
      character*20  :: data_category
      character*20  :: area_of_data
      character*20  :: write_interval
+     ! EMK
+     integer :: num_ens
+     integer :: num_tiles
+     integer :: ntiles_pergrid
 !--------------------------------------------------------
 !  interpolation/upscaling weights
 !--------------------------------------------------------
@@ -126,6 +130,38 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config,lsmteffobs%odir, &
          label="LIS soil temperature output directory:",rc=rc)
     call LDT_verify(rc,'LIS soil temperature output directory: not defined')
+
+    ! EMK Add LIS ensemble information
+    call ESMF_ConfigGetAttribute(LDT_config, lsmteffobs%num_ens, &
+         label="LIS ensemble size:", rc=rc)
+    call LDT_verify(rc,'LIS ensemble size: not defined')
+    if (lsmteffobs%num_ens < 1) then
+       write(LDT_logunit,*)'[ERR] LIS ensemble size must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', lsmteffobs%num_ens
+       call LDT_endrun()
+    end if
+
+    call ESMF_ConfigGetAttribute(LDT_config, lsmteffobs%num_tiles, &
+         label="LIS total number of tiles (including ensembles):", rc=rc)
+    call LDT_verify(rc,'LIS total number of tiles (including ensembles): ' // &
+         'not defined')
+    if (lsmteffobs%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS total number of tiles (including ensembles) must be'  &
+            //'at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', lsmteffobs%num_tiles
+       call LDT_endrun()
+    end if
+
+    call ESMF_ConfigGetAttribute(LDT_config, lsmteffobs%ntiles_pergrid, &
+         label="LIS number of tiles per grid point:", rc=rc)
+    call LDT_verify(rc,'LIS number of tiles per grid point: not defined')
+    if (lsmteffobs%num_tiles < 1) then
+       write(LDT_logunit,*) &
+            '[ERR] LIS number of tiles per grid point must be at least 1!'
+       write(LDT_logunit,*)'[ERR] Read in ', lsmteffobs%ntiles_pergrid
+       call LDT_endrun()
+    end if
 
     ! WMO-convention specific identifiers
     if ( lsmteffobs%wstyle == "WMO convention") then 

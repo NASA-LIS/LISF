@@ -181,6 +181,8 @@ MODULE TOOLSUBS
     SUBROUTINE GetSMAP_L1B(filename, data1_out, data2_out, data3_out, data4_out, data5_out, data6_out, data7_out, data8_out, &
                            data9_out, data10_out, data11_out, data12_out, data13_out, data14_out, data15_out, n, m)
 
+      use LDT_logMod, only: LDT_logunit ! EMK
+
     CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7
     CHARACTER (len=100)    :: dataset8, dataset9, dataset10, dataset11, dataset12, dataset13, dataset14, dataset15
 #if (defined USE_HDF5)
@@ -216,8 +218,9 @@ MODULE TOOLSUBS
 #if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
-!        PRINT*, 'sd_id, hdferr', file_id, hdferr
+       !        PRINT*, 'sd_id, hdferr', file_id, hdferr
        CALL h5dopen_f (file_id, trim(dataset1),dataset_id1, hdferr) !Open dataset
+
        call h5dget_space_f(dataset_id1,dspace_id,hdferr)
        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
        CALL h5dopen_f (file_id, trim(dataset2),dataset_id2, hdferr) !Open dataset 
@@ -234,7 +237,6 @@ MODULE TOOLSUBS
        CALL h5dopen_f (file_id, trim(dataset13),dataset_id13, hdferr) !Open dataset 
        CALL h5dopen_f (file_id, trim(dataset14),dataset_id14, hdferr) !Open dataset 
        CALL h5dopen_f (file_id, trim(dataset15),dataset_id15, hdferr) !Open dataset       
-
 
        !PRINT*,'ds_id hdferr', dataset_id1, hdferr
        !PRINT*,'dims maxdims', dims, maxdims
@@ -284,6 +286,369 @@ MODULE TOOLSUBS
        ! PRINT*, 'SMAP Data', sm_mat
 #endif
     END SUBROUTINE GetSMAP_L1B
+
+      ! Forked version of GetSMAP_L1B to SMAP files in operations, processing
+      ! a subset of the fields.  Also with fault tolerance and some special
+      ! logic for older NRT files missing the tb_v_surface_corrected field.
+      ! Eric Kemp/SSAI.
+      SUBROUTINE GetSMAP_L1B_NRT_subset(filename, tb_time_seconds, &
+           tb_v_surface_corrected, &
+           tb_lat, tb_lon, tb_qual_flag_v, tb_qual_flag_h, sc_nadir_angle, &
+           antenna_scan_angle, n, m, ierr)
+
+      ! Imports
+      use LDT_logMod, only: LDT_logunit, LDT_endrun ! EMK
+
+      ! Arguments
+      character(*), intent(in) :: filename
+      real*4, allocatable, intent(out) :: tb_time_seconds(:,:)
+      real*4, allocatable, intent(out) :: tb_v_surface_corrected(:,:)
+      real*4, allocatable, intent(out) :: tb_lat(:,:), tb_lon(:,:)
+      integer*4, allocatable, intent(out) :: tb_qual_flag_v(:,:)
+      integer*4, allocatable, intent(out) :: tb_qual_flag_h(:,:)
+      real*4, allocatable, intent(out) :: sc_nadir_angle(:)
+      real*4, allocatable, intent(out) :: antenna_scan_angle(:,:)
+      integer, intent(out) :: m, n
+      integer, intent(out) :: ierr
+
+#if (defined USE_HDF5)
+
+      ! Locals
+      character(100) :: dataset
+      integer(HID_T) :: file_id, dataset_id, dspace_id
+      integer(HSIZE_T) :: dims(2), maxdims(2)
+      integer :: hdferr
+      logical :: exists, ishdf5
+
+      ierr = 0
+      m = 0
+      n = 0
+
+      ! Make sure file exists
+      inquire(file=trim(filename), exist=exists)
+      if (.not. exists) then
+         write(LDT_logunit,*)'[ERR] Cannot find file ', trim(filename)
+         ierr = 1
+         return
+      end if
+
+      ! Initialize HDF5
+      call h5open_f(hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot initialize HDF5 Fortran interface!'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Make sure the file is HDF5
+      call h5fis_hdf5_f(trim(filename), ishdf5, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Problem checking if ', trim(filename), &
+              ' is HDF5'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+      if (.not. ishdf5) then
+         write(LDT_logunit,*)'[ERR] File ', trim(filename), ' is not HDF5!'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Open the file
+      call h5fopen_f(trim(filename), H5F_ACC_RDONLY_F, file_id, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot open ', trim(filename)
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Find Tb_lat, plus dimensions
+      dataset = "/Brightness_Temperature/tb_lat/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call h5dget_space_f(dataset_id, dspace_id, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+              trim(dataset)
+         call h5dclose_f(dataset_id, hdferr)
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+      call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+              trim(dataset)
+         call h5dclose_f(dataset_id, hdferr)
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! We have the dimensions for the arrays, so let's allocate here.
+      n = dims(1)
+      m = dims(2)
+      allocate(tb_v_surface_corrected(n,m)); tb_v_surface_corrected = 0
+      allocate(tb_time_seconds(n,m)); tb_time_seconds = 0
+      allocate(tb_lat(n,m)) ; tb_lat = 0
+      allocate(tb_lon(n,m)) ; tb_lon = 0
+      allocate(tb_qual_flag_v(n,m)) ; tb_qual_flag_v = 0
+      allocate(tb_qual_flag_h(n,m)) ; tb_qual_flag_h = 0
+      allocate(sc_nadir_angle(n)) ; sc_nadir_angle = 0
+      allocate(antenna_scan_angle(n,m)) ; antenna_scan_angle = 0
+
+      ! Get Tb_lat
+      call read_dataset_real(file_id, dataset, dataset_id, tb_lat, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get tb_lon
+      dataset = "/Brightness_Temperature/tb_lon/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_real(file_id, dataset, dataset_id, tb_lon, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get tb_time_seconds
+      dataset = "/Brightness_Temperature/tb_time_seconds/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_real(file_id, dataset, dataset_id, tb_time_seconds, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get tb_qual_flag_v
+      dataset = "/Brightness_Temperature/tb_qual_flag_v/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_integer(file_id, dataset, dataset_id, tb_qual_flag_v, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get tb_qual_flag_h
+      dataset = "/Brightness_Temperature/tb_qual_flag_h/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_integer(file_id, dataset, dataset_id, tb_qual_flag_h, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get sc_nadir_angle
+      dataset = "/Spacecraft_Data/sc_nadir_angle/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_real_1d(file_id, dataset, dataset_id, sc_nadir_angle, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Get antenna_scan_angle
+      dataset = "/Brightness_Temperature/antenna_scan_angle/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr)
+      if (ierr == 1) return
+      call read_dataset_real(file_id, dataset, dataset_id, &
+           antenna_scan_angle, dims, ierr)
+      if (ierr == 1) return
+
+      ! We will try to get tb_v_surface_corrected, but this is missing
+      ! in older NRT files.  If absent, we will substitute tb_v.
+      ! NOTE:  If a *read* error occurs, the file will assumed to be
+      ! corrupt all arrays will be nuked.
+      ! Get tb_v_surface_corrected
+      dataset = "/Brightness_Temperature/tb_v_surface_corrected/"
+      call get_dataset_id(file_id, dataset, dataset_id, ierr, &
+           handle_missing_nrt_field=.true.)
+      if (ierr == 1) then
+         ierr = 0
+         dataset = "/Brightness_Temperature/tb_v/"
+         write(LDT_logunit,*)'[WARN] Will try substituting ', trim(dataset)
+         call get_dataset_id(file_id, dataset, dataset_id, ierr)
+         if (ierr == 1) return
+      end if
+      call read_dataset_real(file_id, dataset, dataset_id, &
+           tb_v_surface_corrected, &
+           dims, ierr)
+      if (ierr == 1) return
+
+      ! Clean up
+      call h5fclose_f(file_id, hdferr)
+      call h5close_f(hdferr)
+      ierr = 0
+
+      return
+
+    contains
+
+      ! Internal subroutine
+      subroutine get_dataset_id(file_id, dataset, dataset_id, ierr, &
+           handle_missing_nrt_field)
+          implicit none
+          integer(HID_T), intent(in) :: file_id
+          character(*), intent(in) :: dataset
+          integer(HID_T), intent(out) :: dataset_id
+          integer, intent(out) :: ierr
+          logical, optional, intent(in) :: handle_missing_nrt_field
+          logical :: link_exists
+          integer :: hdferr
+          call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+          if (hdferr == -1) then
+             write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+             ierr = 1
+             if (handle_missing_nrt_field) return
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          endif
+          if (.not. link_exists) then
+             write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+             ierr = 1
+             if (handle_missing_nrt_field) return
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          endif
+          call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+          if (hdferr == -1) then
+             write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+             ierr = 1
+             if (handle_missing_nrt_field) return
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          end if
+        end subroutine get_dataset_id
+
+        ! Internal subroutine
+        subroutine read_dataset_real(file_id, dataset, dataset_id, buf, &
+             dims, ierr)
+          implicit none
+          integer(HID_T), intent(in) :: file_id
+          character(*), intent(in) :: dataset
+          integer(HID_T), intent(in) :: dataset_id
+          real*4, intent(inout) :: buf(:,:)
+          integer(HSIZE_T), intent(in) :: dims(:)
+          integer, intent(out) :: ierr
+          integer :: hdferr
+          call h5dread_f(dataset_id, H5T_IEEE_F32LE, buf, dims, hdferr)
+          if (hdferr == -1) then
+             write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+             call h5dclose_f(dataset_id, hdferr)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          endif
+          call h5dclose_f(dataset_id, hdferr)
+          if (hdferr == -1) then
+             write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                  trim(dataset)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          end if
+        end subroutine read_dataset_real
+
+        ! Internal subroutine
+        subroutine read_dataset_real_1d(file_id, dataset, dataset_id, buf, &
+             dims, ierr)
+          implicit none
+          integer(HID_T), intent(in) :: file_id
+          character(*), intent(in) :: dataset
+          integer(HID_T), intent(in) :: dataset_id
+          real*4, intent(inout) :: buf(:)
+          integer(HSIZE_T), intent(in) :: dims(:)
+          integer, intent(out) :: ierr
+          integer :: hdferr
+          call h5dread_f(dataset_id, H5T_IEEE_F32LE, buf, dims, hdferr)
+          if (hdferr == -1) then
+             write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+             call h5dclose_f(dataset_id, hdferr)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          endif
+          call h5dclose_f(dataset_id, hdferr)
+          if (hdferr == -1) then
+             write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                  trim(dataset)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          end if
+        end subroutine read_dataset_real_1d
+
+        ! Internal subroutine
+        subroutine read_dataset_integer(file_id, dataset, dataset_id, buf, &
+             dims, ierr)
+          implicit none
+          integer(HID_T), intent(in) :: file_id
+          character(*), intent(in) :: dataset
+          integer(HID_T), intent(in) :: dataset_id
+          integer*4, intent(inout) :: buf(:,:)
+          integer(HSIZE_T), intent(in) :: dims(:)
+          integer, intent(out) :: ierr
+          integer :: hdferr
+          call h5dread_f(dataset_id, H5T_NATIVE_INTEGER, buf, dims, hdferr)
+          if (hdferr == -1) then
+             write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+             call h5dclose_f(dataset_id, hdferr)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          endif
+          call h5dclose_f(dataset_id, hdferr)
+          if (hdferr == -1) then
+             write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                  trim(dataset)
+             call h5fclose_f(file_id, hdferr)
+             call h5close_f(hdferr)
+             call freeall(ierr)
+             return
+          end if
+        end subroutine read_dataset_integer
+
+        ! Internal subroutine.  Warning -- deallocates memory in
+        ! parent subroutine and resets two variables.  This is intended
+        ! for gracefully handling errors returned from HDF5.
+        subroutine freeall(ierr)
+          implicit none
+          integer, intent(out) :: ierr
+          if (allocated(tb_v_surface_corrected)) &
+               deallocate(tb_v_surface_corrected)
+          if (allocated(tb_lat)) deallocate(tb_lat)
+          if (allocated(tb_lon)) deallocate(tb_lon)
+          if (allocated(tb_time_seconds)) deallocate(tb_time_seconds)
+          if (allocated(tb_qual_flag_v)) deallocate(tb_qual_flag_v)
+          if (allocated(tb_qual_flag_h)) deallocate(tb_qual_flag_h)
+          if (allocated(sc_nadir_angle))deallocate(sc_nadir_angle)
+          if (allocated(antenna_scan_angle)) deallocate(antenna_scan_angle)
+          m = 0
+          n = 0
+          ierr = 1
+          return
+        end subroutine freeall
+#else
+        ! Dummy version if LDT was compiled w/o HDF5 support.
+        write(LDT_logunit,*) &
+             '[ERR] GetSMAP_L1B_NRT called without HDF5 support!'
+        write(LDT_logunit,*) &
+             '[ERR] Recompile LDT with HDF5 support and try again!'
+        call LDE_endrun()
+#endif
+      end subroutine GetSMAP_L1B_NRT_Subset
 
     SUBROUTINE NEAREST_1d ( nd, xd, yd, ni, xi, yi )
      IMPLICIT NONE
@@ -397,5 +762,7 @@ END SUBROUTINE IDW_2D
    !PRINT*, " y-intercept  b = ", b
    !PRINT*, " Correlation  r = ", r
    END SUBROUTINE LSQ_Linear
-   
+
+
+
 END MODULE TOOLSUBS
