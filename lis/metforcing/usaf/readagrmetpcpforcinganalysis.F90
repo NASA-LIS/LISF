@@ -127,13 +127,13 @@ subroutine readagrmetpcpforcinganalysis(n,findex, order)
                 //'.03hr.'//date10_03
         endif
 
-        write(LIS_logunit,*)' - READING precip ',ifil
+        write(LIS_logunit,*)'[INFO] READING precip ',ifil
         inquire(file=ifil,exist=exists)
         if(exists) then      
            call LIS_putget(gi(hemi,:,:), 'r', ifil, &
                 routine_name, agrmet_struc(n)%imax, agrmet_struc(n)%jmax )
         else
-           write(LIS_logunit,*) 'premrg file does not exist'
+           write(LIS_logunit,*) '[ERR] premrg file does not exist'
            write(LIS_logunit,*) ifil
            call LIS_endrun()
         endif

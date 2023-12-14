@@ -136,9 +136,9 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
      inquire(file = trim(ifil), exist = exists)
      if (.not. exists) then
         write(LIS_logunit,*) ' '
-        write(LIS_logunit,*)'precip/smiedr:  error opening file'
-        write(LIS_logunit,*)'  SSMI data file ', trim(ifil),' does not exist.'
-        write(LIS_logunit,*)'  SSMI estimates will not be used in ',&
+        write(LIS_logunit,*)'[WARN] precip/smiedr:  error opening file'
+        write(LIS_logunit,*)'[WARN]  SSMI data file ', trim(ifil),' does not exist.'
+        write(LIS_logunit,*)'[WARN]  SSMI estimates will not be used in ',&
              'precip analysis.'
         write(LIS_logunit,*) ' '
         message   =' '
@@ -153,7 +153,7 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
 
         ra_tmp(hemi,:,:) = udef
      else
-        write(LIS_logunit,*) '- READING ',trim(ifil)
+        write(LIS_logunit,*) '[INFO] READING ',trim(ifil)
         call LIS_putget( ra_tmp(hemi,:,:), 'r', ifil, routine_name, &
              imax, jmax)
      endif
@@ -161,7 +161,7 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
   enddo
 
   if ( .not. use_zeros ) then
-     write(LIS_logunit,*)'- SSMI ZEROS NOT USED'
+     write(LIS_logunit,*)'[INFO] SSMI ZEROS NOT USED'
      where ( ra_tmp .eq. 0.0 ) ra_tmp = udef 
   endif
 
