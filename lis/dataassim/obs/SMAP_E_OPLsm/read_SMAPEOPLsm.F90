@@ -14,6 +14,7 @@
 !
 ! !REVISION HISTORY:
 !  6 Jun 2022: Yonghwan Kwon; Updated for use with SMAP_E_OPL soil moisture
+!  23 Feb 2023: Eric Kemp; Updated to read netCDF file.
 !
 ! !INTERFACE:
 subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
@@ -143,8 +144,11 @@ subroutine read_SMAPEOPLsm(n, k, OBS_State, OBS_Pert_State)
       write(hh,'(i2.2)') LIS_rc%hr
 
       if(LIS_masterproc) then
+         !list_files = trim(smobsdir)//'/ARFS_SM_*' &
+         !             //trim(yyyymmdd)//'T'//trim(hh)//'*.dat'
+         !EMK...Use netCDF
          list_files = trim(smobsdir)//'/ARFS_SM_*' &
-                      //trim(yyyymmdd)//'T'//trim(hh)//'*.dat'
+              //trim(yyyymmdd)//'T'//trim(hh)//'*.nc'
          write(LIS_logunit,*) &
                '[INFO] Searching for ',trim(list_files)
          rc = create_filelist(trim(list_files)//char(0), &
@@ -426,7 +430,9 @@ end subroutine read_SMAPEOPLsm
 subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
 ! 
 ! !USES: 
-
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
@@ -452,28 +458,205 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
   integer                 :: ios, nid
   integer                 :: c,r
   integer                 :: ftn1
+  ! EMK
+  logical :: file_exists
+  character(255) :: map_projection
+  integer :: ncid, dim_ids(3), var_id
+  integer :: ntime, nlat, nlon
+  real, allocatable :: tmp(:,:,:)
+  integer :: rc
 
-  ftn1 = LIS_getNextUnitNumber()
-  open(unit=ftn1,file=fname,form='unformatted',access='direct',recl=4*nc*nr,status='old')
-  read(ftn1, rec=1) sm_raw
-  close(1)
-  call LIS_releaseUnitNumber(ftn1)
+  ! Old code to use binary data
+  !ftn1 = LIS_getNextUnitNumber()
+  !open(unit=ftn1,file=fname,form='unformatted',access='direct',recl=4*nc*nr,status='old')
 
+  ! read(ftn1, rec=1) sm_raw
+  ! close(1)
+  ! call LIS_releaseUnitNumber(ftn1)
+
+  ! sm_data_b = .false.
+
+  ! do r=1,SMAPEOPLsm_struc(n)%nr
+  !    do c=1,SMAPEOPLsm_struc(n)%nc
+  !       if (sm_raw(c,r)>=0.and.&
+  !          sm_raw(c,r)<=100) then
+
+  !          sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = sm_raw(c,r)
+  !          sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .true.
+  !       else
+  !          sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = LIS_rc%udef
+  !          sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .false.
+  !       endif
+  !    enddo
+  ! enddo
+
+  ! EMK...Read netCDF data
+  sm_in = LIS_rc%udef
   sm_data_b = .false.
 
-  do r=1,SMAPEOPLsm_struc(n)%nr
-     do c=1,SMAPEOPLsm_struc(n)%nc
-        if (sm_raw(c,r)>=0.and.&
-           sm_raw(c,r)<=100) then
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
-           sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = sm_raw(c,r)
-           sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .true.
-        else
-           sm_in(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = LIS_rc%udef
-           sm_data_b(c+(r-1)*SMAPEOPLsm_struc(n)%nc) = .false.
-        endif
-     enddo
-  enddo
+  ! See if the file exists.
+  inquire(file=trim(fname), exist=file_exists)
+  if (.not. file_exists) then
+     write(LIS_logunit,*)'[ERR] Cannot find ', trim(fname)
+     return
+  end if
+
+  ! Open the file
+  rc = nf90_open(path=trim(fname), &
+       mode=NF90_NOWRITE, &
+       ncid=ncid)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot open ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     return
+  end if
+
+  ! Read the map projection
+  rc = nf90_get_att(ncid=ncid, &
+       varid=NF90_GLOBAL, &
+       name='MAP_PROJECTION', &
+       values=map_projection)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read MAP_PROJECTION from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Sanity check map projection
+  ! TODO:  Support other map projections
+  if (trim(map_projection) .ne. 'EQUIDISTANT CYLINDRICAL') then
+     write(LIS_logunit,*) &
+          '[ERR] Unrecognized map projection found in SMAP file!'
+     write(LIS_logunit,*) '[ERR] Expected EQUIDISTANT CYLINDRICAL'
+     write(LIS_logunit,*) '[ERR] Found ',trim(map_projection)
+     write(LIS_logunit,*) '[ERR] LIS will skip file ', trim(fname)
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Get dimension IDs
+  rc = nf90_inq_dimid(ncid=ncid, &
+       name='time', &
+       dimid=dim_ids(3))
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read time dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  rc = nf90_inq_dimid(ncid=ncid, &
+       name='lat', &
+       dimid=dim_ids(2))
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read lat dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  rc = nf90_inq_dimid(ncid=ncid, &
+       name='lon', &
+       dimid=dim_ids(1))
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read lon dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Get actual dimension sizes
+  rc = nf90_inquire_dimension(ncid=ncid, &
+       dimid=dim_ids(3), &
+       len=ntime)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read time dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  rc = nf90_inquire_dimension(ncid=ncid, &
+       dimid=dim_ids(2), &
+       len=nlat)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read lat dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  rc = nf90_inquire_dimension(ncid=ncid, &
+       dimid=dim_ids(1), &
+       len=nlon)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read lon dimension from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Sanity check the dimensions
+  if (ntime .ne. 1) then
+     write(LIS_logunit,*)'[ERR] Expected time dimension to be 1'
+     write(LIS_logunit,*)'[ERR] Found ', ntime, ' from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  if (nlat .ne. SMAPEOPLsm_struc(n)%nr) then
+     write(LIS_logunit,*)'[ERR] Expected lat dimension to be ', &
+          SMAPEOPLsm_struc(n)%nr
+     write(LIS_logunit,*)'[ERR] Found ', nlat, ' from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+  if (nlon .ne. SMAPEOPLsm_struc(n)%nc) then
+     write(LIS_logunit,*)'[ERR] Expected lon dimension to be ', &
+          SMAPEOPLsm_struc(n)%nc
+     write(LIS_logunit,*)'[ERR] Found ', nlon, ' from ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Fetch the variable id
+  rc = nf90_inq_varid(ncid=ncid, &
+       name='arfs_sm', &
+       varid=var_id)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read arfs_sm ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     return
+  end if
+
+  ! Read the retrievals
+  allocate(tmp(nlon, nlat, ntime))
+  rc = nf90_get_var(ncid=ncid, &
+       varid=var_id, &
+       values=tmp)
+  if (rc .ne. 0) then
+     write(LIS_logunit,*)'[ERR] Cannot read arfs_sm ', trim(fname)
+     write(LIS_logunit,*)'[ERR] LIS will continue...'
+     rc = nf90_close(ncid)
+     deallocate(tmp)
+     return
+  end if
+  rc = nf90_close(ncid)
+
+  do r = 1, nlat
+     do c = 1, nlon
+        if (tmp(c,r,1) >= 0 .and. &
+             tmp(c,r,1) <= 1) then
+           sm_in(c + (r-1)*nc) = tmp(c,r,1)*100
+           sm_data_b(c + (r-1)*nc) = .true.
+        end if
+     end do
+  end do
+  deallocate(tmp)
+
+#endif
 
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
@@ -495,7 +678,7 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
           sm_data_b,sm_in, smobs_b_ip, smobs_ip)
   endif
 
-!overwrite the input data 
+!overwrite the input data
   do r=1,LIS_rc%obs_lnr(k)
      do c=1,LIS_rc%obs_lnc(k)
         if(smobs_ip(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then

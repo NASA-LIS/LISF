@@ -178,14 +178,16 @@ contains
                                   gmt = LDT_rc%hr
                                   call LDT_gmt2localtime(gmt, lon, lhour, zone)
 
-                                  if(lhour.eq.6) then
+                                  !if(lhour.eq.6) then ! Orig
+                                  if(lhour > 4 .and. lhour < 8) then ! EMK for 3-hrly data
                                      metrics%sxx_sigma_6am(t,j,k) = metrics%sxx_sigma_6am(t,j,k) + &
                                           obs%value(t1,k)*obs%value(t1,k)
                                      metrics%sx_sigma_6am(t,j,k) = metrics%sx_sigma_6am(t,j,k) + &
                                           obs%value(t1,k)
                                      metrics%count_sigma_6am(t,j,k) = &
                                           metrics%count_sigma_6am(t,j,k) + 1
-                                  elseif(lhour.eq.18) then
+                                   !elseif(lhour.eq.18) then ! Orig
+                                  elseif (lhour > 16 .and. lhour < 20) then ! EMK for 3-hrly data
                                      metrics%sxx_sigma_6pm(t,j,k) = metrics%sxx_sigma_6pm(t,j,k) + &
                                           obs%value(t1,k)*obs%value(t1,k)
                                      metrics%sx_sigma_6pm(t,j,k) = metrics%sx_sigma_6pm(t,j,k) + &
