@@ -81,8 +81,6 @@
                        ENDIF !(zerodistflag_fine(rr,cc).NE.0)
                     ENDIF !IF (gcdist < 0.0001D0)
                  ENDIF !(gcdist < search_radius)
-                 !                    ENDDO !cc=cmin,cmax
-                 !                 ENDDO !rr=rmin,rmax
               ENDDO !rr=rmin,rmax
            ENDDO !cc=cmin,cmax
         ENDDO !jj=1:2560
@@ -99,15 +97,13 @@
            r=3*jj-1  !3x3 FINE GRID EQ TO A ARFS GRID
            rmin=r-5 ; IF (rmin < 1) rmin=1
            rmax=r+5 ; IF (rmax > size(arfs_fine_lon)) rmax=size(arfs_fine_lon)
-           !                 DO rr=rmin,rmax
-           !                    DO cc=cmin,cmax
            DO cc=cmin,cmax
               DO rr=rmin,rmax
                  IF (abs(arfs_fine_temp(rr,cc)).GT.1.0D-7) THEN !DO WHEN T ~0 (change to fillvalue)
                     arfs_smap_temp(jj,ii)=arfs_smap_temp(jj,ii)+arfs_fine_temp(rr,cc); arfs_wt(jj,ii)=arfs_wt(jj,ii)+1.0 !Weight the point 1
                  ENDIF
-              ENDDO !cc=cmin,cmax
-           ENDDO !rr=rmin,rmax
+              ENDDO !rr=rmin,rmax
+           ENDDO !cc=cmin,cmax
         ENDDO !jj=1:2560
      ENDDO !ii=1:1920
      WHERE(arfs_smap_temp.NE.0.0.AND.arfs_wt.NE.0.0)
