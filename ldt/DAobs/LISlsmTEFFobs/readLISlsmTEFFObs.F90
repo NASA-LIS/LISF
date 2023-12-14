@@ -112,40 +112,11 @@ subroutine readLISlsmTEFFobs(n)
         write(LDT_logunit,*) '[ERR] DA preprocessing on the binary format is not '
         write(LDT_logunit,*) '[ERR] currently supported. Program stopping....'
         call LDT_endrun()
-  
-#if 0 
-        ftn = LDT_getNextUnitNumber()
-        open(ftn,file=trim(fname), form='unformatted')
-        if(file_exists) then 
-           do index=1,LDT_MOC_COUNT
-              call LDT_readLISSingleBinaryVar(n,ftn,LDT_DAobsDataPtr(n,index)%dataEntryPtr)
-           enddo
-        else
-           print*, 'LSM file ',trim(fname),' does not exist'
-           print*, 'Program stopping.. '
-           stop
-        endif
-        call LDT_releaseUnitNumber(ftn)
-#endif
+
      elseif(lsmteffobs%format.eq."grib1") then 
         write(LDT_logunit,*) '[ERR] DA preprocessing on the grib1 format is not '
         write(LDT_logunit,*) '[ERR] currently supported. Program stopping....'
         call LDT_endrun()
-
-#if 0 
-        ftn = LDT_getNextUnitNumber()
-        open(ftn,file=trim(fname), form='unformatted')
-        if(file_exists) then
-           do index=1,LDT_MOC_COUNT
-              call LDT_readLISSingleBinaryVar(n,ftn,LDT_DAobsDataPtr(n,index)%dataEntryPtr)
-           enddo
-        else
-           print*, 'LSM file ',trim(fname),' does not exist'
-           print*, 'Program stopping.. '
-           stop
-        endif
-        call LDT_releaseUnitNumber(ftn)
-#endif
 
      elseif(lsmteffobs%format.eq."netcdf") then 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4) 
@@ -164,20 +135,6 @@ subroutine readLISlsmTEFFobs(n)
         iret = nf90_close(ftn)
         call LDT_verify(iret,'Error in nf90_close')
         
-        !if(lsmteffobs%datares.eq.LDT_rc%gridDesc(n,10)) then 
-        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-        !        1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
-        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-        !        2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
-        !else
-        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-        !        1,lsmteffobs%nc, lsmteffobs%nr, Tsoil01value2d)
-        !   call LDT_readLISSingleNetcdfVar(n,ftn, vname,&
-        !        2,lsmteffobs%nc, lsmteffobs%nr, Tsoil02value2d)
-        !endif
-        !iret = nf90_close(ftn)
-        !call LDT_verify(iret,'Error in nf90_close')
-
         if ((LDT_rc%lnc(n) .ne. lsmteffobs%nc) .or. &
              (LDT_rc%lnr(n) .ne. lsmteffobs%nr)) then
            write(LDT_logunit,*)'[ERR] Dimension mismatch for LIS data!'
@@ -499,7 +456,6 @@ subroutine create_lsm_teff_output_filename(n, form, fname, odir, wstyle, wopt, &
       elseif(map_proj.eq."lambert") then 
          fproj = 'L'
          print *,"fres ",run_dd(6)
-!         write(unit=fres, fmt='(f2.0)') run_dd(6)
          write(unit=fres, fmt='(f3.0)') run_dd(6)
          if (run_dd(6) .ge. 10.) then
             write(unit=fres, fmt='(i2)') nint(run_dd(6))
@@ -535,15 +491,6 @@ subroutine create_lsm_teff_output_filename(n, form, fname, odir, wstyle, wopt, &
          fres2 = trim(fres2)//'DEG'
       endif
 
-      ! out_fname = trim(odir)//'/'//&
-      !      '/PS.AFWA_SC.'//trim(security_class)//&
-      !      '_DI.'//trim(distribution_class)//&
-      !      '_DC.'//trim(data_category)//&
-      !      '_GP.LIS_GR.'//&
-      !      trim(fproj)//trim(fres2)//&
-      !      '_AR.'//trim(area_of_data)//&
-      !      '_PA.'//trim(write_interval)//'-HR-SUM_DD.'//&
-      !      trim(cdate1)//'_DT.'//trim(cdate)//'_DF.GR1'
       out_fname = trim(odir)//'/'//&
            '/PS.AFWA_SC.'//trim(security_class)//&
            '_DI.'//trim(distribution_class)//&
