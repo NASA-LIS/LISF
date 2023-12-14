@@ -18,10 +18,10 @@
 !  06 Feb 2023: Eric Kemp, now process subset of SMAP fields.
 !  14 Feb 2023: Eric Kemp, now uses USAFSI and USAF LIS output.
 !  22 Feb 2023: Eric Kemp, ensemble size now in ldt.config file.
-!  01 Jul 2023: Mahdi Navari,This edit generates a separate SMAP_filelist  
-!                     for each LDT job based on user input. 
-!                     Now we can run several LDT jobs in the same directory.  
-!                             
+!  01 Jul 2023: Mahdi Navari,This edit generates a separate SMAP_filelist
+!                     for each LDT job based on user input.
+!                     Now we can run several LDT jobs in the same directory.
+!
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
@@ -111,7 +111,7 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%L1BresampWriteOpt, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    cfg_entry = "SMAP_E_OPL filelist suffix number:"   
+    cfg_entry = "SMAP_E_OPL filelist suffix number:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, SMAPeOPL%SMAPfilelistSuffixNumber, rc=rc)

@@ -32,7 +32,7 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     use LDT_ARFSSM_netcdfMod, only: LDT_ARFSSM_write_netcdf
     use LDT_logMod, only: LDT_logunit
     USE LDT_smap_e_oplMod  
-    
+
     IMPLICIT NONE
 ! !ARGUMENTS:
     CHARACTER (len=100)          :: SMAPFILE                             
