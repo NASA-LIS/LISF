@@ -55,7 +55,7 @@ subroutine SMAPL1BRESAMPLE_SUBSET(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
   ARFS_LAT = LAT(arfs_geo_lat_lo,arfs_geo_lat_up,-arfs_lat_space)
   ARFS_LON = LON(arfs_geo_lon_lf,arfs_geo_lon_rt,arfs_lon_space)
 
-  !Input (Path/filename, datatypes, lat, lon) Return(DATA,LAT,LON,length of row and col) 
+  !Input (Path/filename, datatypes, lat, lon) Return(DATA,LAT,LON,length of row and col)
   ! READ SMAP_L1B DATA FROM HDF5
 
   ! EMK...Try fault tolerant NRT version.

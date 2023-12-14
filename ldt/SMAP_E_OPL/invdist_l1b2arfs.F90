@@ -17,7 +17,7 @@
    IMPLICIT NONE
 
  CONTAINS
-   SUBROUTINE L1BTB2ARFS_INVDIS(tim, tbvl1b_cor, tbhl1b_cor, tbvl1b, tbhl1b, surwat_v_l1b, surwat_h_l1b, & 
+   SUBROUTINE L1BTB2ARFS_INVDIS(tim, tbvl1b_cor, tbhl1b_cor, tbvl1b, tbhl1b, surwat_v_l1b, surwat_h_l1b, &
         netd_v_l1b, netd_h_l1b, lat_l1b, lon_l1b, tbv_qual_flag, tbh_qual_flag, sc_nadir_angle, antenna_scan_angle, nrows_l1btb, ncols_l1btb, &
         ref_lat, ref_lon, arfs_tim, arfs_tbv_cor, arfs_tbh_cor, arfs_tbv, arfs_tbh, arfs_nedtv, arfs_nedth, &
         arfs_surwatv, arfs_surwath, arfs_wt_cor_tbv, arfs_wt_cor_tbh, arfs_samplenumv, arfs_samplenumh)
@@ -32,34 +32,34 @@
      REAL*4,DIMENSION(ncols_l1btb) :: sc_nadir_angle
      INTEGER*4,DIMENSION(nrows_l1btb,ncols_l1btb) :: tbv_qual_flag, tbh_qual_flag
      INTEGER(4),DIMENSION(:,:),ALLOCATABLE :: zerodistflag
-     REAL*8,DIMENSION(:),ALLOCATABLE :: ref_lat, ref_lon         
+     REAL*8,DIMENSION(:),ALLOCATABLE :: ref_lat, ref_lon
      REAL*4,DIMENSION(2560,1920) :: arfs_tim, arfs_tbv_cor, arfs_tbh_cor, arfs_tbv, arfs_tbh, arfs_nedtv, arfs_nedth, arfs_surwatv, arfs_surwath
      REAL*4,DIMENSION(2560,1920) :: arfs_wt_tim, arfs_wt_cor_tbv, arfs_wt_cor_tbh, arfs_wt_tbv, arfs_wt_tbh, arfs_wt_nedtv, arfs_wt_nedth, arfs_wt_surwatv, arfs_wt_surwath
      INTEGER*4,DIMENSION(2560,1920) :: arfs_samplenumv, arfs_samplenumh
-     
+
      !ALLOCATE(zerodistflag(size(ref_lat),size(ref_lon)))
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
      arfs_tbv_cor=0.0
-     arfs_tbh_cor=0.0 
+     arfs_tbh_cor=0.0
      arfs_tbv=0.0
      arfs_tbh=0.0
      arfs_nedtv=0.0
      arfs_nedth=0.0
      arfs_surwatv=0.0
      arfs_surwath=0.0
-     arfs_wt_tim=0.0 
+     arfs_wt_tim=0.0
      arfs_wt_cor_tbv=0.0
-     arfs_wt_cor_tbh=0.0 
-     arfs_wt_tbv=0.0 
-     arfs_wt_tbh=0.0 
-     arfs_wt_nedtv=0.0 
-     arfs_wt_nedth=0.0 
-     arfs_wt_surwatv=0.0 
+     arfs_wt_cor_tbh=0.0
+     arfs_wt_tbv=0.0
+     arfs_wt_tbh=0.0
+     arfs_wt_nedtv=0.0
+     arfs_wt_nedth=0.0
+     arfs_wt_surwatv=0.0
      arfs_wt_surwath=0.0
-     arfs_samplenumv=0.0 
-     
+     arfs_samplenumv=0.0
+
      DO ii = 1,ncols_l1btb
         IF (ABS (sc_nadir_angle(ii)) <= 2.0) THEN
            DO jj = 1,nrows_l1btb
@@ -85,7 +85,7 @@
                           else
                              gcdist = RE_KM * DACOS ( DSIN (lat1) * DSIN (lat2) + DCOS (lat1) * DCOS (lat2) * DCOS (lon1-lon2) )
                           endif
-                          
+
                           IF (gcdist < search_radius) THEN !RESAMPLE ONLY WITHIN THE SEARCH RANGE
                              IF (gcdist < 0.0001D0) THEN !The TB is right on the grid center
                                 zerodistflag (rr,cc) = 1
@@ -121,29 +121,29 @@
                                 END IF
                              ELSE
                                 IF (zerodistflag (rr,cc).EQ.0) THEN
-                                   
+
                                    IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (surwat_v_l1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_surwatv(rr,cc) = arfs_surwatv(rr,cc) + surwat_v_l1b(jj,ii) / SNGL (gcdist*gcdist) 
-                                      arfs_wt_surwatv(rr,cc) = arfs_wt_surwatv(rr,cc) + 1.0 / SNGL (gcdist*gcdist) 
+                                      arfs_surwatv(rr,cc) = arfs_surwatv(rr,cc) + surwat_v_l1b(jj,ii) / SNGL (gcdist*gcdist)
+                                      arfs_wt_surwatv(rr,cc) = arfs_wt_surwatv(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (surwat_h_l1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_surwath(rr,cc) = arfs_surwath(rr,cc) + surwat_h_l1b(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_surwath(rr,cc) = arfs_surwath(rr,cc) + surwat_h_l1b(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_surwath(rr,cc) = arfs_wt_surwath(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (netd_v_l1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_nedtv(rr,cc) = arfs_nedtv(rr,cc) + netd_v_l1b(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_nedtv(rr,cc) = arfs_nedtv(rr,cc) + netd_v_l1b(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_nedtv(rr,cc) = arfs_wt_nedtv(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (netd_h_l1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_nedth(rr,cc) = arfs_nedth(rr,cc) + netd_h_l1b(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_nedth(rr,cc) = arfs_nedth(rr,cc) + netd_h_l1b(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_nedth(rr,cc) = arfs_wt_nedth(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0))).GT.1.0D-7) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_tbv_cor(rr,cc) = arfs_tbv_cor(rr,cc) + tbvl1b_cor(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_tbv_cor(rr,cc) = arfs_tbv_cor(rr,cc) + tbvl1b_cor(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_cor_tbv(rr,cc) = arfs_wt_cor_tbv(rr,cc) + 1.0 /  SNGL (gcdist*gcdist)
                                       arfs_samplenumv(rr,cc)=arfs_samplenumv(rr,cc)+1.0 !Sample number only calculate for correct tb
                                       k=k+1;
@@ -154,11 +154,11 @@
                                       arfs_samplenumh(rr,cc)=arfs_samplenumh(rr,cc)+1.0 !Sample number only calculate for correct tb
                                    END IF
                                    IF ((ABS (tbvl1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_tbv(rr,cc) = arfs_tbv(rr,cc) + tbvl1b(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_tbv(rr,cc) = arfs_tbv(rr,cc) + tbvl1b(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_tbv(rr,cc) = arfs_wt_tbv(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                    IF ((ABS (tbhl1b(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_tbh(rr,cc) = arfs_tbh(rr,cc) + tbhl1b(jj,ii) / SNGL (gcdist*gcdist) 
+                                      arfs_tbh(rr,cc) = arfs_tbh(rr,cc) + tbhl1b(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_tbh(rr,cc) = arfs_wt_tbh(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                    END IF
                                 END IF !(zerodistflag (rr,cc) = 0)
@@ -171,7 +171,7 @@
            END DO !jj=1,2
         END IF !(ABS (sc_nadir_angle(ii)) <= 2.0)
      END DO !ii=1,2
-     
+
      !APPLY WEIGHTING FUNCTION FOR RESAMPLING
      WHERE(arfs_tim.NE.0.0.AND.arfs_wt_tim.NE.0.0)
         arfs_tim = arfs_tim / arfs_wt_tim
@@ -200,15 +200,15 @@
      WHERE(arfs_tbh.NE.0.0.AND.arfs_wt_tbh.NE.0.0)
         arfs_tbh = arfs_tbh / arfs_wt_tbh
      END WHERE
-     
+
    END SUBROUTINE L1BTB2ARFS_INVDIS
-   
+
    ! EMK...Only process subset of SMAP L1B fields for NRT operations.
    SUBROUTINE L1BTB2ARFS_INVDIS_SUBSET(tim, tbvl1b_cor, &
         lat_l1b, lon_l1b, tbv_qual_flag, tbh_qual_flag, &
         sc_nadir_angle, antenna_scan_angle, nrows_l1btb, ncols_l1btb, &
         ref_lat, ref_lon, arfs_tim, arfs_tbv_cor)
-     
+
      INTEGER(4) :: ii, jj, k, r, c, rr, rmin, rmax, cc, cmin, cmax, nrows_l1btb, ncols_l1btb
      INTEGER(4), PARAMETER :: qualitybit = 0
      REAL(8), PARAMETER :: RE_KM = 6371.228, search_radius = 20.0, PI = 3.141592653589793238, d2r = PI/180.0
@@ -222,7 +222,7 @@
      REAL*4,DIMENSION(2560,1920) :: arfs_tim, arfs_tbv_cor
      REAL*4,DIMENSION(2560,1920) :: arfs_wt_tim, arfs_wt_cor_tbv
      INTEGER*4,DIMENSION(2560,1920) :: arfs_samplenumv
-     
+
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
@@ -230,7 +230,7 @@
      arfs_wt_tim=0.0
      arfs_wt_cor_tbv=0.0
      arfs_samplenumv=0.0
-     
+
      DO ii = 1,ncols_l1btb
         IF (ABS (sc_nadir_angle(ii)) <= 2.0) THEN
            DO jj = 1,nrows_l1btb
@@ -253,13 +253,13 @@
                        lat2 = DBLE (ref_lat(cc)*d2r)
                        DO rr = rmin,rmax !Lon direction
                           lon2 = DBLE (ref_lon(rr)*d2r)
-                          
+
                           if(lat1.eq.lat2.and.lon1.eq.lon2) then
                              gcdist = 0.
                           else
                              gcdist = RE_KM * DACOS ( DSIN (lat1) * DSIN (lat2) + DCOS (lat1) * DCOS (lat2) * DCOS (lon1-lon2) )
                           endif
-                          
+
                           IF (gcdist < search_radius) THEN !RESAMPLE ONLY WITHIN THE SEARCH RANGE
                              IF (gcdist < 0.0001D0) THEN !The TB is right on the grid center
                                 zerodistflag (rr,cc) = 1
@@ -273,7 +273,7 @@
                                 END IF
                              ELSE
                                 IF (zerodistflag (rr,cc).EQ.0) THEN
-                                   
+
                                    IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
                                       arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
@@ -284,7 +284,7 @@
                                       arfs_samplenumv(rr,cc)=arfs_samplenumv(rr,cc)+1.0 !Sample number only calculate for correct tb
                                       k=k+1;
                                    END IF
-                                   
+
                                 END IF !(zerodistflag (rr,cc) = 0)
                              END IF !(gcdist < 0.0001D0)!
                           END IF !(gcdist < search_radius)
@@ -292,13 +292,13 @@
                           !                         END DO !rr = rmin,rmax
                        END DO !rr = rmin,rmax
                     END DO !cc =cmin,cmax
-                    
+
                  END IF !(IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(ii,jj),qualitybit,1) == 0)
               END IF !(ABS (antenna_scan_angle(ii,jj)) <= 360.00)
            END DO !jj=1,2
         END IF !(ABS (sc_nadir_angle(ii)) <= 2.0)
      END DO !ii=1,2
-     
+
      !APPLY WEIGHTING FUNCTION FOR RESAMPLING
      WHERE(arfs_tim.NE.0.0.AND.arfs_wt_tim.NE.0.0)
         arfs_tim = arfs_tim / arfs_wt_tim
@@ -306,8 +306,8 @@
      WHERE(arfs_tbv_cor.NE.0.0.AND.arfs_wt_cor_tbv.NE.0.0)
         arfs_tbv_cor = arfs_tbv_cor / arfs_wt_cor_tbv
      END WHERE
-     
+
      deallocate(zerodistflag) ! EMK cleanup memory
    END SUBROUTINE L1BTB2ARFS_INVDIS_SUBSET
-   
+
  END MODULE invdist_l1b2arfs

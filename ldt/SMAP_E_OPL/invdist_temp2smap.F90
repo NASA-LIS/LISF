@@ -23,10 +23,10 @@
 
      !INITIAL THE OUTPUT VARIABLES
      zerodistflag=0
-     zerodistflag_fine=0 
-     arfs_smap_temp=0 
+     zerodistflag_fine=0
+     arfs_smap_temp=0
      arfs_wt=0
-     arfs_fine_temp=0 
+     arfs_fine_temp=0
      arfs_fine_wt=0
      !DISAGGREGATE ARFS TEMP TO FINEER GRID (~3km)
      DO ii=1,1920
@@ -61,7 +61,7 @@
                  endif
                  !---------------------------------------kyh
                  !PRINT*, lat1, lon1, lat2, lon2, gcdist
-                 !PRINT*, arfs_temp(ii,jj) 
+                 !PRINT*, arfs_temp(ii,jj)
                  IF (gcdist < search_radius) THEN !RESAMPLE ONLY WITHIN THE SEARCH RANGE
                     !PRINT*,'HERE 0'
                     IF (gcdist < 0.0001D0) THEN !The TB is right on the grid center
@@ -74,7 +74,7 @@
                     ELSE
                        IF (zerodistflag_fine(rr,cc).EQ.0) THEN !To maintain the corresponding pixel has the same value
                           IF ((ABS (arfs_temp(jj,ii)-(-9999.000)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(0)
-                             arfs_fine_temp(rr,cc) = arfs_fine_temp(rr,cc)+arfs_temp(jj,ii) / SNGL(gcdist)  
+                             arfs_fine_temp(rr,cc) = arfs_fine_temp(rr,cc)+arfs_temp(jj,ii) / SNGL(gcdist)
                              arfs_fine_wt(rr,cc) = arfs_fine_wt(rr,cc) + 1.0 / SNGL(gcdist)
                              !PRINT*,'Here 2'
                           ENDIF
