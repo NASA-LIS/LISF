@@ -74,7 +74,7 @@ subroutine AGRMET_getcli(n, filename,rtn,clidat)
 
   inquire( file = trim(filename), exist = exists)
   if ( exists )  then 
-     write(LIS_logunit,*) '- READING ', trim(filename)
+     write(LIS_logunit,*) '[INFO] READING ', trim(filename)
      
 !     ------------------------------------------------------------------
 !     the rtneph climo files are real valued files, while the precip

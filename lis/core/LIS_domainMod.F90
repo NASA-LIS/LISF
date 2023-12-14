@@ -397,15 +397,22 @@ contains
 
     TRACE_ENTER("dom_setup")
     allocate(LIS_domain(n)%ntiles_pergrid(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+    LIS_domain(n)%ntiles_pergrid = 0 ! EMK TEST
     allocate(LIS_domain(n)%str_tind(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+    LIS_domain(n)%str_tind = 0 ! EMK TEST
     allocate(ntiles_pergrid(LIS_rc%lnc(n)*LIS_rc%lnr(n)),stat=ierr)
+    ntiles_pergrid = 0
     allocate(ntiles_pergrid_red(LIS_rc%lnc_red(n)*LIS_rc%lnr_red(n)),stat=ierr)
-
+    ntiles_pergrid_red = 0
     allocate(npatch_pergrid(LIS_rc%lnc(n)*LIS_rc%lnr(n),LIS_rc%max_model_types))
+    npatch_pergrid = 0
     allocate(npatch_pergrid_red(LIS_rc%lnc(n)*LIS_rc%lnr(n),LIS_rc%max_model_types))
+    npatch_pergrid_red = 0
     do m=1,LIS_rc%max_model_types
        allocate(LIS_surface(n,m)%npatch_pergrid(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+       LIS_surface(n,m)%npatch_pergrid = 0
        allocate(LIS_surface(n,m)%str_patch_ind(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+       LIS_surface(n,m)%str_patch_ind = 0
     enddo
 
     do t=1,LIS_rc%ntiles(n)
