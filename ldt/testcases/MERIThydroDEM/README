@@ -1,0 +1,22 @@
+Adds the MERIT (Multi-Error-Removed Improved-Terrain) DEM Test Case
+
+This testcase processes upscaled 1k MERIT DEM data for topography parameters. 
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.)
+* The input.ctl GrADS descriptor file used to display the input parameter file.  
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data.
+
+Notes:
+
+This feature was added in pull request #531 
+(https://github.com/NASA-LIS/LISF/pull/531).

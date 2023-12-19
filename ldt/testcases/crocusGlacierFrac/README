@@ -1,0 +1,23 @@
+The Crocus Glacier fraction LDT Test Case
+
+This testcase computes the glacier fraction and tests LDT features that are part of the wider implementation of Crocus into the LIS framework. 
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) i
+* The input.ctl GrADS descriptor file for viewing the input parameter file.
+* plot.gs 
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data. 
+
+Notes:
+
+This feature was added in pull request #694 
+(https://github.com/NASA-LIS/LISF/pull/694). 
