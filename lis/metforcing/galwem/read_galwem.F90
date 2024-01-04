@@ -59,8 +59,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
   real            :: vwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous meridional wind interpolated to 10 metres[m/s]
   real            :: ps(LIS_rc%lnc(n),LIS_rc%lnr(n))        !Instantaneous Surface Pressure [Pa] 
   real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   !Total precipitation [kg/m^2/s] 
-
   integer, intent(out) :: rc
+  logical :: found_inq
 
    ! Initialize return code to "no error".  We will change it below if
    ! necessary.
@@ -70,6 +70,17 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    ! the first file only, as all data will be of the same type.
    ! (GALWEM) because the search script ensures that it is.
    !
+
+   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
+   ! using a simple inquire statement.  This avoids ECCODES/GRIB_API
+   ! writing error messages to stdout/stderr, which may lead to runtime
+   ! problems.
+   inquire(file=trim(gribfile),exist=found_inq)
+   if (.not. found_inq) then
+      write(LIS_logunit,*)'[ERR] Cannot find file '//trim(gribfile)
+      call LIS_endrun()
+   end if
+
 #if (defined USE_GRIBAPI)
 
    call grib_open_file(ftn,trim(gribfile),'r',ierr)
