@@ -390,7 +390,7 @@ contains
 
     if ( ierr /= 0 ) then
        write(LIS_logunit,*) '[WARN] ****************WARNING*********************'
-       write(LIS_logunit,*) '[WARN] ',msg
+       write(LIS_logunit,*) '[WARN] ', trim(msg)
        write(LIS_logunit,*) '[WARN] ****************WARNING*********************'
     endif
 
