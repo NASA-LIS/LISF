@@ -242,7 +242,6 @@ subroutine NoahMP50_main(n)
             NoahmpIO%IOPT_TBOT          = NoahMP50_struc(n)%tbot_opt
             NoahmpIO%IOPT_STC           = NoahMP50_struc(n)%stc_opt
             NoahmpIO%IOPT_GLA           = NoahMP50_struc(n)%gla_opt
-            NoahmpIO%IOPT_sndpth_gla    = NoahMP50_struc(n)%sndpth_gla_opt
             NoahmpIO%IOPT_RSF           = NoahMP50_struc(n)%rsf_opt
             NoahmpIO%IOPT_SOIL          = NoahMP50_struc(n)%soil_opt
             NoahmpIO%IOPT_PEDO          = NoahMP50_struc(n)%pedo_opt

@@ -341,21 +341,22 @@ subroutine NoahMP50_readcrd()
     enddo
 
     ! Custom snowpack depth for glacier model (in mm)
-    call ESMF_ConfigFindLabel(LIS_config, &
-         "NoahMP.5.0 snow depth glacier model option:", rc = rc)
-    if(rc /= 0) then
-        write(LIS_logunit,33) "[WARN] Max snow depth not defined."
-        write(LIS_logunit,33) "[WARN] Setting to default value of 5000."
-        do n=1, LIS_rc%nnest
-            Noahmp50_struc(n)%sndpth_gla_opt = 5000
-            write(LIS_logunit,33) "snow depth for glacier model: ",Noahmp50_struc(n)%sndpth_gla_opt
-        enddo
-    else
-        do n=1, LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%sndpth_gla_opt, rc=rc)
-            write(LIS_logunit,33) "snow depth for glacier model: ",Noahmp50_struc(n)%sndpth_gla_opt
-        enddo
-    endif
+    !=== Now this parameter is set in the NoahmpTable.TBL ("SWEMAXGLA", default=5000mm)
+    !call ESMF_ConfigFindLabel(LIS_config, &
+    !     "NoahMP.5.0 snow depth glacier model option:", rc = rc)
+    !if(rc /= 0) then
+    !    write(LIS_logunit,33) "[WARN] Max snow depth not defined."
+    !    write(LIS_logunit,33) "[WARN] Setting to default value of 5000."
+    !    do n=1, LIS_rc%nnest
+    !        Noahmp50_struc(n)%sndpth_gla_opt = 5000
+    !        write(LIS_logunit,33) "snow depth for glacier model: ",Noahmp50_struc(n)%sndpth_gla_opt
+    !    enddo
+    !else
+    !    do n=1, LIS_rc%nnest
+    !        call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%sndpth_gla_opt, rc=rc)
+    !        write(LIS_logunit,33) "snow depth for glacier model: ",Noahmp50_struc(n)%sndpth_gla_opt
+    !    enddo
+    !endif
 
     ! surface resistance (1->Sakaguchi/Zeng;2->Seller;3->mod Sellers;4->1+snow)
     call ESMF_ConfigFindLabel(LIS_config, &
