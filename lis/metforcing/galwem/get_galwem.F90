@@ -57,7 +57,7 @@ subroutine get_galwem(n, findex)
   integer           :: openfile
   integer :: filecount
   logical, save :: use_prior_galwem_run
-  integer :: cur_fcsthr, next_fcsthr
+  integer :: first_fcsthr, next_fcsthr
   integer :: ierr
 
   ! GALWEM cycles every 6 hours; each cycle provide up to 168 hours (7 days) forecast for GALWEM-17km;
@@ -95,7 +95,7 @@ subroutine get_galwem(n, findex)
      use_prior_galwem_run = .false.
      call run_audit(n, LIS_rc%syr, LIS_rc%smo, LIS_rc%sda, LIS_rc%shr, &
           0, filecount)
-     if (filecount == 0) then !Roll back to prior GALWEM run
+     if (filecount < 2) then !Roll back to prior GALWEM run
         yr1 = LIS_rc%syr
         mo1 = LIS_rc%smo
         da1 = LIS_rc%sda
@@ -106,7 +106,7 @@ subroutine get_galwem(n, findex)
         call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         call run_audit(n, yr1, mo1, da1, hr1, &
              12, filecount)
-        if (filecount == 0) then
+        if (filecount < 2) then
            write(LIS_logunit,*)"[ERR] No GALWEM files found!"
            call LIS_endrun()
         else
@@ -118,8 +118,13 @@ subroutine get_galwem(n, findex)
         end if
      end if
   end if
-  write(LIS_logunit,*) '[INFO] use_prior_galwem_run = ', &
-       use_prior_galwem_run
+  !write(LIS_logunit,*) '[INFO] use_prior_galwem_run = ', &
+  !     use_prior_galwem_run
+  if (use_prior_galwem_run) then
+     write(LIS_logunit,*) &
+          '[WARN] LIS run may terminate early since a prior ' // &
+          'GALWEM run is being used for forcing'
+  end if
 
   ! Get the bookends at the start of the run
   if (LIS_rc%tscount(n) .eq. 1 .or. LIS_rc%rstflag(n) .eq. 1) then
@@ -136,17 +141,20 @@ subroutine get_galwem(n, findex)
      call LIS_tick(time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1)
 
      ! Find Bookend-time record 2
-     cur_fcsthr = 0
-     if (use_prior_galwem_run) cur_fcsthr = 12
+     first_fcsthr = 0
+     if (use_prior_galwem_run) first_fcsthr = 12
      call find_next_fcsthr(n, galwem_struc(n)%init_yr, &
           galwem_struc(n)%init_mo, &
           galwem_struc(n)%init_da, &
           galwem_struc(n)%init_hr, &
-          cur_fcsthr, next_fcsthr, ierr)
+          first_fcsthr, next_fcsthr, ierr)
      if (ierr .ne. 0) then
         write(LIS_logunit,*) '[ERR] Cannot find next GALWEM GRIB file!'
+        write(LIS_logunit,*) '[ERR] LIS run with terminate...'
+        flush(LIS_logunit)
         call LIS_endrun()
      end if
+     galwem_struc(n)%fcst_hour = next_fcsthr
      yr2 = LIS_rc%syr
      mo2 = LIS_rc%smo
      da2 = LIS_rc%sda
@@ -159,151 +167,262 @@ subroutine get_galwem(n, findex)
 
      openfile = 1
   end if
-  call LIS_endrun() ! EMK TEST
 
-  ! First timestep of run
-  if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then
-    ! Bookend-time record 1
-     yr1 = LIS_rc%syr
-     mo1=LIS_rc%smo
-     da1=LIS_rc%sda
-     hr1=LIS_rc%shr
-     mn1=0
-     ss1=0
-     ts1=0
-     call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+  ! ! First timestep of run
+  ! if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then
+  !   ! Bookend-time record 1
+  !    yr1 = LIS_rc%syr
+  !    mo1=LIS_rc%smo
+  !    da1=LIS_rc%sda
+  !    hr1=LIS_rc%shr
+  !    mn1=0
+  !    ss1=0
+  !    ts1=0
+  !    call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
 
-     ! Bookend-time record 2
-     yr2=LIS_rc%syr
-     mo2=LIS_rc%smo
-     da2=LIS_rc%sda
-     hr2=LIS_rc%shr
-     mn2=0
-     ss2=0
-     ts2=3600 ! Advance 1 hour
-     call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+  !    ! Bookend-time record 2
+  !    yr2=LIS_rc%syr
+  !    mo2=LIS_rc%smo
+  !    da2=LIS_rc%sda
+  !    hr2=LIS_rc%shr
+  !    mn2=0
+  !    ss2=0
+  !    ts2=3600 ! Advance 1 hour
+  !    call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
 
-     !movetime = 1
-     openfile=1
+  !    !movetime = 1
+  !    openfile=1
 
-     !write(LIS_logunit,*)'EMK: time1,yr1,mo1,da1,hr1,ts1 = ', &
-     !     time1,yr1,mo1,da1,hr1,ts1
-     !write(LIS_logunit,*)'EMK: time2,yr2,mo2,da2,hr2,ts2 = ', &
-     !     time2,yr2,mo2,da2,hr2,ts2
+  !    !write(LIS_logunit,*)'EMK: time1,yr1,mo1,da1,hr1,ts1 = ', &
+  !    !     time1,yr1,mo1,da1,hr1,ts1
+  !    !write(LIS_logunit,*)'EMK: time2,yr2,mo2,da2,hr2,ts2 = ', &
+  !    !     time2,yr2,mo2,da2,hr2,ts2
 
-  endif
+  ! endif
 
-  ! Determine valid times when forecasts are available to be read in:
-  ! EMK...Revised based on sample forecast runs for 20230523.
-  if(galwem_struc(n)%fcst_hour < 42) then
-     fcsthr_intv = 1
-     valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
-  elseif(galwem_struc(n)%fcst_hour >= 42 .and. &
-       galwem_struc(n)%fcst_hour < 168) then
-     fcsthr_intv = 3
-     valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
-  else
-     fcsthr_intv = 6
-     valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
-  endif
+  ! ! Determine valid times when forecasts are available to be read in:
+  ! ! EMK...Revised based on sample forecast runs for 20230523.
+  ! if(galwem_struc(n)%fcst_hour < 42) then
+  !    fcsthr_intv = 1
+  !    valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
+  ! elseif(galwem_struc(n)%fcst_hour >= 42 .and. &
+  !      galwem_struc(n)%fcst_hour < 168) then
+  !    fcsthr_intv = 3
+  !    valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
+  ! else
+  !    fcsthr_intv = 6
+  !    valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
+  ! endif
 
-  if((valid_hour==LIS_rc%hr .and. LIS_rc%mn==0) .or. &
-      openfile == 1)  then
+  ! If this is the beginning of the LIS run, read the two bookends
+  if (openfile == 1) then
 
-     ! Forecast hour condition within each file:
-     if(galwem_struc(n)%fcst_hour < 42) then
-        galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
-     elseif(galwem_struc(n)%fcst_hour >= 42) then
-        galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
-     endif
+     ferror = 0
+     order = 1
+     call getGALWEMfilename(n, galwem_struc(n)%odir, &
+          galwem_struc(n)%init_yr, &
+          galwem_struc(n)%init_mo, &
+          galwem_struc(n)%init_da, &
+          galwem_struc(n)%init_hr, &
+          first_fcsthr, fname)
 
-     ! Check if local forecast hour exceeds max grib file forecast hour (GALWEM-17km):
-     if(galwem_struc(n)%resol == 17) then
-        if(galwem_struc(n)%fcst_hour > 168 ) then
-           write(LIS_logunit,*) &
-                 "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
-           write(LIS_logunit,*) &
-                 "  forecast hour (record). Run will end here for now ... "
-           call LIS_endrun
-        endif
-     endif
-     ! Check if local forecast hour exceeds max grib file forecast hour (GALWEM-25deg):
-     if(galwem_struc(n)%resol == 25) then
-        if(galwem_struc(n)%fcst_hour > 240 ) then
-           write(LIS_logunit,*) &
-                 "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
-           write(LIS_logunit,*) &
-                 "  forecast hour (record). Run will end here for now ... "
-           call LIS_endrun
-        endif
-     endif
-   
-     ! Update bookend-time record 2:
-     if(LIS_rc%tscount(n).ne.1) then
-        galwem_struc(n)%fcsttime1=galwem_struc(n)%fcsttime2
-        galwem_struc(n)%metdata1=galwem_struc(n)%metdata2
+     write(LIS_logunit,*) '[INFO] Getting GALWEM forecast file1 ... ', &
+          trim(fname)
+     call read_galwem(n, findex, order, fname, ferror)
+     if (ferror .ge. 1) galwem_struc(n)%fcsttime1 = time1
 
-        yr2=LIS_rc%syr
-        mo2=LIS_rc%smo
-        da2=LIS_rc%sda
-        hr2=LIS_rc%shr
-        mn2=0
-        ss2=0
-        ts2=3600 * galwem_struc(n)%fcst_hour
-        call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
-      endif
+     ferror = 0
+     order = 2
+     call getGALWEMfilename(n, galwem_struc(n)%odir, &
+          galwem_struc(n)%init_yr, &
+          galwem_struc(n)%init_mo, &
+          galwem_struc(n)%init_da, &
+          galwem_struc(n)%init_hr, &
+          galwem_struc(n)%fcst_hour, fname)
 
-      ! Read in file contents:
-      if(LIS_rc%tscount(n) == 1) then  ! Read in first two book-ends 
+     write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ', &
+          trim(fname)
+     call read_galwem(n, findex, order, fname, ferror)
+     if (ferror .ge. 1) galwem_struc(n)%fcsttime2 = time2
 
-         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_yr = ', &
-         !     galwem_struc(n)%init_yr
-         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_mo = ', &
-         !     galwem_struc(n)%init_mo
-         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_da = ', &
-         !     galwem_struc(n)%init_da
-         !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_hr = ', &
-         !     galwem_struc(n)%init_hr
-         !write(LIS_logunit,*)'EMK: galwem_struc(n)%fcst_hour = ', &
-         ! galwem_struc(n)%fcst_hour
+  else if (LIS_rc%mn==0 .and. &
+       LIS_rc%tscount(n) .ne. 1) then
 
-         ferror=0
-         order=1   
-         call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
-              galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
-              0,fname)
+     ! See if we need to update the bookends
+     yr1 = LIS_rc%yr
+     mo1 = LIS_rc%mo
+     da1 = LIS_rc%da
+     hr1 = LIS_rc%hr
+     mn1 = 0
+     ss1 = 0
+     ts1 = 0
+     call LIS_tick(time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1)
 
-         write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file1 ... ',trim(fname)
-         call read_galwem(n, findex, order, fname, ferror)
-         if(ferror.ge.1) galwem_struc(n)%fcsttime1=time1
-                 
-         ferror=0
-         order=2
-         call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
-              galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
-              galwem_struc(n)%fcst_hour,fname)
+     yr2 = galwem_struc(n)%init_yr
+     mo2 = galwem_struc(n)%init_mo
+     da2 = galwem_struc(n)%init_da
+     hr2 = galwem_struc(n)%init_hr
+     mn2 = 0
+     ss2 = 0
+     ts2 = 3600 * galwem_struc(n)%fcst_hour
+     call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, ts2)
 
-         write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ',trim(fname)
-         call read_galwem(n, findex, order, fname, ferror)
-         if(ferror.ge.1) galwem_struc(n)%fcsttime2=time2
-      else
-         ferror=0
-         order=2
-         call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
-              galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
-              galwem_struc(n)%fcst_hour,fname)
+     !write(LIS_logunit,*)'EMK: time1: ', time1
+     !write(LIS_logunit,*)'EMK: time2: ', time2
 
-         write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ',trim(fname)
-         call read_galwem(n, findex, order, fname, ferror)
-         if(ferror.ge.1) galwem_struc(n)%fcsttime2=time2
-      endif
-  endif
-  openfile=0
+     if (time2 .le. time1) then
+
+        ! Update the bookends
+        call find_next_fcsthr(n, galwem_struc(n)%init_yr, &
+             galwem_struc(n)%init_mo, &
+             galwem_struc(n)%init_da, &
+             galwem_struc(n)%init_hr, &
+             galwem_struc(n)%fcst_hour, next_fcsthr, ierr)
+        if (ierr .ne. 0) then
+           write(LIS_logunit,*) '[ERR] Cannot find next GALWEM GRIB file!'
+           write(LIS_logunit,*) '[ERR] LIS will terminate early'
+           flush(LIS_logunit)
+           call LIS_endrun()
+        end if
+        yr2 = galwem_struc(n)%init_yr
+        mo2 = galwem_struc(n)%init_mo
+        da2 = galwem_struc(n)%init_da
+        hr2 = galwem_struc(n)%init_hr
+        mn2 = 0
+        ss2 = 0
+        ts2 = 3600 * next_fcsthr
+        call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, &
+             ts2)
+
+        ! Update the bookends
+        galwem_struc(n)%fcsttime1 = galwem_struc(n)%fcsttime2
+        galwem_struc(n)%metdata1 = galwem_struc(n)%metdata2
+
+        galwem_struc(n)%fcst_hour = next_fcsthr
+
+        ferror = 0
+        order = 2
+        call getGALWEMfilename(n, galwem_struc(n)%odir, &
+             galwem_struc(n)%init_yr, &
+             galwem_struc(n)%init_mo, &
+             galwem_struc(n)%init_da, &
+             galwem_struc(n)%init_hr, &
+             galwem_struc(n)%fcst_hour, fname)
+
+        write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ', &
+             trim(fname)
+        call read_galwem(n, findex, order, fname, ferror)
+        if (ferror .ge. 1) galwem_struc(n)%fcsttime2 = time2
+
+     end if
+  end if
+  openfile = 0
 
   !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime1 = ", &
   !     galwem_struc(n)%fcsttime1
   !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime2 = ", &
   !     galwem_struc(n)%fcsttime2
+
+  !call LIS_endrun() ! EMK TEST
+
+
+  ! if((valid_hour==LIS_rc%hr .and. LIS_rc%mn==0) .or. &
+  !     openfile == 1)  then
+
+  !    ! Forecast hour condition within each file:
+  !    if(galwem_struc(n)%fcst_hour < 42) then
+  !       galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
+  !    elseif(galwem_struc(n)%fcst_hour >= 42) then
+  !       galwem_struc(n)%fcst_hour = galwem_struc(n)%fcst_hour + fcsthr_intv
+  !    endif
+
+  !    ! Check if local forecast hour exceeds max grib file forecast hour (GALWEM-17km):
+  !    if(galwem_struc(n)%resol == 17) then
+  !       if(galwem_struc(n)%fcst_hour > 168 ) then
+  !          write(LIS_logunit,*) &
+  !                "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
+  !          write(LIS_logunit,*) &
+  !                "  forecast hour (record). Run will end here for now ... "
+  !          call LIS_endrun
+  !       endif
+  !    endif
+  !    ! Check if local forecast hour exceeds max grib file forecast hour (GALWEM-25deg):
+  !    if(galwem_struc(n)%resol == 25) then
+  !       if(galwem_struc(n)%fcst_hour > 240 ) then
+  !          write(LIS_logunit,*) &
+  !                "[INFO] GALWEM Forecast hour has exceeded the grib file's final"
+  !          write(LIS_logunit,*) &
+  !                "  forecast hour (record). Run will end here for now ... "
+  !          call LIS_endrun
+  !       endif
+  !    endif
+   
+  !    ! Update bookend-time record 2:
+  !    if(LIS_rc%tscount(n).ne.1) then
+  !       galwem_struc(n)%fcsttime1=galwem_struc(n)%fcsttime2
+  !       galwem_struc(n)%metdata1=galwem_struc(n)%metdata2
+
+  !       yr2=LIS_rc%syr
+  !       mo2=LIS_rc%smo
+  !       da2=LIS_rc%sda
+  !       hr2=LIS_rc%shr
+  !       mn2=0
+  !       ss2=0
+  !       ts2=3600 * galwem_struc(n)%fcst_hour
+  !       call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+  !     endif
+
+  !     ! Read in file contents:
+  !     if(LIS_rc%tscount(n) == 1) then  ! Read in first two book-ends 
+
+  !        !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_yr = ', &
+  !        !     galwem_struc(n)%init_yr
+  !        !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_mo = ', &
+  !        !     galwem_struc(n)%init_mo
+  !        !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_da = ', &
+  !        !     galwem_struc(n)%init_da
+  !        !write(LIS_logunit,*)'EMK: galwem_struc(n)%init_hr = ', &
+  !        !     galwem_struc(n)%init_hr
+  !        !write(LIS_logunit,*)'EMK: galwem_struc(n)%fcst_hour = ', &
+  !        ! galwem_struc(n)%fcst_hour
+
+  !        ferror=0
+  !        order=1   
+  !        call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
+  !             galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
+  !             0,fname)
+
+  !        write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file1 ... ',trim(fname)
+  !        call read_galwem(n, findex, order, fname, ferror)
+  !        if(ferror.ge.1) galwem_struc(n)%fcsttime1=time1
+                 
+  !        ferror=0
+  !        order=2
+  !        call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
+  !             galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
+  !             galwem_struc(n)%fcst_hour,fname)
+
+  !        write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ',trim(fname)
+  !        call read_galwem(n, findex, order, fname, ferror)
+  !        if(ferror.ge.1) galwem_struc(n)%fcsttime2=time2
+  !     else
+  !        ferror=0
+  !        order=2
+  !        call getGALWEMfilename(n,galwem_struc(n)%odir,galwem_struc(n)%init_yr,&
+  !             galwem_struc(n)%init_mo,galwem_struc(n)%init_da,galwem_struc(n)%init_hr,&
+  !             galwem_struc(n)%fcst_hour,fname)
+
+  !        write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ',trim(fname)
+  !        call read_galwem(n, findex, order, fname, ferror)
+  !        if(ferror.ge.1) galwem_struc(n)%fcsttime2=time2
+  !     endif
+  ! endif
+  ! openfile=0
+
+  ! !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime1 = ", &
+  ! !     galwem_struc(n)%fcsttime1
+  ! !write(LIS_logunit,*)"EMK: galwem_struc(n)%fcsttime2 = ", &
+  ! !     galwem_struc(n)%fcsttime2
 
 end subroutine get_galwem
 
@@ -389,7 +508,7 @@ subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
           fcsthr, fname)
      inquire(file=trim(fname), exist=found_inq)
      if (found_inq) then
-        write(LIS_logunit,*)'[INFO] Found ', trim(fname)
+        !write(LIS_logunit,*)'[INFO] Found ', trim(fname)
         filecount = filecount + 1
      else
         if (i == 0) then
