@@ -178,6 +178,8 @@ AGRMET forcing domain resolution (dy):        0.0937500
 # Input settings
 AGRMET forcing directory:                  ./lis.forcing.global.202307/usaf_lis/MET_FORCING/usaf_lis75s2s_gfs2galwem
 AGRMET retrospective root filename:        "/PS.AFWA_SC.U_DI.C_DC.ANLYS_GP.LIS_GR.C0P09DEG_AR.GLOBAL_PA.03-HR-SUM_DD."
+AGRMET precip obs file format: 1
+AGRMET sfc obs file format: 1
 
 # Output settings
 AGRMET analysis directory:                 Analysis_UMFG_1 # Change as appropriate
