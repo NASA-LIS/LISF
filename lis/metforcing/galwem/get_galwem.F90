@@ -59,7 +59,8 @@ subroutine get_galwem(n, findex)
   logical, save :: use_prior_galwem_run
   integer :: first_fcsthr, next_fcsthr
   integer :: ierr
-
+  logical :: lrc
+  
   ! GALWEM cycles every 6 hours; each cycle provide up to 168 hours (7 days) forecast for GALWEM-17km;
   ! each cycle provide up to 240 hours (10 days) forecast for GALWEM-25deg;
   ! <=42 (every 1-hour); > 42 (every 3-hour)
@@ -107,7 +108,8 @@ subroutine get_galwem(n, findex)
         call run_audit(n, yr1, mo1, da1, hr1, &
              12, filecount)
         if (filecount < 2) then
-           write(LIS_logunit,*)"[ERR] No GALWEM files found!"
+           write(LIS_logunit,*) &
+                "[ERR] No GALWEM files found, LIS will be halted!"
            call LIS_endrun()
         else
            use_prior_galwem_run = .true.
@@ -120,11 +122,11 @@ subroutine get_galwem(n, findex)
   end if
   !write(LIS_logunit,*) '[INFO] use_prior_galwem_run = ', &
   !     use_prior_galwem_run
-  if (use_prior_galwem_run) then
-     write(LIS_logunit,*) &
-          '[WARN] LIS run may terminate early since a prior ' // &
-          'GALWEM run is being used for forcing'
-  end if
+  !if (use_prior_galwem_run) then
+  !   write(LIS_logunit,*) &
+  !        '[WARN] LIS run may terminate early since a prior ' // &
+  !        'GALWEM run is being used for forcing'
+  !end if
 
   ! Get the bookends at the start of the run
   if (LIS_rc%tscount(n) .eq. 1 .or. LIS_rc%rstflag(n) .eq. 1) then
@@ -279,10 +281,12 @@ subroutine get_galwem(n, findex)
              galwem_struc(n)%init_hr, &
              galwem_struc(n)%fcst_hour, next_fcsthr, ierr)
         if (ierr .ne. 0) then
-           write(LIS_logunit,*) '[ERR] Cannot find next GALWEM GRIB file!'
-           write(LIS_logunit,*) '[ERR] LIS will terminate early'
+           write(LIS_logunit,*) &
+                '[WARN] Cannot find next GALWEM GRIB file!'
            flush(LIS_logunit)
-           call LIS_endrun()
+           !call LIS_endrun()
+           lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return .true.
+           return
         end if
         yr2 = galwem_struc(n)%init_yr
         mo2 = galwem_struc(n)%init_mo
