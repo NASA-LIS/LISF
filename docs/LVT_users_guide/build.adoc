@@ -89,12 +89,13 @@ This script will prompt the user with a series of questions regarding support to
 | `LVT_OPENJPEG`   | path to openJPEG library   | required
 | `LVT_ECCODES`    | path to ecCodes library    | required
 | `LVT_NETCDF`     | path to NETCDF library     | optional
-| `LVT_HDF4`       | path to HDF4 library       | optional
+| `LVT_HDF4`       | path to HDF4 library       | optional (required to use HDFEOS2)
 | `LVT_HDF5`       | path to HDF5 library       | optional
 | `LVT_HDFEOS`     | path to HDFEOS2 library    | optional
 | `LVT_GDAL`       | path to GDAL library       | optional
 | `LVT_FORTRANGIS` | path to FortranGIS library | optional (required to use GDAL)
 | `LVT_JPEG`       | path to JPEG library       | optional (use system libjpeg by default)
+| `LVT_RPC`        | path to RPC library        | optional (use system RPC library by default)
 |===
 
 //{cpp} is C++
