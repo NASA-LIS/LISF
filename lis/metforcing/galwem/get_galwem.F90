@@ -95,10 +95,12 @@ subroutine get_galwem(n, findex)
   endif
 
   !EMK...Perform audit of available GALWEM-GD GRIB files for current fcst
-  !run.
+  !run.  First two files will be saved in galwem_struc(n) as metdata1
+  !and metdata2; also saves fcst_hour.
   if (LIS_rc%tscount(n) .eq. 1 .or. LIS_rc%rstflag(n) .eq. 1) then
      use_prior_galwem_run = .false.
-     call run_audit(n, LIS_rc%syr, LIS_rc%smo, LIS_rc%sda, LIS_rc%shr, &
+     call run_audit(n, findex, &
+          LIS_rc%syr, LIS_rc%smo, LIS_rc%sda, LIS_rc%shr, &
           0, filecount)
      if (filecount < 2) then !Roll back to prior GALWEM run
         yr1 = LIS_rc%syr
@@ -109,7 +111,8 @@ subroutine get_galwem(n, findex)
         ss1 = 0
         ts1 = -43200
         call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
-        call run_audit(n, yr1, mo1, da1, hr1, &
+        call run_audit(n, findex, &
+             yr1, mo1, da1, hr1, &
              12, filecount)
         if (filecount < 2) then
            write(LIS_logunit,*) &
@@ -127,78 +130,15 @@ subroutine get_galwem(n, findex)
 
   ! Get the bookends at the start of the run
   if (LIS_rc%tscount(n) .eq. 1 .or. LIS_rc%rstflag(n) .eq. 1) then
-
-     ! Bookend-time record 1
-     yr1 = LIS_rc%syr
-     mo1 = LIS_rc%smo
-     da1 = LIS_rc%sda
-     hr1 = LIS_rc%shr
-     mn1 = 0
-     ss1 = 0
-     ts1 = 0
-     if (use_prior_galwem_run) ts1 = -43200
-     call LIS_tick(time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1)
-
-     ! Find Bookend-time record 2
-     first_fcsthr = 0
-     if (use_prior_galwem_run) first_fcsthr = 12
-     call find_next_fcsthr(n, galwem_struc(n)%init_yr, &
-          galwem_struc(n)%init_mo, &
-          galwem_struc(n)%init_da, &
-          galwem_struc(n)%init_hr, &
-          first_fcsthr, next_fcsthr, ierr)
-     if (ierr .ne. 0) then
-        write(LIS_logunit,*) '[ERR] Cannot find next GALWEM GRIB file!'
-        write(LIS_logunit,*) '[ERR] LIS run with terminate...'
-        flush(LIS_logunit)
-        call LIS_endrun()
-     end if
-     galwem_struc(n)%fcst_hour = next_fcsthr
-     yr2 = LIS_rc%syr
-     mo2 = LIS_rc%smo
-     da2 = LIS_rc%sda
-     hr2 = LIS_rc%shr
-     mn2 = 0
-     ss2 = 0
-     ts2 = next_fcsthr * 3600
-     if (use_prior_galwem_run) ts2 = ts2 - 43200
-     call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, ts2)
-
-     openfile = 1
+     write(LIS_logunit,*)'[INFO] time1 = ', &
+          galwem_struc(n)%fcsttime1
+     write(LIS_logunit,*)'[INFO] time2 = ', &
+          galwem_struc(n)%fcsttime2
+     openfile = 1 ! Data already stored in galwem_struc(n) by run_audit
   end if
 
-  ! If this is the beginning of the LIS run, read the two bookends
-  if (openfile == 1) then
-
-     ferror = 0
-     order = 1
-     call getGALWEMfilename(n, galwem_struc(n)%odir, &
-          galwem_struc(n)%init_yr, &
-          galwem_struc(n)%init_mo, &
-          galwem_struc(n)%init_da, &
-          galwem_struc(n)%init_hr, &
-          first_fcsthr, fname)
-
-     write(LIS_logunit,*) '[INFO] Getting GALWEM forecast file1 ... ', &
-          trim(fname)
-     call read_galwem(n, findex, order, fname, ferror)
-     if (ferror .ge. 1) galwem_struc(n)%fcsttime1 = time1
-
-     ferror = 0
-     order = 2
-     call getGALWEMfilename(n, galwem_struc(n)%odir, &
-          galwem_struc(n)%init_yr, &
-          galwem_struc(n)%init_mo, &
-          galwem_struc(n)%init_da, &
-          galwem_struc(n)%init_hr, &
-          galwem_struc(n)%fcst_hour, fname)
-
-     write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ', &
-          trim(fname)
-     call read_galwem(n, findex, order, fname, ferror)
-     if (ferror .ge. 1) galwem_struc(n)%fcsttime2 = time2
-
-  else if (LIS_rc%mn==0 .and. &
+  ! If this is not the first LIS timestep, see if we need a new bookend
+  if (openfile == 0 .and. LIS_rc%mn==0 .and. &
        LIS_rc%tscount(n) .ne. 1) then
 
      ! See if we need to update the bookends
@@ -211,60 +151,36 @@ subroutine get_galwem(n, findex)
      ts1 = 0
      call LIS_tick(time1, doy1, gmt1, yr1, mo1, da1, hr1, mn1, ss1, ts1)
 
-     yr2 = galwem_struc(n)%init_yr
-     mo2 = galwem_struc(n)%init_mo
-     da2 = galwem_struc(n)%init_da
-     hr2 = galwem_struc(n)%init_hr
-     mn2 = 0
-     ss2 = 0
-     ts2 = 3600 * galwem_struc(n)%fcst_hour
-     call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, ts2)
+     if (time1 >= galwem_struc(n)%fcsttime2) then
 
-     if (time2 .le. time1) then
-
-        ! Update the bookends
-        call find_next_fcsthr(n, galwem_struc(n)%init_yr, &
-             galwem_struc(n)%init_mo, &
-             galwem_struc(n)%init_da, &
-             galwem_struc(n)%init_hr, &
-             galwem_struc(n)%fcst_hour, next_fcsthr, ierr)
-        if (ierr .ne. 0) then
-           write(LIS_logunit,*) &
-                '[WARN] Cannot find next GALWEM GRIB file!'
-           flush(LIS_logunit)
-           lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return .true.
-           return
-        end if
-        yr2 = galwem_struc(n)%init_yr
-        mo2 = galwem_struc(n)%init_mo
-        da2 = galwem_struc(n)%init_da
-        hr2 = galwem_struc(n)%init_hr
-        mn2 = 0
-        ss2 = 0
-        ts2 = 3600 * next_fcsthr
-        call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, &
-             ts2)
-
-        ! Update the bookends
-        galwem_struc(n)%fcsttime1 = galwem_struc(n)%fcsttime2
-        galwem_struc(n)%metdata1 = galwem_struc(n)%metdata2
-
-        galwem_struc(n)%fcst_hour = next_fcsthr
-
-        ferror = 0
-        order = 2
-        call getGALWEMfilename(n, galwem_struc(n)%odir, &
+        ! Update the bookends.  Note: find_next_fcsthr will save
+        ! data from next file in galwem_struc(n)%metdata3
+        call find_next_fcsthr(n, findex, &
              galwem_struc(n)%init_yr, &
              galwem_struc(n)%init_mo, &
              galwem_struc(n)%init_da, &
              galwem_struc(n)%init_hr, &
-             galwem_struc(n)%fcst_hour, fname)
+             galwem_struc(n)%fcst_hour, next_fcsthr, ierr)
 
-        write(LIS_logunit,*)'[INFO] Getting GALWEM forecast file2 ... ', &
-             trim(fname)
-        call read_galwem(n, findex, order, fname, ferror)
-        if (ferror .ge. 1) galwem_struc(n)%fcsttime2 = time2
+        if (ierr .ne. 0) then
+           ! We couldn't find a newer GALWEM file.  Set flag to
+           ! terminate after this timestep, and return.
+           write(LIS_logunit,*) &
+                '[WARN] Cannot find next GALWEM GRIB file!'
+           flush(LIS_logunit)
+           lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return true
+           return
+        else
+           ! We have a new second bookend.  Copy the saved older bookend
+           ! to the first end.
+           galwem_struc(n)%metdata1 = galwem_struc(n)%metdata2
+           galwem_struc(n)%fcsttime1 = galwem_struc(n)%fcsttime2
 
+           galwem_struc(n)%fcst_hour = next_fcsthr
+           galwem_struc(n)%fcsttime2 = galwem_struc(n)%fcsttime3
+           galwem_struc(n)%metdata2 = galwem_struc(n)%metdata3
+
+        end if
      end if
   end if
   openfile = 0
@@ -317,7 +233,8 @@ subroutine getGALWEMfilename(n,rootdir,yr,mo,da,hr,fc_hr,filename)
 end subroutine getGALWEMfilename
 
 ! Run audit on GALWEM GRIB files with specified start date and time.
-subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
+subroutine run_audit(n, findex, &
+     yr, mo, da, hr, first_fcsthr, filecount)
 
   ! Imports
   use galwem_forcingMod, only: galwem_struc
@@ -330,6 +247,7 @@ subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
 
   ! Arguments
   integer, intent(in) :: n
+  integer, intent(in) :: findex
   integer, intent(in) :: yr
   integer, intent(in) :: mo
   integer, intent(in) :: da
@@ -340,7 +258,10 @@ subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
   ! Locals
   integer, parameter :: MAX_FCSTHRS = 240
   character(len=LIS_CONST_PATH_LEN) :: fname
-  integer :: fcsthr, delta
+  integer :: fcsthr, delta, ferror, order
+  integer :: yr1, mo1, da1, hr1, mn1, ss1, doy1
+  real :: ts1, gmt1
+  real*8 :: time1
   logical :: found_inq
   integer :: i
 
@@ -349,10 +270,49 @@ subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
   filecount = 0
   do i = 0, MAX_FCSTHRS
      fcsthr = first_fcsthr + (i * delta)
-     call getGALWEMfilename(n, galwem_struc(n)%odir, yr, mo, da, hr, &
+     yr1 = yr
+     mo1 = mo
+     da1 = da
+     hr1 = hr
+     call getGALWEMfilename(n, galwem_struc(n)%odir, yr1, mo1, da1, hr1, &
           fcsthr, fname)
+
+     write(LIS_logunit,*)'EMK: Searching for ', trim(fname)
+
+     ferror = 0
      inquire(file=trim(fname), exist=found_inq)
      if (found_inq) then
+        if (i == 0) then
+           order = 1
+        else if (filecount < 2) then
+           order = 2
+        else
+           order = 3
+        end if
+        call read_galwem(n, findex, order, fname, ferror)
+        if (ferror == 0) then
+           mn1 = 0
+           ss1 = 0
+           ts1 = fcsthr * 3600
+           call LIS_tick(time1, doy1, gmt1, &
+                yr1, mo1, da1, hr1, mn1, ss1, ts1)
+           if (order == 1) then
+              galwem_struc(n)%fcsttime1 = time1
+              write(LIS_logunit,*) &
+                   '[INFO] Read ', trim(fname)
+              write(LIS_logunit,*) '[INFO] time1 = ', time1
+           else if (order == 2) then
+              galwem_struc(n)%fcsttime2 = time1
+              galwem_struc(n)%fcst_hour = fcsthr
+              write(LIS_logunit,*) &
+                   '[INFO] Read ', trim(fname)
+              write(LIS_logunit,*) '[INFO] time2 = ', time1
+           else
+              galwem_struc(n)%fcsttime3 = time1
+           end if
+        end if
+     end if
+     if (found_inq .and. ferror .eq. 0) then
         filecount = filecount + 1
      else
         if (i == 0) then
@@ -364,29 +324,34 @@ subroutine run_audit(n, yr, mo, da, hr, first_fcsthr, filecount)
            exit
         end if
      end if
+
+     if (filecount >= 2) exit
   end do
 
-  if (filecount > 0) then
-     write(LIS_logunit,*)'[INFO] Found ', filecount, ' files'
-  end if
+  !if (filecount > 0) then
+  !   write(LIS_logunit,*)'[INFO] Found ', filecount, ' files'
+  !end if
 
 end subroutine run_audit
 
 ! Find next GALWEM grib file given current selected time and
 ! forecast hour
-subroutine find_next_fcsthr(n, yr, mo, da, hr, cur_fcsthr, &
+subroutine find_next_fcsthr(n, findex, &
+     yr, mo, da, hr, cur_fcsthr, &
      next_fcsthr, ierr)
 
   ! Imports
   use galwem_forcingMod, only: galwem_struc
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod, only: LIS_logunit, LIS_endrun
-
+  use LIS_timeMgrMod, only: LIS_tick
+  
   ! Defaults
   implicit none
 
   ! Arguments
   integer, intent(in) :: n
+  integer, intent(in) :: findex
   integer, intent(in) :: yr
   integer, intent(in) :: mo
   integer, intent(in) :: da
@@ -398,7 +363,10 @@ subroutine find_next_fcsthr(n, yr, mo, da, hr, cur_fcsthr, &
   ! Locals
   integer, parameter :: MAX_FCSTHRS = 240
   character(len=LIS_CONST_PATH_LEN) :: fname
-  integer :: fcsthr, delta
+  integer :: fcsthr, delta, order, ferror
+  integer :: yr1, mo1, da1, hr1, mn1, ss1, doy1
+  real :: gmt1, ts1
+  real*8 :: time1
   logical :: found_inq
   integer :: i
 
@@ -407,10 +375,28 @@ subroutine find_next_fcsthr(n, yr, mo, da, hr, cur_fcsthr, &
   delta = 1
   do i = 1, MAX_FCSTHRS
      fcsthr = cur_fcsthr + (i * delta)
-     call getGALWEMfilename(n, galwem_struc(n)%odir, yr, mo, da, hr, &
+     yr1 = yr
+     mo1 = mo
+     da1 = da
+     hr1 = hr
+     call getGALWEMfilename(n, galwem_struc(n)%odir, yr1, mo1, da1, hr1, &
           fcsthr, fname)
      inquire(file=trim(fname), exist=found_inq)
+     ferror = 0
      if (found_inq) then
+        order = 3
+        call read_galwem(n, findex, order, fname, ferror)
+        if (ferror == 0) then
+           mn1 = 0
+           ss1 = 0
+           ts1 = fcsthr * 3600
+           call LIS_tick(time1, doy1, gmt1, &
+                yr1, mo1, da1, hr1, mn1, ss1, ts1)
+           galwem_struc(n)%fcsttime3 = time1
+        end if
+     end if
+     if (found_inq .and. ferror .eq. 0) then
+        write(LIS_logunit,*)'[INFO] Read ', trim(fname)
         next_fcsthr = fcsthr
         ierr = 0
         exit
