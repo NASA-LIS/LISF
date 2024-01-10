@@ -2,7 +2,7 @@
 [[sec-intro]]
 == Introduction
 
-This is the Users`' Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software.  It also describes LDT`'s run-time configuration options (the _ldt.config_ file).
+This is the Users Guide for the Land surface Data Toolkit (LDT). This document describes how to download and install the LDT software.  It also describes LDT`'s run-time configuration options (the _ldt.config_ file).
 
 This document consists of 7 sections, described as follows:
 
@@ -30,6 +30,20 @@ This document consists of 7 sections, described as follows:
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more
 //details.  (See Section~\ref{sec:obtain-src}.)}
+
+==== Version 7.5
+
+. Includes new runmode
+* Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPL)
+. Supports additional data assimilation observations
+* CDFS green vegetation fraction (CDFS_GVF)
+* GEOS-FP effective soil temperature (GEOS_FP_TEFFobs)
+* Precipitation output from a LIS run (LISlsmPrecipobs)
+* Soil temperature output from a LIS run (LISlsmTEFFobs)
+* Operational 9-km enhanced SMAP soil moisture retrieval (SMAP_E_OPLsm)
+* VIIRS green vegetation fraction (VIIRS_GVF)
+. Supports additional parameters
+* SnowModel parameters
 
 ==== Version 7.4
 
