@@ -78,7 +78,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    inquire(file=trim(gribfile),exist=found_inq)
    if (.not. found_inq) then
       write(LIS_logunit,*)'[ERR] Cannot find file '//trim(gribfile)
-      call LIS_endrun()
+      rc = 1
+      return
    end if
 
 #if (defined USE_GRIBAPI)
@@ -86,7 +87,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call grib_open_file(ftn,trim(gribfile),'r',ierr)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] Failed to open - '//trim(gribfile)
-      call LIS_endrun()
+      rc = 1
+      return
    end if
 
    ! Read in the first grib record, unpack the header and extract
@@ -95,7 +97,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    if ( ierr .ne. 0 ) then
       write(LIS_logunit,*) '[ERR] failed to read - '//trim(gribfile)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
    endif
 
    call grib_get(igrib,'centre',center,ierr)
@@ -104,7 +106,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'centre in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'gridType',gtype,ierr)
@@ -113,14 +116,16 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'gridtype in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    if(trim(gtype).ne."regular_ll") then
       write(LIS_logunit,*)'[ERR] GALWEM file not on lat/lon grid!'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'Ni',iginfo(1),ierr)
@@ -128,7 +133,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
       write(LIS_logunit,*) '[ERR] in grid_get: Ni in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'Nj',iginfo(2),ierr)
@@ -136,7 +142,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
       write(LIS_logunit,*) '[ERR] in grid_get: Nj in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'jDirectionIncrementInDegrees',gridres_dlat,ierr)
@@ -146,7 +153,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    ! EMK...Added dlon
@@ -157,7 +165,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'in read_galwem'
       call grib_release(igrib, ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'dataDate',dataDate,ierr)
@@ -166,7 +175,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'dataDate in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    call grib_get(igrib,'dataTime',dataTime,ierr)
@@ -175,7 +185,8 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
            'dataTime in read_galwem'
       call grib_release(igrib,ierr)
       call grib_close_file(ftn)
-      call LIS_endrun()
+      rc = 1
+      return
    endif
 
    ! Here we tentatively have a file we can use. Close it for now, and
@@ -197,7 +208,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
    call assign_processed_galwemforc(n,order,6,vwind)
    call assign_processed_galwemforc(n,order,7,ps)
    call assign_processed_galwemforc(n,order,8,prectot)
-      
+
 #endif
 
 end subroutine read_galwem
@@ -269,7 +280,7 @@ subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
 
   ! Executable code begins here ...
 
-  rc = 1 ! Initialize as "no error"
+  rc = 0 ! Initialize as "no error"
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
   ! using a simple inquire statement.  This avoids ECCODES/GRIB_API
@@ -278,7 +289,7 @@ subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
   inquire(file=trim(gribfile),exist=found_inq)
   if (.not. found_inq) then
      write(LIS_logunit,*) '[WARN] Cannot find file '//trim(gribfile)
-     rc = 0
+     rc = 1
      return
   end if
 
@@ -289,7 +300,7 @@ subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
   call grib_open_file(ftn,trim(gribfile),'r',ierr)
   if ( ierr .ne. 0 ) then
      write(LIS_logunit,*) '[WARN] Failed to open - '//trim(gribfile)
-     rc = 0
+     rc = 1
      return
   end if
 
@@ -514,7 +525,7 @@ subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
 
   ! At this point, we have everything.  Close the file and return.
   call grib_close_file(ftn)
-  rc = 1
+  rc = 0
   return
 
   ! Jump down here to clean up memory before returning after finding a
@@ -531,7 +542,7 @@ subroutine fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess,&
   deallocate ( fg_vwind   )
   deallocate ( fg_ps      )
   deallocate ( fg_prectot )
-  rc = 0
+  rc = 1
 #endif
 
 end subroutine fldbld_read_galwem
@@ -747,6 +758,10 @@ subroutine assign_processed_galwemforc(n,order,var_index,galwemforc)
                    galwemforc(c,r)
            elseif(order.eq.2) then
               galwem_struc(n)%metdata2(var_index,&
+                   LIS_domain(n)%gindex(c,r)) = &
+                   galwemforc(c,r)
+           elseif(order.eq.3) then
+              galwem_struc(n)%metdata3(var_index,&
                    LIS_domain(n)%gindex(c,r)) = &
                    galwemforc(c,r)
            endif
