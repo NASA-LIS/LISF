@@ -6511,8 +6511,26 @@ of the GALWEM-GE forecast forcing data.
 GALWEM-GE forecast forcing directory:          ./GALWEM_GE
 GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
 GALWEM-GE forecast number of ensemble members: 21
+....
 
+[[sssec_mogrepsgforecast,MOGREPS-G forecast]]
+==== MOGREPS-G Forecast
 
+`MOGREPS-G forecast forcing directory:` specifies the location
+of the MOGREPS-G forecast forcing files.
+
+`MOGREPS-G forecast run mode:` specifies the run mode related
+to the MOGREPS-G dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`MOGREPS-G forecast number of ensemble members:` specifies the number of ensembles
+of the MOGREPS-G forecast forcing data.
+
+.Example _lis.config_ entry
+....
+MOGREPS-G forecast forcing directory:          ./MOGREPS-G
+MOGREPS-G forecast run mode:                   forecast    # forecast | analysis
+MOGREPS-G forecast number of ensemble members: 18
 ....
 
 [[ssec_lsm,Land surface models]]
