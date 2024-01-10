@@ -1,4 +1,4 @@
-= Land Information System (LIS): LIS {lisfrevision} Users`' Guide
+= Land Information System (LIS): LIS {lisfrevision} Users Guide
 :revnumber: 2.5
 :revdate: 05 Jul 2023
 :doctype: book
@@ -23,11 +23,11 @@
 :vertellipsis: ⋮
 
 
-// Set :devonly: when compiling the developers' version of the Users' Guide.
-// Set :devonly!: when compiling the public version of the Users' Guide.
+// Set :devonly: when compiling the developers' version of the Users Guide.
+// Set :devonly!: when compiling the public version of the Users Guide.
 //
 // The ifdef::devonly[] command allows one to include text for the developers'
-// version of the Users' Guide.
+// version of the Users Guide.
 // Usage:
 // ifdef::devonly[]
 // line one
