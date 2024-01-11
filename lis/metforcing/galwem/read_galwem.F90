@@ -15,6 +15,7 @@
 !
 ! !REVISION HISTORY:
 ! 15 Mar 2022: Yeosang Yoon, initial code
+! 11 Jan 2024; Eric Kemp, revisions for fault tolerance.
 !
 ! !INTERFACE:
 subroutine read_galwem(n, findex, order, gribfile, rc)
@@ -98,6 +99,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
       write(LIS_logunit,*) '[ERR] failed to read - '//trim(gribfile)
       call grib_close_file(ftn)
       rc = 1
+      return
    endif
 
    call grib_get(igrib,'centre',center,ierr)
@@ -199,6 +201,7 @@ subroutine read_galwem(n, findex, order, gribfile, rc)
 
    call fldbld_read_galwem(n, findex, order, gribfile, ifguess, jfguess, &
            tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
+   if (rc .ne. 0) return
 
    call assign_processed_galwemforc(n,order,1,tair)
    call assign_processed_galwemforc(n,order,2,qair)

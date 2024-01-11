@@ -20,7 +20,8 @@ module galwem_forcingMod
 ! REVISION HISTORY:
 ! 11 Mar 2022; Yeosang Yoon; Initial Specification
 ! 08 Sep 2022; Yeosang Yoon, Add codes to read GALWEM 25 DEG dataset
-
+! 11 Jan 2024; Eric Kemp, added third entries for fcsttime and metdata
+!              for temporary storage.
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
@@ -199,6 +200,7 @@ contains
        galwem_struc(n)%mi = galwem_struc(n)%nc*galwem_struc(n)%nr
        galwem_struc(n)%fcsttime1 = 3000.0
        galwem_struc(n)%fcsttime2 = 0.0
+       galwem_struc(n)%fcsttime3 = 0.0
     enddo
 
     do n=1,LIS_rc%nnest
