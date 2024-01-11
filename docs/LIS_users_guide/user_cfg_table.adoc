@@ -35,6 +35,7 @@
 | GLDAS                                  | On
 | GFS                                    | On
 | MERRA2                                 | On
+| GEOS-IT                                | On
 | ERA5                                   | On
 | CMAP                                   | On
 | CHIRPS2                                | On
@@ -173,6 +174,7 @@
 | DA OBS NRT_SMAPsm       | On
 | DA OBS pildas           | On
 | DA OBS GRACE            | On
+| DA CDF TRANSFER NASA SMAPSM | On
 |====
 
 .Bias estimation
@@ -255,9 +257,10 @@
 | FASST               | Off
 | CLSM F2.5           | On
 | GeoWRSI.2           | On
-| LSM RDHM.3.5.6      | On
+| LSM RDHM.3.5.6      | Off
 | SUMMA.1.0           | Off
 | Crocus.8.1          | Off
+| SNOWMODEL           | Off
 | Flake.1.0           | Off
 | NoahMP-GL.3.9.1.1   | On
 | template glacier    | On
