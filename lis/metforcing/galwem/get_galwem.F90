@@ -21,7 +21,7 @@
 !              00Z, to correct time intervals between GALWEM-GD files,
 !              and to stop searching for (nonexistent) GALWEM-GD file
 !              when LIS reaches it's end time.
-! 09 Jan 2024: Eric Kemp. Reworked code to be fault tolerant, to roll
+! 11 Jan 2024: Eric Kemp. Reworked code to be fault tolerant, to roll
 !              back to an earlier GALWEM run if necessary, and to better
 !              ensure LIS outputs history files before an early
 !              termination.
@@ -110,7 +110,8 @@ subroutine get_galwem(n, findex)
         mn1 = 0
         ss1 = 0
         ts1 = -43200
-        call LIS_tick(time1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
+        call LIS_tick(time1, doy1, gmt1, &
+             yr1, mo1, da1, hr1, mn1, ss1, ts1)
         call run_audit(n, findex, &
              yr1, mo1, da1, hr1, &
              12, filecount)
@@ -130,10 +131,6 @@ subroutine get_galwem(n, findex)
 
   ! Get the bookends at the start of the run
   if (LIS_rc%tscount(n) .eq. 1 .or. LIS_rc%rstflag(n) .eq. 1) then
-     write(LIS_logunit,*)'[INFO] time1 = ', &
-          galwem_struc(n)%fcsttime1
-     write(LIS_logunit,*)'[INFO] time2 = ', &
-          galwem_struc(n)%fcsttime2
      openfile = 1 ! Data already stored in galwem_struc(n) by run_audit
   end if
 
@@ -277,8 +274,6 @@ subroutine run_audit(n, findex, &
      call getGALWEMfilename(n, galwem_struc(n)%odir, yr1, mo1, da1, hr1, &
           fcsthr, fname)
 
-     write(LIS_logunit,*)'EMK: Searching for ', trim(fname)
-
      ferror = 0
      inquire(file=trim(fname), exist=found_inq)
      if (found_inq) then
@@ -300,13 +295,11 @@ subroutine run_audit(n, findex, &
               galwem_struc(n)%fcsttime1 = time1
               write(LIS_logunit,*) &
                    '[INFO] Read ', trim(fname)
-              write(LIS_logunit,*) '[INFO] time1 = ', time1
            else if (order == 2) then
               galwem_struc(n)%fcsttime2 = time1
               galwem_struc(n)%fcst_hour = fcsthr
               write(LIS_logunit,*) &
                    '[INFO] Read ', trim(fname)
-              write(LIS_logunit,*) '[INFO] time2 = ', time1
            else
               galwem_struc(n)%fcsttime3 = time1
            end if
