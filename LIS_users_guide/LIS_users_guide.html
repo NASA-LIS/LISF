@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
-<title>Land Information System (LIS): LIS 7.4 Users&#8217; Guide</title>
+<title>Land Information System (LIS): LIS 7.5 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,10 +435,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land Information System (LIS): LIS 7.4 Users&#8217; Guide</h1>
+<h1>Land Information System (LIS): LIS 7.5 Users Guide</h1>
 <div class="details">
-<span id="revnumber">version 2.5,</span>
-<span id="revdate">05 Jul 2023</span>
+<span id="revnumber">version 3.0,</span>
+<span id="revdate">11 Jan 2024</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -557,6 +557,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 11, 2024</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2.5</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
@@ -695,7 +700,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="sec_intro">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.4.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
+<p>This is the Land Information System (LIS) User&#8217;s Guide.  This document describes how to download and install the code and data needed to run the LIS executable for LIS revision 7.5.  It describes how to build and run the code, and finally this document also describes how to download output data-sets to use for validation.</p>
 </div>
 <div class="paragraph">
 <p>This document consists of 12 sections, described as follows:</p>
@@ -755,7 +760,55 @@ describes how to request help from and provide feedback to the LISF development 
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_version_7_4">1.1.1. Version 7.4</h4>
+<h4 id="_version_7_5">1.1.1. Version 7.5</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports additional metforcing datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>GALWEM 17km or 0.25deg deterministic forecast reader (galwem)</p>
+</li>
+<li>
+<p>GALWEM-GE forecast reader (galwem_ge)</p>
+</li>
+<li>
+<p>GEOS-IT (geos_it)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Supports additional data assimilation observation datasets</p>
+<div class="ulist">
+<ul>
+<li>
+<p>CDFS green vegetation fraction (CDFS_GVF)</p>
+</li>
+<li>
+<p>CDF_Transfer_NASA_SMAPsm</p>
+</li>
+<li>
+<p>Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPLsm)</p>
+</li>
+<li>
+<p>VIIRS green vegetation fraction (VIIRS_GVF)</p>
+</li>
+<li>
+<p>Margulis Western US Snow Reanalysis dataset (WUS_UCLAsnow)</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>Includes RAPID router</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_version_7_4">1.1.2. Version 7.4</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -916,7 +969,7 @@ describes how to request help from and provide feedback to the LISF development 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_3">1.1.2. LIS 7.3</h4>
+<h4 id="_lis_7_3">1.1.3. LIS 7.3</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1216,7 +1269,7 @@ describes how to request help from and provide feedback to the LISF development 
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_2">1.1.3. LIS 7.2</h4>
+<h4 id="_lis_7_2">1.1.4. LIS 7.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1301,7 +1354,7 @@ forecasting runmode</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_1">1.1.4. LIS 7.1</h4>
+<h4 id="_lis_7_1">1.1.5. LIS 7.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1354,7 +1407,7 @@ available to external users; they should become available in July 2015</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_7_0">1.1.5. LIS 7.0</h4>
+<h4 id="_lis_7_0">1.1.6. LIS 7.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1449,7 +1502,7 @@ emissivity support</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_2">1.1.6. LIS 6.2</h4>
+<h4 id="_lis_6_2">1.1.7. LIS 6.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1490,7 +1543,7 @@ version 2 (RFE2) daily precipition (for use in WRSI).</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_1">1.1.7. LIS 6.1</h4>
+<h4 id="_lis_6_1">1.1.8. LIS 6.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1519,7 +1572,7 @@ snowcover, and LPRM retrievals of AMSRE soil moisture.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_6_0">1.1.8. LIS 6.0</h4>
+<h4 id="_lis_6_0">1.1.9. LIS 6.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1583,7 +1636,7 @@ for radiance based assimilation</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_5_0">1.1.9. LIS 5.0</h4>
+<h4 id="_lis_5_0">1.1.10. LIS 5.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1604,7 +1657,7 @@ replaced with the corresponding ESMF utility.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_2">1.1.10. LIS 4.2</h4>
+<h4 id="_lis_4_2">1.1.11. LIS 4.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1636,7 +1689,7 @@ parallel processing environments.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_1">1.1.11. LIS 4.1</h4>
+<h4 id="_lis_4_1">1.1.12. LIS 4.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1655,7 +1708,7 @@ parallel processing environments.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_0_2">1.1.12. LIS 4.0.2</h4>
+<h4 id="_lis_4_0_2">1.1.13. LIS 4.0.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1672,7 +1725,7 @@ only CLM and Noah models have full support.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_4_0">1.1.13. LIS 4.0</h4>
+<h4 id="_lis_4_0">1.1.14. LIS 4.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1682,7 +1735,7 @@ only CLM and Noah models have full support.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_3_1">1.1.14. LIS 3.1</h4>
+<h4 id="_lis_3_1">1.1.15. LIS 3.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1719,7 +1772,7 @@ this version of LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_lis_3_0">1.1.15. LIS 3.0</h4>
+<h4 id="_lis_3_0">1.1.16. LIS 3.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1897,7 +1950,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 <div class="sect2">
 <h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
 <div class="paragraph">
-<p>The LISF public release 7.4 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.5 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1915,7 +1968,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.4.0.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.5.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -1937,7 +1990,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.4.0.tar.gz | tar xf -</pre>
+<pre>% gzip -dc LISF_public_release_7.5.0.tar.gz | tar xf -</pre>
 </div>
 </div>
 </div>
@@ -2145,6 +2198,18 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>CDFS_GVF</em></p>
+<div class="paragraph">
+<p>CDFS green vegetation fraction</p>
+</div>
+</li>
+<li>
+<p><em>CDF_Transfer_NASA_SMAPsm</em></p>
+<div class="paragraph">
+<p><span class="red">specifies what?</span></p>
+</div>
+</li>
+<li>
 <p><em>ESACCI_sm</em></p>
 <div class="paragraph">
 <p>ESACCI Essential Climate Variable product</p>
@@ -2241,6 +2306,12 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>SMAP_E_OPLsm</em></p>
+<div class="paragraph">
+<p>Operation Enhanced (9-km) SMAP soil moisture</p>
+</div>
+</li>
+<li>
 <p><em>SMAP_NRTsm</em></p>
 <div class="paragraph">
 <p>SMAP near-real time soil moisture retrievals</p>
@@ -2328,6 +2399,18 @@ included components</p>
 <p><em>USAFSI</em></p>
 <div class="paragraph">
 <p>USAF Snow and Ice Analysis</p>
+</div>
+</li>
+<li>
+<p><em>VIIRS_GVF</em></p>
+<div class="paragraph">
+<p>VIIRS green vegetation fraction</p>
+</div>
+</li>
+<li>
+<p><em>WUS_UCLAsnow</em></p>
+<div class="paragraph">
+<p>Margulis Western US Snow Reanalysis dataset</p>
 </div>
 </li>
 <li>
@@ -2676,6 +2759,18 @@ included components</p>
 </div>
 </li>
 <li>
+<p><em>galwem</em></p>
+<div class="paragraph">
+<p>GALWEM 17km or 0.25deg deterministic forecast reader</p>
+</div>
+</li>
+<li>
+<p><em>galwem_ge</em></p>
+<div class="paragraph">
+<p>GALWEM-GE forecast reader</p>
+</div>
+</li>
+<li>
 <p><em>gdas</em></p>
 <div class="paragraph">
 <p>NCEP GDAS meteorological forcing data</p>
@@ -2715,6 +2810,12 @@ included components</p>
 <p><em>geos5fcst</em></p>
 <div class="paragraph">
 <p>NASA GEOS 5 meteorological forecast forcing data</p>
+</div>
+</li>
+<li>
+<p><em>geos_it</em></p>
+<div class="paragraph">
+<p>GEOS-IT</p>
 </div>
 </li>
 <li>
@@ -3150,6 +3251,9 @@ included components</p>
 </li>
 <li>
 <p><em>NLDAS_router</em></p>
+</li>
+<li>
+<p><em>RAPID_router</em></p>
 </li>
 </ul>
 </div>
@@ -3791,7 +3895,7 @@ included components</p>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_HDF4</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to HDF4 library</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (required to use HDFEOS2)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_HDF5</code></p></td>
@@ -3837,6 +3941,11 @@ included components</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_JPEG</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to JPEG library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system libjpeg by default)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_RPC</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to RPC library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system RPC library by default)</p></td>
 </tr>
 </tbody>
 </table>
@@ -4183,6 +4292,10 @@ Not all the optional components listed below are available in the public release
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">MERRA2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GEOS-IT</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
@@ -4683,6 +4796,10 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">DA OBS GRACE</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">DA CDF TRANSFER NASA SMAPSM</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
@@ -4977,7 +5094,7 @@ Not all the optional components listed below are available in the public release
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LSM RDHM.3.5.6</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SUMMA.1.0</p></td>
@@ -4985,6 +5102,10 @@ Not all the optional components listed below are available in the public release
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Crocus.8.1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">SNOWMODEL</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Off</p></td>
 </tr>
 <tr>
@@ -23594,7 +23715,7 @@ Program stopping..</pre>
 <div id="footnotes">
 <hr>
 <div class="footnote" id="_footnotedef_1">
-<a href="#_footnoteref_1">1</a>. Not available in the LISF_public_release_7.4.0.tar.gz public release of LISF 7.4.
+<a href="#_footnoteref_1">1</a>. Not available in the LISF_public_release_7.5.0.tar.gz public release of LISF 7.5.
 </div>
 <div class="footnote" id="_footnotedef_2">
 <a href="#_footnoteref_2">2</a>. See the &#8220;Creating a Custom Modulefile&#8221; document found at <a href="https://nasa-lis.github.io/LISF/" class="bare">https://nasa-lis.github.io/LISF/</a>
@@ -23602,8 +23723,8 @@ Program stopping..</pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.5<br>
-Last updated 2023-12-11 23:12:46 UTC
+Version 3.0<br>
+Last updated 2024-01-18 20:08:19 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

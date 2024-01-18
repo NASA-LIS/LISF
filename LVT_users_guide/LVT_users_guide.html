@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="generator" content="Asciidoctor 2.0.20">
-<title>Land surface Verification Toolkit (LVT): LVT 7.4 Users&#8217; Guide</title>
+<title>Land surface Verification Toolkit (LVT): LVT 7.5 Users Guide</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -435,10 +435,10 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </head>
 <body class="book">
 <div id="header">
-<h1>Land surface Verification Toolkit (LVT): LVT 7.4 Users&#8217; Guide</h1>
+<h1>Land surface Verification Toolkit (LVT): LVT 7.5 Users Guide</h1>
 <div class="details">
-<span id="revnumber">version 2.4,</span>
-<span id="revdate">05 Jul 2023</span>
+<span id="revnumber">version 3.0,</span>
+<span id="revdate">10 Jan 2024</span>
 </div>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
@@ -518,6 +518,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </tr>
 </thead>
 <tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Jan 10, 2024</p></td>
+</tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">2.4</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.9 release</p></td>
@@ -601,7 +606,7 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <h2 id="sec-intro">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>This is the Users&#8217; Guide for Land surface Verification Toolkit (LVT; <a href="#kumar_etal_gmd_2012">[kumar_etal_gmd_2012]</a>).
+<p>This is the Users Guide for Land surface Verification Toolkit (LVT; <a href="#kumar_etal_gmd_2012">[kumar_etal_gmd_2012]</a>).
 This document describes how to download and install the LVT software.  It also describes LVT&#8217;s run-time configuration options (the <em>lvt.config</em> file).</p>
 </div>
 <div class="paragraph">
@@ -650,7 +655,33 @@ describes the specification of the model output from LIS.</p>
 <div class="sect2">
 <h3 id="_whats_new">1.1. What&#8217;s New</h3>
 <div class="sect3">
-<h4 id="_version_7_4">1.1.1. Version 7.4</h4>
+<h4 id="_version_7_5">1.1.1. Version 7.5</h4>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Supports additional data streams</p>
+<div class="ulist">
+<ul>
+<li>
+<p>COAMPS forcing data (COAMPSout)</p>
+</li>
+<li>
+<p>GRUN runoff data (GRUNrunoff)</p>
+</li>
+<li>
+<p>GPM IMERG Monthly precipitation data (IMERG_monthly)</p>
+</li>
+<li>
+<p>Operational enhanced SMAP soil moisture retrieval data (SMAP_E_OPL)</p>
+</li>
+</ul>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_version_7_4">1.1.2. Version 7.4</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -686,7 +717,7 @@ describes the specification of the model output from LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_3">1.1.2. Version 7.3</h4>
+<h4 id="_version_7_3">1.1.3. Version 7.3</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -873,7 +904,7 @@ describes the specification of the model output from LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_2">1.1.3. Version 7.2</h4>
+<h4 id="_version_7_2">1.1.4. Version 7.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -956,7 +987,7 @@ describes the specification of the model output from LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_1">1.1.4. Version 7.1</h4>
+<h4 id="_version_7_1">1.1.5. Version 7.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -985,7 +1016,7 @@ observations</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_7_0">1.1.5. Version 7.0</h4>
+<h4 id="_version_7_0">1.1.6. Version 7.0</h4>
 <div class="paragraph">
 <p>Note that LVT has been renumbered to version 7.0.</p>
 </div>
@@ -1063,7 +1094,7 @@ is similar to SSWI, but for TWS variable</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_1_2">1.1.6. Version 1.2</h4>
+<h4 id="_version_1_2">1.1.7. Version 1.2</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1073,7 +1104,7 @@ is similar to SSWI, but for TWS variable</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_1_1">1.1.7. Version 1.1</h4>
+<h4 id="_version_1_1">1.1.8. Version 1.1</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1092,7 +1123,7 @@ is similar to SSWI, but for TWS variable</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_version_1_0">1.1.8. Version 1.0</h4>
+<h4 id="_version_1_0">1.1.9. Version 1.0</h4>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
@@ -1259,7 +1290,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 <div class="sect2">
 <h3 id="sec_publicrelease">4.2. Public Release Source Code</h3>
 <div class="paragraph">
-<p>The LISF public release 7.4 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
+<p>The LISF public release 7.5 source code is available both on <a href="https://lis.gsfc.nasa.gov">LISF&#8217;s web-site</a> under the &#8220;Source&#8221; menu and on GitHub under the NASA-LIS organization at <a href="https://github.com/NASA-LIS/LISF" class="bare">https://github.com/NASA-LIS/LISF</a> under the &#8220;Releases&#8221; link.</p>
 </div>
 <div class="paragraph">
 <p>After downloading the LISF tar-file:</p>
@@ -1277,7 +1308,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% mv LISF_public_release_7.4.0.tar.gz TOPLEVELDIR</pre>
+<pre>% mv LISF_public_release_7.5.0.tar.gz TOPLEVELDIR</pre>
 </div>
 </div>
 </div>
@@ -1299,7 +1330,7 @@ All users are encouraged to go to <a href="https://lis.gsfc.nasa.gov">LISF&#8217
 </div>
 <div class="literalblock">
 <div class="content">
-<pre>% gzip -dc LISF_public_release_7.4.0.tar.gz | tar xf -</pre>
+<pre>% gzip -dc LISF_public_release_7.5.0.tar.gz | tar xf -</pre>
 </div>
 </div>
 </div>
@@ -1500,7 +1531,7 @@ The directory containing the LVT source code, <em>LISF/lvt</em>, will be referre
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_HDF4</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to HDF4 library</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">optional</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (required to use HDFEOS2)</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_HDF5</code></p></td>
@@ -1526,6 +1557,11 @@ The directory containing the LVT source code, <em>LISF/lvt</em>, will be referre
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_JPEG</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to JPEG library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system libjpeg by default)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LVT_RPC</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to RPC library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system RPC library by default)</p></td>
 </tr>
 </tbody>
 </table>
@@ -7154,8 +7190,8 @@ rmse_qle_ensSTD rmse_qle_CI
 </div>
 <div id="footer">
 <div id="footer-text">
-Version 2.4<br>
-Last updated 2023-12-11 23:12:46 UTC
+Version 3.0<br>
+Last updated 2024-01-18 20:08:19 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
