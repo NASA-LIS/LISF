@@ -666,7 +666,13 @@ subroutine LIS_metforcing_plugin
    external finalize_mogrepsg
    external reset_mogrepsg
 #endif
-   
+
+   external :: registerinitmetforc
+   external :: registerretrievemetforc
+   external :: registertimeinterpmetforc
+   external :: registerfinalmetforc
+   external :: registerresetmetforc
+
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
    call registerinitmetforc(trim(LIS_metForcTemplateId)//char(0), &

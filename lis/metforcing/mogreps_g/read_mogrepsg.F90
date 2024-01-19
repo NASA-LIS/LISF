@@ -23,7 +23,6 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
 ! !USES:
   use LIS_coreMod
   use LIS_logMod
-  use mogrepsg_forcingMod, only : mogrepsg_struc
 
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -68,14 +67,10 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
   integer         :: ftn, igrib, ierr
   integer         :: center
   character*100   :: gtype
-  integer         :: file_julhr
-  integer         :: yr1, mo1, da1, hr1
-  character*255   :: message     ( 20 )
   integer         :: iginfo      ( 40 )
   real            :: gridres_dlat, gridres_dlon
   integer         :: ifguess, jfguess
   integer         :: dataDate, dataTime
-  integer         :: fc_hr
 
   real            :: tair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Temperature interpolated to 2 metres [K] 
   real            :: qair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Relative humidity interpolated to 2 metres[kg/kg] 
@@ -87,6 +82,9 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
   real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   ! Total precipitation [kg/m^2]
 
   integer, intent(out) :: rc
+
+  external :: fldbld_read_mogrepsg
+  external :: assign_processed_mogrepsgforc
 
   ! Initialize return code to "no error".  We will change it below if
   ! necessary.
@@ -277,6 +275,9 @@ subroutine fldbld_read_mogrepsg(n, findex, order, gribfile, ifguess, jfguess,   
 
   logical                       :: found_inq
 
+  external :: interp_mogrepsg
+  external :: interp_mogrepsg_vwind
+  
   rc = 1 ! Initialize as "no error"
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
@@ -620,15 +621,17 @@ subroutine interp_mogrepsg(n, findex, ifguess, jfguess, pcp_flag, input, output)
 !EOP
 
   integer   :: mi, mo
-  integer   :: k
   integer   :: i,j
   integer   :: iret
   integer   :: midway
-  character(len=50) :: method
   real, allocatable, dimension(:,:)    :: var
   logical*1, allocatable, dimension(:) :: lb
   logical*1, allocatable, dimension(:) :: lo
 
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: neighbor_interp
+  
   allocate(var(ifguess,jfguess))
   allocate(lb(ifguess*jfguess))
   allocate(lo(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
@@ -725,14 +728,16 @@ subroutine interp_mogrepsg_vwind(n, findex, ifguess, jfguess, pcp_flag, input, o
 !EOP
 
   integer   :: mi, mo
-  integer   :: k
   integer   :: i,j
   integer   :: iret
   integer   :: midway
-  character(len=50) :: method
   real, allocatable, dimension(:,:)    :: var
   logical*1, allocatable, dimension(:) :: lb
   logical*1, allocatable, dimension(:) :: lo
+
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: neighbor_interp
 
   allocate(var(ifguess,jfguess))
   allocate(lb(ifguess*jfguess))
