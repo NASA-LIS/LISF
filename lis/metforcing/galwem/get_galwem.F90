@@ -28,12 +28,13 @@
 ! !INTERFACE:
 subroutine get_galwem(n, findex)
 ! !USES:
-  use LIS_coreMod
-  use LIS_timeMgrMod
-  use LIS_logMod
-  use LIS_metforcingMod
   use galwem_forcingMod
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+  use LIS_coreMod, only: LIS_masterproc, LIS_rc, LIS_endofrun
+  use LIS_logMod, only: LIS_logunit, LIS_abort, LIS_alert, LIS_endrun
+  use LIS_metforcingMod
+  use LIS_mpiMod
+  use LIS_timeMgrMod, only: LIS_julhr_date, LIS_tick
 
   implicit none
 
@@ -64,15 +65,31 @@ subroutine get_galwem(n, findex)
   integer :: first_fcsthr, next_fcsthr
   integer :: ierr
   logical :: lrc
+  character(255) :: message(20)
 
   ! GALWEM cycles every 6 hours; each cycle provide up to 168 hours (7 days) forecast for GALWEM-17km;
   ! each cycle provide up to 240 hours (10 days) forecast for GALWEM-25deg;
   ! <=42 (every 1-hour); > 42 (every 3-hour)
 
-  if(LIS_rc%ts.gt.10800) then
-     write(LIS_logunit,*) '[WARN] The model timestep is > forcing data timestep ...'
-     write(LIS_logunit,*) '[WARN] LIS does not support this mode currently.'
-     call LIS_endrun()
+  if (LIS_rc%ts .gt. 3600) then
+     write(LIS_logunit,*) '[ERR] The model timestep is > 1 hour ...'
+     write(LIS_logunit,*) '[ERR] LIS does not support this mode currently.'
+     message = ''
+     message(1) = '[ERR] Program: LIS'
+     message(2) = ' Routine: get_galwem.'
+     message(3) = ' Model timestep > 1 hour'
+     message(4) = ' LIS does not support this mode.'
+
+#if (defined SPMD)
+     call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+     if (LIS_masterproc) then
+        call LIS_alert( 'LIS.get_galwem          ', 1, message)
+        call LIS_abort(message)
+     else
+        call sleep(10) ! Make sure LIS_masterproc finishes LIS_abort
+        call LIS_endrun()
+     end if
   endif
 
   ! EMK...Return if LIS has reached the end time (meaning a new GALWEM
@@ -118,7 +135,23 @@ subroutine get_galwem(n, findex)
         if (filecount < 2) then
            write(LIS_logunit,*) &
                 "[ERR] No GALWEM files found, LIS will be halted!"
-           call LIS_endrun()
+           message = ''
+           message(1) = '[ERR] Program: LIS'
+           message(2) = ' Routine: get_galwem.'
+           message(3) = ' No GALWEM files found.'
+           message(4) = ' LIS will be halted.'
+
+#if (defined SPMD)
+           call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+           if (LIS_masterproc) then
+              call LIS_alert( 'LIS.get_galwem          ', 1, message)
+              call LIS_abort(message)
+           else
+              call sleep(10) ! Make sure LIS_masterproc finishes LIS_abort
+              call LIS_endrun()
+           end if
+
         else
            use_prior_galwem_run = .true.
            galwem_struc(n)%init_yr = yr1
@@ -164,8 +197,18 @@ subroutine get_galwem(n, findex)
            ! terminate after this timestep, and return.
            write(LIS_logunit,*) &
                 '[WARN] Cannot find next GALWEM GRIB file!'
+           write(LIS_logunit,*) &
+                '[WARN] LIS will terminate early.'
            flush(LIS_logunit)
            lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return true
+           message = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = ' Routine: get_galwem.'
+           message(3) = ' Cannot find next GALWEM GRIB file.'
+           message(4) = ' LIS will terminate early.'
+           if (LIS_masterproc) then
+              call LIS_alert( 'LIS.get_galwem          ', 1, message)
+           end if
            return
         else
            ! We have a new second bookend.  Copy the saved older bookend
@@ -192,11 +235,12 @@ end subroutine get_galwem
 ! !INTERFACE:
 subroutine getGALWEMfilename(n,rootdir,yr,mo,da,hr,fc_hr,filename)
 
-  use LIS_logMod, only: LIS_logunit, LIS_endrun
   use galwem_forcingMod
+  use LIS_logMod, only: LIS_logunit
 
   implicit none
-! !ARGUMENTS:
+
+  ! !ARGUMENTS:
   integer,          intent(in)  :: n
   character(len=*), intent(in)  :: rootdir
   integer,          intent(in)  :: yr,mo,da,hr
@@ -212,9 +256,9 @@ subroutine getGALWEMfilename(n,rootdir,yr,mo,da,hr,fc_hr,filename)
 
   write (UNIT=chr, FMT='(i2.2)') hr
   write (UNIT=fchr, FMT='(i3.3)') fc_hr
- 
-  ! GALWEM-17km 
-  if(galwem_struc(n)%resol == 17) then   
+
+  ! GALWEM-17km
+  if(galwem_struc(n)%resol == 17) then
      fname = 'PS.557WW_SC.U_DI.C_GP.GALWEM-GD_GR.C17KM_AR.GLOBAL_DD.'
   endif
 
@@ -236,7 +280,7 @@ subroutine run_audit(n, findex, &
   ! Imports
   use galwem_forcingMod, only: galwem_struc
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
-  use LIS_logMod, only: LIS_logunit, LIS_endrun
+  use LIS_logMod, only: LIS_logunit
   use LIS_timeMgrMod, only: LIS_tick
 
   ! Defaults
@@ -336,7 +380,7 @@ subroutine find_next_fcsthr(n, findex, &
   ! Imports
   use galwem_forcingMod, only: galwem_struc
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
-  use LIS_logMod, only: LIS_logunit, LIS_endrun
+  use LIS_logMod, only: LIS_logunit
   use LIS_timeMgrMod, only: LIS_tick
   
   ! Defaults
