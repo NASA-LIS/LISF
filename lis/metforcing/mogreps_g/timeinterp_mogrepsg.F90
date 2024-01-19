@@ -67,9 +67,10 @@ subroutine timeinterp_mogrepsg(n,findex)
   type(ESMF_Field)   :: psurfField,pcpField
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:)
-  real               :: pcp_tmp
-  integer            :: mfactor, m, k, tid, fcsthr_intv
-! ________________________________________
+  integer            :: mfactor, m, k, tid
+
+  external :: zterp
+  ! ________________________________________
 
   btime=mogrepsg_struc(n)%fcsttime1
   call LIS_time2date(btime,bdoy,gmt1,byr,bmo,bda,bhr,bmn)

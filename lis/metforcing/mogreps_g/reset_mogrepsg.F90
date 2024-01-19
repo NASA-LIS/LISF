@@ -28,7 +28,6 @@ subroutine reset_mogrepsg()
   implicit none
 
   integer   :: n
-  integer   :: findex
 
   do n=1,LIS_rc%nnest
      mogrepsg_struc(n)%fcsttime1 = 3000.0

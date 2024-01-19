@@ -43,20 +43,20 @@ subroutine get_mogrepsg(n, findex)
 !  the current model timestep.
 
 !EOP
-  integer           :: order, ferror, m, t
+  integer           :: order, ferror, m
   character(len=LIS_CONST_PATH_LEN) :: fname
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2
   real              :: gmt1, gmt2
   real              :: ts1, ts2
-  integer           :: fc_hr
 
-  integer           :: hr_int1, hr_int2
   integer           :: valid_hour
   integer           :: fcsthr_intv
-  integer           :: fcst_hour
   integer           :: openfile
+
+  external :: get_mogrepsg_filename
+  external :: read_mogrepsg
 
   ! MOGREPS-G cycles every 6 hours; ecch cycle provide up to 192 hours (8 days; 3-hour interval) forecast
   if(LIS_rc%ts.gt.10800) then
@@ -186,7 +186,7 @@ end subroutine get_mogrepsg
 ! !INTERFACE:
 subroutine get_mogrepsg_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
 
-  use LIS_logMod, only: LIS_logunit, LIS_endrun
+  use LIS_logMod, only: LIS_endrun
   implicit none
 ! !ARGUMENTS:
   character(len=*), intent(in)  :: rootdir
