@@ -70,6 +70,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_noah39Id    = "Noah.3.9"
    character*50, public,  parameter :: LIS_noahmp36Id  = "NoahMP.3.6"
    character*50, public,  parameter :: LIS_noahmp401Id = "Noah-MP.4.0.1"
+   character*50, public,  parameter :: LIS_ac71Id      = "AquaCrop.7.1"
    character*50, public,  parameter :: LIS_ruc37Id     = "RUC.3.7"
    character*50, public,  parameter :: LIS_clm2Id      = "CLM.2"
    character*50, public,  parameter :: LIS_vic411Id    = "VIC.4.1.1"
@@ -135,6 +136,9 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
+   !LB: for AC71 testing (to be removed)
+   character*50, public,  parameter :: LIS_merra2_acId       = "MERRA2_AC"
+   !LB: (end of to be removed)
    character*50, public,  parameter :: LIS_geositId          = "GEOS-IT"
 
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"
