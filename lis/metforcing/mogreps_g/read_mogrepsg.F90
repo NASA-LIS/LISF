@@ -36,6 +36,7 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
   integer,           intent(in)    :: findex  ! forcing index
   integer,           intent(in)    :: order
   character(len=*),  intent(in)    :: gribfile
+  integer, intent(out) :: rc
 
 !DESCRIPTION:
 !  For the given time, reads the forcing data from the
@@ -80,8 +81,6 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
   real            :: vwind(LIS_rc%lnc(n),LIS_rc%lnr(n))     !Instantaneous meridional wind interpolated to 10 metres[m/s]
   real            :: ps(LIS_rc%lnc(n),LIS_rc%lnr(n))        !Instantaneous Surface Pressure [Pa] 
   real            :: prectot(LIS_rc%lnc(n),LIS_rc%lnr(n))   ! Total precipitation [kg/m^2]
-
-  integer, intent(out) :: rc
 
   external :: fldbld_read_mogrepsg
   external :: assign_processed_mogrepsgforc
@@ -195,7 +194,7 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
    ifguess = iginfo(1)
    jfguess = iginfo(2)
 
-   call fldbld_read_mogrepsg(n, findex, order, gribfile, ifguess, jfguess, &
+   call fldbld_read_mogrepsg(n, findex, gribfile, ifguess, jfguess, &
            tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
 
    call assign_processed_mogrepsgforc(n, m, order, 1, tair)
@@ -211,8 +210,8 @@ subroutine read_mogrepsg(n, m, findex, order, gribfile, rc)
 
 end subroutine read_mogrepsg
 
-subroutine fldbld_read_mogrepsg(n, findex, order, gribfile, ifguess, jfguess,     &
-                                tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)                            
+subroutine fldbld_read_mogrepsg(n, findex, gribfile, ifguess, jfguess,     &
+                                tair, qair, swdown, lwdown, uwind, vwind, ps, prectot, rc)
  
 ! !USES:
   use LIS_coreMod, only : LIS_rc
@@ -226,7 +225,6 @@ subroutine fldbld_read_mogrepsg(n, findex, order, gribfile, ifguess, jfguess,   
 ! !ARGUMENTS:
   integer,        intent(in)    :: n
   integer, intent(in)           :: findex  ! Forcing index
-  integer,        intent(in)    :: order
   character(len=*),  intent(in) :: gribfile
   integer,        intent(in)    :: ifguess
   integer,        intent(in)    :: jfguess
