@@ -437,32 +437,32 @@ subroutine fldbld_read_mogrepsg(n, findex, gribfile, ifguess, jfguess,     &
 
      select case (grib_msg)
      case('t2')       ! 2-m temperature
-        fg_tair = reshape(dum1d, (/ifguess,jfguess/))
+        fg_tair(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_tair = count_tair + 1
      case ('q2')      ! 2-m relative humidity 
-        fg_qair = reshape(dum1d, (/ifguess,jfguess/))
+        fg_qair(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_qair = count_qair + 1
      case ('swdown')  ! downward shortwave
-        fg_swdown = reshape(dum1d, (/ifguess,jfguess/))
+        fg_swdown(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_swdown = count_swdown + 1
      case ('lwdown')  ! downward longwave radiation
-        fg_lwdown = reshape(dum1d, (/ifguess,jfguess/))
+        fg_lwdown(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_lwdown = count_lwdown + 1
      case ('u10')     ! 10m u-wind
-        fg_uwind = reshape(dum1d, (/ifguess,jfguess/))
+        fg_uwind(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_uwind = count_uwind + 1
      case('v10')      ! 10m v-wind
-        fg_vwind = reshape(dumv1d, (/ifguess,jfguess+1/))
+        fg_vwind(:,:) = reshape(dumv1d, (/ifguess,jfguess+1/))
         count_vwind = count_vwind + 1
      case('ps')       ! surface pressure
-        fg_ps = reshape(dum1d, (/ifguess,jfguess/))
+        fg_ps(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_ps = count_ps + 1
      case('prectot')  ! accumulated total precipitation
-        fg_prectot = reshape(dum1d, (/ifguess,jfguess/))
+        fg_prectot(:,:) = reshape(dum1d, (/ifguess,jfguess/))
         count_prectot = count_prectot + 1
 
      case default ! Internal error, we shouldn't be here
-        write(LIS_logunit,*)'[WARN] Unknown grib_message ',grib_msg
+        write(LIS_logunit,*)'[ERR] Unknown grib_message ',grib_msg
         write(LIS_logunit,*)'Aborting...'
         flush(LIS_logunit)
         write(cstat,'(i9)',iostat=istat1) ierr

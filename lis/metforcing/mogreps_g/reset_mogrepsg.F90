@@ -30,8 +30,8 @@ subroutine reset_mogrepsg()
   integer   :: n
 
   do n=1,LIS_rc%nnest
-     mogrepsg_struc(n)%fcsttime1 = 3000.0
-     mogrepsg_struc(n)%fcsttime2 = 0.0
+     mogrepsg_struc(n)%fcsttime1 = dble(3000.0)
+     mogrepsg_struc(n)%fcsttime2 = dble(0.0)
   enddo
 
 end subroutine reset_mogrepsg
