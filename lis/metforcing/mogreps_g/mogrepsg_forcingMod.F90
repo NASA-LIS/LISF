@@ -187,29 +187,41 @@ contains
        gridDesci = 0
  
        gridDesci(n,1)  = 0
-       gridDesci(n,2)  = mogrepsg_struc(n)%nc !gnc
-       gridDesci(n,3)  = mogrepsg_struc(n)%nr !gnr
+       gridDesci(n,2)  = real(mogrepsg_struc(n)%nc) !gnc
+       gridDesci(n,3)  = real(mogrepsg_struc(n)%nr) !gnr
        gridDesci(n,4)  =  -89.906250   !lat(1,1)
+       !NOTE:  gfortran complains about non-significant digits in below
+       !assignment.  For now we ignore the warning message from the
+       !compiler.
        gridDesci(n,5)  = -179.859375   !lon(1,1)
        gridDesci(n,6)  = 128
        gridDesci(n,7)  =  89.906250    !lat(gnc,gnr)
+       !NOTE:  gfortran complains about non-significant digits in below
+       !assignment.  For now we ignore the warning message from the
+       !compiler.
        gridDesci(n,8)  = 179.859375    !lon(gnc,gnr)
        gridDesci(n,9)  = 0.28125       !dx
        gridDesci(n,10) = 0.18750       !dy
        gridDesci(n,20) = 0             !for 0 to 360?
 
        mogrepsg_struc(n)%mi = mogrepsg_struc(n)%nc*mogrepsg_struc(n)%nr
-       mogrepsg_struc(n)%fcsttime1 = 3000.0
-       mogrepsg_struc(n)%fcsttime2 = 0.0
+       mogrepsg_struc(n)%fcsttime1 = dble(3000.0)
+       mogrepsg_struc(n)%fcsttime2 = dble(0.0)
 
        ! v-wind
        gridDesci_v(n,1)  = 0
-       gridDesci_v(n,2)  = mogrepsg_struc(n)%nc  !gnc
-       gridDesci_v(n,3)  = mogrepsg_struc(n)%nrv !gnr
+       gridDesci_v(n,2)  = real(mogrepsg_struc(n)%nc)  !gnc
+       gridDesci_v(n,3)  = real(mogrepsg_struc(n)%nrv) !gnr
        gridDesci_v(n,4)  =  -90.000000   !lat(1,1)
+       !NOTE:  gfortran complains about non-significant digits in below
+       !assignment.  For now we ignore the warning message from the
+       !compiler.
        gridDesci_v(n,5)  = -179.859375   !lon(1,1)
        gridDesci_v(n,6)  = 128
        gridDesci_v(n,7)  =  90.000000    !lat(gnc,gnr)
+       !NOTE:  gfortran complains about non-significant digits in below
+       !assignment.  For now we ignore the warning message from the
+       !compiler.
        gridDesci_v(n,8)  = 179.859375    !lon(gnc,gnr)
        gridDesci_v(n,9)  = 0.28125       !dx
        gridDesci_v(n,10) = 0.18750       !dy

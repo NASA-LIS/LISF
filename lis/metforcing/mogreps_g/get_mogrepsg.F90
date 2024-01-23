@@ -117,7 +117,7 @@ subroutine get_mogrepsg(n, findex)
      ! Update bookend-time record 2:
      if(LIS_rc%tscount(n).ne.1) then
         mogrepsg_struc(n)%fcsttime1=mogrepsg_struc(n)%fcsttime2
-        mogrepsg_struc(n)%metdata1=mogrepsg_struc(n)%metdata2
+        mogrepsg_struc(n)%metdata1(:,:,:)=mogrepsg_struc(n)%metdata2(:,:,:)
 
         yr2=LIS_rc%yr
         mo2=LIS_rc%mo

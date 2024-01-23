@@ -107,10 +107,10 @@ subroutine timeinterp_mogrepsg(n,findex)
        tempbss,tempbts)
 
   !Interpolate Data in Time
-  wt1=(mogrepsg_struc(n)%fcsttime2-LIS_rc%time)/ &
-       (mogrepsg_struc(n)%fcsttime2-mogrepsg_struc(n)%fcsttime1)
+  wt1=real((mogrepsg_struc(n)%fcsttime2-LIS_rc%time)/ &
+       (mogrepsg_struc(n)%fcsttime2-mogrepsg_struc(n)%fcsttime1))
   wt2=1.0-wt1
-  swt1=(newtime2-LIS_rc%time)/(newtime2-newtime1)
+  swt1=real((newtime2-LIS_rc%time)/(newtime2-newtime1))
   swt2=1.0-swt1
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),LIS_FORC_Tair%varname(1),tmpField,&
@@ -241,7 +241,7 @@ subroutine timeinterp_mogrepsg(n,findex)
 
            if(mogrepsg_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
               ! account for the accum fields
-              pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/(3600*3)
+              pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/real(3600*3)
               if(pcp(tid).lt.0) then
                  pcp(tid) = 0.0
               endif
