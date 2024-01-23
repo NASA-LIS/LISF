@@ -68,7 +68,7 @@ MODULE TOOLSUBS
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
 
-#if (defined USE_HDF5)
+#if (defined USE_HDF4)
          status = sfrdata(ssid,start, stride,edges, data)
 #endif
         !PRINT *, "Filename", filename
@@ -99,7 +99,7 @@ MODULE TOOLSUBS
          !DFACC=1 !Read Only Access
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
-#if (defined USE_HDF5)
+#if (defined USE_HDF4)
          status = sfrdata(ssid,start, stride,edges, data)
 #endif
          NDVI_MAT=-9999
