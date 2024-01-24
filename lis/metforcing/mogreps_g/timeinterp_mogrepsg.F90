@@ -15,6 +15,7 @@
 ! !REVISION HISTORY:
 !
 ! 26 Jan 2023: Yeosang Yoon, Initial specification
+! 01 Jan 2024; Yeosang Yoon; update codes for precpi. bias-correction
 !
 ! !INTERFACE:
 subroutine timeinterp_mogrepsg(n,findex)
@@ -239,13 +240,25 @@ subroutine timeinterp_mogrepsg(n,findex)
            tid = (t-1)*LIS_rc%nensem(n)+(m-1)*mfactor+k
            index1 = LIS_domain(n)%tile(tid)%index
 
-           if(mogrepsg_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
-              ! account for the accum fields
-              pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/real(3600*3)
-              if(pcp(tid).lt.0) then
-                 pcp(tid) = 0.0
+           ! apply precipitation bias correction
+           if (mogrepsg_struc(n)%bc == 1) then  !1 - use; or 0
+              if(mogrepsg_struc(n)%pcp_bc(m,index1).ne.LIS_rc%udef) then
+                 ! account for the accum fields
+                 pcp(tid)=mogrepsg_struc(n)%pcp_bc(m,index1)/(3600*3)
+                 if(pcp(tid).lt.0) then
+                    pcp(tid) = 0.0
+                 endif
+              endif
+           else  !don't apply bias correction
+              if(mogrepsg_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
+                 ! account for the accum fields
+                 pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/(3600*3)
+                 if(pcp(tid).lt.0) then
+                    pcp(tid) = 0.0
+                 endif
               endif
            endif
+
         enddo
      enddo
   enddo

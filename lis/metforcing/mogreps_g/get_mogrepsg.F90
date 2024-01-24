@@ -16,6 +16,7 @@
 ! !REVISION HISTORY:
 ! 26 Jan 2023: Yeosang Yoon, initial code
 ! 13 Mar 2023: Yeosang Yoon, update codes to fit new format
+! 01 Jan 2024; Yeosang Yoon; update codes for precpi. bias-correction
 !
 ! !INTERFACE:
 subroutine get_mogrepsg(n, findex)
@@ -43,7 +44,7 @@ subroutine get_mogrepsg(n, findex)
 !  the current model timestep.
 
 !EOP
-  integer           :: order, ferror, m
+  integer           :: order, ferror, m, t
   character(len=LIS_CONST_PATH_LEN) :: fname
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
@@ -54,6 +55,10 @@ subroutine get_mogrepsg(n, findex)
   integer           :: valid_hour
   integer           :: fcsthr_intv
   integer           :: openfile
+
+  ! precipitation bias correction
+  real              :: pcp1, pcp2
+  integer           :: lead_time
 
   external :: get_mogrepsg_filename
   external :: read_mogrepsg
@@ -172,6 +177,47 @@ subroutine get_mogrepsg(n, findex)
               mogrepsg_struc(n)%metdata2(4,m,:) = mogrepsg_struc(n)%metdata1(4,m,:)
            endif
         endif
+
+        ! apply precipitation bias correction (cdf from difference bewteen NAPFA and MOGREPS-G)
+        if (mogrepsg_struc(n)%bc == 1) then
+           lead_time=floor((float(mogrepsg_struc(n)%fcst_hour))/24)+1      
+
+           if (lead_time > 8) then
+              lead_time = 8
+           endif
+
+           do t=1, LIS_rc%ngrid(n)
+              if(mogrepsg_struc(n)%metdata2(8,m,t).ne.LIS_rc%udef) then
+                 ! only for land pixels
+                 if (mogrepsg_struc(n)%bc_param_a(t,lead_time) .ne. LIS_rc%udef) then
+                    ! perform centering and scaling
+                    pcp1=mogrepsg_struc(n)%metdata2(8,m,t)-mogrepsg_struc(n)%metdata1(8,m,t)
+                    if (mogrepsg_struc(n)%bc_std(t,lead_time) .ne. 0) then
+                       pcp2=(pcp1-mogrepsg_struc(n)%bc_mean(t,lead_time))/&
+                          mogrepsg_struc(n)%bc_std(t,lead_time)
+                    else
+                       pcp2=pcp1
+                    endif
+
+                    ! apply cdf params
+                    pcp2=pcp2*mogrepsg_struc(n)%bc_param_a(t,lead_time)+mogrepsg_struc(n)%bc_param_b(t,lead_time)
+                    ! check for negative precipitation; if the corrected value has negative, keep the original value.
+                    if(pcp2 >= 0) then
+                       mogrepsg_struc(n)%pcp_bc(m,t)=pcp2
+                    else
+                       mogrepsg_struc(n)%pcp_bc(m,t)=pcp1
+                    endif
+                    ! additionally, avoid bias correction for values that are too samll to reduce abnormal noise.
+                    if(pcp1 < 0.01) then
+                       mogrepsg_struc(n)%pcp_bc(m,t)=pcp1
+                    endif
+                 else ! for water pixels
+                    mogrepsg_struc(n)%pcp_bc(m,t)=mogrepsg_struc(n)%metdata2(8,m,t)-mogrepsg_struc(n)%metdata1(8,m,t)
+                 endif
+              endif
+           enddo
+        endif
+
      enddo
   endif
   openfile=0
