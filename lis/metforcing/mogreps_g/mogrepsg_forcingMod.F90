@@ -19,6 +19,7 @@ module mogrepsg_forcingMod
 
 ! REVISION HISTORY:
 ! 26 Jan 2023; Yeosang Yoon; Initial Specification
+! 01 Jan 2024; Yeosang Yoon; update codes for precpi. bias-correction
 
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -88,6 +89,15 @@ module mogrepsg_forcingMod
      real, allocatable      :: wv212(:,:),wv222(:,:)
 
      integer, allocatable   :: nv113(:)
+
+     ! precipitation bias correction
+     integer                           :: bc        !option for bias correction
+     character(len=LIS_CONST_PATH_LEN) :: cdf_fname !MOGREPS-G model CDF file name
+     real, allocatable                 :: pcp_bc(:,:)
+     real, allocatable                 :: bc_param_a(:,:)
+     real, allocatable                 :: bc_param_b(:,:)
+     real, allocatable                 :: bc_mean(:,:)
+     real, allocatable                 :: bc_std(:,:)
 
   end type mogrepsg_type_dec
 
@@ -160,7 +170,7 @@ contains
        ! Check if starting hour of LIS run matches 00/06/12/18 UTC:
        if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 6) .and. &
           (LIS_rc%shr .ne.  12) .and. (LIS_rc%shr .ne. 18)) then
-          write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
+          write(LIS_logunit,*) "[ERR] MOGREPS-G forecast type begins"
           write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
           write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
           write(LIS_logunit,*) "[ERR]  your lis.config file.."
@@ -337,6 +347,28 @@ contains
 
           call neighbor_interp_input(n,gridDesci_v(n,:),&
                mogrepsg_struc(n)%nv113)
+       endif
+    enddo
+
+    ! precipitation bias correction
+    do n=1,LIS_rc%nnest
+       if (mogrepsg_struc(n)%bc == 1) then
+          allocate(mogrepsg_struc(n)%pcp_bc(mogrepsg_struc(n)%max_ens_members,LIS_rc%ngrid(n)))
+          allocate(mogrepsg_struc(n)%bc_param_a(LIS_rc%ngrid(n),8)) !8: lead time
+          allocate(mogrepsg_struc(n)%bc_param_b(LIS_rc%ngrid(n),8))
+          allocate(mogrepsg_struc(n)%bc_mean(LIS_rc%ngrid(n),8))
+          allocate(mogrepsg_struc(n)%bc_std(LIS_rc%ngrid(n),8))
+
+          mogrepsg_struc(n)%pcp_bc = 0
+          mogrepsg_struc(n)%bc_param_a = 0
+          mogrepsg_struc(n)%bc_param_b = 0
+          mogrepsg_struc(n)%bc_mean = 0
+          mogrepsg_struc(n)%bc_std = 0
+
+          ! read cdf parameters
+          call get_cdf_params(n,mogrepsg_struc(n)%cdf_fname,LIS_rc%mo,&
+               mogrepsg_struc(n)%bc_param_a, mogrepsg_struc(n)%bc_param_b,&
+               mogrepsg_struc(n)%bc_mean, mogrepsg_struc(n)%bc_std)
        endif
     enddo
 
