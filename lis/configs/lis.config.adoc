@@ -6559,7 +6559,7 @@ MRMS mask directory: ./input/MASKS/
 AWRAL forcing directory:               ./INPUT/AWRAL.FORCING
 AWRAL domain x-dimension size:         841
 AWRAL domain y-dimension size:         681
-....
+...` specifies the .
 
 [[sssec_plumber2forcing,PLUMBER2]]
 ==== PLUMBER2
@@ -6650,11 +6650,25 @@ run mode. Currently, only the forecast mode is supported.
 `MOGREPS-G forecast number of ensemble members:` specifies the number of ensembles
 of the MOGREPS-G forecast forcing data.
 
+`Apply MOGREPS-G precipitation bias correction:` specifies whether to enable the
+precipitation bias correction. Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not enable
+|1     | Enable
+|====
+
+`MOGREPS-G model CDF file:` specifies the location of the MOGREPS-G model CDF file.                      
+
 .Example _lis.config_ entry
 ....
 MOGREPS-G forecast forcing directory:          ./MOGREPS-G
 MOGREPS-G forecast run mode:                   forecast    # forecast | analysis
 MOGREPS-G forecast number of ensemble members: 18
+Apply MOGREPS-G precipitation bias correction: 1 #enter 1 - use; or 0
+MOGREPS-G model CDF file:                      ./input/cdf/MOGREPS_G_leadtime_cdf_10km.nc
 ....
 
 [[ssec_lsm,Land surface models]]
