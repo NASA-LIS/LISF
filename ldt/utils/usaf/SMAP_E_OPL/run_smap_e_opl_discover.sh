@@ -15,11 +15,12 @@
 # queueing system.
 #
 # USAGE: run_smap_e_opl_discover.sh $startdate $starthour $enddate \
-#          $endhour
+#          $endhour $lsm
 #          where $startdate and $enddate specify the inclusive UTC
-#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD),
-#          and $starthour and $endhour specify the hours of the respective
-#          dates (formatted HH).
+#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD);
+#          $starthour and $endhour specify the hours of the respective
+#          dates (formatted HH); and $lsm is the LSM name, used to select
+#          the ldt.config template file.
 #
 # Based on Korn shell script provided by Pang-Wei Liu.
 #
@@ -66,6 +67,9 @@ if [ -z "$4" ] ; then
     echo "ERROR, Missing end hour for SMAP_E_OPL retrievals!"
     exit 1
 fi
+if [ -z "$5" ] ; then
+    echo "ERROR, missing LSM option!" && exit 1
+fi
 
 # Use the command line arguments to set start and end datetime limits.
 # Sanity check and report errors if found.
@@ -84,10 +88,24 @@ d="$start_dt"
 cur_yyyymmddhh=$(date -d "$start_dt" +%Y%m%d%H)
 end_yyyymmddhh=$(date -d "$end_dt" +%Y%m%d%H)
 
-# Other sanity checks
-if [ ! -e $TMPLDIR/ldt.config.smapeopl.tmpl ] ; then
-    echo "ERR, $TMPLDIR/ldt.config.smap.tmpl not found!" && exit 1
+# Use the LSM command line argument to select the appropriate ldt.config
+# template.
+lsm="$5"
+if [ "$lsm" = "noah" ] ; then
+    tmplfile="$TMPLDIR/ldt.config.smapeopl.noah.tmpl"
+elif [ "$lsm" = "noahmp" ] ; then
+    tmplfile="$TMPLDIR/ldt.config.smapeopl.noahmp.tmpl"
+elif [ "$lsm" = "jules" ] ; then
+    tmplfile="$TMPLDIR/ldt.config.smapeopl.jules.tmpl"
+else
+    echo "ERR, invalid LSM option, must be noah, noahmp, or jules"
+    exit 1
 fi
+if [ ! -e $tmplfile ] ; then
+    echo "ERR, $tmplfile not found!" && exit 1
+fi
+
+# Other sanity checks
 if [ ! -e $BINDIR/LDT ] ; then
     echo "ERR, $BINDIR/LDT does not exist!" && exit 1
 fi
@@ -106,7 +124,7 @@ while [ "$cur_yyyymmddhh" -le "$end_yyyymmddhh" ] ; do
 
     # Update ldt.config file
     $SCRIPTDIR/customize_ldt_smapeopl_config.py "$cur_yyyymmddhh" \
-                 $TMPLDIR/ldt.config.smapeopl.tmpl $i || exit 1
+                 "$tmplfile" $i || exit 1
 
     # Run LDT
     srun --ntasks=1 --nodes=1 --exclusive \
@@ -166,4 +184,3 @@ unset yyyymmddhh
 
 # The end
 exit 0
-
