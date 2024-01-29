@@ -17,10 +17,10 @@
 # USAGE: run_smap_e_opl_discover.sh $startdate $starthour $enddate \
 #          $endhour $lsm
 #          where $startdate and $enddate specify the inclusive UTC
-#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD);
-#          $starthour and $endhour specify the hours of the respective
-#          dates (formatted HH); and $lsm is the LSM name, used to select
-#          the ldt.config template file.
+#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD
+#          or YYYYMMDD); $starthour and $endhour specify the hours of the
+#          respective dates (formatted HH); and $lsm is the LSM name, used
+#          to select the ldt.config template file.
 #
 # Based on Korn shell script provided by Pang-Wei Liu.
 #
