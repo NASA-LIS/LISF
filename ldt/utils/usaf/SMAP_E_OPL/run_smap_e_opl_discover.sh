@@ -98,7 +98,7 @@ elif [ "$lsm" = "noahmp" ] ; then
 elif [ "$lsm" = "jules" ] ; then
     tmplfile="$TMPLDIR/ldt.config.smapeopl.jules.tmpl"
 else
-    echo "ERR, invalid LSM option, must be noah, noahmp, or jules"
+    echo "ERR, invalid LSM option, expected noah, noahmp, or jules; got $lsm"
     exit 1
 fi
 if [ ! -e $tmplfile ] ; then
