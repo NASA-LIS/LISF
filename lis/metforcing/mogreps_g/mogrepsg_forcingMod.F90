@@ -19,6 +19,7 @@ module mogrepsg_forcingMod
 
 ! REVISION HISTORY:
 ! 26 Jan 2023; Yeosang Yoon; Initial Specification
+! 01 Jan 2024; Yeosang Yoon; update codes for precpi. bias-correction
 
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -46,14 +47,14 @@ module mogrepsg_forcingMod
      integer, allocatable   :: gindex(:,:)
 
      integer                :: mi
-     
+
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)
      integer, allocatable   :: n211(:)
      integer, allocatable   :: n221(:)
      real, allocatable      :: w111(:),w121(:)
      real, allocatable      :: w211(:),w221(:)
-     
+
      integer, allocatable   :: n112(:,:)
      integer, allocatable   :: n122(:,:)
      integer, allocatable   :: n212(:,:)
@@ -62,14 +63,14 @@ module mogrepsg_forcingMod
      real, allocatable      :: w212(:,:),w222(:,:)
 
      integer, allocatable   :: n113(:)
-     
+
      integer                :: findtime1, findtime2
      integer                :: fcst_hour
      integer                :: init_yr, init_mo, init_da, init_hr
-     real, allocatable      :: metdata1(:,:,:) 
+     real, allocatable      :: metdata1(:,:,:)
      real, allocatable      :: metdata2(:,:,:)
-    
-     integer                :: nmodels   
+
+     integer                :: nmodels
 
      ! only for v-wind due to difference resolution
      integer                :: nrv
@@ -77,17 +78,26 @@ module mogrepsg_forcingMod
      integer, allocatable   :: nv121(:)
      integer, allocatable   :: nv211(:)
      integer, allocatable   :: nv221(:)
-     real, allocatable      :: wv111(:),wv121(:)
-     real, allocatable      :: wv211(:),wv221(:)
+     real, allocatable      :: wv111(:), wv121(:)
+     real, allocatable      :: wv211(:), wv221(:)
 
      integer, allocatable   :: nv112(:,:)
      integer, allocatable   :: nv122(:,:)
      integer, allocatable   :: nv212(:,:)
      integer, allocatable   :: nv222(:,:)
-     real, allocatable      :: wv112(:,:),wv122(:,:)
-     real, allocatable      :: wv212(:,:),wv222(:,:)
+     real, allocatable      :: wv112(:,:), wv122(:,:)
+     real, allocatable      :: wv212(:,:), wv222(:,:)
 
      integer, allocatable   :: nv113(:)
+
+     ! precipitation bias correction
+     integer                           :: bc        !option for bias correction
+     character(len=LIS_CONST_PATH_LEN) :: cdf_fname !MOGREPS-G model CDF file name
+     real, allocatable                 :: pcp_bc(:,:)
+     real, allocatable                 :: bc_param_a(:,:)
+     real, allocatable                 :: bc_param_b(:,:)
+     real, allocatable                 :: bc_mean(:,:)
+     real, allocatable                 :: bc_std(:,:)
 
   end type mogrepsg_type_dec
 
@@ -99,19 +109,19 @@ contains
 !
 ! !ROUTINE: init_mogrepsg
 ! \label{init_mogrepsg}
-! 
+!
 ! !INTERFACE:
   subroutine init_mogrepsg(findex)
-! !USES: 
+! !USES:
     use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
 
     implicit none
-! !USES: 
+! !USES:
     integer, intent(in)  :: findex
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  Defines the native resolution of the input forcing for MOGREPS-G
 !  data. The grid description arrays are based on the decoding
 !  schemes used by NCEP and followed in the LIS interpolation
@@ -127,13 +137,17 @@ contains
     external :: bilinear_interp_input
     external :: conserv_interp_input
     external :: neighbor_interp_input
+    external :: get_cdf_params
 
-    write(LIS_logunit,*) "[INFO] Initializing the MOGREPS-G forecast inputs "
+    write(LIS_logunit,*) &
+         "[INFO] Initializing the MOGREPS-G forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
     if( LIS_rc%forecastMode.eq.1 ) then
-       write(LIS_logunit,*) '[ERR] Currently the MOGREPS-G forecast forcing reader'
-       write(LIS_logunit,*) '[ERR] is not set up to run in forecast mode.'
+       write(LIS_logunit,*) &
+            '[ERR] Currently the MOGREPS-G forecast forcing reader'
+       write(LIS_logunit,*) &
+            '[ERR] is not set up to run in forecast mode.'
        write(LIS_logunit,*) '[ERR] LIS forecast run-time ending.'
        call LIS_endrun()
     endif
@@ -153,23 +167,23 @@ contains
     enddo
 
     ! 8 - key met field
-    LIS_rc%met_nf(findex) = 8  
+    LIS_rc%met_nf(findex) = 8
 
-    do n=1,LIS_rc%nnest
-     
+    do n = 1, LIS_rc%nnest
+
        ! Check if starting hour of LIS run matches 00/06/12/18 UTC:
        if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 6) .and. &
           (LIS_rc%shr .ne.  12) .and. (LIS_rc%shr .ne. 18)) then
-          write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
+          write(LIS_logunit,*) "[ERR] MOGREPS-G forecast type begins"
           write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
           write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
           write(LIS_logunit,*) "[ERR]  your lis.config file.."
           call LIS_endrun()
        endif
-      
+
        ! Allocate and initialize MOGREPS-G metforcing data structures:
        LIS_rc%met_nensem(findex) = mogrepsg_struc(n)%max_ens_members
- 
+
        allocate(mogrepsg_struc(n)%metdata1(LIS_rc%met_nf(findex),&
                 mogrepsg_struc(n)%max_ens_members,LIS_rc%ngrid(n)))
        allocate(mogrepsg_struc(n)%metdata2(LIS_rc%met_nf(findex),&
@@ -185,7 +199,7 @@ contains
        mogrepsg_struc(n)%metdata1 = 0
        mogrepsg_struc(n)%metdata2 = 0
        gridDesci = 0
- 
+
        gridDesci(n,1)  = 0
        gridDesci(n,2)  = real(mogrepsg_struc(n)%nc) !gnc
        gridDesci(n,3)  = real(mogrepsg_struc(n)%nr) !gnr
@@ -337,6 +351,29 @@ contains
 
           call neighbor_interp_input(n,gridDesci_v(n,:),&
                mogrepsg_struc(n)%nv113)
+       endif
+    enddo
+
+    ! precipitation bias correction
+    do n = 1, LIS_rc%nnest
+       if (mogrepsg_struc(n)%bc == 1) then
+          allocate(mogrepsg_struc(n)%pcp_bc(mogrepsg_struc(n)%max_ens_members,LIS_rc%ngrid(n)))
+          allocate(mogrepsg_struc(n)%bc_param_a(LIS_rc%ngrid(n),8)) !8: lead time
+          allocate(mogrepsg_struc(n)%bc_param_b(LIS_rc%ngrid(n),8))
+          allocate(mogrepsg_struc(n)%bc_mean(LIS_rc%ngrid(n),8))
+          allocate(mogrepsg_struc(n)%bc_std(LIS_rc%ngrid(n),8))
+
+          mogrepsg_struc(n)%pcp_bc = 0
+          mogrepsg_struc(n)%bc_param_a = 0
+          mogrepsg_struc(n)%bc_param_b = 0
+          mogrepsg_struc(n)%bc_mean = 0
+          mogrepsg_struc(n)%bc_std = 0
+
+          ! read cdf parameters
+          call get_cdf_params(n,mogrepsg_struc(n)%cdf_fname,LIS_rc%mo, &
+               mogrepsg_struc(n)%bc_param_a, &
+               mogrepsg_struc(n)%bc_param_b, &
+               mogrepsg_struc(n)%bc_mean, mogrepsg_struc(n)%bc_std)
        endif
     enddo
 
