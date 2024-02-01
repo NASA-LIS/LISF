@@ -15795,12 +15795,43 @@ run mode. Currently, only the forecast mode is supported.</p>
 <p><code>MOGREPS-G forecast number of ensemble members:</code> specifies the number of ensembles
 of the MOGREPS-G forecast forcing data.</p>
 </div>
+<div class="paragraph">
+<p><code>Apply MOGREPS-G precipitation bias correction:</code> specifies whether to enable the precipitation
+bias correction. Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not enable</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Enable</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>MOGREPS-G model CDF file:</code> specifies the location of the MOGREPS-G model CDF file.</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
 <pre>MOGREPS-G forecast forcing directory:          ./MOGREPS-G
 MOGREPS-G forecast run mode:                   forecast    # forecast | analysis
-MOGREPS-G forecast number of ensemble members: 18</pre>
+MOGREPS-G forecast number of ensemble members: 18
+Apply MOGREPS-G precipitation bias correction: 1 #enter 1 - use; or 0
+MOGREPS-G model CDF file:                      ./input/cdf/MOGREPS_G_leadtime_cdf_10km.nc</pre>
 </div>
 </div>
 </div>
@@ -23748,7 +23779,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 3.0<br>
-Last updated 2024-01-25 15:18:46 UTC
+Last updated 2024-02-01 20:10:10 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
