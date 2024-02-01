@@ -22,7 +22,6 @@ subroutine get_cdf_params (n, fname, month, param_a, param_b, mean, std)
   !USES:
   use LIS_coreMod
   use LIS_logMod
-  use mogrepsg_forcingMod, only : mogrepsg_struc
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif

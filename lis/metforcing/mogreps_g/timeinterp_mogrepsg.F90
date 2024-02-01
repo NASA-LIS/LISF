@@ -244,7 +244,7 @@ subroutine timeinterp_mogrepsg(n,findex)
            if (mogrepsg_struc(n)%bc == 1) then  !1 - use; or 0
               if(mogrepsg_struc(n)%pcp_bc(m,index1).ne.LIS_rc%udef) then
                  ! account for the accum fields
-                 pcp(tid)=mogrepsg_struc(n)%pcp_bc(m,index1)/(3600*3)
+                 pcp(tid)=mogrepsg_struc(n)%pcp_bc(m,index1)/real(3600*3)
                  if(pcp(tid).lt.0) then
                     pcp(tid) = 0.0
                  endif
@@ -252,7 +252,7 @@ subroutine timeinterp_mogrepsg(n,findex)
            else  !don't apply bias correction
               if(mogrepsg_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
                  ! account for the accum fields
-                 pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/(3600*3)
+                 pcp(tid)=(mogrepsg_struc(n)%metdata2(8,m,index1)-mogrepsg_struc(n)%metdata1(8,m,index1))/real(3600*3)
                  if(pcp(tid).lt.0) then
                     pcp(tid) = 0.0
                  endif

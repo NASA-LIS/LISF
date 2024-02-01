@@ -137,6 +137,7 @@ contains
     external :: bilinear_interp_input
     external :: conserv_interp_input
     external :: neighbor_interp_input
+    external :: get_cdf_params
 
     write(LIS_logunit,*) "[INFO] Initializing the MOGREPS-G forecast inputs "
 
