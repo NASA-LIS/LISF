@@ -60,7 +60,7 @@ proc ModulesHelp { } {
     puts stderr "\t\tcomp/gcc/12.3.0"
     puts stderr "\t\tcomp/intel/2023.2.1"
     puts stderr "\t\tgit/2.42.0"
-    puts stedrr "\t\tmpi/openmpi/5.0.0/intel-2023.2.1 (GMAO)"
+    puts stderr "\t\tmpi/openmpi/5.0.0/intel-2023.2.1 (GMAO)"
     puts stderr ""
 }
 
