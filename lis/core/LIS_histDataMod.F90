@@ -451,8 +451,6 @@ module LIS_histDataMod
   public :: LIS_MOC_WCMV1V2
   public :: LIS_MOC_AC71FC
   public :: LIS_MOC_AC71Irrigation
-  public :: LIS_MOC_AC71StressTot_Temp
-  public :: LIS_MOC_AC71StressTot_Sto
   public :: LIS_MOC_AC71RootZoneWC_Actual
   public :: LIS_MOC_AC71RootZoneWC_WP
   public :: LIS_MOC_AC71RootZoneWC_FC
@@ -989,8 +987,6 @@ module LIS_histDataMod
    integer :: LIS_MOC_WCMV1V2  = -9999
    integer :: LIS_MOC_AC71FC  = -9999
    integer :: LIS_MOC_AC71Irrigation  = -9999
-   integer :: LIS_MOC_AC71StressTot_Temp  = -9999
-   integer :: LIS_MOC_AC71StressTot_Sto  = -9999
    integer :: LIS_MOC_AC71RootZoneWC_Actual  = -9999
    integer :: LIS_MOC_AC71RootZoneWC_WP  = -9999
    integer :: LIS_MOC_AC71RootZoneWC_FC  = -9999
@@ -4678,30 +4674,6 @@ contains
          "AC71 Irrigation",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Irrigation,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71StressTot_Temp:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC71StressTot_Temp",&
-         "AC71_StressTot_Temp",&
-         "AC71 StressTot_Temp",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71StressTot_Temp,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71StressTot_Sto:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC71StressTot_Sto",&
-         "AC71_StressTot_Sto",&
-         "AC71 StressTot_Sto",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71StressTot_Sto,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
