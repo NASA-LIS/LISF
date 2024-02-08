@@ -39,12 +39,8 @@ subroutine Ac71_finalize(n)
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             deallocate(AC71_struc(n)%ac71(t)%shdfac_monthly)
             deallocate(AC71_struc(n)%ac71(t)%smceq)
-            deallocate(AC71_struc(n)%ac71(t)%sstc)
             deallocate(AC71_struc(n)%ac71(t)%sh2o)
             deallocate(AC71_struc(n)%ac71(t)%smc)
-            deallocate(AC71_struc(n)%ac71(t)%zss)
-            deallocate(AC71_struc(n)%ac71(t)%snowice)
-            deallocate(AC71_struc(n)%ac71(t)%snowliq)
         end do  ! tile loop
  
         ! free memory for ac71, the data at tile level
@@ -55,12 +51,8 @@ subroutine Ac71_finalize(n)
         deallocate(AC71_struc(n)%Thickness)
 
         ! free momory for initial state variable
-        deallocate(AC71_struc(n)%init_stc)
         deallocate(AC71_struc(n)%init_sh2o)
         deallocate(AC71_struc(n)%init_smc)
-        !deallocate(AC71_struc(n)%init_zss)
-        !deallocate(AC71_struc(n)%init_snowice)
-        !deallocate(AC71_struc(n)%init_snowliq)
     end do ! nest loop
   
     deallocate(AC71_struc)

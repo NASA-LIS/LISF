@@ -245,10 +245,6 @@ module Ac71_lsmMod
         character(len=256) :: Crop_Filename
         character(len=256) :: Management_Filename
         character(len=256) :: Irrigation_Filename
-        integer            :: irrigation_dveg !LB
-        integer            :: irrigation_threshold !LB
-        real               :: irrigation_CCparam1 !LB
-        real               :: irrigation_CCparam2 !LB
         integer            :: Crop_AnnualStartDay
         integer            :: Crop_AnnualEndDay
         integer            :: Crop_AnnualStartMonth
@@ -314,11 +310,7 @@ contains
             enddo
             ! allocate memory for state variables
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%sstc( AC71_struc(n)%nsoil + AC71_struc(n)%nsnow))
                 allocate(AC71_struc(n)%ac71(t)%sh2o(AC71_struc(n)%nsoil))
-                allocate(AC71_struc(n)%ac71(t)%zss( AC71_struc(n)%nsoil + AC71_struc(n)%nsnow))
-                allocate(AC71_struc(n)%ac71(t)%snowice(AC71_struc(n)%nsnow))
-                allocate(AC71_struc(n)%ac71(t)%snowliq(AC71_struc(n)%nsnow))
             enddo
             !!! MB: AC71
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -331,39 +323,13 @@ contains
 !            allocate(AC71_struc(n)%init_stc( AC71_struc(n)%nsoil))
 !            allocate(AC71_struc(n)%init_sh2o(AC71_struc(n)%nsoil))
 !            allocate(AC71_struc(n)%init_smc(AC71_struc(n)%nsoil))
-            !allocate(AC71_struc(n)%init_zss( AC71_struc(n)%nsoil + AC71_struc(n)%nsnow))
-            !allocate(AC71_struc(n)%init_snowice(AC71_struc(n)%nsnow))
-            !allocate(AC71_struc(n)%init_snowliq(AC71_struc(n)%nsnow))
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC71_struc(n)%ac71(t)%lwdown = 0.0
-                AC71_struc(n)%ac71(t)%swdown = 0.0
-                AC71_struc(n)%ac71(t)%psurf = 0.0
-                AC71_struc(n)%ac71(t)%prcp = 0.0
-                AC71_struc(n)%ac71(t)%tair = 0.0
-                AC71_struc(n)%ac71(t)%qair = 0.0
-                AC71_struc(n)%ac71(t)%wind_e = 0.0
-                AC71_struc(n)%ac71(t)%wind_n = 0.0
                 AC71_struc(n)%ac71(t)%PREC_ac = 0.0
                 AC71_struc(n)%ac71(t)%TMIN_ac = 0.0
                 AC71_struc(n)%ac71(t)%TMAX_ac = 0.0
                 AC71_struc(n)%ac71(t)%ETo_ac = 0.0
-                !Added by Chandana Gangodagamage
-#if WRF_HYDRO
-                AC71_struc(n)%ac71(t)%sfcheadrt = 0.0
-            !   AC71_struc(n)%ac71(t)%sfhead1rt = 0.0
-                AC71_struc(n)%ac71(t)%infxs1rt = 0.0
-                AC71_struc(n)%ac71(t)%soldrain1rt = 0.0
-#endif
-                
-                AC71_struc(n)%ac71(t)%albd = -9999.0
-                AC71_struc(n)%ac71(t)%albi = -9999.0
-                AC71_struc(n)%ac71(t)%alb_upd_flag = .false.
-                !ag(05Jan2021)
-                AC71_struc(n)%ac71(t)%rivsto = 0.0
-                AC71_struc(n)%ac71(t)%fldsto = 0.0
-                AC71_struc(n)%ac71(t)%fldfrc = 0.0
 
                 !LB: Initialize HarvestNow (new in AC7.1)
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
