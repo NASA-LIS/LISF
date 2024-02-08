@@ -131,21 +131,7 @@ subroutine Ac71_readcrd()
         allocate(AC71_struc(n)%init_sh2o(AC71_struc(n)%nsoil))
         allocate(AC71_struc(n)%init_smc(AC71_struc(n)%nsoil))
     enddo
- 
-    ! maximum number of snow layers
-    do n=1, LIS_rc%nnest
-       AC71_struc(n)%nsnow  = 3
-    enddo
- 
-    ! MB: AC71
-    ! PathNameOutp
-    !call ESMF_ConfigFindLabel(LIS_config, "PathNameOutp:", rc = rc)
-    !do n=1, LIS_rc%nnest
-    !    call ESMF_ConfigGetAttribute(LIS_config, &
-    !        AC71_struc(n)%PathNameOutp, rc=rc)
-    !    call LIS_verify(rc, "PathNameOutp: not defined")
-    !enddo
- 
+
     ! PathNameSimul
     call ESMF_ConfigFindLabel(LIS_config, "AC_INPUT_PATH:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -153,22 +139,6 @@ subroutine Ac71_readcrd()
             AC71_struc(n)%PathNameSimul, rc=rc)
         call LIS_verify(rc, "PathNameSimul: not defined")
     enddo
- 
-    ! PathNameList
-    !call ESMF_ConfigFindLabel(LIS_config, "PathNameList:", rc = rc)
-    !do n=1, LIS_rc%nnest
-    !    call ESMF_ConfigGetAttribute(LIS_config, &
-    !        AC71_struc(n)%PathNameList, rc=rc)
-    !    call LIS_verify(rc, "PathNameList: not defined")
-    !enddo
- 
-    ! PathNameParam
-    !call ESMF_ConfigFindLabel(LIS_config, "PathNameParam:", rc = rc)
-    !do n=1, LIS_rc%nnest
-    !    call ESMF_ConfigGetAttribute(LIS_config, &
-    !        AC71_struc(n)%PathNameParam, rc=rc)
-    !    call LIS_verify(rc, "PathNameParam: not defined")
-    !enddo
 
     ! CO2_Filename
     call ESMF_ConfigFindLabel(LIS_config, "CO2_Filename:", rc = rc)
@@ -210,17 +180,6 @@ subroutine Ac71_readcrd()
             AC71_struc(n)%Irrigation_Filename = '(None)'
         endif
     enddo
-
- 
-    !! NumberSimulationRuns
-    !call ESMF_ConfigFindLabel(LIS_config, "NumberSimulationRuns:", rc = rc)
-    !do n=1, LIS_rc%nnest
-    !    call ESMF_ConfigGetAttribute(LIS_config, &
-    !        AC71_struc(n)%NumberSimulationRuns, rc=rc)
-    !    call LIS_verify(rc, "NumberSimulationRuns: not defined")
-    !enddo
-
-    ! MB: AC71
 
  
     ! Noah model landuse parameter table
@@ -279,96 +238,6 @@ subroutine Ac71_readcrd()
         endif 
     enddo
  
-    ! vegetation model
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 vegetation model option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%dveg_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 vegetation model option: not defined")
-    enddo
- 
-    ! canopy stomatal resistance
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 canopy stomatal resistance option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%crs_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 canopy stomatal resistance option: not defined")
-    enddo
- 
-    ! soil moisture factor for stomatal resistance
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil moisture factor for stomatal resistance option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%btr_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 soil moisture factor for stomatal resistance option: not defined")
-    enddo
- 
-    ! runoff and groundwater
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 runoff and groundwater option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%run_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 runoff and groundwater option: not defined")
-    enddo
- 
-    ! surface layer drag coefficients (CH & CM)
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 surface layer drag coefficient option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%sfc_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 surface layer drag coefficient option: not defined")
-    enddo
- 
-    ! supercooled liquid water
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 supercooled liquid water option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%frz_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 supercooled liquid water option: not defined")
-    enddo
- 
-    ! frozen soil permeability
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 frozen soil permeability option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%inf_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 frozen soil permeability option: not defined")
-    enddo
- 
-    ! radiation transfer
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 radiation transfer option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%rad_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 radiation transfer option: not defined")
-    enddo
- 
-    ! snow surface albedo
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 snow surface albedo option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%alb_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 snow surface albedo option: not defined")
-    enddo
- 
-    ! rainfall & snowfall
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 rainfall and snowfall option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%snf_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 rainfall and snowfall option: not defined")
-    enddo
- 
-    ! lower boundary of soil temperature
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 lower boundary of soil temperature option:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%tbot_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 lower boundary of soil temperature option: not defined")
-    enddo
- 
-    ! snow/soil temperature time scheme
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 snow and soil temperature time scheme:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%stc_opt, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 snow and soil temperature time scheme: not defined")
-    enddo
- 
-    ! the number of total soil types in parameter table
-    do n=1, LIS_rc%nnest
-        ios = nf90_get_att(nids(n), NF90_GLOBAL, 'NUMBER_SOILTYPES', AC71_struc(n)%nslcats)
-        call LIS_verify(ios, 'Error in nf90_get_att: NUMBER_SOILTYPES')
-    enddo
- 
     ! the number of total land cover types in parameter table
     do n=1, LIS_rc%nnest
         ios = nf90_get_att(nids(n), NF90_GLOBAL, 'NUMBER_LANDCATS', AC71_struc(n)%nlucats)
@@ -397,36 +266,7 @@ subroutine Ac71_readcrd()
             call LIS_verify(rc, 'Thickness: not defined')
         enddo
     enddo
- 
-    ! urban land cover type index
-    do n=1, LIS_rc%nnest
-        ios = nf90_get_att(nids(n), NF90_GLOBAL, 'URBANCLASS', AC71_struc(n)%urban_vegetype)
-        call LIS_verify(ios, 'Error in nf90_get_att: URBANCLASS')
-    enddo
- 
-    ! ice flag: 0 = no ice, 1 = ice
-    do n=1, LIS_rc%nnest
-        AC71_struc(n)%ice_flag = 0
-    enddo
- 
-    ! surface type 1=soil, 2=lake
-    do n=1, LIS_rc%nnest
-        AC71_struc(n)%st_flag = 1 
-    enddo
- 
-    ! soil color type
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil color index:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%sc_idx, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 soil color index: not defined")
-    enddo
- 
-    ! option of Chen adjustment of Czil
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 CZIL option (iz0tlnd):", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%iz0tlnd, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 CZIL option (iz0tlnd): not defined")
-    enddo
+
  
     do n=1,LIS_rc%nnest
       ios = nf90_close(nids(n))
@@ -455,37 +295,14 @@ subroutine Ac71_readcrd()
             call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%rfile, rc=rc)
             call LIS_verify(rc, "AquaCrop.7.1 restart file: not defined")
         enddo
-        
+
         Call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 restart file format:", rc=rc)
         do n=1,LIS_rc%nnest
             call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%rformat, rc=rc)
             call LIS_verify(rc, "AquaCrop.7.1 restart file format: not defined")
         enddo
-    ! cold start run, read initial state variables
-    else 
-        ! snow albedo at last time step
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial value of snow albedo at the last timestep:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_albold, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial value of snow albedo at the last timestep: not defined")
-        enddo
-
-        ! snow mass at the last time step
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial value of snow mass at the last timestep:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_sneqvo, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial value of snow mass at the last timestep: not defined")
-        enddo
-
-        ! soil temperature
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial soil temperatures:", rc = rc)
-        do n=1,LIS_rc%nnest
-            do i=1, AC71_struc(n)%nsoil 
-                call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_stc(i), rc=rc)
-            end do
-            call LIS_verify(rc, "AquaCrop.7.1 initial soil temperatures: not defined")
-        enddo
-
+        ! cold start run, read initial state variables
+    else
         ! volumetric liquid soil moisture
         call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial liquid soil moistures:", rc = rc)
         do n=1,LIS_rc%nnest
@@ -494,222 +311,8 @@ subroutine Ac71_readcrd()
             end do
             call LIS_verify(rc, "AquaCrop.7.1 initial liquid soil moistures: not defined")
         enddo
+    endif
 
-        ! volumetric soil moisture, ice + liquid
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial total soil moistures:", rc = rc)
-        do n=1,LIS_rc%nnest
-            do i=1, AC71_struc(n)%nsoil
-                call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_smc(i), rc=rc)
-            end do
-            call LIS_verify(rc, "AquaCrop.7.1 initial total soil moistures: not defined")
-        enddo
-
-        ! canopy air temperature
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial canopy air temperature:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_tah, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial canopy air temperature: not defined")
-        enddo
-
-        ! canopy air vapor pressure
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial canopy air vapor pressure:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_eah, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial canopy air vapor pressure: not defined")
-        enddo
-
-        ! wetted or snowed fraction of canopy
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial wetted or snowed fraction of canopy:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_fwet, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial wetted or snowed fraction of canopy: not defined")
-        enddo
-
-        ! intercepted liquid water
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial intercepted liquid water:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_canliq, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial intercepted liquid water: not defined")
-        enddo
-
-        ! intercepted ice mass
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial intercepted ice mass:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_canice, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial intercepted ice mass: not defined")
-        enddo
-
-        ! vegetation temperature
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial vegetation temperature:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_tv, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial vegetation temperature: not defined")
-        enddo
-
-        ! ground temperature (skin temperature)
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial ground temperature:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_tg, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial ground temperature: not defined")
-        enddo
-
-        ! snowfall on the ground
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial snowfall on the ground:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_qsnow, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial snowfall on the ground: not defined")
-        enddo
-
-        ! snow height
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial snow height:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_snowh, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial snow height: not defined")
-        enddo
-
-        ! snow water equivalent
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial snow water equivalent:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_sneqv, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial snow water equivalent: not defined")
-        enddo
-
-
-        ! depth to water table
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial depth to water table:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_zwt, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial depth to water table: not defined")
-        enddo
-
-        ! water storage in aquifer
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial water storage in aquifer:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_wa, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial water storage in aquifer: not defined")
-        enddo
-
-        ! water in aquifer and saturated soil
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial water in aquifer and saturated soil:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_wt, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial water in aquifer and saturated soil: not defined")
-        enddo
-
-        ! lake water storage
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial lake water storage:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_wslake, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial lake water storage: not defined")
-        enddo
-
-        ! leaf mass
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial leaf mass:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_lfmass, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial leaf mass: not defined")
-        enddo
-
-        ! mass of fine roots
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial mass of fine roots:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_rtmass, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial mass of fine roots: not defined")
-        enddo
-
-        ! stem mass
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial stem mass:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_stmass, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial stem mass: not defined")
-        enddo
-
-        ! mass of wood including woody roots
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial mass of wood including woody roots:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_wood, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial mass of wood including woody roots: not defined")
-        enddo
-
-        ! stable carbon in deep soil
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial stable carbon in deep soil:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_stblcp, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial stable carbon in deep soil: not defined")
-        enddo
-
-        ! short-lived carbon in shallow soil
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial short-lived carbon in shallow soil:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_fastcp, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial short-lived carbon in shallow soil: not defined")
-        enddo
-
-        ! leaf area index
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial LAI:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_lai, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial LAI: not defined")
-        enddo
-
-        ! stem area index
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial SAI:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_sai, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial SAI: not defined")
-        enddo
-
-        ! momentum drag coefficient
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial momentum drag coefficient:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_cm, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial momentum drag coefficient: not defined")
-        enddo
-
-        ! sensible heat exchange coefficient
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial sensible heat exchange coefficient:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_ch, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial sensible heat exchange coefficient: not defined")
-        enddo
-
-        ! snow aging term
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial snow aging term:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_tauss, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial snow aging term: not defined")
-        enddo
-
-        ! soil water content between bottom of the soil and water table
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial soil water content between bottom of the soil and water table:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_smcwtd, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial soil water content between bottom of the soil and water table: not defined")
-        enddo
-
-        ! recharge to or from the water table when deep
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial recharge to or from the water table when deep:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_deeprech, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial recharge to or from the water table when deep: not defined")
-        enddo
-
-        ! recharge to or from the water table when shallow
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial recharge to or from the water table when shallow:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_rech, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial recharge to or from the water table when shallow: not defined")
-        enddo
-        
-        ! air temperature and humidity reference height
-        call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial reference height of temperature and humidity:", rc = rc)
-        do n=1,LIS_rc%nnest
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_zlvl, rc=rc)
-            call LIS_verify(rc, "AquaCrop.7.1 initial reference height of temperature and humidity: not defined")
-        enddo
-
-    end if
-     
     deallocate(nids)
 
     write(LIS_logunit, *) "Finish reading LIS configuration file for AquaCrop.7.1 model"
