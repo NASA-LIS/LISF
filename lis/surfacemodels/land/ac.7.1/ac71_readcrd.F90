@@ -69,15 +69,6 @@ subroutine Ac71_readcrd()
         call LIS_parseTimeString(time, AC71_struc(n)%rstInterval)
     enddo
     
-    !---------------------------!
-    ! Constant Parameters       !
-    !---------------------------!
-    ! number of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 number of soil layers:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%nsoil, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 number of soil layers: not defined")
-    enddo
  
     ! MB: AC71
 
@@ -180,11 +171,11 @@ subroutine Ac71_readcrd()
 
  
     ! Noah model landuse parameter table
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 landuse parameter table:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%landuse_tbl_name, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 landuse parameter table: not defined")
-    enddo
+!    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 landuse parameter table:", rc = rc)
+!    do n=1, LIS_rc%nnest
+!        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%landuse_tbl_name, rc=rc)
+!        call LIS_verify(rc, "AquaCrop.7.1 landuse parameter table: not defined")
+!    enddo
  
     ! Noah model soil parameter table
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil parameter table:", rc = rc)
@@ -194,18 +185,12 @@ subroutine Ac71_readcrd()
     enddo
  
     ! Noah model general parameter table
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 general parameter table:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%gen_tbl_name, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 general parameter table: not defined")
-    enddo
- 
-    ! Ac parameter table
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 MP parameter table:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%ac_tbl_name, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 MP parameter table: not defined")
-    enddo
+!    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 general parameter table:", rc = rc)
+!    do n=1, LIS_rc%nnest
+!        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%gen_tbl_name, rc=rc)
+!        call LIS_verify(rc, "AquaCrop.7.1 general parameter table: not defined")
+!    enddo
+
  
     ! landuse classification scheme
     do n=1, LIS_rc%nnest
