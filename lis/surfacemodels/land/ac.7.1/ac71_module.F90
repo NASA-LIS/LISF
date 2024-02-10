@@ -528,214 +528,12 @@ module Ac71_module
      !-------------------------------------------------------------------------
      ! state
      !-------------------------------------------------------------------------
-     real               :: albold
-     real               :: sneqvo
-     real, pointer      :: sstc(:)
-     real, pointer      :: sh2o(:)
      real, pointer      :: smc(:)
-     real               :: tah
-     real               :: eah
-     real               :: fwet
-     real               :: canliq
-     real               :: canice
-     real               :: tv
-     real               :: tg
-     real               :: qsnow
-     integer            :: isnow
-     real, pointer      :: zss(:)
-     real               :: snowh
-     real               :: sneqv
-     real, pointer      :: snowice(:)
-     real, pointer      :: snowliq(:)
-     real               :: zwt
-     real               :: wa
-     real               :: wt
-     real               :: wslake
-     real               :: lfmass
-     real               :: rtmass
-     real               :: stmass
-     real               :: wood
-     real               :: stblcp
-     real               :: fastcp
-     real               :: lai
-     real               :: sai
-     real               :: cm
-     real               :: ch
-     real               :: tauss
-     real               :: smcwtd
-     real               :: deeprech
-     real               :: rech
-     real               :: zlvl 
-     real               :: albd(2)
-     real               :: albi(2)
-     logical            :: alb_upd_flag
-     !ag (12Sep2019)
-     ! 2-way coupling parameters
-     real               :: rivsto
-     real               :: fldsto
-     real               :: fldfrc
      !-------------------------------------------------------------------------
-     ! output
-     !-------------------------------------------------------------------------
-     real               :: fsa
-     real               :: fsr
-     real               :: fira
-     real               :: fsh
-     real               :: ssoil
-     real               :: fcev
-     real               :: fgev
-     real               :: fctr
-     real               :: ecan
-     real               :: etran
-     real               :: edir
-     real               :: trad
-     real               :: tgb
-     real               :: tgv
-     real               :: t2mv
-     real               :: t2mb
-     real               :: q2v
-     real               :: q2b
-     real               :: runsrf
-     real               :: runsub
-     real               :: apar
-     real               :: psn
-     real               :: sav
-     real               :: sag
-     real               :: fsno
-     real               :: nee
-     real               :: gpp
-     real               :: npp
-     real               :: fveg
-     real               :: albedo
-     real               :: qsnbot
-     real               :: ponding
-     real               :: ponding1
-     real               :: ponding2
-     real               :: rssun
-     real               :: rssha
-     real               :: bgap
-     real               :: wgap
-     real               :: chv
-     real               :: chb
-     real               :: emissi
-     real               :: shg
-     real               :: shc
-     real               :: shb
-     real               :: evg
-     real               :: evb
-     real               :: ghv
-     real               :: ghb
-     real               :: irg
-     real               :: irc
-     real               :: irb
-     real               :: tr
-     real               :: evc
-     real               :: chleaf
-     real               :: chuc
-     real               :: chv2
-     real               :: chb2
-     real               :: fpice
-     real               :: sfcheadrt
-     !Added by Chandana Gangodagamage
-     real :: sfchead1rt
-     real :: infxs1rt
-     real :: soldrain1rt
-
-     !-------------------------------------------------------------------------
-     ! read in from ARS sm data files ! SY
-     !-------------------------------------------------------------------------
-     !real               :: smc_std
-     !-------------------------------------------------------------------------
-     ! calibratable parameters for OPTUE ! SY
-     !-------------------------------------------------------------------------
-     ! SY: Begin from REDPRM
-     !SY: begin vegetation parameters
-     real               :: topt
-     real               :: rgl
-     real               :: rsmax
-     real               :: rsmin
-     real               :: hs
-     real               :: nroot
-     !SY: end vegetation parameters
-     !SY: begin soil parameters
-     real               :: csoil
-     real               :: bexp
-     real               :: dksat
-     real               :: dwsat
-     !real               :: f1 ! SY: Not used by Ac71 from REDPRM 
-     real               :: psisat
-     real               :: quartz
-     !real               :: smcdry ! SY: Not used by Ac71 from REDPRM
-     real               :: smcmax
-     real               :: smcref
-     real               :: smcwlt
-     !SY: end soil parameters
-     !SY: begin universal parameters (not dependent on SOILTYP, VEGTYP)
-     real               :: czil
-     real               :: frzk
-     real               :: refdk
-     real               :: refkdt
-     real               :: slope
-     !SY: end universal parameters (not dependent on SOILTYP, VEGTYP)
-     ! SY: End from REDPRM
-     ! SY: Begin from read_mp_veg_parameters
-     real               :: CH2OP
-     real               :: DLEAF
-     real               :: Z0MVT
-     real               :: HVT
-     real               :: HVB
-     real               :: RC
-     real               :: RHOL1
-     real               :: RHOL2
-     real               :: RHOS1
-     real               :: RHOS2
-     real               :: TAUL1
-     real               :: TAUL2
-     real               :: TAUS1
-     real               :: TAUS2
-     real               :: XL
-     real               :: CWPVT
-     real               :: C3PSN
-     real               :: KC25
-     real               :: AKC
-     real               :: KO25
-     real               :: AKO
-     real               :: AVCMX
-     real               :: AQE
-     real               :: LTOVRC
-     real               :: DILEFC
-     real               :: DILEFW
-     real               :: RMF25
-     real               :: SLA
-     real               :: FRAGR
-     real               :: TMIN
-     real               :: VCMX25
-     real               :: TDLEF
-     real               :: BP
-     real               :: MP
-     real               :: QE25
-     real               :: RMS25
-     real               :: RMR25
-     real               :: ARM
-     real               :: FOLNMX
-     real               :: WDPOOL
-     real               :: WRRAT
-     real               :: MRP
-     ! SY: End from read_mp_veg_parameters
-     !-------------------------------------------------------------------------
-     ! used for constraints on calibratable parameters for OPTUE ! SY
-     !-------------------------------------------------------------------------
-     real               :: smcdry ! SY: Not used by Ac71 from REDPRM, but read in from table
 
      !!! MB: AC71
-     ! WCM
-     real               :: Tmin_ac_Julyref
-     real               :: WCMV1V2
-     real               :: AC71FC
-     real, allocatable  :: TMIN_ac_antecedent(:)
      !!!
      integer            :: daynri
-     !real, pointer      :: ac71_soilwc(:)
      real               :: RootZoneWC_Actual
      real               :: RootZoneWC_FC
      real               :: RootZoneWC_WP
@@ -749,8 +547,6 @@ module Ac71_module
      real               :: RootZoneWC_ZtopThresh
      logical            :: HarvestNow
      type(rep_RootZoneWC) :: RootZoneWC
-     !type(CompartmentIndividual), dimension(GetNrCompartments()) :: Compartment
-     !type(SoilLayerIndividual), dimension(GetSoil_NrSoilLayers()) :: soillayer
      type(rep_Content) :: TotalSaltContent
      type(rep_Content) :: TotalWaterContent
      type(rep_EffectiveRain) :: effectiverain
@@ -948,7 +744,6 @@ character(len=:), allocatable :: ManDescription
 character(len=:), allocatable :: ClimDescription
 character(len=:), allocatable :: OffSeasonDescription
 character(len=:), allocatable :: GroundwaterDescription
-     ! OUTPUT
 
   end type ac71dec
 end module Ac71_module

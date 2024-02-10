@@ -34,14 +34,6 @@ subroutine Ac71_dynsetup(n)
 !EOP
     implicit none
     integer, intent(in) :: n
-    
-    integer   :: tid
-    integer   :: t, gid, change, local_hour
-    integer   :: locdoy, locyr, locmo, locda, lochr, locmn, locss
-    real*8    :: loctime
-    real      :: interp_fraction
-    real      :: locgmt
-    integer   :: col, row, ncount(LIS_rc%npatch(n, LIS_rc%lsm_index))
  
     !TODO: add code here if needed.
 end subroutine Ac71_dynsetup

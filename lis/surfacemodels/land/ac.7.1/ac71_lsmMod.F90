@@ -157,44 +157,7 @@ module Ac71_lsmMod
         !-------------------------------------------------------------------------
         ! Initial Model State for cold start
         !-------------------------------------------------------------------------
-        real               :: init_albold
-        real               :: init_sneqvo
-        real, pointer      :: init_stc(:)
-        real, pointer      :: init_sh2o(:)
         real, pointer      :: init_smc(:)
-        real               :: init_tah
-        real               :: init_eah
-        real               :: init_fwet
-        real               :: init_canliq
-        real               :: init_canice
-        real               :: init_tv
-        real               :: init_tg
-        real               :: init_qsnow
-        !integer            :: init_isnow
-        !real, pointer      :: init_zss(:)
-        real               :: init_snowh
-        real               :: init_sneqv
-        !real, pointer      :: init_snowice(:)
-        !real, pointer      :: init_snowliq(:)
-        real               :: init_zwt
-        real               :: init_wa
-        real               :: init_wt
-        real               :: init_wslake
-        real               :: init_lfmass
-        real               :: init_rtmass
-        real               :: init_stmass
-        real               :: init_wood
-        real               :: init_stblcp
-        real               :: init_fastcp
-        real               :: init_lai
-        real               :: init_sai
-        real               :: init_cm
-        real               :: init_ch
-        real               :: init_tauss
-        real               :: init_smcwtd
-        real               :: init_deeprech
-        real               :: init_rech
-        real               :: init_zlvl
         !!! MB: AC71
         integer            :: init_daynri
 
@@ -206,32 +169,10 @@ module Ac71_lsmMod
         character(len=256) :: gen_tbl_name
         character(len=256) :: ac_tbl_name
         character(len=256) :: landuse_scheme_name
-        character(len=256) :: soil_scheme_name
-        integer            :: dveg_opt
-        integer            :: crs_opt
-        integer            :: btr_opt
-        integer            :: run_opt
-        integer            :: sfc_opt
-        integer            :: frz_opt
-        integer            :: inf_opt
-        integer            :: rad_opt
-        integer            :: alb_opt
-        integer            :: snf_opt
-        integer            :: tbot_opt
-        integer            :: stc_opt
-        integer            :: nslcats
         integer            :: nlucats
-        integer            :: nslpcats
+        character(len=256) :: soil_scheme_name
         real               :: dt
         integer            :: nsoil
-        real, pointer      :: sldpth(:)
-        integer            :: nsnow
-        integer            :: urban_vegetype
-        integer            :: ice_flag
-        integer            :: st_flag
-        integer            :: sc_idx
-        integer            :: iz0tlnd
-        !real               :: zlvl
         !!! MB: AC71
         integer            :: daynrinextclimaterecord
         character(len=256) :: PathNameOutp
@@ -303,26 +244,10 @@ contains
             ! allocate memory for vector variables passed to model interfaces        
             ! TODO: check the following allocation statements carefully!
             !------------------------------------------------------------------------
-            ! allocate memory for multilevel spatial parameter
-            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%shdfac_monthly(12))
-                allocate(AC71_struc(n)%ac71(t)%smceq(AC71_struc(n)%nsoil))
-            enddo
-            ! allocate memory for state variables
-            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%sh2o(AC71_struc(n)%nsoil))
-            enddo
             !!! MB: AC71
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
             enddo
-            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%Tmin_ac_antecedent(AC71_struc(n)%Tmin_windowsize))
-            enddo
-!            ! allocate memory for intiali state variables
-!            allocate(AC71_struc(n)%init_stc( AC71_struc(n)%nsoil))
-!            allocate(AC71_struc(n)%init_sh2o(AC71_struc(n)%nsoil))
-!            allocate(AC71_struc(n)%init_smc(AC71_struc(n)%nsoil))
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
