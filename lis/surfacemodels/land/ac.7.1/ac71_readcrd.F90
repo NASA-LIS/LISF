@@ -126,9 +126,6 @@ subroutine Ac71_readcrd()
     ! allocate memory for sldpth using nsoil as dimension
     do n=1, LIS_rc%nnest
         allocate(AC71_struc(n)%Thickness(AC71_struc(n)%NrSoilLayers))
-        allocate(AC71_struc(n)%sldpth(AC71_struc(n)%nsoil))
-        allocate(AC71_struc(n)%init_stc( AC71_struc(n)%nsoil))
-        allocate(AC71_struc(n)%init_sh2o(AC71_struc(n)%nsoil))
         allocate(AC71_struc(n)%init_smc(AC71_struc(n)%nsoil))
     enddo
 
@@ -230,10 +227,10 @@ subroutine Ac71_readcrd()
     do n=1, LIS_rc%nnest
         ios = nf90_get_att(nids(n), NF90_GLOBAL, 'SOILTEXT_SCHEME', soil_scheme_name)
         call LIS_verify(ios, 'Error in nf90_get_att: SOILTEXT_SCHEME')
-        if (trim(soil_scheme_name) .eq. "STATSGO") then 
+        if (trim(soil_scheme_name) .eq. "STATSGO") then !LB: later change it to AC
           AC71_struc(n)%soil_scheme_name = "STAS"
         else
-          write(LIS_logunit, *) "Fatal error: currently, only STATSGO soil scheme is supported by Noah-MP!"
+          write(LIS_logunit, *) "Fatal error: currently, only STATSGO soil scheme is supported by AquaCrop!"
           call LIS_endrun()
         endif 
     enddo
@@ -248,14 +245,6 @@ subroutine Ac71_readcrd()
       AC71_struc(n)%dt = AC71_struc(n)%ts
     enddo 
 
-    ! thickness of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil layer thickness:", rc = rc)
-    do n=1, LIS_rc%nnest
-        do i = 1, AC71_struc(n)%nsoil
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%sldpth(i), rc=rc)
-            call LIS_verify(rc, 'AquaCrop.7.1 soil layer thickness: not defined')
-        enddo
-    enddo
  
     ! MB: AC71
     ! thickness of soil layers
@@ -275,13 +264,7 @@ subroutine Ac71_readcrd()
 
     ! The following lines hard code the LDT NetCDF variable names. 
     do n=1, LIS_rc%nnest
-        AC71_struc(n)%LDT_ncvar_shdfac_monthly = 'GREENNESS'  !'AC71_SHDFAC_MONTHLY'
-        ! AC71_struc(n)%LDT_ncvar_vegetype = ' ! Edit here if hard code name
         AC71_struc(n)%LDT_ncvar_soiltype = 'AC71_SOILTYPE'
-        AC71_struc(n)%LDT_ncvar_slopetype = 'SLOPETYPE'       !'AC71_SLOPETYPE'
-        AC71_struc(n)%LDT_ncvar_smceq    = 'AC71_SMCEQ'
-        AC71_struc(n)%LDT_ncvar_tbot     = 'TBOT'             !'AC71_TBOT'
-        AC71_struc(n)%LDT_ncvar_pblh     = 'NOAHMP36_PBLH'
     enddo
 
     ! set default restart format to netcdf
@@ -306,9 +289,6 @@ subroutine Ac71_readcrd()
         ! volumetric liquid soil moisture
         call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial liquid soil moistures:", rc = rc)
         do n=1,LIS_rc%nnest
-            do i=1, AC71_struc(n)%nsoil
-                call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_sh2o(i), rc=rc)
-            end do
             call LIS_verify(rc, "AquaCrop.7.1 initial liquid soil moistures: not defined")
         enddo
     endif

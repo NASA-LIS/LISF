@@ -29,18 +29,9 @@ subroutine Ac71_setup()
     use LIS_timeMgrMod
     !use AC_VEG_PARAMETERS_71, only: read_mp_veg_parameters
     !use MODULE_SF_ACLSM_71, only: read_mp_veg_parameters
-    use MODULE_SF_ACLSM_71, only: read_mp_veg_parameters, &
-           SLCATS, LUCATS, CSOIL_DATA, BB, SATDK, SATDW, &
-           SATPSI, QTZ, MAXSMC, REFSMC, WLTSMC, &
+    use module_sf_aclsm_71, only: &
            ! MB: AC71
-           OC, WP, SAT, FC, INFRATE, SD, CL, SI, & 
-           CZIL_DATA, FRZK_DATA, REFDK_DATA, REFKDT_DATA, SLOPE_DATA, &
-           TOPT_DATA, RGLTBL, RSMAX_DATA, RSTBL, HSTBL, NROTBL, &
-           CH2OP, DLEAF, Z0MVT, HVT, HVB, RC, RHOL, RHOS, TAUL, TAUS, &
-           XL, CWPVT, C3PSN, KC25, AKC, KO25, AKO, AVCMX, AQE, &         
-           LTOVRC,  DILEFC,  DILEFW,  RMF25,  SLA,  FRAGR,  TMIN, &
-           VCMX25,  TDLEF,  BP, MP, QE25, RMS25, RMR25, ARM, &
-           FOLNMX, WDPOOL, WRRAT, MRP, DRYSMC ! SY: adding 
+           OC, WP, SAT, FC, INFRATE, SD, CL, SI 
  
 
     use Ac71_lsmMod
@@ -666,19 +657,6 @@ subroutine Ac71_setup()
                 
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
-
-                ! SY: Begin lines following those in REDPRM
-
-                AC71_struc(n)%ac71(t)%csoil = CSOIL_DATA
-                AC71_struc(n)%ac71(t)%bexp = BB(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%dksat = SATDK(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%dwsat = SATDW(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%psisat = SATPSI(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%quartz = QTZ(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%smcmax = MAXSMC(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%smcref = REFSMC(AC71_struc(n)%ac71(t)%soiltype)
-                AC71_struc(n)%ac71(t)%smcwlt = WLTSMC(AC71_struc(n)%ac71(t)%soiltype)
-                ! SY: End SOIL PARAMETERS
 
 
                 !!! Start the Program AC71

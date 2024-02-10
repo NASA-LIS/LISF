@@ -203,44 +203,6 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
     integer :: dimID(11)
-    integer :: albold_ID
-    integer :: sneqvo_ID
-    integer :: sstc_ID
-    integer :: sh2o_ID
-    integer :: smc_ID
-    integer :: tah_ID
-    integer :: eah_ID
-    integer :: fwet_ID
-    integer :: canliq_ID
-    integer :: canice_ID
-    integer :: tv_ID
-    integer :: tg_ID
-    integer :: qsnow_ID
-    integer :: isnow_ID
-    integer :: zss_ID
-    integer :: snowh_ID
-    integer :: sneqv_ID
-    integer :: snowice_ID
-    integer :: snowliq_ID
-    integer :: zwt_ID
-    integer :: wa_ID
-    integer :: wt_ID
-    integer :: wslake_ID
-    integer :: lfmass_ID
-    integer :: rtmass_ID
-    integer :: stmass_ID
-    integer :: wood_ID
-    integer :: stblcp_ID
-    integer :: fastcp_ID
-    integer :: lai_ID
-    integer :: sai_ID
-    integer :: cm_ID
-    integer :: ch_ID
-    integer :: tauss_ID
-    integer :: smcwtd_ID
-    integer :: deeprech_ID
-    integer :: rech_ID
-    integer :: zlvl_ID
     
     ! write the header of the restart file
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &

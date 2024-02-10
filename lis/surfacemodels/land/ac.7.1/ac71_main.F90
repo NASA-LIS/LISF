@@ -952,10 +952,6 @@ subroutine Ac71_main(n)
             !                                  vlevel=1, unit="t h-1", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiPrev, value = real(AC71_struc(n)%ac71(t)%CCiPrev,kind=sp), &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_WCMV1V2, value = real(AC71_struc(n)%ac71(t)%WCMV1V2,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71FC, value = real(AC71_struc(n)%ac71(t)%AC71FC,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Irrigation, value = real(AC71_struc(n)%ac71(t)%Irrigation,kind=sp), &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_Actual, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,kind=sp), &

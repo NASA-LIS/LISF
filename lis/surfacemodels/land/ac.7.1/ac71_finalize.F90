@@ -37,9 +37,6 @@ subroutine Ac71_finalize(n)
     do n=1, LIS_rc%nnest
         ! free memory allocated for each tile
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-            deallocate(AC71_struc(n)%ac71(t)%shdfac_monthly)
-            deallocate(AC71_struc(n)%ac71(t)%smceq)
-            deallocate(AC71_struc(n)%ac71(t)%sh2o)
             deallocate(AC71_struc(n)%ac71(t)%smc)
         end do  ! tile loop
  
@@ -47,11 +44,9 @@ subroutine Ac71_finalize(n)
         deallocate(AC71_struc(n)%ac71)
 
         ! free momory for constant parameter 
-        deallocate(AC71_struc(n)%sldpth)
         deallocate(AC71_struc(n)%Thickness)
 
         ! free momory for initial state variable
-        deallocate(AC71_struc(n)%init_sh2o)
         deallocate(AC71_struc(n)%init_smc)
     end do ! nest loop
   
