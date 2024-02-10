@@ -448,8 +448,6 @@ module LIS_histDataMod
   public :: LIS_MOC_AC71SOILMOIST 
   public :: LIS_MOC_AC71BIOMASS
   public :: LIS_MOC_CCiprev
-  public :: LIS_MOC_WCMV1V2
-  public :: LIS_MOC_AC71FC
   public :: LIS_MOC_AC71Irrigation
   public :: LIS_MOC_AC71RootZoneWC_Actual
   public :: LIS_MOC_AC71RootZoneWC_WP
@@ -984,8 +982,6 @@ module LIS_histDataMod
    integer :: LIS_MOC_AC71SOILMOIST  = -9999
    integer :: LIS_MOC_AC71BIOMASS  = -9999
    integer :: LIS_MOC_CCiprev  = -9999
-   integer :: LIS_MOC_WCMV1V2  = -9999
-   integer :: LIS_MOC_AC71FC  = -9999
    integer :: LIS_MOC_AC71Irrigation  = -9999
    integer :: LIS_MOC_AC71RootZoneWC_Actual  = -9999
    integer :: LIS_MOC_AC71RootZoneWC_WP  = -9999
@@ -4638,30 +4634,6 @@ contains
          "CCiprev",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_CCiprev,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"WCMV1V2:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "WCMV1V2",&
-         "WCMV1V2",&
-         "WCMV1V2",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_WCMV1V2,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71FC:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC71FC",&
-         "AC71FC",&
-         "AC71FC",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71FC,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
