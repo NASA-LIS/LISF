@@ -8,6 +8,7 @@
 #  AUTHOR:  Shrad Shukla, UCSB, MAY-2016
 #  Edited:  Abheera Hazra, NASA, MAR-2019
 #  Edited:  Ryan Zamora, NASA, MAR-2022
+#  Edited:  KR Arsenault, NASA, FEB-2024; Added Jan-, Feb-2011 CFSv2 downloads
 #
 #  SOURCE WEBSITE:  https://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/
 #
@@ -44,11 +45,26 @@ do
     if [ $model == 'NCEP-CFSv2' ]; then
         SYRA=1982
         EYRA=2010
+
         SYRB=2011
         EYRB=2021
 
+        # Years: Jan-1982 to Dec-2010:
         strA="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.HINDCAST/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYRA"-"$EYRA"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"_"$SYRA"_"$EYRA".nc"
+
+        # Years: Mar-2011 to present:
         strB="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.FORECAST/.EARLY_MONTH_SAMPLES/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYRB"-"$EYRB"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"_"$SYRB"_"$EYRB".nc"
+
+        # ABOVE DATASETS - MISSING:  Jan- and Feb-2011:
+        #  ... So must download separately here:
+        if [ $month == 'Jan' -o $month == 'Feb' ]; then
+          SYRC=2011
+          EYRC=2011
+
+          strC="http://iridl.ldeo.columbia.edu/SOURCES/.Models/.NMME/."$model"/.HINDCAST/.PENTAD_SAMPLES/.MONTHLY/."$var"/S/%280000%201%20"$month"%20"$SYRC"-"$EYRC"%29VALUES/data.nc -o "$OUTDIR"/"$var"."$model".mon_"$month"_"$SYRC"_"$EYRC".nc"
+          echo $strC
+          curl -v $strC
+        fi
 
         echo $strA
         curl -v $strA
