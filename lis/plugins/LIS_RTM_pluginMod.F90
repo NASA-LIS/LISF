@@ -22,6 +22,7 @@ module LIS_RTM_pluginMod
 !  21 Mar 09    Sujay Kumar  Initial Specification
 !  20 Oct 10    Yudong Tian  Added CRTM2 and CRTM2 EMonly
 !  08 Feb 11    Yudong Tian  Added CMEM3
+!  04 Sep 20    Sara Modanesi Added WCM (Water Cloud Model)
 !
 !EOP
   implicit none
@@ -75,6 +76,12 @@ subroutine LIS_RTM_plugin
        TauOmegaRTM_run
 #endif
 
+#if ( defined RTMS_WCM )
+   use WCMRTM_Mod, only : WCMRTM_initialize, WCMRTM_f2t,&
+       WCMRTM_geometry, &
+       WCMRTM_run
+#endif
+
 #if ( defined RTMS_CRTM )
 ! CRTM 1.x
 !   call registerrtminit(trim(LIS_crtmId)//char(0), CRTM_Kmatrix_initialize)
@@ -116,6 +123,15 @@ subroutine LIS_RTM_plugin
    call registergeometry2rtm(trim(LIS_tauomegartmId)//char(0), &
                              TauOmegaRTM_geometry)
    call registerrtmrun(trim(LIS_tauomegartmId)//char(0),TauOmegaRTM_run)
+#endif
+
+#if ( defined RTMS_WCM )
+!WCMRTM
+   call registerrtminit(trim(LIS_wcmrtmId)//char(0),WCMRTM_initialize)
+   call registerrtmf2t(trim(LIS_wcmrtmId)//char(0),WCMRTM_f2t)
+   call registergeometry2rtm(trim(LIS_wcmrtmId)//char(0), &
+                             WCMRTM_geometry)
+   call registerrtmrun(trim(LIS_wcmrtmId)//char(0),WCMRTM_run)
 #endif
 #endif
 end subroutine LIS_RTM_plugin
