@@ -1,6 +1,6 @@
 #!/bin/sh
 #SBATCH --job-name=autotune
-#SBATCH --time=1:00:00
+#SBATCH --time=0:30:00
 #SBATCH --account s1189
 #SBATCH --output autotune.slurm.out
 #Adjust node, core, and hardware constraints here
@@ -9,7 +9,7 @@
 #Substitute your e-mail here
 #SBATCH --mail-type=ALL
 #Set quality of service, if needed.
-#SBATCH --qos=debug
+##SBATCH --qos=debug
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_autotune_discover.sh
@@ -50,9 +50,9 @@ NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/scripts
-CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/cfgs
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis74_oba_runs/build/LISF/lis/utils/usaf/retune_bratseth/src
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/scripts
+CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/cfgs
+BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/bin
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
@@ -155,6 +155,7 @@ fi
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "INFO, Task $i:  Calling procOBA_Sat for $varname at `date`"
+    echo `ls`
     if [ ! -e procOBA_Sat.$varname.config ] ; then
         echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
     fi
@@ -371,4 +372,5 @@ srun --ntasks=1 --nodes=1 --exclusive --kill-on-bad-exit=1 \
 
 # The end
 echo "INFO, Completed autotuning at `date`"
+touch autotune.job.done
 exit 0

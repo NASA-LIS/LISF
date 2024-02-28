@@ -160,9 +160,9 @@ class AutomateTuning:
             "startday: " : f"startday: {self.startdt.day:02d}\n",
             "starthour: " : f"starthour: {self.startdt.hour:02d}\n",
             "endyear: " : f"endyear: {self.enddt.year:04d}\n",
-            "endmonth: " : f"endmonth: {self.enddt.month:04d}\n",
-            "endday: " : f"endday: {self.enddt.day:04d}\n",
-            "endhour: " : f"endhour: {self.enddt.hour:04d}\n",
+            "endmonth: " : f"endmonth: {self.enddt.month:02d}\n",
+            "endday: " : f"endday: {self.enddt.day:02d}\n",
+            "endhour: " : f"endhour: {self.enddt.hour:02d}\n",
             "blacklist_file:" : f"blacklist_file: blacklist_{self.varname}.txt"
         }
         with open(cfgfile, "w", encoding="ascii") as file:
