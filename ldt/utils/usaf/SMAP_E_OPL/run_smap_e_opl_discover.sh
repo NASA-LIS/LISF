@@ -3,9 +3,11 @@
 #SBATCH --time=0:20:00
 #SBATCH --account s1189
 #SBATCH --output smapeopl.slurm.out
-#SBATCH --ntasks=13 --ntasks-per-node=1
+##SBATCH --ntasks=13 --ntasks-per-node=1
+##SBATCH --ntasks=13 --ntasks-per-node=2
+#SBATCH --ntasks=13 --ntasks-per-node=13
 #SBATCH --mail-type=ALL
-#SBATCH --qos=debug
+##SBATCH --qos=debug
 #--------------------------------------------------------------------------
 #
 # SCRIPT: run_smap_e_opl_discover.sh
@@ -127,8 +129,13 @@ while [ "$cur_yyyymmddhh" -le "$end_yyyymmddhh" ] ; do
                  "$tmplfile" $i || exit 1
 
     # Run LDT
-    srun --ntasks=1 --nodes=1 --exclusive \
+    #srun --ntasks=1 --nodes=1 --exclusive \
+    #     $BINDIR/LDT ldt.config.smapeopl."$cur_yyyymmddhh" &
+    #srun --ntasks=1 --cpus-per-task=1 \
+    #     $BINDIR/LDT ldt.config.smapeopl."$cur_yyyymmddhh" &
+    srun --ntasks=1 --cpus-per-task=1 \
          $BINDIR/LDT ldt.config.smapeopl."$cur_yyyymmddhh" &
+
     PIDS+=($!)
     actives+=(1)
     yyyymmddhh+=("$cur_yyyymmddhh")
@@ -183,4 +190,5 @@ unset actives
 unset yyyymmddhh
 
 # The end
+touch smapeopl.job.done
 exit 0
