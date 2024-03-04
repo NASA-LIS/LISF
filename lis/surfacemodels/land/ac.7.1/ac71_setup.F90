@@ -570,14 +570,12 @@ subroutine Ac71_setup()
             ! MULTILEVEL reading spatial spatial parameters !
             !----------------------------------------------!
 
-            deallocate(placeholder)
             call SOIL_VEG_GEN_PARM_71(AC71_struc(n)%landuse_tbl_name,   & 
                                       AC71_struc(n)%soil_tbl_name,      &
                                       AC71_struc(n)%gen_tbl_name,       &
                                       AC71_struc(n)%landuse_scheme_name,& 
                                       AC71_struc(n)%soil_scheme_name)
-            
-
+        deallocate(placeholder)
             ! MB: AC71
             TheProjectType = typeproject_typeprm
 
@@ -1012,10 +1010,8 @@ subroutine Ac71_setup()
             AC71_struc(n)%ac71(t)%ECstorage = GetECstorage() !EC surface storage dS/m
             AC71_struc(n)%ac71(t)%Eact = GetEact() ! mm/day
             AC71_struc(n)%ac71(t)%Epot = GetEpot() ! mm/day
-            AC71_struc(n)%ac71(t)%ETo_ac = GetETo() ! mm/day
             AC71_struc(n)%ac71(t)%Drain = GetDrain()  ! mm/day
             AC71_struc(n)%ac71(t)%Infiltrated = GetInfiltrated() ! mm/day
-            AC71_struc(n)%ac71(t)%PREC_ac = GetRain()  ! mm/day
             AC71_struc(n)%ac71(t)%RootingDepth = GetRootingDepth()
             AC71_struc(n)%ac71(t)%Runoff = GetRunoff()  ! mm/day
             AC71_struc(n)%ac71(t)%SaltInfiltr = GetSaltInfiltr() ! salt infiltrated in soil profile Mg/ha
@@ -1024,8 +1020,6 @@ subroutine Ac71_setup()
             AC71_struc(n)%ac71(t)%Tact = GetTact() ! mm/day
             AC71_struc(n)%ac71(t)%Tpot = GetTpot() ! mm/day
             AC71_struc(n)%ac71(t)%TactWeedInfested = GetTactWeedInfested() !mm/day
-            AC71_struc(n)%ac71(t)%Tmax_ac = GetTmax() ! degC
-            AC71_struc(n)%ac71(t)%Tmin_ac =GetTmin() ! degC
 
 
             AC71_struc(n)%ac71(t)%GwTable = GetGwTable()

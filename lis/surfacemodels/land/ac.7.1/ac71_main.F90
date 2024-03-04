@@ -32,6 +32,7 @@ subroutine Ac71_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod 
     use Ac71_lsmMod
+    use ac71_prep_f, only : ac71_ETo_calc
    !use other modules
     use ESMF
     use LIS_routingMod, only : LIS_runoff_state
@@ -428,14 +429,6 @@ subroutine Ac71_main(n)
     !!! MB_AC71
 
     implicit none
-
-    !!! MB_AC71
-    integer :: daynr, todaynr, iproject, nprojects
-    logical :: ListProjectFileExist
-    character(len=:), allocatable :: ListProjectsFile, TheProjectFile
-
-    !!! MB_AC71
-
 ! !ARGUMENTS:
     integer, intent(in)  :: n
     integer              :: t
@@ -443,17 +436,26 @@ subroutine Ac71_main(n)
     integer              :: itemp, countertemp
     real                 :: dt
     real                 :: lat, lon
-    real                 :: Tmin_movmean
-    real                 :: Tmin_mplr
+    real                 :: tmp_elev
     integer              :: row, col
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
-    integer               :: status
-    integer               :: c,r,l
-    integer               :: ios, nid,rivid,fldid
+    integer              :: status
+    integer              :: c,r,l
+    integer              :: ios, nid,rivid,fldid
 
-    integer            :: tid
+    integer              :: tid
+
+    !!! MB_AC71
+    integer              :: daynr, todaynr, iproject, nprojects
+    logical              :: ListProjectFileExist
+    character(len=:), allocatable :: ListProjectsFile, TheProjectFile
+
+    !LB AC71
+
+    real                 :: tmp_pres, tmp_precip, tmp_tmean, tmp_tmax, tmp_tmin   ! Weather Forcing
+    real                 :: tmp_tdew, tmp_swrad, tmp_lwrad, tmp_wind, tmp_eto     ! Weather Forcing
 !
 ! !DESCRIPTION:
 !  This is the entry point for calling the Ac71 physics.
@@ -468,63 +470,116 @@ subroutine Ac71_main(n)
 !EOP
 
 ! define variables for Ac71
-    
-    !MB: AC71
-    real                 :: tmp_PREC_ac        ! 
-    real                 :: tmp_TMIN_ac        ! 
-    real                 :: tmp_TMAX_ac        ! 
-    real                 :: tmp_ETo_ac         ! 
-
     ! check Ac71 alarm. If alarm is ring, run model. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
+        do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            dt = LIS_rc%ts
+            row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+            col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+            lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
+            lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
+            tmp_elev = LIS_domain(n)%tile(t)%elev
 
-       do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-          dt = LIS_rc%ts
-          row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
-          col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
-          lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
-          lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
+            !!------ This Block Is Where We Obtain Weather Forcing ------------------------------!!
+            ! retrieve forcing data from AC71_struc(n)%ac71(t) and assign to local variables
 
-          ! PREC_ac
-          tmp_PREC_ac      = AC71_struc(n)%ac71(t)%PREC_ac  / AC71_struc(n)%forc_count
-          ! TMIN_ac
-          tmp_TMIN_ac      = AC71_struc(n)%ac71(t)%TMIN_ac  / AC71_struc(n)%forc_count
-          ! TMAX_ac
-          tmp_TMAX_ac      = AC71_struc(n)%ac71(t)%TMAX_ac  / AC71_struc(n)%forc_count
-          ! ETo_ac
-          tmp_ETo_ac      = AC71_struc(n)%ac71(t)%ETo_ac  / AC71_struc(n)%forc_count
+            ! PRES: Daily average surface pressure (kPa)
+            tmp_pres      = (AC71_struc(n)%ac71(t)%psurf / Ac71_struc(n)%forc_count) / 1000
 
-          ! check validity of PREC_ac
-          if(tmp_PREC_ac .eq. LIS_rc%udef) then
-              write(LIS_logunit, *) "undefined value found for forcing variable PREC_ac in Ac71"
-              write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-              call LIS_endrun()
-          endif
-            
-          ! check validity of TMIN
-          if(tmp_TMIN_ac .eq. LIS_rc%udef) then
-              write(LIS_logunit, *) "undefined value found for forcing variable TMIN in Ac71"
-              write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-              call LIS_endrun()
-          endif
-          
-          ! check validity of TMAX
-          if(tmp_TMAX_ac .eq. LIS_rc%udef) then
-              write(LIS_logunit, *) "undefined value found for forcing variable TMAX in Ac71"
-              write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-              call LIS_endrun()
-          endif
-            
-          ! check validity of ETo
-          if(tmp_ETo_ac .eq. LIS_rc%udef) then
-              write(LIS_logunit, *) "undefined value found for forcing variable ETo in Ac71"
-              write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-              call LIS_endrun()
-          endif
-            
+            ! PRECIP: Total daily precipitation (rain+snow) (mm)
+            tmp_precip    = (AC71_struc(n)%ac71(t)%prcp / Ac71_struc(n)%forc_count) * 3600. * 24. !Convert from kg/ms2 to mm
 
-            !!! MB_AC71
+            ! TMEAN: mean daily air temperature (C)
+            tmp_tmean      = AC71_struc(n)%ac71(t)%tair / Ac71_struc(n)%forc_count - 273.15 !Convert from K to C
+
+            ! TMAX: maximum daily air temperature (degC)
+            tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - 273.15 !Convert from K to C
+
+            ! TMIN: minimum daily air temperature (degC)
+            tmp_tmin      = AC71_struc(n)%ac71(t)%tmin - 273.15 !Convert from K to C 
+
+            ! TDEW: average daily dewpoint temperature (degC)
+            tmp_tdew      = (AC71_struc(n)%ac71(t)%tdew / AC71_struc(n)%forc_count) - 273.15 !Convert from K to C
+
+            ! SW_RAD: daily total incoming solar radiation (MJ/(m2d))
+            tmp_swrad     = (AC71_struc(n)%ac71(t)%swdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
+
+            ! LW_RAD: daily surface net downward longwave flux (MJ/(m2d))
+            tmp_lwrad     = (AC71_struc(n)%ac71(t)%lwdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
+
+            ! Wind: daily average wind speed (m/s)
+            tmp_wind      = AC71_struc(n)%ac71(t)%wndspd / AC71_struc(n)%forc_count
+
+            ! check validity of PRES
+            if(tmp_pres .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable PRES in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of PRECIP
+            if(tmp_precip .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable PRECIP in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of TMEAN
+            if(tmp_tmean .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable TMEAN in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of TMAX
+            if(tmp_tmax .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable TMAX in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+           ! check validity of TMIN
+            if(tmp_tmin .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable TMIN in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of TDEW
+            if(tmp_tdew .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable TDEW in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of SW_RAD
+            if(tmp_swrad .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable SW_RAD in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of LW_RAD
+            if(tmp_lwrad .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable LW_RAD in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! check validity of WIND
+            if(tmp_wind .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable WIND in Ac71"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+
+            ! Call ETo function ! later add argument with ref height
+             
+            call ac71_ETo_calc(tmp_pres, tmp_tmax, tmp_tmin, tmp_tdew, &
+                               tmp_wind, tmp_swrad, &
+                               tmp_elev, lat, tmp_eto)
+            AC71_struc(n)%ac71(t)%eto = tmp_eto
 
             ! setting all global variables
             call SetRootZoneWC_Actual(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,8))
@@ -550,7 +605,7 @@ subroutine Ac71_main(n)
             call SetIrriInfoRecord2(AC71_struc(n)%ac71(t)%IrriInfoRecord2)
             call SetIrrigation(REAL(AC71_struc(n)%ac71(t)%Irrigation,8))
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
-                 call SetCompartment_theta(l,REAL(AC71_struc(n)%ac71(t)%smc(l),8))
+                    call SetCompartment_theta(l,REAL(AC71_struc(n)%ac71(t)%smc(l),8))
             enddo
             call SetIrriECw(AC71_struc(n)%ac71(t)%IrriECw) 
             call SetManagement(AC71_struc(n)%ac71(t)%Management) 
@@ -692,41 +747,30 @@ subroutine Ac71_main(n)
 
             !!! initialize run (year)
 
-             if (AC71_struc(n)%ac71(t)%InitializeRun .eq. 1) then
-                ! Replaces LoadSimulationRunProject in LoadSimulationRunProject
-                !call SetSimulation_YearSeason(YearSeason_temp)
-                !call SetCrop_Day1(TempInt)
-                !call SetCrop_DayN(TempInt)
-                !SetCO2FileFull
-
-                ! Run InitializeRunPart1 ( in future without LoadSimulationRunProject)
-                        call SetClimRecord_DataType(0_int8)
-                        call SetClimRecord_fromd(0)
-                        call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
-                        call SetClimRecord_fromm(0)
-                        call SetClimRecord_fromstring("")
-                        call SetClimRecord_fromy(LIS_rc%syr)
-                        call SetClimRecord_NrObs(999)
-                        call SetClimRecord_tod(0)
-                        call SetClimRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
-                        call SetClimRecord_tom(0)
-                        call SetClimRecord_tostring("")
-                        call SetClimRecord_toy(0)
-                        call SetClimFile('(External)')
-                        !call SetClimFile('EToRainTempFile')
-                        !call SetClimDescription('Read ETo/RAIN/TEMP data set')
+            if (AC71_struc(n)%ac71(t)%InitializeRun .eq. 1) then
+                call SetClimRecord_DataType(0_int8)
+                call SetClimRecord_fromd(0)
+                call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
+                call SetClimRecord_fromm(0)
+                call SetClimRecord_fromstring("")
+                call SetClimRecord_fromy(LIS_rc%syr)
+                call SetClimRecord_NrObs(999)
+                call SetClimRecord_tod(0)
+                call SetClimRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
+                call SetClimRecord_tom(0)
+                call SetClimRecord_tostring("")
+                call SetClimRecord_toy(0)
+                call SetClimFile('(External)')
+                !call SetClimFile('EToRainTempFile')
+                !call SetClimDescription('Read ETo/RAIN/TEMP data set')
 
                 AC71_struc(n)%ac71(t)%WPi = 0._dp
 
-                call InitializeRunPart1(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType);
-                if (trim(LIS_rc%metforc(1)) == 'MERRA2_AC') then
-                  call SetRain(real(tmp_PREC_ac,kind=dp))
-                  call SetTmin(real(tmp_TMIN_ac,kind=dp))
-                  call SetTmax(real(tmp_TMAX_ac,kind=dp))
-                  call SetETo(real(tmp_ETo_ac,kind=dp))
-                else ! read from AC input
-                  call InitializeClimate();
-                end if
+                call InitializeRunPart1(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)
+                !call SetRain(real(tmp_PREC_ac,kind=dp))
+                !call SetTmin(real(tmp_TMIN_ac,kind=dp))
+                !call SetTmax(real(tmp_TMAX_ac,kind=dp))
+                !call SetETo(real(tmp_ETo_ac,kind=dp))
 
                 !call InitializeRunPart2(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType);
                 call InitializeSimulationRunPart2()
@@ -735,24 +779,23 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
-            ! for MERRA2_AC --> first set climate variables then advanceonetimestep
-            call SetRain(real(tmp_PREC_ac,kind=dp))
-            call SetTmin(real(tmp_TMIN_ac,kind=dp))
-            call SetTmax(real(tmp_TMAX_ac,kind=dp))
-            call SetETo(real(tmp_ETo_ac,kind=dp))
+            ! Set climate variables then advanceonetimestep
+            call SetRain(real(tmp_precip,kind=dp))
+            call SetTmin(real(tmp_tmin,kind=dp))
+            call SetTmax(real(tmp_tmax,kind=dp))
+            call SetETo(real(tmp_eto,kind=dp))
             ! Sum of GDD at end of first day
             call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
-                 GetTmax(), GetSimulParam_GDDMethod()))
+                    GetTmax(), GetSimulParam_GDDMethod()))
             if (GetDayNri() >= GetCrop_Day1()) then
-               if (GetDayNri() == GetCrop_Day1()) then
-                  call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
-               end if
-               call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
-                  GetGDDayi())
+                if (GetDayNri() == GetCrop_Day1()) then
+                    call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
+                end if
+                call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
+                    GetGDDayi())
             end if
 
-            !write(LIS_logunit,*) &
-            !                '[INFO] AdvanceOneTimeStep AquaCrop, day in month: ', LIS_rc
+            ! Run AC
             call AdvanceOneTimeStep(AC71_struc(n)%ac71(t)%WPi, AC71_struc(n)%ac71(t)%HarvestNow)
 
             AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
@@ -782,7 +825,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%SoilLayer = GetSoilLayer()
             AC71_struc(n)%ac71(t)%daynri = GetDayNri()
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
-                 AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
+                    AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
             enddo
             !write(*,'(e23.15e3)') AC71_struc(n)%ac71(t)%ac71smc(1)
             AC71_struc(n)%ac71(t)%IrriECw = GetIrriECw()
@@ -836,10 +879,8 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%ECstorage = GetECstorage() !EC surface storage dS/m
             AC71_struc(n)%ac71(t)%Eact = GetEact() ! mm/day
             AC71_struc(n)%ac71(t)%Epot = GetEpot() ! mm/day
-            AC71_struc(n)%ac71(t)%ETo_ac = GetETo() ! mm/day
             AC71_struc(n)%ac71(t)%Drain = GetDrain()  ! mm/day
             AC71_struc(n)%ac71(t)%Infiltrated = GetInfiltrated() ! mm/day
-            AC71_struc(n)%ac71(t)%PREC_ac = GetRain()  ! mm/day
             AC71_struc(n)%ac71(t)%RootingDepth = GetRootingDepth()
             AC71_struc(n)%ac71(t)%Runoff = GetRunoff()  ! mm/day
             AC71_struc(n)%ac71(t)%SaltInfiltr = GetSaltInfiltr() ! salt infiltrated in soil profile Mg/ha
@@ -848,8 +889,6 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Tact = GetTact() ! mm/day
             AC71_struc(n)%ac71(t)%Tpot = GetTpot() ! mm/day
             AC71_struc(n)%ac71(t)%TactWeedInfested = GetTactWeedInfested() !mm/day
-            AC71_struc(n)%ac71(t)%Tmax_ac = GetTmax() ! degC
-            AC71_struc(n)%ac71(t)%Tmin_ac =GetTmin() ! degC
 
 
             AC71_struc(n)%ac71(t)%GwTable = GetGwTable()
@@ -926,7 +965,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%WaterTableInProfile = GetWaterTableInProfile()
             AC71_struc(n)%ac71(t)%StartMode = GetStartMode()
             AC71_struc(n)%ac71(t)%NoMoreCrop = GetNoMoreCrop()
-          
+
 
             if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then
                 AC71_struc(n)%ac71(t)%InitializeRun = 1
@@ -941,38 +980,56 @@ subroutine Ac71_main(n)
             ![ 1] output variable: smc (unit=m^3 m-3 ). ***  volumetric soil moisture, ice + liquid 
             do i=1, AC71_struc(n)%ac71(t)%NrCompartments
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SOILMOIST, value = AC71_struc(n)%ac71(t)%smc(i),  &
-                                                  vlevel=i, unit="kg m-2", direction="-", surface_type = LIS_rc%lsm_index)
+                                                    vlevel=i, unit="kg m-2", direction="-", surface_type = LIS_rc%lsm_index)
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SOILMOIST, value = AC71_struc(n)%ac71(t)%smc(i), &
-                                                  vlevel=i, unit="m^3 m-3", direction="-", surface_type = LIS_rc%lsm_index)
+                                                    vlevel=i, unit="m^3 m-3", direction="-", surface_type = LIS_rc%lsm_index)
             end do
             ![ 4] output variable: biomass (unit=t/ha). ***  leaf area index 
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71BIOMASS, value = real(AC71_struc(n)%ac71(t)%SumWaBal%Biomass,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71BIOMASS, value = real(AC71_struc(n)%ac71(t)%SumWaBal%Biomass,kind=sp), &
             !                                  vlevel=1, unit="t h-1", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiPrev, value = real(AC71_struc(n)%ac71(t)%CCiPrev,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Irrigation, value = real(AC71_struc(n)%ac71(t)%Irrigation,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_Actual, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_WP, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_WP,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_FC, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_FC,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tact, value = real(AC71_struc(n)%ac71(t)%Tact,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Eact, value = real(AC71_struc(n)%ac71(t)%Eact,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ETo, value = real(AC71_struc(n)%ac71(t)%eto,kind=sp), &
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootingDepth, value = real(AC71_struc(n)%ac71(t)%RootingDepth,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
-                                              vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tmin, value = real(tmp_tmin,kind=sp), &
+                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tmax, value = real(tmp_tmax,kind=sp), &
+                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Rain, value = real(tmp_precip,kind=sp), &
+                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
-            AC71_struc(n)%ac71(t)%PREC_ac = 0.0
-            AC71_struc(n)%ac71(t)%TMIN_ac = 0.0
-            AC71_struc(n)%ac71(t)%TMAX_ac = 0.0
-            AC71_struc(n)%ac71(t)%ETo_ac = 0.0
+            ! 
+            AC71_struc(n)%ac71(t)%tair = 0.0
+            AC71_struc(n)%ac71(t)%tmax = 0.0
+            AC71_struc(n)%ac71(t)%tmin = 0.0
+            AC71_struc(n)%ac71(t)%tdew = 0.0
+            AC71_struc(n)%ac71(t)%qair = 0.0
+            AC71_struc(n)%ac71(t)%wind_e = 0.0
+            AC71_struc(n)%ac71(t)%wind_n = 0.0
+            AC71_struc(n)%ac71(t)%wndspd = 0.0            
+            AC71_struc(n)%ac71(t)%psurf = 0.0
+            AC71_struc(n)%ac71(t)%prcp = 0.0
+            AC71_struc(n)%ac71(t)%eto = 0.0
+            AC71_struc(n)%ac71(t)%lwdown = 0.0
+            AC71_struc(n)%ac71(t)%swdown = 0.0
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero
         AC71_struc(n)%forc_count = 0 

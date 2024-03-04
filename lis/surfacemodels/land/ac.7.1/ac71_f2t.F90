@@ -10,13 +10,9 @@
 !BOP
 ! !ROUTINE: Ac71_f2t
 ! \label{Ac71_f2t}
-!
-! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
 !  
 !  18 JAN 2024, Louise Busschaert; initial implementation for LIS 7 and AC71
+!  14 FEB 2024, Louise Busschaert; Compute Tmax/Min and Averages
 !
 ! !INTERFACE:
 subroutine Ac71_f2t(n)
@@ -44,8 +40,9 @@ subroutine Ac71_f2t(n)
 !
 !EOP
 
-    integer           :: t, v, status
-    integer           :: tid 
+    integer            :: t, v, status
+    integer            :: tid 
+    real               :: ee, val, td
  
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
@@ -63,7 +60,7 @@ subroutine Ac71_f2t(n)
     type(ESMF_Field)  :: lwdField
     real, pointer     :: lwd(:)
  
-    ! Eastward Wind [W m-2]
+    ! Eastward Wind [m s-1]
     type(ESMF_Field)  :: uField
     real, pointer     :: uwind(:)
  
@@ -83,21 +80,12 @@ subroutine Ac71_f2t(n)
     type(ESMF_Field)  :: snowField
     real, pointer     :: snowf(:)
 
-    ! PREC_ac [mm/day]
-    type(ESMF_Field)  :: PREC_ac_Field
-    real, pointer     :: PREC_ac(:)
- 
-    ! TMIN_ac [degC]
-    type(ESMF_Field)  :: TMIN_ac_Field
-    real, pointer     :: TMIN_ac(:)
- 
-    ! TMAX_ac [degC]
-    type(ESMF_Field)  :: TMAX_ac_Field
-    real, pointer     :: TMAX_ac(:)
- 
-    ! ETo_ac [mm/d]
-    type(ESMF_Field)  :: ETo_ac_Field
-    real, pointer     :: ETo_ac(:)
+    ! Dewpoint Temperature [K]
+    real, pointer     :: tdew(:)
+
+    ! Wind Speed [m/s]
+    real, pointer     :: wndspd(:)
+
 
     integer, pointer   :: layer_h(:), layer_m(:)
  
@@ -167,41 +155,6 @@ subroutine Ac71_f2t(n)
         call LIS_verify(status, "Ac71_f2t: error retrieving Snowf")
     endif 
 
-    ! MB: AC_71 
-
-    ! get PREC_ac
-    if(LIS_Forc_PREC_ac%selectOpt .eq. 1) then 
-    call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_PREC_AC%varname(1)), PREC_ac_Field, rc=status)
-    call LIS_verify(status, "Ac71_f2t: error getting PREC_ac")
-
-    call ESMF_FieldGet(PREC_ac_Field, localDE = 0, farrayPtr = PREC_ac, rc = status)
-    call LIS_verify(status, "Ac71_f2t: error retrieving PREC_ac")
-    endif
-    ! get TMIN_ac
-    if(LIS_Forc_TMIN_ac%selectOpt .eq. 1) then 
-    call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_TMIN_AC%varname(1)), TMIN_ac_Field, rc=status)
-    call LIS_verify(status, "Ac71_f2t: error getting TMIN_ac")
-
-    call ESMF_FieldGet(TMIN_ac_Field, localDE = 0, farrayPtr = TMIN_ac, rc = status)
-    call LIS_verify(status, "Ac71_f2t: error retrieving TMIN_ac")
-    endif
-    ! get TMAX_ac
-    if(LIS_Forc_TMAX_ac%selectOpt .eq. 1) then 
-    call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_TMAX_AC%varname(1)), TMAX_ac_Field, rc=status)
-    call LIS_verify(status, "Ac71_f2t: error getting TMAX_ac")
-
-    call ESMF_FieldGet(TMAX_ac_Field, localDE = 0, farrayPtr = TMAX_ac, rc = status)
-    call LIS_verify(status, "Ac71_f2t: error retrieving TMAX_ac")
-    endif
-    ! get ETo_ac
-    if(LIS_Forc_ETo_ac%selectOpt .eq. 1) then 
-    call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_ETo_AC%varname(1)), ETo_ac_Field, rc=status)
-    call LIS_verify(status, "Ac71_f2t: error getting ETo_ac")
-
-    call ESMF_FieldGet(ETo_ac_Field, localDE = 0, farrayPtr = ETo_ac, rc = status)
-    call LIS_verify(status, "Ac71_f2t: error retrieving ETo_ac")
-    endif
-
     !!! set the forcing counter
     AC71_struc(n)%forc_count = AC71_struc(n)%forc_count + 1
  
@@ -211,6 +164,18 @@ subroutine Ac71_f2t(n)
 
         ! TAIR
         AC71_struc(n)%ac71(t)%tair = AC71_struc(n)%ac71(t)%tair + tmp(tid)
+
+        if (AC71_struc(n)%forc_count.eq.1) then !First iteration set max/min 
+            AC71_struc(n)%ac71(t)%tmax = tmp(tid)
+            AC71_struc(n)%ac71(t)%tmin = tmp(tid)
+        else
+            if (tmp(tid).gt.AC71_struc(n)%ac71(t)%tmax) then
+            AC71_struc(n)%ac71(t)%tmax=tmp(tid) !Replace maximum temperature
+            endif
+            if (tmp(tid).lt.AC71_struc(n)%ac71(t)%tmin) then
+            AC71_struc(n)%ac71(t)%tmin=tmp(tid) !Replace minimum temperature
+            endif
+        endif
 
         ! QAIR
         AC71_struc(n)%ac71(t)%qair = AC71_struc(n)%ac71(t)%qair + q2(tid)
@@ -226,6 +191,9 @@ subroutine Ac71_f2t(n)
 
         ! WIND_N
         AC71_struc(n)%ac71(t)%wind_n = AC71_struc(n)%ac71(t)%wind_n + vwind(tid)
+
+        ! Calculate Magnitude of Wind Speed (m/s) 
+        AC71_struc(n)%ac71(t)%wndspd = AC71_struc(n)%ac71(t)%wndspd + SQRT(uwind(tid)**2 + vwind(tid)**2)
 
         ! PSURF
         AC71_struc(n)%ac71(t)%psurf = AC71_struc(n)%ac71(t)%psurf + psurf(tid)
@@ -243,17 +211,22 @@ subroutine Ac71_f2t(n)
               AC71_struc(n)%ac71(t)%prcp = AC71_struc(n)%ac71(t)%prcp + snowf(tid)
            endif
         endif
-        
-        if (trim(LIS_rc%metforc(1)) == 'MERRA2_AC') then
-        ! PREC_ac
-        AC71_struc(n)%ac71(t)%PREC_ac = AC71_struc(n)%ac71(t)%PREC_ac + PREC_ac(tid)
-        ! TMIN
-        AC71_struc(n)%ac71(t)%TMIN_ac = AC71_struc(n)%ac71(t)%TMIN_ac + TMIN_ac(tid)
-        ! TMAX
-        AC71_struc(n)%ac71(t)%TMAX_ac = AC71_struc(n)%ac71(t)%TMAX_ac + TMAX_ac(tid)
-        ! ETo
-        AC71_struc(n)%ac71(t)%ETo_ac = AC71_struc(n)%ac71(t)%ETo_ac + ETo_ac(tid)
-        end if 
+
+        ! Calculate Dewpoint
+
+        ! Following A First Course in Atmospheric Thermodynamics, assume
+        ! approximation q = epsilon*e/p
+
+        ! Calculate vapor pressure
+        ee = (q2(tid)*psurf(tid))/0.622
+
+        ! Invert Bolton 1980 formula for saturation vapor pressure to calculate Td
+        ! since es(Td) = e
+
+        val = log(ee/611.2)
+        td = (243.5 * val) / (17.67 - val) ! Dewpoint in C
+        td = td + 273.15
+        AC71_struc(n)%ac71(t)%tdew = AC71_struc(n)%ac71(t)%tdew + td 
 
     enddo
  

@@ -140,6 +140,7 @@ module Ac71_lsmMod
         ! Parameter file names
         !-------------------------------------------------------------------------
         character*128      :: LDT_ncvar_shdfac_monthly
+        character*128      :: LDT_ncvar_albedo_monthly
         character*128      :: LDT_ncvar_vegetype
         character*128      :: LDT_ncvar_soiltype
         character*128      :: LDT_ncvar_slopetype
@@ -247,14 +248,22 @@ contains
             !!! MB: AC71
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
+                allocate(AC71_struc(n)%ac71(t)%albedo_monthly(12))
             enddo
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC71_struc(n)%ac71(t)%PREC_ac = 0.0
-                AC71_struc(n)%ac71(t)%TMIN_ac = 0.0
-                AC71_struc(n)%ac71(t)%TMAX_ac = 0.0
-                AC71_struc(n)%ac71(t)%ETo_ac = 0.0
+                AC71_struc(n)%ac71(t)%tair = 0.0
+                AC71_struc(n)%ac71(t)%tmax = 0.0
+                AC71_struc(n)%ac71(t)%tmin = 0.0
+                AC71_struc(n)%ac71(t)%tdew = 0.0
+                AC71_struc(n)%ac71(t)%qair = 0.0
+                AC71_struc(n)%ac71(t)%wind_e = 0.0
+                AC71_struc(n)%ac71(t)%wind_n = 0.0
+                AC71_struc(n)%ac71(t)%wndspd = 0.0            
+                AC71_struc(n)%ac71(t)%psurf = 0.0
+                AC71_struc(n)%ac71(t)%prcp = 0.0
+                AC71_struc(n)%ac71(t)%eto = 0.0
 
                 !LB: Initialize HarvestNow (new in AC7.1)
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
