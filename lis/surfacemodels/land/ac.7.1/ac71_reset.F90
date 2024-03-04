@@ -51,10 +51,6 @@ subroutine Ac71_reset()
          AC71_struc(n)%ac71(tt)%qair = 0.0
          AC71_struc(n)%ac71(tt)%wind_e = 0.0
          AC71_struc(n)%ac71(tt)%wind_n = 0.0
-         AC71_struc(n)%ac71(tt)%PREC_ac = 0.0
-         AC71_struc(n)%ac71(tt)%TMIN_ac = 0.0
-         AC71_struc(n)%ac71(tt)%TMAX_ac = 0.0
-         AC71_struc(n)%ac71(tt)%ETo_ac = 0.0
      enddo ! end of tile (tt) loop
      AC71_struc(n)%forc_count = 0
      

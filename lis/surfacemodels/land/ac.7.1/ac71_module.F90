@@ -500,18 +500,20 @@ module Ac71_module
      ! forcing
      !-------------------------------------------------------------------------
      real               :: tair
+     real               :: tmax
+     real               :: tmin
+     real               :: tdew
+     real               :: wn
      real               :: sfctmp
      real               :: psurf
      real               :: wind_e
      real               :: wind_n
+     real               :: wndspd
      real               :: qair
      real               :: swdown
      real               :: lwdown
      real               :: prcp
-     real               :: PREC_ac
-     real               :: TMIN_ac
-     real               :: TMAX_ac
-     real               :: ETo_ac
+     real               :: eto
      !-------------------------------------------------------------------------
      ! spatial parameter
      !-------------------------------------------------------------------------
@@ -524,6 +526,7 @@ module Ac71_module
      ! multilevel spatial parameter
      !-------------------------------------------------------------------------
      real, pointer      :: shdfac_monthly(:)
+     real, pointer      :: albedo_monthly(:)
      real, pointer      :: smceq(:)
      !-------------------------------------------------------------------------
      ! state
@@ -611,11 +614,9 @@ module Ac71_module
     real(dp) :: ECstorage !EC surface storage dS/m
     real(dp) :: Eact ! mm/day
     real(dp) :: Epot ! mm/day
-    !real(dp) :: ETo_ac ! mm/day
     real(dp) :: Drain  ! mm/day
     real(dp) :: Infiltrated ! mm/day
     real(dp) :: Irrigation ! mm/day
-    !real(dp) :: PREC_ac  ! mm/day
     real(dp) :: RootingDepth
     real(dp) :: Runoff  ! mm/day
     real(dp) :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
@@ -624,8 +625,6 @@ module Ac71_module
     real(dp) :: Tact ! mm/day
     real(dp) :: Tpot ! mm/day
     real(dp) :: TactWeedInfested !mm/day
-    !real(dp) :: Tmax_ac ! degC
-    !real(dp) :: Tmin_ac ! degC
 
     ! variables from run.f90
     type(rep_GwTable) :: GwTable

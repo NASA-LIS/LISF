@@ -7,7 +7,6 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-!WRF:MODEL_LAYER:CONSTANTS
 !
 
  MODULE module_model_constants_71

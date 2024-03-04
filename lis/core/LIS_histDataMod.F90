@@ -454,6 +454,10 @@ module LIS_histDataMod
   public :: LIS_MOC_AC71RootZoneWC_FC
   public :: LIS_MOC_AC71Tact
   public :: LIS_MOC_AC71Eact
+  public :: LIS_MOC_AC71ETo
+  public :: LIS_MOC_AC71Tmin
+  public :: LIS_MOC_AC71Tmax
+  public :: LIS_MOC_AC71Rain
   public :: LIS_MOC_AC71RootingDepth
   public :: LIS_MOC_AC71CCiActual
   ! end AC71
@@ -988,6 +992,10 @@ module LIS_histDataMod
    integer :: LIS_MOC_AC71RootZoneWC_FC  = -9999
    integer :: LIS_MOC_AC71Tact  = -9999
    integer :: LIS_MOC_AC71Eact  = -9999
+   integer :: LIS_MOC_AC71ETo  = -9999
+   integer :: LIS_MOC_AC71Tmin  = -9999
+   integer :: LIS_MOC_AC71Tmax  = -9999
+   integer :: LIS_MOC_AC71Rain  = -9999
    integer :: LIS_MOC_AC71RootingDepth  = -9999
    integer :: LIS_MOC_AC71CCiActual  = -9999
 
@@ -4706,6 +4714,54 @@ contains
          "AC71 Eact",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Eact,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71ETo:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71ETo",&
+         "AC71_ETo",&
+         "AC71 ETo",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71ETo,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Tmin:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71Tmin",&
+         "AC71_Tmin",&
+         "AC71 Tmin",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Tmin,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Tmax:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71Tmax",&
+         "AC71_Tmax",&
+         "AC71 Tmax",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Tmax,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Rain:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71Rain",&
+         "AC71_Rain",&
+         "AC71 Rain",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Rain,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
