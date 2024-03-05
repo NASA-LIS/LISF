@@ -344,25 +344,6 @@ contains
     call get_forcingvar_attributes(forcConfig,LIS_FORC_Forc_Hgt,&
          "Height of Forcing Variables", tnvars,status)
 
-
-!LB: for AC71 testing (to be removed)
-    call ESMF_ConfigFindLabel(forcConfig,"PREC_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_PREC_ac,&
-         "Rainfall_ac Rate", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"TMIN_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_TMIN_ac,&
-         "min temperature_ac", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"TMAX_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_TMAX_ac,&
-         "max temperature_ac", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"ETo_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_ETo_ac,&
-         "potential evaporation_ac", tnvars,status)
-!LB: (end of to be removed)
-
     call ESMF_ConfigFindLabel(forcConfig,"Ch:",rc=status)
     call get_forcingvar_attributes(forcConfig,LIS_FORC_Ch,&
          "Surface Exchange Coefficient for Heat", tnvars,status)
@@ -597,25 +578,6 @@ contains
     call get_forcingvar_attributes(forcConfig,LIS_FORC_Forc_Hgt,&
          "Height of Forcing Variables", tnvars,status)
 
-
-!LB: for AC71 testing (to be removed)
-    call ESMF_ConfigFindLabel(forcConfig,"PREC_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_PREC_ac,&
-         "Rainfall_ac Rate", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"TMIN_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_TMIN_ac,&
-         "min temperature", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"TMAX_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_TMAX_ac,&
-         "max temperature", tnvars,status)
-
-    call ESMF_ConfigFindLabel(forcConfig,"ETo_ac:",rc=status)
-    call get_forcingvar_attributes(forcConfig,LIS_FORC_ETo_ac,&
-         "potential evaporation", tnvars,status)
-!LB: (end of to be removed)
-
     call ESMF_ConfigFindLabel(forcConfig,"Ch:",rc=status)
     call get_forcingvar_attributes(forcConfig,LIS_FORC_Ch,&
          "Surface Exchange Coefficient for Heat", tnvars,status)
@@ -833,18 +795,6 @@ contains
             LIS_FORC_Base_State(n,:),LIS_forc_lpressure)
        call add_forcing_fields(n,LIS_FORC_State(n),&
             LIS_FORC_Base_State(n,:),LIS_forc_o3)
-
-!LB: for AC71 testing (to be removed)
-!</for ac71>
-       call add_forcing_fields(n,LIS_FORC_State(n),&
-            LIS_FORC_Base_State(n,:),LIS_forc_PREC_ac)
-       call add_forcing_fields(n,LIS_FORC_State(n),&
-            LIS_FORC_Base_State(n,:),LIS_forc_TMIN_ac)
-       call add_forcing_fields(n,LIS_FORC_State(n),&
-            LIS_FORC_Base_State(n,:),LIS_forc_TMAX_ac)
-       call add_forcing_fields(n,LIS_FORC_State(n),&
-            LIS_FORC_Base_State(n,:),LIS_forc_ETo_ac)
-!LB: (end of to be removed)
 
 !<for vic>
        call add_forcing_fields(n,LIS_FORC_State(n),&
@@ -1766,12 +1716,8 @@ contains
     integer            :: status, t
     type(ESMF_Field)   :: tmpField,q2Field,uField,vField,swdField,lwdField
     type(ESMF_Field)   :: psurfField,pcpField,cpcpField,snowfField
-    !LB: for AC71 testing (to be removed)
-    type(ESMF_Field)   :: PREC_ac_Field,TMIN_ac_Field,TMAX_ac_Field,ETo_ac_Field
     real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:),snowf(:)
     real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:),cpcp(:)
-    !LB: for AC71 testing (to be removed)
-    real,pointer       :: PREC_ac(:),TMIN_ac(:),TMAX_ac(:),ETo_ac(:)
     integer            :: k 
     type(ESMF_Field)   :: swdirField,swdifField,hField,chField,cmField
     type(ESMF_Field)   :: emissField,mixField,coszField,albField
@@ -2391,84 +2337,6 @@ contains
              enddo
           enddo
        endif
-
-!LB: for AC71 testing (to be removed)
-       if(LIS_FORC_PREC_ac%selectOpt.eq.1) then
-          do k=1,LIS_FORC_PREC_ac%vlevels
-             call ESMF_StateGet(LIS_FORC_State(n),(LIS_FORC_PREC_ac%varname(k)),&
-                  PREC_ac_Field,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_StateGet:PREC_ac in diagnoseForcingOutput')
-
-             call ESMF_FieldGet(PREC_ac_Field,localDE=0, farrayPtr=PREC_ac,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_FieldGet:PREC_ac in diagnoseForcingOutput')
-
-             do t=1,LIS_rc%ntiles(n)
-                call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_PREC_ac_FORC,value=&
-                     PREC_ac(t),vlevel=k,unit="-",direction="-", &
-                     valid_min = 0.0, valid_max=1000.0)
-             enddo
-          enddo
-       endif
-
-       if(LIS_FORC_TMIN_ac%selectOpt.eq.1) then
-          do k=1,LIS_FORC_TMIN_ac%vlevels
-             call ESMF_StateGet(LIS_FORC_State(n),(LIS_FORC_TMIN_ac%varname(k)),&
-                  TMIN_ac_Field,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_StateGet:TMIN_ac in diagnoseForcingOutput')
-
-             call ESMF_FieldGet(TMIN_ac_Field,localDE=0, farrayPtr=TMIN_ac,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_FieldGet:TMIN_ac in diagnoseForcingOutput')
-
-             do t=1,LIS_rc%ntiles(n)
-                call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_TMIN_ac_FORC,value=&
-                     TMIN_ac(t),vlevel=k,unit="C",direction="-", &
-                     valid_min = -60.0, valid_max=100.0)
-             enddo
-          enddo
-       endif
-
-       if(LIS_FORC_TMAX_ac%selectOpt.eq.1) then
-          do k=1,LIS_FORC_TMAX_ac%vlevels
-             call ESMF_StateGet(LIS_FORC_State(n),(LIS_FORC_TMAX_ac%varname(k)),&
-                  TMAX_ac_Field,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_StateGet:TMAX_ac in diagnoseForcingOutput')
-
-             call ESMF_FieldGet(TMAX_ac_Field,localDE=0, farrayPtr=TMAX_ac,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_FieldGet:TMAX_ac in diagnoseForcingOutput')
-
-             do t=1,LIS_rc%ntiles(n)
-                call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_TMAX_ac_FORC,value=&
-                     TMAX_ac(t),vlevel=k,unit="C",direction="-", &
-                     valid_min = -60.0, valid_max=100.0)
-             enddo
-          enddo
-       endif
-
-       if(LIS_FORC_ETo_ac%selectOpt.eq.1) then
-          do k=1,LIS_FORC_ETo_ac%vlevels
-             call ESMF_StateGet(LIS_FORC_State(n),(LIS_FORC_ETo_ac%varname(k)),&
-                  ETo_ac_Field,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_StateGet:ETo_ac in diagnoseForcingOutput')
-
-             call ESMF_FieldGet(ETo_ac_Field,localDE=0, farrayPtr=ETo_ac,rc=status)
-             call LIS_verify(status,&
-                  'error in ESMF_FieldGet:ETo_ac in diagnoseForcingOutput')
-
-             do t=1,LIS_rc%ntiles(n)
-                call LIS_diagnoseSurfaceOutputVar(n, t,LIS_MOC_ETo_ac_FORC,value=&
-                     ETo_ac(t),vlevel=k,unit="mm/d",direction="-", &
-                     valid_min = 0.0, valid_max=1000.0)
-             enddo
-          enddo
-       endif
-!LB: (end of to be removed)
     endif
   end subroutine diagnoseForcingOutput
 

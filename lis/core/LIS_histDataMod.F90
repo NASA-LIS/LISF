@@ -152,13 +152,6 @@ module LIS_histDataMod
   public :: LIS_MOC_TOTLIVBIOM
 
   
-  !LB: for AC71 testing (to be removed)
-  public :: LIS_MOC_PREC_ac
-  public :: LIS_MOC_TMIN_ac 
-  public :: LIS_MOC_TMAX_ac 
-  public :: LIS_MOC_ETo_ac
-  !LB: (end of to be removed)
-  
   public :: LIS_MOC_WINDFORC  
   public :: LIS_MOC_RAINFFORC 
   public :: LIS_MOC_SNOWFFORC 
@@ -191,13 +184,6 @@ module LIS_histDataMod
   public :: LIS_MOC_VAPORPRESSDEFICITFORC
   public :: LIS_MOC_ARESIST
 !</for vic>
-
-!LB: for AC71 testing (to be removed)
-  public :: LIS_MOC_PREC_ac_FORC 
-  public :: LIS_MOC_TMIN_ac_FORC 
-  public :: LIS_MOC_TMAX_ac_FORC 
-  public :: LIS_MOC_ETo_ac_FORC 
-!LB: (end of to be removed)
 
   public :: LIS_MOC_LANDMASK  
   public :: LIS_MOC_LANDCOVER 
@@ -686,17 +672,6 @@ module LIS_histDataMod
    integer :: LIS_MOC_PARDRFORC  = -9999
    integer :: LIS_MOC_PARDFFORC  = -9999
 
-   !LB: for AC71 testing (to be removed)
-   ! AC71 FORCING VARIABLES
-   integer :: LIS_MOC_PREC_ac_FORC  = -9999
-   integer :: LIS_MOC_TMIN_ac_FORC  = -9999
-   integer :: LIS_MOC_TMAX_ac_FORC  = -9999
-   integer :: LIS_MOC_ETo_ac_FORC  = -9999
-   integer :: LIS_MOC_PREC_ac  = -9999
-   integer :: LIS_MOC_TMIN_ac  = -9999
-   integer :: LIS_MOC_TMAX_ac  = -9999
-   integer :: LIS_MOC_ETo_ac  = -9999  
-   !LB: (end of to be removed)
 
    ! PARAMETER OUTPUT - EXPERIMENTAL (USE W/WRF-WPS)
    integer :: LIS_MOC_LANDMASK   = -9999
@@ -2779,57 +2754,6 @@ contains
             n,1,ntiles,(/"Pa"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-
-    !LB: for AC71 testing (to be removed)
-    call ESMF_ConfigFindLabel(modelSpecConfig,"PREC_ac_f:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "PREC_ac_f",&
-         "Rainfall_ac Rate mm/day",&
-         "Rainfall_ac Rate",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_PREC_ac_FORC,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"TMIN_ac_f:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "TMIN_ac_f",&
-         "min temperature degC",&
-         "min temperature_ac",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TMIN_ac_FORC,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"C"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"TMAX_ac_f:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "TMAX_ac_f",&
-         "max temperature degC",&
-         "max temperature_ac",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TMAX_ac_FORC,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"C"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-
-    call ESMF_ConfigFindLabel(modelSpecConfig,"ETo_ac_f:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "ETo_ac_f",&
-         "potential evaporation mm/day",&
-         "potential evaporation_ac",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_ETo_ac_FORC,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"mm/d"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
-    !LB: (end of to be removed)
-
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"SWdown_f:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
