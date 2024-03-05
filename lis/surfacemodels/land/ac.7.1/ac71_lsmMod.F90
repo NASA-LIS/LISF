@@ -195,6 +195,7 @@ module Ac71_lsmMod
         integer            :: max_No_compartments
         integer            :: Tmin_windowsize
         real, pointer      :: Thickness(:)
+        real               :: refz_forc
         !!! MB: AC71
         type(Ac71dec), pointer :: ac71(:)
     end type Ac71_type_dec
@@ -257,9 +258,6 @@ contains
                 AC71_struc(n)%ac71(t)%tmax = 0.0
                 AC71_struc(n)%ac71(t)%tmin = 0.0
                 AC71_struc(n)%ac71(t)%tdew = 0.0
-                AC71_struc(n)%ac71(t)%qair = 0.0
-                AC71_struc(n)%ac71(t)%wind_e = 0.0
-                AC71_struc(n)%ac71(t)%wind_n = 0.0
                 AC71_struc(n)%ac71(t)%wndspd = 0.0            
                 AC71_struc(n)%ac71(t)%psurf = 0.0
                 AC71_struc(n)%ac71(t)%prcp = 0.0

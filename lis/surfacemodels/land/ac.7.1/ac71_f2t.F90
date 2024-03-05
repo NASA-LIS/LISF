@@ -19,6 +19,7 @@ subroutine Ac71_f2t(n)
 ! !USES:
     use ESMF
     use LIS_coreMod, only       : LIS_rc , LIS_surface
+    use LIS_constantsMod
     use LIS_metforcingMod, only : LIS_FORC_State
     use LIS_logMod, only        : LIS_verify
     use LIS_FORC_AttributesMod   
@@ -43,6 +44,17 @@ subroutine Ac71_f2t(n)
     integer            :: t, v, status
     integer            :: tid 
     real               :: ee, val, td
+
+    ! For lapse rate
+    real :: force_tmp,force_hum,force_prs
+    real :: elevdiff
+    real :: esat,qsat,rh,fesat,fqsat
+    real :: tcforce,pcforce,hcforce,tbar
+    real, parameter :: rdry = 287.
+    real, parameter :: lapse = -0.0065
+
+    ! For corrected wind speed
+    real :: wind_tmp
  
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
@@ -55,10 +67,6 @@ subroutine Ac71_f2t(n)
     ! Incident Shortwave Radiation [W m-2]
     type(ESMF_Field)  :: swdField
     real, pointer     :: swd(:)
- 
-    ! Incident Longwave Radiation [W m-2]
-    type(ESMF_Field)  :: lwdField
-    real, pointer     :: lwd(:)
  
     ! Eastward Wind [m s-1]
     type(ESMF_Field)  :: uField
@@ -87,7 +95,6 @@ subroutine Ac71_f2t(n)
     real, pointer     :: wndspd(:)
 
 
-    integer, pointer   :: layer_h(:), layer_m(:)
  
     !!! GET FORCING FIELDS FROM LIS
     ! get near surface air temperature
@@ -110,13 +117,6 @@ subroutine Ac71_f2t(n)
 
     call ESMF_FieldGet(swdField, localDE = 0, farrayPtr = swd, rc = status)
     call LIS_verify(status, "Ac71_f2t: error retrieving Swdown")
-    
-    ! get incident longwave radiation
-    call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_LWdown%varname(1)), lwdField, rc=status)
-    call LIS_verify(status, "Ac71_f2t: error getting Lwdown")
-
-    call ESMF_FieldGet(lwdField, localDE = 0, farrayPtr = lwd, rc = status)
-    call LIS_verify(status, "Ac71_f2t: error retrieving Lwdown")
     
     ! get eastward wind
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Wind_E%varname(1)), uField, rc=status)
@@ -162,6 +162,33 @@ subroutine Ac71_f2t(n)
     do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
 
+        ! lapse-rate correction for ref height > 2 m
+        ! Copied from lapse-rate correction LIS
+        elevdiff = AC71_struc(n)%refz_forc - 2. ! ref 2m for AC
+        if (elevdiff.gt.0.1) then          
+            force_tmp = tmp(tid)
+            force_hum = q2(tid)
+            force_prs = psurf(tid)
+            
+            tcforce=force_tmp+(lapse*elevdiff)
+            tbar=(force_tmp+tcforce)/2.
+            pcforce=force_prs/(exp((LIS_CONST_G*elevdiff)/(rdry*tbar)))
+            if (force_hum .eq. 0) force_hum=1e-08
+            ee=(force_hum*force_prs)/0.622               
+            esat=611.2*(exp((17.67*(force_tmp-LIS_CONST_TKFRZ))/&
+                ((force_tmp-LIS_CONST_TKFRZ)+243.5)))
+            qsat=(0.622*esat)/(force_prs-(0.378*esat))
+            rh=(force_hum/qsat)*100.
+            fesat=611.2*(exp((17.67*(tcforce-LIS_CONST_TKFRZ))/ &
+                ((tcforce-LIS_CONST_TKFRZ)+243.5)))
+            fqsat=(0.622*fesat)/(pcforce-(0.378*fesat))
+            hcforce=(rh*fqsat)/100.
+          
+            tmp(tid)   = tcforce
+            q2(tid)    = hcforce
+            psurf(tid) = pcforce
+        endif
+
         ! TAIR
         AC71_struc(n)%ac71(t)%tair = AC71_struc(n)%ac71(t)%tair + tmp(tid)
 
@@ -177,23 +204,16 @@ subroutine Ac71_f2t(n)
             endif
         endif
 
-        ! QAIR
-        AC71_struc(n)%ac71(t)%qair = AC71_struc(n)%ac71(t)%qair + q2(tid)
-
         ! SWDOWN
         AC71_struc(n)%ac71(t)%swdown = AC71_struc(n)%ac71(t)%swdown + swd(tid)
 
-        ! LWDOWN
-        AC71_struc(n)%ac71(t)%lwdown = AC71_struc(n)%ac71(t)%lwdown + lwd(tid)
+        ! Calculate Magnitude of Wind Speed (m/s)
+        wind_tmp = SQRT(uwind(tid)**2 + vwind(tid)**2)
+        if (elevdiff.gt.0.1) then ! replace with corrected value
+            wind_tmp = wind_tmp * (4.87/LOG(67.8*AC71_struc(n)%refz_forc-5.42))
+        endif
 
-        ! WIND_E
-        AC71_struc(n)%ac71(t)%wind_e = AC71_struc(n)%ac71(t)%wind_e + uwind(tid)
-
-        ! WIND_N
-        AC71_struc(n)%ac71(t)%wind_n = AC71_struc(n)%ac71(t)%wind_n + vwind(tid)
-
-        ! Calculate Magnitude of Wind Speed (m/s) 
-        AC71_struc(n)%ac71(t)%wndspd = AC71_struc(n)%ac71(t)%wndspd + SQRT(uwind(tid)**2 + vwind(tid)**2)
+        AC71_struc(n)%ac71(t)%wndspd = AC71_struc(n)%ac71(t)%wndspd + wind_tmp
 
         ! PSURF
         AC71_struc(n)%ac71(t)%psurf = AC71_struc(n)%ac71(t)%psurf + psurf(tid)

@@ -230,6 +230,15 @@ subroutine Ac71_readcrd()
       AC71_struc(n)%dt = AC71_struc(n)%ts
     enddo 
 
+    ! reference height of forcings
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "AquaCrop.7.1 reference height of forcings:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%refz_forc, rc=rc)
+        call LIS_verify(rc, &
+             "AquaCrop.7.1 reference height of forcings: "//&
+             "not defined")
+    enddo
  
     ! MB: AC71
     ! thickness of soil layers
