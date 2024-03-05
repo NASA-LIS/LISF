@@ -43,14 +43,10 @@ subroutine Ac71_reset()
 
      ! initialize forcing variables to zeros
      do tt=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-         AC71_struc(n)%ac71(tt)%lwdown = 0.0
          AC71_struc(n)%ac71(tt)%swdown = 0.0
          AC71_struc(n)%ac71(tt)%psurf = 0.0
          AC71_struc(n)%ac71(tt)%prcp = 0.0
          AC71_struc(n)%ac71(tt)%tair = 0.0
-         AC71_struc(n)%ac71(tt)%qair = 0.0
-         AC71_struc(n)%ac71(tt)%wind_e = 0.0
-         AC71_struc(n)%ac71(tt)%wind_n = 0.0
      enddo ! end of tile (tt) loop
      AC71_struc(n)%forc_count = 0
      

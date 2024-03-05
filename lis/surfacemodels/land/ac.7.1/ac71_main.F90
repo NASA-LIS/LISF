@@ -454,8 +454,8 @@ subroutine Ac71_main(n)
 
     !LB AC71
 
-    real                 :: tmp_pres, tmp_precip, tmp_tmean, tmp_tmax, tmp_tmin   ! Weather Forcing
-    real                 :: tmp_tdew, tmp_swrad, tmp_lwrad, tmp_wind, tmp_eto     ! Weather Forcing
+    real                 :: tmp_pres, tmp_precip, tmp_tmax, tmp_tmin   ! Weather Forcing
+    real                 :: tmp_tdew, tmp_swrad, tmp_wind, tmp_eto     ! Weather Forcing
 !
 ! !DESCRIPTION:
 !  This is the entry point for calling the Ac71 physics.
@@ -488,10 +488,7 @@ subroutine Ac71_main(n)
             tmp_pres      = (AC71_struc(n)%ac71(t)%psurf / Ac71_struc(n)%forc_count) / 1000
 
             ! PRECIP: Total daily precipitation (rain+snow) (mm)
-            tmp_precip    = (AC71_struc(n)%ac71(t)%prcp / Ac71_struc(n)%forc_count) * 3600. * 24. !Convert from kg/ms2 to mm
-
-            ! TMEAN: mean daily air temperature (C)
-            tmp_tmean      = AC71_struc(n)%ac71(t)%tair / Ac71_struc(n)%forc_count - 273.15 !Convert from K to C
+            tmp_precip    = (AC71_struc(n)%ac71(t)%prcp / Ac71_struc(n)%forc_count) * 3600. * 24. !Convert from kg/ms2 to mm/d
 
             ! TMAX: maximum daily air temperature (degC)
             tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - 273.15 !Convert from K to C
@@ -504,9 +501,6 @@ subroutine Ac71_main(n)
 
             ! SW_RAD: daily total incoming solar radiation (MJ/(m2d))
             tmp_swrad     = (AC71_struc(n)%ac71(t)%swdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
-
-            ! LW_RAD: daily surface net downward longwave flux (MJ/(m2d))
-            tmp_lwrad     = (AC71_struc(n)%ac71(t)%lwdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
 
             ! Wind: daily average wind speed (m/s)
             tmp_wind      = AC71_struc(n)%ac71(t)%wndspd / AC71_struc(n)%forc_count
@@ -521,13 +515,6 @@ subroutine Ac71_main(n)
             ! check validity of PRECIP
             if(tmp_precip .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable PRECIP in Ac71"
-                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-                call LIS_endrun()
-            endif
-
-            ! check validity of TMEAN
-            if(tmp_tmean .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable TMEAN in Ac71"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -560,12 +547,6 @@ subroutine Ac71_main(n)
                 call LIS_endrun()
             endif
 
-            ! check validity of LW_RAD
-            if(tmp_lwrad .eq. LIS_rc%udef) then
-                write(LIS_logunit, *) "undefined value found for forcing variable LW_RAD in Ac71"
-                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
-                call LIS_endrun()
-            endif
 
             ! check validity of WIND
             if(tmp_wind .eq. LIS_rc%udef) then
@@ -574,7 +555,10 @@ subroutine Ac71_main(n)
                 call LIS_endrun()
             endif
 
-            ! Call ETo function ! later add argument with ref height
+            ! Call ETo subroutine
+
+            ! later --> add if statements to correct for 10m data (ERA5 10m T and 10m wind)
+            ! Add in config file reference height for wind
              
             call ac71_ETo_calc(tmp_pres, tmp_tmax, tmp_tmin, tmp_tdew, &
                                tmp_wind, tmp_swrad, &
@@ -1021,14 +1005,10 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%tmax = 0.0
             AC71_struc(n)%ac71(t)%tmin = 0.0
             AC71_struc(n)%ac71(t)%tdew = 0.0
-            AC71_struc(n)%ac71(t)%qair = 0.0
-            AC71_struc(n)%ac71(t)%wind_e = 0.0
-            AC71_struc(n)%ac71(t)%wind_n = 0.0
             AC71_struc(n)%ac71(t)%wndspd = 0.0            
             AC71_struc(n)%ac71(t)%psurf = 0.0
             AC71_struc(n)%ac71(t)%prcp = 0.0
             AC71_struc(n)%ac71(t)%eto = 0.0
-            AC71_struc(n)%ac71(t)%lwdown = 0.0
             AC71_struc(n)%ac71(t)%swdown = 0.0
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero

@@ -503,15 +503,10 @@ module Ac71_module
      real               :: tmax
      real               :: tmin
      real               :: tdew
-     real               :: wn
      real               :: sfctmp
      real               :: psurf
-     real               :: wind_e
-     real               :: wind_n
      real               :: wndspd
-     real               :: qair
      real               :: swdown
-     real               :: lwdown
      real               :: prcp
      real               :: eto
      !-------------------------------------------------------------------------
