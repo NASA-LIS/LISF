@@ -136,9 +136,6 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
    character*50, public,  parameter :: LIS_merra2Id          = "MERRA2"
-   !LB: for AC71 testing (to be removed)
-   character*50, public,  parameter :: LIS_merra2_acId       = "MERRA2_AC"
-   !LB: (end of to be removed)
    character*50, public,  parameter :: LIS_geositId          = "GEOS-IT"
 
    character*50, public,  parameter :: LIS_cmapId            = "CMAP"

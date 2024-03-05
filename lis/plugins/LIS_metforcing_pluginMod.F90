@@ -136,12 +136,6 @@ subroutine LIS_metforcing_plugin
    use merra2_forcingMod
 #endif
 
-!LB: for AC71 testing (to be removed)
-#if ( defined MF_MERRA2_AC )
-   use merra2_ac_forcingMod
-#endif
-!LB: (end of to be removed)
-
 #if ( defined MF_GEOS_IT )
    use geosit_forcingMod
 #endif
@@ -389,15 +383,6 @@ subroutine LIS_metforcing_plugin
    external finalize_merra2
    external reset_merra2
 #endif
-
-!LB: for AC71 testing (to be removed)
-#if ( defined MF_MERRA2_AC )
-   external get_merra2_ac
-   external timeinterp_merra2_ac
-   external finalize_merra2_ac
-   external reset_merra2_ac
-#endif
-!LB: (end of to be removed)
 
 #if ( defined MF_GEOS_IT )
    external get_geosit
@@ -802,17 +787,6 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_merra2)
    call registerresetmetforc(trim(LIS_merra2Id)//char(0),reset_merra2)
    call registerfinalmetforc(trim(LIS_merra2Id)//char(0),finalize_merra2)
-#endif
-
-!LB: for AC71 testing (to be removed)
-#if ( defined MF_MERRA2_AC )
-! - MERRA2 AC Reanalysis Forcing:
-   call registerinitmetforc(trim(LIS_merra2_acId)//char(0),init_MERRA2_ac)
-   call registerretrievemetforc(trim(LIS_merra2_acId)//char(0),get_merra2_ac)
-   call registertimeinterpmetforc(trim(LIS_merra2_acId)//char(0), &
-                                  timeinterp_merra2_ac)
-   call registerresetmetforc(trim(LIS_merra2_acId)//char(0),reset_merra2_ac)
-   call registerfinalmetforc(trim(LIS_merra2_acId)//char(0),finalize_merra2_ac)
 #endif
 
 #if ( defined MF_GEOS_IT )
