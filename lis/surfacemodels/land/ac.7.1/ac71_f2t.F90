@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -11,8 +11,7 @@
 ! !ROUTINE: Ac71_f2t
 ! \label{Ac71_f2t}
 !  
-!  18 JAN 2024, Louise Busschaert; initial implementation for LIS 7 and AC71
-!  14 FEB 2024, Louise Busschaert; Compute Tmax/Min and Averages
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
 !
 ! !INTERFACE:
 subroutine Ac71_f2t(n)
@@ -95,7 +94,6 @@ subroutine Ac71_f2t(n)
     real, pointer     :: wndspd(:)
 
 
- 
     !!! GET FORCING FIELDS FROM LIS
     ! get near surface air temperature
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)

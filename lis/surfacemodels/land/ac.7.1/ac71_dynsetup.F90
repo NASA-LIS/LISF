@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,10 +13,7 @@
 ! \label{Ac71_dynsetup}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!   18 JAN 2024, Louise Busschaert; initial implementation for LIS 7 and AC71
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
 !
 ! !INTERFACE:
 subroutine Ac71_dynsetup(n)
@@ -26,7 +23,6 @@ subroutine Ac71_dynsetup(n)
     use LIS_timeMgrMod, only : LIS_date2time, LIS_tick
     use LIS_fileIOMod, only  : LIS_read_param
     use Ac71_lsmMod, only : AC71_struc
-   !use any other modules 
 !
 ! !DESCRIPTION:
 !  This routine sets up the time-dependent variables in Ac71
@@ -38,4 +34,4 @@ subroutine Ac71_dynsetup(n)
     !TODO: add code here if needed.
 end subroutine Ac71_dynsetup
  
-! generate date/time string for reading time-dependent variables 
+! generate date/time string for reading time-dependent variables ??Michel

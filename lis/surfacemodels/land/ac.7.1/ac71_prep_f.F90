@@ -15,7 +15,7 @@ contains
 ! \label{Ac71_ETo_calc}
 !
 ! !REVISION HISTORY:
-!  18 FEB 2024, Louise Busschaert; initial implementation of Ac71_ETo_calc
+!  18 FEB 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:
