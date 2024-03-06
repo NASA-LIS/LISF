@@ -522,31 +522,10 @@ subroutine Ac71_setup()
             !------------------------------------!
             ! reading spatial spatial parameters !
             !------------------------------------!
-            ! vegetype takes value from the LIS built-in parameter vegt
-            !TODO: convert vegetation data source into vegetation types
-            if(LIS_rc%uselcmap(n) .ne. 'none') then
-                write(LIS_logunit,*) "Ac71: retrieve parameter VEGETYPE from LIS"
-                do t=1, LIS_rc%npatch(n, mtype)
-                    AC71_struc(n)%ac71(t)%vegetype= LIS_surface(n, mtype)%tile(t)%vegt
-                enddo
-            else 
-                ! read: vegetype
-                write(LIS_logunit,*) "Ac71: reading parameter VEGETYPE from ", trim(LIS_rc%paramfile(n))
-                call LIS_read_param(n, trim(AC71_struc(n)%LDT_ncvar_vegetype), placeholder)
-                do t = 1, LIS_rc%npatch(n, mtype)
-                    col = LIS_surface(n, mtype)%tile(t)%col
-                    row = LIS_surface(n, mtype)%tile(t)%row
-                    AC71_struc(n)%ac71(t)%vegetype = placeholder(col, row)
-                enddo 
-            endif
-            ! read: soiltype
-            !write(LIS_logunit,*) "Ac71: reading parameter SOILTYPE from ", trim(LIS_rc%paramfile(n))
-            !call LIS_read_param(n, trim(AC71_struc(n)%LDT_ncvar_soiltype), placeholder)
-            !do t = 1, LIS_rc%npatch(n, mtype)
-            !    col = LIS_surface(n, mtype)%tile(t)%col
-            !    row = LIS_surface(n, mtype)%tile(t)%row
-            !    AC71_struc(n)%ac71(t)%soiltype = placeholder(col, row)
-            !enddo 
+            ! croptype
+            ! Read crop type maximum root depth file (combined landcover/crop classifications):
+
+            call read_croptype(n)
 
             ! soiltype takes value from the LIS built-in parameter soilt
             !TODO: convert soil texture into soil types according to scheme
@@ -565,17 +544,13 @@ subroutine Ac71_setup()
                     AC71_struc(n)%ac71(t)%soiltype = placeholder(col, row)
                 enddo 
             endif
+            deallocate(placeholder)
 
             !----------------------------------------------!
             ! MULTILEVEL reading spatial spatial parameters !
             !----------------------------------------------!
-
-            call SOIL_VEG_GEN_PARM_71(AC71_struc(n)%landuse_tbl_name,   & 
-                                      AC71_struc(n)%soil_tbl_name,      &
-                                      AC71_struc(n)%gen_tbl_name,       &
-                                      AC71_struc(n)%landuse_scheme_name,& 
-                                      AC71_struc(n)%soil_scheme_name)
-        deallocate(placeholder)
+            ! also should read gen parm
+            call SOIL_PARM_71(AC71_struc(n)%soil_tbl_name)
             ! MB: AC71
             TheProjectType = typeproject_typeprm
 
@@ -605,7 +580,7 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Climate_Info', ' MERRA2_AC ')
                 call set_project_input(l, 'Climate_Filename', '(External)')
                 call set_project_input(l, 'Climate_Directory', '(None)')
-                call set_project_input(l, 'VersionNr', 7.0_dp)
+                call set_project_input(l, 'VersionNr', 7.1_dp)
                 call set_project_input(l, 'Temperature_Info', '(None)')
                 call set_project_input(l, 'Temperature_Filename', '(None)')
                 call set_project_input(l, 'Temperature_Directory', '(None)')
@@ -755,9 +730,6 @@ subroutine Ac71_setup()
                    write(LIS_logunit, *) 'program stopping ...'
                    call LIS_endrun
                 end if
-                ! soil_type = ['sand', 'loamy sand', 'sandy loam', 'loam', 'silt loam', 'silt', 'sandy clay loam',
-                !              'clay loam',
-                !              'silty clay loam', 'sandy clay', 'silty clay', 'clay']
                 InfRate_tmp = AC71_struc(n)%ac71(t)%SoilLayer(1)%InfRate
                 if ((descr == 0) .or. (descr == 1) .or. (descr == 2)) then
                     AC71_struc(n)%ac71(t)%SoilLayer(1)%CRa = -0.3112-10**(-5)*InfRate_tmp
@@ -804,7 +776,7 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%SoilLayer = GetSoilLayer()
                 AC71_struc(n)%ac71(t)%Soil = GetSoil()
                 AC71_struc(n)%ac71(t)%NrCompartments = GetNrCompartments()
-                ! Reset soil variables due to internal AquaCrop default routines 
+                ! Reset soil variables due to internal AquaCrop default routines (!LB because InitializeSettings puts everything to default)
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%wp = WP(AC71_struc(n)%ac71(t)%soiltype) * 100
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%sat = SAT(AC71_struc(n)%ac71(t)%soiltype) * 100
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%fc = FC(AC71_struc(n)%ac71(t)%soiltype) * 100
@@ -1219,5 +1191,149 @@ subroutine AC71_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         call LIS_endrun
     endif
  end subroutine AC71_read_MULTILEVEL_param
+
+!BOP
+!
+! !ROUTINE: read_croptype
+!  \label{read_croptype}
+!
+! !REVISION HISTORY:
+!  06 MAR 2024; Louise Busschaert, initial implementation
+!
+! !INTERFACE:
+subroutine read_croptype(n)
+! !USES
+    use ESMF
+    use LIS_fileIOMod
+    use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
+    use LIS_coreMod
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+    use Ac71_lsmMod
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+    implicit none
+! !ARGUMENTS
+    integer, intent(in)     :: n
+
+! !DESCRIPTION:
+!  This subroutine checks the crop classifcation and assigns a
+!  a crop (corresponding to a crop file .CRO) to each tile.
+!  
+!  The arguments are:
+!  \begin{description}
+!   \item[n]
+!    index of n
+!   \end{description}
+!
+!EOP   
+    character(len=LIS_CONST_PATH_LEN) :: crop_path
+    integer                 :: ncropt
+    integer                 :: ftn
+    integer                 :: t,j,col,row,IINDEX,CT
+    integer                 :: nid, ios, status, croptypeId
+    integer                 :: rc
+    logical                 :: file_exists
+    character(len=100),allocatable :: croptypes(:)
+    real, allocatable       :: l_croptype(:,:)
+    real, allocatable       :: glb_croptype(:,:)
+    real, allocatable       :: glb_croptype1(:,:)
+    character*128 :: mess
+! __________________________________________________________________________
+    
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+
+    call ESMF_ConfigFindLabel(LIS_config,"Crop library directory:",rc=rc)
+    call ESMF_ConfigGetAttribute(LIS_config,crop_path,rc=rc)
+    call LIS_verify(rc,'Crop library directory: not specified')
+
+!- Read in LDT input crop classification information (done here for now):
+    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+    if(file_exists) then
+        ! Read in LDT-generated netcdf file information:
+        write(LIS_logunit,*)"[INFO] Reading crop classification information ..."
+        ios = nf90_open(path=LIS_rc%paramfile(n),&
+                        mode=NF90_NOWRITE,ncid=nid)
+        call LIS_verify(ios,'Error in nf90_open in AC71_setup')
+
+        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_SCHEME', LIS_rc%cropscheme)
+        call LIS_verify(ios,'Error in nf90_get_att in AC71_setup')
+        ! add check if LIS_rc%cropscheme not AquaCrop, STOP
+
+        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_NUMBER', LIS_rc%numbercrops)
+        call LIS_verify(ios,'Error in nf90_get_att in AC71_setup')
+        write(LIS_logunit,*)"[INFO] Read in crop classfication: ",trim(LIS_rc%cropscheme),&
+                            ", with the number of crop types:",LIS_rc%numbercrops
+        ios = nf90_close(nid)
+        call LIS_verify(ios,'nf90_close failed in AC71_setup')
+    endif
+
+ !- Read in crop table
+      open(19, FILE=trim(crop_path)//trim(LIS_rc%cropscheme)//"_Crop.Inventory",FORM='FORMATTED',STATUS='OLD',IOSTAT=rc)
+      call LIS_verify(rc,'Ac71_setup.F: failure opening ,'//trim(LIS_rc%cropscheme)//'Crop.Inventory')
+
+      read(19,*)
+      read(19,*) ncropt
+
+      allocate(character(len=100) :: croptypes(ncropt))
+
+      write( mess , *) 'AC_Crop.Inventory contains ', ncropt, ' types' 
+      if (LIS_masterproc) then
+            write(LIS_logunit, *) trim(mess)
+      endif
+      read(19,*)
+      do CT=1,ncropt
+        read(19,*) IINDEX, croptypes(CT)
+      enddo
+      close(19)
+
+    allocate(l_croptype(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+
+
+ !- Read in crop type map file (specified in LIS parameter input file)
+    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
+    if(file_exists) then 
+       ios = nf90_open(path=LIS_rc%paramfile(n),&
+                       mode=NF90_NOWRITE,ncid=nid)
+       call LIS_verify(ios,'Error in nf90_open in the lis input netcdf file')
+
+       write(LIS_logunit,*) "[INFO] Reading in the crop type field ... "
+       
+       allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+       
+       ios = nf90_inq_varid(nid,'CROPTYPE',croptypeId)
+       call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE')
+       
+       ios = nf90_get_var(nid, croptypeId, glb_croptype)
+       call LIS_verify(ios,'nf90_get_var failed for CROPTYPE')
+
+       ios = nf90_close(nid)
+       call LIS_verify(ios,'nf90_close failed in AC71_setup')
+       
+       l_croptype(:,:) = glb_croptype(&
+            LIS_ews_halo_ind(n,LIS_localPet+1):&         
+            LIS_ewe_halo_ind(n,LIS_localPet+1), &
+            LIS_nss_halo_ind(n,LIS_localPet+1): &
+            LIS_nse_halo_ind(n,LIS_localPet+1))
+       deallocate(glb_croptype)
+
+       do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+          col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
+          row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
+          
+          AC71_struc(n)%ac71(t)%cropt = trim(croptypes(nint(l_croptype(col,row))))
+       enddo
+       deallocate(croptypes)
+
+    else
+       write(LIS_logunit,*) "[ERR] The croptype map: ",&
+             LIS_rc%paramfile(n)," does not exist."
+       write(LIS_logunit,*) "[ERR] Program stopping ..."
+       call LIS_endrun
+    endif
+    deallocate(l_croptype)
+#endif
+
+  end subroutine read_croptype
                                           
 
