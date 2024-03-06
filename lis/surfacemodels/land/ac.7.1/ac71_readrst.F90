@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -14,10 +14,7 @@
 ! \label{Ac71_readrst}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial
-!  specification of the subroutine is defined by Sujay Kumar.
-!   9/4/14: Shugong Wang; initial implementation for LIS 7 and Ac71
+!  06 MAR 2024; Louise Busschaert, initial implementation
 !
 ! !INTERFACE:
 subroutine Ac71_readrst()

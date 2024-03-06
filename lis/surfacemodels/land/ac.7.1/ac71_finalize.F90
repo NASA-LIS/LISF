@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,11 +13,7 @@
 ! \label{Ac71_finalize}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!
-!  18 JAN 2024, Louise Busschaert; initial implementation for LIS 7 and AC71
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
 !
 ! !INTERFACE:
 subroutine Ac71_finalize(n)
@@ -35,6 +31,7 @@ subroutine Ac71_finalize(n)
     integer :: t, n 
 
     do n=1, LIS_rc%nnest
+    !TODO deallocate all vars
         ! free memory allocated for each tile
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             deallocate(AC71_struc(n)%ac71(t)%smc)
@@ -43,10 +40,10 @@ subroutine Ac71_finalize(n)
         ! free memory for ac71, the data at tile level
         deallocate(AC71_struc(n)%ac71)
 
-        ! free momory for constant parameter 
+        ! free memory for constant parameter 
         deallocate(AC71_struc(n)%Thickness)
 
-        ! free momory for initial state variable
+        ! free memory for initial state variable
         deallocate(AC71_struc(n)%init_smc)
     end do ! nest loop
   

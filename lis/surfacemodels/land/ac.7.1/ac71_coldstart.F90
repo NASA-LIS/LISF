@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,10 +13,7 @@
 ! !ROUTINE: Ac71_coldstart
 ! \label{Ac71_coldstart}
 !
-! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
+! !REVISION HISTORY: 
 !   18 JAN 2024, Louise Busschaert; initial implementation for LIS 7 and AC71
 !
 ! !INTERFACE:
@@ -26,8 +23,7 @@ subroutine Ac71_coldstart(mtype)
     use LIS_logMod, only: LIS_logunit
     use LIS_timeMgrMod, only: LIS_date2time
     use Ac71_lsmMod
- 
-!!! MB: AC71
+ !  !AC71
     use ac_global, only: GetCompartment_theta           
 !
 ! !DESCRIPTION:
@@ -42,7 +38,6 @@ subroutine Ac71_coldstart(mtype)
     integer :: t, l, n, i
     integer :: c, r
     
-
     do n=1, LIS_rc%nnest
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
             write(LIS_logunit,*) "MSG: Ac71_coldstart -- cold-starting Ac71"
