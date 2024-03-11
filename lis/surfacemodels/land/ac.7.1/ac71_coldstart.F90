@@ -42,10 +42,10 @@ subroutine Ac71_coldstart(mtype)
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
             write(LIS_logunit,*) "MSG: Ac71_coldstart -- cold-starting Ac71"
             do t=1, LIS_rc%npatch(n,mtype)
-                AC71_struc(n)%ac71(t)%irun = 1
-                AC71_struc(n)%daynrinextclimaterecord = 1
+                !AC71_struc(n)%ac71(t)%irun = 1
+                !AC71_struc(n)%daynrinextclimaterecord = 1
 
-                AC71_struc(n)%ac71(t)%InitializeRun = 1 ! gets 1 at end of year 
+                !AC71_struc(n)%ac71(t)%InitializeRun = 1 ! gets 1 at end of year 
 
                 do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)

@@ -430,6 +430,7 @@ subroutine Ac71_setup()
                              InitializeSimulation ,&
                              InitializeRunPart1 ,&
                              InitializeRunPart2 ,&
+                             InitializeSimulationRunPart2, &
                              InitializeClimate,&
                              GetSimulation_ToDayNr, &
                              SetRain,& 
@@ -750,7 +751,37 @@ subroutine Ac71_setup()
                       GetFullFileNameProgramParameters(), &
                              ProgramParametersAvailable)
                 call SetSimulation_MultipleRun(.true.)
-                call SetSimulation_NrRuns(TotalSimRuns)   
+                call SetSimulation_NrRuns(TotalSimRuns)
+
+                ! InitializeSimulation (year)
+                AC71_struc(n)%ac71(t)%irun = 1
+                AC71_struc(n)%daynrinextclimaterecord = 1
+
+                call SetClimRecord_DataType(0_int8)
+                call SetClimRecord_fromd(0)
+                call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
+                call SetClimRecord_fromm(0)
+                call SetClimRecord_fromstring("")
+                call SetClimRecord_fromy(LIS_rc%syr)
+                call SetClimRecord_NrObs(999)
+                call SetClimRecord_tod(0)
+                call SetClimRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
+                call SetClimRecord_tom(0)
+                call SetClimRecord_tostring("")
+                call SetClimRecord_toy(0)
+                call SetClimFile('(External)')
+
+                AC71_struc(n)%ac71(t)%WPi = 0._dp
+
+                ! Set crop file (crop parameters are read when calling InitializeRunPart1)
+                call set_project_input(int(AC71_struc(n)%ac71(t)%irun, kind=int32), &
+                                       'Crop_Filename', &
+                                        trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
+
+                call InitializeRunPart1(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)
+                call InitializeSimulationRunPart2()
+                AC71_struc(n)%ac71(t)%HarvestNow = .false.
+                AC71_struc(n)%ac71(t)%InitializeRun = 0
 
                 ! Set AC71_struc after Initialization
                 do l=1, AC71_struc(n)%ac71(t)%NrCompartments
@@ -915,6 +946,7 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%fWeedNoS = GetfWeedNoS()
                 AC71_struc(n)%ac71(t)%onset = GetOnset()
                 AC71_struc(n)%ac71(t)%simulparam = GetSimulParam()
+                ! In case of restart, variables will be overwritten
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
 end subroutine Ac71_setup

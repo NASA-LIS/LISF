@@ -160,21 +160,26 @@ module Ac71_module
     character(len=:), allocatable :: TemperatureFileFull
     integer        :: daynri
     integer        :: IrriInterval
-    integer(int32) :: DayLastCut,NrCut,SumInterval
-    integer(int32) :: DayNr1Eval,DayNrEval
+    integer(int32) :: DayLastCut
+    integer(int32) :: DayNr1Eval
+    integer(int32) :: DayNrEval
     integer(int32) :: DaySubmerged
+    integer(int32) :: GDDTadj
     integer(int32) :: InitializeRun
     integer(int32) :: IrriFirstDayNr
     integer(int32) :: MaxPlotNew
     integer(int32) :: NextSimFromDayNr
     integer(int32) :: NrCompartments
+    integer(int32) :: NrCut
     integer(int32) :: NrRuns
     integer(int32) :: PreviousDayNr
-    integer(int32) :: Tadj, GDDTadj
+    integer(int32) :: SumInterval
+    integer(int32) :: Tadj
     integer(int32) :: ZiAqua
     integer(int8)  :: LineNrEval
-    integer(int8)  :: PreviousStressLevel, StressSFadjNEW
+    integer(int8)  :: PreviousStressLevel
     integer(int8)  :: StageCode
+    integer(int8)  :: StressSFadjNEW
     integer(int8) :: IniPercTAW
     integer(int8) :: irun
     integer(int8) :: MaxPlotTr
@@ -187,6 +192,7 @@ module Ac71_module
     logical  :: HarvestNow
     logical :: EvapoEntireSoilSurface
     logical :: GlobalIrriECw
+    logical :: NoMoreCrop
     logical :: NoYear
     logical :: Out1Wabal
     logical :: Out2Crop
@@ -195,9 +201,12 @@ module Ac71_module
     logical :: Out5CompWC
     logical :: Out6CompEC
     logical :: Out7Clim
-    logical :: Part1Mult,Part2Eval
-    logical :: PreDay, OutDaily
-    logical :: WaterTableInProfile, StartMode, NoMoreCrop
+    logical :: OutDaily
+    logical :: Part1Mult
+    logical :: Part2Eval
+    logical :: PreDay
+    logical :: StartMode
+    logical :: WaterTableInProfile
     real    :: RootZoneWC_Actual
     real    :: RootZoneWC_FC
     real    :: RootZoneWC_Leaf
@@ -209,22 +218,31 @@ module Ac71_module
     real    :: RootZoneWC_ZtopFC
     real    :: RootZoneWC_ZtopThresh
     real    :: RootZoneWC_ZtopWP
-    real(dp) :: alfaHI, alfaHIAdj
+    real(dp) :: alfaHI
+    real(dp) :: alfaHIAdj
     real(dp) :: Bin
     real(dp) :: Bout
-    real(dp) :: BprevSum, YprevSum, SumGDDcuts, HItimesBEF
+    real(dp) :: BprevSum
     real(dp) :: CCiActual
+    real(dp) :: CCiActualWeedInfested
     real(dp) :: CCiprev
     real(dp) :: CCiTopEarlySen
-    real(dp) :: CCoTotal, CCxTotal, CDCTotal, GDDCDCTotal, CCxCropWeedsNoSFstress
+    real(dp) :: CCoTotal
+    real(dp) :: CCxCropWeedsNoSFstress
+    real(dp) :: CCxTotal
     real(dp) :: CCxWitheredTpotNoS
+    real(dp) :: CDCTotal
     real(dp) :: CGCref,GDDCGCref 
     real(dp) :: CO2i
-    real(dp) :: Coeffb0,Coeffb1,Coeffb2
-    real(dp) :: Coeffb0Salt,Coeffb1Salt,Coeffb2Salt
+    real(dp) :: Coeffb0
+    real(dp) :: Coeffb0Salt
+    real(dp) :: Coeffb1
+    real(dp) :: Coeffb1Salt
+    real(dp) :: Coeffb2
+    real(dp) :: Coeffb2Salt
     real(dp) :: CRsalt
     real(dp) :: CRwater
-    real(dp) :: DayFraction,GDDayFraction
+    real(dp) :: DayFraction
     real(dp) :: Drain  
     real(dp) :: Eact
     real(dp) :: ECdrain 
@@ -232,36 +250,62 @@ module Ac71_module
     real(dp) :: ECstorage
     real(dp) :: Epot 
     real(dp) :: FracBiomassPotSF
+    real(dp) :: fWeedNoS
+    real(dp) :: GDDayFraction
     real(dp) :: GDDayi
+    real(dp) :: GDDCDCTotal
+    real(dp) :: HItimesAT
+    real(dp) :: HItimesAT1
+    real(dp) :: HItimesAT2
+    real(dp) :: HItimesBEF
     real(dp) :: Infiltrated 
     real(dp) :: Irrigation 
-    real(dp) :: PreviousSumETo, PreviousSumGDD, PreviousBmob,PreviousBsto
+    real(dp) :: PreviousBmob
+    real(dp) :: PreviousBsto
+    real(dp) :: PreviousSumETo
+    real(dp) :: PreviousSumGDD
     real(dp) :: RootingDepth
     real(dp) :: Runoff  
     real(dp) :: SaltInfiltr
-    real(dp) :: ScorAT1, ScorAT2, HItimesAT1, HItimesAT2, HItimesAT
-    real(dp) :: StressLeaf,StressSenescence
-    real(dp) :: SumETo,SumGDD, Ziprev,SumGDDPrev
-    real(dp) :: SumKcTop, SumKcTopStress, SumKci
+    real(dp) :: ScorAT1
+    real(dp) :: ScorAT2
+    real(dp) :: StressLeaf
+    real(dp) :: StressSenescence
+    real(dp) :: SumETo
+    real(dp) :: SumGDD
+    real(dp) :: SumGDDcuts
+    real(dp) :: SumGDDPrev
+    real(dp) :: SumKci
+    real(dp) :: SumKcTop
+    real(dp) :: SumKcTopStress
     real(dp) :: Surf0
     real(dp) :: SurfaceStorage
     real(dp) :: Tact 
     real(dp) :: TactWeedInfested
     real(dp) :: TimeSenescence
     real(dp) :: Tpot 
-    real(dp) :: WeedRCi, CCiActualWeedInfested, fWeedNoS, Zeval
+    real(dp) :: WeedRCi
     real(dp) :: WPi
+    real(dp) :: YprevSum
+    real(dp) :: Zeval
+    real(dp) :: Ziprev
     type(CompartmentIndividual), dimension(12) :: Compartment
-    type(repCutInfoRecord) :: CutInfoRecord1, CutInfoRecord2
-    type(repIrriInfoRecord) :: IrriInfoRecord1, IrriInfoRecord2
-    type(rep_clim)  :: TemperatureRecord, ClimRecord, RainRecord, EToRecord
+    type(repCutInfoRecord) :: CutInfoRecord1
+    type(repCutInfoRecord) :: CutInfoRecord2
+    type(repIrriInfoRecord) :: IrriInfoRecord1
+    type(repIrriInfoRecord) :: IrriInfoRecord2
+    type(rep_clim) :: ClimRecord
+    type(rep_clim) :: EToRecord
+    type(rep_clim) :: RainRecord
+    type(rep_clim) :: TemperatureRecord
     type(rep_Content) :: TotalSaltContent
     type(rep_Content) :: TotalWaterContent
-    type(rep_Crop) :: crop
+    type(rep_Crop) :: Crop
     type(rep_Cuttings) :: Cuttings
     type(rep_DayEventDbl), dimension(31) :: EToDataSet
     type(rep_DayEventDbl), dimension(31) :: RainDataSet
-    type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
+    type(rep_DayEventDbl), dimension(31) :: TminDataSet
+    type(rep_DayEventDbl), dimension(31) ::TmaxDataSet
     type(rep_DayEventInt), dimension(5) :: IrriAfterSeason
     type(rep_DayEventInt), dimension(5) :: IrriBeforeSeason
     type(rep_EffectiveRain) :: effectiverain

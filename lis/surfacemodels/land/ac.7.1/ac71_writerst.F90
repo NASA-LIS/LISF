@@ -203,6 +203,8 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
     integer :: l, t 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
     integer :: dimID(11)
+
+    integer :: SMC_ID
     
     ! write the header of the restart file
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
@@ -210,5 +212,25 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
          dim1 = AC71_struc(n)%nsoil, &
          dimID = dimID, &
          output_format = trim(wformat))
+
+    ! write the header for state variable smc
+    call LIS_writeHeader_restart(ftn, n, dimID, smc_ID, "SMC", &
+                                 "volumtric soil moisture", &
+                                 "m3/m3", vlevels=AC71_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                 var_flag = "dim1")
+
+    ! close header of restart file
+    call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AC71_struc(n)%rstInterval)
+
+    ! write state variables into restart file
+    ! volumtric soil moisture
+    do l=1, AC71_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC71_struc(n)%ac71(t)%smc(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=smc_ID, dim=l, wformat=wformat)
+    enddo
 
 end subroutine Ac71_dump_restart
