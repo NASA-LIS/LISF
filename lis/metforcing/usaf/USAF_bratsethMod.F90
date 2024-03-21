@@ -3406,8 +3406,9 @@ contains
             ! Skip bad data
             if ( this%qc(j) .eq. QC_REJECT) cycle
 
-            ! Screen by type.  Only apply test to gauges
-            if ( .not. is_gauge(this%net(j)) ) cycle
+            ! Do not apply to IMERG.  But allow application to other
+            ! data sources.
+            if ( is_imerg(this%net(j)) ) cycle
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
             found = .false.
@@ -4168,8 +4169,9 @@ contains
          ! Skip bad data
          if ( this%qc(r) .eq. QC_REJECT) cycle
 
-         ! Only apply to gauge data
-         if ( .not. is_gauge(this%net(r)) ) cycle
+         ! Do not apply to IMERG.  But allow application to other data
+         ! sources.
+         if ( .not. is_imerg(this%net(r)) ) cycle
 
          errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))
          absDiff = abs(this%obs(r) - this%back(r))
