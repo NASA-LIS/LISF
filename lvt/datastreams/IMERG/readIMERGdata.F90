@@ -96,7 +96,8 @@ subroutine readIMERGdata(source)
       !call create_IMERG_filename(imergdata(source)%odir, &
       !                       yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
       call create_IMERG_filename(imergdata(source)%odir, &
-           yr2,mo2,da2,hr2,mn2,filename,imergdata(source)%imergver)
+           yr2,mo2,da2,hr2,mn2,filename,imergdata(source)%imergver, &
+           imergdata(source)%imergprd)
       inquire(file=trim(filename),exist=file_exists)
 
       if(file_exists) then 
@@ -294,7 +295,7 @@ subroutine read_imerghdf(filename, col, row, version, precipout, ireaderr)
 end subroutine read_imerghdf
 !------------------------------------------------------------------------------
 subroutine create_IMERG_filename(odir, &
-                             yr,mo,da,hr,mn,filename,imVer)
+                             yr,mo,da,hr,mn,filename,imVer, imergprd)
    use IMERG_dataMod
    use LVT_logMod
 
@@ -302,7 +303,7 @@ subroutine create_IMERG_filename(odir, &
    implicit none
 
    ! Arguments
-   character(len=*), intent(in) :: odir, imVer
+   character(len=*), intent(in) :: odir, imVer, imergprd
    integer, intent(in) :: yr, mo, da, hr, mn
    character(len=*), intent(out) :: filename
 
@@ -332,13 +333,13 @@ subroutine create_IMERG_filename(odir, &
    write(cmnadd, '(I2.2)') umnadd
    write(cmnday, '(I4.4)')umnday
 
-   if(imergdata(1)%imergprd == 'early') then
+   if(imergprd == 'early') then
       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
       fext = '.RT-H5'
-   elseif(imergdata(1)%imergprd == 'late') then
+   elseif(imergprd == 'late') then
       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
       fext = '.RT-H5'
-   elseif(imergdata(1)%imergprd == 'final') then
+   elseif(imergprd == 'final') then
       fstem = '/3B-HHR.MS.MRG.3IMERG.'
       fext = '.HDF5'
    else
