@@ -178,6 +178,8 @@ subroutine NoahMP401_coldstart(mtype)
 
    real, dimension(1,60,1) :: gecros_state  ! Optional gecros crop
   
+
+
 !  PLANTING(1,1)   = 126     ! default planting date
 !  HARVEST(1,1)    = 290     ! default harvest date
 !  SEASON_GDD(1,1) = 1605    ! default total seasonal growing degree days
@@ -343,13 +345,13 @@ subroutine NoahMP401_coldstart(mtype)
              rechxy(1,1) = 0.0
              deeprechxy(1,1) = 0.0
              areaxy(1,1) = 100.
-             dx = 10.0
-             dy = 10.0
-             msftx(1,1) = 0.0
-             msfty(1,1) = 0.0
-             wtddt = 0.0
+             dx = 10.0 ! SW, not used 
+             dy = 10.0 ! SW, not used
+             msftx(1,1) = 1.0
+             msfty(1,1) = 1.0
+             wtddt = NOAHMP401_struc(n)%ts/60.0 ! wtddt in minute? 
              stepwtd = 0
-             dtbl = 0.0
+             dtbl = NOAHMP401_struc(n)%ts
              qrfsxy(1,1) = 0.0
              qslatxy(1,1) = 0.0
              fdepthxy(1,1) = 0.0
@@ -452,6 +454,11 @@ subroutine NoahMP401_coldstart(mtype)
             enddo   ! t=1,1
 
         endif       ! coldstart
+       
+        !!! MMF initialization 
+        if(NOAHMP401_struc(n)%run_opt==5) then
+            call  mmf_start(n)
+        endif
 
         deallocate(zsnso)
         deallocate(tsnow)
@@ -477,4 +484,6 @@ subroutine NoahMP401_coldstart(mtype)
         write(LIS_logunit,*) "[INFO] NoahMP401_coldstart -- ",     &
                              "Using the specified start time ", LIS_rc%time
        enddo        ! nnest
+       
 end subroutine NoahMP401_coldstart
+
