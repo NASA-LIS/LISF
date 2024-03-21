@@ -22,6 +22,9 @@
 !              ........................................Eric Kemp/SSAI/NASA
 ! 12 Mar 2024  Restrict BackQC and SuperstatQC to gage reports. Fixed
 !              typo in SuperstatQC threshold...........Eric Kemp/SSAI/NASA
+! 21 Mar 2024  Changed internal BackQC and SuperstatQC logic to only
+!              skip for IMERG.  This allows use with T, RH, and wind
+!              speed analyses..........................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
