@@ -61,8 +61,10 @@ subroutine Ac71_main(n)
                     GetSimulParam,&
                     GetSimulParam_GDDMethod,&
                     GetSimulation,&
+                    GetSimulation_EvapLimitON, &
                     GetSimulation_SumGDD,&
                     GetSimulation_SumGDDfromDay1,&
+                    GetSimulation_SWCtopSoilConsidered, &
                     GetSoil,&
                     GetSoilLayer,&
                     GetSumWaBal,&
@@ -113,8 +115,10 @@ subroutine Ac71_main(n)
                     SetRootZoneWC_ZtopThresh,&
                     SetRootZoneWC_ZtopWP,&
                     SetSimulation,&
+                    SetSimulation_EvapLimitON, &
                     SetSimulation_SumGDD, &
                     SetSimulation_SumGDDfromDay1,&
+                    SetSimulation_SWCtopSoilConsidered, &
                     SetSoil,&
                     SetSoilLayer,&
                     SetSumWaBal,&
@@ -266,6 +270,9 @@ subroutine Ac71_main(n)
 
     real                 :: tmp_pres, tmp_precip, tmp_tmax, tmp_tmin   ! Weather Forcing
     real                 :: tmp_tdew, tmp_swrad, tmp_wind, tmp_eto     ! Weather Forcing
+
+    ! For type problem in AdvanceOneTimeStep
+    real(dp)             :: tmp_wpi
 !
 ! !DESCRIPTION:
 !  This is the entry point for calling the Ac71 physics.
@@ -371,30 +378,29 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%eto = tmp_eto
 
             ! setting all global variables
+            !Required vars to be set before simulation
+            call SetalfaHI(REAL(AC71_struc(n)%ac71(t)%alfaHI, 8))
+            call SetalfaHIAdj(REAL(AC71_struc(n)%ac71(t)%alfaHIAdj, 8))
+            call SetBin(REAL(AC71_struc(n)%ac71(t)%Bin, 8))
+            call SetBout(REAL(AC71_struc(n)%ac71(t)%Bout, 8))
+            call SetCCiActual(REAL(AC71_struc(n)%ac71(t)%CCiActual, 8))
+            call SetCCiActualWeedInfested(REAL(AC71_struc(n)%ac71(t)%CCiActualWeedInfested, 8))
+            call SetCCiprev(REAL(AC71_struc(n)%ac71(t)%CCiprev, 8))
+            call SetCCiTopEarlySen(REAL(AC71_struc(n)%ac71(t)%CCiTopEarlySen, 8))
+            call SetCCxWitheredTpotNoS(REAL(AC71_struc(n)%ac71(t)%CCxWitheredTpotNoS, 8))
+            call SetCompartment(AC71_struc(n)%ac71(t)%Compartment) !_Salt _Depo _Theta (Thickness is defined is Ini and same spatially)
             ! Important when SM gets updates
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     call SetCompartment_theta(l,REAL(AC71_struc(n)%ac71(t)%smc(l),8))
             enddo
-
-            !Required vars to be set before simulation
-            call SetalfaHI(AC71_struc(n)%ac71(t)%alfaHI)
-            call SetalfaHIAdj(AC71_struc(n)%ac71(t)%alfaHIAdj)
-            call SetBin(AC71_struc(n)%ac71(t)%Bin)
-            call SetBout(AC71_struc(n)%ac71(t)%Bout)
-            call SetCCiActual(AC71_struc(n)%ac71(t)%CCiActual)
-            call SetCCiActualWeedInfested(AC71_struc(n)%ac71(t)%CCiActualWeedInfested)
-            call SetCCiTopEarlySen(AC71_struc(n)%ac71(t)%CCiTopEarlySen)
-            call SetCCxWitheredTpotNoS(AC71_struc(n)%ac71(t)%CCxWitheredTpotNoS)
-            call SetCompartment(AC71_struc(n)%ac71(t)%Compartment) !_Salt _Depo _Theta (Thickness is defined is Ini and same spatially)
-            call SetDayFraction(AC71_struc(n)%ac71(t)%DayFraction)
+            call SetDayFraction(REAL(AC71_struc(n)%ac71(t)%DayFraction, 8))
             call SetDayNri(AC71_struc(n)%ac71(t)%daynri) ! Could be derived by counting?
             call SetDaySubmerged(AC71_struc(n)%ac71(t)%DaySubmerged)
-            call SetECstorage(AC71_struc(n)%ac71(t)%ECstorage)
-            call SetHItimesAT(AC71_struc(n)%ac71(t)%HItimesAT)
-            call SetHItimesAT1(AC71_struc(n)%ac71(t)%HItimesAT1)
-            call SetHItimesAT2(AC71_struc(n)%ac71(t)%HItimesAT2)
-            call SetHItimesBEF(AC71_struc(n)%ac71(t)%HItimesBEF)
-            call SetNoMoreCrop(AC71_struc(n)%ac71(t)%NoMoreCrop)
+            call SetECstorage(REAL(AC71_struc(n)%ac71(t)%ECstorage, 8))
+            call SetHItimesAT(REAL(AC71_struc(n)%ac71(t)%HItimesAT, 8))
+            call SetHItimesAT1(REAL(AC71_struc(n)%ac71(t)%HItimesAT1, 8))
+            call SetHItimesAT2(REAL(AC71_struc(n)%ac71(t)%HItimesAT2, 8))
+            call SetHItimesBEF(REAL(AC71_struc(n)%ac71(t)%HItimesBEF, 8))
             call SetPreviousStressLevel(int(AC71_struc(n)%ac71(t)%PreviousStressLevel,kind=int32))
             call SetRootZoneWC_Actual(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,8))
             call SetRootZoneWC_FC(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_FC,8))
@@ -407,48 +413,67 @@ subroutine Ac71_main(n)
             call SetRootZoneWC_ZtopFC(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_ZtopAct,8))
             call SetRootZoneWC_ZtopThresh(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_ZtopAct,8))
             call SetRootZoneWC_ZtopWP(REAL(AC71_struc(n)%ac71(t)%RootZoneWC_ZtopAct,8))
-            call SetScorAT1(AC71_struc(n)%ac71(t)%ScorAT1)
-            call SetScorAT2(AC71_struc(n)%ac71(t)%ScorAT2)
-            call SetStressLeaf(AC71_struc(n)%ac71(t)%StressLeaf)
-            call SetStressSenescence(AC71_struc(n)%ac71(t)%StressSenescence)
+            call SetScorAT1(REAL(AC71_struc(n)%ac71(t)%ScorAT1, 8))
+            call SetScorAT2(REAL(AC71_struc(n)%ac71(t)%ScorAT2, 8))
+            call SetStressLeaf(REAL(AC71_struc(n)%ac71(t)%StressLeaf, 8))
+            call SetStressSenescence(REAL(AC71_struc(n)%ac71(t)%StressSenescence, 8))
             call SetStressSFadjNEW(int(AC71_struc(n)%ac71(t)%StressSFadjNEW,kind=int32))
             call SetStressTot(AC71_struc(n)%ac71(t)%StressTot)
-            call SetSumGDDcuts(AC71_struc(n)%ac71(t)%SumGDDcuts)
+            call SetSumGDDcuts(REAL(AC71_struc(n)%ac71(t)%SumGDDcuts, 8))
             call SetSumInterval(AC71_struc(n)%ac71(t)%SumInterval)
-            call SetSumKci(AC71_struc(n)%ac71(t)%SumKci)
-            call SetSumKcTopStress(AC71_struc(n)%ac71(t)%SumKcTopStress)
+            call SetSumKci(REAL(AC71_struc(n)%ac71(t)%SumKci, 8))
+            call SetSumKcTopStress(REAL(AC71_struc(n)%ac71(t)%SumKcTopStress, 8))
             call SetSumWaBal(AC71_struc(n)%ac71(t)%SumWaBal)
-            call SetSurfaceStorage(AC71_struc(n)%ac71(t)%SurfaceStorage)
-            call SetTact(AC71_struc(n)%ac71(t)%Tact) ! Because GetTact to compute RZ before BUDGET_module --> questionable
-            call SetTactWeedInfested(AC71_struc(n)%ac71(t)%TactWeedInfested)
+            call SetSurfaceStorage(REAL(AC71_struc(n)%ac71(t)%SurfaceStorage, 8))
+            call SetTact(REAL(AC71_struc(n)%ac71(t)%Tact, 8)) ! Because GetTact to compute RZ before BUDGET_module --> questionable
+            call SetTactWeedInfested(REAL(AC71_struc(n)%ac71(t)%TactWeedInfested, 8))
             call SetTadj(AC71_struc(n)%ac71(t)%Tadj)
-            call SetTimeSenescence(AC71_struc(n)%ac71(t)%TimeSenescence)
-            call SetTpot(AC71_struc(n)%ac71(t)%Tpot) ! Same as Tact
-            call SetTransfer(AC71_struc(n)%ac71(t)%Transfer)
-            call SetWeedRCi(AC71_struc(n)%ac71(t)%WeedRCi)
-            call SetZiprev(AC71_struc(n)%ac71(t)%Ziprev)
+            call SetTimeSenescence(REAL(AC71_struc(n)%ac71(t)%TimeSenescence, 8))
+            call SetTpot(REAL(AC71_struc(n)%ac71(t)%Tpot, 8)) ! Same as Tact
+            call SetWeedRCi(REAL(AC71_struc(n)%ac71(t)%WeedRCi, 8))
+            call SetZiprev(REAL(AC71_struc(n)%ac71(t)%Ziprev, 8))
+
+            if (.not. ((LIS_rc%mo .eq. 1) .AND. (LIS_rc%da .eq. 1))) then !make it flex
+                ! Set logicals
+                if(AC71_struc(n)%ac71(t)%NoMoreCrop.eq.1)then
+                    call SetNoMoreCrop(.true.)
+                else
+                    call SetNoMoreCrop(.false.)
+                endif
+                if(AC71_struc(n)%ac71(t)%Simulation%EvapLimitON.eq.1)then
+                    call SetSimulation_EvapLimitON(.true.)
+                else
+                    call SetSimulation_EvapLimitON(.false.)
+                endif
+                if(AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered.eq.1)then
+                    call SetSimulation_SWCtopSoilConsidered(.true.)
+                else
+                    call SetSimulation_SWCtopSoilConsidered(.false.)
+                endif
+                ! Can be false when sim is initialized
+                call SetPreDay(.true.) ! set to false in InitializeSettings
+            endif
 
             ! Set in Initialize (not needed for restart)
-            call SetCCiprev(AC71_struc(n)%ac71(t)%CCiprev) ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCCoTotal(AC71_struc(n)%ac71(t)%CCoTotal)  ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCCxCropWeedsNoSFstress(AC71_struc(n)%ac71(t)%CCxCropWeedsNoSFstress)   ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCCxTotal(AC71_struc(n)%ac71(t)%CCxTotal)    ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCDCTotal(AC71_struc(n)%ac71(t)%CDCTotal)     ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCoeffb0(AC71_struc(n)%ac71(t)%Coeffb0)      ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb0Salt(AC71_struc(n)%ac71(t)%Coeffb0Salt)       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb1(AC71_struc(n)%ac71(t)%Coeffb1)       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb1Salt(AC71_struc(n)%ac71(t)%Coeffb1Salt)       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb2(AC71_struc(n)%ac71(t)%Coeffb2)       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb2Salt(AC71_struc(n)%ac71(t)%Coeffb2Salt)       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCrop(AC71_struc(n)%ac71(t)%crop) ! Eveyrhting done in Initialize? --> copy Initialization to setup then overwrite with rst
-            call SetGDDayFraction(AC71_struc(n)%ac71(t)%GDDayFraction) ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetGDDCDCTotal(AC71_struc(n)%ac71(t)%GDDCDCTotal) ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCCoTotal(REAL(AC71_struc(n)%ac71(t)%CCoTotal, 8))  ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
+            call SetCCxCropWeedsNoSFstress(REAL(AC71_struc(n)%ac71(t)%CCxCropWeedsNoSFstress, 8))   ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
+            call SetCCxTotal(REAL(AC71_struc(n)%ac71(t)%CCxTotal, 8))   ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
+            call SetCDCTotal(REAL(AC71_struc(n)%ac71(t)%CDCTotal, 8))     ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
+            call SetCoeffb0(REAL(AC71_struc(n)%ac71(t)%Coeffb0, 8))      ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCoeffb0Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb0Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCoeffb1(REAL(AC71_struc(n)%ac71(t)%Coeffb1, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCoeffb1Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb1Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCoeffb2(REAL(AC71_struc(n)%ac71(t)%Coeffb2, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCoeffb2Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb2Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCrop(AC71_struc(n)%ac71(t)%crop) ! CCxWithered, CCxAdjusted, pActStom passed in retart
+            call SetGDDayFraction(REAL(AC71_struc(n)%ac71(t)%GDDayFraction, 8)) ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
+            call SetGDDCDCTotal(REAL(AC71_struc(n)%ac71(t)%GDDCDCTotal, 8)) ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
             call SetGDDTadj(AC71_struc(n)%ac71(t)%GDDTadj)  ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetManagement(AC71_struc(n)%ac71(t)%Management) ! Set from InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetSimulation(AC71_struc(n)%ac71(t)%Simulation) ! Eveyrhting done in Initialize? --> copy Initialization to setup then overwrite with rst
+            call SetManagement(AC71_struc(n)%ac71(t)%Management) ! WeedDeltaRC passed in restart
+            call SetSimulation(AC71_struc(n)%ac71(t)%Simulation) ! A few vars are passed in restart (EffectStress)
             call SetSoil(AC71_struc(n)%ac71(t)%Soil)  !Not needed for restart, everything should be set in setup
             call SetSoilLayer(AC71_struc(n)%ac71(t)%SoilLayer) !Not needed for restart, everything should be set in setup
-            call SetSumKcTop(AC71_struc(n)%ac71(t)%SumKcTop)  ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetSumKcTop(REAL(AC71_struc(n)%ac71(t)%SumKcTop, 8))  ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
 
             !! Fixed vars
             call SetCGCref(GetCrop_CGC()) ! Make sure crop is set before
@@ -458,13 +483,12 @@ subroutine Ac71_main(n)
             call SetOutputAggregate(int(0,kind=int8)) ! Avoid writing out daily results in the console
             call SetPart1Mult(.false.) 
             call SetPart2Eval(.false.)
-            call SetPreDay(.true.) ! set to false in InitializeSettings
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
             call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
             !!! initialize run (year)
 
-            if (AC71_struc(n)%ac71(t)%InitializeRun .eq. 1) then
+            if ((LIS_rc%mo .eq. 1) .AND. (LIS_rc%da .eq. 1)) then !make it flex
                 call SetClimRecord_DataType(0_int8)
                 call SetClimRecord_fromd(0)
                 call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
@@ -482,11 +506,11 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%WPi = 0._dp
 
                 ! Set crop file (crop parameters are read when calling InitializeRunPart1)
-                call set_project_input(int(AC71_struc(n)%ac71(t)%irun, kind=int32), &
+                call set_project_input(AC71_struc(n)%ac71(t)%irun, &
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
 
-                call InitializeRunPart1(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)
+                call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
@@ -509,7 +533,9 @@ subroutine Ac71_main(n)
             end if
 
             ! Run AC
-            call AdvanceOneTimeStep(AC71_struc(n)%ac71(t)%WPi, AC71_struc(n)%ac71(t)%HarvestNow)
+            tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
+            call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
+            AC71_struc(n)%ac71(t)%WPi = tmp_wpi
 
             ! Get all the ac71 variables and store in AC71_struc
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
@@ -549,7 +575,6 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%HItimesAT2 = GetHItimesAT2()
             AC71_struc(n)%ac71(t)%HItimesBEF = GetHItimesBEF()
             AC71_struc(n)%ac71(t)%Management = GetManagement()
-            AC71_struc(n)%ac71(t)%NoMoreCrop = GetNoMoreCrop()
             AC71_struc(n)%ac71(t)%PreviousStressLevel = GetPreviousStressLevel()
             AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
             AC71_struc(n)%ac71(t)%RootZoneWC_FC = GetRootZoneWC_FC()
@@ -586,6 +611,25 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Transfer = GetTransfer()
             AC71_struc(n)%ac71(t)%WeedRCi = GetWeedRCi()
             AC71_struc(n)%ac71(t)%Ziprev = GetZiprev()
+
+            !NoMoreCrop
+            if(GetNoMoreCrop()) then
+                AC71_struc(n)%ac71(t)%NoMoreCrop = 1
+            else
+                AC71_struc(n)%ac71(t)%NoMoreCrop = 0
+            endif
+            !Simulation_EvapLimitON
+            if(GetSimulation_EvapLimitON()) then
+                AC71_struc(n)%ac71(t)%Simulation%EvapLimitON = 1
+            else
+                AC71_struc(n)%ac71(t)%Simulation%EvapLimitON = 0
+            endif
+            !Simulation_SWCtopSoilConsidered
+            if(GetSimulation_SWCtopSoilConsidered()) then
+                AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 1
+            else
+                AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 0
+            endif
 
             !LB to change --> sim period
             if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then
@@ -633,6 +677,10 @@ subroutine Ac71_main(n)
                                     vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Rain, value = real(tmp_precip,kind=sp), &
                                     vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Yield, value = real(AC71_struc(n)%ac71(t)%SumWaBal%YieldPart,kind=sp), &
+                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ZiPrev, value = real(AC71_struc(n)%ac71(t)%ZiPrev,kind=sp), &
+                        vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
             !  Reset forcings
             AC71_struc(n)%ac71(t)%tair = 0.0

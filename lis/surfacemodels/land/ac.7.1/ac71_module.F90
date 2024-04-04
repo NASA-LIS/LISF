@@ -176,14 +176,15 @@ module Ac71_module
     integer(int32) :: SumInterval
     integer(int32) :: Tadj
     integer(int32) :: ZiAqua
-    integer(int8)  :: LineNrEval
-    integer(int8)  :: PreviousStressLevel
-    integer(int8)  :: StageCode
-    integer(int8)  :: StressSFadjNEW
-    integer(int8) :: IniPercTAW
-    integer(int8) :: irun
-    integer(int8) :: MaxPlotTr
-    integer(int8) :: OutputAggregate
+    integer        :: LineNrEval
+    integer        :: PreviousStressLevel
+    integer        :: StageCode
+    integer        :: StressSFadjNEW
+    integer       :: IniPercTAW
+    integer       :: irun
+    integer       :: MaxPlotTr
+    integer       :: OutputAggregate
+    integer       :: NoMoreCrop
     integer(intEnum) :: GenerateDepthMode
     integer(intEnum) :: GenerateTimeMode
     integer(intEnum) :: IrriMethod
@@ -192,7 +193,7 @@ module Ac71_module
     logical  :: HarvestNow
     logical :: EvapoEntireSoilSurface
     logical :: GlobalIrriECw
-    logical :: NoMoreCrop
+    !logical :: NoMoreCrop
     logical :: NoYear
     logical :: Out1Wabal
     logical :: Out2Crop
@@ -218,77 +219,77 @@ module Ac71_module
     real    :: RootZoneWC_ZtopFC
     real    :: RootZoneWC_ZtopThresh
     real    :: RootZoneWC_ZtopWP
-    real(dp) :: alfaHI
-    real(dp) :: alfaHIAdj
-    real(dp) :: Bin
-    real(dp) :: Bout
-    real(dp) :: BprevSum
-    real(dp) :: CCiActual
-    real(dp) :: CCiActualWeedInfested
-    real(dp) :: CCiprev
-    real(dp) :: CCiTopEarlySen
-    real(dp) :: CCoTotal
-    real(dp) :: CCxCropWeedsNoSFstress
-    real(dp) :: CCxTotal
-    real(dp) :: CCxWitheredTpotNoS
-    real(dp) :: CDCTotal
-    real(dp) :: CGCref,GDDCGCref 
-    real(dp) :: CO2i
-    real(dp) :: Coeffb0
-    real(dp) :: Coeffb0Salt
-    real(dp) :: Coeffb1
-    real(dp) :: Coeffb1Salt
-    real(dp) :: Coeffb2
-    real(dp) :: Coeffb2Salt
-    real(dp) :: CRsalt
-    real(dp) :: CRwater
-    real(dp) :: DayFraction
-    real(dp) :: Drain  
-    real(dp) :: Eact
-    real(dp) :: ECdrain 
-    real(dp) :: ECiAqua
-    real(dp) :: ECstorage
-    real(dp) :: Epot 
-    real(dp) :: FracBiomassPotSF
-    real(dp) :: fWeedNoS
-    real(dp) :: GDDayFraction
-    real(dp) :: GDDayi
-    real(dp) :: GDDCDCTotal
-    real(dp) :: HItimesAT
-    real(dp) :: HItimesAT1
-    real(dp) :: HItimesAT2
-    real(dp) :: HItimesBEF
-    real(dp) :: Infiltrated 
-    real(dp) :: Irrigation 
-    real(dp) :: PreviousBmob
-    real(dp) :: PreviousBsto
-    real(dp) :: PreviousSumETo
-    real(dp) :: PreviousSumGDD
-    real(dp) :: RootingDepth
-    real(dp) :: Runoff  
-    real(dp) :: SaltInfiltr
-    real(dp) :: ScorAT1
-    real(dp) :: ScorAT2
-    real(dp) :: StressLeaf
-    real(dp) :: StressSenescence
-    real(dp) :: SumETo
-    real(dp) :: SumGDD
-    real(dp) :: SumGDDcuts
-    real(dp) :: SumGDDPrev
-    real(dp) :: SumKci
-    real(dp) :: SumKcTop
-    real(dp) :: SumKcTopStress
-    real(dp) :: Surf0
-    real(dp) :: SurfaceStorage
-    real(dp) :: Tact 
-    real(dp) :: TactWeedInfested
-    real(dp) :: TimeSenescence
-    real(dp) :: Tpot 
-    real(dp) :: WeedRCi
-    real(dp) :: WPi
-    real(dp) :: YprevSum
-    real(dp) :: Zeval
-    real(dp) :: Ziprev
+    real :: alfaHI
+    real :: alfaHIAdj
+    real :: Bin
+    real :: Bout
+    real :: BprevSum
+    real :: CCiActual
+    real :: CCiActualWeedInfested
+    real :: CCiprev
+    real :: CCiTopEarlySen
+    real :: CCoTotal
+    real :: CCxCropWeedsNoSFstress
+    real :: CCxTotal
+    real :: CCxWitheredTpotNoS
+    real :: CDCTotal
+    real :: CGCref,GDDCGCref 
+    real :: CO2i
+    real :: Coeffb0
+    real :: Coeffb0Salt
+    real :: Coeffb1
+    real :: Coeffb1Salt
+    real :: Coeffb2
+    real :: Coeffb2Salt
+    real :: CRsalt
+    real :: CRwater
+    real :: DayFraction
+    real :: Drain  
+    real :: Eact
+    real :: ECdrain 
+    real :: ECiAqua
+    real :: ECstorage
+    real :: Epot 
+    real :: FracBiomassPotSF
+    real :: fWeedNoS
+    real :: GDDayFraction
+    real :: GDDayi
+    real :: GDDCDCTotal
+    real :: HItimesAT
+    real :: HItimesAT1
+    real :: HItimesAT2
+    real :: HItimesBEF
+    real :: Infiltrated 
+    real :: Irrigation 
+    real :: PreviousBmob
+    real :: PreviousBsto
+    real :: PreviousSumETo
+    real :: PreviousSumGDD
+    real :: RootingDepth
+    real :: Runoff  
+    real :: SaltInfiltr
+    real :: ScorAT1
+    real :: ScorAT2
+    real :: StressLeaf
+    real :: StressSenescence
+    real :: SumETo
+    real :: SumGDD
+    real :: SumGDDcuts
+    real :: SumGDDPrev
+    real :: SumKci
+    real :: SumKcTop
+    real :: SumKcTopStress
+    real :: Surf0
+    real :: SurfaceStorage
+    real :: Tact 
+    real :: TactWeedInfested
+    real :: TimeSenescence
+    real :: Tpot 
+    real :: WeedRCi
+    real :: WPi
+    real :: YprevSum
+    real :: Zeval
+    real :: Ziprev
     type(CompartmentIndividual), dimension(12) :: Compartment
     type(repCutInfoRecord) :: CutInfoRecord1
     type(repCutInfoRecord) :: CutInfoRecord2
