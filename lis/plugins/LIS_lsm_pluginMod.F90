@@ -978,10 +978,8 @@ subroutine LIS_lsm_plugin
         ac71_f2t)
    call registerlsmf2t(trim(LIS_ac71Id)//"+"//trim(LIS_nuopccplId)//char(0),&
         ac71_f2t)
-   ! ------------wanshu----add registry for smootherDA for NoahMP-----------------
    call registerlsmf2t(trim(LIS_ac71Id)//"+"//&
         trim(LIS_smootherDAId)//char(0), ac71_f2t)
-   ! -----------------------------------------------------------------------------
    call registerlsmf2t(trim(LIS_ac71Id)//"+"//&
         trim(LIS_agrmetrunId)//char(0),ac71_f2t)
    call registerlsmf2t(trim(LIS_ac71Id)//"+"//&

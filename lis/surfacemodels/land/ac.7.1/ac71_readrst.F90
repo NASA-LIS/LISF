@@ -99,6 +99,7 @@ subroutine Ac71_readrst()
     integer           :: ftn
     integer           :: status
     real, allocatable :: tmptilen(:)
+    integer, allocatable :: tmptilen_int(:)
     logical           :: file_exists
     character*20      :: wformat
     !WN
@@ -145,6 +146,7 @@ subroutine Ac71_readrst()
                 endif
 
             allocate(tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index)))
+            allocate(tmptilen_int(LIS_rc%npatch(n, LIS_rc%lsm_index)))
             ! check the existance of restart file
             inquire(file=AC71_struc(n)%rfile, exist=file_exists)
             If (.not. file_exists) then
@@ -183,15 +185,473 @@ subroutine Ac71_readrst()
 #endif
             endif
 
-            ! read: volumetric soil moisture, ice + liquid
-            do l=1, AC71_struc(n)%nsoil ! TODO: check loop
+            ! read: volumetric soil moisture
+            do l=1, AC71_struc(n)%max_No_Compartments
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                      varname="SMC", &
-                     dim=l, vlevels = AC71_struc(n)%nsoil, wformat=wformat)
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                    AC71_struc(n)%ac71(t)%smc(l) = tmptilen(t)
+                   ! Also adjust theta ini
+                    !AC71_struc(n)%ac71(t)%Simulation%thetaini(l) = tmptilen(t) !will also be needed for salinity
                 enddo
             enddo
+
+            !! From Compartment
+
+            ! read: Compartment_DayAnaero
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                     varname="Compartment_DayAnaero", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%DayAnaero = tmptilen_int(t)
+                enddo
+            enddo
+                                    
+            ! read: Compartment_fluxout
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_fluxout", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%fluxout = tmptilen(t)
+                enddo
+            enddo
+
+
+            ! read: Compartment_Smax
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_Smax", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%Smax = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_FCadj
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_FCadj", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%FCadj = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_WFactor
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_WFactor", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%WFactor = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_DayAnaero
+            do l=1, AC71_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                     varname="Compartment_DayAnaero", &
+                     dim=l, vlevels = AC71_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC71_struc(n)%ac71(t)%Compartment(l)%DayAnaero = tmptilen_int(t)
+                enddo
+            enddo
+
+
+
+            !! reals
+            ! read: alfaHI
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%alfaHI, &
+                                    varname="alfaHI", wformat=wformat)
+
+            ! read: alfaHIAdj
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%alfaHIAdj, &
+                                    varname="alfaHIAdj", wformat=wformat)
+
+            ! read: Bin
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Bin, &
+                                    varname="Bin", wformat=wformat)
+
+            ! read: Bout
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Bout, &
+                                    varname="Bout", wformat=wformat)
+
+            ! read: CCiActual
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%CCiActual, &
+                                    varname="CCiActual", wformat=wformat)
+
+            ! read: CCiActualWeedInfested
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%CCiActualWeedInfested, &
+                                    varname="CCiActualWeedInfested", wformat=wformat)
+
+            ! read: CCiPrev
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%CCiPrev, &
+                                    varname="CCiPrev", wformat=wformat)
+
+            ! read: CCiTopEarlySen
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%CCiTopEarlySen, &
+                                    varname="CCiTopEarlySen", wformat=wformat)
+
+            ! read: CCxWitheredTpotNoS
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%CCxWitheredTpotNoS, &
+                                    varname="CCxWitheredTpotNoS", wformat=wformat)
+
+            ! read: DayFraction
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%DayFraction, &
+                                    varname="DayFraction", wformat=wformat)
+
+            ! read: ECstorage
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%ECstorage, &
+                                    varname="ECstorage", wformat=wformat)
+
+            ! read: HItimesAT
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%HItimesAT, &
+                                    varname="HItimesAT", wformat=wformat)
+
+            ! read: HItimesAT1
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%HItimesAT1, &
+                                    varname="HItimesAT1", wformat=wformat)
+
+            ! read: HItimesAT2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%HItimesAT2, &
+                                    varname="HItimesAT2", wformat=wformat)
+
+            ! read: HItimesBEF
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%HItimesBEF, &
+                                    varname="HItimesBEF", wformat=wformat)
+
+            ! read: RootZoneWC_Actual
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_Actual, &
+                                    varname="RootZoneWC_Actual", wformat=wformat)
+
+            ! read: RootZoneWC_FC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_FC, &
+                                    varname="RootZoneWC_FC", wformat=wformat)
+
+            ! read: RootZoneWC_Leaf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_Leaf, &
+                                    varname="RootZoneWC_Leaf", wformat=wformat)
+
+            ! read: RootZoneWC_SAT
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_SAT, &
+                                    varname="RootZoneWC_SAT", wformat=wformat)
+
+            ! read: RootZoneWC_Sen
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_Sen, &
+                                    varname="RootZoneWC_Sen", wformat=wformat)
+
+            ! read: RootZoneWC_Thresh
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_Thresh, &
+                                    varname="RootZoneWC_Thresh", wformat=wformat)
+
+            ! read: RootZoneWC_WP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_WP, &
+                                    varname="RootZoneWC_WP", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_ZtopAct, &
+                                    varname="RootZoneWC_ZtopAct", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopFC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_ZtopFC, &
+                                    varname="RootZoneWC_ZtopFC", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopThresh
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_ZtopThresh, &
+                                    varname="RootZoneWC_ZtopThresh", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopWP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%RootZoneWC_ZtopWP, &
+                                    varname="RootZoneWC_ZtopWP", wformat=wformat)
+
+            ! read: ScorAT1
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%ScorAT1, &
+                                    varname="ScorAT1", wformat=wformat)
+
+            ! read: ScorAT2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%ScorAT2, &
+                                    varname="ScorAT2", wformat=wformat)
+
+            ! read: StressLeaf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%StressLeaf, &
+                                    varname="StressLeaf", wformat=wformat)
+
+            ! read: StressSenescence
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%StressSenescence, &
+                                    varname="StressSenescence", wformat=wformat)
+
+            ! read: SumGDDcuts
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%SumGDDcuts, &
+                                    varname="SumGDDcuts", wformat=wformat)
+
+            ! read: SumKci
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%SumKci, &
+                                    varname="SumKci", wformat=wformat)
+
+            ! read: SumKcTopStress
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%SumKcTopStress, &
+                                    varname="SumKcTopStress", wformat=wformat)
+
+            ! read: SurfaceStorage
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%SurfaceStorage, &
+                                    varname="SurfaceStorage", wformat=wformat)
+
+            ! read: Tact
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Tact, &
+                                    varname="Tact", wformat=wformat)
+
+            ! read: TactWeedInfested
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%TactWeedInfested, &
+                                    varname="TactWeedInfested", wformat=wformat)
+
+            ! read: Tadj
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Tadj, &
+                                    varname="Tadj", wformat=wformat)
+
+            ! read: TimeSenescence
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%TimeSenescence, &
+                                    varname="TimeSenescence", wformat=wformat)
+
+            ! read: Tpot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Tpot, &
+                                    varname="Tpot", wformat=wformat)
+
+            ! read: WeedRCi
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%WeedRCi, &
+                                    varname="WeedRCi", wformat=wformat)
+            ! read: WPi
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%WPi, &
+                                    varname="WPi", wformat=wformat)
+
+            ! read: Ziprev
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%Ziprev, &
+                                    varname="Ziprev", wformat=wformat)
+
+            
+            !! integers
+            ! read: DayNri
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%DayNri, &
+                                    varname="DayNri", wformat=wformat)
+
+            ! read: DaySubmerged
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%DaySubmerged, &
+                                    varname="DaySubmerged", wformat=wformat)
+
+            ! read: PreviousStressLevel
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%PreviousStressLevel, &
+                                    varname="PreviousStressLevel", wformat=wformat)
+
+            ! read: StressSFadjNEW
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%StressSFadjNEW, &
+                                    varname="StressSFadjNEW", wformat=wformat)
+
+            ! read: SumInterval
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%SumInterval, &
+                                    varname="SumInterval", wformat=wformat)
+
+            !! logical
+            !read: NoMoreCrop
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC71_struc(n)%ac71%NoMoreCrop, &
+                                    varname="NoMoreCrop", wformat=wformat)
+
+            !! From StressTot
+            ! read: StressTot_Salt
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Salt", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%Salt = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Temp
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Temp", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%Temp = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Exp
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Exp", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%Exp = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Sto
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Sto", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%Sto = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Weed
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Weed", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%Weed = tmptilen(t)
+            enddo
+
+            ! read: StressTot_NrD
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="StressTot_NrD", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%StressTot%NrD = tmptilen_int(t)
+            enddo
+
+            !! From SumWaBal
+            ! read: SumWaBal_Biomass
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_Biomass", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%SumWaBal%Biomass = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassPot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassPot", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%SumWaBal%BiomassPot = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassTot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassTot", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%SumWaBal%BiomassTot = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassUnlim
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassUnlim", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%SumWaBal%BiomassUnlim = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_YieldPart
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_YieldPart", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%SumWaBal%YieldPart = tmptilen(t)
+            enddo
+
+            !! From Simulation%EffectStress
+            ! read: Simulation_EffectStress_CDecline
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_EffectStress_CDecline", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EffectStress%CDecline = tmptilen(t)
+            enddo
+
+            ! read: Simulation_DayAnaero
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_DayAnaero", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%DayAnaero = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedCGC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedCGC", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EffectStress%RedCGC = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedCCx
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedCCx", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EffectStress%RedCCx = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedWP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedWP", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EffectStress%RedWP = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedKsSto
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedKsSto", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EffectStress%RedKsSto = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_SWCtopsoilconsidered
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_SWCtopSoilConsidered", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EvapLimitON
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EvapLimitON", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EvapLimitON = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EvapStartStg2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EvapStartStg2", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EvapStartStg2 = tmptilen_int(t)
+            enddo
+
+            !! From Simulation
+            ! read: Simulation_EvapWCSurf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_EvapWCSurf", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Simulation%EvapWCSurf = tmptilen(t)
+            enddo
+
+            !! From Management
+            ! read: Management_WeedDeltaRC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Management_WeedDeltaRC", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Management%WeedDeltaRC = tmptilen_int(t)
+            enddo
+
+            !! From Crop
+            ! read: Crop_CCxAdjusted
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_CCxAdjusted", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Crop%CCxAdjusted = tmptilen(t)
+            enddo
+
+            ! read: Crop_CCxWithered
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_CCxWithered", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Crop%CCxWithered = tmptilen(t)
+            enddo
+
+            ! read: Crop_pActStom
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pActStom", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Crop%pActStom = tmptilen(t)
+            enddo
+
+            ! read: Crop_pLeafAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pLeafAct", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Crop%pLeafAct = tmptilen(t)
+            enddo
+
+            ! read: Crop_pSenAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pSenAct", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC71_struc(n)%ac71(t)%Crop%pSenAct = tmptilen(t)
+            enddo
+
             ! close restart file
             if(wformat .eq. "binary") then
                 call LIS_releaseUnitNumber(ftn)

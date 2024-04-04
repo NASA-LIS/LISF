@@ -446,6 +446,8 @@ module LIS_histDataMod
   public :: LIS_MOC_AC71Rain
   public :: LIS_MOC_AC71RootingDepth
   public :: LIS_MOC_AC71CCiActual
+  public :: LIS_MOC_AC71Yield
+  public :: LIS_MOC_AC71ZiPrev
   ! end AC71
  
   ! RUC 
@@ -973,6 +975,8 @@ module LIS_histDataMod
    integer :: LIS_MOC_AC71Rain  = -9999
    integer :: LIS_MOC_AC71RootingDepth  = -9999
    integer :: LIS_MOC_AC71CCiActual  = -9999
+   integer :: LIS_MOC_AC71Yield  = -9999
+   integer :: LIS_MOC_AC71ZiPrev  = -9999
 
 !   <- RUC -> 
    integer :: LIS_MOC_QVG = -9999
@@ -4710,6 +4714,30 @@ contains
          "AC71 CCiActual",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71CCiActual,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Yield:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71Yield",&
+         "AC71_Yield",&
+         "AC71 Yield",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Yield,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71ZiPrev:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71ZiPrev",&
+         "AC71_ZiPrev",&
+         "AC71 ZiPrev",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71ZiPrev,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)

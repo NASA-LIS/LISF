@@ -507,7 +507,7 @@ subroutine Ac71_setup()
             ! reading spatial spatial parameters !
             !------------------------------------!
             ! croptype
-            ! Read crop type maximum root depth file (combined landcover/crop classifications):
+            ! Read crop type:
 
             call ac71_read_croptype(n)
 
@@ -778,7 +778,7 @@ subroutine Ac71_setup()
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
 
-                call InitializeRunPart1(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)
+                call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
@@ -946,7 +946,16 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%fWeedNoS = GetfWeedNoS()
                 AC71_struc(n)%ac71(t)%onset = GetOnset()
                 AC71_struc(n)%ac71(t)%simulparam = GetSimulParam()
-                ! In case of restart, variables will be overwritten
+
+                if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then !make it flex
+                    AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
+                endif
+                ! In case of restart, variables will be overwritten when reading the restart file
+                ! Some variables need to be manually overwritten to avoid any reset
+                !if (LIS_rc%startcode .eq. "restart") then
+                !    AC71_struc(n)%ac71(t)%Simulation%ResetIniSWC = .false.
+                !    AC71_struc(n)%ac71(t)%Simulation%IniSWC_AtFC = .false.
+                !endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
 end subroutine Ac71_setup
