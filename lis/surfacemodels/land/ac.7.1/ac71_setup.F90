@@ -723,16 +723,25 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%Penetrability = 100.0
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%GravelMass = 10.0
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%Description = 'soil type from LIS'
-                AC71_struc(n)%ac71(t)%SoilLayer(2) = AC71_struc(n)%ac71(t)%SoilLayer(1)
-                AC71_struc(n)%ac71(t)%SoilLayer(2)%GravelMass = 0.0
 
                 AC71_struc(n)%ac71(t)%ProfDescription = 'soil profile from LIS'
-                
+
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%Thickness = AC71_struc(n)%Thickness(1)
-                AC71_struc(n)%ac71(t)%SoilLayer(2)%Thickness = AC71_struc(n)%Thickness(2)
-                AC71_struc(n)%ac71(t)%SoilLayer(3) = AC71_struc(n)%ac71(t)%SoilLayer(2)
-                AC71_struc(n)%ac71(t)%SoilLayer(4) = AC71_struc(n)%ac71(t)%SoilLayer(2)
-                AC71_struc(n)%ac71(t)%SoilLayer(5) = AC71_struc(n)%ac71(t)%SoilLayer(2)
+
+                ! loop if more than 2 layers
+                if (AC71_struc(n)%NrSoilLayers.gt.1) then
+                    do l = 2, AC71_struc(n)%NrSoilLayers
+                        AC71_struc(n)%ac71(t)%SoilLayer(l) = AC71_struc(n)%ac71(t)%SoilLayer(1)
+                        AC71_struc(n)%ac71(t)%SoilLayer(l)%Thickness = AC71_struc(n)%Thickness(l)
+                        AC71_struc(n)%ac71(t)%SoilLayer(l)%GravelMass = 0.0
+                    enddo
+                endif
+
+                if (AC71_struc(n)%NrSoilLayers.lt.5) then !repeat the last layer
+                    do l = AC71_struc(n)%NrSoilLayers+1, 5
+                        AC71_struc(n)%ac71(t)%SoilLayer(l) = AC71_struc(n)%ac71(t)%SoilLayer(AC71_struc(n)%NrSoilLayers)
+                    enddo
+                endif
                 
                 AC71_struc(n)%ac71(t)%Soil%NrSoilLayers = AC71_struc(n)%NrSoilLayers
                 AC71_struc(n)%ac71(t)%NrCompartments = AC71_struc(n)%max_No_compartments
@@ -784,9 +793,6 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
 
                 ! Set AC71_struc after Initialization
-                do l=1, AC71_struc(n)%ac71(t)%NrCompartments
-                     AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
-                enddo
                 AC71_struc(n)%ac71(t)%Bin = GetBin()
                 AC71_struc(n)%ac71(t)%Bout = GetBout()
                 AC71_struc(n)%ac71(t)%BprevSum = GetBprevSum()
@@ -950,12 +956,6 @@ subroutine Ac71_setup()
                 if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then !make it flex
                     AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
                 endif
-                ! In case of restart, variables will be overwritten when reading the restart file
-                ! Some variables need to be manually overwritten to avoid any reset
-                !if (LIS_rc%startcode .eq. "restart") then
-                !    AC71_struc(n)%ac71(t)%Simulation%ResetIniSWC = .false.
-                !    AC71_struc(n)%ac71(t)%Simulation%IniSWC_AtFC = .false.
-                !endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
 end subroutine Ac71_setup
