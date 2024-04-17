@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
 # SCRIPT: forecast_task_03.py
 #
-# PURPOSE: Reorganizes the downloaded nmme data into a format for further
+# PURPOSE: Reorganizes the downloaded NMME data into a format for further
 # processing. Based on FORECAST_TASK_03.sh.
 #
 # REVISION HISTORY:
@@ -12,6 +23,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import sys

@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
@@ -240,7 +239,7 @@ def _create_final_filename(output_dir, fcst_date, curdt, model_forcing, domain):
         sys.exit(1)
     return name
 
-def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
+def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file, fcst_date):
     """Copy LDT, NoahMP and HYMAP2 fields into same file."""
 
     src1 = nc4_dataset(noahmp_file, "r")
@@ -287,7 +286,7 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
                       "RelSMC_tavg"]:
             dst.createVariable(name, variable.datatype, \
-                               ("ensemble", "soil_layer", "lat", "lon"),zlib=True,
+                               ("ensemble", "time", "soil_layer","lat", "lon"),zlib=True,
                                complevel=6, shuffle=True)
         else:
             # Need to account for new CF dimension names
@@ -297,6 +296,10 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
                     dimensions.append(dimension_dict[dimension])
                 else:
                     dimensions.append(dimension)
+            if len(dimensions) == 3:
+                dimensions = ['ensemble', 'time', 'lat', 'lon']
+            if name == "Landcover_inst" or name == "Soiltype_inst" or name == "Elevation_inst":
+                dimensions = ['lat', 'lon']
             var = dst.createVariable(name, variable.datatype,
                                      dimensions,zlib=True, complevel=6, shuffle=True )
             if name == "Landcover_inst":
@@ -360,6 +363,8 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
                 dimensions.append(dimension_dict[dimension])
             else:
                 dimensions.append(dimension)
+        if len(dimensions) == 3:
+                dimensions = ['ensemble', 'time', 'lat', 'lon']
         dst.createVariable(name, variable.datatype,
                            dimensions,zlib=True, complevel=6, shuffle=True )
         # Extra CF attributes
@@ -409,6 +414,12 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
     }
     dst["soil_layer_thickness"].setncatts(attrs)
 
+    # add atime forecast_reference_time
+    dst.createVariable("atime", "f8")
+    attrs = {"standard_name": "forecast_reference_time",
+             "units": "hours since " + fcst_date.strftime("%Y-%m-%d") + " 00:00"}
+    dst["atime"].setncatts(attrs)
+
     # Write data from src1
     for name, variable in src1.variables.items():
         # Special handling for lat and lon, which should be 1d arrays
@@ -422,12 +433,17 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
         elif name in ["SoilMoist_tavg", "SoilTemp_tavg",
                       "RelSMC_tavg"]:
             _ns = dst.dimensions["soil_layer"].size
-            for i in range(0, _ns):
-                dst[name][:,i,:,:] = src1[name][i,:,:,:]
-        elif len(variable.dimensions) == 4:
-            dst[name][:,:,:,:] = src1[name][:,:,:,:]
+            _es = dst.dimensions["ensemble"].size
+            for e in range(0, _es):
+                for i in range(0, _ns):
+                    dst[name][e,0,i,:,:] = src1[name][i,e,:,:]
+        #elif len(variable.dimensions) == 4:
+        #    dst[name][:,0,:,:,:] = src1[name][:,:,:,:]
         elif len(variable.dimensions) == 3:
-            dst[name][:,:,:] = src1[name][:,:,:]
+            if name == "Landcover_inst" or name == "Soiltype_inst" or name == "Elevation_inst":
+                dst[name][:,:] = src1[name][0,:,:]
+            else:
+                dst[name][:,0,:,:] = src1[name][:,:,:]
         elif len(variable.dimensions) == 2:
             dst[name][:,:] = src1[name][:,:]
         elif len(variable.dimensions) == 1:
@@ -439,16 +455,16 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
             nens = prec.shape[0]
             for i in range (0, nens):
                 prec[i,:,:] = np.where(mask ==1, prec[i,:,:],-9999.)
-            dst[name][:] = prec
+            dst[name][:,0,:,:] = prec
 
     # Write data from src2
     for name, variable in src2.variables.items():
         if name in src2_excludes:
             continue
         if len(variable.dimensions) == 4:
-            dst[name][:,:,:,:] = src2[name][:,:,:,:]
+            dst[name][:,0,:,:,:] = src2[name][:,:,:,:]
         elif len(variable.dimensions) == 3:
-            dst[name][:,:,:] = src2[name][:,:,:]
+            dst[name][:,0,:,:] = src2[name][:,:,:]
         elif len(variable.dimensions) == 2:
             dst[name][:,:] = src2[name][:,:]
         elif len(variable.dimensions) == 1:
@@ -461,6 +477,9 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
     dst["time_bnds"][0,0] = -1440.
     dst["time_bnds"][0,1] = 0.
 
+    # writ atime
+    dst["atime"][()] = 0.
+
     # Write soil layer data
     dst["soil_layer"][0] = 1
     dst["soil_layer"][1] = 2
@@ -470,12 +489,13 @@ def _merge_files(ldtfile, noahmp_file, hymap2_file, merge_file):
     dst["soil_layer_thickness"][1] = 0.3
     dst["soil_layer_thickness"][2] = 0.6
     dst["soil_layer_thickness"][3] = 1.0
+    del dst['time'].time_increment
 
     src1.close()
     src2.close()
     src3.close()
     dst.close()
-
+    sys.exit()
 # Test driver
 if __name__ == "__main__":
 
@@ -491,4 +511,4 @@ if __name__ == "__main__":
 
     _ldtfile = _config['SETUP']['supplementarydir'] + '/lis_darun/' + \
         _config["SETUP"]["ldtinputfile"]
-    _merge_files(_ldtfile, _noahmp_file, _hymap2_file, _final_file)
+    _merge_files(_ldtfile, _noahmp_file, _hymap2_file, _final_file, _fcst_date)

@@ -1,5 +1,15 @@
 #!/bin/sh
-#
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+# 
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #  Title:  CFSv2 Operational Timeseries (Oper_TS) Download Script
 #
 #  Source:  NOAA NCEI Data Archive Center
@@ -47,10 +57,76 @@ neighb_days(){
 }
 
 print_message(){
-    echo "Note: if all recommended substitutes are also not available, you could try a different forecast hour from any of above dates." >> $CFSV2_LOG
+    echo "Note: If all recommended substitutes are also not available, you could try a different forecast hour from any of above dates." >> $CFSV2_LOG
     echo ""  >> $CFSV2_LOG
 }
 
+ret_code_pipe=$(mktemp)
+main_loop() {
+    # Initial forecast dates:
+    for prevmondays in ${day1} ${day2} ${day3}; do
+    
+	icdate=${year2}${prevmon}${prevmondays}
+	#echo ${icdate}
+	mkdir -p ${icdate}
+	cd ${icdate}
+    
+	# Loop over variable type:
+	for vartype in dlwsfc dswsfc q2m wnd10m prate tmp2m pressfc; do
+	
+	    # Forecast cycle (00,06,12,18):
+	    for cycle in 00 06 12 18; do
+		#echo "Cycle :: "${cycle}
+		# File to be downloaded:
+		if [ "$download" = 'Y' ] || [ "$download" = 'y' ]; then
+		    file=${srcdir}/cfs.${icdate}/${cycle}/time_grib_01/${vartype}.01.${icdate}${cycle}.daily.grb2
+		    if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+			wget ${file}
+		    fi
+		fi
+	    
+		# File check 1: missing file
+		if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+		    have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
+		    if [[ $have_patch == "" ]]; then
+			echo "${vartype}.01.${icdate}${cycle}.daily.grb2:  MISSING " >> $CFSV2_LOG
+			echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
+			neighb_days ${vartype} $icdate ${cycle} ${mon}
+			ret_code=1
+		    fi
+		fi
+	    
+		# File check 2: corrupted file
+		if [ -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
+		    python $LISHDIR/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
+		    py_code=$?
+		
+		    if [ $py_code -gt 0 ]; then
+			have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
+			if [[ $have_patch == "" ]]; then
+			    echo "${vartype}.01.${icdate}${cycle}.daily.grb2: CORRUPTED ">> $CFSV2_LOG
+			    echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
+			    neighb_days ${vartype} $icdate ${cycle} ${mon}
+			    ret_code=1
+			else
+			    supfile=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}  | cut -d',' -f3 | tr -d ' '`
+			    python $LISHDIR/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
+			    py_code=$?
+			    if [ $py_code -gt 0 ]; then
+				echo "${vartype}.01.${icdate}${cycle}.daily.grb2: Replacement ${supfile} is also CORRUPTED!" >> $CFSV2_LOG
+				echo "Try downloading the next file (DON'T forget to update ${patchfile}"                    >> $CFSV2_LOG
+				neighb_days ${vartype} $icdate ${cycle} ${mon}
+				ret_code=1
+			    fi		    
+			fi
+		    fi
+		fi
+	    done
+	done
+	cd ../
+    done
+    echo $ret_code > $ret_code_pipe
+}
 # ________________________________________________________________
 # Main script
 # ________________________________________________________________
@@ -72,8 +148,8 @@ do
 	   echo "---------------------------------"
 	   echo "  YEAR:        forecast start year"
 	   echo "  MONTH:       forecast start month [1 to 12]"
-	   echo "  CONFIG_FILE: E2E main config file for forecast with the full path of the E2E directory"
-	   echo "  DOWNLOAD: Download CFSv2 forcings (Y/N). If N only the file check will be perdormed."
+	   echo "  CONFIG_FILE: E2ES main config file for forecast with the full path of the E2ES directory"
+	   echo "  DOWNLOAD: Download CFSv2 forcings (Y/N). If N only the file check will be performed."
 	   exit 1 
 	   ;;	 	   
   esac
@@ -157,7 +233,7 @@ ulimit -s unlimited
   /bin/rm -f $CFSV2_LOG
 
 echo " #####################################################################################" >> $CFSV2_LOG
-echo "                                  MISSING/CORRUPTED CFSv2 FILES                       " >> $CFSV2_LOG
+echo "                                  MISSING/INCOMPLETE CFSV2 FILES                      " >> $CFSV2_LOG
 echo " #####################################################################################" >> $CFSV2_LOG
 echo "                         " >> $CFSV2_LOG
 echo "  A replacement file is required for each missing or corrupted file. CFSv2 replacement files are saved in:" >> $CFSV2_LOG
@@ -292,76 +368,26 @@ elif [ ${mon} -eq "12" ]; then
 fi
 echo "Previous mon,days 1-2-3 :: "${prevmon}", "${day1}"-"${day2}"-"${day3}
 echo " "
-echo "=============================================================================================================="
-echo "Please wait. CFSv2 file checker is running  to ensure all forcings files are available and not corrupted......"
-echo "=============================================================================================================="
+echo "=================================================================================================="
+echo " CFSv2 file checker is running to ensure all forcings files are available and not corrupted......"
+echo "=================================================================================================="
 
-# Initial forecast dates:
-for prevmondays in ${day1} ${day2} ${day3}; do
-    
-    icdate=${year2}${prevmon}${prevmondays}
-    #echo ${icdate}
-    mkdir -p ${icdate}
-    cd ${icdate}
-    
-    # Loop over variable type:
-    for vartype in dlwsfc dswsfc q2m wnd10m prate tmp2m pressfc; do
-	
-	# Forecast cycle (00,06,12,18):
-	for cycle in 00 06 12 18; do
-            #echo "Cycle :: "${cycle}
-            # File to be downloaded:
-	    if [ "$download" = 'Y' ] || [ "$download" = 'y' ]; then
-		file=${srcdir}/cfs.${icdate}/${cycle}/time_grib_01/${vartype}.01.${icdate}${cycle}.daily.grb2
-		if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		    wget ${file}
-		fi
-	    fi
-	    
-	    # File check 1: missing file
-	    if [ ! -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
-		if [[ $have_patch == "" ]]; then
-		    echo "${vartype}.01.${icdate}${cycle}.daily.grb2:  MISSING " >> $CFSV2_LOG
-		    echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
-		    neighb_days ${vartype} $icdate ${cycle} ${mon}
-		    ret_code=1
-		fi
-	    fi
-	    
-	    # File check 2: corrupted file
-	    if [ -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		python $LISHDIR/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
-		py_code=$?
-		
-		if [ $py_code -gt 0 ]; then
-		    have_patch=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}`
-		    if [[ $have_patch == "" ]]; then
-			echo "${vartype}.01.${icdate}${cycle}.daily.grb2: CORRUPTED ">> $CFSV2_LOG
-			echo "Possible substitutes in order of preference are:"      >> $CFSV2_LOG
-			neighb_days ${vartype} $icdate ${cycle} ${mon}
-			ret_code=1
-		    else
-			supfile=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}  | cut -d',' -f3 | tr -d ' '`
-			python $LISHDIR/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
-			py_code=$?
-			if [ $py_code -gt 0 ]; then
-			    echo "${vartype}.01.${icdate}${cycle}.daily.grb2: Replacement ${supfile} is also CORRUPTED!" >> $CFSV2_LOG
-			    echo "Try downloading the next file (DON'T forget to update ${patchfile}"                    >> $CFSV2_LOG
-			    neighb_days ${vartype} $icdate ${cycle} ${mon}
-			    ret_code=1
-			fi		    
-		    fi
-		fi
-	    fi
-	done
+# Run the main loop
+main_loop &
+
+# Display the rotating hyphen animation
+animation="-\|/"
+while kill -0 $! >/dev/null 2>&1; do
+    for (( i=0; i<${#animation}; i++ )); do
+        echo -ne "\rPlease wait... ${animation:$i:1}"
+        sleep 0.1
     done
-    cd ../
 done
+ret_code=$(cat $ret_code_pipe)
+/bin/rm $ret_code_pipe
 
-cd ${cfsv2datadir}
 if [ $ret_code -gt 0 ]; then
-    echo "*** Missing or Corrupted CFSv2 forcing files were found ***."
+    echo "*** Missing or Incomplete CFSv2 forcing files were found ***."
     echo "Please follow the instructions in:"
     echo $CFSV2_LOG
     print_message
@@ -375,13 +401,8 @@ else
     echo "**************************************************************"
     
 fi  
-echo " -- Done downloading CFSv2 Reforecast files -- "
+echo " -- Done checking (and/or downloading) CFSv2 Forecast files -- "
+
 exit $ret_code
 # ____________________________
 
-
-
-#  https://oceanobservatories.org/knowledgebase/how-can-i-download-all-files-at-once-from-a-data-request/
-#  url=https://www.ncei.noaa.gov/thredds/catalog/model-cfs_refor_6h_9m_flx/2007/200711/20071127/catalog.html
-#  wget -r -l2 -nd -nc -np -e robots=off -A.grb2 --no-check-certificate  ${url}
-#

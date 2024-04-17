@@ -1,8 +1,18 @@
 #!/bin/bash
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+# 
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+# -------------------------END NOTICE -- DO NOT EDIT-----------------------
 #
 # Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
 #
-#  Date: 02-01-2023;  Latest version
+#  Date: 08-01-2023;  Latest version
 #
 
 ######################################################################
@@ -570,7 +580,7 @@ bcsd_fcst(){
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -j $jobname
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
     job_list="$jobname*.j"
@@ -591,7 +601,7 @@ bcsd_fcst(){
     jobname=bcsd05
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -M $model -j $jobname    
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -611,7 +621,7 @@ bcsd_fcst(){
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd06
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 4 -j $jobname
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -636,7 +646,7 @@ bcsd_fcst(){
     jobname=bcsd08
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -M $model -j $jobname    
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -849,10 +859,10 @@ s2smetrics(){
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
+	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
     done
     
-    job_list=`ls $jobname*.j`
+    job_list=`ls $jobname*anom_run.j`
     s2smetric_ID=
     for jfile in $job_list
     do
@@ -947,7 +957,16 @@ fi
 #                        Set up scratch directory
 #######################################################################
 
+# Setfacl command: Applied here to allow multiple users to write
+#  to the same E2ES directories, if needed.
+#
+# Note: After initial time this script is run and multiple users
+#     are established, it may be helpful to comment out the setfacl
+#     line, since it can slow down over time, given the number of
+#     files in the E2ES directory.
+
 setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
+
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
 mkdir -p -m 775 ${SCRDIR}/lis_fcst
@@ -958,6 +977,8 @@ if [ $DATATYPE  == "forecast" ]; then
     mkdir -p -m 775 ${SCRDIR}/lis_darun
     mkdir -p -m 775 ${SCRDIR}/s2smetric
     mkdir -p -m 775 ${SCRDIR}/s2splots
+
+#   Check for CFSv2 files being ready to read in:
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
 	if [[ $STEP == "E2E" ]] || [[ $STEP == "BCSD" ]]; then
 	    download_forecasts
@@ -965,17 +986,24 @@ if [ $DATATYPE  == "forecast" ]; then
     else
 	echo
 	# CFSv2 forecast
-	sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
-	ret_code=$?
+        sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
+        ret_code=$?
+
 	if [ $ret_code -gt 0 ]; then
+            echo " Error return code from the CFSv2 file download checker :: "${ret_code}
+            echo " > 0 :: Exiting from s2s_run.sh --"
      	    exit
 	fi
-	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecats is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)?" YESORNO
-	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
-	    exit
-	fi
+# -----------------
+#  NOTE: Turned off user-specified check below since run from cron env for operations ...
+#	read -p "WARNING: Downloading ${YYYY}${MM} NMME precipitation and CFSv2 forcings forecasts is a prerequisite to run the ${YYYY}${MM} E2E hydrological forecast. Please confirm, have you downloaded CFSv2 and NMME forecasts already (Y/N)? " YESORNO
+#	if [ "$YESORNO" = 'N' ] || [ "$YESORNO" = 'n' ]; then
+#	    exit
+#	fi
+# -----------------
     fi
 fi
+
 MODELS=`grep NMME_models $CFILE | cut -d'[' -f2 | cut -d']' -f1 | sed 's/,//g'`
 
 cd ${BWD}

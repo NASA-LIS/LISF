@@ -7,10 +7,10 @@
 #This module bias corrects a forecasts following probability
 #mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
 
-from __future__ import division
+
+
 import os
 import sys
 from datetime import datetime
@@ -26,17 +26,28 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from bcsd_stats_functions import get_domain_info
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
+
+CF2VAR = {
+    'PRECTOT': 'PRECTOT',
+    'LWGAB': 'LWS',
+    'SWGDN': 'SLRSF',
+    'PS': 'PS',
+    'QV2M':'Q2M',
+    'T2M': 'T2M',
+    'U10M': 'WIND',
+    }
 
 def scale_forcings (mon_bc_value, mon_raw_value, input_raw_data, bc_var = None):
     ''' perform scaling '''
-    output_bc_data = np.ones(len(input_raw_data))*-999
+    output_bc_data = np.ones(len(input_raw_data))*-9999.
 
     if bc_var == 'PRCP':
         if mon_raw_value == 0.:
-            correction_factor = mon_bc_value
-            ## HACK## for when input monthly value is 0
-            output_bc_data[:] = correction_factor
+            output_bc_data[:] = mon_bc_value
         else:
             correction_factor = mon_bc_value/mon_raw_value
             output_bc_data[:] = input_raw_data[:]*correction_factor
@@ -175,7 +186,7 @@ for MON in [INIT_FCST_MON]:
             # and define array to store output file
             OUTFILE = SUBDAILY_OUTFILE_TEMPLATE.format(OUTDIR, OBS_VAR, \
             FCST_YEAR, FCST_MONTH)
-            OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-999
+            OUTPUT_BC_DATA = np.ones((NUM_TIMESTEPS, len(LATS), len(LONS)))*-9999.
             # Monthly raw data
             if FCST_VAR != 'PRECTOT':
                 MONTHLY_INFILE = MONTHLY_RAW_INFILE_TEMPLATE.format(\
@@ -237,19 +248,25 @@ for MON in [INIT_FCST_MON]:
 
             ### Finish correcting values for all timesteps in the given
             ### month and ensemble member
+            # clip limits
+            if OBS_VAR == 'PRECTOT':
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR), precip=True)
+            else:
+                OUTPUT_BC_DATA = limits.clip_array(OUTPUT_BC_DATA, var_name=CF2VAR.get(OBS_VAR))
+
             print(f"Now writing {OUTFILE}")
             OUTPUT_BC_DATA = np.ma.masked_array(OUTPUT_BC_DATA, \
-            mask=OUTPUT_BC_DATA == -999)
+                                                mask=OUTPUT_BC_DATA == -9999.)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
             range(NUM_TIMESTEPS)]
 
             if DOMAIN == 'AFRICOM':
                 write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 39.875, 59.875, -39.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 39.875, 59.875, -39.875, \
                                 -19.875, 0.25, 0.25, 21600)
             if DOMAIN == 'GLOBAL':
                 write_bc_netcdf(OUTFILE, OUTPUT_BC_DATA, OBS_VAR, \
                                 'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 5, 89.875, 179.875, -89.875, \
+                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 89.875, 179.875, -89.875, \
                                 -179.875, 0.25, 0.25, 21600)
