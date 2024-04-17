@@ -498,10 +498,23 @@ subroutine Ac71_setup()
         integer(int32) :: TotalSimRuns
 
         mtype = LIS_rc%lsm_index
+
         
         do n=1, LIS_rc%nnest
             ! allocate memory for place holder for #n nest
             allocate(placeholder(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+
+            ! Check for AC simulation period start at LIS start for coldstart
+            if (trim(LIS_rc%startcode) .eq. "coldstart") then
+                if ((AC71_struc(n)%Sim_AnnualStartMonth.eq.LIS_rc%smo) &
+                    .and.(AC71_struc(n)%Sim_AnnualStartDay.eq.LIS_rc%sda)) then
+                    write(LIS_logunit, *) 'AC coldstart: simulation period start matches LIS start'
+                else
+                    write(LIS_logunit, *) 'AC coldstart: simulation period start does not match LIS start'
+                    write(LIS_logunit, *) 'program stopping ...'
+                    call LIS_endrun
+                endif
+            endif
             
             !------------------------------------!
             ! reading spatial spatial parameters !
@@ -540,22 +553,29 @@ subroutine Ac71_setup()
                 ! MB: for current generic crop this is fixed to 1
                 call set_project_input(l, 'Simulation_YearSeason', 1_int8)
                 ! Simulation
-                call LIS_get_julhr(LIS_rc%syr+(l-1), 1,1,0,0,0,time1julhours)
-                call LIS_get_julhr(LIS_rc%syr+(l-1),12,31,0,0,0,time2julhours)
+                call LIS_get_julhr(LIS_rc%syr+(l-1), AC71_struc(n)%Sim_AnnualStartMonth, &
+                                   AC71_struc(n)%Sim_AnnualStartDay,0,0,0,time1julhours)
+                if (AC71_struc(n)%Sim_AnnualEndMonth.gt.AC71_struc(n)%Sim_AnnualStartMonth) then
+                    call LIS_get_julhr(LIS_rc%syr+(l-1), AC71_struc(n)%Sim_AnnualEndMonth, &
+                                    AC71_struc(n)%Sim_AnnualEndDay,0,0,0,time2julhours)
+                else
+                    call LIS_get_julhr(LIS_rc%syr+(l), AC71_struc(n)%Sim_AnnualEndMonth, &
+                                    AC71_struc(n)%Sim_AnnualEndDay,0,0,0,time2julhours)
+                endif
                 time1days = (time1julhours - timerefjulhours)/24 + 1
                 time2days = (time2julhours - timerefjulhours)/24 + 1
                 call set_project_input(l, 'Simulation_DayNr1', time1days)
                 call set_project_input(l, 'Simulation_DayNrN', time2days)
                 ! Crop
-                call LIS_get_julhr(LIS_rc%syr+(l-1),AC71_struc(n)%Crop_AnnualStartMonth,AC71_struc(n)%Crop_AnnualStartDay,0,0,0,time1julhours)
-                call LIS_get_julhr(LIS_rc%syr+(l-1),AC71_struc(n)%Crop_AnnualEndMonth,AC71_struc(n)%Crop_AnnualEndDay,0,0,0,time2julhours)
+                call LIS_get_julhr(LIS_rc%syr+(l-1),AC71_struc(n)%Crop_AnnualStartMonth, &
+                                   AC71_struc(n)%Crop_AnnualStartDay,0,0,0,time1julhours)
                 time1days = (time1julhours - timerefjulhours)/24 + 1
-                time2days = (time2julhours - timerefjulhours)/24 + 1
+                !time2days = (time2julhours - timerefjulhours)/24 + 1    !LB set it to same as end sim
                 call set_project_input(l, 'Crop_Day1', time1days)
                 call set_project_input(l, 'Crop_DayN', time2days)
-                !
+                ! Note: '(External)' input sources can vary spatially (e.g. soil, crop, meteo)
                 call set_project_input(l, 'Description', ' LIS ')
-                call set_project_input(l, 'Climate_Info', ' MERRA2_AC ')
+                call set_project_input(l, 'Climate_Info', ' MERRA2_AC ') !LB replace by (External)
                 call set_project_input(l, 'Climate_Filename', '(External)')
                 call set_project_input(l, 'Climate_Directory', '(None)')
                 call set_project_input(l, 'VersionNr', 7.1_dp)
@@ -575,7 +595,7 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Calendar_Filename', '(None)')
                 call set_project_input(l, 'Calendar_Directory', '(None)')
                 call set_project_input(l, 'Crop_Info', '(None)')
-                call set_project_input(l, 'Crop_Filename', '(External)') ! will be overwritten
+                call set_project_input(l, 'Crop_Filename', '(External)')
                 call set_project_input(l, 'Crop_Directory', trim(AC71_struc(n)%PathCropFiles))
                 call set_project_input(l, 'Irrigation_Info', ' LIS ')
                 call set_project_input(l, 'Irrigation_Filename', trim(AC71_struc(n)%Irrigation_Filename))
@@ -953,8 +973,10 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%onset = GetOnset()
                 AC71_struc(n)%ac71(t)%simulparam = GetSimulParam()
 
-                if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then !make it flex
+                if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
+                    .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
                     AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
+                    AC71_struc(n)%ac71(t)%InitializeRun = 1
                 endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo

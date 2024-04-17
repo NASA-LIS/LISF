@@ -114,10 +114,12 @@ module Ac71_lsmMod
         character(len=256) :: Crop_Filename
         character(len=256) :: Management_Filename
         character(len=256) :: Irrigation_Filename
+        integer            :: Sim_AnnualStartDay
+        integer            :: Sim_AnnualEndDay
+        integer            :: Sim_AnnualStartMonth
+        integer            :: Sim_AnnualEndMonth
         integer            :: Crop_AnnualStartDay
-        integer            :: Crop_AnnualEndDay
         integer            :: Crop_AnnualStartMonth
-        integer            :: Crop_AnnualEndMonth
         integer            :: NrSoilLayers
         integer            :: max_No_compartments
         integer            :: Tmin_windowsize
