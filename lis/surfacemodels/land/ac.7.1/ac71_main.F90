@@ -388,13 +388,12 @@ subroutine Ac71_main(n)
             call SetCCiprev(REAL(AC71_struc(n)%ac71(t)%CCiprev, 8))
             call SetCCiTopEarlySen(REAL(AC71_struc(n)%ac71(t)%CCiTopEarlySen, 8))
             call SetCCxWitheredTpotNoS(REAL(AC71_struc(n)%ac71(t)%CCxWitheredTpotNoS, 8))
-            call SetCompartment(AC71_struc(n)%ac71(t)%Compartment) !_Salt _Depo _Theta (Thickness is defined is Ini and same spatially)
-            ! Important when SM gets updates
+            call SetCompartment(AC71_struc(n)%ac71(t)%Compartment)
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     call SetCompartment_theta(l,REAL(AC71_struc(n)%ac71(t)%smc(l),8))
             enddo
             call SetDayFraction(REAL(AC71_struc(n)%ac71(t)%DayFraction, 8))
-            call SetDayNri(AC71_struc(n)%ac71(t)%daynri) ! Could be derived by counting?
+            call SetDayNri(AC71_struc(n)%ac71(t)%daynri)
             call SetDaySubmerged(AC71_struc(n)%ac71(t)%DaySubmerged)
             call SetECstorage(REAL(AC71_struc(n)%ac71(t)%ECstorage, 8))
             call SetHItimesAT(REAL(AC71_struc(n)%ac71(t)%HItimesAT, 8))
@@ -425,15 +424,16 @@ subroutine Ac71_main(n)
             call SetSumKcTopStress(REAL(AC71_struc(n)%ac71(t)%SumKcTopStress, 8))
             call SetSumWaBal(AC71_struc(n)%ac71(t)%SumWaBal)
             call SetSurfaceStorage(REAL(AC71_struc(n)%ac71(t)%SurfaceStorage, 8))
-            call SetTact(REAL(AC71_struc(n)%ac71(t)%Tact, 8)) ! Because GetTact to compute RZ before BUDGET_module --> questionable
+            call SetTact(REAL(AC71_struc(n)%ac71(t)%Tact, 8))
             call SetTactWeedInfested(REAL(AC71_struc(n)%ac71(t)%TactWeedInfested, 8))
             call SetTadj(AC71_struc(n)%ac71(t)%Tadj)
             call SetTimeSenescence(REAL(AC71_struc(n)%ac71(t)%TimeSenescence, 8))
-            call SetTpot(REAL(AC71_struc(n)%ac71(t)%Tpot, 8)) ! Same as Tact
+            call SetTpot(REAL(AC71_struc(n)%ac71(t)%Tpot, 8))
             call SetWeedRCi(REAL(AC71_struc(n)%ac71(t)%WeedRCi, 8))
             call SetZiprev(REAL(AC71_struc(n)%ac71(t)%Ziprev, 8))
 
-            if (.not. ((LIS_rc%mo .eq. 1) .AND. (LIS_rc%da .eq. 1))) then !make it flex
+            if (.not. ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualStartMonth) &
+                .AND. (LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualStartDay))) then !make it flex
                 ! Set logicals
                 if(AC71_struc(n)%ac71(t)%NoMoreCrop.eq.1)then
                     call SetNoMoreCrop(.true.)
@@ -488,7 +488,7 @@ subroutine Ac71_main(n)
 
             !!! initialize run (year)
 
-            if ((LIS_rc%mo .eq. 1) .AND. (LIS_rc%da .eq. 1)) then !make it flex
+            if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
                 call SetClimRecord_DataType(0_int8)
                 call SetClimRecord_fromd(0)
                 call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
@@ -631,8 +631,9 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 0
             endif
 
-            !LB to change --> sim period
-            if ((LIS_rc%mo .eq. 12) .AND. (LIS_rc%da .eq. 31)) then
+            ! Check for end of simulation period
+            if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
+                .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
                 AC71_struc(n)%ac71(t)%InitializeRun = 1
                 !call FinalizeRun1(AC71_struc(n)%ac71(t)%irun, GetTheProjectFile(), AC71_struc(n)%ac71(t)%TheProjectType)
                 !call FinalizeRun2(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)

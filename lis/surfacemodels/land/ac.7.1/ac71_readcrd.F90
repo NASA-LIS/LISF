@@ -43,7 +43,7 @@ subroutine Ac71_readcrd()
 
     allocate(nids(LIS_rc%nnest))
 
-    write(LIS_logunit, *) "Start reading LIS configuration file for AquaCrop.7.1 model"
+    write(LIS_logunit, *) "[INFO] Start reading LIS configuration file for AquaCrop.7.1 model"
     
     ! open NetCDF parameter file for reading global attributes 
     do n=1,LIS_rc%nnest
@@ -64,6 +64,34 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc,"AquaCrop.7.1 restart output interval: not defined")
         call LIS_parseTimeString(time, AC71_struc(n)%rstInterval)
     enddo
+
+    ! First day of year of simulation period
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting day of sim period:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualStartDay, rc=rc)
+        call LIS_verify(rc, "AquaCrop.7.1 starting day of sim period: not defined")
+    enddo
+
+    ! Last day of year of simulation period
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending day of sim period:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualEndDay, rc=rc)
+        call LIS_verify(rc, "AquaCrop.7.1 ending day of sim period: not defined")
+    enddo
+
+    ! First month of year of simulation period
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting month of sim period:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualStartMonth, rc=rc)
+        call LIS_verify(rc, "AquaCrop.7.1 starting month of sim period: not defined")
+    enddo
+
+    ! Last month of year of simulation period
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending month of sim period:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualEndMonth, rc=rc)
+        call LIS_verify(rc, "AquaCrop.7.1 ending month of sim period: not defined")
+    enddo
     
 
     ! First day of year of cropping period
@@ -73,25 +101,12 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc, "AquaCrop.7.1 starting day of crop period: not defined")
     enddo
 
-    ! Last day of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending day of crop period:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualEndDay, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 ending day of crop period: not defined")
-    enddo
 
     ! First month of year of cropping period
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting month of crop period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualStartMonth, rc=rc)
         call LIS_verify(rc, "AquaCrop.7.1 starting month of crop period: not defined")
-    enddo
-
-    ! Last month of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending month of crop period:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualEndMonth, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 ending month of crop period: not defined")
     enddo
 
     ! number of soil compartments
@@ -238,5 +253,5 @@ enddo
 
     deallocate(nids)
 
-    write(LIS_logunit, *) "Finish reading LIS configuration file for AquaCrop.7.1 model"
+    write(LIS_logunit, *) "[INFO] Finish reading LIS configuration file for AquaCrop.7.1 model"
 end subroutine AC71_readcrd
