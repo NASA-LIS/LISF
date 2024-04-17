@@ -24,7 +24,8 @@ subroutine Ac71_coldstart(mtype)
     use LIS_timeMgrMod, only: LIS_date2time
     use Ac71_lsmMod
  !  !AC71
-    use ac_global, only: GetCompartment_theta           
+    use ac_global, only:    GetCompartment_Layer, &
+                            GetCompartment_theta         
 !
 ! !DESCRIPTION:
 !
@@ -48,7 +49,7 @@ subroutine Ac71_coldstart(mtype)
                 !AC71_struc(n)%ac71(t)%InitializeRun = 1 ! gets 1 at end of year 
 
                 do l=1, AC71_struc(n)%ac71(t)%NrCompartments
-                    AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
+                    AC71_struc(n)%ac71(t)%smc(l) = AC71_struc(n)%init_smc(GetCompartment_Layer(l))
                 enddo              
             enddo
         endif

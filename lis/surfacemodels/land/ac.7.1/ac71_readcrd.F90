@@ -67,81 +67,81 @@ subroutine Ac71_readcrd()
     
 
     ! First day of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "Starting day of crop period:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting day of crop period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualStartDay, rc=rc)
-        call LIS_verify(rc, "Starting day of crop period: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 starting day of crop period: not defined")
     enddo
 
     ! Last day of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "Ending day of crop period:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending day of crop period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualEndDay, rc=rc)
-        call LIS_verify(rc, "Ending day of crop period: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 ending day of crop period: not defined")
     enddo
 
     ! First month of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "Starting month of crop period:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting month of crop period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualStartMonth, rc=rc)
-        call LIS_verify(rc, "Starting month of crop period: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 starting month of crop period: not defined")
     enddo
 
     ! Last month of year of cropping period
-    call ESMF_ConfigFindLabel(LIS_config, "Ending month of crop period:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending month of crop period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualEndMonth, rc=rc)
-        call LIS_verify(rc, "Ending month of crop period: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 ending month of crop period: not defined")
     enddo
 
-    ! number of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "max_No_compartments:", rc = rc)
+    ! number of soil compartments
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 max no of compartments:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%max_No_compartments, rc=rc)
-        call LIS_verify(rc, "max_No_compartments: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 max no of compartments: not defined")
     enddo
 
     ! number of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "NrSoilLayers:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 number of soil layers:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%NrSoilLayers, rc=rc)
-        call LIS_verify(rc, "NrSoilLayers: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 number of soil layers: not defined")
     enddo
  
     ! allocate memory for sldpth using nsoil as dimension
     do n=1, LIS_rc%nnest
         allocate(AC71_struc(n)%Thickness(AC71_struc(n)%NrSoilLayers))
-        allocate(AC71_struc(n)%init_smc(AC71_struc(n)%nsoil))
+        allocate(AC71_struc(n)%init_smc(AC71_struc(n)%NrSoilLayers))
     enddo
 
     ! PathNameSimul
-    call ESMF_ConfigFindLabel(LIS_config, "AC_INPUT_PATH:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 input path:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, &
             AC71_struc(n)%PathNameSimul, rc=rc)
-        call LIS_verify(rc, "PathNameSimul: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 input path: not defined")
     enddo
 
     ! CO2_Filename
-    call ESMF_ConfigFindLabel(LIS_config, "CO2_Filename:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 CO2_Filename:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, &
             AC71_struc(n)%CO2_Filename, rc=rc)
-        call LIS_verify(rc, "CO2_Filename: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 CO2_Filename: not defined")
     enddo
  
     ! Management_Filename
-    call ESMF_ConfigFindLabel(LIS_config, "Management_Filename:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 Management_Filename:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, &
             AC71_struc(n)%Management_Filename, rc=rc)
-        call LIS_verify(rc, "Management_Filename: not defined")
+        call LIS_verify(rc, "AquaCrop.7.1 Management_Filename: not defined")
     enddo
  
     ! Irrigation_Filename
     call ESMF_ConfigFindLabel(LIS_config, "Irrigation_Filename:", rc = rc)
     do n=1, LIS_rc%nnest
-        if ( rc == 0) then
+        if (rc == 0) then
             call ESMF_ConfigGetAttribute(LIS_config, &
                  AC71_struc(n)%Irrigation_Filename, rc=rc)
              ! change lis none to AquaCrop (None)
@@ -191,12 +191,12 @@ subroutine Ac71_readcrd()
     enddo
  
     ! thickness of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "Thickness:", rc = rc)
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil layer thickness:", rc = rc)
     do n=1, LIS_rc%nnest
         do i = 1, AC71_struc(n)%NrSoilLayers
             call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Thickness(i), rc=rc)
-            call LIS_verify(rc, 'Thickness: not defined')
-        enddo
+        call LIS_verify(rc, 'AquaCrop.7.1 soil layer thickness: not defined')
+enddo
     enddo
 
     do n=1,LIS_rc%nnest
@@ -231,6 +231,7 @@ subroutine Ac71_readcrd()
         ! volumetric liquid soil moisture
         call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 initial liquid soil moistures:", rc = rc)
         do n=1,LIS_rc%nnest
+            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%init_smc, rc=rc)
             call LIS_verify(rc, "AquaCrop.7.1 initial liquid soil moistures: not defined")
         enddo
     endif

@@ -161,7 +161,8 @@ subroutine Ac71_f2t(n)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
 
         ! lapse-rate correction for ref height > 2 m
-        ! Copied from lapse-rate correction LIS
+        ! Copied from lapse-rate correction of met forcings assuming lapse
+        ! rate of 6.5 degC/km
         elevdiff = AC71_struc(n)%refz_forc - 2. ! ref 2m for AC
         if (elevdiff.gt.0.1) then          
             force_tmp = tmp(tid)
