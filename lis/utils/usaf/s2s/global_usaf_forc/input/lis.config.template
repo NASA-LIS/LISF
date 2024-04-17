@@ -248,7 +248,7 @@ AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
 AGRMET IMERG data directory:               ./input/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-AGRMET IMERG version:                      V06C            # V06C started 9 May 2022
+AGRMET IMERG version:                      V06E            # V06E started 8 Nov 2023
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings

@@ -7,7 +7,9 @@
 # Wood et al. 2002
 # Date: August 06, 2015
 """
-from __future__ import division
+
+
+
 import os
 import sys
 import numpy as np
@@ -62,13 +64,18 @@ if not os.path.exists(OUTDIR):
 INFILE_TEMPLATE = '{}/{:04d}{:02d}/LIS_HIST_{:04d}{:02d}010000.d01.nc'
 OUTFILE_TEMPLATE = '{}/{}_obs_clim.nc'
 
+# Read in LDT landmask - impose on precip field prior to BC:
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+mask = np.array(ldt_xr['LANDMASK'].values)
+
 ## Defining array to store observed data
 OBS_DATA_COARSE = np.empty((((CLIM_EYR-CLIM_SYR)+1)*12, len(LATS), len(LONS)))
 
 MON_COUNTER = 0
 for YEAR in range(CLIM_SYR, CLIM_EYR+1):
     for MON in range(0, 12):
-		    #INFILE = INFILE_TEMPLATE.format(INDIR, YEAR, MON+1, YEAR, MON+1)
+        # INFILE = INFILE_TEMPLATE.format(INDIR, YEAR, MON+1, YEAR, MON+1)
         # LIS_HIST monthly file directory is month + 1
         lis_year = YEAR
         lis_month = MON+2
@@ -78,6 +85,9 @@ for YEAR in range(CLIM_SYR, CLIM_EYR+1):
         INFILE = INFILE_TEMPLATE.format(INDIR, lis_year, lis_month, lis_year, lis_month)
         print (f"Reading Observed Data {INFILE}")
         OBS_DATA_COARSE[MON_COUNTER, ] = read_nc_files(INFILE, VAR_NAME)
+#       Impose mask on precip values:
+        if VAR_NAME == 'Rainf_f_tavg':
+           OBS_DATA_COARSE[MON_COUNTER,mask == 0] = -9999.
         MON_COUNTER+=1
 
 ## Looping through each month and creating time series of quantiles and observed climatology
@@ -111,4 +121,7 @@ CLIM_XR.coords['longitude'] = (('longitude'), LONS)
 
 #Now selecting only the data over the given lat lon box
 SLICED_CLIM_XR = CLIM_XR.sel(longitude=slice(lon1, lon2), latitude=slice(lat1, lat2))
-SLICED_CLIM_XR.to_netcdf(OUTFILE)
+edict = {}
+for var in SLICED_CLIM_XR.data_vars:
+    edict[var] = {"zlib":True, "complevel":6, "shuffle":True, "missing_value": np.nan, "_FillValue": np.nan}
+SLICED_CLIM_XR.to_netcdf(OUTFILE, format="NETCDF4", encoding=edict)

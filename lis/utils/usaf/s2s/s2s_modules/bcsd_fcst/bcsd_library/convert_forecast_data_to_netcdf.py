@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 """
 #------------------------------------------------------------------------------
 #
 # SCRIPT:  convert_forecast_data_to_netcdf.py
 #
-# PURPOSE: Convert NNME GRIB2 files to netCDF.  Based on
+# PURPOSE: Convert CFSv2 GRIB2 files to netCDF.  Based on
 # convert_forecast_data_to_netcdf.scr by Ryan Zamora.
 #
 # REQUIREMENTS as of 04 Nov 2021:
@@ -15,6 +26,7 @@
 #
 #------------------------------------------------------------------------------
 """
+
 
 # Standard modules
 import sys

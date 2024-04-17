@@ -7,10 +7,10 @@
 #This module bias corrects a forecasts following
 #probability mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
-# In[28]:
 """
 
-from __future__ import division
+
+
 import calendar
 import sys
 from datetime import datetime
@@ -22,7 +22,19 @@ import numpy as np
 from shrad_modules import read_nc_files
 from bcsd_stats_functions import write_4d_netcdf, get_domain_info
 from bcsd_function import calc_bcsd
+from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
+
+limits = lim()
+CF2VAR = {
+    'PRECTOT': 'PRECTOT',
+    'LWS': 'LWS',
+    'SLRSF': 'SLRSF',
+    'PS': 'PS',
+    'Q2M':'Q2M',
+    'T2M': 'T2M',
+    'WIND10M': 'WIND',
+    }
 
 ## Usage: <Name of variable in observed climatology>
 ## <Name of variable in reforecast climatology
@@ -165,7 +177,7 @@ def monthly_calculations(mon):
                 read_nc_files(infile, FCST_VAR)[:]
     # Defining array to store bias-corrected monthly forecasts
     correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
-    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-999
+    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.
     print("shape of fcst_coarse: ", fcst_coarse.shape)
 
     # Get the lat/lon indexes for the ranges
@@ -192,7 +204,12 @@ def monthly_calculations(mon):
     TINY, fcst_coarse, correct_fcst_coarse)
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \
-                          mask=correct_fcst_coarse == -999)
+                                             mask=correct_fcst_coarse == -9999.)
+
+    # clip limits - monthly BC NMME precip:
+    correct_fcst_coarse = limits.clip_array(correct_fcst_coarse, \
+            var_name=CF2VAR.get(FCST_VAR))
+
     outfile = OUTFILE_TEMPLATE.format(OUTDIR, FCST_VAR, month_name, \
               TARGET_FCST_SYR, TARGET_FCST_EYR)
     print(f"Now writing {outfile}")
