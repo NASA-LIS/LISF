@@ -274,7 +274,7 @@ contains
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
-    real                    :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
+    real*8                  :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
@@ -501,6 +501,8 @@ contains
 
              ! get UTC
              call get_UTC(n,TIMEsec,UTChr)
+
+             !write(LDT_logunit,*)'EMK: UTChr = ', UTChr
 
              ! retrieve
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
