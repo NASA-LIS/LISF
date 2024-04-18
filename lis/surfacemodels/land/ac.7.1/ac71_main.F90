@@ -33,6 +33,8 @@ subroutine Ac71_main(n)
 !   ! AC module imports
     use ac_global, only: &
                     DegreesDay,&
+                    GenerateDepthMode_ToFC, &
+                    GenerateTimeMode_AllRAW, &
                     GetCCiActual,&
                     GetCCiTopEarlySen,&
                     GetCCiprev,&
@@ -46,6 +48,10 @@ subroutine Ac71_main(n)
                     GetEact,&
                     GetECstorage,& 
                     GetETo,&
+                    GetIrriAfterSeason, &
+                    GetIrriBeforeSeason, &
+                    GetIrriECw, &
+                    GetIrrigation, &
                     GetManagement,&
                     GetRootZoneWC_Actual,&
                     GetRootZoneWC_FC,&
@@ -74,6 +80,8 @@ subroutine Ac71_main(n)
                     GetTmax,& 
                     GetTmin,& 
                     GetTpot,&
+                    IrriMethod_MSprinkler, &
+                    IrriMode_Generate, &
                     SetCCiActual,&
                     SetCCiTopEarlySen,&
                     SetCCiprev,&
@@ -97,6 +105,13 @@ subroutine Ac71_main(n)
                     SetDaySubmerged,&
                     SetECstorage,& 
                     SetETo,&
+                    SetIrriAfterSeason, &
+                    SetIrriBeforeSeason, &
+                    SetIrriECw, &
+                    SetIrriMethod, &
+                    SetIrriMode, &
+                    SetGenerateDepthMode, &
+                    SetGenerateTimeMode, &
                     SetManagement,&
                     SetOutputAggregate,&
                     SetPart1Mult,&
@@ -138,6 +153,7 @@ subroutine Ac71_main(n)
                     AdvanceOneTimeStep, &
                     FinalizeRun1, &
                     FinalizeRun2, &
+                    fIrri_close, &
                     GetBin,&
                     GetBout,&
                     GetCCiActualWeedInfested,&
@@ -164,6 +180,8 @@ subroutine Ac71_main(n)
                     GetHItimesAT1,&
                     GetHItimesAT2,&
                     GetHItimesBEF,&
+                    GetIrriInfoRecord1, &
+                    GetIrriInfoRecord2, &
                     GetNoMoreCrop,&
                     GetPreviousStressLevel,&
                     GetScorAT1,&
@@ -215,6 +233,8 @@ subroutine Ac71_main(n)
                     SetHItimesAT1,&
                     SetHItimesAT2,&
                     SetHItimesBEF,&
+                    SetIrriInfoRecord1, &
+                    SetIrriInfoRecord2, &
                     SetNextSimFromDayNr ,&
                     SetNoMoreCrop,&
                     SetNoYear,&
@@ -486,6 +506,24 @@ subroutine Ac71_main(n)
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
             call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
+            !! If irrigation ON
+            if(LIS_rc%irrigation_type.ne."none") then
+                if(trim(LIS_rc%irrigation_type).eq."Sprinkler") then
+                    call SetIrriAfterSeason(AC71_struc(n)%ac71(t)%IrriAfterSeason)
+                    call SetIrriBeforeSeason(AC71_struc(n)%ac71(t)%IrriBeforeSeason)
+                    call SetIrriECw(AC71_struc(n)%ac71(t)%IrriECw) 
+                    call SetIrriInfoRecord1(AC71_struc(n)%ac71(t)%IrriInfoRecord1)
+                    call SetIrriInfoRecord2(AC71_struc(n)%ac71(t)%IrriInfoRecord2)
+                    call SetIrriMethod(IrriMethod_MSprinkler)
+                    call SetIrriMode(IrriMode_Generate)
+                    call SetGenerateDepthMode(GenerateDepthMode_ToFC)
+                    call SetGenerateTimeMode(GenerateTimeMode_AllRAW)
+                else ! Other options can be implemented later
+                    write(LIS_logunit, *) trim(LIS_rc%irrigation_type), " irrigation type not compatible with AquaCrop.7.1"
+                    call LIS_endrun()
+                endif
+            endif
+
             !!! initialize run (year)
 
             if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
@@ -513,6 +551,9 @@ subroutine Ac71_main(n)
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
+                if(LIS_rc%irrigation_type.ne."none") then
+                    call fIrri_close() !LB check if problem with specific irrigation file
+                endif
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
@@ -574,6 +615,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%HItimesAT1 = GetHItimesAT1()
             AC71_struc(n)%ac71(t)%HItimesAT2 = GetHItimesAT2()
             AC71_struc(n)%ac71(t)%HItimesBEF = GetHItimesBEF()
+            AC71_struc(n)%ac71(t)%Irrigation = GetIrrigation()
             AC71_struc(n)%ac71(t)%Management = GetManagement()
             AC71_struc(n)%ac71(t)%PreviousStressLevel = GetPreviousStressLevel()
             AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
@@ -629,6 +671,15 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 1
             else
                 AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 0
+            endif
+
+            !! If irrigation ON
+            if(LIS_rc%irrigation_type.ne."none") then
+                AC71_struc(n)%ac71(t)%IrriAfterSeason = GetIrriAfterSeason()
+                AC71_struc(n)%ac71(t)%IrriBeforeSeason = GetIrriBeforeSeason()
+                AC71_struc(n)%ac71(t)%IrriECw = GetIrriECw()
+                AC71_struc(n)%ac71(t)%IrriInfoRecord1 = GetIrriInfoRecord1()
+                AC71_struc(n)%ac71(t)%IrriInfoRecord2 = GetIrriInfoRecord2()
             endif
 
             ! Check for end of simulation period

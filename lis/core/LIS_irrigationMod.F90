@@ -114,6 +114,7 @@ contains
 
      ! Parameters to control the GVF threshold based on the range of GVF
      ! (shdmax-shdmin) for which sprinkler irrigation is triggered:(WN)
+     ! Or CC threshold for AquaCrop (LB)
        call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%irrigation_GVFparam1,&
             label="Irrigation GVF parameter 1:",rc=rc)
        call LIS_verify(rc,"Irrigation GVF parameter 1: not defined")
