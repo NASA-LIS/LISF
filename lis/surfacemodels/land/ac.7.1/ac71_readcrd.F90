@@ -148,27 +148,15 @@ subroutine Ac71_readcrd()
     ! Management_Filename
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 Management_Filename:", rc = rc)
     do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, &
-            AC71_struc(n)%Management_Filename, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 Management_Filename: not defined")
-    enddo
- 
-    ! Irrigation_Filename
-    call ESMF_ConfigFindLabel(LIS_config, "Irrigation_Filename:", rc = rc)
-    do n=1, LIS_rc%nnest
         if (rc == 0) then
             call ESMF_ConfigGetAttribute(LIS_config, &
-                 AC71_struc(n)%Irrigation_Filename, rc=rc)
-             ! change lis none to AquaCrop (None)
-             if ((AC71_struc(n)%Irrigation_Filename .eq. 'none') .or. &
-                 (AC71_struc(n)%Irrigation_Filename .eq. 'None')) then
-                 AC71_struc(n)%Irrigation_Filename = '(None)'
-             endif 
+                AC71_struc(n)%Management_Filename, rc=rc)
         else
-            print*,'Irrigation_Filename: not defined --> set to (None)'
-            AC71_struc(n)%Irrigation_Filename = '(None)'
+            write(LIS_logunit, *) 'Management_Filename: not defined --> set to (None)'
+            AC71_struc(n)%Management_Filename = '(None)'
         endif
     enddo
+
 
  
     ! AquaCrop model soil parameter table
