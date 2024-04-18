@@ -310,7 +310,7 @@ MODULE TOOLSUBS
 
       ! Arguments
       character(*), intent(in) :: filename
-      real*4, allocatable, intent(out) :: tb_time_seconds(:,:)
+      real*8, allocatable, intent(out) :: tb_time_seconds(:,:)
       real*4, allocatable, intent(out) :: tb_v_surface_corrected(:,:)
       real*4, allocatable, intent(out) :: tb_lat(:,:), tb_lon(:,:)
       integer*4, allocatable, intent(out) :: tb_qual_flag_v(:,:)
@@ -378,7 +378,7 @@ MODULE TOOLSUBS
 
       ! Get the data
       dataset = "/Brightness_Temperature/tb_lat/"
-      call get_dataset_real_2d(file_id, dataset, n, m, tb_lat, ierr)
+      call get_dataset_real4_2d(file_id, dataset, n, m, tb_lat, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -386,7 +386,7 @@ MODULE TOOLSUBS
          return
       end if
       dataset = "/Brightness_Temperature/tb_lon/"
-      call get_dataset_real_2d(file_id, dataset, n, m, tb_lon, ierr)
+      call get_dataset_real4_2d(file_id, dataset, n, m, tb_lon, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -394,7 +394,8 @@ MODULE TOOLSUBS
          return
       end if
       dataset = "/Brightness_Temperature/tb_time_seconds/"
-      call get_dataset_real_2d(file_id, dataset, n, m, tb_time_seconds, ierr)
+      call get_dataset_real8_2d(file_id, dataset, n, m, tb_time_seconds, &
+           ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -402,7 +403,8 @@ MODULE TOOLSUBS
          return
       end if
       dataset = "/Brightness_Temperature/tb_qual_flag_v/"
-      call get_dataset_integer_2d(file_id, dataset, n, m, tb_qual_flag_v, ierr)
+      call get_dataset_integer2_2d(file_id, dataset, n, m, &
+           tb_qual_flag_v, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -410,15 +412,17 @@ MODULE TOOLSUBS
          return
       end if
       dataset = "/Brightness_Temperature/tb_qual_flag_h/"
-      call get_dataset_integer_2d(file_id, dataset, n, m, tb_qual_flag_h, ierr)
+      call get_dataset_integer2_2d(file_id, dataset, n, m, &
+           tb_qual_flag_h, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
          call freeall(ierr)
          return
       end if
+
       dataset = "/Spacecraft_Data/sc_nadir_angle/"
-      call get_dataset_real_1d(file_id, dataset, n, sc_nadir_angle, ierr)
+      call get_dataset_real4_1d(file_id, dataset, n, sc_nadir_angle, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -426,8 +430,8 @@ MODULE TOOLSUBS
          return
       end if
       dataset = "/Brightness_Temperature/antenna_scan_angle/"
-      call get_dataset_real_2d(file_id, dataset, n, m, antenna_scan_angle, &
-           ierr)
+      call get_dataset_real4_2d(file_id, dataset, n, m, &
+           antenna_scan_angle, ierr)
       if (ierr == 1) then
          call h5fclose_f(file_id, hdferr)
          call h5close_f(hdferr)
@@ -440,7 +444,7 @@ MODULE TOOLSUBS
       dataset = "/Brightness_Temperature/tb_v_surface_corrected/"
       call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
       if (link_exists) then
-         call get_dataset_real_2d(file_id, dataset, n, m, &
+         call get_dataset_real4_2d(file_id, dataset, n, m, &
               tb_v_surface_corrected, &
               ierr)
          if (ierr == 1) then
@@ -452,7 +456,7 @@ MODULE TOOLSUBS
       else
          dataset = "/Brightness_Temperature/tb_v/"
          write(LDT_logunit,*)'[WARN] Will try substituting ', trim(dataset)
-         call get_dataset_real_2d(file_id, dataset, n, m, &
+         call get_dataset_real4_2d(file_id, dataset, n, m, &
               tb_v_surface_corrected, &
               ierr)
          if (ierr == 1) then
@@ -474,7 +478,8 @@ MODULE TOOLSUBS
     contains
 
       ! Internal subroutine
-      subroutine get_dataset_integer_2d(file_id, dataset, n, m, var2d, ierr)
+      subroutine get_dataset_integer2_2d(file_id, dataset, n, m, var2d, &
+           ierr)
 
         ! Defaults
         implicit none
@@ -488,7 +493,7 @@ MODULE TOOLSUBS
         integer, intent(out) :: ierr
 
         ! Locals
-        integer(HID_T) :: dataset_id
+        integer(HID_T) :: dataset_id, datatype_id
         logical :: link_exists
         integer :: hdferr
         integer(HID_T) :: dspace_id
@@ -593,7 +598,9 @@ MODULE TOOLSUBS
         allocate(var2d(n,m))
         var2d = 0
 
-        ! Read the dataset
+        ! Read the dataset.  Fortran doesn't have unsigned integers,
+        ! so we save the 16-bit unsigned integer in a 32-bit signed
+        ! integer (should have the room).
         call h5dread_f(dataset_id, H5T_NATIVE_INTEGER, var2d, dims, hdferr)
         if (hdferr == -1) then
            write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
@@ -616,10 +623,10 @@ MODULE TOOLSUBS
         end if
 
         return
-      end subroutine get_dataset_integer_2d
+      end subroutine get_dataset_integer2_2d
 
       ! Internal subroutine
-      subroutine get_dataset_real_2d(file_id, dataset, n, m, var2d, ierr)
+      subroutine get_dataset_real4_2d(file_id, dataset, n, m, var2d, ierr)
 
         ! Defaults
         implicit none
@@ -633,7 +640,7 @@ MODULE TOOLSUBS
         integer, intent(out) :: ierr
 
         ! Locals
-        integer(HID_T) :: dataset_id
+        integer(HID_T) :: dataset_id, datatype_id
         logical :: link_exists
         integer :: hdferr
         integer(HID_T) :: dspace_id
@@ -739,7 +746,7 @@ MODULE TOOLSUBS
         var2d = 0
 
         ! Read the dataset
-        call h5dread_f(dataset_id, H5T_IEEE_F32LE, var2d, dims, hdferr)
+        call h5dread_f(dataset_id, H5T_NATIVE_REAL, var2d, dims, hdferr)
         if (hdferr == -1) then
            write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
            call h5dclose_f(dataset_id, hdferr)
@@ -761,10 +768,156 @@ MODULE TOOLSUBS
         end if
 
         return
-      end subroutine get_dataset_real_2d
+      end subroutine get_dataset_real4_2d
 
       ! Internal subroutine
-      subroutine get_dataset_real_1d(file_id, dataset, n, var1d, ierr)
+      subroutine get_dataset_real8_2d(file_id, dataset, n, m, var2d, ierr)
+
+        ! Defaults
+        implicit none
+
+        ! Arguments
+        integer(HID_T), intent(in) :: file_id
+        character(*), intent(in) :: dataset
+        integer, intent(out) :: n
+        integer, intent(out) :: m
+        real*8, allocatable, intent(out) :: var2d(:,:)
+        integer, intent(out) :: ierr
+
+        ! Locals
+        integer(HID_T) :: dataset_id, datatype_id
+        logical :: link_exists
+        integer :: hdferr
+        integer(HID_T) :: dspace_id
+        integer(HSIZE_T) :: dims(2), maxdims(2)
+        integer :: rank
+
+        ierr = 0
+
+        ! See if the dataset is in the file
+        call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+        if (.not. link_exists) then
+           write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Get the dataset id
+        call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dspace id for the variable dimensions
+        call h5dget_space_f(dataset_id, dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the rank of the dataset in the file.
+        call h5sget_simple_extent_ndims_f(dspace_id, rank, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get rank for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check that the rank is 2.
+        if (rank .ne. 2) then
+           write(LDT_logunit,*) &
+                '[ERR] Wrong rank for ', trim(dataset), &
+                ', expected 2, found ', rank
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dimensions
+        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close access to the dataspace.
+        call h5sclose_f(dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*) &
+                '[ERR] Cannot close access to dataspace for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Allocate and initialize the array
+        n = dims(1)
+        m = dims(2)
+        allocate(var2d(n,m))
+        var2d = 0
+
+        ! Read the dataset
+        call h5dread_f(dataset_id, H5T_NATIVE_DOUBLE, var2d, dims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Close access to the dataset
+        call h5dclose_f(dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        return
+      end subroutine get_dataset_real8_2d
+
+      ! Internal subroutine
+      subroutine get_dataset_real4_1d(file_id, dataset, n, var1d, ierr)
 
         ! Defaults
         implicit none
@@ -777,7 +930,7 @@ MODULE TOOLSUBS
         integer, intent(out) :: ierr
 
         ! Locals
-        integer(HID_T) :: dataset_id
+        integer(HID_T) :: dataset_id, datatype_id
         logical :: link_exists
         integer :: hdferr
         integer(HID_T) :: dspace_id
@@ -882,7 +1035,7 @@ MODULE TOOLSUBS
         var1d = 0
 
         ! Read the dataset
-        call h5dread_f(dataset_id, H5T_IEEE_F32LE, var1d, dims, hdferr)
+        call h5dread_f(dataset_id, H5T_NATIVE_REAL, var1d, dims, hdferr)
         if (hdferr == -1) then
            write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
            call h5dclose_f(dataset_id, hdferr)
@@ -904,7 +1057,7 @@ MODULE TOOLSUBS
         end if
 
         return
-      end subroutine get_dataset_real_1d
+      end subroutine get_dataset_real4_1d
 
       ! Internal subroutine
       subroutine get_dataset_id(file_id, dataset, dataset_id, ierr, &

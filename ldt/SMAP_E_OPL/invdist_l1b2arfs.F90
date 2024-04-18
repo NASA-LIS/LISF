@@ -219,14 +219,17 @@
      INTEGER(4), PARAMETER :: qualitybit = 0
      REAL(8), PARAMETER :: RE_KM = 6371.228, search_radius = 20.0, PI = 3.141592653589793238, d2r = PI/180.0
      REAL(8)  :: gcdist, lat1, lon1, lat2, lon2
-     REAL*4,DIMENSION(nrows_l1btb,ncols_l1btb) :: tim, tbvl1b_cor
+     REAL*8,DIMENSION(nrows_l1btb,ncols_l1btb) :: tim
+     REAL*4,DIMENSION(nrows_l1btb,ncols_l1btb) :: tbvl1b_cor
      REAL*4,DIMENSION(nrows_l1btb,ncols_l1btb) :: lat_l1b, lon_l1b, antenna_scan_angle
      REAL*4,DIMENSION(ncols_l1btb) :: sc_nadir_angle
      INTEGER*4,DIMENSION(nrows_l1btb,ncols_l1btb) :: tbv_qual_flag, tbh_qual_flag
      INTEGER(4),DIMENSION(:,:),ALLOCATABLE :: zerodistflag
      REAL*8,DIMENSION(:),ALLOCATABLE :: ref_lat, ref_lon
-     REAL*4,DIMENSION(2560,1920) :: arfs_tim, arfs_tbv_cor
-     REAL*4,DIMENSION(2560,1920) :: arfs_wt_tim, arfs_wt_cor_tbv
+     REAL*8,DIMENSION(2560,1920) :: arfs_tim
+     REAL*4,DIMENSION(2560,1920) :: arfs_tbv_cor
+     REAL*8,DIMENSION(2560,1920) :: arfs_wt_tim
+     REAL*4,DIMENSION(2560,1920) :: arfs_wt_cor_tbv
      INTEGER*4,DIMENSION(2560,1920) :: arfs_samplenumv
 
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
@@ -281,8 +284,11 @@
                                 IF (zerodistflag (rr,cc).EQ.0) THEN
 
                                    IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
-                                      arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist)
-                                      arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
+                                      !arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist)
+                                      !arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
+                                      arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / (gcdist*gcdist)
+                                      arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 /  (gcdist*gcdist)
+
                                    END IF
                                    IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0))).GT.1.0D-7) THEN !DO IF NOT FILLVALUE(-9999)
                                       arfs_tbv_cor(rr,cc) = arfs_tbv_cor(rr,cc) + tbvl1b_cor(jj,ii) / SNGL (gcdist*gcdist)
