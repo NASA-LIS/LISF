@@ -15,6 +15,7 @@
 !  18 Dec 2021: Yonghwan Kwon; modified for LDT
 !  09 Feb 2023: Eric Kemp; now processes subset of fields, no output of
 !    data to separate binary files.
+!  19 Apr 2024: Eric Kemp; changed pixel times to REAL*8.
 !
 ! DESCRIPTION: RESAMPLE SMAPL1B TB TO AIR FORCE GRID
 ! INPUT : SMAP - L1B Brightness Temperature
