@@ -272,10 +272,14 @@
                           IF (gcdist < search_radius) THEN !RESAMPLE ONLY WITHIN THE SEARCH RANGE
                              IF (gcdist < 0.0001D0) THEN !The TB is right on the grid center
                                 zerodistflag (rr,cc) = 1
-                                IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                !IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                IF ( .not. tim(jj,ii) < 0) THEN !DO IF NOT FILLVALUE(-9999)
+
                                    arfs_tim(rr,cc) = tim(jj,ii) ; arfs_wt_tim(rr,cc) = 1.0
                                 END IF
-                                IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                !IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                IF ( .not. tbvl1b_cor(jj,ii) < 0 ) THEN !DO IF NOT FILLVALUE(-9999)
+
                                    arfs_tbv_cor(rr,cc) = tbvl1b_cor(jj,ii) ; arfs_wt_cor_tbv(rr,cc) = 1.0
                                    arfs_samplenumv(rr,cc)=1 !Sample number only calculate for correct tb
                                    k=k+1;
@@ -283,14 +287,18 @@
                              ELSE
                                 IF (zerodistflag (rr,cc).EQ.0) THEN
 
-                                   IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                   !IF ((ABS (tim(jj,ii) - (-9999.0)).GT.1.0D-7)) THEN !DO IF NOT FILLVALUE(-9999)
+                                   IF ( .not. tim(jj,ii) < 0 ) THEN !DO IF NOT FILLVALUE(-9999)
+
                                       !arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / SNGL (gcdist*gcdist)
                                       !arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 / SNGL (gcdist*gcdist)
                                       arfs_tim(rr,cc) = arfs_tim(rr,cc) + tim(jj,ii) / (gcdist*gcdist)
                                       arfs_wt_tim(rr,cc) = arfs_wt_tim(rr,cc) + 1.0 /  (gcdist*gcdist)
 
                                    END IF
-                                   IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0))).GT.1.0D-7) THEN !DO IF NOT FILLVALUE(-9999)
+                                   !IF ((ABS (tbvl1b_cor(jj,ii) - (-9999.0))).GT.1.0D-7) THEN !DO IF NOT FILLVALUE(-9999)
+                                  IF ( .not. tbvl1b_cor(jj,ii) < 0 ) THEN !DO IF NOT FILLVALUE(-9999)
+ 
                                       arfs_tbv_cor(rr,cc) = arfs_tbv_cor(rr,cc) + tbvl1b_cor(jj,ii) / SNGL (gcdist*gcdist)
                                       arfs_wt_cor_tbv(rr,cc) = arfs_wt_cor_tbv(rr,cc) + 1.0 /  SNGL (gcdist*gcdist)
                                       arfs_samplenumv(rr,cc)=arfs_samplenumv(rr,cc)+1.0 !Sample number only calculate for correct tb
