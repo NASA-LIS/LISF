@@ -20,7 +20,8 @@ module galwem_forcingMod
 ! REVISION HISTORY:
 ! 11 Mar 2022; Yeosang Yoon; Initial Specification
 ! 08 Sep 2022; Yeosang Yoon, Add codes to read GALWEM 25 DEG dataset
-
+! 11 Jan 2024; Eric Kemp, added third entries for fcsttime and metdata
+!              for temporary storage.
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
@@ -39,7 +40,7 @@ module galwem_forcingMod
   type, public ::  galwem_type_dec
      real                              :: ts
      integer                           :: nc, nr, vector_len   
-     real*8                            :: fcsttime1,fcsttime2
+     real*8                            :: fcsttime1,fcsttime2,fcsttime3
      character(len=LIS_CONST_PATH_LEN) :: odir      !GALWEM forecast forcing Directory
      character*20                      :: runmode
      integer                           :: resol     !GALWEM forecast resolution (17km or 25deg)
@@ -68,7 +69,7 @@ module galwem_forcingMod
      integer                :: init_yr, init_mo, init_da, init_hr
      real, allocatable      :: metdata1(:,:) 
      real, allocatable      :: metdata2(:,:)
-
+     real, allocatable      :: metdata3(:,:)
      integer                :: nmodels   
 
   end type galwem_type_dec
@@ -154,6 +155,7 @@ contains
        
        allocate(galwem_struc(n)%metdata1(LIS_rc%met_nf(findex),LIS_rc%ngrid(n)))
        allocate(galwem_struc(n)%metdata2(LIS_rc%met_nf(findex),LIS_rc%ngrid(n)))
+       allocate(galwem_struc(n)%metdata3(LIS_rc%met_nf(findex),LIS_rc%ngrid(n)))
 
        ! Initialize the forecast initial date-time and grib record:
        galwem_struc(n)%init_yr = LIS_rc%syr
@@ -164,6 +166,7 @@ contains
        galwem_struc(n)%fcst_hour = 0
        galwem_struc(n)%metdata1 = 0
        galwem_struc(n)%metdata2 = 0
+       galwem_struc(n)%metdata3 = 0
        gridDesci = 0
 
        if(galwem_struc(n)%resol == 17) then   !galwem-17km 
@@ -197,6 +200,7 @@ contains
        galwem_struc(n)%mi = galwem_struc(n)%nc*galwem_struc(n)%nr
        galwem_struc(n)%fcsttime1 = 3000.0
        galwem_struc(n)%fcsttime2 = 0.0
+       galwem_struc(n)%fcsttime3 = 0.0
     enddo
 
     do n=1,LIS_rc%nnest
