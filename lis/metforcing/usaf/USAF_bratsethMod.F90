@@ -21,7 +21,11 @@
 ! 03 Jun 2020  Removed Box-Cox transform in precipitation analysis
 !              ........................................Eric Kemp/SSAI/NASA
 ! 29 Nov 2023  Pass QC-rejected obs to OBA files.......Eric Kemp/SSAI/NASA
-!
+! 12 Mar 2024  Restrict BackQC and SuperstatQC to gage reports. Fixed
+!              typo in SuperstatQC threshold...........Eric Kemp/SSAI/NASA
+! 21 Mar 2024  Changed internal BackQC and SuperstatQC logic to only
+!              skip for IMERG.  This allows use with T, RH, and wind
+!              speed analyses..........................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -36,7 +40,7 @@
 !
 ! Bratseth, A M, 1986:  Statistical interpolation by means of successive
 !   corrections.  Tellus, 38A, 439-447.
-! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition,
 !   Wiley, New York, 928 pp.
 ! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
 !   Cambridge, UK, 457 pp.
@@ -3323,7 +3327,7 @@ contains
    !
    ! This implementation is parallelized by distributing work among the
    ! different LIS ESMF PETs.
-   subroutine USAF_superstatQC(this,nest,new_name,network,silent_rejects)
+   subroutine USAF_superstatQC(this,nest,new_name,silent_rejects)
 
       ! Imports
       use LIS_coreMod, only: LIS_domain, LIS_rc, LIS_localPet
@@ -3339,7 +3343,6 @@ contains
       type(USAF_ObsData), intent(inout) :: this
       integer,intent(in) :: nest
       character(len=32), intent(in) :: new_name
-      character(len=*), optional :: network
       logical,optional,intent(in) :: silent_rejects
 
       ! Local variables
@@ -3461,20 +3464,9 @@ contains
             if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
             if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
-            ! Screen by type
-            if (present(network)) then
-               if (trim(network) .eq. "SSMI") then
-                  if (.not. is_ssmi(this%net(j))) cycle
-               else if (trim(network) .eq. "GEOPRECIP") then
-                  if (.not. is_geoprecip(this%net(j))) cycle
-               else if (trim(network) .eq. "CMORPH") then
-                  if (.not. is_cmorph(this%net(j))) cycle
-               else if (trim(network) .eq. "IMERG") then
-                  if (.not. is_imerg(this%net(j))) cycle
-               end if
-            else ! Gauges
-               if (.not. is_gauge(this%net(j))) cycle
-            end if
+            ! Do not apply to IMERG.  But allow application to other
+            ! data sources.
+            if ( is_imerg(this%net(j)) ) cycle
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
             found = .false.
@@ -3518,7 +3510,8 @@ contains
                if (means(gindex) .eq. MISSING) cycle
 
                icount = superob_count(gindex)
-               threshold = 3 * this%sigmaOSqr(j) * &
+               ! EMK 12 Mar 2024...Fixed typo in threshold eqn
+               threshold = 4 * sqrt(this%sigmaOSqr(j)) * &
                     sqrt(real(icount) / real(icount-1))
 
                if (abs(means(gindex) - this%obs(j)) .gt. threshold) then
@@ -4240,6 +4233,10 @@ contains
          if ( this%qc(r) .eq. QC_REJECT) cycle
          if ( this%qc(r) .eq. QC_SUSPECT_SUPERSTATQC) cycle
          if ( this%qc(r) .eq. QC_SUSPECT_BACKQC) cycle
+
+         ! Do not apply to IMERG.  But allow application to other data
+         ! sources.
+         if ( .not. is_imerg(this%net(r)) ) cycle
 
          errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))
          absDiff = abs(this%obs(r) - this%back(r))
