@@ -16,6 +16,7 @@
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 08 Dec 2015: James Geiger, update timing logic
 ! 20 Apr 2023: David Mocko,  initial code (based on merra2)
+! 15 Apr 2024: David Mocko,  updated for CSS filename convention
 !
 ! !INTERFACE:
       subroutine get_geosit(n,findex)
@@ -257,27 +258,19 @@
 !EOP
 
       character*4  :: cyear
-      character*2  :: cyr,cmo,cdy,chr
-      character*16 :: prefix
+      character*2  :: cmo,cdy,chr
+      character*11 :: prefix
       character*31 :: slv_spec,flx_spec,lfo_spec,rad_spec
 
       write(unit=cyear,fmt='(i4.4)') yr
       write(unit=cmo,  fmt='(i2.2)') mo
-      write(unit=chr,  fmt='(i2.2)') hr
       write(unit=cdy,  fmt='(i2.2)') da
+      write(unit=chr,  fmt='(i2.2)') hr
 
-      prefix = 'd5294_geosit_jan'
+      prefix = 'GEOS.it.asm'
       if (yr.lt.1998) then
          write(LIS_logunit,*) '[ERR] GEOS-IT data starts 1 Jan 1998.'
          call LIS_endrun()
-      else
-         cyr = '98'
-      endif
-      if (yr.ge.2008) then
-         cyr = '08'
-      endif
-      if (yr.ge.2018) then
-         cyr = '18'
       endif
 
       slv_spec = '.slv_tavg_1hr_glo_L576x361_slv.'
@@ -286,24 +279,24 @@
       rad_spec = '.rad_tavg_1hr_glo_L576x361_slv.'
 
 ! Single level fields:
-      slvname = trim(geositdir)//'/'//prefix//cyr//'/diag/Y'//cyear//  &
-                '/M'//cmo//'/'//prefix//cyr//slv_spec//cyear//'-'//    &
-                cmo//'-'//cdy//'T'//chr//'30Z.nc4'
+      slvname = trim(geositdir)//'/Y'//cyear//'/M'//cmo//'/D'//cdy//   &
+                '/'//prefix//slv_spec//'GEOS5294.'//cyear//'-'//       &
+                cmo//'-'//cdy//'T'//chr//'30.V01.nc4'
 
 ! Flux fields:
-      flxname = trim(geositdir)//'/'//prefix//cyr//'/diag/Y'//cyear//  &
-                '/M'//cmo//'/'//prefix//cyr//flx_spec//cyear//'-'//    &
-                cmo//'-'//cdy//'T'//chr//'30Z.nc4'
+      flxname = trim(geositdir)//'/Y'//cyear//'/M'//cmo//'/D'//cdy//   &
+                '/'//prefix//flx_spec//'GEOS5294.'//cyear//'-'//       &
+                cmo//'-'//cdy//'T'//chr//'30.V01.nc4'
 
 ! Land surface forcing level:
-      lfoname = trim(geositdir)//'/'//prefix//cyr//'/diag/Y'//cyear//  &
-                '/M'//cmo//'/'//prefix//cyr//lfo_spec//cyear//'-'//    &
-                cmo//'-'//cdy//'T'//chr//'30Z.nc4'
+      lfoname = trim(geositdir)//'/Y'//cyear//'/M'//cmo//'/D'//cdy//   &
+                '/'//prefix//lfo_spec//'GEOS5294.'//cyear//'-'//       &
+                cmo//'-'//cdy//'T'//chr//'30.V01.nc4'
 
 ! Radiation fields:
-      radname = trim(geositdir)//'/'//prefix//cyr//'/diag/Y'//cyear//  &
-                '/M'//cmo//'/'//prefix//cyr//rad_spec//cyear//'-'//    &
-                cmo//'-'//cdy//'T'//chr//'30Z.nc4'
+      radname = trim(geositdir)//'/Y'//cyear//'/M'//cmo//'/D'//cdy//   &
+                '/'//prefix//rad_spec//'GEOS5294.'//cyear//'-'//       &
+                cmo//'-'//cdy//'T'//chr//'30.V01.nc4'
 
       end subroutine geositfiles
 
