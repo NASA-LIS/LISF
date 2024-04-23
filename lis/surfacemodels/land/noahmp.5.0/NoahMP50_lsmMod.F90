@@ -214,6 +214,8 @@ module NoahMP50_lsmMod
         real               :: dz8w
         real               :: dt
         real               :: dt_soil
+        real               :: dx
+        real               :: dy
         real, pointer      :: sldpth(:)
         integer            :: nsoil
         integer            :: nsnow

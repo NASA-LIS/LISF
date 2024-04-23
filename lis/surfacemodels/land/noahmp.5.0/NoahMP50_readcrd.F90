@@ -85,7 +85,25 @@ subroutine NoahMP50_readcrd()
              "NoahMP.5.0 restart output interval: not defined")
         call LIS_parseTimeString(time, Noahmp50_struc(n)%rstInterval)
     enddo
-    
+
+    ! model domain size dx (meter)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "NoahMP.5.0 domain resolution dx:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%dx, rc=rc)
+        call LIS_verify(rc, &
+             "NoahMP.5.0 domain resolution dx: not defined")
+    enddo
+
+    ! model domain size dy (meter)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "NoahMP.5.0 domain resolution dy:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, Noahmp50_struc(n)%dy, rc=rc)
+        call LIS_verify(rc, &
+             "NoahMP.5.0 domain resolution dy: not defined")
+    enddo
+
     !---------------------------!
     ! Constant Parameters       !
     !---------------------------!

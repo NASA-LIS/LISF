@@ -60,10 +60,6 @@ subroutine noahmp_driver_50(n, LISparam)
       call LIS_endrun
    endif
 
-   ! dx is horizontal grid spacing. dx is not used past this point,
-   ! but is used earlier when run_opt=5 (new groundwater scheme).
-   NoahmpIO%dx = 0.0
-
   !!!!! print all the options not supported in offline mode 
   if (NoahmpIO%IOPT_SFC > 2) then
      stop "(opt_sfc == 3) and (opt_sfc == 4) are not for offline use"

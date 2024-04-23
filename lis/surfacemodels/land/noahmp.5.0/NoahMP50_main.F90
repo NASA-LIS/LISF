@@ -208,6 +208,8 @@ subroutine NoahMP50_main(n)
             ! get parameters
             NoahmpIO%xlat(1,1)          = lat
             NoahmpIO%xlon(1,1)          = lon
+            NoahmpIO%msftx(1,1)         = 1.0
+            NoahmpIO%msfty(1,1)         = 1.0
             NoahmpIO%year               = LIS_rc%yr
             NoahmpIO%month              = LIS_rc%mo
             NoahmpIO%day                = LIS_rc%da
@@ -220,6 +222,8 @@ subroutine NoahMP50_main(n)
             NoahmpIO%dzs(:)             = NoahMP50_struc(n)%sldpth(:)
             NoahmpIO%nsoil              = NoahMP50_struc(n)%nsoil
             NoahmpIO%nsnow              = NoahMP50_struc(n)%nsnow
+            NoahmpIO%dx                 = NoahMP50_struc(n)%dx
+            NoahmpIO%dy                 = NoahMP50_struc(n)%dy
             NoahmpIO%ivgtyp(1,1)        = NoahMP50_struc(n)%noahmp50(t)%vegetype
             NoahmpIO%isltyp(1,1)        = NoahMP50_struc(n)%noahmp50(t)%soiltype
             ! Multiply shdfac by 100.0 because noahmpdrv.f90, expects it in units of percentage, not fraction.
@@ -312,8 +316,6 @@ subroutine NoahMP50_main(n)
             ! for MMF groundwater
             if (NoahmpIO%IOPT_RUNSUB == 5) then
                NoahmpIO%fdepthxy(1,1)    = NoahMP50_struc(n)%noahmp50(t)%fdepth
-               NoahmpIO%msftx(1,1)       = 1.0
-               NoahmpIO%msfty(1,1)       = 1.0
                NoahmpIO%eqzwt(1,1)       = NoahMP50_struc(n)%noahmp50(t)%eqzwt
                NoahmpIO%riverbedxy(1,1)  = NoahMP50_struc(n)%noahmp50(t)%riverbed
                NoahmpIO%rivercondxy(1,1) = NoahMP50_struc(n)%noahmp50(t)%rivercond

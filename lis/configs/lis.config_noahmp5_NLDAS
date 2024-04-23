@@ -171,6 +171,8 @@ NoahMP.5.0 restart file format:           netcdf
 NoahMP.5.0 parameter table:               ./input/NoahmpTable.TBL
 NoahMP.5.0 number of soil layers:         4
 NoahMP.5.0 thickness of soil layers:      0.1  0.3  0.6  1.0
+NoahMP.5.0 domain resolution dx:          13897.18     # unit of meter (=0.125deg for NLDAS2)
+NoahMP.5.0 domain resolution dy:          13897.18     # unit of meter (=0.125deg for NLDAS2)
 NoahMP.5.0 dynamic vegetation option:                      4  # Up to 9 different options
 NoahMP.5.0 canopy stomatal resistance option:              1  # 1=Ball-Berry; 2=Jarvis
 NoahMP.5.0 soil moisture factor for stomatal resistance:   1  # 1=Noah; 2=CLM; 3=SSiB

@@ -102,7 +102,7 @@ subroutine NoahMP50_coldstart(mtype)
              do l=1, Noahmp50_struc(n)%nsoil
                NoahmpIO%TSLB(1,l,1)  = Noahmp50_struc(n)%init_tslb(l)
                NoahmpIO%SMOIS(1,l,1) = Noahmp50_struc(n)%init_smc(l)
-               NoahmpIO%SH2O(1,l,1)  = 0.0
+               NoahmpIO%SH2O(1,l,1)  = Noahmp50_struc(n)%init_smc(l)
                NoahmpIO%DZS(l)       = Noahmp50_struc(n)%sldpth(l)
              enddo
 
@@ -162,10 +162,6 @@ subroutine NoahMP50_coldstart(mtype)
              NoahmpIO%rechxy(1,1)      = 0.0
              NoahmpIO%deeprechxy(1,1)  = 0.0
              NoahmpIO%areaxy(1,1)      = 100.0
-             NoahmpIO%dx               = 10.0
-             NoahmpIO%dy               = 10.0
-             NoahmpIO%msftx(1,1)       = 0.0
-             NoahmpIO%msfty(1,1)       = 0.0
              NoahmpIO%wtddt            = 30.0
              NoahmpIO%stepwtd          = 0
              NoahmpIO%dtbl             = NoahMP50_struc(n)%ts
