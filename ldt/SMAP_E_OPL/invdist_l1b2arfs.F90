@@ -215,6 +215,8 @@
         sc_nadir_angle, antenna_scan_angle, nrows_l1btb, ncols_l1btb, &
         ref_lat, ref_lon, arfs_tim, arfs_tbv_cor)
 
+     use LDT_logMod, only: LDT_logunit
+
      INTEGER(4) :: ii, jj, k, r, c, rr, rmin, rmax, cc, cmin, cmax, nrows_l1btb, ncols_l1btb
      INTEGER(4), PARAMETER :: qualitybit = 0
      REAL(8), PARAMETER :: RE_KM = 6371.228, search_radius = 20.0, PI = 3.141592653589793238, d2r = PI/180.0
@@ -233,6 +235,8 @@
      INTEGER*4,DIMENSION(2560,1920) :: arfs_samplenumv
 
      ALLOCATE(zerodistflag(size(ref_lon),size(ref_lat)))
+     zerodistflag = 0 ! EMK Added initialization
+     
      !INITIAL THE OUTPUT VARIABLES
      arfs_tim=0.0
      arfs_tbv_cor=0.0
@@ -243,7 +247,10 @@
      DO ii = 1,ncols_l1btb
         IF (ABS (sc_nadir_angle(ii)) <= 2.0) THEN
            DO jj = 1,nrows_l1btb
+
+              
               IF (ABS (antenna_scan_angle(jj,ii)).LE.360.00) THEN
+
                  lat1 = DBLE (lat_l1b(jj,ii)*d2r)
                  lon1 = DBLE (lon_l1b(jj,ii)*d2r)
                  ! FIND ARFS_GRID (r,c)
@@ -255,6 +262,7 @@
                  cmax=c+5 ; IF (cmax > size(ref_lat)) cmax=size(ref_lat)
 !                 IF (IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(jj,jj),qualitybit,1) == 0) THEN !RESAMPLE ONLY WHEN BOTH V and H MEET QUALITY
                  IF (IBITS (tbv_qual_flag(jj,ii),qualitybit,1) == 0 .AND. IBITS (tbh_qual_flag(jj,ii),qualitybit,1) == 0) THEN !RESAMPLE ONLY WHEN BOTH V and H MEET QUALITY
+
                     k=0
                     !                         DO rr = rmin,rmax !Lon direction
                     !                            DO cc =cmin,cmax !Lat direction
