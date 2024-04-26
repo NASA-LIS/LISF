@@ -3,9 +3,9 @@
 #SBATCH --time=0:20:00
 #SBATCH --account s1189
 #SBATCH --output smapeopl.slurm.out
-#SBATCH --ntasks=13 --ntasks-per-node=13
+#SBATCH --ntasks=13 --ntasks-per-node=13 --constraint="[mil]"
 #SBATCH --mail-type=ALL
-##SBATCH --qos=debug
+#SBATCH --qos=debug
 #--------------------------------------------------------------------------
 #
 # SCRIPT: run_smap_e_opl_discover.sh
@@ -43,13 +43,13 @@ fi
 # Environment
 module purge
 unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules
-module load lisf_7.5_intel_2021.4.0_s2s
+module use --append /home/emkemp/privatemodules/sles15
+module load lisf_7.5_intel_2023.2.1
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/scripts
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/bin
-TMPLDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/tmpl
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/scripts
+BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/bin
+TMPLDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/tmpl
 
 # Get the command line arguments to specify the training period
 if [ -z "$1" ] ; then
