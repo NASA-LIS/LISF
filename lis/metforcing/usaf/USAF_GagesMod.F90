@@ -1753,8 +1753,7 @@ contains
     end do
 
     300 continue
-    close(iunit)
-    call LIS_releaseUnitNumber(iunit)
+    call LIS_releaseUnitNumber(iunit) ! Closes file
 
   end subroutine USAF_gages_write_data
 
@@ -1824,8 +1823,8 @@ contains
        end if
        return
     end if
-    iunit = LIS_getNextUnitNumber()
 
+    iunit = LIS_getNextUnitNumber()
     open(iunit, file=trim(filename), iostat=istat)
     if (istat .ne. 0) then
        write(LIS_logunit,*)'[WARN] Problem opening ', trim(filename)
@@ -1837,6 +1836,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
+       call LIS_releaseUnitNumber(iunit)
        return
     end if
 
@@ -1852,8 +1852,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        return
     end if
 
@@ -1868,8 +1867,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        return
     end if
 
@@ -1923,8 +1921,7 @@ contains
             i9, 1x, i9)
     end do
 
-    close(iunit)
-    call LIS_releaseUnitNumber(iunit)
+    call LIS_releaseUnitNumber(iunit) ! Closes file
 300 continue
 
     ! If read was successful, copy to USAF_gages_t structure.
