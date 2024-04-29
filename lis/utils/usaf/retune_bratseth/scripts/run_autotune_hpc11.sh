@@ -362,4 +362,5 @@ srun --ntasks=1 --nodes=1 --exclusive --kill-on-bad-exit=1 \
 
 # The end
 echo "INFO, Completed autotuning at `date`"
+touch autotune.job.done
 exit 0
