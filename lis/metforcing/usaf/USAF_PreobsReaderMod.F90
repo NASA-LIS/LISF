@@ -171,6 +171,7 @@ contains
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
           end if
+          call LIS_releaseUnitNumber(iunit)
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
@@ -187,8 +188,7 @@ contains
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
           end if
-          close(iunit)
-          call LIS_releaseUnitNumber(iunit)
+          call LIS_releaseUnitNumber(iunit) ! Closes file
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
@@ -209,9 +209,7 @@ contains
        end if
 
        nsize_total = nsize_total + nsize
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
-
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        if (use_expanded_station_ids == 1) exit ! These files are global
     end do
 
@@ -274,13 +272,14 @@ contains
 
        iunit = LIS_getNextUnitNumber()
        open(iunit, file=trim(filename), status='old', iostat=ierr)
-       if (ierr .ne. 0) cycle
-
+       if (ierr .ne. 0) then
+          call LIS_releaseUnitNumber(iunit)
+          cycle
+       end if
        nsize = 0
        read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
-          close(iunit)
-          call LIS_releaseUnitNumber(iunit)
+          call LIS_releaseUnitNumber(iunit) ! Closes file
           if (use_expanded_station_ids == 1) exit
           cycle
        end if
@@ -552,6 +551,8 @@ contains
              end if
           end if
        end do
+
+       call LIS_releaseUnitNumber(iunit) ! Closes file
 
        if (use_expanded_station_ids == 1) cycle ! These files are global
     end do ! ihemi
