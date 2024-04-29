@@ -1,20 +1,21 @@
 #!/bin/sh
 #SBATCH --job-name=smapeopl
-#SBATCH --time=0:20:00
-#SBATCH --account s1189
+#SBATCH --time=0:30:00
+#SBATCH --account=NWP601
 #SBATCH --output smapeopl.slurm.out
-#SBATCH --ntasks=13 --ntasks-per-node=13 --constraint="[mil]"
-#SBATCH --mail-type=ALL
-#SBATCH --qos=debug
+#SBATCH --ntasks=13 --ntasks-per-node=13
+#SBATCH --cluster-constraint=blue
+#SBATCH --exclusive
+#SBATCH --mem=0
 #--------------------------------------------------------------------------
 #
-# SCRIPT: run_smap_e_opl_discover.sh
+# SCRIPT: run_smap_e_opl_hpc11.sh
 #
 # Batch script for running LDT to generate SMAP_E_OPL retrievals with
-# LDT.  Customized for NASA Discover supercomputer running SLURM batch
+# LDT.  Customized for USAF HPC11 supercomputer running SLURM batch
 # queueing system.
 #
-# USAGE: run_smap_e_opl_discover.sh $startdate $starthour $enddate \
+# USAGE: run_smap_e_opl_hpc11.sh $startdate $starthour $enddate \
 #          $endhour $lsm
 #          where $startdate and $enddate specify the inclusive UTC
 #          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD
@@ -25,10 +26,7 @@
 # Based on Korn shell script provided by Pang-Wei Liu.
 #
 # REVISION HISTORY:
-# 25 Jan 2024: Eric Kemp.  Initial specification.
-# 26 Jan 2024: Eric Kemp.  Added in-script parallelization following
-#     autotuning scripts.
-# 28 Feb 2024: Eric Kemp.  Now uses single node.
+# 29 Mar 2024: Eric Kemp.  Initial specification, based on Discover script.
 #
 #--------------------------------------------------------------------------
 
@@ -41,15 +39,14 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 # Environment
-module purge
-unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules/sles15
-module load lisf_7.5_intel_2023.2.1
+module use --append /ccs/home/emkemp/hpc11/privatemodules
+module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12_draft
+module load afw-python/3.10-202312
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/scripts
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/bin
-TMPLDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/tmpl
+SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/scripts
+BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/bin
+TMPLDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/tmpl
 
 # Get the command line arguments to specify the training period
 if [ -z "$1" ] ; then
@@ -153,6 +150,8 @@ while true; do
         fi
         pid="${PIDS[$i]}"
         # See if pid is still running
+        echo `ps --pid "$pid"`
+
         ps --pid "$pid" > /dev/null
         if [ "$?" -ne 0 ] ; then # ps doesn't see it, so it terminated
            wait "$pid"

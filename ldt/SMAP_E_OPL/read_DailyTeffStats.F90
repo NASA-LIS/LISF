@@ -251,17 +251,19 @@ subroutine get_UTC(n,TIMEsec,UTChr)
 ! 
 ! !USES:
   use LDT_coreMod
+  use LDT_logMod, only: LDT_logunit
 
   implicit none
 
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  real                :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
+  real*8              :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
   real                :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
 
 !EOP
   integer             :: ilat, ilon, imo, ida
-  real                :: TIMEday, TIMEhr
+  real*8              :: TIMEday
+  real                :: TIMEhr
   real                :: UTCyr, UTCmo, UTCda
   integer             :: count_yr, dayremove
 
@@ -269,8 +271,10 @@ subroutine get_UTC(n,TIMEsec,UTChr)
      do ilon=1,LDT_rc%lnc(n)
 
         if (TIMEsec(ilon,ilat).gt.0) then
-           !write(*,*) 'TIMEsec= ', TIMEsec(ilon,ilat)
-           TIMEday = TIMEsec(ilon,ilat)/(60*60*24)
+           !write(LDT_logunit,*) 'EMK: ilon,ilat, TIMEsec= ', &
+           !     ilon, ilat, TIMEsec(ilon,ilat)
+
+           TIMEday = TIMEsec(ilon,ilat)/DBLE(60*60*24)
            !write(*,*) 'TIMEday= ', TIMEday
 
            count_yr = 0
@@ -327,6 +331,10 @@ subroutine get_UTC(n,TIMEsec,UTChr)
               UTCda = UTCda + 1
               UTChr(ilon,ilat) = UTChr(ilon,ilat) - 24
            endif
+
+           !write(LDT_logunit,*) 'EMK: ilon,ilat,TIMEsec,UTChr= ', &
+           !     ilon, ilat, TIMEsec(ilon,ilat), UTChr(ilon,ilat)
+
         else
            UTChr(ilon,ilat) = LDT_rc%udef 
         endif

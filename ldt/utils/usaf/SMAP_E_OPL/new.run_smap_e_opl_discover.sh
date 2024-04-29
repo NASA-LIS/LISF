@@ -3,7 +3,7 @@
 #SBATCH --time=0:20:00
 #SBATCH --account s1189
 #SBATCH --output smapeopl.slurm.out
-#SBATCH --ntasks=13 --ntasks-per-node=13 --constraint="[mil]"
+#SBATCH --ntasks=13 --ntasks-per-node=1
 #SBATCH --mail-type=ALL
 #SBATCH --qos=debug
 #--------------------------------------------------------------------------
@@ -17,10 +17,10 @@
 # USAGE: run_smap_e_opl_discover.sh $startdate $starthour $enddate \
 #          $endhour $lsm
 #          where $startdate and $enddate specify the inclusive UTC
-#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD
-#          or YYYYMMDD); $starthour and $endhour specify the hours of the
-#          respective dates (formatted HH); and $lsm is the LSM name, used
-#          to select the ldt.config template file.
+#          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD);
+#          $starthour and $endhour specify the hours of the respective
+#          dates (formatted HH); and $lsm is the LSM name, used to select
+#          the ldt.config template file.
 #
 # Based on Korn shell script provided by Pang-Wei Liu.
 #
@@ -28,7 +28,6 @@
 # 25 Jan 2024: Eric Kemp.  Initial specification.
 # 26 Jan 2024: Eric Kemp.  Added in-script parallelization following
 #     autotuning scripts.
-# 28 Feb 2024: Eric Kemp.  Now uses single node.
 #
 #--------------------------------------------------------------------------
 
@@ -43,13 +42,13 @@ fi
 # Environment
 module purge
 unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules/sles15
-module load lisf_7.5_intel_2023.2.1
+module use --append /home/emkemp/privatemodules
+module load lisf_7.5_intel_2021.4.0_s2s
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/scripts
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/bin
-TMPLDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/ldt76_smap_e_opl/tmpl
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/scripts
+BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/bin
+TMPLDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_smap_e_opl_scripting/tmpl
 
 # Get the command line arguments to specify the training period
 if [ -z "$1" ] ; then
@@ -99,7 +98,7 @@ elif [ "$lsm" = "noahmp" ] ; then
 elif [ "$lsm" = "jules" ] ; then
     tmplfile="$TMPLDIR/ldt.config.smapeopl.jules.tmpl"
 else
-    echo "ERR, invalid LSM option, expected noah, noahmp, or jules; got $lsm"
+    echo "ERR, invalid LSM option, must be noah, noahmp, or jules"
     exit 1
 fi
 if [ ! -e $tmplfile ] ; then
@@ -128,9 +127,8 @@ while [ "$cur_yyyymmddhh" -le "$end_yyyymmddhh" ] ; do
                  "$tmplfile" $i || exit 1
 
     # Run LDT
-    srun --ntasks=1 --cpus-per-task=1 \
+    srun --ntasks=1 --nodes=1 --exclusive \
          $BINDIR/LDT ldt.config.smapeopl."$cur_yyyymmddhh" &
-
     PIDS+=($!)
     actives+=(1)
     yyyymmddhh+=("$cur_yyyymmddhh")
@@ -185,5 +183,4 @@ unset actives
 unset yyyymmddhh
 
 # The end
-touch smapeopl.job.done
 exit 0
