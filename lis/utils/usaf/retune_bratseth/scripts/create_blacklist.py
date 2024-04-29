@@ -141,7 +141,7 @@ def create_blacklist(cfgfile, blacklistfilename, yyyymmddhh, dayrange):
             f"{count_thresh} observations\n"
         outfile.write(txt)
         txt = "# Rejecting stations with absolute mean OMB beyond " + \
-            "{omb_thresh}\n"
+            f"{omb_thresh}\n"
         outfile.write(txt)
 
         platforms = list(data.keys())
