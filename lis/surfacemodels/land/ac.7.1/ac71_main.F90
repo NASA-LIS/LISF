@@ -691,48 +691,50 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%irun = AC71_struc(n)%ac71(t)%irun + 1
             end if
 
-            ![ 1] output variable: smc (unit=m^3 m-3 ). ***  volumetric soil moisture, ice + liquid 
+            ![ 1] output variable: smc (unit=m^3 m-3 ). ***  volumetric soil moisture
             do i=1, AC71_struc(n)%ac71(t)%NrCompartments
-                call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SOILMOIST, value = AC71_struc(n)%ac71(t)%smc(i),  &
-                                                    vlevel=i, unit="kg m-2", direction="-", surface_type = LIS_rc%lsm_index)
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SOILMOIST, value = AC71_struc(n)%ac71(t)%smc(i), &
                                                     vlevel=i, unit="m^3 m-3", direction="-", surface_type = LIS_rc%lsm_index)
             end do
-            ![ 4] output variable: biomass (unit=t/ha). ***  leaf area index 
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71BIOMASS, value = real(AC71_struc(n)%ac71(t)%SumWaBal%Biomass,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71BIOMASS, value = real(AC71_struc(n)%ac71(t)%SumWaBal%Biomass,kind=sp), &
-            !                                  vlevel=1, unit="t h-1", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiPrev, value = real(AC71_struc(n)%ac71(t)%CCiPrev,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Irrigation, value = real(AC71_struc(n)%ac71(t)%Irrigation,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_Actual, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_WP, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_WP,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootZoneWC_FC, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_FC,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tact, value = real(AC71_struc(n)%ac71(t)%Tact,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Eact, value = real(AC71_struc(n)%ac71(t)%Eact,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 2] output variable: biomass (unit=t/ha).  *** cummulative biomass
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_biomass, value = real(AC71_struc(n)%ac71(t)%SumWaBal%Biomass,kind=sp), &
+                                                vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 3] output variable: biomass (unit=mm).  *** actual rootzone water content
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_Actual, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_Actual,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 4] output variable: RootZoneWC_WP (unit=mm).  *** rootzone water content at wilting point
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_WP, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_WP,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 5] output variable: RootZoneWC_FC (unit=mm).  *** rootzone water content at field capacity
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_FC, value = real(AC71_struc(n)%ac71(t)%RootZoneWC_FC,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 6] output variable: Tact (unit=mm).  *** actual transpiration
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tact, value = real(AC71_struc(n)%ac71(t)%Tact,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 7] output variable: Eact (unit=mm).  *** actual evaporation
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Eact, value = real(AC71_struc(n)%ac71(t)%Eact,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 8] output variable: AC71ETo (unit=mm).  *** reference evapotranspiration (Penman-Monteith)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ETo, value = real(AC71_struc(n)%ac71(t)%eto,kind=sp), &
+                                                vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 9] output variable: RootingDepth (unit=m).  *** rooting depth
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(AC71_struc(n)%ac71(t)%RootingDepth,kind=sp), &
+                                                vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 10] output variable: CCiActual (unit=-).  *** canopy cover
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
                                                 vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71RootingDepth, value = real(AC71_struc(n)%ac71(t)%RootingDepth,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
-                                                vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tmin, value = real(tmp_tmin,kind=sp), &
-                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Tmax, value = real(tmp_tmax,kind=sp), &
-                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Rain, value = real(tmp_precip,kind=sp), &
-                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Yield, value = real(AC71_struc(n)%ac71(t)%SumWaBal%YieldPart,kind=sp), &
-                                    vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ZiPrev, value = real(AC71_struc(n)%ac71(t)%ZiPrev,kind=sp), &
-                        vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 11] output variable: AC71Tmin (unit=K).  *** daily minimum temperature
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin+273.15,kind=sp), &
+                                    vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 12] output variable: AC71Tmax (unit=K).  *** daily maximum temperature
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax+273.15,kind=sp), &
+                                    vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 13] output variable: rainf (unit=kg m-2 s-1).  *** precipitation rate
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = real(tmp_precip/86400.,kind=sp), &
+                                    vlevel=1, unit="kg m-2 s-1", direction="DN", surface_type = LIS_rc%lsm_index)
+            ![ 14] output variable: yield (unit=t ha-1).  *** yield
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Yield, value = real(AC71_struc(n)%ac71(t)%SumWaBal%YieldPart,kind=sp), &
+                                    vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
 
             !  Reset forcings
             AC71_struc(n)%ac71(t)%tair = 0.0
