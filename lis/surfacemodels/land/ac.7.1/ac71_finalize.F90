@@ -31,7 +31,7 @@ subroutine Ac71_finalize(n)
     integer :: t, n 
 
     do n=1, LIS_rc%nnest
-    !TODO deallocate all vars
+    !deallocate all vars
         ! free memory allocated for each tile
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             deallocate(AC71_struc(n)%ac71(t)%smc)

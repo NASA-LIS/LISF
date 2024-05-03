@@ -91,7 +91,7 @@ module Ac71_lsmMod
         !-------------------------------------------------------------------------
         ! Initial Model State for cold start
         !-------------------------------------------------------------------------
-        real, pointer      :: init_smc(:) !keep for initial moisture
+        real, pointer      :: init_smc(:)
 
         !-------------------------------------------------------------------------
         ! Constant Parameter
@@ -99,17 +99,9 @@ module Ac71_lsmMod
         character(len=256) :: soil_tbl_name
         character(len=256) :: soil_scheme_name
         real               :: dt
-        integer            :: nsoil
 
-        integer            :: daynrinextclimaterecord
-        character(len=256) :: PathNameOutp
         character(len=256) :: PathNameSimul
-        character(len=256) :: PathNameList
-        character(len=256) :: PathNameParam
         character(len=256) :: PathCropFiles
-        character(len=256) :: Climate_Filename
-        character(len=256) :: ETo_Filename
-        character(len=256) :: Rain_Filename
         character(len=256) :: CO2_Filename
         character(len=256) :: Crop_Filename
         character(len=256) :: Management_Filename
@@ -122,7 +114,6 @@ module Ac71_lsmMod
         integer            :: Crop_AnnualStartMonth
         integer            :: NrSoilLayers
         integer            :: max_No_compartments
-        integer            :: Tmin_windowsize
         real, pointer      :: Thickness(:)
         real               :: refz_forc
         type(Ac71dec), pointer :: ac71(:)
@@ -207,10 +198,8 @@ contains
             call LIS_registerAlarm("Ac71 restart alarm", &
                                    AC71_struc(n)%ts,&
                                    AC71_struc(n)%rstInterval)
-            ! TODO: set number of soil moisture layers in surface model
+            ! Set number of soil moisture layers in surface model
             LIS_sfmodel_struc(n)%nsm_layers = AC71_struc(n)%max_No_compartments
-            ! TODO: set number of soil temperature layers in surface model
-            LIS_sfmodel_struc(n)%nst_layers = AC71_struc(n)%max_No_compartments
             allocate(LIS_sfmodel_struc(n)%lyrthk(AC71_struc(n)%max_No_compartments))
             LIS_sfmodel_struc(n)%lyrthk(:) = 0.1
             LIS_sfmodel_struc(n)%ts = AC71_struc(n)%ts
