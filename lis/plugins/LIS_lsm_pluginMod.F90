@@ -535,7 +535,6 @@ subroutine LIS_lsm_plugin
    external ac71_f2t
    external ac71_writerst
    external ac71_finalize
-   external ac71_reset
 #endif
 
 #if ( defined SM_LSM_TEMPLATE )
@@ -989,7 +988,6 @@ subroutine LIS_lsm_plugin
    call registerlsmdynsetup(trim(LIS_ac71Id)//char(0),ac71_dynsetup)
    call registerlsmwrst(trim(LIS_ac71Id)//char(0),ac71_writerst)
    call registerlsmfinalize(trim(LIS_ac71Id)//char(0),ac71_finalize)
-   call registerlsmreset(trim(LIS_ac71Id)//char(0),ac71_reset)
 #endif
 
 end subroutine LIS_lsm_plugin

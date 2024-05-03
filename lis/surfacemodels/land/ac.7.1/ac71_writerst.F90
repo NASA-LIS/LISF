@@ -14,11 +14,7 @@
 ! \label{Ac71_writerst}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!   9/4/14: Shugong Wang; initial implementation for LIS 7 and Ac71
-!   LB: TODO
+!   26 FEB 2024: Louise Busschaert; initial implementation for AC71
 !
 ! !INTERFACE:
 subroutine Ac71_writerst(n)
@@ -42,7 +38,7 @@ subroutine Ac71_writerst(n)
 !
 ! !DESCRIPTION:
 !  This program writes restart files for Ac71.
-!  This includes all relevant water/energy storage and tile information.
+!  This includes all relevant AC71 variables to restart.
 !
 !  The routines invoked are:
 ! \begin{description}
@@ -142,49 +138,6 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
 !    restart file format (binary/netcdf)
 !  \end{description}
 !
-!
-!  The following is the list of variables written in the Ac71
-!  restart file:
-!  \begin{verbatim}
-!    nc, nr, ntiles             - grid and tile space dimensions
-!    albold                     - Ac71 snow albedo at last time step [-]
-!    sneqvo                     - Ac71 snow mass at the last time step [mm]
-!    sstc                       - Ac71 snow/soil temperature [K]
-!    sh2o                       - Ac71 volumetric liquid soil moisture [m^3 m-3]
-!    smc                        - Ac71 volumetric soil moisture, ice + liquid [m^3 m-3]
-!    tah                        - Ac71 canopy air temperature [K]
-!    eah                        - Ac71 canopy air vapor pressure [Pa]
-!    fwet                       - Ac71 wetted or snowed fraction of canopy [-]
-!    canliq                     - Ac71 intercepted liquid water [mm]
-!    canice                     - Ac71 intercepted ice mass [mm]
-!    tv                         - Ac71 vegetation temperature [K]
-!    tg                         - Ac71 ground temperature (skin temperature) [K]
-!    qsnow                      - Ac71 snowfall on the ground [mm s-1]
-!    isnow                      - Ac71 actual number of snow layers [-]
-!    zss                        - Ac71 snow/soil layer-bottom depth from snow surface [m]
-!    snowh                      - Ac71 snow height [m]
-!    sneqv                      - Ac71 snow water equivalent [mm]
-!    snowice                    - Ac71 snow-layer ice [mm]
-!    snowliq                    - Ac71 snow-layer liquid water [mm]
-!    zwt                        - Ac71 depth to water table [m]
-!    wa                         - Ac71 water storage in aquifer [mm]
-!    wt                         - Ac71 water in aquifer and saturated soil [mm]
-!    wslake                     - Ac71 lake water storage [mm]
-!    lfmass                     - Ac71 leaf mass [g/m2]
-!    rtmass                     - Ac71 mass of fine roots [g/m2]
-!    stmass                     - Ac71 stem mass [g/m2]
-!    wood                       - Ac71 mass of wood including woody roots [g/m2]
-!    stblcp                     - Ac71 stable carbon in deep soil [g/m2]
-!    fastcp                     - Ac71 short-lived carbon in shallow soil [g/m2]
-!    lai                        - Ac71 leaf area index [-]
-!    sai                        - Ac71 stem area index [-]
-!    cm                         - Ac71 momentum drag coefficient [s/m]
-!    ch                         - Ac71 sensible heat exchange coefficient [s/m]
-!    tauss                      - Ac71 snow aging term [-]
-!    smcwtd                     - Ac71 soil water content between bottom of the soil and water table [m^3 m-3]
-!    deeprech                   - Ac71 recharge to or from the water table when deep [m]
-!    rech                       - Ac71 recharge to or from the water table when shallow [m]
-!  \end{verbatim}
 !
 ! The routines invoked are:
 ! \begin{description}
@@ -303,7 +256,6 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
     integer :: StressTot_NrD_ID
 
 
-    
     ! write the header of the restart file
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
          "AC71", &
@@ -317,19 +269,6 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
                                  "volumtric soil moisture", &
                                  "m3/m3", vlevels=AC71_struc(n)%max_No_Compartments , valid_min=-99999.0, valid_max=99999.0, &
                                  var_flag = "dim1")
-
-    ! write the header for state variable Compartment_Salt             
-    !call LIS_writeHeader_restart(ftn, n, dimID, Compartment_Salt_ID, "Compartment_Salt", &
-    !                             "Compartment_Salt at last time step", &
-    !                             "-", vlevels=AC71_struc(n)%max_No_Compartments + 11 , valid_min=-99999.0, valid_max=99999.0, &
-    !                             var_flag = "dim2")
-
-    ! write the header for state variable Compartment_Depo             
-    !call LIS_writeHeader_restart(ftn, n, dimID, Compartment_Salt_ID, "Compartment_Depo", &
-    !                             "Compartment_Depo at last time step", &
-    !                             "-", vlevels=AC71_struc(n)%max_No_Compartments + 11 , valid_min=-99999.0, valid_max=99999.0, &
-    !                             var_flag = "dim2")
-
     !! reals
     ! write the header for state variable alfaHI
     call LIS_writeHeader_restart(ftn, n, dimID, alfaHI_ID, "alfaHI", &

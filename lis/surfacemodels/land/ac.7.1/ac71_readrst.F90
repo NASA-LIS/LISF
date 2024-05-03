@@ -38,49 +38,7 @@ subroutine Ac71_readrst()
 !
 ! !DESCRIPTION:
 !  This program reads restart files for Ac71.  This
-!  includes all relevant water/energy storages and tile information.
-!  The following is the list of variables specified in the Ac71
-!  restart file:
-!  \begin{verbatim}
-!    nc, nr, ntiles             - grid and tile space dimensions
-!    albold                     - Ac71 snow albedo at last time step [-]
-!    sneqvo                     - Ac71 snow mass at the last time step [mm]
-!    sstc                       - Ac71 snow/soil temperature [K]
-!    sh2o                       - Ac71 volumetric liquid soil moisture [m^3 m-3]
-!    smc                        - Ac71 volumetric soil moisture, ice + liquid [m^3 m-3]
-!    tah                        - Ac71 canopy air temperature [K]
-!    eah                        - Ac71 canopy air vapor pressure [Pa]
-!    fwet                       - Ac71 wetted or snowed fraction of canopy [-]
-!    canliq                     - Ac71 intercepted liquid water [mm]
-!    canice                     - Ac71 intercepted ice mass [mm]
-!    tv                         - Ac71 vegetation temperature [K]
-!    tg                         - Ac71 ground temperature (skin temperature) [K]
-!    qsnow                      - Ac71 snowfall on the ground [mm s-1]
-!    isnow                      - Ac71 actual number of snow layers [-]
-!    zss                        - Ac71 snow/soil layer-bottom depth from snow surface [m]
-!    snowh                      - Ac71 snow height [m]
-!    sneqv                      - Ac71 snow water equivalent [mm]
-!    snowice                    - Ac71 snow-layer ice [mm]
-!    snowliq                    - Ac71 snow-layer liquid water [mm]
-!    zwt                        - Ac71 depth to water table [m]
-!    wa                         - Ac71 water storage in aquifer [mm]
-!    wt                         - Ac71 water in aquifer and saturated soil [mm]
-!    wslake                     - Ac71 lake water storage [mm]
-!    lfmass                     - Ac71 leaf mass [g/m2]
-!    rtmass                     - Ac71 mass of fine roots [g/m2]
-!    stmass                     - Ac71 stem mass [g/m2]
-!    wood                       - Ac71 mass of wood including woody roots [g/m2]
-!    stblcp                     - Ac71 stable carbon in deep soil [g/m2]
-!    fastcp                     - Ac71 short-lived carbon in shallow soil [g/m2]
-!    lai                        - Ac71 leaf area index [-]
-!    sai                        - Ac71 stem area index [-]
-!    cm                         - Ac71 momentum drag coefficient [s/m]
-!    ch                         - Ac71 sensible heat exchange coefficient [s/m]
-!    tauss                      - Ac71 snow aging term [-]
-!    smcwtd                     - Ac71 soil water content between bottom of the soil and water table [m^3 m-3]
-!    deeprech                   - Ac71 recharge to or from the water table when deep [m]
-!    rech                       - Ac71 recharge to or from the water table when shallow [m]
-!  \end{verbatim}
+!  includes all relevant AC71 variables used to restart.
 !
 !  The routines invoked are:
 ! \begin{description}
@@ -102,7 +60,6 @@ subroutine Ac71_readrst()
     integer, allocatable :: tmptilen_int(:)
     logical           :: file_exists
     character*20      :: wformat
-    !WN
     character*100     :: filen
     integer           :: yr,mo,da,hr,mn,ss,doy
     real*8            :: time
@@ -259,7 +216,6 @@ subroutine Ac71_readrst()
                    AC71_struc(n)%ac71(t)%Compartment(l)%DayAnaero = tmptilen_int(t)
                 enddo
             enddo
-
 
 
             !! reals

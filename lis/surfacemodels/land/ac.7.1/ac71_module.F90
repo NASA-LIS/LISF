@@ -31,31 +31,17 @@ module Ac71_module
   use ac_global, only: &
           CompartmentIndividual,&
           SoilLayerIndividual, &
-          rep_Content,&
           rep_Crop,&
-          rep_Cuttings,&
-          rep_DayEventDbl,&
           rep_DayEventInt,&
-          rep_EffectiveRain,&
-          rep_EndSeason,&
           rep_IrriECw,&
           rep_Manag,&
-          rep_Onset,&
-          rep_PerennialPeriod,&
-          rep_RootZoneSalt,&
-          rep_RootZoneWC,&
-          rep_clim,&
-          rep_param,&
           rep_sim,&
           rep_soil,&
           rep_sum
 
   use ac_run, only: &
           repIrriInfoRecord,&
-          rep_GwTable,&
-          rep_StressTot,&
-          rep_Transfer,&
-          rep_plotPar
+          rep_StressTot
 
   use ac_kinds, only: dp,&
                 int8,&
