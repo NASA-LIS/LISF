@@ -473,25 +473,25 @@ subroutine Ac71_main(n)
             endif
 
             ! Set in Initialize (not needed for restart)
-            call SetCCoTotal(REAL(AC71_struc(n)%ac71(t)%CCoTotal, 8))  ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCCxCropWeedsNoSFstress(REAL(AC71_struc(n)%ac71(t)%CCxCropWeedsNoSFstress, 8))   ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCCxTotal(REAL(AC71_struc(n)%ac71(t)%CCxTotal, 8))   ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCDCTotal(REAL(AC71_struc(n)%ac71(t)%CDCTotal, 8))     ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetCoeffb0(REAL(AC71_struc(n)%ac71(t)%Coeffb0, 8))      ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb0Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb0Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb1(REAL(AC71_struc(n)%ac71(t)%Coeffb1, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb1Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb1Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb2(REAL(AC71_struc(n)%ac71(t)%Coeffb2, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCoeffb2Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb2Salt, 8))       ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetCrop(AC71_struc(n)%ac71(t)%crop) ! CCxWithered, CCxAdjusted, pActStom passed in retart
-            call SetGDDayFraction(REAL(AC71_struc(n)%ac71(t)%GDDayFraction, 8)) ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetGDDCDCTotal(REAL(AC71_struc(n)%ac71(t)%GDDCDCTotal, 8)) ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
-            call SetGDDTadj(AC71_struc(n)%ac71(t)%GDDTadj)  ! Set in InitializeRunPart2 --> copy INIR2nto setup for restart
-            call SetManagement(AC71_struc(n)%ac71(t)%Management) ! WeedDeltaRC passed in restart
-            call SetSimulation(AC71_struc(n)%ac71(t)%Simulation) ! A few vars are passed in restart (EffectStress)
-            call SetSoil(AC71_struc(n)%ac71(t)%Soil)  !Not needed for restart, everything should be set in setup
-            call SetSoilLayer(AC71_struc(n)%ac71(t)%SoilLayer) !Not needed for restart, everything should be set in setup
-            call SetSumKcTop(REAL(AC71_struc(n)%ac71(t)%SumKcTop, 8))  ! Set in InitializeRunPart1 --> copy INIR2nto setup for restart
+            call SetCCoTotal(REAL(AC71_struc(n)%ac71(t)%CCoTotal, 8)) 
+            call SetCCxCropWeedsNoSFstress(REAL(AC71_struc(n)%ac71(t)%CCxCropWeedsNoSFstress, 8)) 
+            call SetCCxTotal(REAL(AC71_struc(n)%ac71(t)%CCxTotal, 8))
+            call SetCDCTotal(REAL(AC71_struc(n)%ac71(t)%CDCTotal, 8))
+            call SetCoeffb0(REAL(AC71_struc(n)%ac71(t)%Coeffb0, 8))
+            call SetCoeffb0Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb0Salt, 8))
+            call SetCoeffb1(REAL(AC71_struc(n)%ac71(t)%Coeffb1, 8))
+            call SetCoeffb1Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb1Salt, 8))
+            call SetCoeffb2(REAL(AC71_struc(n)%ac71(t)%Coeffb2, 8))
+            call SetCoeffb2Salt(REAL(AC71_struc(n)%ac71(t)%Coeffb2Salt, 8))
+            call SetCrop(AC71_struc(n)%ac71(t)%crop)
+            call SetGDDayFraction(REAL(AC71_struc(n)%ac71(t)%GDDayFraction, 8))
+            call SetGDDCDCTotal(REAL(AC71_struc(n)%ac71(t)%GDDCDCTotal, 8))
+            call SetGDDTadj(AC71_struc(n)%ac71(t)%GDDTadj)
+            call SetManagement(AC71_struc(n)%ac71(t)%Management)
+            call SetSimulation(AC71_struc(n)%ac71(t)%Simulation)
+            call SetSoil(AC71_struc(n)%ac71(t)%Soil)
+            call SetSoilLayer(AC71_struc(n)%ac71(t)%SoilLayer) 
+            call SetSumKcTop(REAL(AC71_struc(n)%ac71(t)%SumKcTop, 8))
 
             !! Fixed vars
             call SetCGCref(GetCrop_CGC()) ! Make sure crop is set before
@@ -651,6 +651,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%WeedRCi = GetWeedRCi()
             AC71_struc(n)%ac71(t)%Ziprev = GetZiprev()
 
+            !logicals are stored as integers for restart file
             !NoMoreCrop
             if(GetNoMoreCrop()) then
                 AC71_struc(n)%ac71(t)%NoMoreCrop = 1
@@ -683,8 +684,6 @@ subroutine Ac71_main(n)
             if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
                 .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
                 AC71_struc(n)%ac71(t)%InitializeRun = 1
-                !call FinalizeRun1(AC71_struc(n)%ac71(t)%irun, GetTheProjectFile(), AC71_struc(n)%ac71(t)%TheProjectType)
-                !call FinalizeRun2(AC71_struc(n)%ac71(t)%irun, AC71_struc(n)%ac71(t)%TheProjectType)
                 AC71_struc(n)%ac71(t)%irun = AC71_struc(n)%ac71(t)%irun + 1
             end if
 

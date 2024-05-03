@@ -44,16 +44,39 @@ module Ac71_lsmMod
 !   AquaCrop model soil parameter table
 ! \item[soil\_scheme\_name]
 !   soil classification scheme
-! \item[nslcats]
-!   the number of total soil types in parameter table
 ! \item[dt]
 !   time step in seconds
-! \item[nsoil]
-!   number of soil layers
-! \item[sldpth]
+! \item[PathNameSimul]
+!   path of simulation folder
+! \item[PathCropFiles]
+!   path of crop files folder
+! \item[CO2_Filename]
+!   CO2 filename (should be in simul folder)
+! \item[Management_Filename]
+!   Management filename (should be in simul folder)
+! \item[Irrigation_Filename]
+!   Irrigation filename (should be in simul folder)
+! \item[Sim_AnnualStartDay]
+!   annual start day of simulation period
+! \item[Sim_AnnualStartMonth]
+!   annual start month of simulation period
+! \item[Sim_AnnualEndDay]
+!   annual end day of simulation period
+! \item[Sim_AnnualEndMonth]
+!   annual end month of simulation period
+! \item[Crop_AnnualStartDay]
+!   annual start day of cropping period
+! \item[Crop_AnnualStartMonth]
+!   annual start month of cropping period
+! \item[NrSoilLayers]
+!   number of soil layers !!different from compartments!!
+! \item[max_No_compartments]
+!   maximum number of compartments (=12)
+! \item[Thickness]
 !   thickness of soil layers
+! \item[refz_forc]
+!   reference height of forcings
 
-! TODO: provide documentation
 !
 ! !REVISION HISTORY:
 !  18 JAN 2024, Louise Busschaert; initial implementation for AC71
@@ -103,7 +126,6 @@ module Ac71_lsmMod
         character(len=256) :: PathNameSimul
         character(len=256) :: PathCropFiles
         character(len=256) :: CO2_Filename
-        character(len=256) :: Crop_Filename
         character(len=256) :: Management_Filename
         character(len=256) :: Irrigation_Filename
         integer            :: Sim_AnnualStartDay
