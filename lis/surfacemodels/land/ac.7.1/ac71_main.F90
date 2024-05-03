@@ -199,7 +199,6 @@ subroutine Ac71_main(n)
                     GetTadj,&
                     GetTheProjectFile,&
                     GetTimeSenescence ,&
-                    GetTransfer,&
                     GetWeedRCi,&
                     GetZiprev,&
                     GetalfaHI,&
@@ -255,7 +254,6 @@ subroutine Ac71_main(n)
                     SetSumKci,&
                     SetTadj,&
                     SetTimeSenescence ,&
-                    SetTransfer,&
                     SetWeedRCi,&
                     SetZiprev,&
                     SetalfaHI,&
@@ -650,7 +648,6 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Tadj = GetTadj()
             AC71_struc(n)%ac71(t)%TimeSenescence = GetTimeSenescence()
             AC71_struc(n)%ac71(t)%Tpot = GetTpot()
-            AC71_struc(n)%ac71(t)%Transfer = GetTransfer()
             AC71_struc(n)%ac71(t)%WeedRCi = GetWeedRCi()
             AC71_struc(n)%ac71(t)%Ziprev = GetZiprev()
 
@@ -718,7 +715,7 @@ subroutine Ac71_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ETo, value = real(AC71_struc(n)%ac71(t)%eto,kind=sp), &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 9] output variable: RootingDepth (unit=m).  *** rooting depth
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(AC71_struc(n)%ac71(t)%RootingDepth,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(AC71_struc(n)%ac71(t)%Ziprev,kind=sp), &
                                                 vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 10] output variable: CCiActual (unit=-).  *** canopy cover
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
