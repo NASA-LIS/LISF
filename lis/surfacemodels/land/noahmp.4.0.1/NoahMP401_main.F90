@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -242,9 +242,9 @@ subroutine NoahMP401_main(n)
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
    
-    real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
-    real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
-    real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
         !ag (05Jan2021)
     real                 :: tmp_rivsto
@@ -272,7 +272,8 @@ subroutine NoahMP401_main(n)
 
     ! check NoahMP401 alarm. If alarm is ring, run model.
 
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm")
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm "//trim(fnest))
 
     if (alarmCheck) Then
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -866,8 +867,8 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
-            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt
-            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt
+            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt(1,1)
+            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt(1,1)
 
             ! EMK Update RHMin for 557WW
             if (tmp_tair .lt. &
@@ -1433,7 +1434,6 @@ subroutine NoahMP401_main(n)
 
     ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
     ! reset for calculating RHMin.  
-    write(fnest,'(i3.3)') n
     alarmCheck = LIS_isAlarmRinging(LIS_rc, &
          "NoahMP401 RHMin alarm "//trim(fnest))
     if (alarmCheck) then

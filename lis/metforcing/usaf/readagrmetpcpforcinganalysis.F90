@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -127,13 +127,13 @@ subroutine readagrmetpcpforcinganalysis(n,findex, order)
                 //'.03hr.'//date10_03
         endif
 
-        write(LIS_logunit,*)' - READING precip ',ifil
+        write(LIS_logunit,*)'[INFO] READING precip ',ifil
         inquire(file=ifil,exist=exists)
         if(exists) then      
            call LIS_putget(gi(hemi,:,:), 'r', ifil, &
                 routine_name, agrmet_struc(n)%imax, agrmet_struc(n)%jmax )
         else
-           write(LIS_logunit,*) 'premrg file does not exist'
+           write(LIS_logunit,*) '[ERR] premrg file does not exist'
            write(LIS_logunit,*) ifil
            call LIS_endrun()
         endif

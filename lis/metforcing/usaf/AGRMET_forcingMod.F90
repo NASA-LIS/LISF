@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -302,7 +302,9 @@ module AGRMET_forcingMod
 !   contains the previous and next forcing values, respectively
 !  \end{description}
 !
-! !USES: 
+! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -352,6 +354,8 @@ module AGRMET_forcingMod
      real*8                 :: agrmetpcptime1, agrmetpcptime2
      real*8                 :: cmortime
      integer                :: pcpobswch
+     integer :: pcpobsfmt ! EMK...File format for precip obs
+     integer :: sfcobsfmt ! EMK...File format for sfcobs
      integer                :: pwswch
      integer                :: raswch
      integer                :: cdfs2swch
@@ -719,6 +723,12 @@ integer, allocatable   :: n112_sh4(:)
      ! EMK Add GFS-to-GALWEM bias correction
      integer :: back_bias_corr
      real, allocatable :: pcp_back_bias_ratio(:,:)
+     ! EMK Add NRT bias correction toward IMERG-Final Run
+     ! (back_bias_corr == 2)
+     character(LIS_CONST_PATH_LEN) :: gfs_nrt_bias_ratio_file
+     character(LIS_CONST_PATH_LEN) :: galwem_nrt_bias_ratio_file
+     real, allocatable :: gfs_nrt_bias_ratio(:,:)
+     real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
   end type agrmet_type_dec
 
@@ -747,7 +757,7 @@ contains
   subroutine init_AGRMET(findex)
 
 ! !USES: 
-    use LIS_coreMod,    only : LIS_rc, LIS_domain
+    use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
     use LIS_snowMod,    only : LIS_snow_setup
@@ -826,6 +836,21 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
     integer                       :: istat
     integer                       :: istat1
     integer                       :: ftn
+
+    external :: readcrd_agrmet
+    external :: AGRMET_readmask
+    external :: AGRMET_readterrain
+    external :: AGRMET_readpcpcntm
+    external :: AGRMET_read_sfcalccntm
+    external :: polarToLatLon
+    external :: bilinear_interp_input_withgrid
+    external :: neighbor_interp_input_withgrid
+    external :: AGRMET_read_pcpclimodata
+    external :: gfs_reset_interp_input
+    external :: galwem_reset_interp_input
+    external :: conserv_interp_input
+    external :: bilinear_interp_input
+    external :: upscaleByAveraging_input
 
     allocate(agrmet_struc(LIS_rc%nnest))
     call readcrd_agrmet()
@@ -2052,26 +2077,41 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
           agrmet_struc(n)%pcpclimoAlarmTime = 0.0
 
           allocate(agrmet_struc(n)%cliprc1(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%cliprc1 = 0
           allocate(agrmet_struc(n)%clippd1(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%clippd1 = 0
           allocate(agrmet_struc(n)%clirtn1(LIS_rc%lnc(n), LIS_rc%lnr(n)))
-       
+          agrmet_struc(n)%clirtn1 = 0
           allocate(agrmet_struc(n)%cliprc2(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%cliprc2 = 0
           allocate(agrmet_struc(n)%clippd2(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%clippd2 = 0
           allocate(agrmet_struc(n)%clirtn2(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%clirtn2 = 0
           
           allocate(agrmet_struc(n)%cliprc(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%cliprc = 0
           allocate(agrmet_struc(n)%clippd(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%clippd = 0
           allocate(agrmet_struc(n)%clirtn(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%clirtn = 0
           
           allocate(agrmet_struc(n)%sfcprs(6,LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%sfcprs = 0
           allocate(agrmet_struc(n)%sfcrlh(6,LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%sfcrlh = 0
           allocate(agrmet_struc(n)%sfcspd(6,LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%sfcspd = 0
           allocate(agrmet_struc(n)%sfctmp(6,LIS_rc%lnc(n), LIS_rc%lnr(n)))
-
+          agrmet_struc(n)%sfctmp = 0
           allocate(agrmet_struc(n)%lasprs(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%lasprs = 0
           allocate(agrmet_struc(n)%lasrlh(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%lasrlh = 0
           allocate(agrmet_struc(n)%lasspd(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%lasspd = 0
           allocate(agrmet_struc(n)%lastmp(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+          agrmet_struc(n)%lastmp = 0
 
           ! EMK BEGIN
 !<rm -- jim merge>

@@ -1,6 +1,6 @@
 = LISF Installation Guide
-:revnumber: 1.1
-:revdate: 30 Nov 2022
+:revnumber: 2.0
+:revdate: 11 Jan 2024
 :doctype: book
 :sectnums:
 :toc:

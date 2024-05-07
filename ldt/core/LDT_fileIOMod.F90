@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -725,7 +725,64 @@ subroutine LDT_create_daobs_filename(n, fname)
         domain_info(i,11) = 64
         domain_info(i,20) = 64
       enddo
-      
+
+! -- Added Lambert parameter domain (KRA)
+
+    case ( "lambert" )
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" lower left lat:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,4),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' lower left lat:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" lower left lon:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,5),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' lower left lon:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" true lat1:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,10),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' true lat1:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" true lat2:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,7),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' true lat2:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" standard lon:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,11),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' standard lon:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" resolution:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,8),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' resolution:')
+         domain_info(i,9) = domain_info(i,8)   ! set dx = dy for now
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" x-dimension size:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,2),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' x-dimension size:')
+      enddo
+
+      call ESMF_ConfigFindLabel(LDT_config,trim(segment_name)//" y-dimension size:",rc=rc)
+      do i=1,LDT_rc%nnest
+         call ESMF_ConfigGetAttribute(LDT_config,domain_info(i,3),rc=rc)
+         call LDT_verify(rc,'please specify '//trim(segment_name)//' y-dimension size:')
+      enddo
+
+      do i=1,LDT_rc%nnest
+         domain_info(i,6) = 8.0
+      enddo
+
 ! ---
     case ( "gaussian" )  
 

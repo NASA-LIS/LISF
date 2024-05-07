@@ -37,12 +37,14 @@ IMPORTANT: The `{compatible-lisf-branch}` branch is known to be compatible with 
 
 For information about configuration settings and detailed compilation instructions, see the {url-lisf-docs}[LISF Users' Guides,window=_blank]. In general, the compilation process for each component is as follows:
 
+NOTE: As you run these testcases, you will have the opportunity to compare your output to TARGET_OUTPUT files or "solutions".  The TARGET_OUTPUT files were created by running ldt, lis, and lvt compiled with *default* compile configuration settings.  For this walkthrough, it is recommended that you also use default compiler configuration settings.   
+
 [#compile-example]
 [source,shell,subs="attributes"]
 ----
 % cd ldt
 % ./configure
-> # Select compile configuration settings (see Docs)...
+> # Select compile configuration settings (Default settings recommended.)
 % ./compile
 > # Compilation output...
 % mv LDT ../../            # move executable up into $WORKING_DIR
@@ -52,3 +54,5 @@ For information about configuration settings and detailed compilation instructio
 Repeat the above process in the `lis/` and `lvt/` directories to generate the _LIS_ and _LVT_ executables.
 
 Change directories back into your `$WORKING_DIR` which should now contain three executable files: `LDT`, `LIS`, `LVT`.
+
+If you ever wish to generate new executable files, `cd` into `/LISF/l??/make` and run `gmake realclean`.  This will clear all dependency files and allow you to cleanly define new compile configuration settings and recompile. 

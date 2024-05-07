@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -174,12 +174,13 @@ subroutine AGRMET_sfcalc(n)
   character(len=10) :: yyyymmddhh
   integer :: ierr
   integer :: r,c, L
-  character(len=10) :: type
+  character(len=32) :: type
   integer :: gdeltas, gid, ntiles
   integer :: count1
   logical :: found_inq
   integer :: rc
   integer, external :: LIS_create_subdirs
+  logical :: use_wigos_sfcobs
 
   data lokspd     / 15, 25, 30, 40, 50 /
   data lokrlh     / 10, 15, 25, 35, 40 /
@@ -367,7 +368,7 @@ subroutine AGRMET_sfcalc(n)
         write(LIS_logunit,*)' '
         write(LIS_logunit,*)'---------------------------- '
         !write(LIS_logunit,*)'- PROCESSING-SFC JULHR ', julhr
-        write(LIS_logunit,*)'- PROCESSING-SFC YYYYMMDDHH ', yyyymmddhh
+        write(LIS_logunit,*)'[INFO] PROCESSING-SFC YYYYMMDDHH ', yyyymmddhh
         write(LIS_logunit,*)'---------------------------- '
 
 !     ------------------------------------------------------------------
@@ -486,12 +487,17 @@ subroutine AGRMET_sfcalc(n)
         call USAF_createObsData(spd10mObs, n, &
              maxobs=agrmet_struc(n)%max_sfcobs)
 
+        if (agrmet_struc(n)%sfcobsfmt == 1) then
+           use_wigos_sfcobs = .false.
+        else
+           use_wigos_sfcobs = .true.
+        end if
         call AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
              ri, rj, obstmp, obsrlh, obsspd, &
              obscnt, agrmet_struc(n)%max_sfcobs, agrmet_struc(n)%minwnd, &
              alert_number, LIS_rc%lnc(n), LIS_rc%lnr(n),&
              agrmet_struc(n)%agrmetdir,agrmet_struc(n)%cdmsdir,&
-             agrmet_struc(n)%use_timestamp)
+             agrmet_struc(n)%use_timestamp, use_wigos_sfcobs)
 
 !        call MPI_Barrier(LIS_mpi_comm, ierr)
 !        stop

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -109,7 +109,7 @@ subroutine read_wrfoutv2_elev( n, findex, wrfoutv2elev, elevdiff )
 ! Open and Read-in Forcing Terrain Hght File - Bring to LIS run domain
 ! -------------------------------------------------------------------
    write(LDT_logunit,*) "[INFO] Reading the WRFoutv2 terrain height file: ", &
-        wrfoutv2_struc(n)%file_wrfelev
+        trim(wrfoutv2_struc(n)%file_wrfelev)
 
 #if (defined USE_NETCDF4) 
 

@@ -197,6 +197,14 @@ ASCAT (TU Wein) soil moisture
 +
 [red]##specifies what?##
 
+*** _CDFS_GVF_
++
+CDFS green vegetation fraction
+
+*** _CDF_Transfer_NASA_SMAPsm_
++
+[red]##specifies what?##
+
 *** _ESACCI_sm_
 +
 ESACCI Essential Climate Variable product
@@ -261,6 +269,10 @@ NASA SMAP vegetation optical depth retrievals
 +
 PMW snow
 
+*** _SMAP_E_OPLsm_
++
+Operation Enhanced (9-km) SMAP soil moisture
+
 *** _SMAP_NRTsm_
 +
 SMAP near-real time soil moisture retrievals
@@ -320,6 +332,14 @@ Thermal hydraulic disaggregation of soil moisture (THySM)
 *** _USAFSI_
 +
 USAF Snow and Ice Analysis
+
+*** _VIIRS_GVF_
++
+VIIRS green vegetation fraction
+
+*** _WUS_UCLAsnow_
++
+Margulis Western US Snow Reanalysis dataset
 
 *** _WindSat_Cband_sm_
 +
@@ -531,6 +551,14 @@ ECMWF meteorological forcing data
 +
 [red]##specifies what?##
 
+** _galwem_
++
+GALWEM 17km or 0.25deg deterministic forecast reader
+
+** _galwem_ge_
++
+GALWEM-GE forecast reader
+
 ** _gdas_
 +
 NCEP GDAS meteorological forcing data
@@ -558,6 +586,10 @@ LDT-generated meteorological forcing data
 ** _geos5fcst_
 +
 NASA GEOS 5 meteorological forecast forcing data
+
+** _geos_it_
++
+GEOS-IT
 
 ** _gfs_
 +
@@ -824,6 +856,7 @@ Directory containing routing models
 ** _HYMAP_router_
 ** _HYMAP2_router_
 ** _NLDAS_router_
+** _RAPID_router_
 
 * _rtms_
 +

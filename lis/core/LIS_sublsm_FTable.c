@@ -1,9 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 // NASA Goddard Space Flight Center
 // Land Information System Framework (LISF)
-// Version 7.4
+// Version 7.5
 //
-// Copyright (c) 2022 United States Government as represented by the
+// Copyright (c) 2024 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -368,6 +368,80 @@ void FTN(sublsmfinalize)(char *j,int len)
   current->func(); 
 }
 
+//BOP
+// !ROUTINE: registersublsmreset
+// \label{registersublsmreset}
+//
+// !INTERFACE:
+void FTN(registersublsmreset)(char *j, void (*func)(),int len)
+//  
+// !DESCRIPTION:
+//  Creates an entry in the registry for the routine
+//  to cleanup allocated structures specific to the 
+//  land surface model
+// 
+//  \begin{description}
+//  \item[j]
+//   name of the LSM
+//  \end{description}
+// 
+//EOP
+{
+  int len1;
+  struct sublsmresetnode* current;
+  struct sublsmresetnode* pnode;
+  // create node
+
+  len1 = len + 1; // ensure that there is space for terminating null
+  pnode=(struct sublsmresetnode*) malloc(sizeof(struct sublsmresetnode));
+  pnode->name=(char*) calloc(len1,sizeof(char));
+  strncpy(pnode->name,j,len);
+  pnode->func = func;
+  pnode->next = NULL;
+
+  if(sublsmreset_table == NULL){
+    sublsmreset_table = pnode;
+  }
+  else{
+    current = sublsmreset_table;
+    while(current->next!=NULL){
+      current = current->next;
+    }
+    current->next = pnode;
+  }
+}
+//BOP
+// !ROUTINE: sublsmreset
+// \label{sublsmreset}
+//
+// !INTERFACE:
+void FTN(sublsmreset)(char *j,int len)
+//  
+// !DESCRIPTION: 
+//  Invokes the routine from the registry for cleaning up
+//  allocated structures specific to the land surface model
+// 
+//  \begin{description}
+//  \item[j]
+//   name of the LSM
+//  \end{description}
+// 
+//EOP
+{
+  struct sublsmresetnode* current;
+
+  current = sublsmreset_table;
+  while(strcmp(current->name,j)!=0){
+    current = current->next;
+    if(current==NULL) {
+      printf("****************Error****************************\n");
+      printf("reset routine for LSM %s is not defined\n",j);
+      printf("program will seg fault.....\n");
+      printf("****************Error****************************\n");
+    }
+  }
+  current->func();
+}
 
 //BOP
 // !ROUTINE: registersublsmsetup

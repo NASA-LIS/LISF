@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -62,6 +62,8 @@ module LVT_LISpostMod
      integer   :: npes
      integer   :: nfields
      integer   :: nlevels
+     integer   :: nsoilmoistlayers, nsoiltemplayers
+     real, pointer :: soilmoistlyrthk(:), soiltemplyrthk(:)
   end type lispost_type_dec
   
   type(lispost_type_dec) :: LVT_LISpost
@@ -87,7 +89,7 @@ contains
 ! 
 !EOP
 
-    integer           :: rc
+    integer           :: i, rc
 
     call ESMF_ConfigGetAttribute(LVT_config,LVT_LISpost%npes,&
          label="Number of processors used in the LIS output generation:",rc=rc)
@@ -98,6 +100,36 @@ contains
     call ESMF_ConfigGetAttribute(LVT_config,LVT_LISpost%nlevels,&
          label="Number of vertical levels in the LIS output:",rc=rc)
     call LVT_verify(rc,'Number of vertical levels in the LIS output: option not specified in the config file')
+    call ESMF_ConfigGetAttribute(LVT_config, LVT_LISpost%nsoilmoistlayers, &
+         label="LIS output number of soil moisture layers:", default=0, rc=rc)
+    call ESMF_ConfigGetAttribute(LVT_config, LVT_LISpost%nsoiltemplayers, &
+         label="LIS output number of soil temperature layers:", default=0, rc=rc)
+    
+    if (LVT_LISpost%nsoilmoistlayers .gt. 0) then
+       allocate(LVT_LISpost%soilmoistlyrthk(LVT_LISpost%nsoilmoistlayers))
+
+       call ESMF_ConfigFindLabel(LVT_config, "LIS output soil moisture layer thickness:", rc=rc)
+       call LVT_verify(rc, 'LIS output soil moisture layer thickness: option not specified in the config file')
+
+       do i=1, LVT_LISpost%nsoilmoistlayers
+          call ESMF_ConfigGetAttribute(LVT_config,LVT_LISpost%soilmoistlyrthk(i), rc=rc)
+          call LVT_verify(rc, 'The number of soil moisture layers indicated in the  &
+               config file is greater than the number of thickness values provided')
+       enddo
+    endif
+    
+    if (LVT_LISpost%nsoiltemplayers .gt. 0) then
+       allocate(LVT_LISpost%soiltemplyrthk(LVT_LISpost%nsoiltemplayers))
+
+       call ESMF_ConfigFindLabel(LVT_config, "LIS output soil temperature layer thickness:", rc=rc)
+       call LVT_verify(rc, 'LIS output soil temperature layer thickness: option not specified in the config file')
+
+       do i=1, LVT_LISpost%nsoilmoistlayers
+          call ESMF_ConfigGetAttribute(LVT_config,LVT_LISpost%soiltemplyrthk(i), rc=rc)
+          call LVT_verify(rc, 'The number of soil temperature layers indicated in the & 
+               config file is greater than the number of thickness values provided')
+       enddo
+    endif
 
   end subroutine LVT_initialize_LISpost
 
@@ -271,12 +303,24 @@ contains
                'nf90_def_att for lat failed in LVT_LISpostMod')    
           
     ! Global attributes
-!    call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"NUM_SOIL_LAYERS", &
-!         nsoillayers),&
-!         'nf90_put_att for title failed in LVT_LISpostMod')
-!    call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"SOIL_LAYER_THICKNESSES", &
-!         lyrthk),&
-!         'nf90_put_att for title failed in LVT_LISpostMod')
+          if (LVT_LISpost%nsoilmoistlayers .gt. 0) then
+             call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"NUM_SOIL_MOIST_LAYERS", &
+                  LVT_LISpost%nsoilmoistlayers),&
+                  'nf90_put_att for NUM_SOIL_MOIST_LAYERS failed in LVT_LISpostMod')
+             call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"SOIL_MOIST_LAYER_THICKNESSES", &
+                  LVT_LISpost%soilmoistlyrthk),&
+                  'nf90_put_att for SOIL_MOIST_LAYER_THICKNESSES failed in LVT_LISpostMod')
+          endif
+          
+          if (LVT_LISpost%nsoiltemplayers .gt. 0) then
+             call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"NUM_SOIL_TEMP_LAYERS", &
+                  LVT_LISpost%nsoiltemplayers),&
+                  'nf90_put_att for NUM_SOIL_TEMP_LAYERS failed in LVT_LISpostMod')
+             call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"SOIL_TEMP_LAYER_THICKNESSES", &
+                  LVT_LISpost%soiltemplyrthk),&
+                  'nf90_put_att for SOIL_TEMP_LAYER_THICKNESSES failed in LVT_LISpostMod')
+          endif
+
           call LVT_verify(nf90_put_att(ftn_nc,NF90_GLOBAL,"title", &
                "LIS land surface model output"),&
                'nf90_put_att for title failed in LVT_LISpostMod')

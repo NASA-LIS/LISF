@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+mkdir -p LISF.AppDir/usr/bin
+mkdir -p LISF.AppDir/usr/lib
+mkdir -p LISF.AppDir/info/ldt
+mkdir -p LISF.AppDir/info/lis
+mkdir -p LISF.AppDir/info/lvt
+cd LISF.AppDir
+cp /home/workdir/AppRun .
+cp /home/workdir/LISF.png .
+cp /home/workdir/LISF.desktop .
+cp /home/workdir/LISF/ldt/LDT usr/bin
+cp /home/workdir/LISF/lis/LIS usr/bin
+cp /home/workdir/LISF/lvt/LVT usr/bin
+cp /home/workdir/LISF/revision.log info
+cp /home/workdir/LISF/ldt/make/LDT_NetCDF_inc.h info/ldt
+cp /home/workdir/LISF/ldt/make/LDT_misc.h info/ldt
+cp /home/workdir/LISF/ldt/make/configure.ldt info/ldt
+cp /home/workdir/LISF/lis/make/LIS_NetCDF_inc.h info/lis
+cp /home/workdir/LISF/lis/make/LIS_misc.h info/lis
+cp /home/workdir/LISF/lis/make/LIS_plugins.h info/lis
+cp /home/workdir/LISF/lis/make/configure.lis info/lis
+cp /home/workdir/LISF/lvt/make/LVT_NetCDF_inc.h info/lvt
+cp /home/workdir/LISF/lvt/make/LVT_misc.h info/lvt
+cp /home/workdir/LISF/lvt/make/configure.lvt info/lvt
+cd usr/lib
+cp -R /home/workdir/lib/* .
+rm -rf mpich
+
+cd /home/workdir/LISF.AppDir
+patchelf --clear-symbol-version expf --clear-symbol-version logf --clear-symbol-version powf usr/bin/LDT
+patchelf --clear-symbol-version expf --clear-symbol-version glob --clear-symbol-version logf --clear-symbol-version powf --clear-symbol-version lgamma usr/bin/LIS
+patchelf --clear-symbol-version expf --clear-symbol-version logf --clear-symbol-version powf usr/bin/LVT
+patchelf --clear-symbol-version powf usr/lib/hdf5/1.12.0_gnu-11.2.0/lib/libhdf5.so
+patchelf --clear-symbol-version logf usr/lib/esmf/8.1.1_gnu-11.2.0_mpich-3.4/lib/libO/Linux.gfortran.64.mpich3.default/libesmf.so
+patchelf --clear-symbol-version logf usr/lib/gdal/3.5.2_gnu-11.2.0/lib/libgdal.so

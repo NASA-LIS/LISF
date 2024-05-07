@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@
 !  01 Aug  2012: KR Arsenault; Expanded for elevation tiling
 !  30 May  2017: KR Arsenault; Expanded for Antarctica
 !  03 Mar  2020: Yeosang Yoon; Modify codes for MERIT DEM
+!  04 Apr  2024: Yeosang Yoon; Fix bug slope value along the coastal area
 !
 ! !INTERFACE:
 subroutine read_MERIT1K_slope( n, num_bins, fgrd, slopeave )
@@ -279,6 +280,11 @@ subroutine read_MERIT1K_slope( n, num_bins, fgrd, slopeave )
    do r = 1, subpnr
       do c = 1, subpnc
          subset_elev(c,r) = yrev_elev(lon_line(c,r),lat_line(c,r))
+       
+         ! for coastal areas
+         if (subset_elev(c,r) .eq. LDT_rc%udef) then
+            subset_elev(c,r) = 0.
+         endif
       enddo
    enddo
    deallocate( yrev_elev )

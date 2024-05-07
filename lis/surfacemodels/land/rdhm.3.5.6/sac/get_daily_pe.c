@@ -15,6 +15,8 @@
 
 #include "models.h"
 
+extern int days_of_month(int, int);
+
 void get_daily_pe(int yr, int mon, int day, int npix,
 		  float *pe, float *pe_adj, float *pe_day)
 {

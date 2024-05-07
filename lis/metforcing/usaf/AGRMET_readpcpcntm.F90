@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,8 +60,8 @@ subroutine AGRMET_readpcpcntm(n)
   name = trim(agrmet_struc(n)%climodir)//'/pcp_spread_radii.1gd4r'
   inquire( file = trim(name) , exist = exists)
   if ( exists ) then
-     write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'- READING ', trim(name)
+     !write(LIS_logunit,*)' '
+     write(LIS_logunit,*)'[INFO] READING ', trim(name)
      ftn= LIS_getNextUnitNumber()
      open(ftn, file=trim(name), access='direct',&
           status='old', form="unformatted", recl=LIS_rc%gnr(n)*LIS_rc%gnc(n)*4)
@@ -76,10 +76,10 @@ subroutine AGRMET_readpcpcntm(n)
      call LIS_releaseUnitNumber(ftn)
      
   else
-     write(LIS_logunit,*) 'LIS:  error opening file ',trim(name)
-     write(LIS_logunit,*) '  file does not exist'
-     write(LIS_logunit,*) '  this could indicate serious data discrepancies'
-     write(LIS_logunit,*) '  LIS will be aborted'
+     write(LIS_logunit,*) '[ERR] LIS:  error opening file ',trim(name)
+     write(LIS_logunit,*) '[ERR]  file does not exist'
+     write(LIS_logunit,*) '[ERR]  this could indicate serious data discrepancies'
+     write(LIS_logunit,*) '[ERR]  LIS will be aborted'
      message(1) = 'program:  LIS'
      message(2) = '  routine: AGRMET_readpcpcntm'
      message(3) = '  error opening file '//trim(name)

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -332,7 +332,7 @@ contains
 !
 ! !INTERFACE:
   subroutine LDT_contIndivParam_Fill( n, pnc, pnr, gridtransform, pnl,  &
-       param_value, undef, mask_value, fill_option, fill_value, fill_rad )
+       param_value, undef, mask_value, fill_option, fill_value, fill_rad, leave_good_data)
 
 ! !USES:
     use ESMF
@@ -359,6 +359,7 @@ contains
     real,    intent(in)   :: fill_value
     real,    intent(in)   :: fill_rad
     character(50), intent(in) :: fill_option
+    logical, intent(in), optional :: leave_good_data
 
 !- Local parameters:
     integer :: i, j, l
@@ -464,12 +465,15 @@ contains
                end if
             end if  
 
-        !== Mask: indicates water point;  Parameter: indicates valid value
-            if( mask_value(i, j, 1) == 0 .and. &
-                param_value(i, j, l) /= undef )  then
-               param_value(i, j, l) = undef
-            end if  ! End mask-param value check
-
+            ! MMF scheme is active on lake/water grid cells. Thus, when MMF parameters are being processed,
+            !  "leave_good_data" optional argument is used to leave acceptable parameter values in lake/water grid cells intact. 
+            if(.not.present(leave_good_data)) then
+               !== Mask: indicates water point;  Parameter: indicates valid value
+               if( mask_value(i, j, 1) == 0 .and. &
+                    param_value(i, j, l) /= undef )  then
+                  param_value(i, j, l) = undef
+               end if  ! End mask-param value check
+            endif
          end do     ! End nc-loop
       end do        ! End nr-loop
 

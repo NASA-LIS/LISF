@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,7 +26,7 @@ subroutine noahmp401_gettws(n, LSM_State)
   use noahmp401_lsmMod
 
   implicit none
-! !ARGUMENTS: 
+! !ARGUMENTS:
   integer, intent(in)    :: n
   type(ESMF_State)       :: LSM_State
 !
@@ -34,8 +34,8 @@ subroutine noahmp401_gettws(n, LSM_State)
 !
 !  Returns the soilmoisture and groundwater related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
@@ -71,8 +71,6 @@ subroutine noahmp401_gettws(n, LSM_State)
   call LIS_verify(status,'ESMF_StateGet failed for gw in noahmp401_gettws')
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for SWE in noahmp401_gettws')
-  call ESMF_StateGet(LSM_State,"Snowdepth",snodField,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for Snowdepth in noahmp401_gettws')
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sm1 in noahmp401_gettws')
@@ -86,8 +84,6 @@ subroutine noahmp401_gettws(n, LSM_State)
   call LIS_verify(status,'ESMF_FieldGet failed for gw in noahmp401_gettws')
   call ESMF_FieldGet(sweField,localDE=0,farrayPtr=swe,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for SWE in noahmp401_gettws')
-  call ESMF_FieldGet(snodField,localDE=0,farrayPtr=snod,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for Snowdepth in noahmp401_gettws')
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index) !to mm
@@ -97,7 +93,6 @@ subroutine noahmp401_gettws(n, LSM_State)
      soilm4(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(4)
      gws(t)    = NOAHMP401_struc(n)%noahmp401(t)%wa
      swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
-     snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
 
 end subroutine noahmp401_gettws

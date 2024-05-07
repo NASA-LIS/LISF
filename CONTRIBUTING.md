@@ -58,6 +58,8 @@ Please use descriptive commit messages. See [this post](https://chris.beams.io/p
 
 If you are contributing a new feature, we will need a testcase so we can reproduce the result before the pull request is merged. Please read the [How to Create a Testcase](https://github.com/NASA-LIS/LISF/blob/master/docs/howto_create_lis_testcases/howto_create_lis_testcases.adoc) document.
 
+**IMPORTANT:** Please **do not** commit your testcase into the Pull Request/repository.  We will make arrangements to obtain your input/output files and configuration files.
+
 ### Documentation
 
 If you are adding or modifying config entries, please update the appropriate config documentation file (e.g., `lis/configs/lis.config.adoc`) to reflect these changes. Our Users' Guides are written in the [AsciiDoc markup language](https://docs.asciidoctor.org/asciidoc/latest/). If you require assistance with documentation, please ask in the Issue thread.

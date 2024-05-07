@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,6 +61,8 @@ subroutine readAGRMETdata(source)
 !               This greatly reduces run-time.
 !  13 Nov 2017: Eric Kemp (SSAI).  Added specific humidity forcing.
 !  02 Nov 2018: Eric Kemp (SSAI).  Added support for n1280e domain.
+!  02 Jan 2023: Mahdi Navari.  Modified to read instantaneous forcing variable. 
+!  04 Jan 2023: Mahdi Navari.  Added surface pressure and wind forcing.
 ! 
 !EOP
 
@@ -144,6 +146,15 @@ subroutine readAGRMETdata(source)
        qair(agrmetdata(source)%nc*agrmetdata(source)%nr) ! EMK Specific humidity
   integer                      :: &
        nqair(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       psurf(agrmetdata(source)%nc*agrmetdata(source)%nr) ! MN surface pressure
+  integer                      :: &
+       npsurf(agrmetdata(source)%nc*agrmetdata(source)%nr)
+  real                         :: &
+       wind(agrmetdata(source)%nc*agrmetdata(source)%nr) ! MN wind speed
+  integer                      :: &
+       nwind(agrmetdata(source)%nc*agrmetdata(source)%nr)
+
 
   logical*1                    :: &
        lb(agrmetdata(source)%nc*agrmetdata(source)%nr)
@@ -152,12 +163,16 @@ subroutine readAGRMETdata(source)
   integer                      :: swe_topt, snod_topt
   integer                      :: sm_topt,st_topt
   integer                      :: qair_topt ! EMK
+  integer                      :: psurf_topt ! MN 
+  integer                      :: wind_topt ! MN
 
   integer                      :: swd_index, lwd_index,rainf_index, tair_index
   integer                      :: qle_index, qh_index, qg_index
   integer                      :: swe_index, snod_index
   integer                      :: sm_index, st_index
   integer                      :: qair_index ! EMK
+  integer                      :: psurf_index ! MN
+  integer                      :: wind_index ! MN
 
   real                         :: varfield(LVT_rc%lnc,LVT_rc%lnr)
   integer                      :: yr1, mo1, da1,hr1,mn1,ss1
@@ -181,10 +196,11 @@ subroutine readAGRMETdata(source)
   nr = agrmetdata(source)%nr
 
 !These are hardcoded for now. 1-instantaneous, 7-timeavged
-  swd_topt = 7
-  lwd_topt = 7
+! MN I have changed the topt from 7 to 1 then LVT can read them. 
+  swd_topt = 1 !7
+  lwd_topt = 1 !7
   rainf_topt =133 
-  tair_topt = 7 
+  tair_topt = 1 !7 
   qle_topt = 7
   qh_topt = 7
   qg_topt = 7 
@@ -192,7 +208,9 @@ subroutine readAGRMETdata(source)
   snod_topt = 1
   sm_topt = 7
   st_topt = 7
-  qair_topt = 7 ! EMK
+  qair_topt = 1 !7 ! EMK
+  psurf_topt = 1 !7 ! MN
+  wind_topt = 1 !7 ! MN
 
 !gribids 
   swd_index = 145
@@ -208,12 +226,14 @@ subroutine readAGRMETdata(source)
   st_index = 85
  ! tskin_index = 148
   qair_index = 51 ! EMK
+  psurf_index = 1  ! MN
+  wind_index = 209 !180 ! MN
 
   yr1 = LVT_rc%dyr(source)
   mo1 = LVT_rc%dmo(source)
   da1 = LVT_rc%dda(source)
   hr1 = LVT_rc%dhr(source)
-  mn1 = 0
+  mn1 = LVT_rc%dmn(source)
   ss1 = 0
   
   swd = 0 
@@ -263,6 +283,10 @@ subroutine readAGRMETdata(source)
 
   qair = 0   ! EMK
   nqair = 0  ! EMK
+  psurf = 0  !MN
+  npsurf = 0 !MN
+  wind = 0   !MN
+  nwind = 0  !MN 
 
   call ESMF_TimeSet(time1,yy=yr1, mm=mo1, dd=da1, &
        h=hr1,m=mn1,s=ss1,calendar=LVT_calendar, rc=status)
@@ -283,7 +307,7 @@ subroutine readAGRMETdata(source)
      call LVT_verify(status)  
 
      call create_agrmetdata_filename(source, &
-          yr2, mo2, da2, hr2, filename)
+          yr2, mo2, da2, hr2, mn2, filename)
 
      inquire(file=trim(filename),exist=file_exists)
      
@@ -556,6 +580,34 @@ subroutine readAGRMETdata(source)
                  enddo
               enddo
 
+           ! MN...Support surface pressure
+           elseif(pid.eq.psurf_index.and.tid.eq.psurf_topt) then
+
+              call grib_get(igrib,"values",var,iret)
+              call LVT_verify(iret,'grib_get failed for values in readAgrmetdata')
+              do r=1,nr
+                 do c=1,nc
+                    if(var(c+(r-1)*nc).ne.9999.0) then
+                       psurf(c+(r-1)*nc) = psurf(c+(r-1)*nc)+var(c+(r-1)*nc)
+                       npsurf(c+(r-1)*nc) = npsurf(c+(r-1)*nc)+1
+                    endif
+                 enddo
+              enddo
+
+           ! MN...Support wind
+           elseif(pid.eq.wind_index.and.tid.eq.wind_topt) then
+
+              call grib_get(igrib,"values",var,iret)
+              call LVT_verify(iret,'grib_get failed for values in readAgrmetdata')
+              do r=1,nr
+                 do c=1,nc
+                    if(var(c+(r-1)*nc).ne.9999.0) then
+                       wind(c+(r-1)*nc) = wind(c+(r-1)*nc)+var(c+(r-1)*nc)
+                       nwind(c+(r-1)*nc) = nwind(c+(r-1)*nc)+1
+                    endif
+                 enddo
+              enddo
+
            endif
 
            call grib_release(igrib,iret)
@@ -633,6 +685,16 @@ subroutine readAGRMETdata(source)
   call interp_agrmetvar(source,nc,nr, qair, nqair, varfield)
   call LVT_logSingleDataStreamVar(LVT_MOC_qairforc,source,varfield,vlevel=1,&
        units="kg/kg")
+
+  ! MN...Support surface pressure
+  call interp_agrmetvar(source,nc,nr, psurf, npsurf, varfield)
+  call LVT_logSingleDataStreamVar(LVT_MOC_PSURFFORC,source,varfield,vlevel=1,&
+       units="Pa")
+
+  ! MN...Support wind
+  call interp_agrmetvar(source,nc,nr, wind, nwind, varfield)
+  call LVT_logSingleDataStreamVar(LVT_MOC_WINDFORC,source,varfield,vlevel=1,&
+       units="m/s")
 
 end subroutine readAGRMETdata
 
@@ -724,7 +786,8 @@ end subroutine interp_agrmetvar
 ! \label{create_agrmetdata_filename}
 !
 ! !INTERFACE: 
-subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
+subroutine create_agrmetdata_filename(source, yr, mo, da, hr, mn, &
+     filename)
 ! !USES:   
   use AGRMET_dataMod
   use LVT_logMod, only: LVT_endrun, LVT_logunit
@@ -733,12 +796,13 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
 
 ! !INPUT PARAMETERS: 
 ! 
-  integer,    intent(in)    :: source
-  integer           :: yr
-  integer           :: mo
-  integer           :: da
-  integer           :: hr
-  character(len=*)  :: filename
+  integer, intent(in) :: source
+  integer, intent(in) :: yr
+  integer, intent(in) :: mo
+  integer, intent(in) :: da
+  integer, intent(in) :: hr
+  integer, intent(in) :: mn
+  character(len=*), intent(out)  :: filename
 
 !
 ! !DESCRIPTION: 
@@ -752,6 +816,7 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
 !   \item[mo]        month of data
 !   \item[da]        day of data
 !   \item[hr]        hour of data
+!   \item[mn]        minute of data
 !   \item[filename]  Name of the AGRMET file
 !  \end{description}
 ! 
@@ -765,11 +830,13 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
   character*2       :: fmo
   character*2       :: fda
   character*2       :: fhr
+  character*2       :: fmn
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
+  write(unit=fmn, fmt='(i2.2)') mn
 
   if (trim(agrmetdata(source)%gridname) == "GLOBAL") then
      ! Old 0.25 deg deterministic run
@@ -780,7 +847,9 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
        '_DC.'//trim(agrmetdata(source)%data_category)//'_GP.LIS_GR'//&
        '.C0P25DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
        '_PA.03-HR-SUM_DD.'//&
-       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       !trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)// &
+       trim(fmn)//'_DF.GR1'
   else if (trim(agrmetdata(source)%gridname) == "n1280e") then
      ! In-house Bratseth run matching GALWEM n1280e domain
      filename = trim(agrmetdata(source)%odir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//'/'&
@@ -790,8 +859,9 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
        '_DC.'//trim(agrmetdata(source)%data_category)//'_GP.LIS_GR'//&
        '.C0P09DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
        '_PA.03-HR-SUM_DD.'//&
-       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
-       
+       !trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)// &
+       trim(fmn)//'_DF.GR1'
   else
      write(LVT_logunit,*) &
           '[ERR] Internal error, unknown AGRMET data gridname ', &

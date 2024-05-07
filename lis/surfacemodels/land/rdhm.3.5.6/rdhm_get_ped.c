@@ -1,14 +1,17 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 // NASA Goddard Space Flight Center
 // Land Information System Framework (LISF)
-// Version 7.4
+// Version 7.5
 //
-// Copyright (c) 2022 United States Government as represented by the
+// Copyright (c) 2024 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
  /* wrapper for calling get_ped 
     Shugong Wang  10/25/2013  */
+
+extern void get_ped(int, int, int, int, int, float *, float *, float *);
+
  void rdhm_get_ped_(int *year,            /* */
                     int *month,           /* */
                     int *day,             /* */

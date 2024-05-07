@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
-# 
-# Copyright (c) 2022 United States Government as represented by the
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -128,10 +128,11 @@ main_loop() {
     echo $ret_code > $ret_code_pipe
 }
 # ________________________________________________________________
-# Main script
+#
+#  Main part of the script
 # ________________________________________________________________
 
-# process command line arguments
+# Process command line arguments
 
 ret_code=0
 while getopts y:m:c:d: flag
@@ -154,6 +155,7 @@ do
 	   ;;	 	   
   esac
 done
+
 if [[ -z "$year" ]] || [[ -z "$mon" ]] || [[ -z "$configfile" ]] || [[ -z "$download" ]]; then
   echo "`basename ${0}`: usage: [-y year] [-m month ] [-c FULL_PATH/config_file] [-d download (Y/N)]"
   exit 1
@@ -163,14 +165,15 @@ echo "Month: $mon";
 echo "Configfile: $configfile";
 echo
 
-# Read config file and extract information
-
+# Read config file and extract information:
 export NODE_NAME=`uname -n`
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     cfsv2datadir=`grep fcst_download_dir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/Oper_TS/"
 else
     cfsv2datadir=`grep fcst_download_dir $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 fi
+
+# Patch file info:
 patchfile=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/patch_files_list.txt"
 patchdir=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/"
 export LISFDIR=`grep LISFDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
@@ -222,11 +225,19 @@ ulimit -s unlimited
   fi
   yearmo=${year}${mon}
   cd ${cfsv2datadir}
-  echo ${year}
-  mkdir -p ${year}
-  cd ${year}
 
-  # open CFSv2 missing/corrupted file info log
+  echo " -- Run year :: "${year}
+# - Need to account for Dec/Jan crossover
+  if [ ${mon} -eq "01" ]; then
+    year2=$((year-1))
+  else
+    year2=${year}
+  fi
+  echo " -- Making and changing directory to target year for downloads -- "${year2}
+  mkdir -p ${year2}
+  cd ${year2}
+
+  # Open CFSv2 missing/corrupted file info log
   SCRDIR=${E2ESDIR}/scratch/${yearmo}/
   mkdir -p -m 775 ${SCRDIR}/
   CFSV2_LOG=${SCRDIR}/CFSv2_missing_corrupted_files
@@ -262,7 +273,6 @@ if [ ${mon} -eq "01" ]; then
     #  "jan01" : ['1217', '1222', '1227']
     echo "January ..."
     prevmon=12
-    year2=$((year-1))
     day1=17
     day2=22
     day3=27
@@ -271,7 +281,6 @@ elif [ ${mon} -eq "02" ]; then
 #  "feb01" : ['0121', '0126', '0131']
     echo "February ..."
     prevmon=01
-    year2=${year}
     day1=21
     day2=26
     day3=31
@@ -280,7 +289,6 @@ elif [ ${mon} -eq "03" ]; then
     #  "mar01" : ['0215', '0220', '0225']
     echo "March ..."
     prevmon=02
-    year2=${year}
     day1=15
     day2=20
     day3=25
@@ -289,7 +297,6 @@ elif [ ${mon} -eq "04" ]; then
     #  "apr01" : ['0317', '0322', '0327']
     echo "April ..."
     prevmon=03
-    year2=${year}
     day1=17
     day2=22
     day3=27
@@ -298,7 +305,6 @@ elif [ ${mon} -eq "05" ]; then
     #  "may01" : ['0416', '0421', '0426']
     echo "May ..."
     prevmon=04
-    year2=${year}
     day1=16
     day2=21
     day3=26
@@ -307,7 +313,6 @@ elif [ ${mon} -eq "06" ]; then
 #  "jun01" : ['0521', '0526', '0531']
     echo "June ..."
     prevmon=05
-    year2=${year}
     day1=21
     day2=26
     day3=31
@@ -316,7 +321,6 @@ elif [ ${mon} -eq "07" ]; then
     #  "jul01" : ['0620', '0625', '0630']
     echo "July ..."
     prevmon=06
-    year2=${year}
     day1=20
     day2=25
     day3=30
@@ -325,7 +329,6 @@ elif [ ${mon} -eq "08" ]; then
     #  "aug01" : ['0720', '0725', '0730']
     echo "August ..."
     prevmon=07
-    year2=${year}
     day1=20
     day2=25
     day3=30
@@ -334,7 +337,6 @@ elif [ ${mon} -eq "09" ]; then
     #  "sep01" : ['0819', '0824', '0829']
     echo "September ..."
     prevmon=08
-    year2=${year}
     day1=19
     day2=24
     day3=29
@@ -343,7 +345,6 @@ elif [ ${mon} -eq "10" ]; then
 #  "oct01" : ['0918', '0923', '0928']
     echo "October ..."
     prevmon=09
-    year2=${year}
     day1=18
     day2=23
     day3=28
@@ -352,7 +353,6 @@ elif [ ${mon} -eq "11" ]; then
     #  "nov01" : ['1018', '1023', '1028']
     echo "November ..."
     prevmon=10
-    year2=${year}
     day1=18
     day2=23
     day3=28
@@ -361,11 +361,11 @@ elif [ ${mon} -eq "12" ]; then
     #  "dec01" : ['1117', '1122', '1127']
     echo "December ..."
     prevmon=11
-    year2=${year}
     day1=17
     day2=22
     day3=27
 fi
+
 echo "Previous mon,days 1-2-3 :: "${prevmon}", "${day1}"-"${day2}"-"${day3}
 echo " "
 echo "=================================================================================================="
