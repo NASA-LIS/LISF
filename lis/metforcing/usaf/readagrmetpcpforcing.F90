@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -267,7 +267,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
    !     precip12Imerg_tmp
    integer :: hourindex
    integer :: k1,k2,k3,k4
-   character(len=10) :: type
+   character(len=32) :: type
    character(len=10) :: yyyymmddhh
    character(len=50) :: pathOBA
    logical :: found_inq
@@ -280,9 +280,10 @@ subroutine readagrmetpcpforcing(n,findex, order)
    integer*2 :: imerg_plp_thresh
    real :: imerg_sigmaOSqr
    real :: imerg_oErrScaleLength
-   character(len=10) :: imerg_net, imerg_platform
+   character(len=32) :: imerg_net, imerg_platform
    real :: sigmaBSqr
-   character(len=10) :: new_name
+   character(len=32) :: new_name
+   integer :: use_expanded_station_ids
    data alert_number / 0 / 
    data srcwts /100.0,50.0,4.0,4.0,1.0,1.0,60.0,1.0/
    data addrad /0, -1, -2, -4, -5, -5, 0, -2/
@@ -399,14 +400,18 @@ subroutine readagrmetpcpforcing(n,findex, order)
             write(LIS_logunit,*) &
                  '[INFO] Fetching 6-hr gage data'
             call USAF_createObsData(precip_6hr_gage_tmp,n,maxobs=15000)
-            call AGRMET_getpcpobs(n, julbeg, LIS_rc%mo, prcpwe, &
-                 use_twelve, p6, p12, alert_number, precip_6hr_gage_tmp,  &
-                 precip_12hr_gage_tmp, &
-                 pcp_src)
+            !call AGRMET_getpcpobs(n, julbeg, LIS_rc%mo, prcpwe, &
+            !     use_twelve, p6, p12, alert_number, precip_6hr_gage_tmp,  &
+            !     precip_12hr_gage_tmp, &
+            !     pcp_src)
+            use_expanded_station_ids = agrmet_struc(n)%pcpobsfmt - 1
+            call USAF_getpcpobs(n, julbeg, LIS_rc%mo, use_twelve, &
+                 pcp_src, use_expanded_station_ids, alert_number, &
+                 precip_6hr_gage_tmp, precip_12hr_gage_tmp)
 
             ! Reject data over water
             write(LIS_logunit,*) &
-                 '[INFO] Running waterQC on 0-6 hr gauge observations'
+                 '[INFO] Running waterQC on 6 hr gauge observations'
             call USAF_waterQC(precip_6hr_gage_tmp,n)
             nobs_good = USAF_countGoodObs(precip_6hr_gage_tmp)
             nobs_good_extra = nint(nobs_good*1.10)
@@ -523,25 +528,25 @@ subroutine readagrmetpcpforcing(n,findex, order)
                     silent_rejects=.true.)
 
                ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly SSMI obs, set ',ii
-                  call USAF_backQC(precip_3hrly_ssmi_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               !if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !   write(LIS_logunit,*) &
+               !        '[INFO] Running backQC on 3hrly SSMI obs, set ',ii
+               !   call USAF_backQC(precip_3hrly_ssmi_tmp(ii),sigmaBSqr, &
+               !        silent_rejects=.true.)
+               !end if
 
                ! Create "superobservations" from close SSMI retrievals
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERSSMI"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly SSMI obs, set ',ii
-                  call USAF_superstatQC(precip_3hrly_SSMI_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_ssmi_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               !if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !   new_name = "SUPERSSMI"
+               !   write(LIS_logunit,*) &
+               !     '[INFO] Running superstatQC on 3hrly SSMI obs, set ',ii
+               !   call USAF_superstatQC(precip_3hrly_SSMI_tmp(ii),n,new_name, &
+               !     silent_rejects=.true.)
+               !   type = new_name
+               !   call USAF_interpBackToTypeObsData(precip_3hrly_ssmi_tmp(ii),&
+               !        n, &
+               !        LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               !end if
 
                ! Filter out the bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_ssmi_tmp(ii))
@@ -608,26 +613,27 @@ subroutine readagrmetpcpforcing(n,findex, order)
                     silent_rejects=.true.)
 
                ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly GEOPRECIP obs, set ',ii
-                  call USAF_backQC(precip_3hrly_geop_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               !if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !   write(LIS_logunit,*) &
+               !        '[INFO] Running backQC on 3hrly GEOPRECIP obs, set ',ii
+               !   call USAF_backQC(precip_3hrly_geop_tmp(ii),sigmaBSqr, &
+               !        silent_rejects=.true.)
+               !end if
 
                ! Create "superobservations" from close obs
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERGEO"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly GEOPRECIP obs, set ',&
-                       ii
-                  call USAF_superstatQC(precip_3hrly_geop_tmp(ii),n,new_name,&
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_geop_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERGEO"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly GEOPRECIP obs, set ',&
+               !    !     ii
+               !    !call USAF_superstatQC(precip_3hrly_geop_tmp(ii),n,new_name,&
+               !    !     silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_geop_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
+
                ! Filter the bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_geop_tmp(ii))
                call USAF_createObsData(precip_3hrly_geop(ii),n, &
@@ -692,26 +698,26 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_cmorph_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly CMORPH obs, set ',ii
-                  call USAF_backQC(precip_3hrly_cmorph_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly CMORPH obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_cmorph_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close CMORPH retrievals
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERCMRPH"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly CMORPH obs, set ',ii
-                  call USAF_superstatQC(precip_3hrly_cmorph_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_cmorph_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERCMRPH"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly CMORPH obs, set ',ii
+               !    !call USAF_superstatQC(precip_3hrly_cmorph_tmp(ii),n,new_name, &
+               !         silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_cmorph_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
 
                ! Filter out the bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_cmorph_tmp(ii))
@@ -782,26 +788,27 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_imerg_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly IMERG obs, set ',ii
-                  call USAF_backQC(precip_3hrly_imerg_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly IMERG obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_imerg_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close IMERG retrievals
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERIMERG"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly IMERG obs, set ',ii
-                  call USAF_superstatQC(precip_3hrly_imerg_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_imerg_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERIMERG"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly IMERG obs, set ',ii
+               !    !call USAF_superstatQC(precip_3hrly_imerg_tmp(ii),n,new_name, &
+               !    !     silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_imerg_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
+
                ! Filter out bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_imerg_tmp(ii))
                call USAF_createObsData(precip_3hrly_imerg(ii),n, &
@@ -912,20 +919,28 @@ subroutine readagrmetpcpforcing(n,findex, order)
             call USAF_createObsData(precip_12hr_gage_tmp,n,maxobs=15000)
             ! EMK...Call this twice to ensure we get obs for first two time
             ! levels.
-            call AGRMET_getpcpobs(n, julbeg, LIS_rc%mo, prcpwe, &
-                 .false., p6, p12, alert_number,precip_6hr_gage_tmp, &
-                 precip_12hr_gage_tmp, &
-                 pcp_src)          
-            call AGRMET_getpcpobs(n, julbeg+6, LIS_rc%mo, prcpwe, &
-                 .true., p6, p12, alert_number,precip_6hr_gage_tmp, &
-                 precip_12hr_gage_tmp, &
-                 pcp_src)
+            !call AGRMET_getpcpobs(n, julbeg, LIS_rc%mo, prcpwe, &
+            !     .false., p6, p12, alert_number,precip_6hr_gage_tmp, &
+            !     precip_12hr_gage_tmp, &
+            !     pcp_src)          
+            !call AGRMET_getpcpobs(n, julbeg+6, LIS_rc%mo, prcpwe, &
+            !     .true., p6, p12, alert_number,precip_6hr_gage_tmp, &
+            !     precip_12hr_gage_tmp, &
+            !     pcp_src)
+            use_expanded_station_ids = agrmet_struc(n)%pcpobsfmt - 1
+            call USAF_getpcpobs(n, julbeg, LIS_rc%mo, .false., pcp_src, &
+                 use_expanded_station_ids, alert_number, &
+                 precip_6hr_gage_tmp, precip_12hr_gage_tmp)
+            call USAF_getpcpobs(n, julbeg+6, LIS_rc%mo, .true., pcp_src, &
+                 use_expanded_station_ids, alert_number, &
+                 precip_6hr_gage_tmp, precip_12hr_gage_tmp)
+
             ! Not needed at this point since we have the 12hr accum
             call USAF_destroyObsData(precip_6hr_gage_tmp)
 
             ! Reject and filter out gage reports over water
             write(LIS_logunit,*) &
-                 '[INFO] Running waterQC on 6-12 hr gauge observations'
+                 '[INFO] Running waterQC on 12 hr gauge observations'
             call USAF_waterQC(precip_12hr_gage_tmp,n)
             nobs_good = USAF_countGoodObs(precip_12hr_gage_tmp)
             nobs_good_extra = nint(nobs_good*1.10)
@@ -1054,26 +1069,26 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_ssmi_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly SSMI obs, set ',ii
-                  call USAF_backQC(precip_3hrly_ssmi_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly SSMI obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_ssmi_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close SSMI reports
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERSSMI"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly SSMI obs, set ',ii
-                  call USAF_superstatQC(precip_3hrly_ssmi_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_ssmi_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERSSMI"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly SSMI obs, set ',ii
+               !    !call USAF_superstatQC(precip_3hrly_ssmi_tmp(ii),n,new_name, &
+               !    !    silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_ssmi_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
 
                ! Filter out the bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_ssmi_tmp(ii))
@@ -1147,27 +1162,27 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_geop_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly GEOPRECIP obs, set ',ii
-                  call USAF_backQC(precip_3hrly_geop_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly GEOPRECIP obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_geop_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close GEOPRECIP reports
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERGEO"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly GEOPRECIP obs, set ',&
-                       ii
-                  call USAF_superstatQC(precip_3hrly_geop_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_geop_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERGEO"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly GEOPRECIP obs, set ',&
+               !    !     ii
+               !    !call USAF_superstatQC(precip_3hrly_geop_tmp(ii),n,new_name, &
+               !    !     silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_geop_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
 
                ! Filter out bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_geop_tmp(ii))
@@ -1239,27 +1254,27 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_cmorph_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly CMORPH obs, set ',ii
-                  call USAF_backQC(precip_3hrly_cmorph_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly CMORPH obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_cmorph_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close CMORPH reports
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERCMRPH"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly CMORPH obs, set ',&
-                       ii
-                  call USAF_superstatQC(precip_3hrly_cmorph_tmp(ii),n,new_name, &
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_cmorph_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERCMRPH"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly CMORPH obs, set ',&
+               !    !     ii
+               !    !call USAF_superstatQC(precip_3hrly_cmorph_tmp(ii),n,new_name, &
+               !    !     silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_cmorph_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
 
                ! Filter out bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_cmorph_tmp(ii))
@@ -1331,27 +1346,27 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call USAF_snowDepthQC(precip_3hrly_imerg_tmp(ii),n, &
                     silent_rejects=.true.)
 
-               ! Compare with background field
-               if (agrmet_struc(n)%skip_backqc .ne. 1) then
-                  write(LIS_logunit,*) &
-                       '[INFO] Running backQC on 3hrly IMERG obs, set ',ii
-                  call USAF_backQC(precip_3hrly_imerg_tmp(ii),sigmaBSqr, &
-                       silent_rejects=.true.)
-               end if
+               ! ! Compare with background field
+               ! if (agrmet_struc(n)%skip_backqc .ne. 1) then
+               !    write(LIS_logunit,*) &
+               !         '[INFO] Running backQC on 3hrly IMERG obs, set ',ii
+               !    call USAF_backQC(precip_3hrly_imerg_tmp(ii),sigmaBSqr, &
+               !         silent_rejects=.true.)
+               ! end if
 
                ! Create "superobservations" from close IMERG reports
-               if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
-                  new_name = "SUPERIMERG"
-                  write(LIS_logunit,*) &
-                       '[INFO] Running superstatQC on 3hrly IMERG obs, set ',&
-                       ii
-                  call USAF_superstatQC(precip_3hrly_imerg_tmp(ii),n,new_name,&
-                       silent_rejects=.true.)
-                  type = new_name
-                  call USAF_interpBackToTypeObsData(precip_3hrly_imerg_tmp(ii),&
-                       n, &
-                       LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
-               end if
+               ! if (agrmet_struc(n)%skip_superstatqc .ne. 1) then
+               !    new_name = "SUPERIMERG"
+               !    !write(LIS_logunit,*) &
+               !    !     '[INFO] Running superstatQC on 3hrly IMERG obs, set ',&
+               !    !     ii
+               !    !call USAF_superstatQC(precip_3hrly_imerg_tmp(ii),n,new_name,&
+               !    !     silent_rejects=.true.)
+               !    type = new_name
+               !    call USAF_interpBackToTypeObsData(precip_3hrly_imerg_tmp(ii),&
+               !         n, &
+               !         LIS_rc%gnc(n),LIS_rc%gnr(n),back4(:,:,ii),type)
+               ! end if
 
                ! Filter out the bad obs
                nobs_good = USAF_countGoodObs(precip_3hrly_imerg_tmp(ii))

@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !=============================i==========================================
 !  MODULE, TOOLSUBS P.W.LIU, 09/12/18
 !  Contains subroutines that are necessry for downscaling program
@@ -59,7 +68,7 @@ MODULE TOOLSUBS
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
 
-#if (defined USE_HDF5)
+#if (defined USE_HDF4)
          status = sfrdata(ssid,start, stride,edges, data)
 #endif
         !PRINT *, "Filename", filename
@@ -90,7 +99,7 @@ MODULE TOOLSUBS
          !DFACC=1 !Read Only Access
          !sd_id = sfstart(trim(filename),DFACC)
          !ssid = sfselect(sd_id, 0)
-#if (defined USE_HDF5)
+#if (defined USE_HDF4)
          status = sfrdata(ssid,start, stride,edges, data)
 #endif
          NDVI_MAT=-9999
@@ -181,6 +190,8 @@ MODULE TOOLSUBS
     SUBROUTINE GetSMAP_L1B(filename, data1_out, data2_out, data3_out, data4_out, data5_out, data6_out, data7_out, data8_out, &
                            data9_out, data10_out, data11_out, data12_out, data13_out, data14_out, data15_out, n, m)
 
+      use LDT_logMod, only: LDT_logunit ! EMK
+
     CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7
     CHARACTER (len=100)    :: dataset8, dataset9, dataset10, dataset11, dataset12, dataset13, dataset14, dataset15
 #if (defined USE_HDF5)
@@ -216,8 +227,9 @@ MODULE TOOLSUBS
 #if (defined USE_HDF5)
        CALL h5open_f(hdferr) !Initialize hdf5
        CALL h5fopen_f (trim(filename),H5F_ACC_RDONLY_F,file_id,hdferr) !Open file
-!        PRINT*, 'sd_id, hdferr', file_id, hdferr
+       !        PRINT*, 'sd_id, hdferr', file_id, hdferr
        CALL h5dopen_f (file_id, trim(dataset1),dataset_id1, hdferr) !Open dataset
+
        call h5dget_space_f(dataset_id1,dspace_id,hdferr)
        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
        CALL h5dopen_f (file_id, trim(dataset2),dataset_id2, hdferr) !Open dataset 
@@ -234,7 +246,6 @@ MODULE TOOLSUBS
        CALL h5dopen_f (file_id, trim(dataset13),dataset_id13, hdferr) !Open dataset 
        CALL h5dopen_f (file_id, trim(dataset14),dataset_id14, hdferr) !Open dataset 
        CALL h5dopen_f (file_id, trim(dataset15),dataset_id15, hdferr) !Open dataset       
-
 
        !PRINT*,'ds_id hdferr', dataset_id1, hdferr
        !PRINT*,'dims maxdims', dims, maxdims
@@ -284,6 +295,1125 @@ MODULE TOOLSUBS
        ! PRINT*, 'SMAP Data', sm_mat
 #endif
     END SUBROUTINE GetSMAP_L1B
+
+      ! Forked version of GetSMAP_L1B to SMAP files in operations, processing
+      ! a subset of the fields.  Also with fault tolerance and some special
+      ! logic for older NRT files missing the tb_v_surface_corrected field.
+      ! Eric Kemp/SSAI.
+      SUBROUTINE GetSMAP_L1B_NRT_subset(filename, tb_time_seconds, &
+           tb_v_surface_corrected, &
+           tb_lat, tb_lon, tb_qual_flag_v, tb_qual_flag_h, sc_nadir_angle, &
+           antenna_scan_angle, n, m, ierr)
+
+      ! Imports
+      use LDT_logMod, only: LDT_logunit, LDT_endrun ! EMK
+
+      ! Arguments
+      character(*), intent(in) :: filename
+      real*8, allocatable, intent(out) :: tb_time_seconds(:,:)
+      real*4, allocatable, intent(out) :: tb_v_surface_corrected(:,:)
+      real*4, allocatable, intent(out) :: tb_lat(:,:), tb_lon(:,:)
+      integer*4, allocatable, intent(out) :: tb_qual_flag_v(:,:)
+      integer*4, allocatable, intent(out) :: tb_qual_flag_h(:,:)
+      real*4, allocatable, intent(out) :: sc_nadir_angle(:)
+      real*4, allocatable, intent(out) :: antenna_scan_angle(:,:)
+      integer, intent(out) :: m, n
+      integer, intent(out) :: ierr
+
+#if (defined USE_HDF5)
+
+      ! Locals
+      character(100) :: dataset
+      integer(HID_T) :: file_id, dataset_id, dspace_id
+      integer(HSIZE_T) :: dims(2), maxdims(2)
+      integer :: rank
+      integer :: hdferr
+      logical :: exists, ishdf5, link_exists
+
+      ierr = 0
+      m = 0
+      n = 0
+
+      ! Make sure file exists
+      inquire(file=trim(filename), exist=exists)
+      if (.not. exists) then
+         write(LDT_logunit,*)'[ERR] Cannot find file ', trim(filename)
+         ierr = 1
+         return
+      end if
+
+      ! Initialize HDF5
+      call h5open_f(hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot initialize HDF5 Fortran interface!'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Make sure the file is HDF5
+      call h5fis_hdf5_f(trim(filename), ishdf5, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Problem checking if ', trim(filename), &
+              ' is HDF5'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+      if (.not. ishdf5) then
+         write(LDT_logunit,*)'[ERR] File ', trim(filename), ' is not HDF5!'
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Open the file
+      call h5fopen_f(trim(filename), H5F_ACC_RDONLY_F, file_id, hdferr)
+      if (hdferr == -1) then
+         write(LDT_logunit,*)'[ERR] Cannot open ', trim(filename)
+         call h5close_f(hdferr)
+         ierr = 1
+         return
+      end if
+
+      ! Get the data
+      dataset = "/Brightness_Temperature/tb_lat/"
+      call get_dataset_real4_2d(file_id, dataset, n, m, tb_lat, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+      dataset = "/Brightness_Temperature/tb_lon/"
+      call get_dataset_real4_2d(file_id, dataset, n, m, tb_lon, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+      dataset = "/Brightness_Temperature/tb_time_seconds/"
+      call get_dataset_real8_2d(file_id, dataset, n, m, tb_time_seconds, &
+           ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+      dataset = "/Brightness_Temperature/tb_qual_flag_v/"
+      call get_dataset_integer2_2d(file_id, dataset, n, m, &
+           tb_qual_flag_v, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+      dataset = "/Brightness_Temperature/tb_qual_flag_h/"
+      call get_dataset_integer2_2d(file_id, dataset, n, m, &
+           tb_qual_flag_h, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+
+      dataset = "/Spacecraft_Data/sc_nadir_angle/"
+      call get_dataset_real4_1d(file_id, dataset, n, sc_nadir_angle, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+      dataset = "/Brightness_Temperature/antenna_scan_angle/"
+      call get_dataset_real4_2d(file_id, dataset, n, m, &
+           antenna_scan_angle, ierr)
+      if (ierr == 1) then
+         call h5fclose_f(file_id, hdferr)
+         call h5close_f(hdferr)
+         call freeall(ierr)
+         return
+      end if
+
+      ! We will try to get tb_v_surface_corrected, but this is missing
+      ! in older NRT files.  If absent, we will substitute tb_v.
+      dataset = "/Brightness_Temperature/tb_v_surface_corrected/"
+      call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+      if (link_exists) then
+         call get_dataset_real4_2d(file_id, dataset, n, m, &
+              tb_v_surface_corrected, &
+              ierr)
+         if (ierr == 1) then
+            call h5fclose_f(file_id, hdferr)
+            call h5close_f(hdferr)
+            call freeall(ierr)
+            return
+         end if
+      else
+         dataset = "/Brightness_Temperature/tb_v/"
+         write(LDT_logunit,*)'[WARN] Will try substituting ', trim(dataset)
+         call get_dataset_real4_2d(file_id, dataset, n, m, &
+              tb_v_surface_corrected, &
+              ierr)
+         if (ierr == 1) then
+            call h5fclose_f(file_id, hdferr)
+            call h5close_f(hdferr)
+            call freeall(ierr)
+            return
+         end if
+      end if
+
+      ! Clean up
+      call h5fclose_f(file_id, hdferr)
+      call h5close_f(hdferr)
+
+      ierr = 0
+
+      return
+
+    contains
+
+      ! Internal subroutine
+      subroutine get_dataset_integer2_2d(file_id, dataset, n, m, var2d, &
+           ierr)
+
+        ! Defaults
+        implicit none
+
+        ! Arguments
+        integer(HID_T), intent(in) :: file_id
+        character(*), intent(in) :: dataset
+        integer, intent(out) :: n
+        integer, intent(out) :: m
+        integer*4, allocatable, intent(out) :: var2d(:,:)
+        integer, intent(out) :: ierr
+
+        ! Locals
+        integer(HID_T) :: dataset_id, datatype_id
+        logical :: link_exists
+        integer :: hdferr
+        integer(HID_T) :: dspace_id
+        integer(HSIZE_T) :: dims(2), maxdims(2)
+        integer :: rank
+        integer :: class
+        integer(SIZE_T) :: size
+        integer :: sign
+
+        ierr = 0
+
+        ! See if the dataset is in the file
+        call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+        if (.not. link_exists) then
+           write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Get the dataset id
+        call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the datatype id
+        call h5dget_type_f(dataset_id, datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the datatype class
+        call h5tget_class_f(datatype_id, class, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get class for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (class .ne. H5T_INTEGER_F) then
+           write(LDT_logunit,*)'[ERR] Bad class for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected ', H5T_INTEGER_F, &
+                ', found ', class
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the size of the datatype.
+        call h5tget_size_f(datatype_id, size, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get size for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (size .ne. 2) then
+           write(LDT_logunit,*)'[ERR] Wrong byte size found for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected 2, found ', size
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the sign type of the datatype.  Should be unsigned.
+        call h5tget_sign_f(datatype_id, sign, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get sign type for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (sign .ne. H5T_SGN_NONE_F) then
+           write(LDT_logunit,*)'[ERR] Wrong sign type found for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected ', H5T_SGN_NONE_F, &
+                ', found ', sign
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close the datatype
+        call h5tclose_f(datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dspace id for the variable dimensions
+        call h5dget_space_f(dataset_id, dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the rank of the dataset in the file.
+        call h5sget_simple_extent_ndims_f(dspace_id, rank, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get rank for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check that the rank is 2.
+        if (rank .ne. 2) then
+           write(LDT_logunit,*) &
+                '[ERR] Wrong rank for ', trim(dataset), &
+                ', expected 2, found ', rank
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dimensions
+        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close access to the dataspace.
+        call h5sclose_f(dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close access to dataspace for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Allocate and initialize the array
+        n = dims(1)
+        m = dims(2)
+        allocate(var2d(n,m))
+        var2d = 0
+
+        ! Read the dataset.  Fortran doesn't have unsigned integers,
+        ! so we save the 16-bit unsigned integer in a 32-bit signed
+        ! integer (should have the room).
+        call h5dread_f(dataset_id, H5T_NATIVE_INTEGER, var2d, dims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Close access to the dataset
+        call h5dclose_f(dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        return
+      end subroutine get_dataset_integer2_2d
+
+      ! Internal subroutine
+      subroutine get_dataset_real4_2d(file_id, dataset, n, m, var2d, ierr)
+
+        ! Defaults
+        implicit none
+
+        ! Arguments
+        integer(HID_T), intent(in) :: file_id
+        character(*), intent(in) :: dataset
+        integer, intent(out) :: n
+        integer, intent(out) :: m
+        real*4, allocatable, intent(out) :: var2d(:,:)
+        integer, intent(out) :: ierr
+
+        ! Locals
+        integer(HID_T) :: dataset_id, datatype_id
+        logical :: link_exists
+        integer :: hdferr
+        integer(HID_T) :: dspace_id
+        integer(HSIZE_T) :: dims(2), maxdims(2)
+        integer :: rank
+        integer :: class
+        integer(SIZE_T) :: size
+
+        ierr = 0
+
+        ! See if the dataset is in the file
+        call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+        if (.not. link_exists) then
+           write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Get the dataset id
+        call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the datatype id
+        call h5dget_type_f(dataset_id, datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the datatype class
+        call h5tget_class_f(datatype_id, class, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get class for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (class .ne. H5T_FLOAT_F) then
+           write(LDT_logunit,*)'[ERR] Bad class for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected ', H5T_FLOAT_F, &
+                ', found ', class
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the size of the datatype
+        call h5tget_size_f(datatype_id, size, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get size for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (size .ne. 4) then
+           write(LDT_logunit,*)'[ERR] Wrong byte size found for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected 4, found ', size
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close the datatype
+        call h5tclose_f(datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dspace id for the variable dimensions
+        call h5dget_space_f(dataset_id, dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the rank of the dataset in the file.
+        call h5sget_simple_extent_ndims_f(dspace_id, rank, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get rank for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check that the rank is 2.
+        if (rank .ne. 2) then
+           write(LDT_logunit,*) &
+                '[ERR] Wrong rank for ', trim(dataset), &
+                ', expected 2, found ', rank
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dimensions
+        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close access to the dataspace.
+        call h5sclose_f(dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close access to dataspace for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Allocate and initialize the array
+        n = dims(1)
+        m = dims(2)
+        allocate(var2d(n,m))
+        var2d = 0
+
+        ! Read the dataset
+        call h5dread_f(dataset_id, H5T_NATIVE_REAL, var2d, dims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Close access to the dataset
+        call h5dclose_f(dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        return
+      end subroutine get_dataset_real4_2d
+
+      ! Internal subroutine
+      subroutine get_dataset_real8_2d(file_id, dataset, n, m, var2d, ierr)
+
+        ! Defaults
+        implicit none
+
+        ! Arguments
+        integer(HID_T), intent(in) :: file_id
+        character(*), intent(in) :: dataset
+        integer, intent(out) :: n
+        integer, intent(out) :: m
+        real*8, allocatable, intent(out) :: var2d(:,:)
+        integer, intent(out) :: ierr
+
+        ! Locals
+        integer(HID_T) :: dataset_id, datatype_id
+        logical :: link_exists
+        integer :: hdferr
+        integer(HID_T) :: dspace_id
+        integer(HSIZE_T) :: dims(2), maxdims(2)
+        integer :: rank
+        integer :: class
+        integer(SIZE_T) :: size
+
+        ierr = 0
+
+        ! See if the dataset is in the file
+        call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+        if (.not. link_exists) then
+           write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Get the dataset id
+        call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the datatype id
+        call h5dget_type_f(dataset_id, datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the datatype class
+        call h5tget_class_f(datatype_id, class, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get class for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (class .ne. H5T_FLOAT_F) then
+           write(LDT_logunit,*)'[ERR] Bad class for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected ', H5T_FLOAT_F, &
+                ', found ', class
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the size of the datatype
+        call h5tget_size_f(datatype_id, size, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get size for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (size .ne. 8) then
+           write(LDT_logunit,*)'[ERR] Wrong byte size found for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected 8, found ', size
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close the datatype
+        call h5tclose_f(datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dspace id for the variable dimensions
+        call h5dget_space_f(dataset_id, dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the rank of the dataset in the file.
+        call h5sget_simple_extent_ndims_f(dspace_id, rank, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get rank for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check that the rank is 2.
+        if (rank .ne. 2) then
+           write(LDT_logunit,*) &
+                '[ERR] Wrong rank for ', trim(dataset), &
+                ', expected 2, found ', rank
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dimensions
+        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close access to the dataspace.
+        call h5sclose_f(dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*) &
+                '[ERR] Cannot close access to dataspace for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Allocate and initialize the array
+        n = dims(1)
+        m = dims(2)
+        allocate(var2d(n,m))
+        var2d = 0
+
+        ! Read the dataset
+        call h5dread_f(dataset_id, H5T_NATIVE_DOUBLE, var2d, dims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Close access to the dataset
+        call h5dclose_f(dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        return
+      end subroutine get_dataset_real8_2d
+
+      ! Internal subroutine
+      subroutine get_dataset_real4_1d(file_id, dataset, n, var1d, ierr)
+
+        ! Defaults
+        implicit none
+
+        ! Arguments
+        integer(HID_T), intent(in) :: file_id
+        character(*), intent(in) :: dataset
+        integer, intent(out) :: n
+        real*4, allocatable, intent(out) :: var1d(:)
+        integer, intent(out) :: ierr
+
+        ! Locals
+        integer(HID_T) :: dataset_id, datatype_id
+        logical :: link_exists
+        integer :: hdferr
+        integer(HID_T) :: dspace_id
+        integer(HSIZE_T) :: dims(1), maxdims(1)
+        integer :: rank
+        integer :: class
+        integer(SIZE_T) :: size
+
+        ierr = 0
+
+        ! See if the dataset is in the file
+        call h5lexists_f(file_id, trim(dataset), link_exists, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Problem finding ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+        if (.not. link_exists) then
+           write(LDT_logunit,*)'[ERR] Nonexistent dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Get the dataset id
+        call h5dopen_f(file_id, trim(dataset), dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot open dataset ', trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the datatype id
+        call h5dget_type_f(dataset_id, datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the datatype class
+        call h5tget_class_f(datatype_id, class, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get class for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (class .ne. H5T_FLOAT_F) then
+           write(LDT_logunit,*)'[ERR] Bad class for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected ', H5T_FLOAT_F, &
+                ', found ', class
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check the size of the datatype
+        call h5tget_size_f(datatype_id, size, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get size for ', &
+                trim(dataset)
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+        if (size .ne. 4) then
+           write(LDT_logunit,*)'[ERR] Wrong byte size found for ', &
+                trim(dataset)
+           write(LDT_logunit,*)'[ERR] Expected 4, found ', size
+           call h5tclose_f(datatype_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close the datatype
+        call h5tclose_f(datatype_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close datatype for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dspace id for the variable dimensions
+        call h5dget_space_f(dataset_id, dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot find dimensions for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the rank of the dataset in the file.
+        call h5sget_simple_extent_ndims_f(dspace_id, rank, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get rank for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Check that the rank is 1.
+        if (rank .ne. 1) then
+           write(LDT_logunit,*) &
+                '[ERR] Wrong rank for ', trim(dataset), &
+                ', expected 1, found ', rank
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Get the dimensions
+        call h5sget_simple_extent_dims_f(dspace_id, dims, maxdims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot get dimensions for ', &
+                trim(dataset)
+           call h5sclose_f(dspace_id, hdferr)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Close access to the dataspace.
+        call h5sclose_f(dspace_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot close access to dataspace for ', &
+                trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        ! Allocate and initialize the array
+        n = dims(1)
+        allocate(var1d(n))
+        var1d = 0
+
+        ! Read the dataset
+        call h5dread_f(dataset_id, H5T_NATIVE_REAL, var1d, dims, hdferr)
+        if (hdferr == -1) then
+           write(LDT_logunit,*)'[ERR] Cannot read dataset ', trim(dataset)
+           call h5dclose_f(dataset_id, hdferr)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        endif
+
+        ! Close access to the dataset
+        call h5dclose_f(dataset_id, hdferr)
+        if (hdferr == -1) then
+           write(LDT_Logunit,*)'[ERR] Problem closing dataset ', &
+                trim(dataset)
+           call h5fclose_f(file_id, hdferr)
+           call h5close_f(hdferr)
+           ierr = 1
+           return
+        end if
+
+        return
+      end subroutine get_dataset_real4_1d
+
+        ! Internal subroutine.  Warning -- deallocates memory in
+        ! parent subroutine and resets two variables.  This is intended
+        ! for gracefully handling errors returned from HDF5.
+        subroutine freeall(ierr)
+          implicit none
+          integer, intent(out) :: ierr
+          if (allocated(tb_v_surface_corrected)) &
+               deallocate(tb_v_surface_corrected)
+          if (allocated(tb_lat)) deallocate(tb_lat)
+          if (allocated(tb_lon)) deallocate(tb_lon)
+          if (allocated(tb_time_seconds)) deallocate(tb_time_seconds)
+          if (allocated(tb_qual_flag_v)) deallocate(tb_qual_flag_v)
+          if (allocated(tb_qual_flag_h)) deallocate(tb_qual_flag_h)
+          if (allocated(sc_nadir_angle))deallocate(sc_nadir_angle)
+          if (allocated(antenna_scan_angle)) deallocate(antenna_scan_angle)
+          m = 0
+          n = 0
+          ierr = 1
+          return
+        end subroutine freeall
+#else
+        ! Dummy version if LDT was compiled w/o HDF5 support.
+        write(LDT_logunit,*) &
+             '[ERR] GetSMAP_L1B_NRT called without HDF5 support!'
+        write(LDT_logunit,*) &
+             '[ERR] Recompile LDT with HDF5 support and try again!'
+        call LDE_endrun()
+#endif
+      end subroutine GetSMAP_L1B_NRT_Subset
 
     SUBROUTINE NEAREST_1d ( nd, xd, yd, ni, xi, yi )
      IMPLICIT NONE
@@ -397,5 +1527,7 @@ END SUBROUTINE IDW_2D
    !PRINT*, " y-intercept  b = ", b
    !PRINT*, " Correlation  r = ", r
    END SUBROUTINE LSQ_Linear
-   
+
+
+
 END MODULE TOOLSUBS

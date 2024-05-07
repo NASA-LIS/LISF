@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -57,9 +57,12 @@ subroutine read_merra2_elev(n,findex)
   integer :: c,r
   real    :: go(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
-  if ( trim(LIS_rc%met_ecor(findex)) .ne. "none") then 
+!  if ( trim(LIS_rc%met_ecor(findex)) .ne. "none") then 
+  if ( LIS_rc%met_ecor(findex) == "lapse-rate" .or. &
+        LIS_rc%met_ecor(findex) == "lapse-rate and slope-aspect" .or. &
+        LIS_rc%met_ecor(findex) == "micromet" ) then
 
-     write(LIS_logunit,*) 'Reading the MERRA2 elevation map ...'
+     write(LIS_logunit,*) '[INFO] Reading the MERRA2 elevation map '
      
      call LIS_read_param(n,"ELEV_MERRA2",go)
 

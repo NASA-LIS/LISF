@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,7 +40,7 @@ subroutine readcrd_agrmet()
   use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_abort, &
        LIS_endrun
 #if (defined SPMD)
-  use LIS_mpiMod, only: LIS_MPI_COMM
+  use LIS_mpiMod
 #endif
   use LIS_pluginIndices, only : LIS_agrmetrunId
   use AGRMET_forcingMod, only : agrmet_struc
@@ -62,12 +62,13 @@ subroutine readcrd_agrmet()
   integer, external :: LIS_create_subdirs
   integer :: tmp_imerg_plp_thresh
   integer :: ierr
+  logical :: use_nrt_bias_files ! EMK
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%agrmetdir,rc=rc)
-     write(LIS_logunit,*)'Using AGRMET forcing'
-     write(LIS_logunit,*) 'AGRMET forcing directory :',agrmet_struc(n)%agrmetdir
+     write(LIS_logunit,*)'[INFO] Using AGRMET forcing'
+     write(LIS_logunit,*) '[INFO] AGRMET forcing directory: ', trim(agrmet_struc(n)%agrmetdir)
   enddo
 
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET first guess source:",rc=rc)
@@ -194,6 +195,65 @@ subroutine readcrd_agrmet()
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%pcpobswch,rc=rc)
   enddo
+
+  ! EMK...Precip observation file formats
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET precip obs file format:", &
+       rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%pcpobsfmt, rc=rc)
+     if (agrmet_struc(n)%pcpobsfmt .ne. 1 .and. &
+          agrmet_struc(n)%pcpobsfmt .ne. 2) then
+        write(LIS_logunit,*) &
+             "[ERR] Bad 'AGRMET precip obs file format:' option"
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 or 2, found ', agrmet_struc(n)%pcpobsfmt
+        write(LIS_logunit,*) '[ERR] Aborting...'
+
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] Illegal value for AGRMET precip obs file format'
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+  enddo
+
+  ! EMK...Sfc observation file formats
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET sfc obs file format:", &
+       rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%sfcobsfmt, rc=rc)
+     if (agrmet_struc(n)%sfcobsfmt .ne. 1 .and. &
+          agrmet_struc(n)%sfcobsfmt .ne. 2) then
+        write(LIS_logunit,*) &
+             "[ERR] Bad 'AGRMET sfc obs file format:' option"
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 or 2, found ', agrmet_struc(n)%sfcobsfmt
+        write(LIS_logunit,*) '[ERR] Aborting...'
+
+        flush(LIS_logunit)
+        message(1) = &
+             '[ERR] Illegal value for AGRMET sfc obs file format'
+#if (defined SPMD)
+        call MPI_Barrier(LIS_MPI_COMM, ierr)
+#endif
+        if (LIS_masterproc) then
+           call LIS_abort(message)
+        else
+           call sleep(10)
+           call LIS_endrun()
+        end if
+     end if
+  enddo
+
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET native imax:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%imaxnative,rc=rc)
@@ -1091,16 +1151,59 @@ subroutine readcrd_agrmet()
      call LIS_verify(rc, &
           "[ERR] AGRMET PPT Background bias correction option: not specified in config file")
      if (agrmet_struc(n)%back_bias_corr .lt. 0 .or. &
-          agrmet_struc(n)%back_bias_corr .gt. 1) then
+          agrmet_struc(n)%back_bias_corr .gt. 2) then
         call LIS_verify(rc, &
-             "[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0 or 1")
+             "[ERR] AGRMET PPT Background bias correction option: bad value in config file, set 0, 1, or 2")
      end if
      if (agrmet_struc(n)%back_bias_corr .eq. 1) then
         allocate(agrmet_struc(n)%pcp_back_bias_ratio(LIS_rc%gnc(n),LIS_rc%gnr(n)))
         agrmet_struc(n)%pcp_back_bias_ratio = 1.
         agrmet_struc(n)%pcp_back_bias_ratio_month = 0
+     else if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+
+        allocate(agrmet_struc(n)%gfs_nrt_bias_ratio( &
+             LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        allocate(agrmet_struc(n)%galwem_nrt_bias_ratio( &
+             LIS_rc%gnc(n),LIS_rc%gnr(n)))
+        agrmet_struc(n)%gfs_nrt_bias_ratio = 1.
+        agrmet_struc(n)%galwem_nrt_bias_ratio = 1.
+        agrmet_struc(n)%pcp_back_bias_ratio_month = 0
      end if
-  enddo ! n
+  end do
+
+  ! EMK Add support for NRT bias files for GFS and GALWEM
+  use_nrt_bias_files = .false.
+  do n = 1, LIS_rc%nnest
+     if (agrmet_struc(n)%back_bias_corr .eq. 2) then
+        use_nrt_bias_files = .true.
+        exit
+     end if
+  end do
+
+  if (use_nrt_bias_files) then
+     call ESMF_ConfigFindLabel(LIS_config, &
+          "AGRMET PPT GFS NRT bias file:", rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT GFS NRT bias file: not specified in config file")
+
+     do n = 1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, &
+             agrmet_struc(n)%gfs_nrt_bias_ratio_file, rc=rc)
+        call LIS_verify(rc, &
+             "[ERR] AGRMET PPT GFS NRT bias file: not specified in config file")
+     end do
+
+     call ESMF_ConfigFindLabel(LIS_config, &
+          "AGRMET PPT GALWEM NRT bias file:", rc=rc)
+     call LIS_verify(rc, &
+          "[ERR] AGRMET PPT GALWEM NRT bias file: not specified in config file")
+     do n = 1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, &
+             agrmet_struc(n)%galwem_nrt_bias_ratio_file, rc=rc)
+        call LIS_verify(rc, &
+             "[ERR] AGRMET PPT GALWEM NRT bias file: not specified in config file")
+     end do
+  end if
 
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1
@@ -1126,7 +1229,7 @@ subroutine readcrd_agrmet()
      if (LIS_masterproc) then
         ios = LIS_create_subdirs(len_trim(c_string),trim(c_string))
         if (ios .ne. 0) then
-           write(LIS_logunit,*)'ERR creating directory ', &
+           write(LIS_logunit,*)'[ERR] Cannot create directory ', &
                 trim(agrmet_struc(n)%analysisdir)
            flush(LIS_logunit)
         end if

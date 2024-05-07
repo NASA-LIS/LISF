@@ -16,16 +16,16 @@ These instructions expect that you are using such a system.  In particular you n
 
 ===== Compilers
 
-* Intel Fortran Compiler versions 18, 19, 20, or 21 with corresponding Intel C Compiler along with GNU`'s Compiler Collection version 9.2.0 or 11.2.0.
-* or GNU`'s Compiler Collection version 9.2.0 or 11.2.0, both gfortran and gcc.
+* Intel Fortran Compiler versions 2021 or 2022 with corresponding Intel C Compiler along with GNU`'s Compiler Collection version 11.2.0 or 12.1.0.
+* or GNU`'s Compiler Collection version 11.2.0, both gfortran and gcc.
 
 ===== Tools
 
 * GNU`'s make, gmake, version 3.77 or 3.81
 * Perl, version 5.10
-* Python, version 2.7 or 3.8
+* Python, version 3.6
 
-IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
 //
 //      *** or Absoft's Pro Fortran Software Developement Kit, version 10.0
@@ -39,17 +39,16 @@ IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depen
 
 ===== Compilers
 
-* Intel Fortran Compiler version 18 or 19 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 7.3.0
-* or Intel Fortran Compiler version 21 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 7.5.0
-* or Cray Compiler Environment (cce) version 12.0.3 or 13.0.0, along with GNU`'s Compiler Collection version 11.2.0
+* Intel Fortran Compiler version 2021 or 2022 with corresponding Intel C Compiler, along with GNU`'s Compiler Collection version 11.2.0 or 12.1.0.
+* or Cray Compiler Environment (cce) version 14.0.0, along with GNU`'s Compiler Collection version 11.2.0.
 
 ===== Tools
 
 * GNU`'s make, gmake, version 3.77 or 3.81
 * Perl, version 5.10
-* Python, version 2.7 or 3.8
+* Python, version 3.6
 
-IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
 ==== IBM/Linux
 
@@ -61,9 +60,9 @@ IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depen
 
 * GNU`'s make, gmake, version 3.77 or 3.81
 * Perl, version 5.10
-* Python, version 2.7 or 3.8
+* Python, version 3.6
 
-IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depend on Python 3.
+IMPORTANT: The use of Python 2.7 for building LISF is now deprecated.  See Section <<Python support>>.
 
 //
 //   * IBM
@@ -73,4 +72,27 @@ IMPORTANT: Support for Python 2.7 is now deprecated.  Future releases will depen
 //   * SGI Altix
 //      ** Intel Fortran Compiler version 12
 //      ** GNU`'s make, gmake, version 3.77
+
+==== Python support
+
+The use of Python 2.7 for building LISF is now deprecated.  If you only have Python 2.7, then edit the following four files
+
+* ldt/make/makedep.py
+* lis/make/makedep.py
+* lis/make/plugins.py
+* lvt/make/makedep.py
+
+changing
+
+```
+#!/usr/bin/env python3
+```
+
+to
+
+```
+#!/usr/bin/env python
+```
+
+Future releases will depend on Python 3 only.
 

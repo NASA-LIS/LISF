@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -297,9 +297,9 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                  message(6) = '  Observations beyond array size will be ignored'
                  message(7) = '  Increase number of AGRMET maximum precip obs in lis.config file!'
                  if (LIS_masterproc) then
+                    alert_number = alert_number + 1
                     call LIS_alert('LIS.AGRMET_getpcpobs', &
                          alert_number, message)
-                    alert_number = alert_number + 1
                  end if
 
                  nsize = agrmet_struc(n)%max_pcpobs
@@ -397,9 +397,9 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                  message(2) = '  Routine: AGRMET_getpcpobs'
                  message(3) = '  Problem reading '// trim(filename)
                  if (LIS_masterproc) then
+                    alert_number = alert_number + 1
                     call LIS_alert('LIS.AGRMET_getpcpobs', &
                          alert_number, message)
-                    alert_number = alert_number + 1
                  end if
               end if
            else
@@ -416,9 +416,9 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
               message(2) = '  Routine: AGRMET_getpcpobs'
               message(3) = '  Missing rain gage file '// trim(filename)
               if (LIS_masterproc) then
+                 alert_number = alert_number + 1
                  call LIS_alert('LIS.AGRMET_getpcpobs', &
                       alert_number, message)
-                 alert_number = alert_number + 1
               end if
 
            endif

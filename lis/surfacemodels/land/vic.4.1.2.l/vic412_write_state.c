@@ -1,9 +1,9 @@
 //-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 // NASA Goddard Space Flight Center
 // Land Information System Framework (LISF)
-// Version 7.4
+// Version 7.5
 //
-// Copyright (c) 2022 United States Government as represented by the
+// Copyright (c) 2024 United States Government as represented by the
 // Administrator of the National Aeronautics and Space Administration.
 // All Rights Reserved.
 //-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,6 +13,9 @@
 #include "ftn.h"
 #define VIC_BASED 0  /** VIC based vegetation tiling  Added by Shugong Wang on 05/01/2012 **/
 #define LIS_BASED 1  /** LIS based vegetation tiling  Added by Shugong Wang on 05/01/2012 **/
+
+extern void pack_model_state(dist_prcp_struct *, global_param_struct *, int, int, filep_struct *, soil_con_struct *, char *, int *, float *, int *);
+
 //BOP
 //
 // !ROUTINE: vic412_write_state

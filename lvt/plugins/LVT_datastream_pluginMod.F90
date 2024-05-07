@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -33,6 +33,7 @@
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
 !  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!  10 Jan 2023  Mahdi Navari added suport for COAMPSout 
 !
 !EOP
 module LVT_datastream_pluginMod
@@ -171,6 +172,7 @@ contains
     use GDASforc_dataMod,       only : GDASforc_datainit    
     use ASOSWE_obsMod,          only : ASOSWE_obsinit
     use IMERG_dataMod,          only : IMERG_datainit
+    use IMERG_monthly_dataMod,  only : IMERG_monthly_datainit
     use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
@@ -180,6 +182,7 @@ contains
     use THySM_obsMod,           only : THySM_obsinit
     use UASMAP_obsMod,          only : UASMAP_obsinit
     use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
+    use COAMPSout_dataMod,      only : COAMPSout_datainit
     use SMAPEOPLSMobsMod,       only : SMAPEOPLSMobsinit
 
     external readtemplateObs
@@ -282,6 +285,7 @@ contains
     external readGDASforcdata
     external readASOSWEObs
     external readIMERGdata
+    external readIMERGmonthlydata
     external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
@@ -291,6 +295,7 @@ contains
     external readTHySMobs
     external readUASMAPobs
     external readGRUNrunoffobs
+    external readCOAMPSoutdata
     external readSMAPEOPL_SMObs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
@@ -697,7 +702,12 @@ contains
          readASOSWEObs)
 
     call registerobssetup(trim(LVT_IMERGdataId)//char(0), IMERG_datainit)
-    call registerobsread(trim(LVT_IMERGdataId)//char(0) , readIMERGdata)
+    call registerobsread(trim(LVT_IMERGdataId)//char(0), readIMERGdata)
+
+    call registerobssetup(trim(LVT_IMERGmonthlydataId)//char(0), &
+         IMERG_monthly_datainit)
+    call registerobsread(trim(LVT_IMERGmonthlydataId)//char(0), &
+         readIMERGmonthlydata)
 
     call registerobssetup(trim(LVT_UASNOWdataId)//char(0), UASNOW_obsinit)
     call registerobsread(trim(LVT_UASNOWdataId)//char(0) , readUASNOWObs)
@@ -740,6 +750,10 @@ contains
     call registerobsread(trim(LVT_GRUNobsId)//char(0),&
          readGRUNrunoffobs)
 
+    call registerobssetup(trim(LVT_COAMPSoutId)//char(0), &
+         COAMPSout_datainit)
+    call registerobsread(trim(LVT_COAMPSoutId)//char(0),&
+         readCOAMPSoutdata)    
     call registerobssetup(trim(LVT_SMAP_E_OPLId)//char(0), &
          SMAPEOPLSMobsinit)
     call registerobsread(trim(LVT_SMAP_E_OPLId)//char(0),&

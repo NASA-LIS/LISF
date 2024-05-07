@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -136,6 +136,9 @@ subroutine NoahMP401_readcrd()
         if (trim(landuse_scheme_name) .eq. "USGS") then
           NOAHMP401_struc(n)%landuse_scheme_name = "USGS"
         elseif (trim(landuse_scheme_name) .eq. "IGBPNCEP") then
+          NOAHMP401_struc(n)%landuse_scheme_name = &
+                               "MODIFIED_IGBP_MODIS_NOAH"
+        elseif (trim(landuse_scheme_name) .eq. "NALCMS_SM_IGBPNCEP" ) then
           NOAHMP401_struc(n)%landuse_scheme_name = &
                                "MODIFIED_IGBP_MODIS_NOAH"
         elseif (trim(landuse_scheme_name) .eq. "UMD") then

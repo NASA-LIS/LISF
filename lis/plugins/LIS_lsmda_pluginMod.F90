@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -2689,6 +2689,26 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
+!MN
+! Noah-MP.4.0.1 SMAP(NASA) soil moisture with CDF Transfer
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
 
 !YK
 ! Noah-MP.4.0.1 SMOS NRT NN soil moisture

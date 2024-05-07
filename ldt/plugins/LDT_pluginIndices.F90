@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -120,9 +120,10 @@ module LDT_pluginIndices
         = "GLASS LAI"
    character*50, public,  parameter :: LDT_LPRMvodobsId            &
         = "LPRM vegetation optical depth"
-
    character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
         = "MCD15A2H LAI"
+   character*50, public,  parameter :: LDT_LISlsmPrecipobsId          &
+        = "LIS LSM total precipitation"
    character*50, public,  parameter :: LDT_VIIRSgvfobsId            &
         = "VIIRS GVF"                                                    !Y.Kwon
    character*50, public,  parameter :: LDT_CDFSgvfobsId            &
@@ -219,6 +220,7 @@ module LDT_pluginIndices
 ! Snow models and data
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
+   character*50, public,  parameter :: LDT_snowmodelId   = "SnowModel"
 
 !-------------------------------------------------------------------------
 ! Landcover sources
@@ -229,6 +231,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_usgslcNATId    = "USGS_Native"
    character*50, public,  parameter :: LDT_modislcLISId   = "MODIS_LIS"
    character*50, public,  parameter :: LDT_modislcNATId   = "MODIS_Native"
+   character*50, public,  parameter :: LDT_mcd12q1Id      = "MCD12Q1"
    character*50, public,  parameter :: LDT_modislcPFTId   = "MODIS_Native_PFT"
    character*50, public,  parameter :: LDT_ukmoigbpPFTId  = "UKMO_IGBP_Native_PFT"
    character*50, public,  parameter :: LDT_UM_ancillaryId = "UM_Native_Ancillary"
@@ -238,6 +241,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_vic411lcId     = "VIC411"
    character*50, public,  parameter :: LDT_vic412lcId     = "VIC412"
    character*50, public,  parameter :: LDT_clm45lcId      = "CLM45"
+   character*50, public,  parameter :: LDT_nalcmsSMlcId   = "NALCMS_SM"
+   character*50, public,  parameter :: LDT_nalcmsSMIGBPlcId  = "NALCMS_SM_IGBPNCEP"
    character*50, public,  parameter :: LDT_constId        = "CONSTANT"
 
 !-------------------------------------------------------------------------
@@ -266,6 +271,7 @@ module LDT_pluginIndices
    character*50, public, parameter :: LDT_srtmLISId  = "SRTM_LIS"
    character*50, public, parameter :: LDT_srtmNATId  = "SRTM_Native"
    character*50, public, parameter :: LDT_merit1KId  = "MERIT_1K"
+   character*50, public, parameter :: LDT_nedSMId    = "NED_SM"
 
 !-------------------------------------------------------------------------
 ! Soils sources

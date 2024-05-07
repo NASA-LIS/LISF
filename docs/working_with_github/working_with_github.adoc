@@ -14,6 +14,7 @@
 :lisf: LISF
 :lisf_git: LISF.git
 :lisf_test_git: lisf-test.git
+:emdash: —
 
 
 == General notes
@@ -942,12 +943,12 @@ Again, the specific command will depend on which private repository you need to 
 
 Now you have a repository (for the restricted-access component) within a repository (for LISF).  To carry out your work for the restricted-access component, follow the instructions in <<sec_step5a>> and/or <<sec_step5b>>.
 
-Yes, you may two sets of commits and two sets of pull requests for your work.
+Yes, you may have two sets of commits and two sets of pull requests for your work.
 
 [WARNING]
 ====
 
-In general, do not run `git add --all`; this always ends up adding files to your commit that do not belong.  And, in particular, do not run `git add --all` when working with private/restricted repositories.  If you accidentally do, then you will see the following warning.  Follow the hint for running `git rm`.
+In general, do not run `git add --all`; this always ends up adding files to your commit that do not belong.  (See Section <<Explicitly add files>>.)  And, in particular, do not run `git add --all` when working with private/restricted repositories.  If you accidentally do, then you will see the following warning.  Follow the hint for running `git rm`.
 
 .Accidental `git add --all`
 ....
@@ -970,6 +971,19 @@ hint: See "git help submodule" for more information.
 add 'RESTRICTED/restricted-ua-lsm/'
 ....
 ====
+
+
+== Explicitly add files
+
+Do not run commands like `git add .` or `git add --all`.  These commands will add files to your commit that do not belong.  For example, you may end up adding restricted code, backup files, temporary build scripts, and executables {emdash} files that do not belong in the repository.
+
+Add files to a commit explicitly.  For example, you added a new output variable to NoahMP 4.0.1:
+
+....
+% git add core/LIS_histDataMod.F90 surfacemodels/land/noahmp.4.0.1/NoahMP401_main.F90
+....
+
+See `git help add` for more information about adding files to a commit.
 
 
 == Useful commands

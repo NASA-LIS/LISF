@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@
 !               and added parameter output option (wparm)
 !  29 Dec 2007: Marv Freimund; Used trim on filenames
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!  15 May 2023  Sujay Kumar, added support for 1D lat/lon output for latlon and merc projections
 !
 ! !INTERFACE:
 subroutine LIS_readConfig()
@@ -134,9 +135,27 @@ subroutine LIS_readConfig()
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%runmode,&
        label="Running mode:",rc=rc)
   call LIS_verify(rc,'Running mode: option not specified in the config file')
+
 !  call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%lis_map_proj,&
 !       label="Map projection of the LIS domain:",rc=rc)
 !  call LIS_verify(rc,'Map projection of the LIS domain: option not specified in the config file')
+
+  ! CM Grabs new optional lis.config entry for the number of dimensions of the lat/lon fields
+  call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nlatlon_dimensions,&
+       label="Number of dimensions in the lat/lon output fields:",rc=rc)
+  call LIS_warning(rc, 'Number of dimensions in the lat/lon output fields: option not specified in the config file. Assigning value to "1D"')
+
+    ! CM If the user did not specify the number of dimension for the lat/lon fields, use 1D. In LIS_domainMod, this will switch to 2D for all projections except latlon. 
+    if ( rc /= 0 ) then
+      LIS_rc%nlatlon_dimensions = "1D"
+    endif   
+  
+    ! CM If the user specified an invalid dimension option, assign to "1D"
+    if ( LIS_rc%nlatlon_dimensions /= "1D" .AND. LIS_rc%nlatlon_dimensions /= "2D" ) then
+      call LIS_warning(1,'Invalid lis.config entry, "Number of dimensions in the lat/lon output fields:" Assigning value to "1D"')
+      LIS_rc%nlatlon_dimensions = "1D"
+    endif
+
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%nnest,&
        label="Number of nests:",rc=rc)
   call LIS_verify(rc,'Number of nests: option not specified in the config file')
@@ -771,11 +790,12 @@ subroutine LIS_readConfig()
   
   call LIS_parseTimeString(time,LIS_rc%pertrestartInterval)
 
-  if(npert_forc.ne.0.or.npert_state.ne.0) then 
-     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
-          label="Apply perturbation bias correction:",rc=rc)
-     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
-  endif
+  LIS_rc%pert_bias_corr = 1
+!  if(npert_forc.ne.0.or.npert_state.ne.0) then 
+!     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%pert_bias_corr,&
+!          label="Apply perturbation bias correction:",rc=rc)
+!     call LIS_verify(rc,'Apply perturbation bias correction: not specified')
+!  endif
 
 !  if(npert_forc.ne.0.or.npert_state.ne.0.or.npert_obs.ne.0) then 
   call ESMF_ConfigFindLabel(LIS_config,"Perturbations restart filename:",rc=rc)

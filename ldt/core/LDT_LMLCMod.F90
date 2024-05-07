@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -182,6 +182,13 @@ contains
        end if
     enddo
 
+    ! Option to assign all landmask and domainmask points to land:
+    ! 0 - "off"; 1 - "on", where all points are set to 1
+    call ESMF_ConfigGetAttribute(LDT_config,LDT_rc%allmaskland,&
+         label="Set all land and domain masks to 1:",&
+         default=0,rc=rc)
+    call LDT_verify(rc,'Set all land and domain masks to 1: not defined')
+
 !-- Landcover dataset file and option inputs:
 
     call ESMF_ConfigFindLabel(LDT_config,"Landcover file:",rc=rc)
@@ -203,7 +210,9 @@ contains
   ! Don't need to read in "Native" grid extents/resolution, just for LIS inputs:
     do n=1,LDT_rc%nnest
        if( index(LDT_LSMparam_struc(n)%landcover%source,"Native").eq.0 .and. &
-           index(LDT_LSMparam_struc(n)%landcover%source,"CONSTANT").eq.0 ) then
+            index(LDT_LSMparam_struc(n)%landcover%source,"CONSTANT").eq.0 .and.&
+            index(LDT_LSMparam_struc(n)%landcover%source,"MCD12Q1").eq.0) then
+          
          call LDT_readDomainConfigSpecs("Landcover", LDT_rc%lc_proj, LDT_rc%lc_gridDesc)
          if( LDT_rc%lc_proj == "latlon" ) then
            call LDT_gridOptChecks( n, "Landcover", &
@@ -878,6 +887,12 @@ contains
        case( "UMD" )
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
               13))
+       case( "NALCMS_SM" )
+         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+              24))
+       case( "NALCMS_SM_IGBPNCEP" )
+         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
+              20))
        case( "Bondville" ) 
          call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMBER_LANDCATS", &
               20))
@@ -934,6 +949,13 @@ contains
       case ( "CLM45" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              36))
+      case ( "NALCMS_SM" )
+        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
+             24))
+      case ( "NALCMS_SM_IGBPNCEP" )
+        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
+             17))
+!             20))
       case ( "Bondville" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              17))
@@ -950,6 +972,8 @@ contains
          write(LDT_logunit,*) ' -- MOSAIC ' 
          write(LDT_logunit,*) ' -- ISA ' 
          write(LDT_logunit,*) ' -- CLM45 ' 
+         write(LDT_logunit,*) ' -- NALCMS_SM '
+         write(LDT_logunit,*) ' -- NALCMS_SM_IGBPNCEP '
          write(LDT_logunit,*) ' -- CONSTANT ' 
          write(LDT_logunit,*) ' ... program stopping. ' 
          call LDT_endrun
@@ -1107,6 +1131,13 @@ contains
       case ( "ISA" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              13))
+      case ( "NALCMS_SM" )
+        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
+             24))
+      case ( "NALCMS_SM_IGBPNCEP" )
+        call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
+             17))
+!             20))
       case ( "CONSTANT" )
         call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"NUMVEGTYPES", &
              LDT_LSMparam_struc(n)%landcover%num_bins))
@@ -1119,6 +1150,8 @@ contains
          write(LDT_logunit,*) ' -- USGS ' 
          write(LDT_logunit,*) ' -- MOSAIC ' 
          write(LDT_logunit,*) ' -- ISA ' 
+         write(LDT_logunit,*) ' -- NALCMS_SM '
+         write(LDT_logunit,*) ' -- NALCMS_SM_IGBPNCEP '
          write(LDT_logunit,*) ' -- CONSTANT ' 
          write(LDT_logunit,*) ' ... program stopping. ' 
          call LDT_endrun

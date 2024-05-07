@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -100,6 +100,11 @@ subroutine read_maskfile(n, vegtype, fgrd, localmask )
       call LDT_endrun
    endif
 
+   if(LDT_rc%mask_source(n) =="MCD12Q1") then
+      call read_maskfile_MCD12Q1(n,vegtype, fgrd, localmask)
+      return
+   endif
+   
 ! -------------------------------------------------------------------
 !    PREPARE SUBSETTED PARAMETER GRID FOR READING IN NEEDED DATA
 ! -------------------------------------------------------------------

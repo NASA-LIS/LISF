@@ -1,6 +1,6 @@
 = LIS Public Testcase Walkthrough
-:revnumber: 1.0
-:revdate: September 23, 2022
+:revnumber: 1.1
+:revdate: June 26, 2023
 :revremark: Updated for LISF Public 7.4 release
 :imagesdir: ./images
 :title-page:
@@ -12,7 +12,7 @@
 :figure-caption!:                       // disable figure captions
 
 // github commit known to be compatible with this walkthrough
-:compatible-lisf-branch: support/lisf-public-7.3
+:compatible-lisf-branch: support/lisf-public-7.4
 
 // urls
 :url-lis-website: https://lis.gsfc.nasa.gov
@@ -20,7 +20,8 @@
 :url-lis-testcases-data: https://portal.nccs.nasa.gov/lisdata_pub/Tutorials/Web_Version/
 :url-lisf-docs: https://github.com/NASA-LIS/LISF/tree/master/docs
 :url-lisf-github: https://github.com/NASA-LIS/LISF
-:ssh-lisf-github: git@github.com:NASA-LIS/LISF.git
+:url-nccs-discover-jobs-page: https://www.nccs.nasa.gov/nccs-users/instructional/using-slurm/submit-jobs
+:ssh-lisf-github: github:NASA-LIS/LISF.git
 
 // begin document
 

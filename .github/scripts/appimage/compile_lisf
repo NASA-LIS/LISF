@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+source lisf.env
+cd LISF
+
+#
+# Revision
+#
+
+git log -n 1 --oneline --decorate >revision.log
+
+#
+# LDT
+#
+
+# Parallelism (0-serial, 1-dmpar, default=0): 0
+# Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): 2
+# Assume little/big_endian data format (1-little, 2-big, default=2): 2
+# Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): 2
+# NETCDF version (3 or 4, default=4)?: 4
+# NETCDF use shuffle filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): 1
+# Use HDF4? (1-yes, 0-no, default=1): 1
+# Use HDF5? (1-yes, 0-no, default=1): 1
+# Use HDFEOS? (1-yes, 0-no, default=1): 1
+# Enable GeoTIFF support? (1-yes, 0-no, default=1): 1
+# Enable LIBGEOTIFF support? (1-yes, 0-no, default=1): 1
+# Include date/time stamp history? (1-yes, 0-no, default=1): 1
+
+cd ldt
+printf '%s\n' "0" "2" "2" "2" "4" "1" "1" "1" "1" "1" "1" "1" "1" "1" | ./configure
+./compile -j 2
+
+#
+# LIS
+#
+
+# Parallelism (0-serial, 1-dmpar, default=1): 1
+# Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): 2
+# Assume little/big_endian data format (1-little, 2-big, default=2): 2
+# Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): 2
+# Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0): 0
+# Use NETCDF? (1-yes, 0-no, default=1): 1
+# NETCDF version (3 or 4, default=4): 4
+# NETCDF use shuffle filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): 1
+# Use HDF4? (1-yes, 0-no, default=1): 1
+# Use HDF5? (1-yes, 0-no, default=1): 1
+# Use HDFEOS? (1-yes, 0-no, default=1): 1
+# Use MINPACK? (1-yes, 0-no, default=0): 0
+# Use LIS-CRTM? (1-yes, 0-no, default=0): 0
+# Use LIS-CMEM? (1-yes, 0-no, default=0): 0
+# Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0): 0
+# Use PETSc? (1-yes, 0-no, default=0): 0
+
+cd ../lis
+printf '%s\n' "1" "2" "2" "2" "0" "1" "4" "1" "1" "1" "1" "1" "1" "0" "0" "0" "0" "0" | ./configure
+./compile -j 2
+
+#
+# LVT
+#
+
+# Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): 2
+# Assume little/big_endian data format (1-little, 2-big, default=2): 2
+# Use GRIBAPI/ECCODES? (1-gribapi, 2-eccodes, default=2): 2
+# Use NETCDF? (1-yes, 0-no, default=1): 1
+# NETCDF version (3 or 4, default=4): 4
+# NETCDF use shuffle filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate filter? (1-yes, 0-no, default = 1): 1
+# NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): 1
+# Use HDF4? (1-yes, 0-no, default=1): 1
+# Use HDF5? (1-yes, 0-no, default=1): 1
+# Use HDFEOS? (1-yes, 0-no, default=1): 1
+# Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0): 0
+# Enable GeoTIFF support? (1-yes, 0-no, default=1): 1
+# Use MATLAB support? (1-yes, 0-no, default=0): 0
+
+cd ../lvt
+printf '%s\n' "2" "2" "2" "1" "4" "1" "1" "1" "1" "1" "1" "0" "1" "0" | ./configure
+./compile -j 2

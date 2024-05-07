@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,6 +40,7 @@
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
 !  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!  10 Jan 2023  Mahdi Navari added suport for COAMPSout 
 !
 !EOP
 module LVT_pluginIndices
@@ -261,6 +262,8 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_GDASdataId = "GDAS"
    character*50, public,  parameter :: LVT_ASOSWEdataId = "ASO SWE"
    character*50, public,  parameter :: LVT_IMERGdataId = "GPM IMERG"
+   character*50, public,  parameter :: LVT_IMERGMonthlydataId = &
+        "GPM IMERG Monthly"
    character*50, public,  parameter :: LVT_UASNOWdataId = "UA SNOW"
    character*50, public,  parameter :: LVT_ozFluxdataId = "OzFlux"
    character*50, public,  parameter :: LVT_JASMINsmobsId = "JASMIN soil moisture"
@@ -270,6 +273,7 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_THySMobsId = "THySM"
    character*50, public,  parameter :: LVT_UASMAPobsId = "UA SMAP"
    character*50, public,  parameter :: LVT_GRUNobsId = "GRUN runoff"
+   character*50, public,  parameter :: LVT_COAMPSoutId = "COAMPSout"
    character*50, public,  parameter :: LVT_SMAP_E_OPLId = "OPL E SMAP soil moisture retrieval"  
 !-------------------------------------------------------------------------
 ! Training algorithms
