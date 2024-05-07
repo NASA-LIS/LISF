@@ -93,8 +93,6 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   real                   :: smc_rnd, smc_tmp 
   real                   :: sh2o_tmp, sh2o_rnd 
   INTEGER, DIMENSION (1) :: seed 
-  integer                :: row, col
-  real                   :: lat, lon
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
@@ -211,11 +209,6 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(i)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(i)%row) 
-
-            row =  LIS_surface(n, LIS_rc%lsm_index)%tile(i)%row
-            col =  LIS_surface(n, LIS_rc%lsm_index)%tile(i)%col
-            lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
-            lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
 
      !if(update_flag(gid)) then
      if(update_flag_new(gid)) then 
