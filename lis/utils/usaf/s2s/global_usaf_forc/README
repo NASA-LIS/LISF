@@ -1,7 +1,14 @@
 DESCRIPTION OF SCRIPTS
 
 Eric Kemp (SSAI)
-Last updated 17 Nov 2022
+Last updated 24 May 2023
+
+* For running on Discover, you will load the following module:
+  LISF/env/discover/lisf_7.5_intel_2021.4.0_s2s
+
+* On HPC-11, the latest module is:
+    lisf_7.5_prgenv_cray_8.3.3_s2s 
+  which uses afw-python/3.9-202203
 
 There are 3 scripts used to configure and run LIS to generate USAF global
 atmospheric forcing data via "AGRMET Ops" mode.  These are located in the
@@ -31,5 +38,5 @@ o store_lis_output.py will copy most GRIB1 output files to a new, semi-permanent
    directory for subsequent use by S2S land DA LIS runs.  (The first GRIB1 file
    valid at the start of the LIS run is skipped, since it has no precipitation
    data.) Also, the restart file produced at t=24 hrs is copied to a ./restart
-   directory, for use by the next LIS forcing run.
+   directory (e.g., input/restarts/), for use by the next LIS forcing run.
 

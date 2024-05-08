@@ -13,13 +13,13 @@
 """
 #------------------------------------------------------------------------------
 #
-# SCRIPT: store_lis_usaf_atmos_output.py
+# SCRIPT: store_lis_output.py
 #
 # PURPOSE: Moves output from LIS USAF forcing run to appropriate new locations,
 # purging as needed.
 #
-# REQUIREMENTS as of 21 Sep 2021:
-# * Python 3.8 or higher.
+# REQUIREMENTS as of 21 Nov 2022:
+# * Python 3.9 or higher.
 #
 # REVISION HISTORY:
 # 21 Sep 2021: Eric Kemp (SSAI), first version.

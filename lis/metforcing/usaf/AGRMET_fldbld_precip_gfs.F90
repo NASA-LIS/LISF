@@ -137,7 +137,7 @@ subroutine AGRMET_fldbld_precip_gfs(n,findex,julhr,fc_hr,gfsdata)
   integer                 :: julhr
   integer                 :: nunit, nunit2
   integer                 :: ksec2       ( 10 )
-  character*100           :: message     ( 20 )
+  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: ginfo       ( 40 )
   real                    :: gridres
@@ -587,7 +587,7 @@ subroutine AGRMET_fldbld_read_precip_gfs( fg_filename, ifguess, jfguess,&
 !
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character*255                 :: message     ( 20 )
   integer                       :: count_prec
   integer                       :: file_age
   integer                       :: i

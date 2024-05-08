@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.4
+#
+# Copyright (c) 2022 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 '''
 This script plots OL anomalies at lead times 0,1,2,3,4 months
 for a given forecast start month and year. The script consolidated
@@ -7,7 +18,6 @@ Plot_real-time_OUTPUT_AFRICOM_NMME_RT_FCST_sanom.py into a single script.
 '''
 # pylint: disable=no-value-for-parameter
 
-from __future__ import division
 import os
 import calendar
 import argparse
@@ -56,7 +66,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     domain = plot_utils.dicts('boundary', region)
 
     for var_name in config_["POST"]["metric_vars"]:
-        under_over = ['black', '#B404AE']
+        # Streamflow specifics
         if var_name == 'Streamflow':
             ldtfile = config['SETUP']['supplementarydir'] + '/lis_darun/' + \
                 config['SETUP']['ldtinputfile']
@@ -64,25 +74,26 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
             ldt_crop = plot_utils.crop(domain, ldt.lat, ldt.lon, ldt)
             mask = ldt_crop.HYMAP_drain_area.values
 
-        levels = plot_utils.dicts('anom_levels', var_name)
-        if standardized_anomaly == 'Y':
+        # levels defaults
+        if standardized_anomaly  == 'Y':
             levels = plot_utils.dicts('anom_levels', 'standardized')
+        else:
+            levels = plot_utils.dicts('anom_levels', var_name)
 
-        if var_name in {'Air-T', 'Air_T'}:
-            load_table = 'L11W'
-            if USAF_COLORS and standardized_anomaly is None:
+        # colors defualts
+        load_table = plot_utils.dicts('anom_tables', var_name)
+
+        # special cases
+        if USAF_COLORS and standardized_anomaly is None:
+            if var_name in {'AirT'}:
                 load_table = '14WT2M'
                 levels = plot_utils.dicts('anom_levels', 'Air_T_AF')
 
-        elif var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            load_table = '14WPR'
-            levels = plot_utils.dicts('anom_levels','Precip_AF')
+            elif var_name == 'Precip':
+                load_table = '14WPR'
+                levels = plot_utils.dicts('anom_levels','Precip_AF')
 
-            if USAF_COLORS and standardized_anomaly is None:
-                under_over = ['gray', 'blue']
-
-        else:
-            load_table = 'RdYlGn'
+        under_over = plot_utils.dicts('lowhigh', load_table)
 
         # READ ANOMALIES
         infile = infile_template.format(data_dir, '*_' + var_name, smonth, syear)
@@ -95,15 +106,23 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
         median_anom = np.median(anom_crop.anom.values, axis=0)
 
-        if (var_name in {'Air-T', 'Air_T'}) and \
+        if (var_name in {'AirT'}) and \
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
-        if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            median_anom = median_anom*30./25.4
+#           In units of deg F
 
-        if var_name in {'Total-Runoff', 'ET'}:
+#       Already monthly accumulated values
+        if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
+            median_anom = median_anom/25.4
+
+        if var_name in {'ET'}:
             if standardized_anomaly is None:
                 median_anom = median_anom * 86400.
+
+#       Runoff = accumulated monthly values ...
+        if var_name in {'Total-Runoff'}:
+            if standardized_anomaly is None:
+                median_anom = median_anom * 1.
 
         plot_arr = median_anom[lead_month, ]
         figure = figure_template.format(plotdir, region, var_name)
@@ -121,7 +140,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
 
         if USAF_COLORS and standardized_anomaly is None:
-            if var_name in {'Air-T', 'Air_T'}:
+            if var_name in {'AirT'}:
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Air_T_AF') + ')'
             elif var_name == 'Precip':
                 clabel = 'Anomaly (' + plot_utils.dicts('units', 'Precip_AF') + ')'
@@ -129,9 +148,11 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
         if standardized_anomaly == 'Y':
             clabel = 'Standardized Anomaly'
 
+        cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
         plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
                              ncols, plot_arr, load_table, titles, domain, figure, under_over,
-                             fscale=0.8, stitle=stitle, clabel=clabel, levels=levels)
+                             fscale=0.8, stitle=stitle, clabel=clabel, levels=levels,
+                             cartopy_datadir=cartopy_dir)
         del anom
         del anom_crop
 

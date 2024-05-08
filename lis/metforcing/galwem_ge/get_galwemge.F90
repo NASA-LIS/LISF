@@ -15,6 +15,7 @@
 !
 ! !REVISION HISTORY:
 ! 15 Mar 2022: Yeosang Yoon, initial code
+! 04 Apr 2023: Yeosang Yoon, Update code to fit new format
 !
 ! !INTERFACE:
 subroutine get_galwemge(n, findex)
@@ -109,11 +110,7 @@ subroutine get_galwemge(n, findex)
       openfile == 1)  then
 
      ! Forecast hour condition within each file:
-     if(galwemge_struc(n)%fcst_hour < 192) then
-        galwemge_struc(n)%fcst_hour = galwemge_struc(n)%fcst_hour + fcsthr_intv
-     elseif(galwemge_struc(n)%fcst_hour >= 192) then
-        galwemge_struc(n)%fcst_hour = galwemge_struc(n)%fcst_hour + fcsthr_intv
-     endif
+      galwemge_struc(n)%fcst_hour = galwemge_struc(n)%fcst_hour + fcsthr_intv
  
      ! Check if local forecast hour exceeds max grib file forecast hour:
      if(galwemge_struc(n)%fcst_hour > 384 ) then
@@ -148,7 +145,7 @@ subroutine get_galwemge(n, findex)
           ! Obtain filenames   
            call get_galwemge_filename(galwemge_struc(n)%odir,galwemge_struc(n)%init_yr,&
                 galwemge_struc(n)%init_mo,galwemge_struc(n)%init_da,galwemge_struc(n)%init_hr,&
-                hr1,m,fname)
+                0,m,fname)
 
            write(LIS_logunit,*)'[INFO] Getting GALWEM-GE forecast file1 ... ',trim(fname)
            call read_galwemge(n, m, findex, order, fname, ferror)
@@ -206,17 +203,27 @@ subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
   character(3) :: fchr
   character(3) :: ens 
 
-  character(len=36) :: fname
+  character(len=37) :: fname
 
   write (UNIT=chr, FMT='(i2.2)') hr
   write (UNIT=fchr, FMT='(i3.3)') fc_hr
-  write (UNIT=ens, FMT='(i3.3)') ens_id-1  ! start 0
   write (UNIT=ftime, FMT='(i4, i2.2, i2.2)') yr, mo, da
 
   fname = 'PS.557WW_SC.U_DI.C_GP.GALWEM-GE-MEMB'
 
+  !TODO: need to check, 12z cycle memebers 00,28-44
+  if (hr == 0) then
+       write (UNIT=ens, FMT='(i3.3)') ens_id-1   ! start 00, 01 - 17
+  else
+     if (ens_id == 1) then
+        write (UNIT=ens, FMT='(i3.3)') ens_id-1  ! start 00
+     else
+        write (UNIT=ens, FMT='(i3.3)') ens_id+26 ! start 28-44
+     endif
+  endif
+
   filename = trim(rootdir)//'/'//ftime//'T'//chr//'00Z'//'/'// &
-             trim(fname) //ens//'_GR.C40KM_AR.GLOBAL_DD.'//   &
+             trim(fname)//ens//'_GR.C0P5DEG_AR.GLOBAL_DD.'//   &
              ftime//'_CY.'//chr//'_FH.'//fchr//'_DF.GR2'
 end subroutine get_galwemge_filename
 
