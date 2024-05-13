@@ -800,7 +800,7 @@ subroutine ac71_read_croptype(n)
 !EOP   
     character(len=LIS_CONST_PATH_LEN) :: crop_path
     integer                 :: ftn
-    integer                 :: t,j,col,row,IINDEX,CT
+    integer                 :: t,j,col,row,IINDEX,CT,n_crops
     integer                 :: nid, ios, status, croptypeId
     integer                 :: rc
     logical                 :: file_exists
@@ -813,46 +813,27 @@ subroutine ac71_read_croptype(n)
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-    call ESMF_ConfigFindLabel(LIS_config,"Crop library directory:",rc=rc)
+    call ESMF_ConfigFindLabel(LIS_config,"AquaCrop.7.1 crop library directory:",rc=rc)
     call ESMF_ConfigGetAttribute(LIS_config,crop_path,rc=rc)
-    call LIS_verify(rc,'Crop library directory: not specified')
-
-!- Read in LDT input crop classification information (done here for now):
-    inquire(file=LIS_rc%paramfile(n), exist=file_exists)
-    if(file_exists) then
-        ! Read in LDT-generated netcdf file information:
-        write(LIS_logunit,*)"[INFO] Reading crop classification information ..."
-        ios = nf90_open(path=LIS_rc%paramfile(n),&
-                        mode=NF90_NOWRITE,ncid=nid)
-        call LIS_verify(ios,'Error in nf90_open in AC71_setup')
-
-        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_SCHEME', LIS_rc%cropscheme)
-        call LIS_verify(ios,'Error in nf90_get_att in AC71_setup')
-        ! add check if LIS_rc%cropscheme not AquaCrop, STOP
-
-        ios = nf90_get_att(nid, NF90_GLOBAL, 'CROPCLASS_NUMBER', LIS_rc%numbercrops)
-        call LIS_verify(ios,'Error in nf90_get_att in AC71_setup')
-        write(LIS_logunit,*)"[INFO] Read in crop classfication: ",trim(LIS_rc%cropscheme),&
-                            ", with the number of crop types:",LIS_rc%numbercrops
-        ios = nf90_close(nid)
-        call LIS_verify(ios,'nf90_close failed in AC71_setup')
-    endif
+    call LIS_verify(rc,'AquaCrop.7.1 crop library directory: not specified')
 
  !- Set path to crop files
-      AC71_struc(n)%PathCropFiles = trim(crop_path)//trim(LIS_rc%cropscheme)//"_Crop_Files/"
+      AC71_struc(n)%PathCropFiles = trim(crop_path)//"AC_Crop.Files/"
 
  !- Read in crop table
-      open(19, FILE=trim(crop_path)//trim(LIS_rc%cropscheme)//"_Crop.Inventory",FORM='FORMATTED',STATUS='OLD',IOSTAT=rc)
-      call LIS_verify(rc,'Ac71_setup.F: failure opening ,'//trim(LIS_rc%cropscheme)//'Crop.Inventory')
+      open(19, FILE=trim(crop_path)//"AC_Crop.Inventory",FORM='FORMATTED',STATUS='OLD',IOSTAT=rc)
+      call LIS_verify(rc,'Ac71_setup.F: failure opening AC_Crop.Inventory')
 
-      allocate(character(len=100) :: croptypes(LIS_rc%numbercrops))
+      read(19,*) n_crops
 
-      write( mess , *) 'AC_Crop.Inventory contains ', LIS_rc%numbercrops, ' types' 
+      allocate(character(len=100) :: croptypes(n_crops))
+
+      write( mess , *) 'AC_Crop.Inventory contains ', n_crops, ' types' 
       if (LIS_masterproc) then
             write(LIS_logunit, *) trim(mess)
       endif
       read(19,*)
-      do CT=1,LIS_rc%numbercrops
+      do CT=1,n_crops
         read(19,*) IINDEX, croptypes(CT)
       enddo
       close(19)
@@ -871,11 +852,11 @@ subroutine ac71_read_croptype(n)
        
        allocate(glb_croptype(LIS_rc%gnc(n),LIS_rc%gnr(n)))
        
-       ios = nf90_inq_varid(nid,'CROPTYPE',croptypeId)
-       call LIS_verify(ios,'nf90_inq_varid failed for CROPTYPE')
+       ios = nf90_inq_varid(nid,'AC_CROPT',croptypeId)
+       call LIS_verify(ios,'nf90_inq_varid failed for AC_CROPT')
        
        ios = nf90_get_var(nid, croptypeId, glb_croptype)
-       call LIS_verify(ios,'nf90_get_var failed for CROPTYPE')
+       call LIS_verify(ios,'nf90_get_var failed for AC_CROPT')
 
        ios = nf90_close(nid)
        call LIS_verify(ios,'nf90_close failed in AC71_setup')
@@ -896,7 +877,7 @@ subroutine ac71_read_croptype(n)
        deallocate(croptypes)
 
     else
-       write(LIS_logunit,*) "[ERR] The croptype map: ",&
+       write(LIS_logunit,*) "[ERR] The croptype inventory: ",&
              LIS_rc%paramfile(n)," does not exist."
        write(LIS_logunit,*) "[ERR] Program stopping ..."
        call LIS_endrun

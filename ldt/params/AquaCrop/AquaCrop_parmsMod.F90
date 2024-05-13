@@ -49,9 +49,8 @@ module AquaCrop_parmsMod
   public :: AquaCrop_struc
 
   type, public :: aquacrop_type_dec
-
-
-     ! -  AquaCrop LSM-specific:
+      ! -  AquaCrop LSM-specific:
+      type(LDT_paramEntry) :: cropt   ! crop type
 
   end type aquacrop_type_dec
 
@@ -62,25 +61,9 @@ module AquaCrop_parmsMod
 contains
 
   subroutine AquaCropParms_init(flag)
-
-    integer      :: flag
-
-    call AquaCropParms_init_LIS()
-    
-  end subroutine AquaCropParms_init
-
-!BOP
-! 
-! !ROUTINE: AquaCropParms_init_LIS
-! \label{AquaCropParms_init_LIS}
-! 
-! !INTERFACE:
-  subroutine AquaCropParms_init_LIS
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
-!    use LDT_paramOptCheckMod, only: LDT_aquacropparmsOptChecks, &
-!                       LDT_gridOptChecks,LDT_soilsOptChecks
 !
 ! !DESCRIPTION:
 !
@@ -95,18 +78,37 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n,i,c,r,m
    integer  :: rc
-   real     :: temp
-   logical  :: file_exists
-   logical  :: check_data
-   real, allocatable  :: force_elev(:,:)
 
 ! _____________________________________________________________________
 
-   allocate( AquaCrop_struc(LDT_rc%nnest) )
-
- end subroutine AquaCropParms_init_LIS
+  allocate(AquaCrop_struc(LDT_rc%nnest))
+   do n=1,LDT_rc%nnest
+   ! Set crop type
+      call set_param_attribs(Aquacrop_struc(n)%cropt, "AC_CROPT",&
+          units="-", &
+          full_name="Aquacrop crop type")
+      call ESMF_ConfigFindLabel(LDT_config,"AC crop type data source:",rc=rc)
+      call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%cropt%source,rc=rc)
+      call LDT_verify(rc,"AC crop type data source: not defined")
+      allocate(Aquacrop_struc(n)%cropt%value(&
+              LDT_rc%lnc(n),LDT_rc%lnr(n),&
+              Aquacrop_struc(n)%cropt%vlevels))
+         select case (AquaCrop_struc(n)%cropt%source)
+          case( "CONSTANT" )
+            call read_CONSTANT_AC_crop(&
+                      n,AquaCrop_struc(n)%cropt%value(:,:,1))
+          case default
+            write(LDT_logunit,*) "[WARN] crop type data source not valid for AquaCrop."
+            write(LDT_logunit,*) "  Please select: CONSTANT"
+            write(LDT_logunit,*) "Program stopping ..."
+            call LDT_endrun
+         end select
+    enddo ! End nest
+    
+  end subroutine AquaCropParms_init
 
  subroutine AquaCropParms_writeHeader(n,ftn,dimID)
 
@@ -114,12 +116,17 @@ contains
     integer   :: ftn
     integer   :: dimID(3)
 
+    call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
+            Aquacrop_struc(n)%cropt)
+
   end subroutine AquaCropParms_writeHeader
 
   subroutine AquaCropParms_writeData(n,ftn)
 
     integer   :: n 
     integer   :: ftn
+
+    call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%cropt)
 
   end subroutine AquaCropParms_writeData
 
