@@ -56,6 +56,11 @@ subroutine Ac71_readcrd()
         call ESMF_ConfigGetAttribute(LIS_config, Time, rc = rc)
         call LIS_verify(rc, "AquaCrop.7.1 model timestep: not defined")
         call LIS_parseTimeString(time, AC71_struc(n)%ts)
+        if (AC71_struc(n)%ts.ne."1da") then
+          write(LIS_logunit, *) "Fatal error: AquaCrop.7.1 only runs with a daily time step ..."
+          write(LIS_logunit, *) "Please select AquaCrop.7.1 model timestep: 1da"
+          call LIS_endrun()
+        endif
     enddo
     
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 restart output interval:", rc = rc)
@@ -171,7 +176,7 @@ subroutine Ac71_readcrd()
     do n=1, LIS_rc%nnest
         ios = nf90_get_att(nids(n), NF90_GLOBAL, 'SOILTEXT_SCHEME', soil_scheme_name)
         call LIS_verify(ios, 'Error in nf90_get_att: SOILTEXT_SCHEME')
-        if (trim(soil_scheme_name) .eq. "STATSGO") then !LB: later change it to AC
+        if (trim(soil_scheme_name) .eq. "STATSGO") then
           AC71_struc(n)%soil_scheme_name = "STAS"
         else
           write(LIS_logunit, *) "Fatal error: currently, only STATSGO soil scheme is supported by AquaCrop!"
