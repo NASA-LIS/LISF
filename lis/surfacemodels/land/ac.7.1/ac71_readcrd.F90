@@ -56,7 +56,7 @@ subroutine Ac71_readcrd()
         call ESMF_ConfigGetAttribute(LIS_config, Time, rc = rc)
         call LIS_verify(rc, "AquaCrop.7.1 model timestep: not defined")
         call LIS_parseTimeString(time, AC71_struc(n)%ts)
-        if (AC71_struc(n)%ts.ne."1da") then
+        if (AC71_struc(n)%ts.ne.86400) then
           write(LIS_logunit, *) "Fatal error: AquaCrop.7.1 only runs with a daily time step ..."
           write(LIS_logunit, *) "Please select AquaCrop.7.1 model timestep: 1da"
           call LIS_endrun()
