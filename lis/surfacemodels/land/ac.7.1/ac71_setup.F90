@@ -27,6 +27,7 @@ subroutine Ac71_setup()
     use LIS_fileIOMod, only: LIS_read_param
     use LIS_coreMod,   only: LIS_rc, LIS_surface, LIS_masterproc
     use LIS_timeMgrMod
+    use LIS_mpiMod,    only: LIS_mpi_comm
 
     use module_sf_aclsm_71, only: &
            OC, WP, SAT, FC, INFRATE, SD, CL, SI 
@@ -203,7 +204,7 @@ subroutine Ac71_setup()
         real, allocatable :: placeholder(:,:)
 
         real              :: Z_surf, cl_tmp, si_tmp, sd_tmp, InfRate_tmp
-        integer           :: REW, descr
+        integer           :: REW, descr, ierr
         integer           :: time1julhours, time2julhours, timerefjulhours
         integer           :: time1days, time2days
         real*8            :: timenow, timetemp
@@ -378,7 +379,9 @@ subroutine Ac71_setup()
             if(LIS_masterproc) then 
                 call ac71_read_Trecord(n)
             endif
-            ! Add MPI_waitall???
+            #if (defined SPMD)
+                call mpi_barrier(LIS_mpi_comm, ierr)
+            #endif
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
