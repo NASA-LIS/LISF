@@ -563,6 +563,7 @@ subroutine Ac71_setup()
 
                 ! Set Global variable to pass T record to AquaCrop (Michel)
                 ! call Set....
+                ! something like this to trace tile back? LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
 
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
