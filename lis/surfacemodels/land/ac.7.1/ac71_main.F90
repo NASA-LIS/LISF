@@ -29,6 +29,7 @@ subroutine Ac71_main(n)
    !use other modules
     use ESMF
     use LIS_routingMod, only : LIS_runoff_state
+    use LIS_mpiMod,    only: LIS_mpi_comm
 
 !   ! AC module imports
     use ac_global, only: &
@@ -273,7 +274,7 @@ subroutine Ac71_main(n)
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
-    integer              :: status
+    integer              :: status, ierr
     integer              :: c,r,l
     integer              :: ios, nid,rivid,fldid
 
@@ -312,7 +313,9 @@ subroutine Ac71_main(n)
             call ac71_read_Trecord(n)
             ini_flag = .true. ! initialize to false!
         endif
-        ! Add MPI_waitall???
+        #if (defined SPMD)
+            call mpi_barrier(LIS_mpi_comm, ierr)
+        #endif
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             dt = LIS_rc%ts
             row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
