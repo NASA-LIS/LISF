@@ -170,4 +170,9 @@ module Ac71_module
     type(SoilLayerIndividual), dimension(5) :: soillayer
 
   end type ac71dec
+
+  type, public :: ac71_trecord
+    real, pointer :: Tmax_record(:)
+    real, pointer :: Tmin_record(:)
+  end type ac71_trecord
 end module Ac71_module

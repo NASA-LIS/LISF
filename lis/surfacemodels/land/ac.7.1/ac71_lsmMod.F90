@@ -138,7 +138,9 @@ module Ac71_lsmMod
         integer            :: max_No_compartments
         real, pointer      :: Thickness(:)
         real               :: refz_forc
+        integer            :: simul_days
         type(Ac71dec), pointer :: ac71(:)
+        type(ac71_trecord), pointer :: Trecord(:)
     end type Ac71_type_dec
 
     type(Ac71_type_dec), pointer :: AC71_struc(:)
@@ -190,6 +192,7 @@ contains
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
             enddo
+
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)

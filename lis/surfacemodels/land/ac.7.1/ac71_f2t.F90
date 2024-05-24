@@ -196,10 +196,10 @@ subroutine Ac71_f2t(n)
             AC71_struc(n)%ac71(t)%tmin = tmp(tid)
         else
             if (tmp(tid).gt.AC71_struc(n)%ac71(t)%tmax) then
-            AC71_struc(n)%ac71(t)%tmax=tmp(tid) !Replace maximum temperature
+                AC71_struc(n)%ac71(t)%tmax=tmp(tid) !Replace maximum temperature
             endif
             if (tmp(tid).lt.AC71_struc(n)%ac71(t)%tmin) then
-            AC71_struc(n)%ac71(t)%tmin=tmp(tid) !Replace minimum temperature
+                AC71_struc(n)%ac71(t)%tmin=tmp(tid) !Replace minimum temperature
             endif
         endif
 
