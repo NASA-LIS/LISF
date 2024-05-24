@@ -25,12 +25,13 @@ subroutine Ac71_setup()
 ! !USES:
     use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
     use LIS_fileIOMod, only: LIS_read_param
-    use LIS_coreMod,   only: LIS_rc, LIS_surface
+    use LIS_coreMod,   only: LIS_rc, LIS_surface, LIS_masterproc
     use LIS_timeMgrMod
 
     use module_sf_aclsm_71, only: &
            OC, WP, SAT, FC, INFRATE, SD, CL, SI 
     use Ac71_lsmMod
+    use ac71_prep_f,    only: ac71_read_Trecord
 
     use ac_project_input, only: set_project_input, &
                                 allocate_project_input
@@ -313,6 +314,8 @@ subroutine Ac71_setup()
                 time2days = (time2julhours - timerefjulhours)/24 + 1
                 call set_project_input(l, 'Simulation_DayNr1', time1days)
                 call set_project_input(l, 'Simulation_DayNrN', time2days)
+                ! Store length of simulation period for Trecord
+                AC71_struc(n)%simul_days = time2days - time1days + 1
                 ! Crop
                 call LIS_get_julhr(LIS_rc%syr+(l-1),AC71_struc(n)%Crop_AnnualStartMonth, &
                                    AC71_struc(n)%Crop_AnnualStartDay,0,0,0,time1julhours)
@@ -370,6 +373,12 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Observations_Filename', '(None)')
                 call set_project_input(l, 'Observations_Directory', '(None)')
             end do
+
+            ! Read annual temperature record --> later add if GDD statement
+            if(LIS_masterproc) then 
+                call ac71_read_Trecord(n)
+            endif
+            ! Add MPI_waitall???
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
@@ -552,6 +561,9 @@ subroutine Ac71_setup()
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
 
+                ! Set Global variable to pass T record to AquaCrop (Michel)
+                ! call Set....
+
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
@@ -648,6 +660,9 @@ subroutine Ac71_setup()
                     AC71_struc(n)%ac71(t)%InitializeRun = 1
                 endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
+        if (LIS_masterproc) then
+            deallocate(AC71_struc(n)%Trecord)
+        endif
     enddo
 end subroutine Ac71_setup
 

@@ -25,7 +25,7 @@ subroutine Ac71_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod 
     use Ac71_lsmMod
-    use ac71_prep_f, only : ac71_ETo_calc
+    use ac71_prep_f
    !use other modules
     use ESMF
     use LIS_routingMod, only : LIS_runoff_state
@@ -281,7 +281,7 @@ subroutine Ac71_main(n)
 
     !!! MB_AC71
     integer              :: daynr, todaynr, iproject, nprojects
-    logical              :: ListProjectFileExist
+    logical              :: ListProjectFileExist, ini_flag
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
 
     !LB AC71
@@ -304,9 +304,15 @@ subroutine Ac71_main(n)
 !EOP
 
 ! define variables for Ac71
-    ! check Ac71 alarm. If alarm is ring, run model. 
+    ! check Ac71 alarm. If alarm is ring, run model.
+    ini_flag = .false. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
+        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.LIS_masterproc) then
+            call ac71_read_Trecord(n)
+            ini_flag = .true. ! initialize to false!
+        endif
+        ! Add MPI_waitall???
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             dt = LIS_rc%ts
             row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
@@ -545,7 +551,8 @@ subroutine Ac71_main(n)
                 call set_project_input(AC71_struc(n)%ac71(t)%irun, &
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
-
+                ! Set Global variable to pass T record to AquaCrop (Michel)
+                ! call Set....
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
@@ -745,6 +752,9 @@ subroutine Ac71_main(n)
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero
         AC71_struc(n)%forc_count = 0 
+        if (LIS_masterproc.and.ini_flag) then
+            deallocate(AC71_struc(n)%Trecord)
+        endif
     endif ! end of alarmCheck loop 
 
 end subroutine Ac71_main

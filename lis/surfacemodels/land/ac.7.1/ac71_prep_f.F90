@@ -100,4 +100,121 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     
 end subroutine Ac71_ETo_calc
 
+
+!BOP
+!
+! !ROUTINE: Ac71_ETo_calc
+! \label{Ac71_ETo_calc}
+!
+! !REVISION HISTORY:
+!  18 FEB 2024, Louise Busschaert; initial implementation
+!                                   
+
+! !INTERFACE:
+subroutine ac71_read_Trecord(n)
+! !USES:
+    use ESMF
+    use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
+    use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
+                                  LIS_update_clock
+    use LIS_coreMod,        only: LIS_rc
+    use LIS_logMod,         only: LIS_logunit, LIS_verify
+    use LIS_FORC_AttributesMod
+    use Ac71_lsmMod
+    use merra2_forcingMod
+
+    !
+    ! !DESCRIPTION: 
+    ! 
+    !  This subroutine stores the mean temperatures for the ac71 simulation
+    !  period required when AquaCrop is run with a crop calibrated in growing
+    !  degree days. 
+    !
+    !  
+    !EOP
+    implicit none
+    integer, intent(in)      :: n
+
+    real, allocatable     :: tmp_arr(:,:,:)
+    integer               :: i, j, m, p, status, met_ts
+    integer               :: yr_saved, mo_saved, da_saved, hr_saved, mn_saved
+    real*8                :: ringtime_saved, time_saved
+    real                  :: gmt_tmp
+    character(256)        :: spatial_interp_saved
+
+    ! Near Surface Air Temperature [K]
+    type(ESMF_Field)  :: tmpField
+    real, pointer     :: tmp(:)
+
+    write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record..."
+
+    ! Change flags for met forcing reading
+    !merra2_struc(n)%ringtime = LIS_rc%time
+    ! Spatial interpolation flag
+    do m=1,LIS_rc%nmetforc
+        spatial_interp_saved = LIS_rc%met_interp(m)
+        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m) ! finalize and initialize again, risky but only solution to get neighbor
+        LIS_rc%met_interp(m) = "neighbor"
+        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+    enddo
+    ! DOES NOT WORK BECAUSE NEED TO INI FORCINGS
+    yr_saved  = LIS_rc%yr
+    mo_saved = LIS_rc%mo
+    da_saved = LIS_rc%da
+    hr_saved = LIS_rc%hr
+    mn_saved = LIS_rc%mn
+    call LIS_update_clock(LIS_rc%ts) ! met time step is set in core_init coming after setup
+
+    !Temporary set end of LIS run to end of sim period
+
+    ! Change to read Tair only --> not possible?
+
+    ! something like this to trace tile back? LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
+
+    met_ts = int(86400./LIS_rc%nts(n))
+
+    allocate(tmp_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),AC71_struc(n)%simul_days,met_ts))
+
+    do i=1,AC71_struc(n)%simul_days
+        do j=1,met_ts
+            call LIS_get_met_forcing(n)
+
+            ! Get Tair
+            call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)
+            call LIS_verify(status, "Ac71_prep_f: error getting Tair")
+
+            call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
+            call LIS_verify(status, "Ac71_prep_f: error retrieving Tair")
+
+            tmp_arr(:,i,j) = tmp
+
+            ! Change LIS time to the next meteo time step
+            call LIS_advance_timestep(LIS_rc)0)
+        enddo
+    enddo
+
+    ! allocate
+    allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+    do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
+        allocate(AC71_struc(n)%Trecord(p)%Tmax_record(AC71_struc(n)%simul_days))
+        allocate(AC71_struc(n)%Trecord(p)%Tmin_record(AC71_struc(n)%simul_days))
+        AC71_struc(n)%Trecord(p)%Tmax_record = maxval(tmp_arr(p,:,:),2)
+        AC71_struc(n)%Trecord(p)%Tmin_record = minval(tmp_arr(p,:,:),2)
+    enddo
+
+    deallocate(tmp_arr)
+
+    ! Reset all flags
+    ! Spatial interpolation flag
+    do m=1,LIS_rc%nmetforc
+        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
+        LIS_rc%met_interp(m) = trim(spatial_interp_saved)
+        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+    enddo
+    call LIS_timemgr_set(LIS_rc,yr_saved,mo_saved,da_saved,hr_saved,mn_saved,0,0,0.0)
+    LIS_rc%rstflag = 1 ! For met forcings
+    write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
+
+end subroutine ac71_read_Trecord
+
 end module ac71_prep_f

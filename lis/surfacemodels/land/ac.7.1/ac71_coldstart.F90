@@ -45,7 +45,7 @@ subroutine Ac71_coldstart(mtype)
             do t=1, LIS_rc%npatch(n,mtype)
                 do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     AC71_struc(n)%ac71(t)%smc(l) = AC71_struc(n)%init_smc(GetCompartment_Layer(l))
-                enddo              
+                enddo         
             enddo
         endif
     
