@@ -103,11 +103,11 @@ end subroutine Ac71_ETo_calc
 
 !BOP
 !
-! !ROUTINE: Ac71_ETo_calc
-! \label{Ac71_ETo_calc}
+! !ROUTINE: Ac71_read_Trecord
+! \label{Ac71_read_Trecord}
 !
 ! !REVISION HISTORY:
-!  18 FEB 2024, Louise Busschaert; initial implementation
+!  24 MAY 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:
@@ -189,7 +189,7 @@ subroutine ac71_read_Trecord(n)
             tmp_arr(:,i,j) = tmp
 
             ! Change LIS time to the next meteo time step
-            call LIS_advance_timestep(LIS_rc)0)
+            call LIS_advance_timestep(LIS_rc)
         enddo
     enddo
 
