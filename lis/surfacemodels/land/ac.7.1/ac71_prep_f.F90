@@ -157,19 +157,15 @@ subroutine ac71_read_Trecord(n)
         LIS_rc%met_interp(m) = "neighbor"
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
-    ! DOES NOT WORK BECAUSE NEED TO INI FORCINGS
+
+    ! Save current time
     yr_saved  = LIS_rc%yr
     mo_saved = LIS_rc%mo
     da_saved = LIS_rc%da
     hr_saved = LIS_rc%hr
     mn_saved = LIS_rc%mn
-    call LIS_update_clock(LIS_rc%ts) ! met time step is set in core_init coming after setup
-
-    !Temporary set end of LIS run to end of sim period
-
-    ! Change to read Tair only --> not possible?
-
-    ! something like this to trace tile back? LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
+    ! Make sure it is the right met time step
+    call LIS_update_clock(LIS_rc%ts)
 
     met_ts = int(86400./LIS_rc%nts(n))
 
@@ -177,6 +173,7 @@ subroutine ac71_read_Trecord(n)
 
     do i=1,AC71_struc(n)%simul_days
         do j=1,met_ts
+            ! read met forcing
             call LIS_get_met_forcing(n)
 
             ! Get Tair
@@ -186,6 +183,7 @@ subroutine ac71_read_Trecord(n)
             call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
             call LIS_verify(status, "Ac71_prep_f: error retrieving Tair")
 
+            ! Store temperatures
             tmp_arr(:,i,j) = tmp
 
             ! Change LIS time to the next meteo time step
@@ -193,7 +191,7 @@ subroutine ac71_read_Trecord(n)
         enddo
     enddo
 
-    ! allocate
+    ! allocate Trecord accoridng to domain grid
     allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
     do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
         allocate(AC71_struc(n)%Trecord(p)%Tmax_record(AC71_struc(n)%simul_days))
@@ -211,8 +209,9 @@ subroutine ac71_read_Trecord(n)
         LIS_rc%met_interp(m) = trim(spatial_interp_saved)
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
+    ! Reset actual time
     call LIS_timemgr_set(LIS_rc,yr_saved,mo_saved,da_saved,hr_saved,mn_saved,0,0,0.0)
-    LIS_rc%rstflag = 1 ! For met forcings
+    LIS_rc%rstflag = 1 ! Needed for met forcings
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
 
 end subroutine ac71_read_Trecord
