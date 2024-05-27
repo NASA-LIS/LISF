@@ -309,13 +309,12 @@ subroutine Ac71_main(n)
     ini_flag = .false. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
-        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.LIS_masterproc) then
+        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.LIS_masterproc.and.&
+            (AC71_struc(n)%GDD_Mode.eq.1)) then
             call ac71_read_Trecord(n)
             ini_flag = .true. ! initialize to false!
         endif
-        #if (defined SPMD)
-            call mpi_barrier(LIS_mpi_comm, ierr)
-        #endif
+        call mpi_barrier(LIS_mpi_comm, ierr)
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             dt = LIS_rc%ts
             row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
@@ -754,7 +753,8 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%swdown = 0.0
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero
-        AC71_struc(n)%forc_count = 0 
+        AC71_struc(n)%forc_count = 0
+        ! deallocate Trecord if needed 
         if (LIS_masterproc.and.ini_flag) then
             deallocate(AC71_struc(n)%Trecord)
         endif

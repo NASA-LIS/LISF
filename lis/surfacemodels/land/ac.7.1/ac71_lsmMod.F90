@@ -134,11 +134,11 @@ module Ac71_lsmMod
         integer            :: Sim_AnnualEndMonth
         integer            :: Crop_AnnualStartDay
         integer            :: Crop_AnnualStartMonth
+        integer            :: GDD_Mode
         integer            :: NrSoilLayers
         integer            :: max_No_compartments
         real, pointer      :: Thickness(:)
         real               :: refz_forc
-        integer            :: simul_days
         type(Ac71dec), pointer :: ac71(:)
         type(ac71_trecord), pointer :: Trecord(:)
     end type Ac71_type_dec

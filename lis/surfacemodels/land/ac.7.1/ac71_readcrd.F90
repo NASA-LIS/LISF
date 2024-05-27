@@ -77,27 +77,12 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc, "AquaCrop.7.1 starting day of sim period: not defined")
     enddo
 
-    ! Last day of year of simulation period
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending day of sim period:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualEndDay, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 ending day of sim period: not defined")
-    enddo
-
     ! First month of year of simulation period
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting month of sim period:", rc = rc)
     do n=1, LIS_rc%nnest
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualStartMonth, rc=rc)
         call LIS_verify(rc, "AquaCrop.7.1 starting month of sim period: not defined")
     enddo
-
-    ! Last month of year of simulation period
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 ending month of sim period:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Sim_AnnualEndMonth, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 ending month of sim period: not defined")
-    enddo
-    
 
     ! First day of year of cropping period
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 starting day of crop period:", rc = rc)
@@ -113,6 +98,14 @@ subroutine Ac71_readcrd()
         call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Crop_AnnualStartMonth, rc=rc)
         call LIS_verify(rc, "AquaCrop.7.1 starting month of crop period: not defined")
     enddo
+
+    ! Crop running mode
+    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 GDD mode:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%GDD_Mode, rc=rc)
+        call LIS_verify(rc, "AquaCrop.7.1 GDD mode: not defined")
+    enddo
+
 
     ! number of soil compartments
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 max no of compartments:", rc = rc)

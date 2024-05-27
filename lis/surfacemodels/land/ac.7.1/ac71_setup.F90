@@ -205,12 +205,9 @@ subroutine Ac71_setup()
 
         real              :: Z_surf, cl_tmp, si_tmp, sd_tmp, InfRate_tmp
         integer           :: REW, descr, ierr
-        integer           :: time1julhours, time2julhours, timerefjulhours
+        integer           :: time1julhours, timerefjulhours
         integer           :: time1days, time2days
-        real*8            :: timenow, timetemp
-        real              :: gmt1, gmt2
-        integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1, tdelta1
-        integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2, tdelta2
+        integer           :: yr2, mo2, da2, hr2, mn2
         
         integer :: daynr, todaynr, iproject, nprojects, NrRuns
         integer(intEnum) :: TheProjectType
@@ -304,29 +301,28 @@ subroutine Ac71_setup()
                 ! Simulation
                 call LIS_get_julhr(LIS_rc%syr+(l-1), AC71_struc(n)%Sim_AnnualStartMonth, &
                                    AC71_struc(n)%Sim_AnnualStartDay,0,0,0,time1julhours)
-                if (AC71_struc(n)%Sim_AnnualEndMonth.gt.AC71_struc(n)%Sim_AnnualStartMonth) then
-                    call LIS_get_julhr(LIS_rc%syr+(l-1), AC71_struc(n)%Sim_AnnualEndMonth, &
-                                    AC71_struc(n)%Sim_AnnualEndDay,0,0,0,time2julhours)
-                else
-                    call LIS_get_julhr(LIS_rc%syr+(l), AC71_struc(n)%Sim_AnnualEndMonth, &
-                                    AC71_struc(n)%Sim_AnnualEndDay,0,0,0,time2julhours)
-                endif
                 time1days = (time1julhours - timerefjulhours)/24 + 1
-                time2days = (time2julhours - timerefjulhours)/24 + 1
+                ! Find last day of simulation (check for leap year)
+                if ((((mod(LIS_rc%syr+(l-1),4).eq.0.and.mod(LIS_rc%syr+(l-1),100).ne.0) &
+                    .or.(mod(LIS_rc%syr+(l-1),400).eq.0)).and.(LIS_rc%smo.le.2)) &
+                    .or.(((mod(LIS_rc%syr+(l),4).eq.0.and.mod(LIS_rc%syr+(l),100).ne.0) &
+                    .or.(mod(LIS_rc%syr+(l),400).eq.0)).and.(LIS_rc%smo.gt.2))) then ! leap year sim period
+                    time2days = time1days + 365
+                else ! no leap year
+                    time2days = time1days + 364
+                endif
                 call set_project_input(l, 'Simulation_DayNr1', time1days)
                 call set_project_input(l, 'Simulation_DayNrN', time2days)
-                ! Store length of simulation period for Trecord
-                AC71_struc(n)%simul_days = time2days - time1days + 1
                 ! Crop
                 call LIS_get_julhr(LIS_rc%syr+(l-1),AC71_struc(n)%Crop_AnnualStartMonth, &
                                    AC71_struc(n)%Crop_AnnualStartDay,0,0,0,time1julhours)
                 time1days = (time1julhours - timerefjulhours)/24 + 1
-                !time2days = (time2julhours - timerefjulhours)/24 + 1    !LB set it to same as end sim
+                !Note: end of cropping period is defined by crop params
                 call set_project_input(l, 'Crop_Day1', time1days)
                 call set_project_input(l, 'Crop_DayN', time2days)
                 ! Note: '(External)' input sources can vary spatially (e.g. soil, crop, meteo)
                 call set_project_input(l, 'Description', ' LIS ')
-                call set_project_input(l, 'Climate_Info', ' MERRA2_AC ') !LB replace by (External)
+                call set_project_input(l, 'Climate_Info', '(External)')
                 call set_project_input(l, 'Climate_Filename', '(External)')
                 call set_project_input(l, 'Climate_Directory', '(None)')
                 call set_project_input(l, 'VersionNr', 7.1_dp)
@@ -362,7 +358,7 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Soil_Directory', '(External)')
                 call set_project_input(l, 'SWCIni_Info', '(None)')
                 if (l == 1) then
-                    call set_project_input(l, 'SWCIni_Filename', '(None)') !LB Initial conditions could be defined here?
+                    call set_project_input(l, 'SWCIni_Filename', '(None)') !Initial conditions are deifned in config
                 else
                     call set_project_input(l, 'SWCIni_Filename', 'KeepSWC')
                 end if
@@ -374,14 +370,17 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Observations_Filename', '(None)')
                 call set_project_input(l, 'Observations_Directory', '(None)')
             end do
+            ! Get end day and month
+            call LIS_julhr_date((time2days-1)*24 + timerefjulhours,yr2,mo2,da2,hr2)
+            AC71_struc(n)%Sim_AnnualEndMonth = mo2
+            AC71_struc(n)%Sim_AnnualEndDay = da2
 
-            ! Read annual temperature record --> later add if GDD statement
-            if(LIS_masterproc) then 
+            ! Read annual temperature record if GDD_Mode
+            if(LIS_masterproc.and.(AC71_struc(n)%GDD_Mode.eq.1)) then 
                 call ac71_read_Trecord(n)
             endif
-            #if (defined SPMD)
-                call mpi_barrier(LIS_mpi_comm, ierr)
-            #endif
+            ! Other processes wait for the master
+            call mpi_barrier(LIS_mpi_comm, ierr)
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
@@ -664,7 +663,7 @@ subroutine Ac71_setup()
                     AC71_struc(n)%ac71(t)%InitializeRun = 1
                 endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
-        if (LIS_masterproc) then
+        if (LIS_masterproc.and.(AC71_struc(n)%GDD_Mode.eq.1)) then
             deallocate(AC71_struc(n)%Trecord)
         endif
     enddo
