@@ -134,7 +134,8 @@ subroutine ac71_read_Trecord(n)
     implicit none
     integer, intent(in)      :: n
 
-    real, allocatable     :: tmp_arr(:,:,:)
+    real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
+    real, allocatable     :: subdaily_arr(:,:)
     integer               :: i, j, m, p, status, met_ts
     integer               :: yr_saved, mo_saved, da_saved, hr_saved, mn_saved
     real*8                :: ringtime_saved, time_saved
@@ -167,7 +168,12 @@ subroutine ac71_read_Trecord(n)
 
     met_ts = int(86400./LIS_rc%nts(n))
 
-    allocate(tmp_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366,met_ts))
+    allocate(daily_tmax_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366))
+    allocate(daily_tmin_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366))
+    allocate(subdaily_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),met_ts))
+    ! Make sure last element is defined
+    daily_tmax_arr(:,366) = 0
+    daily_tmin_arr(:,366) = 0
 
     day_loop: do i=1,366
         do j=1,met_ts
@@ -182,26 +188,29 @@ subroutine ac71_read_Trecord(n)
             call LIS_verify(status, "Ac71_prep_f: error retrieving Tair")
 
             ! Store temperatures
-            tmp_arr(:,i,j) = tmp
+            subdaily_arr(:,j) = tmp
 
             ! Change LIS time to the next meteo time step
             call LIS_advance_timestep(LIS_rc)
         enddo
+        ! Store daily max and min temperatures
+        daily_tmax_arr(:,i) = maxval(subdaily_arr,2)
+        daily_tmin_arr(:,i) = minval(subdaily_arr,2)
         if ((LIS_rc%da.eq.AC71_struc(n)%Sim_AnnualStartDay)&
             .and.(LIS_rc%mo.eq.AC71_struc(n)%Sim_AnnualStartMonth)&
-            .and.(i.ne.1)) exit day_loop
+            .and.(i.ne.1)) exit day_loop ! Exit if we reach end of sim period
     enddo day_loop
 
-    ! allocate Trecord accoridng to domain grid
-    allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+    deallocate(subdaily_arr)
+
+    ! Assign Tmax and Tmin arrays to AC71_struc
     do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
-        allocate(AC71_struc(n)%Trecord(p)%Tmax_record(366))
-        allocate(AC71_struc(n)%Trecord(p)%Tmin_record(366))
-        AC71_struc(n)%Trecord(p)%Tmax_record = maxval(tmp_arr(p,:,:),2)
-        AC71_struc(n)%Trecord(p)%Tmin_record = minval(tmp_arr(p,:,:),2)
+        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(p,:)
+        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(p,:)
     enddo
 
-    deallocate(tmp_arr)
+    deallocate(daily_tmax_arr)
+    deallocate(daily_tmin_arr)
 
     ! Reset all flags
     ! Spatial interpolation flag
