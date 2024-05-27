@@ -121,7 +121,6 @@ subroutine ac71_read_Trecord(n)
     use LIS_logMod,         only: LIS_logunit, LIS_verify
     use LIS_FORC_AttributesMod
     use Ac71_lsmMod
-    use merra2_forcingMod
 
     !
     ! !DESCRIPTION: 
@@ -149,7 +148,6 @@ subroutine ac71_read_Trecord(n)
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record..."
 
     ! Change flags for met forcing reading
-    !merra2_struc(n)%ringtime = LIS_rc%time
     ! Spatial interpolation flag
     do m=1,LIS_rc%nmetforc
         spatial_interp_saved = LIS_rc%met_interp(m)
@@ -169,9 +167,9 @@ subroutine ac71_read_Trecord(n)
 
     met_ts = int(86400./LIS_rc%nts(n))
 
-    allocate(tmp_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),AC71_struc(n)%simul_days,met_ts))
+    allocate(tmp_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366,met_ts))
 
-    do i=1,AC71_struc(n)%simul_days
+    day_loop: do i=1,366
         do j=1,met_ts
             ! read met forcing
             call LIS_get_met_forcing(n)
@@ -189,13 +187,16 @@ subroutine ac71_read_Trecord(n)
             ! Change LIS time to the next meteo time step
             call LIS_advance_timestep(LIS_rc)
         enddo
-    enddo
+        if ((LIS_rc%da.ne.AC71_struc(n)%Sim_AnnualStartDay)&
+            .and.(LIS_rc%mo.ne.AC71_struc(n)%Sim_AnnualStartMonth)&
+            .and.(i.ne.1)) exit day_loop
+    enddo day_loop
 
     ! allocate Trecord accoridng to domain grid
     allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
     do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
-        allocate(AC71_struc(n)%Trecord(p)%Tmax_record(AC71_struc(n)%simul_days))
-        allocate(AC71_struc(n)%Trecord(p)%Tmin_record(AC71_struc(n)%simul_days))
+        allocate(AC71_struc(n)%Trecord(p)%Tmax_record(366))
+        allocate(AC71_struc(n)%Trecord(p)%Tmin_record(366))
         AC71_struc(n)%Trecord(p)%Tmax_record = maxval(tmp_arr(p,:,:),2)
         AC71_struc(n)%Trecord(p)%Tmin_record = minval(tmp_arr(p,:,:),2)
     enddo
