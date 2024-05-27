@@ -187,8 +187,8 @@ subroutine ac71_read_Trecord(n)
             ! Change LIS time to the next meteo time step
             call LIS_advance_timestep(LIS_rc)
         enddo
-        if ((LIS_rc%da.ne.AC71_struc(n)%Sim_AnnualStartDay)&
-            .and.(LIS_rc%mo.ne.AC71_struc(n)%Sim_AnnualStartMonth)&
+        if ((LIS_rc%da.eq.AC71_struc(n)%Sim_AnnualStartDay)&
+            .and.(LIS_rc%mo.eq.AC71_struc(n)%Sim_AnnualStartMonth)&
             .and.(i.ne.1)) exit day_loop
     enddo day_loop
 
