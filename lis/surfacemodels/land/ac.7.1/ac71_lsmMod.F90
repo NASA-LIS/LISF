@@ -173,7 +173,7 @@ contains
 !  \end{description}
 !EOP
         implicit none        
-        integer  :: n, t     
+        integer  :: n, t, p    
         integer  :: status   
 
         ! allocate memory for nest 
@@ -191,6 +191,13 @@ contains
             !------------------------------------------------------------------------
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
+            enddo
+
+            ! allocate memory for Trecord arrays
+            allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+            do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
+                allocate(AC71_struc(n)%Trecord(p)%Tmax_record(366))
+                allocate(AC71_struc(n)%Trecord(p)%Tmin_record(366))
             enddo
 
             
