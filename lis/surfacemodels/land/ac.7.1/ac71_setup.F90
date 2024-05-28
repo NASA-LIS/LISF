@@ -380,6 +380,7 @@ subroutine Ac71_setup()
                 call ac71_read_Trecord(n)
             endif
             ! Other processes wait for the master
+            write(LIS_logunit, *) 'Waiting for temeprature reading for AC71 simul period...'
             call mpi_barrier(LIS_mpi_comm, ierr)
 
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -663,9 +664,6 @@ subroutine Ac71_setup()
                     AC71_struc(n)%ac71(t)%InitializeRun = 1
                 endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
-        if (LIS_masterproc.and.(AC71_struc(n)%GDD_Mode.eq.1)) then
-            deallocate(AC71_struc(n)%Trecord)
-        endif
     enddo
 end subroutine Ac71_setup
 

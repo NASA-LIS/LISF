@@ -310,7 +310,7 @@ subroutine Ac71_main(n)
 
     !!! MB_AC71
     integer              :: daynr, todaynr, iproject, nprojects
-    logical              :: ListProjectFileExist, ini_flag
+    logical              :: ListProjectFileExist
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
 
     !LB AC71
@@ -334,13 +334,11 @@ subroutine Ac71_main(n)
 
 ! define variables for Ac71
     ! check Ac71 alarm. If alarm is ring, run model.
-    ini_flag = .false. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
         if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.LIS_masterproc.and.&
             (AC71_struc(n)%GDD_Mode.eq.1)) then
             call ac71_read_Trecord(n)
-            ini_flag = .true. ! initialize to false!
         endif
         call mpi_barrier(LIS_mpi_comm, ierr)
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -831,10 +829,6 @@ subroutine Ac71_main(n)
         enddo ! end of tile (t) loop
         ! reset forcing counter to be zero
         AC71_struc(n)%forc_count = 0
-        ! deallocate Trecord if needed 
-        if (LIS_masterproc.and.ini_flag) then
-            deallocate(AC71_struc(n)%Trecord)
-        endif
     endif ! end of alarmCheck loop 
 
 end subroutine Ac71_main
