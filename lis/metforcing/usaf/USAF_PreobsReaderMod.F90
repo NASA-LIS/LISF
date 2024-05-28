@@ -43,6 +43,7 @@ contains
     use LIS_logMod, only:  LIS_logunit, LIS_alert, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber
     use LIS_mpiMod, only:  LIS_mpi_comm
+    use USAF_bratsethMod, only: USAF_is_gauge ! EMK 20240524
     use USAF_GagesMod, only: USAF_Gages_t
 
     ! Defaults
@@ -124,6 +125,28 @@ contains
     character(255) :: timestring
     integer :: iunit
     character(255) :: message(20)
+    integer, parameter :: MAX_NEW_NETWORKS = 20
+    character(10), save :: new_networks(MAX_NEW_NETWORKS) = &
+         (/"NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      "/)
 
     message = ''
 
@@ -147,6 +170,7 @@ contains
        inquire(file=trim(filename), exist=found_file)
        if (.not. found_file) then
           write(LIS_logunit,*) '[WARN] Cannot find ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot find file ' // trim(filename)
@@ -163,6 +187,7 @@ contains
        open(iunit, file=trim(filename), status='old', iostat=ierr)
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem opening ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot open file ' // trim(filename)
@@ -180,6 +205,7 @@ contains
        read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem reading ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Problem reading file ' // trim(filename)
@@ -196,6 +222,7 @@ contains
        if (nsize == 0) then
           write(LIS_logunit,*)'[WARN] No precip obs found in ', &
                trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  No precip obs found in ' // trim(filename)
@@ -318,6 +345,39 @@ contains
 
           ! Skip if lat/lon is 0 (this is interpreted as missing).
           if (ilat_tmp == 0 .and. ilon_tmp == 0) cycle
+
+          ! EMK 20240524...Skip report if network is not recognized.
+          ! Issue an alert. Keep track of unknown networks to avoid
+          ! redundant alerts.
+          if (.not. USAF_is_gauge(network_tmp)) then
+             do j = 1, MAX_NEW_NETWORKS
+                if (trim(new_networks(j)) == trim(network_tmp)) then
+                   exit ! Out of immediate do loop
+                else if (trim(new_networks(j)) == "NULL") then
+                   new_networks(j) = network_tmp
+                   write(LIS_logunit,*) &
+                        '[WARN] Found unrecognized network ', &
+                        trim(network_tmp)
+                   write(LIS_logunit,*) &
+                        '[WARN] Will skip report in preobs file'
+                   message = ''
+                   message(1) = '[WARN] Program:  LIS'
+                   message(2) = '  Routine: USAF_read_preobs'
+                   message(3) = '  Found unrecognized network in '// &
+                        trim(filename)
+                   message(4) = '  Network '//trim(network_tmp)
+                   message(5) = &
+                        '  Contact NASA developers to add this network'
+                   if (LIS_masterproc) then
+                      alert_number = alert_number + 1
+                      call LIS_alert('LIS.USAF_read_preobs', &
+                           alert_number, message)
+                   end if
+                   exit ! Out of immediate do loop
+                end if
+             end do
+             cycle ! Read next report
+          end if
 
           ! Skip reports that are too much after the analysis time
           ! (but allow earlier reports).  This is a crude way of
@@ -736,6 +796,7 @@ contains
           write(LIS_logunit,*) &
                '[WARN] Will skip reconciling with obs from ', &
                abs(deltahr),' hours ago'
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot find earlier presav2 file ' // &
