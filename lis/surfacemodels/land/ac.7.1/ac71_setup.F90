@@ -327,7 +327,7 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Climate_Directory', '(None)')
                 call set_project_input(l, 'VersionNr', 7.1_dp)
                 call set_project_input(l, 'Temperature_Info', '(None)')
-                call set_project_input(l, 'Temperature_Filename', '(None)')
+                call set_project_input(l, 'Temperature_Filename', '(External)')
                 call set_project_input(l, 'Temperature_Directory', '(None)')
                 call set_project_input(l, 'ETo_Info', '(None)')
                 call set_project_input(l, 'ETo_Filename', '(External)')
@@ -563,10 +563,10 @@ subroutine Ac71_setup()
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
 
-                ! Set Global variable to pass T record to AquaCrop (Michel)
-                ! call Set....
-                ! something like this to trace tile back? LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index
-
+                ! Set Global variable to pass T record to AquaCrop
+                call SetTminRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmin_record)    
+                call SetTmaxRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmax_record)
+                ! InitializeRunPart1    
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
