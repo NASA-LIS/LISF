@@ -25,7 +25,7 @@ subroutine Ac71_setup()
 ! !USES:
     use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
     use LIS_fileIOMod, only: LIS_read_param
-    use LIS_coreMod,   only: LIS_rc, LIS_surface, LIS_masterproc
+    use LIS_coreMod,   only: LIS_rc, LIS_surface
     use LIS_timeMgrMod
     use LIS_mpiMod,    only: LIS_mpi_comm
 
@@ -376,12 +376,9 @@ subroutine Ac71_setup()
             AC71_struc(n)%Sim_AnnualEndDay = da2
 
             ! Read annual temperature record if GDD_Mode
-            if(LIS_masterproc.and.(AC71_struc(n)%GDD_Mode.eq.1)) then 
+            if(AC71_struc(n)%GDD_Mode.eq.1) then 
                 call ac71_read_Trecord(n)
             endif
-            ! Other processes wait for the master
-            write(LIS_logunit, *) 'Waiting for temeprature reading for AC71 simul period...'
-            call mpi_barrier(LIS_mpi_comm, ierr)
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
