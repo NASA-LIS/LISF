@@ -117,8 +117,9 @@ subroutine ac71_read_Trecord(n)
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
     use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
                                   LIS_update_clock
-    use LIS_coreMod,        only: LIS_rc
+    use LIS_coreMod,        only: LIS_rc, LIS_masterproc
     use LIS_logMod,         only: LIS_logunit, LIS_verify
+    use LIS_mpiMod,    only: LIS_mpi_comm
     use LIS_FORC_AttributesMod
     use Ac71_lsmMod
 
@@ -136,7 +137,7 @@ subroutine ac71_read_Trecord(n)
 
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
     real, allocatable     :: subdaily_arr(:,:)
-    integer               :: i, j, m, p, status, met_ts
+    integer               :: i, j, m, p, status, met_ts, ierr
     integer               :: yr_saved, mo_saved, da_saved, hr_saved, mn_saved
     real*8                :: ringtime_saved, time_saved
     real                  :: gmt_tmp
@@ -168,12 +169,12 @@ subroutine ac71_read_Trecord(n)
 
     met_ts = int(86400./LIS_rc%nts(n))
 
-    allocate(daily_tmax_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366))
-    allocate(daily_tmin_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),366))
-    allocate(subdaily_arr(LIS_rc%gnc(n)*LIS_rc%gnr(n),met_ts))
+    allocate(daily_tmax_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
+    allocate(daily_tmin_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
+    allocate(subdaily_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),met_ts))
     ! Make sure last element is defined
-    daily_tmax_arr(:,366) = 0
-    daily_tmin_arr(:,366) = 0
+    !daily_tmax_arr(:,366) = 0
+    !daily_tmin_arr(:,366) = 0
 
     day_loop: do i=1,366
         do j=1,met_ts
@@ -204,9 +205,10 @@ subroutine ac71_read_Trecord(n)
     deallocate(subdaily_arr)
 
     ! Assign Tmax and Tmin arrays to AC71_struc
-    do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
-        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(p,:)
-        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(p,:)
+    do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
+        p = (i-1)/LIS_rc%nensem(n) + 1
+        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)
+        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)
     enddo
 
     deallocate(daily_tmax_arr)
@@ -219,9 +221,9 @@ subroutine ac71_read_Trecord(n)
         LIS_rc%met_interp(m) = trim(spatial_interp_saved)
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
+    LIS_rc%rstflag = 1 ! For met forcings
     ! Reset actual time
     call LIS_timemgr_set(LIS_rc,yr_saved,mo_saved,da_saved,hr_saved,mn_saved,0,0,0.0)
-    LIS_rc%rstflag = 1 ! Needed for met forcings
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
 
 end subroutine ac71_read_Trecord

@@ -29,7 +29,6 @@ subroutine Ac71_main(n)
    !use other modules
     use ESMF
     use LIS_routingMod, only : LIS_runoff_state
-    use LIS_mpiMod,    only: LIS_mpi_comm
 
 !   ! AC module imports
     use ac_global, only: &
@@ -308,11 +307,9 @@ subroutine Ac71_main(n)
     ! check Ac71 alarm. If alarm is ring, run model.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
-        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.LIS_masterproc.and.&
-            (AC71_struc(n)%GDD_Mode.eq.1)) then
+        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.(AC71_struc(n)%GDD_Mode.eq.1)) then
             call ac71_read_Trecord(n)
         endif
-        call mpi_barrier(LIS_mpi_comm, ierr)
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             dt = LIS_rc%ts
             row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
