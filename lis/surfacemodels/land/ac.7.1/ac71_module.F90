@@ -91,8 +91,15 @@ module Ac71_module
     integer       :: irun
     integer       :: NoMoreCrop
     integer(intEnum) :: TheProjectType
+    integer        :: Crop_DaysToGermination
+    integer        :: Crop_DaysToMaxRooting
+    integer        :: Crop_DaysToFlowering
+    integer        :: Crop_DaysToSenescence
+    integer        :: Crop_DaysToHarvest
     logical  :: HarvestNow
     logical :: NoYear
+    logical :: germ_reached, harv_reached
+    logical :: maxR_reached, sene_reached, flowr_reached
     real    :: RootZoneWC_Actual
     real    :: RootZoneWC_FC
     real    :: RootZoneWC_Leaf
@@ -155,6 +162,8 @@ module Ac71_module
     real :: WPi
     real :: YprevSum
     real :: Ziprev
+    real :: Simulation_SumGDD
+    real :: Simulation_SumGDDfromDay1    
     type(CompartmentIndividual), dimension(12) :: Compartment
     type(repIrriInfoRecord) :: IrriInfoRecord1
     type(repIrriInfoRecord) :: IrriInfoRecord2

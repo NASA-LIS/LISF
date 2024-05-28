@@ -43,6 +43,15 @@ subroutine Ac71_main(n)
                     GetCompartment_theta,&
                     GetCrop,&
                     GetCrop_Day1,&
+                    GetCrop_DayN,&
+                    SetCrop_Day1,&
+                    SetCrop_DayN,&
+                    SetCrop_DaysToGermination,&
+                    SetCrop_DaysToMaxRooting,&
+                    SetCrop_DaysToFlowering,&
+                    GetCrop_DaysToFlowering,&
+                    SetCrop_DaysToHarvest,&
+                    SetCrop_DaysTosenescence,&
                     GetCrop_CGC, &
                     GetCrop_GDDCGC,&
                     GetDaySubmerged,&
@@ -67,6 +76,8 @@ subroutine Ac71_main(n)
                     GetRootZoneWC_ZtopWP,&
                     GetSimulParam,&
                     GetSimulParam_GDDMethod,&
+                    GetCrop_ModeCycle,&
+                    GetSimulation_DelayedDays,&
                     GetSimulation,&
                     GetSimulation_EvapLimitON, &
                     GetSimulation_SumGDD,&
@@ -81,6 +92,12 @@ subroutine Ac71_main(n)
                     GetTmax,& 
                     GetTmin,& 
                     GetTpot,&
+                    GetCrop_GDDaysToGermination,&
+                    GetCrop_GDDaysToMaxRooting,&
+                    GetCrop_GDDaysToHarvest,&
+                    GetCrop_GDDaysToGermination,&
+                    GetCrop_GDDaysToFlowering,&
+                    GetCrop_GDDaysToSenescence,&
                     IrriMethod_MSprinkler, &
                     IrriMode_Generate, &
                     SetCCiActual,&
@@ -143,7 +160,16 @@ subroutine Ac71_main(n)
                     SetTactWeedInfested,&
                     SetTmax,& 
                     SetTmin,&
-                    SetTpot
+                    SetTpot,&
+                    SetTminRun_i, &
+                    SetTminRun, &
+                    SetTmaxRun_i, &
+                    SetTmaxRun, &
+                    GetTminRun_i, &
+                    GetTminRun, &
+                    GetTmaxRun_i, &
+                    GetTmaxRun
+
     use ac_kinds, only: intEnum, &
                         int32, &
                         int8, &
@@ -273,6 +299,8 @@ subroutine Ac71_main(n)
     integer              :: row, col
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
+    real                 :: TminRun_i, TmaxRun_i
+    real                 :: sumGDD, sumGDD2
 
     integer              :: status, ierr
     integer              :: c,r,l
@@ -530,6 +558,12 @@ subroutine Ac71_main(n)
                 endif
             endif
 
+            call SetCrop_DaysToGermination(AC70_struc(n)%ac70(t)%Crop_DaysToGermination)
+            call SetCrop_DaysToMaxRooting(AC70_struc(n)%ac70(t)%Crop_DaysToMaxRooting)
+            call SetCrop_DaysToFlowering(AC70_struc(n)%ac70(t)%Crop_DaysToFlowering)
+            call SetCrop_DaysToSenescence(AC70_struc(n)%ac70(t)%Crop_DaysToSenescence)
+            call SetCrop_DaysToHarvest(AC70_struc(n)%ac70(t)%Crop_DaysToHarvest)
+
             !!! initialize run (year)
 
             if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
@@ -553,8 +587,10 @@ subroutine Ac71_main(n)
                 call set_project_input(AC71_struc(n)%ac71(t)%irun, &
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
-                ! Set Global variable to pass T record to AquaCrop (Michel)
-                ! call Set....
+                ! Set Global variable to pass T record to AquaCrop
+                call SetTminRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmin_record)
+                call SetTmaxRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmax_record)
+                ! InitializeRunPart1
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
@@ -569,21 +605,62 @@ subroutine Ac71_main(n)
             call SetTmin(real(tmp_tmin,kind=dp))
             call SetTmax(real(tmp_tmax,kind=dp))
             call SetETo(real(tmp_eto,kind=dp))
+
+            ! Initialize for new crop cycle
+            ! Reset Crop_DaysTo* to allow that members reach stages at different days
+            if (GetDayNri() == GetCrop_Day1()) then
+                call setCrop_DayN(GetSimulation_ToDayNr())
+                AC70_struc(n)%ac70(t)%germ_reached = .false.
+                AC70_struc(n)%ac70(t)%harv_reached = .false.
+                AC70_struc(n)%ac70(t)%flowr_reached = .false.
+                AC70_struc(n)%ac70(t)%MaxR_reached = .false.
+                AC70_struc(n)%ac70(t)%Sene_reached = .false.
+                ! Initialize to end of the year but with one day difference 
+                ! due to internal AC if statements
+                AC70_struc(n)%ac70(t)%Crop_DaysToGermination = 361
+                AC70_struc(n)%ac70(t)%Crop_DaysToFlowering = 362
+                AC70_struc(n)%ac70(t)%Crop_DaysToMaxRooting = 363
+                AC70_struc(n)%ac70(t)%Crop_DaysToSenescence = 364
+                AC70_struc(n)%ac70(t)%Crop_DaysToHarvest= 365
+            end if
             ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
             call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
                     GetTmax(), GetSimulParam_GDDMethod()))
             if (GetDayNri() >= GetCrop_Day1()) then
-                if (GetDayNri() == GetCrop_Day1()) then
-                    call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
-                end if
+                call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
                 call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
                     GetGDDayi())
+            end if
+            !find calendar days for crop stages
+            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC70_struc(n)%ac70(t)%germ_reached)) then ! from sow
+                AC70_struc(n)%ac70(t)%Crop_DaysToGermination = GetDayNri() - GetCrop_Day1()
+                AC70_struc(n)%ac70(t)%germ_reached = .true.
+            end if
+            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToMaxRooting()) .and. (.not. AC70_struc(n)%ac70(t)%maxR_reached)) then ! from sowin
+                AC70_struc(n)%ac70(t)%Crop_DaysToMaxRooting = GetDayNri() - GetCrop_Day1()
+                AC70_struc(n)%ac70(t)%maxR_reached = .true.
+            end if
+            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToFlowering()) .and.  (.not. AC70_struc(n)%ac70(t)%flowr_reached)) then ! from sowi
+               AC70_struc(n)%ac70(t)%Crop_DaysToFlowering = GetDayNri() - GetCrop_Day1()
+               AC70_struc(n)%ac70(t)%flowr_reached = .true.
+            end if
+            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToSenescence()) .and. (.not. AC70_struc(n)%ac70(t)%sene_reached)) then ! from sowin
+               AC70_struc(n)%ac70(t)%Crop_DaysToSenescence = GetDayNri() - GetCrop_Day1()
+               AC70_struc(n)%ac70(t)%sene_reached = .true.
+            end if
+            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToHarvest()) .and. (.not. AC70_struc(n)%ac70(t)%harv_reached)) then ! from sowing t
+               AC70_struc(n)%ac70(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
+               AC70_struc(n)%ac70(t)%harv_reached = .true.
             end if
 
             ! Run AC
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
             call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
             AC71_struc(n)%ac71(t)%WPi = tmp_wpi
+            
+            ! MB: tmp, just for debugging
+            sumGDD = GetSimulation_SumGDD()
+            sumGDD2 = GetSumGDD()
 
             ! Get all the ac71 variables and store in AC71_struc
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
