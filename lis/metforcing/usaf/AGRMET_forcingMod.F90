@@ -341,6 +341,9 @@ module AGRMET_forcingMod
      character*100          :: geodir
      character*100          :: gfsdir
      character*100          :: galwemdir
+! TEMP -- KRA
+     character*180          :: galwemraddir
+! TEMP -- KRA
      character*100          :: cdmsdir
      character*100          :: cmordir
      character*100          :: analysisdir

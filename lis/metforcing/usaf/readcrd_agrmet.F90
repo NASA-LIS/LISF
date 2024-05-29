@@ -448,10 +448,20 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%retroFileRoot,rc=rc)
   enddo
 
+  ! New AGRMET radiation option -- GALWEM-based inputs (KRA) = GALWEM_RAD:
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET radiation derived from:",rc=rc)
   do n=1,LIS_rc%nnest
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%compute_radiation,default="cloud types", rc=rc)
+     ! "cloud types" is default for WWMCA Grib files:
   enddo
+
+! -- TEMPORARY -- KRA -- GALWEM RADIATION FILE READER:
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET GALWEM radiation data directory:",rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%galwemraddir,rc=rc)
+  enddo
+! -- TEMPORARY --
+
 
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%security_class,&
        label="AGRMET security classification:",rc=rc)
