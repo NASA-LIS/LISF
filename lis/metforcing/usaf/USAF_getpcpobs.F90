@@ -82,7 +82,7 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
 
      ! Read appropriate preobs file(s), intercompare with older presav2
      ! files, and create new presav2 file for current date/time.
-     call USAF_read_preobs(preobsdir, &
+     call USAF_read_preobs(n, preobsdir, &
           trim(agrmet_struc(n)%analysisdir), &
           agrmet_struc(n)%use_timestamp, yr, mo, da, hr, &
           use_expanded_station_ids, alert_number)

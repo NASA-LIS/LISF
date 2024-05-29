@@ -1987,7 +1987,7 @@ contains
                      num = num + this%sigmaOSqr(job)
                   else if (trim(this%net(iob)) .eq. trim(this%net(job))) then
                      ! Satellite observations have correlated errors.
-                     if (.not. isUncorrObType(this%net(job))) then
+                     if (.not. isUncorrObType(this%net(job),nest)) then
                         if (.not. this%oErrScaleLength(job) > 0 .and. &
                              .not. this%oErrScaleLength(job) < 0) then
                            write(LIS_logunit,*) &
@@ -2302,7 +2302,7 @@ contains
                      else if (trim(this%net(iob)) .eq. &
                               trim(this%net(job))) then
                         ! Satellite data have horizontal error correlations
-                        if (.not. isUncorrObType(this%net(job))) then
+                        if (.not. isUncorrObType(this%net(job),nest)) then
                            weight = weight + &
                                 obsErrCov(this%sigmaOSqr(job), &
                                 this%oErrScaleLength(job), &
@@ -4284,23 +4284,37 @@ contains
 
    !---------------------------------------------------------------------------
    ! Checks if observation network is recognized as a gauge.
-   logical function USAF_is_gauge(net)
-      implicit none
-      character(len=32), intent(in) :: net
-      logical :: answer
-      answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "HADS") answer = .true.
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "NWSLI") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
-      ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
-      USAF_is_gauge = answer
+   logical function USAF_is_gauge(net, n) result(answer)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=32), intent(in) :: net
+     integer, intent(in) :: n
+
+     ! Locals
+     integer :: j
+
+     answer = .false. ! First guess
+
+     ! Two special cases
+     if (trim(net) .eq. "SUPERGAGE" .or. &
+          trim(net) .eq. "CDMS") then
+        answer = .true.
+        return
+     end if
+
+     ! General case:  Check list from LIS config file
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        if (trim(net) == trim(agrmet_struc(n)%gage_networks(j))) then
+           answer = .true.
+           exit
+        end if
+     end do
    end function USAF_is_gauge
 
    !---------------------------------------------------------------------------
@@ -4309,9 +4323,10 @@ contains
    ! Bratseth routines that need to know which reports in a collection
    ! have correlated errors.  When analyzing screen-level variables with
    ! surface stations, all observations should have uncorrelated errors.
-   logical function is_stn(net)
+   logical function is_stn(net, n)
       implicit none
       character(len=32), intent(in) :: net
+      integer, intent(in) :: n
       logical :: answer
       answer = .true.
       is_stn = answer
