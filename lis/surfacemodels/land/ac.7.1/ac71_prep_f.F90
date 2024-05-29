@@ -143,6 +143,12 @@ subroutine ac71_read_Trecord(n)
     real                  :: gmt_tmp
     character(256)        :: spatial_interp_saved
 
+    !Note: this code assumes that the forcing data (tmp) has a length=ntiles
+    !This will need to be tested when running ensembles.
+    !This assumption will likely be valid even without forcing perturbations. 
+    !In this case, the tmp array will just have the same values for the ensemble
+    ! e.g. 24 members --> 24x same temperature value
+
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
     real, pointer     :: tmp(:)
@@ -172,9 +178,6 @@ subroutine ac71_read_Trecord(n)
     allocate(daily_tmax_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
     allocate(daily_tmin_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
     allocate(subdaily_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),met_ts))
-    ! Make sure last element is defined
-    !daily_tmax_arr(:,366) = 0
-    !daily_tmin_arr(:,366) = 0
 
     day_loop: do i=1,366
         do j=1,met_ts
