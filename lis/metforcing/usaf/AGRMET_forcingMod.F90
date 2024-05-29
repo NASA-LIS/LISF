@@ -730,6 +730,10 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable :: gfs_nrt_bias_ratio(:,:)
      real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
+
+     ! EMK Add list of gage networks to use
+     integer :: num_gage_networks
+     character(32), allocatable :: gage_networks(:)
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)

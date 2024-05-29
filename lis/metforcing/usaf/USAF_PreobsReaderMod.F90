@@ -32,7 +32,7 @@ contains
 
   ! Read preobs files, perform simple preprocessing, and store
   ! in database.
-  subroutine USAF_read_preobs(preobsdir, presavdir, &
+  subroutine USAF_read_preobs(n, preobsdir, presavdir, &
        use_timestamp, &
        year, month, day, hour, use_expanded_station_ids, &
        alert_number)
@@ -50,6 +50,7 @@ contains
     implicit none
 
     ! Arguments
+    integer, intent(in) :: n
     character(*), intent(in) :: preobsdir
     character(*), intent(in) :: presavdir
     integer, intent(in) :: use_timestamp
@@ -349,7 +350,7 @@ contains
           ! EMK 20240524...Skip report if network is not recognized.
           ! Issue an alert. Keep track of unknown networks to avoid
           ! redundant alerts.
-          if (.not. USAF_is_gauge(network_tmp)) then
+          if (.not. USAF_is_gauge(network_tmp, n)) then
              do j = 1, MAX_NEW_NETWORKS
                 if (trim(new_networks(j)) == trim(network_tmp)) then
                    exit ! Out of immediate do loop
@@ -367,7 +368,7 @@ contains
                         trim(filename)
                    message(4) = '  Network '//trim(network_tmp)
                    message(5) = &
-                        '  Contact NASA developers to add this network'
+                        '  Modify lis.config to add this network'
                    if (LIS_masterproc) then
                       alert_number = alert_number + 1
                       call LIS_alert('LIS.USAF_read_preobs', &
