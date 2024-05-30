@@ -117,9 +117,9 @@ subroutine ac71_read_Trecord(n)
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
     use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
                                   LIS_update_clock
-    use LIS_coreMod,        only: LIS_rc, LIS_masterproc
+    use LIS_coreMod,        only: LIS_rc
+    use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
-    use LIS_mpiMod,    only: LIS_mpi_comm
     use LIS_FORC_AttributesMod
     use Ac71_lsmMod
 
@@ -137,11 +137,9 @@ subroutine ac71_read_Trecord(n)
 
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
     real, allocatable     :: subdaily_arr(:,:)
-    integer               :: i, j, m, p, status, met_ts, ierr
-    integer               :: yr_saved, mo_saved, da_saved, hr_saved, mn_saved
-    real*8                :: ringtime_saved, time_saved
-    real                  :: gmt_tmp
-    character(256)        :: spatial_interp_saved
+    type(lisrcdec)        :: LIS_rc_saved
+    integer               :: i, j, p, status, met_ts, ierr
+    integer               :: yr_start
 
     !Note: this code assumes that the forcing data (tmp) has a length=ntiles
     !This will need to be tested when running ensembles.
@@ -155,30 +153,29 @@ subroutine ac71_read_Trecord(n)
 
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record..."
 
-    ! Change flags for met forcing reading
-    ! Spatial interpolation flag
-    do m=1,LIS_rc%nmetforc
-        spatial_interp_saved = LIS_rc%met_interp(m)
-        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m) ! finalize and initialize again, risky but only solution to get neighbor
-        LIS_rc%met_interp(m) = "neighbor"
-        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
-    enddo
-
-    ! Save current time
-    yr_saved  = LIS_rc%yr
-    mo_saved = LIS_rc%mo
-    da_saved = LIS_rc%da
-    hr_saved = LIS_rc%hr
-    mn_saved = LIS_rc%mn
+    ! Save current LIS_rc
+    LIS_rc_saved = LIS_rc
+    ! Rst for forcings
+    LIS_rc%rstflag = 1
     ! Make sure it is the right met time step
     call LIS_update_clock(LIS_rc%ts)
 
-    met_ts = int(86400./LIS_rc%nts(n))
+    met_ts = int(86400./LIS_rc%ts)
 
     allocate(daily_tmax_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
     allocate(daily_tmin_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),366))
     allocate(subdaily_arr(LIS_rc%npatch(n,LIS_rc%lsm_index),met_ts))
 
+    ! Set LIS_rc time to beginning of simulation period (in case of restart)
+    ! Check in which year the simulation did start (assuming a 365-366 sim period)
+    if (AC71_struc(n)%Sim_AnnualStartMonth.gt.LIS_rc%mo) then
+        yr_start = LIS_rc%yr - 1
+    else
+        yr_start = LIS_rc%yr
+    endif
+    call LIS_timemgr_set(LIS_rc,yr_start,AC71_struc(n)%Sim_AnnualStartMonth,&
+                         AC71_struc(n)%Sim_AnnualStartDay,LIS_rc%hr,LIS_rc%mn,&
+                         LIS_rc%ss,LIS_rc%ms,0.0)
     day_loop: do i=1,366
         do j=1,met_ts
             ! read met forcing
@@ -217,18 +214,14 @@ subroutine ac71_read_Trecord(n)
     deallocate(daily_tmax_arr)
     deallocate(daily_tmin_arr)
 
-    ! Reset all flags
-    ! Spatial interpolation flag
-    do m=1,LIS_rc%nmetforc
-        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
-        LIS_rc%met_interp(m) = trim(spatial_interp_saved)
-        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
-    enddo
+    ! Reset LIS_rc
+    LIS_rc = LIS_rc_saved
+    ! Reset time manager
+    call LIS_timemgr_set(LIS_rc,LIS_rc_saved%yr,LIS_rc_saved%mo,LIS_rc_saved%da,&
+                        LIS_rc_saved%hr,LIS_rc_saved%mn,LIS_rc_saved%ss,LIS_rc_saved%ms,&
+                        0.0)
     LIS_rc%rstflag = 1 ! For met forcings
-    ! Reset actual time
-    call LIS_timemgr_set(LIS_rc,yr_saved,mo_saved,da_saved,hr_saved,mn_saved,0,0,0.0)
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
-
 end subroutine ac71_read_Trecord
 
 end module ac71_prep_f
