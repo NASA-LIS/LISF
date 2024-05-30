@@ -48,9 +48,21 @@ subroutine Ac71_main(n)
                     SetCrop_DaysToGermination,&
                     SetCrop_DaysToMaxRooting,&
                     SetCrop_DaysToFlowering,&
-                    GetCrop_DaysToFlowering,&
                     SetCrop_DaysToHarvest,&
                     SetCrop_DaysTosenescence,&
+                    SetCrop_DaysToCCini,&
+                    SetCrop_DaysToFullCanopy,&
+                    SetCrop_DaysToFullCanopySF,&
+                    SetCrop_DaysToHIo,&
+                    GetCrop_DaysToGermination,&
+                    GetCrop_DaysToMaxRooting,&
+                    GetCrop_DaysToFlowering,&
+                    GetCrop_DaysToHarvest,&
+                    GetCrop_DaysTosenescence,&
+                    GetCrop_DaysToCCini,&
+                    GetCrop_DaysToFullCanopy,&
+                    GetCrop_DaysToFullCanopySF,&
+                    GetCrop_DaysToHIo,&
                     GetCrop_CGC, &
                     GetCrop_GDDCGC,&
                     GetDaySubmerged,&
@@ -82,6 +94,7 @@ subroutine Ac71_main(n)
                     GetSimulation_SumGDD,&
                     GetSimulation_SumGDDfromDay1,&
                     GetSimulation_SWCtopSoilConsidered, &
+                    GetSimulation_ToDayNr, &
                     GetSoil,&
                     GetSoilLayer,&
                     GetSumWaBal,&
@@ -309,7 +322,7 @@ subroutine Ac71_main(n)
 
     !!! MB_AC71
     integer              :: daynr, todaynr, iproject, nprojects
-    logical              :: ListProjectFileExist
+    logical              :: ListProjectFileExist, phenological_stages_ensemble
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
 
     !LB AC71
@@ -554,10 +567,14 @@ subroutine Ac71_main(n)
             endif
 
             call SetCrop_DaysToGermination(AC71_struc(n)%ac71(t)%Crop_DaysToGermination)
-            call SetCrop_DaysToMaxRooting(AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting)
             call SetCrop_DaysToFlowering(AC71_struc(n)%ac71(t)%Crop_DaysToFlowering)
+            call SetCrop_DaysToMaxRooting(AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting)
             call SetCrop_DaysToSenescence(AC71_struc(n)%ac71(t)%Crop_DaysToSenescence)
             call SetCrop_DaysToHarvest(AC71_struc(n)%ac71(t)%Crop_DaysToHarvest)
+            call SetCrop_DaysToCCini(AC71_struc(n)%ac71(t)%Crop_DaysToCCini)
+            call SetCrop_DaysToFullCanopy(AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopy)
+            call SetCrop_DaysToFullCanopySF(AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF)
+            call SetCrop_DaysToHIo(AC71_struc(n)%ac71(t)%Crop_DaysToHIo)
 
             !!! initialize run (year)
 
@@ -602,7 +619,10 @@ subroutine Ac71_main(n)
             call SetETo(real(tmp_eto,kind=dp))
 
             ! Initialize for new crop cycle
+
             ! Reset Crop_DaysTo* to allow that members reach stages at different days
+            phenological_stages_ensemble = .false.
+        if (phenological_stages_ensemble) then
             if (GetDayNri() == GetCrop_Day1()) then
                 call setCrop_DayN(GetSimulation_ToDayNr())
                 AC71_struc(n)%ac71(t)%germ_reached = .false.
@@ -647,6 +667,7 @@ subroutine Ac71_main(n)
                AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
                AC71_struc(n)%ac71(t)%harv_reached = .true.
             end if
+        end if
 
             ! Run AC
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
@@ -661,6 +682,18 @@ subroutine Ac71_main(n)
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
             enddo
+            
+            ! MB likely not needed since done with AC71_struc(n)%ac71(t)%crop = GetCrop() ?
+            AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetCrop_DaysToGermination()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetCrop_DaysToFlowering()
+            AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetCrop_DaysToMaxRooting()
+            AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetCrop_DaysToSenescence()
+            AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetCrop_DaysToHarvest()
+            AC71_struc(n)%ac71(t)%Crop_DaysToCCini = GetCrop_DaysToCCini()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopy = GetCrop_DaysToFullCanopy()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF = GetCrop_DaysToFullCanopySF()
+            AC71_struc(n)%ac71(t)%Crop_DaysToHIo = GetCrop_DaysToHIo()
+            !
             AC71_struc(n)%ac71(t)%alfaHI = GetalfaHI()
             AC71_struc(n)%ac71(t)%alfaHIAdj = GetalfaHIAdj()
             AC71_struc(n)%ac71(t)%Bin = GetBin()

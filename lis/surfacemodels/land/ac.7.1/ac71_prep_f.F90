@@ -207,8 +207,8 @@ subroutine ac71_read_Trecord(n)
     ! Assign Tmax and Tmin arrays to AC71_struc
     do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
         p = (i-1)/LIS_rc%nensem(n) + 1
-        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)
-        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)
+        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)-273.16
+        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)-273.16
     enddo
 
     deallocate(daily_tmax_arr)
