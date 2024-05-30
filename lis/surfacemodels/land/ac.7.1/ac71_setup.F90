@@ -112,7 +112,19 @@ subroutine Ac71_setup()
                             SetTemperatureRecord, &
                             SetTmax,& 
                             SetTmin,&
-                            typeproject_typeprm
+                            SetTmaxRun,& 
+                            SetTminRun,&
+                            typeproject_typeprm,&
+                        GetCrop_DaysToGermination,&
+                        GetCrop_DaysToFlowering,&
+                        GetCrop_DaysToMaxRooting,&
+                        GetCrop_DaysToSenescence,&
+                        GetCrop_DaysToHarvest,&
+                        GetCrop_DaysToCCini,&
+                        GetCrop_DaysToFullCanopy,&
+                        GetCrop_DaysToFullCanopySF,&
+                        GetCrop_DaysToHIo
+
     use ac_project_input, only: ProjectInput 
     use ac_run, only:   GetalfaHI,&
                         GetalfaHIAdj,&
@@ -170,6 +182,7 @@ subroutine Ac71_setup()
                         SetRain,& 
                         SetTmax,& 
                         SetTmin
+                        
         use ac_kinds, only: intEnum, &
                             int32, &
                             int8, &
@@ -571,6 +584,15 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
 
                 ! Set AC71_struc after Initialization
+                AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetCrop_DaysToGermination()
+                AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetCrop_DaysToFlowering()
+                AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetCrop_DaysToMaxRooting()
+                AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetCrop_DaysToSenescence()
+                AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetCrop_DaysToHarvest()
+                AC71_struc(n)%ac71(t)%Crop_DaysToCCini = GetCrop_DaysToCCini()
+                AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopy = GetCrop_DaysToFullCanopy()
+                AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF = GetCrop_DaysToFullCanopySF()
+                AC71_struc(n)%ac71(t)%Crop_DaysToHIo = GetCrop_DaysToHIo()
                 AC71_struc(n)%ac71(t)%Bin = GetBin()
                 AC71_struc(n)%ac71(t)%Bout = GetBout()
                 AC71_struc(n)%ac71(t)%CCiActual = GetCCiActual()

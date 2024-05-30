@@ -3809,7 +3809,8 @@ subroutine GetSumGDDBeforeSimulation(SumGDDtillDay, SumGDDtillDayM1)
                                             TminDataSet_temp
 
     call SetSimulation_SumGDD(0._dp)
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and.&
+        (GetTemperatureFile() /= '(External)')) then
         totalname = GetTemperatureFilefull()
 
         if (FileExists(totalname)) then
@@ -3941,6 +3942,11 @@ subroutine GetSumGDDBeforeSimulation(SumGDDtillDay, SumGDDtillDayM1)
         if (SumGDDtillDayM1 < 0._dp) then
             SumGDDtillDayM1 = 0._dp
         end if
+    else if (GetTemperatureFile() == '(External)') then
+        ! Set SumGDD before simulation to zero
+        call SetSimulation_SumGDD(0._dp)
+        SumGDDtillDay = GetSimulation_SumGDD()
+        SumGDDtillDayM1 = 0._dp
     else
         SumGDDtillDay = GetSimulation_SumGDD()
         SumGDDtillDayM1 = SumGDDtillDay &
@@ -4819,7 +4825,8 @@ subroutine InitializeSimulationRunPart1()
     call SetSimulation_DelayedDays(0)
 
     ! 3. create temperature file covering crop cycle
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and.&
+        (GetTemperatureFile() /= '(External)')) then
         if (GetSimulation_ToDayNr() < GetCrop_DayN()) then
             call TemperatureFileCoveringCropPeriod(GetCrop_Day1(), &
                        GetSimulation_TodayNr())
@@ -5805,7 +5812,8 @@ subroutine CreateDailyClimFiles(FromSimDay, ToSimDay)
     end if
 
     ! 3. Temperature file
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and.&
+        (GetTemperatureFile() /= '(External)')) then
         totalname = GetTemperatureFilefull()
         if (FileExists(totalname)) then
             ! open file and find first day of simulation period
@@ -6007,7 +6015,8 @@ subroutine OpenClimFilesAndGetDataFirstDay(FirstDayNr)
         end if
     end if
     ! Temperature file
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and.&
+        (GetTemperatureFile() /= '(External)')) then
         totalname = trim(GetPathNameSimul())//'TempData.SIM'
         call fTempSIM_open(totalname, 'r')
         if (FirstDayNr == GetSimulation_FromDayNr()) then
@@ -7360,7 +7369,8 @@ subroutine ReadClimateNextDay()
             read(TempString, *) tmpRain
             call SetRain(tmpRain)
         end if
-        if (GetTemperatureFile() == '(None)') then
+        if ((GetTemperatureFile() == '(None)') .or.&
+            (GetTemperatureFile() == '(External)')) then
             call SetTmin(GetSimulParam_Tmin())
             call SetTmax(GetSimulParam_Tmax())
         else

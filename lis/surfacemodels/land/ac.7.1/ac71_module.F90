@@ -96,6 +96,10 @@ module Ac71_module
     integer        :: Crop_DaysToFlowering
     integer        :: Crop_DaysToSenescence
     integer        :: Crop_DaysToHarvest
+    integer        :: Crop_DaysToCCini
+    integer        :: Crop_DaysToFullCanopy
+    integer        :: Crop_DaysToFullCanopySF
+    integer        :: Crop_DaysToHIo
     logical  :: HarvestNow
     logical :: NoYear
     logical :: germ_reached, harv_reached
@@ -181,7 +185,7 @@ module Ac71_module
   end type ac71dec
 
   type, public :: ac71_trecord
-    real, pointer :: Tmax_record(:)
-    real, pointer :: Tmin_record(:)
+    real(sp), pointer :: Tmax_record(:)
+    real(sp), pointer :: Tmin_record(:)
   end type ac71_trecord
 end module Ac71_module

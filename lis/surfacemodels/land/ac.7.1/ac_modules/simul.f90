@@ -3259,7 +3259,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
     real(dp) :: pLeafLLAct , GDDCGCadjusted, GDDCDCadjusted, &
                 CCiSen, GDDtTemp, CCxSF, CGCGDDSF, CCxSFCD, &
                 RatDGDD, KsRED, CCibis
-    integer(int32) :: GDDtFinalCCx
+    integer(int32) :: GDDtFinalCCx, temp2, temp3, temp4
     logical :: WithBeta
     logical :: TheSenescenceON
 
@@ -3532,6 +3532,9 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                     ! calculate CC in late season
                     ! CCibis = CC which canopy declines
                     ! (soil fertility/salinity stress) further in late season
+                    temp2 = GetCrop_GDDaysToFullCanopySF()
+                    temp3 = GetCrop_GDDaysToSenescence()
+                    temp4 = GetCrop_GDDaysToFullCanopySF()
                     CCibis = CCxSF &
                             - (RatDGDD*GetSimulation_EffectStress_CDecline() &
                                                                    /100._dp) &
@@ -4640,6 +4643,9 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
     real(dp) :: Crop_pLeafAct_temp
     real(dp) :: Crop_pSenAct_temp
     real(dp) :: Crop_CCxAdjusted_temp
+    !
+    real(dp) :: temp1
+    integer(int32) :: temp2,temp3,temp4,temp5
 
     ! DetermineCCi
     if ((VirtualTimeCC < GetCrop_DaysToGermination()) &
@@ -4898,6 +4904,11 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                     ! calculate CC in late season
                     ! CCibis = CC which canopy declines
                     ! (soil fertility/salinity stress) further in late season
+                    temp1 = GetSimulation_EffectStress_CDecline()
+                    temp2 = GetSimulation_DelayedDays()
+                    temp3 = GetCrop_DaysToFullCanopySF()
+                    temp4 = GetCrop_DaysToSenescence()
+                    temp5 = GetCrop_DaysToFullCanopySF()
                     CCibis = CCxSF - (GetSimulation_EffectStress_CDecline() &
                                                                   /100._dp) &
                             * (exp(2._dp * log( &
