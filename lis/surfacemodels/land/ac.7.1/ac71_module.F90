@@ -154,6 +154,8 @@ module Ac71_module
     real :: StressLeaf
     real :: StressSenescence
     real :: SumGDDcuts
+    real :: SumGDD
+    real :: SumGDDprev
     real :: SumKci
     real :: SumKcTop
     real :: SumKcTopStress

@@ -231,6 +231,7 @@ subroutine Ac71_main(n)
                     GetStressTot,&
                     GetSumGDD,&
                     GetSumGDDcuts,&
+                    GetSumGDDPrev,&
                     GetSumInterval,&
                     GetSumKcTop,&
                     GetSumKcTopStress,&
@@ -324,6 +325,10 @@ subroutine Ac71_main(n)
     integer              :: daynr, todaynr, iproject, nprojects
     logical              :: ListProjectFileExist, phenological_stages_ensemble
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
+    integer              :: Crop_DaysToGermination, Crop_DaysToMaxRooting, Crop_DaysToFlowering
+    integer              :: Crop_DaysToHarvest, Crop_DaysTosenescence, Crop_DaysToCCini
+    integer              :: Crop_DaysToFullCanopy, Crop_DaysToFullCanopySF, Crop_DaysToHIo
+    integer(int32) :: temp1    
 
     !LB AC71
 
@@ -348,7 +353,8 @@ subroutine Ac71_main(n)
     ! check Ac71 alarm. If alarm is ring, run model.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
-        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.(AC71_struc(n)%GDD_Mode.eq.1)) then
+        !if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.(AC71_struc(n)%GDD_Mode.eq.1)) then
+        if (AC71_struc(n)%ac71(1)%InitializeRun.eq.1) then
             call ac71_read_Trecord(n)
         endif
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -481,6 +487,8 @@ subroutine Ac71_main(n)
             call SetStressSFadjNEW(int(AC71_struc(n)%ac71(t)%StressSFadjNEW,kind=int32))
             call SetStressTot(AC71_struc(n)%ac71(t)%StressTot)
             call SetSumGDDcuts(REAL(AC71_struc(n)%ac71(t)%SumGDDcuts, 8))
+            call SetSumGDD(REAL(AC71_struc(n)%ac71(t)%SumGDD, 8))
+            call SetSumGDDPrev(REAL(AC71_struc(n)%ac71(t)%SumGDDPrev, 8))
             call SetSumInterval(AC71_struc(n)%ac71(t)%SumInterval)
             call SetSumKci(REAL(AC71_struc(n)%ac71(t)%SumKci, 8))
             call SetSumKcTopStress(REAL(AC71_struc(n)%ac71(t)%SumKcTopStress, 8))
@@ -622,7 +630,7 @@ subroutine Ac71_main(n)
 
             ! Reset Crop_DaysTo* to allow that members reach stages at different days
             phenological_stages_ensemble = .false.
-        if (phenological_stages_ensemble) then
+        !if (phenological_stages_ensemble) then
             if (GetDayNri() == GetCrop_Day1()) then
                 call setCrop_DayN(GetSimulation_ToDayNr())
                 AC71_struc(n)%ac71(t)%germ_reached = .false.
@@ -632,12 +640,13 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%Sene_reached = .false.
                 ! Initialize to end of the year but with one day difference 
                 ! due to internal AC if statements
-                AC71_struc(n)%ac71(t)%Crop_DaysToGermination = 361
-                AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = 362
-                AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = 363
-                AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = 364
-                AC71_struc(n)%ac71(t)%Crop_DaysToHarvest= 365
+                !AC71_struc(n)%ac71(t)%Crop_DaysToGermination = 361
+                !AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = 362
+                !AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = 363
+                !AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = 364
+                !AC71_struc(n)%ac71(t)%Crop_DaysToHarvest= 365
             end if
+        !end if
             ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
             call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
                     GetTmax(), GetSimulParam_GDDMethod()))
@@ -646,6 +655,7 @@ subroutine Ac71_main(n)
                 call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
                     GetGDDayi())
             end if
+        if (phenological_stages_ensemble) then
             !find calendar days for crop stages
             if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC71_struc(n)%ac71(t)%germ_reached)) then ! from sow
                 AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetDayNri() - GetCrop_Day1()
@@ -668,7 +678,18 @@ subroutine Ac71_main(n)
                AC71_struc(n)%ac71(t)%harv_reached = .true.
             end if
         end if
-
+           
+           Crop_DaysToGermination = GetCrop_DaysToGermination()
+           Crop_DaysToMaxRooting =         GetCrop_DaysToMaxRooting()
+           Crop_DaysToFlowering =        GetCrop_DaysToFlowering()
+           Crop_DaysToHarvest =        GetCrop_DaysToHarvest()
+           Crop_DaysTosenescence =        GetCrop_DaysTosenescence()
+           Crop_DaysToCCini =         GetCrop_DaysToCCini()
+           Crop_DaysToFullCanopy =         GetCrop_DaysToFullCanopy()
+           Crop_DaysToFullCanopySF =         GetCrop_DaysToFullCanopySF()
+           Crop_DaysToHIo =         GetCrop_DaysToHIo()
+           temp1 = GetCrop_GDDaysToGermination()
+           temp1 = GetCrop_GDDaysToSenescence()
             ! Run AC
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
             call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
@@ -751,6 +772,8 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%StressSFadjNEW = GetStressSFadjNEW()
             AC71_struc(n)%ac71(t)%StressTot = GetStressTot()
             AC71_struc(n)%ac71(t)%SumGDDcuts = GetSumGDDcuts()
+            AC71_struc(n)%ac71(t)%SumGDD = GetSumGDD()
+            AC71_struc(n)%ac71(t)%SumGDDPrev = GetSumGDDPrev()
             AC71_struc(n)%ac71(t)%SumInterval = GetSumInterval()
             AC71_struc(n)%ac71(t)%SumKci = GetSumKci()
             AC71_struc(n)%ac71(t)%SumKcTop = GetSumKcTop()

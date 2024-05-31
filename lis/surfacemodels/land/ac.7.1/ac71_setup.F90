@@ -123,7 +123,8 @@ subroutine Ac71_setup()
                         GetCrop_DaysToCCini,&
                         GetCrop_DaysToFullCanopy,&
                         GetCrop_DaysToFullCanopySF,&
-                        GetCrop_DaysToHIo
+                        GetCrop_DaysToHIo,&
+                        GetCrop_GDDaysToGermination
 
     use ac_project_input, only: ProjectInput 
     use ac_run, only:   GetalfaHI,&
@@ -166,6 +167,8 @@ subroutine Ac71_setup()
                         GetStressSFadjNEW,&
                         GetStressTot,&
                         GetSumGDDcuts,&
+                        GetSumGDD,&
+                        GetSumGDDPrev,&
                         GetSumInterval,&
                         GetSumKci,&
                         GetSumKcTop,&
@@ -229,7 +232,7 @@ subroutine Ac71_setup()
 
         logical ::  ProgramParametersAvailable 
         integer(int32) :: TotalSimRuns
-
+        integer(int32) :: temp1
         character(256) :: irr_dir, man_dir
 
         mtype = LIS_rc%lsm_index
@@ -389,9 +392,9 @@ subroutine Ac71_setup()
             AC71_struc(n)%Sim_AnnualEndDay = da2
 
             ! Read annual temperature record if GDD_Mode
-            if(AC71_struc(n)%GDD_Mode.eq.1) then 
+            !if(AC71_struc(n)%GDD_Mode.eq.1) then 
                 call ac71_read_Trecord(n)
-            endif
+            !endif
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
@@ -657,6 +660,8 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%StressSenescence = GetStressSenescence ()
                 AC71_struc(n)%ac71(t)%StressTot = GetStressTot()
                 AC71_struc(n)%ac71(t)%SumGDDcuts = GetSumGDDcuts()
+                AC71_struc(n)%ac71(t)%SumGDD = GetSumGDD()
+                AC71_struc(n)%ac71(t)%SumGDDPrev = GetSumGDDPrev()
                 AC71_struc(n)%ac71(t)%SumInterval = GetSumInterval()
                 AC71_struc(n)%ac71(t)%SumKcTop = GetSumKcTop()
                 AC71_struc(n)%ac71(t)%SumKcTopStress = GetSumKcTopStress()
@@ -675,6 +680,7 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%alfaHI = GetalfaHI()
                 AC71_struc(n)%ac71(t)%alfaHIAdj = GetalfaHIAdj()
                 AC71_struc(n)%ac71(t)%crop = GetCrop()
+                temp1 = GetCrop_GDDaysToGermination()
                 AC71_struc(n)%ac71(t)%daynri = GetDayNri()
 
                 if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
