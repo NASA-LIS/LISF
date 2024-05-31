@@ -352,9 +352,9 @@ contains
           ! redundant alerts.
           if (.not. USAF_is_gauge(network_tmp, n)) then
              do j = 1, MAX_NEW_NETWORKS
-                if (trim(new_networks(j)) == trim(network_tmp)) then
+                if (new_networks(j) == network_tmp) then
                    exit ! Out of immediate do loop
-                else if (trim(new_networks(j)) == "NULL") then
+                else if (new_networks(j) == "NULL") then
                    new_networks(j) = network_tmp
                    write(LIS_logunit,*) &
                         '[WARN] Found unrecognized network ', &

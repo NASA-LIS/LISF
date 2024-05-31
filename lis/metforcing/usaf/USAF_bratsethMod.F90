@@ -4310,7 +4310,7 @@ contains
 
      ! General case:  Check list from LIS config file
      do j = 1, agrmet_struc(n)%num_gage_networks
-        if (trim(net) == trim(agrmet_struc(n)%gage_networks(j))) then
+        if (net == agrmet_struc(n)%gage_networks(j)) then
            answer = .true.
            exit
         end if
