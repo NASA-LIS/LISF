@@ -138,7 +138,7 @@ subroutine ac71_read_Trecord(n)
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
     real, allocatable     :: subdaily_arr(:,:)
     type(lisrcdec)        :: LIS_rc_saved
-    integer               :: i, j, p, status, met_ts, ierr
+    integer               :: i, j, p, status, met_ts, ierr,m
     integer               :: yr_start
 
     !Note: this code assumes that the forcing data (tmp) has a length=ntiles
@@ -155,8 +155,12 @@ subroutine ac71_read_Trecord(n)
 
     ! Save current LIS_rc
     LIS_rc_saved = LIS_rc
-    ! Rst for forcings
-    LIS_rc%rstflag = 1
+    ! Re-initialize met forcings
+    do m=1,LIS_rc%nmetforc
+        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
+        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+    enddo
+    LIS_rc%rstflag(n) = 1
     ! Make sure it is the right met time step
     call LIS_update_clock(LIS_rc%ts)
 
@@ -220,7 +224,12 @@ subroutine ac71_read_Trecord(n)
     call LIS_timemgr_set(LIS_rc,LIS_rc_saved%yr,LIS_rc_saved%mo,LIS_rc_saved%da,&
                         LIS_rc_saved%hr,LIS_rc_saved%mn,LIS_rc_saved%ss,LIS_rc_saved%ms,&
                         0.0)
-    LIS_rc%rstflag = 1 ! For met forcings
+    ! Re-initialize met forcings
+    do m=1,LIS_rc%nmetforc
+        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
+        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+    enddo
+    LIS_rc%rstflag(n) = 1 ! For met forcings
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
 end subroutine ac71_read_Trecord
 
