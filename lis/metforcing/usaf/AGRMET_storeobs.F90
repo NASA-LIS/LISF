@@ -255,9 +255,9 @@ subroutine AGRMET_storeobs(nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
      ! alert. Keep track of unknown networks to avoid redundant alerts.
      if (.not. USAF_is_gauge(network(irecord))) then
         do i = 1, MAX_NEW_NETWORKS
-           if (trim(new_networks(i)) == trim(network(irecord))) then
+           if (new_networks(i) == network(irecord)) then
               cycle RECORD
-           else if (trim(new_networks(i)) == "NULL") then
+           else if (new_networks(i) == "NULL") then
               new_networks(i) = network(irecord)
               write(LIS_logunit,*)'[WARN] Found unrecognized network ', &
                    trim(network(irecord))

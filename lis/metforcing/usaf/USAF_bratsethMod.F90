@@ -4076,17 +4076,17 @@ contains
       character(len=10), intent(in) :: net
       logical :: answer
       answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "HADS") answer = .true.  ! EMK 20240523
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "NWSLI") answer = .true. ! EMK 20240523
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
+      if (net .eq. "AMIL") answer = .true.
+      if (net .eq. "CANA") answer = .true.
+      if (net .eq. "FAA") answer = .true.
+      if (net .eq. "HADS") answer = .true.  ! EMK 20240523
+      if (net .eq. "ICAO") answer = .true.
+      if (net .eq. "NWSLI") answer = .true. ! EMK 20240523
+      if (net .eq. "WMO") answer = .true.
+      if (net .eq. "MOBL") answer = .true.
+      if (net .eq. "SUPERGAGE") answer = .true.
       ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
+      if (net .eq. "CDMS") answer = .true.
       USAF_is_gauge = answer
    end function USAF_is_gauge
 
