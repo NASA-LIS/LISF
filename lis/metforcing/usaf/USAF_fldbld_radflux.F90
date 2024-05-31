@@ -22,11 +22,11 @@
 ! 28 May 2024  Generated reader for radiation fluxese...K. Arsenault/SAIC
 !
 ! !INTERFACE:    
-subroutine USAF_fldbld_radflux(n,order,julhr)
+subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
 
 ! !USES: 
   use AGRMET_forcingMod, only : agrmet_struc
-  use LIS_coreMod,       only : LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort,&
                                 LIS_alert
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -40,6 +40,8 @@ subroutine USAF_fldbld_radflux(n,order,julhr)
   integer, intent(in)    :: n
   integer, intent(in)    :: order
   integer, intent(inout) :: julhr
+  real, intent(out)      :: swdown(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  real, intent(out)      :: longwv(LIS_rc%lnc(n), LIS_rc%lnr(n))
 !
 ! !DESCRIPTION: 
 !  This routine calls the appropriate first guess forcing based on
@@ -69,6 +71,7 @@ subroutine USAF_fldbld_radflux(n,order,julhr)
   integer :: rc
   character(len=255) :: message(20)
   character(len=10) :: yyyymmddhh
+  integer :: fc_hr
   integer :: ierr
 
   ! Sanity check
@@ -85,7 +88,11 @@ subroutine USAF_fldbld_radflux(n,order,julhr)
   ! Try fetching GALWEM, if requested
   ierr = 0
   if ( agrmet_struc(n)%first_guess_source == 'GALWEM' ) then
-!     call USAF_fldbld_radflux_galwem(n,order,julhr,rc)
+
+     fc_hr = LIS_rc%hr  ! KRA - TEMPORARY PLACEHOLDER FOR FC_HR ...
+     write(LIS_logunit,*) '[INFO] NWP radiation fc_hr: ',fc_hr
+
+     call USAF_fldbld_radflux_galwem(n,julhr,fc_hr,swdown,longwv,rc)
      ierr = rc
   end if
 

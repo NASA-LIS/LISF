@@ -245,11 +245,12 @@ subroutine readagrmetforcing(n,findex, order)
   data THRES /12600, 12300, 12000, 11700, 11400/
 
   TRACE_ENTER("agrmet_readforc")
-  allocate(longwv(LIS_rc%lnc(n), LIS_rc%lnr(n)))
   allocate(varfield(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(tair(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(psurf(LIS_rc%lnc(n), LIS_rc%lnr(n)))
   allocate(rlh(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+  allocate(longwv(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+  allocate(swdown(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
   allocate(coszen_ps(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
   allocate(coszen(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -355,17 +356,24 @@ subroutine readagrmetforcing(n,findex, order)
 
      ! Downward Longwave + Shortwave Radiation, read in from GALWEM / GFS:
      if ( agrmet_struc(n)%compute_radiation == 'GALWEM_RAD' ) then
+
         call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
         julend = istart+6
-        call USAF_fldbld_radflux(n,order,julend)
+
         if(LIS_masterproc) then
            print *, "READ IN GALWEM RADIATION FIELDS -- ", yr1, mo1, da1, hr1
            print *, "order :: ",order
            print *, "istart, julend :: ",istart,julend
- 
-           call LIS_endrun
-
+!           call LIS_endrun
         endif
+
+        ! Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
+        longwv = 200.   ! KRA - Just testing a sample value ...
+        swdown = 100.   ! KRA - Just testing a sample value ...
+
+        ! Call to the NWP Radiation Flux main routines:
+        call USAF_fldbld_radflux(n,order,julend,swdown,longwv)
+
      endif
 
      ! Read in cloud amount, type or COD information:
@@ -572,12 +580,11 @@ subroutine readagrmetforcing(n,findex, order)
         endwhere
      endif
 
-     allocate(swdown(LIS_rc%lnc(n),LIS_rc%lnr(n)))
-
      ! Downward Shortwave Radiation - Calculation from cloud data:
      if ( agrmet_struc(n)%compute_radiation .ne. 'GALWEM_RAD' ) then
        do r=1,LIS_rc%lnr(n)
          do c=1,LIS_rc%lnc(n)
+
            if ( LIS_domain(n)%gindex(c,r) /= -1 ) then
               t = LIS_domain(n)%gindex(c,r)
               if(r1(c,r).eq.LIS_rc%udef) r1(c,r) = 0.0
@@ -594,6 +601,7 @@ subroutine readagrmetforcing(n,findex, order)
            else
               swdown(c,r) = LIS_rc%udef
            endif
+
          enddo
        enddo
      endif
