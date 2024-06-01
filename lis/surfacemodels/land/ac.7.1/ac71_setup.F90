@@ -52,6 +52,7 @@ subroutine Ac71_setup()
                             GetIrriECw,&
                             GetIrrigation,&
                             GetManagement,&
+                            GetNrCompartments,&
                             GetRootZoneWC_Actual,&
                             GetRootZoneWC_FC,&
                             GetRootZoneWC_Leaf,&
@@ -611,6 +612,7 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%IrriInfoRecord2 = GetIrriInfoRecord2()
                 AC71_struc(n)%ac71(t)%Irrigation = GetIrrigation()
                 AC71_struc(n)%ac71(t)%Management = GetManagement()
+                AC71_struc(n)%ac71(t)%NrCompartments = GetNrCompartments()
                 AC71_struc(n)%ac71(t)%NoMoreCrop = GetNoMoreCrop()
                 AC71_struc(n)%ac71(t)%PreviousStressLevel = GetPreviousStressLevel()
                 AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
