@@ -116,7 +116,7 @@ subroutine ac71_read_Trecord(n)
     use ESMF
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
     use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
-                                  LIS_update_clock
+                                  LIS_update_clock, LIS_is_last_step
     use LIS_coreMod,        only: LIS_rc
     use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
@@ -230,6 +230,12 @@ subroutine ac71_read_Trecord(n)
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
     LIS_rc%rstflag(n) = 1 ! For met forcings
+
+    ! Check if end of LIS run
+    if (LIS_is_last_step(LIS_rc)) then
+        LIS_rc%endtime = 1
+    endif
+
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
 end subroutine ac71_read_Trecord
 
