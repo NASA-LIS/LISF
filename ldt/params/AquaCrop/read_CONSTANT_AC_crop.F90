@@ -20,7 +20,8 @@ subroutine read_CONSTANT_AC_crop(n, array)
 
 ! !USES:
   use ESMF
-  use LDT_coreMod,  only : LDT_rc, LDT_config
+  use LDT_coreMod,      only : LDT_rc, LDT_config
+  use LDT_paramDataMod, only: LDT_LSMparam_struc
   use LDT_logMod
 
   implicit none
@@ -31,9 +32,10 @@ subroutine read_CONSTANT_AC_crop(n, array)
 ! !LOCALS:
   integer        :: ftn, ios1
   integer        :: i, k, rc, num_types, crop_index
+  integer        :: r,c
   character(100) :: croptype
   character(200) :: dir
-  character(100) :: cropinv_file
+  character(200) :: cropinv_file
   character(100) :: header1
   character(100) :: read_cropname
   character(100) :: read_fullname
@@ -53,14 +55,14 @@ subroutine read_CONSTANT_AC_crop(n, array)
 ! ____________________________
 
 !- Finds chosen crop type
-  call ESMF_ConfigFindLabel(LDT_config,"AC crop type:",rc=rc)
+  call ESMF_ConfigFindLabel(LDT_config,"AquaCrop crop type:",rc=rc)
   call ESMF_ConfigGetAttribute(LDT_Config, croptype, rc=rc)
-  call LDT_verify(rc,"AC crop type: not defined")
+  call LDT_verify(rc,"AquaCrop crop type: not defined")
 
 !- Finds crop inventory
-  call ESMF_ConfigFindLabel(LDT_config,"AC crop library directory:",rc=rc)
+  call ESMF_ConfigFindLabel(LDT_config,"AquaCrop crop library directory:",rc=rc)
   call ESMF_ConfigGetAttribute(LDT_Config, dir,rc=rc)
-  call LDT_verify(rc,"AC crop library directory: not defined")
+  call LDT_verify(rc,"AquaCrop crop library directory: not defined")
 
    cropinv_file = trim(dir)//"AC_Crop.Inventory"
 
@@ -71,6 +73,7 @@ subroutine read_CONSTANT_AC_crop(n, array)
    ftn = LDT_getNextUnitNumber()
    open(ftn, file=cropinv_file, status='old', form='formatted',&
         iostat=ios1)
+   call LDT_verify(ios1,"AquaCrop crop inventory does not exist")
 
 !- Read crop inventory file:
    read(ftn,fmt=*) num_types
@@ -84,7 +87,17 @@ subroutine read_CONSTANT_AC_crop(n, array)
    end do
    
    call LDT_releaseUnitNumber(ftn)
-  array = crop_index    ! Set all values to chosen crop type
+
+    ! fill the array with the crop type in case not masked
+    do r=1,LDT_rc%lnr(n)
+        do c=1,LDT_rc%lnc(n)
+          if (LDT_LSMparam_struc(n)%landmask%value(c,r,1).gt.0) then
+            array(c,r) = crop_index
+          else
+            array(c,r) = LDT_rc%udef
+          endif
+        enddo
+    enddo
 
   write(LDT_logunit, *) "[INFO] Setting a CONSTANT crop type value ..."
   

@@ -39,7 +39,7 @@ subroutine Ac71_readcrd()
     character*6  :: str_i
     integer :: ios
     integer, allocatable :: nids(:)
-    character*32 :: soil_scheme_name
+    character*32 :: soil_scheme_name,str
 
     allocate(nids(LIS_rc%nnest))
 
@@ -114,19 +114,6 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc, "AquaCrop.7.1 max no of compartments: not defined")
     enddo
 
-    ! number of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 number of soil layers:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%NrSoilLayers, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 number of soil layers: not defined")
-    enddo
- 
-    ! allocate memory for sldpth using nsoil as dimension
-    do n=1, LIS_rc%nnest
-        allocate(AC71_struc(n)%Thickness(AC71_struc(n)%NrSoilLayers))
-        allocate(AC71_struc(n)%init_smc(AC71_struc(n)%NrSoilLayers))
-    enddo
-
     ! PathNameSimul
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 input path:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -154,8 +141,6 @@ subroutine Ac71_readcrd()
             AC71_struc(n)%Management_Filename = '(None)'
         endif
     enddo
-
-
  
     ! AquaCrop model soil parameter table
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil parameter table:", rc = rc)
@@ -176,6 +161,25 @@ subroutine Ac71_readcrd()
           call LIS_endrun()
         endif 
     enddo
+
+    ! Read Nrsoil layers from LDT
+    do n=1, LIS_rc%nnest
+        ios = nf90_get_att(nids(n), NF90_GLOBAL, 'SOIL_LAYERS', AC71_struc(n)%NrSoilLayers)
+        call LIS_verify(ios,'Error in nf90_get_att in ac71_readcrd')
+        write(LIS_logunit,*)"[INFO] Number of soil layers from LDT: ",AC71_struc(n)%NrSoilLayers
+        allocate(AC71_struc(n)%Thickness(AC71_struc(n)%NrSoilLayers))
+        allocate(AC71_struc(n)%init_smc(AC71_struc(n)%NrSoilLayers))
+        
+        ! Get thickness of soil layers from LDT
+        do i=1, AC71_struc(n)%NrSoilLayers
+            write (str, '(i0)') i
+            ios = nf90_get_att(nids(n), NF90_GLOBAL, "THICKNESS_LAYER_"//trim(str), &
+                                AC71_struc(n)%Thickness(i))
+            call LIS_verify(ios,'Error in nf90_get_att in ac71_readcrd')
+            write(LIS_logunit,*)"[INFO] AC71 THICKNESS_LAYER_"//trim(str), &
+                                AC71_struc(n)%Thickness(i)
+        enddo
+    enddo
  
     do n=1, LIS_rc%nnest
       AC71_struc(n)%dt = AC71_struc(n)%ts
@@ -189,15 +193,6 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc, &
              "AquaCrop.7.1 reference height of forcings: "//&
              "not defined")
-    enddo
- 
-    ! thickness of soil layers
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 soil layer thickness:", rc = rc)
-    do n=1, LIS_rc%nnest
-        do i = 1, AC71_struc(n)%NrSoilLayers
-            call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%Thickness(i), rc=rc)
-        call LIS_verify(rc, 'AquaCrop.7.1 soil layer thickness: not defined')
-enddo
     enddo
 
     do n=1,LIS_rc%nnest
