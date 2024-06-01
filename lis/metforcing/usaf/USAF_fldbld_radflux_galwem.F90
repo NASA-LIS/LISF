@@ -44,8 +44,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 
 !
 ! !DESCRIPTION:
-!  This routine interpolates the GALWEM radiation flux
-!  data to the USAF/AGRMET grid.
+!  This routine reads in the GALWEM downward short- 
+!   and long-wave radiation flux data and interpolates 
+!   to the USAF/AGRMET grid.
 !
 ! The arguments and variables are:
 !  \begin{description}
@@ -53,8 +54,10 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 !    index of the nest
 !  \item[fc\_hr]
 !    forecast hour or the difference between reference and valid time
-!  \item[fg\_data]
-!   array of galwem rain rate data
+!  \item[fg\_swdata]
+!    array of galwem shortwave radiation data
+!  \item[fg\_lwdata]
+!    array of galwem longwave radiation data
 !
 !  \item[ftn]
 !    file unit number
@@ -73,18 +76,18 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 !  \item[gridres]
 !    the resolution, in degrees, of the first
 !    guess grid
-!  \item[fg\_ewdown]
-!   SWdown radiation flux data to be interpolated to lis grid
+!  \item[fg\_swdown]
+!    SWdown radiation flux data to be interpolated to lis grid
 !  \item[fg\_lwdown]
-!   LWdown radiation flux data to be interpolated to lis grid
+!    LWdown radiation flux data to be interpolated to lis grid
 !  \item[fg\_swdown1]
-!   3 hour forecast swdown radiation flux data
+!    3 hour forecast swdown radiation flux data
 !  \item[fg\_swdown2]
-!   6 hour forecast swdown radiation flux data
+!    6 hour forecast swdown radiation flux data
 !  \item[fg\_lwdown1]
-!   3 hour forecast lwdown radiation flux data
+!    3 hour forecast lwdown radiation flux data
 !  \item[fg\_lwdown2]
-!   6 hour forecast lwdown radiation flux data
+!    6 hour forecast lwdown radiation flux data
 !  \item[alert\_number]
 !    number of alerts that occur in the program
 !  \item[ifguess]
@@ -107,13 +110,13 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 !  \item[file\_julhr]
 !    julian hour used to determine names of forecast files from previous cycles
 !  \item[getsixhr]
-!   indicates whether to get data from the 6 hour forecast file
+!    indicates whether to get data from the 6 hour forecast file
 !  \item[dataDate]
-!   date of values in the GRIB message
+!    date of values in the GRIB message
 !  \item[dataTime]
-!   time of values in the GRIB message
+!    time of values in the GRIB message
 !  \item[gtype]
-!   type of grid determined by querying GRIB message
+!    type of grid determined by querying GRIB message
 !  \end{description}
 !
 !  The routines invoked are:
@@ -124,11 +127,11 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 !    generates the first guess GALWEM filename
 !  \item[AGRMET\_fldbld\_read\_radflux\_galwem]
 !   (\ref{USAF_fldbld_read_radflux_galwem}) \newline
-!   read GALWEM radiation flux data in grib format
+!    read GALWEM radiation flux data in grib format
 !  \item[interp\_galwem\_first\_guess](\ref{interp_galwem_first_guess}) \newline
-!   interpolate first guess data to the USAF/AGRMET grid
+!    interpolate first guess data to the USAF/AGRMET grid
 !  \item[LIS\_abort](\ref{LIS_abort}) \newline
-!   abort in case of error
+!    abort in case of error
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
@@ -154,7 +157,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
   integer                 :: getsixhr
   integer                 :: dataDate, dataTime
   character*100           :: gtype
-  logical :: found_inq
+  logical                 :: found_inq
 ! ---------------------------------------------------
 
   rc = 0
@@ -164,11 +167,11 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
   call LIS_julhr_date(julhr,yr1,mo1,da1,hr1)
   file_julhr = julhr
 
-!     ------------------------------------------------------------------
-!     Need to process the current and previous 6 hour instances
+!    ------------------------------------------------------------------
+!    Need to process the current and previous 6 hour instances
 !     Search for an analysis or forecast file for upto 24 hours with
 !     the needed valid time
-!     ------------------------------------------------------------------
+!    ------------------------------------------------------------------
 
   do while( ((.not.found) .or. (.not.found2)) .and. (fc_hr <= 12))
      found = .false.
@@ -210,7 +213,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
      ! using a simple inquire statement.  This avoids ECCODES/GRIB_API
      ! writing error messages to stdout/stderr, which may lead to runtime
      ! problems.
-     !call grib_open_file(ftn,trim(avnfile),'r',ierr)
+
      inquire(file=trim(avnfile),exist=found_inq)
      if (found_inq) then
         call grib_open_file(ftn,trim(avnfile),'r',ierr)
@@ -218,7 +221,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
         ierr = 1
      end if
      if ( ierr /= 0 ) then
-        write(LIS_logunit,*) '[WARN] Failed to open - ',trim(avnfile)
+        write(LIS_logunit,*) '[WARN] (1) Failed to open first guess - ',trim(avnfile)
      else
    !    ------------------------------------------------------------------
    !    read in the first grib record, unpack the header and extract
@@ -226,7 +229,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
    !    ------------------------------------------------------------------
         call grib_new_from_file(ftn,igrib,ierr)
         if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Failed to read - '//trim(avnfile)
+           write(LIS_logunit,*) '[WARN] (1) Failed file read check - '//trim(avnfile)
         endif
 
         call grib_get(igrib,'centre',center,ierr)
@@ -276,9 +279,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
            found = .TRUE.
            if ( gtype /= "regular_ll" ) then
               message(1) = 'program: LIS'
-              message(2) = '  Subroutine: agrmet_sfcalc'
+              message(2) = '  Subroutine: USAF_fldbld_radflux_galwem'
               message(3) = '  First guess source is not a lat/lon grid'
-              message(4) = '  agrmet_sfcalc expects lat/lon data'
+              message(4) = '  USAF_fldbld_radflux_galwem expects lat/lon data'
               call lis_abort(message)
            endif
         endif
@@ -287,9 +290,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
         call grib_close_file(ftn)
      endif
 #else
-  write(LIS_logunit,*) 'ERR: USAF_fldbld_radflux_galwem requires GRIB-API'
-  write(LIS_logunit,*) 'ERR: please recompile LIS'
-  call LIS_endrun
+    write(LIS_logunit,*) '[ERR]: USAF_fldbld_radflux_galwem requires GRIB-API'
+    write(LIS_logunit,*) '[ERR]: please recompile LIS'
+    call LIS_endrun
 #endif
 
 !    -------------------------------------------------------------------
@@ -311,7 +314,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
            ierr = 1
         end if
         if(ierr.ne.0) then
-           write(LIS_logunit,*) '[WARN] Failed to open - ', trim(avnfile2)
+           write(LIS_logunit,*) '[WARN] (2) Failed to open 6-hr fcst file - ', trim(avnfile2)
         else
    !     ------------------------------------------------------------------
    !     read in the first grib record, unpack the header and extract
@@ -354,9 +357,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
               found2 = .TRUE.
               if ( gtype /= "regular_ll" ) then
                  message(1) = 'program: LIS'
-                 message(2) = '  Subroutine: agrmet_sfcalc'
+                 message(2) = '  Subroutine: USAF_fldbld_radflux_galwem'
                  message(3) = '  First guess source is not a lat/lon grid'
-                 message(4) = '  agrmet_sfcalc expects lat/lon data'
+                 message(4) = '  USAF_fldbld_radflux_galwem expects lat/lon data'
                  call lis_abort(message)
               endif
            endif
@@ -367,19 +370,17 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 #endif
      endif
 
-
 !    ------------------------------------------------------------------
 !    If the correct valid time is not found:
 !       Increment forecast hour by 6.
 !       Decrement file_julhr by 6 and get the new filename elements.
 !    ------------------------------------------------------------------
-
      if ((.not. found).or.(.not. found2)) then
         fc_hr = fc_hr + 6
         file_julhr = file_julhr - 6
         call LIS_julhr_date(file_julhr,yr1,mo1,da1,hr1)
      endif
-  enddo
+  enddo   ! End while loop
 
 
    if ((found) .and. (found2)) then
@@ -394,9 +395,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
         write(LIS_logunit,*)'- UNKNOWN SOURCE FOR FIRST GUESS DATA'
      end if
 
-!     ------------------------------------------------------------------
-!       allocate first guess grid-specific variables.
-!     ------------------------------------------------------------------
+!    ------------------------------------------------------------------
+!      allocate first guess grid-specific variables.
+!    ------------------------------------------------------------------
      allocate ( fg_swdown1 (ifguess, jfguess) )
      allocate ( fg_lwdown1 (ifguess, jfguess) )
 
@@ -404,9 +405,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
      if (getsixhr.eq.1) allocate ( fg_lwdown2 (ifguess, jfguess) )
 
 
-!     ------------------------------------------------------------------
-!         read in first guess data for this julian hour.
-!     ------------------------------------------------------------------
+!    ------------------------------------------------------------------
+!       read in first guess data for this julian hour.
+!    ------------------------------------------------------------------
      alert_number = 0
 
      call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
@@ -441,6 +442,7 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
         fg_lwdown=0
      endwhere
 
+     ! Spatially interpolate native grid to target domain grid:
      call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
                                     fg_swdown, fg_swdata)
 
@@ -452,11 +454,11 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
      if (getsixhr.eq.1) deallocate ( fg_swdown2, fg_lwdown2 )
 
   else
-        write(LIS_logunit,*)'- ** GALWEM RADIATION FLUX data not available **'
+        write(LIS_logunit,*)'[WARN] ** GALWEM RADIATION FLUX data not available **'
 
         message(1) = 'Program:  LIS'
-        message(2) = '  Routine:  fldbld_radflux.'
-        message(3) = '  galwem Radiation flux data not available, ' // &
+        message(2) = '  Routine: USAF_fldbld_radflux_galwem.'
+        message(3) = '  galwem radiation flux data not available, ' // &
                      'possible degradation.'
         alert_number = alert_number + 1
         if(LIS_masterproc) then
@@ -550,7 +552,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
 !
 !EOP
   character*9                   :: cstat
-  character*255                 :: message     ( 20 )
+  character*255                 :: message  ( 20 )
   integer                       :: count_swdown
   integer                       :: count_lwdown
   integer                       :: i
@@ -561,16 +563,14 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
   integer                       :: ftn, igrib, nvars
   integer                       :: param_disc_val, param_cat_val, &
                                    param_num_val, forecasttime_val
-  real,           allocatable   :: dum1d       ( : )
-  logical :: found_inq
+  real,           allocatable   :: dum1d    ( : )
+  logical                       :: found_inq
 
-!     ------------------------------------------------------------------
-!     executable code begins here ...
-!     ------------------------------------------------------------------
+! ------------------------------------------------------------------
 
-!     ------------------------------------------------------------------
-!     read in grib file.
-!     ------------------------------------------------------------------
+! ------------------------------------------------------------------
+!   read in grib file.
+! ------------------------------------------------------------------
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
   ! using a simple inquire statement.  This avoids ECCODES/GRIB_API
@@ -583,11 +583,11 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
   else
      ierr = 0
   end if
-  call LIS_verify(ierr,'[WARN] Failed to open - '//trim(fg_filename))
+  call LIS_verify(ierr,'[WARN] FILE NOT FOUND - '//trim(fg_filename))
 
 #if (defined USE_GRIBAPI)
   call grib_open_file(ftn,trim(fg_filename),'r',ierr)
-  call LIS_verify(ierr,'[WARN] Failed to open - '//trim(fg_filename))
+  call LIS_verify(ierr,'[WARN] (3) Failed to open in read routine - '//trim(fg_filename))
 
   if ( ierr == 0 ) then
      allocate ( dum1d   (ifguess*jfguess) )
@@ -625,7 +625,8 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
 
         !  SW Down Radiation flux:
         if ( param_disc_val == 0 .and. param_cat_val    == 4 .and. &
-             param_num_val  == 7 .and. forecasttime_val == 0 ) then
+             param_num_val  == 7 ) then
+!             param_num_val  == 7 .and. forecasttime_val == 0 ) then
 
            call grib_get(igrib,'values',dum1d,ierr)
            call LIS_verify(ierr, 'error in grib_get: SWdown values in ' // &
@@ -655,7 +656,8 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
 
         !  LW Down Radiation flux:
         if ( param_disc_val == 0 .and. param_cat_val    == 5 .and. &
-             param_num_val  == 3 .and. forecasttime_val == 0 ) then
+             param_num_val  == 3 ) then
+!             param_num_val  == 3 .and. forecasttime_val == 0 ) then
 
            call grib_get(igrib,'values',dum1d,ierr)
            call LIS_verify(ierr, 'error in grib_get: LWdown values in ' // &
@@ -669,7 +671,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
            else
               write(cstat,'(i9)',iostat=istat1) ierr
               message(1) = 'Program: LIS'
-              message(2) = '  Subroutine:  AGRMET_fldbld_read.'
+              message(2) = '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
               message(3) = '  Error reading first guess file:'
               message(4) = '  ' // trim(fg_filename)
               if( istat1 .eq. 0 )then
