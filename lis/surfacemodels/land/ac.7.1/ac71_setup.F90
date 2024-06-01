@@ -218,8 +218,6 @@ subroutine Ac71_setup()
         logical ::  ProgramParametersAvailable 
         integer(int32) :: TotalSimRuns
 
-        character(256) :: irr_dir, man_dir
-
         mtype = LIS_rc%lsm_index
 
         
@@ -273,30 +271,6 @@ subroutine Ac71_setup()
             TotalSimRuns = LIS_rc%eyr - LIS_rc%syr + 1
             call allocate_project_input(TotalSimRuns)
             do l=1, TotalSimRuns  ! TotalSimRuns
-                !! Check irrigation and management
-                ! Check if irrigation ON
-                if(LIS_rc%irrigation_type.ne."none") then
-                    if(trim(LIS_rc%irrigation_type).eq."Sprinkler") then
-                        AC71_struc(n)%Irrigation_Filename = "sprinkler.IRR"
-                        irr_dir = trim(AC71_struc(n)%PathNameSimul)
-                    else ! Other options can be implemented later
-                        write(LIS_logunit, *) trim(LIS_rc%irrigation_type), &
-                        " irrigation type not compatible with AquaCrop.7.1"
-                        call LIS_endrun()
-                    endif
-                else
-                    AC71_struc(n)%Irrigation_Filename = "(None)"
-                    irr_dir = "(None)"
-                endif
-
-                ! Check if management file
-                if(trim(AC71_struc(n)%Management_Filename).ne."(None)") then
-                    man_dir = trim(AC71_struc(n)%PathNameSimul)
-                else
-                    man_dir = "(None)"
-                endif
-                !! End check irrigation and management
-
                 ! MB: for current generic crop this is fixed to 1
                 call set_project_input(l, 'Simulation_YearSeason', 1_int8)
                 ! Simulation
@@ -347,10 +321,10 @@ subroutine Ac71_setup()
                 call set_project_input(l, 'Crop_Directory', trim(AC71_struc(n)%PathCropFiles))
                 call set_project_input(l, 'Irrigation_Info', ' LIS ')
                 call set_project_input(l, 'Irrigation_Filename', trim(AC71_struc(n)%Irrigation_Filename))
-                call set_project_input(l, 'Irrigation_Directory', trim(irr_dir))
+                call set_project_input(l, 'Irrigation_Directory', trim(AC71_struc(n)%PathNameSimul))
                 call set_project_input(l, 'Management_Info', ' LIS ')
                 call set_project_input(l, 'Management_Filename',  trim(AC71_struc(n)%Management_Filename))
-                call set_project_input(l, 'Management_Directory', trim(man_dir))
+                call set_project_input(l, 'Management_Directory', trim(AC71_struc(n)%PathNameSimul))
                 call set_project_input(l, 'GroundWater_Info', '(None)')
                 call set_project_input(l, 'GroundWater_Filename', '(None)')
                 call set_project_input(l, 'GroundWater_Directory', '(None)')
