@@ -33,6 +33,8 @@ subroutine Ac71_main(n)
 !   ! AC module imports
     use ac_global, only: &
                     DegreesDay,&
+                    GenerateDepthMode_ToFC, &
+                    GenerateTimeMode_AllRAW, &
                     GetCCiActual,&
                     GetCCiTopEarlySen,&
                     GetCCiprev,&
@@ -46,6 +48,10 @@ subroutine Ac71_main(n)
                     GetEact,&
                     GetECstorage,& 
                     GetETo,&
+                    GetIrriAfterSeason, &
+                    GetIrriBeforeSeason, &
+                    GetIrriECw, &
+                    GetIrrigation,&
                     GetManagement,&
                     GetRootZoneWC_Actual,&
                     GetRootZoneWC_FC,&
@@ -74,6 +80,8 @@ subroutine Ac71_main(n)
                     GetTmax,& 
                     GetTmin,& 
                     GetTpot,&
+                    IrriMethod_MSprinkler, &
+                    IrriMode_Generate, &
                     SetCCiActual,&
                     SetCCiTopEarlySen,&
                     SetCCiprev,&
@@ -97,6 +105,13 @@ subroutine Ac71_main(n)
                     SetDaySubmerged,&
                     SetECstorage,& 
                     SetETo,&
+                    SetIrriAfterSeason, &
+                    SetIrriBeforeSeason, &
+                    SetIrriECw, &
+                    SetIrriMethod, &
+                    SetIrriMode, &
+                    SetGenerateDepthMode, &
+                    SetGenerateTimeMode, &
                     SetManagement,&
                     SetOutputAggregate,&
                     SetPart1Mult,&
@@ -138,6 +153,7 @@ subroutine Ac71_main(n)
                     AdvanceOneTimeStep, &
                     FinalizeRun1, &
                     FinalizeRun2, &
+                    fIrri_close, &
                     GetBin,&
                     GetBout,&
                     GetCCiActualWeedInfested,&
@@ -164,6 +180,8 @@ subroutine Ac71_main(n)
                     GetHItimesAT1,&
                     GetHItimesAT2,&
                     GetHItimesBEF,&
+                    GetIrriInfoRecord1, &
+                    GetIrriInfoRecord2, &
                     GetNoMoreCrop,&
                     GetPreviousStressLevel,&
                     GetScorAT1,&
@@ -214,6 +232,8 @@ subroutine Ac71_main(n)
                     SetHItimesAT1,&
                     SetHItimesAT2,&
                     SetHItimesBEF,&
+                    SetIrriInfoRecord1, &
+                    SetIrriInfoRecord2, &
                     SetNextSimFromDayNr ,&
                     SetNoMoreCrop,&
                     SetNoYear,&
@@ -487,6 +507,20 @@ subroutine Ac71_main(n)
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
             call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
+            !! If irrigation ON
+            if(trim(AC71_struc(n)%Irrigation_Filename).ne."(None)") then
+                ! Only works with given sprinkler file, will need to be generalized
+                call SetIrriAfterSeason(AC71_struc(n)%ac71(t)%IrriAfterSeason)
+                call SetIrriBeforeSeason(AC71_struc(n)%ac71(t)%IrriBeforeSeason)
+                call SetIrriECw(AC71_struc(n)%ac71(t)%IrriECw) 
+                call SetIrriInfoRecord1(AC71_struc(n)%ac71(t)%IrriInfoRecord1)
+                call SetIrriInfoRecord2(AC71_struc(n)%ac71(t)%IrriInfoRecord2)
+                call SetIrriMethod(IrriMethod_MSprinkler)
+                call SetIrriMode(IrriMode_Generate)
+                call SetGenerateDepthMode(GenerateDepthMode_ToFC)
+                call SetGenerateTimeMode(GenerateTimeMode_AllRAW)
+            endif
+
             !!! initialize run (year)
 
             if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
@@ -515,6 +549,9 @@ subroutine Ac71_main(n)
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
+                if(trim(AC71_struc(n)%Irrigation_Filename).ne."(None)") then
+                    call fIrri_close() !OK for files with 2 records max
+                endif
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
@@ -576,6 +613,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%HItimesAT1 = GetHItimesAT1()
             AC71_struc(n)%ac71(t)%HItimesAT2 = GetHItimesAT2()
             AC71_struc(n)%ac71(t)%HItimesBEF = GetHItimesBEF()
+            AC71_struc(n)%ac71(t)%Irrigation = GetIrrigation()
             AC71_struc(n)%ac71(t)%Management = GetManagement()
             AC71_struc(n)%ac71(t)%PreviousStressLevel = GetPreviousStressLevel()
             AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
@@ -684,6 +722,9 @@ subroutine Ac71_main(n)
             ![ 14] output variable: yield (unit=t ha-1).  *** yield
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Yield, value = real(AC71_struc(n)%ac71(t)%SumWaBal%YieldPart,kind=sp), &
                                     vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 15] output variable: irrigation (unit=mm).  *** irrigation
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Irrigation, value = real(AC71_struc(n)%ac71(t)%Irrigation,kind=sp), &
+                                    vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
 
             !  Reset forcings
             AC71_struc(n)%ac71(t)%tair = 0.0
