@@ -439,6 +439,7 @@ module LIS_histDataMod
   public :: LIS_MOC_Tact
   public :: LIS_MOC_Eact
   public :: LIS_MOC_AC71ETo
+  public :: LIS_MOC_AC71Irrigation
   public :: LIS_MOC_Tmin
   public :: LIS_MOC_Tmax
   public :: LIS_MOC_RootingDepth
@@ -962,6 +963,7 @@ module LIS_histDataMod
    integer :: LIS_MOC_Tact  = -9999
    integer :: LIS_MOC_Eact  = -9999
    integer :: LIS_MOC_AC71ETo  = -9999
+   integer :: LIS_MOC_AC71Irrigation  = -9999
    integer :: LIS_MOC_Tmin  = -9999
    integer :: LIS_MOC_Tmax  = -9999
    integer :: LIS_MOC_RootingDepth  = -9999
@@ -4620,6 +4622,18 @@ contains
          "ac71 reference evapotranspiration",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71ETo,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Irrigation:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Irrigation",&
+         "Irrigation",&
+         "Irrigation",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Irrigation,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
