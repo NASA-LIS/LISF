@@ -20,6 +20,8 @@
 !              ........................................Eric Kemp/SSAI/NASA
 ! 03 Jun 2020  Removed Box-Cox transform in precipitation analysis
 !              ........................................Eric Kemp/SSAI/NASA
+! 23 May 2024  Export USAF_is_gauge function, and add HADS and
+!              NWSLI gage networks.....................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -133,6 +135,8 @@ module USAF_bratsethMod
    public :: USAF_snowDepthQC
    public :: USAF_backQC
    public :: USAF_superstatQC
+   ! EMK 20240523
+   public :: USAF_is_gauge
 
    ! A simple linked list type that can be used in a hash table.  Intended
    ! to store indices of arrays in the USAF_obsData type for efficient look-up.
@@ -1617,7 +1621,7 @@ contains
       call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           is_gauge, &
+           USAF_is_gauge, &
            invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
@@ -1628,7 +1632,7 @@ contains
       call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           convergeThresh, is_gauge, sumObsEstimates, &
+           convergeThresh, USAF_is_gauge, sumObsEstimates, &
            npasses, precipOBA)
 
       ! Calculate analysis at grid points.
@@ -3307,7 +3311,7 @@ contains
                   if (.not. is_imerg(this%net(j))) cycle
                end if
             else ! Gauges
-               if (.not. is_gauge(this%net(j))) cycle
+               if (.not. USAF_is_gauge(this%net(j))) cycle
             end if
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
@@ -4068,22 +4072,24 @@ contains
 
    !---------------------------------------------------------------------------
    ! Checks if observation network is recognized as a gauge.
-   logical function is_gauge(net)
+   logical function USAF_is_gauge(net)
       implicit none
       character(len=10), intent(in) :: net
       logical :: answer
       answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
+      if (net .eq. "AMIL") answer = .true.
+      if (net .eq. "CANA") answer = .true.
+      if (net .eq. "FAA") answer = .true.
+      if (net .eq. "HADS") answer = .true.  ! EMK 20240523
+      if (net .eq. "ICAO") answer = .true.
+      if (net .eq. "NWSLI") answer = .true. ! EMK 20240523
+      if (net .eq. "WMO") answer = .true.
+      if (net .eq. "MOBL") answer = .true.
+      if (net .eq. "SUPERGAGE") answer = .true.
       ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
-      is_gauge = answer
-   end function is_gauge
+      if (net .eq. "CDMS") answer = .true.
+      USAF_is_gauge = answer
+   end function USAF_is_gauge
 
    !---------------------------------------------------------------------------
    ! Dummy function for establishing a surface station is uncorrelated.
