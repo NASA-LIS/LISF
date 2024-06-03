@@ -422,7 +422,7 @@ if ( $use_pfio ) {
       $sys_esmflib_path = "-L$ENV{LIS_LIBESMF} -lesmf";
       $sys_flapmod_path = "-I$ENV{LIS_FLAP}/include/FLAP";
       $sys_flaplib_path = "-L$ENV{LIS_FLAP}/lib64 -lFLAP";
-      $sys_maplmod_path = "-I$ENV{LIS_MAPL}/include/MAPL -I$ENV{LIS_MAPL}/include/MAPL.base -I$ENV{LIS_MAPL}/include/MAPL.cap -I$ENV{LIS_MAPL}/include/MAPL_cfio_r4 -I$ENV{LIS_MAPL}/include/MAPL.constants -I$ENV{LIS_MAPL}/include/MAPL.generic -I$ENV{LIS_MAPL}/include/MAPL.gridcomps -I$ENV{LIS_MAPL}/include/MAPL.griddedio -I$ENV{LIS_MAPL}/include/MAPL.history -I$ENV{LIS_MAPL}/include/MAPL.oomph -I$ENV{LIS_MAPL}/include/MAPL.orbit -I$ENV{LIS_MAPL}/include/MAPL.pfio -I$ENV{LIS_MAPL}/include/MAPL.profiler -I$ENV{LIS_MAPL}/include/MAPL.shared -I$ENV{LIS_MAPL}/include/pflogger -I$ENV{LIS_MAPL}/include/MAPL.ExtData";
+      $sys_maplmod_path = "-I$ENV{LIS_MAPL}/include/MAPL -I$ENV{LIS_MAPL}/include/MAPL.base -I$ENV{LIS_MAPL}/include/MAPL.cap -I$ENV{LIS_MAPL}/include/MAPL_cfio_r4 -I$ENV{LIS_MAPL}/include/MAPL.constants -I$ENV{LIS_MAPL}/include/MAPL.generic -I$ENV{LIS_MAPL}/include/MAPL.gridcomps -I$ENV{LIS_MAPL}/include/MAPL.griddedio -I$ENV{LIS_MAPL}/include/MAPL.history -I$ENV{LIS_MAPL}/include/MAPL.oomph -I$ENV{LIS_MAPL}/include/MAPL.orbit -I$ENV{LIS_MAPL}/include/MAPL.pfio -I$ENV{LIS_MAPL}/include/MAPL.profiler -I$ENV{LIS_MAPL}/include/MAPL.shared -I$ENV{LIS_MAPL}/include/pflogger -I$ENV{LIS_MAPL}/include/MAPL.ExtData -I$ENV{LIS_MAPL}/include/MAPL.field_utils";
       $sys_mapllib_path = "$ENV{LIS_MAPL}/lib/libMAPL.generic.so $ENV{LIS_MAPL}/lib/libMAPL.base.so $ENV{LIS_MAPL}/lib/libMAPL.cap.so $ENV{LIS_MAPL}/lib/libMAPL.pfio.so $ENV{LIS_MAPL}/lib/libMAPL.constants.so $ENV{LIS_MAPL}/lib/libMAPL_cfio_r4.so $ENV{LIS_MAPL}/lib/libMAPL.shared.so $ENV{LIS_MAPL}/lib/libMAPL.history.so $ENV{LIS_MAPL}/lib/libMAPL.profiler.so $ENV{LIS_MAPL}/lib/libMAPL.so";
 
    }
@@ -989,7 +989,7 @@ print " \n";
 
 if($sys_arch eq "linux_ifc") {
    $cflags = "-c ".$sys_omp." ".$sys_c_opt." -traceback -DIFC -DLINUX";
-   $fflags77= "-c ".$sys_omp." ".$sys_opt." ".$sys_pfio." -mcmodel=medium -traceback -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) ".$sys_par_d;
+   $fflags77= "-c ".$sys_omp." ".$sys_opt." ".$sys_pfio." -traceback -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) ".$sys_par_d;
    $fflags ="-c ".$sys_omp." ".$sys_opt." ".$sys_pfio." -u -traceback -fpe0 -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) ".$sys_par_d;
    $ldflags= $sys_omp." \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -limf -lrt";
    $lib_flags= "-lesmf -lstdc++ -limf -lrt";
