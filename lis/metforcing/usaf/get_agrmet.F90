@@ -44,10 +44,10 @@ subroutine get_agrmet(n, findex)
 !  The strategy for missing data is to go backwards up to 10 days to get
 !  forcing at the same time of day. This entry point code also 
 !  calls different routines based on the running mode. The AGRMET
-!  mode will generate the surface analysis, merged precipitaition,
+!  mode will generate the surface analysis, merged precipitation,
 !  whereas the analysis mode will simply use the previously generated
 !  data. 
-!.
+!
 !  The arguments are: 
 !  \begin{description}
 !  \item[n]

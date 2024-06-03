@@ -231,7 +231,7 @@ subroutine AGRMET_sfcalc(n)
        0,0,jultmp)
   if(jultmp .gt. agrmet_struc(n)%lastSfcalcHour) then 
     timeToReadGFS = .true. 
- else
+  else
     timeToReadGFS = .false.
   endif
 

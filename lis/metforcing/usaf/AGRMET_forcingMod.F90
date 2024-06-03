@@ -555,8 +555,9 @@ integer, allocatable   :: n112_sh4(:)
 ! EMK END
      integer                :: lastSfcalcHour
      integer                :: lastPcpHour
+     integer                :: lastRadHour
 !new 
-     integer            :: ncol, nrow
+     integer                :: ncol, nrow
      integer, allocatable   :: n11_1_gfs(:)
      integer, allocatable   :: n12_1_gfs(:)
      integer, allocatable   :: n21_1_gfs(:)
@@ -2108,6 +2109,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
           agrmet_struc(n)%pcp_ready = .false. 
           agrmet_struc(n)%lastSfcalcHour = 0
           agrmet_struc(n)%lastPcpHour = 0
+          agrmet_struc(n)%lastRadHour = 0
+
           call AGRMET_read_pcpclimodata(n)
 
           agrmet_struc(n)%albAlarmTime = 0.0

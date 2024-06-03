@@ -199,13 +199,13 @@ subroutine readagrmetforcing(n,findex, order)
   integer          :: julhr
   character(len=255) :: message(20)
 
-  real,allocatable             :: cldamt(:,:,:)
-  integer,allocatable          :: cldamt_nh( :,:,:)
-  integer,allocatable          :: cldtyp_nh( :,:,:)
-  integer,allocatable          :: cldamt_sh( :,:,:)
-  integer,allocatable          :: cldtyp_sh( :,:,:)
-  logical,allocatable          :: fog_nh( :,:)
-  logical,allocatable          :: fog_sh( :,:)
+  real,allocatable            :: cldamt(:,:,:)
+  integer,allocatable         :: cldamt_nh( :,:,:)
+  integer,allocatable         :: cldtyp_nh( :,:,:)
+  integer,allocatable         :: cldamt_sh( :,:,:)
+  integer,allocatable         :: cldtyp_sh( :,:,:)
+  logical,allocatable         :: fog_nh( :,:)
+  logical,allocatable         :: fog_sh( :,:)
   integer          :: thres(5) !needs to be read in.
   real             :: q2sat
   real             :: e,esat
@@ -216,9 +216,9 @@ subroutine readagrmetforcing(n,findex, order)
   real*8           :: backtime1
   real             :: gmt1,ts1
   logical          :: fog, bare
-  real,allocatable             :: albedo(:)
-  real,allocatable             :: albedo_tmp(:)
-  integer,allocatable          :: ncount(:)
+  real,allocatable            :: albedo(:)
+  real,allocatable            :: albedo_tmp(:)
+  integer,allocatable         :: ncount(:)
   real             :: snup(24)
   integer          :: dindex
 
@@ -243,6 +243,7 @@ subroutine readagrmetforcing(n,findex, order)
              .040, .080, .025, .040, .040, .040, .025, .025/
 
   data THRES /12600, 12300, 12000, 11700, 11400/
+! ___________________________________________________________
 
   TRACE_ENTER("agrmet_readforc")
   allocate(varfield(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -328,6 +329,7 @@ subroutine readagrmetforcing(n,findex, order)
 !     print*,'EMK: minval(agrmet_struc(n)%sfcrlh(dindex,:,:) = ', &
 !          minval(agrmet_struc(n)%sfcrlh(dindex,:,:))
 
+     ! Humidity field:
      do c =1, LIS_rc%lnc(n)
         do r = 1,LIS_rc%lnr(n)
            if (LIS_domain(n)%gindex(c,r).ne. -1) then
@@ -355,24 +357,22 @@ subroutine readagrmetforcing(n,findex, order)
      ss1 = LIS_rc%ss
 
      ! Downward Longwave + Shortwave Radiation, read in from GALWEM / GFS:
+     ! -- KRA: Initial setup
      if ( agrmet_struc(n)%compute_radiation == 'GALWEM_RAD' ) then
 
-        call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
-        julend = istart+6
+!        call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
+!        julend = istart+6
 
         if(LIS_masterproc) then
            print *, "READ IN GALWEM RADIATION FIELDS -- ", yr1, mo1, da1, hr1
            print *, "order :: ",order
-           print *, "istart, julend :: ",istart,julend
-!           call LIS_endrun
+!           print *, "istart, julend :: ",istart,julend
         endif
 
-        ! Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
-        longwv = 200.   ! KRA - Just testing a sample value ...
-        swdown = 100.   ! KRA - Just testing a sample value ...
-
         ! Call to the NWP Radiation Flux main routines:
-        call USAF_fldbld_radflux(n,order,julend,swdown,longwv)
+        !  Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
+!        call USAF_fldbld_radflux(n,order,julend,swdown,longwv)
+        call USAF_fldbld_radflux(n,order,swdown,longwv)
 
      endif
 
@@ -391,10 +391,11 @@ subroutine readagrmetforcing(n,findex, order)
            ! EMK...Calculate for all valid grid indices
 !           if(LIS_LMLC(n)%landmask(c,r).eq.1) then 
            if ( LIS_domain(n)%gindex(c,r) /= -1 ) then
-              call AGRMET_svp(q2sat,esat,&
-                   psurf(c,r), tair(c,r))
+              call AGRMET_svp(q2sat, esat, &
+                              psurf(c,r), tair(c,r))
               e = esat*rlh(c,r)
-              call AGRMET_longwv(tair(c,r),e,cldamt(:,c,r),longwv(c,r))
+              call AGRMET_longwv(tair(c,r), e, cldamt(:,c,r),&
+                                 longwv(c,r))
            else
               longwv(c,r) = LIS_rc%udef
            endif
