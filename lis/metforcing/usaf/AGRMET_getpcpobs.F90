@@ -33,6 +33,8 @@
 !   11 May 11  Store obs from 3,9,15,& 21Z for India and Sri Lanka in a 
 !              new array and pass to processobs............Chris Franks/16WS/WXE/SEMS
 !   29 Aug 23  Call LIS_alert if a preobs file is missing..............Eric Kemp/NASA
+!   23 May 24  Updated calls to AGRMET_storeobs and
+!              AGRMET_storeobs_offhour.......................Eric Kemp/NASA
 !
 ! !INTERFACE:
 subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
@@ -361,7 +363,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                        call AGRMET_storeobs(nsize, nsize3, agrmet_struc(n)%max_pcpobs, &
                             obs, obs3, ilat, ilon, &
                             mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
-                            duration, j3hr, stncnt)
+                            duration, j3hr, stncnt, alert_number, filename)
                     
                     else
                        
@@ -371,7 +373,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                        call AGRMET_storeobs_offhour(nsize, agrmet_struc(n)%max_pcpobs, &
                             obs3, ilat, ilon, &
                             mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
-                            duration, nsize3)
+                            duration, nsize3, alert_number, filename)
                     
                     end if
                  
