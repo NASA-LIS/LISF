@@ -986,7 +986,7 @@ if($sys_arch eq "linux_ifc") {
 elsif($sys_arch eq "linux_pgi") {
    $cflags = "-c -DLITTLE_ENDIAN -DPGI";
    $fflags77= "-c ".$sys_opt." ".$sys_pfio." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess ".$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
-   $fflags ="-c ".$sys_opt." ".$sys_pfio." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess" .$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
+   $fflags ="-c ".$sys_opt." ".$sys_pfio." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess" .$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
    $ldflags= " \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
    $lib_flags= "-lesmf -lesmf -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
    $lib_paths= "\$(LIB_ESMF)";
@@ -1024,11 +1024,13 @@ elsif($sys_arch eq "cray_cray") {
       $fflags77= "-c ".$sys_opt." ".$sys_pfio." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
       $fflags =" -c ".$sys_opt." ".$sys_pfio." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
       $ldflags= " -hdynamic \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -lrt";
+      $lib_paths= "\$(LIB_ESMF)";
    }
    else {
       $fflags77= "-c ".$sys_opt." ".$sys_pfio." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
       $fflags =" -c ".$sys_opt." ".$sys_pfio." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
       $ldflags= " -hbyteswapio -hdynamic \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -lrt";
+      $lib_paths= "\$(LIB_ESMF)";
    }
 
    $cflags = "-c ".$sys_c_opt." -DCRAYFTN -DLINUX ";
