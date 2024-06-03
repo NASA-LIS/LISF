@@ -146,6 +146,18 @@ chomp($use_pfio);
 if($use_pfio eq "") {
    $use_pfio=0
 }  
+
+if ( $use_pfio == 1 ) {
+   if ( $par_lev != 1 ) {
+      print "--------------ERROR---------------------\n";
+      print "PFIO requires MPI\n";
+      print "You must select 1 at the Parallelism prompt\n";
+      print "   Parallelism (0-serial, 1-dmpar, default=1):\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
    
 if ( $use_pfio ) {
    my %pfio_table = ();
