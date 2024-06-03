@@ -655,30 +655,6 @@ if($use_netcdf == 1) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
-
-   print "NETCDF use shuffle filter (NOW SET in lis.config)? (1-yes, 0-no, default = 1): ";
-   $netcdf_shuffle=<stdin>;
-   $netcdf_shuffle=~s/ *#.*$//;
-   chomp($netcdf_shuffle);
-   if($netcdf_shuffle eq ""){
-      $netcdf_shuffle=1;
-   }
-
-   print "NETCDF use deflate filter (NOW SET in lis.config)? (1-yes, 0-no, default = 1): ";
-   $netcdf_deflate=<stdin>;
-   $netcdf_deflate=~s/ *#.*$//;
-   chomp($netcdf_deflate);
-   if($netcdf_deflate eq ""){
-      $netcdf_deflate=1;
-   }
-
-   print "NETCDF use deflate level (NOW SET in lis.config)? (1 to 9-yes, 0-no, default = 1): ";
-   $netcdf_deflate_level=<stdin>;
-   $netcdf_deflate_level=~s/ *#.*$//;
-   chomp($netcdf_deflate_level);
-   if($netcdf_deflate_level eq ""){
-      $netcdf_deflate_level=9;
-   }
 }
 
 
