@@ -22,14 +22,15 @@
 ! 28 May 2024  Generated reader for radiation fluxese...K. Arsenault/SAIC
 !
 ! !INTERFACE:    
-subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
+!subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
+subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
 
 ! !USES: 
   use AGRMET_forcingMod, only : agrmet_struc
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort,&
                                 LIS_alert
-  use LIS_timeMgrMod,    only : LIS_julhr_date
+  use LIS_timeMgrMod,    only : LIS_julhr_date, LIS_get_julhr
 
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -39,7 +40,7 @@ subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
   integer, intent(in)    :: order
-  integer, intent(inout) :: julhr
+!  integer, intent(inout) :: julhr
   real, intent(out)      :: swdown(LIS_rc%lnc(n), LIS_rc%lnr(n))
   real, intent(out)      :: longwv(LIS_rc%lnc(n), LIS_rc%lnr(n))
 !
@@ -70,9 +71,15 @@ subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
 
   integer :: rc
   character(len=255) :: message(20)
-  character(len=10) :: yyyymmddhh
-  integer :: fc_hr
-  integer :: ierr
+  character(len=10)  :: yyyymmddhh
+  integer            :: julhr
+  integer            :: jultmp
+  integer            :: istart
+  integer            :: julend
+  integer            :: ordertmp  ! Temporary placeholder
+!  integer            :: fc_hr
+  integer            :: ierr
+  logical :: timetoReadRad
 
   ! Sanity check
   if ( agrmet_struc(n)%first_guess_source .ne. 'GALWEM' .and. &
@@ -81,53 +88,98 @@ subroutine USAF_fldbld_radflux(n,order,julhr,swdown,longwv)
       call LIS_endrun
   end if
 
-  call AGRMET_julhr_date10(julhr, yyyymmddhh)
-  write(LIS_logunit,*) &
+  ! Estimate julian hour to trigger reading of radiation fields:
+  call LIS_get_julhr(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,&
+                     0,0,jultmp)
+
+  if(jultmp .gt. agrmet_struc(n)%lastRadHour) then 
+    timeToReadRad = .true. 
+  else
+    timeToReadRad = .false.
+  endif
+
+  if(timeToReadRad) then  
+!------------------------------------------------------------------    
+! Find the time to start the processing from 
+!------------------------------------------------------------------    
+     call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
+
+     julend = istart+6
+
+     agrmet_struc(n)%lastRadHour = julend
+
+!    ------------------------------------------------------------------
+!    check if the current instance is a restart or continuation of a run
+!    if the run is a cold start, read current and previous 6 hour data
+!    else copy the current to previous and read the new current data. 
+!    ------------------------------------------------------------------
+     if(agrmet_struc(n)%findtime1.eq.1.and.agrmet_struc(n)%findtime2.eq.1) then
+        ordertmp = 2         
+!        order = 2         
+!        call AGRMET_fldbld(n,order,istart)
+        
+!        order = 1   
+!        call AGRMET_fldbld(n,order,julend)
+     else 
+        ordertmp = 1
+!        order = 1
+!        call AGRMET_fldbld(n,order,julend)
+     endif
+
+     ! Generate 10-digit Year-Month-Day-Hour for "julhr":
+     call AGRMET_julhr_date10(julend, yyyymmddhh)
+     write(LIS_logunit,*) " "
+     write(LIS_logunit,*) &
        '[INFO] Searching for NWP radiation fields, valid ',yyyymmddhh
 
-  ! Try fetching GALWEM, if requested
-  ierr = 0
-  if ( agrmet_struc(n)%first_guess_source == 'GALWEM' ) then
+     ! Try fetching GALWEM, if requested
+     ierr = 0
+     if ( agrmet_struc(n)%first_guess_source == 'GALWEM' ) then
 
-     fc_hr = LIS_rc%hr  ! KRA - TEMPORARY PLACEHOLDER FOR FC_HR ...
-     write(LIS_logunit,*) '[INFO] NWP radiation fc_hr: ',fc_hr
+       julhr = julend   ! KRA -- Temporary placeholder
 
-     call USAF_fldbld_radflux_galwem(n,julhr,fc_hr,swdown,longwv,rc)
-     ierr = rc
-  end if
+!       fc_hr = LIS_rc%hr  ! KRA - TEMPORARY PLACEHOLDER FOR FC_HR ...
+!       write(LIS_logunit,*) '[INFO] NWP radiation fc_hr: ',fc_hr
 
-  ! Try fetching GFS, if requested, or if GALWEM is not available.
-  if ( agrmet_struc(n)%first_guess_source == "GFS" .or. &
-       ierr .ne. 0) then
-     if (ierr .ne. 0) then
-        write(LIS_logunit,*)'[WARN] Unable to find GALWEM data!'
-        write(LIS_logunit,*)'[WARN] Rolling back to GFS...'
+!       call USAF_fldbld_radflux_galwem(n,julhr,fc_hr,swdown,longwv,rc)
+       call USAF_fldbld_radflux_galwem(n,julhr,swdown,longwv,rc)
+       ierr = rc
      end if
 
-!     call USAF_fldbld_radflux_gfs(n,order,julhr,rc)
+     ! Try fetching GFS, if requested, or if GALWEM is not available.
+     if ( agrmet_struc(n)%first_guess_source == "GFS" .or. &
+          ierr .ne. 0) then
+       if (ierr .ne. 0) then
+          write(LIS_logunit,*)'[WARN] Unable to find GALWEM data!'
+          write(LIS_logunit,*)'[WARN] Rolling back to GFS...'
+       end if
 
-     if (rc .ne. 0) then
-        call AGRMET_julhr_date10(julhr, yyyymmddhh)
-        if (ierr .ne. 0) then
-           write(LIS_logunit,*) &
-                '[ERR] No GALWEM or GFS background found for ',yyyymmddhh
-        else
-           write(LIS_logunit,*) &
-                '[ERR] No GFS background found for ',yyyymmddhh
-        end if
-        write(LIS_logunit,*) ' ABORTING!'
-        flush(LIS_logunit)
-        message(:) = ''
-        message(1) = '[ERR] Program:  LIS'
-        message(2) = '  Routine:  USAF_fldbld_radflux.'
-        message(3) = '  GALWEM and GFS GRIB data not available for '//&
+!       call USAF_fldbld_radflux_gfs(n,order,julhr,rc)
+
+       if (rc .ne. 0) then
+          call AGRMET_julhr_date10(julhr, yyyymmddhh)
+          if (ierr .ne. 0) then
+             write(LIS_logunit,*) &
+                  '[ERR] No GALWEM or GFS background found for ',yyyymmddhh
+          else
+             write(LIS_logunit,*) &
+                  '[ERR] No GFS background found for ',yyyymmddhh
+          end if
+          write(LIS_logunit,*) ' ABORTING!'
+          flush(LIS_logunit)
+          message(:) = ''
+          message(1) = '[ERR] Program:  LIS'
+          message(2) = '  Routine:  USAF_fldbld_radflux.'
+          message(3) = '  GALWEM and GFS GRIB data not available for '//&
              yyyymmddhh
-        if(LIS_masterproc) then
-           call LIS_alert( 'LIS.USAF_fldbld_radflux.', 1, &
-                message )
-           call LIS_abort( message)
-        endif
-     end if
-  end if
+          if(LIS_masterproc) then
+             call LIS_alert( 'LIS.USAF_fldbld_radflux.', 1, &
+                  message )
+             call LIS_abort( message)
+          endif
+       end if
+    end if
+
+  endif   ! End to timeToReadRad check
   
 end subroutine USAF_fldbld_radflux
