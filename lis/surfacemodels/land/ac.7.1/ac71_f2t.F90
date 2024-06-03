@@ -163,7 +163,7 @@ subroutine Ac71_f2t(n)
         ! lapse-rate correction for ref height > 2 m
         ! Copied from lapse-rate correction of met forcings assuming lapse
         ! rate of 6.5 degC/km
-        elevdiff = AC71_struc(n)%refz_forc - 2. ! ref 2m for AC
+        elevdiff = AC71_struc(n)%refz_tq - 2. ! ref 2m for AC
         if (elevdiff.gt.0.1) then          
             force_tmp = tmp(tid)
             force_hum = q2(tid)
@@ -208,8 +208,9 @@ subroutine Ac71_f2t(n)
 
         ! Calculate Magnitude of Wind Speed (m/s)
         wind_tmp = SQRT(uwind(tid)**2 + vwind(tid)**2)
+        elevdiff = AC71_struc(n)%refz_uv - 2.
         if (elevdiff.gt.0.1) then ! replace with corrected value
-            wind_tmp = wind_tmp * (4.87/LOG(67.8*AC71_struc(n)%refz_forc-5.42))
+            wind_tmp = wind_tmp * (4.87/LOG(67.8*AC71_struc(n)%refz_uv-5.42))
         endif
 
         AC71_struc(n)%ac71(t)%wndspd = AC71_struc(n)%ac71(t)%wndspd + wind_tmp

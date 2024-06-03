@@ -99,21 +99,6 @@ subroutine Ac71_readcrd()
         call LIS_verify(rc, "AquaCrop.7.1 starting month of crop period: not defined")
     enddo
 
-    ! Crop running mode
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 GDD mode:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%GDD_Mode, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 GDD mode: not defined")
-    enddo
-
-
-    ! number of soil compartments
-    call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 max no of compartments:", rc = rc)
-    do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%max_No_compartments, rc=rc)
-        call LIS_verify(rc, "AquaCrop.7.1 max no of compartments: not defined")
-    enddo
-
     ! PathNameSimul
     call ESMF_ConfigFindLabel(LIS_config, "AquaCrop.7.1 input path:", rc = rc)
     do n=1, LIS_rc%nnest
@@ -207,13 +192,23 @@ subroutine Ac71_readcrd()
       AC71_struc(n)%dt = AC71_struc(n)%ts
     enddo 
 
-    ! reference height of forcings
+    ! reference height of forcings (T and q)
     call ESMF_ConfigFindLabel(LIS_config, &
-         "AquaCrop.7.1 reference height of forcings:", rc = rc)
+         "AquaCrop.7.1 reference height of T and q:", rc = rc)
     do n=1, LIS_rc%nnest
-        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%refz_forc, rc=rc)
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%refz_tq, rc=rc)
         call LIS_verify(rc, &
-             "AquaCrop.7.1 reference height of forcings: "//&
+             "AquaCrop.7.1 reference height of T and q: "//&
+             "not defined")
+    enddo
+
+    ! reference height of forcings (u and v)
+    call ESMF_ConfigFindLabel(LIS_config, &
+         "AquaCrop.7.1 reference height of u and v:", rc = rc)
+    do n=1, LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config, AC71_struc(n)%refz_uv, rc=rc)
+        call LIS_verify(rc, &
+             "AquaCrop.7.1 reference height of u and v: "//&
              "not defined")
     enddo
 

@@ -350,10 +350,8 @@ subroutine Ac71_setup()
             AC71_struc(n)%Sim_AnnualEndMonth = mo2
             AC71_struc(n)%Sim_AnnualEndDay = da2
 
-            ! Read annual temperature record if GDD_Mode
-            if(AC71_struc(n)%GDD_Mode.eq.1) then 
-                call ac71_read_Trecord(n)
-            endif
+            ! Read annual temperature record
+            call ac71_read_Trecord(n)
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 

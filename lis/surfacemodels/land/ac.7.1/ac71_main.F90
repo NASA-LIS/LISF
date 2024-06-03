@@ -307,7 +307,7 @@ subroutine Ac71_main(n)
     ! check Ac71 alarm. If alarm is ring, run model.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
-        if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.(AC71_struc(n)%GDD_Mode.eq.1)) then
+        if (AC71_struc(n)%ac71(1)%InitializeRun.eq.1) then
             call ac71_read_Trecord(n)
         endif
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
