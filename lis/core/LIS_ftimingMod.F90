@@ -9,7 +9,9 @@
       use LIS_logMod
       use LIS_coreMod, only : LIS_rc, LIS_localPet, LIS_npes
       use LIS_mpiMod, only : LIS_mpi_comm
+#if ( defined SPMD )
       use mpi
+#endif
 
       implicit none
 
@@ -50,6 +52,7 @@
 !EOP
 !-------------------------------------------------------------------------------
       contains
+#if ( defined SPMD )
 !-------------------------------------------------------------------------------
 !BOP
 !
@@ -577,6 +580,35 @@
       end subroutine Ftiming_Nothing
 !EOC
 !-------------------------------------------------------------------------------
+#else
+subroutine Ftiming_Init
+   write(LIS_logunit, *) "[WARN] Ftiming requires MPI."
+end subroutine Ftiming_Init
+
+subroutine Ftiming_On(block_name)
+   implicit none
+   character (len=*)  :: block_name
+   return
+end subroutine Ftiming_On
+
+subroutine Ftiming_Off(block_name)
+   implicit none
+   character (len=*)  :: block_name
+   return
+end subroutine Ftiming_Off
+
+subroutine Ftiming_Reset(block_name)
+   implicit none
+   character (len=*)  :: block_name
+   return
+end subroutine Ftiming_Reset
+
+subroutine Ftiming_Output(lu)
+   implicit none
+   integer, intent(in) :: lu
+   return
+end subroutine Ftiming_Output
+#endif
 
       end module LIS_ftimingMod
 

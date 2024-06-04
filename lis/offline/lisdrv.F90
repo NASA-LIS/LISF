@@ -71,15 +71,14 @@ program lisdrv
       use LIS_ftimingMod, only : Ftiming_init, Ftiming_Output
       use LIS_ftimingMod, only : Ftiming_On, Ftiming_Off
       use LIS_logMod
-      use LIS_mpiMod,     only : LIS_mpi_comm
 
 #ifdef ESMF_TRACE
       use ESMF
 #endif
 
-      use mpi
 
 #ifdef USE_PFIO
+      use mpi
       use ESMF
       use MAPL
       use FLAP
@@ -299,6 +298,10 @@ CONTAINS
 !------------------------------------------------------------------------------
 !
 #else
+#if ( defined SPMD )
+      use LIS_mpiMod,     only : LIS_mpi_comm
+      use mpi
+#endif
 !
 !EOP
      implicit none
@@ -345,7 +348,9 @@ CONTAINS
          root_cpu = 0
 
          lun_array(1) = ftim_lun
+#if ( defined SPMD )
          call MPI_Bcast (lun_array, 1, MPI_INTEGER, root_cpu, LIS_mpi_comm, ierr)
+#endif
          ftim_lun     = lun_array(1)
 
          call Ftiming_Output(ftim_lun)
