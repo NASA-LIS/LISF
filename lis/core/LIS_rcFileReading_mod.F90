@@ -106,7 +106,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a list of integer variables from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS, i
@@ -150,7 +150,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a real variable from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS
@@ -194,7 +194,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a list of real variables from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS, i
@@ -238,7 +238,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a character-based variable from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS
@@ -282,7 +282,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a list of character-based variables from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS, i
@@ -326,7 +326,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a boolean variable from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS
@@ -370,7 +370,7 @@
     type(ESMF_Config), intent(inOut) :: config
 !
 ! !DESCRIPTION:
-! Reads in an integer variable from a resource file.
+! Reads in a list of boolean variables from a resource file.
 !
 ! !LOCAL VARIABLES:
       integer :: STATUS, i
