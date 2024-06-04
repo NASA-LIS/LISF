@@ -19,9 +19,9 @@
       private
 !
 ! !PUBLIC MEMBER FUNCTIONS:
-      public  :: read_rc_variables
+      public  :: LIS_read_rc_variables
 
-      interface read_rc_variables
+      interface LIS_read_rc_variables
            module procedure read_rc_var_int
            module procedure read_rc_var_list_int
            module procedure read_rc_var_real

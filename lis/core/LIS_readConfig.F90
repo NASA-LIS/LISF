@@ -45,7 +45,7 @@ subroutine LIS_readConfig()
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod
   use LIS_mpiMod, only: LIS_mpi_comm ! EMK
-  use LIS_rcFileReading_mod, only: read_rc_variables
+  use LIS_rcFileReading_mod, only: LIS_read_rc_variables
 !
 ! !DESCRIPTION:
 !
@@ -514,15 +514,15 @@ subroutine LIS_readConfig()
 !--------------------------------------------------------------------
 !---- Set the netCDF-4 data compression parameters
 !--------------------------------------------------------------------
-  CALL read_rc_variables(LIS_config, LIS_rc%nc_shuffle, &
+  CALL LIS_read_rc_variables(LIS_config, LIS_rc%nc_shuffle, &
                          "netCDF shuffle filter:", &
                          default=0, rc=rc)
   
-  CALL read_rc_variables(LIS_config, LIS_rc%nc_deflate, &
+  CALL LIS_read_rc_variables(LIS_config, LIS_rc%nc_deflate, &
                          "netCDF deflate filter:", &
                          default=1, rc=rc)
 
-  CALL read_rc_variables(LIS_config, LIS_rc%nc_deflate_lvl, &
+  CALL LIS_read_rc_variables(LIS_config, LIS_rc%nc_deflate_lvl, &
                          "netCDF deflate level:", &
                          default=1, rc=rc)
   
@@ -539,7 +539,7 @@ subroutine LIS_readConfig()
 !---- Determine the number of PFIO Virtual Collections
 !--------------------------------------------------------------------
 
-  CALL read_rc_variables(LIS_config, LIS_rc%n_vcollections, &
+  CALL LIS_read_rc_variables(LIS_config, LIS_rc%n_vcollections, &
                          "num PFIO virtual collections:", &
                          default=1, rc=rc)
 
