@@ -67,7 +67,7 @@
 program lisdrv
 !
 ! !USES:       
-      use LIS_coreMod,    only : LIS_config_init, LIS_rc, LIS_localPet
+      use LIS_coreMod,    only : LIS_config_init, LIS_rc, LIS_masterproc
       use LIS_ftimingMod, only : Ftiming_init, Ftiming_Output
       use LIS_ftimingMod, only : Ftiming_On, Ftiming_Off
       use LIS_logMod
@@ -180,7 +180,7 @@ program lisdrv
 
             if (LIS_rc%do_ftiming) then
                ftim_lun = 499
-               if (LIS_localPet == 0) then
+               if ( LIS_masterproc ) then
                   ftim_lun = LIS_getNextUnitNumber()
                endif
 
@@ -318,9 +318,9 @@ CONTAINS
          call Ftiming_On("Total Model")
          call Ftiming_On("LIS_init")
       endif
-      if (LIS_localPet == 0) PRINT*,"Start running lisinit"
+      if ( LIS_masterproc ) PRINT*,"Start running lisinit"
       call lisinit(trim(LIS_rc%runmode)//char(0))
-      if (LIS_localPet == 0) PRINT*,"Done with lisinit"
+      if ( LIS_masterproc ) PRINT*,"Done with lisinit"
       if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init")
 
       TRACE_EXIT("LIS_init")
@@ -328,9 +328,9 @@ CONTAINS
       TRACE_ENTER("LIS_run")
 
       if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run")
-      if (LIS_localPet == 0) PRINT*,"Start running lisrun"
+      if ( LIS_masterproc ) PRINT*,"Start running lisrun"
       call lisrun(trim(LIS_rc%runmode)//char(0))
-      if (LIS_localPet == 0) PRINT*,"Done with lisrun"
+      if ( LIS_masterproc ) PRINT*,"Done with lisrun"
       if (LIS_rc%do_ftiming) then
          call Ftiming_Off("LIS_run")
          call Ftiming_Off("Total Model")
@@ -339,9 +339,9 @@ CONTAINS
       TRACE_EXIT("LIS_run")
 
       if (LIS_rc%do_ftiming) then
-         if (LIS_localPet == 0) PRINT*,"Collecting the timing statistics"
+         if ( LIS_masterproc ) PRINT*,"Collecting the timing statistics"
          ftim_lun = -999
-         if (LIS_localPet == 0) then
+         if ( LIS_masterproc ) then
             ftim_lun = LIS_getNextUnitNumber()
          endif
 
@@ -354,10 +354,10 @@ CONTAINS
          ftim_lun     = lun_array(1)
 
          call Ftiming_Output(ftim_lun)
-         if (LIS_localPet == 0) PRINT*,"Done with the timing statistics"
+         if ( LIS_masterproc ) PRINT*,"Done with the timing statistics"
       endif
 
-      if (LIS_localPet == 0) PRINT*,"Start running lisfinalize"
+      if ( LIS_masterproc ) PRINT*,"Start running lisfinalize"
       call lisfinalize(trim(LIS_rc%runmode)//char(0))
 
   !call LIS_config_init(cmd_args=.true.)

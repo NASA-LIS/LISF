@@ -7,7 +7,7 @@
 !
 ! !USES:
       use LIS_logMod
-      use LIS_coreMod, only : LIS_rc, LIS_localPet, LIS_npes
+      use LIS_coreMod, only : LIS_rc, LIS_masterproc, LIS_localPet, LIS_npes
       use LIS_mpiMod, only : LIS_mpi_comm
 #if ( defined SPMD )
       use mpi
@@ -293,7 +293,7 @@
          numLonProcs = 0
          numLatProcs = 0
 
-         IF (LIS_localPet == 0) THEN
+         IF ( LIS_masterproc ) THEN
             numLonProcs = LIS_rc%procLayoutx
             numLatProcs = LIS_rc%procLayouty
          ENDIF
@@ -388,8 +388,8 @@
 
       call Mpi_Barrier (commWorld, ierr)
 
-      if(LIS_localPet == 0) PRINT'(a,2i5)', "Writing results ", tblock, NBLKS
-      if (LIS_localPet == 0) then
+      if( LIS_masterproc ) PRINT'(a,2i5)', "Writing results ", tblock, NBLKS
+      if ( LIS_masterproc ) then
 
          call Date_And_Time (cdate, ctime)
          write(cnx, '(i4.4)') numLonProcs
