@@ -30,7 +30,7 @@ module LIS_surfaceModelMod
   use LIS_logMod
   use LIS_RTMMod
   use LIS_ftimingMod
-#ifdef USE_PFIO 
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif 
 
@@ -385,7 +385,7 @@ contains
           if(alarmCheck) then 
              open_stats = .false.
              call LIS_create_output_directory('SURFACEMODEL')             
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
              IF (PFIO_bundle%first_time(n, 1, PFIO_LSM_idx)) THEN
                 ! Create the file metadata ONCE.
                 call PFIO_create_file_metadata(n, PFIO_LSM_idx, &

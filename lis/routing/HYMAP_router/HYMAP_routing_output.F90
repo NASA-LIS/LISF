@@ -20,7 +20,7 @@ subroutine HYMAP_routing_output(n)
   use LIS_fileIOMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP_routingMod
-#ifdef USE_PFIO 
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif 
 
@@ -79,7 +79,7 @@ subroutine HYMAP_routing_output(n)
 
         if(alarmCheck) then 
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
            HYMAP_routing_struc(n)%numout=HYMAP_routing_struc(n)%numout+1    
            IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
               ! Create the file metadata ONCE.

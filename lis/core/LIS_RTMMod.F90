@@ -35,7 +35,7 @@ module LIS_RTMMod
   use LIS_timeMgrMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
-#ifdef USE_PFIO 
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif
 
@@ -367,7 +367,7 @@ contains
 
              if(alarmCheck) then 
                 open_stats = .false.
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
                 call LIS_create_output_directory('RTM')
                 call LIS_create_output_filename(n, outfile,&
                                  model_name = 'RTM',&

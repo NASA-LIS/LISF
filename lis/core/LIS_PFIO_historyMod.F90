@@ -5,7 +5,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
 #include "MAPL_ErrLog.h"
 #include "unused_dummy.H"
 #endif
@@ -28,7 +28,7 @@
       use LIS_logMod
 
       use LIS_mpiMod
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
       use, intrinsic :: iso_fortran_env, only: REAL32
       use MAPL
       use ESMF
@@ -85,7 +85,7 @@
        integer :: dummy_int
 #endif
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
 !EOP
 !------------------------------------------------------------------------------ 
 CONTAINS

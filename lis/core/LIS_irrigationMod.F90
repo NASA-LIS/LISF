@@ -24,7 +24,7 @@ module LIS_irrigationMod
   use ESMF
   use LIS_coreMod
   use LIS_logMod
-#ifdef USE_PFIO    
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif
   implicit none
@@ -270,7 +270,7 @@ contains
        if(alarmCheck) then 
           open_stats = .false. 
           if(LIS_rc%wopt.ne."none") then 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
              IF (PFIO_bundle%first_time(n, 1, PFIO_IRRIG_idx)) THEN
                 ! Create the file metadata ONCE.
                 call PFIO_create_file_metadata(n, PFIO_IRRIG_idx, &

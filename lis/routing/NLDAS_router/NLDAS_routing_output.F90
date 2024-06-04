@@ -20,7 +20,7 @@ subroutine NLDAS_routing_output(n)
        LIS_create_stats_filename, LIS_create_output_filename
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use NLDAS_routingMod, only : NLDAS_routing_struc
-#ifdef USE_PFIO    
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif
 !
@@ -78,7 +78,7 @@ subroutine NLDAS_routing_output(n)
 
         if(alarmCheck) then 
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
            NLDAS_routing_struc(n)%numout=NLDAS_routing_struc(n)%numout+1    
            IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
               call PFIO_create_file_metadata(n, PFIO_ROUTING_idx, NLDAS_routing_struc(n)%outInterval, &

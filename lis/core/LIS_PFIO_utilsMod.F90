@@ -11,7 +11,7 @@
 
 module LIS_PFIO_utilsMod
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
 ! !USES:
       use mpi
       use MAPL
@@ -44,7 +44,7 @@ module LIS_PFIO_utilsMod
       integer :: dummy_int
 #endif
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
 !
 !EOP
 !---------------------------------------------------------------------

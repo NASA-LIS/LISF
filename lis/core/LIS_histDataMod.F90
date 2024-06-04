@@ -5850,7 +5850,7 @@ contains
     call LIS_resetOutputVars(n,3) !for RTM
     call LIS_resetOutputVars(n,4) !for Irrigation
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
     PFIO_LSM_idx     = 0
     PFIO_RTM_idx     = 0
     PFIO_IRRIG_idx   = 0

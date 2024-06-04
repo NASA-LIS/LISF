@@ -3,7 +3,7 @@
       module LIS_PFIO_varsMod
 !
 ! !USES:
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
       use MAPL
       use pFIO_UnlimitedEntityMod
 !

@@ -102,7 +102,7 @@ module LIS_coreMod
   use LIS_mpiMod
   use map_utils
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
       use LIS_PFIO_varsMod
 #endif
 
@@ -166,7 +166,7 @@ module LIS_coreMod
   public :: LIS_routing
   public :: LIS_routing_gdeltas, LIS_routing_goffsets
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
       public :: PFIO_bundle
       public :: numPFIOcols
       public :: PFIO_LSM_idx
@@ -215,7 +215,7 @@ module LIS_coreMod
   end type lis_domain_sf_type
 
   type(lisrcdec), save          :: LIS_rc
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
   type(pfio_t),   save          :: PFIO_bundle
   integer                       :: numPFIOcols
   integer                       :: pfioLIS_MOC_LSM_COUNT
@@ -898,7 +898,7 @@ contains
     deallocate(LIS_npatches)
     deallocate(LIS_patch_offsets)
     deallocate(LIS_patch_deltas)
-#ifndef USE_PFIO
+#if ( ! defined USE_PFIO )
     if ( fin_esmf ) then
        call ESMF_Finalize(endflag=ESMF_END_KEEPMPI, rc=ierr)
     endif
@@ -906,7 +906,7 @@ contains
 #if ( defined COUPLED)
 #else
 #if ( defined SPMD )
-#ifndef USE_PFIO
+#if ( ! defined USE_PFIO )
     call MPI_FINALIZE(ierr)
 #endif
 #endif

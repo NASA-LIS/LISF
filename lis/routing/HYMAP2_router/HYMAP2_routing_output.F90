@@ -23,7 +23,7 @@ subroutine HYMAP2_routing_output(n)
 
   use LIS_mpiMod
 
-#ifdef USE_PFIO 
+#if ( defined USE_PFIO )
       use LIS_PFIO_historyMod
 #endif 
 
@@ -85,7 +85,7 @@ subroutine HYMAP2_routing_output(n)
 
            open_stats = .false.
 
-#ifdef USE_PFIO
+#if ( defined USE_PFIO )
            HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
            IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
               ! Create the file metadata ONCE.
