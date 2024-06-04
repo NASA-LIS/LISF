@@ -115,7 +115,7 @@ program lisdrv
 
       ! MPI is not initialized yet. Only Check if it is.
       ! MPI will be initialized under "model"
-      call initialize_mpi(MPI_COMM_WORLD)
+      call is_mpi_initialized(MPI_COMM_WORLD)
 
       call MPI_Comm_size(MPI_COMM_WORLD, npes_world, ierror)
       if (cap_options%npes_model == -1) then
@@ -262,7 +262,7 @@ CONTAINS
      ! Check if MPI is already initialized. 
      ! If MPI is not initialized, then we initialize the MPI execution 
      ! environment with a single thread.
-     subroutine initialize_mpi(comm)
+     subroutine is_mpi_initialized(comm)
          integer, intent(in) :: comm
          logical :: mpi_already_initialized
          integer :: ierror
@@ -277,7 +277,7 @@ CONTAINS
 
          !call MPI_Comm_rank(comm, pe_rank, ierror); _VERIFY(ierror)
          !call MPI_Comm_size(comm, npes_world, ierror); _VERIFY(ierror)
-      end subroutine initialize_mpi
+      end subroutine is_mpi_initialized
 !
 !------------------------------------------------------------------------------
 !
