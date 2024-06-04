@@ -185,6 +185,10 @@ program lisdrv
                endif
 
                call Ftiming_Output(ftim_lun)
+
+               if ( LIS_masterproc ) then
+                  call LIS_releaseUnitNumber(ftim_lun)
+               endif
             endif
 
             if (pe_id == 0) PRINT*,"Start running lisfinalize"
