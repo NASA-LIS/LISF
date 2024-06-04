@@ -11,7 +11,7 @@
 #endif
 
 #include "LIS_misc.h"
-      module LIS_PFIO_historyMod
+module LIS_PFIO_historyMod
 !BOP
 !
 ! !MODULE: LIS_PFIO_historyMod
@@ -22,67 +22,67 @@
 !  The output files are in netCDF format.
 !  
 ! !USES: 
-      use LIS_coreMod
-      use LIS_histDataMod
-      use LIS_timeMgrMod
-      use LIS_logMod
+   use LIS_coreMod
+   use LIS_histDataMod
+   use LIS_timeMgrMod
+   use LIS_logMod
 
-      use LIS_mpiMod
+   use LIS_mpiMod
 #if ( defined USE_PFIO )
-      use, intrinsic :: iso_fortran_env, only: REAL32
-      use MAPL
-      use ESMF
-      use pFIO_ClientManagerMod, only: o_Clients
-      use pFIO_UnlimitedEntityMod
-      use LIS_PFIO_utilsMod, only : PFIO_write_var
+   use, intrinsic :: iso_fortran_env, only: REAL32
+   use MAPL
+   use ESMF
+   use pFIO_ClientManagerMod, only: o_Clients
+   use pFIO_UnlimitedEntityMod
+   use LIS_PFIO_utilsMod, only : PFIO_write_var
 
-      implicit none
+   implicit none
 
-      PRIVATE
+   PRIVATE
 !--------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !--------------------------------
-      public :: PFIO_create_file_metadata
-      public :: PFIO_write_data
-      public :: PFIO_create_routing_metadata
-      public :: PFIO_write_routingdata
+   public :: PFIO_create_file_metadata
+   public :: PFIO_write_data
+   public :: PFIO_create_routing_metadata
+   public :: PFIO_write_routingdata
 
-      REAL               ::          pfio_vmin 
-      REAL               ::          pfio_vmax
-      REAL               :: pfio_missing_value
-      REAL               ::    pfio_fill_value
-      REAL, DIMENSION(2) ::   pfio_valid_range 
+   REAL               ::          pfio_vmin 
+   REAL               ::          pfio_vmax
+   REAL               :: pfio_missing_value
+   REAL               ::    pfio_fill_value
+   REAL, DIMENSION(2) ::   pfio_valid_range 
 
 
-      INTEGER, PARAMETER :: MAX_NUM_VLEVELS = 12
-      integer            :: idx_field2d        ! index of 2d field to ne written out
-      integer            :: idx_field3d        ! index of 3d field to ne written out
-      integer            :: idx_field4d        ! index of 4d field to ne written out
-      INTEGER            :: total_num_2Dfields(10) ! total number of 2D fields to be written out
-      INTEGER            :: total_num_3Dfields(10) ! total number of 3D fields to be written out
-      INTEGER            :: total_num_4Dfields(10) ! total number of 4D fields to be written out
+   INTEGER, PARAMETER :: MAX_NUM_VLEVELS = 12
+   integer            :: idx_field2d        ! index of 2d field to ne written out
+   integer            :: idx_field3d        ! index of 3d field to ne written out
+   integer            :: idx_field4d        ! index of 4d field to ne written out
+   INTEGER            :: total_num_2Dfields(10) ! total number of 2D fields to be written out
+   INTEGER            :: total_num_3Dfields(10) ! total number of 3D fields to be written out
+   INTEGER            :: total_num_4Dfields(10) ! total number of 4D fields to be written out
 
-      ! Derived type to hold the values of the fields to be written
+   ! Derived type to hold the values of the fields to be written
 
-      TYPE local_2Dfield_var
-           real, allocatable :: var2d(:,:)
-           integer           :: idx_field2d
-      END TYPE local_2Dfield_var
+   TYPE local_2Dfield_var
+      real, allocatable :: var2d(:,:)
+      integer           :: idx_field2d
+   END TYPE local_2Dfield_var
 
-      TYPE local_3Dfield_var
-           real, allocatable :: var3d(:,:,:)
-           integer           :: idx_field3d
-      END TYPE local_3Dfield_var
+   TYPE local_3Dfield_var
+      real, allocatable :: var3d(:,:,:)
+      integer           :: idx_field3d
+   END TYPE local_3Dfield_var
 
-      TYPE local_4Dfield_var
-           real, allocatable :: var4d(:,:,:,:)
-           integer           :: idx_field4d
-      END TYPE local_4Dfield_var
+   TYPE local_4Dfield_var
+      real, allocatable :: var4d(:,:,:,:)
+      integer           :: idx_field4d
+   END TYPE local_4Dfield_var
 
-      type(LIS_metadataEntry), pointer :: xlat, xlong
+   type(LIS_metadataEntry), pointer :: xlat, xlong
 
 #else
-       integer :: dummy_int
+   integer :: dummy_int
 #endif
 
 #if ( defined USE_PFIO )
@@ -95,8 +95,8 @@ CONTAINS
 ! \label{PFIO_create_file_metadata}
 ! 
 ! !INTERFACE: PFIO_create_file_metadata
-      subroutine PFIO_create_file_metadata(n, PFIOmodel_idx, outInterval, &
-                                  nsoillayers, lyrthk, model_name, group)
+   subroutine PFIO_create_file_metadata(n, PFIOmodel_idx, outInterval, &
+         nsoillayers, lyrthk, model_name, group)
 ! !USES: 
 !
 ! !INPUTS PARAMETERS: 
@@ -145,8 +145,8 @@ CONTAINS
       integer                 :: group_
       character(len=100)      :: model_name_
       integer                 :: status, gindex
-! Note that the fix to add lat/lon to the NETCDF output will output
-! undefined values for the water points. 
+      ! Note that the fix to add lat/lon to the NETCDF output will output
+      ! undefined values for the water points. 
       character(len=8)        :: date
       character(len=10)       :: time
       character(len=90)       :: name_dims(4)
@@ -255,10 +255,10 @@ CONTAINS
             ensval(i) = float(i)
          end do
       endif
-    
+
       ! defining time field
       write(xtime_units, 200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
-200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
+      200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
@@ -310,37 +310,37 @@ CONTAINS
          call v%add_attribute("begin_time", xtime_begin_time)
          !call v%add_const_value(UnlimitedEntity( time_data ))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
-   
+
          ! Pointer to header information
          SELECT CASE (group_)
-            CASE(1) ! LSM output
-               dataEntry => LIS_histData(n)%head_lsm_list
-               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_LSM_LIST [',PFIOmodel_idx,']'
-            CASE(2) ! ROUTING
-               dataEntry => LIS_histData(n)%head_routing_list
-               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_ROUTING_LIST [',PFIOmodel_idx,']'
-            CASE(3) ! RTM
-               dataEntry => LIS_histData(n)%head_rtm_list
-               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_RTM_LIST [',PFIOmodel_idx,']'
-            CASE(4) ! Irrigation
-               dataEntry => LIS_histData(n)%head_irrig_list
-               write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_IRRIG_LIST [',PFIOmodel_idx,']'
+         CASE(1) ! LSM output
+            dataEntry => LIS_histData(n)%head_lsm_list
+            write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_LSM_LIST [',PFIOmodel_idx,']'
+         CASE(2) ! ROUTING
+            dataEntry => LIS_histData(n)%head_routing_list
+            write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_ROUTING_LIST [',PFIOmodel_idx,']'
+         CASE(3) ! RTM
+            dataEntry => LIS_histData(n)%head_rtm_list
+            write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_RTM_LIST [',PFIOmodel_idx,']'
+         CASE(4) ! Irrigation
+            dataEntry => LIS_histData(n)%head_irrig_list
+            write(LIS_logunit,'(a,i2,a)')'[INFO-PFIO] Doing HEAD_IRRIG_LIST [',PFIOmodel_idx,']'
          END SELECT
-         
+
          total_num_2Dfields(PFIOmodel_idx) = 0
          total_num_3Dfields(PFIOmodel_idx) = 0
          total_num_4Dfields(PFIOmodel_idx) = 0
 
          !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then
-            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
-            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
+         call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
+         call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
          !endif
 
          do while ( associated(dataEntry) )
             call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims)
             dataEntry => dataEntry%next
          enddo
- 
+
          !------------------
          ! Global attributes
          !------------------
@@ -351,7 +351,7 @@ CONTAINS
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("institution", trim(LIS_rc%institution))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("source", trim(model_name_))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("history",  & 
-                   "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
+            "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("conventions", "CF-1.6")
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
@@ -417,7 +417,7 @@ CONTAINS
          deallocate(ensval)
       endif
 
-  end subroutine PFIO_create_file_metadata
+   end subroutine PFIO_create_file_metadata
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -425,8 +425,8 @@ CONTAINS
 ! \label{PFIO_create_routing_metadata}
 ! 
 ! !INTERFACE: PFIO_create_routing_metadata
-      subroutine PFIO_create_routing_metadata(n, PFIOmodel_idx, group, outInterval, &
-                                  nsoillayers, lyrthk, model_name)
+   subroutine PFIO_create_routing_metadata(n, PFIOmodel_idx, group, outInterval, &
+         nsoillayers, lyrthk, model_name)
 ! !USES: 
 !
 ! !INPUTS PARAMETERS: 
@@ -475,8 +475,8 @@ CONTAINS
       integer                 :: group_
       character(len=100)      :: model_name_
       integer                 :: status, gindex
-! Note that the fix to add lat/lon to the NETCDF output will output
-! undefined values for the water points. 
+      ! Note that the fix to add lat/lon to the NETCDF output will output
+      ! undefined values for the water points. 
       character(len=8)        :: date
       character(len=10)       :: time
       character(len=90)       :: name_dims(4)
@@ -564,10 +564,10 @@ CONTAINS
       do i=1,LIS_rc%nroutinggrid(n)
          do m=1,LIS_rc%nensem(n)
             t = m+(i-1)*LIS_rc%nensem(n)
-      
+
             c = LIS_routing(n)%tile(t)%col
             r = LIS_routing(n)%tile(t)%row
-    
+
             xlat%modelOutput(1,t,1)  = LIS_domain(n)%lat(c+(r-1)*LIS_rc%lnc(n))
             xlong%modelOutput(1,t,1) = LIS_domain(n)%lon(c+(r-1)*LIS_rc%lnc(n))
          enddo
@@ -580,10 +580,10 @@ CONTAINS
             ensval(i) = float(i)
          end do
       endif
-    
+
       ! defining time field
       write(xtime_units, 200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
-200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
+      200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
@@ -636,24 +636,24 @@ CONTAINS
          call v%add_attribute("begin_time", xtime_begin_time)
          !call v%add_const_value(UnlimitedEntity( time_data ))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable('time', v)
-   
+
          ! Pointer to header information
          dataEntry => LIS_histData(n)%head_routing_list
-         
+
          total_num_2Dfields(PFIOmodel_idx) = 0
          total_num_3Dfields(PFIOmodel_idx) = 0
          total_num_4Dfields(PFIOmodel_idx) = 0
 
          !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then
-            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
-            call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
+         call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlat,  name_dims, non_model_fields = 1)
+         call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, xlong, name_dims, non_model_fields = 2)
          !endif
 
          do while ( associated(dataEntry) )
             call PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims)
             dataEntry => dataEntry%next
          enddo
- 
+
          !------------------
          ! Global attributes
          !------------------
@@ -664,7 +664,7 @@ CONTAINS
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("institution", trim(LIS_rc%institution))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("source", trim(model_name_))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("history",  & 
-                   "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
+            "created on date: "//date(1:4)//"-"//date(5:6)//"-"// date(7:8)//"T"//time(1:2)//":"//time(3:4)//":"//time(5:10))
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("references", "Kumar_etal_EMS_2006, Peters-Lidard_etal_ISSE_2007")
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("conventions", "CF-1.6")
          call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_attribute("comment", "website: http://lis.gsfc.nasa.gov/")
@@ -730,7 +730,7 @@ CONTAINS
          deallocate(ensval)
       endif
 
-  end subroutine PFIO_create_routing_metadata
+   end subroutine PFIO_create_routing_metadata
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -739,7 +739,7 @@ CONTAINS
 ! 
 ! !INTERFACE: 
 !
-      subroutine PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims, non_model_fields)
+   subroutine PFIO_define_variable_header(n, PFIOmodel_idx, vcol_id, dataEntry, name_dims, non_model_fields)
 !
 ! !USES: 
 
@@ -854,7 +854,7 @@ CONTAINS
                else
                   short_name = trim(dataEntry%short_name)
                endif
-             
+
                if (dataEntry%vlevels.gt.1) then 
                   dim_names = TRIM(name_dims(1))//','//TRIM(name_dims(2))
                else
@@ -909,7 +909,7 @@ CONTAINS
                else
                   short_name = trim(dataEntry%short_name)
                endif
-             
+
                if (dataEntry%vlevels.gt.1) then 
                   dim_names = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))
                else
@@ -944,7 +944,7 @@ CONTAINS
          elseif (LIS_rc%wopt.eq."2d ensemble gridspace") then 
 
             if (dataEntry%timeAvgOpt.eq.2) then 
-             
+
                if (dataEntry%vlevels.gt.1) then 
                   dim_names  = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))//','//TRIM(name_dims(4))
 
@@ -1008,7 +1008,7 @@ CONTAINS
                      short_name = trim(dataEntry%short_name)//'_acc'
                   endif
                endif
-             
+
                vname_def = trim(short_name)
 
                if (dataEntry%vlevels.gt.1) then 
@@ -1102,7 +1102,7 @@ CONTAINS
          endif
       endif
 
-      end subroutine PFIO_define_variable_header
+   end subroutine PFIO_define_variable_header
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1110,7 +1110,7 @@ CONTAINS
 ! \label{PFIO_write_data}
 !
 ! !INTERFACE: 
-      subroutine PFIO_write_data(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
+   subroutine PFIO_write_data(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
       integer,          intent(in) :: n 
       integer,          intent(in) :: PFIOmodel_idx 
@@ -1152,7 +1152,7 @@ CONTAINS
       !-------------------------
       call date_and_time(date, time, zone, values)
       write(xtime_units, 200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
-200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
+      200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
@@ -1183,14 +1183,14 @@ CONTAINS
 
 
       SELECT CASE (group_)
-         CASE(1) ! LSM output
-            dataEntry => LIS_histData(n)%head_lsm_list
-         CASE(2) ! ROUTING
-            dataEntry => LIS_histData(n)%head_routing_list
-         CASE(3) ! RTM
-            dataEntry => LIS_histData(n)%head_rtm_list
-         CASE(4) ! Irrigation
-            dataEntry => LIS_histData(n)%head_irrig_list
+      CASE(1) ! LSM output
+         dataEntry => LIS_histData(n)%head_lsm_list
+      CASE(2) ! ROUTING
+         dataEntry => LIS_histData(n)%head_routing_list
+      CASE(3) ! RTM
+         dataEntry => LIS_histData(n)%head_rtm_list
+      CASE(4) ! Irrigation
+         dataEntry => LIS_histData(n)%head_irrig_list
       END SELECT
 
       SELECT CASE(LIS_rc%wopt)
@@ -1210,19 +1210,19 @@ CONTAINS
       ! Writing latitude/longitude
       !---------------------------
       !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
-         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  &
-                                  file_name, local_var2D, local_var3D, local_var4D, &
-                                  i1, i2, j1, j2, non_model_fields=1)
-         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, &
-                                  file_name, local_var2D, local_var3D, local_var4D, &
-                                  i1, i2, j1, j2, non_model_fields=2)
+      call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  &
+         file_name, local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields=1)
+      call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, &
+         file_name, local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields=2)
       !endif
 
       ! Writing the model fields
       !-------------------------
       do while ( associated(dataEntry) )
          call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
-                                  local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+            local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
          dataEntry => dataEntry%next
       enddo
 
@@ -1260,7 +1260,7 @@ CONTAINS
 
       call LIS_resetOutputVars(n, group_)
 
-      end subroutine PFIO_write_data
+   end subroutine PFIO_write_data
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1268,20 +1268,20 @@ CONTAINS
 ! \label{PFIO_write_variable}
 !
 ! !INTERFACE: 
-  subroutine PFIO_write_variable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
-                                 local_var2D, local_var3D, local_var4D, &
-                                 i1, i2, j1, j2, non_model_fields)
+   subroutine PFIO_write_variable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
+         local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields)
 
-    integer,   intent(in)   :: n 
-    integer,   intent(in)   :: PFIOmodel_idx 
-    integer,   intent(in)   :: vcol_id 
-    integer,   intent(in)   :: i1, i2, j1, j2
-    type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
-    type(local_3Dfield_var), intent(inOut) :: local_var3D(:)
-    type(local_4Dfield_var), intent(inOut) :: local_var4D(:)
-    type(LIS_metadataEntry), pointer :: dataEntry
-    character(len=*), intent(in) :: file_name
-    integer, optional, intent(in) :: non_model_fields
+      integer,   intent(in)   :: n 
+      integer,   intent(in)   :: PFIOmodel_idx 
+      integer,   intent(in)   :: vcol_id 
+      integer,   intent(in)   :: i1, i2, j1, j2
+      type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
+      type(local_3Dfield_var), intent(inOut) :: local_var3D(:)
+      type(local_4Dfield_var), intent(inOut) :: local_var4D(:)
+      type(LIS_metadataEntry), pointer :: dataEntry
+      character(len=*), intent(in) :: file_name
+      integer, optional, intent(in) :: non_model_fields
 ! 
 ! !DESCRIPTION: 
 !  This routine writes a single variable to a NETCDF file
@@ -1313,86 +1313,86 @@ CONTAINS
          nmodel_status = non_model_fields
       endif
 
-    IF_selectOpt: if (dataEntry%selectOpt.eq.1) then
+      IF_selectOpt: if (dataEntry%selectOpt.eq.1) then
 
-       m = 1
-       IF (nmodel_status == 0) THEN
-          do t=1,LIS_rc%ntiles(n)
-             m = LIS_domain(n)%tile(t)%sftype
-             do k=1,dataEntry%vlevels
-                if (dataEntry%count(t,k).gt.0) then 
-                   SELECT CASE(dataEntry%timeAvgOpt)
-                   CASE(3)
-                      continue   
-                   CASE (1, 2)
-                      dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/ dataEntry%count(t,k)
-                   CASE DEFAULT
-                      continue   
-                   END SELECT
-                else
-                   dataEntry%modelOutput(1,t,k) = pfio_missing_value
-                endif
-             enddo
-          enddo
-       ENDIF
+         m = 1
+         IF (nmodel_status == 0) THEN
+            do t=1,LIS_rc%ntiles(n)
+               m = LIS_domain(n)%tile(t)%sftype
+               do k=1,dataEntry%vlevels
+                  if (dataEntry%count(t,k).gt.0) then 
+                     SELECT CASE(dataEntry%timeAvgOpt)
+                     CASE(3)
+                        continue   
+                     CASE (1, 2)
+                        dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/ dataEntry%count(t,k)
+                     CASE DEFAULT
+                        continue   
+                     END SELECT
+                  else
+                     dataEntry%modelOutput(1,t,k) = pfio_missing_value
+                  endif
+               enddo
+            enddo
+         ENDIF
 
-       if (nmodel_status == 0) then
-          SELECT CASE(dataEntry%timeAvgOpt)
-          CASE(0)
-             var_name = trim(dataEntry%short_name)//'_inst'
-          CASE(1)
-             var_name = trim(dataEntry%short_name)//'_tavg'
-          CASE(3)
-             var_name = trim(dataEntry%short_name)//'_acc'
-          END SELECT
-       else
-          var_name = trim(dataEntry%short_name)
-       endif
+         if (nmodel_status == 0) then
+            SELECT CASE(dataEntry%timeAvgOpt)
+            CASE(0)
+               var_name = trim(dataEntry%short_name)//'_inst'
+            CASE(1)
+               var_name = trim(dataEntry%short_name)//'_tavg'
+            CASE(3)
+               var_name = trim(dataEntry%short_name)//'_acc'
+            END SELECT
+         else
+            var_name = trim(dataEntry%short_name)
+         endif
 
-       ! accumulated values
-       ! time-averaged values and instantaneous values
-       nlev = dataEntry%vlevels
-       if (dataEntry%timeAvgOpt.eq.2) then 
-          CALL increment_field_counter()
-          var_name = trim(dataEntry%short_name)//"_tavg"
-          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(1,:,1:nlev),  &
-                                     var_name, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+         ! accumulated values
+         ! time-averaged values and instantaneous values
+         nlev = dataEntry%vlevels
+         if (dataEntry%timeAvgOpt.eq.2) then 
+            CALL increment_field_counter()
+            var_name = trim(dataEntry%short_name)//"_tavg"
+            call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(1,:,1:nlev),  &
+               var_name, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_inst"
-          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(2,:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_inst"
+            call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(2,:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-       ! time-averaged values or instantaneous values
-       else
-          CALL increment_field_counter(nmodel_status)
-          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(1,:,1:nlev),  &
-                                     var_name, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
-       end if ! EMK
-       if (dataEntry%minmaxOpt.gt.0) then 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_min"
-          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%minimum(:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+            ! time-averaged values or instantaneous values
+         else
+            CALL increment_field_counter(nmodel_status)
+            call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(1,:,1:nlev),  &
+               var_name, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
+         end if ! EMK
+         if (dataEntry%minmaxOpt.gt.0) then 
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_min"
+            call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%minimum(:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_max"
-          call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%maximum(:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
-       endif
-    end if IF_selectOpt
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_max"
+            call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%maximum(:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
+         endif
+      end if IF_selectOpt
 
-  end subroutine PFIO_write_variable
+   end subroutine PFIO_write_variable
 
 !EOC
 ! -----------------------------------------------------------------------
@@ -1401,9 +1401,9 @@ CONTAINS
 ! \label{PFIO_write_single_var}
 ! 
 ! !INTERFACE:
-  subroutine PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
-                                   local_var2D, local_var3D, local_var4D, &
-                                   i1, i2, j1, j2, nlev, nmodel_status)
+   subroutine PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
+         local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, nlev, nmodel_status)
 ! !USES: 
 
 ! !ARGUMENTS: 
@@ -1459,13 +1459,13 @@ CONTAINS
          call map_1dtile_to_1darray(n, var_data, local_var2D(idx_field2d)%var2d(:,1:nlev), i1, i2, nlev)
          ref =  ArrayReference(local_var2D(idx_field2d)%var2d(:,1:nlev))
          call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                        TRIM(file_name), TRIM(var_name), ref, &
-                        start        = [ i1, 1 ], &
-                        global_start = [  1, 1 ], & 
-                        global_count = [ LIS_rc%glbntiles_red(n), nlev ] )
+            TRIM(file_name), TRIM(var_name), ref, &
+            start        = [ i1, 1 ], &
+            global_start = [  1, 1 ], & 
+            global_count = [ LIS_rc%glbntiles_red(n), nlev ] )
 
          ! deallaocate(var1)
-      ! Write output in 2d grid space:
+         ! Write output in 2d grid space:
       elseif(LIS_rc%wopt.eq."2d gridspace") then
          CALL get_LIS_globaldim(n, global_dim)
          allocate(var1(LIS_rc%ngrid(n),nlev))
@@ -1492,17 +1492,17 @@ CONTAINS
 
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
-                    gindex = c+(r-1)*LIS_rc%lnc(n)
-                    loclat(r) = LIS_domain(n)%lat(gindex)
+                     gindex = c+(r-1)*LIS_rc%lnc(n)
+                     loclat(r) = LIS_domain(n)%lat(gindex)
                   enddo
                enddo
 
                ref = ArrayReference(loclat(:))
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ j1 ], &
-                           global_start = [ 1  ], & 
-                           global_count = [ global_dim(2) ] )
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ j1 ], &
+                  global_start = [ 1  ], & 
+                  global_count = [ global_dim(2) ] )
                deallocate(loclat) 
             elseif(nmodel_status.eq.2) then !lon
                allocate(loclon(LIS_rc%lnc(n)))
@@ -1510,38 +1510,38 @@ CONTAINS
 
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
-                    gindex = c+(r-1)*LIS_rc%lnc(n)
-                    loclon(c) = LIS_domain(n)%lon(gindex)
+                     gindex = c+(r-1)*LIS_rc%lnc(n)
+                     loclon(c) = LIS_domain(n)%lon(gindex)
                   enddo
                enddo
 
                ref = ArrayReference(loclon(:))
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ i1 ], &
-                           global_start = [ 1  ], & 
-                           global_count = [ global_dim(1) ] )
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ i1 ], &
+                  global_start = [ 1  ], & 
+                  global_count = [ global_dim(1) ] )
                deallocate(loclon) 
             endif
-         ! The latlon fields are written to 2D
+            ! The latlon fields are written to 2D
          else
             call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), &
-                                       i1, i2, j1, j2, nlev)
+               i1, i2, j1, j2, nlev)
             ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
             call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                        TRIM(file_name), TRIM(var_name), ref, &
-                        start        = [ i1, j1, 1 ], &
-                        global_start = [  1,  1, 1 ], & 
-                        global_count = [ global_dim(1), global_dim(2), nlev ] )
+               TRIM(file_name), TRIM(var_name), ref, &
+               start        = [ i1, j1, 1 ], &
+               global_start = [  1,  1, 1 ], & 
+               global_count = [ global_dim(1), global_dim(2), nlev ] )
 
             deallocate(var1) 
          endif
 
-      ! Write output in 2D ensemble grid space:
+         ! Write output in 2D ensemble grid space:
       elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then
          CALL get_LIS_globaldim(n, global_dim)
-  
+
          ! Non-model output field status (T=non-model; F=model-based):
          if (nmodel_status > 0) then   ! non-model output field status
             allocate(var1(LIS_rc%ngrid(n),nlev))
@@ -1568,51 +1568,51 @@ CONTAINS
 
                   do r=1,LIS_rc%lnr(n)
                      do c=1,LIS_rc%lnc(n)
-                       gindex = c+(r-1)*LIS_rc%lnc(n)
-                       loclat(r) = LIS_domain(n)%lat(gindex)
+                        gindex = c+(r-1)*LIS_rc%lnc(n)
+                        loclat(r) = LIS_domain(n)%lat(gindex)
                      enddo
                   enddo
 
                   ref = ArrayReference(loclat(:))
                   call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ j1 ], &
-                              global_start = [ 1  ], &
-                              global_count = [ global_dim(2) ] )
+                     TRIM(file_name), TRIM(var_name), ref, &
+                     start        = [ j1 ], &
+                     global_start = [ 1  ], &
+                     global_count = [ global_dim(2) ] )
                   deallocate(loclat)
                elseif(nmodel_status.eq.2) then !lon
                   allocate(loclon(LIS_rc%lnc(n)))
                   loclon = LIS_rc%udef
-   
+
                   do r=1,LIS_rc%lnr(n)
                      do c=1,LIS_rc%lnc(n)
-                       gindex = c+(r-1)*LIS_rc%lnc(n)
-                       loclon(c) = LIS_domain(n)%lon(gindex)
+                        gindex = c+(r-1)*LIS_rc%lnc(n)
+                        loclon(c) = LIS_domain(n)%lon(gindex)
                      enddo
                   enddo
 
                   ref = ArrayReference(loclon(:))
                   call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ i1 ], &
-                              global_start = [ 1  ], &
-                              global_count = [ global_dim(1) ] )
+                     TRIM(file_name), TRIM(var_name), ref, &
+                     start        = [ i1 ], &
+                     global_start = [ 1  ], &
+                     global_count = [ global_dim(1) ] )
                   deallocate(loclon)
                endif
-            ! The latlon fields are written to 2D
+               ! The latlon fields are written to 2D
             else
                call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), i1, i2, j1, j2, nlev)
                ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ i1, j1, 1 ], &
-                              global_start = [  1,  1, 1 ], &
-                              global_count = [ global_dim(1), global_dim(2), nlev ] )
-   
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ i1, j1, 1 ], &
+                  global_start = [  1,  1, 1 ], &
+                  global_count = [ global_dim(1), global_dim(2), nlev ] )
+
                deallocate(var1)
             endif
-         ! Model-based field output:
+            ! Model-based field output:
          else
             allocate(var1_ens(LIS_rc%ngrid(n), LIS_rc%nensem(n), nlev))
 
@@ -1630,7 +1630,7 @@ CONTAINS
                   enddo
                enddo
             enddo
-         
+
             do m=1,LIS_rc%nensem(n)
                call map_1dtile_to_2darray(n, var1_ens(:,m,:), local_var4D(idx_field4d)%var4d(:,:,m,1:nlev), i1, i2, j1, j2, nlev)
             enddo
@@ -1638,10 +1638,10 @@ CONTAINS
             m = LIS_rc%nensem(n)
             ref =  ArrayReference(local_var4D(idx_field4d)%var4d(:,:,:,1:nlev))
             call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ i1, j1, 1, 1 ], &
-                           global_start = [  1,  1, 1, 1 ], & 
-                           global_count = [ global_dim(1), global_dim(2), m, nlev] )
+               TRIM(file_name), TRIM(var_name), ref, &
+               start        = [ i1, j1, 1, 1 ], &
+               global_start = [  1,  1, 1, 1 ], & 
+               global_count = [ global_dim(1), global_dim(2), m, nlev] )
 
             deallocate(var1_ens) 
          endif
@@ -1649,7 +1649,7 @@ CONTAINS
       end if WOPT
 
 
-  end subroutine PFIO_write_single_var
+   end subroutine PFIO_write_single_var
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1657,7 +1657,7 @@ CONTAINS
 ! \label{PFIO_write_routingdata}
 !
 ! !INTERFACE: 
-      subroutine PFIO_write_routingdata(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
+   subroutine PFIO_write_routingdata(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
       integer,          intent(in) :: n, PFIOmodel_idx
       integer,          intent(in) :: vcol_id 
@@ -1698,7 +1698,7 @@ CONTAINS
       !-------------------------
       call date_and_time(date, time, zone, values)
       write(xtime_units, 200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
-200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
+      200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
@@ -1744,17 +1744,17 @@ CONTAINS
       ! Writing latitude/longitude
       !---------------------------
       !if ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
-         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  file_name, local_var2D, local_var3D, local_var4D, &
-                                  i1, i2, j1, j2, non_model_fields=1)
-         call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, file_name, local_var2D, local_var3D, local_var4D, &
-                                  i1, i2, j1, j2, non_model_fields=2)
+      call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlat,  file_name, local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields=1)
+      call PFIO_write_variable(n, PFIOmodel_idx, vcol_id, xlong, file_name, local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields=2)
       !endif
 
       ! Writing the model fields
       !-------------------------
       do while ( associated(dataEntry) )
          call PFIO_write_routingvariable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
-                                  local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+            local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
          dataEntry => dataEntry%next
       enddo
 
@@ -1788,7 +1788,7 @@ CONTAINS
 
       call LIS_resetOutputVars(n, group_)
 
-      end subroutine PFIO_write_routingdata
+   end subroutine PFIO_write_routingdata
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1796,20 +1796,20 @@ CONTAINS
 ! \label{PFIO_write_routingvariable}
 !
 ! !INTERFACE: 
-  subroutine PFIO_write_routingvariable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
-                                 local_var2D, local_var3D, local_var4D, &
-                                 i1, i2, j1, j2, non_model_fields)
+   subroutine PFIO_write_routingvariable(n, PFIOmodel_idx, vcol_id, dataEntry, file_name, &
+         local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, non_model_fields)
 
-    integer,   intent(in)   :: n 
-    integer,   intent(in)   :: PFIOmodel_idx 
-    integer,   intent(in)   :: vcol_id 
-    integer,   intent(in)   :: i1, i2, j1, j2
-    type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
-    type(local_3Dfield_var), intent(inOut) :: local_var3D(:)
-    type(local_4Dfield_var), intent(inOut) :: local_var4D(:)
-    type(LIS_metadataEntry), pointer :: dataEntry
-    character(len=*), intent(in) :: file_name
-    integer, optional, intent(in) :: non_model_fields
+      integer,   intent(in)   :: n 
+      integer,   intent(in)   :: PFIOmodel_idx 
+      integer,   intent(in)   :: vcol_id 
+      integer,   intent(in)   :: i1, i2, j1, j2
+      type(local_2Dfield_var), intent(inOut) :: local_var2D(:)
+      type(local_3Dfield_var), intent(inOut) :: local_var3D(:)
+      type(local_4Dfield_var), intent(inOut) :: local_var4D(:)
+      type(LIS_metadataEntry), pointer :: dataEntry
+      character(len=*), intent(in) :: file_name
+      integer, optional, intent(in) :: non_model_fields
 ! 
 ! !DESCRIPTION: 
 !  This routine writes a single variable to a NETCDF file
@@ -1839,84 +1839,84 @@ CONTAINS
       nmodel_status = 0
       if (present(non_model_fields)) nmodel_status = non_model_fields
 
-    IF_selectOpt: if (dataEntry%selectOpt.eq.1) then
+      IF_selectOpt: if (dataEntry%selectOpt.eq.1) then
 
-       IF (nmodel_status == 0) THEN
-          do t=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
-             do k=1,dataEntry%vlevels
-                if (dataEntry%count(t,k).gt.0) then 
-                   SELECT CASE(dataEntry%timeAvgOpt)
-                   CASE(3)
-                      continue   
-                   CASE (1, 2)
-                      dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/ dataEntry%count(t,k)
-                   CASE DEFAULT
-                      continue   
-                   END SELECT
-                else
-                   dataEntry%modelOutput(1,t,k) = pfio_missing_value
-                endif
-             enddo
-          enddo
-       ENDIF
+         IF (nmodel_status == 0) THEN
+            do t=1,LIS_rc%nroutinggrid(n)*LIS_rc%nensem(n)
+               do k=1,dataEntry%vlevels
+                  if (dataEntry%count(t,k).gt.0) then 
+                     SELECT CASE(dataEntry%timeAvgOpt)
+                     CASE(3)
+                        continue   
+                     CASE (1, 2)
+                        dataEntry%modelOutput(1,t,k) = dataEntry%modelOutput(1,t,k)/ dataEntry%count(t,k)
+                     CASE DEFAULT
+                        continue   
+                     END SELECT
+                  else
+                     dataEntry%modelOutput(1,t,k) = pfio_missing_value
+                  endif
+               enddo
+            enddo
+         ENDIF
 
-       if (nmodel_status == 0) then
-          SELECT CASE(dataEntry%timeAvgOpt)
-          CASE(0)
-             var_name = trim(dataEntry%short_name)//'_inst'
-          CASE(1)
-             var_name = trim(dataEntry%short_name)//'_tavg'
-          CASE(3)
-             var_name = trim(dataEntry%short_name)//'_acc'
-          END SELECT
-       else
-          var_name = trim(dataEntry%short_name)
-       endif
+         if (nmodel_status == 0) then
+            SELECT CASE(dataEntry%timeAvgOpt)
+            CASE(0)
+               var_name = trim(dataEntry%short_name)//'_inst'
+            CASE(1)
+               var_name = trim(dataEntry%short_name)//'_tavg'
+            CASE(3)
+               var_name = trim(dataEntry%short_name)//'_acc'
+            END SELECT
+         else
+            var_name = trim(dataEntry%short_name)
+         endif
 
-       ! accumulated values
-       ! time-averaged values and instantaneous values
-       nlev = dataEntry%vlevels
-       if (dataEntry%timeAvgOpt.eq.2) then 
-          CALL increment_field_counter()
-          var_name = trim(dataEntry%short_name)//"_tavg"
-          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(1,:,1:nlev),  &
-                                     var_name, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+         ! accumulated values
+         ! time-averaged values and instantaneous values
+         nlev = dataEntry%vlevels
+         if (dataEntry%timeAvgOpt.eq.2) then 
+            CALL increment_field_counter()
+            var_name = trim(dataEntry%short_name)//"_tavg"
+            call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(1,:,1:nlev),  &
+               var_name, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_inst"
-          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(2,:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_inst"
+            call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(2,:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-       ! time-averaged values or instantaneous values
-       else
-          CALL increment_field_counter(nmodel_status)
-          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%modelOutput(1,:,1:nlev),  &
-                                     var_name, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
-       end if ! EMK
-       if (dataEntry%minmaxOpt.gt.0) then 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_min"
-          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%minimum(:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
+            ! time-averaged values or instantaneous values
+         else
+            CALL increment_field_counter(nmodel_status)
+            call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%modelOutput(1,:,1:nlev),  &
+               var_name, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
+         end if ! EMK
+         if (dataEntry%minmaxOpt.gt.0) then 
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_min"
+            call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%minimum(:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
 
-          CALL increment_field_counter()
-          var_name2 = trim(dataEntry%short_name)//"_max"
-          call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
-                                     dataEntry%maximum(:,1:nlev),  &
-                                     var_name2, local_var2D, local_var3D, local_var4D, &
-                                     i1, i2, j1, j2, nlev, nmodel_status)
-       endif
-    end if IF_selectOpt
+            CALL increment_field_counter()
+            var_name2 = trim(dataEntry%short_name)//"_max"
+            call PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
+               dataEntry%maximum(:,1:nlev),  &
+               var_name2, local_var2D, local_var3D, local_var4D, &
+               i1, i2, j1, j2, nlev, nmodel_status)
+         endif
+      end if IF_selectOpt
 
-  end subroutine PFIO_write_routingvariable
+   end subroutine PFIO_write_routingvariable
 !EOC
 ! -----------------------------------------------------------------------
 !BOP
@@ -1924,9 +1924,9 @@ CONTAINS
 ! \label{PFIO_write_single_var}
 ! 
 ! !INTERFACE:
-  subroutine PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
-                                   local_var2D, local_var3D, local_var4D, &
-                                   i1, i2, j1, j2, nlev, nmodel_status)
+   subroutine PFIO_write_single_routingvar(n, PFIOmodel_idx, vcol_id, file_name, var_data, var_name, &
+         local_var2D, local_var3D, local_var4D, &
+         i1, i2, j1, j2, nlev, nmodel_status)
 ! !USES: 
 
 ! !ARGUMENTS: 
@@ -2001,17 +2001,17 @@ CONTAINS
 
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
-                    gindex = c+(r-1)*LIS_rc%lnc(n)
-                    loclat(r) = LIS_domain(n)%lat(gindex)
+                     gindex = c+(r-1)*LIS_rc%lnc(n)
+                     loclat(r) = LIS_domain(n)%lat(gindex)
                   enddo
                enddo
 
                ref = ArrayReference(loclat(:))
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ j1 ], &
-                           global_start = [ 1  ], & 
-                           global_count = [ global_dim(2) ] )
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ j1 ], &
+                  global_start = [ 1  ], & 
+                  global_count = [ global_dim(2) ] )
                deallocate(loclat) 
             elseif(nmodel_status.eq.2) then !lon
                allocate(loclon(LIS_rc%lnc(n)))
@@ -2019,38 +2019,38 @@ CONTAINS
 
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
-                    gindex = c+(r-1)*LIS_rc%lnc(n)
-                    loclon(c) = LIS_domain(n)%lon(gindex)
+                     gindex = c+(r-1)*LIS_rc%lnc(n)
+                     loclon(c) = LIS_domain(n)%lon(gindex)
                   enddo
                enddo
 
                ref = ArrayReference(loclon(:))
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ i1 ], &
-                           global_start = [ 1  ], & 
-                           global_count = [ global_dim(1) ] )
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ i1 ], &
+                  global_start = [ 1  ], & 
+                  global_count = [ global_dim(1) ] )
                deallocate(loclon) 
             endif
-         ! The latlon fields are written to 2D
+            ! The latlon fields are written to 2D
          else
             call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), &
-                                       i1, i2, j1, j2, nlev)
+               i1, i2, j1, j2, nlev)
             ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
             call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                        TRIM(file_name), TRIM(var_name), ref, &
-                        start        = [ i1, j1, 1 ], &
-                        global_start = [  1,  1, 1 ], & 
-                        global_count = [ global_dim(1), global_dim(2), nlev ] )
+               TRIM(file_name), TRIM(var_name), ref, &
+               start        = [ i1, j1, 1 ], &
+               global_start = [  1,  1, 1 ], & 
+               global_count = [ global_dim(1), global_dim(2), nlev ] )
 
             deallocate(var1) 
          endif
 
-      ! Write output in 2D ensemble grid space:
+         ! Write output in 2D ensemble grid space:
       elseif(LIS_rc%wopt.eq."2d ensemble gridspace") then
          CALL get_LIS_globaldim(n, global_dim)
-  
+
          ! Non-model output field status (T=non-model; F=model-based):
          if (nmodel_status > 0) then   ! non-model output field status
             allocate(var1(LIS_rc%nroutinggrid(n),nlev))
@@ -2076,51 +2076,51 @@ CONTAINS
 
                   do r=1,LIS_rc%lnr(n)
                      do c=1,LIS_rc%lnc(n)
-                       gindex = c+(r-1)*LIS_rc%lnc(n)
-                       loclat(r) = LIS_domain(n)%lat(gindex)
+                        gindex = c+(r-1)*LIS_rc%lnc(n)
+                        loclat(r) = LIS_domain(n)%lat(gindex)
                      enddo
                   enddo
 
                   ref = ArrayReference(loclat(:))
                   call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ j1 ], &
-                              global_start = [ 1  ], &
-                              global_count = [ global_dim(2) ] )
+                     TRIM(file_name), TRIM(var_name), ref, &
+                     start        = [ j1 ], &
+                     global_start = [ 1  ], &
+                     global_count = [ global_dim(2) ] )
                   deallocate(loclat)
                elseif(nmodel_status.eq.2) then !lon
                   allocate(loclon(LIS_rc%lnc(n)))
                   loclon = LIS_rc%udef
-   
+
                   do r=1,LIS_rc%lnr(n)
                      do c=1,LIS_rc%lnc(n)
-                       gindex = c+(r-1)*LIS_rc%lnc(n)
-                       loclon(c) = LIS_domain(n)%lon(gindex)
+                        gindex = c+(r-1)*LIS_rc%lnc(n)
+                        loclon(c) = LIS_domain(n)%lon(gindex)
                      enddo
                   enddo
 
                   ref = ArrayReference(loclon(:))
                   call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ i1 ], &
-                              global_start = [ 1  ], &
-                              global_count = [ global_dim(1) ] )
+                     TRIM(file_name), TRIM(var_name), ref, &
+                     start        = [ i1 ], &
+                     global_start = [ 1  ], &
+                     global_count = [ global_dim(1) ] )
                   deallocate(loclon)
                endif
-            ! The latlon fields are written to 2D
+               ! The latlon fields are written to 2D
             else
                call map_1dtile_to_2darray(n, var1, local_var3D(idx_field3d)%var3d(:,:,1:nlev), i1, i2, j1, j2, nlev)
                ref =  ArrayReference(local_var3D(idx_field3d)%var3d(:,:,1:nlev))
 
                call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                              TRIM(file_name), TRIM(var_name), ref, &
-                              start        = [ i1, j1, 1 ], &
-                              global_start = [  1,  1, 1 ], &
-                              global_count = [ global_dim(1), global_dim(2), nlev ] )
-   
+                  TRIM(file_name), TRIM(var_name), ref, &
+                  start        = [ i1, j1, 1 ], &
+                  global_start = [  1,  1, 1 ], &
+                  global_count = [ global_dim(1), global_dim(2), nlev ] )
+
                deallocate(var1)
             endif
-         ! Model-based field output:
+            ! Model-based field output:
          else
             allocate(var1_ens(LIS_rc%ngrid(n), LIS_rc%nensem(n), nlev))
 
@@ -2138,7 +2138,7 @@ CONTAINS
                   enddo
                enddo
             enddo
-         
+
             do m=1,LIS_rc%nensem(n)
                call map_1dtile_to_2darray(n, var1_ens(:,m,:), local_var4D(idx_field4d)%var4d(:,:,m,1:nlev), i1, i2, j1, j2, nlev)
             enddo
@@ -2146,17 +2146,17 @@ CONTAINS
             m = LIS_rc%nensem(n)
             ref =  ArrayReference(local_var4D(idx_field4d)%var4d(:,:,:,1:nlev))
             call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id,PFIOmodel_idx), &
-                           TRIM(file_name), TRIM(var_name), ref, &
-                           start        = [ i1, j1, 1, 1 ], &
-                           global_start = [  1,  1, 1, 1 ], & 
-                           global_count = [ global_dim(1), global_dim(2), m, nlev] )
+               TRIM(file_name), TRIM(var_name), ref, &
+               start        = [ i1, j1, 1, 1 ], &
+               global_start = [  1,  1, 1, 1 ], & 
+               global_count = [ global_dim(1), global_dim(2), m, nlev] )
 
             deallocate(var1_ens) 
          endif
 
       end if WOPT
 
-  end subroutine PFIO_write_single_routingvar
+   end subroutine PFIO_write_single_routingvar
 !EOC
 ! -----------------------------------------------------------------------
 !BOP
@@ -2164,27 +2164,27 @@ CONTAINS
 ! \label{PFIO_restart_metadata}
 ! 
 ! !INTERFACE: PFIO_create_restart_metadata
-      subroutine PFIO_restart_metadata(n, m, model_name, var_flag, &
-                      dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10,&
-                      output_format)
+   subroutine PFIO_restart_metadata(n, m, model_name, var_flag, &
+         dim1, dim2, dim3, dim4, dim5, dim6, dim7, dim8, dim9, dim10,&
+         output_format)
 ! !USES: 
 !
 ! !INPUTS PARAMETERS: 
-    integer,   intent(in)     :: n
-    integer,   intent(in)     :: m
-    character(len=*), intent(in) :: model_name
-    character(len=*), optional :: var_flag
-    integer,    optional      :: dim1
-    integer,    optional      :: dim2
-    integer,    optional      :: dim3
-    integer,    optional      :: dim4
-    integer,    optional      :: dim5
-    integer,    optional      :: dim6
-    integer,    optional      :: dim7
-    integer,    optional      :: dim8
-    integer,    optional      :: dim9
-    integer,    optional      :: dim10
-    character(len=*), optional :: output_format
+      integer,   intent(in)     :: n
+      integer,   intent(in)     :: m
+      character(len=*), intent(in) :: model_name
+      character(len=*), optional :: var_flag
+      integer,    optional      :: dim1
+      integer,    optional      :: dim2
+      integer,    optional      :: dim3
+      integer,    optional      :: dim4
+      integer,    optional      :: dim5
+      integer,    optional      :: dim6
+      integer,    optional      :: dim7
+      integer,    optional      :: dim8
+      integer,    optional      :: dim9
+      integer,    optional      :: dim10
+      character(len=*), optional :: output_format
 
 ! 
 ! !DESCRIPTION: 
@@ -2229,11 +2229,11 @@ CONTAINS
 !---------------------------------------------------------------------------------------------
 !BOC
 
-       if (present(var_flag)) then
-          var_flag_tmp = var_flag
-       else
-          var_flag_tmp = ""
-       endif
+      if (present(var_flag)) then
+         var_flag_tmp = var_flag
+      else
+         var_flag_tmp = ""
+      endif
 
 
       if(.NOT.PRESENT(output_format)) then
@@ -2241,7 +2241,7 @@ CONTAINS
       else
          wout = trim(output_format)
       endif
-  
+
       call PFIO_bundle%fmd_rst(n)%add_dimension('ntiles', LIS_rc%glbnpatch_red(n,m), rc=status)
 
       if (present(dim1))  call PFIO_bundle%fmd_rst(n)%add_dimension('dim1',  dim1,  rc=status)
@@ -2284,7 +2284,7 @@ CONTAINS
       ! defining time field
       call date_and_time(date,time,zone,values)
       write(xtime_units, 200) LIS_rc%yr, LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
-200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
+      200   format ('minutes since ',I4.4,'-',I2.2,'-',I2.2,' ',I2.2,':', I2.2,':',I2.2)
       write(xtime_begin_date, fmt='(I4.4,I2.2,I2.2)') LIS_rc%yr, LIS_rc%mo, LIS_rc%da
       write(xtime_begin_time, fmt='(I2.2,I2.2,I2.2)') LIS_rc%hr, LIS_rc%mn, LIS_rc%ss
       !write(xtime_timeInc, fmt='(I20)')  nint(outInterval)
@@ -2364,11 +2364,11 @@ CONTAINS
       ! Create the history collection
       PFIO_bundle%rst_id(n) = o_Clients%add_hist_collection(PFIO_bundle%fmd_rst(n))
 
-  end subroutine PFIO_restart_metadata
+   end subroutine PFIO_restart_metadata
 !EOC
 !------------------------------------------------------------------------------
-  subroutine PFIO_restart_header(n, standard_name, long_name, units, vlevels, &
-                        valid_min, valid_max, var_flag)
+   subroutine PFIO_restart_header(n, standard_name, long_name, units, vlevels, &
+         valid_min, valid_max, var_flag)
 
 ! !USES: 
 
@@ -2410,10 +2410,10 @@ CONTAINS
       call v%add_attribute("vmin", valid_min)
       call v%add_attribute("vmax", valid_max)
       call PFIO_bundle%fmd_rst(n)%add_variable(trim(standard_name), v)
-   
-  end subroutine PFIO_restart_header
-!------------------------------------------------------------------------------
-  subroutine PFIO_restart_write_real(n, file_name, var_data, var_name, n_levs)
+
+   end subroutine PFIO_restart_header
+   !------------------------------------------------------------------------------
+   subroutine PFIO_restart_write_real(n, file_name, var_data, var_name, n_levs)
 
 ! !ARGUMENTS:
       integer,          intent(in) :: n, n_levs
@@ -2427,20 +2427,20 @@ CONTAINS
       integer           :: peIdx, count1, ntiles
 
 
-!         call map_1dtile_to_1darray(n, var_data, var2d(:,1:n_levs), i1, i2, n_levs)
-!         ref =  ArrayReference(var2d(:,1:nlev))
-!         call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
-!                        TRIM(file_name), TRIM(var_name), ref, &
-!                        start        = [ i1, 1 ], &
-!                        global_start = [  1, 1 ], &
-!                        global_count = [ LIS_rc%glbntiles_red(n), nlev ] )
+      !         call map_1dtile_to_1darray(n, var_data, var2d(:,1:n_levs), i1, i2, n_levs)
+      !         ref =  ArrayReference(var2d(:,1:nlev))
+      !         call o_Clients%collective_stage_data(PFIO_bundle%hist_id(n,vcol_id), &
+      !                        TRIM(file_name), TRIM(var_name), ref, &
+      !                        start        = [ i1, 1 ], &
+      !                        global_start = [  1, 1 ], &
+      !                        global_count = [ LIS_rc%glbntiles_red(n), nlev ] )
 
 
-  end subroutine PFIO_restart_write_real
+   end subroutine PFIO_restart_write_real
 !------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 ! -----------------------------------------------------------------------
-  subroutine increment_field_counter(non_model_fields)
+   subroutine increment_field_counter(non_model_fields)
       integer, optional :: non_model_fields
 
       integer       :: nmodel_status
@@ -2451,44 +2451,44 @@ CONTAINS
 
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
-          idx_field2d = idx_field2d + 1
+         idx_field2d = idx_field2d + 1
       CASE("2d gridspace")
-          idx_field3d = idx_field3d + 1
+         idx_field3d = idx_field3d + 1
       CASE("2d ensemble gridspace")
-          if (nmodel_status > 0) then
-             idx_field3d = idx_field3d + 1
-          else
-             idx_field4d = idx_field4d + 1
-          endif
+         if (nmodel_status > 0) then
+            idx_field3d = idx_field3d + 1
+         else
+            idx_field4d = idx_field4d + 1
+         endif
       END SELECT
-  end subroutine increment_field_counter
-! -----------------------------------------------------------------------
-! -----------------------------------------------------------------------
-!  subroutine set_field_index(local_var, idx_field3d, idx_field4d)
-!      integer, intent(in) :: idx_field3d, idx_field4d
-!      type(local_field_var), intent(inout) :: local_var(:)
-!
-!      SELECT CASE(LIS_rc%wopt)
-!      CASE("1d tilespace")
-!          CONTINUE
-!      CASE("2d gridspace")
-!          local_var(idx_field3d)%idx_field3d = idx_field3d
-!      CASE("2d ensemble gridspace")
-!          local_var(idx_field3d)%idx_field3d = idx_field3d
-!          local_var(idx_field4d)%idx_field4d = idx_field4d
-!      END SELECT
-!  end subroutine set_field_index
-! -----------------------------------------------------------------------
-! -----------------------------------------------------------------------
-  subroutine allocate_local_var(n, PFIOmodel_idx, &
-                                local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
+   end subroutine increment_field_counter
+   ! -----------------------------------------------------------------------
+   ! -----------------------------------------------------------------------
+   !  subroutine set_field_index(local_var, idx_field3d, idx_field4d)
+   !      integer, intent(in) :: idx_field3d, idx_field4d
+   !      type(local_field_var), intent(inout) :: local_var(:)
+   !
+   !      SELECT CASE(LIS_rc%wopt)
+   !      CASE("1d tilespace")
+   !          CONTINUE
+   !      CASE("2d gridspace")
+   !          local_var(idx_field3d)%idx_field3d = idx_field3d
+   !      CASE("2d ensemble gridspace")
+   !          local_var(idx_field3d)%idx_field3d = idx_field3d
+   !          local_var(idx_field4d)%idx_field4d = idx_field4d
+   !      END SELECT
+   !  end subroutine set_field_index
+   ! -----------------------------------------------------------------------
+   ! -----------------------------------------------------------------------
+   subroutine allocate_local_var(n, PFIOmodel_idx, &
+         local_var2D, local_var3D, local_var4D, i1, i2, j1, j2)
       integer, intent(in) :: n, PFIOmodel_idx
       integer, intent(in) :: i1, i2, j1, j2
       type(local_2Dfield_var), intent(inout) :: local_var2D(:)
       type(local_3Dfield_var), intent(inout) :: local_var3D(:)
       type(local_4Dfield_var), intent(inout) :: local_var4D(:)
       integer :: i
-   
+
       SELECT CASE(LIS_rc%wopt)
       CASE("1d tilespace")
          DO i= 1, total_num_2Dfields(PFIOmodel_idx)
@@ -2510,10 +2510,10 @@ CONTAINS
             local_var4D(i)%var4d = pfio_missing_value
          ENDDO
       END SELECT
-  end subroutine allocate_local_var
-! -----------------------------------------------------------------------
-! -----------------------------------------------------------------------
-  subroutine deallocate_local_var(PFIOmodel_idx, local_var2D, local_var3D, local_var4D)
+   end subroutine allocate_local_var
+   ! -----------------------------------------------------------------------
+   ! -----------------------------------------------------------------------
+   subroutine deallocate_local_var(PFIOmodel_idx, local_var2D, local_var3D, local_var4D)
       integer,                 intent(in)    :: PFIOmodel_idx
       type(local_2Dfield_var), intent(inout) :: local_var2D(:)
       type(local_3Dfield_var), intent(inout) :: local_var3D(:)
@@ -2543,12 +2543,12 @@ CONTAINS
       END SELECT
 
       !DEALLOCATE(local_var)
-  end subroutine deallocate_local_var
-! -----------------------------------------------------------------------
-! map_1dtile_to_2darray
-!    Map 1D local tile to a 2D local array
-! -----------------------------------------------------------------------
-  subroutine map_1dtile_to_2darray(n, var_tile, var3d, i1, i2, j1, j2, nlev)
+   end subroutine deallocate_local_var
+   ! -----------------------------------------------------------------------
+   ! map_1dtile_to_2darray
+   !    Map 1D local tile to a 2D local array
+   ! -----------------------------------------------------------------------
+   subroutine map_1dtile_to_2darray(n, var_tile, var3d, i1, i2, j1, j2, nlev)
       integer, intent(in) :: n
       integer, intent(in) :: i1, i2, j1, j2, nlev
       real, intent(in) :: var_tile(:,:)
@@ -2568,7 +2568,7 @@ CONTAINS
                ntiles = LIS_domain(n)%ntiles_pergrid(gid)
                if (ntiles .ne. 0) then
                   IF (r.ge.LIS_nss_ind(n,peIdx) .and. r.le.LIS_nse_ind(n,peIdx) .and.&
-                      c.ge.LIS_ews_ind(n,peIdx) .and. c.le.LIS_ewe_ind(n,peIdx)) THEN !points not in halo
+                     c.ge.LIS_ews_ind(n,peIdx) .and. c.le.LIS_ewe_ind(n,peIdx)) THEN !points not in halo
                      var3d(c,r,1:nlev) = var_tile(count1,1:nlev)
                   END IF
                   count1 = count1 + 1
@@ -2577,12 +2577,12 @@ CONTAINS
          enddo
       ENDIF
 
-  end subroutine map_1dtile_to_2darray
-! -----------------------------------------------------------------------
-! map_1dtile_to_1darray
-!    Map 1D local tile to a 2D local array
-! -----------------------------------------------------------------------
-  subroutine map_1dtile_to_1darray(n, var_tile, var2d, i1, i2, nlev)
+   end subroutine map_1dtile_to_2darray
+   ! -----------------------------------------------------------------------
+   ! map_1dtile_to_1darray
+   !    Map 1D local tile to a 2D local array
+   ! -----------------------------------------------------------------------
+   subroutine map_1dtile_to_1darray(n, var_tile, var2d, i1, i2, nlev)
       integer, intent(in) :: n
       integer, intent(in) :: i1, i2, nlev
       real, intent(in) :: var_tile(:,:)
@@ -2601,7 +2601,7 @@ CONTAINS
             ntiles = LIS_domain(n)%ntiles_pergrid(gid)
             stid = LIS_domain(n)%str_tind(gid)
             IF (r.ge.LIS_nss_ind(n,l) .and. r.le.LIS_nse_ind(n,l) .and.&
-                c.ge.LIS_ews_ind(n,l) .and. c.le.LIS_ewe_ind(n,l)) THEN !points not in halo
+               c.ge.LIS_ews_ind(n,l) .and. c.le.LIS_ewe_ind(n,l)) THEN !points not in halo
                do t=1,ntiles
                   tid = stid + t-1
                   var2d(tid,1:nlev) = var_tile(count1,1:nlev)
@@ -2613,12 +2613,12 @@ CONTAINS
          enddo
       enddo
 
-  end subroutine map_1dtile_to_1darray
-! -----------------------------------------------------------------------
-! get_LIS_interior_tile
-!    Determine the interior tiles for each domain
-! -----------------------------------------------------------------------
-  subroutine get_LIS_interior_tile(n, i1, i2)
+   end subroutine map_1dtile_to_1darray
+   ! -----------------------------------------------------------------------
+   ! get_LIS_interior_tile
+   !    Determine the interior tiles for each domain
+   ! -----------------------------------------------------------------------
+   subroutine get_LIS_interior_tile(n, i1, i2)
       integer, intent(in) :: n
       integer, intent(out) :: i1, i2
 
@@ -2652,7 +2652,7 @@ CONTAINS
             ntiles = LIS_domain(n)%ntiles_pergrid(gid)
             stid = LIS_domain(n)%str_tind(gid)
             IF (r.ge.LIS_nss_ind(n,l) .and. r.le.LIS_nse_ind(n,l) .and.&
-                c.ge.LIS_ews_ind(n,l) .and. c.le.LIS_ewe_ind(n,l)) THEN !points not in halo
+               c.ge.LIS_ews_ind(n,l) .and. c.le.LIS_ewe_ind(n,l)) THEN !points not in halo
                do t=1,ntiles
                   tid = stid + t-1
                   if (tid .GE. mymax) mymax = tid
@@ -2666,12 +2666,12 @@ CONTAINS
       enddo
       i1 = i1_n
       i2 = i1 + count1 - 1
-      
-  end subroutine get_LIS_interior_tile
-!---------------------------------------------------------------------------
-! Get the interior grid
-! -----------------------------------------------------------------------
-  subroutine get_LIS_interior_grid(n, i1, i2, j1, j2)
+
+   end subroutine get_LIS_interior_tile
+   !---------------------------------------------------------------------------
+   ! Get the interior grid
+   ! -----------------------------------------------------------------------
+   subroutine get_LIS_interior_grid(n, i1, i2, j1, j2)
       integer, intent(in)  :: n
       integer, intent(out) :: i1, i2, j1, j2
       integer :: peIdx
@@ -2682,19 +2682,19 @@ CONTAINS
       j1 = LIS_nss_ind(n,peIdx) ! lower latitude
       j2 = LIS_nse_ind(n,peIdx) ! upper latitude
 
-  end subroutine get_LIS_interior_grid
-! -----------------------------------------------------------------------
-! Get the global dimensions
-! -----------------------------------------------------------------------
-  subroutine get_LIS_globaldim(n, global_dim)
+   end subroutine get_LIS_interior_grid
+   ! -----------------------------------------------------------------------
+   ! Get the global dimensions
+   ! -----------------------------------------------------------------------
+   subroutine get_LIS_globaldim(n, global_dim)
       integer, intent(in)  :: n
       integer, intent(out) :: global_dim(2)
 
       global_dim(1) = LIS_rc%gnc(n) ! longitudes / columns
       global_dim(2) = LIS_rc%gnr(n) ! latitudes / rows
 
-  end subroutine get_LIS_globaldim
-! -----------------------------------------------------------------------
+   end subroutine get_LIS_globaldim
+   ! -----------------------------------------------------------------------
 
 #endif
 end module LIS_PFIO_historyMod

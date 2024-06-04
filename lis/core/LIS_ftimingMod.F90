@@ -3,55 +3,55 @@
 !
 ! !MODULE: LIS_ftimingMod
 !
-      module LIS_ftimingMod
+module LIS_ftimingMod
 !
 ! !USES:
-      use LIS_logMod
-      use LIS_coreMod, only : LIS_rc, LIS_masterproc, LIS_localPet, LIS_npes
-      use LIS_mpiMod, only : LIS_mpi_comm
+   use LIS_logMod
+   use LIS_coreMod, only : LIS_rc, LIS_masterproc, LIS_localPet, LIS_npes
+   use LIS_mpiMod, only : LIS_mpi_comm
 #if ( defined SPMD )
-      use mpi
+   use mpi
 #endif
 
-      implicit none
+   implicit none
 
+   private
+   public   :: Ftiming_Init
+   public   :: Ftiming_On
+   public   :: Ftiming_Off
+   public   :: Ftiming_Reset
+   public   :: Ftiming_Output
+
+   integer, parameter :: sp = selected_real_kind(6, 37)
+   integer, parameter :: dp = selected_real_kind(15, 307)
+   integer, parameter :: qp = selected_real_kind(33, 4931)
+
+   integer, parameter, private :: MAX_BLK_NAME = 24
+   integer, parameter, private :: NBLKS = 120
+   character (len=MAX_BLK_NAME), private :: list_blocknames(NBLKS)
+   integer, private      :: tblock
+
+   type tms
       private
-      public   :: Ftiming_Init
-      public   :: Ftiming_On
-      public   :: Ftiming_Off
-      public   :: Ftiming_Reset
-      public   :: Ftiming_Output
+      real(dp) :: usr, sys
+   end type tms
 
-      integer, parameter :: sp = selected_real_kind(6, 37)
-      integer, parameter :: dp = selected_real_kind(15, 307)
-      integer, parameter :: qp = selected_real_kind(33, 4931)
-      
-      integer, parameter, private :: MAX_BLK_NAME = 24
-      integer, parameter, private :: NBLKS = 120
-      character (len=MAX_BLK_NAME), private :: list_blocknames(NBLKS)
-      integer, private      :: tblock
+   type (tms), private   :: accum(NBLKS)
+   type (tms), private   :: last (NBLKS)
 
-      type tms
-           private
-           real(dp) :: usr, sys
-      end type tms
+   real(dp), private       :: us_tmp1(NBLKS, 2)
+   real(dp), private       :: us_tmp2(NBLKS, 2)
 
-      type (tms), private   :: accum(NBLKS)
-      type (tms), private   :: last (NBLKS)
-
-      real(dp), private       :: us_tmp1(NBLKS, 2)
-      real(dp), private       :: us_tmp2(NBLKS, 2)
-
-      integer               :: ierwtime
+   integer               :: ierwtime
 
 !#     include "mpif.h"
-      real(dp), external      :: Mpi_Wtime
+   real(dp), external      :: Mpi_Wtime
 !
 ! !DESCRIPTION:
 !
 !EOP
 !-------------------------------------------------------------------------------
-      contains
+contains
 #if ( defined SPMD )
 !-------------------------------------------------------------------------------
 !BOP
@@ -60,7 +60,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_Init ( )
+   subroutine Ftiming_Init ( )
 !
 ! !DESCRIPTION:
 ! Initialize the timing tool.
@@ -91,7 +91,7 @@
 
       return
 
-      end subroutine Ftiming_Init
+   end subroutine Ftiming_Init
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
@@ -100,7 +100,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_On (block_name)
+   subroutine Ftiming_On (block_name)
 !
 ! !INPUT PARAMETERS:
       character (len=*)  :: block_name
@@ -137,7 +137,7 @@
 
       return
 
-      end subroutine Ftiming_On
+   end subroutine Ftiming_On
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
@@ -146,7 +146,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_Off (block_name)
+   subroutine Ftiming_Off (block_name)
 
       character (len=*)            :: block_name
 
@@ -186,7 +186,7 @@
 
       return
 
-      end subroutine Ftiming_Off
+   end subroutine Ftiming_Off
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
@@ -195,7 +195,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_Reset (block_name)
+   subroutine Ftiming_Reset (block_name)
 !
 ! !INPUT PARAMETERS:
       character (len=*)  :: block_name
@@ -215,10 +215,10 @@
 
       do ii = 1, tblock
 
-        if (TRIM(ctmp) == TRIM(list_blocknames(ii))) then
-          iblock = ii
-          EXIT
-        end if
+         if (TRIM(ctmp) == TRIM(list_blocknames(ii))) then
+            iblock = ii
+            EXIT
+         end if
 
       end do
 
@@ -235,7 +235,7 @@
 
       return
 
-      end subroutine Ftiming_Reset
+   end subroutine Ftiming_Reset
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
@@ -244,7 +244,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_Output (lu)
+   subroutine Ftiming_Output (lu)
 !
 ! !INPUT PARAMETERS:
       integer, intent(in) :: lu
@@ -329,7 +329,7 @@
       end do
 
       call Mpi_Allreduce (us_glob1, us_glob2, tblock*numWorkerProcs, &
-                          MPI_REAL8, MPI_SUM, commWorld, ierr)
+         MPI_REAL8, MPI_SUM, commWorld, ierr)
 
       onpi  = 1.0d0 / numLonProcs
       onpj  = 1.0d0 / numLatProcs
@@ -427,109 +427,109 @@
             Write (lu,*)
             Write (lu,*) '-------------------------------------------------'
             Write (lu,*)  &
-             '     Block                       Min Time    Max Time    ',  &
-             'Avg Time'
+               '     Block                       Min Time    Max Time    ',  &
+               'Avg Time'
             Write (lu,*) '-------------------------------------------------'
 
             do nn = 1, tblock
                Write (lu,900) list_blocknames(nn), ctmin(nn), ctmax(nn), ctavg(nn)
             end do
 
- 900        format (3x, a24, 3x, 3f12.4)
+            900        format (3x, a24, 3x, 3f12.4)
 
-   IF (.FALSE.) THEN
-            Write (lu,*)
-            Write (lu,*) '-------------------------------------------------'
-            Write (lu,*)  &
-     &       '                    Longitudinal Accounting                 '
-            Write (lu,*) '-------------------------------------------------'
-
-            do ii = 1, numLonProcs
+            IF (.FALSE.) THEN
                Write (lu,*)
-               Write (lu,910) ii
-               Write (lu,*)
-   
-               do nn = 1, tblock
-                  Write (lu,900) list_blocknames(nn), ctminj(nn,ii), ctmaxj(nn,ii), ctavgj(nn,ii)
-               end do
-            end do
+               Write (lu,*) '-------------------------------------------------'
+               Write (lu,*)  &
+                  &       '                    Longitudinal Accounting                 '
+               Write (lu,*) '-------------------------------------------------'
 
- 910        format ('  i = ', i5, '                            ',  &
-                   'Min         Max         Avg')
+               do ii = 1, numLonProcs
+                  Write (lu,*)
+                  Write (lu,910) ii
+                  Write (lu,*)
 
-            Write (lu,*)
-            Write (lu,*)  &
-             '  ---------------------------------------------------------',  &
-             '--------'
-            Write (lu,*)  &
-             '                    Latitudinal Accounting                  '
-            Write (lu,*)  &
-             '  ---------------------------------------------------------',  &
-             '--------'
-
-            do jj = 1, numLatProcs
-               Write (lu,*)
-               Write (lu,920) jj
-               Write (lu,*)
-   
-               do nn = 1, tblock
-                  Write (lu,900) list_blocknames(nn), ctmini(nn,jj), ctmaxi(nn,jj), ctavgi(nn,jj)
-               end do
-            end do
-
- 920        format ('  j = ', i5, '                            ',  &
-     &             'Min         Max         Avg')
-
-            Write (lu,*)
-            Write (lu,*)  &
-     &       '  ---------------------------------------------------------',  &
-     &       '------------------'
-            Write (lu,*)  &
-     &       '                    Per-Process Detail                      '
-            Write (lu,*)  &
-     &       '  ---------------------------------------------------------',  &
-     &       '------------------'
-
-            do nn = 1, tblock
-               Write (lu,990) list_blocknames(nn), (us_glob2(nn,kk),kk=1,numWorkerProcs)
-            end do
-
- 990        format (3x, a24, 3x, 4f12.4, /, (30x, 4f12.4))
-
-            Write (lu,*)
-            Write (lu,*)
-            Write (lu,*) '-------------------------------------------------'
-            Write (lu,*) '           End of Timing Statistics'
-            Write (lu,*) '-------------------------------------------------'
-            Write (lu,*)
-            Write (lu,*)
-
-            flush (lu)
-
-            Close (lu)
-
-         else if (lu == 6) then
-            !--------------------------------------------------------------------
-            ! Unnecessary calculations in order to allow time for unit 6 to flush.
-            !--------------------------------------------------------------------
-
-            ijk  = 1000
-
-            cijk = 1.0d0
-            sijk = 1.0d0 / ijk
-
-            do kk = 1, ijk
-               do jj = 1, ijk
-                  do ii = 1, ijk
-                     cijk = cijk * Sin (sijk*ii*jj*kk)
+                  do nn = 1, tblock
+                     Write (lu,900) list_blocknames(nn), ctminj(nn,ii), ctmaxj(nn,ii), ctavgj(nn,ii)
                   end do
                end do
-            end do
 
-            call Ftiming_Nothing (cijk)
-         endif
-      end if
-  ENDIF
+               910        format ('  i = ', i5, '                            ',  &
+                  'Min         Max         Avg')
+
+               Write (lu,*)
+               Write (lu,*)  &
+                  '  ---------------------------------------------------------',  &
+                  '--------'
+               Write (lu,*)  &
+                  '                    Latitudinal Accounting                  '
+               Write (lu,*)  &
+                  '  ---------------------------------------------------------',  &
+                  '--------'
+
+               do jj = 1, numLatProcs
+                  Write (lu,*)
+                  Write (lu,920) jj
+                  Write (lu,*)
+
+                  do nn = 1, tblock
+                     Write (lu,900) list_blocknames(nn), ctmini(nn,jj), ctmaxi(nn,jj), ctavgi(nn,jj)
+                  end do
+               end do
+
+               920        format ('  j = ', i5, '                            ',  &
+                  &             'Min         Max         Avg')
+
+               Write (lu,*)
+               Write (lu,*)  &
+                  &       '  ---------------------------------------------------------',  &
+                  &       '------------------'
+               Write (lu,*)  &
+                  &       '                    Per-Process Detail                      '
+               Write (lu,*)  &
+                  &       '  ---------------------------------------------------------',  &
+                  &       '------------------'
+
+               do nn = 1, tblock
+                  Write (lu,990) list_blocknames(nn), (us_glob2(nn,kk),kk=1,numWorkerProcs)
+               end do
+
+               990        format (3x, a24, 3x, 4f12.4, /, (30x, 4f12.4))
+
+               Write (lu,*)
+               Write (lu,*)
+               Write (lu,*) '-------------------------------------------------'
+               Write (lu,*) '           End of Timing Statistics'
+               Write (lu,*) '-------------------------------------------------'
+               Write (lu,*)
+               Write (lu,*)
+
+               flush (lu)
+
+               Close (lu)
+
+            else if (lu == 6) then
+               !--------------------------------------------------------------------
+               ! Unnecessary calculations in order to allow time for unit 6 to flush.
+               !--------------------------------------------------------------------
+
+               ijk  = 1000
+
+               cijk = 1.0d0
+               sijk = 1.0d0 / ijk
+
+               do kk = 1, ijk
+                  do jj = 1, ijk
+                     do ii = 1, ijk
+                        cijk = cijk * Sin (sijk*ii*jj*kk)
+                     end do
+                  end do
+               end do
+
+               call Ftiming_Nothing (cijk)
+            endif
+         end if
+      ENDIF
 
       deallocate (ctavg)
       deallocate (ctmax)
@@ -550,7 +550,7 @@
 
       return
 
-      end subroutine Ftiming_Output
+   end subroutine Ftiming_Output
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
@@ -559,7 +559,7 @@
 !
 ! !INTERFACE:
 !
-      subroutine Ftiming_Nothing (aa)
+   subroutine Ftiming_Nothing (aa)
 !
 ! !INPUT PARAMETERS:
       real(dp)  :: aa
@@ -577,38 +577,38 @@
 
       return
 
-      end subroutine Ftiming_Nothing
+   end subroutine Ftiming_Nothing
 !EOC
 !-------------------------------------------------------------------------------
 #else
-subroutine Ftiming_Init
-   write(LIS_logunit, *) "[WARN] Ftiming requires MPI."
-end subroutine Ftiming_Init
+   subroutine Ftiming_Init
+      write(LIS_logunit, *) "[WARN] Ftiming requires MPI."
+   end subroutine Ftiming_Init
 
-subroutine Ftiming_On(block_name)
-   implicit none
-   character (len=*)  :: block_name
-   return
-end subroutine Ftiming_On
+   subroutine Ftiming_On(block_name)
+      implicit none
+      character (len=*)  :: block_name
+      return
+   end subroutine Ftiming_On
 
-subroutine Ftiming_Off(block_name)
-   implicit none
-   character (len=*)  :: block_name
-   return
-end subroutine Ftiming_Off
+   subroutine Ftiming_Off(block_name)
+      implicit none
+      character (len=*)  :: block_name
+      return
+   end subroutine Ftiming_Off
 
-subroutine Ftiming_Reset(block_name)
-   implicit none
-   character (len=*)  :: block_name
-   return
-end subroutine Ftiming_Reset
+   subroutine Ftiming_Reset(block_name)
+      implicit none
+      character (len=*)  :: block_name
+      return
+   end subroutine Ftiming_Reset
 
-subroutine Ftiming_Output(lu)
-   implicit none
-   integer, intent(in) :: lu
-   return
-end subroutine Ftiming_Output
+   subroutine Ftiming_Output(lu)
+      implicit none
+      integer, intent(in) :: lu
+      return
+   end subroutine Ftiming_Output
 #endif
 
-      end module LIS_ftimingMod
+end module LIS_ftimingMod
 
