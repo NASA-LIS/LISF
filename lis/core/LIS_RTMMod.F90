@@ -324,7 +324,6 @@ contains
          LIS_create_output_filename,  &
          LIS_create_stats_filename
     use LIS_constantsMod, only : LIS_CONST_PATH_LEN
-    use LIS_logMod, only : LIS_logunit
 
     integer, intent(in)   :: n 
 !EOP

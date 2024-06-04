@@ -1,24 +1,14 @@
 !------------------------------------------------------------------------------
 !BOP
 !
-#ifdef USE_PFIO
-
-#include "MAPL_ErrLog.h"
-#include "unused_dummy.H"
-#include "LIS_misc.h"
-
-#endif
-
 module LIS_PFIO_utilsMod
 
 #if ( defined USE_PFIO )
 ! !USES:
-      use mpi
       use MAPL
       use pFIO_UnlimitedEntityMod
       use LIS_coreMod
       use LIS_logMod
-      use LIS_mpiMod
       
       implicit none
 
