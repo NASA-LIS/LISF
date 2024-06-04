@@ -183,7 +183,6 @@ CONTAINS
          model_name_ = model_name
       endif
 
-      !PRINT'(a, i5)','KNJR --> Going into LIS_rescaleCount: ',LIS_localPet
       call LIS_rescaleCount(n, group_)
 
       call date_and_time(date,time,zone,values)
@@ -504,7 +503,6 @@ CONTAINS
       group_ = group
       model_name_ = model_name
 
-      !PRINT'(a, i5)','KNJR --> Going into LIS_rescaleCount: ',LIS_localPet
       call LIS_rescaleCount(n, group_)
 
       call date_and_time(date,time,zone,values)
@@ -877,7 +875,6 @@ CONTAINS
                endif
             endif
          elseif (LIS_rc%wopt.eq."2d gridspace") then 
-            !IF (LIS_masterproc) PRINT'(a,a5,i4)','DEF-->'//TRIM(dataEntry%short_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status
             if (dataEntry%timeAvgOpt.eq.2) then 
                if (dataEntry%vlevels.gt.1) then 
                   dim_names  = TRIM(name_dims(1))//','//TRIM(name_dims(2))//','//TRIM(name_dims(3))
@@ -1179,9 +1176,6 @@ CONTAINS
 
       if (LIS_rc%wopt.eq."1d tilespace") then
          CALL get_LIS_interior_tile(n, i1, i2)
-         IF ( (LIS_localPet == 0) .OR. (LIS_localPet == LIS_npes-1) ) THEN
-         PRINT'(a17, i5, 3i12)','Interior Grid:',LIS_localPet,i1,i2,LIS_rc%glbntiles_red(n)
-         ENDIF
       elseif ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
          CALL get_LIS_interior_grid(n, i1, i2, j1, j2)
       endif
@@ -1490,9 +1484,6 @@ CONTAINS
             enddo
          enddo
 
-         !IF (LIS_masterproc) PRINT'(a,a5,3i4)','WRT-->'//TRIM(var_name), TRIM(LIS_rc%nlatlon_dimensions), nmodel_status,nlev, idx_field3d
-         !WRITE(LIS_logunit, '(a,3i4)'),'WRT-->'//TRIM(var_name), PFIOmodel_idx,nlev, idx_field3d
-
          ! The latlon fields are written to 1D
          if ((LIS_rc%nlatlon_dimensions == '1D') .AND. (nmodel_status > 0)) then
             if (nmodel_status.eq.1) then   ! lat
@@ -1730,9 +1721,6 @@ CONTAINS
 
       if (LIS_rc%wopt.eq."1d tilespace") then
          CALL get_LIS_interior_tile(n, i1, i2)
-         IF ( (LIS_localPet == 0) .OR. (LIS_localPet == LIS_npes-1) ) THEN
-         PRINT'(a17, i5, 3i12)','Interior Grid:',LIS_localPet,i1,i2,LIS_rc%glbntiles_red(n)
-         ENDIF
       elseif ( (LIS_rc%wopt.eq."2d gridspace") .OR. (LIS_rc%wopt.eq."2d ensemble gridspace") )then 
          CALL get_LIS_interior_grid(n, i1, i2, j1, j2)
       endif
@@ -2676,7 +2664,6 @@ CONTAINS
             END IF
          enddo
       enddo
-      !PRINT'(a12, i4, 8i9)','TILE GRID: ',LIS_localPet,i1, i1_n, mymin,i2, i1_n+count1-1,mymax,LIS_rc%ntiles(n),count1
       i1 = i1_n
       i2 = i1 + count1 - 1
       
