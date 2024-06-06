@@ -6985,7 +6985,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
             ' for field ',trim(dataEntry%standard_name),' is not defined '
        write(LIS_logunit,*) '[ERR] for diagnostic output...'
        write(LIS_logunit,*) '[ERR] supported direction types: ',&
-            dataEntry%dir
+            dataEntry%dirtypes
        write(LIS_logunit,*) '[ERR] Program stopping ..'
        call LIS_endrun()       
     endif
