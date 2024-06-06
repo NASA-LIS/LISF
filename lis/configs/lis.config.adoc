@@ -11002,6 +11002,49 @@ sample MODEL_OUTPUT_LIST.TBL file for the complete specification.
 Model output attributes file: './MODEL_OUTPUT_LIST.TBL'
 ....
 
+`netCDF shuffle filter:` specifies whether to enable the NetCDF shuffle filter for NetCDF-based output.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not enable
+|1     | enable
+|====
+
+Defaults to 0.
+
+`netCDF deflate filter:` specifies whether to enable the NetCDF deflate filter for NetCDF-based output.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not enable
+|1     | enable
+|====
+
+Defaults to 1.
+
+`netCDF deflate level:` specifies the deflate (compression) level for NetCDF-based output.
+Acceptable values are 0 through 9.  Defaults to 1.  Note that 0 disables NetCDF compression.
+
+`num PFIO virtual collections:` specifies the number of virtual collections to use when PFIO is enabled.  Defaults to 1.  Note that enabling PFIO is a compile-time setting.
+
+`Profiling Tool:` specifies whether to enable the built-in profiling support.
+Acceptable values are:
+
+|====
+|Value       | Description
+
+|.false.     | do not enable
+|.true.      | enable
+|====
+
+Defaults to `.false.`.
+
+Note that this profiling tool requires MPI.
+
 [[ssec_timeinterval,Defining a time interval]]
 === Defining a time interval
 
