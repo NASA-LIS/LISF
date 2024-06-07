@@ -163,7 +163,7 @@ subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
           write(LIS_logunit,*)'[WARN] Rolling back to GFS...'
        end if
 
-!       call USAF_fldbld_radflux_gfs(n,order,julhr,rc)
+       call USAF_fldbld_radflux_gfs(n, julhr, swdown, longwv, rc)
 
        if (rc .ne. 0) then
           call AGRMET_julhr_date10(julhr, yyyymmddhh)
@@ -190,5 +190,5 @@ subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
     end if
 
   endif   ! End to timeToReadRad check
-  
+ 
 end subroutine USAF_fldbld_radflux
