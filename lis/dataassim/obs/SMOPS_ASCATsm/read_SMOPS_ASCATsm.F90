@@ -144,14 +144,15 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
      else
         write(LIS_logunit,*) '[WARN] Missing SMOPS ',trim(fname)
      endif
-
+     
      SMOPS_ASCATsm_struc(n)%smobs  = LIS_rc%udef
      SMOPS_ASCATsm_struc(n)%smtime = -1
 
      do r=1,LIS_rc%obs_lnr(k)
         do c=1,LIS_rc%obs_lnc(k)
            grid_index = LIS_obs_domain(n,k)%gindex(c,r)
-           if(grid_index.ne.-1) then 
+   
+           if(grid_index.ne.-1) then
               if(smobs(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then 
                  SMOPS_ASCATsm_struc(n)%smobs(c,r) = &
                       smobs(c+(r-1)*LIS_rc%obs_lnc(k))                 
@@ -190,6 +191,7 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
                  sm_current(c,r) = & 
                       SMOPS_ASCATsm_struc(n)%smobs(c,r)
                  fnd = 1
+
               endif           
            endif
         endif
@@ -320,7 +322,6 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
 !  Depending on data update flag...
 !-------------------------------------------------------------------------     
-  
   if(data_upd) then 
 
      do t=1,LIS_rc%obs_ngrid(k)
@@ -519,7 +520,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   ! Otherwise, when reading the daily datasets, there is no need to
   ! adjust time.
   if ( SMOPS_ASCATsm_struc(n)%useRealtime == 1 ) then
-     offset = 6
+     offset = 6 ! EJ only for version 3!
   else
      offset = 0
   endif
@@ -534,10 +535,14 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      yr1 = LIS_rc%yr
      mo1 = LIS_rc%mo
      da1 = LIS_rc%da
-     hr1 = LIS_rc%hr + offset
+     hr1 = LIS_rc%hr
      mn1 = LIS_rc%mn
      ss1 = 0
      call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+     if ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
+           file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
+         file_time = file_time+offset
+     endif
   endif
 
   if ( file_time < SMOPS_ASCATsm_struc(n)%version3_time ) then
@@ -1135,7 +1140,9 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
         s  = 0,  & 
         calendar = LIS_calendar, & 
         rc = rc)
-     file_time = file_time + six_hours
+     if ( file_time >= naming3_time .and. file_time < Ver4_blended_time) then
+         file_time = file_time+six_hours
+     endif
      call ESMF_TimeGet(file_time, &
         yy = yr, &
         mm = mo, &
