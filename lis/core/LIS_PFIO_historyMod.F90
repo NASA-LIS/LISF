@@ -42,10 +42,10 @@ module LIS_PFIO_historyMod
 !--------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
 !--------------------------------
-   public :: PFIO_create_file_metadata
-   public :: PFIO_write_data
-   public :: PFIO_create_routing_metadata
-   public :: PFIO_write_routingdata
+   public :: LIS_PFIO_create_file_metadata
+   public :: LIS_PFIO_write_data
+   public :: LIS_PFIO_create_routing_metadata
+   public :: LIS_PFIO_write_routingdata
 
    REAL               ::          pfio_vmin 
    REAL               ::          pfio_vmax
@@ -91,11 +91,11 @@ module LIS_PFIO_historyMod
 CONTAINS
 !------------------------------------------------------------------------------ 
 !BOP
-! !ROUTINE: PFIO_create_file_metadata
-! \label{PFIO_create_file_metadata}
+! !ROUTINE: LIS_PFIO_create_file_metadata
+! \label{LIS_PFIO_create_file_metadata}
 ! 
-! !INTERFACE: PFIO_create_file_metadata
-   subroutine PFIO_create_file_metadata(n, PFIOmodel_idx, outInterval, &
+! !INTERFACE: LIS_PFIO_create_file_metadata
+   subroutine LIS_PFIO_create_file_metadata(n, PFIOmodel_idx, outInterval, &
          nsoillayers, lyrthk, model_name, group)
 ! !USES: 
 !
@@ -416,15 +416,15 @@ CONTAINS
          deallocate(ensval)
       endif
 
-   end subroutine PFIO_create_file_metadata
+   end subroutine LIS_PFIO_create_file_metadata
 !EOC
 !------------------------------------------------------------------------------
 !BOP
-! !ROUTINE: PFIO_create_routing_metadata
-! \label{PFIO_create_routing_metadata}
+! !ROUTINE: LIS_PFIO_create_routing_metadata
+! \label{LIS_PFIO_create_routing_metadata}
 ! 
-! !INTERFACE: PFIO_create_routing_metadata
-   subroutine PFIO_create_routing_metadata(n, PFIOmodel_idx, group, outInterval, &
+! !INTERFACE: LIS_PFIO_create_routing_metadata
+   subroutine LIS_PFIO_create_routing_metadata(n, PFIOmodel_idx, group, outInterval, &
          nsoillayers, lyrthk, model_name)
 ! !USES: 
 !
@@ -728,7 +728,7 @@ CONTAINS
          deallocate(ensval)
       endif
 
-   end subroutine PFIO_create_routing_metadata
+   end subroutine LIS_PFIO_create_routing_metadata
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1103,11 +1103,11 @@ CONTAINS
 !EOC
 !------------------------------------------------------------------------------
 !BOP
-! !ROUTINE: PFIO_write_data
-! \label{PFIO_write_data}
+! !ROUTINE: LIS_PFIO_write_data
+! \label{LIS_PFIO_write_data}
 !
 ! !INTERFACE: 
-   subroutine PFIO_write_data(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
+   subroutine LIS_PFIO_write_data(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
       integer,          intent(in) :: n 
       integer,          intent(in) :: PFIOmodel_idx 
@@ -1257,7 +1257,7 @@ CONTAINS
 
       call LIS_resetOutputVars(n, group_)
 
-   end subroutine PFIO_write_data
+   end subroutine LIS_PFIO_write_data
 !EOC
 !------------------------------------------------------------------------------
 !BOP
@@ -1650,11 +1650,11 @@ CONTAINS
 !EOC
 !------------------------------------------------------------------------------
 !BOP
-! !ROUTINE: PFIO_write_routingdata
-! \label{PFIO_write_routingdata}
+! !ROUTINE: LIS_PFIO_write_routingdata
+! \label{LIS_PFIO_write_routingdata}
 !
 ! !INTERFACE: 
-   subroutine PFIO_write_routingdata(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
+   subroutine LIS_PFIO_write_routingdata(n, PFIOmodel_idx, vcol_id, file_name, outInterval, group)
 
       integer,          intent(in) :: n, PFIOmodel_idx
       integer,          intent(in) :: vcol_id 
@@ -1785,7 +1785,7 @@ CONTAINS
 
       call LIS_resetOutputVars(n, group_)
 
-   end subroutine PFIO_write_routingdata
+   end subroutine LIS_PFIO_write_routingdata
 !EOC
 !------------------------------------------------------------------------------
 !BOP

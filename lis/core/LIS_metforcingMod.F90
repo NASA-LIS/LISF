@@ -1086,7 +1086,7 @@ contains
     integer :: m
 
     TRACE_ENTER("metf_get")
-    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run/metf_get")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run/metf_get")
     if(LIS_rc%nmetforc.gt.0) then 
        do m=1,LIS_rc%nmetforc
 
@@ -1175,7 +1175,7 @@ contains
        endif
 
     endif
-    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_run/metf_get")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_run/metf_get")
     TRACE_EXIT("metf_get")
 
   end subroutine LIS_get_met_forcing

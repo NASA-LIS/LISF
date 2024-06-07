@@ -143,7 +143,7 @@ contains
     integer             :: patch_deltas(LIS_rc%max_model_types)
 
     TRACE_ENTER("dom_init")
-    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_init/dom_init")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_init/dom_init")
 !    call LIS_domain_plugin
 !    call readinput(trim(LIS_rc%lis_map_proj)//char(0))
     call readDomainInput()
@@ -368,7 +368,7 @@ contains
        call LIS_histDataInit(n,LIS_rc%ntiles(n))
 
     enddo
-    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init/dom_init")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_init/dom_init")
     TRACE_EXIT("dom_init")
 
   end subroutine LIS_domain_init

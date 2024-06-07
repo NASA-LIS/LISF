@@ -110,7 +110,7 @@ contains
 !  \end{description}
 !EOP
     TRACE_ENTER("param_init")
-    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_init/param_init")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_init/param_init")
     call LIS_greenness_setup
     call LIS_roughness_setup
     call LIS_emiss_setup
@@ -118,7 +118,7 @@ contains
     call LIS_lai_setup
     call LIS_sai_setup
 !    call LIS_prism_init()
-    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init/param_init")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_init/param_init")
     TRACE_EXIT("param_init")
 
   end subroutine LIS_param_init
@@ -169,7 +169,7 @@ contains
     logical :: lsm_enabled
 
     TRACE_ENTER("param_dynsetup")
-    if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run/param_dynsetup")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run/param_dynsetup")
     lsm_enabled = .false. 
     do m=1,LIS_rc%nsf_model_types
        if(LIS_rc%sf_model_type_select(m).eq.LIS_rc%lsm_index) then 
@@ -188,7 +188,7 @@ contains
     endif
 !    call prism_dataops(n)
     call diagnoseOutputparams(n)
-    if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_run/param_dynsetup")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_run/param_dynsetup")
     TRACE_EXIT("param_dynsetup")
 
   end subroutine LIS_setDynparams

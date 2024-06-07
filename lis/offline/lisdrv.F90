@@ -68,8 +68,8 @@ program lisdrv
 !
 ! !USES:       
       use LIS_coreMod,    only : LIS_config_init, LIS_rc, LIS_masterproc
-      use LIS_ftimingMod, only : Ftiming_init, Ftiming_Output
-      use LIS_ftimingMod, only : Ftiming_On, Ftiming_Off
+      use LIS_ftimingMod, only : LIS_Ftiming_init, LIS_Ftiming_Output, &
+                                 LIS_Ftiming_On, LIS_Ftiming_Off
       use LIS_logMod
 
 #ifdef ESMF_TRACE
@@ -151,14 +151,14 @@ program lisdrv
             TRACE_ENTER("LIS_init")
 
             if (LIS_rc%do_ftiming) then
-               call Ftiming_Init ( )
-               call Ftiming_On("Total Model")
-               call Ftiming_On("LIS_init")
+               call LIS_Ftiming_Init ( )
+               call LIS_Ftiming_On("Total Model")
+               call LIS_Ftiming_On("LIS_init")
             endif
 
             call lisinit(trim(LIS_rc%runmode)//char(0))
 
-            if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init")
+            if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_init")
 
             TRACE_EXIT("LIS_init")
 
@@ -168,11 +168,11 @@ program lisdrv
             if (pe_id == 0) PRINT*,"Start running lisrun"
             TRACE_ENTER("LIS_run")
 
-            if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run")
+            if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run")
             call lisrun(trim(LIS_rc%runmode)//char(0))
             if (LIS_rc%do_ftiming) then
-               call Ftiming_Off("LIS_run")
-               call Ftiming_Off("Total Model")
+               call LIS_Ftiming_Off("LIS_run")
+               call LIS_Ftiming_Off("Total Model")
             endif
 
             TRACE_EXIT("LIS_run")
@@ -184,7 +184,7 @@ program lisdrv
                   ftim_lun = LIS_getNextUnitNumber()
                endif
 
-               call Ftiming_Output(ftim_lun)
+               call LIS_Ftiming_Output(ftim_lun)
 
                if ( LIS_masterproc ) then
                   call LIS_releaseUnitNumber(ftim_lun)
@@ -318,26 +318,26 @@ CONTAINS
       TRACE_ENTER("LIS_init")
 
       if (LIS_rc%do_ftiming) then
-         call Ftiming_Init ( )
-         call Ftiming_On("Total Model")
-         call Ftiming_On("LIS_init")
+         call LIS_Ftiming_Init ( )
+         call LIS_Ftiming_On("Total Model")
+         call LIS_Ftiming_On("LIS_init")
       endif
       if ( LIS_masterproc ) PRINT*,"Start running lisinit"
       call lisinit(trim(LIS_rc%runmode)//char(0))
       if ( LIS_masterproc ) PRINT*,"Done with lisinit"
-      if (LIS_rc%do_ftiming) call Ftiming_Off("LIS_init")
+      if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_init")
 
       TRACE_EXIT("LIS_init")
 
       TRACE_ENTER("LIS_run")
 
-      if (LIS_rc%do_ftiming) call Ftiming_On("LIS_run")
+      if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run")
       if ( LIS_masterproc ) PRINT*,"Start running lisrun"
       call lisrun(trim(LIS_rc%runmode)//char(0))
       if ( LIS_masterproc ) PRINT*,"Done with lisrun"
       if (LIS_rc%do_ftiming) then
-         call Ftiming_Off("LIS_run")
-         call Ftiming_Off("Total Model")
+         call LIS_Ftiming_Off("LIS_run")
+         call LIS_Ftiming_Off("Total Model")
       endif
 
       TRACE_EXIT("LIS_run")
@@ -357,7 +357,7 @@ CONTAINS
 #endif
          ftim_lun     = lun_array(1)
 
-         call Ftiming_Output(ftim_lun)
+         call LIS_Ftiming_Output(ftim_lun)
          if ( LIS_masterproc ) PRINT*,"Done with the timing statistics"
       endif
 

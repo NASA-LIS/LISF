@@ -16,11 +16,11 @@ module LIS_ftimingMod
    implicit none
 
    private
-   public   :: Ftiming_Init
-   public   :: Ftiming_On
-   public   :: Ftiming_Off
-   public   :: Ftiming_Reset
-   public   :: Ftiming_Output
+   public   :: LIS_Ftiming_Init
+   public   :: LIS_Ftiming_On
+   public   :: LIS_Ftiming_Off
+   public   :: LIS_Ftiming_Reset
+   public   :: LIS_Ftiming_Output
 
    integer, parameter :: sp = selected_real_kind(6, 37)
    integer, parameter :: dp = selected_real_kind(15, 307)
@@ -56,11 +56,11 @@ contains
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_Init
+! !ROUTINE: LIS_Ftiming_Init
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_Init ( )
+   subroutine LIS_Ftiming_Init ( )
 !
 ! !DESCRIPTION:
 ! Initialize the timing tool.
@@ -91,16 +91,16 @@ contains
 
       return
 
-   end subroutine Ftiming_Init
+   end subroutine LIS_Ftiming_Init
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_On
+! !ROUTINE: LIS_Ftiming_On
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_On (block_name)
+   subroutine LIS_Ftiming_On (block_name)
 !
 ! !INPUT PARAMETERS:
       character (len=*)  :: block_name
@@ -137,16 +137,16 @@ contains
 
       return
 
-   end subroutine Ftiming_On
+   end subroutine LIS_Ftiming_On
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_Off
+! !ROUTINE: LIS_Ftiming_Off
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_Off (block_name)
+   subroutine LIS_Ftiming_Off (block_name)
 
       character (len=*)            :: block_name
 
@@ -172,8 +172,8 @@ contains
       end do
 
       if (iblock == 0) then
-         write(LIS_logunit,*) "[ERR] Stopping in Ftiming_Off in "//TRIM(ctmp)
-         call LIS_verify(-1, 'Stopping in Ftiming_Off in '//TRIM(ctmp))
+         write(LIS_logunit,*) "[ERR] Stopping in LIS_Ftiming_Off in "//TRIM(ctmp)
+         call LIS_verify(-1, 'Stopping in LIS_Ftiming_Off in '//TRIM(ctmp))
       end if
 
       wclk = Mpi_Wtime (ierwtime)
@@ -186,16 +186,16 @@ contains
 
       return
 
-   end subroutine Ftiming_Off
+   end subroutine LIS_Ftiming_Off
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_Reset
+! !ROUTINE: LIS_Ftiming_Reset
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_Reset (block_name)
+   subroutine LIS_Ftiming_Reset (block_name)
 !
 ! !INPUT PARAMETERS:
       character (len=*)  :: block_name
@@ -223,8 +223,8 @@ contains
       end do
 
       if (iblock == 0) then
-         write(LIS_logunit,*) "[ERR] Stopping in Ftiming_Reset in "//TRIM(ctmp)
-         call LIS_verify(-1, 'Stopping in Ftiming_Reset in '//TRIM(ctmp))
+         write(LIS_logunit,*) "[ERR] Stopping in LIS_Ftiming_Reset in "//TRIM(ctmp)
+         call LIS_verify(-1, 'Stopping in LIS_Ftiming_Reset in '//TRIM(ctmp))
       end if
 
       accum(iblock)%usr = 0.0d0
@@ -235,16 +235,16 @@ contains
 
       return
 
-   end subroutine Ftiming_Reset
+   end subroutine LIS_Ftiming_Reset
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_Output
+! !ROUTINE: LIS_Ftiming_Output
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_Output (lu)
+   subroutine LIS_Ftiming_Output (lu)
 !
 ! !INPUT PARAMETERS:
       integer, intent(in) :: lu
@@ -526,7 +526,7 @@ contains
                   end do
                end do
 
-               call Ftiming_Nothing (cijk)
+               call LIS_Ftiming_Nothing (cijk)
             endif
          end if
       ENDIF
@@ -550,16 +550,16 @@ contains
 
       return
 
-   end subroutine Ftiming_Output
+   end subroutine LIS_Ftiming_Output
 !EOC
 !-------------------------------------------------------------------------------
 !BOP
 !
-! !ROUTINE: Ftiming_Nothing
+! !ROUTINE: LIS_Ftiming_Nothing
 !
 ! !INTERFACE:
 !
-   subroutine Ftiming_Nothing (aa)
+   subroutine LIS_Ftiming_Nothing (aa)
 !
 ! !INPUT PARAMETERS:
       real(dp)  :: aa
@@ -577,37 +577,37 @@ contains
 
       return
 
-   end subroutine Ftiming_Nothing
+   end subroutine LIS_Ftiming_Nothing
 !EOC
 !-------------------------------------------------------------------------------
 #else
-   subroutine Ftiming_Init
+   subroutine LIS_Ftiming_Init
       write(LIS_logunit, *) "[WARN] Ftiming requires MPI."
-   end subroutine Ftiming_Init
+   end subroutine LIS_Ftiming_Init
 
-   subroutine Ftiming_On(block_name)
+   subroutine LIS_Ftiming_On(block_name)
       implicit none
       character (len=*)  :: block_name
       return
-   end subroutine Ftiming_On
+   end subroutine LIS_Ftiming_On
 
-   subroutine Ftiming_Off(block_name)
+   subroutine LIS_Ftiming_Off(block_name)
       implicit none
       character (len=*)  :: block_name
       return
-   end subroutine Ftiming_Off
+   end subroutine LIS_Ftiming_Off
 
-   subroutine Ftiming_Reset(block_name)
+   subroutine LIS_Ftiming_Reset(block_name)
       implicit none
       character (len=*)  :: block_name
       return
-   end subroutine Ftiming_Reset
+   end subroutine LIS_Ftiming_Reset
 
-   subroutine Ftiming_Output(lu)
+   subroutine LIS_Ftiming_Output(lu)
       implicit none
       integer, intent(in) :: lu
       return
-   end subroutine Ftiming_Output
+   end subroutine LIS_Ftiming_Output
 #endif
 
 end module LIS_ftimingMod

@@ -373,7 +373,7 @@ contains
                                  writeint=LIS_rtm_struc(n)%rtmoutInterval)
                 IF (PFIO_bundle%first_time(n, 1, PFIO_RTM_idx)) THEN
                    ! Create the file metadata ONCE.
-                   call PFIO_create_file_metadata(n, PFIO_RTM_idx, &
+                   call LIS_PFIO_create_file_metadata(n, PFIO_RTM_idx, &
                                      LIS_rtm_struc(n)%rtmoutInterval, &
                                      1, (/1.0/), &
                                      model_name = LIS_rtm_struc(n)%models_used,           &
@@ -381,7 +381,7 @@ contains
                    PFIO_bundle%first_time(n, :, PFIO_RTM_idx) = .FALSE.
                 ENDIF
                 vcol_id = MOD(PFIO_bundle%counter(n, PFIO_RTM_idx)-1, LIS_rc%n_vcollections) + 1
-                CALL PFIO_write_data(n, PFIO_RTM_idx, vcol_id, &
+                CALL LIS_PFIO_write_data(n, PFIO_RTM_idx, vcol_id, &
                                      outfile, LIS_rtm_struc(n)%rtmoutInterval, &
                                      group = 3) !<--- PFIO
     

@@ -89,7 +89,7 @@ subroutine HYMAP2_routing_output(n)
            HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
            IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
               ! Create the file metadata ONCE.
-              call PFIO_create_routing_metadata(n, PFIO_ROUTING_idx, &
+              call LIS_PFIO_create_routing_metadata(n, PFIO_ROUTING_idx, &
                                                 2, HYMAP2_routing_struc(n)%outInterval, &
                                                 1, (/1.0/) , 'ROUTING')
               PFIO_bundle%first_time(n, :, PFIO_ROUTING_idx) = .FALSE.
@@ -99,7 +99,7 @@ subroutine HYMAP2_routing_output(n)
                             model_name = 'ROUTING',&
                             writeint=HYMAP2_routing_struc(n)%outInterval)
            vcol_id = MOD(PFIO_bundle%counter(n, PFIO_ROUTING_idx)-1, LIS_rc%n_vcollections) + 1
-           CALL PFIO_write_routingdata(n, PFIO_ROUTING_idx, vcol_id, filename, &
+           CALL LIS_PFIO_write_routingdata(n, PFIO_ROUTING_idx, vcol_id, filename, &
                                        HYMAP2_routing_struc(n)%outInterval, 2)
     
            PFIO_bundle%counter(n, PFIO_ROUTING_idx) = PFIO_bundle%counter(n, PFIO_ROUTING_idx) + 1

@@ -273,7 +273,7 @@ contains
 #if ( defined USE_PFIO )
              IF (PFIO_bundle%first_time(n, 1, PFIO_IRRIG_idx)) THEN
                 ! Create the file metadata ONCE.
-                call PFIO_create_file_metadata(n, PFIO_IRRIG_idx, &
+                call LIS_PFIO_create_file_metadata(n, PFIO_IRRIG_idx, &
                                      LIS_irrig_struc(n)%outInterval, &
                                      1, (/1.0/), &
                                      model_name=LIS_irrig_struc(n)%models_used, &
@@ -286,7 +286,7 @@ contains
                               model_name = 'IRRIGATION',&
                               writeint=LIS_irrig_struc(n)%outInterval)
              vcol_id = MOD(PFIO_bundle%counter(n, PFIO_IRRIG_idx)-1, LIS_rc%n_vcollections) + 1
-             CALL PFIO_write_data(n, PFIO_IRRIG_idx, vcol_id, &
+             CALL LIS_PFIO_write_data(n, PFIO_IRRIG_idx, vcol_id, &
                                   outfile, LIS_irrig_struc(n)%outInterval, &
                                   group=4) !<--- PFIO
     
