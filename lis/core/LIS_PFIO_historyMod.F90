@@ -2156,6 +2156,10 @@ CONTAINS
    end subroutine PFIO_write_single_routingvar
 !EOC
 ! -----------------------------------------------------------------------
+#if 0
+! LIS' restart format is not compatible with PFIO.
+! Save these routines for future reference.
+!
 !BOP
 ! !ROUTINE: PFIO_restart_metadata
 ! \label{PFIO_restart_metadata}
@@ -2434,6 +2438,7 @@ CONTAINS
 
 
    end subroutine PFIO_restart_write_real
+#endif
 !------------------------------------------------------------------------------
 !------------------------------------------------------------------------------
 ! -----------------------------------------------------------------------
