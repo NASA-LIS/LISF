@@ -187,7 +187,9 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      if ( (.not. first_time) .or. &
           (first_time .and. fc_hr < 6)) then
         fc_hr = fc_hr + 6
-        if (fc_hr > 24) exit ! Give up
+        !if (fc_hr > 24) exit ! Give up
+        if (fc_hr > 30) exit ! Give up
+
         file_julhr = file_julhr - 6
         call LIS_julhr_date(file_julhr,yr1,mo1,da1,hr1)
      end if
