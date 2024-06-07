@@ -945,7 +945,6 @@ print "                                     Use MINPACK? $use_minpack\n";
 print "                                    Use LIS-CRTM? $use_crtm\n";
 print "                                    Use LIS-CHEM? $use_cmem\n";
 print "                                  Use LIS-LAPACK? $use_lapck\n";
-print "                              Use LIS-MKL-LAPACK? $use_mkllapck\n";
 print "                                       Use PETSc? $use_petsc\n";
 print "----------------------------------------------------\n";
 print " \n";
