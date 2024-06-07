@@ -193,8 +193,6 @@ CONTAINS
          start        = local_start, &
          global_start = global_start, &
          global_count = global_count)
-      !if (LIS_masterproc) PRINT'(a,2f20.7)',"KNJR --> Done writing "//TRIM(var_name),minval(local_var),maxval(local_var)
-      !PRINT'(a,2f20.7)',"KNJR --> Done writing "//TRIM(var_name),minval(local_var),maxval(local_var)
    end subroutine pfio_write_var2d
 !EOC
 !------------------------------------------------------------------------------

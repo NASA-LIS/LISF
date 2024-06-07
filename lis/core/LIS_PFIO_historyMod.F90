@@ -265,7 +265,6 @@ CONTAINS
 
       COL_LOOPS: DO vcol_id = 1, LIS_rc%n_vcollections
          write(LIS_logunit,'(a,i2,a1,i2,a2,i2,a)')'[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections,' [',PFIOmodel_idx,']'
-         if(LIS_masterproc) write(*,'(a,i2,a1,i2,a2,i2,a)') '[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections,' [',PFIOmodel_idx,']'
          name_dims(:) = ''
 
          !------------------
@@ -590,7 +589,6 @@ CONTAINS
 
       COL_LOOPS: DO vcol_id = 1, LIS_rc%n_vcollections
          write(LIS_logunit,'(a,i2,a1,i2)')'[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
-         if(LIS_masterproc) write(*,'(a,i2,a1,i2)') '[INFO-PFIO] Create file metadata of collection ', vcol_id, '/', LIS_rc%n_vcollections
          name_dims(:) = ''
 
          !------------------
@@ -1072,7 +1070,6 @@ CONTAINS
             call PFIO_bundle%fmd(n,vcol_id,PFIOmodel_idx)%add_variable(TRIM(vname_opt1), v_opt1)
          endif
 
-         ! EMK...Add metadata for max/min variables
          if (dataEntry%minMaxOpt.gt.0) then
             ! Min metadata
             call v_min%add_attribute("units", trim(dataEntry%units))
@@ -1374,7 +1371,7 @@ CONTAINS
                dataEntry%modelOutput(1,:,1:nlev),  &
                var_name, local_var2D, local_var3D, local_var4D, &
                i1, i2, j1, j2, nlev, nmodel_status)
-         end if ! EMK
+         end if
          if (dataEntry%minmaxOpt.gt.0) then 
             CALL increment_field_counter()
             var_name2 = trim(dataEntry%short_name)//"_min"
@@ -1898,7 +1895,7 @@ CONTAINS
                dataEntry%modelOutput(1,:,1:nlev),  &
                var_name, local_var2D, local_var3D, local_var4D, &
                i1, i2, j1, j2, nlev, nmodel_status)
-         end if ! EMK
+         end if
          if (dataEntry%minmaxOpt.gt.0) then 
             CALL increment_field_counter()
             var_name2 = trim(dataEntry%short_name)//"_min"
