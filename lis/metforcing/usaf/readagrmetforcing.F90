@@ -363,11 +363,8 @@ subroutine readagrmetforcing(n,findex, order)
 !        call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
 !        julend = istart+6
 
-        if(LIS_masterproc) then
-           print *, "READ IN GALWEM RADIATION FIELDS -- ", yr1, mo1, da1, hr1
-           print *, "order :: ",order
-!           print *, "istart, julend :: ",istart,julend
-        endif
+        !write(LIS_logunit,*) "EMK: READ IN GALWEM RADIATION FIELDS -- ", yr1, mo1, da1, hr1
+        !write(LIS_logunit,*) "EMK: order = ", order
 
         ! Call to the NWP Radiation Flux main routines:
         !  Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
@@ -375,6 +372,9 @@ subroutine readagrmetforcing(n,findex, order)
         call USAF_fldbld_radflux(n,order,swdown,longwv)
 
      endif
+
+     !write(LIS_logunit,*)'EMK1: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK1: maxval(longwv) = ', maxval(longwv)
 
      ! Read in cloud amount, type or COD information:
      if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then
@@ -493,6 +493,9 @@ subroutine readagrmetforcing(n,findex, order)
      ! Downward Shortwave Radiation Field estimates:
 
      ! WWMCA Cloud properties used to derive solar downward radiation fields:
+     !write(LIS_logunit,*)'EMK2: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK2: maxval(longwv) = ', maxval(longwv)
+
      if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then
         r1_ps = 0.0
         r2_ps = 0.0
@@ -581,6 +584,9 @@ subroutine readagrmetforcing(n,findex, order)
         endwhere
      endif
 
+     !write(LIS_logunit,*)'EMK3: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK3: maxval(longwv) = ', maxval(longwv)
+
      ! Downward Shortwave Radiation - Calculation from cloud data:
      if ( agrmet_struc(n)%compute_radiation .ne. 'GALWEM_RAD' ) then
        do r=1,LIS_rc%lnr(n)
@@ -606,6 +612,9 @@ subroutine readagrmetforcing(n,findex, order)
          enddo
        enddo
      endif
+
+     !write(LIS_logunit,*)'EMK4: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK4: maxval(longwv) = ', maxval(longwv)
 
      ! Downward Shortwave Radiation: write out final field to metdata array:
      do r=1,LIS_rc%lnr(n)

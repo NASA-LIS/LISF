@@ -43,6 +43,7 @@ subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
 !  integer, intent(inout) :: julhr
   real, intent(out)      :: swdown(LIS_rc%lnc(n), LIS_rc%lnr(n))
   real, intent(out)      :: longwv(LIS_rc%lnc(n), LIS_rc%lnr(n))
+
 !
 ! !DESCRIPTION: 
 !  This routine calls the appropriate first guess forcing based on
@@ -80,6 +81,9 @@ subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
 !  integer            :: fc_hr
   integer            :: ierr
   logical :: timetoReadRad
+  real*8           :: time
+  integer          :: doy
+  real :: gmt
 
   ! Sanity check
   if ( agrmet_struc(n)%first_guess_source .ne. 'GALWEM' .and. &
@@ -89,22 +93,27 @@ subroutine USAF_fldbld_radflux(n,order,swdown,longwv)
   end if
 
   ! Estimate julian hour to trigger reading of radiation fields:
-  call LIS_get_julhr(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,&
-                     0,0,jultmp)
+!  call LIS_get_julhr(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,&
+!                     0,0,jultmp)
+!
+!  if(jultmp .gt. agrmet_struc(n)%lastRadHour) then 
+!    timeToReadRad = .true. 
+!  else
+!    timeToReadRad = .false.
+!  endif
 
-  if(jultmp .gt. agrmet_struc(n)%lastRadHour) then 
-    timeToReadRad = .true. 
-  else
-    timeToReadRad = .false.
-  endif
+  timeToReadRad = .true. ! EMK TEST
 
   if(timeToReadRad) then  
 !------------------------------------------------------------------    
 ! Find the time to start the processing from 
 !------------------------------------------------------------------    
-     call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
-
-     julend = istart+6
+     !call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
+     call LIS_get_julhr(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+          LIS_rc%hr, 0, 0, istart)
+     
+     !julend = istart+6
+     julend = istart
 
      agrmet_struc(n)%lastRadHour = julend
 
