@@ -166,6 +166,19 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
   file_julhr = julhr  ! Decremented below
   call LIS_julhr_date(file_julhr,yr1,mo1,da1,hr1)
 
+  if (hr1 == 1 .or. hr1 == 7 .or. hr1 == 13 .or. hr1 == 19) then
+     fc_hr = 1
+  else if (hr1 == 2 .or. hr1 == 8 .or. hr1 == 14 .or. hr1 == 20) then
+     fc_hr = 2
+  else if (hr1 == 3 .or. hr1 == 9 .or. hr1 == 15 .or. hr1 == 21) then
+     fc_hr = 3
+  else if (hr1 == 4 .or. hr1 == 10 .or. hr1 == 16 .or. hr1 == 22) then
+     fc_hr = 4
+  else if (hr1 == 5 .or. hr1 == 11 .or. hr1 == 17 .or. hr1 == 23) then
+     fc_hr = 5
+  end if
+  file_julhr = file_julhr - fc_hr
+
   found = .FALSE.
   first_time = .true.
   do while ( .not. found )
@@ -329,29 +342,39 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
                                            fg_swdown1, fg_lwdown1, alert_number)
 
-     allocate ( fg_swdown (ifguess, jfguess) )
-     allocate ( fg_lwdown (ifguess, jfguess) )
+     !write(LIS_logunit,*)'EMK: maxval(fg_swdown1) = ', maxval(fg_swdown1)
+     !write(LIS_logunit,*)'EMK: maxval(fg_lwdown1) = ', maxval(fg_lwdown1)
+
+     !allocate ( fg_swdown (ifguess, jfguess) )
+     !allocate ( fg_lwdown (ifguess, jfguess) )
 
 ! -----------------------------------------------------------------------
 !    sometimes the subtraction of 3 hour radiation from 6 hour rad fluxes causes
 !    slightly negative radiation values, set back to 0
 ! -----------------------------------------------------------------------
-     where (fg_swdown .lt. 0)
-        fg_swdown=0
-     endwhere
-     where (fg_lwdown .lt. 0)
-        fg_lwdown=0
-     endwhere
+     !where (fg_swdown .lt. 0)
+     !   fg_swdown=0
+     !endwhere
+     !where (fg_lwdown .lt. 0)
+     !   fg_lwdown=0
+     !endwhere
+     !fg_swdown=0
+     !fg_lwdown=0
 
      ! Spatially interpolate native grid to target domain grid:
-     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-                                    fg_swdown, fg_swdata)
+     !call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+     !                               fg_swdown, fg_swdata)
+     !call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+     !                               fg_lwdown, fg_lwdata)
+     !deallocate ( fg_swdown, fg_swdown1 )
+     !deallocate ( fg_lwdown, fg_lwdown1 )
 
      call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-                                    fg_lwdown, fg_lwdata)
-
-     deallocate ( fg_swdown, fg_swdown1 )
-     deallocate ( fg_lwdown, fg_lwdown1 )
+                                    fg_swdown1, fg_swdata)
+     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+                                    fg_lwdown1, fg_lwdata)
+     deallocate ( fg_swdown1 )
+     deallocate ( fg_lwdown1 )
 
   else
         write(LIS_logunit,*)'[WARN] ** GALWEM RADIATION FLUX data not available **'
