@@ -133,7 +133,7 @@ NOTE: LDT-only dependency
 
 NOTE: LIS-only dependency
 
-If you wish to enable LIS' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/ and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.
+If you wish to enable LIS`' RTM support, then you must install the CRTM library from the Joint Centers for Satellite Data Assimilation (JCSDA).  First go to http://ftp.emc.ncep.noaa.gov/jcsda/CRTM/Repository/ and fill out the CRTM.Subversion_Account_Request.pdf form.  Once you have access to their Subversion repository, checkout revision 9604 of the trunk.
 
 Please create a directory outside of the LIS source code to checkout the CRTM library into.  Then, within that new directory, run:
 
@@ -159,24 +159,32 @@ Next compile and install the CRTM library:
 
 NOTE: LIS-only dependency
 
-If you wish to enable LIS' RTM support, then you must manually compile an included library.
+If you wish to enable LIS`' RTM support, then you must manually compile an included library.
 
 ....
 % cd $WORKING/lib/lis-cmem3
-% gmake
+% LIS_ARCH=linux_ifc make
 ....
+
+NOTE: If using the GNU compilers, set `LIS_ARCH` to linux_gfortran.
+
+IMPORTANT: linux_ifc and linux_gfortran are the only supported architectures.
 
 ==== LIS-CRTM-PROFILE-UTILITY library
 
 NOTE: LIS-only dependency
 
-If you wish to enable LIS' RTM support, then you must manually compile an included library.
+If you wish to enable LIS`' RTM support, then you must manually compile an included library.
 
 ....
 % cd $WORKING/lib/lis-crtm-profile-utility
-% gmake
-% gmake install
+% LIS_ARCH=linux_ifc make
+% LIS_ARCH=linux_ifc make install
 ....
+
+NOTE: If using the GNU compilers, set `LIS_ARCH` to linux_gfortran.
+
+IMPORTANT: linux_ifc and linux_gfortran are the only supported architectures.
 
 === Second order dependencies
 

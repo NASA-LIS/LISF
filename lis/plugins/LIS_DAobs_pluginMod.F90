@@ -251,6 +251,10 @@ subroutine LIS_DAobs_plugin
     use NASASMAPsm_Mod,          only : NASASMAPsm_setup
 #endif
 
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+    use cdfTransfer_NASASMAPsm_Mod,         only : cdfTransfer_NASASMAPsm_setup
+#endif
+
 !YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
     use SMOSNRTNNL2sm_Mod,       only : SMOSNRTNNL2sm_setup
@@ -270,6 +274,10 @@ subroutine LIS_DAobs_plugin
 #endif
 #if ( defined DA_OBS_MCD15A2H_LAI )
     use MCD15A2HLAI_Mod,       only : MCD15A2Hlai_setup
+#endif
+
+#if ( defined DA_OBS_MCD15A3H_LAI )
+    use MCD15A3HLAI_Mod,       only : MCD15A3Hlai_setup
 #endif
 
 !Y.Kwon
@@ -451,6 +459,10 @@ subroutine LIS_DAobs_plugin
     external read_NASASMAPsm, write_NASASMAPsmobs
 #endif
 
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+    external read_cdfTransfer_NASASMAPsm, write_cdfTransfer_NASASMAPsmobs
+#endif
+
 !YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
     external read_SMOSNRTNNL2sm, write_SMOSNRTNNL2smobs
@@ -471,6 +483,10 @@ subroutine LIS_DAobs_plugin
 
 #if ( defined DA_OBS_MCD15A2H_LAI)
     external read_MCD15A2Hlai, write_MCD15A2Hlai
+#endif
+
+#if ( defined DA_OBS_MCD15A3H_LAI)
+    external read_MCD15A3Hlai, write_MCD15A3Hlai
 #endif
 
 #if ( defined DA_OBS_GLASS_Albedo)
@@ -838,6 +854,16 @@ subroutine LIS_DAobs_plugin
         write_NASASMAPsmobs)
 #endif
 
+#if ( defined DA_CDF_TRANSFER_NASA_SMAPSM )
+   call registerdaobsclass(trim(LIS_CDFTRANSFERNASASMAPsmobsId),"LSM")
+   call registerdaobssetup(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        cdfTransfer_NASASMAPsm_setup)
+   call registerreaddaobs(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        read_cdfTransfer_NASASMAPsm)
+   call registerwritedaobs(trim(LIS_CDFTRANSFERNASASMAPsmobsId)//char(0),&
+        write_cdfTransfer_NASASMAPsmobs)
+#endif
+
 !YK
 #if ( defined DA_OBS_SMOS_NRT_NN )
    call registerdaobsclass(trim(LIS_SMOSNRTNNL2smobsId),"LSM")
@@ -888,6 +914,16 @@ subroutine LIS_DAobs_plugin
         read_MCD15A2Hlai)
    call registerwritedaobs(trim(LIS_MCD15A2HlaiobsId)//char(0),&
         write_MCD15A2Hlai)
+#endif
+
+#if ( defined DA_OBS_MCD15A3H_LAI)
+   call registerdaobsclass(trim(LIS_MCD15A3HlaiobsId),"LSM")
+   call registerdaobssetup(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        MCD15A3Hlai_setup)
+   call registerreaddaobs(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        read_MCD15A3Hlai)
+   call registerwritedaobs(trim(LIS_MCD15A3HlaiobsId)//char(0),&
+        write_MCD15A3Hlai)
 #endif
 
 !Y.Kwon

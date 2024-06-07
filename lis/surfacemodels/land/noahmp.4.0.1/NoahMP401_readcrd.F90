@@ -420,9 +420,19 @@ subroutine NoahMP401_readcrd()
 
 !------------------------------------------------------------------------------------------
     ! set default restart format to netcdf
-    do n=1,LIS_rc%nnest
-        NOAHMP401_struc(n)%rformat = "netcdf"
-    enddo
+   ! do n=1,LIS_rc%nnest
+   !     NOAHMP401_struc(n)%rformat = "netcdf"
+   ! enddo
+    Call ESMF_ConfigFindLabel(LIS_config, &
+             "Noah-MP.4.0.1 restart file format:", rc=rc)
+        do n=1,LIS_rc%nnest
+            call ESMF_ConfigGetAttribute(LIS_config, NOAHMP401_struc(n)%rformat, rc=rc)
+            call LIS_verify(rc, &
+                 "Noah-MP.4.0.1 restart file format: not defined")
+        enddo
+
+
+
     ! restart run, read restart file
     if (trim(LIS_rc%startcode) == "restart") then 
         Call ESMF_ConfigFindLabel(LIS_config, &

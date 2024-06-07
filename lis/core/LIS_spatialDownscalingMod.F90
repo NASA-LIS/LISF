@@ -336,6 +336,12 @@ contains
           ha = (tst*0.25 - 180.0)*deg2rad
 
           cosphi = sin(lat)*sin(decl)+cos(lat)*cos(decl)*cos(ha)
+          if (cosphi .ge. 1.0) then
+              cosphi = 0.9999999
+          endif
+          if (cosphi .le. -1.0) then
+              cosphi = -0.9999999
+          endif
           phi = acos(cosphi)
           szen = phi/deg2rad
           !EMK...Avoid division by zero

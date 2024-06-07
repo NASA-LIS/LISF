@@ -208,6 +208,10 @@ subroutine LIS_metforcing_plugin
    use nldas2_forcingMod
 #endif
 
+#if ( defined MF_GEIS )
+   use geis_forcingMod
+#endif   
+
 #if ( defined MF_NARR )
    use narr_forcingMod
 #endif
@@ -500,6 +504,13 @@ subroutine LIS_metforcing_plugin
    external reset_nldas2
 #endif
 
+#if ( defined MF_GEIS )
+   external get_geis
+   external timeinterp_geis
+   external finalize_geis
+   external reset_geis
+#endif
+   
 #if ( defined MF_NARR )
    external get_narr
    external timeinterp_narr
@@ -964,6 +975,16 @@ subroutine LIS_metforcing_plugin
    call registerresetmetforc(trim(LIS_nldas2Id)//char(0),reset_nldas2)
 #endif
 
+#if ( defined MF_GEIS )
+! - GEIS Forcing:
+   call registerinitmetforc(trim(LIS_geisId)//char(0),init_geis)
+   call registerretrievemetforc(trim(LIS_geisId)//char(0),get_geis)
+   call registertimeinterpmetforc(trim(LIS_geisId)//char(0), &
+                                  timeinterp_geis)
+   call registerfinalmetforc(trim(LIS_geisId)//char(0),finalize_geis)
+   call registerresetmetforc(trim(LIS_geisId)//char(0),reset_geis)
+#endif
+   
 #if ( defined MF_NARR )
 ! - NARR profile data for CRTM 
    call registerinitmetforc(trim(LIS_narrId)//char(0),init_NARR)

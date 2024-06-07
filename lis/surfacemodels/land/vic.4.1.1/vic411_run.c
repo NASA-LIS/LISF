@@ -18,8 +18,7 @@
 #define VIC_BASED 0  /* VIC based tiling */
 #define LIS_BASED 1  /* LIS based tiling */
 
-//extern void FTN(vic411_diagnoseoutputvar)(int, int, int, int, float, 
-//                                          char *, char *);
+extern void FTN(vic411_diagnoseoutputvar)(int *, int *, int *, int *, double *, char *, int *, char *, int *);
 
 //BOP
 //

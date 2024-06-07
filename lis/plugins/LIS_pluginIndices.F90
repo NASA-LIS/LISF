@@ -131,6 +131,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_agrmetId          = "AGRMET"
    character*50, public,  parameter :: LIS_princetonId       = "PRINCETON"
    character*50, public,  parameter :: LIS_nldas2Id          = "NLDAS2"
+   character*50, public,  parameter :: LIS_geisId            = "Global EIS"
 
    character*50, public,  parameter :: LIS_gldasId           = "GLDAS"
    character*50, public,  parameter :: LIS_gfsId             = "GFS"
@@ -272,6 +273,8 @@ module LIS_pluginIndices
         "SMOS(NESDIS) soil moisture"
    character*50, public,  parameter :: LIS_NASASMAPsmobsId       = &
         "SMAP(NASA) soil moisture"
+   character*50, public,  parameter :: LIS_CDFTRANSFERNASASMAPsmobsId = &
+        "SMAP(NASA) soil moisture with CDF Transfer"                 !MN 
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
    character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
@@ -284,6 +287,8 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_MCD15A3HlaiobsId      = &
+        "MCD15A3H LAI"
    character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
         "VIIRS GVF"                                                  !YK
    character*50, public,  parameter :: LIS_CDFSgvfobsId          = &

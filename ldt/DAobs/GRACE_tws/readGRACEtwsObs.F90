@@ -148,7 +148,7 @@ subroutine readGRACEtwsObs(n)
            allocate(GRACEtwsobs%scalefactor(GRACEtwsobs%gracenc, &
                 GRACEtwsobs%gracenr))
            
-           call LDT_verify(nf90_inq_varid(ftn,'SCALE_FACTOR',scaleId), &
+           call LDT_verify(nf90_inq_varid(ftn,'scale_factor',scaleId), &
                 'nf90_inq_varid failed for scale_factor in readGRACEtwsObs')
            call LDT_verify(nf90_get_var(ftn,scaleId,GRACEtwsobs%scalefactor),&
                 'nf90_get_var failed for scale_factor in readGRACEtwsObs') 

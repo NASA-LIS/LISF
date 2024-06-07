@@ -60,19 +60,19 @@ BCSD:
   
 #######################################################################
 #                            LIS Forecast
-# Note: Acceptable JOB_SEGMENTS for 9-year forecast are 1,2,3,5,and 9
+# Note: Acceptable JOB_SEGMENTS for 9-month forecasts are 1,2,3,5,and 9
 #######################################################################
 
 FCST:
   numprocx: 4
   numprocy: 72
   JOB_SEGMENTS:
-  - CCM4: 2
-    CCSM4: 2
-    GNEMO5: 2
+  - CCM4: 3
+    CCSM4: 3
+    GNEMO5: 3
     GEOSv2: 1
-    CFSv2: 2
-    GFDL: 3 
+    CFSv2: 3
+    GFDL: 9 
   
 #######################################################################
 #                          Post-processor
@@ -86,6 +86,6 @@ POST:
   var_tavg_twsgws_list: [TWS_tavg, GWS_tavg]
   var_tair_max_list: [Tair_f_max]
   var_tair_min_list: [Tair_f_min]
-  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, LANDMASK]
+  const_list: [lat, lon, ensemble, soil_layer, soil_layer_thickness, atime, LANDMASK]
   metric_vars: [RZSM, SFCSM, TWS, Precip, AirT, ET, Streamflow]
 

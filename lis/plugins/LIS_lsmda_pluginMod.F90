@@ -477,6 +477,7 @@ subroutine LIS_lsmda_plugin
    external NoahMP401_scale_soilm
    external NoahMP401_descale_soilm
    external NoahMP401_updatesoilm
+   external NoahMP401_soilm_DAlog
 
    external NoahMP401_getsnowvars         
    external NoahMP401_setsnowvars              
@@ -2689,6 +2690,29 @@ subroutine LIS_lsmda_plugin
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_NASASMAPsmobsId )//char(0),NoahMP401_soilm_DAlog)
+
+!MN
+! Noah-MP.4.0.1 SMAP(NASA) soil moisture with CDF Transfer
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_dasoilm_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_getsoilm)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_setsoilm)
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_getsmpred)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_qcsoilm)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_qc_soilmobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_scale_soilm)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_descale_soilm)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_CDFTRANSFERNASASMAPsmobsId )//char(0),NoahMP401_updatesoilm)
 
 !YK
 ! Noah-MP.4.0.1 SMOS NRT NN soil moisture
@@ -2791,6 +2815,8 @@ subroutine LIS_lsmda_plugin
         trim(LIS_ESACCIsmobsId)//char(0),noahmp401_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_ESACCIsmobsId)//char(0),noahmp401_updatesoilm)
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_ESACCIsmobsId)//char(0),NoahMP401_soilm_DAlog)
 
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_wusUCLAobsId)//char(0),noahmp401_dasnow_init)
@@ -2875,6 +2901,30 @@ subroutine LIS_lsmda_plugin
         trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_descale_veg)
    call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
         trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp401_veg_DAlog)
+
+#if ( defined DA_OBS_MCD15A3H_LAI )
+   call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_daveg_init)
+   call registerlsmdagetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_getvegvars)
+   call registerlsmdasetstatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_setvegvars)
+   call registerlsmdaupdatestate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_updatevegvars)
+   call registerlsmdaqcstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_qcveg)
+
+   call registerlsmdagetobspred(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_getLAIpred)
+   call registerlsmdaqcobsstate(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_qc_LAIobs)
+   call registerlsmdascalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_scale_veg)
+   call registerlsmdadescalestatevar(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_descale_veg)
+   call registerlsmdadiagnosevars(trim(LIS_noahmp401Id)//"+"//&
+        trim(LIS_MCD15A3HlaiobsId)//char(0),noahmp401_veg_DAlog)
+#endif
 
 !Y.Kwon
    call registerlsmdainit(trim(LIS_noahmp401Id)//"+"//&

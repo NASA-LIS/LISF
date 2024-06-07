@@ -49,7 +49,7 @@ subroutine AGRMET_read_sfcalccntm(n)
 !EOP
 
   logical       :: exists
-  character*100 :: message(20)
+  character*255 :: message(20)
   integer       :: ftn
   real          :: data_in(LIS_rc%gnc(n), LIS_rc%gnr(n))
   integer       :: istat

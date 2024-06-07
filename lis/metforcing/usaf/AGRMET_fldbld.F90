@@ -64,7 +64,7 @@ subroutine AGRMET_fldbld(n,order,julhr)
 !EOP
 
   integer :: rc
-  character(len=100) :: message(20)
+  character(len=255) :: message(20)
   character(len=10) :: yyyymmddhh
   integer :: ierr
 

@@ -23,7 +23,7 @@
 ! !INTERFACE:
 subroutine NoahMP401_writerst(n)
 ! !USES:
-    use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+    use LIS_coreMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_getNextUnitNumber, &
                                LIS_releaseUnitNumber , LIS_verify
@@ -55,7 +55,9 @@ subroutine NoahMP401_writerst(n)
 ! \end{description}
 !EOP
 
-    character(len=LIS_CONST_PATH_LEN) :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen,filenp
+    character*4   :: temp1
+    character*1   :: fproc(4)
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn
@@ -66,46 +68,299 @@ subroutine NoahMP401_writerst(n)
     
     ! set restart file format (read from LIS configration file_
     wformat = trim(NOAHMP401_struc(n)%rformat)
-    
+
     if(alarmCheck .or. (LIS_rc%endtime ==1)) then
-        If (LIS_masterproc) Then
-            call LIS_create_output_directory("SURFACEMODEL")
-            call LIS_create_restart_filename(n, filen, "SURFACEMODEL", &
-                                            "NOAHMP401",wformat=wformat)
-            if(wformat .eq. "binary") then
-                ftn = LIS_getNextUnitNumber()
-                open(ftn,file=filen,status="unknown", form="unformatted")
-            elseif(wformat .eq. "netcdf") then
+       call LIS_create_output_directory("SURFACEMODEL")
+       call LIS_create_restart_filename(n, filen, "SURFACEMODEL", &
+            "NOAHMP401",wformat=wformat)
+       if(wformat .eq. "binary") then
+          if(LIS_masterproc) then
+             ftn = LIS_getNextUnitNumber()
+             open(ftn,file=filen,status="unknown", form="unformatted")
+          endif
+       elseif(wformat .eq. "netcdf") then
+          if(LIS_masterproc) then
 #if (defined USE_NETCDF4)
-                status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
-                call LIS_verify(status, &
-                     "Error in nf90_open in NoahMP401_writerst")
+             status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
+             call LIS_verify(status, &
+                  "Error in nf90_open in NoahMP401_writerst")
 #endif
 #if (defined USE_NETCDF3)
-                status = nf90_create(Path = filen, cmode = nf90_clobber, ncid = ftn)
-                call LIS_verify(status, &
-                     "Error in nf90_open in NoahMP401_writerst")
+             status = nf90_create(Path = filen, cmode = nf90_clobber, ncid = ftn)
+             call LIS_verify(status, &
+                  "Error in nf90_open in NoahMP401_writerst")
 #endif
-             endif
-        endif
-    
-        call NoahMP401_dump_restart(n, ftn, wformat)
-    
-        if (LIS_masterproc) then
-            if(wformat .eq. "binary") then
-                call LIS_releaseUnitNumber(ftn)
-            elseif(wformat .eq. "netcdf") then
+          endif
+       elseif(wformat.eq."distributed binary") then
+          ftn = LIS_getNextUnitNumber()
+
+          write(temp1,'(i4.4)') LIS_localPet
+          read(temp1,fmt='(4a1)') fproc
+
+          filenp = trim(filen)//'.'//fproc(1)//fproc(2)//fproc(3)//fproc(4)
+          open(ftn,file=trim(filenp),&
+               form='unformatted')
+       endif
+
+       if(wformat.eq."distributed binary") then
+          call NoahMP401_dump_restart_dist(n, ftn, wformat)
+       else
+          call NoahMP401_dump_restart(n, ftn, wformat)
+       endif
+        
+       if(wformat .eq. "binary") then
+          if (LIS_masterproc) then
+             call LIS_releaseUnitNumber(ftn)
+          endif
+       elseif(wformat.eq."distributed binary") then
+          call LIS_releaseUnitNumber(ftn)
+       elseif(wformat .eq. "netcdf") then
+          if(LIS_masterproc) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-                status = nf90_close(ftn)
-                call LIS_verify(status, &
-                     "Error in nf90_close in NoahMP401_writerst")
+             status = nf90_close(ftn)
+             call LIS_verify(status, &
+                  "Error in nf90_close in NoahMP401_writerst")
 #endif
-            endif
-            write(LIS_logunit, *)&
-                 "[INFO] Noah-MP.4.0.1 archive restart written: ",trim(filen)
-        endif
+             write(LIS_logunit, *)&
+                  "[INFO] Noah-MP.4.0.1 archive restart written: ",trim(filen)
+          endif
+       endif
     endif
 end subroutine NoahMP401_writerst
+
+!BOP
+!
+! !ROUTINE: NoahMP401_dump_restart_dist
+! \label{NoahMP401_dump_restart_dist}
+!
+! !REVISION HISTORY:
+!  This subroutine is generated with the Model Implementation Toolkit developed
+!  by Shugong Wang for the NASA Land Information System Version 7. The initial
+!  specification of the subroutine is defined by Sujay Kumar.
+!  10/25/18: Shugong Wang, Zhuo Wang, initial implementation for LIS 7 and NoahMP401
+! !INTERFACE:
+subroutine NoahMP401_dump_restart_dist(n, ftn, wformat)
+
+! !USES:
+    use LIS_coreMod
+    use LIS_logMod, only  : LIS_logunit
+    use LIS_historyMod
+    use NoahMP401_lsmMod
+
+    implicit none
+
+    integer, intent(in) :: ftn
+    integer, intent(in) :: n
+    character(len=*), intent(in) :: wformat
+!
+! !DESCRIPTION:
+!  This routine gathers the necessary restart variables and performs
+!  the actual write statements to create the restart files.
+!
+!  The arguments are:
+!  \begin{description}
+!   \item[n]
+!    index of the nest
+!   \item[ftn]
+!    unit number for the restart file
+!   \item[wformat]
+!    restart file format (binary/netcdf)
+!  \end{description}
+!
+!
+!  The following is the list of variables written in the NoahMP401
+!  restart file:
+!  \begin{verbatim}
+!    nc, nr, ntiles             - grid and tile space dimensions
+!    sfcrunoff                  - NoahMP401 accumulated surface runoff [m]
+!    udrrunoff                  - NoahMP401 accumulated sub-surface runoff [m]
+!    smc                        - NoahMP401 volumtric soil moisture [m3/m3]
+!    sh2o                       - NoahMP401 volumtric liquid soil moisture [m3/m3]
+!    tslb                       - NoahMP401 soil temperature [K]
+!    sneqv                      - NoahMP401 snow water equivalent [mm]
+!    snowh                      - NoahMP401 physical snow depth [m]
+!    canwat                     - NoahMP401 total canopy water + ice [mm]
+!    acsnom                     - NoahMP401 accumulated snow melt leaving pack [-]
+!    acsnow                     - NoahMP401 accumulated snow on grid [mm]
+!    isnow                      - NoahMP401 actual no. of snow layers [-]
+!    tv                         - NoahMP401 vegetation leaf temperature [K]
+!    tg                         - NoahMP401 bulk ground surface temperature [K]
+!    canice                     - NoahMP401 canopy-intercepted ice [mm]
+!    canliq                     - NoahMP401 canopy-intercepted liquid water [mm]
+!    eah                        - NoahMP401 canopy air vapor pressure [Pa]
+!    tah                        - NoahMP401 canopy air temperature [K]
+!    cm                         - NoahMP401 bulk momentum drag coefficient [-]
+!    ch                         - NoahMP401 bulk sensible heat exchange coefficient [-]
+!    fwet                       - NoahMP401 wetted or snowed fraction of canopy [-]
+!    sneqvo                     - NoahMP401 snow mass at last time step [mm h2o]
+!    albold                     - NoahMP401 snow albedo at last time step [-]
+!    qsnow                      - NoahMP401 snowfall on the ground [mm/s]
+!    wslake                     - NoahMP401 lake water storage [mm]
+!    zwt                        - NoahMP401 water table depth [m]
+!    wa                         - NoahMP401 water in the "aquifer" [mm]
+!    wt                         - NoahMP401 water in aquifer and saturated soil [mm]
+!    tsno                       - NoahMP401 snow layer temperature [K]
+!    zss                        - NoahMP401 snow/soil layer depth from snow surface [m]
+!    snowice                    - NoahMP401 snow layer ice [mm]
+!    snowliq                    - NoahMP401 snow layer liquid water [mm]
+!    lfmass                     - NoahMP401 leaf mass [g/m2]
+!    rtmass                     - NoahMP401 mass of fine roots [g/m2]
+!    stmass                     - NoahMP401 stem mass [g/m2]
+!    wood                       - NoahMP401 mass of wood (including woody roots) [g/m2]
+!    stblcp                     - NoahMP401 stable carbon in deep soil [g/m2]
+!    fastcp                     - NoahMP401 short-lived carbon in shallow soil [g/m2]
+!    lai                        - NoahMP401 leaf area index [-]
+!    sai                        - NoahMP401 stem area index [-]
+!    tauss                      - NoahMP401 snow age factor [-]
+!    smoiseq                    - NoahMP401 equilibrium volumetric soil moisture content [m3/m3]
+!    smcwtd                     - NoahMP401 soil moisture content in the layer to the water table when deep [-]
+!    deeprech                   - NoahMP401 recharge to the water table when deep [-]
+!    rech                       - NoahMP401 recharge to the water table (diagnostic) [-]
+!    grain                      - NoahMP401 mass of grain XING [g/m2]
+!    gdd                        - NoahMP401 growing degree days XING (based on 10C) [-]
+!    pgs                        - NoahMP401 growing degree days XING [-]
+!    gecros_state               - NoahMP401 optional gecros crop [-]
+!  \end{verbatim}
+!
+! The routines invoked are:
+! \begin{description}
+!   \item[LIS\_writeGlobalHeader\_restart](\ref{LIS_writeGlobalHeader_restart})\\
+!      writes the global header information
+!   \item[LIS\_writeHeader\_restart](\ref{LIS_writeHeader_restart})\\
+!      writes the header information for a variable
+!   \item[LIS\_closeHeader\_restart](\ref{LIS_closeHeader_restart})\\
+!      close the header
+!   \item[LIS\_writevar\_restart](\ref{LIS_writevar_restart})\\
+!      writes a variable to the restart file
+! \end{description}
+!
+!EOP
+
+    integer :: l, t
+    real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
+
+    write(ftn) NOAHMP401_struc(n)%noahmp401%sfcrunoff
+    write(ftn) NOAHMP401_struc(n)%noahmp401%udrrunoff
+
+    do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%sh2o(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    ! soil temperature
+    do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%tslb(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    write(ftn) NOAHMP401_struc(n)%noahmp401%sneqv
+    write(ftn) NOAHMP401_struc(n)%noahmp401%snowh
+    write(ftn) NOAHMP401_struc(n)%noahmp401%canwat
+    write(ftn) NOAHMP401_struc(n)%noahmp401%acsnom
+    write(ftn) NOAHMP401_struc(n)%noahmp401%acsnow
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%isnow
+    enddo
+    write(ftn) tmptilen
+    write(ftn) NOAHMP401_struc(n)%noahmp401%tv
+    write(ftn) NOAHMP401_struc(n)%noahmp401%tg
+    write(ftn) NOAHMP401_struc(n)%noahmp401%canice
+    write(ftn) NOAHMP401_struc(n)%noahmp401%canliq
+    write(ftn) NOAHMP401_struc(n)%noahmp401%eah
+    write(ftn) NOAHMP401_struc(n)%noahmp401%tah
+    write(ftn) NOAHMP401_struc(n)%noahmp401%cm
+    write(ftn) NOAHMP401_struc(n)%noahmp401%ch
+    write(ftn) NOAHMP401_struc(n)%noahmp401%fwet
+    write(ftn) NOAHMP401_struc(n)%noahmp401%sneqvo
+    write(ftn) NOAHMP401_struc(n)%noahmp401%albold
+    write(ftn) NOAHMP401_struc(n)%noahmp401%qsnow
+    write(ftn) NOAHMP401_struc(n)%noahmp401%wslake
+    write(ftn) NOAHMP401_struc(n)%noahmp401%zwt
+    write(ftn) NOAHMP401_struc(n)%noahmp401%wa
+    write(ftn) NOAHMP401_struc(n)%noahmp401%wt
+
+    ! snow layer temperature
+    do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%tsno(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    ! snow/soil layer depth from snow surface
+    do l=1, NOAHMP401_struc(n)%nsnow+NOAHMP401_struc(n)%nsoil   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%zss(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    ! snow layer ice
+    do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%snowice(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    ! snow layer liquid water
+    do l=1, NOAHMP401_struc(n)%nsnow   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%snowliq(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    write(ftn) NOAHMP401_struc(n)%noahmp401%lfmass
+    write(ftn) NOAHMP401_struc(n)%noahmp401%rtmass
+    write(ftn) NOAHMP401_struc(n)%noahmp401%stmass
+    write(ftn) NOAHMP401_struc(n)%noahmp401%wood
+    write(ftn) NOAHMP401_struc(n)%noahmp401%stblcp
+    write(ftn) NOAHMP401_struc(n)%noahmp401%fastcp
+    write(ftn) NOAHMP401_struc(n)%noahmp401%lai
+    write(ftn) NOAHMP401_struc(n)%noahmp401%sai
+    write(ftn) NOAHMP401_struc(n)%noahmp401%tauss
+
+    ! equilibrium volumetric soil moisture content
+    do l=1, NOAHMP401_struc(n)%nsoil   ! TODO: check loop
+       tmptilen = 0
+       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%smoiseq(l)
+       enddo
+       write(ftn) tmptilen
+    enddo
+    write(ftn) NOAHMP401_struc(n)%noahmp401%smcwtd
+    write(ftn) NOAHMP401_struc(n)%noahmp401%deeprech
+    write(ftn) NOAHMP401_struc(n)%noahmp401%rech
+    write(ftn) NOAHMP401_struc(n)%noahmp401%grain
+    write(ftn) NOAHMP401_struc(n)%noahmp401%gdd
+
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+       tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%pgs
+    enddo
+    write(ftn) tmptilen
+
+!    do l=1, 60  ! TODO: check loop
+!      tmptilen = 0
+!       do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+!          tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
+!       enddo
+!       write(ftn) tmptilen
+!    enddo
+  end subroutine NoahMP401_dump_restart_dist
 
 !BOP
 !
