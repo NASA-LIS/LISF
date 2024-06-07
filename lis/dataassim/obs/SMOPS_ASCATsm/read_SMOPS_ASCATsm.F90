@@ -541,7 +541,8 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
      if ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
            file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
-         file_time = file_time+offset
+           hr1 = LIS_rc%hr+offset
+           call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
      endif
   endif
 
