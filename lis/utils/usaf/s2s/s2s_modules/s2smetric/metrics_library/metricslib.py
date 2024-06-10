@@ -60,6 +60,15 @@ def sel_var(sel_cim_data, var_name, model):
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
 
+    elif var_name == "TOP40SM":
+        if model in ('NOAHMP', 'NoahMP'):
+            term1 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=0) * 0.1
+            term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.3
+            var_sel_clim_data = term1 + term2
+        else:
+            print(f"[ERR] Unknown model {model}")
+            sys.exit(1)
+
     elif var_name == 'Total-SM':
         if model == 'CLSM':
             # for clsm the total soil moisture is in the third layer
