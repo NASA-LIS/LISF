@@ -360,21 +360,11 @@ subroutine readagrmetforcing(n,findex, order)
      ! -- KRA: Initial setup
      if ( agrmet_struc(n)%compute_radiation == 'GALWEM_RAD' ) then
 
-!        call find_agrfld_starttime(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,istart)
-!        julend = istart+6
-
-        !write(LIS_logunit,*) "EMK: READ IN GALWEM RADIATION FIELDS -- ", yr1, mo1, da1, hr1
-        !write(LIS_logunit,*) "EMK: order = ", order
-
         ! Call to the NWP Radiation Flux main routines:
         !  Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
-!        call USAF_fldbld_radflux(n,order,julend,swdown,longwv)
-        call USAF_fldbld_radflux(n,order,swdown,longwv)
+        call USAF_fldbld_radflux(n,swdown,longwv)
 
      endif
-
-     !write(LIS_logunit,*)'EMK1: maxval(swdown) = ', maxval(swdown)
-     !write(LIS_logunit,*)'EMK1: maxval(longwv) = ', maxval(longwv)
 
      ! Read in cloud amount, type or COD information:
      if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then

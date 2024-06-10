@@ -20,25 +20,24 @@
 !              ...........................................K. Arsenault/SAIC
 !
 ! !INTERFACE:
-!subroutine USAF_fldbld_radflux_galwem(n,julhr,fc_hr,fg_swdata,fg_lwdata,rc)
 subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 
 ! !USES:
+  use AGRMET_forcingMod, only : agrmet_struc
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
                                 LIS_verify, LIS_endrun
   use LIS_timeMgrMod,    only : LIS_julhr_date
-  use AGRMET_forcingMod, only : agrmet_struc
 
 #if (defined USE_GRIBAPI)
   use grib_api
 #endif
 
   implicit none
+
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer             :: julhr
-!  integer             :: fc_hr
   real, intent(out)   :: fg_swdata(LIS_rc%lnc(n), LIS_rc%lnr(n))
   real, intent(out)   :: fg_lwdata(LIS_rc%lnc(n), LIS_rc%lnr(n))
   integer, intent(out):: rc
@@ -101,9 +100,6 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 !  \item[found]
 !    logical flag set true when an input file with the correct valid
 !    time is found
-!  \item[found2]
-!    logical flag set true when an input file with the correct valid
-!    time is found
 !  \item[file\_julhr]
 !    julian hour used to determine names of forecast files from previous cycles
 !  \item[getsixhr]
@@ -132,29 +128,32 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
-  character*250           :: avnfile, avnfile2
+  character*250           :: avnfile
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
   character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 2 )
   real                    :: gridres
   integer                 :: alert_number
-  real, allocatable       :: fg_swdown    ( : , : )
   real, allocatable       :: fg_swdown1   ( : , : )
-  real, allocatable       :: fg_lwdown    ( : , : )
   real, allocatable       :: fg_lwdown1   ( : , : )
   integer                 :: ifguess, jfguess
   integer                 :: center
   integer                 :: ierr
-  logical*1               :: found, found2
+  logical*1               :: found
   logical                 :: first_time
   integer                 :: yr_2d
   integer                 :: file_julhr
-!  integer                 :: getsixhr
   integer                 :: dataDate, dataTime
   character*100           :: gtype
   logical                 :: found_inq
-! ---------------------------------------------------
+
+  ! External functions
+  external :: AGRMET_getGALWEMfilename
+  external :: interp_galwem_first_guess
+  external :: USAF_fldbld_read_radflux_galwem
+
+  ! ---------------------------------------------------
 
   ! Initialize return code to "no error".  We will change it below if 
   ! necessary.
@@ -318,78 +317,38 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
   rc = 0
 
 
-  if( found ) then
-     write(LIS_logunit,*)'- FIRST GUESS DATA IS ON A ', gridres,&
-          ' DEGREE LAT/LON GRID'
-     ifguess = iginfo(1)
-     jfguess = iginfo(2)
+  write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS ON A ', gridres,&
+       ' DEGREE LAT/LON GRID'
+  ifguess = iginfo(1)
+  jfguess = iginfo(2)
 
-     if (center .eq. 57) then
-        write(LIS_logunit,*)'- FIRST GUESS DATA IS FROM UK UM (GALWEM) MODEL'
-     else
-        write(LIS_logunit,*)'- UNKNOWN SOURCE FOR FIRST GUESS DATA'
-     end if
-
-!    ------------------------------------------------------------------
-!      allocate first guess grid-specific variables.
-!    ------------------------------------------------------------------
-     allocate ( fg_swdown1 (ifguess, jfguess) )
-     allocate ( fg_lwdown1 (ifguess, jfguess) )
-
-!    ------------------------------------------------------------------
-!      read in first guess data for this julian hour.
-!    ------------------------------------------------------------------
-     alert_number = 0
-
-     call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
-                                           fg_swdown1, fg_lwdown1, alert_number)
-
-     !write(LIS_logunit,*)'EMK: maxval(fg_swdown1) = ', maxval(fg_swdown1)
-     !write(LIS_logunit,*)'EMK: maxval(fg_lwdown1) = ', maxval(fg_lwdown1)
-
-     !allocate ( fg_swdown (ifguess, jfguess) )
-     !allocate ( fg_lwdown (ifguess, jfguess) )
-
-! -----------------------------------------------------------------------
-!    sometimes the subtraction of 3 hour radiation from 6 hour rad fluxes causes
-!    slightly negative radiation values, set back to 0
-! -----------------------------------------------------------------------
-     !where (fg_swdown .lt. 0)
-     !   fg_swdown=0
-     !endwhere
-     !where (fg_lwdown .lt. 0)
-     !   fg_lwdown=0
-     !endwhere
-     !fg_swdown=0
-     !fg_lwdown=0
-
-     ! Spatially interpolate native grid to target domain grid:
-     !call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-     !                               fg_swdown, fg_swdata)
-     !call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-     !                               fg_lwdown, fg_lwdata)
-     !deallocate ( fg_swdown, fg_swdown1 )
-     !deallocate ( fg_lwdown, fg_lwdown1 )
-
-     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-                                    fg_swdown1, fg_swdata)
-     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-                                    fg_lwdown1, fg_lwdata)
-     deallocate ( fg_swdown1 )
-     deallocate ( fg_lwdown1 )
-
+  if (center .eq. 57) then
+     write(LIS_logunit,*) &
+          '[INFO FIRST GUESS DATA IS FROM UK UM (GALWEM) MODEL'
   else
-        write(LIS_logunit,*)'[WARN] ** GALWEM RADIATION FLUX data not available **'
+     write(LIS_logunit,*)'[INFO UNKNOWN SOURCE FOR FIRST GUESS DATA'
+  end if
 
-        message(1) = 'Program:  LIS'
-        message(2) = '  Routine: USAF_fldbld_radflux_galwem.'
-        message(3) = '  galwem radiation flux data not available, ' // &
-                     'possible degradation.'
-        alert_number = alert_number + 1
-        if(LIS_masterproc) then
-           call LIS_alert( 'fldbld              ', alert_number, message )
-        endif
-  endif
+! ------------------------------------------------------------------
+! allocate first guess grid-specific variables.
+! ------------------------------------------------------------------
+  allocate ( fg_swdown1 (ifguess, jfguess) )
+  allocate ( fg_lwdown1 (ifguess, jfguess) )
+
+! ------------------------------------------------------------------
+! read in first guess data for this julian hour.
+! ------------------------------------------------------------------
+  alert_number = 0
+  call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
+       fg_swdown1, fg_lwdown1, alert_number)
+
+  ! Interpolate
+  call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+       fg_swdown1, fg_swdata)
+  call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+       fg_lwdown1, fg_lwdata)
+  deallocate ( fg_swdown1 )
+  deallocate ( fg_lwdown1 )
 
 end subroutine USAF_fldbld_radflux_galwem
 
@@ -406,10 +365,10 @@ end subroutine USAF_fldbld_radflux_galwem
 !              ...........................................K. Arsenault/SAIC
 !
 ! !INTERFACE:
-subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
-                                            fg_swdown, fg_lwdown, alert_number )
+subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
+     ifguess, jfguess, fg_swdown, fg_lwdown, alert_number )
+
 ! !USES:
-  use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
 #if (defined USE_GRIBAPI)
@@ -417,6 +376,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
 #endif
 
   implicit none
+
 ! !ARGUMENTS:
   character(len=*),  intent(in) :: fg_filename
   integer,        intent(in)    :: ifguess
@@ -480,11 +440,9 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
   character*255                 :: message  ( 20 )
   integer                       :: count_swdown
   integer                       :: count_lwdown
-  integer                       :: i
   integer                       :: ierr
   integer                       :: istat1
-  integer                       :: j
-  integer                       :: k, c, r
+  integer :: k
   integer                       :: ftn, igrib, nvars
   integer                       :: param_disc_val, param_cat_val, &
                                    param_num_val, forecasttime_val
@@ -511,8 +469,9 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
   call LIS_verify(ierr,'[WARN] FILE NOT FOUND - '//trim(fg_filename))
 
 #if (defined USE_GRIBAPI)
-  call grib_open_file(ftn,trim(fg_filename),'r',ierr)
-  call LIS_verify(ierr,'[WARN] (3) Failed to open in read routine - '//trim(fg_filename))
+  call grib_open_file(ftn, trim(fg_filename), 'r', ierr)
+  call LIS_verify(ierr, &
+       '[WARN] Failed to open in read routine - '//trim(fg_filename))
 
   if ( ierr == 0 ) then
      allocate ( dum1d   (ifguess*jfguess) )
@@ -520,7 +479,8 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
      count_lwdown = 0
 
      write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'[INFO] Reading first guess GALWEM radiation fluxes '
+     write(LIS_logunit,*) &
+          '[INFO] Reading first guess GALWEM radiation fluxes '
      write(LIS_logunit,*) trim(fg_filename)
 
      call grib_count_in_file(ftn,nvars,ierr)
@@ -533,17 +493,20 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
         call LIS_verify(ierr, 'failed to read - '//trim(fg_filename))
 
         call grib_get(igrib,'discipline',param_disc_val,ierr)
-        call LIS_verify(ierr, 'error in grib_get: parameterNumber in ' // &
-                              'USAF_fldbld_read_radflux_galwem')
+        call LIS_verify(ierr, &
+             'error in grib_get: parameterNumber in ' // &
+             'USAF_fldbld_read_radflux_galwem')
 
         call grib_get(igrib,'parameterCategory',param_cat_val,ierr)
-        call LIS_verify(ierr, 'error in grib_get: parameterCategory in ' // &
-                              'USAF_fldbld_read_radflux_galwem')
+        call LIS_verify(ierr, &
+             'error in grib_get: parameterCategory in ' // &
+             'USAF_fldbld_read_radflux_galwem')
 
         call grib_get(igrib,'parameterNumber',param_num_val,ierr)
-        call LIS_verify(ierr, 'error in grib_get: parameterNumber in ' // &
-                              'USAF_fldbld_read_radflux_galwem')
-        
+        call LIS_verify(ierr, &
+             'error in grib_get: parameterNumber in ' // &
+             'USAF_fldbld_read_radflux_galwem')
+
         call grib_get(igrib,'forecastTime',forecasttime_val,ierr)
         call LIS_verify(ierr, 'error in grib_get: forecastTime in ' // &
                               'USAF_fldbld_read_radflux_galwem')
@@ -551,20 +514,17 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
         !  SW Down Radiation flux:
         if ( param_disc_val == 0 .and. param_cat_val    == 4 .and. &
              param_num_val  == 7 ) then
-!             param_num_val  == 7 .and. forecasttime_val == 0 ) then
 
-           call grib_get(igrib,'values',dum1d,ierr)
-           call LIS_verify(ierr, 'error in grib_get: SWdown values in ' // &
-                                 'USAF_fldbld_read_radflux_galwem')
-           if ( ierr == 0 ) then 
+           call grib_get(igrib, 'values', dum1d, ierr)
+           call LIS_verify(ierr, &
+                'error in grib_get: SWdown values in ' // &
+                'USAF_fldbld_read_radflux_galwem')
+           if ( ierr == 0 ) then
 !     ------------------------------------------------------------------
 !       store SW radiation flux to the fg_swdown array.
 !     ------------------------------------------------------------------
               fg_swdown = reshape(dum1d, (/ifguess,jfguess/))
               count_swdown = count_swdown + 1
-              ! found swdown; clean up and break out of do-loop.
-!              call grib_release(igrib,ierr)
-!              exit
            else
               write(cstat,'(i9)',iostat=istat1) ierr
               message(1) = 'Program: LIS'
@@ -582,11 +542,11 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
         !  LW Down Radiation flux:
         if ( param_disc_val == 0 .and. param_cat_val    == 5 .and. &
              param_num_val  == 3 ) then
-!             param_num_val  == 3 .and. forecasttime_val == 0 ) then
 
-           call grib_get(igrib,'values',dum1d,ierr)
-           call LIS_verify(ierr, 'error in grib_get: LWdown values in ' // &
-                                 'USAF_fldbld_read_radflux_galwem')
+           call grib_get(igrib, 'values', dum1d, ierr)
+           call LIS_verify(ierr, &
+                'error in grib_get: LWdown values in ' // &
+                'USAF_fldbld_read_radflux_galwem')
            if ( ierr == 0 ) then
 !     ------------------------------------------------------------------
 !       store LW radiation flux to the fg_lwdown array.
@@ -596,7 +556,8 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, ifguess, jfguess,&
            else
               write(cstat,'(i9)',iostat=istat1) ierr
               message(1) = 'Program: LIS'
-              message(2) = '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
+              message(2) = &
+                   '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
               message(3) = '  Error reading first guess file:'
               message(4) = '  ' // trim(fg_filename)
               if( istat1 .eq. 0 )then

@@ -14,7 +14,7 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
 
   ! Imports
   use AGRMET_forcingMod, only : agrmet_struc
-  use LIS_coreMod,       only : LIS_rc, LIS_masterproc
+  use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
                                 LIS_verify, LIS_endrun
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -33,28 +33,31 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   integer, intent(out):: rc
 
   ! Locals
-    integer                 :: ftn, igrib
-  character*250           :: avnfile, avnfile2
+  integer                 :: ftn, igrib
+  character*250           :: avnfile
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
   character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 2 )
   real                    :: gridres
   integer                 :: alert_number
-  real, allocatable       :: fg_swdown    ( : , : )
   real, allocatable       :: fg_swdown1   ( : , : )
-  real, allocatable       :: fg_lwdown    ( : , : )
   real, allocatable       :: fg_lwdown1   ( : , : )
   integer                 :: ifguess, jfguess
   integer                 :: center
   integer                 :: ierr
-  logical*1               :: found, found2
+  logical*1               :: found
   logical                 :: first_time
   integer                 :: yr_2d
   integer                 :: file_julhr
   integer                 :: dataDate, dataTime
   character*100           :: gtype
   logical                 :: found_inq
+
+  ! External subroutines
+  external :: AGRMET_fg2lis
+  external :: getAVNfilename
+  external :: USAF_fldbld_read_radflux_gfs
 
   ! Initialize return code to "no error".  We will change it below if
   ! necessary.
@@ -65,9 +68,6 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   fc_hr = 0           ! Incremented below
   file_julhr = julhr  ! Decremented below
   call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
-
-  !write(LIS_logunit,*)'EMK1: yr1, mo1, da1, hr1 = ', &
-  !     yr1, mo1, da1, hr1
 
   ! GFS is only available 3-hrly in NCEI archive, so we will use that
   ! here
@@ -87,11 +87,8 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
      fc_hr = 6
      file_julhr = file_julhr - 5
   end if
-  !file_julhr = file_julhr - fc_hr
 
   call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
-  !write(LIS_logunit,*)'EMK2: yr1, mo1, da1, hr1 = ', &
-  !     yr1, mo1, da1, hr1
 
   found = .false.
   first_time = .true.
@@ -104,9 +101,6 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
         if (fc_hr > 30) exit ! Give up
         file_julhr = file_julhr - 6
         call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
-        !write(LIS_logunit,*)'EMK3: yr1, mo1, da1, hr1 = ', &
-        !     yr1, mo1, da1, hr1
-
      end if
      first_time = .false.
 
@@ -253,8 +247,8 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   if (center == 7) then
      write(LIS_logunit,*) '[INFO] Data is from GFS model'
   end if
-  
-  write(LIS_logunit,*)'- FIRST GUESS DATA IS ON A ', gridres,&
+
+  write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS ON A ', gridres,&
           ' DEGREE LAT/LON GRID'
   ifguess = iginfo(1)
   jfguess = iginfo(2)
@@ -280,7 +274,6 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
      fg_swdown, fg_lwdown, alert_number )
 
   ! Imports
-  use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -298,18 +291,14 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
   integer,        intent(inout) :: alert_number
 
   ! Locals
-  character*9                   :: cstat
   character*255                 :: message  ( 20 )
   integer                       :: count_swdown
   integer                       :: count_lwdown
-  integer                       :: i
   integer                       :: ierr
-  integer                       :: istat1
-  integer                       :: j
-  integer                       :: k, c, r
+  integer                       :: k
   integer                       :: ftn, igrib, nvars
   integer                       :: param_disc_val, param_cat_val, &
-                                   param_num_val, forecasttime_val
+                                   param_num_val
   real,           allocatable   :: dum1d    ( : )
   logical                       :: found_inq
 
@@ -371,7 +360,7 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
            fg_swdown = reshape(dum1d, (/ifguess,jfguess/))
            count_swdown = count_swdown + 1
         end if
-        
+
         !  LW Down Radiation flux:
         if ( param_disc_val == 0 .and. param_cat_val    == 5 .and. &
              param_num_val  == 192 ) then
