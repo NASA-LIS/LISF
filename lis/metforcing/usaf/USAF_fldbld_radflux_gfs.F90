@@ -66,18 +66,32 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   file_julhr = julhr  ! Decremented below
   call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
 
+  !write(LIS_logunit,*)'EMK1: yr1, mo1, da1, hr1 = ', &
+  !     yr1, mo1, da1, hr1
+
+  ! GFS is only available 3-hrly in NCEI archive, so we will use that
+  ! here
   if (hr1 == 1 .or. hr1 == 7 .or. hr1 == 13 .or. hr1 == 19) then
-     fc_hr = 1
+     fc_hr = 0
+     file_julhr = file_julhr - 1
   else if (hr1 == 2 .or. hr1 == 8 .or. hr1 == 14 .or. hr1 == 20) then
-     fc_hr = 2
+     fc_hr = 3
+     file_julhr = file_julhr - 2
   else if (hr1 == 3 .or. hr1 == 9 .or. hr1 == 15 .or. hr1 == 21) then
      fc_hr = 3
+     file_julhr = file_julhr - 3
   else if (hr1 == 4 .or. hr1 == 10 .or. hr1 == 16 .or. hr1 == 22) then
-     fc_hr = 4
+     fc_hr = 3
+     file_julhr = file_julhr - 4
   else if (hr1 == 5 .or. hr1 == 11 .or. hr1 == 17 .or. hr1 == 23) then
-     fc_hr = 5
+     fc_hr = 6
+     file_julhr = file_julhr - 5
   end if
-  file_julhr = file_julhr - fc_hr
+  !file_julhr = file_julhr - fc_hr
+
+  call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
+  !write(LIS_logunit,*)'EMK2: yr1, mo1, da1, hr1 = ', &
+  !     yr1, mo1, da1, hr1
 
   found = .false.
   first_time = .true.
@@ -90,6 +104,9 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
         if (fc_hr > 30) exit ! Give up
         file_julhr = file_julhr - 6
         call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
+        !write(LIS_logunit,*)'EMK3: yr1, mo1, da1, hr1 = ', &
+        !     yr1, mo1, da1, hr1
+
      end if
      first_time = .false.
 
