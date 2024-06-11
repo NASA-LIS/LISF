@@ -33,30 +33,34 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   integer, intent(out):: rc
 
   ! Locals
-  integer                 :: ftn, igrib
-  character*250           :: avnfile
+  integer                 :: ftn, ftn2
+  integer                 :: igrib, igrib2
+  character*250           :: avnfile, avnfile2
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
   character*255           :: message     ( 20 )
-  integer                 :: iginfo      ( 2 )
-  real                    :: gridres
+  integer                 :: iginfo(2), iginfo2(2)
+  real                    :: gridres, gridres2
   integer                 :: alert_number
-  real, allocatable       :: fg_swdown1   ( : , : )
-  real, allocatable       :: fg_lwdown1   ( : , : )
-  integer                 :: ifguess, jfguess
-  integer                 :: center
-  integer                 :: ierr
-  logical*1               :: found
+  real, allocatable       :: fg_swdown1(:,:), fg_swdown2(:,:)
+  real, allocatable       :: fg_lwdown1(:,:), fg_lwdown2(:,:)
+  integer                 :: ifguess, ifguess2
+  integer                 :: jfguess, jfguess2
+  integer                 :: center, center2
+  integer                 :: ierr, ierr2
+  logical*1               :: found, found2
   logical                 :: first_time
   integer                 :: yr_2d
   integer                 :: file_julhr
-  integer                 :: dataDate, dataTime
-  character*100           :: gtype
-  logical                 :: found_inq
+  integer                 :: dataDate, dataDate2
+  integer                 :: dataTime, dataTime2
+  character*100           :: gtype, gtype2
+  logical                 :: found_inq, found_inq2
+  integer :: getsixhr
 
   ! External subroutines
   external :: AGRMET_fg2lis
-  external :: getAVNfilename
+  external :: getAVNfilename, getAVNfilename2
   external :: USAF_fldbld_read_radflux_gfs
 
   ! Initialize return code to "no error".  We will change it below if
@@ -69,25 +73,42 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   file_julhr = julhr  ! Decremented below
   call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
 
-  ! GFS is only available 3-hrly in NCEI archive, so we will use that
-  ! here
-  if (hr1 == 1 .or. hr1 == 7 .or. hr1 == 13 .or. hr1 == 19) then
-     fc_hr = 0
-     file_julhr = file_julhr - 1
+  ! GFS is only available 3-hrly in NCEI archive, so we will use that here.
+  ! Also, files contain time averaged radiation, with the time average
+  ! *ending* at the forecast hour.  This creates an eastward bias in the
+  ! position of the Sun. We account for that here.
+  if (hr1 ==  0 .or. hr1 ==  6 .or. hr1 ==  12 .or. hr1 == 18) then
+     fc_hr = 9
+     file_julhr = file_julhr - 6
+  else if (hr1 ==  1 .or. hr1 ==  7 .or. hr1 == 13 .or. hr1 == 19) then
+     fc_hr = 9
+     file_julhr = file_julhr - 7
   else if (hr1 == 2 .or. hr1 == 8 .or. hr1 == 14 .or. hr1 == 20) then
-     fc_hr = 3
-     file_julhr = file_julhr - 2
+     fc_hr = 9
+     file_julhr = file_julhr - 8
   else if (hr1 == 3 .or. hr1 == 9 .or. hr1 == 15 .or. hr1 == 21) then
-     fc_hr = 3
-     file_julhr = file_julhr - 3
+     fc_hr = 12
+     file_julhr = file_julhr - 9
   else if (hr1 == 4 .or. hr1 == 10 .or. hr1 == 16 .or. hr1 == 22) then
-     fc_hr = 3
-     file_julhr = file_julhr - 4
+     fc_hr = 12
+     file_julhr = file_julhr - 10
   else if (hr1 == 5 .or. hr1 == 11 .or. hr1 == 17 .or. hr1 == 23) then
-     fc_hr = 6
-     file_julhr = file_julhr - 5
+     fc_hr = 12
+     file_julhr = file_julhr - 11
   end if
 
+  ! Some GFS files have 6-hr time averages of radiation instead of 3-hr.
+  ! This requires taking a weighted difference to estimate the most
+  ! recent 3-hr time average.  (Equivalent to multiplying average values
+  ! by 6 or 3 hours to get "accumulations", differencing the
+  ! "accumulations", and then dividing by 3 hours.)
+  if (mod(fc_hr,12) .eq. 0) then
+     getsixhr = 1
+     found2 = .false.
+  else
+     getsixhr = 0
+     found2 = .true.
+  end if
   call LIS_julhr_date(file_julhr, yr1, mo1, da1, hr1)
 
   found = .false.
@@ -112,6 +133,13 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
           agrmet_struc(n)%gfs_timestamp, &
           agrmet_struc(n)%gfs_filename_version, &
           yr1, mo1, da1, hr1, fc_hr)
+     if (getsixhr.eq.1) then
+        call getAVNfilename(avnfile2, agrmet_struc(n)%agrmetdir,&
+             agrmet_struc(n)%gfsdir, agrmet_struc(n)%use_timestamp,&
+             agrmet_struc(n)%gfs_timestamp, &
+             agrmet_struc(n)%gfs_filename_version, &
+             yr1, mo1, da1, hr1, fc_hr-3)
+     end if
 
      ! See if the GRIB file exists before calling ECCODES.
      inquire(file=trim(avnfile), exist=found_inq)
@@ -119,109 +147,275 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
         write(LIS_logunit,*) '[WARN] Cannot find file ' // trim(avnfile)
         cycle
      end if
+     if (getsixhr .eq. 1) then
+        inquire(file=trim(avnfile2), exist=found_inq2)
+        if (.not. found_inq2) then
+           write(LIS_logunit,*) &
+                '[WARN] Cannot find file ' // trim(avnfile2)
+           cycle
+        end if
+     end if
 
 #if (defined USE_GRIBAPI)
-     if (found_inq) then
-        call grib_open_file(ftn, trim(avnfile), 'r', ierr)
-     else
-        ierr = 1
-     end if
+     call grib_open_file(ftn, trim(avnfile), 'r', ierr)
      if ( ierr /= 0 ) then
         write(LIS_logunit,*) '[WARN] Failed to open first guess - ', &
              trim(avnfile)
-     else
-        ! Extract some information
-        call grib_new_from_file(ftn, igrib, ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Failed file read check - ' // &
-                trim(avnfile)
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-        endif
-
-        call grib_get(igrib, 'centre', center, ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Cannot read: centre in ' // &
-                                'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-        endif
-
-        call grib_get(igrib, 'gridType', gtype, ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Cannot read: gridType in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         call grib_get(igrib, 'Ni', iginfo(1), ierr)
-         if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Cannot read: Ni in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         call grib_get(igrib, 'Nj', iginfo(2), ierr)
-         if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] Cannot read: Nj in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         call grib_get(igrib, 'jDirectionIncrementInDegrees', gridres, &
-              ierr)
-         if ( ierr /= 0 ) then
-            write(LIS_logunit,*) &
-                 '[WARN] Cannot read: jDirectionIncrementInDegrees in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         call grib_get(igrib, 'dataDate', dataDate, ierr)
-         if ( ierr /= 0 ) then
-            write(LIS_logunit,*) &
-                 '[WARN] Cannot read: dataDate in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         call grib_get(igrib, 'dataTime', dataTime, ierr)
-         if ( ierr /= 0 ) then
-            write(LIS_logunit,*) &
-                 '[WARN] Cannot read: dataTime in ' // &
-                                 'USAF_fldbld_radflux_gfs'
-           call grib_release(igrib, ierr)
-           call grib_close_file(ftn)
-           cycle
-         endif
-
-         if ( yr1*10000+mo1*100+da1 == dataDate .and. &
-              hr1*100 == dataTime ) then
-            found = .TRUE.
-            if ( gtype /= "regular_ll" ) then
-               message(1) = 'program: LIS'
-               message(2) = '  Subroutine: USAF_fldbld_radflux_gfs'
-               message(3) = '  First guess source is not a lat/lon grid'
-               message(4) = '  USAF_fldbld_radflux_gfs expects lat/lon data'
-              call lis_abort(message)
-           endif
-        endif
-
-        call grib_release(igrib, ierr)
+        flush(LIS_logunit)
         call grib_close_file(ftn)
-     endif
+        cycle
+     end if
+     if (getsixhr .eq. 1) then
+        call grib_open_file(ftn2, trim(avnfile2), 'r', ierr2)
+        if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Failed to open first guess - ', &
+               trim(avnfile2)
+          call grib_close_file(ftn2)
+          flush(LIS_logunit)
+          cycle
+       end if
+    end if
+
+    ! Extract some information
+    call grib_new_from_file(ftn, igrib, ierr)
+    ierr2 = 0
+    if (getsixhr .eq. 1) call grib_new_from_file(ftn2, igrib2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Failed file read check - ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Failed file read check - ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if (getsixhr .eq. 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       end if
+       cycle
+    endif
+
+    call grib_get(igrib, 'centre', center, ierr)
+    ierr2 = 0
+    if (getsixhr .eq. 1) call grib_get(igrib2, 'centre', center2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: centre in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: centre in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       endif
+       cycle
+    endif
+
+    call grib_get(igrib, 'gridType', gtype, ierr)
+    ierr2 = 0
+    if (getsixhr .eq. 1) call grib_get(igrib2, 'gridType', gtype2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: gridType in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: gridType in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       end if
+       cycle
+    end if
+
+    call grib_get(igrib, 'Ni', iginfo(1), ierr)
+    ierr2 = 0
+    if (getsixhr == 1) call grib_get(igrib2, 'Ni', iginfo2(1), ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: Ni in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if (ierr2 /= 0) then
+          write(LIS_logunit,*) '[WARN] Cannot read: Ni in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       end if
+       cycle
+    end if
+
+    call grib_get(igrib, 'Nj', iginfo(2), ierr)
+    ierr2 = 0
+    if (getsixhr == 1) call grib_get(igrib2, 'Nj', iginfo2(2), ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: Nj in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) '[WARN] Cannot read: Nj in ' // &
+               'USAF_fldbld_radflux_gfs'
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       endif
+       cycle
+    end if
+
+
+    call grib_get(igrib, 'jDirectionIncrementInDegrees', gridres, &
+         ierr)
+    ierr2 = 0
+    if (getsixhr == 1) call grib_get(igrib2, &
+         'jDirectionIncrementInDegrees', gridres2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: jDirectionIncrementInDegrees in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: jDirectionIncrementInDegrees in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       endif
+       cycle
+    end if
+
+    call grib_get(igrib, 'dataDate', dataDate, ierr)
+    ierr2 = 0
+    if (getsixhr == 1) call grib_get(igrib2, 'dataDate', dataDate2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: dataDate in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: dataDate in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       endif
+       cycle
+    end if
+
+    call grib_get(igrib, 'dataTime', dataTime, ierr)
+    ierr2 = 0
+    if (getsixhr == 1) call grib_get(igrib2, 'dataTime', dataTime2, ierr2)
+    if (ierr /= 0 .or. ierr2 /= 0) then
+       if ( ierr /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: dataTime in ' // &
+               trim(avnfile)
+          flush(LIS_logunit)
+       end if
+       call grib_release(igrib, ierr)
+       call grib_close_file(ftn)
+       if ( ierr2 /= 0 ) then
+          write(LIS_logunit,*) &
+               '[WARN] Cannot read: dataTime in ' // &
+               trim(avnfile2)
+          flush(LIS_logunit)
+       end if
+       if (getsixhr == 1) then
+          call grib_release(igrib2, ierr2)
+          call grib_close_file(ftn2)
+       end if
+       cycle
+    end if
+
+    if ( yr1*10000+mo1*100+da1 == dataDate .and. &
+         hr1*100 == dataTime ) then
+       found = .TRUE.
+       if ( gtype /= "regular_ll" ) then
+          message(1) = 'program: LIS'
+          message(2) = '  Subroutine: USAF_fldbld_radflux_gfs'
+          message(3) = '  First guess source is not a lat/lon grid'
+          message(4) = '  USAF_fldbld_radflux_gfs expects lat/lon data'
+          call lis_abort(message)
+       endif
+    endif
+    call grib_release(igrib, ierr)
+    call grib_close_file(ftn)
+
+    if (getsixhr == 1) then
+       if ( yr1*10000+mo1*100+da1 == dataDate2 .and. &
+            hr1*100 == dataTime2 ) then
+          found2 = .TRUE.
+          if ( gtype2 /= "regular_ll" ) then
+             message(1) = 'program: LIS'
+             message(2) = '  Subroutine: USAF_fldbld_radflux_gfs'
+             message(3) = '  First guess source is not a lat/lon grid'
+             message(4) = '  USAF_fldbld_radflux_gfs expects lat/lon data'
+             call lis_abort(message)
+          endif
+       endif
+       call grib_release(igrib2, ierr2)
+       call grib_close_file(ftn2)
+    end if
+
+    ! Make sure grids match
+    if (getsixhr == 1) then
+       if ((iginfo(1) .ne. iginfo2(1)) .or. &
+            (iginfo(2) .ne. iginfo2(2)) .or. &
+            (gridres .ne. gridres2) .or. &
+            (center .ne. center2)) then
+          write(LIS_logunit,*) '[ERR]: Grid mismatch between ', &
+               trim(avnfile), ' and ', trim(avnfile2)
+          message(1) = 'program: LIS'
+          message(2) = '  Subroutine: USAF_fldbld_radflux_gfs'
+          message(3) = '  First guess source is not a lat/lon grid'
+          message(4) = '  USAF_fldbld_radflux_gfs expects lat/lon data'
+          call lis_abort(message)
+       end if
+    end if
+
 #else
      write(LIS_logunit,*) '[ERR]: USAF_fldbld_radflux_gfs requires GRIB-API'
      write(LIS_logunit,*) '[ERR]: please recompile LIS'
@@ -241,25 +435,52 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   end if
 
   write(LIS_logunit,*) &
-       '[INFO] Using NWP Radiation fields from ',trim(avnfile)
+       '[INFO] Using time-averaged NWP Radiation fields from ',trim(avnfile)
+  if (getsixhr == 1) then
+     write(LIS_logunit,*) &
+          '[INFO] Also using NWP Radiation fields from ',trim(avnfile2)
+  end if
   rc = 0
 
   if (center == 7) then
-     write(LIS_logunit,*) '[INFO] Data is from GFS model'
+     write(LIS_logunit,*) '[INFO] Data are from GFS model'
   end if
 
-  write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS ON A ', gridres,&
+  write(LIS_logunit,*)'[INFO] GFS RADIATION DATA ARE ON A ', gridres,&
           ' DEGREE LAT/LON GRID'
   ifguess = iginfo(1)
   jfguess = iginfo(2)
-
   allocate ( fg_swdown1 (ifguess, jfguess) )
   allocate ( fg_lwdown1 (ifguess, jfguess) )
+
+  if (getsixhr == 1) then
+     ifguess2 = iginfo2(1)
+     jfguess2 = iginfo2(2)
+     allocate ( fg_swdown2 (ifguess2, jfguess2) )
+     allocate ( fg_lwdown2 (ifguess2, jfguess2) )
+  end if
 
   ! Get radiation for this julian hour
   alert_number = 0
   call USAF_fldbld_read_radflux_gfs(avnfile, ifguess, jfguess, &
        fg_swdown1, fg_lwdown1, alert_number)
+  if (getsixhr == 1) then
+     call USAF_fldbld_read_radflux_gfs(avnfile2, ifguess2, jfguess2, &
+          fg_swdown2, fg_lwdown2, alert_number)
+  end if
+
+  ! Estimate time-averaged radiation from last 3 hours.
+  ! Some GFS files have 6-hr time averages of radiation instead of 3-hr.
+  ! This requires taking a weighted difference to estimate the most
+  ! recent 3-hr time average.  (Equivalent to multiplying average values
+  ! by 6 or 3 hours to get "accumulations", differencing the
+  ! "accumulations", and then dividing by 3 hours.)
+  if (getsixhr == 1) then
+     write(LIS_logunit,*) &
+          '[INFO] Estimating 3-hr time averaged radiation...'
+     fg_swdown1 = 2*fg_swdown1 - fg_swdown2
+     fg_lwdown1 = 2*fg_lwdown1 - fg_lwdown2
+  end if
 
   ! Interpolate to the LIS grid
   call AGRMET_fg2lis(n, ifguess, jfguess, fg_swdown1, fg_swdata)
@@ -268,6 +489,11 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   ! Clean up
   deallocate(fg_swdown1)
   deallocate(fg_lwdown1)
+  if (getsixhr == 1) then
+     deallocate(fg_swdown2)
+     deallocate(fg_lwdown2)
+  end if
+
 end subroutine USAF_fldbld_radflux_gfs
 
 subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
@@ -322,7 +548,8 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
      count_lwdown = 0
 
      write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'[INFO] Reading first guess GFS radiation fluxes'
+     write(LIS_logunit,*) &
+          '[INFO] Reading time-averaged GFS radiation fluxes'
      write(LIS_logunit,*) trim(fg_filename)
 
      call grib_count_in_file(ftn, nvars, ierr)
