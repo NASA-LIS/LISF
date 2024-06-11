@@ -61,12 +61,14 @@ module LIS_metforcingMod
 !                              Moved CRainf (convective rainfall forcing)
 !                                 from LIS_MOC_RAINFCONV to LIS_MOC_CRAINFFORC.
 !                              Added units of [kg/m^2] for PET and CRainf.
+!  13 Aug 2023    Jules Kouatchou Introduce calls for time profiling.
 ! 
   use ESMF
   use LIS_FORC_AttributesMod
   use LIS_spatialDownscalingMod
   use LIS_logMod
   use LIS_coreMod
+  use LIS_ftimingMod
 
   implicit none 
 
@@ -1084,6 +1086,7 @@ contains
     integer :: m
 
     TRACE_ENTER("metf_get")
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run/metf_get")
     if(LIS_rc%nmetforc.gt.0) then 
        do m=1,LIS_rc%nmetforc
 
@@ -1172,6 +1175,7 @@ contains
        endif
 
     endif
+    if (LIS_rc%do_ftiming) call LIS_Ftiming_Off("LIS_run/metf_get")
     TRACE_EXIT("metf_get")
 
   end subroutine LIS_get_met_forcing

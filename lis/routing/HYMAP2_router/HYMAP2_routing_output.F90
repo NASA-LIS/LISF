@@ -22,6 +22,16 @@ subroutine HYMAP2_routing_output(n)
   use HYMAP2_routingMod
 
   use LIS_mpiMod
+
+#if ( defined USE_PFIO )
+      use LIS_PFIO_historyMod
+#endif 
+
+!
+! !HISTORY:
+! 05 Sep 2023 Jules Kouatchou; Introduce preprocessing directives for calls
+!             of HISTORY related subroutines with and without PFIO components.
+
   implicit none
   
   integer, intent(in)   :: n 
@@ -35,6 +45,7 @@ subroutine HYMAP2_routing_output(n)
   logical               :: open_stats
   logical               :: alarmCheck
   integer               :: status
+  integer               :: vcol_id
 
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
@@ -69,9 +80,30 @@ subroutine HYMAP2_routing_output(n)
            alarmCheck = LIS_isAlarmRinging(LIS_rc,&
                 "HYMAP2 router output alarm")
         endif
+
         if(alarmCheck) then 
 
            open_stats = .false.
+
+#if ( defined USE_PFIO )
+           HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
+           IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
+              ! Create the file metadata ONCE.
+              call LIS_PFIO_create_routing_metadata(n, PFIO_ROUTING_idx, &
+                                                2, HYMAP2_routing_struc(n)%outInterval, &
+                                                1, (/1.0/) , 'ROUTING')
+              PFIO_bundle%first_time(n, :, PFIO_ROUTING_idx) = .FALSE.
+           ENDIF
+           call LIS_create_output_directory('ROUTING')
+           call LIS_create_output_filename(n, filename,&
+                            model_name = 'ROUTING',&
+                            writeint=HYMAP2_routing_struc(n)%outInterval)
+           vcol_id = MOD(PFIO_bundle%counter(n, PFIO_ROUTING_idx)-1, LIS_rc%n_vcollections) + 1
+           CALL LIS_PFIO_write_routingdata(n, PFIO_ROUTING_idx, vcol_id, filename, &
+                                       HYMAP2_routing_struc(n)%outInterval, 2)
+    
+           PFIO_bundle%counter(n, PFIO_ROUTING_idx) = PFIO_bundle%counter(n, PFIO_ROUTING_idx) + 1
+#else
            if(LIS_masterproc) then 
               HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
               call LIS_create_output_directory('ROUTING')
@@ -99,6 +131,7 @@ subroutine HYMAP2_routing_output(n)
                 outInterval=HYMAP2_routing_struc(n)%outInterval,     &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
+#endif
         endif
      endif
   endif

@@ -87,6 +87,10 @@ module LIS_coreMod
 !
 ! !REVISION HISTORY:
 !  14 Nov 2002    Sujay Kumar  Initial Specification
+!  13 Aug 2023    Jules Kouatchou Declare and allocate variables needed by PFIO.
+!                                 Do not finalize ESMF if PFIO is used.
+!                                 Add preprocessing directives.
+!                                 
 !
 ! !USES:
   use ESMF
@@ -97,6 +101,10 @@ module LIS_coreMod
   use LIS_logMod
   use LIS_mpiMod
   use map_utils
+
+#if ( defined USE_PFIO )
+      use LIS_PFIO_varsMod
+#endif
 
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -158,6 +166,15 @@ module LIS_coreMod
   public :: LIS_routing
   public :: LIS_routing_gdeltas, LIS_routing_goffsets
 
+#if ( defined USE_PFIO )
+      public :: PFIO_bundle
+      public :: numPFIOcols
+      public :: PFIO_LSM_idx
+      public :: PFIO_RTM_idx
+      public :: PFIO_IRRIG_idx
+      public :: PFIO_ROUTING_idx
+#endif
+
   integer, allocatable  :: LIS_routing_gdeltas(:,:), LIS_routing_goffsets(:,:)
 
   type, public :: routing_type_dec
@@ -197,7 +214,19 @@ module LIS_coreMod
      integer,       allocatable :: str_patch_ind(:)
   end type lis_domain_sf_type
 
-  type(lisrcdec), save           :: LIS_rc
+  type(lisrcdec), save          :: LIS_rc
+#if ( defined USE_PFIO )
+  type(pfio_t),   save          :: PFIO_bundle
+  integer                       :: numPFIOcols
+  integer                       :: pfioLIS_MOC_LSM_COUNT
+  integer                       :: pfioLIS_MOC_RTM_COUNT
+  integer                       :: pfioLIS_MOC_IRRIG_COUNT
+  integer                       :: pfioLIS_MOC_ROUTING_COUNT
+  integer                       :: PFIO_LSM_idx
+  integer                       :: PFIO_RTM_idx
+  integer                       :: PFIO_IRRIG_idx
+  integer                       :: PFIO_ROUTING_idx
+#endif
   type(lis_domain_type), allocatable :: LIS_domain(:)
   type(lis_domain_sf_type), allocatable :: LIS_surface(:,:)
   logical                        :: LIS_initialized = .false.
@@ -869,13 +898,17 @@ contains
     deallocate(LIS_npatches)
     deallocate(LIS_patch_offsets)
     deallocate(LIS_patch_deltas)
+#if ( ! defined USE_PFIO )
     if ( fin_esmf ) then
        call ESMF_Finalize(endflag=ESMF_END_KEEPMPI, rc=ierr)
     endif
+#endif
 #if ( defined COUPLED)
 #else
 #if ( defined SPMD )
+#if ( ! defined USE_PFIO )
     call MPI_FINALIZE(ierr)
+#endif
 #endif
 #endif
   end subroutine spmd_finalize

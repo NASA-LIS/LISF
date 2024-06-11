@@ -10,6 +10,8 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 # 6 Jan 2012: Sujay Kumar, Initial Specification
+# 13 Aug 2023: Jules Kouatchou; Settings to accommodate PFIO without 
+#              changing the compilation process of the original code.
 
 #
 # Process environment and configure options
@@ -138,6 +140,41 @@ $sys_par_d = $par_table{$sys_arch}{$par_lev};
 #   $sys_omp = "";
 #}
 
+print "Use PFIO to produce nc4 HISTORY? (1-yes, 0-no, default=0): ";
+$use_pfio=<stdin>;
+chomp($use_pfio);
+if($use_pfio eq "") {
+   $use_pfio=0
+}  
+
+if ( $use_pfio == 1 ) {
+   if ( $par_lev != 1 ) {
+      print "--------------ERROR---------------------\n";
+      print "PFIO requires MPI\n";
+      print "You must select 1 at the Parallelism prompt\n";
+      print "   Parallelism (0-serial, 1-dmpar, default=1):\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+   
+if ( $use_pfio ) {
+   my %pfio_table = ();
+   
+   $pfio_table{"linux_ifc"}       = "-DUSE_PFIO";
+   $pfio_table{"linux_pgi"}       = "-DUSE_PFIO";
+   $pfio_table{"linux_absoft"}    = "-DUSE_PFIO";
+   $pfio_table{"linux_lf95"}      = "-DUSE_PFIO";
+   $pfio_table{"Darwin_gfortran"} = "-DUSE_PFIO";
+   $pfio_table{"linux_gfortran"}  = "-DUSE_PFIO";
+   $pfio_table{"AIX"}             = "-DUSE_PFIO";
+   
+   $sys_pfio = $pfio_table{$sys_arch};
+}
+else {
+   $sys_pfio = "";
+}
 
 print "Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): ";
 $opt_lev=<stdin>;
@@ -393,6 +430,32 @@ else{
    exit 1;
 }
 
+if ( $use_pfio ) {
+   
+   if(defined($ENV{LIS_MAPL})) {
+      $sys_esmflib_path = "-L$ENV{LIS_LIBESMF} -lesmf";
+      $sys_flapmod_path = "-I$ENV{LIS_FLAP}/include/FLAP";
+      $sys_flaplib_path = "-L$ENV{LIS_FLAP}/lib64 -lFLAP";
+      $sys_maplmod_path = "-I$ENV{LIS_MAPL}/include/MAPL -I$ENV{LIS_MAPL}/include/MAPL.base -I$ENV{LIS_MAPL}/include/MAPL.cap -I$ENV{LIS_MAPL}/include/MAPL_cfio_r4 -I$ENV{LIS_MAPL}/include/MAPL.constants -I$ENV{LIS_MAPL}/include/MAPL.generic -I$ENV{LIS_MAPL}/include/MAPL.gridcomps -I$ENV{LIS_MAPL}/include/MAPL.griddedio -I$ENV{LIS_MAPL}/include/MAPL.history -I$ENV{LIS_MAPL}/include/MAPL.oomph -I$ENV{LIS_MAPL}/include/MAPL.orbit -I$ENV{LIS_MAPL}/include/MAPL.pfio -I$ENV{LIS_MAPL}/include/MAPL.profiler -I$ENV{LIS_MAPL}/include/MAPL.shared -I$ENV{LIS_MAPL}/include/pflogger -I$ENV{LIS_MAPL}/include/MAPL.ExtData -I$ENV{LIS_MAPL}/include/MAPL.field_utils";
+      $sys_mapllib_path = "$ENV{LIS_MAPL}/lib/libMAPL.generic.so $ENV{LIS_MAPL}/lib/libMAPL.base.so $ENV{LIS_MAPL}/lib/libMAPL.cap.so $ENV{LIS_MAPL}/lib/libMAPL.pfio.so $ENV{LIS_MAPL}/lib/libMAPL.constants.so $ENV{LIS_MAPL}/lib/libMAPL_cfio_r4.so $ENV{LIS_MAPL}/lib/libMAPL.shared.so $ENV{LIS_MAPL}/lib/libMAPL.history.so $ENV{LIS_MAPL}/lib/libMAPL.profiler.so $ENV{LIS_MAPL}/lib/libMAPL.so";
+
+   }
+   else{
+      print "--------------ERROR---------------------\n";
+      print "Please specify the MAPL library paths using\n";
+      print "the LIS_MAPL variables.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+else {
+   $sys_maplmod_path = "";
+   $sys_mapllib_path = "";
+   $sys_flapmod_path = "";
+   $sys_flaplib_path = "";
+   $sys_esmflib_path = "-L$ENV{LIS_LIBESMF} -lesmf -lpioc";
+}
 
 print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
@@ -593,30 +656,6 @@ if($use_netcdf == 1) {
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
-   }
-
-   print "NETCDF use shuffle filter? (1-yes, 0-no, default = 1): ";
-   $netcdf_shuffle=<stdin>;
-   $netcdf_shuffle=~s/ *#.*$//;
-   chomp($netcdf_shuffle);
-   if($netcdf_shuffle eq ""){
-      $netcdf_shuffle=1;
-   }
-
-   print "NETCDF use deflate filter? (1-yes, 0-no, default = 1): ";
-   $netcdf_deflate=<stdin>;
-   $netcdf_deflate=~s/ *#.*$//;
-   chomp($netcdf_deflate);
-   if($netcdf_deflate eq ""){
-      $netcdf_deflate=1;
-   }
-
-   print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): ";
-   $netcdf_deflate_level=<stdin>;
-   $netcdf_deflate_level=~s/ *#.*$//;
-   chomp($netcdf_deflate_level);
-   if($netcdf_deflate_level eq ""){
-      $netcdf_deflate_level=9;
    }
 }
 
@@ -882,6 +921,33 @@ else{
    $librpc = "";
 }
 
+## -----------------------
+## Summary of the settings
+## -----------------------
+print " \n";
+print "----------------------------------------------------\n";
+print "------------- SUMMARY of the SETTINGS --------------\n";
+print "----------------------------------------------------\n";
+print "                                     Parallelism: $par_lev\n";
+print "                 Use PFIO to produce nc4 HISTORY? $use_pfio\n";
+print "                              Optimization level: $opt_lev\n";
+print "            Assume little/big_endian data format: $use_endian\n";
+print "                             Use GRIBAPI/ECCODES? $use_gribapi\n";
+print "Enable AFWA-specific grib configuration settings? $use_afwagrib\n";
+print "                                      Use NETCDF? $use_netcdf\n";
+if($use_netcdf == 1) {
+print "                                  NETCDF version: $netcdf_v\n";
+}
+print "                                        Use HDF4? $use_hdf4\n";
+print "                                        Use HDF5? $use_hdf5\n";
+print "                                      Use HDFEOS? $use_hdfeos\n";
+print "                                     Use MINPACK? $use_minpack\n";
+print "                                    Use LIS-CRTM? $use_crtm\n";
+print "                                    Use LIS-CHEM? $use_cmem\n";
+print "                                  Use LIS-LAPACK? $use_lapck\n";
+print "                                       Use PETSc? $use_petsc\n";
+print "----------------------------------------------------\n";
+print " \n";
 
 #
 # Compiler flags
@@ -889,19 +955,19 @@ else{
 
 if($sys_arch eq "linux_ifc") {
    $cflags = "-c ".$sys_omp." ".$sys_c_opt." -traceback -DIFC -DLINUX";
-   $fflags77= "-c ".$sys_omp." ".$sys_opt." -traceback -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
-   $fflags ="-c ".$sys_omp." ".$sys_opt." -u -traceback -fpe0 -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
-   $ldflags= $sys_omp." -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lrt";
+   $fflags77= "-c ".$sys_omp." ".$sys_opt." ".$sys_pfio." -traceback -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) ".$sys_par_d;
+   $fflags ="-c ".$sys_omp." ".$sys_opt." ".$sys_pfio." -u -traceback -fpe0 -nomixed-str-len-arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) ".$sys_par_d;
+   $ldflags= $sys_omp." \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -limf -lrt";
    $lib_flags= "-lesmf -lstdc++ -limf -lrt";
-   $lib_paths= "-L\$(LIB_ESMF)";
+   $lib_paths= "\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "linux_pgi") {
    $cflags = "-c -DLITTLE_ENDIAN -DPGI";
-   $fflags77= "-c ".$sys_opt." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess ".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-   $fflags ="-c ".$sys_opt." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess" .$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-   $ldflags= " -L\$(LIB_ESMF) -lesmf -lesmf -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
+   $fflags77= "-c ".$sys_opt." ".$sys_pfio." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess ".$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
+   $fflags ="-c ".$sys_opt." ".$sys_pfio." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess" .$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
+   $ldflags= " \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
    $lib_flags= "-lesmf -lesmf -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
-   $lib_paths= "-L\$(LIB_ESMF)";
+   $lib_paths= "\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "linux_absoft") {
 }
@@ -909,38 +975,40 @@ elsif($sys_arch eq "linux_lf95") {
 }
 elsif($sys_arch eq "linux_gfortran") {
    $cflags = "-c ".$sys_c_opt." -DGFORTRAN -DLINUX";
-   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
-   $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -lz";
+   $fflags77= "-c ".$sys_opt." ".$sys_pfio." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_pfio." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+   $ldflags= " \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -lz";
    $lib_flags= "-lesmf -lstdc++ -lz";
-   $lib_paths= "-L\$(LIB_ESMF)";
+   $lib_paths= "\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "Darwin_gfortran") {
    $cflags = "-c ".$sys_c_opt." -DGFORTRAN";
-   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
-   $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++";
+   $fflags77= "-c ".$sys_opt." ".$sys_pfio." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_pfio." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+   $ldflags= " \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++";
    $lib_flags= "-lesmf -lstdc++";
-   $lib_paths= "-L\$(LIB_ESMF)";
+   $lib_paths= "\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "AIX") {
    $cflags = "-c -w -g -qfullpath -q64 -qcpluscmt";
-   $fflags77= "-c ".$sys_opt." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-   $fflags ="-c ".$sys_opt." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
-   $ldflags= "-q64 -bmap:map -bloadmap:lm -lmass -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt";
+   $fflags77= "-c ".$sys_opt." ".$sys_pfio." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
+   $fflags ="-c ".$sys_opt." ".$sys_pfio." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL) -DUSE_INCLUDE_MPI";
+   $ldflags= "-q64 -bmap:map -bloadmap:lm -lmass \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -limf -lm -lrt";
    $lib_flags= "-lmass -lesmf -lstdc++ -limf -lm -lrt";
-   $lib_paths= "-L\$(LIB_ESMF)";
+   $lib_paths= "\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "cray_cray") {
    if($use_endian == 1) {
-      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
-      $ldflags= " -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+      $fflags77= "-c ".$sys_opt." ".$sys_pfio." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+      $fflags =" -c ".$sys_opt." ".$sys_pfio." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+      $ldflags= " -hdynamic \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -lrt";
+      $lib_paths= "\$(LIB_ESMF)";
    }
    else {
-      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
-      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
-      $ldflags= " -hbyteswapio -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+      $fflags77= "-c ".$sys_opt." ".$sys_pfio." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+      $fflags =" -c ".$sys_opt." ".$sys_pfio." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) \$(MOD_FLAP) \$(MOD_MAPL)";
+      $ldflags= " -hbyteswapio -hdynamic \$(LIB_ESMF) \$(LIB_FLAP) \$(LIB_MAPL) -lstdc++ -lrt";
+      $lib_paths= "\$(LIB_ESMF)";
    }
 
    $cflags = "-c ".$sys_c_opt." -DCRAYFTN -DLINUX ";
@@ -1118,6 +1186,10 @@ printf conf_file "%s%s\n","CC              = $sys_cc";
 printf conf_file "%s%s\n","AR              = ar";
 printf conf_file "%s%s\n","MOD_ESMF        = $sys_esmfmod_path";
 printf conf_file "%s%s\n","LIB_ESMF        = $sys_esmflib_path";
+printf conf_file "%s%s\n","MOD_MAPL        = $sys_maplmod_path";
+printf conf_file "%s%s\n","LIB_MAPL        = $sys_mapllib_path";
+printf conf_file "%s%s\n","MOD_FLAP        = $sys_flapmod_path";
+printf conf_file "%s%s\n","LIB_FLAP        = $sys_flaplib_path";
 printf conf_file "%s%s\n","INC_JPEG2000      = $inc_jpeg2000";
 printf conf_file "%s%s\n","LIB_JPEG2000      = $lib_jpeg2000";
 if($use_gribapi == 2) {

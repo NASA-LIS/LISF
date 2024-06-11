@@ -20,6 +20,14 @@ subroutine HYMAP_routing_output(n)
   use LIS_fileIOMod
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP_routingMod
+#if ( defined USE_PFIO )
+      use LIS_PFIO_historyMod
+#endif 
+
+!
+! !HISTORY:
+! 01 Sep 2023 Jules Kouatchou; Introduce preprocessing directives for calls
+!             of HISTORY related subroutines with and without PFIO components.
 
   implicit none
   
@@ -33,6 +41,7 @@ subroutine HYMAP_routing_output(n)
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
+  integer               :: vcol_id
 
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
@@ -67,8 +76,27 @@ subroutine HYMAP_routing_output(n)
            alarmCheck = LIS_isAlarmRinging(LIS_rc,&
                 "HYMAP router output alarm")
         endif
+
         if(alarmCheck) then 
 
+#if ( defined USE_PFIO )
+           HYMAP_routing_struc(n)%numout=HYMAP_routing_struc(n)%numout+1    
+           IF (PFIO_bundle%first_time(n, 1, PFIO_ROUTING_idx)) THEN
+              ! Create the file metadata ONCE.
+              call LIS_PFIO_create_file_metadata(n, PFIO_ROUTING_idx, HYMAP_routing_struc(n)%outInterval, &
+                                   1, (/1.0/), group=2)
+              PFIO_bundle%first_time(n, :, PFIO_ROUTING_idx) = .FALSE.
+           ENDIF
+           call LIS_create_output_directory('ROUTING')
+           call LIS_create_output_filename(n, outfile,&
+                            model_name = 'ROUTING',&
+                            writeint=HYMAP_routing_struc(n)%outInterval)
+           vcol_id = MOD(PFIO_bundle%counter(n, PFIO_ROUTING_idx)-1, LIS_rc%n_vcollections) + 1
+           CALL LIS_PFIO_write_data(n, PFIO_ROUTING_idx, vcol_id, &
+                                outfile, HYMAP_routing_struc(n)%outInterval)
+    
+           PFIO_bundle%counter(n, PFIO_ROUTING_idx) = PFIO_bundle%counter(n, PFIO_ROUTING_idx) + 1
+#else
            open_stats = .false.
            if(LIS_masterproc) then 
               HYMAP_routing_struc(n)%numout=HYMAP_routing_struc(n)%numout+1    
@@ -99,6 +127,7 @@ subroutine HYMAP_routing_output(n)
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
                          
+#endif
         endif
      endif
   endif

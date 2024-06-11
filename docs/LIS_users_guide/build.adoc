@@ -95,6 +95,8 @@ This script will prompt the user with a series of questions regarding support to
 | `LIS_CRTM`      | path to CRTM library             | optional
 | `LIS_CRTM_PROF` | path to LIS-CRTM Profile library | optional
 | `LIS_CMEM`      | path to LIS-CMEM library         | optional
+| `LIS_MAPL`      | path to MAPL library             | optional (required to use PFIO)
+| `LIS_FLAP`      | path to FLAP library             | optional (required to use PFIO)
 | `LIS_LAPACK`    | path to LAPACK library           | optional
 | `LIS_PETSC`     | path to PETSc library            | optional
 | `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
@@ -123,15 +125,13 @@ An example execution of the configure script is shown below:
 ------------------------------------------------------------------------
 Setting up configuration for LIS
 Parallelism (0-serial, 1-dmpar, default=1):
+Use PFIO to produce nc4 HISTORY? (1-yes, 0-no, default=0):
 Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2):
 Assume little/big_endian data format (1-little, 2-big, default=2):
 Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2):
 Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0):
 Use NETCDF? (1-yes, 0-no, default=1):
 NETCDF version (3 or 4, default=4):
-NETCDF use shuffle filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate filter? (1-yes, 0-no, default = 1):
-NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9):
 Use HDF4? (1-yes, 0-no, default=1):
 Use HDF5? (1-yes, 0-no, default=1):
 Use HDFEOS? (1-yes, 0-no, default=1):
@@ -160,6 +160,8 @@ dmpar refers to enabling MPI
 //* for `Use openMP parallelism (1-yes, 0-no, default=0):`,
 //select the default value of 0.  OpenMP support is
 //experimental.  Please do not use.
+
+* for `Use PFIO to produce nc4 HISTORY? (1-yes, 0-no, default=0):`, PFIO requires MPI.
 
 * for `Assume little/big_endian data format (1-little, 2-big, default=2):`,
 select the default value of 2.  By default, LIS reads and writes binary data in the big endian format.  Only select the value of 1, if you have reformatted all required binary data into the little endian format.
