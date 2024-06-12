@@ -127,14 +127,14 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 !    abort in case of error
 !  \end{description}
 !EOP
+  character(255) :: message(20)
   integer                 :: ftn, igrib
   character*250           :: avnfile
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
-  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 2 )
   real                    :: gridres
-  integer                 :: alert_number
+  integer, save           :: alert_number = 1
   real, allocatable       :: fg_swdown1   ( : , : )
   real, allocatable       :: fg_lwdown1   ( : , : )
   integer                 :: ifguess, jfguess
@@ -186,7 +186,6 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      if ( (.not. first_time) .or. &
           (first_time .and. fc_hr < 6)) then
         fc_hr = fc_hr + 6
-        !if (fc_hr > 24) exit ! Give up
         if (fc_hr > 30) exit ! Give up
 
         file_julhr = file_julhr - 6
@@ -209,6 +208,15 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      inquire(file=trim(avnfile),exist=found_inq)
      if (.not. found_inq) then
         write(LIS_logunit,*) '[WARN] Cannot find file '//trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Cannot find file ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
         cycle
      end if
 
@@ -219,87 +227,262 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      ! writing error messages to stdout/stderr, which may lead to runtime
      ! problems.
 
-     if (found_inq) then
-        call grib_open_file(ftn,trim(avnfile),'r',ierr)
-     else
-        ierr = 1
-     end if
+     call grib_open_file(ftn,trim(avnfile),'r',ierr)
      if ( ierr /= 0 ) then
-        write(LIS_logunit,*) '[WARN] (1) Failed to open first guess - ',trim(avnfile)
-     else
-   !    ------------------------------------------------------------------
-   !    read in the first grib record, unpack the header and extract
-   !    section 1 and section 2 information.
-   !    ------------------------------------------------------------------
-        call grib_new_from_file(ftn,igrib,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) '[WARN] (1) Failed file read check - '//trim(avnfile)
-        endif
+        write(LIS_logunit,*) &
+             '[WARN] Failed to open GALWEM radiation file ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Cannot open file ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        cycle
+     end if
 
-        call grib_get(igrib,'centre',center,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grib_get: centre in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'gridType',gtype,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grid_get: gridtype in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'Ni',iginfo(1),ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grid_get:Ni in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'Nj',iginfo(2),ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grid_get:Nj in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'jDirectionIncrementInDegrees',gridres,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) &
-              'error in grid_get:jDirectionIncrementInDegrees in ' // &
-              'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'dataDate',dataDate,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grid_get:dataDate in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        call grib_get(igrib,'dataTime',dataTime,ierr)
-        if ( ierr /= 0 ) then
-           write(LIS_logunit,*) 'error in grid_get:dataTime in ' // &
-                                'USAF_fldbld_radflux_galwem'
-        endif
-
-        if ( yr1*10000+mo1*100+da1 == dataDate .and. hr1*100 == dataTime ) then
-           found = .TRUE.
-           if ( gtype /= "regular_ll" ) then
-              message(1) = 'program: LIS'
-              message(2) = '  Subroutine: USAF_fldbld_radflux_galwem'
-              message(3) = '  First guess source is not a lat/lon grid'
-              message(4) = '  USAF_fldbld_radflux_galwem expects lat/lon data'
-              call lis_abort(message)
-           endif
-        endif
-
-        call grib_release(igrib,ierr)
+     call grib_new_from_file(ftn,igrib,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) &
+             '[WARN] Failed file read check '//trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Failed to read field from ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
         call grib_close_file(ftn)
+        cycle
      endif
+
+     call grib_get(igrib,'centre',center,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grib_get: centre in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Failed to read centre from ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     end if
+
+     call grib_get(igrib,'gridType',gtype,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grid_get: gridType in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Failed to read gridType from ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_get(igrib,'Ni',iginfo(1),ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grid_get:Ni in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Failed to read Ni from ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_get(igrib,'Nj',iginfo(2),ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grid_get:Nj in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = '  Failed to read Nj from ' // trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_get(igrib,'jDirectionIncrementInDegrees',gridres,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) &
+             'error in grid_get:jDirectionIncrementInDegrees in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = &
+                '  Failed to read jDirectionIncrementInDegrees from ' // &
+                trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_get(igrib,'dataDate',dataDate,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grid_get:dataDate in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = &
+                '  Failed to read dataDate from ' // &
+                trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_get(igrib,'dataTime',dataTime,ierr)
+     if ( ierr /= 0 ) then
+        write(LIS_logunit,*) 'error in grid_get:dataTime in ' // &
+             trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = &
+                '  Failed to read dataTime from ' // &
+                trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     if ( yr1*10000+mo1*100+da1 /= dataDate .or. &
+          hr1*100 /= dataTime ) then
+        write(LIS_logunit,*) &
+             '[WARN] Bad time found in ', trim(avnfile)
+        write(LIS_logunit,*) &
+             '[WARN] Found: ', dataDate, dataTime
+        write(LIS_logunit,*) &
+             '[WARN] Expected ', (yr1*10000+mo1*100+da1), &
+             (hr1*100)
+        flush(LIS_logunit)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = &
+                '  Bad date and time from ' // &
+                trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     if ( gtype /= "regular_ll" ) then
+        write(LIS_logunit,*) &
+             '[WARN] Did not find lat/long data in ', trim(avnfile)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_radflux_galwem.'
+           message(3) = &
+                '  Lat/lon grid not found in ' // &
+                trim(avnfile)
+           call LIS_alert( 'USAF_fldbld_radflux_galwem', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_close_file(ftn)
+        cycle
+     endif
+
+     call grib_release(igrib,ierr)
+     call grib_close_file(ftn)
+
 #else
      write(LIS_logunit,*) '[ERR]: USAF_fldbld_radflux_galwem requires GRIB-API'
      write(LIS_logunit,*) '[ERR]: please recompile LIS'
      call LIS_endrun
 #endif
 
-     ! At this point, we have everything we need.
+     write(LIS_logunit,*) &
+          '[INFO] Using NWP Radiation fields from ',trim(avnfile)
+     rc = 0
+
+     write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS ON A ', gridres,&
+          ' DEGREE LAT/LON GRID'
+     ifguess = iginfo(1)
+     jfguess = iginfo(2)
+
+     if (center .eq. 57) then
+        write(LIS_logunit,*) &
+             '[INFO] RADIATION DATA IS FROM UK UM (GALWEM) MODEL'
+     else
+        write(LIS_logunit,*)'[INFO] UNKNOWN SOURCE FOR RADIATION'
+     end if
+
+! ------------------------------------------------------------------
+! allocate first guess grid-specific variables.
+! ------------------------------------------------------------------
+     allocate ( fg_swdown1 (ifguess, jfguess) )
+     allocate ( fg_lwdown1 (ifguess, jfguess) )
+
+! ------------------------------------------------------------------
+! read in first guess data for this julian hour.
+! ------------------------------------------------------------------
+     alert_number = 0
+     call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
+          fg_swdown1, fg_lwdown1, rc)
+
+     if (rc /= 0) then
+        deallocate ( fg_swdown1 )
+        deallocate ( fg_lwdown1 )
+        cycle
+     end if
+
+     ! Interpolate
+     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+          fg_swdown1, fg_swdata)
+     call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
+          fg_lwdown1, fg_lwdata)
+     deallocate ( fg_swdown1 )
+     deallocate ( fg_lwdown1 )
+
+     ! At this point, we are done.
      found = .true.
      if (found) exit
 
@@ -311,44 +494,6 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
      rc = 1
      return
   end if
-
-  write(LIS_logunit,*) &
-       '[INFO] Using NWP Radiation fields from ',trim(avnfile)
-  rc = 0
-
-
-  write(LIS_logunit,*)'[INFO] FIRST GUESS DATA IS ON A ', gridres,&
-       ' DEGREE LAT/LON GRID'
-  ifguess = iginfo(1)
-  jfguess = iginfo(2)
-
-  if (center .eq. 57) then
-     write(LIS_logunit,*) &
-          '[INFO FIRST GUESS DATA IS FROM UK UM (GALWEM) MODEL'
-  else
-     write(LIS_logunit,*)'[INFO UNKNOWN SOURCE FOR FIRST GUESS DATA'
-  end if
-
-! ------------------------------------------------------------------
-! allocate first guess grid-specific variables.
-! ------------------------------------------------------------------
-  allocate ( fg_swdown1 (ifguess, jfguess) )
-  allocate ( fg_lwdown1 (ifguess, jfguess) )
-
-! ------------------------------------------------------------------
-! read in first guess data for this julian hour.
-! ------------------------------------------------------------------
-  alert_number = 0
-  call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
-       fg_swdown1, fg_lwdown1, alert_number)
-
-  ! Interpolate
-  call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-       fg_swdown1, fg_swdata)
-  call interp_galwem_first_guess(n, ifguess, jfguess, .true., &
-       fg_lwdown1, fg_lwdata)
-  deallocate ( fg_swdown1 )
-  deallocate ( fg_lwdown1 )
 
 end subroutine USAF_fldbld_radflux_galwem
 
@@ -366,9 +511,10 @@ end subroutine USAF_fldbld_radflux_galwem
 !
 ! !INTERFACE:
 subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
-     ifguess, jfguess, fg_swdown, fg_lwdown, alert_number )
+     ifguess, jfguess, fg_swdown, fg_lwdown, rc )
 
-! !USES:
+  ! !USES:
+  use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
 #if (defined USE_GRIBAPI)
@@ -383,7 +529,7 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
   integer,        intent(in)    :: jfguess
   real,           intent(out)   :: fg_swdown ( ifguess,jfguess )
   real,           intent(out)   :: fg_lwdown ( ifguess,jfguess )
-  integer,        intent(inout) :: alert_number
+  integer,        intent(out) :: rc
 !
 ! !DESCRIPTION:
 !
@@ -436,20 +582,22 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
 !       \end{description}
 !
 !EOP
-  character*9                   :: cstat
-  character*255                 :: message  ( 20 )
+  character(255) :: message(20)
+  integer, save :: alert_number = 1
   integer                       :: count_swdown
   integer                       :: count_lwdown
   integer                       :: ierr
-  integer                       :: istat1
   integer :: k
   integer                       :: ftn, igrib, nvars
   integer                       :: param_disc_val, param_cat_val, &
                                    param_num_val, forecasttime_val
   real,           allocatable   :: dum1d    ( : )
   logical                       :: found_inq
+  integer :: productDefinitionTemplateNumber
 
 ! ------------------------------------------------------------------
+
+  rc = 0
 
 ! ------------------------------------------------------------------
 !   read in grib file.
@@ -462,144 +610,313 @@ subroutine USAF_fldbld_read_radflux_galwem(fg_filename, &
 
   inquire(file=trim(fg_filename),exist=found_inq)
   if (.not. found_inq) then
-     ierr = 1
-  else
-     ierr = 0
+     write(LIS_logunit,*)'[WARN] Cannot find ' // trim(fg_filename)
+     if (LIS_masterproc) then
+        message(:) = ''
+        message(1) = '[WARN] Program: LIS'
+        message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+        message(3) = '  Cannot find file ' // trim(fg_filename)
+        call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+             alert_number, message)
+        alert_number = alert_number + 1
+     end if
+     rc = 1
+     return
   end if
-  call LIS_verify(ierr,'[WARN] FILE NOT FOUND - '//trim(fg_filename))
 
 #if (defined USE_GRIBAPI)
   call grib_open_file(ftn, trim(fg_filename), 'r', ierr)
-  call LIS_verify(ierr, &
-       '[WARN] Failed to open in read routine - '//trim(fg_filename))
-
-  if ( ierr == 0 ) then
-     allocate ( dum1d   (ifguess*jfguess) )
-     count_swdown = 0
-     count_lwdown = 0
-
-     write(LIS_logunit,*)' '
-     write(LIS_logunit,*) &
-          '[INFO] Reading first guess GALWEM radiation fluxes '
-     write(LIS_logunit,*) trim(fg_filename)
-
-     call grib_count_in_file(ftn,nvars,ierr)
-     call LIS_verify(ierr, 'error in grib_count_in_file in ' // &
-                           'USAF_fldbld_read_radflux_galwem')
-
-     do k = 1, nvars
-
-        call grib_new_from_file(ftn,igrib,ierr)
-        call LIS_verify(ierr, 'failed to read - '//trim(fg_filename))
-
-        call grib_get(igrib,'discipline',param_disc_val,ierr)
-        call LIS_verify(ierr, &
-             'error in grib_get: parameterNumber in ' // &
-             'USAF_fldbld_read_radflux_galwem')
-
-        call grib_get(igrib,'parameterCategory',param_cat_val,ierr)
-        call LIS_verify(ierr, &
-             'error in grib_get: parameterCategory in ' // &
-             'USAF_fldbld_read_radflux_galwem')
-
-        call grib_get(igrib,'parameterNumber',param_num_val,ierr)
-        call LIS_verify(ierr, &
-             'error in grib_get: parameterNumber in ' // &
-             'USAF_fldbld_read_radflux_galwem')
-
-        call grib_get(igrib,'forecastTime',forecasttime_val,ierr)
-        call LIS_verify(ierr, 'error in grib_get: forecastTime in ' // &
-                              'USAF_fldbld_read_radflux_galwem')
-
-        !  SW Down Radiation flux:
-        if ( param_disc_val == 0 .and. param_cat_val    == 4 .and. &
-             param_num_val  == 7 ) then
-
-           call grib_get(igrib, 'values', dum1d, ierr)
-           call LIS_verify(ierr, &
-                'error in grib_get: SWdown values in ' // &
-                'USAF_fldbld_read_radflux_galwem')
-           if ( ierr == 0 ) then
-!     ------------------------------------------------------------------
-!       store SW radiation flux to the fg_swdown array.
-!     ------------------------------------------------------------------
-              fg_swdown = reshape(dum1d, (/ifguess,jfguess/))
-              count_swdown = count_swdown + 1
-           else
-              write(cstat,'(i9)',iostat=istat1) ierr
-              message(1) = 'Program: LIS'
-              message(2) = '  Subroutine:  AGRMET_fldbld_read.'
-              message(3) = '  Error reading first guess file:'
-              message(4) = '  ' // trim(fg_filename)
-              if( istat1 .eq. 0 )then
-                 message(5) = '  Status = ' // trim(cstat)
-              endif
-              if ( allocated(dum1d) )   deallocate(dum1d)
-              call LIS_abort( message)
-           endif
-        endif ! SWdown
-
-        !  LW Down Radiation flux:
-        if ( param_disc_val == 0 .and. param_cat_val    == 5 .and. &
-             param_num_val  == 3 ) then
-
-           call grib_get(igrib, 'values', dum1d, ierr)
-           call LIS_verify(ierr, &
-                'error in grib_get: LWdown values in ' // &
-                'USAF_fldbld_read_radflux_galwem')
-           if ( ierr == 0 ) then
-!     ------------------------------------------------------------------
-!       store LW radiation flux to the fg_lwdown array.
-!     ------------------------------------------------------------------
-              fg_lwdown = reshape(dum1d, (/ifguess,jfguess/))
-              count_lwdown = count_lwdown + 1
-           else
-              write(cstat,'(i9)',iostat=istat1) ierr
-              message(1) = 'Program: LIS'
-              message(2) = &
-                   '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
-              message(3) = '  Error reading first guess file:'
-              message(4) = '  ' // trim(fg_filename)
-              if( istat1 .eq. 0 )then
-                 message(5) = '  Status = ' // trim(cstat)
-              endif
-              if ( allocated(dum1d) )   deallocate(dum1d)
-              call LIS_abort( message)
-           endif
-        endif ! LWdown
-
-        call grib_release(igrib,ierr)
-     enddo
-
+  if (ierr /= 0) then
+     write(LIS_logunit,*)'[WARN] Cannot open ' // trim(fg_filename)
+     if (LIS_masterproc) then
+        message(:) = ''
+        message(1) = '[WARN] Program: LIS'
+        message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+        message(3) = '  Cannot open file ' // trim(fg_filename)
+        call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+             alert_number, message)
+        alert_number = alert_number + 1
+     end if
      call grib_close_file(ftn)
+     rc = 1
+     return
+  end if
 
-     deallocate ( dum1d )
+  write(LIS_logunit,*)' '
+  write(LIS_logunit,*) &
+       '[INFO] Reading GALWEM radiation fluxes '
+  write(LIS_logunit,*) trim(fg_filename)
 
-!     ------------------------------------------------------------------
-!     see if we have everything. if not, abort.
-!     ------------------------------------------------------------------
+  call grib_count_in_file(ftn, nvars, ierr)
+  if (ierr /= 0) then
+     write(LIS_logunit,*) &
+          '[WARN] Problem counting GRIB messages in ' //trim(fg_filename)
+     if (LIS_masterproc) then
+        message(:) = ''
+        message(1) = '[WARN] Program: LIS'
+        message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+        message(3) = '  Problem counting GRIB messages in ' // &
+             trim(fg_filename)
+        call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+             alert_number, message)
+        alert_number = alert_number + 1
+     end if
+     call grib_close_file(ftn)
+     rc = 1
+     return
+  end if
 
-     if ( count_swdown == 0 .or. count_lwdown == 0 ) then
-        message(1) = 'Program: LIS'
-        message(2) = '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
-        message(3) = '  Error reading first guess file:'
-        message(4) = '  ' // trim(fg_filename)
-        message(5) = '  File does not contain all data that fldbld needs.'
-        if ( allocated(dum1d) ) deallocate(dum1d)
-        call LIS_abort( message)
-     endif
+  allocate ( dum1d   (ifguess*jfguess) )
+  count_swdown = 0
+  count_lwdown = 0
 
-  else
-     write(cstat,'(i9)',iostat=istat1) ierr
-     message(1) = 'Program: LIS'
-     message(2) = '  Subroutine:  USAF_fldbld_read_radflux_galwem.'
-     message(3) = '  Error opening first guess file:'
-     message(4) = '  ' // trim(fg_filename)
-     if ( istat1 == 0 ) then
-        message(5) = '  Status = ' // trim(cstat)
-     endif
-     call LIS_abort(message)
-  endif
+  do k = 1, nvars
+
+     call grib_new_from_file(ftn, igrib, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get GRIB message in ' // trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = '  Cannot get GRIB message in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        rc = 1
+        exit
+     end if
+
+     call grib_get(igrib, 'discipline', param_disc_val, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get discipline in ' // trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = '  Cannot read discipline in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_release(igrib, ierr)
+        rc = 1
+        exit
+     end if
+
+     call grib_get(igrib,'parameterCategory',param_cat_val,ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get parameterCategory in ' // &
+             trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = '  Cannot read parameterCategory in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_release(igrib, ierr)
+        rc = 1
+        exit
+     end if
+
+     call grib_get(igrib, 'parameterNumber', param_num_val, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get parameterNumber in ' // &
+             trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = '  Cannot read parameterNumber in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_release(igrib, ierr)
+        rc = 1
+        exit
+     end if
+
+     call grib_get(igrib, 'productDefinitionTemplateNumber', &
+          productDefinitionTemplateNumber, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get productDefinitionTemplateNumber in ' // &
+             trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = &
+                '  Cannot read productDefinitionTemplateNumber in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_release(igrib, ierr)
+        rc = 1
+        exit
+     end if
+
+     call grib_get(igrib, 'forecastTime', forecasttime_val, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot get forecastTime in ' // &
+             trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = &
+                '  Cannot read forecastTime in ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        call grib_release(igrib, ierr)
+        rc = 1
+        exit
+     end if
+
+     !  Instantaneous SW Down Radiation flux:
+     if ( param_disc_val == 0 .and. param_cat_val == 4 .and. &
+          param_num_val  == 7 .and. &
+          productDefinitionTemplateNumber == 0) then
+
+        call grib_get(igrib, 'values', dum1d, ierr)
+        if (ierr /= 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Cannot get values in ' // &
+                trim(fg_filename)
+           if (LIS_masterproc) then
+              message(:) = ''
+              message(1) = '[WARN] Program: LIS'
+              message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+              message(3) = &
+                   '  Cannot read values in ' // &
+                   trim(fg_filename)
+              call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                   alert_number, message)
+              alert_number = alert_number + 1
+           end if
+           call grib_release(igrib,ierr)
+           rc = 1
+           exit
+        end if
+        fg_swdown = reshape(dum1d, (/ifguess,jfguess/))
+        count_swdown = count_swdown + 1
+     end if
+
+     !  Instantaneous LW Down Radiation flux:
+     if ( param_disc_val == 0 .and. param_cat_val == 5 .and. &
+          param_num_val  == 3 .and. &
+          productDefinitionTemplateNumber == 0) then
+
+        call grib_get(igrib, 'values', dum1d, ierr)
+        if (ierr /= 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Cannot get values in ' // &
+                trim(fg_filename)
+           if (LIS_masterproc) then
+              message(:) = ''
+              message(1) = '[WARN] Program: LIS'
+              message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+              message(3) = &
+                   '  Cannot read values in ' // &
+                   trim(fg_filename)
+              call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                   alert_number, message)
+              alert_number = alert_number + 1
+           end if
+           call grib_release(igrib, ierr)
+           rc = 1
+           exit
+        end if
+        fg_lwdown = reshape(dum1d, (/ifguess,jfguess/))
+        count_lwdown = count_lwdown + 1
+     end if
+
+     ! Done with this GRIB message
+     call grib_release(igrib, ierr)
+     if (ierr /= 0) then
+        write(LIS_logunit,*) &
+             '[WARN] Cannot release GRIB message from ' // &
+             trim(fg_filename)
+        if (LIS_masterproc) then
+           message(:) = ''
+           message(1) = '[WARN] Program: LIS'
+           message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+           message(3) = &
+                '  Cannot release GRIB message from ' // &
+                trim(fg_filename)
+           call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        rc = 1
+        exit
+     end if
+
+     ! Break out of loop if we have what we need.
+     if (count_swdown > 0 .and. &
+         count_lwdown > 0) exit
+  enddo
+
+  call grib_close_file(ftn)
+
+  deallocate ( dum1d )
+
+!------------------------------------------------------------------
+! See if we have everything. if not, abort.
+!------------------------------------------------------------------
+
+  if (count_swdown == 0) then
+     write(LIS_logunit,*)'[WARN] Missing downward SW radiation in ', &
+          trim(fg_filename)
+     if (LIS_masterproc) then
+        message(:) = ''
+        message(1) = '[WARN] Program: LIS'
+        message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+        message(3) = &
+             '  Missing downward SW radiation in  ' // &
+             trim(fg_filename)
+        call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+             alert_number, message)
+        alert_number = alert_number + 1
+     end if
+     rc = 1
+  end if
+  if (count_lwdown == 0) then
+     write(LIS_logunit,*)'[WARN] Missing downward LW radiation in ', &
+          trim(fg_filename)
+     if (LIS_masterproc) then
+        message(:) = ''
+        message(1) = '[WARN] Program: LIS'
+        message(2) = '  Routine USAF_fldbld_read_radflux_galwem.'
+        message(3) = &
+             '  Missing downward LW radiation in  ' // &
+             trim(fg_filename)
+        call LIS_alert( 'USAF_fldbld_read_radflux_galwem.', &
+             alert_number, message)
+        alert_number = alert_number + 1
+     end if
+     rc = 1
+  end if
+
 #endif
 
 end subroutine USAF_fldbld_read_radflux_galwem
