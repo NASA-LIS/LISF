@@ -77,9 +77,15 @@ subroutine USAF_fldbld_radflux(n,swdown,longwv)
   ! Sanity check
   if ( agrmet_struc(n)%first_guess_source .ne. 'GALWEM' .and. &
        agrmet_struc(n)%first_guess_source .ne. "GFS") then
-      write(LIS_logunit,*) '[ERR] First guess source is not correctly defined.'
+      write(LIS_logunit,*) '[ERR] NWP radiation source is not correctly defined.'
       call LIS_endrun
-  end if
+   end if
+   ! EMK 12 Jun 2024...GFS radiation option is disabled pending discussion
+   ! with 557 WW and testing.
+   if ( agrmet_struc(n)%first_guess_source .ne. 'GALWEM' ) then
+      write(LIS_logunit,*)'[ERR] NWP radiation source must be GALWEM!'
+      call LIS_endrun
+   end if
 
 !------------------------------------------------------------------    
 ! Find the time to start the processing from 
@@ -104,33 +110,17 @@ subroutine USAF_fldbld_radflux(n,swdown,longwv)
      julhr = julend
      call USAF_fldbld_radflux_galwem(n,julhr,swdown,longwv,rc)
      ierr = rc
-  end if
-
-  ! Try fetching GFS, if requested, or if GALWEM is not available.
-  if ( agrmet_struc(n)%first_guess_source == "GFS" .or. &
-       ierr .ne. 0) then
-     if (ierr .ne. 0) then
-        write(LIS_logunit,*)'[WARN] Unable to find GALWEM data!'
-        write(LIS_logunit,*)'[WARN] Rolling back to GFS...'
-     end if
-
-     call USAF_fldbld_radflux_gfs(n, julhr, swdown, longwv, rc)
 
      if (rc .ne. 0) then
         call AGRMET_julhr_date10(julhr, yyyymmddhh)
-        if (ierr .ne. 0) then
-           write(LIS_logunit,*) &
-                '[ERR] No GALWEM or GFS background found for ',yyyymmddhh
-        else
-           write(LIS_logunit,*) &
-                '[ERR] No GFS background found for ',yyyymmddhh
-        end if
+        write(LIS_logunit,*) &
+             '[ERR] No GALWEM radiation found for ',yyyymmddhh
         write(LIS_logunit,*) '[ERR] ABORTING!'
         flush(LIS_logunit)
         message(:) = ''
         message(1) = '[ERR] Program:  LIS'
         message(2) = '  Routine:  USAF_fldbld_radflux.'
-        message(3) = '  GALWEM and GFS GRIB data not available for '//&
+        message(3) = '  GALWEM radiation data not available for '//&
              yyyymmddhh
         if (LIS_masterproc) then
            call LIS_alert( 'LIS.USAF_fldbld_radflux.', 1, &
@@ -138,6 +128,43 @@ subroutine USAF_fldbld_radflux(n,swdown,longwv)
            call LIS_abort( message)
         endif
      end if
+
   end if
+
+
+  ! EMK 12 Jun 2024...GFS option is disabled.
+  ! ! Try fetching GFS, if requested, or if GALWEM is not available.
+  ! if ( agrmet_struc(n)%first_guess_source == "GFS" .or. &
+  !      ierr .ne. 0) then
+  !    if (ierr .ne. 0) then
+  !       write(LIS_logunit,*)'[WARN] Unable to find GALWEM data!'
+  !       write(LIS_logunit,*)'[WARN] Rolling back to GFS...'
+  !    end if
+
+  !    call USAF_fldbld_radflux_gfs(n, julhr, swdown, longwv, rc)
+
+  !    if (rc .ne. 0) then
+  !       call AGRMET_julhr_date10(julhr, yyyymmddhh)
+  !       if (ierr .ne. 0) then
+  !          write(LIS_logunit,*) &
+  !               '[ERR] No GALWEM or GFS background found for ',yyyymmddhh
+  !       else
+  !          write(LIS_logunit,*) &
+  !               '[ERR] No GFS background found for ',yyyymmddhh
+  !       end if
+  !       write(LIS_logunit,*) '[ERR] ABORTING!'
+  !       flush(LIS_logunit)
+  !       message(:) = ''
+  !       message(1) = '[ERR] Program:  LIS'
+  !       message(2) = '  Routine:  USAF_fldbld_radflux.'
+  !       message(3) = '  GALWEM and GFS GRIB data not available for '//&
+  !            yyyymmddhh
+  !       if (LIS_masterproc) then
+  !          call LIS_alert( 'LIS.USAF_fldbld_radflux.', 1, &
+  !               message )
+  !          call LIS_abort( message)
+  !       endif
+  !    end if
+  ! end if
 
 end subroutine USAF_fldbld_radflux
