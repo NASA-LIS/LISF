@@ -124,7 +124,8 @@ subroutine Ac71_setup()
                         GetCrop_DaysToFullCanopy,&
                         GetCrop_DaysToFullCanopySF,&
                         GetCrop_DaysToHIo,&
-                        GetCrop_GDDaysToGermination
+                        GetCrop_GDDaysToGermination,&
+                        FromGravelMassToGravelVolume
 
     use ac_project_input, only: ProjectInput 
     use ac_run, only:   GetalfaHI,&
@@ -184,7 +185,11 @@ subroutine Ac71_setup()
                         SetETo, &
                         SetRain,& 
                         SetTmax,& 
-                        SetTmin
+                        SetTmin,&
+                        SetPlotVarCrop,&
+                        GetPlotVarCrop,&
+                        SetfWeedNoS,&
+                        GetfWeedNoS
                         
         use ac_kinds, only: intEnum, &
                             int32, &
@@ -323,9 +328,9 @@ subroutine Ac71_setup()
                     .or.(mod(LIS_rc%syr+(l-1),400).eq.0)).and.(LIS_rc%smo.le.2)) &
                     .or.(((mod(LIS_rc%syr+(l),4).eq.0.and.mod(LIS_rc%syr+(l),100).ne.0) &
                     .or.(mod(LIS_rc%syr+(l),400).eq.0)).and.(LIS_rc%smo.gt.2))) then ! leap year sim period
-                    time2days = time1days + 365
+                    time2days = time1days + 366
                 else ! no leap year
-                    time2days = time1days + 364
+                    time2days = time1days + 365
                 endif
                 call set_project_input(l, 'Simulation_DayNr1', time1days)
                 call set_project_input(l, 'Simulation_DayNrN', time2days)
@@ -514,6 +519,11 @@ subroutine Ac71_setup()
                 ! Set GravelMass and Penetrability
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%Penetrability = 100.0
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%GravelMass = 10.0
+                ! Set GravelVol
+                AC71_struc(n)%ac71(t)%SoilLayer(1)%GravelVol = &
+                    FromGravelMassToGravelVolume(AC71_struc(n)%ac71(t)%SoilLayer(1)%sat,&
+                    AC71_struc(n)%ac71(t)%SoilLayer(1)%GravelMass)
+
                 AC71_struc(n)%ac71(t)%SoilLayer(1)%Description = 'soil type from LIS'
 
 
@@ -525,6 +535,7 @@ subroutine Ac71_setup()
                         AC71_struc(n)%ac71(t)%SoilLayer(l) = AC71_struc(n)%ac71(t)%SoilLayer(1)
                         AC71_struc(n)%ac71(t)%SoilLayer(l)%Thickness = AC71_struc(n)%Thickness(l)
                         AC71_struc(n)%ac71(t)%SoilLayer(l)%GravelMass = 0.0
+                        AC71_struc(n)%ac71(t)%SoilLayer(l)%GravelVol = 0.0
                     enddo
                 endif
 
@@ -580,6 +591,8 @@ subroutine Ac71_setup()
                 ! Set Global variable to pass T record to AquaCrop
                 call SetTminRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmin_record)    
                 call SetTmaxRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmax_record)
+                call SetTmin(real(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmin_record(1),kind=dp))    
+                call SetTmax(real(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmax_record(1),kind=dp))
                 ! InitializeRunPart1    
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
@@ -680,14 +693,16 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%alfaHI = GetalfaHI()
                 AC71_struc(n)%ac71(t)%alfaHIAdj = GetalfaHIAdj()
                 AC71_struc(n)%ac71(t)%crop = GetCrop()
+                AC71_struc(n)%ac71(t)%PlotVarCrop = GetPlotVarCrop()
+                AC71_struc(n)%ac71(t)%fWeedNoS = GetfWeedNoS()
                 temp1 = GetCrop_GDDaysToGermination()
                 AC71_struc(n)%ac71(t)%daynri = GetDayNri()
 
-                if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
-                    .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
-                    AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
-                    AC71_struc(n)%ac71(t)%InitializeRun = 1
-                endif
+                !if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
+                !    .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
+                !    AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
+                !    AC71_struc(n)%ac71(t)%InitializeRun = 1
+                !endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
 end subroutine Ac71_setup

@@ -41,7 +41,8 @@ module Ac71_module
 
   use ac_run, only: &
           repIrriInfoRecord,&
-          rep_StressTot
+          rep_StressTot,&
+          rep_plotPar
 
   use ac_kinds, only: dp,&
                 int8,&
@@ -152,6 +153,7 @@ module Ac71_module
     real :: ScorAT1
     real :: ScorAT2
     real :: StressLeaf
+    real :: fWeedNoS
     real :: StressSenescence
     real :: SumGDDcuts
     real :: SumGDD
@@ -174,6 +176,7 @@ module Ac71_module
     type(repIrriInfoRecord) :: IrriInfoRecord1
     type(repIrriInfoRecord) :: IrriInfoRecord2
     type(rep_Crop) :: Crop
+    type(rep_plotPar) :: PlotVarCrop
     type(rep_IrriECw) :: IrriECw
     type(rep_DayEventInt), dimension(5) :: IrriAfterSeason
     type(rep_DayEventInt), dimension(5) :: IrriBeforeSeason

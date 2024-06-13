@@ -23,7 +23,8 @@ subroutine Ac71_main(n)
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
-    use LIS_FORC_AttributesMod 
+    use LIS_FORC_AttributesMod
+    use LIS_constantsMod
     use Ac71_lsmMod
     use ac71_prep_f
    !use other modules
@@ -211,6 +212,7 @@ subroutine Ac71_main(n)
                     GetCrop_Tupper, &
                     GetDayFraction,&
                     GetDayNri,&
+                    GetSimulation_FromDayNr,&
                     GetGDDCDCTotal,&
                     GetGDDTadj,&
                     GetGDDayFraction,&
@@ -297,7 +299,12 @@ subroutine Ac71_main(n)
                     SetWeedRCi,&
                     SetZiprev,&
                     SetalfaHI,&
-                    SetalfaHIAdj               
+                    SetalfaHIAdj,&
+                    GetPlotVarCrop,&
+                    SetPlotVarCrop,&
+                    GetfWeedNoS,&
+                    SetfWeedNoS
+
     use ac_startunit, only: GetSimulation_NrRuns
 
     implicit none
@@ -375,13 +382,13 @@ subroutine Ac71_main(n)
             tmp_precip    = (AC71_struc(n)%ac71(t)%prcp / Ac71_struc(n)%forc_count) * 3600. * 24. !Convert from kg/ms2 to mm/d
 
             ! TMAX: maximum daily air temperature (degC)
-            tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - 273.15 !Convert from K to C
+            tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - LIS_CONST_TKFRZ !Convert from K to C
 
             ! TMIN: minimum daily air temperature (degC)
-            tmp_tmin      = AC71_struc(n)%ac71(t)%tmin - 273.15 !Convert from K to C 
+            tmp_tmin      = AC71_struc(n)%ac71(t)%tmin - LIS_CONST_TKFRZ !Convert from K to C 
 
             ! TDEW: average daily dewpoint temperature (degC)
-            tmp_tdew      = (AC71_struc(n)%ac71(t)%tdew / AC71_struc(n)%forc_count) - 273.15 !Convert from K to C
+            tmp_tdew      = (AC71_struc(n)%ac71(t)%tdew / AC71_struc(n)%forc_count) - LIS_CONST_TKFRZ !Convert from K to C
 
             ! SW_RAD: daily total incoming solar radiation (MJ/(m2d))
             tmp_swrad     = (AC71_struc(n)%ac71(t)%swdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
@@ -501,6 +508,10 @@ subroutine Ac71_main(n)
             call SetTpot(REAL(AC71_struc(n)%ac71(t)%Tpot, 8))
             call SetWeedRCi(REAL(AC71_struc(n)%ac71(t)%WeedRCi, 8))
             call SetZiprev(REAL(AC71_struc(n)%ac71(t)%Ziprev, 8))
+            call SetfWeedNoS(REAL(AC71_struc(n)%ac71(t)%fWeedNoS, 8))
+
+            ! MB apparently needed for GDD runs
+            call SetPlotVarCrop(AC71_struc(n)%ac71(t)%PlotVarCrop)
 
             if (.not. ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualStartMonth) &
                 .AND. (LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualStartDay))) then !make it flex
@@ -554,7 +565,7 @@ subroutine Ac71_main(n)
             call SetPart1Mult(.false.) 
             call SetPart2Eval(.false.)
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
-            call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
+            !old, needed?: call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
             !! If irrigation ON
             if(LIS_rc%irrigation_type.ne."none") then
@@ -584,6 +595,24 @@ subroutine Ac71_main(n)
             call SetCrop_DaysToFullCanopySF(AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF)
             call SetCrop_DaysToHIo(AC71_struc(n)%ac71(t)%Crop_DaysToHIo)
 
+            ! Set climate variables
+            call SetRain(real(tmp_precip,kind=dp))
+            call SetTmin(real(tmp_tmin,kind=dp))
+            call SetTmax(real(tmp_tmax,kind=dp))
+            call SetETo(real(tmp_eto,kind=dp))
+            
+            ! SumGDD calculation needed only for second day when not done within InitializeSimulationRunPart2
+            if (GetDayNri()>GetSimulation_FromDayNr()) then
+            !if (AC71_struc(n)%ac71(t)%InitializeRun.eq.0) then !make it flex
+            ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
+            call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
+                    GetTmax(), GetSimulParam_GDDMethod()))
+            if (GetDayNri() >= GetCrop_Day1()) then
+                call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
+                call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
+                    GetGDDayi())
+            end if
+            end if
             !!! initialize run (year)
 
             if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
@@ -620,12 +649,6 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
-            ! Set climate variables then advanceonetimestep
-            call SetRain(real(tmp_precip,kind=dp))
-            call SetTmin(real(tmp_tmin,kind=dp))
-            call SetTmax(real(tmp_tmax,kind=dp))
-            call SetETo(real(tmp_eto,kind=dp))
-
             ! Initialize for new crop cycle
 
             ! Reset Crop_DaysTo* to allow that members reach stages at different days
@@ -647,14 +670,7 @@ subroutine Ac71_main(n)
                 !AC71_struc(n)%ac71(t)%Crop_DaysToHarvest= 365
             end if
         !end if
-            ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
-            call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
-                    GetTmax(), GetSimulParam_GDDMethod()))
-            if (GetDayNri() >= GetCrop_Day1()) then
-                call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
-                call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
-                    GetGDDayi())
-            end if
+
         if (phenological_stages_ensemble) then
             !find calendar days for crop stages
             if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC71_struc(n)%ac71(t)%germ_reached)) then ! from sow
@@ -768,6 +784,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Soil = GetSoil()
             AC71_struc(n)%ac71(t)%SoilLayer = GetSoilLayer()
             AC71_struc(n)%ac71(t)%StressLeaf = GetStressLeaf()
+            AC71_struc(n)%ac71(t)%fWeedNoS = GetfWeedNoS()
             AC71_struc(n)%ac71(t)%StressSenescence = GetStressSenescence()
             AC71_struc(n)%ac71(t)%StressSFadjNEW = GetStressSFadjNEW()
             AC71_struc(n)%ac71(t)%StressTot = GetStressTot()
@@ -787,6 +804,9 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Tpot = GetTpot()
             AC71_struc(n)%ac71(t)%WeedRCi = GetWeedRCi()
             AC71_struc(n)%ac71(t)%Ziprev = GetZiprev()
+
+            ! MB: Apparently needed for GDD
+            AC71_struc(n)%ac71(t)%PlotVarCrop = GetPlotVarCrop()
 
             !logicals are stored as integers for restart file
             !NoMoreCrop
@@ -857,10 +877,10 @@ subroutine Ac71_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
                                                 vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 11] output variable: AC71Tmin (unit=K).  *** daily minimum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin+273.15,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin+LIS_CONST_TKFRZ,kind=sp), &
                                     vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 12] output variable: AC71Tmax (unit=K).  *** daily maximum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax+273.15,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax+LIS_CONST_TKFRZ,kind=sp), &
                                     vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 13] output variable: rainf (unit=kg m-2 s-1).  *** precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = real(tmp_precip/86400.,kind=sp), &
