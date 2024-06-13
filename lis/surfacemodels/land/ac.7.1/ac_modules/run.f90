@@ -3943,10 +3943,11 @@ subroutine GetSumGDDBeforeSimulation(SumGDDtillDay, SumGDDtillDayM1)
             SumGDDtillDayM1 = 0._dp
         end if
     else if (GetTemperatureFile() == '(External)') then
-        ! Set SumGDD before simulation to zero
-        call SetSimulation_SumGDD(0._dp)
         SumGDDtillDay = GetSimulation_SumGDD()
-        SumGDDtillDayM1 = 0._dp
+        SumGDDtillDayM1 = SumGDDtillDay &
+                         - DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), &
+                                      GetTmin(), GetTmax(), &
+                                      GetSimulParam_GDDMethod())
     else
         SumGDDtillDay = GetSimulation_SumGDD()
         SumGDDtillDayM1 = SumGDDtillDay &

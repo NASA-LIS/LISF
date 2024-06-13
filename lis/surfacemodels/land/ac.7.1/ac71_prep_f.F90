@@ -24,6 +24,7 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     use LIS_tbotAdjustMod,  only: LIS_tbotTimeUtil
     use LIS_coreMod,        only: LIS_rc
     use LIS_logMod, only     : LIS_logunit
+    use LIS_constantsMod
 
     !
     ! !DESCRIPTION: 
@@ -49,8 +50,6 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     real                  :: Rns, Rnl, Rn
     real                  :: julian_in, ratio
 
-    real, parameter       :: PI = 3.14159265359
-
     ! Teamn (degC)
     Tmean = (Tmin + Tmax)/2.
 
@@ -69,11 +68,11 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
 
     ! Extraterrestrial radiation (Ra) [MJ m-2 day-1]
     call LIS_tbotTimeUtil(julian_in,LIS_rc%yr) ! First get day of year
-    phi = lat * PI/180 ! get latitude in rad
-    dr = 1 + 0.033 * COS(2*PI/365 * julian_in) ! Inverse relative distance Earth-Sun
-    delta = 0.409 * SIN(2*PI/365 * julian_in - 1.39) ! Solar declination
+    phi = lat * LIS_CONST_PI/180 ! get latitude in rad
+    dr = 1 + 0.033 * COS(2*LIS_CONST_PI/365 * julian_in) ! Inverse relative distance Earth-Sun
+    delta = 0.409 * SIN(2*LIS_CONST_PI/365 * julian_in - 1.39) ! Solar declination
     omega = ACOS(-TAN(phi)*TAN(delta))
-    Ra = (24 * 60/PI) * 0.082 * dr * (omega*SIN(phi)*SIN(delta) &
+    Ra = (24 * 60/LIS_CONST_PI) * 0.082 * dr * (omega*SIN(phi)*SIN(delta) &
          + COS(phi)*COS(delta)*SIN(omega))
     if(Ra.le.0) then ! return 0 ETo for unrealisic numbers
             eto = 0
@@ -86,13 +85,13 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     if (ratio.gt.1) then
         ratio=1
     endif
-    Rnl = 4.903E-9 * (((Tmax + 273.15)**4 + (Tmin + 273.15)**4) / 2.) &
+    Rnl = 4.903E-9 * (((Tmax + LIS_CONST_TKFRZ)**4 + (Tmin + LIS_CONST_TKFRZ)**4) / 2.) &
                     * (0.34 - 0.14 * SQRT(ea)) &
                     * (1.35 * ratio - 0.35) ! Net longwave radiation [MJ m-2 day-1]
     Rn = Rns - Rnl
 
     ! Penman-Monteith --> reference evapotranspiration [mm day-1]
-    eto = (0.408 * slope * Rn + (gamma * (900 / (Tmean + 273.15)) * ws * (es - ea))) &
+    eto = (0.408 * slope * Rn + (gamma * (900 / (Tmean + LIS_CONST_TKFRZ)) * ws * (es - ea))) &
         / (slope + gamma * (1 + 0.34 * ws))
     if(eto.le.0) then
         eto = 0 ! avoid negative values
@@ -116,10 +115,11 @@ subroutine ac71_read_Trecord(n)
     use ESMF
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
     use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
-                                  LIS_update_clock
+                                  LIS_update_clock, LIS_is_last_step
     use LIS_coreMod,        only: LIS_rc
     use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
+    use LIS_constantsMod
     use LIS_FORC_AttributesMod
     use Ac71_lsmMod
 
@@ -211,8 +211,8 @@ subroutine ac71_read_Trecord(n)
     ! Assign Tmax and Tmin arrays to AC71_struc
     do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
         p = (i-1)/LIS_rc%nensem(n) + 1
-        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)-273.16
-        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)-273.16
+        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)-LIS_CONST_TKFRZ
+        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)-LIS_CONST_TKFRZ
     enddo
 
     deallocate(daily_tmax_arr)
@@ -230,6 +230,12 @@ subroutine ac71_read_Trecord(n)
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
     LIS_rc%rstflag(n) = 1 ! For met forcings
+
+    ! Check if end of LIS run
+    if (LIS_is_last_step(LIS_rc)) then
+        LIS_rc%endtime = 1
+    endif
+
     write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
 end subroutine ac71_read_Trecord
 
