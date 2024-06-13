@@ -653,9 +653,10 @@ subroutine Ac71_main(n)
 
             ! Reset Crop_DaysTo* to allow that members reach stages at different days
             phenological_stages_ensemble = .false.
-        !if (phenological_stages_ensemble) then
-            if (GetDayNri() == GetCrop_Day1()) then
-                call setCrop_DayN(GetSimulation_ToDayNr())
+
+            if (phenological_stages_ensemble) then
+                if (GetDayNri() == GetCrop_Day1()) then
+                !call setCrop_DayN(GetSimulation_ToDayNr())
                 AC71_struc(n)%ac71(t)%germ_reached = .false.
                 AC71_struc(n)%ac71(t)%harv_reached = .false.
                 AC71_struc(n)%ac71(t)%flowr_reached = .false.
@@ -668,33 +669,33 @@ subroutine Ac71_main(n)
                 !AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = 363
                 !AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = 364
                 !AC71_struc(n)%ac71(t)%Crop_DaysToHarvest= 365
-            end if
-        !end if
 
-        if (phenological_stages_ensemble) then
-            !find calendar days for crop stages
-            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC71_struc(n)%ac71(t)%germ_reached)) then ! from sow
-                AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetDayNri() - GetCrop_Day1()
-                AC71_struc(n)%ac71(t)%germ_reached = .true.
+                !find calendar days for crop stages
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC71_struc(n)%ac71(t)%germ_reached)) then ! from sow
+                    AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%germ_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToMaxRooting()) .and. (.not. AC71_struc(n)%ac71(t)%maxR_reached)) then ! from sowin
+                    AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%maxR_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToFlowering()) .and.  (.not. AC71_struc(n)%ac71(t)%flowr_reached)) then ! from sowi
+                    AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%flowr_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToSenescence()) .and. (.not. AC71_struc(n)%ac71(t)%sene_reached)) then ! from sowin
+                    AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%sene_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToHarvest()) .and. (.not. AC71_struc(n)%ac71(t)%harv_reached)) then ! from sowing t
+                    AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%harv_reached = .true.
+                end if
             end if
-            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToMaxRooting()) .and. (.not. AC71_struc(n)%ac71(t)%maxR_reached)) then ! from sowin
-                AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetDayNri() - GetCrop_Day1()
-                AC71_struc(n)%ac71(t)%maxR_reached = .true.
-            end if
-            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToFlowering()) .and.  (.not. AC71_struc(n)%ac71(t)%flowr_reached)) then ! from sowi
-               AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetDayNri() - GetCrop_Day1()
-               AC71_struc(n)%ac71(t)%flowr_reached = .true.
-            end if
-            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToSenescence()) .and. (.not. AC71_struc(n)%ac71(t)%sene_reached)) then ! from sowin
-               AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetDayNri() - GetCrop_Day1()
-               AC71_struc(n)%ac71(t)%sene_reached = .true.
-            end if
-            if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToHarvest()) .and. (.not. AC71_struc(n)%ac71(t)%harv_reached)) then ! from sowing t
-               AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
-               AC71_struc(n)%ac71(t)%harv_reached = .true.
-            end if
-        end if
            
+            ! MB: tmp, just for debugging
+            sumGDD = GetSimulation_SumGDD()
+            sumGDD2 = GetSumGDD()
            Crop_DaysToGermination = GetCrop_DaysToGermination()
            Crop_DaysToMaxRooting =         GetCrop_DaysToMaxRooting()
            Crop_DaysToFlowering =        GetCrop_DaysToFlowering()
@@ -706,6 +707,7 @@ subroutine Ac71_main(n)
            Crop_DaysToHIo =         GetCrop_DaysToHIo()
            temp1 = GetCrop_GDDaysToGermination()
            temp1 = GetCrop_GDDaysToSenescence()
+
             ! Run AC
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
             call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
