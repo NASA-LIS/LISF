@@ -25,20 +25,24 @@
 ! 13Dec2007: Marv Freimund, Do NOT abort for missing 10 files
 ! 31Dec2007: Marv Freimund, simplify file creation code; use trim on filenames
 ! 1 Aug2008: Switched processing from PS to a generic cartesian grid with 
-!            built-in implicit parallelism
-! 10 MAR 2010 Added some variables to pass in calls to interp_agrmet, loadcloud,
+!             built-in implicit parallelism
+! 10MAR2010: Added some variables to pass in calls to interp_agrmet, loadcloud,
 !             tr_coeffs.................................Michael Shaw/WXE
+! 28MAY2024: Implemented GALWEM / GFS radiation flux options ... K. Arsenault/SAIC
 !
 ! !INTERFACE:
 subroutine readagrmetforcing(n,findex, order)
 ! !USES:
-  use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_localPet
+  use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_localPet, &
+                                LIS_masterproc
   use LIS_timeMgrMod,only       : LIS_get_julhr,LIS_tick,LIS_time2date
   use LIS_LMLCMod,   only       : LIS_LMLC
   use LIS_albedoMod, only       : LIS_alb
   use LIS_vegDataMod, only      : LIS_gfrac
   use LIS_snowMod, only         : LIS_snow_struc
   use LIS_logMod, only          : LIS_logunit
+  use LIS_logMod, only          :  LIS_logunit, LIS_abort, LIS_endrun, &
+                                LIS_alert
   use AGRMET_forcingMod, only : agrmet_struc
 
   use LIS_mpiMod
@@ -193,24 +197,28 @@ subroutine readagrmetforcing(n,findex, order)
   real,allocatable :: rlh(:,:)
   integer          :: ip
   integer          :: julhr
-  real,allocatable             :: cldamt(:,:,:)
-  integer,allocatable          :: cldamt_nh( :,:,:)
-  integer,allocatable          :: cldtyp_nh( :,:,:)
-  integer,allocatable          :: cldamt_sh( :,:,:)
-  integer,allocatable          :: cldtyp_sh( :,:,:)
-  logical,allocatable          :: fog_nh( :,:)
-  logical,allocatable          :: fog_sh( :,:)
+  character(len=255) :: message(20)
+
+  real,allocatable            :: cldamt(:,:,:)
+  integer,allocatable         :: cldamt_nh( :,:,:)
+  integer,allocatable         :: cldtyp_nh( :,:,:)
+  integer,allocatable         :: cldamt_sh( :,:,:)
+  integer,allocatable         :: cldtyp_sh( :,:,:)
+  logical,allocatable         :: fog_nh( :,:)
+  logical,allocatable         :: fog_sh( :,:)
   integer          :: thres(5) !needs to be read in.
   real             :: q2sat
   real             :: e,esat
   real             :: udef
   integer          :: doy1,yr1,mo1,da1,hr1,mn1,ss1,try
+  integer          :: istart
+  integer          :: julend
   real*8           :: backtime1
   real             :: gmt1,ts1
   logical          :: fog, bare
-  real,allocatable             :: albedo(:)
-  real,allocatable             :: albedo_tmp(:)
-  integer,allocatable          :: ncount(:)
+  real,allocatable            :: albedo(:)
+  real,allocatable            :: albedo_tmp(:)
+  integer,allocatable         :: ncount(:)
   real             :: snup(24)
   integer          :: dindex
 
@@ -234,15 +242,16 @@ subroutine readagrmetforcing(n,findex, order)
              .040, .080, .080, .080, .080, .080, .080, .080, &
              .040, .080, .025, .040, .040, .040, .025, .025/
 
-
   data THRES /12600, 12300, 12000, 11700, 11400/
+! ___________________________________________________________
 
   TRACE_ENTER("agrmet_readforc")
-  allocate(longwv(LIS_rc%lnc(n), LIS_rc%lnr(n)))
   allocate(varfield(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(tair(LIS_rc%lnc(n),LIS_rc%lnr(n)))
   allocate(psurf(LIS_rc%lnc(n), LIS_rc%lnr(n)))
   allocate(rlh(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+  allocate(longwv(LIS_rc%lnc(n), LIS_rc%lnr(n)))
+  allocate(swdown(LIS_rc%lnc(n),LIS_rc%lnr(n)))
 
   allocate(coszen_ps(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
   allocate(coszen(LIS_rc%lnc(n),LIS_rc%lnr(n)))
@@ -270,7 +279,8 @@ subroutine readagrmetforcing(n,findex, order)
      allocate(t1_ps(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
      allocate(t2_ps(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
      allocate(t3_ps(2,agrmet_struc(n)%imax,agrmet_struc(n)%jmax))
-  else
+
+  elseif ( agrmet_struc(n)%compute_radiation == 'cod properties' ) then
      allocate(cod(3, LIS_rc%lnc(n), LIS_rc%lnr(n)))
   endif
 
@@ -278,17 +288,21 @@ subroutine readagrmetforcing(n,findex, order)
   allocate(albedo_tmp(LIS_rc%ntiles(n)))
   allocate(ncount(LIS_rc%ngrid(n)))
 
+  ! AGRMET SFCALC: Main routine that generates the surface fields:
+  !  temperature, pressure, winds and relative humidity
+  !  Calls to model background fields (e.g., GALWEM, GFS)
+  !   are also made within this main routine.
 
   call AGRMET_sfcalc(n)
 
   call find_agrsfc_dataindex(LIS_rc%hr,dindex)
-
 
 !  open(100,file='tmp.bin',form='unformatted')
 !  write(100) agrmet_struc(n)%sfctmp(dindex,:,:)
 !  close(100) 
 !  print*, 'Finished with SFCALC '
 !  stop
+
   if(LIS_rc%run_model) then
 
      tair  = agrmet_struc(n)%sfctmp(dindex,:,:)
@@ -315,6 +329,7 @@ subroutine readagrmetforcing(n,findex, order)
 !     print*,'EMK: minval(agrmet_struc(n)%sfcrlh(dindex,:,:) = ', &
 !          minval(agrmet_struc(n)%sfcrlh(dindex,:,:))
 
+     ! Humidity field:
      do c =1, LIS_rc%lnc(n)
         do r = 1,LIS_rc%lnr(n)
            if (LIS_domain(n)%gindex(c,r).ne. -1) then
@@ -334,13 +349,6 @@ subroutine readagrmetforcing(n,findex, order)
         enddo
      enddo
 
-     if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then
-        call compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
-                                       cldtyp_nh, cldtyp_sh, fog_nh, fog_sh)
-     else
-        call compute_cod_based_clouds(n, cod, cldamt)
-     endif
-
      yr1 = LIS_rc%yr
      mo1 = LIS_rc%mo
      da1 = LIS_rc%da
@@ -348,21 +356,44 @@ subroutine readagrmetforcing(n,findex, order)
      mn1 = LIS_rc%mn
      ss1 = LIS_rc%ss
 
-     do r=1,LIS_rc%lnr(n)
-        do c=1,LIS_rc%lnc(n)
+     ! Downward Longwave + Shortwave Radiation, read in from GALWEM / GFS:
+     ! -- KRA: Initial setup
+     if ( agrmet_struc(n)%compute_radiation == 'GALWEM_RAD' ) then
+
+        ! Call to the NWP Radiation Flux main routines:
+        !  Target fields:  swdown(lnc,lnr), longwv(lnc,lnr)
+        call USAF_fldbld_radflux(n,swdown,longwv)
+
+     endif
+
+     ! Read in cloud amount, type or COD information:
+     if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then
+        call compute_type_based_clouds(n, cldamt_nh, cldamt_sh, cldamt, &
+                                       cldtyp_nh, cldtyp_sh, fog_nh, fog_sh)
+     elseif ( agrmet_struc(n)%compute_radiation == 'cod properties' ) then
+        call compute_cod_based_clouds(n, cod, cldamt)
+     endif
+
+     ! Downward Longwave Radiation calculation, based on cloud amounts:
+     if ( agrmet_struc(n)%compute_radiation .ne. 'GALWEM_RAD' ) then
+       do r=1,LIS_rc%lnr(n)
+         do c=1,LIS_rc%lnc(n)
            ! EMK...Calculate for all valid grid indices
 !           if(LIS_LMLC(n)%landmask(c,r).eq.1) then 
            if ( LIS_domain(n)%gindex(c,r) /= -1 ) then
-              call AGRMET_svp(q2sat,esat,&
-                   psurf(c,r), tair(c,r))
+              call AGRMET_svp(q2sat, esat, &
+                              psurf(c,r), tair(c,r))
               e = esat*rlh(c,r)
-              call AGRMET_longwv(tair(c,r),e,cldamt(:,c,r),longwv(c,r))
+              call AGRMET_longwv(tair(c,r), e, cldamt(:,c,r),&
+                                 longwv(c,r))
            else
               longwv(c,r) = LIS_rc%udef
            endif
-        enddo
-     enddo
+         enddo
+       enddo
+     endif 
 
+     ! Downward Longwave Radiation: write out final field to metdata array:
      do r=1,LIS_rc%lnr(n)
         do c=1,LIS_rc%lnc(n)
            if(LIS_domain(n)%gindex(c,r).ne.-1) then
@@ -371,6 +402,7 @@ subroutine readagrmetforcing(n,findex, order)
         enddo
      enddo
 
+     ! Surface albedo: Preparing for effects on solar radiation field
      fog = .false.
      if(agrmet_struc(n)%findtime1.eq.1.and.agrmet_struc(n)%findtime2.eq.1) then
 #if 0 
@@ -378,11 +410,11 @@ subroutine readagrmetforcing(n,findex, order)
            do c=1,LIS_rc%lnc(n)
               if(LIS_domain(n)%gindex(c,r).ne.-1) then
                  t = LIS_domain(n)%gindex(c,r)
-! The snup value is looked up from a table based on the vegtype.
-! This is a little tricky when subgrid tiling is used since each tile
-! in a gridcell has a different vegtype. For now proceeding with a
-! simple 1st tile lookup.
-!
+     ! The snup value is looked up from a table based on the vegtype.
+     ! This is a little tricky when subgrid tiling is used since each tile
+     ! in a gridcell has a different vegtype. For now proceeding with a
+     ! simple 1st tile lookup.
+     !
                  if  (LIS_domain(n)%tile(t)%vegt .eq. LIS_rc%bareclass  .or. &
                       LIS_domain(n)%tile(t)%vegt .eq. LIS_rc%urbanclass .or. &
                       LIS_domain(n)%tile(t)%vegt .eq. LIS_rc%snowclass)  then
@@ -401,6 +433,7 @@ subroutine readagrmetforcing(n,findex, order)
         enddo
         LIS_alb(n)%albedo(:) = albedo(:)
 #endif        
+        ! Calculate surface albedo:
         do t=1,LIS_rc%ntiles(n)
            sftype = LIS_domain(n)%tile(t)%sftype
            if(sftype.eq.1) then 
@@ -418,9 +451,9 @@ subroutine readagrmetforcing(n,findex, order)
                    snup(LIS_domain(n)%tile(t)%vegt),&
                    agrmet_struc(n)%salp, bare)
            else
-!ocean - set a fixed albedo
-!for small zenith angle 0.03-0.10
-! for large zenith angle 0.10 -1.0
+           ! Ocean - set a fixed albedo
+           !  for small zenith angle 0.03-0.10
+           !  for large zenith angle 0.10 -1.0
               albedo_tmp(t) = 0.10
            endif
         enddo        
@@ -447,6 +480,11 @@ subroutine readagrmetforcing(n,findex, order)
         endif
      enddo
 
+     ! Downward Shortwave Radiation Field estimates:
+
+     ! WWMCA Cloud properties used to derive solar downward radiation fields:
+     !write(LIS_logunit,*)'EMK2: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK2: maxval(longwv) = ', maxval(longwv)
 
      if ( agrmet_struc(n)%compute_radiation == 'cloud types' ) then
         r1_ps = 0.0
@@ -493,7 +531,10 @@ subroutine readagrmetforcing(n,findex, order)
         call interp_agrmetvar(n,ip,t3_ps,0.0,t3,agrmet_struc(n)%imax,agrmet_struc(n)%jmax)
 
         call interp_agrmetvar(n,ip,coszen_ps,-1.0,coszen,agrmet_struc(n)%imax,agrmet_struc(n)%jmax)
-     else
+
+     ! COD-based routines used for deriving solar downward radiation fields:
+     elseif ( agrmet_struc(n)%compute_radiation == 'cod properties' ) then
+
         call compute_tr_from_cod(n, t1, r1, cod(1,:,:))
         call compute_tr_from_cod(n, t2, r2, cod(2,:,:))
         call compute_tr_from_cod(n, t3, r3, cod(3,:,:))
@@ -533,10 +574,14 @@ subroutine readagrmetforcing(n,findex, order)
         endwhere
      endif
 
-     allocate(swdown(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+     !write(LIS_logunit,*)'EMK3: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK3: maxval(longwv) = ', maxval(longwv)
 
-     do r=1,LIS_rc%lnr(n)
-        do c=1,LIS_rc%lnc(n)
+     ! Downward Shortwave Radiation - Calculation from cloud data:
+     if ( agrmet_struc(n)%compute_radiation .ne. 'GALWEM_RAD' ) then
+       do r=1,LIS_rc%lnr(n)
+         do c=1,LIS_rc%lnc(n)
+
            if ( LIS_domain(n)%gindex(c,r) /= -1 ) then
               t = LIS_domain(n)%gindex(c,r)
               if(r1(c,r).eq.LIS_rc%udef) r1(c,r) = 0.0
@@ -553,9 +598,15 @@ subroutine readagrmetforcing(n,findex, order)
            else
               swdown(c,r) = LIS_rc%udef
            endif
-        enddo
-     enddo
 
+         enddo
+       enddo
+     endif
+
+     !write(LIS_logunit,*)'EMK4: maxval(swdown) = ', maxval(swdown)
+     !write(LIS_logunit,*)'EMK4: maxval(longwv) = ', maxval(longwv)
+
+     ! Downward Shortwave Radiation: write out final field to metdata array:
      do r=1,LIS_rc%lnr(n)
         do c=1,LIS_rc%lnc(n)
            if(LIS_domain(n)%gindex(c,r).ne.-1) then
@@ -597,7 +648,7 @@ subroutine readagrmetforcing(n,findex, order)
         deallocate(t1_ps)
         deallocate(t2_ps)
         deallocate(t3_ps)
-     else
+     elseif ( agrmet_struc(n)%compute_radiation == 'cod properties' ) then
         deallocate(cod)
      endif
 
@@ -607,6 +658,7 @@ subroutine readagrmetforcing(n,findex, order)
   end if
   TRACE_EXIT("agrmet_readforc")
 end subroutine readagrmetforcing
+
 !BOP
 !
 ! !ROUTINE: agrmet_cdfs_pcts_filename
