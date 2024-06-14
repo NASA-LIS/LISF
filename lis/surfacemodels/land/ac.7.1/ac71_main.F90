@@ -691,6 +691,7 @@ subroutine Ac71_main(n)
                     AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
                     AC71_struc(n)%ac71(t)%harv_reached = .true.
                 end if
+                end if
             end if
            
             ! MB: tmp, just for debugging
