@@ -1046,6 +1046,7 @@ real(dp) :: Tpot ! mm/day
 real(dp) :: TactWeedInfested !mm/day
 real(dp) :: Tmax ! degC
 real(dp) :: Tmin ! degC
+real(sp), dimension(1:366) :: TmaxRun, TminRun
 
 logical :: EvapoEntireSoilSurface ! True of soil wetted by RAIN (false = IRRIGATION and fw < 1)
 logical :: PreDay, OutDaily
@@ -4439,7 +4440,8 @@ subroutine SetClimData()
     end if
 
     ! Part B - ClimFile and Temperature files --> ClimFile
-    if (GetTemperatureFile() == '(None)') then
+    if ((GetTemperatureFile() == '(None)') .or.&
+        (GetTemperatureFile() == '(External)')) then
         ! no adjustments are required
     else
         if (GetClimFile() == '(None)') then
@@ -5355,7 +5357,8 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     logical :: GrowthON
 
     ! 1. Open Temperature file
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and. &
+        (GetTemperatureFile() /= '(External)')) then
         open(newunit=fhandle, file=trim(GetPathNameSimul()//'TCrop.SIM'), &
              status='old', action='read')
     end if
@@ -5415,12 +5418,17 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     ! 3. Calculate Sum
     do Dayi = 1, L1234
         ! 3.1 calculate growing degrees for the day
-        if (GetTemperatureFile() /= '(None)') then
-            read(fhandle, *) Tndayi, Txdayi
+        if (GetTemperatureFile() == '(None)') then
+            GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
+                                    GetSimulParam_GDDMethod())
+        elseif (GetTemperatureFile() == '(External)') then
+            Tndayi = real(GetTminRun_i(Dayi),kind=dp)
+            Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
-            GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
+            read(fhandle, *) Tndayi, Txdayi
+            GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         end if
         if (TheModeCycle == modeCycle_GDDays) then
@@ -5518,7 +5526,8 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     end do
 
     ! 5. Close Temperature file
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and. &
+        (GetTemperatureFile() /= '(External)')) then
         close(fhandle)
     end if
 
@@ -16107,6 +16116,74 @@ subroutine SetTactWeedInfested(TactWeedInfested_in)
 
     TactWeedInfested = TactWeedInfested_in
 end subroutine SetTactWeedInfested
+
+
+function GetTminRun() result(TminRun_out)
+    !! Getter for the "TminRun" global variable.
+    real(sp), dimension(1:366) :: TminRun_out
+
+    TminRun_out = TminRun
+end function GetTminRun
+
+
+function GetTminRun_i(i) result(TminRun_i)
+    !! Getter for individual elements of the "GetTminRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TminRun_i
+
+    TminRun_i = TminRun(i)
+end function GetTminRun_i
+
+
+subroutine SetTminRun(TminRun_in)
+    !! Setter for the "TminRun" global variable.
+    real(sp), dimension(1:366), intent(in) :: TminRun_in
+
+    TminRun = TminRun_in
+end subroutine SetTminRun
+
+
+subroutine SetTminRun_i(i, TminRun_i)
+    !! Setter for individual element for the "TminRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TminRun_i
+
+    TminRun(i) = TminRun_i
+end subroutine SetTminRun_i
+
+
+function GetTmaxRun() result(TmaxRun_out)
+    !! Getter for the "TmaxRun" global variable.
+    real(sp), dimension(1:366) :: TmaxRun_out
+
+    TmaxRun_out = TmaxRun
+end function GetTmaxRun
+
+
+function GetTmaxRun_i(i) result(TmaxRun_i)
+    !! Getter for individual elements of the "GetTmaxRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TmaxRun_i
+
+    TmaxRun_i = TmaxRun(i)
+end function GetTmaxRun_i
+
+
+subroutine SetTmaxRun(TmaxRun_in)
+    !! Setter for the "TmaxRun" global variable.
+    real(sp), dimension(1:366), intent(in) :: TmaxRun_in
+
+    TmaxRun = TmaxRun_in
+end subroutine SetTmaxRun
+
+
+subroutine SetTmaxRun_i(i, TmaxRun_i)
+    !! Setter for individual element for the "TmaxRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TmaxRun_i
+
+    TmaxRun(i) = TmaxRun_i
+end subroutine SetTmaxRun_i
 
 
 real(dp) function GetTmin()

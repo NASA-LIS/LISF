@@ -41,7 +41,8 @@ module Ac71_module
 
   use ac_run, only: &
           repIrriInfoRecord,&
-          rep_StressTot
+          rep_StressTot,&
+          rep_plotPar
 
   use ac_kinds, only: dp,&
                 int8,&
@@ -97,8 +98,19 @@ module Ac71_module
     integer(intEnum) :: IrriMethod
     integer(intEnum) :: IrriMode
     integer(intEnum) :: TheProjectType
+    integer        :: Crop_DaysToGermination
+    integer        :: Crop_DaysToMaxRooting
+    integer        :: Crop_DaysToFlowering
+    integer        :: Crop_DaysToSenescence
+    integer        :: Crop_DaysToHarvest
+    integer        :: Crop_DaysToCCini
+    integer        :: Crop_DaysToFullCanopy
+    integer        :: Crop_DaysToFullCanopySF
+    integer        :: Crop_DaysToHIo
     logical  :: HarvestNow
     logical :: NoYear
+    logical :: germ_reached, harv_reached
+    logical :: maxR_reached, sene_reached, flowr_reached
     real    :: RootZoneWC_Actual
     real    :: RootZoneWC_FC
     real    :: RootZoneWC_Leaf
@@ -147,8 +159,11 @@ module Ac71_module
     real :: ScorAT1
     real :: ScorAT2
     real :: StressLeaf
+    real :: fWeedNoS
     real :: StressSenescence
     real :: SumGDDcuts
+    real :: SumGDD
+    real :: SumGDDprev
     real :: SumKci
     real :: SumKcTop
     real :: SumKcTopStress
@@ -161,10 +176,13 @@ module Ac71_module
     real :: WPi
     real :: YprevSum
     real :: Ziprev
+    real :: Simulation_SumGDD
+    real :: Simulation_SumGDDfromDay1    
     type(CompartmentIndividual), dimension(12) :: Compartment
     type(repIrriInfoRecord) :: IrriInfoRecord1
     type(repIrriInfoRecord) :: IrriInfoRecord2
     type(rep_Crop) :: Crop
+    type(rep_plotPar) :: PlotVarCrop
     type(rep_IrriECw) :: IrriECw
     type(rep_DayEventInt), dimension(5) :: IrriAfterSeason
     type(rep_DayEventInt), dimension(5) :: IrriBeforeSeason
@@ -179,7 +197,7 @@ module Ac71_module
   end type ac71dec
 
   type, public :: ac71_trecord
-    real, pointer :: Tmax_record(:)
-    real, pointer :: Tmin_record(:)
+    real(sp), pointer :: Tmax_record(:)
+    real(sp), pointer :: Tmin_record(:)
   end type ac71_trecord
 end module Ac71_module
