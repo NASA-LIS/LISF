@@ -74,8 +74,10 @@ module Ac71_lsmMod
 !   maximum number of compartments (=12)
 ! \item[Thickness]
 !   thickness of soil layers
-! \item[refz_forc]
-!   reference height of forcings
+! \item[refz_tq]
+!   reference height of forcings T and q
+! \item[refz_uv]
+!   reference height of forcings u and v
 
 !
 ! !REVISION HISTORY:
@@ -134,11 +136,11 @@ module Ac71_lsmMod
         integer            :: Sim_AnnualEndMonth
         integer            :: Crop_AnnualStartDay
         integer            :: Crop_AnnualStartMonth
-        integer            :: GDD_Mode
         integer            :: NrSoilLayers
         integer            :: max_No_compartments
         real, pointer      :: Thickness(:)
-        real               :: refz_forc
+        real               :: refz_tq
+        real               :: refz_uv
         type(Ac71dec), pointer :: ac71(:)
         type(ac71_trecord), pointer :: Trecord(:)
     end type Ac71_type_dec
@@ -189,6 +191,7 @@ contains
             ! allocate memory for vector variables passed to model interfaces        
             ! TODO: check the following allocation statements carefully!
             !------------------------------------------------------------------------
+            AC71_struc(n)%max_No_compartments = 12 ! hard coded
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
             enddo

@@ -27,9 +27,7 @@ subroutine Ac71_main(n)
     use LIS_constantsMod
     use Ac71_lsmMod
     use ac71_prep_f
-   !use other modules
     use ESMF
-    use LIS_routingMod, only : LIS_runoff_state
 
 !   ! AC module imports
     use ac_global, only: &
@@ -73,8 +71,10 @@ subroutine Ac71_main(n)
                     GetIrriAfterSeason, &
                     GetIrriBeforeSeason, &
                     GetIrriECw, &
-                    GetIrrigation, &
+                    GetIrrigation,&
+                    GetIrriMode,&
                     GetManagement,&
+                    GetRootingDepth,&
                     GetRootZoneWC_Actual,&
                     GetRootZoneWC_FC,&
                     GetRootZoneWC_Leaf,&
@@ -95,6 +95,7 @@ subroutine Ac71_main(n)
                     GetSimulation_SumGDD,&
                     GetSimulation_SumGDDfromDay1,&
                     GetSimulation_SWCtopSoilConsidered, &
+                    GetSimulation_FromDayNr, &
                     GetSimulation_ToDayNr, &
                     GetSoil,&
                     GetSoilLayer,&
@@ -111,8 +112,10 @@ subroutine Ac71_main(n)
                     GetCrop_GDDaysToGermination,&
                     GetCrop_GDDaysToFlowering,&
                     GetCrop_GDDaysToSenescence,&
-                    IrriMethod_MSprinkler, &
-                    IrriMode_Generate, &
+                    IrriMode_Generate,&
+                    IrriMode_Inet,&
+                    IrriMode_Manual,&
+                    IrriMode_NoIrri,&
                     SetCCiActual,&
                     SetCCiTopEarlySen,&
                     SetCCiprev,&
@@ -145,6 +148,8 @@ subroutine Ac71_main(n)
                     SetGenerateTimeMode, &
                     SetManagement,&
                     SetOutputAggregate,&
+                    SetOutDaily,&
+                    SetOut3Prof,&
                     SetPart1Mult,&
                     SetPart2Eval,&
                     SetPreDay,&
@@ -181,8 +186,8 @@ subroutine Ac71_main(n)
                     GetTminRun_i, &
                     GetTminRun, &
                     GetTmaxRun_i, &
-                    GetTmaxRun
-
+                    GetTmaxRun, &
+                    undef_int
     use ac_kinds, only: intEnum, &
                         int32, &
                         int8, &
@@ -194,6 +199,8 @@ subroutine Ac71_main(n)
                     FinalizeRun1, &
                     FinalizeRun2, &
                     fIrri_close, &
+                    fIrri_open,&
+                    firri_read,&
                     GetBin,&
                     GetBout,&
                     GetCCiActualWeedInfested,&
@@ -222,6 +229,7 @@ subroutine Ac71_main(n)
                     GetHItimesAT2,&
                     GetHItimesBEF,&
                     GetIrriInfoRecord1, &
+                    GetIrriInfoRecord1_NoMoreInfo,&
                     GetIrriInfoRecord2, &
                     GetNoMoreCrop,&
                     GetPreviousStressLevel,&
@@ -338,6 +346,8 @@ subroutine Ac71_main(n)
     integer(int32) :: temp1    
 
     !LB AC71
+    integer              :: irr_record_flag, DNr ! for irri file management
+    character(250)       :: TempStr 
 
     real                 :: tmp_pres, tmp_precip, tmp_tmax, tmp_tmin   ! Weather Forcing
     real                 :: tmp_tdew, tmp_swrad, tmp_wind, tmp_eto     ! Weather Forcing
@@ -360,7 +370,6 @@ subroutine Ac71_main(n)
     ! check Ac71 alarm. If alarm is ring, run model.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 model alarm")
     if (alarmCheck) Then
-        !if ((AC71_struc(n)%ac71(1)%InitializeRun.eq.1).and.(AC71_struc(n)%GDD_Mode.eq.1)) then
         if (AC71_struc(n)%ac71(1)%InitializeRun.eq.1) then
             call ac71_read_Trecord(n)
         endif
@@ -453,7 +462,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%eto = tmp_eto
 
             ! setting all global variables
-            !Required vars to be set before simulation
+            ! Required vars for restart
             call SetalfaHI(REAL(AC71_struc(n)%ac71(t)%alfaHI, 8))
             call SetalfaHIAdj(REAL(AC71_struc(n)%ac71(t)%alfaHIAdj, 8))
             call SetBin(REAL(AC71_struc(n)%ac71(t)%Bin, 8))
@@ -513,26 +522,21 @@ subroutine Ac71_main(n)
             ! MB apparently needed for GDD runs
             call SetPlotVarCrop(AC71_struc(n)%ac71(t)%PlotVarCrop)
 
-            if (.not. ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualStartMonth) &
-                .AND. (LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualStartDay))) then !make it flex
-                ! Set logicals
-                if(AC71_struc(n)%ac71(t)%NoMoreCrop.eq.1)then
-                    call SetNoMoreCrop(.true.)
-                else
-                    call SetNoMoreCrop(.false.)
-                endif
-                if(AC71_struc(n)%ac71(t)%Simulation%EvapLimitON.eq.1)then
-                    call SetSimulation_EvapLimitON(.true.)
-                else
-                    call SetSimulation_EvapLimitON(.false.)
-                endif
-                if(AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered.eq.1)then
-                    call SetSimulation_SWCtopSoilConsidered(.true.)
-                else
-                    call SetSimulation_SWCtopSoilConsidered(.false.)
-                endif
-                ! Can be false when sim is initialized
-                call SetPreDay(.true.) ! set to false in InitializeSettings
+            ! Set logicals global variables required in restart
+            if(AC71_struc(n)%ac71(t)%NoMoreCrop.eq.1)then
+                call SetNoMoreCrop(.true.)
+            else
+                call SetNoMoreCrop(.false.)
+            endif
+            if(AC71_struc(n)%ac71(t)%Simulation%EvapLimitON.eq.1)then
+                call SetSimulation_EvapLimitON(.true.)
+            else
+                call SetSimulation_EvapLimitON(.false.)
+            endif
+            if(AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered.eq.1)then
+                call SetSimulation_SWCtopSoilConsidered(.true.)
+            else
+                call SetSimulation_SWCtopSoilConsidered(.false.)
             endif
 
             ! Set in Initialize (not needed for restart)
@@ -552,6 +556,7 @@ subroutine Ac71_main(n)
             call SetGDDTadj(AC71_struc(n)%ac71(t)%GDDTadj)
             call SetManagement(AC71_struc(n)%ac71(t)%Management)
             call SetSimulation(AC71_struc(n)%ac71(t)%Simulation)
+            call SetSimulParam(AC71_struc(n)%ac71(t)%SimulParam)
             call SetSoil(AC71_struc(n)%ac71(t)%Soil)
             call SetSoilLayer(AC71_struc(n)%ac71(t)%SoilLayer) 
             call SetSumKcTop(REAL(AC71_struc(n)%ac71(t)%SumKcTop, 8))
@@ -561,29 +566,40 @@ subroutine Ac71_main(n)
             call SetGDDCGCref(GetCrop_GDDCGC()) ! Make sure crop is set before
             call SetNextSimFromDayNr(int(-9, kind=int32)) !Always undef_int in AquaCrop... Check src for v7.2
             call SetNoYear(.false.)
-            call SetOutputAggregate(int(0,kind=int8)) ! Avoid writing out daily results in the console
+            call SetOutputAggregate(int(0,kind=int8))
+            call SetOut3Prof(.true.)
+            call SetOutDaily(.true.) ! AVoid writing daily output in console?
             call SetPart1Mult(.false.) 
             call SetPart2Eval(.false.)
+            call SetPreDay(.true.) ! set to false in InitializeSettings
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
             !old, needed?: call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
-            !! If irrigation ON
-            if(LIS_rc%irrigation_type.ne."none") then
-                if(trim(LIS_rc%irrigation_type).eq."Sprinkler") then
-                    call SetIrriAfterSeason(AC71_struc(n)%ac71(t)%IrriAfterSeason)
-                    call SetIrriBeforeSeason(AC71_struc(n)%ac71(t)%IrriBeforeSeason)
-                    call SetIrriECw(AC71_struc(n)%ac71(t)%IrriECw) 
-                    call SetIrriInfoRecord1(AC71_struc(n)%ac71(t)%IrriInfoRecord1)
-                    call SetIrriInfoRecord2(AC71_struc(n)%ac71(t)%IrriInfoRecord2)
-                    call SetIrriMethod(IrriMethod_MSprinkler)
-                    call SetIrriMode(IrriMode_Generate)
-                    call SetGenerateDepthMode(GenerateDepthMode_ToFC)
-                    call SetGenerateTimeMode(GenerateTimeMode_AllRAW)
-                else ! Other options can be implemented later
-                    write(LIS_logunit, *) trim(LIS_rc%irrigation_type), " irrigation type not compatible with AquaCrop.7.1"
-                    call LIS_endrun()
-                endif
-            endif
+            ! Optional vars -> for later implementations
+            ! Groundwater (not tested in LIS)
+            !call SetSimulParam_ConstGwt(.true.) by default
+            !call SetGwTable(AC71_struc(n)%ac71(t)%GwTable)
+            !call SetSimulParam(AC71_struc(n)%ac71(t)%simulparam)
+            !call SetZiAqua(AC71_struc(n)%ac71(t)%ZiAqua)
+            !call SetEciAqua(AC71_struc(n)%ac71(t)%ECiAqua)
+            !call SetWaterTableInProfile(AC71_struc(n)%ac71(t)%WaterTableInProfile)
+
+            ! .OBS not used in LIS
+            !call SetDayNr1Eval(AC71_struc(n)%ac71(t)%DayNr1Eval)
+            !call SetDayNrEval(AC71_struc(n)%ac71(t)%DayNrEval)
+            !call SetLineNrEval(int(AC71_struc(n)%ac71(t)%LineNrEval,kind=int32))
+
+            ! Perennial mode
+            !call SetCutInfoRecord1(AC71_struc(n)%ac71(t)%CutInfoRecord1)
+            !call SetCutInfoRecord2(AC71_struc(n)%ac71(t)%CutInfoRecord2)
+            !call SetDayLastCut(AC71_struc(n)%ac71(t)%DayLastCut)
+            !call SetNrCut(AC71_struc(n)%ac71(t)%NrCut)
+            !call SetPerennialPeriod(AC71_struc(n)%ac71(t)%PerennialPeriod)
+            !call SetBprevSum(AC71_struc(n)%ac71(t)%BprevSum)
+            !call SetTransfer(AC71_struc(n)%ac71(t)%Transfer)
+            !call SetOnset(AC71_struc(n)%ac71(t)%onset)
+
+
 
             call SetCrop_DaysToGermination(AC71_struc(n)%ac71(t)%Crop_DaysToGermination)
             call SetCrop_DaysToFlowering(AC71_struc(n)%ac71(t)%Crop_DaysToFlowering)
@@ -643,9 +659,29 @@ subroutine Ac71_main(n)
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
-                if(LIS_rc%irrigation_type.ne."none") then
-                    call fIrri_close() !LB check if problem with specific irrigation file
+
+                ! Irrigaton file management after InitializeRun
+                if(GetIrriMode().ne.IrriMode_NoIrri) then
+                    call fIrri_close()
+                    ! Check for irrigation (irrigation file management)
+                    if(GetIrriMode().eq.IrriMode_Manual)then
+                        if(GetIrriInfoRecord1_NoMoreInfo())then
+                            AC71_struc(n)%ac71(t)%irri_lnr = 9
+                        else
+                            AC71_struc(n)%ac71(t)%irri_lnr = 10
+                        endif
+                    elseif(GetIrriMode().eq.IrriMode_Generate)then
+                        if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo)then
+                            AC71_struc(n)%ac71(t)%irri_lnr = 11
+                        else
+                            AC71_struc(n)%ac71(t)%irri_lnr = 12
+                        endif
+                    else ! no irrigation, set to 0
+                        AC71_struc(n)%ac71(t)%irri_lnr = 0
+                    endif
                 endif
+                ! End irrigation block
+
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
@@ -709,6 +745,52 @@ subroutine Ac71_main(n)
            temp1 = GetCrop_GDDaysToGermination()
            temp1 = GetCrop_GDDaysToSenescence()
 
+            ! Irrigation
+            call SetIrriMode(AC71_struc(n)%ac71(t)%IrriMode)
+            irr_record_flag = 0
+            if(AC71_struc(n)%ac71(t)%IrriMode.ne.IrriMode_NoIrri) then
+                ! Irrigation ON for tile
+                call SetIrriAfterSeason(AC71_struc(n)%ac71(t)%IrriAfterSeason)
+                call SetIrriBeforeSeason(AC71_struc(n)%ac71(t)%IrriBeforeSeason)
+                call SetIrriECw(AC71_struc(n)%ac71(t)%IrriECw) 
+                call SetIrriInfoRecord1(AC71_struc(n)%ac71(t)%IrriInfoRecord1)
+                call SetIrriInfoRecord2(AC71_struc(n)%ac71(t)%IrriInfoRecord2)
+                call SetIrriMethod(AC71_struc(n)%ac71(t)%IrriMethod)
+                call SetGenerateDepthMode(AC71_struc(n)%ac71(t)%GenerateDepthMode)
+                call SetGenerateTimeMode(AC71_struc(n)%ac71(t)%GenerateTimeMode)
+
+                ! For IrriMode_Generate and IrriMode_Manual
+                ! Check if new record needs to be read
+                if(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Generate) then
+                    if((AC71_struc(n)%ac71(t)%daynri-AC71_struc(n)%ac71(t)%Crop%Day1+1)&
+                    .gt.AC71_struc(n)%ac71(t)%IrriInfoRecord1%ToDay) then
+                        irr_record_flag = 1
+                    endif
+                elseif(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Manual) then
+                    ! Check start date of schedule
+                    if(AC71_struc(n)%ac71(t)%IrriFirstDayNr.eq.undef_int)then
+                        DNr = AC71_struc(n)%ac71(t)%daynri &
+                              - AC71_struc(n)%ac71(t)%Crop%Day1 + 1
+                    else
+                        DNr = AC71_struc(n)%ac71(t)%daynri &
+                              - AC71_struc(n)%ac71(t)%IrriFirstDayNr + 1
+                    endif
+                    if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%TimeInfo.eq.DNr)then
+                        irr_record_flag = 1
+                    endif
+                endif
+
+                ! re-open irrigation file and read the previous records
+                if(irr_record_flag.eq.1)then
+                    call fIrri_open(trim(AC71_struc(n)%PathNameSimul)&
+                                    //trim(AC71_struc(n)%Irrigation_Filename), 'r')
+                        do i=1,AC71_struc(n)%ac71(t)%irri_lnr
+                            TempStr = fIrri_read()
+                        enddo
+                    AC71_struc(n)%ac71(t)%irri_lnr = AC71_struc(n)%ac71(t)%irri_lnr + 1
+                endif
+            endif
+
             ! Run AC
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
             call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
@@ -717,6 +799,11 @@ subroutine Ac71_main(n)
             ! MB: tmp, just for debugging
             sumGDD = GetSimulation_SumGDD()
             sumGDD2 = GetSumGDD()
+
+            ! Close irri file if opened
+            if(irr_record_flag.eq.1)then
+                call fIrri_close()
+            endif
 
             ! Get all the ac71 variables and store in AC71_struc
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
@@ -768,6 +855,8 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%HItimesAT2 = GetHItimesAT2()
             AC71_struc(n)%ac71(t)%HItimesBEF = GetHItimesBEF()
             AC71_struc(n)%ac71(t)%Irrigation = GetIrrigation()
+            AC71_struc(n)%ac71(t)%IrriInfoRecord1 = GetIrriInfoRecord1()
+            AC71_struc(n)%ac71(t)%IrriInfoRecord2 = GetIrriInfoRecord2()
             AC71_struc(n)%ac71(t)%Management = GetManagement()
             AC71_struc(n)%ac71(t)%PreviousStressLevel = GetPreviousStressLevel()
             AC71_struc(n)%ac71(t)%RootZoneWC_Actual = GetRootZoneWC_Actual()
@@ -784,6 +873,7 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%ScorAT1 = GetScorAT1()
             AC71_struc(n)%ac71(t)%ScorAT2 = GetScorAT2()
             AC71_struc(n)%ac71(t)%Simulation = GetSimulation()
+            AC71_struc(n)%ac71(t)%SimulParam = GetSimulParam()
             AC71_struc(n)%ac71(t)%Soil = GetSoil()
             AC71_struc(n)%ac71(t)%SoilLayer = GetSoilLayer()
             AC71_struc(n)%ac71(t)%StressLeaf = GetStressLeaf()
@@ -831,18 +921,8 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%Simulation%SWCtopSoilConsidered = 0
             endif
 
-            !! If irrigation ON
-            if(LIS_rc%irrigation_type.ne."none") then
-                AC71_struc(n)%ac71(t)%IrriAfterSeason = GetIrriAfterSeason()
-                AC71_struc(n)%ac71(t)%IrriBeforeSeason = GetIrriBeforeSeason()
-                AC71_struc(n)%ac71(t)%IrriECw = GetIrriECw()
-                AC71_struc(n)%ac71(t)%IrriInfoRecord1 = GetIrriInfoRecord1()
-                AC71_struc(n)%ac71(t)%IrriInfoRecord2 = GetIrriInfoRecord2()
-            endif
-
             ! Check for end of simulation period
-            if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
-                .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
+            if (GetDayNri() .eq. GetSimulation_ToDayNr()) then
                 AC71_struc(n)%ac71(t)%InitializeRun = 1
                 AC71_struc(n)%ac71(t)%irun = AC71_struc(n)%ac71(t)%irun + 1
             end if
@@ -874,7 +954,7 @@ subroutine Ac71_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71ETo, value = real(AC71_struc(n)%ac71(t)%eto,kind=sp), &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 9] output variable: RootingDepth (unit=m).  *** rooting depth
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(AC71_struc(n)%ac71(t)%Ziprev,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(GetRootingDepth(),kind=sp), &
                                                 vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 10] output variable: CCiActual (unit=-).  *** canopy cover
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
@@ -891,6 +971,9 @@ subroutine Ac71_main(n)
             ![ 14] output variable: yield (unit=t ha-1).  *** yield
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Yield, value = real(AC71_struc(n)%ac71(t)%SumWaBal%YieldPart,kind=sp), &
                                     vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
+            ![ 15] output variable: irrigation (unit=mm).  *** irrigation
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC71Irrigation, value = real(AC71_struc(n)%ac71(t)%Irrigation,kind=sp), &
+                                    vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
 
             !  Reset forcings
             AC71_struc(n)%ac71(t)%tair = 0.0
