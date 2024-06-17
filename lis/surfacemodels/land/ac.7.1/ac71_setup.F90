@@ -50,7 +50,10 @@ subroutine Ac71_setup()
                             GetIrriAfterSeason,&
                             GetIrriBeforeSeason,&
                             GetIrriECw,&
+                            GetIrriFirstDayNr,&
                             GetIrrigation,&
+                            GetIrriMethod,&
+                            GetIrriMode,&
                             GetManagement,&
                             GetNrCompartments,&
                             GetRootZoneWC_Actual,&
@@ -75,6 +78,8 @@ subroutine Ac71_setup()
                             GetTact,&
                             GetTactWeedInfested,&
                             GetTpot,&
+                            IrriMode_Generate,&
+                            IrriMode_Manual,&
                             SetCCiActual,&
                             SetClimFile,&
                             SetClimRecord_DataType, &
@@ -115,7 +120,8 @@ subroutine Ac71_setup()
                             SetTmin,&
                             typeproject_typeprm
     use ac_project_input, only: ProjectInput 
-    use ac_run, only:   GetalfaHI,&
+    use ac_run, only:   fIrri_close,& 
+                        GetalfaHI,&
                         GetalfaHIAdj,&
                         GetBin,&
                         GetBout,&
@@ -233,7 +239,7 @@ subroutine Ac71_setup()
                 else
                     write(LIS_logunit, *) 'AC coldstart: simulation period start does not match LIS start'
                     write(LIS_logunit, *) 'program stopping ...'
-                    call LIS_endrun
+                    !call LIS_endrun
                 endif
             endif
             
@@ -541,6 +547,12 @@ subroutine Ac71_setup()
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun, kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
+                ! Close irrigation file after Run Initialization
+                ! Note: only 2 irrigation records can be passed
+                if((AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Generate)&
+                   .or.(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Manual)) then
+                    call fIrri_close()
+                endif
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
 
                 ! Set AC71_struc after Initialization
@@ -580,9 +592,12 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%IrriAfterSeason = GetIrriAfterSeason()
                 AC71_struc(n)%ac71(t)%IrriBeforeSeason = GetIrriBeforeSeason()
                 AC71_struc(n)%ac71(t)%IrriECw = GetIrriECw()
+                AC71_struc(n)%ac71(t)%IrriFirstDayNr = GetIrriFirstDayNr()
                 AC71_struc(n)%ac71(t)%IrriInfoRecord1 = GetIrriInfoRecord1()
                 AC71_struc(n)%ac71(t)%IrriInfoRecord2 = GetIrriInfoRecord2()
                 AC71_struc(n)%ac71(t)%Irrigation = GetIrrigation()
+                AC71_struc(n)%ac71(t)%IrriMethod = GetIrriMethod()
+                AC71_struc(n)%ac71(t)%IrriMode = GetIrriMode()
                 AC71_struc(n)%ac71(t)%Management = GetManagement()
                 AC71_struc(n)%ac71(t)%NrCompartments = GetNrCompartments()
                 AC71_struc(n)%ac71(t)%NoMoreCrop = GetNoMoreCrop()
@@ -629,8 +644,24 @@ subroutine Ac71_setup()
                 AC71_struc(n)%ac71(t)%crop = GetCrop()
                 AC71_struc(n)%ac71(t)%daynri = GetDayNri()
 
-                if ((LIS_rc%mo .eq. AC71_struc(n)%Sim_AnnualEndMonth) &
-                    .and.(LIS_rc%da .eq. AC71_struc(n)%Sim_AnnualEndDay)) then
+                ! Check for irrigation (irrigation file management)
+                if(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Manual)then
+                    if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo)then
+                        AC71_struc(n)%ac71(t)%irri_lnr = 9
+                    else
+                        AC71_struc(n)%ac71(t)%irri_lnr = 10
+                    endif
+                elseif(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Generate)then
+                    if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo)then
+                        AC71_struc(n)%ac71(t)%irri_lnr = 11
+                    else
+                        AC71_struc(n)%ac71(t)%irri_lnr = 12
+                    endif
+                else ! no irrigation, set to 0
+                    AC71_struc(n)%ac71(t)%irri_lnr = 0
+                endif
+
+                if (GetDayNri() .eq. GetSimulation_ToDayNr())  then
                     AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
                     AC71_struc(n)%ac71(t)%InitializeRun = 1
                 endif
@@ -644,8 +675,7 @@ end subroutine Ac71_setup
 !  \label{AC71_read_MULTILEVEL_param}
 !
 ! !REVISION HISTORY:
-!  03 Sept 2004: Sujay Kumar; Initial Specification for read_laiclimo
-!  30 Oct  2013: Shugong Wang; Generalization for reading MULTILEVEL spatial parameter
+!  20 FEB: Louise Busschaert; Initial implementation
 !
 ! !INTERFACE:
 subroutine AC71_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
