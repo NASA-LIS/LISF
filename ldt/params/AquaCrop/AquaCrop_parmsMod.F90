@@ -129,9 +129,9 @@ contains
 
  subroutine AquaCropParms_writeHeader(n,ftn,dimID)
 
-  #if(defined USE_NETCDF3 || defined USE_NETCDF4)
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
-  #endif
+#endif
 
     integer   :: n,i 
     integer   :: ftn
@@ -143,7 +143,7 @@ contains
     ndimID(1) = dimID(1)
     ndimID(2) = dimID(2)
 
-
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             Aquacrop_struc(n)%cropt)
     call LDT_verify(nf90_def_dim(ftn,'AC_max_compartments',&
@@ -159,6 +159,7 @@ contains
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"THICKNESS_LAYER_"//trim(str),&
                       AquaCrop_struc(n)%lthickness(i)))
     enddo
+#endif
 
   end subroutine AquaCropParms_writeHeader
 
