@@ -23,7 +23,8 @@ subroutine Ac71_main(n)
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
-    use LIS_FORC_AttributesMod 
+    use LIS_FORC_AttributesMod
+    use LIS_constantsMod
     use Ac71_lsmMod
     use ac71_prep_f
     use ESMF
@@ -40,6 +41,27 @@ subroutine Ac71_main(n)
                     GetCompartment_theta,&
                     GetCrop,&
                     GetCrop_Day1,&
+                    GetCrop_DayN,&
+                    SetCrop_Day1,&
+                    SetCrop_DayN,&
+                    SetCrop_DaysToGermination,&
+                    SetCrop_DaysToMaxRooting,&
+                    SetCrop_DaysToFlowering,&
+                    SetCrop_DaysToHarvest,&
+                    SetCrop_DaysTosenescence,&
+                    SetCrop_DaysToCCini,&
+                    SetCrop_DaysToFullCanopy,&
+                    SetCrop_DaysToFullCanopySF,&
+                    SetCrop_DaysToHIo,&
+                    GetCrop_DaysToGermination,&
+                    GetCrop_DaysToMaxRooting,&
+                    GetCrop_DaysToFlowering,&
+                    GetCrop_DaysToHarvest,&
+                    GetCrop_DaysTosenescence,&
+                    GetCrop_DaysToCCini,&
+                    GetCrop_DaysToFullCanopy,&
+                    GetCrop_DaysToFullCanopySF,&
+                    GetCrop_DaysToHIo,&
                     GetCrop_CGC, &
                     GetCrop_GDDCGC,&
                     GetDaySubmerged,&
@@ -66,6 +88,8 @@ subroutine Ac71_main(n)
                     GetRootZoneWC_ZtopWP,&
                     GetSimulParam,&
                     GetSimulParam_GDDMethod,&
+                    GetCrop_ModeCycle,&
+                    GetSimulation_DelayedDays,&
                     GetSimulation,&
                     GetSimulation_EvapLimitON, &
                     GetSimulation_SumGDD,&
@@ -82,6 +106,12 @@ subroutine Ac71_main(n)
                     GetTmax,& 
                     GetTmin,& 
                     GetTpot,&
+                    GetCrop_GDDaysToGermination,&
+                    GetCrop_GDDaysToMaxRooting,&
+                    GetCrop_GDDaysToHarvest,&
+                    GetCrop_GDDaysToGermination,&
+                    GetCrop_GDDaysToFlowering,&
+                    GetCrop_GDDaysToSenescence,&
                     IrriMode_Generate,&
                     IrriMode_Inet,&
                     IrriMode_Manual,&
@@ -149,6 +179,14 @@ subroutine Ac71_main(n)
                     SetTmax,& 
                     SetTmin,&
                     SetTpot,&
+                    SetTminRun_i, &
+                    SetTminRun, &
+                    SetTmaxRun_i, &
+                    SetTmaxRun, &
+                    GetTminRun_i, &
+                    GetTminRun, &
+                    GetTmaxRun_i, &
+                    GetTmaxRun, &
                     undef_int
     use ac_kinds, only: intEnum, &
                         int32, &
@@ -181,6 +219,7 @@ subroutine Ac71_main(n)
                     GetCrop_Tupper, &
                     GetDayFraction,&
                     GetDayNri,&
+                    GetSimulation_FromDayNr,&
                     GetGDDCDCTotal,&
                     GetGDDTadj,&
                     GetGDDayFraction,&
@@ -202,6 +241,7 @@ subroutine Ac71_main(n)
                     GetStressTot,&
                     GetSumGDD,&
                     GetSumGDDcuts,&
+                    GetSumGDDPrev,&
                     GetSumInterval,&
                     GetSumKcTop,&
                     GetSumKcTopStress,&
@@ -267,7 +307,12 @@ subroutine Ac71_main(n)
                     SetWeedRCi,&
                     SetZiprev,&
                     SetalfaHI,&
-                    SetalfaHIAdj               
+                    SetalfaHIAdj,&
+                    GetPlotVarCrop,&
+                    SetPlotVarCrop,&
+                    GetfWeedNoS,&
+                    SetfWeedNoS
+
     use ac_startunit, only: GetSimulation_NrRuns
 
     implicit none
@@ -282,6 +327,8 @@ subroutine Ac71_main(n)
     integer              :: row, col
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
+    real                 :: TminRun_i, TmaxRun_i
+    real                 :: sumGDD, sumGDD2
 
     integer              :: status, ierr
     integer              :: c,r,l
@@ -291,8 +338,12 @@ subroutine Ac71_main(n)
 
     !!! MB_AC71
     integer              :: daynr, todaynr, iproject, nprojects
-    logical              :: ListProjectFileExist
+    logical              :: ListProjectFileExist, phenological_stages_ensemble
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
+    integer              :: Crop_DaysToGermination, Crop_DaysToMaxRooting, Crop_DaysToFlowering
+    integer              :: Crop_DaysToHarvest, Crop_DaysTosenescence, Crop_DaysToCCini
+    integer              :: Crop_DaysToFullCanopy, Crop_DaysToFullCanopySF, Crop_DaysToHIo
+    integer(int32) :: temp1    
 
     !LB AC71
     integer              :: irr_record_flag, DNr ! for irri file management
@@ -340,13 +391,13 @@ subroutine Ac71_main(n)
             tmp_precip    = (AC71_struc(n)%ac71(t)%prcp / Ac71_struc(n)%forc_count) * 3600. * 24. !Convert from kg/ms2 to mm/d
 
             ! TMAX: maximum daily air temperature (degC)
-            tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - 273.15 !Convert from K to C
+            tmp_tmax      = AC71_struc(n)%ac71(t)%tmax - LIS_CONST_TKFRZ !Convert from K to C
 
             ! TMIN: minimum daily air temperature (degC)
-            tmp_tmin      = AC71_struc(n)%ac71(t)%tmin - 273.15 !Convert from K to C 
+            tmp_tmin      = AC71_struc(n)%ac71(t)%tmin - LIS_CONST_TKFRZ !Convert from K to C 
 
             ! TDEW: average daily dewpoint temperature (degC)
-            tmp_tdew      = (AC71_struc(n)%ac71(t)%tdew / AC71_struc(n)%forc_count) - 273.15 !Convert from K to C
+            tmp_tdew      = (AC71_struc(n)%ac71(t)%tdew / AC71_struc(n)%forc_count) - LIS_CONST_TKFRZ !Convert from K to C
 
             ! SW_RAD: daily total incoming solar radiation (MJ/(m2d))
             tmp_swrad     = (AC71_struc(n)%ac71(t)%swdown / AC71_struc(n)%forc_count) * 0.0864 !Convert from W/m2 to MJ/(m2d)
@@ -452,6 +503,8 @@ subroutine Ac71_main(n)
             call SetStressSFadjNEW(int(AC71_struc(n)%ac71(t)%StressSFadjNEW,kind=int32))
             call SetStressTot(AC71_struc(n)%ac71(t)%StressTot)
             call SetSumGDDcuts(REAL(AC71_struc(n)%ac71(t)%SumGDDcuts, 8))
+            call SetSumGDD(REAL(AC71_struc(n)%ac71(t)%SumGDD, 8))
+            call SetSumGDDPrev(REAL(AC71_struc(n)%ac71(t)%SumGDDPrev, 8))
             call SetSumInterval(AC71_struc(n)%ac71(t)%SumInterval)
             call SetSumKci(REAL(AC71_struc(n)%ac71(t)%SumKci, 8))
             call SetSumKcTopStress(REAL(AC71_struc(n)%ac71(t)%SumKcTopStress, 8))
@@ -464,6 +517,10 @@ subroutine Ac71_main(n)
             call SetTpot(REAL(AC71_struc(n)%ac71(t)%Tpot, 8))
             call SetWeedRCi(REAL(AC71_struc(n)%ac71(t)%WeedRCi, 8))
             call SetZiprev(REAL(AC71_struc(n)%ac71(t)%Ziprev, 8))
+            call SetfWeedNoS(REAL(AC71_struc(n)%ac71(t)%fWeedNoS, 8))
+
+            ! MB apparently needed for GDD runs
+            call SetPlotVarCrop(AC71_struc(n)%ac71(t)%PlotVarCrop)
 
             ! Set logicals global variables required in restart
             if(AC71_struc(n)%ac71(t)%NoMoreCrop.eq.1)then
@@ -516,7 +573,7 @@ subroutine Ac71_main(n)
             call SetPart2Eval(.false.)
             call SetPreDay(.true.) ! set to false in InitializeSettings
             call SetStartMode(.false.) ! Overwritten to .true. in InitalizeRunPart1
-            call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
+            !old, needed?: call SetSumGDDPrev(GetSimulation_SumGDD()) ! Make sure that Simulation is set before
 
             ! Optional vars -> for later implementations
             ! Groundwater (not tested in LIS)
@@ -544,6 +601,34 @@ subroutine Ac71_main(n)
 
 
 
+            call SetCrop_DaysToGermination(AC71_struc(n)%ac71(t)%Crop_DaysToGermination)
+            call SetCrop_DaysToFlowering(AC71_struc(n)%ac71(t)%Crop_DaysToFlowering)
+            call SetCrop_DaysToMaxRooting(AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting)
+            call SetCrop_DaysToSenescence(AC71_struc(n)%ac71(t)%Crop_DaysToSenescence)
+            call SetCrop_DaysToHarvest(AC71_struc(n)%ac71(t)%Crop_DaysToHarvest)
+            call SetCrop_DaysToCCini(AC71_struc(n)%ac71(t)%Crop_DaysToCCini)
+            call SetCrop_DaysToFullCanopy(AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopy)
+            call SetCrop_DaysToFullCanopySF(AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF)
+            call SetCrop_DaysToHIo(AC71_struc(n)%ac71(t)%Crop_DaysToHIo)
+
+            ! Set climate variables
+            call SetRain(real(tmp_precip,kind=dp))
+            call SetTmin(real(tmp_tmin,kind=dp))
+            call SetTmax(real(tmp_tmax,kind=dp))
+            call SetETo(real(tmp_eto,kind=dp))
+            
+            ! SumGDD calculation needed only for second day when not done within InitializeSimulationRunPart2
+            if (GetDayNri()>GetSimulation_FromDayNr()) then
+            !if (AC71_struc(n)%ac71(t)%InitializeRun.eq.0) then !make it flex
+            ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
+            call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
+                    GetTmax(), GetSimulParam_GDDMethod()))
+            if (GetDayNri() >= GetCrop_Day1()) then
+                call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
+                call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
+                    GetGDDayi())
+            end if
+            end if
             !!! initialize run (year)
 
             if (AC71_struc(n)%ac71(t)%InitializeRun.eq.1) then !make it flex
@@ -567,8 +652,10 @@ subroutine Ac71_main(n)
                 call set_project_input(AC71_struc(n)%ac71(t)%irun, &
                                        'Crop_Filename', &
                                         trim(AC71_struc(n)%ac71(t)%cropt)//'.CRO')
-                ! Set Global variable to pass T record to AquaCrop (Michel)
-                ! call Set....
+                ! Set Global variable to pass T record to AquaCrop
+                call SetTminRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmin_record)
+                call SetTmaxRun(AC71_struc(n)%Trecord(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%index)%Tmax_record)
+                ! InitializeRunPart1
                 call InitializeRunPart1(int(AC71_struc(n)%ac71(t)%irun,kind=int8), AC71_struc(n)%ac71(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC71_struc(n)%ac71(t)%HarvestNow = .false.
@@ -598,21 +685,65 @@ subroutine Ac71_main(n)
                 AC71_struc(n)%ac71(t)%InitializeRun = 0
             end if
 
-            ! Set climate variables then advanceonetimestep
-            call SetRain(real(tmp_precip,kind=dp))
-            call SetTmin(real(tmp_tmin,kind=dp))
-            call SetTmax(real(tmp_tmax,kind=dp))
-            call SetETo(real(tmp_eto,kind=dp))
-            ! Sum of GDD at end of first day ! Wait for GDD implementation from Michel
-            call SetGDDayi(DegreesDay(GetCrop_Tbase(), GetCrop_Tupper(), GetTmin(), &
-                    GetTmax(), GetSimulParam_GDDMethod()))
-            if (GetDayNri() >= GetCrop_Day1()) then
+            ! Initialize for new crop cycle
+
+            ! Reset Crop_DaysTo* to allow that members reach stages at different days
+            phenological_stages_ensemble = .false.
+
+            if (phenological_stages_ensemble) then
                 if (GetDayNri() == GetCrop_Day1()) then
-                    call SetSimulation_SumGDD(GetSimulation_SumGDD() + GetGDDayi())
+                !call setCrop_DayN(GetSimulation_ToDayNr())
+                AC71_struc(n)%ac71(t)%germ_reached = .false.
+                AC71_struc(n)%ac71(t)%harv_reached = .false.
+                AC71_struc(n)%ac71(t)%flowr_reached = .false.
+                AC71_struc(n)%ac71(t)%MaxR_reached = .false.
+                AC71_struc(n)%ac71(t)%Sene_reached = .false.
+                ! Initialize to end of the year but with one day difference 
+                ! due to internal AC if statements
+                !AC71_struc(n)%ac71(t)%Crop_DaysToGermination = 361
+                !AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = 362
+                !AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = 363
+                !AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = 364
+                !AC71_struc(n)%ac71(t)%Crop_DaysToHarvest= 365
+
+                !find calendar days for crop stages
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) .and.  (.not. AC71_struc(n)%ac71(t)%germ_reached)) then ! from sow
+                    AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%germ_reached = .true.
                 end if
-                call SetSimulation_SumGDDfromDay1(GetSimulation_SumGDDfromDay1() + &
-                    GetGDDayi())
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToMaxRooting()) .and. (.not. AC71_struc(n)%ac71(t)%maxR_reached)) then ! from sowin
+                    AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%maxR_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToFlowering()) .and.  (.not. AC71_struc(n)%ac71(t)%flowr_reached)) then ! from sowi
+                    AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%flowr_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToSenescence()) .and. (.not. AC71_struc(n)%ac71(t)%sene_reached)) then ! from sowin
+                    AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%sene_reached = .true.
+                end if
+                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToHarvest()) .and. (.not. AC71_struc(n)%ac71(t)%harv_reached)) then ! from sowing t
+                    AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetDayNri() - GetCrop_Day1()
+                    AC71_struc(n)%ac71(t)%harv_reached = .true.
+                end if
+                end if
             end if
+           
+            ! MB: tmp, just for debugging
+            sumGDD = GetSimulation_SumGDD()
+            sumGDD2 = GetSumGDD()
+           Crop_DaysToGermination = GetCrop_DaysToGermination()
+           Crop_DaysToMaxRooting =         GetCrop_DaysToMaxRooting()
+           Crop_DaysToFlowering =        GetCrop_DaysToFlowering()
+           Crop_DaysToHarvest =        GetCrop_DaysToHarvest()
+           Crop_DaysTosenescence =        GetCrop_DaysTosenescence()
+           Crop_DaysToCCini =         GetCrop_DaysToCCini()
+           Crop_DaysToFullCanopy =         GetCrop_DaysToFullCanopy()
+           Crop_DaysToFullCanopySF =         GetCrop_DaysToFullCanopySF()
+           Crop_DaysToHIo =         GetCrop_DaysToHIo()
+           temp1 = GetCrop_GDDaysToGermination()
+           temp1 = GetCrop_GDDaysToSenescence()
 
             ! Irrigation
             call SetIrriMode(AC71_struc(n)%ac71(t)%IrriMode)
@@ -664,6 +795,10 @@ subroutine Ac71_main(n)
             tmp_wpi = REAL(AC71_struc(n)%ac71(t)%WPi,8)
             call AdvanceOneTimeStep(tmp_wpi, AC71_struc(n)%ac71(t)%HarvestNow)
             AC71_struc(n)%ac71(t)%WPi = tmp_wpi
+            
+            ! MB: tmp, just for debugging
+            sumGDD = GetSimulation_SumGDD()
+            sumGDD2 = GetSumGDD()
 
             ! Close irri file if opened
             if(irr_record_flag.eq.1)then
@@ -674,6 +809,18 @@ subroutine Ac71_main(n)
             do l=1, AC71_struc(n)%ac71(t)%NrCompartments
                     AC71_struc(n)%ac71(t)%smc(l) = GetCompartment_theta(l)
             enddo
+            
+            ! MB likely not needed since done with AC71_struc(n)%ac71(t)%crop = GetCrop() ?
+            AC71_struc(n)%ac71(t)%Crop_DaysToGermination = GetCrop_DaysToGermination()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFlowering = GetCrop_DaysToFlowering()
+            AC71_struc(n)%ac71(t)%Crop_DaysToMaxRooting = GetCrop_DaysToMaxRooting()
+            AC71_struc(n)%ac71(t)%Crop_DaysToSenescence = GetCrop_DaysToSenescence()
+            AC71_struc(n)%ac71(t)%Crop_DaysToHarvest = GetCrop_DaysToHarvest()
+            AC71_struc(n)%ac71(t)%Crop_DaysToCCini = GetCrop_DaysToCCini()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopy = GetCrop_DaysToFullCanopy()
+            AC71_struc(n)%ac71(t)%Crop_DaysToFullCanopySF = GetCrop_DaysToFullCanopySF()
+            AC71_struc(n)%ac71(t)%Crop_DaysToHIo = GetCrop_DaysToHIo()
+            !
             AC71_struc(n)%ac71(t)%alfaHI = GetalfaHI()
             AC71_struc(n)%ac71(t)%alfaHIAdj = GetalfaHIAdj()
             AC71_struc(n)%ac71(t)%Bin = GetBin()
@@ -730,10 +877,13 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Soil = GetSoil()
             AC71_struc(n)%ac71(t)%SoilLayer = GetSoilLayer()
             AC71_struc(n)%ac71(t)%StressLeaf = GetStressLeaf()
+            AC71_struc(n)%ac71(t)%fWeedNoS = GetfWeedNoS()
             AC71_struc(n)%ac71(t)%StressSenescence = GetStressSenescence()
             AC71_struc(n)%ac71(t)%StressSFadjNEW = GetStressSFadjNEW()
             AC71_struc(n)%ac71(t)%StressTot = GetStressTot()
             AC71_struc(n)%ac71(t)%SumGDDcuts = GetSumGDDcuts()
+            AC71_struc(n)%ac71(t)%SumGDD = GetSumGDD()
+            AC71_struc(n)%ac71(t)%SumGDDPrev = GetSumGDDPrev()
             AC71_struc(n)%ac71(t)%SumInterval = GetSumInterval()
             AC71_struc(n)%ac71(t)%SumKci = GetSumKci()
             AC71_struc(n)%ac71(t)%SumKcTop = GetSumKcTop()
@@ -747,6 +897,9 @@ subroutine Ac71_main(n)
             AC71_struc(n)%ac71(t)%Tpot = GetTpot()
             AC71_struc(n)%ac71(t)%WeedRCi = GetWeedRCi()
             AC71_struc(n)%ac71(t)%Ziprev = GetZiprev()
+
+            ! MB: Apparently needed for GDD
+            AC71_struc(n)%ac71(t)%PlotVarCrop = GetPlotVarCrop()
 
             !logicals are stored as integers for restart file
             !NoMoreCrop
@@ -807,10 +960,10 @@ subroutine Ac71_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC71_struc(n)%ac71(t)%CCiActual,kind=sp), &
                                                 vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 11] output variable: AC71Tmin (unit=K).  *** daily minimum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin+273.15,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin+LIS_CONST_TKFRZ,kind=sp), &
                                     vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 12] output variable: AC71Tmax (unit=K).  *** daily maximum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax+273.15,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax+LIS_CONST_TKFRZ,kind=sp), &
                                     vlevel=1, unit="K", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 13] output variable: rainf (unit=kg m-2 s-1).  *** precipitation rate
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RAINF, value = real(tmp_precip/86400.,kind=sp), &

@@ -262,7 +262,16 @@ use ac_global , only: undef_int, &
                       setgroundwaterfile,&
                       setsimulation_surfacestorageini,&
                       translateinipointstoswprofile,&
-                      KsAny
+                      KsAny, &
+                      SetTminRun_i, &
+                      SetTminRun, &
+                      SetTmaxRun_i, &
+                      SetTmaxRun, &
+                      GetTminRun_i, &
+                      GetTminRun, &
+                      GetTmaxRun_i, &
+                      GetTmaxRun
+
 use ac_kinds,  only: dp, &
                      int8, &
                      int16, &
@@ -894,6 +903,32 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
             DayGDD = DegreesDay(Tbase, Tupper, &
                      TDayMin_local, TDayMax_local, GetSimulParam_GDDMethod())
             GDDays = roundc(ValPeriod * DayGDD, mold=1_int32)
+        else if (GetTemperatureFile() == '(External)') then
+            RemainingDays = ValPeriod
+            i = 1 
+            TDayMin_local = real(GetTminRun_i(i),kind=dp)
+            TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
+            DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
+                                        TDayMax_local, &
+                                        GetSimulParam_GDDMethod())
+            GDDays = GDDays + DayGDD
+            RemainingDays = RemainingDays - 1
+
+            do while ((RemainingDays > 0) &
+                        .and. (i<(GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
+                        i = i + 1
+                        TDayMin_local = real(GetTminRun_i(i),kind=dp)
+                        TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
+                        DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
+                                            TDayMax_local, &
+                                            GetSimulParam_GDDMethod())
+                        GDDays = GDDays + DayGDD
+                        RemainingDays = RemainingDays - 1
+            end do
+
+           if (RemainingDays > 0) then
+                 GDDays = undef_int
+           end if
         else
             ! temperature file
             DayNri = FirstDayPeriod
@@ -1064,6 +1099,33 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
             else
                 NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
             end if
+        else if (GetTemperatureFile() == '(External)') then
+            RemainingGDDays = ValGDDays
+            i = GetCrop_Day1()-GetSimulation_FromDayNr()+1
+            TDayMin_loc = real(GetTminRun_i(i),kind=dp)
+            TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
+            DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
+                                        TDayMax_loc, &
+                                        GetSimulParam_GDDMethod())
+            NrCDays = NrCDays + 1
+            RemainingGDDays = RemainingGDDays - DayGDD
+
+            do while ((RemainingGDDays > 0) &
+                           .and. (i < (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
+                  i = i + 1
+                  TDayMin_loc = real(GetTminRun_i(i),kind=dp)
+                  TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
+
+                  DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
+                                       TDayMax_loc, &
+                                       GetSimulParam_GDDMethod())
+                  NrCDays = NrCDays + 1
+                  RemainingGDDays = RemainingGDDays - DayGDD
+            end do
+
+            if (RemainingGDDays > 0) then
+                NrCDays = undef_int
+            end if
         else
             DayNri = FirstDayCrop
             if (FullUndefinedRecord(GetTemperatureRecord_FromY(), &
@@ -1219,6 +1281,22 @@ real(dp) function MaxAvailableGDD(FromDayNr, Tbase, Tupper, TDayMin, TDayMax)
         if (DayGDD <= epsilon(1._dp)) then
             MaxGDDays = 0._dp
         end if
+    else if (GetTemperatureFile() == '(External)') then
+        MaxGDDays = 0._dp
+        i = GetCrop_Day1()-GetSimulation_FromDayNr()+1
+        TDayMin = real(GetTminRun_i(i),kind=dp)
+        TDayMax = real(GetTmaxRun_i(i),kind=dp)
+        DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
+                                    GetSimulParam_GDDMethod())
+        MaxGDDays = MaxGDDays + DayGDD
+        do while (i < (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1))
+            i = i + 1
+            TDayMin = real(GetTminRun_i(i),kind=dp)
+            TDayMax = real(GetTmaxRun_i(i),kind=dp)
+            DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
+                                GetSimulParam_GDDMethod())
+            MaxGDDays = MaxGDDays + DayGDD
+        end do
     else
         MaxGDDays = 0._dp
         if (FullUndefinedRecord(GetTemperatureRecord_FromY(),&
@@ -1872,9 +1950,11 @@ subroutine TemperatureFileCoveringCropPeriod(CropFirstDay, CropLastDay)
 
         close(fhandle)
     else
-        write(*,*) 'ERROR: no valid air temperature file'
-        return
-        ! fatal error if no air temperature file
+        if (GetTemperatureFile() /= '(External)') then
+           write(*,*) 'ERROR: no valid air temperature file'
+           return
+           ! fatal error if no air temperature file
+        end if
     endif
 end subroutine TemperatureFileCoveringCropPeriod
 
@@ -1961,6 +2041,8 @@ subroutine LoadSimulationRunProject(NrRun)
     call SetSimulation_YearSeason(ProjectInput(NrRun)%Simulation_YearSeason)
     call SetCrop_Day1(ProjectInput(NrRun)%Crop_Day1)
     call SetCrop_DayN(ProjectInput(NrRun)%Crop_DayN)
+    call SetSimulation_FromDayNr(ProjectInput(NrRun)%Simulation_DayNr1)
+    call SetSimulation_ToDayNr(ProjectInput(NrRun)%Simulation_DayNrN)
 
     ! 1. Climate
     call SetClimateFile(ProjectInput(NrRun)%Climate_Filename)
@@ -2410,7 +2492,8 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
     integer(int32) :: GDDTadj, Tadj, DayCC, Dayi, StartStorage
 
     ! 1. Open Temperature file
-    if (GetTemperatureFile() /= '(None)') then
+    if ((GetTemperatureFile() /= '(None)') .and. &
+        (GetTemperatureFile() /= '(External)')) then
         open(newunit=fTemp, file=trim(GetPathNameSimul()//'TCrop.SIM'), &
              status='old', action='read', iostat=rc)
     end if
@@ -2473,12 +2556,17 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
     ! 4. Calculate Biomass
     do Dayi = 1, L1234
         ! 4.1 growing degrees for dayi
-        if (GetTemperatureFile() /= '(None)') then
+        if (GetTemperatureFile() == '(None)') then
+            GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
+                              GetSimulParam_GDDMethod())
+        elseif (GetTemperatureFile() == '(External)') then 
+            Tndayi = real(GetTminRun_i(Dayi),kind=dp)
+            Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
+            GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
+                                    GetSimulParam_GDDMethod())
+        else
             read(fTemp, *, iostat=rc) Tndayi, Txdayi
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
-                              GetSimulParam_GDDMethod())
-        else
-            GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                               GetSimulParam_GDDMethod())
         end if
         if (TheModeCycle == modeCycle_GDDays) then
@@ -2575,7 +2663,8 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
            end if
 
            ! 5. Close Temperature file
-           if (GetTemperatureFile() /= '(None)') then
+           if ((GetTemperatureFile() /= '(None)') .and. &
+               (GetTemperatureFile() /= '(External)')) then
                close(fTemp)
            end if
        end if
@@ -2679,7 +2768,8 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      end if
 
      ! 2. Open Temperature file
-     if (GetTemperatureFile() /= '(None)') then
+     if ((GetTemperatureFile() /= '(None)') .and. &
+         (GetTemperatureFile() /= '(External)')) then
          open(newunit=fTemp, file=trim(GetPathNameSimul()//'TCrop.SIM'), &
                       status='old', action='read', iostat=rc)
      end if
@@ -2751,12 +2841,17 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      ! 5. Calculate Bnormalized
      do Dayi = 1, L1234
          ! 5.1 growing degrees for dayi
-         if (GetTemperatureFile() /= '(None)') then
+         if (GetTemperatureFile() == '(None)') then
+             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax,&
+                               GetSimulParam_GDDMethod())
+         elseif (GetTemperatureFile() == '(External)') then 
+             Tndayi = real(GetTminRun_i(Dayi),kind=dp)
+             Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
+             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
+                                    GetSimulParam_GDDMethod())
+         else
              read(fTemp, *, iostat=rc) Tndayi, Txdayi
              GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi,&
-                               GetSimulParam_GDDMethod())
-         else
-             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax,&
                                GetSimulParam_GDDMethod())
          end if
          if (TheModeCycle == modeCycle_GDDays) then
@@ -2938,7 +3033,8 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      enddo
 
      ! 4. Close Temperature file
-     if (GetTemperatureFile() /= '(None)') then
+     if ((GetTemperatureFile() /= '(None)') .and. &
+         (GetTemperatureFile() /= '(External)')) then
          close(fTemp)
      end if
 

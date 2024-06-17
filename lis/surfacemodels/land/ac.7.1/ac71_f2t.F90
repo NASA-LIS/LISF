@@ -245,7 +245,7 @@ subroutine Ac71_f2t(n)
 
         val = log(ee/611.2)
         td = (243.5 * val) / (17.67 - val) ! Dewpoint in C
-        td = td + 273.15
+        td = td + LIS_CONST_TKFRZ
         AC71_struc(n)%ac71(t)%tdew = AC71_struc(n)%ac71(t)%tdew + td 
 
     enddo
