@@ -136,15 +136,21 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
           yyyy,mm,dd,hh, &
           SMOPS_ASCATsm_struc(n)%conv, fname)
 
-     inquire(file=fname,exist=file_exists)
+     ! EMK...Handle case where no SMOPS v4 files are available
+     if (fname /= 'NULL') then
+        inquire(file=fname,exist=file_exists)
 
-     if(file_exists) then
-        write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-        call read_SMOPS_ASCAT_data(n,k,fname,smobs,smtime)
+        if(file_exists) then
+           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           call read_SMOPS_ASCAT_data(n,k,fname,smobs,smtime)
+        else
+           write(LIS_logunit,*) '[WARN] Missing SMOPS ASCATsm', &
+                trim(fname)
+        endif
      else
-        write(LIS_logunit,*) '[WARN] Missing SMOPS ',trim(fname)
-     endif
-     
+        write(LIS_logunit,*) '[WARN] No SMOPS ASCATsm file found'
+     end if
+
      SMOPS_ASCATsm_struc(n)%smobs  = LIS_rc%udef
      SMOPS_ASCATsm_struc(n)%smtime = -1
 
@@ -1170,7 +1176,7 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
             ! NPR-SMOPS-CMAP-6hrly_v4r0_blend_s202404250600000_e202404251159599_c202404251440470.grib2
             !filename = trim(ndir)//'/'//'/NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
             !  //trim(yyyymmdd)//'00000_e'//trim(yyyymmdd)//'*_c'//trim(yyyymmdd)//'*.grib2'
-
+           filename = 'NULL' ! EMK Initialize
            if (LIS_masterproc) then
                list_files = trim(ndir)//'/'//'NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
                  //trim(yyyymmdd)//trim(fhr)//'*.grib2'
@@ -1200,8 +1206,8 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
               if(ierr.ne.0) then
                  exit
               endif
-              !write(LIS_logunit,*) '[INFO] reading ',trim(filename)
            enddo
+           !write(LIS_logunit,*) '[INFO] Will read  ',trim(filename)
            call LIS_releaseUnitNumber(ftn)
         else
            filename = trim(ndir)//'/smops_d' &
