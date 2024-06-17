@@ -35,6 +35,14 @@ subroutine Ac71_readrst()
     use netcdf
 #endif
 
+! AC modules
+    use ac_global,  only: IrriMode_Generate, &
+                          IrriMode_Inet, &
+                          IrriMode_Manual, &
+                          IrriMode_NoIrri, &
+                          undef_int
+    use ac_run,     only: fIrri_open, fIrri_close, &
+                          fIrri_read, fIrri_eof
 !
 ! !DESCRIPTION:
 !  This program reads restart files for Ac71.  This
@@ -65,6 +73,12 @@ subroutine Ac71_readrst()
     real*8            :: time
     real              :: gmt
     real              :: ts
+
+    !LB for irrigation rst
+    integer           :: i, FromDay_temp, TimeInfo_temp, &
+                         DepthInfo_temp, DNr
+    character*200     :: TempStr
+    real              :: IrriEcw_temp
 
 
     do n=1, LIS_rc%nnest
@@ -619,6 +633,91 @@ subroutine Ac71_readrst()
 #endif
             endif
             deallocate(tmptilen)
+
+            ! Get irrigation file line number from DayNri
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                if(AC71_struc(n)%ac71(t)%IrriMode.ne.IrriMode_NoIrri) then
+                    ! For IrriMode_Generate and IrriMode_Manual
+                    if(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Generate) then
+                        ! Initial LN
+                        if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo)then
+                            AC71_struc(n)%ac71(t)%irri_lnr = 11
+                        else
+                            AC71_struc(n)%ac71(t)%irri_lnr = 12
+                            ! re-open irrigation file and read first lines
+                            call fIrri_open(trim(AC71_struc(n)%PathNameSimul)&
+                                            //trim(AC71_struc(n)%Irrigation_Filename), 'r')
+                            do i=1,AC71_struc(n)%ac71(t)%irri_lnr
+                                TempStr = fIrri_read()
+                            enddo
+                            ! Check if we passed the first record
+                            do while ((AC71_struc(n)%ac71(t)%daynri-AC71_struc(n)%ac71(t)%Crop%Day1+1)&
+                            .gt.AC71_struc(n)%ac71(t)%IrriInfoRecord1%ToDay+1) ! +1 because let the main read
+                                ! Read next record
+                                TempStr = fIrri_read()
+                                ! Extract info (copied and adpated from run.f90, GetIrriParam)
+                                if (fIrri_eof()) then
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord1%ToDay = &
+                                            AC71_struc(n)%ac71(t)%Crop%DayN - &
+                                            AC71_struc(n)%ac71(t)%Crop%Day1 + 1
+                                else
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%NoMoreInfo = .false.
+                                    read(TempStr,*) FromDay_temp, &
+                                    TimeInfo_temp, DepthInfo_temp
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%FromDay = FromDay_temp
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%TimeInfo = TimeInfo_temp
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%DepthInfo = DepthInfo_temp
+                                    AC71_struc(n)%ac71(t)%Simulation%IrriEcw = IrriEcw_temp
+                                end if
+                                AC71_struc(n)%ac71(t)%irri_lnr = AC71_struc(n)%ac71(t)%irri_lnr + 1 ! extra record has been read
+                            enddo
+                        endif
+                    elseif(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Manual) then
+                        ! Initial LN
+                        if(AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo)then
+                            AC71_struc(n)%ac71(t)%irri_lnr = 9
+                        else
+                            AC71_struc(n)%ac71(t)%irri_lnr = 10
+                            ! re-open irrigation file and read the firts lines
+                            call fIrri_open(trim(AC71_struc(n)%PathNameSimul)&
+                                            //trim(AC71_struc(n)%Irrigation_Filename), 'r')
+                            do i=1,AC71_struc(n)%ac71(t)%irri_lnr
+                                TempStr = fIrri_read()
+                            enddo
+                            ! Check if we passed the first record
+                            ! Check start date of schedule
+                            if(AC71_struc(n)%ac71(t)%IrriFirstDayNr.eq.undef_int)then
+                                DNr = AC71_struc(n)%ac71(t)%daynri &
+                                    - AC71_struc(n)%ac71(t)%Crop%Day1 + 1
+                            else
+                                DNr = AC71_struc(n)%ac71(t)%daynri &
+                                    - AC71_struc(n)%ac71(t)%IrriFirstDayNr + 1
+                            endif
+                            do while (DNr.lt.AC71_struc(n)%ac71(t)%IrriInfoRecord1%TimeInfo)
+                                ! Read next record
+                                TempStr = fIrri_read()
+                                ! Extract info (copied and adpated from run.f90, IrriManual)
+                                if (fIrri_eof()) then
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo = .true.
+                                else
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord1%NoMoreInfo = .false.
+                                    read(TempStr,*) TimeInfo_temp, DepthInfo_temp
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%TimeInfo = TimeInfo_temp
+                                    AC71_struc(n)%ac71(t)%IrriInfoRecord2%DepthInfo = DepthInfo_temp
+                                    AC71_struc(n)%ac71(t)%Simulation%IrriEcw = IrriEcw_temp
+                                endif
+                                AC71_struc(n)%ac71(t)%irri_lnr = AC71_struc(n)%ac71(t)%irri_lnr + 1 ! extra record has been read
+                            enddo
+                        endif
+                    elseif(AC71_struc(n)%ac71(t)%IrriMode.eq.IrriMode_Inet) then
+                        AC71_struc(n)%ac71(t)%irri_lnr = 0 !Inet mode
+                    endif
+                    ! end irrigation method
+                    call fIrri_close() ! close irrigation file
+                endif
+                ! end check if irrigated
+            enddo
+            ! end tile
         endif
     enddo
 end subroutine Ac71_readrst

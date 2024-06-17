@@ -20,7 +20,6 @@ module sprinkler_irrigationMod
 !  11 Nov 2012: Sujay Kumar; Initial implementation
 !  25 Feb 2020: Jessica Erlingis; Update irrigation window
 !  14 Apr 2021: Wanshu Nie; Add support for GW/SW irrigation partitioning
-!  18 Apr 2024: Louise Busschaert; couple with AquaCrop.7.1
 ! !USES: 
   use ESMF
   use LIS_coreMod
@@ -65,117 +64,113 @@ contains
 
        write(LIS_logunit,*) "[INFO] Running the 'Sprinkler' irrigation method ... "
 
-      call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
+     ! Read irrigation fraction (or "intensity") input:
+       call read_irrigFrac(n, irrigFrac)
+       call read_irriggwratio(n,irriggwratio)
+
+     ! Read crop type maximum root depth file (combined landcover/crop classifications):
+       call ESMF_ConfigGetAttribute(LIS_config,maxrootdepthfile,&
+            label="Sprinkler irrigation max root depth file:",&
+            rc=rc)
+       call LIS_verify(rc,&
+            'Sprinkler irrigation max root depth file: option not specified in the config file')
+
+       call read_irrigRootdepth( n, maxrootdepthfile, irrigRootDepth )
+
+     ! Calculate irrigation scale:
+       call compute_irrigScale(n, irrigFrac, irrigScale)
+
+       call ESMF_ArraySpecSet(arrspec1,rank=1,typekind=ESMF_TYPEKIND_R4,&
             rc=status)
-      call LIS_verify(status, &
+       call LIS_verify(status, &
             "ESMF_ArraySpecSet failed in sprinkler_irrigation_init")
 
-      irrigRateField = ESMF_FieldCreate(&
+       irrigRateField = ESMF_FieldCreate(&
             grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
             arrayspec=arrspec1,&
             name="Irrigation rate", rc=status)
-      call LIS_verify(status, &
+       call LIS_verify(status, &
             "ESMF_FieldCreate failed in sprinkler_irrigation_init")
 
-      call ESMF_FieldGet(irrigRateField,localDE=0,&
+       call ESMF_FieldGet(irrigRateField,localDE=0,&
             farrayPtr=irrigrate,rc=status)
-      call LIS_verify(status,'ESMF_FieldGet failed for irrigrate ')
-      irrigrate = 0.0
+       call LIS_verify(status,'ESMF_FieldGet failed for irrigrate ')
+       irrigrate = 0.0
 
-      call ESMF_StateAdd(irrigState(n),(/irrigRateField/),rc=status)
-      call LIS_verify(status,&
+       call ESMF_StateAdd(irrigState(n),(/irrigRateField/),rc=status)
+       call LIS_verify(status,&
             "ESMF_StateAdd for irrigRate failed in sprinkler_irrigation_init")
 
+       irrigFracField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Irrigation frac", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in sprinkler_irrigation_init")
 
-       if(.not.(LIS_rc%lsm.eq."AquaCrop.7.1")) then
+       call ESMF_FieldGet(irrigFracField,localDE=0,&
+            farrayPtr=frac,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for IrrigFrac')
+       
+       frac = irrigFrac
 
-         ! Read irrigation fraction (or "intensity") input:
-            call read_irrigFrac(n, irrigFrac)
-            call read_irriggwratio(n,irriggwratio)
+       call ESMF_StateAdd(irrigState(n),(/irrigFracField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for irrigFrac failed in sprinkler_irrigation_init")
+       deallocate(irrigFrac)
 
-         ! Read crop type maximum root depth file (combined landcover/crop classifications):
-            call ESMF_ConfigGetAttribute(LIS_config,maxrootdepthfile,&
-                  label="Sprinkler irrigation max root depth file:",&
-                  rc=rc)
-            call LIS_verify(rc,&
-                  'Sprinkler irrigation max root depth file: option not specified in the config file')
+       irriggwratioField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Groundwater irrigation ratio", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in sprinkler_irrigation_init")
 
-            call read_irrigRootdepth( n, maxrootdepthfile, irrigRootDepth )
+       call ESMF_FieldGet(irriggwratioField,localDE=0,&
+            farrayPtr=gwratio,rc=status)
+       call LIS_verify(status,'ESMF_FieldGet failed for irriggwratio')
 
-         ! Calculate irrigation scale:
-            call compute_irrigScale(n, irrigFrac, irrigScale)
+       gwratio = irriggwratio
 
-            irrigFracField = ESMF_FieldCreate(&
-                  grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
-                  arrayspec=arrspec1,&
-                  name="Irrigation frac", rc=status)
-            call LIS_verify(status, &
-                  "ESMF_FieldCreate failed in sprinkler_irrigation_init")
+       call ESMF_StateAdd(irrigState(n),(/irriggwratioField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for irriggwratio failed in sprinkler_irrigation_init")
+       deallocate(irriggwratio)
 
-            call ESMF_FieldGet(irrigFracField,localDE=0,&
-                  farrayPtr=frac,rc=status)
-            call LIS_verify(status,'ESMF_FieldGet failed for IrrigFrac')
-            
-            frac = irrigFrac
+       irrigRootdepthField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Irrigation max root depth", rc=status)
+       call LIS_verify(status, &
+            "ESMF_FieldCreate failed in sprinkler_irrigation_init")
 
-            call ESMF_StateAdd(irrigState(n),(/irrigFracField/),rc=status)
-            call LIS_verify(status,&
-                  "ESMF_StateAdd for irrigFrac failed in sprinkler_irrigation_init")
-            deallocate(irrigFrac)
+       call ESMF_FieldGet(irrigRootdepthField,localDE=0,&
+            farrayPtr=rootdepth,rc=status)
+       call LIS_verify(status, 'ESMF_FieldGet failed for root depth')
+       rootdepth=irrigRootDepth
+       
+       call ESMF_StateAdd(irrigState(n),(/irrigRootdepthField/),rc=status)
+       call LIS_verify(status,&
+            "ESMF_StateAdd for max root depth failed in sprinkler_irrigation_init")
+       deallocate(irrigRootDepth)
 
-            irriggwratioField = ESMF_FieldCreate(&
-                  grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
-                  arrayspec=arrspec1,&
-                  name="Groundwater irrigation ratio", rc=status)
-            call LIS_verify(status, &
-                  "ESMF_FieldCreate failed in sprinkler_irrigation_init")
+       irrigScaleField = ESMF_FieldCreate(&
+            grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
+            arrayspec=arrspec1,&
+            name="Irrigation scale",rc=status)
+       call LIS_verify(status, &
+            'ESMF_FieldCreate failed in sprinkler_irrigation_init')
+       
+       call ESMF_FieldGet(irrigScaleField,localDE=0,&
+            farrayPtr = scale,rc=status)
+       call LIS_verify(status, 'ESMF_FieldGet failed for irrigation scale')
 
-            call ESMF_FieldGet(irriggwratioField,localDE=0,&
-                  farrayPtr=gwratio,rc=status)
-            call LIS_verify(status,'ESMF_FieldGet failed for irriggwratio')
-
-            gwratio = irriggwratio
-
-            call ESMF_StateAdd(irrigState(n),(/irriggwratioField/),rc=status)
-            call LIS_verify(status,&
-                  "ESMF_StateAdd for irriggwratio failed in sprinkler_irrigation_init")
-            deallocate(irriggwratio)
-
-            irrigRootdepthField = ESMF_FieldCreate(&
-                  grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
-                  arrayspec=arrspec1,&
-                  name="Irrigation max root depth", rc=status)
-            call LIS_verify(status, &
-                  "ESMF_FieldCreate failed in sprinkler_irrigation_init")
-
-            call ESMF_FieldGet(irrigRootdepthField,localDE=0,&
-                  farrayPtr=rootdepth,rc=status)
-            call LIS_verify(status, 'ESMF_FieldGet failed for root depth')
-            rootdepth=irrigRootDepth
-            
-            call ESMF_StateAdd(irrigState(n),(/irrigRootdepthField/),rc=status)
-            call LIS_verify(status,&
-                  "ESMF_StateAdd for max root depth failed in sprinkler_irrigation_init")
-            deallocate(irrigRootDepth)
-
-            irrigScaleField = ESMF_FieldCreate(&
-                  grid=LIS_vecPatch(n,LIS_rc%lsm_index),&
-                  arrayspec=arrspec1,&
-                  name="Irrigation scale",rc=status)
-            call LIS_verify(status, &
-                  'ESMF_FieldCreate failed in sprinkler_irrigation_init')
-            
-            call ESMF_FieldGet(irrigScaleField,localDE=0,&
-                  farrayPtr = scale,rc=status)
-            call LIS_verify(status, 'ESMF_FieldGet failed for irrigation scale')
-
-            scale = irrigScale
-            call ESMF_StateAdd(irrigState(n),(/irrigScaleField/),rc=status)
-            call LIS_verify(status,&
-                  'ESMF_StateAdd for irrigation scale failed in sprinkler_irrigation_init')
-            deallocate(irrigScale)
-      endif
-   enddo
+       scale = irrigScale
+       call ESMF_StateAdd(irrigState(n),(/irrigScaleField/),rc=status)
+       call LIS_verify(status,&
+            'ESMF_StateAdd for irrigation scale failed in sprinkler_irrigation_init')
+       deallocate(irrigScale)
+    enddo
 
   end subroutine sprinkler_irrigation_init
   
@@ -251,9 +246,7 @@ contains
        if(lhr.lt.0) lhr = lhr+24
        
        ltime = real(lhr)+real(LIS_rc%mn)/60.0+real(LIS_rc%ss)/3600.0
-       if (LIS_rc%lsm .eq. 'AquaCrop.7.1') then
-          irrigAmt(t) = irrigRate(t)
-       elseif((ltime.ge.shift_otimes).and.(ltime.lt.shift_otimee)) then       
+       if((ltime.ge.shift_otimes).and.(ltime.lt.shift_otimee)) then           
           tmpval = LIS_domain(n)%tile(t)%index
           prcp(t)=prcp(t)+irrigRate(t)
           irrigAmt(t) = irrigRate(t)

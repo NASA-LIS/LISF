@@ -84,13 +84,19 @@ module Ac71_module
     integer(int32) :: DaySubmerged
     integer(int32) :: GDDTadj
     integer(int32) :: InitializeRun
+    integer(int32) :: IrriFirstDayNr
     integer(int32) :: NrCompartments
     integer(int32) :: SumInterval
     integer(int32) :: Tadj
     integer        :: PreviousStressLevel
     integer        :: StressSFadjNEW
-    integer       :: irun
-    integer       :: NoMoreCrop
+    integer        :: irri_lnr ! Irrigation file line number
+    integer        :: irun
+    integer        :: NoMoreCrop
+    integer(intEnum) :: GenerateDepthMode
+    integer(intEnum) :: GenerateTimeMode
+    integer(intEnum) :: IrriMethod
+    integer(intEnum) :: IrriMode
     integer(intEnum) :: TheProjectType
     integer        :: Crop_DaysToGermination
     integer        :: Crop_DaysToMaxRooting
@@ -182,6 +188,7 @@ module Ac71_module
     type(rep_DayEventInt), dimension(5) :: IrriBeforeSeason
     type(rep_Manag) :: Management
     type(rep_sim) :: Simulation
+    type(rep_param) :: SimulParam
     type(rep_soil) :: Soil
     type(rep_StressTot) :: StressTot
     type(rep_sum) :: SumWaBal
