@@ -12,6 +12,9 @@
 !                             The routine is based on Sarith Mahanama's 
 !                             ReadProcess_MIRCA 
 !                             section of preprocess_irrig.F90
+!  7   May 2024: H Beaudoing; Modified plantday assignment to use both
+!                             irrigated and rainfed crop fractions when
+!                             using numcrop=26 (irrigated tiling)
 !
 ! !INTERFACE:
 
@@ -160,6 +163,9 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
                                  rainfedplant, rainfedharvest )
 
     if ( LDT_rc%numcrop(n) .eq. 26 ) then    ! irrigated crops
+      !-- redo reading in and adjust plant and harvest dates
+      call modifyirrigcalendar( n, tempfilei, tempfiler, cropcaflag, &
+                                 irrigplant, irrigharvest )
       ! croptype_frac array (lnc,lnr,26)
       do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
@@ -194,7 +200,7 @@ subroutine read_MIRCA2000_croptype(n,num_types,fgrd)
            endif
         enddo
       enddo
-     else if ( LDT_rc%numcrop(n) .eq. 52 ) then   ! irrigated & rainfed crops
+    else if ( LDT_rc%numcrop(n) .eq. 52 ) then   ! irrigated & rainfed crops
      ! croptype_frac array (lnc,lnr,52)
       do r = 1, LDT_rc%lnr(n)
         do c = 1, LDT_rc%lnc(n)
@@ -731,5 +737,237 @@ end subroutine read_MIRCA2000_croptype
   end do ! r
 
  end subroutine getplantharvest2mc
+
+ subroutine modifyirrigcalendar( n, tempfilei, tempfiler, cropcaflag, plantday, harvestday )
+! Special routine for Rice crop type. Because irrigated paddy is irrigated strictly
+! based on the plant and harvest dates, we need to blend in irrigated and rainfed
+! monthly variation to reflect multiple cropping where irrigated and rainfed happends
+! in the same grid.
+! This routine is called only with 26 crop tiling (irrigated crops), not with 52 crops
+! (irrigated + rainfed crops).
+                                  
+! !USES:
+    use LDT_coreMod
+    use LDT_gridmappingMod
+    use LDT_paramTileInputMod
+    use LDT_LSMCropModifier_Mod
+    use LDT_fileIOMod
+    use LDT_logMod
+
+    implicit none
+! !ARGUMENTS:
+   integer,       intent(in) :: n
+   character(140),intent(in) :: tempfilei,tempfiler
+   logical,       intent(in) :: cropcaflag
+   real,intent(inout) :: plantday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax)
+   real,intent(inout) :: harvestday(LDT_rc%lnc(n),LDT_rc%lnr(n),LDT_LSMCrop_struc(n)%multicroppingmax)
+
+! MIRCA2000 monthly_growing_area_grids crop area map (5 arcmin):
+   integer, parameter :: IN_cols = 4320
+   integer, parameter :: IN_rows = 2160
+   real,    parameter :: IN_xres = 1.0/12.0 ! or 360deg/4320 col points
+   real,    parameter :: IN_yres = 1.0/12.0 ! or 180deg/2160 row points
+   real, parameter    :: PI = 3.1415926535898
+   real, parameter    :: radius = 6371.0 ! [km]
+
+   integer :: glpnc, glpnr             ! Parameter (global) total columns and rows
+   integer :: subpnc, subpnr           ! Parameter subsetted columns and rows
+   real    :: param_gridDesc(20)       ! Input parameter grid desc fgrd
+   real    :: subparam_gridDesc(20)    ! Input parameter grid desc array
+   integer, allocatable  :: lat_line(:,:), lon_line(:,:)
+
+   logical :: file_exists
+   integer :: ftn, ierr, nrec, ios 
+   integer :: i, j, t, c, r, m, nc, nr
+   integer :: mi                       ! Total number of input param grid array points
+   integer :: mo                       ! Total number of output LIS grid array points
+
+   real, allocatable :: var_read(:)           ! Read in parameter
+   real, allocatable :: var_in_i(:,:,:)         ! Read in parameter
+   real, allocatable :: var_in_r(:,:,:)         ! Read in parameter
+
+   real              :: latc, lonc, area, d2r
+! crop calendar varibles
+   integer :: mc   ! crop seasons-- hard-coded to two for now
+   integer :: mci
+   real,    allocatable  :: gi1p(:)   ! Input parameter 1d grid
+   logical*1,allocatable :: li1p(:)   ! Input logical mask (to match gi)
+   real      :: var_out(LDT_rc%lnc(n),LDT_rc%lnr(n),12)  ! 12-mon croptype frac
+   real      :: go1p(LDT_rc%lnc(n)*LDT_rc%lnr(n))        ! Output lis 1d grid
+   logical*1 :: lo1p(LDT_rc%lnc(n)*LDT_rc%lnr(n))        ! Output logical mask (to match go)
+
+!_____________________________________________________________________________
+!- Set parameter grid array inputs:
+   LDT_LSMCrop_struc(n)%crop_proj = "latlon"
+   param_gridDesc(1)  = 0.          ! Latlon
+   param_gridDesc(2)  = IN_cols
+   param_gridDesc(3)  = IN_rows
+   param_gridDesc(4)  = -90.0  + (IN_yres/2) ! LL lat
+   param_gridDesc(5)  = -180.0 + (IN_xres/2) ! LL lon
+   param_gridDesc(6)  = 128
+   param_gridDesc(7)  =  90.0 - (IN_yres/2)  ! UR lat
+   param_gridDesc(8)  = 180.0 - (IN_xres/2)  ! UR lon
+   param_gridDesc(9)  = IN_yres     ! dy: 0.083333
+   param_gridDesc(10) = IN_xres     ! dx: 0.083333
+   param_gridDesc(20) = 64
+
+!- Map Parameter Grid Info to LIS Target Grid/Projection/Subset Info:
+   subparam_gridDesc = 0.
+   call LDT_RunDomainPts( n, LDT_LSMCrop_struc(n)%crop_proj, &
+        param_gridDesc, glpnc, glpnr, subpnc, subpnr, &
+        subparam_gridDesc, lat_line, lon_line )
+
+
+!- Perform check on grid and projection choices selected:
+   if( LDT_rc%lis_map_proj(n) == "latlon"  ) then 
+     if( param_gridDesc(10) .gt. (LDT_rc%gridDesc(n,9)/LDT_rc%lis_map_resfactor(n))) then
+        write(LDT_logunit,*) "[ERR] 'Native' MIRCA2000 crop files have been selected, "
+        write(LDT_logunit,*) "    with a resolution (0.0833deg), but the LIS run domain resolution"
+        write(LDT_logunit,*) "    selected is finer than that. Downscaling crop type information is "
+        write(LDT_logunit,*) "    currently not supported in LDT."
+        write(LDT_logunit,*) "Program stopping ..."
+        call LDT_endrun
+     endif
+   else
+    write(LDT_logunit,*) "[ERR] projection other than latlon is not supported "
+    write(LDT_logunit,*) " due to only UpscaleByAveraging transformation "
+    write(LDT_logunit,*) " is appropriate for MIRCA2000 crop map "
+    write(LDT_logunit,*) "Program stopping ..."
+    call LDT_endrun
+   endif
+
+   if( allocated(var_read) ) then
+       deallocate(var_read)
+   endif
+   mc = LDT_LSMCrop_struc(n)%multicroppingmax
+   allocate( var_read(IN_cols*12) )
+   allocate( var_in_i(subpnc,subpnr,12) )
+   allocate( var_in_r(subpnc,subpnr,12) )
+!
+!  READ IN MIRCA2000 CROP IRRIGATED AREA FIELDS 
+!
+   ftn = LDT_getNextUnitNumber()
+   open(ftn, file=trim(tempfilei),status='old',form='unformatted',&
+        access='direct',convert='little_endian',recl=4*IN_cols*12,iostat=ios)
+!- Reverse-Y and read in 12-month values and subset
+   nrec = 0
+   do nr=subpnr, 1, -1
+    nrec = IN_rows - lat_line(1,nr) + 1
+    read(ftn,rec=nrec) var_read
+    do nc = 1, subpnc
+      do m = 1, 12
+        var_in_i(nc,nr,m) = var_read((lon_line(nc,1)-1)*12 + m)
+      end do
+    end do
+   end do
+
+!  READ IN MIRCA2000 CROP RAINFED AREA FIELDS 
+!
+   ftn = LDT_getNextUnitNumber()
+   open(ftn, file=trim(tempfiler),status='old',form='unformatted',&
+        access='direct',convert='little_endian',recl=4*IN_cols*12,iostat=ios)
+!- Reverse-Y and read in 12-month values and subset
+   nrec = 0
+   do nr=subpnr, 1, -1
+    nrec = IN_rows - lat_line(1,nr) + 1
+    read(ftn,rec=nrec) var_read
+    do nc = 1, subpnc
+      do m = 1, 12
+        var_in_r(nc,nr,m) = var_read((lon_line(nc,1)-1)*12 + m)
+      end do
+    end do
+   end do
+
+   deallocate( var_read )
+   call LDT_releaseUnitNumber(ftn)
+
+   write(LDT_logunit,*) "[INFO] Done reading MIRCA2000 Rice data"
+
+! -------------------------------------------------------------------
+!     AGGREGATING FINE-SCALE GRIDS TO COARSER LIS OUTPUT GRID
+! -------------------------------------------------------------------
+    mi = subpnc*subpnr
+    mo = LDT_rc%lnc(n)*LDT_rc%lnr(n)
+
+ !- Upscale routine:
+    select case ( LDT_LSMCrop_struc(n)%crop_gridtransform )
+
+   !- Single layer transformation:
+      case( "none", "average", "neighbor", "bilinear", "budget-bilinear" )
+
+! HKB: save monthly fraction for CROPCALENDAR in_plantday/in_harvestday 
+!      upscale/downscale using the same options as in croptypefrac
+      !- Assign 2-D array to 1-D for aggregation routines:
+      allocate( gi1p(mi), li1p(mi) )
+      do m = 1, 12
+        lo1p = .false.;  go1p = 0.
+        li1p = .false.
+        i = 0
+        do nr = 1, subpnr
+           do nc = 1, subpnc
+              i = i + 1
+              if ( maxval(var_in_i(nc,nr,:)) > 0 ) then
+               !HKB reset irrigated area to zero if rainfed > irrigated
+               if ( var_in_r(nc,nr,m) > var_in_i(nc,nr,m) ) then
+                   gi1p(i) = 0.
+               else
+                   gi1p(i) = var_in_i(nc,nr,m)
+               endif
+              else
+               gi1p(i) = LDT_rc%udef
+              endif
+              if( gi1p(i) < 0. ) gi1p(i) = LDT_rc%udef
+              if( gi1p(i) .ne. LDT_rc%udef )  li1p(i) = .true.
+           enddo
+        enddo
+        !- Transform parameter from original grid to LIS output grid:
+        call LDT_transform_paramgrid(n, LDT_LSMCrop_struc(n)%crop_gridtransform, &
+                  subparam_gridDesc, mi, 1, gi1p, li1p, mo, go1p, lo1p )
+
+        !- Convert 1D t o 2D grid arrays and units from area (Ha) to fraction
+        d2r = PI/180.
+        j = 0
+        do r = 1, LDT_rc%lnr(n)
+          latc = (r-1) * LDT_rc%gridDesc(n,9) + LDT_rc%gridDesc(n,4)
+          area = (sin(d2r*(latc+0.5*LDT_rc%gridDesc(n,9))) - sin(d2r*(latc-0.5*LDT_rc%gridDesc(n,9))))*(LDT_rc%gridDesc(n,10)*d2r)
+          area = 100. * area * radius * radius ! in hectares as in MIRCA
+          do c = 1, LDT_rc%lnc(n)
+             j = j + 1
+             if ( go1p(j) < 0. ) then
+               var_out(c,r,m) = LDT_rc%udef
+             else
+               var_out(c,r,m) = go1p(j)/area
+             endif
+             if ( var_out(c,r,m) < 0. ) var_out(c,r,m) = LDT_rc%udef
+             if ( var_out(c,r,m) > 100. ) var_out(c,r,m) = LDT_rc%udef
+          enddo  ! c 
+        enddo  ! r 
+      enddo  ! m
+      deallocate(gi1p, li1p)
+
+     case default
+       write(*,*)"[ERR] Other spatial grid transformations are not currently supported"
+       write(*,*)"   for the tiled 'MIRCA2000' crop type maps. Please select either:"
+       write(*,*)"  -- neighbor, bilinear, budget-bilinear (to downscale)"
+       write(*,*)"  -- average (to upscale) or none"
+       write(*,*)" Stopping program ..."
+       call LDT_endrun
+
+    end select  ! End vegtype/cnt aggregation method
+! -------------------------------------------------------------------
+!HKB: compute crop planting/harvesting days here with "var_out"
+!     (lnc,lnr,12), per crop with 2 seasons
+! -------------------------------------------------------------------
+    if ( cropcaflag ) then
+     call getplantharvest2mc(mc,LDT_rc%lnc(n),LDT_rc%lnr(n),var_out, &
+                            plantday,harvestday)
+    else
+     plantday = LDT_rc%udef
+     harvestday = LDT_rc%udef
+    endif
+    deallocate( lat_line, lon_line )
+    deallocate( var_in_i,var_in_r )
+
+ end subroutine modifyirrigcalendar
 
 end module MIRCA2000_crops_module

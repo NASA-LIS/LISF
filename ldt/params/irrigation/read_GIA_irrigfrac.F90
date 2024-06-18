@@ -310,10 +310,6 @@
 
   write(LDT_logunit,fmt=*) "[INFO] Done reading GIA irrigation gridcell fractions"
 
-!Hiroko: for point data, force irrigfrac 100%
-!   fgrd = 100.
-!  write(LDT_logunit,fmt=*) "[INFO] forcing 100% irrigation ",fgrd
-
 #endif
 
 end subroutine read_GIA_irrigfrac
