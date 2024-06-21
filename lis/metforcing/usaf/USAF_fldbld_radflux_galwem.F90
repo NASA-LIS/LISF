@@ -464,7 +464,6 @@ subroutine USAF_fldbld_radflux_galwem(n,julhr,fg_swdata,fg_lwdata,rc)
 ! ------------------------------------------------------------------
 ! read in first guess data for this julian hour.
 ! ------------------------------------------------------------------
-     alert_number = 0
      call USAF_fldbld_read_radflux_galwem(avnfile, ifguess, jfguess,&
           fg_swdown1, fg_lwdown1, rc)
 
