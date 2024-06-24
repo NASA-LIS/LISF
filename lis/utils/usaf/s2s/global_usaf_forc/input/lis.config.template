@@ -104,7 +104,10 @@ Bias estimation start mode:                           none                      
 Bias estimation restart file:                         none                                    none                                    none
 
 #Perturbation options
-Perturbations start mode:                             restart                                 restart                                 restart
+#Perturbations start mode:                             restart            #                     restart                                 restart
+# NOTE:  In Ops, use restart mode with appropriate restart files.
+Perturbations start mode:                    coldstart coldstart coldstart
+
 Perturbations restart output interval:                12hr                                    12hr                                    12hr
 Perturbations restart filename:   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin
 Apply perturbation bias correction:                   1                                       1                                       1
