@@ -25,16 +25,16 @@ Output data format:                     netcdf
 Output naming style:                    "WMO convention"
 Enable output statistics:               .false.
 Start mode:                             restart
-Starting year:                          2022
-Starting month:                            8
-Starting day:                              1
-Starting hour:                             0
+Starting year:                          2024
+Starting month:                           06
+Starting day:                             11
+Starting hour:                            12
 Starting minute:                           0
 Starting second:                           0
-Ending year:                            2022
-Ending month:                              8
-Ending day:                                1
-Ending hour:                              12
+Ending year:                            2024
+Ending month:                             06
+Ending day:                               12
+Ending hour:                              00
 Ending minute:                             5
 Ending second:                             0
 Undefined value:                       -9999
@@ -95,9 +95,10 @@ Bias estimation restart file:                         none                      
 
 #Perturbation options
 Perturbations start mode:                             restart                                 restart                                 restart
+#Perturbations start mode: coldstart coldstart coldstart
 
 Perturbations restart output interval:                12hr                                    12hr                                    12hr
-Perturbations restart filename:   ./input/restarts/LIS_DAPERT_202208010000.d01.bin   ./input/restarts/LIS_DAPERT_202208010000.d01.bin   ./input/restarts/LIS_DAPERT_202208010000.d01.bin
+Perturbations restart filename:   ./input/rstfiles/LIS_DAPERT_202406111200.d01.bin   ./input/rstfiles/LIS_DAPERT_202406111200.d01.bin   ./input/rstfiles/LIS_DAPERT_202406111200.d01.bin
 Apply perturbation bias correction:                   1                                       1                                       1
 
 Forcing perturbation algorithm:                       "GMAO scheme"                           "GMAO scheme"                           "GMAO scheme"
@@ -236,9 +237,9 @@ AGRMET CMORPH minimum temperature threshold:      273
 # Use IMERG rainfall data
 AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG/Early_V06B
+AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-AGRMET IMERG version:                      V06E            # V06E released 8 Nov 2023
+AGRMET IMERG version:                      V07B            # V07B released 1 Jun 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings
@@ -327,6 +328,8 @@ AGRMET cloud data directory:               WWMCA_GRIB      # WWMCA_LE, NONE, or 
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
+AGRMET radiation derived from: GALWEM_RAD # WWMCA turned off Jul 2024
+AGRMET GALWEM radiation data directory: GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
@@ -362,7 +365,7 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah-MP.4.0.1 model timestep:                15mn
 Noah-MP.4.0.1 restart output interval:       12hr
-Noah-MP.4.0.1 restart file:                  ./input/restarts/LIS_RST_NOAHMP401_202208010000.d01.nc
+Noah-MP.4.0.1 restart file:                  ./input/rstfiles/LIS_RST_NOAHMP401_202406111200.d01.nc
 Noah-MP.4.0.1 restart file format:           netcdf
 Noah-MP.4.0.1 soil parameter table:          ./input/LS_PARAMETERS/noahmp401_parms/SOILPARM.TBL
 Noah-MP.4.0.1 general parameter table:       ./input/LS_PARAMETERS/noahmp401_parms/GENPARM.TBL
