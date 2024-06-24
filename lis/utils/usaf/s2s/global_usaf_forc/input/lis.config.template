@@ -106,7 +106,7 @@ Bias estimation restart file:                         none                      
 #Perturbation options
 Perturbations start mode:                             restart                                 restart                                 restart
 Perturbations restart output interval:                12hr                                    12hr                                    12hr
-Perturbations restart filename:   ./input/restarts/LIS_DAPERT_202104130000.d01.bin   ./input/restarts/LIS_DAPERT_202104130000.d01.bin   ./input/restarts/LIS_DAPERT_202104130000.d01.bin
+Perturbations restart filename:   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin
 Apply perturbation bias correction:                   1                                       1                                       1
 
 Forcing perturbation algorithm: none none none
@@ -374,7 +374,7 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         12hr
-Noah.3.9 restart file: ./input/restarts/LIS_RST_NOAH39_202406111200.d01.nc
+Noah.3.9 restart file: ./input/rstfiles/LIS_RST_NOAH39_202406111200.d01.nc
 
 Noah.3.9 restart file format:             netcdf
 Noah.3.9 vegetation parameter table:      ./input/noah39_parms/VEGPARM.TBL
