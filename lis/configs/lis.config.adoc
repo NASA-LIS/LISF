@@ -5395,6 +5395,9 @@ Acceptable values are:
 |"`GALWEM_RAD`"          | use radiation fields from GALWEM
 |====
 
+`AGRMET GALWEM radiation data directory:` specifies the location of the GALWEM
+radiation data files.
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5466,7 +5469,8 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'cloud types'
+AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET GALWEM radiation data directory: GALWEM_Rad
 ....
 
 
