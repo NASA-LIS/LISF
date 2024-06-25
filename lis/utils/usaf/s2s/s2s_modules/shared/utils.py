@@ -71,6 +71,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
 #            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -207,6 +209,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
 #            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         else:
@@ -256,8 +260,8 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     if extent is not None:
         lon = np.array(ldt['lon'])
         lat = np.array(ldt['lat'])
-        return np.int(np.floor(np.min(lat[:,0]))), np.int(np.ceil(np.max(lat[:,0]))), \
-            np.int(np.floor(np.min(lon[0,:]))), np.int(np.ceil(np.max(lon[0,:])))
+        return int(np.floor(np.min(lat[:,0]))), int(np.ceil(np.max(lat[:,0]))), \
+            int(np.floor(np.min(lon[0,:]))), int(np.ceil(np.max(lon[0,:])))
 
     if coord is not None:
         lon = np.array(ldt['lon'])
