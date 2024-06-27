@@ -359,6 +359,7 @@ AGRMET cloud data directory:               WWMCA_GRIB              #  Original i
 #  -- July 2, 2024, 00Z and onward:
 #AGRMET radiation derived from:      "GALWEM_RAD"                               # GALWEM Radiation files
 #AGRMET cloud data directory:            GALWEM     #  GALWEM forcing directory
+AGRMET GALWEM radiation data directory:   GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
