@@ -253,9 +253,9 @@ AGRMET IMERG temperature threshold:        278
 AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
 ## S2S June-2024 forecast – use the following option:
-AGRMET IMERG version:                      V06E            # FOR MAY-2024 dates
+#AGRMET IMERG version:                      V06E            # FOR MAY-2024 dates
 ## S2S July-2024 forecast and after – use the following option:
-#AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
+AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings
@@ -351,7 +351,7 @@ AGRMET cloud data directory:               WWMCA_GRIB              #  Original i
 ##  FOR JULY-2024 S2S Forecast – use following options up to June 24, 2024, 00Z:
 #AGRMET radiation derived from:      "cloud types"
 #AGRMET cloud data directory:               WWMCA_GRIB            #  Original input WWMCA GRIB-1 files
-#  -- June 24, 00Z to July 1, 2024, 00Z
+#  -- June 24, 00Z to July 2, 2024, 00Z
 #AGRMET radiation derived from:      "cloud types"
 #AGRMET cloud data directory:               WWMCA_GRIB_LOOKALIKE     #  WWMCA GRIB Look-alike files target directory
 #
