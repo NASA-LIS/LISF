@@ -36,15 +36,15 @@ Output naming style:                    "WMO convention"
 Enable output statistics:               .false.
 Start mode: restart
 Starting year: 2024
-Starting month: 6
-Starting day: 11
-Starting hour: 12
+Starting month:  6
+Starting day:    1
+Starting hour:   0
 Starting minute: 0
 Starting second: 0
 Ending year: 2024
-Ending month: 6
-Ending day: 12
-Ending hour: 00
+Ending month:  6
+Ending day:    2
+Ending hour:   0
 Ending minute: 5
 Ending second: 0
 Undefined value:                       -9999
@@ -252,6 +252,9 @@ AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
 AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
+## S2S June-2024 forecast – use the following option:
+#AGRMET IMERG version:                      V06E            # FOR MAY-2024 dates
+## S2S July-2024 forecast and after – use the following option:
 AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
@@ -340,8 +343,22 @@ AGRMET cloud data directory:               WWMCA_GRIB
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
-AGRMET radiation derived from: GALWEM_RAD # WWMCA turned off July 2024
-AGRMET GALWEM radiation data directory: GALWEM
+# S2S AGRMET/Bratseth forcing generation step guidance:
+##  FOR JUNE-2024 S2S Forecast – use following options up to June 1, 2024, 00Z:
+AGRMET radiation derived from:      "cloud types"
+AGRMET cloud data directory:               WWMCA_GRIB              #  Original input WWMCA GRIB-1 files
+#
+##  FOR JULY-2024 S2S Forecast – use following options up to June 24, 2024, 00Z:
+#AGRMET radiation derived from:      "cloud types"
+#AGRMET cloud data directory:               WWMCA_GRIB            #  Original input WWMCA GRIB-1 files
+#  -- June 24, 00Z to July 2, 2024, 00Z
+#AGRMET radiation derived from:      "cloud types"
+#AGRMET cloud data directory:               WWMCA_GRIB_LOOKALIKE     #  WWMCA GRIB Look-alike files target directory
+#
+## FOR AUG-2024 and after S2S Forecast runs – use the following options:
+#  -- July 2, 2024, 00Z and onward:
+#AGRMET radiation derived from:      "GALWEM_RAD"                               # GALWEM Radiation files
+#AGRMET cloud data directory:            GALWEM     #  GALWEM forcing directory
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
@@ -377,7 +394,7 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         12hr
-Noah.3.9 restart file: ./input/rstfiles/LIS_RST_NOAH39_202406111200.d01.nc
+Noah.3.9 restart file: ./input/rstfiles/LIS_RST_NOAH39_202406010000.d01.nc
 
 Noah.3.9 restart file format:             netcdf
 Noah.3.9 vegetation parameter table:      ./input/noah39_parms/VEGPARM.TBL
