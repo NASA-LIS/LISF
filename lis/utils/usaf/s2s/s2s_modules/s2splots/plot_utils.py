@@ -548,6 +548,8 @@ def crop (limits, lat, lon, xrin):
     with dask.config.set(**{'array.slicing.split_large_chunks': True}):
         xr_lon = (lon >= limits[2]) & (lon <= limits[3])
         xr_lat = (lat >= limits[0]) & (lat <= limits[1])
+        xr_lon = xr_lon.compute()
+        xr_lat = xr_lat.compute()
         crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)
     return crop_xcm
 
