@@ -23,6 +23,8 @@
 !  01 Apr 2019: Yonghwan Kwon: Upated for reading monthy CDF for the current
 !               month.
 !  25 Mar 2022: Eric Kemp; Modified read_SMOPS_ASCATsm to be fault tolerant.
+!  10 May 2024: Mahdi Navari; Updated to read ASCAT Metop-B and C from SMOPS V4
+!                             
 ! !INTERFACE:
 subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 ! !USES:
@@ -90,6 +92,7 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
   real                   :: model_delta(LIS_rc%obs_ngrid(k))
   real                   :: obs_delta(LIS_rc%obs_ngrid(k))
   integer :: yyyy,mm,dd,hh ! EMK
+  integer, external      :: create_filelist ! C function
 
 
   call ESMF_AttributeGet(OBS_State,"Data Directory",&
@@ -127,19 +130,26 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
      !     SMOPS_ASCATsm_struc(n)%useRealtime, &
      !     LIS_rc%yr, LIS_rc%mo, &
      !     LIS_rc%da, LIS_rc%hr, SMOPS_ASCATsm_struc(n)%conv, fname)
+  
      call create_SMOPS_ASCATsm_filename(smobsdir, &
           SMOPS_ASCATsm_struc(n)%useRealtime, &
           yyyy,mm,dd,hh, &
           SMOPS_ASCATsm_struc(n)%conv, fname)
 
-     inquire(file=fname,exist=file_exists)
+     ! EMK...Handle case where no SMOPS v4 files are available
+     if (fname /= 'NULL') then
+        inquire(file=fname,exist=file_exists)
 
-     if(file_exists) then
-        write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
-        call read_SMOPS_ASCAT_data(n,k,fname,smobs,smtime)
+        if(file_exists) then
+           write(LIS_logunit,*) '[INFO] Reading ',trim(fname)
+           call read_SMOPS_ASCAT_data(n,k,fname,smobs,smtime)
+        else
+           write(LIS_logunit,*) '[WARN] Missing SMOPS ASCATsm', &
+                trim(fname)
+        endif
      else
-        write(LIS_logunit,*) '[WARN] Missing SMOPS ',trim(fname)
-     endif
+        write(LIS_logunit,*) '[WARN] No SMOPS ASCATsm file found'
+     end if
 
      SMOPS_ASCATsm_struc(n)%smobs  = LIS_rc%udef
      SMOPS_ASCATsm_struc(n)%smtime = -1
@@ -147,7 +157,8 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
      do r=1,LIS_rc%obs_lnr(k)
         do c=1,LIS_rc%obs_lnc(k)
            grid_index = LIS_obs_domain(n,k)%gindex(c,r)
-           if(grid_index.ne.-1) then 
+   
+           if(grid_index.ne.-1) then
               if(smobs(c+(r-1)*LIS_rc%obs_lnc(k)).ne.-9999.0) then 
                  SMOPS_ASCATsm_struc(n)%smobs(c,r) = &
                       smobs(c+(r-1)*LIS_rc%obs_lnc(k))                 
@@ -186,6 +197,7 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
                  sm_current(c,r) = & 
                       SMOPS_ASCATsm_struc(n)%smobs(c,r)
                  fnd = 1
+
               endif           
            endif
         endif
@@ -316,7 +328,6 @@ subroutine read_SMOPS_ASCATsm(n, k, OBS_State, OBS_Pert_State)
 !-------------------------------------------------------------------------
 !  Depending on data update flag...
 !-------------------------------------------------------------------------     
-  
   if(data_upd) then 
 
      do t=1,LIS_rc%obs_ngrid(k)
@@ -458,6 +469,9 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   integer         :: param_ASCAT_B, param_ASCAT_B_qa
   integer         :: param_ASCAT_B_hr, param_ASCAT_B_mn
 
+  integer         :: param_ASCAT_C, param_ASCAT_C_qa
+  integer         :: param_ASCAT_C_hr, param_ASCAT_C_mn
+
   real            :: sm_ASCAT_A(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_ASCAT_A_t(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_ASCAT_A_hr(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
@@ -468,14 +482,23 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   real            :: sm_ASCAT_B_hr(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_ASCAT_B_mn(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
 
+  real            :: sm_ASCAT_C(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+  real            :: sm_ASCAT_C_t(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+  real            :: sm_ASCAT_C_hr(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+  real            :: sm_ASCAT_C_mn(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+
   real            :: sm_ASCAT_A_qa(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   integer*2       :: sm_ASCAT_A_qa_t(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
 
   real            :: sm_ASCAT_B_qa(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   integer*2       :: sm_ASCAT_B_qa_t(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
 
+  real            :: sm_ASCAT_C_qa(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+  integer*2       :: sm_ASCAT_C_qa_t(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+
   real            :: sm_time_ASCAT_A(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_time_ASCAT_B(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
+  real            :: sm_time_ASCAT_C(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_time(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   real            :: sm_data(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
   logical*1       :: sm_data_b(SMOPS_ASCATsm_struc(n)%nc*SMOPS_ASCATsm_struc(n)%nr)
@@ -493,6 +516,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   integer :: imsg
   character(len=512) :: message(20)
   integer, save :: alert_number = 0
+  logical :: a_exist,b_exist,c_exist
 
 #if(defined USE_GRIBAPI)
   ! When we are reading the 6-hourly datasets, we read the file HR+6
@@ -502,7 +526,7 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   ! Otherwise, when reading the daily datasets, there is no need to
   ! adjust time.
   if ( SMOPS_ASCATsm_struc(n)%useRealtime == 1 ) then
-     offset = 6
+     offset = 6 ! EJ only for version 3!
   else
      offset = 0
   endif
@@ -517,10 +541,15 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      yr1 = LIS_rc%yr
      mo1 = LIS_rc%mo
      da1 = LIS_rc%da
-     hr1 = LIS_rc%hr + offset
+     hr1 = LIS_rc%hr
      mn1 = LIS_rc%mn
      ss1 = 0
      call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+     if ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
+           file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
+           hr1 = LIS_rc%hr+offset
+           call LIS_date2time(file_time,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
+     endif
   endif
 
   if ( file_time < SMOPS_ASCATsm_struc(n)%version3_time ) then
@@ -529,17 +558,29 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      param_ASCAT_A_hr = 223; param_ASCAT_A_mn = 224
      param_ASCAT_B = 214; param_ASCAT_B_qa = 235
      param_ASCAT_B_hr = 225; param_ASCAT_B_mn = 226
+     a_exist = .true.; b_exist = .true.; c_exist = .false.
      write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
         'as SMOPS version 1.3/2.0'
 
-  else ! ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time ) then
+  elseif ( file_time >= SMOPS_ASCATsm_struc(n)%version3_time .and. &
+           file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
      ! SMOPS version 3.0
      param_ASCAT_A = 213; param_ASCAT_A_qa = 243
      param_ASCAT_A_hr = 226; param_ASCAT_A_mn = 227
      param_ASCAT_B = 214; param_ASCAT_B_qa = 244
      param_ASCAT_B_hr = 228; param_ASCAT_B_mn = 229
+     a_exist = .true.; b_exist = .true.; c_exist = .false.
      write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
         'as SMOPS version 3.0'
+  else 
+     ! SMOPS version 4.0    
+     param_ASCAT_B = 214; param_ASCAT_B_qa = 244
+     param_ASCAT_B_hr = 228; param_ASCAT_B_mn = 229
+     param_ASCAT_C = 250; param_ASCAT_C_qa = 253
+     param_ASCAT_C_hr = 251; param_ASCAT_C_mn = 252
+     a_exist = .false.; b_exist = .true.; c_exist = .true.
+     write(LIS_logunit,*) '[MSG] Reading SMOPS ASCAT dataset '//&
+        'as SMOPS version 4.0'
   endif
 
   call grib_open_file(ftn, trim(fname), 'r', iret)
@@ -568,145 +609,218 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
      end if
 
      var_found = .false.
-     if (param_num .eq. param_ASCAT_A) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_A, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_A'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-        do r = 1, SMOPS_ASCATsm_struc(n)%nr
-           do c = 1, SMOPS_ASCATsm_struc(n)%nc
-              sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
-                   sm_ASCAT_A(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc)
-           enddo
-        enddo
-     endif
+     if (a_exist) then 
+             if(param_num .eq. param_ASCAT_A) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_A, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_A'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           sm_ASCAT_A(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc)
+                   enddo
+                enddo
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_A_qa) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_A_qa, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_A'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-        do r = 1, SMOPS_ASCATsm_struc(n)%nr
-           do c = 1, SMOPS_ASCATsm_struc(n)%nc
-              sm_ASCAT_A_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
-                   INT(sm_ASCAT_A_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-           enddo
-        enddo
-     endif
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_A_qa) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_A_qa, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_A'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_A_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           INT(sm_ASCAT_A_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                   enddo
+                enddo
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_A_hr) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_A_hr, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_A'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-     endif
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_A_hr) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_A_hr, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_A'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_A_mn) then
-        var_found = .true.
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_A_mn) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_A_mn, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_A'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
      endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_A_mn, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_A'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-     endif
+     if (b_exist) then   
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_B) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_B, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_B'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           sm_ASCAT_B(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc)
+                   enddo
+                enddo
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_B) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_B, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_B'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-        do r = 1, SMOPS_ASCATsm_struc(n)%nr
-           do c = 1, SMOPS_ASCATsm_struc(n)%nc
-              sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
-                   sm_ASCAT_B(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc)
-           enddo
-        enddo
-     endif
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_B_qa) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_B_qa, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_B'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_B_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           INT(sm_ASCAT_B_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                   enddo
+                enddo
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_B_qa) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_B_qa, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_B'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-        do r = 1, SMOPS_ASCATsm_struc(n)%nr
-           do c = 1, SMOPS_ASCATsm_struc(n)%nc
-              sm_ASCAT_B_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
-                   INT(sm_ASCAT_B_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-           enddo
-        enddo
-     endif
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_B_hr) then
+                var_found = .true.
+             endif
+             if(var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_B_hr, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_B'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_B_hr) then
-        var_found = .true.
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_B_mn) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_B_mn, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_B'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
      endif
-     if(var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_B_hr, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_B'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-     endif
+     if (c_exist) then
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_C) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_C, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading values for ASCAT_C'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_C_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           sm_ASCAT_C(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc)
+                   enddo
+                enddo
+             endif
 
-     var_found = .false.
-     if (param_num .eq. param_ASCAT_B_mn) then
-        var_found = .true.
-     endif
-     if (var_found) then
-        call grib_get(igrib, 'values', sm_ASCAT_B_mn, iret)
-        if (iret .ne. 0) then
-           write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_B'
-           call grib_release(igrib, iret)
-           imsg = -1
-           exit
-        end if
-     endif
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_C_qa) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_C_qa, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading QA values for ASCAT_C'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+                do r = 1, SMOPS_ASCATsm_struc(n)%nr
+                   do c = 1, SMOPS_ASCATsm_struc(n)%nc
+                      sm_ASCAT_C_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = &
+                           INT(sm_ASCAT_C_qa(c+((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                   enddo
+                enddo
+             endif
 
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_C_hr) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_C_hr, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading hr values for ASCAT_C'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
+
+             var_found = .false.
+             if (param_num .eq. param_ASCAT_C_mn) then
+                var_found = .true.
+             endif
+             if (var_found) then
+                call grib_get(igrib, 'values', sm_ASCAT_C_mn, iret)
+                if (iret .ne. 0) then
+                   write(LIS_logunit,*)'[WARN] Problem reading mn values for ASCAT_C'
+                   call grib_release(igrib, iret)
+                   imsg = -1
+                   exit
+                end if
+             endif
+     endif
      call grib_release(igrib, iret)
      if (iret .ne. 0) then
         write(LIS_logunit,*)'[WARN] Problem releasing from ', trim(fname)
@@ -755,82 +869,132 @@ subroutine read_SMOPS_ASCAT_data(n, k, fname, smobs_ip, smtime_ip)
   ! Meaning estimated error is get_byte1, and quality is get_byte2.
   sm_time_ASCAT_A = LIS_rc%udef
   sm_time_ASCAT_B = LIS_rc%udef
+  sm_time_ASCAT_C = LIS_rc%udef
   sm_data         = LIS_rc%udef
   sm_data_b       = .false.
+  
+  if (a_exist) then
+          do r=1, SMOPS_ASCATsm_struc(n)%nr
+             do c=1, SMOPS_ASCATsm_struc(n)%nc
+                qavalue = sm_ASCAT_A_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc)
+                if ( qavalue .ne. 9999 ) then
+                   !estimated error
+                   err = get_byte1(qavalue)
+                   !quality flag - not used currently
+                   ql = get_byte2(qavalue)
 
-  do r=1, SMOPS_ASCATsm_struc(n)%nr
-     do c=1, SMOPS_ASCATsm_struc(n)%nc
-        qavalue = sm_ASCAT_A_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc)
-        if ( qavalue .ne. 9999 ) then
-           !estimated error
-           err = get_byte1(qavalue)
-           !quality flag - not used currently
-           ql = get_byte2(qavalue)
+                   if(err.lt.err_threshold) then
+                      hr_val = nint(sm_ASCAT_A_hr(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      mn_val =  nint(sm_ASCAT_A_mn(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      call LIS_get_timeoffset_sec(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                           hr_val, mn_val, 0, julss)
+                      sm_time_ASCAT_A(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = julss
+                      sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .true.
+                   else
+                      sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                      sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                   endif
+                else
+                   sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                   sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                endif
+                if(sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc).lt.0.001) then
+                   sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                   sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                endif
+             enddo
+          enddo
+  endif
+  if (b_exist) then
+          do r=1, SMOPS_ASCATsm_struc(n)%nr
+             do c=1, SMOPS_ASCATsm_struc(n)%nc
+                qavalue = sm_ASCAT_B_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc)
+                if ( qavalue .ne. 9999 ) then
+                   !estimated error
+                   err = get_byte1(qavalue)
+                   !quality flag - not used currently
+                   ql = get_byte2(qavalue)
 
-           if(err.lt.err_threshold) then
-              hr_val = nint(sm_ASCAT_A_hr(c+&
-                   ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-              mn_val =  nint(sm_ASCAT_A_mn(c+&
-                   ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-              call LIS_get_timeoffset_sec(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
-                   hr_val, mn_val, 0, julss)
-              sm_time_ASCAT_A(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = julss
-              sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .true.
-           else
-              sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-              sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
-           endif
-        else
-           sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-           sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
-        endif
-        if(sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc).lt.0.001) then
-           sm_ASCAT_A_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-           sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
-        endif
-     enddo
-  enddo
+                   if(err.lt.err_threshold) then
+                      hr_val = nint(sm_ASCAT_B_hr(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      mn_val =  nint(sm_ASCAT_B_mn(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      call LIS_get_timeoffset_sec(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                           hr_val, mn_val, 0, julss)
+                      sm_time_ASCAT_B(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = julss
+                   else
+                      sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                   endif
+                else
+                   sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                endif
+                if(sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc).lt.0.001) then
+                   sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                endif
+             enddo
+          enddo
+  endif
+  if (c_exist) then
+          do r=1, SMOPS_ASCATsm_struc(n)%nr
+             do c=1, SMOPS_ASCATsm_struc(n)%nc
+                qavalue = sm_ASCAT_C_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc)
+                if ( qavalue .ne. 9999 ) then
+                   !estimated error
+                   err = get_byte1(qavalue)
+                   !quality flag - not used currently
+                   ql = get_byte2(qavalue)
 
-  do r=1, SMOPS_ASCATsm_struc(n)%nr
-     do c=1, SMOPS_ASCATsm_struc(n)%nc
-        qavalue = sm_ASCAT_B_qa_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc)
-        if ( qavalue .ne. 9999 ) then
-           !estimated error
-           err = get_byte1(qavalue)
-           !quality flag - not used currently
-           ql = get_byte2(qavalue)
+                   if(err.lt.err_threshold) then
+                      hr_val = nint(sm_ASCAT_C_hr(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      mn_val =  nint(sm_ASCAT_C_mn(c+&
+                           ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
+                           SMOPS_ASCATsm_struc(n)%nc))
+                      call LIS_get_timeoffset_sec(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                           hr_val, mn_val, 0, julss)
+                      sm_time_ASCAT_C(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = julss
+                      sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .true.
+                   else
+                      sm_ASCAT_C_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                      sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                   endif
+                else
+                   sm_ASCAT_C_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                   sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                endif
+                if(sm_ASCAT_C_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc).lt.0.001) then
+                   sm_ASCAT_C_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
+                   sm_data_b(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = .false.
+                endif
+             enddo
+          enddo
+  endif
 
-           if(err.lt.err_threshold) then
-              hr_val = nint(sm_ASCAT_B_hr(c+&
-                   ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-              mn_val =  nint(sm_ASCAT_B_mn(c+&
-                   ((SMOPS_ASCATsm_struc(n)%nr-r+1)-1)*&
-                   SMOPS_ASCATsm_struc(n)%nc))
-              call LIS_get_timeoffset_sec(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
-                   hr_val, mn_val, 0, julss)
-              sm_time_ASCAT_B(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = julss
-           else
-              sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-           endif
-        else
-           sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-        endif
-        if(sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc).lt.0.001) then
-           sm_ASCAT_B_t(c+(r-1)*SMOPS_ASCATsm_struc(n)%nc) = LIS_rc%udef
-        endif
-     enddo
-  enddo
-
-  sm_data = sm_ASCAT_A_t
-  sm_time = sm_time_ASCAT_A
-  where ( sm_ASCAT_B_t /= LIS_rc%udef )
+  if ( file_time <  SMOPS_ASCATsm_struc(n)%version4_time ) then
+     sm_data = sm_ASCAT_A_t
+     sm_time = sm_time_ASCAT_A
+     where ( sm_ASCAT_B_t /= LIS_rc%udef )
+        sm_data = sm_ASCAT_B_t
+        sm_time = sm_time_ASCAT_B
+        sm_data_b = .true.
+     endwhere
+   else
      sm_data = sm_ASCAT_B_t
      sm_time = sm_time_ASCAT_B
-     sm_data_b = .true.
-  endwhere
+     where ( sm_ASCAT_C_t /= LIS_rc%udef )
+        sm_data = sm_ASCAT_C_t
+        sm_time = sm_time_ASCAT_C
+        sm_data_b = .true.
+     endwhere
+   endif
 
 !--------------------------------------------------------------------------
 ! Interpolate to the LIS running domain
@@ -897,8 +1061,11 @@ end subroutine read_SMOPS_ASCAT_data
 subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filename)
 ! !USES:   
   use ESMF
+  use LIS_mpiMod
+  use LIS_logMod
+  use LIS_coreMod,only : LIS_masterproc
   use LIS_timeMgrMod, only : LIS_calendar
-
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
   character(len=*)  :: filename
@@ -906,6 +1073,7 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
   integer           :: yr, mo, da, hr
   character (len=*) :: ndir
   character (len=*) :: conv
+  integer, external      :: create_filelist ! C function
 ! 
 ! !DESCRIPTION: 
 !  This subroutine creates the SMOPS filename based on the time and date 
@@ -936,9 +1104,13 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
 
   logical, save           :: first_time=.true.
   type(ESMF_Time), save   :: naming3_time
+  type(ESMF_Time), save   :: Ver4_blended_time
   type(ESMF_Time)         :: file_time
   type(ESMF_TimeInterval) :: six_hours
   integer                 :: rc
+  character*8            :: yyyymmdd
+  character(len=LIS_CONST_PATH_LEN) :: list_files
+   integer                :: ftn, ierr
 
   if ( first_time ) then
      call ESMF_TimeSet(naming3_time, &
@@ -950,6 +1122,17 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
         s  = 0,    &
         calendar = LIS_calendar, & 
         rc = rc)
+
+     call ESMF_TimeSet(Ver4_blended_time, &
+        yy = 2024, &
+        mm = 4,   &
+        dd = 25,    &
+        h  = 0,    &
+        m  = 0,    &
+        s  = 0,    &
+        calendar = LIS_calendar, &
+        rc = rc)
+
      first_time = .false.
   endif
 
@@ -964,7 +1147,9 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
         s  = 0,  & 
         calendar = LIS_calendar, & 
         rc = rc)
-     file_time = file_time + six_hours
+     if ( file_time >= naming3_time .and. file_time < Ver4_blended_time) then
+         file_time = file_time+six_hours
+     endif
      call ESMF_TimeGet(file_time, &
         yy = yr, &
         mm = mo, &
@@ -977,15 +1162,53 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
+  write(yyyymmdd,'(i4.4,2i2.2)') yr,mo,da
 
   if(useRT.eq.1) then 
      if ( conv == "LIS" ) then
         filename = trim(ndir)//'/'//trim(fyr)//'/NPR_SMOPS_CMAP_D' &
                    //trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//'.gr2'     
      else
-        if ( file_time >= naming3_time) then
+        if ( file_time >= naming3_time .and. file_time < Ver4_blended_time) then
            filename = trim(ndir)//'/'//'/NPR_SMOPS_CMAP_D' &
               //trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)//'.gr2'     
+        elseif (file_time >= Ver4_blended_time) then 
+            ! NPR-SMOPS-CMAP-6hrly_v4r0_blend_s202404250600000_e202404251159599_c202404251440470.grib2
+            !filename = trim(ndir)//'/'//'/NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
+            !  //trim(yyyymmdd)//'00000_e'//trim(yyyymmdd)//'*_c'//trim(yyyymmdd)//'*.grib2'
+           filename = 'NULL' ! EMK Initialize
+           if (LIS_masterproc) then
+               list_files = trim(ndir)//'/'//'NPR-SMOPS-CMAP-6hrly_v4r0_blend_s' &
+                 //trim(yyyymmdd)//trim(fhr)//'*.grib2'
+
+               write(LIS_logunit,*) &
+                     '[INFO] Searching for ',trim(list_files)
+               rc = create_filelist(trim(list_files)//char(0), &
+                    "SMOPS_ASCAT_filelist.sm.dat"//char(0))
+               if (rc .ne. 0) then
+                  write(LIS_logunit,*) &
+                       '[WARN] Problem encountered when searching for SMOPS_ASCAT files'
+                  write(LIS_logunit,*) &
+                       'Was searching for ',trim(list_files)
+                  write(LIS_logunit,*) &
+                       'LIS will continue...'
+               endif
+           end if
+#if (defined SPMD)
+           call mpi_barrier(lis_mpi_comm,ierr)
+#endif
+
+           ftn = LIS_getNextUnitNumber()
+           open(ftn,file="./SMOPS_ASCAT_filelist.sm.dat",status='old',iostat=ierr)
+           ! We do not need do while.Only one file should be available for the selected date
+           do while(ierr.eq.0)
+              read(ftn,'(a)',iostat=ierr) filename
+              if(ierr.ne.0) then
+                 exit
+              endif
+           enddo
+           !write(LIS_logunit,*) '[INFO] Will read  ',trim(filename)
+           call LIS_releaseUnitNumber(ftn)
         else
            filename = trim(ndir)//'/smops_d' &
               //trim(fyr)//trim(fmo)//trim(fda)//'_s'//trim(fhr)//'0000_cness.gr2'
