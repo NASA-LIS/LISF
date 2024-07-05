@@ -5453,15 +5453,19 @@ Note that if you wish to use the first guess precip, then it must
 match the first guess source.
 
 `AGRMET radiation derived from:` specifies how to compute
-shortwave and longwave radiation.  Defaults to "`cloud types`".
+shortwave and longwave radiation.
 Acceptable values are:
 
 |====
 |Value                   | Description
 
 |"`cloud types`"         | use cloud types
-|"`cloud optical depth`" | use cloud optical depth
+|"`cod properties`"      | use cloud optical depth properties
+|"`GALWEM_RAD`"          | use radiation fields from GALWEM
 |====
+
+`AGRMET GALWEM radiation data directory:` specifies the location of the GALWEM
+radiation data files.
 
 .Example _lis.config_ entry
 ....
@@ -5534,7 +5538,8 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'cloud types'
+AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET GALWEM radiation data directory: GALWEM_Rad
 ....
 
 

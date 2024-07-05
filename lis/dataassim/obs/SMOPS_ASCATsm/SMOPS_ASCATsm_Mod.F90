@@ -37,6 +37,7 @@
 !  8 May 2013    Sujay Kumar; initial specification
 !  28 Sep 2017: Mahdi Navari; Updated to read ASCAT from SMOPS V3
 !  1  Apr 2019  Yonghwan Kwon: Upated for reading monthy CDF for the current month
+!  08 May 2024: Mahdi Navari; Updated to read ASCAT Metop-B and C from SMOPS V4
 ! 
 module SMOPS_ASCATsm_Mod
 ! !USES: 
@@ -83,7 +84,7 @@ module SMOPS_ASCATsm_Mod
 
      integer                :: nbins
      integer                :: ntimes
-     real*8                 :: version2_time, version3_time
+     real*8                 :: version2_time, version3_time, version4_time
      character(len=17)      :: version
      character(len=10)      :: conv
 
@@ -601,6 +602,11 @@ contains
           yr1 = 2017; mo1 = 8; da1 = 24; hr1 = 12; mn1 = 0; ss1 = 0
           call LIS_date2time(SMOPS_ASCATsm_struc(n)%version3_time,updoy,upgmt,&
              yr1,mo1,da1,hr1,mn1,ss1)
+
+          yr1 = 2024; mo1 = 4; da1 = 25; hr1 = 0; mn1 = 0; ss1 = 0
+          call LIS_date2time(SMOPS_ASCATsm_struc(n)%version4_time,updoy,upgmt,&
+             yr1,mo1,da1,hr1,mn1,ss1)
+
        endif
 
        gridDesci = 0 

@@ -230,9 +230,9 @@ subroutine AGRMET_sfcalc(n)
 
   call LIS_get_julhr(LIS_rc%yr,LIS_rc%mo,LIS_rc%da,LIS_rc%hr,&
        0,0,jultmp)
-  if(jultmp .gt.agrmet_struc(n)%lastSfcalcHour) then 
+  if(jultmp .gt. agrmet_struc(n)%lastSfcalcHour) then 
     timeToReadGFS = .true. 
- else
+  else
     timeToReadGFS = .false.
   endif
 
