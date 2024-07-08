@@ -116,7 +116,7 @@ subroutine ac71_read_Trecord(n)
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
     use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
                                   LIS_update_clock, LIS_is_last_step
-    use LIS_coreMod,        only: LIS_rc
+    use LIS_coreMod,        only: LIS_rc, LIS_surface
     use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
     use LIS_constantsMod
@@ -138,7 +138,7 @@ subroutine ac71_read_Trecord(n)
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
     real, allocatable     :: subdaily_arr(:,:)
     type(lisrcdec)        :: LIS_rc_saved
-    integer               :: i, j, p, status, met_ts, ierr,m
+    integer               :: i, j, t, status, met_ts, ierr,m, tid
     integer               :: yr_start
 
     !Note: this code assumes that the forcing data (tmp) has a length=ntiles
@@ -178,7 +178,7 @@ subroutine ac71_read_Trecord(n)
         yr_start = LIS_rc%yr
     endif
     call LIS_timemgr_set(LIS_rc,yr_start,AC71_struc(n)%Sim_AnnualStartMonth,&
-                         AC71_struc(n)%Sim_AnnualStartDay,LIS_rc%hr,LIS_rc%mn,&
+                         AC71_struc(n)%Sim_AnnualStartDay,LIS_rc%hr+1,LIS_rc%mn,&
                          LIS_rc%ss,LIS_rc%ms,0.0)
     day_loop: do i=1,366
         do j=1,met_ts
@@ -203,16 +203,19 @@ subroutine ac71_read_Trecord(n)
         daily_tmin_arr(:,i) = minval(subdaily_arr,2)
         if ((LIS_rc%da.eq.AC71_struc(n)%Sim_AnnualStartDay)&
             .and.(LIS_rc%mo.eq.AC71_struc(n)%Sim_AnnualStartMonth)&
-            .and.(i.ne.1)) exit day_loop ! Exit if we reach end of sim period
+            .and.(LIS_rc%hr.eq.LIS_rc_saved%hr+1)&
+            .and.(i.ne.1)) exit day_loop 
+            ! Exit if we reach end of sim period
+            ! but still include the last hour
     enddo day_loop
 
     deallocate(subdaily_arr)
 
     ! Assign Tmax and Tmin arrays to AC71_struc
-    do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
-        p = (i-1)/LIS_rc%nensem(n) + 1
-        AC71_struc(n)%Trecord(p)%Tmax_record = daily_tmax_arr(i,:)-LIS_CONST_TKFRZ
-        AC71_struc(n)%Trecord(p)%Tmin_record = daily_tmin_arr(i,:)-LIS_CONST_TKFRZ
+    do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+        tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
+        AC71_struc(n)%ac71(t)%Tmax_record = daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ
+        AC71_struc(n)%ac71(t)%Tmin_record = daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ
     enddo
 
     deallocate(daily_tmax_arr)

@@ -60,10 +60,6 @@ module Ac71_lsmMod
 !   annual start day of simulation period
 ! \item[Sim_AnnualStartMonth]
 !   annual start month of simulation period
-! \item[Sim_AnnualEndDay]
-!   annual end day of simulation period
-! \item[Sim_AnnualEndMonth]
-!   annual end month of simulation period
 ! \item[Crop_AnnualStartDay]
 !   annual start day of cropping period
 ! \item[Crop_AnnualStartMonth]
@@ -131,9 +127,7 @@ module Ac71_lsmMod
         character(len=256) :: Management_Filename
         character(len=256) :: Irrigation_Filename
         integer            :: Sim_AnnualStartDay
-        integer            :: Sim_AnnualEndDay
         integer            :: Sim_AnnualStartMonth
-        integer            :: Sim_AnnualEndMonth
         integer            :: Crop_AnnualStartDay
         integer            :: Crop_AnnualStartMonth
         integer            :: NrSoilLayers
@@ -142,7 +136,6 @@ module Ac71_lsmMod
         real               :: refz_tq
         real               :: refz_uv
         type(Ac71dec), pointer :: ac71(:)
-        type(ac71_trecord), pointer :: Trecord(:)
     end type Ac71_type_dec
 
     type(Ac71_type_dec), pointer :: AC71_struc(:)
@@ -175,7 +168,7 @@ contains
 !  \end{description}
 !EOP
         implicit none        
-        integer  :: n, t, p    
+        integer  :: n, t, i    
         integer  :: status   
 
         ! allocate memory for nest 
@@ -197,12 +190,10 @@ contains
             enddo
 
             ! allocate memory for Trecord arrays
-            allocate(AC71_struc(n)%Trecord(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
-            do p=1,LIS_rc%gnc(n)*LIS_rc%gnr(n)
-                allocate(AC71_struc(n)%Trecord(p)%Tmax_record(366))
-                allocate(AC71_struc(n)%Trecord(p)%Tmin_record(366))
+            do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
+                allocate(AC71_struc(n)%ac71(t)%Tmax_record(366))
+                allocate(AC71_struc(n)%ac71(t)%Tmin_record(366))
             enddo
-
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -236,7 +227,10 @@ contains
             ! Set number of soil moisture layers in surface model
             LIS_sfmodel_struc(n)%nsm_layers = AC71_struc(n)%max_No_compartments
             allocate(LIS_sfmodel_struc(n)%lyrthk(AC71_struc(n)%max_No_compartments))
-            LIS_sfmodel_struc(n)%lyrthk(:) = 0.1
+            ! Note, the default compartment size (0.10) is stored in the 
+            ! SURFACEMODEL output file, but these are spatially variable and included in the
+            ! input file produced by LDT
+            LIS_sfmodel_struc(n)%lyrthk(:) = 0.10
             LIS_sfmodel_struc(n)%ts = AC71_struc(n)%ts
         enddo
     end subroutine Ac71_ini

@@ -7453,7 +7453,7 @@ subroutine WriteDailyResults(DAP, WPi)
 
     ! 0. info day
     write(tempstring, '(5i6)') Di, Mi, Yi, DAP_loc, GetStageCode()
-    call fDaily_write(trim(tempstring), .false.)
+    !call fDaily_write(trim(tempstring), .false.)
 
 
     ! 1. Water balance
@@ -7634,7 +7634,7 @@ subroutine WriteDailyResults(DAP, WPi)
     ! 3. Profile/Root zone - Soil water content
     if (GetOut3Prof()) then
         write(tempstring, '(f10.1)') GetTotalWaterContent_EndDay()
-        call fDaily_write(trim(tempstring), .false.)
+        !call fDaily_write(trim(tempstring), .false.)
         if (GetRootingDepth() < epsilon(0._dp)) then
             call SetRootZoneWC_Actual(undef_double)
         else
@@ -7651,7 +7651,7 @@ subroutine WriteDailyResults(DAP, WPi)
             end if
         end if
         write(tempstring, '(f9.1, f8.2)') GetRootZoneWC_actual(), GetRootingDepth()
-        call fDaily_write(trim(tempstring), .false.)
+        !call fDaily_write(trim(tempstring), .false.)
         if (GetRootingDepth() < epsilon(0._dp)) then
             call SetRootZoneWC_Actual(undef_double)
             call SetRootZoneWC_FC(undef_double)
@@ -7669,14 +7669,14 @@ subroutine WriteDailyResults(DAP, WPi)
         write(tempstring, '(f8.1, 5f10.1)') GetRootZoneWC_actual(), &
                 GetRootZoneWC_SAT(), GetRootZoneWC_FC(), GetRootZoneWC_Leaf(), &
                 GetRootZoneWC_Thresh(), GetRootZoneWC_Sen()
-        call fDaily_write(trim(tempstring), .false.)
+        !call fDaily_write(trim(tempstring), .false.)
         if ((GetOut4Salt()) .or. (GetOut5CompWC()) .or. (GetOut6CompEC()) &
             .or. (GetOut7Clim())) then
             write(tempstring, '(f10.1)') GetRootZoneWC_WP()
             call fDaily_write(trim(tempstring), .false.)
         else
             write(tempstring, '(f10.1)') GetRootZoneWC_WP()
-            call fDaily_write(tempstring)
+            !call fDaily_write(tempstring)
         end if
     end if
 
