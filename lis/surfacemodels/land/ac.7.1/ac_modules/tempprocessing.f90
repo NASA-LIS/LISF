@@ -2190,6 +2190,44 @@ subroutine LoadSimulationRunProject(NrRun)
     end if
 
     call AdjustCalendarCrop(GetCrop_Day1())
+    !test
+    ! Germination
+    if (GetCrop_DaysToGermination().eq.undef_int) then
+        call SetCrop_DaysToGermination(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! Flowering (only for Tuber and grain)
+    if (GetCrop_DaysToFlowering().eq.undef_int) then
+        call SetCrop_DaysToFlowering(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! MaxRooting
+    if (GetCrop_DaysToMaxRooting().eq.undef_int) then
+        call SetCrop_DaysToMaxRooting(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! Senescence
+    if (GetCrop_DaysToSenescence().eq.undef_int) then
+        call SetCrop_DaysToSenescence(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! Harvest
+    if (GetCrop_DaysToHarvest().eq.undef_int) then
+        call SetCrop_DaysToHarvest(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! CCini
+    if (GetCrop_DaysToCCini().eq.undef_int) then
+        call SetCrop_DaysToCCini(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! FullCanopy
+    if (GetCrop_DaysToFullCanopy().eq.undef_int) then
+        call SetCrop_DaysToFullCanopy(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! FullCanopySF
+    if (GetCrop_DaysToFullCanopySF().eq.undef_int) then
+        call SetCrop_DaysToFullCanopySF(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+    ! HIo
+    if (GetCrop_DaysToHIo().eq.undef_int) then
+        call SetCrop_DaysToHIo(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
+    endif
+
     call CompleteCropDescription
     ! Onset.Off := true;
     if (GetClimFile() == '(None)') then

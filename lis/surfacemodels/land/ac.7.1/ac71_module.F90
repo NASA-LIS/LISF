@@ -35,6 +35,7 @@ module Ac71_module
           rep_DayEventInt,&
           rep_IrriECw,&
           rep_Manag,&
+          rep_param,&
           rep_sim,&
           rep_soil,&
           rep_sum
@@ -98,19 +99,12 @@ module Ac71_module
     integer(intEnum) :: IrriMethod
     integer(intEnum) :: IrriMode
     integer(intEnum) :: TheProjectType
-    integer        :: Crop_DaysToGermination
-    integer        :: Crop_DaysToMaxRooting
-    integer        :: Crop_DaysToFlowering
-    integer        :: Crop_DaysToSenescence
-    integer        :: Crop_DaysToHarvest
-    integer        :: Crop_DaysToCCini
-    integer        :: Crop_DaysToFullCanopy
-    integer        :: Crop_DaysToFullCanopySF
-    integer        :: Crop_DaysToHIo
     logical  :: HarvestNow
     logical :: NoYear
+    logical :: PreDay
     logical :: germ_reached, harv_reached
     logical :: maxR_reached, sene_reached, flowr_reached
+    real    :: RootingDepth
     real    :: RootZoneWC_Actual
     real    :: RootZoneWC_FC
     real    :: RootZoneWC_Leaf
@@ -177,7 +171,9 @@ module Ac71_module
     real :: YprevSum
     real :: Ziprev
     real :: Simulation_SumGDD
-    real :: Simulation_SumGDDfromDay1    
+    real :: Simulation_SumGDDfromDay1 
+    real(sp), pointer :: Tmax_record(:)
+    real(sp), pointer :: Tmin_record(:)   
     type(CompartmentIndividual), dimension(12) :: Compartment
     type(repIrriInfoRecord) :: IrriInfoRecord1
     type(repIrriInfoRecord) :: IrriInfoRecord2
@@ -195,9 +191,4 @@ module Ac71_module
     type(SoilLayerIndividual), dimension(5) :: soillayer
 
   end type ac71dec
-
-  type, public :: ac71_trecord
-    real(sp), pointer :: Tmax_record(:)
-    real(sp), pointer :: Tmin_record(:)
-  end type ac71_trecord
 end module Ac71_module

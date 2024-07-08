@@ -716,6 +716,14 @@ subroutine Ac71_readrst()
                     call fIrri_close() ! close irrigation file
                 endif
                 ! end check if irrigated
+
+                ! For restart: check if we reached end of simul period
+                if (AC71_struc(n)%ac71(t)%DayNri &
+                   .eq. AC71_struc(n)%ac71(t)%Simulation%ToDayNr)  then
+                    AC71_struc(n)%ac71(t)%irun = 2 ! Means that we need to start a new sim
+                    AC71_struc(n)%ac71(t)%InitializeRun = 1
+                endif
+                
             enddo
             ! end tile
         endif
