@@ -39,6 +39,7 @@ import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
 import shapely.geometry as sgeom
 import requests
+import dask
 import PIL
 import numpy as np
 mpl.use('pdf')
@@ -544,9 +545,12 @@ def preproc(ds_):
 
 def crop (limits, lat, lon, xrin):
     ''' crops a data set'''
-    xr_lon = (lon >= limits[2]) & (lon <= limits[3])
-    xr_lat = (lat >= limits[0]) & (lat <= limits[1])
-    crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)
+    with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+        xr_lon = (lon >= limits[2]) & (lon <= limits[3])
+        xr_lat = (lat >= limits[0]) & (lat <= limits[1])
+        xr_lon = xr_lon.compute()
+        xr_lat = xr_lat.compute()
+        crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)
     return crop_xcm
 
 def getclosest_ij(lats,lons,latpt,lonpt):
