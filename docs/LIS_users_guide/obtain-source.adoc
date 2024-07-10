@@ -219,11 +219,11 @@ AMSR2 soil moisture retrievals
 
 *** _GLASS_Albedo_
 +
-[red]##specifies what?##
+GLASS Albedo retrievals
 
 *** _GLASS_LAI_
 +
-[red]##specifies what?##
+GLASS LAI retrievals
 
 *** _GRACE_
 +

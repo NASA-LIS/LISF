@@ -1248,6 +1248,8 @@ Acceptable values are:
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
 |"`SNODAS`"                     | SNODAS snow depth
+|"`GLASS LAI`"                  | GLASS Leaf Area Index (LAI)
+|"`GLASS Albedo`"               | Glass Albedo (black-sky and white-sky)
 |====
 
 .Example _lis.config_ entry
@@ -2826,6 +2828,38 @@ MCD15A2H LAI data version:                                    "006"
 MCD15A2H LAI apply temporal smoother between 8-day intervals: 1
 MCD15A2H LAI apply climatological fill values:                1
 MCD15A2H LAI apply QC flags:                                  1
+....
+
+[[sssec_glasslaida,GLASS LAI assimilation]]
+==== GLASS LAI assimilation
+
+`GLASS LAI data directory:` specifies the location of the data directory containing the GLASS LAI retrievals.
+
+`GLASS LAI data source:` specifies if the GLASS data source is AVHRR or MODIS.
+
+`GLASS LAI apply temporal smoother between 8-day intervals:` specifies whether to apply temporal smoother between 8-day intervals of the LAI product.
+
+.Example _lis.config_ entry
+....
+GLASS LAI data directory:                                  ./GLASS/LAI
+GLASS LAI data source:                                     "AVHRR"
+GLASS LAI apply temporal smoother between 8-day intervals: 1
+....
+
+[[sssec_glassalbedoda,GLASS Albedo assimilation]]
+==== GLASS Albedo assimilation
+
+`GLASS Albedo data directory:` specifies the location of the data directory containing the GLASS Albedo retrievals.
+
+`GLASS Albedo data source:` specifies if the GLASS data source is AVHRR or MODIS.
+
+`GLASS Albedo apply QC flags:` specifies whether to apply quality-control flags of the GLASS Albedo data to the assimilation.
+
+.Example _lis.config_ entry
+....
+GLASS Albedo data directory:                               ./GLASS/Albedo
+GLASS Albedo data source:                                  "AVHRR"
+GLASS Albedo apply QC flags:                               1
 ....
 
 [[sssec_simgraceda,Simulated GRACE]]
