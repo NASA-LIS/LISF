@@ -1231,16 +1231,16 @@ subroutine readcrd_agrmet()
   call ESMF_ConfigFindLabel(LIS_config, &
        'AGRMET gauge networks to use::', rc=rc)
   call LIS_verify(rc, &
-       "[ERR] AGRMET gauge networks to use: not specified in config file")
+       "[ERR] AGRMET gauge networks to use:: not specified in config file")
   do n=1, LIS_rc%nnest
      call ESMF_ConfigNextLine(LIS_config, rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET gauge networks to use: problem reading next line')
+          '[ERR] AGRMET gauge networks to use:: problem reading next line')
      do j = 1, agrmet_struc(n)%num_gage_networks
         call ESMF_ConfigGetAttribute(LIS_config, &
              agrmet_struc(n)%gage_networks(j), rc=rc)
         call LIS_verify(rc, &
-             '[ERR] AGRMET gauge networks to use: problem reading entry')
+             '[ERR] AGRMET gauge networks to use:: problem reading entry')
      end do
      write(LIS_logunit,*) &
           '[INFO] Will use following gauge networks for domain ', n
