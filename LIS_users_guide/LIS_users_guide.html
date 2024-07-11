@@ -2236,13 +2236,13 @@ included components</p>
 <li>
 <p><em>GLASS_Albedo</em></p>
 <div class="paragraph">
-<p><span class="red">specifies what?</span></p>
+<p>GLASS Albedo retrievals</p>
 </div>
 </li>
 <li>
 <p><em>GLASS_LAI</em></p>
 <div class="paragraph">
-<p><span class="red">specifies what?</span></p>
+<p>GLASS LAI retrievals</p>
 </div>
 </li>
 <li>
@@ -7722,6 +7722,14 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;SNODAS&#8221;</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SNODAS snow depth</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GLASS LAI&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GLASS Leaf Area Index (LAI)</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GLASS Albedo&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GLASS Albedo (black-sky and white-sky)</p></td>
+</tr>
 </tbody>
 </table>
 <div class="literalblock">
@@ -9920,7 +9928,93 @@ MCD15A2H LAI apply QC flags:                                  1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_simgraceda">9.5.28. Simulated GRACE</h4>
+<h4 id="sssec_glasslaida">9.5.28. GLASS LAI assimilation</h4>
+<div class="paragraph">
+<p><code>GLASS LAI data directory:</code> specifies the location of the data directory containing the GLASS LAI retrievals.</p>
+</div>
+<div class="paragraph">
+<p><code>GLASS LAI data source:</code> specifies if the GLASS data source is AVHRR or MODIS.</p>
+</div>
+<div class="paragraph">
+<p><code>GLASS LAI apply temporal smoother between 8-day intervals:</code> specifies whether to apply temporal smoother between 8-day intervals of the LAI product.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not apply temporal smoother</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apply temporal smoother</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>GLASS LAI data directory:                                  ./GLASS/LAI
+GLASS LAI data source:                                     "AVHRR"
+GLASS LAI apply temporal smoother between 8-day intervals: 1</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="sssec_glassalbedoda">9.5.29. GLASS Albedo assimilation</h4>
+<div class="paragraph">
+<p><code>GLASS Albedo data directory:</code> specifies the location of the data directory containing the GLASS Albedo retrievals.</p>
+</div>
+<div class="paragraph">
+<p><code>GLASS Albedo data source:</code> specifies if the GLASS data source is AVHRR or MODIS.</p>
+</div>
+<div class="paragraph">
+<p><code>GLASS Albedo apply QC flags:</code> specifies whether to apply quality-control flags of the GLASS Albedo data to the assimilation.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not apply QC flags</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Apply QC flags</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>GLASS Albedo data directory:                               ./GLASS/Albedo
+GLASS Albedo data source:                                  "AVHRR"
+GLASS Albedo apply QC flags:                               1</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="sssec_simgraceda">9.5.30. Simulated GRACE</h4>
 <div class="paragraph">
 <p><code>Simulated GRACE data directory:</code> specifies the location
 of the simulated GRACE data.</p>
@@ -9993,7 +10087,7 @@ Simulated GRACE use reported measurement error values:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_synsfda">9.5.29. Synthetic Streamflow</h4>
+<h4 id="sssec_synsfda">9.5.31. Synthetic Streamflow</h4>
 <div class="paragraph">
 <p><code>Synthetic streamflow data directory:</code> specifies the location
 of the synthetic streamflow data.</p>
@@ -10006,7 +10100,7 @@ of the synthetic streamflow data.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_esaccismda">9.5.30. ESA CCI soil moisture data assimilation</h4>
+<h4 id="sssec_esaccismda">9.5.32. ESA CCI soil moisture data assimilation</h4>
 <div class="paragraph">
 <p><code>ESA CCI soil moisture data directory:</code> specifies the location
 of the ESA CCI soil moisture data.</p>
@@ -10074,7 +10168,7 @@ ESA CCI soil moisture number of bins in the CDF:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_amsr2gcomwsmda">9.5.31. AMSR2 (GCOMW) soil moisture data assimilation</h4>
+<h4 id="sssec_amsr2gcomwsmda">9.5.33. AMSR2 (GCOMW) soil moisture data assimilation</h4>
 <div class="paragraph">
 <p><code>AMSR2(GCOMW) soil moisture data directory:</code> specifies the AMSR2(GCOMW) soil
 moisture data directory.</p>
@@ -10136,7 +10230,7 @@ AMSR2(GCOMW) soil moisture number of bins in the CDF:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_amsr2gcomwsndda">9.5.32. AMSR2 (GCOMW) snow depth data assimilation</h4>
+<h4 id="sssec_amsr2gcomwsndda">9.5.34. AMSR2 (GCOMW) snow depth data assimilation</h4>
 <div class="paragraph">
 <p><code>AMSR2(GCOMW) snow depth data directory:</code>
 specifies the directory for the AMSR2(GCOMW) snow depth data.</p>
@@ -10275,7 +10369,7 @@ AMSR2(GCOMW) snow depth input mask file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_smapnasasmda">9.5.33. SMAP (NASA) soil moisture assimilation</h4>
+<h4 id="sssec_smapnasasmda">9.5.35. SMAP (NASA) soil moisture assimilation</h4>
 <div class="paragraph">
 <p><code>SMAP(NASA) soil moisture data directory:</code> specifies the SMAP(NASA) soil
 moisture data directory.</p>
@@ -10388,7 +10482,7 @@ SMAP(NASA) CDF read option:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_smapnrtsmda">9.5.34. SMAP (NRT) soil moisture assimilation</h4>
+<h4 id="sssec_smapnrtsmda">9.5.36. SMAP (NRT) soil moisture assimilation</h4>
 <div class="paragraph">
 <p><code>SMAP(NRT) soil moisture data directory:</code> specifies the SMAP(NRT) soil
 moisture data directory</p>
@@ -10464,7 +10558,7 @@ SMAP(NRT) CDF read option:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_cdftransfersmda">9.5.35. Transfering stratified CDFs from one domain to another</h4>
+<h4 id="sssec_cdftransfersmda">9.5.37. Transfering stratified CDFs from one domain to another</h4>
 <div class="paragraph">
 <p><code>Use CDF transfer for soil moisture data assimilation:</code> specifies
 whether to use CDF transfer method.</p>
@@ -10497,7 +10591,7 @@ Target domain precipitation climatology data source: Precip.climo.eu.merra/LVT_M
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_smapnasavodda">9.5.36. SMAP (NASA) vegetation optical depth assimilation</h4>
+<h4 id="sssec_smapnasavodda">9.5.38. SMAP (NASA) vegetation optical depth assimilation</h4>
 <div class="paragraph">
 <p><code>SMAP(NASA) vegetation optical depth data directory:</code> specifies the SMAP(NASA) vegetation
 optical depth data directory</p>
@@ -10566,7 +10660,7 @@ SMAP(NASA) vegetation optical depth number of bins in the CDF:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_smosnesdissmda">9.5.37. SMOS (NESDIS) soil moisture assimilation</h4>
+<h4 id="sssec_smosnesdissmda">9.5.39. SMOS (NESDIS) soil moisture assimilation</h4>
 <div class="paragraph">
 <p><code>SMOS(NESDIS) soil moisture data directory:</code> specifies the SMOS(NESDIS) soil
 moisture data directory</p>
@@ -10600,7 +10694,7 @@ SMOS(NESDIS) soil moisture number of bins in the CDF:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_smosnrtnnsmda">9.5.38. SMOS NRT NN soil moisture assimilation</h4>
+<h4 id="sssec_smosnrtnnsmda">9.5.40. SMOS NRT NN soil moisture assimilation</h4>
 <div class="paragraph">
 <p><code>SMOS NRT NN soil moisture data directory:</code> specifies the SMOS NRT NN soil
 moisture data directory</p>
@@ -10676,7 +10770,7 @@ SMOS NRT NN CDF read option:       1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_thysmda">9.5.39. THySM soil moisture assimilation</h4>
+<h4 id="sssec_thysmda">9.5.41. THySM soil moisture assimilation</h4>
 <div class="paragraph">
 <p><code>THySM data directory:</code> specifies the THySM data directory.</p>
 </div>
@@ -10704,7 +10798,7 @@ THySM soil moisture number of bins in the CDF: 100</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_snodasda">9.5.40. SNODAS snow depth assimilation</h4>
+<h4 id="sssec_snodasda">9.5.42. SNODAS snow depth assimilation</h4>
 <div class="paragraph">
 <p><code>SNODAS data directory:</code> specifies the directory for the
 SNODAS data.</p>
@@ -23794,7 +23888,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 3.0<br>
-Last updated 2024-07-11 13:12:32 UTC
+Last updated 2024-07-11 14:07:05 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
