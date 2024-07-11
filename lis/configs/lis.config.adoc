@@ -5541,7 +5541,7 @@ AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
 AGRMET radiation derived from: 'cloud types'
-AGRMET number of gauge networks to use: 6
+AGRMET number of gauge networks to use: 7
 AGRMET gauge networks to use::
 AMIL CANA FAA ICAO WMO HADS NWSLI
 ::
