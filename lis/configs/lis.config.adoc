@@ -1249,7 +1249,7 @@ Acceptable values are:
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
 |"`SNODAS`"                     | SNODAS snow depth
 |"`GLASS LAI`"                  | GLASS Leaf Area Index (LAI)
-|"`GLASS Albedo`"               | Glass Albedo (black-sky and white-sky)
+|"`GLASS Albedo`"               | GLASS Albedo (black-sky and white-sky)
 |====
 
 .Example _lis.config_ entry
@@ -2838,6 +2838,14 @@ MCD15A2H LAI apply QC flags:                                  1
 `GLASS LAI data source:` specifies if the GLASS data source is AVHRR or MODIS.
 
 `GLASS LAI apply temporal smoother between 8-day intervals:` specifies whether to apply temporal smoother between 8-day intervals of the LAI product.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply temporal smoother
+|1     | Apply temporal smoother
+|====
 
 .Example _lis.config_ entry
 ....
@@ -2854,6 +2862,14 @@ GLASS LAI apply temporal smoother between 8-day intervals: 1
 `GLASS Albedo data source:` specifies if the GLASS data source is AVHRR or MODIS.
 
 `GLASS Albedo apply QC flags:` specifies whether to apply quality-control flags of the GLASS Albedo data to the assimilation.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply QC flags
+|1     | Apply QC flags
+|====
 
 .Example _lis.config_ entry
 ....
