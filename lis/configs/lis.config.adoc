@@ -5467,6 +5467,12 @@ Acceptable values are:
 `AGRMET GALWEM radiation data directory:` specifies the location of the GALWEM
 radiation data files.
 
+`AGRMET number of gauge networks to use:` specifies nonnegative number
+of gauge networks to use, to be identified in separate config entry.
+
+`AGRMET gauge networks to use::` specifies list of names of gauge
+networks to be used. (One line of names per domain.)
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5540,6 +5546,10 @@ AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
 AGRMET radiation derived from: 'GALWEM_RAD'
 AGRMET GALWEM radiation data directory: GALWEM_Rad
+AGRMET number of gauge networks to use: 7
+AGRMET gauge networks to use::
+AMIL CANA FAA ICAO WMO HADS NWSLI
+::
 ....
 
 
