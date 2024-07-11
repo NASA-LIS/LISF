@@ -2971,6 +2971,7 @@ contains
 
          yr_2d = mod(yr1,100)
          if (yr_2d.eq.0) yr_2d = 100
+
          if (src .eq. "GFS") then
             ! EMK...Added support for new GFS filename convention
             call getAVNfilename(gribfile, agrmet_struc(nest)%agrmetdir,&

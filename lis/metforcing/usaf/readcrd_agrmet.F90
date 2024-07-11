@@ -509,10 +509,30 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%retroFileRoot,rc=rc)
   enddo
 
+  ! KRA/EMK 4 Jun 2024 New AGRMET radiation option
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET radiation derived from:",rc=rc)
+  call LIS_verify(rc, &
+          '[ERR] AGRMET radiation derived from: option not specified in the config file')
   do n=1,LIS_rc%nnest
-     call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%compute_radiation,default="cloud types", rc=rc)
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%compute_radiation, rc=rc)
+     call LIS_verify(rc, &
+          '[ERR] AGRMET radiation derived from: option not specified in the config file')
+     if (agrmet_struc(n)%compute_radiation .ne. "cloud types" .and. &
+          agrmet_struc(n)%compute_radiation .ne. "cod properties" .and. &
+          agrmet_struc(n)%compute_radiation .ne. "GALWEM_RAD") then
+        call LIS_verify(1, &
+             '[ERR] AGRMET radiation derived from: invalid option, must be "cloud types", "cod properties", or "GALWEM_RAD"')
+     end if
   enddo
+
+! KRA/EMK 4 Jun 2024 GALWEM RADIATION FILE READER:
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET GALWEM radiation data directory:",rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%galwemraddir,rc=rc)
+  enddo
+
+
 
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%security_class,&
        label="AGRMET security classification:",rc=rc)
