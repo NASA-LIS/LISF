@@ -360,7 +360,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                        write(LIS_logunit,*)'- CALLING STOREOBS TO PROCESS RAIN GAUGE DATA', j3hr
                        write(LIS_logunit,*)' '
                        
-                       call AGRMET_storeobs(nsize, nsize3, agrmet_struc(n)%max_pcpobs, &
+                       call AGRMET_storeobs(n, nsize, nsize3, agrmet_struc(n)%max_pcpobs, &
                             obs, obs3, ilat, ilon, &
                             mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
                             duration, j3hr, stncnt, alert_number, filename)
@@ -370,7 +370,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
                        write(LIS_logunit,*)'- CALLING STOREOBS_OFFHOUR TO PROCESS 3HOUR RAIN GAUGE DATA', j3hr
                        write(LIS_logunit,*)' '
                        
-                       call AGRMET_storeobs_offhour(nsize, agrmet_struc(n)%max_pcpobs, &
+                       call AGRMET_storeobs_offhour(n, nsize, agrmet_struc(n)%max_pcpobs, &
                             obs3, ilat, ilon, &
                             mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
                             duration, nsize3, alert_number, filename)

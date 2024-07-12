@@ -26,7 +26,7 @@
 !                new unknown network is encountered..........Eric Kemp/NASA
 !
 ! !INTERFACE: 
-subroutine AGRMET_storeobs(nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
+subroutine AGRMET_storeobs(n, nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
      mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
      duration, julhr, stncnt, alert_number, filename)
 
@@ -37,6 +37,7 @@ subroutine AGRMET_storeobs(nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
 
   implicit none
   
+  integer,    intent(in)         :: n
   integer,    intent(in)         :: isize
   character*10, intent(in)       :: network(isize)
   character*10, intent(in)       :: plat_id(isize)
@@ -253,7 +254,7 @@ subroutine AGRMET_storeobs(nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
 
      ! EMK 20240523...Skip report if network is not recognized. Issue an
      ! alert. Keep track of unknown networks to avoid redundant alerts.
-     if (.not. USAF_is_gauge(network(irecord))) then
+     if (.not. USAF_is_gauge(network(irecord),n)) then
         do i = 1, MAX_NEW_NETWORKS
            if (new_networks(i) == network(irecord)) then
               cycle RECORD
