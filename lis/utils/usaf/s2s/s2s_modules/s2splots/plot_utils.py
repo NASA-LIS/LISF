@@ -53,7 +53,7 @@ ADD_LAND = True
 ADD_RIVERS = True
 RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
-cbar_axes = [0.15, 0.04, 0.7, 0.02]
+cbar_axes = [0.1, 0.02, 0.8, 0.02]
 
 mpl.use('pdf')
 mpl.style.use('bmh')
