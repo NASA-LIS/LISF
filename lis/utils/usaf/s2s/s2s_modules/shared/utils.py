@@ -63,7 +63,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        if command_list is None:
+            _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        else:
+            _f.write('#SBATCH --nodes=1' + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -99,7 +102,9 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             _f.write( sec_command + '\n')
         else:
             for this_command in command_list:
-                _f.write( this_command + '\n')
+                _f.write("nohup " + this_command + ' &' + '\n')
+            _f.write("wait " + '\n')
+        #print(len(command_list))
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')

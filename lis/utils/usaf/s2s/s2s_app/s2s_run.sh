@@ -19,6 +19,7 @@
 #                              SHARED FUNCTIONS
 ######################################################################
 SOURCE_ONLY='N'
+GROUP_JOBS='Y'
 submit_job(){
     if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
@@ -549,21 +550,38 @@ bcsd_fcst(){
 	# hindcast does not run bcsd01 and bcsd03 since they have been preprocessed.
 	# Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
 	# --------------------------------------------------------------------------
+	cmdfile="bcsd01.file"
 	jobname=bcsd01
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
-	
 	job_list="$jobname*.j"
 	bcsd01_ID=
 	for jfile in $job_list
 	do
-	    thisID=$(submit_job "" "${jfile}")
-	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	    if [ $GROUP_JOBS == "Y" ]; then
+		job_comm=`grep python ${jfile} | cut -d'|' -f1`
+		echo "$job_comm" >> "$cmdfile"
+	    else
+		thisID=$(submit_job "" "${jfile}")
+		bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	    fi
 	done
 	bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
-	
+	if [ $GROUP_JOBS == "Y" ]; then
+	    bcsd01_ID=
+	    /bin/rm bcsd01_*.j
+	    split -l 6  $cmdfile part_
+	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C "part_aa"
+	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C "part_ab"
+	    /bin/rm ${cmdfile} "part_aa" "part_ab"
+	    bcsd01_ID=$(submit_job "" "${jobname}_01_run.j")
+	    thisID=$(submit_job "" "${jobname}_02_run.j")
+	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	    bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
+	fi
 	# Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
 	# --------------------------------------------------------------
 	jobname=bcsd03
+	cmdfile="bcsd03.file"
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	
 	unset job_list
@@ -571,15 +589,28 @@ bcsd_fcst(){
 	bcsd03_ID=
 	for jfile in $job_list
 	do
-	    thisID=$(submit_job "" "${jfile}")
-	    bcsd03_ID=`echo $bcsd03_ID`' '$thisID
+	    if [ $GROUP_JOBS == "Y" ]; then
+		job_comm=`grep python ${jfile} | cut -d'|' -f1`
+		echo "$job_comm" >> "$cmdfile"
+	    else
+		thisID=$(submit_job "" "${jfile}")
+		bcsd03_ID=`echo $bcsd03_ID`' '$thisID
+	    fi
 	done
 	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
+	if [ $GROUP_JOBS == "Y" ]; then
+	    /bin/rm bcsd03*.j
+	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	    /bin/rm ${cmdfile}
+	    bcsd03_ID=$(submit_job "" "${jobname}_run.j")
+	fi
     fi
 
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
+    cmdfile="bcsd04-05.file"
+    /bin/rm bcsd04-05*
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
@@ -587,12 +618,17 @@ bcsd_fcst(){
     bcsd04_ID=
     for jfile in $job_list
     do
-	if [ $DATATYPE == "forecast" ]; then
-	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	if [ $GROUP_JOBS == "Y" ]; then
+		job_comm=`grep python ${jfile} | cut -d'|' -f1`
+		echo "$job_comm" >> "$cmdfile"
 	else
-	    thisID=$(submit_job "" "${jfile}")
-	fi
-	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
+	    if [ $DATATYPE == "forecast" ]; then
+		thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	    else
+		thisID=$(submit_job "" "${jfile}")
+	    fi
+	    bcsd04_ID=`echo $bcsd04_ID`' '$thisID
+	fi	
     done
     bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
     
@@ -609,18 +645,34 @@ bcsd_fcst(){
     bcsd05_ID=
     for jfile in $job_list
     do
-	if [ $DATATYPE == "forecast" ]; then
-	    thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	if [ $GROUP_JOBS == "Y" ]; then
+		job_comm=`grep python ${jfile} | cut -d'|' -f1`
+		echo "$job_comm" >> "$cmdfile"
 	else
-	    thisID=$(submit_job "" "${jfile}")
+	    if [ $DATATYPE == "forecast" ]; then
+		thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jfile}")
+	    else
+		thisID=$(submit_job "" "${jfile}")
+	    fi
+	    bcsd05_ID=`echo $bcsd05_ID`' '$thisID
 	fi
-	bcsd05_ID=`echo $bcsd05_ID`' '$thisID
     done
     bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	jobname=bcsd04-05
+	/bin/rm bcsd04*.j
+	/bin/rm bcsd05*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
+	bcsd05_ID=
+    fi
     
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd06
+    cmdfile="bcsd06.file"
+    /bin/rm bcsd06*
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
@@ -628,10 +680,21 @@ bcsd_fcst(){
     bcsd06_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jfile}")
-	bcsd06_ID=`echo $bcsd06_ID`' '$thisID
+	if [ $GROUP_JOBS == "Y" ]; then
+	    job_comm=`grep python ${jfile} | cut -d'|' -f1`
+	    echo "$job_comm" >> "$cmdfile"
+	else
+	    thisID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jfile}")
+	    bcsd06_ID=`echo $bcsd06_ID`' '$thisID
+	fi
     done
-    bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"` 
+    bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	/bin/rm bcsd06*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd06_ID=$(submit_job "$bcsd04_ID" "${jobname}_run.j")
+    fi
     
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
     # temporal disaggregation due to an uneven number of ensembles between the datasets
@@ -644,6 +707,8 @@ bcsd_fcst(){
     # Task 8: NMME Temporal Disaggregation (forecast_task_08.py: after 6, 7)
     # ----------------------------------------------------------------------------
     jobname=bcsd08
+    cmdfile="bcsd08.file"
+    /bin/rm bcsd08*
     for model in $MODELS
     do
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
@@ -654,18 +719,36 @@ bcsd_fcst(){
     bcsd08_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd06_ID" "${jfile}")
-	bcsd08_ID=`echo $bcsd08_ID`' '$thisID
+	if [ $GROUP_JOBS == "Y" ]; then
+	    job_comm=`grep python ${jfile} | cut -d'|' -f1`
+	    echo "$job_comm" >> "$cmdfile"
+	else
+	    thisID=$(submit_job "$bcsd06_ID" "${jfile}")
+	    bcsd08_ID=`echo $bcsd08_ID`' '$thisID
+	fi
     done
     bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	/bin/rm bcsd08*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd08_ID=$(submit_job "$bcsd06_ID" "${jobname}_run.j")
+    fi
     
     # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
     #         (forecast_task_09.py: after 8)
     # ---------------------------------------------------------------------------
+    
     jobname=bcsd09
+    cmdfile="bcsd09-10.file"
+    /bin/rm bcsd09*
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
-
-    bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
+    if [ $GROUP_JOBS == "Y" ]; then
+	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
+	echo "$job_comm" >> "$cmdfile"
+    else
+	bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
+    fi
     
     # Task 10: Combine the NMME forcing fields into final format for LIS to read
     #          and symbolically link to the reusable CFSv2 met forcings
@@ -680,18 +763,38 @@ bcsd_fcst(){
     bcsd10_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$bcsd08_ID" "${jfile}")
-	bcsd10_ID=`echo $bcsd10_ID`' '$thisID
+	if [ $GROUP_JOBS == "Y" ]; then
+	    job_comm=`grep python ${jfile} | cut -d'|' -f1`
+	    echo "$job_comm" >> "$cmdfile"
+	else
+	    thisID=$(submit_job "$bcsd08_ID" "${jfile}")
+	    bcsd10_ID=`echo $bcsd10_ID`' '$thisID
+	fi
     done
     bcsd10_ID=`echo $bcsd10_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	jobname=bcsd09-10
+	/bin/rm bcsd09*.j
+	/bin/rm bcsd10*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
+	bcsd10_ID=
+    fi
     
     # Task 11: Copy 9th forecast lead file as 10th forecast lead for LIS runs
     #         (forecast_task_11.py: after 9 and 10)
     # ---------------------------------------------------------------------------
     jobname=bcsd11
+    cmdfile="bcsd11-12.file"
     # NOTE : Task 11  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd11_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
+    if [ $GROUP_JOBS == "Y" ]; then
+	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
+	echo "$job_comm" >> "$cmdfile"
+    else
+	bcsd11_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
+    fi
     
     # Task 12:  Task to introduce an all-zero variable V10M due to the way wind
     #           is handled in the USAF forcing
@@ -700,7 +803,21 @@ bcsd_fcst(){
     jobname=bcsd12
     # NOTE : Task 12  Job scripts are written by forecast_task_09.py to execute: 
     # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
-    bcsd12_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
+    if [ $GROUP_JOBS == "Y" ]; then
+	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
+	echo "$job_comm" >> "$cmdfile"
+    else
+	bcsd12_ID=$(submit_job "$bcsd09_ID:$bcsd10_ID" "${jobname}_run.j")
+    fi
+    if [ $GROUP_JOBS == "Y" ]; then
+	jobname=bcsd11-12
+	/bin/rm bcsd11*.j
+	/bin/rm bcsd12*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd11_ID=$(submit_job "$bcsd09_ID" "${jobname}_run.j")
+	bcsd12_ID=
+    fi
     
     cd ${BWD}
 }
@@ -762,7 +879,11 @@ lis_fcst(){
 	do
 	    if [ $nFiles -gt 1 ]; then
 		if [ $FileNo  -eq 1 ]; then
-		    thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
+		    if [ $GROUP_JOBS == "Y" ]; then
+			thisID=$(submit_job "$bcsd11_ID" "$jfile")
+		    else
+			thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
+		    fi
 		    lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 		    prevID=$thisID
 		else
@@ -771,7 +892,11 @@ lis_fcst(){
 		    prevID=$thisID		
 		fi
 	    else
-		thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
+		if [ $GROUP_JOBS == "Y" ]; then
+		    thisID=$(submit_job "$bcsd11_ID" "$jfile")
+		else
+		    thisID=$(submit_job "$bcsd11_ID:$bcsd12_ID" "$jfile")
+		fi
 		lisfcst_ID=`echo $lisfcst_ID`' '$thisID
 	    fi	
 	    ((FileNo++))
@@ -791,6 +916,7 @@ s2spost(){
     #######################################################################
     
     jobname=s2spost
+    cmdfile="s2spost.file"
     
     echo "              " >> $JOB_SCHEDULE
     echo "(5) S2S post-process                       " >> $JOB_SCHEDULE
@@ -826,10 +952,21 @@ s2spost(){
     s2spost_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$lisfcst_ID" "$jfile")
-	s2spost_ID=`echo $s2spost_ID`' '$thisID
+	if [ $GROUP_JOBS == "Y" ]; then
+	    job_comm=`grep python ${jfile} | cut -d'|' -f1`
+	    echo "$job_comm" >> "$cmdfile"
+	else
+	    thisID=$(submit_job "$lisfcst_ID" "$jfile")
+	    s2spost_ID=`echo $s2spost_ID`' '$thisID
+	fi
     done
-    s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`    
+    s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	/bin/rm s2spost_*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	s2spost_ID=$(submit_job "$lisfcst_ID" "${jobname}_run.j")
+    fi
     cd ${BWD}
 }
 
@@ -842,6 +979,7 @@ s2smetrics(){
     #######################################################################
     
     jobname=s2smetric
+    cmdfile="s2smetric.file"
     
     echo "              " >> $JOB_SCHEDULE
     echo "(6) S2S metric                             " >> $JOB_SCHEDULE
@@ -866,10 +1004,21 @@ s2smetrics(){
     s2smetric_ID=
     for jfile in $job_list
     do
-	thisID=$(submit_job "$s2spost_ID" "$jfile")
-	s2smetric_ID=`echo $s2smetric_ID`' '$thisID
+	if [ $GROUP_JOBS == "Y" ]; then
+	    job_comm=`grep python ${jfile} | cut -d'|' -f1`
+	    echo "$job_comm" >> "$cmdfile"
+	else
+	    thisID=$(submit_job "$s2spost_ID" "$jfile")
+	    s2smetric_ID=`echo $s2smetric_ID`' '$thisID
+	fi
     done
     s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	/bin/rm s2smetric_*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	s2smetric_ID=$(submit_job "$s2spost_ID" "${jobname}_run.j")
+    fi
     
     # write tiff file
     python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
@@ -889,6 +1038,7 @@ s2splots(){
     #######################################################################
     
     jobname=s2splots
+    cmdfile="s2splots.file"
     
     echo "              " >> $JOB_SCHEDULE
     echo "(7) S2S plots                              " >> $JOB_SCHEDULE
@@ -900,26 +1050,17 @@ s2splots(){
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
-    
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD}
-    COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "s|COMMAND|${COMMAND}|g" s2splots_run.j
-    
-    PLINE=`grep -n plot_s2smetrics.py s2splots_run.j | cut -d':' -f1`
-    ((PLINE++))
-    SEC_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "${PLINE}i ${SEC_COMMAND}" s2splots_run.j
-    ((PLINE++))
-    THIRD_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
-    sed -i "${PLINE}i ${THIRD_COMMAND}" s2splots_run.j
-    ((PLINE++))
-    FOURTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1"
-    sed -i "${PLINE}i ${FOURTH_COMMAND}" s2splots_run.j
-    ((PLINE++))
-    FIFTH_COMMAND="python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2"
-    sed -i "${PLINE}i ${FIFTH_COMMAND}" s2splots_run.j
 
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
+    echo "ython ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
+
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    /bin/rm ${cmdfile}
     s2splots_ID=$(submit_job "$s2smetric_tiff_ID" "${jobname}_run.j")
+        
 }
 
 #######################################################################
