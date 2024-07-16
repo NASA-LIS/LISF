@@ -31,7 +31,8 @@
 | GSWP2                                  | On
 | AGRMET                                 | Off
 | PRINCETON                              | On
-| NLDAS2                                 | On
+| NLDAS2 grib                            | On
+| NLDAS2 netcdf                          | On
 | GLDAS                                  | On
 | GFS                                    | On
 | MERRA2                                 | On
