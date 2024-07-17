@@ -700,7 +700,7 @@ bcsd_fcst(){
     bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm bcsd06*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd06_ID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jobname}_run.j")
     fi
@@ -739,7 +739,7 @@ bcsd_fcst(){
     bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm bcsd08*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd08_ID=$(submit_job "$bcsd06_ID" "${jobname}_run.j")
     fi
@@ -822,7 +822,7 @@ bcsd_fcst(){
 	jobname=bcsd11-12
 	/bin/rm bcsd11*.j
 	/bin/rm bcsd12*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd11_ID=$(submit_job "$bcsd09_ID" "${jobname}_run.j")
 	bcsd12_ID=

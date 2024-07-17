@@ -102,7 +102,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             if group_jobs:
                 for cmd in group_jobs:
                     _f.write(f"nohup {cmd} &\n")
-                    _f.write("wait\n")
+                _f.write("wait\n")
             if command_list:
                 for cmd in command_list:
                     _f.write(f"{cmd}\n")
