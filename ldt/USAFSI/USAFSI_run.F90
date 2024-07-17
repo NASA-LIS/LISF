@@ -86,6 +86,7 @@ subroutine USAFSI_run(n)
 #endif
   use USAFSI_analysisMod
   use USAFSI_arraysMod, only: USAFSI_arrays
+  use USAFSI_espcdMod
   use USAFSI_galwemMod, only: USAFSI_get_galwem_t2m
   use USAFSI_gofsMod
   use USAFSI_lisMod, only:  read_gr2_t2
