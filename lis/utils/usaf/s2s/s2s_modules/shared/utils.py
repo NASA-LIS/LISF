@@ -35,7 +35,7 @@ import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
 
 def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command = None,
-               command2 = None, command_list = None):
+               command2 = None, command_list = None, group_jobs=None):
     ''' writes SLURM job script '''
     if in_command is None:
         this_command = 'COMMAND'
@@ -63,10 +63,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        if command_list is None:
-            _f.write('#SBATCH --ntasks=' + ntasks + '\n')
-        else:
-            _f.write('#SBATCH --nodes=1' + '\n')
+        _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -97,14 +94,19 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
 
-        if  command_list is None:
-            _f.write( this_command + ' || exit 1' + '\n')
-            _f.write( sec_command + '\n')
+
+        if command_list is None and group_jobs is None:
+            _f.write(f"{this_command} || exit 1\n")
+            _f.write(f"{sec_command}\n")
         else:
-            for this_command in command_list:
-                _f.write("nohup " + this_command + ' &' + '\n')
-            _f.write("wait " + '\n')
-        #print(len(command_list))
+            if group_jobs:
+                for cmd in group_jobs:
+                    _f.write(f"nohup {cmd} &\n")
+                    _f.write("wait\n")
+            if command_list:
+                for cmd in command_list:
+                    _f.write(f"{cmd}\n")
+        
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')

@@ -569,12 +569,15 @@ bcsd_fcst(){
 	if [ $GROUP_JOBS == "Y" ]; then
 	    bcsd01_ID=
 	    /bin/rm bcsd01_*.j
-	    split -l 6  $cmdfile part_
+	    split -l 4  $cmdfile part_
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C "part_aa"
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C "part_ab"
-	    /bin/rm ${cmdfile} "part_aa" "part_ab"
+	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_03_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C "part_ac"
+	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac"
 	    bcsd01_ID=$(submit_job "" "${jobname}_01_run.j")
 	    thisID=$(submit_job "" "${jobname}_02_run.j")
+	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	    thisID=$(submit_job "" "${jobname}_03_run.j")
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
 	    bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
 	fi
@@ -599,6 +602,7 @@ bcsd_fcst(){
 	done
 	bcsd03_ID=`echo $bcsd03_ID | sed "s| |:|g"`
 	if [ $GROUP_JOBS == "Y" ]; then
+	    bcsd03_ID=
 	    /bin/rm bcsd03*.j
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	    /bin/rm ${cmdfile}
@@ -609,8 +613,7 @@ bcsd_fcst(){
     # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
-    cmdfile="bcsd04-05.file"
-    /bin/rm bcsd04-05*
+    cmdfile="bcsd04.file"
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
@@ -631,10 +634,18 @@ bcsd_fcst(){
 	fi	
     done
     bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
+    if [ $GROUP_JOBS == "Y" ]; then
+	bcsd04_ID=
+	/bin/rm bcsd04*.j
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	/bin/rm ${cmdfile}
+	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
+    fi
     
     # Task 5: Monthly "BC" step applied to NMME (forecast_task_05.py: after 1 and 3)
     # ------------------------------------------------------------------------------
     jobname=bcsd05
+    cmdfile="bcsd05.file"
     for model in $MODELS
     do
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
@@ -659,13 +670,11 @@ bcsd_fcst(){
     done
     bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
-	jobname=bcsd04-05
-	/bin/rm bcsd04*.j
+	bcsd05_ID=
 	/bin/rm bcsd05*.j
 	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
-	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
-	bcsd05_ID=
+	bcsd05_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
     fi
     
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
@@ -693,7 +702,7 @@ bcsd_fcst(){
 	/bin/rm bcsd06*.j
 	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
-	bcsd06_ID=$(submit_job "$bcsd04_ID" "${jobname}_run.j")
+	bcsd06_ID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jobname}_run.j")
     fi
     
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
