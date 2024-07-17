@@ -672,7 +672,7 @@ bcsd_fcst(){
     if [ $GROUP_JOBS == "Y" ]; then
 	bcsd05_ID=
 	/bin/rm bcsd05*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd05_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
     fi
@@ -972,7 +972,7 @@ s2spost(){
     s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2spost_*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	s2spost_ID=$(submit_job "$lisfcst_ID" "${jobname}_run.j")
     fi
