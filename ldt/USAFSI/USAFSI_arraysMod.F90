@@ -65,7 +65,7 @@ module USAFSI_arraysMod
       real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON USAFSI GRID
       real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
       real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
-      real, allocatable :: gofs_icecon(:,:)
+      real, allocatable :: navy_icecon(:,:)
    end type USAFSI_arrays_t
 
    type(USAFSI_arrays_t), public :: USAFSI_arrays
