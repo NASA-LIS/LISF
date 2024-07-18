@@ -569,15 +569,18 @@ bcsd_fcst(){
 	if [ $GROUP_JOBS == "Y" ]; then
 	    bcsd01_ID=
 	    /bin/rm bcsd01_*.j
-	    split -l 4  $cmdfile part_
+	    split -l 3  $cmdfile part_
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_03_run.j -t 1 -H 3 -j ${jobname}_03_ -w ${CWD} -C "part_ac"
-	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac"
+	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_04_run.j -t 1 -H 3 -j ${jobname}_04_ -w ${CWD} -C "part_ad"
+	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac" "part_ad"
 	    bcsd01_ID=$(submit_job "" "${jobname}_01_run.j")
 	    thisID=$(submit_job "" "${jobname}_02_run.j")
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
 	    thisID=$(submit_job "" "${jobname}_03_run.j")
+	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
+	    thisID=$(submit_job "" "${jobname}_04_run.j")
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
 	    bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
 	fi
