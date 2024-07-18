@@ -134,7 +134,7 @@ def print_status_report (e2es, yyyymm):
                     if (not re.search(pattern_not1, line)) and (not re.search(pattern_not2, line)):
                         _l2 = [int(x) for x in line.split(":")[1:4]]
                 if re.search(pattern_sbu, line):
-                    sbu = np.float (line.split(":")[1])
+                    sbu = float (line.split(":")[1])
         file.close()
         print ('{:>3}/{:>3}  {:<35}{:>2}h {:>2}m {:>2}s'.format
                (this_no,nfiles,job_file,_l2[0],_l2[1],_l2[2]))
