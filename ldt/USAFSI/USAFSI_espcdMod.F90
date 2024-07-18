@@ -46,29 +46,32 @@ contains
     ! Arguments
     character(len=*), intent(in) :: rootdir
     character*3, intent(in) :: region
-    integer, intent(inout) :: yyyy
-    integer, intent(inout) :: mm
-    integer, intent(inout) :: dd
-    integer, intent(inout) :: hh
-    integer, intent(inout) :: fh
+    integer, intent(in) :: yyyy
+    integer, intent(in) :: mm
+    integer, intent(in) :: dd
+    integer, intent(in) :: hh
+    integer, intent(in) :: fh
     character*255, intent(out) :: filename
 
     ! Locals
     integer :: julhr, julhr_orig
     logical :: file_exists
+    integer :: yyyy_local, mm_local, dd_local, hh_local
+    integer :: fh_local
 
     ! Build the file name.  Note that all ESPC-D CICE runs start at 12Z.
     call LDT_get_julhr(yyyy, mm, dd, 12, 0, 0, julhr)
     if (hh >= 12) then
        julhr_orig = julhr
-       fh = 0
+       fh_local = 0
     else
        julhr_orig = julhr - 24 ! Must use previous day's run
-       fh = 12
+       fh_local = 12
     end if
-    call LDT_julhr_date(julhr_orig, yyyy, mm, dd, hh)
+    call LDT_julhr_date(julhr_orig, yyyy_local, mm_local, dd_local, &
+         hh_local)
     call construct_espcd_cice_filename(rootdir, region, &
-         yyyy, mm, dd, hh, fh, filename)
+         yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
 
     write(LDT_logunit,*) &
          '------------------------------------------------------------------'
@@ -85,7 +88,7 @@ contains
     julhr = julhr_orig
     do
        write(LDT_logunit,*)'[WARN] Cannot find ', trim(filename)
-       fh = fh + 24
+       fh_local = fh_local + 24
        julhr = julhr - 24
        if ( (julhr_orig - julhr) > 24*5) then
           write(LDT_logunit,*)&
@@ -97,10 +100,11 @@ contains
           filename = 'NONE'
           return
        end if
-       call LDT_julhr_date(julhr, yyyy, mm, dd, hh)
+       call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
+            hh_local)
 
        call construct_espcd_cice_filename(rootdir, region, &
-            yyyy, mm, dd, hh, fh, filename)
+            yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
        inquire(file=trim(filename), exist=file_exists)
        if (file_exists) then
           write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
@@ -468,21 +472,24 @@ contains
     ! Locals
     real, allocatable :: icecon_arc(:,:)
     real, allocatable :: icecon_ant(:,:)
+    integer :: fh_internal
     integer :: c, r
     integer :: gindex
     real :: rlat
 
     ! First handle Arctic region
-    call process_espcd_cice_region('ARC', rootdir, nc, nr, landmask, &
-         yyyy, mm, dd, hh, fh, icecon_arc, ierr)
+    fh_internal = fh
+    call process_espcd_cice_region('arc', rootdir, nc, nr, landmask, &
+         yyyy, mm, dd, hh, fh_internal, icecon_arc, ierr)
     if (ierr .ne. 0) then
        if (allocated(icecon_arc)) deallocate(icecon_arc)
        return
     end if
 
     ! Next handle Antarctic region
-    call process_espcd_cice_region('ANT', rootdir, nc, nr, landmask, &
-         yyyy, mm, dd, hh, fh, icecon_ant, ierr)
+    fh_internal = fh
+    call process_espcd_cice_region('ant', rootdir, nc, nr, landmask, &
+         yyyy, mm, dd, hh, fh_internal, icecon_ant, ierr)
     if (ierr .ne. 0) then
        if (allocated(icecon_arc)) deallocate(icecon_arc)
        if (allocated(icecon_ant)) deallocate(icecon_ant)
@@ -559,14 +566,14 @@ contains
     external :: upscaleByAveraging
 
     ! Sanity check the region
-    if (region .eq. 'ARC') then
+    if (region .eq. 'arc') then
        nlat = nlat_arc
-    else if (region .eq. 'ANT') then
+    else if (region .eq. 'ant') then
        nlat = nlat_ant
     else
        write(LDT_logunit,*)'[ERR] Invalid ESPC-D region for cice: ' &
             // region
-       write(LDT_logunit,*)'[ERR] Must be either ARC or ANT'
+       write(LDT_logunit,*)'[ERR] Must be either arc or ant'
        ierr = 1
        call LDT_endrun()
     end if
@@ -619,7 +626,7 @@ contains
     deallocate(aice)
 
     ! Set up interpolation weights
-    if (region .eq. 'ARC') then
+    if (region .eq. 'arc') then
        gridDesci = 0
        gridDesci(1) = 0 ! Lat/lon projection
        gridDesci(2) = nlon    ! Number of columns
@@ -632,7 +639,7 @@ contains
        gridDesci(9) =    0.039978027344005795 ! delta-lon (deg)
        gridDesci(10) =   0.0200004577637 !     delta-lat (deg)
        gridDesci(20) = 64  ! East-west ordering
-    else if (region .eq. 'ANT') then
+    else if (region .eq. 'ant') then
        gridDesci = 0
        gridDesci(1) = 0 ! Lat/lon projection
        gridDesci(2) = nlon  ! Number of columns
