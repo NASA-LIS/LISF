@@ -1125,9 +1125,9 @@ subroutine create_SMOPS_ASCATsm_filename(ndir, useRT, yr, mo,da, hr, conv, filen
 
      call ESMF_TimeSet(Ver4_blended_time, &
         yy = 2024, &
-        mm = 4,   &
-        dd = 25,    &
-        h  = 0,    &
+        mm = 7,    &
+        dd = 4,    &
+        h  = 18,   &
         m  = 0,    &
         s  = 0,    &
         calendar = LIS_calendar, &
