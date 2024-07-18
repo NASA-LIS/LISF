@@ -640,9 +640,14 @@ bcsd_fcst(){
     if [ $GROUP_JOBS == "Y" ]; then
 	bcsd04_ID=
 	/bin/rm bcsd04*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
-	/bin/rm ${cmdfile}
-	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
+	split -l 4  $cmdfile part_
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	/bin/rm ${cmdfile} "part_aa" "part_ab"
+	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_01_run.j")
+	thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_02_run.j")
+	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
+	bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
     fi
     
     # Task 5: Monthly "BC" step applied to NMME (forecast_task_05.py: after 1 and 3)
