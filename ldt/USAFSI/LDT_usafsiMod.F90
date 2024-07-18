@@ -501,7 +501,7 @@ contains
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! EMK 20240718...Specify source of ocean data.
-    cfg_entry = "USAFSI Source of ocean data:"
+    cfg_entry = "USAFSI source of ocean data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
@@ -513,7 +513,7 @@ contains
        write(LDT_logunit,*)'[ERR] Unrecognized source of ocean data'
        write(LDT_logunit,*)'[ERR] Must be GOFS or ESPC-D'
        write(LDT_logunit,*) &
-            "[ERR] Update entry for 'USAFSI Source of ocean data:'"
+            "[ERR] Update entry for 'USAFSI source of ocean data:'"
        write(LDT_logunit,*)'[ERR] LDT will halt.'
        call LDT_endrun()
     end if
