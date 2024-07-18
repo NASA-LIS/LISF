@@ -14323,6 +14323,14 @@ Acceptable values are:</p>
 <p><code>AGRMET GALWEM radiation data directory:</code> specifies the location of the GALWEM
 radiation data files.</p>
 </div>
+<div class="paragraph">
+<p><code>AGRMET number of gauge networks to use:</code> specifies nonnegative number
+of gauge networks to use, to be identified in separate config entry.</p>
+</div>
+<div class="paragraph">
+<p><code>AGRMET gauge networks to use::</code> specifies list of names of gauge
+networks to be used. (One line of names per domain.)</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
@@ -14396,7 +14404,11 @@ AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
 AGRMET radiation derived from: 'GALWEM_RAD'
-AGRMET GALWEM radiation data directory: GALWEM_Rad</pre>
+AGRMET GALWEM radiation data directory: GALWEM_Rad
+AGRMET number of gauge networks to use: 7
+AGRMET gauge networks to use::
+AMIL CANA FAA ICAO WMO HADS NWSLI
+::</pre>
 </div>
 </div>
 </div>
@@ -23888,7 +23900,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 3.0<br>
-Last updated 2024-07-11 14:07:05 UTC
+Last updated 2024-07-18 20:07:53 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
