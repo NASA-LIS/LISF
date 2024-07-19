@@ -90,7 +90,7 @@
       endif
 
       write(LIS_logunit,*)                                             &
-                      "Finished reading original NLDAS-2 elevation data"
+                      "[INFO] Finished reading original NLDAS-2 elevation data"
 #endif
 
       end subroutine read_nldas20_elev
