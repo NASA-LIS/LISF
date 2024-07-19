@@ -67,22 +67,26 @@ contains
     routine_name = 'find_espcd_cice_file'
 
     ! Build the file name.  Note that all ESPC-D CICE runs start at 12Z.
+    ! NOTE:  CICE output is 12-hrly.
     call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, julhr)
     if (hh == 12) then
        fh_local = 0
     else if (hh == 18) then
-       fh_local = 6
+       fh_local = 0
+       julhr = julhr - 6
     else if (hh == 00) then
        fh_local = 12
+       julhr = julhr - 12
     else if (hh == 06) then
-       fh_local = 18
+       fh_local = 12
+       julhr = julhr - 18
     else
        write(LDT_logunit,*)'[ERR] Bad USAFSI hour ', hh
        write(LDT_logunit,*)'[ERR] Must be 00, 06, 12, or 18'
        write(LDT_logunit,*)'[ERR] LDT will exit...'
        call LDT_endrun()
     end if
-    julhr = julhr - fh_local
+
     call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
          hh_local)
     call construct_espcd_cice_filename(rootdir, region, &
