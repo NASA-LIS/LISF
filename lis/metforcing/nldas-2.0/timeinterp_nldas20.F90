@@ -12,10 +12,8 @@
 ! \label{timeinterp_nldas20}
 !
 ! !REVISION HISTORY:
-! 02 Feb 2004: Sujay Kumar;  Initial Specification
-! 24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
-! 14 Mar 2014: David Mocko:  Added CAPE and PET forcing from NLDAS-2
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from timeinterp_nldas2.F90)
 !
 ! !INTERFACE:
       subroutine timeinterp_nldas20(n,findex)

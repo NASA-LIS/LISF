@@ -13,9 +13,8 @@
 !  \label{read_nldas20_elev}
 !
 ! !REVISION HISTORY:
-!  17 Dec 2004; Sujay Kumar; Initial Specificaton
-!  24 Aug 2007: Chuck Alonge; Modified for use with NLDAS2 data
-!  11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from read_nldas2_elev.F90)
 !
 ! !INTERFACE:
       subroutine read_nldas20_elev(n,findex)
@@ -36,8 +35,8 @@
 !
 ! !DESCRIPTION:
 !
-!  Opens, reads, and interpolates NLDAS2 model elevation to the LIS
-!  grid. The data will be used to perform any topographical
+!  Opens, reads, and interpolates NLDAS-2 model elevation to the
+!  LIS grid.  The data will be used to perform any topographical
 !  adjustments to the forcing.
 !
 !  The arguments are:
@@ -90,7 +89,7 @@
       endif
 
       write(LIS_logunit,*)                                             &
-                      "[INFO] Finished reading original NLDAS-2 elevation data"
+               "[INFO] Finished reading original NLDAS-2 elevation data"
 #endif
 
       end subroutine read_nldas20_elev

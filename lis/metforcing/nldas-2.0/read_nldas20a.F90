@@ -13,34 +13,8 @@
 !  \label{read_nldas20a}
 !
 ! !REVISION HISTORY:
-!  11 Apr 2000: Brian Cosgrove; changed code to use Forcing Mask (With
-!               inland water filled in).  Deleted unused variables.
-!  27 Apr 2000: Brian Cosgrove; changed code to use the original
-!               mask again since that is the
-!               mask which NCEP has already applied to the forcing data
-!               by the time NASA gets it......not possible to use the
-!               expanded NASA forcing mask
-!  1  May 2000: Brian Cosgrove; changed code so that if parameter 11 (sw)
-!               is not found in hourly ncep data, it will just use
-!               edas-based shortwave from the hourly ncep files
-!  20 Jun 2000: Brian Cosgrove; changed code so that it uses LDAS%UDEF and
-!               not a hard-wired undefined value of -999.9 and -999.0
-!  18 Aug 2000: Brian Cosgrove; changed code so that FMASK and not MASK
-!               is used when ungribbing.  NCEP data already has a mask applied
-!               to it and so may not be able to supply forcing data to
-!               all LDAS land forcing points.  In areas where LDAS
-!               forcing mask states that land exists, but where NCEP forcing
-!               data is non-existent, assign undefined value to forcing data.
-!  22 Aug 2000: Brian Cosgrove; Altered code for US/Mexico/Canada Mask
-!  05 Sep 2001: Brian Cosgrove; Removed dirnom and infile variables, changed
-!               call to ungribncep to match removal.  Added code to make use
-!               of precip weighting mask
-!  02 Feb 2004: Sujay Kumar; Initial Specification in LIS
-!  24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
-!  25 Jan 2012: Sujay Kumar;  Switched to the use of grib-api library
-!  14 Mar 2014: David Mocko:  Added CAPE and PET forcing from NLDAS-2
-!  16 Oct 2017: Bailing Li:   Modified interp_nldas2 to read climatology ratios
-!  11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from read_nldas2a.F90)
 !
 ! !INTERFACE:
       subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
@@ -221,6 +195,10 @@
 !BOP
 ! !ROUTINE: interp_nldas20
 ! \label{interp_nldas20}
+!
+! !REVISION HISTORY:
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from read_nldas2a.F90)
 !
 ! !INTERFACE:
       subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &

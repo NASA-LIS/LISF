@@ -13,12 +13,8 @@
 !  \label{readcrd_nldas20}
 !
 ! !REVISION HISTORY:
-! 02Feb2004; Sujay Kumar,    Initial Code
-! 24 Aug 2007: Chuck Alonge; Modified for use with NLDAS2 data
-! 22 Jan 2012: K. Arsenault; Accommodate GES DISC, NCEP filename conventions
-! 14 Mar 2014: David Mocko:  Removed elevation file line in config file,
-!                            as this data is now in the LDT input file.
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from readcrd_nldas2.F90)
 !
 ! !INTERFACE:
       subroutine readcrd_nldas20()

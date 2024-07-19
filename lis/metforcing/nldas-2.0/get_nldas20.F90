@@ -12,11 +12,8 @@
 ! \label{get_nldas20}
 !
 ! !REVISION HISTORY:
-! 02 Feb 2004: Sujay Kumar;  Initial Version in LIS
-! 22 Aug 2007: Chuck Alonge; Updated for NLDAS2 Forcing
-! 22 Jan 2012: K. Arsenault; Accommodate GESDISC, NCEP filename conventions
-! 14 Mar 2014: David Mocko:  Trim writing of filenames to log file
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from get_nldas2.F90)
 !
 ! !INTERFACE:
       subroutine get_nldas20(n,findex)

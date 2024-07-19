@@ -13,9 +13,8 @@
 ! \label{read_orig_nldas20_elevdiff}
 !
 ! !REVISION HISTORY:
-!  7 Nov 2012: Sujay Kumar - initial specification based on the NLDAS-1
-!                            implementation
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from read_orig_nldas2_elevdiff.F90)
 !
 ! !INTERFACE:
       subroutine read_orig_nldas20_elevdiff(n)
@@ -72,7 +71,7 @@
       endif
 
       write(LIS_logunit,*) "[INFO] Finished reading original NLDAS-2"
-      write(LIS_logunit,*) "[INFO] NLDAS2 elevation difference data.."
+      write(LIS_logunit,*) "[INFO] elevation difference data."
 #endif
 
       end subroutine read_orig_nldas20_elevdiff
