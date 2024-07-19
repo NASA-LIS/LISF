@@ -12,9 +12,8 @@
 ! \label{nldas20_ec_removal}
 !
 ! !REVISION HISTORY:
-!  20 Oct 2006: Kristi Arsenault; Adapted elevation correction code
-!               to remove such a correction from NLDAS2 fields
-!  11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from nldas2_ec_removal.F90)
 !
 ! !INTERFACE:
       subroutine nldas20_ec_removal(nest,point,force_tmp,force_hum,    &
@@ -38,7 +37,7 @@
 !  to these variables described in Cosgrove et. al (2003).
 !
 !  Cosgrove, B.A. et.al, Real-time and retrospective forcing in the
-!  North American Land Data Assimilation (NLDAS2) project, Journal of
+!  North American Land Data Assimilation (NLDAS) project, Journal of
 !  Geophysical Research, 108(D22), 8842, DOI: 10.1029/2002JD003118, 2003.
 !
 !  The arguments are:

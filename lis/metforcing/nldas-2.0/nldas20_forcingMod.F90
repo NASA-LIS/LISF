@@ -12,10 +12,8 @@
 ! !MODULE: nldas20_forcingMod
 !
 ! !REVISION HISTORY:
-! 02 Feb 2004: Sujay Kumar; Initial Specification
-! 24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
-! 14 Mar 2014: David Mocko: Added CAPE and PET forcing from NLDAS-2
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from nldas2_forcingMod.F90)
 !
 ! !USES:
       use LIS_constantsMod, only : LIS_CONST_PATH_LEN
@@ -41,7 +39,7 @@
 !  at the following URL:
 !    https://ldas.gsfc.nasa.gov/nldas/v2/forcing
 !
-!  The implemenatation in LIS has the derived data type {\tt nldas20\_struc}
+!  The implementation in LIS has the derived data type {\tt nldas20\_struc}
 !  that includes the variables that specify the runtime options, and the
 !  weights and neighbor information to be used for spatial interpolation.
 !  They are described below:
@@ -316,7 +314,7 @@
             call LIS_endrun()
          end select
 
-! Read in elevation difference and NLDAS2 elevation maps:
+! Read in elevation difference and NLDAS-2 elevation maps:
          if (LIS_rc%met_ecor(findex).ne."none") then
             allocate(nldas20_struc(n)%orig_ediff(                      &
                      nldas20_struc(n)%ncold*nldas20_struc(n)%nrold))

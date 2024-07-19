@@ -12,13 +12,8 @@
 ! \label{netcdf4_nldas20filea}
 !
 ! !REVISION HISTORY:
-!  1  Oct 1999: Jared Entin; Initial code
-!  15 Oct 1999: Paul Houser; Significant F90 Revision
-!  04 Sep 2001: Brian Cosgrove; Use of NASA data enabled, updated
-!               reading of data directory structure to read new format
-!  24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
-!  22 Jan 2012: K. Arsenault; Accommodate GES DISC, NCEP/EMC filename conventions
-!  11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from get_gesdisc_filenames.F90)
 !
 ! !INTERFACE:
       subroutine netcdf4_nldas20filea(n,kk,findex,filename,            &
@@ -119,13 +114,8 @@
 ! \label{netcdf4_nldas20fileb}
 !
 ! !REVISION HISTORY:
-!  1  Oct 1999: Jared Entin; Initial code
-!  15 Oct 1999: Paul Houser; Significant F90 Revision
-!  04 Sep 2001: Brian Cosgrove; Use of NASA data enabled, updated
-!               reading of data directory structure to read new format
-!  24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
-!  22 Jan 2012: K. Arsenault; Accommodate GES DISC, GES DISC filename conventions
-!  11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from get_gesdisc_filenames.F90)
 !
 ! !INTERFACE:
       subroutine netcdf4_nldas20fileb(n,kk,findex,filename,            &

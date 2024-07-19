@@ -12,9 +12,8 @@
 !  \label{finalize_nldas20}
 !
 ! !REVISION HISTORY:
-! 25 Oct 2005: Sujay Kumar,  Initial Code
-! 24 Aug 2007: Chuck Alonge, Modified for use with NLDAS-2 data
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from finalize_nldas2.F90)
 !
 ! !INTERFACE:
       subroutine finalize_nldas20(findex)

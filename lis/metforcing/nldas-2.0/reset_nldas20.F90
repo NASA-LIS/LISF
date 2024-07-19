@@ -12,8 +12,8 @@
 !  \label{reset_nldas20}
 !
 ! !REVISION HISTORY:
-! 25 Oct 2005; Sujay Kumar,  Initial Code
-! 11 Jul 2024: David Mocko,  Modified for use with netCDF-4 format
+! 11 Jul 2024: David Mocko, Initial Specification
+!                           (derived from reset_nldas2.F90)
 !
 ! !INTERFACE:
       subroutine reset_nldas20()
@@ -24,7 +24,7 @@
       implicit none
 !
 ! !DESCRIPTION:
-!  Routine to reset nldas2 forcing related memory allocations.
+!  Routine to reset NLDAS-2 forcing related memory allocations.
 !
 !EOP
       integer   :: n
