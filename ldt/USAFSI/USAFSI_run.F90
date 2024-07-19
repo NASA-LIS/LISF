@@ -71,6 +71,7 @@ subroutine USAFSI_run(n)
   !**  13 Jan 22  Added support for FNMOC SST GRIB1 file.........Eric Kemp/NASA GSFC/SSAI
   !**  27 Jun 23  Removed LDT_endrun for normal termination, to avoid error
   !               code 1.........................................Eric Kemp/SSAI
+  !**  19 Jul 24  Added ESPC-D support...........................Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
