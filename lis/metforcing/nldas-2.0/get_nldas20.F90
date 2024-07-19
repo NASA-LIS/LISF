@@ -212,7 +212,7 @@
             call LIS_tick(dtime1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
             if (try.gt.11) then
                write(LIS_logunit,*)                                    &
-                     "[ERR} NLDAS-2 data gap exceeds 10 days on file 1"
+                     "[ERR] NLDAS-2 data gap exceeds 10 days on file 1"
                write(LIS_logunit,*) "[ERR] Program stopping ..."
                call LIS_endrun()
             endif
@@ -260,7 +260,7 @@
             call LIS_tick(dtime2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
             if (try.gt.11) then
                write(LIS_logunit,*)                                    &
-                     "[ERR} NLDAS-2 data gap exceeds 10 days on file 2"
+                     "[ERR] NLDAS-2 data gap exceeds 10 days on file 2"
                write(LIS_logunit,*) "[ERR] Program stopping ..."
                call LIS_endrun()
             endif
