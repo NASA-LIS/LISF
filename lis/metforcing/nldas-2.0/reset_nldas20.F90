@@ -7,7 +7,6 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#include "LIS_misc.h"
 !BOP
 ! !MODULE: reset_nldas20
 !  \label{reset_nldas20}
