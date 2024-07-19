@@ -39,6 +39,8 @@ contains
     ! Imports
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
+    use USAFSI_paramsMod, only: program_name, msglns
+    use USAFSI_utilMod, only: error_message
 
     ! Defaults
     implicit none
@@ -58,6 +60,11 @@ contains
     logical :: file_exists
     integer :: yyyy_local, mm_local, dd_local, hh_local
     integer :: fh_local
+    character*255 :: message (msglns)
+    character*12 :: routine_name
+
+    message = ''
+    routine_name = 'find_espcd_cice_file'
 
     ! Build the file name.  Note that all ESPC-D CICE runs start at 12Z.
     call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, julhr)
@@ -89,6 +96,10 @@ contains
     if (file_exists) then
        write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
        return
+    else
+       message(1) = '[WARN] CANNOT FIND FILE'
+       message(2) = '[WARN] PATH = ' // trim(filename)
+       call error_message(program_name, routine_name, message)
     end if
 
     ! At this point, we are rolling back to earlier CICE file
@@ -119,6 +130,10 @@ contains
        if (file_exists) then
           write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
           return
+       else
+          message(1) = '[WARN] CANNOT FIND FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
        end if
     end do
 
@@ -160,6 +175,8 @@ contains
     ! Imports
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
+    use USAFSI_paramsMod, only: program_name, msglns
+    use USAFSI_utilMod, only: error_message
 
     ! Defaults
     implicit none
@@ -177,6 +194,11 @@ contains
     integer :: julhr, julhr_orig
     integer :: yyyy_local, mm_local, dd_local, hh_local, fh_local
     logical :: file_exists
+    character*255 :: message (msglns)
+    character*12 :: routine_name
+
+    message = ''
+    routine_name = 'find_espcd_sst_file'
 
     ! Build the file name.  Note that all ESPC-D SST runs start at 12Z.
     call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, &
@@ -210,6 +232,10 @@ contains
     if (file_exists) then
        write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
        return
+    else
+       message(1) = '[WARN] CANNOT FIND FILE'
+       message(2) = '[WARN] PATH = ' // trim(filename)
+       call error_message(program_name, routine_name, message)
     end if
 
     ! At this point, we are rolling back to earlier SST file
@@ -237,6 +263,10 @@ contains
        if (file_exists) then
           write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
           return
+       else
+          message(1) = '[WARN] CANNOT FIND FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
        end if
     end do
 
