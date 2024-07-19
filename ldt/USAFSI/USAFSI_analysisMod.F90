@@ -17,6 +17,10 @@
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 ! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
+! 19 Jul 2024  Eric Kemp Renamed run_seaice_analysis_gofs to
+!                        run_seaice_analysis_navy to reflect use of
+!                        ESPC-D or GOFS data.  Also fixed uninitialized
+!                        variable.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.

@@ -32,7 +32,8 @@
 !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
 !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
 !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
-!** 
+!**  19 Jul 24  Renamed gofs_icecon array to navy_icecon array to reflect
+!               source as either ESPC-D or GOFS.
 !*****************************************************************************************
 !*****************************************************************************************
 
