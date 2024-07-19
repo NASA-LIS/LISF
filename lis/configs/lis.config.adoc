@@ -5874,8 +5874,8 @@ SCAN forcing directory:   ./input/FORCING/SCAN
 SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
 ....
 
-[[sssec_forcings_nldas2,NLDAS2]]
-==== NLDAS2
+[[sssec_forcings_nldas2,NLDAS2 (grib)]]
+==== NLDAS2 (grib)
 
 `NLDAS2 forcing directory:` specifies the location of the NLDAS-2
 GRIB-1 forcing files.
@@ -5959,8 +5959,8 @@ NLDAS2 use model based precip:          0
 NLDAS2 use model based pressure:        0
 ....
 
-[[sssec_forcings_nldas20,NLDAS20]]
-==== NLDAS-2.0
+[[sssec_forcings_nldas20,NLDAS-2.0 (netcdf)]]
+==== NLDAS-2.0 (netcdf)
 
 `NLDAS-2.0 FORA forcing directory:` specifies the location of the
 NLDAS-2.0 v020 "`FORA`" netCDF-4 forcing files.
