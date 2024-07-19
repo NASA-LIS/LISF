@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !MODULE: reset_nldas20
+! !ROUTINE: reset_nldas20
 !  \label{reset_nldas20}
 !
 ! !REVISION HISTORY:
