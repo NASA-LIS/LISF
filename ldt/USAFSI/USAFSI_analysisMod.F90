@@ -2250,6 +2250,7 @@ contains
       found   = .false.
       limit   = 3
       tries   = 1
+      grstat  = 0
 
       call date10_julhr (date10, julsst, program_name, routine_name)
 
