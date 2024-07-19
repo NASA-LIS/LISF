@@ -37,7 +37,7 @@ contains
        yyyy, mm, dd, hh, fh, filename)
 
     ! Imports
-    use LDT_logMod, only: LDT_logunit
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
 
     ! Defaults
@@ -60,15 +60,23 @@ contains
     integer :: fh_local
 
     ! Build the file name.  Note that all ESPC-D CICE runs start at 12Z.
-    call LDT_get_julhr(yyyy, mm, dd, 12, 0, 0, julhr)
-    if (hh >= 12) then
-       julhr_orig = julhr
+    call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, julhr)
+    if (hh == 12) then
        fh_local = 0
-    else
-       julhr_orig = julhr - 24 ! Must use previous day's run
+    else if (hh == 18) then
+       fh_local = 6
+    else if (hh == 00) then
        fh_local = 12
+    else if (hh == 06) then
+       fh_local = 18
+    else
+       write(LDT_logunit,*)'[ERR] Bad USAFSI hour ', hh
+       write(LDT_logunit,*)'[ERR] Must be 00, 06, 12, or 18'
+       write(LDT_logunit,*)'[ERR] LDT will exit...'
+       call LDT_endrun()
     end if
-    call LDT_julhr_date(julhr_orig, yyyy_local, mm_local, dd_local, &
+    julhr = julhr - fh_local
+    call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
          hh_local)
     call construct_espcd_cice_filename(rootdir, region, &
          yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
@@ -84,12 +92,14 @@ contains
     end if
 
     ! At this point, we are rolling back to earlier CICE file
+    julhr_orig = julhr
+
     ! Start looping for earlier files
-    julhr = julhr_orig
     do
        write(LDT_logunit,*)'[WARN] Cannot find ', trim(filename)
        fh_local = fh_local + 24
-       julhr = julhr - 24
+       julhr = julhr - 24 ! Roll back to previous 12Z cycle
+       ! Give up after 5 days
        if ( (julhr_orig - julhr) > 24*5) then
           write(LDT_logunit,*)&
                '[WARN] *** GIVING UP ON ESPC-D CICE FOR ', &
@@ -148,7 +158,7 @@ contains
        filename)
 
     ! Imports
-    use LDT_logMod, only: LDT_logunit
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
 
     ! Defaults
@@ -156,30 +166,40 @@ contains
 
     ! Arguments
     character(len=*), intent(in) :: rootdir
-    integer, intent(inout) :: yyyy
-    integer, intent(inout) :: mm
-    integer, intent(inout) :: dd
-    integer, intent(inout) :: hh
-    integer, intent(inout) :: fh
+    integer, intent(in) :: yyyy
+    integer, intent(in) :: mm
+    integer, intent(in) :: dd
+    integer, intent(in) :: hh
+    integer, intent(in) :: fh
     character*255, intent(inout) :: filename
 
     ! Locals
     integer :: julhr, julhr_orig
+    integer :: yyyy_local, mm_local, dd_local, hh_local, fh_local
     logical :: file_exists
 
-    ! Build the file name.  Note that all ESPC-D SST runs start at 00Z.
-    if (hh < 6) then
-       fh = 0
-    else if (hh < 12) then
-       fh = 6
-    else if (hh < 18) then
-       fh = 12
+    ! Build the file name.  Note that all ESPC-D SST runs start at 12Z.
+    call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, &
+         julhr)
+    if (hh == 12) then
+       fh_local = 0
+    else if (hh == 18) then
+       fh_local = 6
+    else if (hh == 00) then
+       fh_local = 12
+    else if (hh == 06) then
+       fh_local = 18
     else
-       fh = 18
+       write(LDT_logunit,*)'[ERR] Bad USAFSI hour ', hh
+       write(LDT_logunit,*)'[ERR] Must be 00, 06, 12, or 18'
+       write(LDT_logunit,*)'[ERR] LDT will exit...'
+       call LDT_endrun()
     end if
-    hh = 0
+    julhr = julhr - fh_local
+    call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
+         hh_local)
     call construct_espcd_sst_filename(rootdir, &
-         yyyy, mm, dd, hh, fh, filename)
+         yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
 
     ! Check if file exists
     write(LDT_logunit,*) &
@@ -193,29 +213,26 @@ contains
     end if
 
     ! At this point, we are rolling back to earlier SST file
-    call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, julhr)
     julhr_orig = julhr
 
     ! Start looping for earlier files
     do
        write(LDT_logunit,*)'[WARN] Cannot find ',trim(filename)
-       fh = fh - 6
-       if (fh < 0) then
-          fh = 24
-          julhr = julhr - 24 ! Roll back to previous 00Z cycle
-          ! Give up after 5 days
-          if ( (julhr_orig - julhr) > 24*5) then
-             write(LDT_logunit,*)"[WARN] *** GIVING UP ON ESPC-D SST! ***"
-             write(LDT_logunit,*) &
-                  "[WARN] *** NO ESPC-D SST AVAILABLE!!! ***"
-             filename = "NONE"
-             return
-          end if
-          call LDT_julhr_date(julhr, yyyy, mm, dd, hh)
+       fh_local = fh_local + 24
+       julhr = julhr - 24 ! Roll back to previous 12Z cycle
+       ! Give up after 5 days
+       if ( (julhr_orig - julhr) > 24*5) then
+          write(LDT_logunit,*)"[WARN] *** GIVING UP ON ESPC-D SST! ***"
+          write(LDT_logunit,*) &
+               "[WARN] *** NO ESPC-D SST AVAILABLE!!! ***"
+          filename = "NONE"
+          return
        end if
+       call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
+            hh_local)
 
        call construct_espcd_sst_filename(rootdir, &
-            yyyy, mm, dd, hh, fh, filename)
+            yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
        inquire(file=trim(filename), exist=file_exists)
        if (file_exists) then
           write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
