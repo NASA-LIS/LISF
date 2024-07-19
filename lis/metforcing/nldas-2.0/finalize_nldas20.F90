@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
-! !MODULE: finalize_nldas20
+! !ROUTINE: finalize_nldas20
 !  \label{finalize_nldas20}
 !
 ! !REVISION HISTORY:
