@@ -127,7 +127,7 @@
 ! !INTERFACE:
       subroutine init_NLDAS20(findex)
 ! !USES:
-      use LIS_coreMod,    only            : LIS_rc,LIS_domain
+      use LIS_coreMod,    only            : LIS_rc
       use LIS_timeMgrMod, only            : LIS_update_timestep
       use LIS_logMod,     only            : LIS_logunit,LIS_endrun
       use map_utils,      only            : proj_latlon
@@ -159,6 +159,14 @@
 !
 !EOP
       integer :: n
+
+      external :: readcrd_nldas20
+      external :: bilinear_interp_input
+      external :: conserv_interp_input
+      external :: neighbor_interp_input
+      external :: read_orig_nldas20_elevdiff
+      external :: read_nldas20_elev
+
 
       allocate(nldas20_struc(LIS_rc%nnest))
       call readcrd_nldas20()
