@@ -16,24 +16,24 @@
 !                           (derived from reset_nldas2.F90)
 !
 ! !INTERFACE:
-      subroutine reset_nldas20()
+subroutine reset_nldas20()
 ! !USES:
-      use LIS_coreMod,        only : LIS_rc
-      use nldas20_forcingMod, only : nldas20_struc
+  use LIS_coreMod,        only : LIS_rc
+  use nldas20_forcingMod, only : nldas20_struc
 
-      implicit none
+  implicit none
 !
 ! !DESCRIPTION:
 !  Routine to reset NLDAS-2 forcing related memory allocations.
 !
 !EOP
-      integer   :: n
-      integer   :: findex
+  integer   :: n
+  integer   :: findex
 
-      do n = 1,LIS_rc%nnest
-         nldas20_struc(n)%nldas20time1 = 3000.0
-         nldas20_struc(n)%nldas20time2 = 0.0
-      enddo
+  do n = 1,LIS_rc%nnest
+     nldas20_struc(n)%nldas20time1 = 3000.0
+     nldas20_struc(n)%nldas20time2 = 0.0
+  enddo
 
-      end subroutine reset_nldas20
+end subroutine reset_nldas20
 

@@ -17,21 +17,21 @@
 !                           (derived from read_nldas2_elev.F90)
 !
 ! !INTERFACE:
-      subroutine read_nldas20_elev(n,findex)
+subroutine read_nldas20_elev(n,findex)
 ! !USES:
-      use LIS_coreMod
-      use LIS_metforcingMod
-      use LIS_logMod
-      use nldas20_forcingMod
-      use LIS_fileIOMod
+  use LIS_coreMod
+  use LIS_metforcingMod
+  use LIS_logMod
+  use nldas20_forcingMod
+  use LIS_fileIOMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-      use netcdf
+  use netcdf
 #endif
 
-      implicit none
+  implicit none
 ! !ARGUMENTS:
-      integer, intent(in) :: n
-      integer, intent(in) :: findex
+  integer, intent(in) :: n
+  integer, intent(in) :: findex
 !
 ! !DESCRIPTION:
 !
@@ -52,44 +52,44 @@
 !   \end{description}
 !
 !EOP
-      logical :: file_exists
-      integer :: nid,elevId
-      integer :: c,r
-      real    :: elev(LIS_rc%gnc(n),LIS_rc%gnr(n))
-      real    :: elev_subset(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  logical :: file_exists
+  integer :: nid,elevId
+  integer :: c,r
+  real    :: elev(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real    :: elev_subset(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
-      inquire(file=LIS_rc%paramfile(n),exist=file_exists)
-      if (file_exists) then
-         write(LIS_logunit,*)                                          &
-                            "[INFO] Reading NLDAS-2 elevation data ... "
+  inquire(file=LIS_rc%paramfile(n),exist=file_exists)
+  if (file_exists) then
+     write(LIS_logunit,*)                                          &
+          "[INFO] Reading NLDAS-2 elevation data ... "
 
-         call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),           &
-                         mode=NF90_NOWRITE,ncid=nid),                  &
-                        "nf90_open failed in read_nldas20_elev")
-         call LIS_verify(nf90_inq_varid(nid,"ELEV_NLDAS2",elevId),     &
-                        "nf90_inq_varid failed in read_nldas20_elev")
-         call LIS_verify(nf90_get_var(nid,elevId,elev),                &
-                        "nf90_get_var failed in read_nldas20_elev")
-         call LIS_verify(nf90_close(nid))
+     call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),           &
+          mode=NF90_NOWRITE,ncid=nid),                  &
+          "nf90_open failed in read_nldas20_elev")
+     call LIS_verify(nf90_inq_varid(nid,"ELEV_NLDAS2",elevId),     &
+          "nf90_inq_varid failed in read_nldas20_elev")
+     call LIS_verify(nf90_get_var(nid,elevId,elev),                &
+          "nf90_get_var failed in read_nldas20_elev")
+     call LIS_verify(nf90_close(nid))
 
-         elev_subset(:,:) = elev(LIS_ews_halo_ind(n,LIS_localPet+1):   &
-                                 LIS_ewe_halo_ind(n,LIS_localPet+1),   &
-                                 LIS_nss_halo_ind(n,LIS_localPet+1):   &
-                                 LIS_nse_halo_ind(n,LIS_localPet+1))
+     elev_subset(:,:) = elev(LIS_ews_halo_ind(n,LIS_localPet+1):   &
+          LIS_ewe_halo_ind(n,LIS_localPet+1),   &
+          LIS_nss_halo_ind(n,LIS_localPet+1):   &
+          LIS_nse_halo_ind(n,LIS_localPet+1))
 
-         do r = 1,LIS_rc%lnr(n)
-            do c = 1,LIS_rc%lnc(n)
-               if (LIS_domain(n)%gindex(c,r).ne.-1) then
-                  LIS_forc(n,findex)%modelelev(LIS_domain(n)%gindex(c,r)) = elev_subset(c,r)
-               endif
-            enddo
-         enddo
-      endif
+     do r = 1,LIS_rc%lnr(n)
+        do c = 1,LIS_rc%lnc(n)
+           if (LIS_domain(n)%gindex(c,r).ne.-1) then
+              LIS_forc(n,findex)%modelelev(LIS_domain(n)%gindex(c,r)) = elev_subset(c,r)
+           endif
+        enddo
+     enddo
+  endif
 
-      write(LIS_logunit,*)                                             &
-               "[INFO] Finished reading original NLDAS-2 elevation data"
+  write(LIS_logunit,*)                                             &
+       "[INFO] Finished reading original NLDAS-2 elevation data"
 #endif
 
-      end subroutine read_nldas20_elev
+end subroutine read_nldas20_elev
 
