@@ -52,7 +52,6 @@
 !   \end{description}
 !
 !EOP
-      integer :: i, err
       logical :: file_exists
       integer :: nid,elevId
       integer :: c,r
