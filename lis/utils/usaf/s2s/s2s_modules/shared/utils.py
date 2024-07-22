@@ -23,7 +23,6 @@
 #------------------------------------------------------------------------------
 """
 
-
 import glob
 import os
 import platform
@@ -63,10 +62,12 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        _f.write('#SBATCH --ntasks=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+            if cfg['SETUP']['CONSTRAINT'] == 'mil':
+                _f.write('#SBATCH --partition=packable'  + '\n')
         else:
 #            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -94,14 +95,13 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
 
-
         if command_list is None and group_jobs is None:
             _f.write(f"{this_command} || exit 1\n")
             _f.write(f"{sec_command}\n")
         else:
             if group_jobs:
                 for cmd in group_jobs:
-                    _f.write(f"nohup {cmd} &\n")
+                    _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
                 _f.write("wait\n")
             if command_list:
                 for cmd in command_list:

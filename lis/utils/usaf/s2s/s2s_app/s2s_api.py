@@ -91,5 +91,6 @@ else:
     else:
         with open(ARGS.group_jobs, 'r') as file:
             commands = [line.strip() for line in file if line.strip()]
+        NTASKS = len(commands)
 
         utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, str(HOURS), CWD, group_jobs=commands)
