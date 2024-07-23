@@ -55,7 +55,7 @@ subroutine read_orig_nldas20_elevdiff(n)
           "[INFO] Reading NLDAS-2 original elevation difference file ..."
 
      call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),           &
-          mode=NF90_NOWRITE,ncid=nid),                  &
+          mode=NF90_NOWRITE,ncid=nid),                             &
           "nf90_open failed in read_orig_nldas20_elevdiff")
      call LIS_verify(nf90_inq_varid(nid,"ELEVDIFF_NLDAS2",elevId), &
           "nf90_inq_varid failed in read_orig_nldas20_elevdiff")

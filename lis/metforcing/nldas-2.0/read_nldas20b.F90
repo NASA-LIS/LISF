@@ -148,8 +148,8 @@ subroutine read_nldas20b(n,kk,findex,order,name,ferror)
         if ((iv.eq.2).or.(iv.eq.3)) pcp_flag = .true.
 
         call interp_nldas20(n,findex,LIS_rc%mo,pcp_flag,nldas20,   &
-             nldas20_forcing(:,iv),                 &
-             lb,LIS_rc%gridDesc(n,:),               &
+             nldas20_forcing(:,iv),                                &
+             lb,LIS_rc%gridDesc(n,:),                              &
              LIS_rc%lnc(n),LIS_rc%lnr(n),varfield)
 
         do r = 1,LIS_rc%lnr(n)

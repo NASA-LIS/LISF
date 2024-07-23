@@ -90,7 +90,7 @@ subroutine readcrd_nldas20()
 
   do n = 1,LIS_rc%nnest
      write(unit=LIS_logunit,fmt=*)                                 &
-          "[INFO] NLDAS-2.0 FORA forcing directory: ", &
+          "[INFO] NLDAS-2.0 FORA forcing directory: ",             &
           trim(nldas20_struc(n)%nldas20foradir)
      nldas20_struc(n)%ncold = 464
      nldas20_struc(n)%nrold = 224
@@ -98,8 +98,8 @@ subroutine readcrd_nldas20()
      nldas20_struc(n)%nldas20time2 = 0.0
 
      if ((nldas20_struc(n)%model_level_data.eq.1).or.              &
-          (nldas20_struc(n)%model_dswrf_data.eq.1).or.              &
-          (nldas20_struc(n)%model_pcp_data.eq.1).or.                &
+          (nldas20_struc(n)%model_dswrf_data.eq.1).or.             &
+          (nldas20_struc(n)%model_pcp_data.eq.1).or.               &
           (nldas20_struc(n)%model_level_press.eq.1)) then
         call ESMF_ConfigFindLabel(LIS_config,                      &
              "NLDAS-2.0 FORB forcing directory:",rc=rc)
@@ -108,7 +108,7 @@ subroutine readcrd_nldas20()
         call ESMF_ConfigGetAttribute(LIS_config,                   &
              nldas20_struc(n)%nldas20forbdir,rc=rc)
         write(unit=LIS_logunit,fmt=*)                              &
-             "[INFO] NLDAS-2.0 FORB forcing directory: ", &
+             "[INFO] NLDAS-2.0 FORB forcing directory: ",          &
              trim(nldas20_struc(n)%nldas20forbdir)
      endif
   enddo

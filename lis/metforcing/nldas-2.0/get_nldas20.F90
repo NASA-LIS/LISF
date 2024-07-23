@@ -81,7 +81,7 @@ subroutine get_nldas20(n,findex)
 
 !=== Check to see if b-file needs to be opened
   readbfile = 0
-  if ((nldas20_struc(n)%model_level_data.gt.0).or.                 &
+  if ((nldas20_struc(n)%model_level_data.gt.0).or.                  &
        (nldas20_struc(n)%model_dswrf_data.gt.0).or.                 &
        (nldas20_struc(n)%model_level_press.gt.0).or.                &
        (nldas20_struc(n)%model_pcp_data.gt.0)) then

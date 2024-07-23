@@ -152,7 +152,7 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
         do t = 1,nldas20
            if (lb(t)) then
               call nldas20_ec_removal(n,t,nldas20_forcing(t,1),    &
-                   nldas20_forcing(t,2),nldas20_forcing(t,4), &
+                   nldas20_forcing(t,2),nldas20_forcing(t,4),      &
                    nldas20_forcing(t,7))
            endif
         enddo
@@ -163,8 +163,8 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
         if ((iv.eq.8).or.(iv.eq.9)) pcp_flag = .true.
 
         call interp_nldas20(n,findex,month,pcp_flag,nldas20,       &
-             nldas20_forcing(:,iv),                 &
-             lb,LIS_rc%gridDesc(n,:),               &
+             nldas20_forcing(:,iv),                                &
+             lb,LIS_rc%gridDesc(n,:),                              &
              LIS_rc%lnc(n),LIS_rc%lnr(n),varfield)
 
         do r = 1,LIS_rc%lnr(n)
@@ -298,7 +298,7 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
   select case(LIS_rc%met_interp(findex))
 
   case("bilinear")
-     call bilinear_interp(lis_gds,input_bitmap,input_data,         &
+     call bilinear_interp(lis_gds,input_bitmap,input_data,      &
           output_bitmap,output_data,nldas20_struc(n)%mi,mo,     &
           LIS_domain(n)%lat,LIS_domain(n)%lon,                  &
           nldas20_struc(n)%w111,nldas20_struc(n)%w121,          &
@@ -309,7 +309,7 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
 
   case("budget-bilinear")
      if (pcp_flag) then
-        call conserv_interp(lis_gds,input_bitmap,input_data,       &
+        call conserv_interp(lis_gds,input_bitmap,input_data,    &
              output_bitmap,output_data,nldas20_struc(n)%mi,mo,  &
              LIS_domain(n)%lat,LIS_domain(n)%lon,               &
              nldas20_struc(n)%w112,nldas20_struc(n)%w122,       &
@@ -319,7 +319,7 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
              LIS_rc%udef,iret)
 
      else
-        call bilinear_interp(lis_gds,input_bitmap,input_data,      &
+        call bilinear_interp(lis_gds,input_bitmap,input_data,   &
              output_bitmap,output_data,nldas20_struc(n)%mi,mo,  &
              LIS_domain(n)%lat,LIS_domain(n)%lon,               &
              nldas20_struc(n)%w111,nldas20_struc(n)%w121,       &
@@ -330,7 +330,7 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
      endif
 
   case("neighbor")
-     call neighbor_interp(lis_gds,input_bitmap,input_data,         &
+     call neighbor_interp(lis_gds,input_bitmap,input_data,      &
           output_bitmap,output_data,nldas20_struc(n)%mi,mo,     &
           LIS_domain(n)%lat,LIS_domain(n)%lon,                  &
           nldas20_struc(n)%n113,LIS_rc%udef,iret)
@@ -338,7 +338,7 @@ subroutine interp_nldas20(n,findex,month,pcp_flag,input_size,    &
   end select
 
   if (pcp_flag.and.(LIS_rc%pcp_downscale(findex).ne.0)) then
-     call LIS_pcpClimoDownscaling(n,findex,month,nc*nr,            &
+     call LIS_pcpClimoDownscaling(n,findex,month,nc*nr,         &
           output_data,output_bitmap)
   endif
 

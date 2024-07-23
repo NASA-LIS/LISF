@@ -65,7 +65,7 @@ subroutine read_nldas20_elev(n,findex)
           "[INFO] Reading NLDAS-2 elevation data ... "
 
      call LIS_verify(nf90_open(path=LIS_rc%paramfile(n),           &
-          mode=NF90_NOWRITE,ncid=nid),                  &
+          mode=NF90_NOWRITE,ncid=nid),                             &
           "nf90_open failed in read_nldas20_elev")
      call LIS_verify(nf90_inq_varid(nid,"ELEV_NLDAS2",elevId),     &
           "nf90_inq_varid failed in read_nldas20_elev")
@@ -74,8 +74,8 @@ subroutine read_nldas20_elev(n,findex)
      call LIS_verify(nf90_close(nid))
 
      elev_subset(:,:) = elev(LIS_ews_halo_ind(n,LIS_localPet+1):   &
-          LIS_ewe_halo_ind(n,LIS_localPet+1),   &
-          LIS_nss_halo_ind(n,LIS_localPet+1):   &
+          LIS_ewe_halo_ind(n,LIS_localPet+1),                      &
+          LIS_nss_halo_ind(n,LIS_localPet+1):                      &
           LIS_nse_halo_ind(n,LIS_localPet+1))
 
      do r = 1,LIS_rc%lnr(n)
