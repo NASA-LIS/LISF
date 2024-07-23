@@ -200,10 +200,10 @@ contains
           endif
 
           allocate(nldas20_struc(n)%metdata1(                        &
-               LIS_forecast_struc(1)%niterations,                &
+               LIS_forecast_struc(1)%niterations,                    &
                LIS_rc%met_nf(findex),LIS_rc%ngrid(n)))
           allocate(nldas20_struc(n)%metdata2(                        &
-               LIS_forecast_struc(1)%niterations,&
+               LIS_forecast_struc(1)%niterations,                    &
                LIS_rc%met_nf(findex),LIS_rc%ngrid(n)))
 
           nldas20_struc(n)%st_iterid = LIS_forecast_struc(1)%st_iterId
@@ -212,9 +212,9 @@ contains
 
 ! Regular retrospective or non-forecast mode:
        else
-          allocate(nldas20_struc(n)%metdata1(1,LIS_rc%met_nf(findex),&
+          allocate(nldas20_struc(n)%metdata1(1,LIS_rc%met_nf(findex), &
                LIS_rc%ngrid(n)))
-          allocate(nldas20_struc(n)%metdata2(1,LIS_rc%met_nf(findex),&
+          allocate(nldas20_struc(n)%metdata2(1,LIS_rc%met_nf(findex), &
                LIS_rc%ngrid(n)))
 
           nldas20_struc(n)%st_iterid = 1
@@ -240,9 +240,9 @@ contains
        nldas20_struc(n)%gridDesc(20) = 64
 
 ! Check for grid and interp option selected:
-       if ((nldas20_struc(n)%gridDesc(9).eq.LIS_rc%gridDesc(n,9)).and.&
-            (nldas20_struc(n)%gridDesc(10).eq.LIS_rc%gridDesc(n,10)).and.&
-            (LIS_rc%gridDesc(n,1).eq.proj_latlon).and.                &
+       if ((nldas20_struc(n)%gridDesc(9).eq.LIS_rc%gridDesc(n,9)).and. &
+            (nldas20_struc(n)%gridDesc(10).eq.LIS_rc%gridDesc(n,10)).and. &
+            (LIS_rc%gridDesc(n,1).eq.proj_latlon).and.               &
             (LIS_rc%met_interp(findex).ne."neighbor")) then
           write(LIS_logunit,*)                                       &
                "[ERR] The NLDAS grid was selected for the LIS run domain;"
@@ -274,9 +274,9 @@ contains
           allocate(nldas20_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
 
           call bilinear_interp_input(n,nldas20_struc(n)%gridDesc(:), &
-               nldas20_struc(n)%n111,nldas20_struc(n)%n121, &
-               nldas20_struc(n)%n211,nldas20_struc(n)%n221, &
-               nldas20_struc(n)%w111,nldas20_struc(n)%w121, &
+               nldas20_struc(n)%n111,nldas20_struc(n)%n121,          &
+               nldas20_struc(n)%n211,nldas20_struc(n)%n221,          &
+               nldas20_struc(n)%w111,nldas20_struc(n)%w121,          &
                nldas20_struc(n)%w211,nldas20_struc(n)%w221)
 
        case ("budget-bilinear")
@@ -290,9 +290,9 @@ contains
           allocate(nldas20_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
 
           call bilinear_interp_input(n,nldas20_struc(n)%gridDesc(:), &
-               nldas20_struc(n)%n111,nldas20_struc(n)%n121, &
-               nldas20_struc(n)%n211,nldas20_struc(n)%n221, &
-               nldas20_struc(n)%w111,nldas20_struc(n)%w121, &
+               nldas20_struc(n)%n111,nldas20_struc(n)%n121,          &
+               nldas20_struc(n)%n211,nldas20_struc(n)%n221,          &
+               nldas20_struc(n)%w111,nldas20_struc(n)%w121,          &
                nldas20_struc(n)%w211,nldas20_struc(n)%w221)
 
           allocate(nldas20_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
@@ -305,9 +305,9 @@ contains
           allocate(nldas20_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
 
           call conserv_interp_input(n,nldas20_struc(n)%gridDesc(:),  &
-               nldas20_struc(n)%n112,nldas20_struc(n)%n122, &
-               nldas20_struc(n)%n212,nldas20_struc(n)%n222, &
-               nldas20_struc(n)%w112,nldas20_struc(n)%w122, &
+               nldas20_struc(n)%n112,nldas20_struc(n)%n122,          &
+               nldas20_struc(n)%n212,nldas20_struc(n)%n222,          &
+               nldas20_struc(n)%w112,nldas20_struc(n)%w122,          &
                nldas20_struc(n)%w212,nldas20_struc(n)%w222)
 
        case ("neighbor")
@@ -333,7 +333,7 @@ contains
 ! Set up precipitation climate downscaling:
        if (LIS_rc%pcp_downscale(findex).ne.0) then
           call LIS_init_pcpclimo_native(n,findex,                    &
-               nint(nldas20_struc(n)%gridDesc(2)),          &
+               nint(nldas20_struc(n)%gridDesc(2)),                   &
                nint(nldas20_struc(n)%gridDesc(3)))
        endif
     enddo

@@ -89,7 +89,7 @@ subroutine timeinterp_nldas20(n,findex)
   tempbmn = bmn
   tempbss = 0
   tempbts = 0
-  call LIS_tick(newtime1,tempbdoy,tempgmt1,tempbyr,tempbmo,tempbda,&
+  call LIS_tick(newtime1,tempbdoy,tempgmt1,tempbyr,tempbmo,tempbda, &
        tempbhr,tempbmn,tempbss,tempbts)
 
   btime = nldas20_struc(n)%nldas20time2
@@ -104,7 +104,7 @@ subroutine timeinterp_nldas20(n,findex)
   tempbmn = bmn
   tempbss = 0
   tempbts = 0
-  call LIS_tick(newtime2,tempbdoy,tempgmt2,tempbyr,tempbmo,tempbda,&
+  call LIS_tick(newtime2,tempbdoy,tempgmt2,tempbyr,tempbmo,tempbda, &
        tempbhr,tempbmn,tempbss,tempbts)
 
 !=== Interpolate Data in time
@@ -234,8 +234,8 @@ subroutine timeinterp_nldas20(n,findex)
         zdoy = LIS_rc%doy
         ! Compute and apply zenith angle weights
         call zterp(1,LIS_domain(n)%grid(index1)%lat,               &
-             LIS_domain(n)%grid(index1)%lon,               &
-             gmt1,gmt2,LIS_rc%gmt,zdoy,zw1,zw2,            &
+             LIS_domain(n)%grid(index1)%lon,                       &
+             gmt1,gmt2,LIS_rc%gmt,zdoy,zw1,zw2,                    &
              czb,cze,czm,LIS_rc)
 
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
@@ -246,10 +246,10 @@ subroutine timeinterp_nldas20(n,findex)
                 (nldas20_struc(n)%metdata2(kk,3,index1)*zw2)
            ! In cases of small cos(zenith) angles, use linear weighting
            ! to avoid overly large weights.
-           if ((swd(t).gt.nldas20_struc(n)%metdata1(kk,3,index1)).and.&
-                (swd(t).gt.nldas20_struc(n)%metdata2(kk,3,index1)).and.&
+           if ((swd(t).gt.nldas20_struc(n)%metdata1(kk,3,index1)).and. &
+                (swd(t).gt.nldas20_struc(n)%metdata2(kk,3,index1)).and. &
                 ((czb.lt.0.1).or.(cze.lt.0.1))) then
-              swd(t) = (nldas20_struc(n)%metdata1(kk,3,index1)*swt1)+ &
+              swd(t) = (nldas20_struc(n)%metdata1(kk,3,index1)*swt1) + &
                    (nldas20_struc(n)%metdata2(kk,3,index1)*swt2)
            endif
         endif
@@ -316,7 +316,7 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,1,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,1,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,1,index1).ne.LIS_rc%udef)) then
            tmp(t) = (nldas20_struc(n)%metdata1(kk,1,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,1,index1)*wt2)
@@ -332,9 +332,9 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,2,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,2,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,2,index1).ne.LIS_rc%udef)) then
-           q2(t) = (nldas20_struc(n)%metdata1(kk,2,index1)*wt1) +  &
+           q2(t) = (nldas20_struc(n)%metdata1(kk,2,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,2,index1)*wt2)
         endif
      enddo
@@ -348,7 +348,7 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,4,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,4,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,4,index1).ne.LIS_rc%udef)) then
            lwd(t) = (nldas20_struc(n)%metdata1(kk,4,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,4,index1)*wt2)
@@ -364,9 +364,9 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,5,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,5,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,5,index1).ne.LIS_rc%udef)) then
-           uwind(t) = (nldas20_struc(n)%metdata1(kk,5,index1)*wt1)+&
+           uwind(t) = (nldas20_struc(n)%metdata1(kk,5,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,5,index1)*wt2)
         endif
      enddo
@@ -380,9 +380,9 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,6,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,6,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,6,index1).ne.LIS_rc%udef)) then
-           vwind(t) = (nldas20_struc(n)%metdata1(kk,6,index1)*wt1)+&
+           vwind(t) = (nldas20_struc(n)%metdata1(kk,6,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,6,index1)*wt2)
         endif
      enddo
@@ -396,9 +396,9 @@ subroutine timeinterp_nldas20(n,findex)
         t = m + (k-1)*mfactor
         index1 = LIS_domain(n)%tile(t)%index
         kk = LIS_get_iteration_index(n,k,index1,mfactor)
-        if ((nldas20_struc(n)%metdata1(kk,7,index1).ne.LIS_rc%udef).and.&
+        if ((nldas20_struc(n)%metdata1(kk,7,index1).ne.LIS_rc%udef).and. &
              (nldas20_struc(n)%metdata2(kk,7,index1).ne.LIS_rc%udef)) then
-           psurf(t) = (nldas20_struc(n)%metdata1(kk,7,index1)*wt1)+&
+           psurf(t) = (nldas20_struc(n)%metdata1(kk,7,index1)*wt1) + &
                 (nldas20_struc(n)%metdata2(kk,7,index1)*wt2)
         endif
      enddo
@@ -413,9 +413,9 @@ subroutine timeinterp_nldas20(n,findex)
            t = m + (k-1)*mfactor
            index1 = LIS_domain(n)%tile(t)%index
            kk = LIS_get_iteration_index(n,k,index1,mfactor)
-           if ((nldas20_struc(n)%metdata1(kk,10,index1).ne.LIS_rc%udef).and.&
+           if ((nldas20_struc(n)%metdata1(kk,10,index1).ne.LIS_rc%udef).and. &
                 (nldas20_struc(n)%metdata2(kk,10,index1).ne.LIS_rc%udef)) then
-              pet(t) = (nldas20_struc(n)%metdata1(kk,10,index1)*wt1)+&
+              pet(t) = (nldas20_struc(n)%metdata1(kk,10,index1)*wt1) + &
                    (nldas20_struc(n)%metdata2(kk,10,index1)*wt2)
               ! Convert NLDAS-2 PET from kg/m^2 to kg/m^2/sec - dmm
               pet(t) = pet(t)/(60.0*60.0)
@@ -433,9 +433,9 @@ subroutine timeinterp_nldas20(n,findex)
            t = m + (k-1)*mfactor
            index1 = LIS_domain(n)%tile(t)%index
            kk = LIS_get_iteration_index(n,k,index1,mfactor)
-           if ((nldas20_struc(n)%metdata1(kk,11,index1).ne.LIS_rc%udef).and.&
+           if ((nldas20_struc(n)%metdata1(kk,11,index1).ne.LIS_rc%udef) .and. &
                 (nldas20_struc(n)%metdata2(kk,11,index1).ne.LIS_rc%udef)) then
-              cape(t) = (nldas20_struc(n)%metdata1(kk,11,index1)*wt1)+&
+              cape(t) = (nldas20_struc(n)%metdata1(kk,11,index1)*wt1) + &
                    (nldas20_struc(n)%metdata2(kk,11,index1)*wt2)
            endif
         enddo
@@ -451,9 +451,9 @@ subroutine timeinterp_nldas20(n,findex)
            t = m + (k-1)*mfactor
            index1 = LIS_domain(n)%tile(t)%index
            kk = LIS_get_iteration_index(n,k,index1,mfactor)
-           if ((nldas20_struc(n)%metdata1(kk,12,index1).ne.LIS_rc%udef).and.&
+           if ((nldas20_struc(n)%metdata1(kk,12,index1).ne.LIS_rc%udef).and. &
                 (nldas20_struc(n)%metdata2(kk,12,index1).ne.LIS_rc%udef)) then
-              fheight(t) = (nldas20_struc(n)%metdata1(kk,12,index1)*wt1)+&
+              fheight(t) = (nldas20_struc(n)%metdata1(kk,12,index1)*wt1) + &
                    (nldas20_struc(n)%metdata2(kk,12,index1)*wt2)
            endif
         enddo
@@ -469,9 +469,9 @@ subroutine timeinterp_nldas20(n,findex)
            t = m + (k-1)*mfactor
            index1 = LIS_domain(n)%tile(t)%index
            kk = LIS_get_iteration_index(n,k,index1,mfactor)
-           if ((nldas20_struc(n)%metdata1(kk,13,index1).ne.LIS_rc%udef).and.&
+           if ((nldas20_struc(n)%metdata1(kk,13,index1).ne.LIS_rc%udef).and. &
                 (nldas20_struc(n)%metdata2(kk,13,index1).ne.LIS_rc%udef)) then
-              acond(t) = (nldas20_struc(n)%metdata1(kk,13,index1)*wt1)+&
+              acond(t) = (nldas20_struc(n)%metdata1(kk,13,index1)*wt1) + &
                    (nldas20_struc(n)%metdata2(kk,13,index1)*wt2)
            endif
         enddo

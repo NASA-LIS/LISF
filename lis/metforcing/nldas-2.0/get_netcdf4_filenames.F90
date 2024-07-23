@@ -71,7 +71,7 @@ subroutine netcdf4_nldas20filea(n,kk,findex,filename,            &
 
 !=== Assemble GES DISC NLDAS-2 netCDF-4 FORA filename:
      filename = trim(nldas20dir)//"/"//fyr//"/"//fdoy//            &
-          "/NLDAS_FORA0125_H.A"//fyr//fmo//fda//"."//fhr//   &
+          "/NLDAS_FORA0125_H.A"//fyr//fmo//fda//"."//fhr//         &
           "00.020.nc"
 
   else ! forecast mode
@@ -103,7 +103,7 @@ subroutine netcdf4_nldas20filea(n,kk,findex,filename,            &
 
 !=== Assemble GES DISC NLDAS-2 netCDF-4 FORA filename:
      filename = trim(nldas20dir)//"/"//fyr//"/"//fdoy//            &
-          "/NLDAS_FORA0125_H.A"//fyr//fmo//fda//"."//fhr//   &
+          "/NLDAS_FORA0125_H.A"//fyr//fmo//fda//"."//fhr//         &
           "00.020.nc"
   endif
 
@@ -173,7 +173,7 @@ subroutine netcdf4_nldas20fileb(n,kk,findex,filename,            &
 
 !=== Assemble GES DISC NLDAS-2 netCDF-4 FORB filename:
      filename = trim(nldas20dir)//"/"//fyr//"/"//fdoy//            &
-          "/NLDAS_FORB0125_H.A"//fyr//fmo//fda//"."//fhr//   &
+          "/NLDAS_FORB0125_H.A"//fyr//fmo//fda//"."//fhr//         &
           "00.020.nc"
 
   else !forecast mode
@@ -205,7 +205,7 @@ subroutine netcdf4_nldas20fileb(n,kk,findex,filename,            &
 
 !=== Assemble GES DISC NLDAS-2 netCDF-4 FORB filename:
      filename = trim(nldas20dir)//"/"//fyr//"/"//fdoy//            &
-          "/NLDAS_FORB0125_H.A"//fyr//fmo//fda//"."//fhr//   &
+          "/NLDAS_FORB0125_H.A"//fyr//fmo//fda//"."//fhr//         &
           "00.020.nc"
   endif
 
