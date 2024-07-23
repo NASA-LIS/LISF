@@ -117,47 +117,47 @@ subroutine timeinterp_nldas20(n,findex)
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Tair%varname(1),tmpField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Tair in the forcing variables list")
+       "[ERR] Enable Tair in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Qair%varname(1),q2Field,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Qair in the forcing variables list")
+       "[ERR] Enable Qair in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_SWdown%varname(1),swdField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable SWdown in the forcing variables list")
+       "[ERR] Enable SWdown in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_LWdown%varname(1),lwdField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable LWdown in the forcing variables list")
+       "[ERR] Enable LWdown in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Wind_E%varname(1),uField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Wind_E in the forcing variables list")
+       "[ERR] Enable Wind_E in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Wind_N%varname(1),vField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Wind_N in the forcing variables list")
+       "[ERR] Enable Wind_N in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Psurf%varname(1),psurfField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Psurf in the forcing variables list")
+       "[ERR] Enable Psurf in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_Rainf%varname(1),pcpField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable Rainf in the forcing variables list")
+       "[ERR] Enable Rainf in the forcing variables list")
 
   call ESMF_StateGet(LIS_FORC_Base_State(n,findex),                &
        LIS_FORC_CRainf%varname(1),cpcpField,rc=status)
   call LIS_verify(status,                                          &
-       "Error: Enable CRainf in the forcing variables list")
+       "[ERR] Enable CRainf in the forcing variables list")
 
   forcing_z = .false.
   forcing_ch = .false.
@@ -166,7 +166,7 @@ subroutine timeinterp_nldas20(n,findex)
         call ESMF_StateGet(LIS_FORC_Base_State(n,findex),          &
              LIS_FORC_Forc_Hgt%varname(1),fhgtField,rc=status)
         call LIS_verify(status,                                    &
-             "Error: Enable Forc_Hgt in the forcing variables list")
+             "[ERR] Enable Forc_Hgt in the forcing variables list")
         forcing_z = .true.
      else
         write(LIS_logunit,*)                                       &
@@ -185,7 +185,7 @@ subroutine timeinterp_nldas20(n,findex)
         call ESMF_StateGet(LIS_FORC_Base_State(n,findex),          &
              LIS_FORC_Ch%varname(1),acondField,rc=status)
         call LIS_verify(status,                                    &
-             "Error: Enable Ch in the forcing variables list")
+             "[ERR] Enable Ch in the forcing variables list")
         forcing_ch = .true.
      else
         write(LIS_logunit,*)                                       &
@@ -205,7 +205,7 @@ subroutine timeinterp_nldas20(n,findex)
      call ESMF_StateGet(LIS_FORC_Base_State(n,findex),             &
           LIS_FORC_PET%varname(1),PETField,rc=status)
      call LIS_verify(status,                                       &
-          "Error: Enable PET in the forcing variables list")
+          "[ERR] Enable PET in the forcing variables list")
      forcing_pet = .true.
   else
      forcing_pet = .false.
@@ -215,7 +215,7 @@ subroutine timeinterp_nldas20(n,findex)
      call ESMF_StateGet(LIS_FORC_Base_State(n,findex),             &
           LIS_FORC_CAPE%varname(1),CAPEField,rc=status)
      call LIS_verify(status,                                       &
-          "Error: Enable CAPE in the forcing variables list")
+          "[ERR] Enable CAPE in the forcing variables list")
      forcing_cape = .true.
   else
      forcing_cape = .false.
