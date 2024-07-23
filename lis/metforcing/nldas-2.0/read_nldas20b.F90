@@ -104,7 +104,7 @@ subroutine read_nldas20b(n,kk,findex,order,name,ferror)
   if (file_exists) then
      iret = nf90_open(path=name,mode=NF90_NOWRITE,ncid=ftn)
      if (iret.ne.0) then
-        write(LIS_logunit,*) "[ERR] Could not open file: ",trim(name)
+        write(LIS_logunit,*) "[WARN] Could not open file: ",trim(name)
         ferror = 0
         return
      endif
@@ -292,7 +292,7 @@ subroutine read_nldas20b(n,kk,findex,order,name,ferror)
      enddo
      deallocate(lb)
   else
-     write(LIS_logunit,*) "[ERR] Could not find file: ",trim(name)
+     write(LIS_logunit,*) "[WARN] Could not find file: ",trim(name)
      ferror = 0
   endif
 
