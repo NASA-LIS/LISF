@@ -130,7 +130,7 @@ def _driver():
 
     print("[INFO] Processing temporal disaggregation of CFSv2 variables")
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
-        cmd = "python"
+        cmd = "srun --exclusive --ntasks 1 python"
         cmd += f" {srcdir}/temporal_disaggregation_nmme_6hourly_module.py"
         cmd += f" {obs_var}"
         cmd += f" {fcst_var}"

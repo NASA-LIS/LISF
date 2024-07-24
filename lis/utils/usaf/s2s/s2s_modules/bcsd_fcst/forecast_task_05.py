@@ -133,7 +133,7 @@ def _driver():
     ens_num = ensemble_sizes[nmme_model]
 
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
-        cmd = "python"
+        cmd = "srun --exclusive --ntasks 1 python"
         cmd += f" {srcdir}/bias_correction_nmme_modulefast.py"
         cmd += f" {obs_var}"
         cmd += f" {fcst_var}"

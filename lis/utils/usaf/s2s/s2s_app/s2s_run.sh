@@ -574,7 +574,7 @@ bcsd_fcst(){
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_03_run.j -t 1 -H 3 -j ${jobname}_03_ -w ${CWD} -C "part_ac"
 	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_04_run.j -t 1 -H 3 -j ${jobname}_04_ -w ${CWD} -C "part_ad"
-	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac" "part_ad"
+	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac" "part_ad" 
 	    bcsd01_ID=$(submit_job "" "${jobname}_01_run.j")
 	    thisID=$(submit_job "" "${jobname}_02_run.j")
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
@@ -641,9 +641,9 @@ bcsd_fcst(){
 	bcsd04_ID=
 	/bin/rm bcsd04*.j
 	split -l 4  $cmdfile part_
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
-	/bin/rm ${cmdfile} "part_aa" "part_ab"
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	/bin/rm ${cmdfile} "part_aa" "part_ab"  
 	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_01_run.j")
 	thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_02_run.j")
 	bcsd04_ID=`echo $bcsd04_ID`' '$thisID
@@ -680,9 +680,14 @@ bcsd_fcst(){
     if [ $GROUP_JOBS == "Y" ]; then
 	bcsd05_ID=
 	/bin/rm bcsd05*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
-	/bin/rm ${cmdfile}
-	bcsd05_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_run.j")
+	split -l 3  $cmdfile part_
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	/bin/rm ${cmdfile} "part_aa" "part_ab"
+	bcsd05_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_01_run.j")
+	thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_02_run.j")
+	bcsd05_ID=`echo $bcsd05_ID`' '$thisID
+	bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
     fi
     
     # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
@@ -694,7 +699,6 @@ bcsd_fcst(){
     
     unset job_list
     job_list=`ls $jobname*.j`
-    bcsd06_ID=
     for jfile in $job_list
     do
 	if [ $GROUP_JOBS == "Y" ]; then
@@ -707,6 +711,7 @@ bcsd_fcst(){
     done
     bcsd06_ID=`echo $bcsd06_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
+	bcsd06_ID=
 	/bin/rm bcsd06*.j
 	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
@@ -980,9 +985,14 @@ s2spost(){
     s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2spost_*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
-	/bin/rm ${cmdfile}
-	s2spost_ID=$(submit_job "$lisfcst_ID" "${jobname}_run.j")
+	split -l 27  $cmdfile part_
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	/bin/rm ${cmdfile} "part_aa" "part_ab"
+	s2spost_ID=$(submit_job "$lisfcst_ID" "${jobname}_01_run.j")
+	thisID=$(submit_job "$lisfcst_ID" "${jobname}_02_run.j")
+	s2spost_ID=`echo $s2spost_ID`' '$thisID
+	s2spost_ID=`echo $s2spost_ID | sed "s| |:|g"`
     fi
     cd ${BWD}
 }
@@ -1032,14 +1042,14 @@ s2smetrics(){
     s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2smetric_*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C $cmdfile
 	/bin/rm ${cmdfile}
 	s2smetric_ID=$(submit_job "$s2spost_ID" "${jobname}_run.j")
     fi
     
     # write tiff file
     python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
-    COMMAND="python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    COMMAND="srun --exclusive --ntasks 1 python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_tiff_run.j
 
     s2smetric_tiff_ID=$(submit_job "$s2smetric_ID" "${jobname}_tiff_run.j")
@@ -1068,11 +1078,11 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
 
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
-    echo "ython ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
+    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
+    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
+    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
 
     python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}

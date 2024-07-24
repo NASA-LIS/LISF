@@ -29,6 +29,7 @@ import platform
 import re
 import datetime
 import numpy as np
+import math
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
@@ -62,8 +63,14 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --ntasks=' + str(ntasks) + '\n')
+        _f.write('#SBATCH --nodes=1' + '\n')
+        _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
+        if group_jobs:
+            mpc = min(math.ceil(240 / ntasks), 80)
+            _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+        else:
+            _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             if cfg['SETUP']['CONSTRAINT'] == 'mil':
@@ -101,7 +108,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         else:
             if group_jobs:
                 for cmd in group_jobs:
-                    _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
+                    _f.write(f"{cmd} &\n")
                 _f.write("wait\n")
             if command_list:
                 for cmd in command_list:
