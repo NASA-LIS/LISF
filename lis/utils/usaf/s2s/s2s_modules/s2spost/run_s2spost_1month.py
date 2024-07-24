@@ -150,7 +150,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 
     curdate = firstdate
     while curdate <= enddate:
-        cmd = f"python {scriptdir}/daily_s2spost_nc.py {configfile}"
+        cmd = f"srun --exclusive --ntasks 1 python {scriptdir}/daily_s2spost_nc.py {configfile}"
         for model in ["SURFACEMODEL", "ROUTING"]:
             cmd += f" lis_fcst/{model_forcing}/{model}/"
             cmd += f"{curdate.year:04d}{curdate.month:02d}"
@@ -193,7 +193,7 @@ def _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forci
         enddate = datetime.datetime(year=startdate.year,
                                     month=(startdate.month + 1),
                                     day=1)
-    cmd = f"python {scriptdir}/monthly_s2spost_nc.py {configfile} "
+    cmd = f"srun --exclusive --ntasks 1 python {scriptdir}/monthly_s2spost_nc.py {configfile} "
     workdir = f"{topdatadir}/cf_{model_forcing}_"
     workdir += f"{startdate.year:04d}{startdate.month:02d}"
 
