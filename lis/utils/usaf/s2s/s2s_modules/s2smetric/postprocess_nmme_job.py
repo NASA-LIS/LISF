@@ -69,7 +69,7 @@ def _run_convert_s2s_anom_cf(config, currentdate, baseoutdir):
                 metricfile += f"/{nmme_model}_{metric_var}"
                 metricfile += f"_{anom_type.upper()}_init_monthly_"
                 metricfile += f"{month:02d}_{year:04d}.nc"
-                cmd = f"srun --exclusive --ntasks 1 python {rundir}/convert_s2s_anom_cf.py"
+                cmd = f"python {rundir}/convert_s2s_anom_cf.py"
                 cmd += f" {metricfile} {cfoutdir}"
                 print(cmd)
                 if subprocess.call(cmd, shell=True) != 0:
@@ -103,7 +103,7 @@ def _run_merge_s2s_anom_cf(config, currentdate, configfile, baseoutdir):
     rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/'
     nmme_models = config["EXP"]["NMME_models"]
     for nmme_model in nmme_models:
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {rundir}/merge_s2s_anom_cf.py"
         cmd += f" {input_dir} {output_dir}"
         cmd += f" {startdate.year:04d}{startdate.month:02d}{startdate.day:02d}"
@@ -126,7 +126,7 @@ def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
 
     for metric1 in metrics:
         metric = metric1.replace('-', '_')
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {rundir}"
         cmd += "/make_s2s_median_metric_geotiff.py"
         cmd += f" {input_dir} {metric} {configfile}"
