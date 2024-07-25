@@ -8,7 +8,7 @@ Surface model output interval:          1da
 Land surface model:                     none
 Number of met forcing sources:          2
 Blending method for forcings:           overlay
-Met forcing sources:                   "NLDAS2" "MRMS"
+Met forcing sources:                   "NLDAS2 grib" "MRMS"
 Met forcing chosen ensemble member:     1
 Topographic correction method (met forcing):  "lapse-rate and slope-aspect"
 Enable spatial downscaling of precipitation:  1
