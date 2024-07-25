@@ -4285,7 +4285,11 @@ Not all the optional components listed below are available in the public release
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS2 grib</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS2 netcdf</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">On</p></td>
 </tr>
 <tr>
@@ -6059,8 +6063,12 @@ Acceptable values for the sources are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Princeton</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;NLDAS2&#8221;</p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;NLDAS2 grib&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS-2 GRIB-1 format</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;NLDAS2 netcdf&#8221;</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">NLDAS-2 v020 netCDF-4 format</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">&#8220;GLDAS&#8221;</p></td>
@@ -14818,14 +14826,14 @@ SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_forcings_nldas2">9.10.4. NLDAS2</h4>
+<h4 id="sssec_forcings_nldas2">9.10.4. NLDAS2 (grib)</h4>
 <div class="paragraph">
-<p><code>NLDAS2 forcing directory:</code> specifies the location of the NLDAS2
-forcing files.</p>
+<p><code>NLDAS2 forcing directory:</code> specifies the location of the NLDAS-2
+GRIB-1 forcing files.</p>
 </div>
 <div class="paragraph">
-<p><code>NLDAS2 data center source:</code> specifies the center that produced
-the NLDAS2 files. (This is specified to distinguish the filenames.)
+<p><code>NLDAS2 data center source:</code> specifies the center that produced the
+NLDAS-2 GRIB-1 files.  (This is specified to distinguish the filenames.)
 Acceptable values are:</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
@@ -14853,7 +14861,7 @@ Acceptable values are:</p>
 <div class="paragraph">
 <p><code>NLDAS2 use model level data:</code> specifies whether or not to
 read in the model level data (instead of 2/10m fields) from the
-NLDAS2 forcing dataset (will open up and read &#8220;B&#8221; files).
+NLDAS-2 forcing dataset (will open up and read &#8220;B&#8221; files).
 This data is at the height of the NARR lowest model level.</p>
 </div>
 <div class="paragraph">
@@ -14887,7 +14895,7 @@ Acceptable values are:</p>
 <div class="paragraph">
 <p><code>NLDAS2 use model based swdown:</code> specifies whether or not to
 read in the un-bias corrected model downward shortwave radiation
-data (in leiu of the bias corrected data) from the NLDAS2 forcing
+data (in leiu of the bias corrected data) from the NLDAS-2 forcing
 dataset (will open up and read &#8220;B&#8221; files).  The data source is
 the NARR shortwave.
 Acceptable values are:</p>
@@ -14917,7 +14925,7 @@ Acceptable values are:</p>
 <div class="paragraph">
 <p><code>NLDAS2 use model based precip:</code> specifies whether or not
 to read in the model based precipitation data (instead of the
-observation based precipitation) from the NLDAS2 forcing
+observation based precipitation) from the NLDAS-2 forcing
 dataset (will open up and read &#8220;B&#8221; files).  The data source
 is the NARR precipitation.
 Acceptable values are:</p>
@@ -14945,10 +14953,9 @@ Acceptable values are:</p>
 </tbody>
 </table>
 <div class="paragraph">
-<p><code>NLDAS2 use model based pressure:</code> specifies whether or
-not to read in the model base pressure data (instead of the
-observation based pressure) from the NLDAS2 forcing dataset
-(will open up and read &#8220;B&#8221; files).  The data source is
+<p><code>NLDAS2 use model based pressure:</code> specifies whether or not
+to read in the model base pressure data from the NLDAS-2 forcing
+dataset (will open up and read &#8220;B&#8221; files).  The data source is
 the pressure at the NARR lowest model level.
 Acceptable values are:</p>
 </div>
@@ -14987,7 +14994,174 @@ NLDAS2 use model based pressure:        0</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_forcings_COAMPS">9.10.5. COAMPS</h4>
+<h4 id="sssec_forcings_nldas20">9.10.5. NLDAS-2.0 (netcdf)</h4>
+<div class="paragraph">
+<p><code>NLDAS-2.0 FORA forcing directory:</code> specifies the location of the
+NLDAS-2.0 v020 &#8220;FORA&#8221; netCDF-4 forcing files.</p>
+</div>
+<div class="paragraph">
+<p><code>NLDAS-2.0 FORB forcing directory:</code> specifies the location of the
+NLDAS-2.0 v020 &#8220;FORB&#8221; netCDF-4 forcing files.  This config entry
+is not required unless one of the following FORB data use flags is
+set to &#8220;1&#8221;.</p>
+</div>
+<div class="paragraph">
+<p><code>NLDAS-2.0 use FORB model level data:</code> specifies whether or not to
+read in and use the model level data (instead of 2/10-m fields) from
+the NLDAS-2 &#8220;FORB&#8221; forcing dataset.  This data is at the height
+of the NARR lowest model level.  The fields that are used are air
+temperature, air humidity, winds, height of the lowest model level,
+and the aerodynamic conductance.  This config entry is not required,
+and the default will be to not use this FORB data.  However, if the
+FORB model level data is chosen, you must specify the directory of
+the FORB data using the &#8220;NLDAS-2.0 FORB forcing directory:&#8221; config.</p>
+</div>
+<div class="paragraph">
+<p>Note that this will read in &#8220;Height of Atmospheric Forcing&#8221;
+and &#8220;Surface Exchange Coefficient for Heat&#8221; (aka, aerodynamic
+conductance).  You must make sure that &#8220;Forc_Hgt:&#8221; and &#8220;Ch:&#8221;
+(respectively) are included in your forcing variables list file.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>NLDAS-2.0 use FORB model-based SWdown:</code> specifies whether or not
+to read in and use the un-bias-corrected model downward shortwave
+radiation data (in leiu of the bias-corrected data) from the NLDAS-2
+&#8220;FORB&#8221; forcing dataset.  The data source is the NARR shortwave.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based SWdown is
+chosen, you must specify the directory of the FORB data using the
+&#8220;NLDAS-2.0 FORB forcing directory:&#8221; config.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>NLDAS-2.0 use FORB model-based precip:</code> specifies whether or not
+to read in and use the model-based precipitation data (instead of
+the observation-based precipitation) from the NLDAS-2 &#8220;FORB&#8221;
+forcing dataset.  The data source is the NARR precipitation.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based precip is
+chosen, you must specify the directory of the FORB data using the
+&#8220;NLDAS-2.0 FORB forcing directory:&#8221; config.
+Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>NLDAS-2.0 use FORB model-based pressure:</code> specifies whether or
+not to read in and use the pressure data from the NLDAS-2 &#8220;FORB&#8221;
+forcing dataset.  This data is at the height of the NARR lowest
+model level.  This config entry is not required, and the default
+will be to not use this FORB data.  However, if the FORB model-based
+pressure is chosen, you must specify the directory of the FORB data
+using the &#8220;NLDAS-2.0 FORB forcing directory:&#8221; config.
+Acceptable values are:</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">do not use</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">use</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry</div>
+<div class="content">
+<pre>NLDAS-2.0 FORA forcing directory:               ./input/NLDAS2/FORA
+NLDAS-2.0 FORB forcing directory:               ./input/NLDAS2/FORB
+NLDAS-2.0 use FORB model level data:            0
+NLDAS-2.0 use FORB model-based SWdown:          0
+NLDAS-2.0 use FORB model-based precip:          0
+NLDAS-2.0 use FORB model-based pressure:        0</pre>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="sssec_forcings_COAMPS">9.10.6. COAMPS</h4>
 <div class="paragraph">
 <p><code>COAMPS output forcing directory:</code> specifies the location of
 the COAMPS forcing files.</p>
@@ -15029,7 +15203,7 @@ COAMPS nest id: 1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_3b42rt">9.10.6. TRMM 3B42RT precipitation</h4>
+<h4 id="sssec_supp_3b42rt">9.10.7. TRMM 3B42RT precipitation</h4>
 <div class="paragraph">
 <p><code>TRMM 3B42RT forcing directory:</code> specifies the location of the
 TRMM 3B42RT forcing files.</p>
@@ -15052,7 +15226,7 @@ TRMM 3B42RT Version 7 forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_3b42v6">9.10.7. TRMM 3B42V6 precipitation</h4>
+<h4 id="sssec_supp_3b42v6">9.10.8. TRMM 3B42V6 precipitation</h4>
 <div class="paragraph">
 <p><code>TRMM 3B42V6 forcing directory:</code> specifies the location of the
 TRMM 3B42V6 forcing files.</p>
@@ -15065,7 +15239,7 @@ TRMM 3B42V6 forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_3b42v7">9.10.8. TRMM 3B42V7 precipitation</h4>
+<h4 id="sssec_supp_3b42v7">9.10.9. TRMM 3B42V7 precipitation</h4>
 <div class="paragraph">
 <p><code>TRMM 3B42V7 forcing directory:</code> specifies the location of the
 TRMM 3B42V7 forcing files.</p>
@@ -15078,7 +15252,7 @@ TRMM 3B42V7 forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_cmorph">9.10.9. CMORPH precipitation</h4>
+<h4 id="sssec_supp_cmorph">9.10.10. CMORPH precipitation</h4>
 <div class="paragraph">
 <p><code>CMORPH forcing directory:</code> specifies the location of the
 CMORPH precipitation forcing files.</p>
@@ -15091,7 +15265,7 @@ CMORPH precipitation forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_imerg">9.10.10. IMERG precipitation</h4>
+<h4 id="sssec_supp_imerg">9.10.11. IMERG precipitation</h4>
 <div class="paragraph">
 <p><code>IMERG forcing directory:</code> specifies the location of the
 GPM IMERG precipitation forcing files.</p>
@@ -15150,7 +15324,7 @@ IMERG version: 'V06B'</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_stageii">9.10.11. Stage II precipitation</h4>
+<h4 id="sssec_supp_stageii">9.10.12. Stage II precipitation</h4>
 <div class="paragraph">
 <p><code>STAGE2 forcing directory:</code> specifies the location of the
 STAGE2 forcing files.</p>
@@ -15163,7 +15337,7 @@ STAGE2 forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_stageiv">9.10.12. Stage IV precipitation</h4>
+<h4 id="sssec_supp_stageiv">9.10.13. Stage IV precipitation</h4>
 <div class="paragraph">
 <p><code>STAGE4 forcing directory:</code> specifies the location of the
 STAGE4 forcing files.</p>
@@ -15176,7 +15350,7 @@ STAGE4 forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_narr">9.10.13. NARR</h4>
+<h4 id="sssec_supp_narr">9.10.14. NARR</h4>
 <div class="paragraph">
 <p><code>NARR forcing directory:</code> specifies the location of the
 NARR forcing files.</p>
@@ -15208,7 +15382,7 @@ NARR domain z-dimension size:      30</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_rfe2daily">9.10.14. RFE2Daily</h4>
+<h4 id="sssec_supp_rfe2daily">9.10.15. RFE2Daily</h4>
 <div class="paragraph">
 <p><code>RFE2Daily forcing directory:</code> specifies the location of the
 RFE2Daily forcing files.</p>
@@ -15229,7 +15403,7 @@ RFE2Daily time offset:          0 # for use by GeoWRSI</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_chirps2">9.10.15. CHIRPS2</h4>
+<h4 id="sssec_chirps2">9.10.16. CHIRPS2</h4>
 <div class="paragraph">
 <p><code>CHIRPS2.0 forcing directory:</code> specifies the location of the
 UCSB CHIRPS v2.0 precipitation forcing file directory. User
@@ -15250,7 +15424,7 @@ CHIRPS2.0 forcing resolution:     0.05</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_petusgs">9.10.16. PET_USGS</h4>
+<h4 id="sssec_supp_petusgs">9.10.17. PET_USGS</h4>
 <div class="paragraph">
 <p><code>USGS PET forcing directory:</code> specifies the location of the
 PET USGS forcing files.</p>
@@ -15290,7 +15464,7 @@ Acceptable values are:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_rfe2gdas">9.10.17. RFE2 data bias corrected to GDAS</h4>
+<h4 id="sssec_rfe2gdas">9.10.18. RFE2 data bias corrected to GDAS</h4>
 <div class="paragraph">
 <p><code>RFE2gdas forcing directory:</code> specifies the location of the
 RFE2gdas forcing files.</p>
@@ -15303,7 +15477,7 @@ RFE2gdas forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_nam242">9.10.18. NAM242</h4>
+<h4 id="sssec_supp_nam242">9.10.19. NAM242</h4>
 <div class="paragraph">
 <p><code>NAM242 forcing directory:</code> specifies the location of the
 &#8220;NAM 242 AWIPS Grid -- Over Alaska&#8221; forcing files</p>
@@ -15316,7 +15490,7 @@ RFE2gdas forcing files.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_wrfout">9.10.19. WRFout</h4>
+<h4 id="sssec_supp_wrfout">9.10.20. WRFout</h4>
 <div class="paragraph">
 <p><code>WRF output forcing directory:</code> specifies the location of the
 WRF output data files.</p>
@@ -15333,7 +15507,7 @@ WRF nest id:                          1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_wrfoutv2">9.10.20. WRFoutv2</h4>
+<h4 id="sssec_supp_wrfoutv2">9.10.21. WRFoutv2</h4>
 <div class="paragraph">
 <p><code>WRF output v2 forcing directory:</code> specifies the location of the
 &#8220;NCAR-WRF 4km metforcing output&#8221; forcing files</p>
@@ -15346,7 +15520,7 @@ WRF nest id:                          1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_wrfakdom">9.10.21. WRF AK domain</h4>
+<h4 id="sssec_supp_wrfakdom">9.10.22. WRF AK domain</h4>
 <div class="paragraph">
 <p><code>WRF AK forcing directory:</code> specifies the location of the
 &#8220;NCAR-WRF Alaska domain 4km metforcing output&#8221; files</p>
@@ -15359,7 +15533,7 @@ WRF nest id:                          1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_geos5forecast">9.10.22. GEOS5 Forecast</h4>
+<h4 id="sssec_geos5forecast">9.10.23. GEOS5 Forecast</h4>
 <div class="paragraph">
 <p><code>GEOS5 forecast forcing directory:</code> specifies the location
 of the GEOS5 forecast forcing files.</p>
@@ -15377,7 +15551,7 @@ GEOS5 forecast forcing number of ensemble members:   11</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_gefsforecast">9.10.23. GEFS Forecast</h4>
+<h4 id="sssec_gefsforecast">9.10.24. GEFS Forecast</h4>
 <div class="paragraph">
 <p><code>GEFS forecast directory:</code> specifies the location
 of the GEFS forecast forcing files.</p>
@@ -15446,7 +15620,7 @@ GEFS forecast grid resolution:   0.25</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_genensfcst">9.10.24. Generic Ensemble Forecast Reader</h4>
+<h4 id="sssec_genensfcst">9.10.25. Generic Ensemble Forecast Reader</h4>
 <div class="paragraph">
 <p><code>Generic ensemble forecast directory:</code> specifies the location
 of the user-generated ensemble forecast forcing files.</p>
@@ -15477,7 +15651,7 @@ Generic ensemble forecast initial date:    20200501</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_pptensfcst">9.10.25. Precipitation-only Ensemble Forecast Reader</h4>
+<h4 id="sssec_pptensfcst">9.10.26. Precipitation-only Ensemble Forecast Reader</h4>
 <div class="paragraph">
 <p><code>Precipitation ensemble forecast directory:</code> specifies the location
 of the user-generated ensemble precipitation forecast forcing files.</p>
@@ -15508,7 +15682,7 @@ Precipitation ensemble forecast initial date:  20200501</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_bondville">9.10.26. Bondville</h4>
+<h4 id="sssec_bondville">9.10.27. Bondville</h4>
 <div class="paragraph">
 <p><code>Bondville forcing file:</code> specifies the location of the
 Bondville forcing file.</p>
@@ -15550,7 +15724,7 @@ Bondville Noah-MP-4.0.1 forcing:     1</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_snotel">9.10.27. SNOTEL</h4>
+<h4 id="sssec_snotel">9.10.28. SNOTEL</h4>
 <div class="paragraph">
 <p><code>SNOTEL forcing directory:</code> specifies the location of the
 SNOTEL forcing files.</p>
@@ -15573,7 +15747,7 @@ SNOTEL coord file:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_vicforcing">9.10.28. VIC processed forcing</h4>
+<h4 id="sssec_vicforcing">9.10.29. VIC processed forcing</h4>
 <div class="paragraph">
 <p>This is used by the LIS development team to support debugging VIC
 within LIS.  One must first run stand-alone VIC, configured to
@@ -15642,7 +15816,7 @@ VIC NR:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_pals">9.10.29. PALS station</h4>
+<h4 id="sssec_pals">9.10.30. PALS station</h4>
 <div class="paragraph">
 <p><code>PALS met forcing directory:</code> specifies the location of the
 PALS station forcing files.</p>
@@ -15690,7 +15864,7 @@ PALS met forcing data start second:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_ldtgen">9.10.30. LDT-generated</h4>
+<h4 id="sssec_ldtgen">9.10.31. LDT-generated</h4>
 <div class="paragraph">
 <p><code>Generated metforcing directory:</code> specifies the location of the
 LDT generated meteorological forcing files.  Files generated in LDT
@@ -15705,7 +15879,7 @@ by the LIS reader.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_climstand">9.10.31. CLIM-Standard</h4>
+<h4 id="sssec_climstand">9.10.32. CLIM-Standard</h4>
 <div class="paragraph">
 <p><code>Metforcing climatology directory:</code> specifies the location of the
 LDT generated forcing climatologies files.  Files generated in LDT
@@ -15720,7 +15894,7 @@ by this selected reader in LIS.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_genensfcstforcing">9.10.32. Generic ensemble forecast</h4>
+<h4 id="sssec_genensfcstforcing">9.10.33. Generic ensemble forecast</h4>
 <div class="paragraph">
 <p><code>Generic ensemble forecast directory:</code> specifies the location of the
 generic ensemble forecast data.</p>
@@ -15738,7 +15912,7 @@ Generic ensemble forecast number of ensemble members:</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_supp_awap">9.10.33. AWAP</h4>
+<h4 id="sssec_supp_awap">9.10.34. AWAP</h4>
 <div class="paragraph">
 <p><code>AWAP forcing directory:</code> specifies the location of the AWAP precipitation
 forcing data.</p>
@@ -15751,7 +15925,7 @@ forcing data.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_gdast1534forcing">9.10.34. GDAS T1534</h4>
+<h4 id="sssec_gdast1534forcing">9.10.35. GDAS T1534</h4>
 <div class="paragraph">
 <p><code>GDAS T1534 forcing directory:</code> specifies the location of the GDAS T1534 metforcing data.</p>
 </div>
@@ -15763,7 +15937,7 @@ forcing data.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_mrmsforcing">9.10.35. MRMS</h4>
+<h4 id="sssec_mrmsforcing">9.10.36. MRMS</h4>
 <div class="paragraph">
 <p><code>MRMS forcing directory:</code> specifies the location of the MRMS metforcing data.</p>
 </div>
@@ -15789,7 +15963,7 @@ MRMS mask directory: ./input/MASKS/</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_awral600forcing">9.10.36. AWRA-L 6.0.0</h4>
+<h4 id="sssec_awral600forcing">9.10.37. AWRA-L 6.0.0</h4>
 <div class="paragraph">
 <p><code>AWRAL forcing directory:</code> specifies the location of the AWRA-L metforcing data.</p>
 </div>
@@ -15809,7 +15983,7 @@ AWRAL domain y-dimension size:         681</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_plumber2forcing">9.10.37. PLUMBER2</h4>
+<h4 id="sssec_plumber2forcing">9.10.38. PLUMBER2</h4>
 <div class="paragraph">
 <p><code>PLUMBER2 forcing file:</code> specifies the location of the PLUMBER2 forcing file.</p>
 </div>
@@ -15829,7 +16003,7 @@ PLUMBER2 Time Delta: 1800</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_gddpforcing">9.10.38. GDDP</h4>
+<h4 id="sssec_gddpforcing">9.10.39. GDDP</h4>
 <div class="paragraph">
 <p><code>GDDP forcing file:</code> specifies the location of the GDDP metforcing data.</p>
 </div>
@@ -15853,7 +16027,7 @@ GDDP reference hourly climatology directory: ./input/MET_FORCING/M2CLIMO/HOURLY/
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_galwemforecast">9.10.39. GALWEM Forecast</h4>
+<h4 id="sssec_galwemforecast">9.10.40. GALWEM Forecast</h4>
 <div class="paragraph">
 <p><code>GALWEM forecast forcing directory:</code> specifies the location
 of the GALWEM forecast forcing files.</p>
@@ -15878,7 +16052,7 @@ GALWEM forecast run mode:          forecast    # forecast | analysis</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_galwemgeforecast">9.10.40. GALWEM-GE Forecast</h4>
+<h4 id="sssec_galwemgeforecast">9.10.41. GALWEM-GE Forecast</h4>
 <div class="paragraph">
 <p><code>GALWEM-GE forecast forcing directory:</code> specifies the location
 of the GALWEM-GE forecast forcing files.</p>
@@ -15902,7 +16076,7 @@ GALWEM-GE forecast number of ensemble members: 21</pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="sssec_mogrepsgforecast">9.10.41. MOGREPS-G Forecast</h4>
+<h4 id="sssec_mogrepsgforecast">9.10.42. MOGREPS-G Forecast</h4>
 <div class="paragraph">
 <p><code>MOGREPS-G forecast forcing directory:</code> specifies the location
 of the MOGREPS-G forecast forcing files.</p>
@@ -23900,7 +24074,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 3.0<br>
-Last updated 2024-07-18 20:07:53 UTC
+Last updated 2024-07-25 18:08:58 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
