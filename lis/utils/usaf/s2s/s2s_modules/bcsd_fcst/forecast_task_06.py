@@ -132,7 +132,7 @@ def _driver():
         for var_num, var_value in enumerate(obs_var_list):
             if var_num == 1:
                 var_type = "PRCP"
-                cmd2 = "srun --exclusive --ntasks 1 python"
+                cmd2 = "python"
                 cmd2 += f" {srcdir2}/forecast_task_07.py"
                 cmd2 += f" -s {year}"
                 cmd2 += f" -m {month_abbr}"
@@ -146,7 +146,7 @@ def _driver():
             fcst_var = fcst_var_list[var_num]
             unit = unit_list[var_num]
 
-            cmd = "srun --exclusive --ntasks 1 python"
+            cmd = "python"
             cmd += f" {srcdir}/temporal_disaggregation_6hourly_module.py"
             cmd += f" {obs_var}"
             cmd += f" {fcst_var}"

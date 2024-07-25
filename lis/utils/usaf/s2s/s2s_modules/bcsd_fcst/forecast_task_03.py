@@ -93,7 +93,7 @@ def _driver():
 
     for nmme_model in  config['EXP']['NMME_models']:
         ensemble_size = ensemble_sizes[nmme_model]
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {srcdir}/nmme_reorg_f.py"
         cmd += f" {month_num}"
         cmd += f" {current_year}"

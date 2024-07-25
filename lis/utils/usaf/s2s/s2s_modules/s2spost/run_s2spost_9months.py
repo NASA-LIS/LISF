@@ -94,7 +94,7 @@ def _submit_batch_jobs(args):
         txt = "[INFO] Submitting batch job for"
         txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
         print(txt)
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {scriptdir}/run_s2spost_1month.py"
         cmd += f" {configfile} {topdatadir}"
         cmd += f" {fcstdate.year:04d}{fcstdate.month:02d}"

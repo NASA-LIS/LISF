@@ -128,7 +128,7 @@ def _driver():
         fcst_var = fcst_var_list[var_num]
         unit = unit_list[var_num]
         #print(f"{var_num} {fcst_var}")
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {srcdir}/bias_correction_modulefast.py"
         cmd += f" {obs_var}"
         cmd += f" {fcst_var}"
