@@ -104,7 +104,7 @@ def driver():
 
     print("[INFO] Combining subdaily BC CFSv2 non-precip variables")
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {srcdir}/combine_sub_daily_downscaled_forcings.py"
         cmd += f" {year}"
         cmd += f" {month_num}"
@@ -121,7 +121,7 @@ def driver():
     # Now write task 10 scripts
 
     for nmme_model in  config['EXP']['NMME_models']:
-        cmd = "srun --exclusive --ntasks 1 python"
+        cmd = "python"
         cmd += f" {srcdir2}/forecast_task_10.py"
         cmd += f" -c {config_file}"
         cmd += f" -s {year}"
@@ -135,7 +135,7 @@ def driver():
 
     # Now write task 11 scripts
 
-    cmd = "srun --exclusive --ntasks 1 python"
+    cmd = "python"
     cmd += f" {srcdir2}/forecast_task_11.py"
     cmd += f" -s {year}"
     cmd += f" -m {month_abbr}"
@@ -148,7 +148,7 @@ def driver():
 
     # Now write task 12 scripts
 
-    cmd = "srun --exclusive --ntasks 1 python"
+    cmd = "python"
     cmd += f" {srcdir2}/forecast_task_12.py"
     cmd += f" -s {year}"
     cmd += f" -m {month_abbr}"

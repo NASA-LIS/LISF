@@ -133,7 +133,7 @@ def _driver():
         if eyear is not None:
             cmd_list = []
             for cyear in range(syear,eyear+1):
-                cmd = "srun --exclusive --ntasks 1 python"
+                cmd = "python"
                 cmd += f" {srcdir}/process_forecast_data.py"
                 cmd += f" {cyear:04d}"
                 cmd += f" {ens_num:02d}"
@@ -149,7 +149,7 @@ def _driver():
                              hours, cwd, command_list=cmd_list)
 
         else:
-            cmd = "srun --exclusive --ntasks 1 python"
+            cmd = "python"
             cmd += f" {srcdir}/process_forecast_data.py"
             cmd += f" {syear:04d}"
             cmd += f" {ens_num:02d}"

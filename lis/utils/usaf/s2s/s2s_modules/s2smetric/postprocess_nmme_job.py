@@ -173,7 +173,7 @@ def _driver():
             '/lis/utils/usaf/s2s/s2s_modules/s2smetric/metrics_library/'
         for anom_type in ["anom", "sanom"]:
             py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
-            cmd = "srun --exclusive --ntasks 1 python"
+            cmd = "python"
             cmd += f" {pylibdir}{py_script}"
             cmd += f" {currentdate.month:02d}"
             cmd += f" {currentdate.year:04d}"
