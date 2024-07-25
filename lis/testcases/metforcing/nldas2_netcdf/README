@@ -1,0 +1,30 @@
+This testcase is for the NLDAS-2 netCDF-4 metforcing plugin in LIS.
+
+This is a test case that uses: 
+  (a) the NLDAS2 forcing 
+  (b) using the Nearest Neighbor Interpolation
+  (c) uses no elevation correction (This is built into the forcing data). 
+  (d) the "template" LSM option (which is a dummy LSM placeholder that simply
+      outputs the interpolated forcing data. 
+  (e) North American domain at 1/8 degree spatial resolution.
+  (f) a time period from 2 Jan 1979 at 14Z to 2 Jan 1979 at 20Z.
+
+There are 4 lis.config files in this directory:
+
+lis.config.nldas.grib         = Standard NLDAS-2 GRIB-1 forcing
+lis.config.nldas.grib.FORB    = NLDAS-2 GRIB-1 forcing, also using
+                                "FORB" secondary forcing
+lis.config.nldas.netcdf       = Standard NLDAS-2 netCDF-4 forcing
+lis.config.nldas.netcdf.FORB  = NLDAS-2 netCDF-4 forcing, also using
+                                "FORB" secondary forcing
+
+Note that the "FORB" lis.config files use separate files for
+forcing_variables and for the MODEL OUTPUT TBL.  These files
+are also provided and include "FORB" in the filename.
+
+Only the lis.config "netcdf" files truly need to be tested with this
+pull request.  The "grib" output is also provided as further comparison.
+Note that because the input GRIB-1 and netCDF-4 NLDAS-2 data are not
+binary identical (with very slight differences due to rounding), the
+"grib" and "netcdf" output will also have very small rounding
+differences between them.
