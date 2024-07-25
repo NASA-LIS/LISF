@@ -1078,7 +1078,7 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
 
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
     echo "python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
     echo "python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
     echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
