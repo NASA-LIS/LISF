@@ -346,7 +346,8 @@ Acceptable values for the sources are:
 |"`GSWP2`"                     | GSWP2
 |"`AGRMET`"                    | AGRMET
 |"`PRINCETON`"                 | Princeton
-|"`NLDAS2`"                    | NLDAS2
+|"`NLDAS2 grib`"               | NLDAS-2 GRIB-1 format
+|"`NLDAS2 netcdf`"             | NLDAS-2 v020 netCDF-4 format
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
 |"`MERRA2`"                    | MERRA2
@@ -5883,15 +5884,14 @@ SCAN forcing directory:   ./input/FORCING/SCAN
 SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
 ....
 
+[[sssec_forcings_nldas2,NLDAS2 (grib)]]
+==== NLDAS2 (grib)
 
-[[sssec_forcings_nldas2,NLDAS2]]
-==== NLDAS2
+`NLDAS2 forcing directory:` specifies the location of the NLDAS-2
+GRIB-1 forcing files.
 
-`NLDAS2 forcing directory:` specifies the location of the NLDAS2
-forcing files.
-
-`NLDAS2 data center source:` specifies the center that produced
-the NLDAS2 files. (This is specified to distinguish the filenames.)
+`NLDAS2 data center source:` specifies the center that produced the
+NLDAS-2 GRIB-1 files.  (This is specified to distinguish the filenames.)
 Acceptable values are:
 
 |====
@@ -5903,7 +5903,7 @@ Acceptable values are:
 
 `NLDAS2 use model level data:` specifies whether or not to
 read in the model level data (instead of 2/10m fields) from the
-NLDAS2 forcing dataset (will open up and read "`B`" files).
+NLDAS-2 forcing dataset (will open up and read "`B`" files).
 This data is at the height of the NARR lowest model level.
 
 Note that this will read in "`Height of Atmospheric Forcing`"
@@ -5920,7 +5920,7 @@ Acceptable values are:
 
 `NLDAS2 use model based swdown:` specifies whether or not to
 read in the un-bias corrected model downward shortwave radiation
-data (in leiu of the bias corrected data) from the NLDAS2 forcing
+data (in leiu of the bias corrected data) from the NLDAS-2 forcing
 dataset (will open up and read "`B`" files).  The data source is
 the NARR shortwave.
 Acceptable values are:
@@ -5934,7 +5934,7 @@ Acceptable values are:
 
 `NLDAS2 use model based precip:` specifies whether or not
 to read in the model based precipitation data (instead of the
-observation based precipitation) from the NLDAS2 forcing
+observation based precipitation) from the NLDAS-2 forcing
 dataset (will open up and read "`B`" files).  The data source
 is the NARR precipitation.
 Acceptable values are:
@@ -5946,10 +5946,9 @@ Acceptable values are:
 |1     | use
 |====
 
-`NLDAS2 use model based pressure:` specifies whether or
-not to read in the model base pressure data (instead of the
-observation based pressure) from the NLDAS2 forcing dataset
-(will open up and read "`B`" files).  The data source is
+`NLDAS2 use model based pressure:` specifies whether or not
+to read in the model base pressure data from the NLDAS-2 forcing
+dataset (will open up and read "`B`" files).  The data source is
 the pressure at the NARR lowest model level.
 Acceptable values are:
 
@@ -5968,6 +5967,103 @@ NLDAS2 use model level data:            0
 NLDAS2 use model based swdown:          0
 NLDAS2 use model based precip:          0
 NLDAS2 use model based pressure:        0
+....
+
+[[sssec_forcings_nldas20,NLDAS-2.0 (netcdf)]]
+==== NLDAS-2.0 (netcdf)
+
+`NLDAS-2.0 FORA forcing directory:` specifies the location of the
+NLDAS-2.0 v020 "`FORA`" netCDF-4 forcing files.
+
+`NLDAS-2.0 FORB forcing directory:` specifies the location of the
+NLDAS-2.0 v020 "`FORB`" netCDF-4 forcing files.  This config entry
+is not required unless one of the following FORB data use flags is
+set to "`1`".
+
+`NLDAS-2.0 use FORB model level data:` specifies whether or not to
+read in and use the model level data (instead of 2/10-m fields) from
+the NLDAS-2 "`FORB`" forcing dataset.  This data is at the height
+of the NARR lowest model level.  The fields that are used are air
+temperature, air humidity, winds, height of the lowest model level,
+and the aerodynamic conductance.  This config entry is not required,
+and the default will be to not use this FORB data.  However, if the
+FORB model level data is chosen, you must specify the directory of
+the FORB data using the "`NLDAS-2.0 FORB forcing directory:`" config.
+
+Note that this will read in "`Height of Atmospheric Forcing`"
+and "`Surface Exchange Coefficient for Heat`" (aka, aerodynamic
+conductance).  You must make sure that "`Forc_Hgt:`" and "`Ch:`"
+(respectively) are included in your forcing variables list file.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based SWdown:` specifies whether or not
+to read in and use the un-bias-corrected model downward shortwave
+radiation data (in leiu of the bias-corrected data) from the NLDAS-2
+"`FORB`" forcing dataset.  The data source is the NARR shortwave.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based SWdown is
+chosen, you must specify the directory of the FORB data using the
+"`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based precip:` specifies whether or not
+to read in and use the model-based precipitation data (instead of
+the observation-based precipitation) from the NLDAS-2 "`FORB`"
+forcing dataset.  The data source is the NARR precipitation.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based precip is
+chosen, you must specify the directory of the FORB data using the
+"`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based pressure:` specifies whether or
+not to read in and use the pressure data from the NLDAS-2 "`FORB`"
+forcing dataset.  This data is at the height of the NARR lowest
+model level.  This config entry is not required, and the default
+will be to not use this FORB data.  However, if the FORB model-based
+pressure is chosen, you must specify the directory of the FORB data
+using the "`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+.Example _lis.config_ entry
+....
+NLDAS-2.0 FORA forcing directory:               ./input/NLDAS2/FORA
+NLDAS-2.0 FORB forcing directory:               ./input/NLDAS2/FORB
+NLDAS-2.0 use FORB model level data:            0
+NLDAS-2.0 use FORB model-based SWdown:          0
+NLDAS-2.0 use FORB model-based precip:          0
+NLDAS-2.0 use FORB model-based pressure:        0
 ....
 
 [[sssec_forcings_COAMPS,COAMPS]]

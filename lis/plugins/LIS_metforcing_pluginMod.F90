@@ -208,6 +208,10 @@ subroutine LIS_metforcing_plugin
    use nldas2_forcingMod
 #endif
 
+#if ( defined MF_NLDAS20 )
+   use nldas20_forcingMod
+#endif
+
 #if ( defined MF_NARR )
    use narr_forcingMod
 #endif
@@ -502,6 +506,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_nldas2
    external finalize_nldas2
    external reset_nldas2
+#endif
+
+#if ( defined MF_NLDAS20 )
+   external get_nldas20
+   external timeinterp_nldas20
+   external finalize_nldas20
+   external reset_nldas20
 #endif
 
 #if ( defined MF_NARR )
@@ -970,13 +981,23 @@ subroutine LIS_metforcing_plugin
 #endif
 
 #if ( defined MF_NLDAS2 )
-! - NLDAS2 Forcing:
+! - NLDAS2 Forcing (GRIB-1 format):
    call registerinitmetforc(trim(LIS_nldas2Id)//char(0),init_NLDAS2)
    call registerretrievemetforc(trim(LIS_nldas2Id)//char(0),get_nldas2)
    call registertimeinterpmetforc(trim(LIS_nldas2Id)//char(0), &
                                   timeinterp_nldas2)
    call registerfinalmetforc(trim(LIS_nldas2Id)//char(0),finalize_nldas2)
    call registerresetmetforc(trim(LIS_nldas2Id)//char(0),reset_nldas2)
+#endif
+
+#if ( defined MF_NLDAS20 )
+! - NLDAS-2.0 Forcing (netCDF format):
+   call registerinitmetforc(trim(LIS_nldas20Id)//char(0),init_NLDAS20)
+   call registerretrievemetforc(trim(LIS_nldas20Id)//char(0),get_nldas20)
+   call registertimeinterpmetforc(trim(LIS_nldas20Id)//char(0), &
+                                  timeinterp_nldas20)
+   call registerfinalmetforc(trim(LIS_nldas20Id)//char(0),finalize_nldas20)
+   call registerresetmetforc(trim(LIS_nldas20Id)//char(0),reset_nldas20)
 #endif
 
 #if ( defined MF_NARR )
