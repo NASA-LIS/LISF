@@ -1078,11 +1078,11 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
 
-    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
-    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
-    echo "srun --exclusive --ntasks 1 python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFIL" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
+    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
 
     python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
