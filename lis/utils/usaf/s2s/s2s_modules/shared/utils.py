@@ -73,7 +73,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-            if cfg['SETUP']['CONSTRAINT'] == 'mil':
+            if 'mil' in cfg['SETUP']['CONSTRAINT']:
                 _f.write('#SBATCH --partition=packable'  + '\n')
         else:
 #            _f.write('#SBATCH --cluster-constraint=green' + '\n')
