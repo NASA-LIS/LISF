@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -462,10 +462,14 @@ contains
 ! \label{LIS_endofrun}
 !
 ! !INTERFACE:
-  function LIS_endofrun() result(finish)
+  function LIS_endofrun(override_end_time) result(finish)
 
-! !ARGUMENTS:
+    use LIS_logMod, only: LIS_logunit
+
+    ! !ARGUMENTS:
+    logical, optional, intent(in) :: override_end_time
     logical :: finish
+    
 ! !DESCRIPTION:
 !  This function checks to see if the runtime clock has reached the
 !  specified stop time of the simulation.
@@ -483,9 +487,19 @@ contains
 !   \end{description}
 !EOP
     integer :: ierr
+    logical, save :: force_end = .false. ! EMK
 
+    ! EMK: Allows a metforcing reader to override
+    if (present(override_end_time)) then
+       force_end = override_end_time
+    end if
     if(LIS_masterproc) then
        finish = LIS_is_last_step(LIS_rc)
+       !  EMK: Allows a metforcing reader to override
+       if (force_end) then
+          finish = .true.
+          write(LIS_logunit,*)'[INFO] LIS will terminate early!'
+       end if
     endif
 #if (defined SPMD)
     call MPI_BCAST(finish, 1, MPI_LOGICAL, 0, &

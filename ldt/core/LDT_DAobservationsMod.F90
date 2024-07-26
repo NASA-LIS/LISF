@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ module LDT_DAobservationsMod
 !
 ! !REVISION HISTORY: 
 !  02 Oct 2008    Sujay Kumar  Initial Specification
+!  2 Dec 2021:   Mahdi Navari; modified to compute CDF for precipitation
 ! 
 ! !USES:       
 
@@ -71,6 +72,7 @@ contains
        call default_init_obsEntry(LDT_DAobsData(i)%vod_obs, "VOD")
        call default_init_obsEntry(LDT_DAobsData(i)%lai_obs, "LAI")
        call default_init_obsEntry(LDT_DAobsData(i)%gvf_obs, "GVF")   !Y.Kwon
+       call default_init_obsEntry(LDT_DAobsData(i)%totalprecip_obs, "TotalPrecip")
     enddo
 
     call daobservationsetup(trim(LDT_rc%obs_src)//char(0))

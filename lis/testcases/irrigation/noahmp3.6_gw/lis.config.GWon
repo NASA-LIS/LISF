@@ -9,7 +9,7 @@ Surface model output interval:     "1da"
 
 Number of met forcing sources:       1
 Blending method for forcings:     "overlay"
-Met forcing sources:               "NLDAS2"
+Met forcing sources:               "NLDAS2 grib"
 #Topographic correction method (met forcing):  "lapse-rate"
 Topographic correction method (met forcing):  "none"
 Spatial interpolation method (met forcing):   "neighbor"

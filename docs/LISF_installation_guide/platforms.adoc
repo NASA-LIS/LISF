@@ -19,10 +19,11 @@ The following tables provide some specific platforms with compiler and library v
 | HDF 4          | 4.2.15
 | HDF-EOS2       | 2.20v.1.00
 | SQLite3        | 3.35.0
-| PROJ           | 7.1.1
+| PROJ           | 9.1.0
 | GeoTIFF        | 1.7.0
-| GDAL           | 2.4.4
+| GDAL           | 3.5.2
 | FortranGIS     | 2.6
+| PETSc          | 3.16.1
 | JPEG           | 8d
 |====
 
@@ -40,12 +41,13 @@ The following tables provide some specific platforms with compiler and library v
 | ecCodes        | 2.23.0
 | ESMF           | 8.1.1
 | HDF 4          | 4.2.15
-| HDF-EOS2       | 2.20v.1.00 [red]#Not installed; failed make check#
+| HDF-EOS2       | 3.0
 | SQLite3        | 3.35.0
-| PROJ           | 7.1.1
+| PROJ           | 9.1.0
 | GeoTIFF        | 1.7.0
-| GDAL           | 2.4.4
+| GDAL           | 3.5.2
 | FortranGIS     | 2.6
+| PETSc          | 3.16.1
 | JPEG           | 8d
 |====
 

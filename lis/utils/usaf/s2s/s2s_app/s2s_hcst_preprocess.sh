@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
-# 
-# Copyright (c) 2022 United States Government as represented by the
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -147,9 +147,9 @@ reorg_cfsv2(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=reorg_cfsv2
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_syr -e $clim_mid -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set1
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_syr -e $clim_mid -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j ${jobname}_set1
     ((clim_mid++))
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_mid -e $clim_eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set2
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_mid -e $clim_eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j ${jobname}_set2
     
     job_list="$jobname*.j"
     for jfile in $job_list
@@ -212,7 +212,7 @@ clim_nafpa(){
     outdir=${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     mkdir -p -m 775 $outdir
      
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}    
     this_var=0
     for var in LWdown_f_tavg Rainf_f_tavg Psurf_f_tavg  Qair_f_tavg SWdown_f_tavg Tair_f_tavg Wind_f_tavg; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir"
@@ -248,7 +248,7 @@ clim_cfsv2(){
     outdir=${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Climatology/${mmm}01/
     mkdir -p -m 775 ${outdir}
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD}
     this_var=0
     for var in PRECTOT  LWS  PS  Q2M  SLRSF  T2M  WIND10M; do
         COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir"
@@ -285,7 +285,7 @@ clim_nmme(){
     mkdir -p -m 775 $MODELS
     cd ${SCRDIR}/clim/
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
     this_model=0
     for model in $MODELS; do
 

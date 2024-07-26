@@ -1,6 +1,6 @@
-= Land surface Verification Toolkit (LVT): LVT {lisfrevision} Users`' Guide
-:revnumber: 2.4
-:revdate: 05 Jul 2023
+= Land surface Verification Toolkit (LVT): LVT {lisfrevision} Users Guide
+:revnumber: 3.0
+:revdate: 10 Jan 2024
 :doctype: book
 :sectnums:
 :toc:
@@ -9,13 +9,13 @@
 :imagesoutdir: images
 :stem: latexmath
 :devonly:
-:lisfrevision: 7.4
+:lisfrevision: 7.5
 :lisfurl: https://lis.gsfc.nasa.gov
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
 :nasalisfpages: https://nasa-lis.github.io/LISF/
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
-:lvttarball: LISF_public_release_7.4.0.tar.gz
+:lvttarball: LISF_public_release_7.5.0.tar.gz
 :emdash: —
 :endash: –
 :vertellipsis: ⋮

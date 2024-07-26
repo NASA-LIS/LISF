@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -172,6 +172,7 @@ contains
     use GDASforc_dataMod,       only : GDASforc_datainit    
     use ASOSWE_obsMod,          only : ASOSWE_obsinit
     use IMERG_dataMod,          only : IMERG_datainit
+    use IMERG_monthly_dataMod,  only : IMERG_monthly_datainit
     use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
@@ -284,6 +285,7 @@ contains
     external readGDASforcdata
     external readASOSWEObs
     external readIMERGdata
+    external readIMERGmonthlydata
     external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
@@ -700,7 +702,12 @@ contains
          readASOSWEObs)
 
     call registerobssetup(trim(LVT_IMERGdataId)//char(0), IMERG_datainit)
-    call registerobsread(trim(LVT_IMERGdataId)//char(0) , readIMERGdata)
+    call registerobsread(trim(LVT_IMERGdataId)//char(0), readIMERGdata)
+
+    call registerobssetup(trim(LVT_IMERGmonthlydataId)//char(0), &
+         IMERG_monthly_datainit)
+    call registerobsread(trim(LVT_IMERGmonthlydataId)//char(0), &
+         readIMERGmonthlydata)
 
     call registerobssetup(trim(LVT_UASNOWdataId)//char(0), UASNOW_obsinit)
     call registerobsread(trim(LVT_UASNOWdataId)//char(0) , readUASNOWObs)

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,14 @@
 !              ........................................Eric Kemp/SSAI/NASA
 ! 03 Jun 2020  Removed Box-Cox transform in precipitation analysis
 !              ........................................Eric Kemp/SSAI/NASA
+! 29 Nov 2023  Pass QC-rejected obs to OBA files.......Eric Kemp/SSAI/NASA
+! 12 Mar 2024  Restrict BackQC and SuperstatQC to gage reports. Fixed
+!              typo in SuperstatQC threshold...........Eric Kemp/SSAI/NASA
+! 21 Mar 2024  Changed internal BackQC and SuperstatQC logic to only
+!              skip for IMERG.  This allows use with T, RH, and wind
+!              speed analyses..........................Eric Kemp/SSAI/NASA
+! 24 May 2024  Export USAF_is_gauge function, and add HADS and
+!              NWSLI gage networks.....................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -34,7 +42,7 @@
 !
 ! Bratseth, A M, 1986:  Statistical interpolation by means of successive
 !   corrections.  Tellus, 38A, 439-447.
-! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition,
 !   Wiley, New York, 928 pp.
 ! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
 !   Cambridge, UK, 457 pp.
@@ -96,8 +104,8 @@ module USAF_bratsethMod
    type USAF_obsData
       private
       integer :: nobs
-      character*10, allocatable :: net(:)
-      character*10, allocatable :: platform(:)
+      character*32, allocatable :: net(:)
+      character*32, allocatable :: platform(:)
       real, allocatable :: obs(:) ! Observed variable
       real, allocatable :: lat(:) ! Latitude of observation (deg N)
       real, allocatable :: lon(:) ! Longitude of observation (deg E)
@@ -133,6 +141,8 @@ module USAF_bratsethMod
    public :: USAF_snowDepthQC
    public :: USAF_backQC
    public :: USAF_superstatQC
+   ! EMK 20240524
+   public :: USAF_is_gauge
 
    ! A simple linked list type that can be used in a hash table.  Intended
    ! to store indices of arrays in the USAF_obsData type for efficient look-up.
@@ -143,12 +153,6 @@ module USAF_bratsethMod
 
    ! Private constants
    real, parameter :: MISSING = -9999
-
-   ! Quality control flags.  Should these be public?
-   real, parameter :: QC_UNKNOWN = 0
-   real, parameter :: QC_GOOD = 1
-   real, parameter :: QC_SUSPECT = 2
-   real, parameter :: QC_REJECT = 3
 
 contains
 
@@ -227,6 +231,9 @@ contains
    ! FIXME: Merge with USAF_createObsData
    subroutine initObsData(this)
 
+      ! Imports
+      use USAF_OBAMod, only: QC_UNKNOWN
+
       ! Defaults
       implicit none
 
@@ -248,9 +255,10 @@ contains
    end subroutine InitObsData
 
    !---------------------------------------------------------------------------
-   ! Loops through contents of ObsData structure and counts all obs with
-   ! "good" quality control flag.
+   ! Loops through contents of ObsData structure and counts all obs
+   ! not flagged for rejection.
    function USAF_countGoodObs(this) result(goodObs)
+      use USAF_OBAMod, only: QC_REJECT
       implicit none
       type(USAF_ObsData), intent(in) :: this
       integer :: goodObs
@@ -259,6 +267,7 @@ contains
       goodObs = 0
       do i = 1, this%nobs
          if (this%qc(i) .ne. QC_REJECT) then
+            ! QC_SUSPECT obs count as "good" so they are included in OBA
             goodObs = goodObs + 1
          end if
       end do ! i
@@ -270,24 +279,26 @@ contains
    ! background field at observation is optional (useful for adding
    ! "superobservations").
    subroutine USAF_assignObsData(this,net,platform,ob,lat,lon,sigmaOSqr, &
-        oErrScaleLength,back)
+        oErrScaleLength,back,qc)
 
       ! Imports
       use LIS_logmod, only : LIS_logunit
+      use USAF_OBAmod, only: QC_UNKNOWN
 
       ! Defaults
       implicit none
 
       ! Arguments
       type(USAF_ObsData),intent(inout) :: this
-      character(len=10), intent(in) :: net
-      character(len=10), intent(in) :: platform
+      character(len=32), intent(in) :: net
+      character(len=32), intent(in) :: platform
       real, intent(in) :: ob
       real, intent(in) :: lat
       real, intent(in) :: lon
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
       real, optional, intent(in) :: back
+      integer, optional, intent(in) :: qc
 
       ! Local variables
       integer :: nobs
@@ -318,11 +329,16 @@ contains
       end if
       this%sigmaOSqr(nobs) = sigmaOSqr
       this%oErrScaleLength(nobs) = oErrScaleLength
-      this%qc(nobs) = QC_UNKNOWN
       this%nobs = nobs
       if (present(back)) then
          this%back(nobs) = back
       end if
+      if (present(qc)) then
+         this%qc(nobs) = qc
+      else
+         this%qc(nobs) = QC_UNKNOWN
+      end if
+
 !      TRACE_EXIT("bratseth_assign")
 
    end subroutine USAF_assignObsData
@@ -358,6 +374,7 @@ contains
    subroutine USAF_split6hrGaugeObsData(this,nest,imax,jmax,back4,pcap,p3,p6)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -372,7 +389,7 @@ contains
       type(USAF_ObsData),intent(out) :: p3
       type(USAF_ObsData),intent(out) :: p6
 
-      ! Local variables 
+      ! Local variables
       integer :: nobs6
       real :: tmp_back2(2)
       real :: tmp_obs2(2)
@@ -444,7 +461,7 @@ contains
             end if
          end do
 
-         ! Assign 
+         ! Assign
          if (tmp_obs2(1) .ne. MISSING) then
             call USAF_assignObsData(p3, this%net(n), this%platform(n), &
                  tmp_obs2(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
@@ -468,6 +485,7 @@ contains
         p9,p12)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -622,11 +640,14 @@ contains
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
-      character(len=10) :: net, platform
+      character(len=32) :: net
+      character(len=32) :: platform
       integer :: icount
       integer :: i,j
       integer :: count_good_ssmi
       real, parameter :: FILL = -9999.0
+
+      external :: polarToLatLon
 
       net = "SSMI"
       platform = "SSMI"
@@ -656,8 +677,8 @@ contains
          continue
       else
          write(LIS_logunit,*)'[ERR] Invalid imax dimension for SSM/I!'
-         write(LIS_logunit,*)'Received ', imax
-         write(LIS_logunit,*)'Only support 512, 1024, or 1400'
+         write(LIS_logunit,*)'[ERR] Received ', imax
+         write(LIS_logunit,*)'[ERR] Only support 512, 1024, or 1400'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
@@ -724,7 +745,7 @@ contains
       if (imax .eq. 1440) then
 
          write(LIS_logunit,*)'[ERR] Lat/lon SSM/I data not supported yet!'
-         write(LIS_logunit,*)'Modify USAF_addSSMIObsData and recompile!'
+         write(LIS_logunit,*)'[ERR] Modify USAF_addSSMIObsData and recompile!'
          flush(LIS_logunit)
          call LIS_endrun()
 
@@ -774,6 +795,8 @@ contains
       character(len=10) :: yyyymmddhh
       integer :: c, r
 
+      external :: AGRMET_julhr_date10
+
       TRACE_ENTER("bratseth_getBackNWP")
       rc = 0
 
@@ -801,6 +824,8 @@ contains
          ! EMK...Fetch bias ratio if requested
          if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
             call USAF_pcpBackBiasRatio_s2s(nest, yyyymmddhh)
+         else if (agrmet_struc(nest)%back_bias_corr .eq. 2) then
+            call USAF_pcpBackBiasRatio_nrt(nest, yyyymmddhh)
          end if
 
          write(LIS_logunit,*) &
@@ -824,6 +849,20 @@ contains
             ! Use GALWEM Bratseth settings if we have the data
             if (rc .eq. 0) then
                pcp_src(k) = 'GALWEM'
+
+               ! Apply bias correction to background field
+               if (agrmet_struc(nest)%back_bias_corr .eq. 2) then
+                  write(LIS_logunit,*) &
+           '[INFO] Applying IMERG-based bias correction to GALWEM precip'
+                  do r = 1, LIS_rc%gnr(nest)
+                     do c = 1, LIS_rc%gnc(nest)
+                        fg_data_glb(c,r) = &
+                             fg_data_glb(c,r) * &
+                          agrmet_struc(nest)%galwem_nrt_bias_ratio(c,r)
+                     end do
+                  end do
+               end if
+
             end if
          endif
 
@@ -851,14 +890,28 @@ contains
             end if
 
             ! Apply bias correction to background field
-            if (agrmet_struc(nest)%back_bias_corr .eq. 1) then
+            if (agrmet_struc(nest)%back_bias_corr .eq. 1 .and. &
+                 rc .eq. 0) then
                write(LIS_logunit,*) &
-                   '[INFO] Applying GALWEM-based bias correction to GFS precip'
+             '[INFO] Applying GALWEM-based bias correction to GFS precip'
                do r = 1, LIS_rc%gnr(nest)
                   do c = 1, LIS_rc%gnc(nest)
                      fg_data_glb(c,r) = &
                           fg_data_glb(c,r) * &
                           agrmet_struc(nest)%pcp_back_bias_ratio(c,r)
+                  end do
+               end do
+
+            else if (agrmet_struc(nest)%back_bias_corr .eq. 2 .and. &
+                 rc .eq. 0) then
+               ! New IMERG option for NRT
+               write(LIS_logunit,*) &
+             '[INFO] Applying IMERG-based bias correction to GFS precip'
+               do r = 1, LIS_rc%gnr(nest)
+                  do c = 1, LIS_rc%gnc(nest)
+                     fg_data_glb(c,r) = &
+                          fg_data_glb(c,r) * &
+                          agrmet_struc(nest)%gfs_nrt_bias_ratio(c,r)
                   end do
                end do
             end if
@@ -874,7 +927,7 @@ contains
             call AGRMET_julhr_date10(j3hr, yyyymmddhh)
             write(LIS_logunit,*) &
                  '[ERR] No NWP background precipitation found for ',yyyymmddhh
-            write(LIS_logunit,*) ' ABORTING!'
+            write(LIS_logunit,*) '[ERR] ABORTING!'
             flush(LIS_logunit)
             message(:) = ''
             message(1) = '[ERR] Program:  LIS'
@@ -884,6 +937,8 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_getBackNWP')
 #endif
             if(LIS_masterproc) then
                call LIS_alert( 'LIS.USAF_getBackNWP          ', 1, &
@@ -945,6 +1000,8 @@ contains
       integer :: local_global_or_hemi
       integer :: local_diff_grid
       integer :: ii,jj,kk,count_good_ssmi ! EMK TEST
+
+      external :: agrmet_ssmiprec_filename
 
       TRACE_ENTER("bratseth_getSSMI")
       routine_name = 'USAF_getSSMIObsData'
@@ -1014,9 +1071,9 @@ contains
                    write(LIS_logunit,*) ' '
                    write(LIS_logunit,*) &
                         '[WARN] precip/smiedr:  error opening file'
-                   write(LIS_logunit,*)'  SSMI data file ', trim(ifil), &
+                   write(LIS_logunit,*)'[WARN]  SSMI data file ', trim(ifil), &
                         ' does not exist.'
-                   write(LIS_logunit,*)'  SSMI estimates will not be used ',&
+                   write(LIS_logunit,*)'[WARN]  SSMI estimates will not be used ',&
                         'in precip analysis.'
                    write(LIS_logunit,*) ' '
                    message   =' '
@@ -1033,7 +1090,7 @@ contains
 
                    ra(hemi,:,:) = MISSING
                 else
-                   write(LIS_logunit,*) '- READING ',trim(ifil)
+                   write(LIS_logunit,*) '[INFO] READING ',trim(ifil)
                    call LIS_putget( ra(hemi,:,:), 'r', ifil, routine_name, &
                         imax, jmax)
                 end if ! .not. exists
@@ -1041,8 +1098,9 @@ contains
 
             ! Honor option to reset SSMI zero precip values to missing
             if (.not. use_zeros) then
-               write(LIS_logunit,*)'- SSMI ZEROS NOT USED'
-               where ( ra(:,:,:) .eq. 0.0 )
+               write(LIS_logunit,*)'[INFO] SSMI ZEROS NOT USED'
+               where ( .not. ra(:,:,:) > 0.0 .and. &
+                    .not. ra(:,:,:) < 0)
                   ra(:,:,:) = MISSING
                end where
             end if
@@ -1128,12 +1186,16 @@ contains
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
-      character(len=10) :: net, platform
+      character(len=32) :: net
+      character(len=32) :: platform
       integer :: count_good_geo_precip, icount
       integer :: npts
       integer :: i,j,jj
       logical, external :: is_geo_corrupted
       real, allocatable :: gest_temp(:,:,:)
+
+      external :: agrmet_geoprec_filename
+      external :: polarToLatLon
 
       TRACE_ENTER("bratseth_getGeopPrcp")
       net = "GEOPRECIP"
@@ -1184,7 +1246,7 @@ contains
                   else
                      write(LIS_logunit,*) &
                           '[ERR] Invalid dimension for GEO_PRECIP data!'
-                     write(LIS_logunit,*)'Read ', agrmet_struc(nest)%imax
+                     write(LIS_logunit,*)'[ERR] Read ', agrmet_struc(nest)%imax
                      call LIS_endrun()
                   end if
                end if
@@ -1214,8 +1276,8 @@ contains
             else
                write(LIS_logunit,*) &
                     '[ERR] Invalid imax dimension for GEO_PRECIP!'
-               write(LIS_logunit,*)'Received ',imax
-               write(LIS_logunit,*)'Only support 512, 1024, or 4096!'
+               write(LIS_logunit,*)'[ERR] Received ',imax
+               write(LIS_logunit,*)'[ERR] Only support 512, 1024, or 4096!'
                flush(LIS_logunit)
                call LIS_endrun()
             end if
@@ -1242,11 +1304,11 @@ contains
                inquire( file = trim(ifil), exist = exists)
                if ( .not. exists ) then
                   write(LIS_logunit,*) &
-                       'USAF_getGeoPrecipObsData:  error opening file ', &
+                       '[WARN] USAF_getGeoPrecipObsData:  error opening file ', &
                        trim(ifil)
-                  write(LIS_logunit,*) '  file does not exist'
+                  write(LIS_logunit,*) '[WARN]  file does not exist'
                   write(LIS_logunit,*) &
-                       '  geo precip estimate will not be performed'
+                       '[WARN]  geo precip estimate will not be performed'
                   message = ' '
                   message(1) = 'program:  LIS'
                   message(2) = '  routine:  USAF_getGeoPrecipObsData'
@@ -1261,7 +1323,7 @@ contains
                   TRACE_EXIT("bratseth_getGeopPrcp")
                   return
                endif
-               write(LIS_logunit,*) '- READING ', trim(ifil)
+               write(LIS_logunit,*) '[INFO] READING ', trim(ifil)
 
                allocate(geoprc(imax,jmax))
 
@@ -1280,10 +1342,10 @@ contains
                ! Check for anomalous geoprecip files
                if (is_geo_corrupted(geoprc, imax, jmax, mo, hemi)) then
                   write(LIS_logunit,*) &
-                       'USAF_getGeoPrecipObsData:  data corrupted - ', &
+                       '[WARN] USAF_getGeoPrecipObsData:  data corrupted - ', &
                        trim(ifil)
                   write(LIS_logunit,*) &
-                       '  geo precip estimate will not be performed'
+                       '[WARN]  geo precip estimate will not be performed'
                   message = ' '
                   message(1) = 'program:  LIS'
                   message(2) = '  routine:  USAF_getGeoPrecipObsData'
@@ -1421,7 +1483,7 @@ contains
                   write(LIS_logunit,*)&
                        '[ERR] Lat/lon GEO_PRECIP data not supported yet!'
                   write(LIS_logunit,*)&
-                       'Modify USAF_addGeoPrecipObsData and recompile!'
+                       '[ERR] Modify USAF_addGeoPrecipObsData and recompile!'
                   flush(LIS_logunit)
                   call LIS_endrun()
 
@@ -1460,7 +1522,7 @@ contains
       integer,intent(in) :: imax
       integer,intent(in) :: jmax
       real, intent(in) :: back(imax,jmax)
-      character(len=10),intent(in) :: type
+      character(len=32),intent(in) :: type
 
       ! Local variables
       integer :: nobs
@@ -1547,7 +1609,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
       use LIS_logMod, only: LIS_logunit
-      use USAF_OBAMod, only: OBA, createOBA,assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -1565,8 +1627,6 @@ contains
       real, allocatable :: invDataDensities(:)
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
-      integer :: r
-      character(len=10) :: new_name,type
       real :: convergeThresh
       real :: sigmaBSqr
       integer :: good_obs
@@ -1605,7 +1665,7 @@ contains
                  precipAll%net(j), precipAll%platform(j), &
                  precipAll%lat(j), precipAll%lon(j), &
                  precipAll%obs(j), precipAll%back(j), &
-                 A=0.)
+                 A=0., qc=precipAll%qc(j), set_qc_good=.true.)
          end do ! j
          call USAF_destroyObsData(precipAll)
          TRACE_EXIT("bratseth_analyzePrcp")
@@ -1617,7 +1677,7 @@ contains
       call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           is_gauge, &
+           USAF_is_gauge, &
            invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
@@ -1628,7 +1688,7 @@ contains
       call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           convergeThresh, is_gauge, sumObsEstimates, &
+           convergeThresh, USAF_is_gauge, sumObsEstimates, &
            npasses, precipOBA)
 
       ! Calculate analysis at grid points.
@@ -1687,6 +1747,9 @@ contains
       real :: glbGridDesc(50)
       integer, external :: get_fieldpos
       real, parameter :: FILL = MISSING
+
+      external :: compute_grid_coord
+      external :: bilinear_interp
 
       ! See if we have any observations available
       nobs = this%nobs
@@ -1801,6 +1864,8 @@ contains
       use LIS_coreMod, only: LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAmod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -1846,6 +1911,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       t1 = MPI_Wtime()
 #endif
 
@@ -1891,8 +1958,19 @@ contains
             ! contributions from neighbors.
             do j = 1, nobs_cr
                job = jobs_cr_vector(j)
+               if (this%qc(job) .eq. QC_REJECT) cycle
+               ! QC_SUSPECT data not used in analysis, but saved for OBA
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+
                do i = 1, nobs_neighbors
                   iob = iobs_neighbors_vector(i)
+
+                  if (this%qc(iob) .eq. QC_REJECT) cycle
+                  ! QC_SUSPECT data not used in analysis, but saved
+                  ! for OBA
+                  if (this%qc(iob) .eq. QC_SUSPECT_BACKQC) cycle
+                  if (this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                   if (iob .eq. job) then
                      dist = 0
@@ -1909,8 +1987,9 @@ contains
                      num = num + this%sigmaOSqr(job)
                   else if (trim(this%net(iob)) .eq. trim(this%net(job))) then
                      ! Satellite observations have correlated errors.
-                     if (.not. isUncorrObType(this%net(job))) then
-                        if (this%oErrScaleLength(job) .eq. 0) then
+                     if (.not. isUncorrObType(this%net(job),nest)) then
+                        if (.not. this%oErrScaleLength(job) > 0 .and. &
+                             .not. this%oErrScaleLength(job) < 0) then
                            write(LIS_logunit,*) &
                                 '[ERR]: job, network, oErrScaleLength: ', &
                                 job, trim(this%net(job)), &
@@ -1952,8 +2031,12 @@ contains
       allocate(invDataDensities(nobs))
       invDataDensities(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       call MPI_ALLREDUCE(dataDensities_pet,invDataDensities,nobs,MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_ALLREDUCE call in calc_invDataDensities')
 #endif
 
       ! Clean up
@@ -1964,6 +2047,9 @@ contains
       do j = 1, nobs
          ! Skip bad data
          if ( this%qc(j) .eq. QC_REJECT) cycle
+         ! QC_SUSPECT data not used in analysis, but saved for OBA
+         if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+         if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
          invDataDensities(j) = &
               invDataDensities(j)*(sigmaBSqr + this%sigmaOSqr(j))
          invDataDensities(j) = 1. / invDataDensities(j)
@@ -1971,6 +2057,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_invDataDensities')
       t2 = MPI_Wtime()
       if (verbose) then
          write(LIS_logunit,*) &
@@ -2006,7 +2094,8 @@ contains
       use LIS_coreMod, only : LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_mpiMod
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT, &
+           QC_SUSPECT_BACKQC, QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2043,7 +2132,7 @@ contains
       integer :: imaxabsdiff
       real :: maxabsdiff, y_prev, y_new, normdev
       integer :: icount, num_high_dev
-      integer :: c,r,i,j,iob,job
+      integer :: c,r,i,j,iob,job,ii
       integer :: ierr
       double precision :: t0,t1, t2
       logical :: verbose
@@ -2076,6 +2165,12 @@ contains
          call LIS_endrun()
       end if
 
+      ! EMK TEST
+      !do ii = 1, nobs
+      !   write(LIS_logunit,*)'EMK: ii, invDataDensity: ', ii, &
+      !        invDataDensities(ii)
+      !end do
+
       ! Here we create a 2d hash table storing the index values of each ob
       ! in linked lists for each LIS grid box.  This can help us screen
       ! out obviously unnecessary ob comparisons later.
@@ -2103,6 +2198,11 @@ contains
       allocate(pprev_ana(nobs))
       allocate(pprev_est(nobs))
 
+      pnew_ana = 0
+      pnew_ana_pet = 0
+      pnew_est = 0
+      pnew_est_pet = 0
+
       pprev_est(:) = this%back(:) ! First guess
       pprev_ana(:) = this%back(:) ! First guess
       sumObsEstimates(:) = 0
@@ -2111,6 +2211,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
       t0 = MPI_Wtime()
 #endif
 
@@ -2118,6 +2220,8 @@ contains
 
 #if (defined SPMD)
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
          t1 = MPI_Wtime()
 #endif
          pnew_est_pet(:) = 0
@@ -2158,15 +2262,23 @@ contains
                do j = 1, nobs_cr
                   job = jobs_cr_vector(j)
 
-                  if (this%qc(job) .eq. QC_REJECT) then
-                     sumObsEstimates_pet(j) = 0
+                  if (this%qc(job) .eq. QC_REJECT .or. &
+                       this%qc(job) .eq. QC_SUSPECT_BACKQC .or. &
+                       this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) then
+                     !sumObsEstimates_pet(j) = 0
+                     sumObsEstimates_pet(job) = 0 ! EMK FIX 20231129
                      cycle
                   endif
+                  ! We will allow analysis to be calculated at points
+                  ! being monitored, but these points will not contribute
+                  ! observation data.
 
                   do i = 1, nobs_neighbors
                      iob = iobs_neighbors_vector(i)
 
-                     if (this%qc(iob) .eq. QC_REJECT) then
+                     if (this%qc(iob) .eq. QC_REJECT .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_BACKQC .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) then
                         sumObsEstimates_pet(iob) = 0
                         cycle
                      endif
@@ -2190,7 +2302,7 @@ contains
                      else if (trim(this%net(iob)) .eq. &
                               trim(this%net(job))) then
                         ! Satellite data have horizontal error correlations
-                        if (.not. isUncorrObType(this%net(job))) then
+                        if (.not. isUncorrObType(this%net(job),nest)) then
                            weight = weight + &
                                 obsErrCov(this%sigmaOSqr(job), &
                                 this%oErrScaleLength(job), &
@@ -2220,11 +2332,19 @@ contains
          pnew_est(:) = 0
          pnew_ana(:) = 0
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(pnew_est_pet, pnew_est, nobs, MPI_REAL, &
               MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(pnew_ana_pet, pnew_ana, nobs, MPI_REAL, &
               MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
 #endif
 
          ! Finish analysis and observation estimates for this iteration
@@ -2248,8 +2368,12 @@ contains
          ! Share sumObsEstimates across all processors.
          sumObsEstimates(:) = 0
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          call MPI_ALLREDUCE(sumObsEstimates_pet, sumObsEstimates, nobs, &
               MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_ALLREDUCE call in calc_obsAnalysis')
 #else
          do j = 1, nobs
             sumObsEstimates(j) = sum(sumObsEstimates_pet)
@@ -2274,7 +2398,9 @@ contains
 
          do j = 1, nobs
 
-            if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_REJECT .or. &
+                 this%qc(j) .eq. QC_SUSPECT_BACKQC .or. &
+                 this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             ! Check for convergence
             y_prev = pprev_ana(j)
@@ -2287,7 +2413,8 @@ contains
                done = .false.
             end if
 
-            ! Updates mean absolute differences against observed values
+            ! Updates mean absolute differences against observed
+            ! values
             if (verbose) then
                icount = icount + 1
                y_est = pnew_est(j)
@@ -2298,12 +2425,13 @@ contains
                diff = y_ana - y_obs
                mad_ana = mad_ana + abs(diff)
 
-               ! A crude check for unusually high normalized deviations.
-               normdev = (y_obs - y_ana)*(y_obs - y_ana)/this%sigmaOSqr(j)
+               ! A crude check for unusually high normalized
+               ! deviations.
+               normdev = (y_obs - y_ana)*(y_obs - y_ana) / &
+                    this%sigmaOSqr(j)
                if (normdev .gt. 9) then
                   num_high_dev = num_high_dev + 1
                end if
-
             end if
 
             pprev_est(j) = pnew_est(j)
@@ -2317,6 +2445,20 @@ contains
                mad_ana = mad_ana / real(icount)
             end if
          end if
+
+         ! !EMK TEST
+         ! do ii = 1, nobs
+         !    write(LIS_logunit,*) &
+         !         '[INFO] ii,net,platform,obs, back, ana, est, dataDensity: ', &
+         !         ii, &
+         !         trim(this%net(ii)), ' ',&
+         !         trim(this%platform(ii)), &
+         !         ' ',this%obs(ii),&
+         !         ' ',this%back(ii),&
+         !         ' ',pnew_ana(ii),&
+         !         ' ',pnew_est(ii),&
+         !         ' ',1./invDataDensities(ii)
+         ! end do
 
          if (done) exit ! No more iterations!
 
@@ -2348,6 +2490,8 @@ contains
 
 #if (defined SPMD)
          call MPI_Barrier(LIS_MPI_COMM, ierr)
+         call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_obsAnalysis')
          t2 = MPI_Wtime()
          if (verbose) then
             write(LIS_logunit,*) &
@@ -2360,24 +2504,24 @@ contains
         ! production, we will allow the program to continue instead of
         ! aborting.
          !if (npasses .eq. 100) then
-	if (npasses .eq. 5) then ! For Ops
+         if (npasses .eq. 5) then ! For Ops
 
-	   write(LIS_logunit,*) &
-	      '[WARN] Bratseth failed to converge after ',npasses, &
-              ' iterations!'
-	   write(LIS_logunit,*) &
-	      '[WARN] Will stop iterating'
-           flush(LIS_logunit)
-	   exit
-	end if
+            write(LIS_logunit,*) &
+                 '[WARN] Bratseth failed to converge after ',npasses, &
+                 ' iterations!'
+            write(LIS_logunit,*) &
+                 '[WARN] Will stop iterating'
+            flush(LIS_logunit)
+            exit
+         end if
       end do ! Iterate until convergence
 
       if (verbose) then
          if (done) then
- 	    write(LIS_logunit,*) &
+            write(LIS_logunit,*) &
               '[INFO] Bratseth analysis converged after ',npasses, &
               ' iterations'
-	 endif
+         endif
          write(LIS_logunit,*) &
               '[INFO] Mean absolute difference against obs: ana: ',mad_ana, &
               ' est: ',mad_est
@@ -2385,6 +2529,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_obsAnalysis')
       t2 = MPI_Wtime()
       if (verbose) then
          write(LIS_logunit,*) &
@@ -2401,6 +2547,8 @@ contains
          icount = 0
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             if (present(skip)) then
                if (skip(j)) cycle
@@ -2417,6 +2565,7 @@ contains
          varOBA = createOBA(nest, maxobs=good_obs)
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            ! Keep QC_SUSPECT obs for OBA
             if (present(skip)) then
                if (skip(j)) cycle
             end if
@@ -2426,7 +2575,7 @@ contains
             call assignOBA(varOBA, &
                  this%net(j), this%platform(j), &
                  this%lat(j), this%lon(j), &
-                 O, B, A)
+                 O, B, A, this%qc(j), set_qc_good=.true.)
          end do ! j
       end if
 
@@ -2473,6 +2622,8 @@ contains
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2511,12 +2662,14 @@ contains
 
       if (nobs .ne. this%nobs) then
          write(LIS_logunit,*)'[ERR] Array size mismatch in calc_gridAnalysis!'
-         write(LIS_logunit,*)'nobs, this%nobs = ',nobs, this%nobs
+         write(LIS_logunit,*)'[ERR] nobs, this%nobs = ',nobs, this%nobs
          call LIS_endrun()
       end if
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+              'MPI_Barrier call in calc_gridAnalysis')
       t1 = MPI_Wtime()
 #endif
 
@@ -2574,6 +2727,8 @@ contains
 
                ! Skip bad observations.
                if (this%qc(job) .eq. QC_REJECT) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                dist = great_circle_distance(locallat,locallon, &
                     this%lat(job), this%lon(job))
@@ -2602,9 +2757,13 @@ contains
       allocate(mrgp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       mrgp_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_gridAnalysis')
       call MPI_ALLREDUCE(mrgp_1d_pet,mrgp_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_ALLREDUCE call in calc_gridAnalysis')
       deallocate(mrgp_1d_pet)
 #endif
 
@@ -2631,6 +2790,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in calc_gridAnalysis')
       t2 = MPI_Wtime()
       write(LIS_logunit,*)'[INFO] Elapsed time for grid analysis is ', &
            t2 - t1,' seconds'
@@ -2765,6 +2926,11 @@ contains
       integer :: rc2
       logical :: first_time
 
+      external :: getAVNfilename
+      external :: AGRMET_getGALWEMfilename
+      external :: AGRMET_fg2lis_precip
+      external :: interp_galwem_first_guess
+
       rc = 0
 
       found = .false.
@@ -2805,6 +2971,7 @@ contains
 
          yr_2d = mod(yr1,100)
          if (yr_2d.eq.0) yr_2d = 100
+
          if (src .eq. "GFS") then
             ! EMK...Added support for new GFS filename convention
             call getAVNfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
@@ -3139,6 +3306,8 @@ contains
       message(3) = '  LIS was not compiled with GRIBAPI or ECCODES support!'
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in check_grib_file')
 #endif
       if(LIS_masterproc) then
          call LIS_alert( 'LIS.check_grib_file', 1, &
@@ -3163,12 +3332,14 @@ contains
    !
    ! This implementation is parallelized by distributing work among the
    ! different LIS ESMF PETs.
-   subroutine USAF_superstatQC(this,nest,new_name,network,silent_rejects)
+   subroutine USAF_superstatQC(this,nest,new_name,silent_rejects)
 
       ! Imports
       use LIS_coreMod, only: LIS_domain, LIS_rc, LIS_localPet
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -3176,8 +3347,7 @@ contains
       ! Arguments
       type(USAF_ObsData), intent(inout) :: this
       integer,intent(in) :: nest
-      character(len=10), intent(in) :: new_name
-      character(len=*), optional :: network
+      character(len=32), intent(in) :: new_name
       logical,optional,intent(in) :: silent_rejects
 
       ! Local variables
@@ -3186,7 +3356,8 @@ contains
       real :: dlat, dlon
       integer :: c,r,j
       real :: ctrlat, ctrlon
-      character(len=10) :: net_new, platform_new
+      character(len=32) :: net_new
+      character(len=32) :: platform_new
       integer, allocatable :: actions(:), actions_pet(:)
       real, allocatable :: superobs_pet(:),superlat_pet(:),superlon_pet(:)
       real, allocatable :: means(:)
@@ -3231,6 +3402,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_superstatQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -3293,21 +3466,12 @@ contains
 
             ! Skip bad data
             if ( this%qc(j) .eq. QC_REJECT) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
-            ! Screen by type
-            if (present(network)) then
-               if (trim(network) .eq. "SSMI") then
-                  if (.not. is_ssmi(this%net(j))) cycle
-               else if (trim(network) .eq. "GEOPRECIP") then
-                  if (.not. is_geoprecip(this%net(j))) cycle
-               else if (trim(network) .eq. "CMORPH") then
-                  if (.not. is_cmorph(this%net(j))) cycle
-               else if (trim(network) .eq. "IMERG") then
-                  if (.not. is_imerg(this%net(j))) cycle
-               end if
-            else ! Gauges
-               if (.not. is_gauge(this%net(j))) cycle
-            end if
+            ! Do not apply to IMERG.  But allow application to other
+            ! data sources.
+            if ( is_imerg(this%net(j)) ) cycle
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
             found = .false.
@@ -3351,7 +3515,8 @@ contains
                if (means(gindex) .eq. MISSING) cycle
 
                icount = superob_count(gindex)
-               threshold = 3 * this%sigmaOSqr(j) * &
+               ! EMK 12 Mar 2024...Fixed typo in threshold eqn
+               threshold = 4 * sqrt(this%sigmaOSqr(j)) * &
                     sqrt(real(icount) / real(icount-1))
 
                if (abs(means(gindex) - this%obs(j)) .gt. threshold) then
@@ -3392,6 +3557,8 @@ contains
 #if (defined SPMD)
             call MPI_Allreduce(superobs_pet,means,glbcr,MPI_REAL, MPI_SUM, &
                  LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
 #else
             do j = 1, glbcr
                means(j) = sum(superobs_pet)
@@ -3402,6 +3569,8 @@ contains
 #if (defined SPMD)
             call MPI_Allreduce(superob_count_pet,superob_count,glbcr,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
 #else
             do j = 1, glbcr
                superob_count(j) = sum(superob_count_pet)
@@ -3426,35 +3595,49 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_superstatQC')
             superob_count(:) = 0
             call MPI_Allreduce(superob_count_pet, superob_count, glbcr,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superob_count_pet(:) = 0
 
             superobs(:) = 0
             call MPI_Allreduce(superobs_pet, superobs, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superobs_pet(:) = 0
 
             superlat(:) = 0
             call MPI_Allreduce(superlat_pet, superlat, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superlat_pet(:) = 0
 
             superlon(:) = 0
             call MPI_Allreduce(superlon_pet, superlon, glbcr, MPI_REAL, &
                  MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superlon_pet(:) = 0
 
             superSigmaOSqr(:) = 0
             call MPI_Allreduce(superSigmaOSqr_pet, superSigmaOSqr, glbcr, &
                  MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superSigmaOSqr_pet(:) = 0
 
             superOErrScaleLength(:) = 0
             call MPI_Allreduce(superOErrScaleLength_pet, &
                  superOErrScaleLength, glbcr, &
                  MPI_REAL, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             superOErrScaleLength_pet(:) = 0
 #endif
 
@@ -3487,9 +3670,13 @@ contains
 
 #if (defined SPMD)
             call MPI_Barrier(LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Barrier call in USAF_superstatQC')
             actions(:) = 0
             call MPI_Allreduce(actions_pet, actions, nobs,&
                  MPI_INTEGER, MPI_SUM, LIS_MPI_COMM, ierr)
+            call handle_mpi_error(ierr, &
+                 'MPI_Allreduce call in USAF_superstatQC')
             actions_pet(:) = 0
 #endif
          end if ! ipass .eq. 3
@@ -3503,7 +3690,8 @@ contains
       num_rejected_obs = 0
       do j = 1, nobs
          if (actions(j) .eq. -1) then
-            this%qc(j) = QC_REJECT
+            !this%qc(j) = QC_REJECT
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             if (.not. silent_rejects_local) then
                write(LIS_logunit,*) &
                     '[INFO] superstatQC rejection j: ',j, &
@@ -3516,7 +3704,8 @@ contains
             endif
             num_rejected_obs = num_rejected_obs + 1
          else if (actions(j) .eq. 1) then
-            this%qc(j) = QC_REJECT ! Was merged into superob
+            !this%qc(j) = QC_REJECT ! Was merged into superob
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             num_merged_obs = num_merged_obs + 1
          end if
       end do ! j
@@ -3566,6 +3755,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_superstatQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in superstatQC is ',t2 - t1,' seconds'
@@ -3592,6 +3783,7 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -3608,7 +3800,8 @@ contains
       integer :: count_dups
       integer :: total_reject_count, total_merge_count, total_create_count
       real :: mean,back,newlat,newlon,sigmaOSqr,oErrScaleLength
-      character(len=10) :: net,platform
+      character(len=32) :: net
+      character(len=32) :: platform
       real :: diff
       integer :: r,c,i
       integer :: nobs
@@ -3626,6 +3819,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -3692,9 +3887,11 @@ contains
             ptr => head
             do i = 1, count_dups
                diff = this%lat(ptr%ob_index) - this%lat(r)
-               if (diff .ne. 0) location_issue = .true.
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) location_issue = .true.
                diff = this%lon(ptr%ob_index) - this%lon(r)
-               if (diff .ne. 0) location_issue = .true.
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) location_issue = .true.
                if (location_issue) exit ! Get out of loop
                ptr => ptr%next
             end do ! i
@@ -3730,7 +3927,8 @@ contains
             reject_all = .false.
             do i = 1, count_dups
                diff = this%obs(ptr%ob_index) - this%obs(r)
-               if (diff .eq. 0) then
+               if (.not. diff > 0 .and. &
+                    .not. diff < 0) then
                   this%qc(ptr%ob_index) = QC_REJECT
                   total_reject_count = total_reject_count + 1
                   write(LIS_logunit,*) &
@@ -3791,7 +3989,8 @@ contains
          if (count_dups .eq. 1 .and. .not. location_issue) then
             ptr => head
             diff = this%obs(ptr%ob_index) - this%obs(r)
-            if (diff .eq. 0) then
+            if (.not. diff < 0 .and. &
+                 .not. diff > 0) then
                this%qc(ptr%ob_index) = QC_REJECT
                total_reject_count = total_reject_count + 1
                write(LIS_logunit,*) &
@@ -3914,6 +4113,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in dupQC is ',t2 - t1,' seconds'
@@ -3970,7 +4171,7 @@ contains
       if (ifix > 0) then
          write(LIS_logunit,6000) ifix
 6000     format (/, 1x, 55('-'), &
-              /, 3x, 'routine reset_negative_values:',&
+              /, 3x, '[INFO] routine reset_negative_values:',&
               /, 5x, '# of pts to which negative values were set to zero = ', &
               i6, /, 1x, 55('-'))
       end if
@@ -3987,6 +4188,8 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -4020,20 +4223,32 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_backQC')
       t1 = MPI_Wtime()
 #endif
+
+      !write(LIS_logunit,*)'EMK: nobs, sigmaBSqr = ', nobs, sigmaBSqr
+      !flush(LIS_Logunit)
 
       reject_count = 0
       do r = 1,nobs
 
          ! Skip bad data
          if ( this%qc(r) .eq. QC_REJECT) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_BACKQC) cycle
+
+         ! Do not apply to IMERG.  But allow application to other data
+         ! sources.
+         if ( .not. is_imerg(this%net(r)) ) cycle
 
          errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))
          absDiff = abs(this%obs(r) - this%back(r))
 
          if (absDiff .gt. errorThresh) then
-            this%qc(r) = QC_REJECT
+            !this%qc(r) = QC_REJECT
+            this%qc(r) = QC_SUSPECT_BACKQC ! Don't use, but save for OBA
 
             reject_count = reject_count + 1
 
@@ -4047,7 +4262,8 @@ contains
                     ' obs: ',this%obs(r), &
                     ' back: ',this%back(r), &
                     ' abs diff: ', abs(this%obs(r) - this%back(r)), &
-                    ' errorThresh ', errorThresh
+                    ' errorThresh ', errorThresh, &
+                    ' qc: ', this%qc(r)
             end if
          end if
 
@@ -4058,6 +4274,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_backQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in backQC is ',t2 - t1,' seconds'
@@ -4067,22 +4285,38 @@ contains
 
    !---------------------------------------------------------------------------
    ! Checks if observation network is recognized as a gauge.
-   logical function is_gauge(net)
-      implicit none
-      character(len=10), intent(in) :: net
-      logical :: answer
-      answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
-      ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
-      is_gauge = answer
-   end function is_gauge
+   logical function USAF_is_gauge(net, n) result(answer)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=32), intent(in) :: net
+     integer, intent(in) :: n
+
+     ! Locals
+     integer :: j
+
+     answer = .false. ! First guess
+
+     ! Two special cases
+     if (trim(net) .eq. "SUPERGAGE" .or. &
+          trim(net) .eq. "CDMS") then
+        answer = .true.
+        return
+     end if
+
+     ! General case:  Check list from LIS config file
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        if (net == agrmet_struc(n)%gage_networks(j)) then
+           answer = .true.
+           exit
+        end if
+     end do
+   end function USAF_is_gauge
 
    !---------------------------------------------------------------------------
    ! Dummy function for establishing a surface station is uncorrelated.
@@ -4090,9 +4324,10 @@ contains
    ! Bratseth routines that need to know which reports in a collection
    ! have correlated errors.  When analyzing screen-level variables with
    ! surface stations, all observations should have uncorrelated errors.
-   logical function is_stn(net)
+   logical function is_stn(net, n)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
+      integer, intent(in) :: n
       logical :: answer
       answer = .true.
       is_stn = answer
@@ -4102,7 +4337,7 @@ contains
    ! Checks if observation "network" is recognized as SSMI retrievals.
    logical function is_ssmi(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "SSMI") answer = .true.
@@ -4113,7 +4348,7 @@ contains
    ! Checks if observation "network" is recognized as GEOPRECIP retrievals.
    logical function is_geoprecip(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "GEOPRECIP") answer = .true.
@@ -4124,7 +4359,7 @@ contains
    ! Checks if observation "network" is recognized as CMORPH estimate.
    logical function is_cmorph(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "CMORPH") answer = .true.
@@ -4135,7 +4370,7 @@ contains
    ! Checks if observation "network" is recognized as IMERG retrievals.
    logical function is_imerg(net)
       implicit none
-      character(len=10), intent(in) :: net
+      character(len=32), intent(in) :: net
       logical :: answer
       answer = .false.
       if (trim(net) .eq. "IMERG") answer = .true.
@@ -4367,8 +4602,7 @@ contains
    subroutine build_hash2d(this,nest,imax,jmax,hash2d)
 
       ! Imports
-      use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_localPet
-      use LIS_logMod, only: LIS_logunit
+      use LIS_coreMod, only: LIS_rc
       use LIS_mpiMod
 
       ! Defaults
@@ -4382,26 +4616,21 @@ contains
       type(hash_list), allocatable, intent(out) :: hash2d(:,:)
 
       ! Local variables
-      real :: dlat, dlon, ctrlat, ctrlon
       integer :: nobs
       integer, allocatable :: cols(:), rows(:)
-      integer :: pet, pet_incr
-      logical :: found
-      integer :: j,r,c,gindex
-      integer :: ierr
 
       nobs = this%nobs
       if (nobs .eq. 0) return
 
       ! Get the columns and rows of the observations in the LIS grid
-      call find_LIS_cols_rows(this,nest,cols,rows)
+      call find_LIS_cols_rows(this, nest, cols, rows)
 
       ! Loop through the collected col, row information and add to the
       ! hash2d table.
-      call init_hash2d(LIS_rc%gnc(nest),LIS_rc%gnr(nest),hash2d)
+      call init_hash2d(LIS_rc%gnc(nest), LIS_rc%gnr(nest), hash2d)
       imax = LIS_rc%gnc(nest) ! Output
       jmax = LIS_rc%gnr(nest) ! Output
-      call insert_hash2d_array(imax,jmax,hash2d,nobs,cols,rows)
+      call insert_hash2d_array(imax, jmax, hash2d, nobs, cols, rows)
 !       do j = 1,nobs
 !          c = cols(j)
 !          if (c .eq. 0) cycle
@@ -4768,6 +4997,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_localPet
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -4804,6 +5034,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
 #endif
       do j = 1, nobs
 
@@ -4884,8 +5116,12 @@ contains
       cols = 0
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
       call MPI_ALLREDUCE(cols_pet,cols,nobs,MPI_INTEGER, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in find_LIS_cols_rows')
 #else
       cols(:) = cols_pet(:)
 #endif
@@ -4896,8 +5132,12 @@ contains
       rows = 0
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in find_LIS_cols_rows')
       call MPI_ALLREDUCE(rows_pet,rows,nobs,MPI_INTEGER, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in find_LIS_cols_rows')
 #else
       rows(:) = rows_pet(:)
 #endif
@@ -4910,11 +5150,10 @@ contains
    subroutine USAF_waterQC(this,nest,silent_rejects)
 
       ! Imports
-      use LIS_coreMod, only: LIS_rc
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
-
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -4949,6 +5188,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_waterQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -4986,6 +5227,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_waterQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in waterQC is ',t2-t1,' seconds'
@@ -5009,6 +5252,7 @@ contains
            LIS_ews_ind, LIS_ewe_ind, LIS_nss_ind, LIS_nse_ind
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5046,6 +5290,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -5089,9 +5335,13 @@ contains
       allocate(sfctmp_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       sfctmp_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       call MPI_ALLREDUCE(sfctmp_1d_pet,sfctmp_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in USAF_snowQC')
       deallocate(sfctmp_1d_pet)
 #endif
       allocate(sfctmp(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
@@ -5168,6 +5418,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in snowQC is ',t2-t1,' seconds'
@@ -5193,6 +5445,7 @@ contains
       use LIS_logMod, only: LIS_logunit
       use LIS_snowMod, only: LIS_snow_struc
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5229,6 +5482,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       t1 = MPI_Wtime()
 #endif
 
@@ -5280,9 +5535,13 @@ contains
       allocate(snowdepth_1d(LIS_rc%gnc(nest)*LIS_rc%gnr(nest)))
       snowdepth_1d(:) = 0
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       call MPI_ALLREDUCE(snowdepth_1d_pet,snowdepth_1d, &
            LIS_rc%gnc(nest)*LIS_rc%gnr(nest),MPI_REAL, &
            MPI_SUM, LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Allreduce call in USAF_snowDepthQC')
       deallocate(snowdepth_1d_pet)
 #endif
       allocate(snowdepth(LIS_rc%gnc(nest), LIS_rc%gnr(nest)))
@@ -5350,6 +5609,8 @@ contains
 
 #if (defined SPMD)
       call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_snowDepthQC')
       t2 = MPI_Wtime()
       write(LIS_logunit,*) &
            '[INFO] Elapsed time in snowDepthQC is ',t2-t1,' seconds'
@@ -5418,7 +5679,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
       use LIS_logMod, only: LIS_logunit
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -5440,9 +5701,9 @@ contains
       real, allocatable :: invDataDensities(:)
       real, allocatable :: sumObsEstimates(:)
       integer :: npasses
-      character(len=10) :: new_name,type
+      character(len=32) :: new_name,type
       real :: convergeThresh
-      integer :: i,j
+      integer :: j
 
       TRACE_ENTER("bratseth_analyzeScrn")
       ! Initialize analysis field with the background first guess.  This will
@@ -5471,24 +5732,6 @@ contains
       write(LIS_logunit,*)'[INFO] Running dupQC on surface observations'
       call USAF_dupQC(screenObs)
 
-      ! EMK...Option 2 just captures O and B info, and skips the
-      ! analysis.
-      if (agrmet_struc(nest)%oba_switch .eq. 2) then
-         goodObs = USAF_countGoodObs(screenObs)
-         screenOBA = createOBA(nest,maxobs=goodObs)
-         do j = 1, screenObs%nobs
-            if (screenObs%qc(j) .eq. QC_REJECT) cycle
-            call assignOBA(screenOBA, &
-                 screenObs%net(j), screenObs%platform(j), &
-                 screenObs%lat(j), screenObs%lon(j), &
-                 screenObs%obs(j), screenObs%back(j), &
-                 A=0.)
-         end do ! j
-         call USAF_destroyObsData(screenObs)
-         TRACE_EXIT("bratseth_analyzeScrn")
-         return ! EMK TEST for O-B
-      end if
-
       ! Compare with background field
       write(LIS_logunit,*)'[INFO] Running backQC on surface observations'
       call USAF_backQC(screenObs,sigmaBSqr)
@@ -5501,6 +5744,25 @@ contains
       type = new_name
       call USAF_interpBackToTypeObsData(screenObs,nest, &
            LIS_rc%gnc(nest),LIS_rc%gnr(nest),back,type)
+
+      ! EMK...Option 2 just captures O and B info, and skips the
+      ! analysis.
+      if (agrmet_struc(nest)%oba_switch .eq. 2) then
+         goodObs = USAF_countGoodObs(screenObs)
+         screenOBA = createOBA(nest,maxobs=goodObs)
+         do j = 1, screenObs%nobs
+            if (screenObs%qc(j) .eq. QC_REJECT) cycle
+            ! Include the QC_SUSPECT obs in the OBA file
+            call assignOBA(screenOBA, &
+                 screenObs%net(j), screenObs%platform(j), &
+                 screenObs%lat(j), screenObs%lon(j), &
+                 screenObs%obs(j), screenObs%back(j), &
+                 A=0., qc=screenObs%qc(j), set_qc_good=.true.)
+         end do ! j
+         call USAF_destroyObsData(screenObs)
+         TRACE_EXIT("bratseth_analyzeScrn")
+         return ! EMK TEST for O-B
+      end if
 
       ! At this point, QC is done.  Copy the good obs into a new structure
       ! for the analysis (this will speed up analysis calculations by
@@ -5550,6 +5812,9 @@ contains
    ! been flagged for rejection by quality control.
    subroutine USAF_filterObsData(this,obsData)
 
+      ! Imports
+      use USAF_OBAMod, only: QC_REJECT
+
       ! Defaults
       implicit none
 
@@ -5558,18 +5823,20 @@ contains
       type(USAF_ObsData), intent(in) :: obsData
 
       ! Local variables
-      integer :: j
+      integer :: j, qc
 
       if ( obsData%nobs .eq. 0) return
 
       do j = 1, obsData%nobs
          if (obsData%qc(j) .eq. QC_REJECT) cycle
+         qc = obsData%qc(j) ! Keep QC_SUSPECT obs for OBA
          call USAF_assignObsData(this, &
               obsData%net(j),obsData%platform(j), &
               obsData%obs(j),obsData%lat(j),obsData%lon(j), &
               obsData%sigmaOSqr(j), &
               obsData%oErrScaleLength(j), &
-              back = obsData%back(j))
+              back=obsData%back(j), &
+              qc=qc)
       end do ! j
 
    end subroutine USAF_filterObsData
@@ -5603,7 +5870,7 @@ contains
       integer, parameter :: YD = 1649
       integer, parameter :: NCMOR = XD*YD
       real :: precip(XD,YD)
-      character(len=10) :: net, platform
+      character(len=32) :: net, platform
       real :: sigmaOSqr, oErrScaleLength
       integer :: count_good_obs
       character(len=120) :: fname
@@ -5613,6 +5880,8 @@ contains
       integer :: j3hr
       integer :: ftn, ios
       integer :: i,j,k
+
+      external :: cmorfile_agrmet
 
       TRACE_ENTER("bratseth_getCMORPH")
       net = "CMORPH"
@@ -6299,9 +6568,9 @@ contains
          write(LIS_logunit,*) &
               '[ERR] Unknown source of background precipitation!'
          write(LIS_logunit,*) &
-              'Source is ',trim(src)
+              '[ERR] Source is ',trim(src)
          write(LIS_logunit, *) &
-              'ABORTING....'
+              '[ERR] ABORTING....'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
@@ -6332,6 +6601,11 @@ contains
               agrmet_struc(n)%galwem_t2m_back_err_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%galwem_t2m_back_sigma_b_sqr
+
+         !write(LIS_logunit,*)'EMK: n, GALWEM T2 err = ', n, &
+         !     agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr
+         !flush(LIS_logunit)
+
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_t2m_stn_sigma_o_sqr
          agrmet_struc(n)%bratseth_t2m_max_dist = &
@@ -6360,6 +6634,11 @@ contains
               agrmet_struc(n)%gfs_t2m_back_err_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%gfs_t2m_back_sigma_b_sqr
+
+         !write(LIS_logunit,*)'EMK: n, GFS T2 err = ', n, &
+         !     agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr
+         !flush(LIS_Logunit)
+
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_t2m_stn_sigma_o_sqr
          agrmet_struc(n)%bratseth_t2m_max_dist = &
@@ -6387,9 +6666,9 @@ contains
          write(LIS_logunit,*) &
               '[ERR] Unknown source of background data!'
          write(LIS_logunit,*) &
-              'Source is ',trim(src)
+              '[ERR] Source is ',trim(src)
          write(LIS_logunit, *) &
-              'ABORTING....'
+              '[ERR] ABORTING....'
          flush(LIS_logunit)
          call LIS_endrun()
       end if
@@ -6397,14 +6676,13 @@ contains
 
    end subroutine USAF_setBratsethScreenStats
 
-   ! Read bias ratio for background field
+   ! Read bias ratio for background field (S2S version, which uses
+   ! data in the LDT parameter file)
    subroutine USAF_pcpBackBiasRatio_s2s(n, yyyymmddhh)
 
      ! Imports
      use AGRMET_forcingMod, only: agrmet_struc
-     use LIS_coreMod, only: LIS_rc, LIS_localPet, &
-          LIS_ews_halo_ind, LIS_ewe_halo_ind, &
-          LIS_nss_halo_ind, LIS_nse_halo_ind
+     use LIS_coreMod, only: LIS_rc
      use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
      use netcdf
@@ -6464,8 +6742,126 @@ contains
                'n90_get_var failed for PPT_ratio in LIS param file')
      call LIS_verify(nf90_close(ncid),&
           'nf90_close failed in USAF_pcpBackBiasRatio_s2s')
-
 #endif
 
    end subroutine USAF_pcpBackBiasRatio_s2s
-end module USAF_bratsethMod
+
+   ! Read bias ratio for background field (NRT version, which uses
+   ! data in standalone netCDF file)
+   subroutine USAF_pcpBackBiasRatio_nrt(n, yyyymmddhh)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+     use LIS_coreMod, only: LIS_rc!, LIS_localPet, &
+          !LIS_ews_halo_ind, LIS_ewe_halo_ind, &
+          !LIS_nss_halo_ind, LIS_nse_halo_ind
+
+     use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_verify
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+     use netcdf
+#endif
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     integer, intent(in) :: n
+     character(len=10), intent(in) :: yyyymmddhh
+
+     ! Locals
+     integer :: imonth
+     logical :: file_exists
+     integer :: ncid, ppt_ratio_Id
+
+#if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
+
+     read(yyyymmddhh(5:6),'(i2.2)') imonth
+
+     ! Accumulations ending at 00Z first of month are part of the
+     ! *previous* month.  So decrement imonth by one in that situation,
+     ! and reset to 12 (December) at the year change.
+     if (agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) then
+        if (yyyymmddhh(9:10) .eq. '00' .and. &
+             yyyymmddhh(7:8) .eq. '01') then
+           imonth = imonth - 1
+           if (imonth .eq. 0) then
+              imonth = 12
+           end if
+        end if
+     end if
+     if (imonth .eq. agrmet_struc(n)%pcp_back_bias_ratio_month .and. &
+          agrmet_struc(n)%pcp_back_bias_ratio_month .ne. 0) return
+
+     agrmet_struc(n)%pcp_back_bias_ratio_month = imonth
+
+     ! First, update the GFS ratios
+     inquire(file=agrmet_struc(n)%gfs_nrt_bias_ratio_file, &
+          exist=file_exists)
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[ERR] Cannot find ', &
+             trim(agrmet_struc(n)%gfs_nrt_bias_ratio_file)
+        call LIS_endrun()
+     end if
+     call LIS_verify( &
+          nf90_open(path=agrmet_struc(n)%gfs_nrt_bias_ratio_file, &
+          mode=NF90_NOWRITE, ncid=ncid), &
+          'Error in nf90_open in USAF_pcpBackBiasRatio_nrt')
+     call LIS_verify(nf90_inq_varid(ncid, "biasRatio", ppt_ratio_Id), &
+          'biasRatio field not found in bias file')
+     call LIS_verify(nf90_get_var(ncid, ppt_ratio_Id, &
+          agrmet_struc(n)%gfs_nrt_bias_ratio, &
+          start=(/1,1,imonth/), &
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)), &
+          'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GFS bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%gfs_nrt_bias_ratio_file)
+     call LIS_verify(nf90_close(ncid),&
+          'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
+
+     ! Repeat for GALWEM ratios
+     inquire(file=agrmet_struc(n)%galwem_nrt_bias_ratio_file, &
+          exist=file_exists)
+     if (.not. file_exists) then
+        write(LIS_logunit,*) '[ERR] Cannot find ', &
+             trim(agrmet_struc(n)%galwem_nrt_bias_ratio_file)
+        call LIS_endrun()
+     end if
+     call LIS_verify( &
+          nf90_open(path=agrmet_struc(n)%galwem_nrt_bias_ratio_file, &
+          mode=NF90_NOWRITE, ncid=ncid), &
+          'Error in nf90_open in USAF_pcpBackBiasRatio_nrt')
+     call LIS_verify(nf90_inq_varid(ncid, "biasRatio", ppt_ratio_Id), &
+          'biasRatio field not found in bias file')
+     call LIS_verify(nf90_get_var(ncid, ppt_ratio_Id, &
+          agrmet_struc(n)%galwem_nrt_bias_ratio, &
+          start=(/1,1,imonth/), &
+          count=(/LIS_rc%gnc(n),LIS_rc%gnr(n),1/)),&
+          'n90_get_var failed for biasRatio in LIS param file')
+     write(LIS_logunit,*) &
+          '[INFO] Read GALWEM bias ratios for month ', imonth, &
+          ' from ', trim(agrmet_struc(n)%galwem_nrt_bias_ratio_file)
+     call LIS_verify(nf90_close(ncid),&
+          'nf90_close failed in USAF_pcpBackBiasRatio_nrt')
+
+#endif
+
+   end subroutine USAF_pcpBackBiasRatio_nrt
+
+   subroutine handle_mpi_error(errorcode, msg)
+     use LIS_logMod, only:  LIS_logunit, LIS_endrun
+     use LIS_mpiMod
+     implicit none
+     integer, intent(in) :: errorcode
+     character(*), intent(in) :: msg
+     character*(MPI_MAX_ERROR_STRING) :: buf
+     integer :: resultlen, ierr
+     if (errorcode .ne. MPI_SUCCESS) then
+        write(LIS_logunit,*)'[ERR] ', trim(msg)
+        call MPI_error_string(errorcode, buf, resultlen, ierr)
+        write(LIS_logunit,*)'[ERR] MPI error: ', trim(buf)
+        flush(LIS_logunit)
+        call LIS_endrun()
+     end if
+   end subroutine handle_mpi_error
+ end module USAF_bratsethMod

@@ -1,0 +1,30 @@
+Noah-MP.4.0.1 SMOPS-ASCAT v4 soil moisture EnKF Assimilation Testcase
+
+This case demonstrates the EnKF-based assimilation of SMOPS-ASCAT v4 data into the NoahMP 4.0.1 LSM.
+
+It uses:
+  (a) The AGRMET foring
+  (b) retrospective running mode
+  (c) The NoahMP version 4.0.1 land surface model
+  (d) Global domain at 0.09 degree spatial resolution
+  (e) A time period from 23:45Z 30 Apr 2024 to 00Z 2 May 2024
+
+This directory contains:
+  (a) This README file
+  (b) The "lis.config" file used for this testcase
+  (c) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (d) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+
+Note that the "lis.config" file should be edited
+to make sure that the locations of the parameter and forcing files
+are specified correctly.
+
+To run this testcase:
+  (a) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (b) View the binary output using the testcase GrADS files
+
+
+

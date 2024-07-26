@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -166,7 +166,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
            USAF_COLORS and standardized_anomaly is None:
             median_anom = median_anom*9./5.
         if var_name == 'Precip' and USAF_COLORS and standardized_anomaly is None:
-            median_anom = median_anom*30./25.4
+            median_anom = median_anom/25.4
 
         if var_name in {'Total-Runoff', 'ET'}:
             if standardized_anomaly is None:

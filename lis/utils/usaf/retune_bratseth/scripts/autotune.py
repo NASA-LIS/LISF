@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -160,9 +160,9 @@ class AutomateTuning:
             "startday: " : f"startday: {self.startdt.day:02d}\n",
             "starthour: " : f"starthour: {self.startdt.hour:02d}\n",
             "endyear: " : f"endyear: {self.enddt.year:04d}\n",
-            "endmonth: " : f"endmonth: {self.enddt.month:04d}\n",
-            "endday: " : f"endday: {self.enddt.day:04d}\n",
-            "endhour: " : f"endhour: {self.enddt.hour:04d}\n",
+            "endmonth: " : f"endmonth: {self.enddt.month:02d}\n",
+            "endday: " : f"endday: {self.enddt.day:02d}\n",
+            "endhour: " : f"endhour: {self.enddt.hour:02d}\n",
             "blacklist_file:" : f"blacklist_file: blacklist_{self.varname}.txt"
         }
         with open(cfgfile, "w", encoding="ascii") as file:

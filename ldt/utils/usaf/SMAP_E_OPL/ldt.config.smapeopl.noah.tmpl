@@ -1,0 +1,55 @@
+
+LDT running mode:                       "OPL E SMAP soil moisture retrieval"
+LDT diagnostic file:                    ldtlog.2021071519
+
+#Rotated GALWEM 10-km domain
+Map projection of the LIS domain:       latlon
+Run domain lower left lat:               -89.9531250
+Run domain lower left lon:              -179.9296875
+Run domain upper right lat:               89.9531250
+Run domain upper right lon:              179.9296875
+Run domain resolution (dx):                0.1406250
+Run domain resolution (dy):                0.0937500
+
+# ------------------------
+# Section for Operational enhanced SMAP soil moisture retrieval
+SMAP_E_OPL valid date (YYYYMMDDHH):                 2021071519
+SMAP_E_OPL soil moisture output directory:          output/SM_retrieval
+#SMAP_E_OPL L1B data directory:                      input/SMAP_L1B_historical
+SMAP_E_OPL L1B data directory:                      input/SMAP_L1B_TB_NRT
+#SMAP_E_OPL L1B data directory:                      input/SMAP_L1B_fake
+#SMAP_E_OPL L1B data type:                           2   #1: NRT; 2: Historical(for evaluations)
+SMAP_E_OPL L1B data type:                           1   #1: NRT; 2: Historical(for evaluations)
+
+SMAP_E_OPL write L1B resampled output:              0   #0: off; 1: on
+SMAP_E_OPL L1B resampled output directory:          output/ARFS_RESAMPLE
+#SMAP_E_OPL LIS soil temperature directory:          input/Noah39_OL
+SMAP_E_OPL LIS soil temperature directory:          input/noah39/jul2021
+#SMAP_E_OPL LIS soil temperature directory:          input/noah39/dec2021
+SMAP_E_OPL apply soil temperature bias correction:  1   #0: off; 1: on
+SMAP_E_OPL reference Teff daily statistics file:    input/geos_daily_statistics_15obs.nc
+SMAP_E_OPL LIS Teff daily statistics file:          input/noah39_daily_statistics_15obs.nc
+#SMAP_E_OPL LIS snow directory:                      input/Noah39_snow
+SMAP_E_OPL LIS snow directory:                      input/USAFSI
+SMAP_E_OPL snow depth threshold:                    0.05  #unit: m
+SMAP_E_OPL TAU directory:                           input/TAU_ARFS_DAILY
+SMAP_E_OPL OMEGA file:                              input/PRMS_RETRIEVAL_ARFS/omega_arfs.dat
+SMAP_E_OPL soil bulk density file:                  input/PRMS_RETRIEVAL_ARFS/bd_arfs_006.dat
+SMAP_E_OPL soil clay fraction file:                 input/PRMS_RETRIEVAL_ARFS/clay_arfs_006.dat
+SMAP_E_OPL roughness file:                          input/PRMS_RETRIEVAL_ARFS/hvalue_arfs.dat
+SMAP_E_OPL landcover file:                          input/PRMS_RETRIEVAL_ARFS/SMAP_LC_ARFS.bin
+
+# Settings for USAF NRT GHI history files
+SMAP_E_OPL LIS ensemble size: 12
+SMAP_E_OPL LIS total number of tiles (including ensembles): 58982400
+SMAP_E_OPL LIS number of tiles per grid point: 1
+SMAP_E_OPL filelist suffix number: 0
+
+# Legacy settings that must in the config file.
+Processed LSM parameter filename:       input/lis_input.global.noah39.nc
+LIS number of nests:                    1
+Number of surface model types:          2
+Surface model types:                    "LSM"  "Openwater"
+Number of met forcing sources:          0
+LDT output directory:                   LDTOUT
+Undefined value:                        -9999.0

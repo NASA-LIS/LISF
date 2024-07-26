@@ -1,6 +1,6 @@
-= Land Information System (LIS): LIS {lisfrevision} Users`' Guide
-:revnumber: 2.5
-:revdate: 05 Jul 2023
+= Land Information System (LIS): LIS {lisfrevision} Users Guide
+:revnumber: 3.0
+:revdate: 11 Jan 2024
 :doctype: book
 :sectnums:
 :toc:
@@ -9,25 +9,25 @@
 :imagesoutdir: images
 :stem: latexmath
 :devonly:
-:lisfrevision: 7.4
+:lisfrevision: 7.5
 :lisfurl: https://lis.gsfc.nasa.gov
 :listesturl: https://lis.gsfc.nasa.gov/lis-testcases
 :nasalisf: https://github.com/NASA-LIS/LISF
 :githuburl: https://github.com
 :nasalisfpages: https://nasa-lis.github.io/LISF/
 :apachelicense: https://www.apache.org/licenses/LICENSE-2.0
-:listarball: LISF_public_release_7.4.0.tar.gz
-:lispublicna: Not available in the {listarball} public release of LISF 7.4.
+:listarball: LISF_public_release_7.5.0.tar.gz
+:lispublicna: Not available in the {listarball} public release of LISF 7.5.
 :emdash: —
 :endash: –
 :vertellipsis: ⋮
 
 
-// Set :devonly: when compiling the developers' version of the Users' Guide.
-// Set :devonly!: when compiling the public version of the Users' Guide.
+// Set :devonly: when compiling the developers' version of the Users Guide.
+// Set :devonly!: when compiling the public version of the Users Guide.
 //
 // The ifdef::devonly[] command allows one to include text for the developers'
-// version of the Users' Guide.
+// version of the Users Guide.
 // Usage:
 // ifdef::devonly[]
 // line one

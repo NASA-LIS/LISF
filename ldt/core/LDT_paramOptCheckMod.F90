@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -499,8 +499,8 @@ contains
           endif
 
         case( "ISRIC")
-          if (nt.ne.13) then 
-            write(LDT_logunit,*) "Param_Check: ISRIC has 13 types (includes water) for tiling."
+          if (nt.ne.16) then
+            write(LDT_logunit,*) "Param_Check: ISRIC has 16 types (includes water) for tiling."
             write(LDT_logunit,*) "             The current value is: ",nt
             write(LDT_logunit,*) " Stopping ..."
             call LDT_endrun

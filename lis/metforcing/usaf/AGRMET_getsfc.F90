@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,20 +40,23 @@
 !     25 Jun 20  Modified to check valid times of surface obs.
 !                ..............................Eric Kemp/NASA/SSAI
 !     16 Dec 21  Replaced julhr with YYYYMMDDHH in log...Eric Kemp/NASA/SSAI
+!     07 Nov 23  Added new sfcobs format.......Eric Kemp/NASA/SSAI
 ! 
 ! !INTERFACE: 
 subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
      ri, rj, obstmp, obsrlh, obsspd, obscnt, &
      isize, minwnd, alert_number, imax, jmax, rootdir,cdmsdir,&
-     use_timestamp)
+     use_timestamp, use_wigos_sfcobs)
 ! !USES: 
+  use ESMF ! EMK Patch for DTG check
   use AGRMET_forcingMod, only : agrmet_struc
   use LIS_coreMod,    only  : LIS_domain, LIS_masterproc
   use LIS_timeMgrMod, only  : LIS_julhr_date
-  use LIS_logMod,     only  : LIS_logunit, LIS_alert
+  use LIS_logMod,     only  : LIS_logunit, LIS_alert, &
+       LIS_getNextUnitNumber,  LIS_releaseUnitNumber
   use map_utils,      only  : latlon_to_ij
   use USAF_bratsethMod, only: USAF_ObsData, USAF_assignObsData
-  use ESMF ! EMK Patch for DTG check
+
 
   implicit none
 ! !ARGUMENTS:   
@@ -76,6 +79,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   character(len=*)               :: rootdir
   character(len=*)               :: cdmsdir
   integer,    intent(in)         :: use_timestamp
+  logical, intent(in) :: use_wigos_sfcobs
 !    
 ! !DESCRIPTION: 
 !    
@@ -220,11 +224,14 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   character*10                   :: date10 ! EMK replace cjulhr in log
   character*14, allocatable      :: dtg      ( : )
   character*100                  :: message  ( 20 )
-  character*8, allocatable       :: netyp    ( : )
+  !character*8, allocatable       :: netyp    ( : )
+  character*9, allocatable       :: netyp    ( : )
   character*8                    :: norsou   ( 2 )
 !  character*8, allocatable       :: platform ( : )
-  character*9, allocatable       :: platform ( : ) ! EMK BUG FIX
-  character*8, allocatable       :: rptyp    ( : )
+  !character*9, allocatable       :: platform ( : ) ! EMK BUG FIX
+  character*32, allocatable       :: platform ( : ) ! EMK WIGOS
+  !character*8, allocatable       :: rptyp    ( : )
+  character*9, allocatable       :: rptyp    ( : ) ! WIGOS
   logical, allocatable           :: skip (:) ! EMK
   real                           :: rlat   
   real                           :: rlon   
@@ -244,8 +251,18 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   integer :: rc
 
   real,        external          :: AGRMET_calcrh_dpt
-  character(len=10) :: net10, platform10
+  !character(len=10) :: net10, platform10
+  character(len=8) :: netyp8
+  character(len=9) :: platform9
+  character(len=32) :: net32, platform32
+  character(len=8) :: rptyp8
+  character*32, parameter :: blank32 = "                                "
+  integer :: iunit
+  logical :: found_file
+
   data norsou  / 'NORTHERN', 'SOUTHERN' /
+
+  message = ''
 
 !     ------------------------------------------------------------------
 !     Executable code begins here. Intialize observation counter to 0.
@@ -292,20 +309,78 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
      skip(:) = .false. ! EMK
 
      call getsfcobsfilename(sfcobsfile, rootdir, cdmsdir, &
-          use_timestamp,hemi, yr, mo, da, hr)
-     
-     write(LIS_logunit,*)'Reading OBS: ',trim(sfcobsfile)
-     open(22,file=trim(sfcobsfile),status='old', iostat=ierr1)
-     if(ierr1.eq.0) then 
-        read(22,*, iostat=ierr2) nsize
-        
+          use_timestamp,hemi, yr, mo, da, hr, use_wigos_sfcobs)
+
+     inquire(file=trim(sfcobsfile), exist=found_file)
+     if (.not. found_file) then
+        write(LIS_logunit,*) '[WARN] Cannot find ', trim(sfcobsfile)
+        message(1) = '[WARN] Program:  LIS'
+        message(2) = '  Routine: AGRMET_getsfc'
+        message(3) = '  Cannot find file ' // trim(sfcobsfile)
+        if (LIS_masterproc) then
+           call LIS_alert('LIS.AGRMET_getsfc', &
+                alert_number, message)
+           alert_number = alert_number + 1
+        end if
+        message = ''
+        if (use_wigos_sfcobs) exit ! These files are global
+        cycle
+     end if
+
+     write(LIS_logunit,*)'[INFO] Opening: ',trim(sfcobsfile)
+     iunit = LIS_getNextUnitNumber()
+     open(iunit,file=trim(sfcobsfile),status='old', iostat=ierr1)
+
+     if (ierr1 .ne. 0) then
+        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) &
+             yr, mo, da, hr
+        write(LIS_logunit,*)' '
+        write(LIS_logunit,*) &
+             '[WARN] ROUTINE AGRMET_GETSFC: ERROR OPENING ', &
+             trim(sfcobsfile)
+        write(LIS_logunit,*)'[WARN] ISTAT IS ', ierr1
+        message(1) = 'program:  LIS'
+        message(2) = '  routine:  AGRMET_getsfc'
+        message(3) = '  error opening file ' // trim(sfcobsfile)
+        alert_number = alert_number + 1
+        if(LIS_masterproc) then
+           call lis_alert( 'LIS.AGRMET_getsfc', alert_number, message )
+        endif
+        message = ''
+        if (use_wigos_sfcobs) exit ! New WIGOS version is global
+        cycle
+     endif
+
+     if(ierr1.eq.0) then
+        read(iunit,*, iostat=ierr2) nsize
+
+        if (ierr2 .ne. 0) then
+           write(LIS_logunit,*) &
+                '[WARN] Problem reading total report count from ', &
+                trim(sfcobsfile)
+           message(1) = 'program:  LIS'
+           message(2) = '  routine:  AGRMET_getsfc'
+           message(3) = '  Cannot read total report count from ' // &
+                trim(sfcobsfile)
+           alert_number = alert_number + 1
+           if(LIS_masterproc) then
+              call lis_alert( 'LIS.AGRMET_getsfc', alert_number, &
+                   message )
+           endif
+           message = ''
+           close(iunit)
+           call LIS_releaseUnitNumber(iunit)
+           if (use_wigos_sfcobs) exit
+           cycle
+        end if
+
 !     ------------------------------------------------------------------
 !     If the number of obs in the file is greater than the array size
 !     write an alert to the log and set back the number to read to
 !     prevent a segfault.
 !     ------------------------------------------------------------------
 
-        if ( nsize .GT. isize ) then
+         if ( nsize .GT. isize ) then
 
            write(LIS_logunit,*)' '
            write(LIS_logunit,*)"******************************************************"
@@ -321,15 +396,32 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
         end if
 
         do i=1,nsize
-           read(22,*, iostat=ierr3) platform(i), dtg(i), &
-                itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
-                ispd(i), rptyp(i), netyp(i)
+           if (.not. use_wigos_sfcobs) then
+              !read(iunit, *, iostat=ierr3) platform(i), dtg(i), &
+              !     itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
+              !     ispd(i), rptyp(i), netyp(i)
+              read(iunit, *, iostat=ierr3) platform9, dtg(i), &
+                   itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
+                   ispd(i), rptyp8, netyp8
+              if (ierr3 == 0) then
+                 platform(i) = platform9
+                 rptyp(i) = rptyp8
+                 netyp(i) = netyp8
+              end if
+           else
+              read(iunit, 1000, iostat=ierr3) platform(i), dtg(i), &
+                   itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
+                   ispd(i), rptyp(i), netyp(i)
+1000          format(a32, 1x, a14, 1x, i9, 1x, i9, 1x, i9, 1x, &
+                   i9, 1x, i9, 1x, i9, 1x, a9, 1x, a9)
+           end if
 
            !if (ierr3 .ne. 0) skip(i) = .true. ! EMK
            ! EMK Patch Skip report if problem occurred reading it
            if (ierr3 .ne. 0) then
               write(LIS_logunit,*) &
-                   '[WARN] Problem reading report ', i, ' from file'
+                   '[WARN] Problem reading report ', i, &
+                   ' from sfcobs file, skipping line'
               skip(i) = .true.
               cycle
            end if
@@ -366,7 +458,8 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
            end if
 
         enddo
-        close(22)
+        close(iunit)
+        call LIS_releaseUnitNumber(iunit)
 
         !if(ierr2.eq.0.and.ierr3.eq.0) then
         ! EMK Patch...Allow observation storage even if problem occurred
@@ -399,20 +492,21 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !     ------------------------------------------------------------------
 !         Only process the observations for the current hemisphere.
 !     ------------------------------------------------------------------
-              
+
+              ! EMK...Use all obs if we are using a WIGOS global file
               if( ((hemi .eq. 1) .and. (rlat .ge. 0.0)) .or. &
-                   ((hemi .eq. 2) .and. (rlat .lt. 0.0)) ) then 
+                   ((hemi .eq. 2) .and. (rlat .lt. 0.0)) .or. &
+                   use_wigos_sfcobs) then
 !     ------------------------------------------------------------------
 !         Convert point's lat/lon to i/j coordinates.
 !         check for values of rigrid and rjgrid outside of
 !         the AGRMET model grid, or in the other hemisphere.
 !     ------------------------------------------------------------------
 
-
                  call latlon_to_ij(LIS_domain(n)%lisproj, rlat, rlon, &
-                      rigrid, rjgrid)                        
-                 
-!                 if(rigrid.ge.1.and.rigrid.le.imax.and. &
+                      rigrid, rjgrid)
+
+                 !if(rigrid.ge.1.and.rigrid.le.imax.and. &
 !                      rjgrid.ge.1.and.rjgrid.le.jmax) then 
 ! EMK TEST
                  if (.true.) then
@@ -423,16 +517,16 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !         observations had to be discared for this reason.
 !     ------------------------------------------------------------------
 
-                 if ( ( (itmp(irecord)  .gt. -99999998) .and. &
-                        (ispd(irecord)  .gt. -99999998) ) .and. &
-                        ( (irelh(irecord) .gt. -99999998) .or. &
-                          (idpt(irecord) .gt. -99999998) ) ) then
-                    
-                    ! EMK...Make sure dew point .le. temperature
-                    if ( (itmp(irecord)  .gt. -99999998) .and. &
-                         (idpt(irecord) .gt. -99999998) ) then
-                       if (idpt(irecord) .gt. itmp(irecord)) cycle
-                    end if
+                    if ( ( (itmp(irecord)  .gt. -99999998) .and. &
+                         (ispd(irecord)  .gt. -99999998) ) .and. &
+                         ( (irelh(irecord) .gt. -99999998) .or. &
+                         (idpt(irecord) .gt. -99999998) ) ) then
+
+                       ! EMK...Make sure dew point .le. temperature
+                       if ( (itmp(irecord)  .gt. -99999998) .and. &
+                            (idpt(irecord) .gt. -99999998) ) then
+                          if (idpt(irecord) .gt. itmp(irecord)) cycle
+                       end if
 
 !     ------------------------------------------------------------------
 !         Gross error check and set temperature.
@@ -442,14 +536,14 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !         so the Barnes scheme will ignore it.
 !     ------------------------------------------------------------------
 
-                    if (itmp(irecord) .gt. -99999998) then
-                       rtmp = float (itmp(irecord)) / 100.0
-                       if ( (rtmp .lt. 200.0) .or. (rtmp .gt. 350.0) ) then
+                       if (itmp(irecord) .gt. -99999998) then
+                          rtmp = float (itmp(irecord)) / 100.0
+                          if ( (rtmp .lt. 200.0) .or. (rtmp .gt. 350.0) ) then
+                             rtmp = -1.0
+                          end if
+                       else
                           rtmp = -1.0
                        end if
-                    else
-                       rtmp = -1.0
-                    end if
         
 !     ------------------------------------------------------------------
 !         Gross error check and set relative humidity values.
@@ -458,21 +552,21 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !         value of -1, so the Barnes scheme will ignore it.  
 !     ------------------------------------------------------------------
 
-                    if (irelh(irecord) .gt. -99999998) then
-                       rrelh = float(irelh(irecord)) / 10000.0
-                       if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
+                       if (irelh(irecord) .gt. -99999998) then
+                          rrelh = float(irelh(irecord)) / 10000.0
+                          if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
+                             rrelh = -1.0
+                          end if
+                       else if ( (idpt(irecord) .gt. -99999998) .and. &
+                            (rtmp .ne. -1.0) ) then
+                          rdpt = float(idpt(irecord)) / 100.0
+                          rrelh = AGRMET_calcrh_dpt(rtmp, rdpt)
+                          if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
+                             rrelh = -1.0
+                          end if
+                       else
                           rrelh = -1.0
                        end if
-                    else if ( (idpt(irecord) .gt. -99999998) .and. &
-                           (rtmp .ne. -1.0) ) then
-                       rdpt = float(idpt(irecord)) / 100.0
-                       rrelh = AGRMET_calcrh_dpt(rtmp, rdpt)
-                       if ( (rrelh .gt. 1.0) .or. (rrelh .lt. 0.0) ) then   
-                          rrelh = -1.0
-                       end if
-                    else
-                       rrelh = -1.0
-                    end if
            
 !     ------------------------------------------------------------------
 !         Constrain surface wind speed to a value between
@@ -481,149 +575,116 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !         of -1, so the Barnes scheme will ignore it.
 !     ------------------------------------------------------------------
 
-                    if (ispd(irecord) .gt. -99999998) then
-                       rspd = float(ispd(irecord)) / 10.0
-                       rspd = max( min( rspd, 75.0 ), minwnd )
-                    else
-                       rspd = -1.0
-                    end if
-      
+                       if (ispd(irecord) .gt. -99999998) then
+                          rspd = float(ispd(irecord)) / 10.0
+                          rspd = max( min( rspd, 75.0 ), minwnd )
+                       else
+                          rspd = -1.0
+                       end if
+                       
 !     ------------------------------------------------------------------
 !         If all the data is out of range and/or missing, don't store
 !         this observation.
 !     ------------------------------------------------------------------
            
-                    if ( (nint(rtmp)  .gt. 0)  .and. &
-                         (nint(rrelh) .gt. 0)  .and.&
-                         (nint(rspd)  .gt. 0) ) then 
-                       
+                       if ( (nint(rtmp)  .gt. 0)  .and. &
+                            (nint(rrelh) .gt. 0)  .and.&
+                            (nint(rspd)  .gt. 0) ) then 
+                          
 !     ------------------------------------------------------------------
 !         If we make it here, the observation probably has some good
 !         data, so increment the observation counter, store the
 !         data into the observation arrays.
 !     ------------------------------------------------------------------
 
-                       ! EMK...Add to data structures.  Handle reformated
-                       ! CDMS data that is missing platform and network
-                       if (rtmp .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
-                          end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
-                          end if
-                          call USAF_assignObsData(t2mObs,net10, &
-                               platform10,rtmp,rlat,rlon, &
-                               agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
-                               0.)
+                          ! EMK...Add to data structures.  Handle reformated
+                          ! CDMS data that is missing platform and network
+                          if (rtmp .gt. 0) then
+                             net32 = blank32
+                             net32 = netyp(irecord)
+                             platform32 = blank32
+                             platform32 = platform(irecord)
+                             if (trim(net32) .eq. 'NULL') then
+                                net32 = 'CDMS'
+                             end if
+                             if (trim(platform32) .eq. '-99999999') then
+                                platform32 = '00000000'
+                             end if
+                             call USAF_assignObsData(t2mObs,net32, &
+                                  platform32,rtmp,rlat,rlon, &
+                                  agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
+                                  0.)
 
-                       end if
-                       if (rrelh .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
                           end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
+                          if (rrelh .gt. 0) then
+                             net32 = blank32
+                             net32 = netyp(irecord)
+                             platform32 = blank32
+                             platform32 = platform(irecord)
+                             if (trim(net32) .eq. 'NULL') then
+                                net32 = 'CDMS'
+                             end if
+                             if (trim(platform32) .eq. '-99999999') then
+                                platform32 = '00000000'
+                             end if
+                             call USAF_assignObsData(rh2mObs,net32, &
+                                  platform32,rrelh,rlat,rlon, &
+                                  agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
+                                  0.)
                           end if
-                          call USAF_assignObsData(rh2mObs,net10, &
-                               platform10,rrelh,rlat,rlon, &
-                               agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
-                               0.)
-                       end if
-                       if (rspd .gt. 0) then
-                          net10 = trim(netyp(irecord))
-                          platform10 = trim(platform(irecord))
-                          if (trim(net10) .eq. 'NULL') then
-                             net10 = 'CDMS'
+                          if (rspd .gt. 0) then
+                             net32 = blank32
+                             net32 = netyp(irecord)
+                             platform32 = blank32
+                             platform32 = platform(irecord)
+                             if (trim(net32) .eq. 'NULL') then
+                                net32 = 'CDMS'
+                             end if
+                             if (trim(platform32) .eq. '-99999999') then
+                                platform32 = '00000000'
+                             end if
+                             call USAF_assignObsData(spd10mObs,net32, &
+                                  platform32,rspd,rlat,rlon, &
+                                  agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
+                                  0.)
                           end if
-                          if (trim(platform10) .eq. '-99999999') then
-                             platform10 = '00000000'
-                          end if
-                          call USAF_assignObsData(spd10mObs,net10, &
-                               platform10,rspd,rlat,rlon, &
-                               agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
-                               0.)
 
-                       end if
+                          obscnt         = obscnt + 1
 
-                       obscnt         = obscnt + 1
-                       
-                       ri(obscnt)     = rigrid
-                       rj(obscnt)     = rjgrid
-                       obstmp(obscnt) = rtmp
-                       obsrlh(obscnt) = rrelh
-                       obsspd(obscnt) = rspd
-                       if(rspd.lt.0) then 
-                          print*, 'probl ',rlat,rlon, rspd
+                          ri(obscnt)     = rigrid
+                          rj(obscnt)     = rjgrid
+                          obstmp(obscnt) = rtmp
+                          obsrlh(obscnt) = rrelh
+                          obsspd(obscnt) = rspd
                        endif
-                    endif
 !     ------------------------------------------------------------------
 !         If we have reached the number of obs that our hard-wired
 !         arrays can hold, then exit the loop.
 !     ------------------------------------------------------------------
 
-                    if ( obscnt .eq. isize ) exit
+                       if ( obscnt .eq. isize ) then
+                          write(LIS_logunit,*) &
+                               '[WARN] ROUTINE GETSFC: REACHED MAXIMUM NUMBER OF SFC OBS TO SAVE IN MEMORY'
+                          message(1) = 'program:  LIS'
+                          message(2) = '  routine:  AGRMET_getsfc'
+                          message(3) = '  reached maximum number of sfc obs to save memory in memory'
+                          alert_number = alert_number + 1
+                          if(LIS_masterproc) then
+                             call lis_alert( 'LIS.AGRMET_getsfc', &
+                                  alert_number, &
+                                  message )
+                          endif
+                          message = ''
+                          exit ! Jump out of hemi do loop
+                       end if
+                    endif
                  endif
               endif
-           endif
-        enddo
-     else
-!     ------------------------------------------------------------------
-!       There was an error retrieving obs for this Julhr and hemi.
-!       Send an alert message, but don't abort.
-!     ------------------------------------------------------------------
-
-           ! EMK...Replace julhr with YYYYMMDD
-           !write(cjulhr,'(i6)',iostat=istat1) julhr
-           write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
-           write(LIS_logunit,*)' '
-           write(LIS_logunit,*)'- ROUTINE GETSFC: ERROR RETRIEVING SFC OBS FOR'
-           write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
-           write(LIS_logunit,*)'- ISTAT IS ', ierr1
-           message(1) = 'program:  LIS'
-           message(2) = '  routine:  AGRMET_getsfc'
-           message(3) = '  error retrieving sfc obs from database for'
-           message(4) = '  the '//norsou(hemi)//' hemisphere.'
-           if( istat1 .eq. 0 ) then
-              ! EMK...Replace julhr with YYYYMMDD
-              !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-              !message(5) = '  julhr is ' // trim(cjulhr) // '.'
-              write(LIS_logunit,*)' - YYYYMMDDHH is ' // date10
-              message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
-           endif
-           alert_number = alert_number + 1
-           if(LIS_masterproc) then 
-              call lis_alert( 'sfcalc              ', alert_number, message )
-           endif
-        endif
-     else
-        ! EMK...Replace julhr with YYYYMMDD
-        !write(cjulhr,'(i6)',iostat=istat1) julhr
-        write(date10,'(i4, i2.2, i2.2, i2.2)', iostat=istat1) yr, mo, da, hr
-        write(LIS_logunit,*)' '
-        write(LIS_logunit,*)'- ROUTINE AGRMET_GETSFC: ERROR RETRIEVING SFC OBS FOR'
-        write(LIS_logunit,*)'- THE '//norsou(hemi)//' HEMISPHERE.'
-        write(LIS_logunit,*)'- ISTAT IS ', ierr1
-        message(1) = 'program:  LIS'
-        message(2) = '  routine:  AGRMET_getsfc'
-        message(3) = '  error retrieving sfc obs from database for'
-        message(4) = '  the '//norsou(hemi)//' hemisphere.'
-        if( istat1 .eq. 0 ) then
-           ! EMK...Replace julhr with YYYYMMDDHH
-           !write(LIS_logunit,*)'- JULHR IS ' // cjulhr
-           !message(5) = '  julhr is ' // trim(cjulhr) // '.'
-           write(LIS_logunit,*)' - YYYYMMDDHH is ' // date10
-           message(5) = '  yyyymmddhh is ' // trim(date10) // '.'
-        endif
-        alert_number = alert_number + 1
-        if(LIS_masterproc) then 
-           call lis_alert( 'sfcalc              ', alert_number, message )
+           enddo
         endif
      endif
+
+     if (use_wigos_sfcobs) exit ! New sfcobs file is global
   enddo
 
   deallocate ( idpt )
@@ -638,6 +699,8 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   deallocate ( rptyp )
 
   deallocate(skip) ! EMK
+
+  write(LIS_logunit,*)'[INFO] Stored ', obscnt, ' sfc obs'
 end subroutine AGRMET_getsfc
 
 !BOP
@@ -647,15 +710,18 @@ end subroutine AGRMET_getsfc
 !
 ! !INTERFACE: 
 subroutine getsfcobsfilename(filename, rootdir, dir, &
-     use_timestamp, hemi, yr,mo,da,hr)
+     use_timestamp, hemi, yr, mo, da, hr, use_wigos_sfcobs)
 
   implicit none
+
 ! !ARGUMENTS: 
-  character(len=*)    :: filename
-  character(len=*)    :: rootdir
-  character(len=*)    :: dir
-  integer, intent(in) :: yr,mo,da,hr, hemi
+  character(len=*), intent(inout) :: filename
+  character(len=*), intent(in) :: rootdir
+  character(len=*), intent(in) :: dir
   integer, intent(in) :: use_timestamp
+  integer, intent(in) :: hemi
+  integer, intent(in) :: yr, mo, da, hr
+  logical, intent(in) :: use_wigos_sfcobs
 !
 ! !DESCRIPTION: 
 !  This routines generates the name of the surface obs file
@@ -699,14 +765,30 @@ subroutine getsfcobsfilename(filename, rootdir, dir, &
      write(unit=fhemi,fmt='(a2)') 'sh'
   endif
 
-  if(use_timestamp.eq.1) then 
-     filename = trim(rootdir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//&
-          '/'//trim(dir)//'/sfcobs_'&
-          //trim(fhemi)//'.01hr.'//trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)
+  if(use_timestamp.eq.1) then
+     if (use_wigos_sfcobs) then
+        filename = trim(rootdir) // '/' // &
+             trim(fyr) // trim(fmo) // trim(fda) // &
+             '/' // trim(dir) // '/sfcobs_01hr_' // &
+             trim(fyr) // trim(fmo) // trim(fda) // trim(fhr) // ".txt"
+     else
+        filename = trim(rootdir) // '/' // &
+             trim(fyr) // trim(fmo) // trim(fda) // &
+             '/' // trim(dir) // '/sfcobs_' // &
+             trim(fhemi) // '.01hr.' // &
+             trim(fyr) // trim(fmo) // trim(fda) // trim(fhr)
+     end if
   else
-     filename = trim(rootdir)//&
-          '/'//trim(dir)//'/sfcobs_'&
-          //trim(fhemi)//'.01hr.'//trim(fyr)//trim(fmo)//trim(fda)//trim(fhr)
+     if (use_wigos_sfcobs) then
+        filename = trim(rootdir) // &
+             '/' // trim(dir) // '/sfcobs_01hr_' // &
+             trim(fyr) // trim(fmo) // trim(fda) // trim(fhr) // ".txt"
+     else
+        filename = trim(rootdir) // &
+             '/' // trim(dir) // '/sfcobs_' // &
+             trim(fhemi) // '.01hr.' // &
+             trim(fyr) // trim(fmo) // trim(fda) // trim(fhr)
+     end if
   endif
 end subroutine getsfcobsfilename
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -259,7 +259,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
              agrmet_struc(n)%clouddir,agrmet_struc(n)%use_timestamp,hemi,&
              yr,mo,da,hr)
 
-        write(LIS_logunit,*)'- OPENING ', trim(ifil) 
+        write(LIS_logunit,*)'[INFO] OPENING ', trim(ifil) 
         open(9, file=trim(ifil), access='direct', &
              recl=icdfs2*jcdfs2*1, iostat=istat, status="old")
 
@@ -268,7 +268,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !      ------------------------------------------------------------------
      
         if (istat /= 0) then
-           write(LIS_logunit,*)'- ERROR OPENING ',trim(ifil),istat
+           write(LIS_logunit,*)'[ERR] ERROR OPENING ',trim(ifil),istat
            error_flag = .true.
            cycle READ_DATA
         end if
@@ -277,12 +277,12 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !        bad read, cycle loop and try to use previous hour's data.  
 !      ------------------------------------------------------------------
 
-        write(LIS_logunit,*)'- READING ',trim(ifil)
+        write(LIS_logunit,*)'[INFO] READING ',trim(ifil)
         read(9, rec=1, iostat=istat) totalc(hemi,:,:)
         close(9)
  
         if (istat /= 0) then
-           write(LIS_logunit,*)'- ERROR READING ',trim(ifil)
+           write(LIS_logunit,*)'[ERR] ERROR READING ',trim(ifil)
            error_flag = .true.
            cycle READ_DATA
         end if
@@ -294,7 +294,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
         call agrmet_cdfs_pixltime_filename(ifil,agrmet_struc(n)%agrmetdir,&
              agrmet_struc(n)%clouddir,agrmet_struc(n)%use_timestamp,hemi,&
              yr,mo,da,hr)
-        write(LIS_logunit,*)'- OPENING ', trim(ifil)
+        write(LIS_logunit,*)'[INFO] OPENING ', trim(ifil)
      
         open(9, file=trim(ifil), access='direct', &
              recl=icdfs2*jcdfs2*4, iostat=istat, status="old")
@@ -304,12 +304,12 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !      ------------------------------------------------------------------
 
         if (istat /= 0) then
-           write(LIS_logunit,*)'- ERROR OPENING ',trim(ifil)
+           write(LIS_logunit,*)'[ERR] Cannot open ',trim(ifil)
            error_flag = .true.
            cycle READ_DATA
         end if
      
-        write(LIS_logunit,*)'- READING ', trim(ifil)
+        write(LIS_logunit,*)'[INFO] READING ', trim(ifil)
         read(9, rec=1, iostat=istat) times(hemi, :,:)
         close(9)
 
@@ -320,7 +320,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !      ------------------------------------------------------------------
         
         if (istat /= 0) then
-           write(LIS_logunit,*)'- ERROR READING ',trim(ifil)
+           write(LIS_logunit,*)'[ERR] ERROR READING ',trim(ifil)
            error_flag = .true.
            cycle READ_DATA
         else
@@ -339,9 +339,9 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
      if (istat /= 0) then
         
         write(LIS_logunit,*)
-        write(LIS_logunit,*) '* IN ROUTINE AGRMET_CDFS2_EST: ERRORS WITH CDFS2 DATA.'
-        write(LIS_logunit,*) '* DATA IS CORRUPT OR DOES NOT EXIST.'
-        write(LIS_logunit,*) '* CDFS2 PRECIP ESTIMATE WILL NOT BE PERFORMED.'
+        write(LIS_logunit,*) '[WARN] IN ROUTINE AGRMET_CDFS2_EST: ERRORS WITH CDFS2 DATA.'
+        write(LIS_logunit,*) '[WARN] DATA IS CORRUPT OR DOES NOT EXIST.'
+        write(LIS_logunit,*) '[WARN] CDFS2 PRECIP ESTIMATE WILL NOT BE PERFORMED.'
         write(LIS_logunit,*)
         
         call AGRMET_julhr_date10 ( j3hr, date10 )

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -189,9 +189,9 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
   
      inquire( file = trim(ifil), exist = exists)
      if ( .not. exists ) then 
-        write(LIS_logunit,*) 'AGRMET_geoest/precip:  error opening file ',trim(ifil)
-        write(LIS_logunit,*) '  file does not exist'
-        write(LIS_logunit,*) '  geo precip estimate will not be performed'
+        write(LIS_logunit,*) '[WARN] AGRMET_geoest/precip:  error opening file ',trim(ifil)
+        write(LIS_logunit,*) '[WARN]  file does not exist'
+        write(LIS_logunit,*) '[WARN]  geo precip estimate will not be performed'
         message = ' '
         message(1) = 'program:  LIS'
         message(2) = '  routine:  AGRMET_geoest'
@@ -205,7 +205,7 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
         endif
         return
      endif
-     write(LIS_logunit,*) '- READING ', trim(ifil)
+     write(LIS_logunit,*) '[INFO] READING ', trim(ifil)
   
      call LIS_putget( geoprc, 'r', ifil, routine_name, &
           imax, jmax )
@@ -235,14 +235,14 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
 
         if ( exists ) then
            gdgeornk = .true.
-           write(LIS_logunit,*) '- READING RANK FILE', trim(ifil)
+           write(LIS_logunit,*) '[INFO] READING RANK FILE', trim(ifil)
         
            call LIS_putget( geornk, 'r', ifil, routine_name, &
                 imax, jmax )
         else
-           write(LIS_logunit,*)'AGRMET_GEOEST/PRECIP: ERROR OPENING FILE ',trim(ifil)
-           write(LIS_logunit,*)'  FILE DOES NOT EXIST'
-           write(LIS_logunit,*)'  DEFAULT VALUES OF 4 WILL BE USED FOR GEO RANKS'
+           write(LIS_logunit,*)'[WARN] AGRMET_GEOEST/PRECIP: ERROR OPENING FILE ',trim(ifil)
+           write(LIS_logunit,*)'[WARN]  FILE DOES NOT EXIST'
+           write(LIS_logunit,*)'[WARN]  DEFAULT VALUES OF 4 WILL BE USED FOR GEO RANKS'
            message = ' '
            message(1)='program:  LIS'
            message(2)='  routine:  AGRMET_geoest'
@@ -273,8 +273,8 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
 ! of these cases.
 
      if ( is_geo_corrupted(geoprc, imax, jmax, mo, hemi) ) then 
-        write(LIS_logunit,*) 'AGRMET_geoest/precip:  data corrupted - ',trim(ifil)
-        write(LIS_logunit,*) '  geo precip estimate will not be performed'
+        write(LIS_logunit,*) '[WARN] AGRMET_geoest/precip:  data corrupted - ',trim(ifil)
+        write(LIS_logunit,*) '[WARN] geo precip estimate will not be performed'
         message = ' '
         message(1) = 'program:  LIS'
         message(2) = '  routine:  AGRMET_geoest'
@@ -330,10 +330,10 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
                        grnk_tmp(hemi,i,j) = 4
                        write(LIS_logunit,*)' '
                        write(LIS_logunit,*)'--------------------------------------------'
-                       write(LIS_logunit,*)'Bad geo precip rank value'
-                       write(LIS_logunit,*)'This value will be set to a default of 4'
-                       write(LIS_logunit,*)'geornk(',i,',',j,') = ',geornk(i,j)
-                       write(LIS_logunit,*)'from file :'
+                       write(LIS_logunit,*)'[WARN] Bad geo precip rank value'
+                       write(LIS_logunit,*)'[WARN] This value will be set to a default of 4'
+                       write(LIS_logunit,*)'[WARN] geornk(',i,',',j,') = ',geornk(i,j)
+                       write(LIS_logunit,*)'[WARN] from file :'
                        write(LIS_logunit,*) trim(ifil)
                        write(LIS_logunit,*)'--------------------------------------------'
                        write(LIS_logunit,*)' '

@@ -6,6 +6,10 @@
 #include "linux.h"
 /* #include "models.h" */
 
+extern void fstfg1_(int *, int *, int *, int *, float *, float *, float *, float *, float *, float *, float *, float *, float *, float *, float *, float *, float *);
+
+extern void frzind1_(float *, float *, float *, float *, int *, float *, float *, float *);
+
 int gen_frzst(int npix, int *nsoil, int *nupl, float *sac_parx, 
                float *frz_parx, float *frz_stx, float *sac_stx,
                float *sacst_prv, float *smc, float *sh2o, float dthr,

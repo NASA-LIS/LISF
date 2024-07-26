@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ module LDT_usafsiMod
      character*10  :: date10
      character*255 :: fracdir
      character*255 :: modif
+     integer :: sfcobsfmt ! EMK 20230727
      character*255 :: sfcobs
      character*255 :: ssmis
      character*255 :: gmi    !kyh20201118
@@ -139,11 +140,20 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%modif, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
+    ! New sfcobs format...EMK 20230728
+    cfg_entry = "USAFSI surface obs data format:"
+    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobsfmt, &
+         rc=rc)
+    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
     ! Get sfcobs
     cfg_entry = "USAFSI surface obs data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobs, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobs, &
+         rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
 !------------------------------------------------------------------------------kyh20201118

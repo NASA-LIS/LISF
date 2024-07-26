@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@
 #This module reorganizes
 #NMME preciptation forecasts
 #Date: May 06, 2021
+# Update: KR Arsenault; Feb-2024; CFSv2 Jan/Feb update
 """
 
 from datetime import datetime
@@ -129,10 +130,23 @@ if NMME_MODEL == 'CFSv2':
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR1, EYR1)
     XPREC[0:29,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
 
-    SYR2 = 2011
-    EYR2 = 2021
-    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
-    XPREC[29:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+    if MON[MM] == 'Jan' or MON[MM] == 'Feb':
+        SYR2 = 2011
+        EYR2 = 2011
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+        XPREC[29,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+        SYR3 = 2011
+        EYR3 = 2021
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR3, EYR3)
+        XPREC[30:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
+    else:
+        SYR2 = 2011
+        EYR2 = 2021
+        INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], SYR2, EYR2)
+        XPREC[29:40,:,:,:,:] = read_nc_files(INFILE, 'prec')[:, 0:LEAD_MON, 0:ENS_NUM, :, :]
+
 elif NMME_MODEL == 'GEOSv2':
     MODEL = 'NASA-GEOSS2S'
     if MM == 0:

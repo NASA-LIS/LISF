@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,8 +27,13 @@
 !    value of the ensemble (i.e. mean of the members that met the conditions)
 ! 3- If less then 50% of the ensemble members met the update conditions --> 
 !    adjust the states    
-
-
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix
+!                           (add check for frozen soil)
+! 11 Mar 2024: Mahdi Navari; ensemble flag bug fix  
+! 10 Apr 2024: Mahdi Navari; Fix bug related to computing delta. The bug fix sets 
+!                    the code to use total soil moisture (smc) if the ground 
+!                    is frozen, rather than the liquid part of soil moisture (sh2o).
+!
 ! !INTERFACE:
 subroutine NoahMP401_setsoilm(n, LSM_State)
 ! !USES:
@@ -36,10 +41,10 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   use LIS_coreMod
   use LIS_logMod
   use NoahMP401_lsmMod
-  !use module_sf_noahlsm_36  !MN
+  !use module_sf_noahlsm_36 
   !use module_sf_noahmpdrv_401, only: parameters
   use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE,SMCWLT_TABLE
-
+  use LIS_constantsMod, only  : LIS_CONST_TKFRZ
 
   implicit none
 ! !ARGUMENTS: 
@@ -65,14 +70,13 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   real, pointer          :: soilm4(:)
   integer                :: t, j,i, gid, m, t_unpert
   integer                :: status
-  real                   :: delta(4)
+  real                   :: delta(4), ens_count(4)
   real                   :: delta1,delta2,delta3,delta4
   real                   :: tmpval
   logical                :: bounds_violation
   integer                :: nIter
   logical                :: update_flag(LIS_rc%ngrid(n))
-  logical                :: ens_flag(LIS_rc%nensem(n))
-! mn
+  logical                :: ens_flag(4,LIS_rc%nensem(n))
   integer                :: SOILTYP           ! soil type index [-]
   real                   :: SMCMAX , SMCWLT
   real                   :: tmp(LIS_rc%nensem(n)), tmp0(LIS_rc%nensem(n))
@@ -142,7 +146,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
           noahmp401_struc(n)%noahmp401(t)%sh2o(1)+delta1.lt.&
-          sm_threshold) then 
+          sm_threshold .and.&
+         noahmp401_struc(n)%noahmp401(t)%tslb(1) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         ! MN save the flag for each tile (col*row*ens)   (64*44)*20
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
@@ -151,7 +156,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(2)+delta2.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(2) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -159,7 +165,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(3)+delta3.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(3) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -167,7 +174,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.lt.sm_threshold) then 
+          noahmp401_struc(n)%noahmp401(t)%sh2o(4)+delta4.lt.sm_threshold .and.&
+          noahmp401_struc(n)%noahmp401(t)%tslb(4) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -194,18 +202,6 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
       update_flag_new(gid)= update_flag(gid).or.update_flag_ens(gid)  ! new flag
   enddo 
   
-  ! MN print 
-#if 0   
-if(i.eq.66) then !i=66  ! --> domain's center  1376
-  if(LIS_rc%hr.eq.12) then
-     write(2001,'(I4, 2x, 3(I2,x), 2x, 23(L1,2x))'),&
-          i, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,update_flag_tile&
-          ((i-1)*LIS_rc%nensem(n)+1:(i)*LIS_rc%nensem(n)),&
-          update_flag_ens(i), update_flag_new(i), update_flag(i) 
-  endif !mn
-  endif
-#endif 
-  
   ! update step
   ! loop over grid points 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
@@ -213,7 +209,7 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(i)%col,&
           LIS_surface(n,LIS_rc%lsm_index)%tile(i)%row) 
-     
+
      !if(update_flag(gid)) then
      if(update_flag_new(gid)) then 
 !-----------------------------------------------------------------------------------------
@@ -323,8 +319,7 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                     stop
                  endif
               endif
-              
-              
+
 !-----------------------------------------------------------------------------------------              
               ! randomly resample the smc from [MIN_THRESHOLD,  Max value from DA @ that tiem step]
 !-----------------------------------------------------------------------------------------
@@ -351,8 +346,7 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
               smc_tmp = (MaxEnsSM4 - MinEnsSM4)/2 + MinEnsSM4
               noahmp401_struc(n)%noahmp401(t)%sh2o(4) = smc_tmp
               noahmp401_struc(n)%noahmp401(t)%smc(4) = smc_tmp
-              
- 
+
            endif ! flag for each tile
 
         enddo ! loop over tile
@@ -379,15 +373,22 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     
                     if(m.ne.LIS_rc%nensem(n)) then 
+                      if (noahmp401_struc(n)%noahmp401(t)%tslb(1) .gt. LIS_CONST_TKFRZ) then ! MN
                        delta(j) = delta(j) + &
                             (noahmp401_struc(n)%noahmp401(t)%sh2o(j) - &
                             noahmp401_struc(n)%noahmp401(t_unpert)%sh2o(j))
+                      else ! MN
+                       delta(j) = delta(j) + &
+                            (noahmp401_struc(n)%noahmp401(t)%smc(j) - &
+                            noahmp401_struc(n)%noahmp401(t_unpert)%smc(j))
+                      endif
                     endif
                     
                  enddo
               enddo
               
               do j=1,4
+                 ens_count(j) = 0.0
                  delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
                  do m=1,LIS_rc%nensem(n)-1
                      t = i+m-1
@@ -405,7 +406,8 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                        noahmp401_struc(n)%noahmp401(t)%smc(j) = &
                             max(noahmp401_struc(n)%noahmp401(t_unpert)%smc(j),&
                             MIN_THRESHOLD)
-                       ens_flag(m) = .false. 
+                       ens_flag(j,m) = .false. 
+                       ens_count(j) = ens_count(j) + 1
                     elseif(tmpval.ge.sm_threshold) then
                        noahmp401_struc(n)%noahmp401(t)%sh2o(j) = &
                             min(noahmp401_struc(n)%noahmp401(t_unpert)%sh2o(j),&
@@ -413,39 +415,53 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                        noahmp401_struc(n)%noahmp401(t)%smc(j) = &
                             min(noahmp401_struc(n)%noahmp401(t_unpert)%smc(j),&
                             sm_threshold)
-                       ens_flag(m) = .false. 
+                       ens_flag(j,m) = .false. 
+                       ens_count(j) = ens_count(j) + 1
                     endif
                  enddo
               enddo
-              
+
               !--------------------------------------------------------------------------
               ! Recalculate the deltas and adjust the ensemble
               !--------------------------------------------------------------------------
               do j=1,4
+
                  delta(j) = 0.0
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
-                    if(m.ne.LIS_rc%nensem(n)) then 
-                       delta(j) = delta(j) + &
-                            (noahmp401_struc(n)%noahmp401(t)%sh2o(j) - &
-                            noahmp401_struc(n)%noahmp401(t_unpert)%sh2o(j))
+
+                    if(m.ne.LIS_rc%nensem(n)) then
+                       if (noahmp401_struc(n)%noahmp401(t)%tslb(1) .gt. LIS_CONST_TKFRZ) then ! MN
+                          delta(j) = delta(j) + &
+                              (noahmp401_struc(n)%noahmp401(t)%sh2o(j) - &
+                               noahmp401_struc(n)%noahmp401(t_unpert)%sh2o(j))
+                       else ! MN
+                          delta(j) = delta(j) + &
+                              (noahmp401_struc(n)%noahmp401(t)%smc(j) - &
+                               noahmp401_struc(n)%noahmp401(t_unpert)%smc(j))
+                      endif
                     endif
                  enddo
               enddo
               
               do j=1,4
-                 delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
+                 if (ens_count(j).lt.(LIS_rc%nensem(n)-1)) then
+                     delta(j) =delta(j)/(LIS_rc%nensem(n)-1-ens_count(j))
+                 else
+                    delta(j) =delta(j)/(LIS_rc%nensem(n)-1) !We apply this  
+                    !to remove the residual bias after setting all ensemble members
+                    !to the bond values (MIN_THRESHOLD, sm_threshold, or unperturbed) 
+                 endif
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     
-                    if(ens_flag(m)) then 
+                    if(ens_flag(j,m)) then 
                        tmpval = noahmp401_struc(n)%noahmp401(t)%sh2o(j) - &
                             delta(j)
                        SOILTYP = noahmp401_struc(n)%noahmp401(t)%soiltype  
                        MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP)  
-                       
                        if(.not.(tmpval.le.0.0 .or.&
                             tmpval.gt.(MAX_THRESHOLD))) then 
                           
@@ -469,7 +485,7 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                     endif
                  enddo
               enddo
-              
+
               if(nIter.gt.10.and.bounds_violation) then 
                  !--------------------------------------------------------------------------
                  ! All else fails, set to the bounds
@@ -497,17 +513,13 @@ if(i.eq.66) then !i=66  ! --> domain's center  1376
                           noahmp401_struc(n)%noahmp401(t)%sh2o(j) = MIN_THRESHOLD
                           noahmp401_struc(n)%noahmp401(t)%smc(j) = MIN_THRESHOLD
                        endif
-!                    print*, i, m
-!                    print*, 'smc',t, noahmp401_struc(n)%noahmp401(t)%smc(:)
-!                    print*, 'sh2o ',t,noahmp401_struc(n)%noahmp401(t)%sh2o(:)
-!                    print*, 'max ',t,MAX_THRESHOLD !noahmp401_struc(n)%noahmp401(t)%smcmax
                     enddo
 !                  call LIS_endrun()
                  enddo
               endif          
            end do
         endif        
-     endif
+    endif
   enddo
 
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -61,17 +61,17 @@ subroutine AGRMET_readterrain(n)
      call get_agrmetterrain_filename(name,agrmet_struc(n)%terrainfile,hemi)
      inquire( file = trim(name), exist = exists)
      if ( exists ) then
-        write(LIS_logunit,*)' '
-        write(LIS_logunit,*)'- READING ', trim(name)
+        !write(LIS_logunit,*)' '
+        write(LIS_logunit,*)'[INFO] READING ', trim(name)
         call LIS_putget( agrmet_struc(n)%alt(:,:,hemi), 'r', name, routine_name, &
                      agrmet_struc(n)%imax, agrmet_struc(n)%jmax )
      else
         write(LIS_logunit,*)
         write(LIS_logunit,*) "*****************************************************"
-        write(LIS_logunit,*) "* LIS: ERROR OPENING FILE:" 
-        write(LIS_logunit,*) "* ", trim(name)
-        write(LIS_logunit,*) "* FILE DOES NOT EXIST."
-        write(LIS_logunit,*) "* LIS WILL ABORT."
+        write(LIS_logunit,*) "[ERR] LIS: ERROR OPENING FILE:" 
+        write(LIS_logunit,*) "[ERR] ", trim(name)
+        write(LIS_logunit,*) "[ERR] FILE DOES NOT EXIST."
+        write(LIS_logunit,*) "[ERR] LIS WILL ABORT."
         write(LIS_logunit,*) "*****************************************************"
         message    = ' '
         message(1) = 'program:  LIS'

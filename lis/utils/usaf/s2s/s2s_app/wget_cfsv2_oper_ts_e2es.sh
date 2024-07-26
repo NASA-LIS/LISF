@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
-# 
-# Copyright (c) 2022 United States Government as represented by the
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -57,10 +57,11 @@ neighb_days(){
 }
 
 print_message(){
-    echo "Note: if all recommended substitutes are also not available, you could try a different forecast hour from any of above dates." >> $CFSV2_LOG
+    echo "Note: If all recommended substitutes are also not available, you could try a different forecast hour from any of above dates." >> $CFSV2_LOG
     echo ""  >> $CFSV2_LOG
 }
 
+ret_code_pipe=$(mktemp)
 main_loop() {
     # Initial forecast dates:
     for prevmondays in ${day1} ${day2} ${day3}; do
@@ -123,13 +124,15 @@ main_loop() {
 	    done
 	done
 	cd ../
-    done    
+    done
+    echo $ret_code > $ret_code_pipe
 }
 # ________________________________________________________________
-# Main script
+#
+#  Main part of the script
 # ________________________________________________________________
 
-# process command line arguments
+# Process command line arguments
 
 ret_code=0
 while getopts y:m:c:d: flag
@@ -146,12 +149,13 @@ do
 	   echo "---------------------------------"
 	   echo "  YEAR:        forecast start year"
 	   echo "  MONTH:       forecast start month [1 to 12]"
-	   echo "  CONFIG_FILE: E2E main config file for forecast with the full path of the E2E directory"
-	   echo "  DOWNLOAD: Download CFSv2 forcings (Y/N). If N only the file check will be perdormed."
+	   echo "  CONFIG_FILE: E2ES main config file for forecast with the full path of the E2ES directory"
+	   echo "  DOWNLOAD: Download CFSv2 forcings (Y/N). If N only the file check will be performed."
 	   exit 1 
 	   ;;	 	   
   esac
 done
+
 if [[ -z "$year" ]] || [[ -z "$mon" ]] || [[ -z "$configfile" ]] || [[ -z "$download" ]]; then
   echo "`basename ${0}`: usage: [-y year] [-m month ] [-c FULL_PATH/config_file] [-d download (Y/N)]"
   exit 1
@@ -161,14 +165,15 @@ echo "Month: $mon";
 echo "Configfile: $configfile";
 echo
 
-# Read config file and extract information
-
+# Read config file and extract information:
 export NODE_NAME=`uname -n`
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
     cfsv2datadir=`grep fcst_download_dir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/Oper_TS/"
 else
     cfsv2datadir=`grep fcst_download_dir $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 fi
+
+# Patch file info:
 patchfile=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/patch_files_list.txt"
 patchdir=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/"
 export LISFDIR=`grep LISFDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
@@ -220,18 +225,26 @@ ulimit -s unlimited
   fi
   yearmo=${year}${mon}
   cd ${cfsv2datadir}
-  echo ${year}
-  mkdir -p ${year}
-  cd ${year}
 
-  # open CFSv2 missing/corrupted file info log
+  echo " -- Run year :: "${year}
+# - Need to account for Dec/Jan crossover
+  if [ ${mon} -eq "01" ]; then
+    year2=$((year-1))
+  else
+    year2=${year}
+  fi
+  echo " -- Making and changing directory to target year for downloads -- "${year2}
+  mkdir -p ${year2}
+  cd ${year2}
+
+  # Open CFSv2 missing/corrupted file info log
   SCRDIR=${E2ESDIR}/scratch/${yearmo}/
   mkdir -p -m 775 ${SCRDIR}/
   CFSV2_LOG=${SCRDIR}/CFSv2_missing_corrupted_files
   /bin/rm -f $CFSV2_LOG
 
 echo " #####################################################################################" >> $CFSV2_LOG
-echo "                                  MISSING/CORRUPTED CFSv2 FILES                       " >> $CFSV2_LOG
+echo "                                  MISSING/INCOMPLETE CFSV2 FILES                      " >> $CFSV2_LOG
 echo " #####################################################################################" >> $CFSV2_LOG
 echo "                         " >> $CFSV2_LOG
 echo "  A replacement file is required for each missing or corrupted file. CFSv2 replacement files are saved in:" >> $CFSV2_LOG
@@ -260,7 +273,6 @@ if [ ${mon} -eq "01" ]; then
     #  "jan01" : ['1217', '1222', '1227']
     echo "January ..."
     prevmon=12
-    year2=$((year-1))
     day1=17
     day2=22
     day3=27
@@ -269,7 +281,6 @@ elif [ ${mon} -eq "02" ]; then
 #  "feb01" : ['0121', '0126', '0131']
     echo "February ..."
     prevmon=01
-    year2=${year}
     day1=21
     day2=26
     day3=31
@@ -278,7 +289,6 @@ elif [ ${mon} -eq "03" ]; then
     #  "mar01" : ['0215', '0220', '0225']
     echo "March ..."
     prevmon=02
-    year2=${year}
     day1=15
     day2=20
     day3=25
@@ -287,7 +297,6 @@ elif [ ${mon} -eq "04" ]; then
     #  "apr01" : ['0317', '0322', '0327']
     echo "April ..."
     prevmon=03
-    year2=${year}
     day1=17
     day2=22
     day3=27
@@ -296,7 +305,6 @@ elif [ ${mon} -eq "05" ]; then
     #  "may01" : ['0416', '0421', '0426']
     echo "May ..."
     prevmon=04
-    year2=${year}
     day1=16
     day2=21
     day3=26
@@ -305,7 +313,6 @@ elif [ ${mon} -eq "06" ]; then
 #  "jun01" : ['0521', '0526', '0531']
     echo "June ..."
     prevmon=05
-    year2=${year}
     day1=21
     day2=26
     day3=31
@@ -314,7 +321,6 @@ elif [ ${mon} -eq "07" ]; then
     #  "jul01" : ['0620', '0625', '0630']
     echo "July ..."
     prevmon=06
-    year2=${year}
     day1=20
     day2=25
     day3=30
@@ -323,7 +329,6 @@ elif [ ${mon} -eq "08" ]; then
     #  "aug01" : ['0720', '0725', '0730']
     echo "August ..."
     prevmon=07
-    year2=${year}
     day1=20
     day2=25
     day3=30
@@ -332,7 +337,6 @@ elif [ ${mon} -eq "09" ]; then
     #  "sep01" : ['0819', '0824', '0829']
     echo "September ..."
     prevmon=08
-    year2=${year}
     day1=19
     day2=24
     day3=29
@@ -341,7 +345,6 @@ elif [ ${mon} -eq "10" ]; then
 #  "oct01" : ['0918', '0923', '0928']
     echo "October ..."
     prevmon=09
-    year2=${year}
     day1=18
     day2=23
     day3=28
@@ -350,7 +353,6 @@ elif [ ${mon} -eq "11" ]; then
     #  "nov01" : ['1018', '1023', '1028']
     echo "November ..."
     prevmon=10
-    year2=${year}
     day1=18
     day2=23
     day3=28
@@ -359,15 +361,15 @@ elif [ ${mon} -eq "12" ]; then
     #  "dec01" : ['1117', '1122', '1127']
     echo "December ..."
     prevmon=11
-    year2=${year}
     day1=17
     day2=22
     day3=27
 fi
+
 echo "Previous mon,days 1-2-3 :: "${prevmon}", "${day1}"-"${day2}"-"${day3}
 echo " "
 echo "=================================================================================================="
-echo " CFSv2 file checker is running  to ensure all forcings files are available and not corrupted......"
+echo " CFSv2 file checker is running to ensure all forcings files are available and not corrupted......"
 echo "=================================================================================================="
 
 # Run the main loop
@@ -381,9 +383,11 @@ while kill -0 $! >/dev/null 2>&1; do
         sleep 0.1
     done
 done
+ret_code=$(cat $ret_code_pipe)
+/bin/rm $ret_code_pipe
 
 if [ $ret_code -gt 0 ]; then
-    echo "*** Missing or Corrupted CFSv2 forcing files were found ***."
+    echo "*** Missing or Incomplete CFSv2 forcing files were found ***."
     echo "Please follow the instructions in:"
     echo $CFSV2_LOG
     print_message
@@ -397,13 +401,8 @@ else
     echo "**************************************************************"
     
 fi  
-echo " -- Done downloading CFSv2 Reforecast files -- "
+echo " -- Done checking (and/or downloading) CFSv2 Forecast files -- "
+
 exit $ret_code
 # ____________________________
 
-
-
-#  https://oceanobservatories.org/knowledgebase/how-can-i-download-all-files-at-once-from-a-data-request/
-#  url=https://www.ncei.noaa.gov/thredds/catalog/model-cfs_refor_6h_9m_flx/2007/200711/20071127/catalog.html
-#  wget -r -l2 -nd -nc -np -e robots=off -A.grb2 --no-check-certificate  ${url}
-#
