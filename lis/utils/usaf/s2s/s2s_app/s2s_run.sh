@@ -91,6 +91,57 @@ print_walltimes(){
     echo " "
     echo "            JOB FILE                 WALLTIME (HH:MM:SS)"
     echo " "
+
+    datetime_to_seconds() {
+	date -d "$1" +%s
+    }
+
+    seconds_to_datetime() {
+	date -d "@$1" '+%Y-%m-%dT%H:%M:%S'
+    }
+    compute_elapse (){
+	local JOB_ID=$1
+
+	local job_times
+	job_times=$(sacct -j $JOB_ID --format=Start,End -P | tail -n +2)
+
+	local start_times
+	local end_times
+	start_times=($(echo "$job_times" | cut -d'|' -f1))
+	end_times=($(echo "$job_times" | cut -d'|' -f2))
+
+	local min_start
+	local max_end
+	min_start=$(datetime_to_seconds "${start_times[0]}")
+	max_end=$(datetime_to_seconds "${end_times[0]}")
+
+
+	for start in "${start_times[@]}"; do
+            local start_sec
+            start_sec=$(datetime_to_seconds "$start")
+            if [[ $start_sec -lt $min_start ]]; then
+		min_start=$start_sec
+            fi
+	done
+
+	for end in "${end_times[@]}"; do
+            local end_sec
+            end_sec=$(datetime_to_seconds "$end")
+            if [[ $end_sec -gt $max_end ]]; then
+		max_end=$end_sec
+            fi
+	done
+
+	local elapsed_seconds
+	elapsed_seconds=$((max_end - min_start))
+
+	local min_start_datetime
+	local max_end_datetime
+	min_start_datetime=$(seconds_to_datetime "$min_start")
+	max_end_datetime=$(seconds_to_datetime "$max_end")
+
+	echo "$min_start_datetime|$max_end_datetime|$elapsed_seconds"
+    }
     
     jobids=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f1`)
     jobfiles=(`grep '.j' ${SCRDIR}/SLURM_JOB_SCHEDULE | tr -s ' ' | cut -d' ' -f2`)
@@ -109,8 +160,12 @@ print_walltimes(){
 	    start_job=`echo $times | cut -d' ' -f1`
 	    end_job=`echo $times | cut -d' ' -f2`
 	    if [ $end_job  !=  'Unknown' ] &&  [ $start_job !=  'Unknown' ] &&  [ $start_job !=  'None' ] && [ $end_job  !=  'None' ]; then
-		elapse=`echo $times | cut -d' ' -f3`
-		ehms=`echo $elapse| cut -d':' -f1`'h '`echo $elapse| cut -d':' -f2`'m '`echo $elapse| cut -d':' -f3`'s'
+		result=$(compute_elapse "${jobids[$cjobs]}")
+		IFS='|' read -r start_job end_job elapsed_seconds <<< "$result"
+		hours=$((elapsed_seconds / 3600))
+		minutes=$(( (elapsed_seconds % 3600) / 60))
+		seconds=$((elapsed_seconds % 60))
+		ehms=`echo $hours`'h '`echo $minutes`'m '`echo $seconds`'s'
 		printf "${fmt}" $((cjobs+1))/$tLen ${jobfiles[$cjobs]} $ehms
 		if [ ${cjobs} -eq 0 ]; then
 		    strart_time=$start_job
@@ -121,10 +176,17 @@ print_walltimes(){
 	    fi
 	fi
     done
-    tdays=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f4`
-    hms=`date -u -d @$(($(date -d "$end_job" '+%s') - $(date -d "$strart_time" '+%s'))) | cut -d' ' -f5`
+    min_start=$(datetime_to_seconds "${strart_time}")
+    max_end=$(datetime_to_seconds "${end_job}")
+    elapsed_seconds=$((max_end - min_start))
+
+    days=$((elapsed_seconds / 86400))
+    hours=$(( (elapsed_seconds % 86400) / 3600 ))
+    minutes=$(( (elapsed_seconds % 3600) / 60 ))
+    seconds=$((elapsed_seconds % 60))
+    ehms=`echo $days`'d '`echo $hours`'h '`echo $minutes`'m '`echo $seconds`'s'
     echo ' '
-    echo 'ELAPSED TIME : ' $(($tdays-1))'d' `echo $hms| cut -d':' -f1`'h '`echo $hms| cut -d':' -f2`'m '`echo $hms| cut -d':' -f3`'s' 
+    echo 'ELAPSED TIME : ' $ehms
 }
 
 if [ "${1}" == "--source-only" ]; then
