@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -550,7 +550,7 @@ subroutine AGRMET_fldbld_read_precip_galwem(fg_filename, ifguess, jfguess,&
      count_prec = 0
 
      write(LIS_logunit,*)' '
-     write(LIS_logunit,*)'[MSG] Reading first guess precip ', trim(fg_filename)
+     write(LIS_logunit,*)'[INFO] Reading first guess precip ', trim(fg_filename)
 
      call grib_count_in_file(ftn,nvars,ierr)
      call LIS_verify(ierr, 'error in grib_count_in_file in ' // &

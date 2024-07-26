@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,7 +24,10 @@
 !    apply the update for that members and set the other member to the mean 
 !    value of the ensemble (i.e. mean of the members that met the conditions)
 ! 3- If less then 50% of the ensemble members met the update conditions --> 
-!    adjust the states  
+!    adjust the states 
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix
+!                           (add check for frozen soil)
+ 
 ! !INTERFACE:
 subroutine jules50_setsoilm(n, LSM_State)
 ! !USES:
@@ -35,7 +38,9 @@ subroutine jules50_setsoilm(n, LSM_State)
  !MN: added to use LIS_sfmodel_struc
   !use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
   use jules_soil_mod, only:  dzsoil !
-  use jules_surface_mod,      only: l_aggregate    
+  use jules_surface_mod,      only: l_aggregate   
+  use LIS_constantsMod, only : LIS_CONST_TKFRZ  
+
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in)    :: n
@@ -159,9 +164,10 @@ subroutine jules50_setsoilm(n, LSM_State)
      else      
         ! frozen soil moisture content has been added (Yonghwan Kwon)
         if (p_s_sth(1) * sat_p(1) + delta1.gt.MIN_THRESHOLD(1) .and.&
-            p_s_sth(1) * sat_p(1) + delta1.lt.sm_threshold(1)) then
+            p_s_sth(1) * sat_p(1) + delta1.lt.sm_threshold(1) .and.&
+            jules50_struc(n)%jules50(t)%t_soil(1) .gt. LIS_CONST_TKFRZ) then  
            update_flag(gid) = update_flag(gid).and.(.true.)
-           ! MN save the flag for each tile (col*row*ens)   PILDAS -->(64*44)*20
+           ! MN save the flag for each tile (col*row*ens) 
            update_flag_tile(t) = update_flag_tile(t).and.(.true.)
         else
            update_flag(gid) = update_flag(gid).and.(.false.)
@@ -169,7 +175,8 @@ subroutine jules50_setsoilm(n, LSM_State)
         endif
 
         if (p_s_sth(2) * sat_p(2) + delta2.gt.MIN_THRESHOLD(2) .and.&
-            p_s_sth(2) * sat_p(2) + delta2.lt.sm_threshold(2)) then
+            p_s_sth(2) * sat_p(2) + delta2.lt.sm_threshold(2) .and.&
+            jules50_struc(n)%jules50(t)%t_soil(2) .gt. LIS_CONST_TKFRZ) then
            update_flag(gid) = update_flag(gid).and.(.true.)
            update_flag_tile(t) = update_flag_tile(t).and.(.true.)
         else
@@ -178,7 +185,8 @@ subroutine jules50_setsoilm(n, LSM_State)
         endif
 
         if (p_s_sth(3) * sat_p(3) + delta3.gt.MIN_THRESHOLD(3) .and.&
-            p_s_sth(3) * sat_p(3) + delta3.lt.sm_threshold(3)) then
+            p_s_sth(3) * sat_p(3) + delta3.lt.sm_threshold(3) .and.&
+            jules50_struc(n)%jules50(t)%t_soil(3) .gt. LIS_CONST_TKFRZ) then
            update_flag(gid) = update_flag(gid).and.(.true.)
            update_flag_tile(t) = update_flag_tile(t).and.(.true.)
         else
@@ -187,7 +195,8 @@ subroutine jules50_setsoilm(n, LSM_State)
         endif
 
         if (p_s_sth(4) * sat_p(4) + delta4.gt.MIN_THRESHOLD(4) .and.&
-            p_s_sth(4) * sat_p(4) + delta4.lt.sm_threshold(4)) then
+            p_s_sth(4) * sat_p(4) + delta4.lt.sm_threshold(4) .and.&
+            jules50_struc(n)%jules50(t)%t_soil(4) .gt. LIS_CONST_TKFRZ) then
            update_flag(gid) = update_flag(gid).and.(.true.)
            update_flag_tile(t) = update_flag_tile(t).and.(.true.)
         else

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -120,9 +120,10 @@ module LDT_pluginIndices
         = "GLASS LAI"
    character*50, public,  parameter :: LDT_LPRMvodobsId            &
         = "LPRM vegetation optical depth"
-
    character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
         = "MCD15A2H LAI"
+   character*50, public,  parameter :: LDT_LISlsmPrecipobsId          &
+        = "LIS LSM total precipitation"
    character*50, public,  parameter :: LDT_VIIRSgvfobsId            &
         = "VIIRS GVF"                                                    !Y.Kwon
    character*50, public,  parameter :: LDT_CDFSgvfobsId            &

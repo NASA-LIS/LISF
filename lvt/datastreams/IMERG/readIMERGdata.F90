@@ -1,15 +1,15 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !------------------------------------------------------------------------------
-!NOTE:  Currently only V05B IMERG data are supported.
+!NOTE:  Supports V06x and V07x
 subroutine readIMERGdata(source)
 
    ! Imports
@@ -71,16 +71,21 @@ subroutine readIMERGdata(source)
    call ESMF_TimeSet(time1,yy=yr1, mm=mo1, dd=da1, &
        h=hr1,m=mn1,s=ss1,calendar=LVT_calendar,rc=status)
    call LVT_verify(status)
-   ! If it is 00Z, use previous day's time level
-   if (mod(currtime,86400.0).eq.0) then
-      call ESMF_TimeIntervalSet(lis_ts, s = 86400, &
-           rc=status)
-      call LVT_verify(status)  
-   else
-      call ESMF_TimeIntervalSet(lis_ts, s = 0, &
-           rc=status)
-      call LVT_verify(status)  
-   end if
+   !! If it is 00Z, use previous day's time level
+   !if (mod(currtime,86400.0).eq.0) then
+   !   call ESMF_TimeIntervalSet(lis_ts, s = 86400, &
+   !        rc=status)
+   !   call LVT_verify(status)  
+   !else
+   !   call ESMF_TimeIntervalSet(lis_ts, s = 0, &
+   !        rc=status)
+   !   call LVT_verify(status)  
+   !end if
+   ! Use previous IMERG file (IMERG accumulates forward in time)
+   call ESMF_TimeIntervalSet(lis_ts, s = 1800, &
+        rc=status)
+   call LVT_verify(status)
+   
    time2 = time1 - lis_ts
    call ESMF_TimeGet(time2,yy=yr2, mm=mo2, dd=da2, &
         h=hr2,m=mn2,s=ss2,calendar=LVT_calendar, &
@@ -88,14 +93,18 @@ subroutine readIMERGdata(source)
    call LVT_verify(status)
 
    if (alarmCheck) then
+      !call create_IMERG_filename(imergdata(source)%odir, &
+      !                       yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
       call create_IMERG_filename(imergdata(source)%odir, &
-                             yr1,mo1,da1,hr1,mn1,filename,imergdata(source)%imergver)
+           yr2,mo2,da2,hr2,mn2,filename,imergdata(source)%imergver, &
+           imergdata(source)%imergprd)
       inquire(file=trim(filename),exist=file_exists)
 
       if(file_exists) then 
          write(LVT_logunit,*) '[INFO] Reading IMERG data ',trim(filename)
          call read_imerghdf(filename, imergdata(source)%nc, &
-              imergdata(source)%nr, prcp_in, ireaderr)
+              imergdata(source)%nr, imergdata(source)%imergver, &
+              prcp_in, ireaderr)
          if(ireaderr .eq. 0) then
             ! Use budget-bilinear interpolation if IMERG data are at 
             ! coarser resolution than the analysis grid; otherwise, use
@@ -163,7 +172,8 @@ subroutine readIMERGdata(source)
    do r=1,LVT_rc%lnr
       do c=1,LVT_rc%lnc
          if(prcp_final(c,r).ge.0) then
-            prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            !prcp_final(c,r) = prcp_final(c,r)*86400.0 !kg/m2
+            prcp_final(c,r) = prcp_final(c,r)*1800. ! kg/m2 for 30 minutes
          else
             prcp_final(c,r) = LVT_rc%udef
          endif
@@ -173,7 +183,7 @@ subroutine readIMERGdata(source)
         vlevel=1,units='kg/m2') 
 end subroutine readIMERGdata
 !------------------------------------------------------------------------------
-subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
+subroutine read_imerghdf(filename, col, row, version, precipout, ireaderr)
 #if(defined USE_HDF5)
       use HDF5
 #endif
@@ -188,11 +198,15 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
 
    character(len=*), intent(in) :: filename
    integer, intent(in)          :: col, row
+   character*10, intent(in)     :: version
    integer, intent(out)         :: ireaderr
    real,    intent(out)         :: precipout(col,row)
    !Local variables
    integer :: xsize, ysize
-   character(len=40) :: dsetname='/Grid/precipitationCal'
+   !character(len=40) :: dsetname='/Grid/precipitationCal'
+   character(len=40) :: dsetname
+   character(len=40) :: dsetname6='/Grid/precipitationCal' ! V06x
+   character(len=40) :: dsetname7='/Grid/precipitation'    ! V07x
    real :: precipin(row,col)
    logical :: bIsError
    integer :: istatus,i
@@ -224,6 +238,16 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
          return
       endif
 !open dataset
+      if (index(trim(version), "V06") .ne. 0) then
+         dsetname = dsetname6
+      else if (index(trim(version), "V07") .ne. 0) then
+         dsetname = dsetname7
+      else
+         write(LVT_logunit,*)'[ERR] Invalid IMERG version number!'
+         write(LVT_logunit,*)'[ERR] Expected V06x or V07x!'
+         write(LVT_logunit,*)'[ERR] Received ', trim(version)
+         stop
+      end if
       call h5dopen_f(fileid,dsetname,dsetid,istatus)
       if(istatus.ne.0) then
          bIsError=.true.
@@ -271,7 +295,7 @@ subroutine read_imerghdf(filename, col, row, precipout, ireaderr)
 end subroutine read_imerghdf
 !------------------------------------------------------------------------------
 subroutine create_IMERG_filename(odir, &
-                             yr,mo,da,hr,mn,filename,imVer)
+                             yr,mo,da,hr,mn,filename,imVer, imergprd)
    use IMERG_dataMod
    use LVT_logMod
 
@@ -279,7 +303,7 @@ subroutine create_IMERG_filename(odir, &
    implicit none
 
    ! Arguments
-   character(len=*), intent(in) :: odir, imVer
+   character(len=*), intent(in) :: odir, imVer, imergprd
    integer, intent(in) :: yr, mo, da, hr, mn
    character(len=*), intent(out) :: filename
 
@@ -309,13 +333,13 @@ subroutine create_IMERG_filename(odir, &
    write(cmnadd, '(I2.2)') umnadd
    write(cmnday, '(I4.4)')umnday
 
-   if(imergdata(1)%imergprd == 'early') then
+   if(imergprd == 'early') then
       fstem = '/3B-HHR-E.MS.MRG.3IMERG.'
       fext = '.RT-H5'
-   elseif(imergdata(1)%imergprd == 'late') then
+   elseif(imergprd == 'late') then
       fstem = '/3B-HHR-L.MS.MRG.3IMERG.'
       fext = '.RT-H5'
-   elseif(imergdata(1)%imergprd == 'final') then
+   elseif(imergprd == 'final') then
       fstem = '/3B-HHR.MS.MRG.3IMERG.'
       fext = '.HDF5'
    else

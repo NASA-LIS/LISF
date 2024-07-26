@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -1587,7 +1587,7 @@ subroutine gfs_reset_interp_input(n, findex, gridDesci)
 
       agrmet_struc(n)%fg_gfs_interp = LIS_rc%met_interp(findex)
 
-      write(LIS_logunit,*) 'MSG: The GFS forcing resolution is coarser ' // &
+      write(LIS_logunit,*) '[INFO] The GFS forcing resolution is coarser ' // &
                            'than the running domain.'
       write(LIS_logunit,*) '     Interpolating with the ' // &
                            trim(agrmet_struc(n)%fg_gfs_interp) // ' method.'
@@ -1644,7 +1644,7 @@ subroutine gfs_reset_interp_input(n, findex, gridDesci)
    elseif ( howtoTransform == 'neighbor') then
       agrmet_struc(n)%fg_gfs_interp = 'neighbor'
 
-      write(LIS_logunit,*) 'MSG: The GFS forcing resolution is comparable ' // &
+      write(LIS_logunit,*) '[INFO] The GFS forcing resolution is comparable ' // &
                            'to the running domain.'
       write(LIS_logunit,*) '     Interpolating with the ' // &
                            trim(agrmet_struc(n)%fg_gfs_interp) // ' method.'
@@ -1655,7 +1655,7 @@ subroutine gfs_reset_interp_input(n, findex, gridDesci)
    elseif ( howtoTransform == 'upscale' ) then
       agrmet_struc(n)%fg_gfs_interp = LIS_rc%met_upscale(findex)
 
-      write(LIS_logunit,*) 'MSG: The GFS forcing resolution is finer ' // &
+      write(LIS_logunit,*) '[INFO] The GFS forcing resolution is finer ' // &
                            'than the running domain.'
       write(LIS_logunit,*) '     Upscaling with the ' // &
                            trim(agrmet_struc(n)%fg_gfs_interp) // ' method.'

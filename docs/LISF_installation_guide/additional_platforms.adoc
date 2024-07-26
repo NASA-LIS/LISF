@@ -2,6 +2,53 @@
 [[sec_additional_platforms,Additional platforms]]
 == Additional platforms
 
+// discover
+.SUSE Linux Enterprise Server 12.3
+|====
+| Library        | Version
+
+| GNU compiler   | 11.2.0
+| Intel compiler | 2021.4.0
+| Intel MPI      | 2021.4.0
+| HDF 5          | 1.12.1
+| NetCDF         | 4.8.1
+| NetCDF-Fortran | 4.5.3
+| openJPEG       | 2.4.0
+| ecCodes        | 2.23.0
+| ESMF           | 8.1.1
+| HDF 4          | 4.2.15
+| HDF-EOS2       | 2.20v.1.00
+| SQLite3        | 3.35.0
+| PROJ           | 7.1.1
+| GeoTIFF        | 1.7.0
+| GDAL           | 2.4.4
+| FortranGIS     | 2.6
+| JPEG           | 8d
+|====
+
+// discover
+.SUSE Linux Enterprise Server 12.3
+|====
+| Library        | Version
+
+| GNU compiler   | 11.2.0
+| Intel MPI      | 2021.4.0
+| HDF 5          | 1.12.1
+| NetCDF         | 4.8.1
+| NetCDF-Fortran | 4.5.3
+| openJPEG       | 2.4.0
+| ecCodes        | 2.23.0
+| ESMF           | 8.1.1
+| HDF 4          | 4.2.15
+| HDF-EOS2       | 2.20v.1.00 [red]#Not installed; failed make check#
+| SQLite3        | 3.35.0
+| PROJ           | 7.1.1
+| GeoTIFF        | 1.7.0
+| GDAL           | 2.4.4
+| FortranGIS     | 2.6
+| JPEG           | 8d
+|====
+
 // koehr
 .Red Hat Enterprise Linux Server 7.8
 |====

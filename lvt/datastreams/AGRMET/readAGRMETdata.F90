@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -233,7 +233,7 @@ subroutine readAGRMETdata(source)
   mo1 = LVT_rc%dmo(source)
   da1 = LVT_rc%dda(source)
   hr1 = LVT_rc%dhr(source)
-  mn1 = 0
+  mn1 = LVT_rc%dmn(source)
   ss1 = 0
   
   swd = 0 
@@ -307,7 +307,7 @@ subroutine readAGRMETdata(source)
      call LVT_verify(status)  
 
      call create_agrmetdata_filename(source, &
-          yr2, mo2, da2, hr2, filename)
+          yr2, mo2, da2, hr2, mn2, filename)
 
      inquire(file=trim(filename),exist=file_exists)
      
@@ -786,7 +786,8 @@ end subroutine interp_agrmetvar
 ! \label{create_agrmetdata_filename}
 !
 ! !INTERFACE: 
-subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
+subroutine create_agrmetdata_filename(source, yr, mo, da, hr, mn, &
+     filename)
 ! !USES:   
   use AGRMET_dataMod
   use LVT_logMod, only: LVT_endrun, LVT_logunit
@@ -795,12 +796,13 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
 
 ! !INPUT PARAMETERS: 
 ! 
-  integer,    intent(in)    :: source
-  integer           :: yr
-  integer           :: mo
-  integer           :: da
-  integer           :: hr
-  character(len=*)  :: filename
+  integer, intent(in) :: source
+  integer, intent(in) :: yr
+  integer, intent(in) :: mo
+  integer, intent(in) :: da
+  integer, intent(in) :: hr
+  integer, intent(in) :: mn
+  character(len=*), intent(out)  :: filename
 
 !
 ! !DESCRIPTION: 
@@ -814,6 +816,7 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
 !   \item[mo]        month of data
 !   \item[da]        day of data
 !   \item[hr]        hour of data
+!   \item[mn]        minute of data
 !   \item[filename]  Name of the AGRMET file
 !  \end{description}
 ! 
@@ -827,11 +830,13 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
   character*2       :: fmo
   character*2       :: fda
   character*2       :: fhr
+  character*2       :: fmn
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
+  write(unit=fmn, fmt='(i2.2)') mn
 
   if (trim(agrmetdata(source)%gridname) == "GLOBAL") then
      ! Old 0.25 deg deterministic run
@@ -842,7 +847,9 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
        '_DC.'//trim(agrmetdata(source)%data_category)//'_GP.LIS_GR'//&
        '.C0P25DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
        '_PA.03-HR-SUM_DD.'//&
-       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       !trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)// &
+       trim(fmn)//'_DF.GR1'
   else if (trim(agrmetdata(source)%gridname) == "n1280e") then
      ! In-house Bratseth run matching GALWEM n1280e domain
      filename = trim(agrmetdata(source)%odir)//'/'//trim(fyr)//trim(fmo)//trim(fda)//'/'&
@@ -852,8 +859,9 @@ subroutine create_agrmetdata_filename(source, yr, mo, da, hr, filename)
        '_DC.'//trim(agrmetdata(source)%data_category)//'_GP.LIS_GR'//&
        '.C0P09DEG_AR.'//trim(agrmetdata(source)%area_of_data)//&
        '_PA.03-HR-SUM_DD.'//&
-       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
-       
+       !trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)//'00_DF.GR1'
+       trim(fyr)//trim(fmo)//trim(fda)//'_DT.'//trim(fhr)// &
+       trim(fmn)//'_DF.GR1'
   else
      write(LVT_logunit,*) &
           '[ERR] Internal error, unknown AGRMET data gridname ', &
