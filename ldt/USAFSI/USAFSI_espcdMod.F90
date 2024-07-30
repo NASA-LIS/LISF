@@ -34,9 +34,10 @@ contains
 
   ! Find ESPCD CICE file on file system
   subroutine find_espcd_cice_file(rootdir, region, &
-       yyyy, mm, dd, hh, fh, filename)
+       yyyy, mm, dd, hh, filename)
 
     ! Imports
+    use netcdf
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
     use USAFSI_paramsMod, only: program_name, msglns
@@ -52,7 +53,6 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    integer, intent(in) :: fh
     character*255, intent(out) :: filename
 
     ! Locals
@@ -62,6 +62,17 @@ contains
     integer :: fh_local
     character*255 :: message (msglns)
     character*12 :: routine_name
+    integer :: nlat
+    integer, parameter :: nlat_arc = 2501
+    integer, parameter :: nlat_ant = 1549
+    integer, parameter :: nlon = 9000
+    integer :: ncid, aice_varid
+    real, allocatable :: aice(:,:,:)
+    integer, allocatable :: dimids(:), lens(:)
+    integer :: ndims
+    logical :: good
+    integer :: ierr
+    integer :: i
 
     message = ''
     routine_name = 'find_espcd_cice_file'
@@ -131,14 +142,122 @@ contains
        call construct_espcd_cice_filename(rootdir, region, &
             yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
        inquire(file=trim(filename), exist=file_exists)
-       if (file_exists) then
-          write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
-          return
-       else
+       if (.not. file_exists) then
           message(1) = '[WARN] CANNOT FIND FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
           call error_message(program_name, routine_name, message)
+          cycle
        end if
+
+       ! Try opening the file.
+       ierr = nf90_open(path=trim(filename), &
+            mode=nf90_nowrite, &
+            ncid=ncid)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT OPEN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          cycle
+       end if
+
+       ! See if aice is in the file.
+       ierr = nf90_inq_varid(ncid, "aice", aice_varid)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT FIND aice IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+
+       ! Check the dimensions
+       ierr = nf90_inquire_variable(ncid, aice_varid, ndims=ndims)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       allocate(dimids(ndims))
+       ierr = nf90_inquire_variable(ncid, aice_varid, dimids=dimids)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          deallocate(dimids)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       allocate(lens(ndims))
+       good = .true.
+       do i = 1, ndims
+          ierr = nf90_inquire_dimension(ncid, dimids(i), len=lens(i))
+          if (ierr .ne. nf90_noerr) then
+             message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
+             message(2) = '[WARN] PATH = ' // trim(filename)
+             call error_message(program_name, routine_name, message)
+             deallocate(dimids)
+             deallocate(lens)
+             ierr = nf90_close(ncid)
+             good = .false.
+             exit
+          end if
+       end do
+       if (.not. good) cycle
+
+       deallocate(dimids)
+
+       ! Sanity check the dimensions
+       if (region .eq. 'arc') then
+          if (lens(3) .ne. 1 .or. &
+               lens(2) .ne. nlat_arc .or. &
+               lens(1) .ne. nlon) then
+             message(1) = '[WARN] BAD DIMENSIONS FOR aice IN FILE'
+             message(2) = '[WARN] PATH = ' // trim(filename)
+             call error_message(program_name, routine_name, message)
+             deallocate(lens)
+             ierr = nf90_close(ncid)
+             cycle
+          end if
+          ! Good dimensions
+          nlat = nlat_arc
+       else if (region .eq. 'ant') then
+          if (lens(3) .ne. 1 .or. &
+               lens(2) .ne. nlat_ant .or. &
+               lens(1) .ne. nlon) then
+             message(1) = '[WARN] BAD DIMENSIONS FOR aice IN FILE'
+             message(2) = '[WARN] PATH = ' // trim(filename)
+             call error_message(program_name, routine_name, message)
+             deallocate(lens)
+             ierr = nf90_close(ncid)
+             cycle
+          end if
+          ! Good dimensions
+          nlat = nlat_ant
+       end if
+
+       ! Allocate the aice array
+       deallocate(lens) ! Don't need this anymore
+       allocate(aice(nlon, nlat, 1))
+
+       ! Try reading the file
+       ierr = nf90_get_var(ncid, aice_varid, aice)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT READ aice IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          deallocate(aice)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+
+       ! We have a winner.
+       deallocate(aice)
+       ierr = nf90_close(ncid)
+       write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
+       return
+
     end do
 
   end subroutine find_espcd_cice_file
@@ -173,10 +292,11 @@ contains
   end subroutine construct_espcd_cice_filename
 
   ! Find ESPC-D SST file on file system
-  subroutine find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, fh, &
+  subroutine find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, &
        filename)
 
     ! Imports
+    use netcdf
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
     use USAFSI_paramsMod, only: program_name, msglns
@@ -191,7 +311,6 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    integer, intent(in) :: fh
     character*255, intent(inout) :: filename
 
     ! Locals
@@ -200,6 +319,15 @@ contains
     logical :: file_exists
     character*255 :: message (msglns)
     character*12 :: routine_name
+    integer, parameter :: nlat = 8001
+    integer, parameter :: nlon = 9000
+    integer :: ncid, water_temp_varid
+    real, allocatable :: water_temp(:,:,:,:)
+    integer :: ndims
+    integer, allocatable :: dimids(:), lens(:)
+    logical :: good
+    integer :: ierr
+    integer :: i
 
     message = ''
     routine_name = 'find_espcd_sst_file'
@@ -264,14 +392,116 @@ contains
        call construct_espcd_sst_filename(rootdir, &
             yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
        inquire(file=trim(filename), exist=file_exists)
-       if (file_exists) then
-          write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
-          return
-       else
+       if (.not. file_exists) then
           message(1) = '[WARN] CANNOT FIND FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
           call error_message(program_name, routine_name, message)
+          cycle
        end if
+
+       ! Try opening the file
+       ierr = nf90_open(path=trim(filename), &
+            mode=nf90_nowrite, &
+            ncid=ncid)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT OPEN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          cycle
+       end if
+
+       ! See if water_temp is in the file.
+       ierr = nf90_inq_varid(ncid, "water_temp", &
+            water_temp_varid)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = '[WARN] CANNOT FIND water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+
+       ! Check the dimensions
+       ierr = nf90_inquire_variable(ncid, water_temp_varid, ndims=ndims)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = &
+               '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       if (ndims .ne. 4) then
+          message(1) = &
+               '[WARN] BAD DIMENSIONS FOR water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       allocate(dimids(ndims))
+       allocate(lens(ndims))
+       ierr = nf90_inquire_variable(ncid, water_temp_varid, dimids=dimids)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = &
+               '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          deallocate(dimids)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       good = .true.
+       do i = 1, ndims
+          ierr = nf90_inquire_dimension(ncid, dimids(i), &
+               len=lens(i))
+          if (ierr .ne. nf90_noerr) then
+             message(1) = &
+                  '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
+             message(2) = '[WARN] PATH = ' // trim(filename)
+             call error_message(program_name, routine_name, message)
+             deallocate(dimids)
+             deallocate(lens)
+             ierr = nf90_close(ncid)
+             good = .false.
+             exit
+          end if
+       end do
+       if (.not. good) cycle
+       deallocate(dimids)
+
+       if (lens(1) .ne. nlon .or. &
+            lens(2) .ne. nlat .or. &
+            lens(3) .ne. 1 .or. &
+            lens(4) .ne. 1) then
+          message(1) = &
+               '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          deallocate(lens)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+       deallocate(lens)
+
+       ! Allocate a subset of water temp
+       allocate(water_temp(nlon, nlat, 1, 1))
+       ierr = nf90_get_var(ncid, water_temp_varid, water_temp)
+       if (ierr .ne. nf90_noerr) then
+          message(1) = &
+               '[WARN] CANNOT READ water_temp IN FILE'
+          message(2) = '[WARN] PATH = ' // trim(filename)
+          call error_message(program_name, routine_name, message)
+          deallocate(water_temp)
+          ierr = nf90_close(ncid)
+          cycle
+       end if
+
+       ! We have a winner
+       deallocate(water_temp)
+       write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
+       return
+
     end do
 
   end subroutine find_espcd_sst_file
@@ -308,7 +538,7 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   ! Read ESPC-D sea surface temperature and reproject to LDT grid
   subroutine process_espcd_sst(rootdir, nc, nr, landmask, sst, &
-       yyyy, mm, dd, hh, fh, ierr)
+       yyyy, mm, dd, hh, ierr)
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
@@ -328,7 +558,6 @@ contains
     integer, intent(inout) :: mm
     integer, intent(inout) :: dd
     integer, intent(inout) :: hh
-    integer, intent(inout) :: fh
     integer, intent(out) :: ierr
 
     ! Locals
@@ -352,7 +581,7 @@ contains
     external :: upscaleByAveraging
 
     ! Find a valid file on the file system
-    call find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, fh, filename)
+    call find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, filename)
     if (trim(filename) == "NONE") then
        ierr = 1
        return
@@ -499,7 +728,7 @@ contains
 
   ! Read ESPC-D sea ice and reproject to LDT grid
   subroutine process_espcd_cice(rootdir, nc, nr, landmask, icecon, &
-       yyyy, mm, dd, hh, fh, ierr)
+       yyyy, mm, dd, hh, ierr)
 
     ! Imports
     use LDT_coreMod, only: LDT_domain
@@ -517,30 +746,26 @@ contains
     integer, intent(inout) :: mm
     integer, intent(inout) :: dd
     integer, intent(inout) :: hh
-    integer, intent(inout) :: fh
     integer, intent(out) :: ierr
 
     ! Locals
     real, allocatable :: icecon_arc(:,:)
     real, allocatable :: icecon_ant(:,:)
-    integer :: fh_internal
     integer :: c, r
     integer :: gindex
     real :: rlat
 
     ! First handle Arctic region
-    fh_internal = fh
     call process_espcd_cice_region('arc', rootdir, nc, nr, landmask, &
-         yyyy, mm, dd, hh, fh_internal, icecon_arc, ierr)
+         yyyy, mm, dd, hh, icecon_arc, ierr)
     if (ierr .ne. 0) then
        if (allocated(icecon_arc)) deallocate(icecon_arc)
        return
     end if
 
     ! Next handle Antarctic region
-    fh_internal = fh
     call process_espcd_cice_region('ant', rootdir, nc, nr, landmask, &
-         yyyy, mm, dd, hh, fh_internal, icecon_ant, ierr)
+         yyyy, mm, dd, hh, icecon_ant, ierr)
     if (ierr .ne. 0) then
        if (allocated(icecon_arc)) deallocate(icecon_arc)
        if (allocated(icecon_ant)) deallocate(icecon_ant)
@@ -575,7 +800,7 @@ contains
 
   ! Process a particular region of ESPC-D CICE data (Arctic or Antarctic
   subroutine process_espcd_cice_region(region, rootdir, nc, nr, &
-       landmask, yyyy, mm, dd, hh, fh, icecon, ierr)
+       landmask, yyyy, mm, dd, hh, icecon, ierr)
 
     ! Imports
     use LDT_coreMod, only: LDT_rc
@@ -592,7 +817,6 @@ contains
     integer, intent(inout) :: mm
     integer, intent(inout) :: dd
     integer, intent(inout) :: hh
-    integer, intent(inout) :: fh
     real, allocatable, intent(out) :: icecon(:,:)
     integer, intent(out) :: ierr
 
@@ -630,7 +854,7 @@ contains
     end if
 
     ! Find a valid file on the file system
-    call find_espcd_cice_file(rootdir, region, yyyy, mm, dd, hh, fh, &
+    call find_espcd_cice_file(rootdir, region, yyyy, mm, dd, hh, &
          filename)
     if (trim(filename) == "NONE") then
        ierr = 1
