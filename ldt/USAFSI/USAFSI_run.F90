@@ -140,8 +140,6 @@ subroutine USAFSI_run(n)
   real, allocatable :: elevations(:,:)
   real, allocatable :: landice(:,:)
   integer :: j
-  character*120 :: line
-  integer :: icount
   integer :: c, r
   real :: arctlatr
   real, allocatable :: climo_tmp(:,:)
@@ -153,7 +151,6 @@ subroutine USAFSI_run(n)
 
   ! PMW snow depth retrievals, Yeosang Yoon
   character*255              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
-  integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
   maxsobs = usafsi_settings%maxsobs
 
@@ -346,7 +343,7 @@ subroutine USAFSI_run(n)
                 '[INFO] CALLING PROCESS_ESPCD_SST TO GET SEA SURFACE TEMPERATURES'
            call process_espcd_sst(usafsi_settings%espcd_sst_dir, &
                 nc, nr, landmask, usafSI_arrays%sst, &
-                yyyy, mm, dd, hh, fh, ierr)
+                yyyy, mm, dd, hh, ierr)
         else if (usafsi_settings%source_of_ocean_data == "GOFS") then
            write (LDT_logunit,*) &
                 '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
@@ -418,7 +415,7 @@ subroutine USAFSI_run(n)
                 '[INFO] CALLING PROCESS_ESPCD_CICE TO GET GOFS SEA ICE DATA'
            call process_espcd_cice(usafsi_settings%espcd_cice_dir, &
                 nc, nr, landmask, USAFSI_arrays%navy_icecon, &
-                yyyy, mm, dd, hh, fh, ierr)
+                yyyy, mm, dd, hh, ierr)
            if (ierr == 0) found_navy_cice = .true.
         else if (usafsi_settings%source_of_ocean_data == "GOFS") then
            ! Try to get the GOFS sea ice data
