@@ -1,4 +1,4 @@
-netcdf ^lis_input.d01 {
+netcdf ^TARGET_OUTPUT/lis_input.d01 {
 dimensions:
 	east_west = 381 ;
 	north_south = 281 ;

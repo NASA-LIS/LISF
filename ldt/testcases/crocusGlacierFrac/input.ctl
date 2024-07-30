@@ -7,7 +7,7 @@ ydef 405 linear 20.775 0.05
 zdef 1 linear 1 1
 * dummy tdef
 tdef 1 linear 00z01jan2012 1hr
-vars 104
+vars 107
 DOMAINMASK=>DOMAINMASK 1 y,x description
 LANDMASK=>LANDMASK 1 y,x description
 SURFACETYPE=>SURFACETYPE1 0 0,y,x description
@@ -65,6 +65,9 @@ TEXTURE=>TEXTURE10 0 9,y,x description
 TEXTURE=>TEXTURE11 0 10,y,x description
 TEXTURE=>TEXTURE12 0 11,y,x description
 TEXTURE=>TEXTURE13 0 12,y,x description
+TEXTURE=>TEXTURE14 0 13,y,x description
+TEXTURE=>TEXTURE15 0 14,y,x description
+TEXTURE=>TEXTURE16 0 15,y,x description
 ELEVFGRD=>ELEVFGRD 1 y,x description
 ELEVATION=>ELEVATION 1 y,x description
 SLOPEFGRD=>SLOPEFGRD 1 y,x description

@@ -1,13 +1,13 @@
-dset ^lis_input.d01.nc
+dset ^TARGET_OUTPUT/lis_input.d01.nc
 dtype netcdf
 options template
 undef -9999
-xdef 464 linear -124.9375 0.125
-ydef 224 linear 25.0625 0.125
+xdef 685 linear 66.775 0.05
+ydef 405 linear 20.775 0.05
 zdef 1 linear 1 1
 * dummy tdef
 tdef 1 linear 00z01jan2012 1hr
-vars 94
+vars 107
 DOMAINMASK=>DOMAINMASK 1 y,x description
 LANDMASK=>LANDMASK 1 y,x description
 SURFACETYPE=>SURFACETYPE1 0 0,y,x description
@@ -24,6 +24,13 @@ SURFACETYPE=>SURFACETYPE11 0 10,y,x description
 SURFACETYPE=>SURFACETYPE12 0 11,y,x description
 SURFACETYPE=>SURFACETYPE13 0 12,y,x description
 SURFACETYPE=>SURFACETYPE14 0 13,y,x description
+SURFACETYPE=>SURFACETYPE15 0 14,y,x description
+SURFACETYPE=>SURFACETYPE16 0 15,y,x description
+SURFACETYPE=>SURFACETYPE17 0 16,y,x description
+SURFACETYPE=>SURFACETYPE18 0 17,y,x description
+SURFACETYPE=>SURFACETYPE19 0 18,y,x description
+SURFACETYPE=>SURFACETYPE20 0 19,y,x description
+SURFACETYPE=>SURFACETYPE21 0 20,y,x description
 LANDCOVER=>LANDCOVER1 0 0,y,x description
 LANDCOVER=>LANDCOVER2 0 1,y,x description
 LANDCOVER=>LANDCOVER3 0 2,y,x description
@@ -38,6 +45,13 @@ LANDCOVER=>LANDCOVER11 0 10,y,x description
 LANDCOVER=>LANDCOVER12 0 11,y,x description
 LANDCOVER=>LANDCOVER13 0 12,y,x description
 LANDCOVER=>LANDCOVER14 0 13,y,x description
+LANDCOVER=>LANDCOVER15 0 14,y,x description
+LANDCOVER=>LANDCOVER16 0 15,y,x description
+LANDCOVER=>LANDCOVER17 0 16,y,x description
+LANDCOVER=>LANDCOVER18 0 17,y,x description
+LANDCOVER=>LANDCOVER19 0 18,y,x description
+LANDCOVER=>LANDCOVER20 0 19,y,x description
+LANDCOVER=>LANDCOVER21 0 20,y,x description
 TEXTURE=>TEXTURE1 0 0,y,x description
 TEXTURE=>TEXTURE2 0 1,y,x description
 TEXTURE=>TEXTURE3 0 2,y,x description
@@ -54,6 +68,12 @@ TEXTURE=>TEXTURE13 0 12,y,x description
 TEXTURE=>TEXTURE14 0 13,y,x description
 TEXTURE=>TEXTURE15 0 14,y,x description
 TEXTURE=>TEXTURE16 0 15,y,x description
+ELEVFGRD=>ELEVFGRD 1 y,x description
+ELEVATION=>ELEVATION 1 y,x description
+SLOPEFGRD=>SLOPEFGRD 1 y,x description
+SLOPE=>SLOPE 1 y,x description
+ASPECTFGRD=>ASPECTFGRD 1 y,x description
+ASPECT=>ASPECT 1 y,x description
 GREENNESS=>GREENNESS1 0 0,y,x description
 GREENNESS=>GREENNESS2 0 1,y,x description
 GREENNESS=>GREENNESS3 0 2,y,x description
@@ -84,22 +104,15 @@ MXSNALBEDO=>MXSNALBEDO 1 y,x description
 TBOT=>TBOT 1 y,x description
 SLOPETYPE=>SLOPETYPE 1 y,x description
 NOAHMP36_PBLH=>NOAHMP36_PBLH 1 y,x description
-BEXP=>BEXP 1 y,x description
-CZIL=>CZIL 1 y,x description
-DKSAT=>DKSAT 1 y,x description
-DWSAT=>DWSAT 1 y,x description
-FRZK=>FRZK 1 y,x description
-HS=>HS 1 y,x description
-NROOT=>NROOT 1 y,x description
-PSISAT=>PSISAT 1 y,x description
-QUARTZ=>QUARTZ 1 y,x description
-REFDK=>REFDK 1 y,x description
-REFKDT=>REFKDT 1 y,x description
-RGL=>RGL 1 y,x description
-RSMIN=>RSMIN 1 y,x description
-SMCMAX=>SMCMAX 1 y,x description
-SMCREF=>SMCREF 1 y,x description
-SMCWLT=>SMCWLT 1 y,x description
+GLACIERFRAC=>GLACIERFRAC 1 y,x description
+ELEV_ECMWF_S23R4=>ELEV_ECMWF_S23R4 1 y,x description
+ELEV_ECMWF_S25R1=>ELEV_ECMWF_S25R1 1 y,x description
+ELEV_ECMWF_S30R1=>ELEV_ECMWF_S30R1 1 y,x description
+ELEV_ECMWF_S33R1=>ELEV_ECMWF_S33R1 1 y,x description
+ELEV_ECMWF_S35R2=>ELEV_ECMWF_S35R2 1 y,x description
+ELEV_ECMWF_S35R3=>ELEV_ECMWF_S35R3 1 y,x description
+ELEV_ECMWF_S36R1=>ELEV_ECMWF_S36R1 1 y,x description
+ELEV_ECMWF_S37R2=>ELEV_ECMWF_S37R2 1 y,x description
 lat=>lat 1 y,x description
 lon=>lon 1 y,x description
 endvars
