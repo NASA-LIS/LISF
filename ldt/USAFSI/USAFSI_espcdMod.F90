@@ -293,7 +293,7 @@ contains
 
   ! Find ESPC-D SST file on file system
   subroutine find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, &
-       filename)
+       filename, water_temp, nlat, nlon)
 
     ! Imports
     use netcdf
@@ -312,6 +312,9 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     character*255, intent(inout) :: filename
+    real, allocatable, intent(inout) :: water_temp(:,:,:,:)
+    integer, intent(out) :: nlat
+    integer, intent(out) :: nlon
 
     ! Locals
     integer :: julhr, julhr_orig
@@ -319,15 +322,16 @@ contains
     logical :: file_exists
     character*255 :: message (msglns)
     character*12 :: routine_name
-    integer, parameter :: nlat = 8001
-    integer, parameter :: nlon = 9000
     integer :: ncid, water_temp_varid
-    real, allocatable :: water_temp(:,:,:,:)
     integer :: ndims
     integer, allocatable :: dimids(:), lens(:)
     logical :: good
+    logical :: first_time
     integer :: ierr
     integer :: i
+
+    nlat = 8001
+    nlon = 9000
 
     message = ''
     routine_name = 'find_espcd_sst_file'
@@ -350,34 +354,17 @@ contains
        call LDT_endrun()
     end if
     julhr = julhr - fh_local
-    call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
-         hh_local)
-    call construct_espcd_sst_filename(rootdir, &
-         yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
-
-    ! Check if file exists
-    write(LDT_logunit,*) &
-         '------------------------------------------------------------------'
-    write(LDT_logunit,*) &
-         '[INFO] *** SEARCHING FOR ESPC-D SST ***'
-    inquire(file=trim(filename), exist=file_exists)
-    if (file_exists) then
-       write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
-       return
-    else
-       message(1) = '[WARN] CANNOT FIND FILE'
-       message(2) = '[WARN] PATH = ' // trim(filename)
-       call error_message(program_name, routine_name, message)
-    end if
-
-    ! At this point, we are rolling back to earlier SST file
     julhr_orig = julhr
 
-    ! Start looping for earlier files
+    ! Loop through possible files
+    first_time = .true.
     do
-       write(LDT_logunit,*)'[WARN] Cannot find ',trim(filename)
-       fh_local = fh_local + 24
-       julhr = julhr - 24 ! Roll back to previous 12Z cycle
+       if (.not. first_time) then
+          fh_local = fh_local + 24
+          julhr = julhr - 24 ! Roll back to previous 12Z cycle
+       end if
+       first_time = .false.
+
        ! Give up after 5 days
        if ( (julhr_orig - julhr) > 24*5) then
           write(LDT_logunit,*)"[WARN] *** GIVING UP ON ESPC-D SST! ***"
@@ -386,11 +373,13 @@ contains
           filename = "NONE"
           return
        end if
+
        call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
             hh_local)
-
        call construct_espcd_sst_filename(rootdir, &
             yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
+
+       ! See if file exists
        inquire(file=trim(filename), exist=file_exists)
        if (.not. file_exists) then
           message(1) = '[WARN] CANNOT FIND FILE'
@@ -440,7 +429,6 @@ contains
           cycle
        end if
        allocate(dimids(ndims))
-       allocate(lens(ndims))
        ierr = nf90_inquire_variable(ncid, water_temp_varid, dimids=dimids)
        if (ierr .ne. nf90_noerr) then
           message(1) = &
@@ -452,6 +440,7 @@ contains
           cycle
        end if
        good = .true.
+       allocate(lens(ndims))
        do i = 1, ndims
           ierr = nf90_inquire_dimension(ncid, dimids(i), &
                len=lens(i))
@@ -486,6 +475,8 @@ contains
 
        ! Allocate a subset of water temp
        allocate(water_temp(nlon, nlat, 1, 1))
+       water_temp = 0
+
        ierr = nf90_get_var(ncid, water_temp_varid, water_temp)
        if (ierr .ne. nf90_noerr) then
           message(1) = &
@@ -498,7 +489,6 @@ contains
        end if
 
        ! We have a winner
-       deallocate(water_temp)
        write(LDT_logunit,*)'[INFO] Will use ',trim(filename)
        return
 
@@ -542,7 +532,7 @@ contains
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
-    use LDT_logMod, only: LDT_verify, ldt_logunit
+    use LDT_logMod, only: LDT_verify, ldt_logunit, LDT_endrun
     use netcdf
 
     ! Defaults
@@ -561,8 +551,8 @@ contains
     integer, intent(out) :: ierr
 
     ! Locals
-    integer, parameter :: nlat = 8001
-    integer, parameter :: nlon = 9000
+    integer :: nlat
+    integer :: nlon
     character*255 :: filename
     integer :: ncid, water_temp_varid
     real, allocatable :: water_temp(:,:,:,:)
@@ -581,35 +571,12 @@ contains
     external :: upscaleByAveraging
 
     ! Find a valid file on the file system
-    call find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, filename)
+    call find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, filename, &
+         water_temp, nlat, nlon)
     if (trim(filename) == "NONE") then
        ierr = 1
        return
     end if
-
-    ! Open the file
-    call LDT_verify(nf90_open(path=trim(filename), &
-         mode=nf90_nowrite, &
-         ncid=ncid), &
-         "[ERR] Error in nf90_open for " // trim(filename))
-
-    write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
-
-    ! Get the varid for water_temp
-    call LDT_verify(nf90_inq_varid(ncid, "water_temp", &
-         water_temp_varid), &
-         "[ERR] Error in nf90_inq_varid for water_temp")
-
-    ! Allocate the water_temp array
-    allocate(water_temp(nlon, nlat, 1, 1))
-
-    ! Pull from the ESPC-D file
-    call LDT_verify(nf90_get_var(ncid, water_temp_varid, water_temp), &
-         "[ERR] Error in nf90_get_var for water_temp")
-
-    ! Close the file
-    call LDT_verify(nf90_close(ncid), &
-         "[ERR] Error in nf90_close for "// trim(filename))
 
     ! We need to interpolate to the LDT grid.  First, copy to 1D array
     allocate(water_temp_1d(nlon*nlat*1*1))
