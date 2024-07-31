@@ -34,7 +34,8 @@ contains
 
   ! Find ESPCD CICE file on file system
   subroutine find_espcd_cice_file(rootdir, region, &
-       yyyy, mm, dd, hh, filename)
+       yyyy, mm, dd, hh, filename, &
+       aice, nlon, nlat)
 
     ! Imports
     use netcdf
@@ -54,6 +55,9 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     character*255, intent(out) :: filename
+    real, allocatable, intent(inout) :: aice(:,:,:)
+    integer, intent(out) :: nlon
+    integer, intent(out) :: nlat
 
     ! Locals
     integer :: julhr, julhr_orig
@@ -62,17 +66,17 @@ contains
     integer :: fh_local
     character*255 :: message (msglns)
     character*12 :: routine_name
-    integer :: nlat
     integer, parameter :: nlat_arc = 2501
     integer, parameter :: nlat_ant = 1549
-    integer, parameter :: nlon = 9000
     integer :: ncid, aice_varid
-    real, allocatable :: aice(:,:,:)
     integer, allocatable :: dimids(:), lens(:)
     integer :: ndims
     logical :: good
+    logical :: first_time
     integer :: ierr
     integer :: i
+
+    nlon = 9000
 
     message = ''
     routine_name = 'find_espcd_cice_file'
@@ -98,33 +102,18 @@ contains
        call LDT_endrun()
     end if
 
-    call LDT_julhr_date(julhr, yyyy_local, mm_local, dd_local, &
-         hh_local)
-    call construct_espcd_cice_filename(rootdir, region, &
-         yyyy_local, mm_local, dd_local, hh_local, fh_local, filename)
-
-    write(LDT_logunit,*) &
-         '------------------------------------------------------------------'
-    write(LDT_logunit,*)'[INFO] *** SEARCHING FOR ESPC-D CICE FOR ',&
-         trim(region),' REGION ***'
-    inquire(file=trim(filename), exist=file_exists)
-    if (file_exists) then
-       write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
-       return
-    else
-       message(1) = '[WARN] CANNOT FIND FILE'
-       message(2) = '[WARN] PATH = ' // trim(filename)
-       call error_message(program_name, routine_name, message)
-    end if
-
-    ! At this point, we are rolling back to earlier CICE file
     julhr_orig = julhr
 
     ! Start looping for earlier files
+    first_time = .true.
     do
-       write(LDT_logunit,*)'[WARN] Cannot find ', trim(filename)
-       fh_local = fh_local + 24
-       julhr = julhr - 24 ! Roll back to previous 12Z cycle
+
+       if (.not. first_time) then
+          fh_local = fh_local + 24
+          julhr = julhr - 24 ! Roll back to previous 12Z cycle
+       end if
+       first_time = .false.
+
        ! Give up after 5 days
        if ( (julhr_orig - julhr) > 24*5) then
           write(LDT_logunit,*)&
@@ -253,7 +242,6 @@ contains
        end if
 
        ! We have a winner.
-       deallocate(aice)
        ierr = nf90_close(ncid)
        write(LDT_logunit,*)'[INFO] Will use ', trim(filename)
        return
@@ -532,7 +520,7 @@ contains
 
     ! Imports
     use LDT_coreMod, only: LDT_rc, LDT_domain
-    use LDT_logMod, only: LDT_verify, ldt_logunit, LDT_endrun
+    use LDT_logMod, only: LDT_verify, LDT_endrun
     use netcdf
 
     ! Defaults
@@ -554,7 +542,6 @@ contains
     integer :: nlat
     integer :: nlon
     character*255 :: filename
-    integer :: ncid, water_temp_varid
     real, allocatable :: water_temp(:,:,:,:)
     real, allocatable :: water_temp_1d(:)
     real, allocatable :: sst_1d(:)
@@ -790,9 +777,8 @@ contains
     ! Locals
     integer, parameter :: nlat_arc = 2501
     integer, parameter :: nlat_ant = 1549
-    integer, parameter :: nlon = 9000
+    integer :: nlon = 9000
     character*255 :: filename
-    integer :: ncid, aice_varid
     real, allocatable :: aice(:,:,:)
     real, allocatable :: aice_1d(:)
     real, allocatable :: icecon_1d(:)
@@ -808,11 +794,8 @@ contains
     external :: upscaleByAveraging
 
     ! Sanity check the region
-    if (region .eq. 'arc') then
-       nlat = nlat_arc
-    else if (region .eq. 'ant') then
-       nlat = nlat_ant
-    else
+    if (region .ne. 'arc' .and. &
+         region .ne. 'ant') then
        write(LDT_logunit,*)'[ERR] Invalid ESPC-D region for cice: ' &
             // region
        write(LDT_logunit,*)'[ERR] Must be either arc or ant'
@@ -822,35 +805,13 @@ contains
 
     ! Find a valid file on the file system
     call find_espcd_cice_file(rootdir, region, yyyy, mm, dd, hh, &
-         filename)
+         filename, &
+         aice, nlon, nlat)
     if (trim(filename) == "NONE") then
        ierr = 1
        return
     end if
 
-    ! Open the file
-    call LDT_verify(nf90_open(path=trim(filename), &
-         mode=nf90_nowrite, &
-         ncid=ncid), &
-         "[ERR] Error in nf90_open for " // trim(filename))
-    write(ldt_logunit,*)'[INFO] Reading ', trim(filename)
-
-    ! Get the varid for aice
-    call LDT_verify(nf90_inq_varid(ncid, "aice", aice_varid), &
-         "[ERR] Error in nf90_inq_varid for aice")
-
-    ! Allocate the aice array
-    allocate(aice(nlon, nlat, 1))
-
-    ! Pull from the ESPC-D file
-    call LDT_verify(nf90_get_var(ncid, aice_varid, aice), &
-         "[ERR] Error in nf90_get_var for aice")
-
-    ! Close the file
-    call LDT_verify(nf90_close(ncid), &
-         "[ERR] Error in nf90_close for "// trim(filename))
-
-    ! We need to interpolate to the LDT grid.  First, copy to 1D array
     allocate(aice_1d(nlon*nlat*1))
     aice_1d = -9999
     allocate(lb(nlon*nlat*1))
