@@ -17,6 +17,10 @@
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 ! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
+! 19 Jul 2024  Eric Kemp Renamed run_seaice_analysis_gofs to
+!                        run_seaice_analysis_navy to reflect use of
+!                        ESPC-D or GOFS data.  Also fixed uninitialized
+!                        variable.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -44,7 +48,7 @@ module USAFSI_analysisMod
    public :: run_snow_analysis_noglacier ! EMK
    public :: run_snow_analysis_glacier ! EMK
    public :: run_seaice_analysis_ssmis ! EMK
-   public :: run_seaice_analysis_gofs  ! EMK
+   public :: run_seaice_analysis_navy  ! EMK
    public :: getclimo                  ! Yeosang Yoon
  
    ! Internal constant
@@ -2250,6 +2254,7 @@ contains
       found   = .false.
       limit   = 3
       tries   = 1
+      grstat  = 0
 
       call date10_julhr (date10, julsst, program_name, routine_name)
 
@@ -3357,8 +3362,8 @@ contains
 
    end subroutine run_seaice_analysis_ssmis
 
-   ! Update sea ice based on remapped US Navy GOFS data
-   subroutine run_seaice_analysis_gofs(month, runcycle, nc, nr, landmask)
+   ! Update sea ice based on remapped US Navy GOFS/ESPC-D data
+   subroutine run_seaice_analysis_navy(month, runcycle, nc, nr, landmask)
 
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
@@ -3402,10 +3407,10 @@ contains
 
             ! Use the GOFS data if available.  Otherwise, try to fall back
             ! on prior analysis subject to certain constraints.
-            if (USAFSI_arrays%gofs_icecon(c,r) >= 0) then
+            if (USAFSI_arrays%navy_icecon(c,r) >= 0) then
                ! We have valid GOFS data
                USAFSI_arrays%icecon(c,r) = &
-                    nint(USAFSI_arrays%gofs_icecon(c,r))
+                    nint(USAFSI_arrays%navy_icecon(c,r))
                if (USAFSI_arrays%icecon(c,r) > usafsi_settings%minice) then
                   USAFSI_arrays%icemask(c,r) = icepnt
                else
@@ -3482,7 +3487,7 @@ contains
          end do ! c
       end do ! r
          
-   end subroutine run_seaice_analysis_gofs
+    end subroutine run_seaice_analysis_navy
 
    ! Private subroutine
    subroutine summer (obelev, hemi, oblat, month, towarm)
