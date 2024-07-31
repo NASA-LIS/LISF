@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,8 @@
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 ! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
+! 28 Jul 2023  Eric Kemp Added support for new sfcobs file format (longer
+!              station names.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -676,7 +678,7 @@ contains
    end subroutine getgeo
 
    subroutine getobs (date10, month,  sfcobs, netid,  staid, stacnt, &
-        stalat, stalon, staelv, stadep)
+        stalat, stalon, staelv, stadep, sfcobsfmt)
 
       !*******************************************************************************
       !*******************************************************************************
@@ -741,6 +743,8 @@ contains
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  27 Jul 23  Added new sfcobs file format...Eric Kemp, SSAI
+      !**  24 Aug 23  New global sfcsno file format...Eric Kemp, SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -760,12 +764,14 @@ contains
       integer, intent(in)         :: month                 ! CURRENT MONTH (1-12)
       character*255, intent(in)   :: sfcobs                ! PATH TO DBPULL SNOW OBS DIRECTORY
       character*5,   intent(out)  :: netid       (:)       ! NETWORK ID OF AN OBSERVATION
-      character*9,   intent(out)  :: staid       (:)       ! STATION ID OF AN OBSERVATION
+      character*32,   intent(out)  :: staid       (:)       ! STATION ID OF AN OBSERVATION
+
       integer, intent(out)        :: stacnt                ! TOTAL NUMBER OF OBSERVATIONS USED
       integer, intent(out)        :: stalat      (:)       ! LATITUDE OF A STATION OBSERVATION
       integer, intent(out)        :: stalon      (:)       ! LONGITUDE OF A STATION OBSERVATION
       integer, intent(out)        :: staelv      (:)       ! ELEVATION OF A STATION OBSERVATION (METERS)
       real, intent(out)           :: stadep      (:)       ! SNOW DEPTH REPORTED AT A STATION (METERS)
+      integer, intent(in) :: sfcobsfmt ! Format of sfcobs file
 
       ! Local variables
       character*7                 :: access_type           ! FILE ACCESS TYPE
@@ -779,9 +785,10 @@ contains
       character*90                :: message     (msglns)  ! ERROR MESSAGE
       character*255               :: obsfile               ! NAME OF OBSERVATION TEXT FILE
       character*5                 :: obsnet                ! RETURNED OBS STATION NETWORK
-      character*9                 :: obssta                ! RETURNED OBS STATION ID
+      character*32                 :: obssta                ! RETURNED OBS STATION ID
       character*5,   allocatable  :: oldnet      (:)       ! ARRAY OF NETWORKS FOR OLDSTA
-      character*9,   allocatable  :: oldsta      (:)       ! ARRAY OF PROCESSED STATIONS WITH SNOW DEPTHS
+      character*32,   allocatable  :: oldsta      (:)       ! ARRAY OF PROCESSED STATIONS WITH SNOW DEPTHS
+
       character*12                :: routine_name          ! NAME OF THIS SUBROUTINE
       integer                     :: ctrgrd                ! TEMP HOLDER FOR GROUND OBS INFO
       integer                     :: ctrtmp                ! TEMP HOLDER FOR TOO WARM TEMPERATURE OBS
@@ -855,13 +862,18 @@ contains
          message      = ' '
 
          ! OPEN INPUT FILE.
-         obsfile = trim(sfcobs) // 'sfcsno_' // chemi(hemi) //           &
-              interval // date10 // '.txt'
+         if (sfcobsfmt == 1) then
+            obsfile = trim(sfcobs) // 'sfcsno_' // chemi(hemi) //      &
+                 interval // date10 // '.txt'
+         else if (sfcobsfmt == 2) then ! Global file
+            obsfile = trim(sfcobs) // 'sfcsno_' //      &
+                 '06hr_' // date10 // '.txt'
+         end if
          inquire (file=obsfile, exist=isfile)
          file_check : if (isfile) then
 
             access_type = 'OPENING'
-            open (lunsrc(hemi), file=obsfile, iostat=istat, err=5000,     &
+            open (lunsrc(hemi), file=obsfile, iostat=istat, err=5000,  &
                  form='formatted')
             isopen = .true.
 
@@ -873,17 +885,33 @@ contains
             ! LOOP THROUGH ALL OBSERVATIONS RETRIEVED FROM THE DATABASE.
             read_loop : do while (istat .eq. 0)
 
-               read (lunsrc(hemi), 6400, iostat=istat, end=3000, err=5000) &
-                    date10_hourly, obsnet, obssta, oblat, oblon, obelev,   &
-                    itemp, depth, ground
-
+               if (sfcobsfmt == 1) then
+                  read (lunsrc(hemi), 6400, iostat=istat, end=3000, &
+                       err=5000) &
+                       date10_hourly, obsnet, obssta, oblat, oblon, &
+                       obelev,   &
+                       itemp, depth, ground
+               else if (sfcobsfmt == 2) then
+                  ! New format with longer station IDs
+                  read (lunsrc(hemi), 6401, iostat=istat, end=3000, &
+                       err=5000) &
+                       date10_hourly, obsnet, obssta, oblat, oblon, &
+                       obelev,   &
+                       itemp, depth, ground
+               end if
                good_read : if (istat == 0) then
 
                   if (date10_hourly .ne. date10_prev) then
                      if (totalobs > 1) then
-                        write(ldt_logunit,6500) &
-                             trim(routine_name), chemicap(hemi),     &
-                             date10_prev, obsrtn
+                        if (sfcobsfmt == 1) then
+                           write(ldt_logunit,6500) &
+                                trim(routine_name), chemicap(hemi),     &
+                                date10_prev, obsrtn
+                        else
+                           write(ldt_logunit,6501) &
+                                trim(routine_name),  &
+                                date10_prev, obsrtn
+                        end if
                         obsrtn = 0
                      end if
                   end if
@@ -924,7 +952,6 @@ contains
 
                            NETID(STCTP1)  = OBSNET
                            staid(stctp1)  = obssta
-
                            stadep(stctp1) = (float (depth) / 1000.0) ! convert from mm to meters
 
                            if (depth >= 1 .and. stadep(stctp1) < 0.001) then
@@ -1057,30 +1084,56 @@ contains
             if (totalobs > 0) then
 
                stacnt_h = stacnt - stacnt_h
-               write (ldt_logunit,6500) trim(routine_name), chemicap(hemi), &
-                    date10_prev, obsrtn
-
-               write (ldt_logunit,6800) trim(routine_name), chemicap(hemi), &
-                    totalobs, &
-                    stacnt_h, obwsno, ctrgrd, ctrtmp, ctrtrs
-
+               if (sfcobsfmt == 1) then
+                  write (ldt_logunit,6500) trim(routine_name), &
+                       chemicap(hemi), &
+                       date10_prev, obsrtn
+                  write (ldt_logunit,6800) trim(routine_name), &
+                       chemicap(hemi), &
+                       totalobs, &
+                       stacnt_h, obwsno, ctrgrd, ctrtmp, ctrtrs
+               else if (sfcobsfmt == 2) then
+                  write (ldt_logunit,6501) trim(routine_name), &
+                       date10_prev, obsrtn
+                  write (ldt_logunit,6801) trim(routine_name), &
+                       totalobs, &
+                       stacnt_h, obwsno, ctrgrd, ctrtmp, ctrtrs
+               end if
             else
 
-               message(1) = &
-                    '[WARN] NO SURFACE OBSERVATIONS READ FOR ' // date10 // &
-                    ' ' // chemicap(hemi)
+               if (sfcobsfmt == 1) then
+                  message(1) = &
+                       '[WARN] NO SURFACE OBSERVATIONS READ FOR ' // &
+                       date10 // &
+                       ' ' // chemicap(hemi)
+               else if (sfcobsfmt == 2) then
+                  message(1) = &
+                       '[WARN] NO SURFACE OBSERVATIONS READ FOR ' // &
+                       date10
+               end if
                call error_message (program_name, routine_name, message)
 
             end if
 
          else file_check
 
-            message(1) = &
-                 '[WARN] NO SURFACE OBSERVATIONS FILE FOR ' // date10 // &
-                 ' ' // chemicap(hemi)
+            if (sfcobsfmt == 1) then
+               message(1) = &
+                    '[WARN] NO SURFACE OBSERVATIONS FILE FOR ' // &
+                    date10 // &
+                    ' ' // chemicap(hemi)
+            else if (sfcobsfmt == 2) then
+               message(1) = &
+                    '[WARN] NO SURFACE OBSERVATIONS FILE FOR ' &
+                    // date10
+            end if
+            message(2) = '[WARN] Looked for ' // trim(obsfile)
             call error_message (program_name, routine_name, message)
 
          end if file_check
+
+         ! New file format is global, so we don't need to loop again
+         if (sfcobsfmt == 2) exit
 
       end do hemi_loop
 
@@ -1088,7 +1141,7 @@ contains
       deallocate (oldsta)
 
       return
-      
+
       ! ERROR-HANDLING SECTION.
 
 5000  continue
@@ -1103,16 +1156,29 @@ contains
 6000  format (/, '[INFO] ', A, ': READING ', A)
 !6200  format (I)
 6400  format (A10, 1X, A5, 1X, A10, 6(I10))
+!6401  format (A10, 1X, A5, 1X, A31, 1X, 6(I10))
+6401  format (A10, 1X, A5, 1X, A32, 6(I10))
 6500  format (/, '[INFO] ', A6, ': SURFACE OBS READ FOR ', A2, ' DTG ',     &
            A10, ' = ', I6)
+6501  format (/, '[INFO] ', A6, ': SURFACE OBS READ FOR DTG ',     &
+           A10, ' = ', I6)
 6600  format (1X, '**', A6, ':  DEPTH = ', I6, '   STADEP = ', I6)
-6700  format (/, 1X, '[INFO] HIGH POLAR TEMP: NETW= ', A5, 1X, 'STN= ', A9,  &
+6700  format (/, 1X, '[INFO] HIGH POLAR TEMP: NETW= ', A5, 1X, 'STN= ', A31,  &
            1X, 'LAT= ', F8.2, 1X, 'LON= ', F8.2,                  &
            1X, 'ELEV= ', I5, /, 6X, 'TEMP= ', F7.1,               &
            2X, 'ST OF GRND= ', I9, 2X, 'DEPTH(CM)= ', I6)
 6800  format (/, 1X, 55('-'),                                           &
            /, 3X, '[INFO] SUBROUTINE:  ', A6,                               &
            /, 5X, '[INFO] TOTAL SURFACE OBS READ FOR ', A2, 9X,' = ',   I6, &
+           /, 5X, '[INFO] TOTAL NON-DUPLICATE OBS PROCESSED      = ',   I6, &
+           /, 5X, '[INFO] STATIONS WITH A FOUR-THREE GROUP       =   ', I4, &
+           /, 5X, '[INFO] OBS NOT USED FOR STATE OF GROUND       =   ', I4, &
+           /, 5X, '[INFO] OBS NOT USED FOR SEASON AND ELEVATION  =   ', I4, &
+           /, 5X, '[INFO] OBS NOT USED FOR EXCEEDED TEMP THRESH  = ',   I6, &
+           /, 1X, 55('-'))
+6801  format (/, 1X, 55('-'),                                           &
+           /, 3X, '[INFO] SUBROUTINE:  ', A6,                               &
+           /, 5X, '[INFO] TOTAL SURFACE OBS READ                 = ',   I6, &
            /, 5X, '[INFO] TOTAL NON-DUPLICATE OBS PROCESSED      = ',   I6, &
            /, 5X, '[INFO] STATIONS WITH A FOUR-THREE GROUP       =   ', I4, &
            /, 5X, '[INFO] OBS NOT USED FOR STATE OF GROUND       =   ', I4, &
@@ -2780,7 +2846,7 @@ contains
       integer :: snomask_reject_count
       integer :: bad_back_count, glacier_zone_count
       real :: ob_value
-      character*10 :: new_name
+      character*32 :: new_name
       integer :: gindex
       real :: rlat
 

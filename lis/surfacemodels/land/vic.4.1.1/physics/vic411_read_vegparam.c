@@ -1,25 +1,13 @@
-//-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-// NASA Goddard Space Flight Center
-// Land Information System Framework (LISF)
-// Version 7.4
-//
-// Copyright (c) 2022 United States Government as represented by the
-// Administrator of the National Aeronautics and Space Administration.
-// All Rights Reserved.
-//-------------------------END NOTICE -- DO NOT EDIT-----------------------
-
 #include <stdio.h>
 #include <stdlib.h>
-#include "vic411_vicNl.h" 
+#include <vic411_vicNl.h>
 #include <string.h>
 
 static char vcid[] = "$Id: vic411_read_vegparam.c,v 4.5.2.11 2009/10/01 21:12:16 vicadmin Exp $";
-// shugong: if cannot find entry for the gridid+vegetation class, return 0, other return 1
-int vic411_read_vegparam(FILE *vegparam,
-                         int   gridcel,
-                         int   Nveg_type,
-                         int   lis_veg_class,
-                         vic411_veg_con_struct *lis_temp)
+
+vic411_veg_con_struct *vic411_read_vegparam(FILE *vegparam,
+                              int   gridcel,
+                              int   Nveg_type)
 /**********************************************************************
   vic411_read_vegparam.c    Keith Cherkauer and Dag Lohmann       1997
 
@@ -58,7 +46,7 @@ int vic411_read_vegparam(FILE *vegparam,
 **********************************************************************/
 {
 
-  void vic411_ttrim1( char *string );
+  void vic411_ttrim( char *string );
   extern vic411_veg_lib_struct *vic411_veg_lib;
   extern vic411_option_struct   vic411_options;
 #if LINK_DEBUG
@@ -80,18 +68,6 @@ int vic411_read_vegparam(FILE *vegparam,
   char            *token;
   char            *vegarr[500];
   size_t	  length;
-  int vic411_flag;
-  vic411_flag = 0; // defualt: not found  
-  // added by Shugong Wang.
-  /* vic_veg_clas is defined to save the vegetation class in vegetation parameter file (called real vegetation class after). 
-     temp is a vic411_veg_con_struct. Firstly, the real vegetation class will be read in and save in the veg_class of temp. Then, 
-     vic411_read_vegparam will find the index number of the real vegetation class in vegetation parameter library (vic411_veg_lib). 
-     In the end, the veg_class of temp will be replced with the index number. In other word, the vegetation class in vic411_veg_con_struct
-     will not be the real vegetatoin class. In stead, it will be the corresponding index number in vegetatoin parameter library.
-     
-     In this function (vic411_read_vegparam), lis_veg_class is real vegetation class. In order to update the LAI and related values in
-     vic411_veg_lib correctly, lis_veg_class should be compared with the real vegetation class (vic_veg_class) */
-  int vic_veg_class;
 
   if(vic411_options.GLOBAL_LAI) skip=2;
   else skip=1;
@@ -121,7 +97,7 @@ int vic411_read_vegparam(FILE *vegparam,
     exit(99);
   }
   if(vegetat_type_num >= MAX_VEG) {
-    sprintf(ErrStr,"Vegetation parameter file wants more vegetation tiles in grid cell %i (%i) than are allowed by MAX_VEG (%i) [NOTE: bare soil class is assumed].  Edit vicNl_def.h and recompile.",gridcel,vegetat_type_num+1,MAX_VEG);
+    sprintf(ErrStr,"Vegetation parameter file wants more vegetation tiles in grid cell %i (%i) than are allowed by MAX_VEG (%i) [NOTE: bare soil class is assumed].  Edit vic411_vicNl_def.h and recompile.",gridcel,vegetat_type_num+1,MAX_VEG);
     vic411_nrerror(ErrStr);
   }
 
@@ -146,7 +122,7 @@ int vic411_read_vegparam(FILE *vegparam,
       vic411_nrerror(ErrStr);
     }
     strcpy(tmpline, line);
-    vic411_ttrim1( tmpline );
+    vic411_ttrim( tmpline );
     token = strtok (tmpline, delimiters);    /*  token => veg_class, move 'line' pointer to next field */  
     Nfields = 0;
     vegarr[Nfields] = calloc( 500, sizeof(char));
@@ -174,20 +150,15 @@ int vic411_read_vegparam(FILE *vegparam,
 
     temp[i].LAKE = 0;
     temp[i].veg_class = atoi( vegarr[0] );
-    /* added by Shugong Wang */
-    vic_veg_class = temp[i].veg_class; // this is the real vegetation class in vegetation parameter file. 
-
     temp[i].Cv = atof( vegarr[1] );
     depth_sum = 0;
     sum = 0.;
-    /* the following VIC code read root zoon information from vegetation parameter file*/
     for(j=0;j<vic411_options.ROOT_ZONES;j++) {
       temp[i].zone_depth[j] = atof( vegarr[2 + j*2] );
       temp[i].zone_fract[j] = atof( vegarr[3 + j*2] );
       depth_sum += temp[i].zone_depth[j];
       sum += temp[i].zone_fract[j];
     }
-
     if(depth_sum <= 0) {
       sprintf(str,"Root zone depths must sum to a value greater than 0.");
       vic411_nrerror(str);
@@ -198,21 +169,6 @@ int vic411_read_vegparam(FILE *vegparam,
 	temp[i].zone_fract[j] /= sum;
       }
     }
-
-    /* added by Shugong Wang to read root zone information for LIS-tiling. 
-       if current vic_veg_class is the same as the lis_veg_class, then set the root zone
-       information to lis_temp, which points to vic411_lis_veg_con.                            */
-    if(vic_veg_class == lis_veg_class)
-    {
-         // added by Shugong Wang. lis_temp is a pointer of vic411_lis_veg_con. In the following lines, lis_temp will retrieve
-         // the root zone depth and root zone fraction from VIC vegetation parameter file
-         for(j=0; j<vic411_options.ROOT_ZONES; j++)
-         {
-           lis_temp->zone_depth[j] = temp[i].zone_depth[j];
-           lis_temp->zone_fract[j] = temp[i].zone_fract[j];     
-         }
-    }
-    
 
     if(vic411_options.BLOWING) {
       j = 2 * vic411_options.ROOT_ZONES;
@@ -238,16 +194,14 @@ int vic411_read_vegparam(FILE *vegparam,
       vic411_nrerror(ErrStr);
     }
     else
-     {
       temp[i].veg_class = veg_class;
-      }
 
     temp[0].Cv_sum += temp[i].Cv;
 
     for(k=0; k<Nfields; k++)
       free(vegarr[k]);
 
-    if ( vic411_options.GLOBAL_LAI) {
+    if ( vic411_options.GLOBAL_LAI ) {
       // Read the LAI line
       if ( fgets( line, MAXSTRING, vegparam ) == NULL ){
         sprintf(ErrStr,"ERROR unexpected EOF for cell %i while reading LAI for vegetat_type_num %d\n",vegcel,vegetat_type_num);
@@ -256,7 +210,7 @@ int vic411_read_vegparam(FILE *vegparam,
       Nfields = 0;
       vegarr[Nfields] = calloc( 500, sizeof(char));      
       strcpy(tmpline, line);
-      vic411_ttrim1( tmpline );
+      vic411_ttrim( tmpline );
       token = strtok (tmpline, delimiters); 
       strcpy(vegarr[Nfields],token);
       Nfields++;
@@ -272,20 +226,14 @@ int vic411_read_vegparam(FILE *vegparam,
         vic411_nrerror(ErrStr);
       }
 
-      if(vic_veg_class == lis_veg_class) // added by shugong for LIS tiling. Only if the current tile has the same vegetation class of lis tile
-      { 
-        // set vic411_flag = 1 indicating find the parameters for the vegetion class
-        vic411_flag = 1; 
-        for ( j = 0; j < 12; j++ ) 
-        {
-           vic411_veg_lib[temp[i].veg_class].LAI[j] = atof( vegarr[j] );
-           if (vic411_veg_lib[temp[i].veg_class].overstory && vic411_veg_lib[temp[i].veg_class].LAI[j] == 0) 
-           {
-               sprintf(ErrStr,"ERROR: cell %d, veg tile %d: the specified veg class (%d) is listed as an overstory class in the veg LIBRARY, but the LAI given in the veg PARAM FILE for this tile for month %d is 0.\n",gridcel, i+1, temp[i].veg_class+1, j+1);
-               vic411_nrerror(ErrStr);
-           }
-           vic411_veg_lib[temp[i].veg_class].Wdmax[j] =  LAI_WATER_FACTOR * vic411_veg_lib[temp[i].veg_class].LAI[j];
-         }
+      for ( j = 0; j < 12; j++ ) {
+        vic411_veg_lib[temp[i].veg_class].LAI[j] = atof( vegarr[j] );
+        if (vic411_veg_lib[temp[i].veg_class].overstory && vic411_veg_lib[temp[i].veg_class].LAI[j] == 0) {
+          sprintf(ErrStr,"ERROR: cell %d, veg tile %d: the specified veg class (%d) is listed as an overstory class in the veg LIBRARY, but the LAI given in the veg PARAM FILE for this tile for month %d is 0.\n",gridcel, i+1, temp[i].veg_class+1, j+1);
+          vic411_nrerror(ErrStr);
+        }
+        vic411_veg_lib[temp[i].veg_class].Wdmax[j] = 
+	  LAI_WATER_FACTOR * vic411_veg_lib[temp[i].veg_class].LAI[j];
       }
       for(k=0; k<Nfields; k++)
         free(vegarr[k]);
@@ -404,27 +352,18 @@ int vic411_read_vegparam(FILE *vegparam,
     }
   }
 
-  vic411_free_vegcon(&temp);
-  return(vic411_flag);
+  return temp;
 } 
 
 
 
 
 
-
+#if 0
 /* trim trailing newlines */
 
 #define END '\0'
 #define NEW '\n'
-
-void vic411_ttrim1( char *c ) 
-{
-  while( (*c++ != END) );
-    --c;
-  for( ; *--c == NEW; *c = END );
-
-}
 
 void vic411_ttrim( char *c ) 
 {
@@ -433,4 +372,4 @@ void vic411_ttrim( char *c )
   for( ; *--c == NEW; *c = END );
 
 }
-
+#endif

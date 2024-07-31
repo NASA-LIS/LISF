@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -102,13 +102,13 @@ subroutine noah39_readrst()
 
         if(.not.file_exists) then 
            write(LIS_logunit,*) '[ERR] Noah-3.9 restart file ',              &
-                noah39_struc(n)%rfile,' does not exist '
+                trim(noah39_struc(n)%rfile),' does not exist '
            write(LIS_logunit,*) '[ERR] Program stopping ...'
            call LIS_endrun()
            
         endif
         write(LIS_logunit,*)                        &
-             '[INFO] Noah-3.9 restart file used: ',noah39_struc(n)%rfile
+             '[INFO] Noah-3.9 restart file used: ',trim(noah39_struc(n)%rfile)
         
         if(wformat.eq."binary") then 
            ftn = LIS_getNextUnitNumber()

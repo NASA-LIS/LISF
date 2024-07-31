@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -234,10 +234,11 @@ def _driver():
     ens_num = int(args['ens_num'])
     print(f"[INFO] {fcst_init['monthday']} {year}")
 
+    fcst_init["year"] = year
     if fcst_init['monthday'] == "jan01":
-        fcst_init["year"] = year - 1
+        fcst_init["year_cfsv2"] = year - 1
     else:
-        fcst_init["year"] = year
+        fcst_init["year_cfsv2"] = year
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
@@ -246,8 +247,8 @@ def _driver():
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
     monthday = args['all_monthdays'][ens_num - 1]
-    temp_name = f"cfsv2.{fcst_init['year']}{monthday}.nc"
-    fcst_init['date'] = f"{fcst_init['year']}{monthday}"
+    temp_name = f"cfsv2.{fcst_init['year_cfsv2']}{monthday}.nc"
+    fcst_init['date'] = f"{fcst_init['year_cfsv2']}{monthday}"
     fcst_init['month'] = int(monthday[0:2])
     fcst_init['day'] = int(monthday[2:4])
     fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
@@ -272,23 +273,23 @@ def _driver():
     if not os.path.exists(outdirs['outdir_monthly']):
         os.makedirs(outdirs['outdir_monthly'])
 
-    cfsv2 = []
+    cfsv2 = []         
     for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                     "q2m", "wnd10m"]:
         print(f"[INFO] {varname}")
         subdir, file_pfx, file_sfx = \
-            _set_input_file_info(fcst_init['year'],
+            _set_input_file_info(fcst_init['year_cfsv2'],
                                  fcst_init['month'],
                                  varname)
         indir = f"{args['forcedir']}/{subdir}/"
         if subdir == "Oper_TS" and not os.path.exists(indir):
             indir = f"{args['forcedir']}/"
-
-        indir += f"{fcst_init['year']}/{fcst_init['date']}"
+            
+        indir += f"{fcst_init['year_cfsv2']}/{fcst_init['date']}"
 
         # Convert GRIB file to netCDF and handle missing/corrupted data
         cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
-
+        
     cfsv2 = xr.merge (cfsv2, compat='override')
     reg_precip = _regrid_precip(cfsv2, args)
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &

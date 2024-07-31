@@ -313,6 +313,8 @@ AGRMET cloud data directory:               WWMCA           # WWMCA_LE, NONE, or 
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
+AGRMET radiation derived from: "cloud types"
+AGRMET GALWEM radiation data directory: WWMCA_GRIB
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.

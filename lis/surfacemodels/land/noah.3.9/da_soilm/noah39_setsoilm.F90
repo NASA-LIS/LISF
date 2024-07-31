@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,7 +13,12 @@
 !
 ! !REVISION HISTORY:
 ! 21Oct2018: Mahdi Navari; Sujay Kumar ; Initial Specification
-!
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix 
+!                           (add check for frozen soil) 
+! 10 Apr 2024: Mahdi Navari; ensemble flag bug fix
+! 11 Apr 2024: Mahdi Navari; Fix bug related to computing delta. The bug fix sets 
+!                    the code to use total soil moisture (smc) if the ground 
+!                    is frozen, rather than the liquid part of soil moisture (sh2o).
 ! !INTERFACE:
 subroutine noah39_setsoilm(n, LSM_State)
 ! !USES:
@@ -21,6 +26,7 @@ subroutine noah39_setsoilm(n, LSM_State)
   use LIS_coreMod 
   use LIS_logMod
   use noah39_lsmMod
+  use LIS_constantsMod, only : LIS_CONST_TKFRZ
 
   implicit none
 ! !ARGUMENTS: 
@@ -47,14 +53,13 @@ subroutine noah39_setsoilm(n, LSM_State)
   real, pointer          :: soilm4(:)
   integer                :: t, j,i, gid, m, t_unpert, LIS_localP, row , col
   integer                :: status
-  real                   :: delta(4)
+  real                   :: delta(4), ens_count(4)
   real                   :: delta1,delta2,delta3,delta4
   real                   :: tmpval
   logical                :: bounds_violation
   integer                :: nIter
   logical                :: update_flag(LIS_rc%ngrid(n))
-  logical                :: ens_flag(LIS_rc%nensem(n))
-! mn
+  logical                :: ens_flag(4,LIS_rc%nensem(n))
   real                   :: tmp(LIS_rc%nensem(n)), tmp0(LIS_rc%nensem(n))
   real                   :: tmp1(LIS_rc%nensem(n)),tmp2(LIS_rc%nensem(n)),tmp3(LIS_rc%nensem(n)),tmp4(LIS_rc%nensem(n)) 
   logical                :: update_flag_tile(LIS_rc%npatch(n,LIS_rc%lsm_index))
@@ -142,7 +147,8 @@ subroutine noah39_setsoilm(n, LSM_State)
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      if(noah39_struc(n)%noah(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
           noah39_struc(n)%noah(t)%sh2o(1)+delta1.lt.&
-          sm_threshold) then 
+          sm_threshold .and.& 
+          noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         ! MN save the flag for each tile (col*row*ens)   (64*44)*20
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
@@ -151,7 +157,8 @@ subroutine noah39_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah39_struc(n)%noah(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold) then 
+          noah39_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold .and.&
+          noah39_struc(n)%noah(t)%stc(2) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -159,7 +166,8 @@ subroutine noah39_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah39_struc(n)%noah(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold) then 
+          noah39_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold .and.&
+          noah39_struc(n)%noah(t)%stc(3) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -167,7 +175,8 @@ subroutine noah39_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah39_struc(n)%noah(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold) then 
+          noah39_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold .and.&
+          noah39_struc(n)%noah(t)%stc(4) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -345,8 +354,8 @@ subroutine noah39_setsoilm(n, LSM_State)
               noah39_struc(n)%noah(t)%smc(4) = smc_tmp
  
               
-	      !MN  4 print 	
-	      tmp0(m) = noah39_struc(n)%noah(t)%smc(1)
+             !MN  4 print 	
+             tmp0(m) = noah39_struc(n)%noah(t)%smc(1)
                           
            endif ! flag for each tile
         enddo ! loop over tile
@@ -365,23 +374,30 @@ subroutine noah39_setsoilm(n, LSM_State)
            do while(bounds_violation) 
               niter = niter + 1
               !t_unpert = i*LIS_rc%nensem(n)
-	      t_unpert = i+LIS_rc%nensem(n)-1
+              t_unpert = i+LIS_rc%nensem(n)-1
               do j=1,4
                  delta(j) = 0.0
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     
-                    if(m.ne.LIS_rc%nensem(n)) then 
+                    if(m.ne.LIS_rc%nensem(n)) then
+                      if (noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then ! MN 
                        delta(j) = delta(j) + &
                             (noah39_struc(n)%noah(t)%sh2o(j) - &
                             noah39_struc(n)%noah(t_unpert)%sh2o(j))
+                      else ! MN
+                       delta(j) = delta(j) + &
+                            (noah39_struc(n)%noah(t)%smc(j) - &
+                            noah39_struc(n)%noah(t_unpert)%smc(j))
+                      endif
                     endif
                     
                  enddo
               enddo
               
               do j=1,4
+                 ens_count(j) = 0.0
                  delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
@@ -398,7 +414,8 @@ subroutine noah39_setsoilm(n, LSM_State)
                        noah39_struc(n)%noah(t)%smc(j) = &
                             max(noah39_struc(n)%noah(t_unpert)%smc(j),&
                             MIN_THRESHOLD)
-                       ens_flag(m) = .false. 
+                       ens_flag(j,m) = .false.
+                       ens_count(j) = ens_count(j) + 1 
                     elseif(tmpval.ge.sm_threshold) then
                        noah39_struc(n)%noah(t)%sh2o(j) = &
                             min(noah39_struc(n)%noah(t_unpert)%sh2o(j),&
@@ -406,7 +423,8 @@ subroutine noah39_setsoilm(n, LSM_State)
                        noah39_struc(n)%noah(t)%smc(j) = &
                             min(noah39_struc(n)%noah(t_unpert)%smc(j),&
                             sm_threshold)
-                       ens_flag(m) = .false. 
+                       ens_flag(j,m) = .false.
+                       ens_count(j) = ens_count(j) + 1 
                     endif
                  enddo
               enddo
@@ -420,20 +438,33 @@ subroutine noah39_setsoilm(n, LSM_State)
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     if(m.ne.LIS_rc%nensem(n)) then 
-                       delta(j) = delta(j) + &
-                            (noah39_struc(n)%noah(t)%sh2o(j) - &
-                            noah39_struc(n)%noah(t_unpert)%sh2o(j))
+                      if (noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then ! MN 
+                         delta(j) = delta(j) + &
+                             (noah39_struc(n)%noah(t)%sh2o(j) - &
+                              noah39_struc(n)%noah(t_unpert)%sh2o(j))
+                      else ! MN
+                          delta(j) = delta(j) + &
+                             (noah39_struc(n)%noah(t)%smc(j) - &
+                              noah39_struc(n)%noah(t_unpert)%smc(j))
+                      endif
                     endif
                  enddo
               enddo
               
               do j=1,4
-                 delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
+                 if (ens_count(j).lt.(LIS_rc%nensem(n)-1)) then
+                    !delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
+                     delta(j) =delta(j)/(LIS_rc%nensem(n)-1-ens_count(j))
+                 else 
+                      delta(j) =delta(j)/(LIS_rc%nensem(n)-1) !We apply this 
+                      !to remove the residual bias after setting all ensemble members
+                      !to the bond values (MIN_THRESHOLD, sm_threshold, or unperturbed)
+                 endif        
                  do m=1,LIS_rc%nensem(n)-1
                     t = i+m-1
                     !t = (i-1)*LIS_rc%nensem(n)+m
                     
-                    if(ens_flag(m)) then 
+                    if(ens_flag(j,m)) then 
                        tmpval = noah39_struc(n)%noah(t)%sh2o(j) - &
                             delta(j)
                        MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax

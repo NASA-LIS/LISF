@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -325,7 +325,8 @@ subroutine NoahMP401_main(n)
 
     ! check NoahMP401 alarm. If alarm is ring, run model.
 
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm")
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 model alarm "//trim(fnest))
 
     if (alarmCheck) Then
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -1788,7 +1789,6 @@ subroutine NoahMP401_main(n)
 
     ! EMK...See if noahmp401_struc(n)%noahmp401(t)%tair_agl_min needs to be 
     ! reset for calculating RHMin.  
-    write(fnest,'(i3.3)') n
     alarmCheck = LIS_isAlarmRinging(LIS_rc, &
          "NoahMP401 RHMin alarm "//trim(fnest))
     if (alarmCheck) then

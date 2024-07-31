@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,6 +47,6 @@ subroutine readtemplateOpenWatercrd()
      call LIS_parseTimeString(time,templateOpenWater_struc(n)%ts)
   enddo
 
-  write(LIS_logunit,*)'Running Template Open water Option:'
+  write(LIS_logunit,*)'[INFO] Running Template Open water Option:'
 
 end subroutine readtemplateOpenWatercrd

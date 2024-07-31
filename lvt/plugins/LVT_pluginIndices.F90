@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -262,6 +262,8 @@ module LVT_pluginIndices
    character*50, public,  parameter :: LVT_GDASdataId = "GDAS"
    character*50, public,  parameter :: LVT_ASOSWEdataId = "ASO SWE"
    character*50, public,  parameter :: LVT_IMERGdataId = "GPM IMERG"
+   character*50, public,  parameter :: LVT_IMERGMonthlydataId = &
+        "GPM IMERG Monthly"
    character*50, public,  parameter :: LVT_UASNOWdataId = "UA SNOW"
    character*50, public,  parameter :: LVT_ozFluxdataId = "OzFlux"
    character*50, public,  parameter :: LVT_JASMINsmobsId = "JASMIN soil moisture"
