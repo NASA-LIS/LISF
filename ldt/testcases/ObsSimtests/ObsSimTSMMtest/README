@@ -1,0 +1,24 @@
+TSMM Observation Simulator Test Case
+
+This LDT test case generates synthetic observations of TSMM using LDT's 
+"Observation Simulation" runmode. This feature is intended for OSSE experiments.
+
+This simulator can handle the use of external orbital masks to be applied to 
+the observations created for OSSEs. Currently, AMSR2, TSMM, Sentinel-1A, 
+and MODIS are available instrumental options.
+
+This directory contains:
+
+* this README file.
+* the ldt.config file used for this testcase.
+
+To run this test case:
+
+* Generate the LDT executable.
+* Run the LDT executable using the ldt.config file and sample input data.
+* View the output using ncview.
+
+
+Notes:
+This feature was added in pull request #867:
+https://github.com/nasa-lis/lisf/pull/867
