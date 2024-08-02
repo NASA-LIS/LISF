@@ -454,12 +454,12 @@ contains
 
                 allocate(NOAHMP401_struc(n)%soil3d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    16)) ! 16 is the number of soil categories, hardcoded temporarily 
+                                                    LIS_rc%nsoiltypes)) ! 16 is the number of soil categories, hardcoded temporarily 
                 allocate(NOAHMP401_struc(n)%soil2d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
                 allocate(NOAHMP401_struc(n)%vege3d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max, &
-                                                    20)) ! 20 is the number of surfacetype categories, hardcoded temporarily 
+                                                    LIS_rc%nsurfacetypes)) ! 20 is the number of surfacetype categories, hardcoded temporarily 
                 allocate(NOAHMP401_struc(n)%vege2d(NOAHMP401_struc(n)%col_min:NOAHMP401_struc(n)%col_max, &
                                                     NOAHMP401_struc(n)%row_min:NOAHMP401_struc(n)%row_max))
             endif

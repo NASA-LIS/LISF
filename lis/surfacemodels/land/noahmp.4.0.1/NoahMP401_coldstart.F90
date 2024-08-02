@@ -68,7 +68,7 @@ subroutine NoahMP401_coldstart(mtype)
     real, dimension(4) ::     DZS  ! Thickness of the soil layers [m]
     real ::     dx, dy
     real, dimension( 1, 1 ) :: msftx, msfty
-    real :: wtddt, dtbl
+    real :: wtddt
     integer :: stepwtd
 
     real, dimension( 1, 1 ) ::                      &
@@ -351,7 +351,6 @@ subroutine NoahMP401_coldstart(mtype)
              msfty(1,1) = 1.0
              wtddt = NOAHMP401_struc(n)%ts/60.0 ! wtddt in minute? 
              stepwtd = 0
-             dtbl = NOAHMP401_struc(n)%ts
              qrfsxy(1,1) = 0.0
              qslatxy(1,1) = 0.0
              fdepthxy(1,1) = 0.0
@@ -386,7 +385,7 @@ subroutine NoahMP401_coldstart(mtype)
                          ims,ime, jms,jme, kms,kme,                &  ! memory
                          its,ite, jts,jte, kts,kte                 &  ! tile
                             ,smoiseqxy,smcwtdxy ,rechxy   ,deeprechxy, areaxy ,dx, dy, msftx, msfty,&
-                            wtddt    ,stepwtd  ,dtbl  ,qrfsxy ,qspringsxy  ,qslatxy,                  &
+                            wtddt    ,stepwtd  ,NOAHMP401_struc(n)%ts  ,qrfsxy ,qspringsxy  ,qslatxy,                  &
                             fdepthxy ,HT       ,riverbedxy ,eqzwt ,rivercondxy ,pexpxy,              &
                             rechclim ,gecros_state                 &
                             )

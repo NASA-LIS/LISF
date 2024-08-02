@@ -391,7 +391,7 @@ subroutine NoahMP401_setup()
 
                     ! if the total fraction from layer 1 to layer 20 is no more than 0.5, this means there is the fraction of the 21st layer is >= 0.5, set the landcover type to be 17 as HRLDAS
                     if(.not. sum(NOAHMP401_struc(n)%vege3d(cidx, ridx, :))>0.5) then
-                        NOAHMP401_struc(n)%vege2d(cidx,ridx) = 17
+                        NOAHMP401_struc(n)%vege2d(cidx,ridx) = LIS_rc%waterclass
                     endif 
                 enddo
             enddo
