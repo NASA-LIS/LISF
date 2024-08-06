@@ -118,6 +118,7 @@ module LIS_historyMod
   public :: LIS_gather_1dgrid_to_2dgrid
   public :: LIS_scatter_global_to_local_grid
   public :: LIS_gather_2d_local_to_global
+  public :: LIS_gather_masterproc_2d_local_to_global
 !EOP
 
 !BOP 
@@ -394,6 +395,24 @@ module LIS_historyMod
 ! space variable to the grid space 
 !
 !EOP 
+  end interface
+
+!BOP
+!
+! !ROUTINE: LIS_gather_masterproc_2d_local_to_global
+! \label{LIS_gather_masterproc_2d_local_to_global}
+!
+! !INTERFACE:
+  interface LIS_gather_masterproc_2d_local_to_global
+! !PRIVATE MEMBER FUNCTIONS:
+     module procedure gather_masterproc_2d_local_to_global_int
+     module procedure gather_masterproc_2d_local_to_global_real
+!
+! !DESCRIPTION:
+! This interface provides routines for gathering 2d local arrays
+! to 2d global array on masterproc.
+!
+!EOP
   end interface
 
 contains
@@ -9803,7 +9822,7 @@ subroutine LIS_gather_1dgrid_to_2dgrid(n, gtmp, var)
 !  30 Jan 2009: Sujay Kumar, Initial Code
 ! 
 ! !INTERFACE:
-subroutine LIS_scatter_global_to_local_grid(n, gtmp,ltmp)
+subroutine LIS_scatter_global_to_local_grid(n, gtmp, ltmp)
 ! !USES: 
 
 ! !ARGUMENTS: 
@@ -9815,7 +9834,7 @@ subroutine LIS_scatter_global_to_local_grid(n, gtmp,ltmp)
 
 !
 ! !DESCRIPTION:
-! This routine gathers a gridded 1d array into a 2d global array.
+! This routine scatters a gridded 2d global array into a 2d local array.
 !
 ! This process accounts for the halo.
 !
@@ -9824,15 +9843,16 @@ subroutine LIS_scatter_global_to_local_grid(n, gtmp,ltmp)
 !   \item [n]
 !     index of the current nest
 !   \item [gtmp]
-!     return array for the gridded output data
-!   \item [var]
+!     array for the gridded global input data
+!   \item [ltmp]
+!     array for the gridded local output data
 !     output data to process
 !  \end{description}
 !EOP
 
    real, allocatable :: gtmp1d(:)
    real, allocatable :: gtmp2d(:,:)
-   integer :: i,c,r,m,t,l
+   integer :: c,r
    integer :: gid
    integer :: ierr
 
@@ -10001,5 +10021,195 @@ subroutine LIS_gather_2d_local_to_global(n, lvar, gvar)
    deallocate(gtmp1)
    deallocate(var1)
 end subroutine LIS_gather_2d_local_to_global
+
+subroutine gather_masterproc_2d_local_to_global_int(n, lvar, gvar)
+! !USES:
+
+   implicit none
+! !ARGUMENTS:
+   integer, intent(in)  :: n
+   integer,    intent(in)  :: lvar(LIS_rc%lnc(n), LIS_rc%lnr(n))
+   integer,    intent(out) :: gvar(LIS_rc%gnc(n), LIS_rc%gnr(n))
+
+! !DESCRIPTION:
+! This routine gathers local (sub-domain) gridded 2d arrays into a
+! 2d global array on the masterproc.
+!
+! The arguments are:
+!  \begin{description}
+!   \item [n]
+!     index of the current nest
+!   \item [lvar]
+!     local (per-process) 2d array
+!   \item [gvar]
+!     global 2d array
+!  \end{description}
+!EOP
+
+   integer, allocatable :: var1(:)
+   integer, allocatable :: gtmp1(:)
+   integer           :: c, r, l
+   integer           :: c1, r1
+   integer           :: count1
+   integer           :: ierr
+   integer           :: deltas
+
+   allocate(var1(LIS_rc%lnc_red(n)*LIS_rc%lnr_red(n)))
+   allocate(gtmp1(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+
+   count1 = 1
+   do r = LIS_nss_halo_ind(n,LIS_localPet+1), LIS_nse_halo_ind(n,LIS_localPet+1)
+      do c = LIS_ews_halo_ind(n,LIS_localPet+1), LIS_ewe_halo_ind(n,LIS_localPet+1)
+         if ( r .ge. LIS_nss_ind(n,LIS_localPet+1) .and. &
+              r .le. LIS_nse_ind(n,LIS_localPet+1) .and. &
+              c .ge. LIS_ews_ind(n,LIS_localPet+1) .and. &
+              c .le. LIS_ewe_ind(n,LIS_localPet+1) ) then
+            r1 = r - LIS_nss_halo_ind(n,LIS_localPet+1) + 1
+            c1 = c - LIS_ews_halo_ind(n,LIS_localPet+1) + 1
+            var1(count1) = lvar(c1,r1)
+            count1 = count1 + 1
+         endif
+      enddo
+   enddo
+
+
+#if (defined SPMD)
+   deltas = LIS_deltas(n,LIS_localPet)
+   call MPI_GATHERV(var1, deltas, MPI_INTEGER,               &
+      gtmp1, LIS_deltas(n,:), LIS_offsets(n,:), MPI_INTEGER, &
+      0, LIS_mpi_comm, ierr)
+#else
+   gtmp1 = var1
+#endif
+
+! Looping over halo is unnecessary here because gtmp does not contain
+! any halo points.  I am keeping this here for reference.
+!   if ( LIS_masterproc ) then
+!      count1 = 1
+!      do l = 1, LIS_npes
+!         do r = LIS_nss_halo_ind(n,l), LIS_nse_halo_ind(n,l)
+!            do c = LIS_ews_halo_ind(n,l), LIS_ewe_halo_ind(n,l)
+!               if ( r .ge. LIS_nss_ind(n,l) .and. &
+!                  r .le. LIS_nse_ind(n,l) .and. &
+!                  c .ge. LIS_ews_ind(n,l) .and. &
+!                  c .le. LIS_ewe_ind(n,l) ) then
+!                  gvar(c,r) = gtmp1(count1)
+!                  count1 = count1 + 1
+!               endif
+!            enddo
+!         enddo
+!      enddo
+!   endif
+   if ( LIS_masterproc ) then
+      count1 = 1
+      do l = 1, LIS_npes
+         do r = LIS_nss_ind(n,l), LIS_nse_ind(n,l)
+            do c = LIS_ews_ind(n,l), LIS_ewe_ind(n,l)
+               gvar(c,r) = gtmp1(count1)
+               count1 = count1 + 1
+            enddo
+         enddo
+      enddo
+   endif
+
+
+   deallocate(gtmp1)
+   deallocate(var1)
+end subroutine gather_masterproc_2d_local_to_global_int
+
+subroutine gather_masterproc_2d_local_to_global_real(n, lvar, gvar)
+! !USES:
+
+   implicit none
+! !ARGUMENTS:
+   integer, intent(in)  :: n
+   real,    intent(in)  :: lvar(LIS_rc%lnc(n), LIS_rc%lnr(n))
+   real,    intent(out) :: gvar(LIS_rc%gnc(n), LIS_rc%gnr(n))
+
+! !DESCRIPTION:
+! This routine gathers local (sub-domain) gridded 2d arrays into a
+! 2d global array on the masterproc.
+!
+! The arguments are:
+!  \begin{description}
+!   \item [n]
+!     index of the current nest
+!   \item [lvar]
+!     local (per-process) 2d array
+!   \item [gvar]
+!     global 2d array
+!  \end{description}
+!EOP
+
+   real, allocatable :: var1(:)
+   real, allocatable :: gtmp1(:)
+   integer           :: c, r, l
+   integer           :: c1, r1
+   integer           :: count1
+   integer           :: ierr
+   integer           :: deltas
+
+   allocate(var1(LIS_rc%lnc_red(n)*LIS_rc%lnr_red(n)))
+   allocate(gtmp1(LIS_rc%gnc(n)*LIS_rc%gnr(n)))
+
+   count1 = 1
+   do r = LIS_nss_halo_ind(n,LIS_localPet+1), LIS_nse_halo_ind(n,LIS_localPet+1)
+      do c = LIS_ews_halo_ind(n,LIS_localPet+1), LIS_ewe_halo_ind(n,LIS_localPet+1)
+         if ( r .ge. LIS_nss_ind(n,LIS_localPet+1) .and. &
+              r .le. LIS_nse_ind(n,LIS_localPet+1) .and. &
+              c .ge. LIS_ews_ind(n,LIS_localPet+1) .and. &
+              c .le. LIS_ewe_ind(n,LIS_localPet+1) ) then
+            r1 = r - LIS_nss_halo_ind(n,LIS_localPet+1) + 1
+            c1 = c - LIS_ews_halo_ind(n,LIS_localPet+1) + 1
+            var1(count1) = lvar(c1,r1)
+            count1 = count1 + 1
+         endif
+      enddo
+   enddo
+
+
+#if (defined SPMD)
+   deltas = LIS_deltas(n,LIS_localPet)
+   call MPI_GATHERV(var1, deltas, MPI_REAL,               &
+      gtmp1, LIS_deltas(n,:), LIS_offsets(n,:), MPI_REAL, &
+      0, LIS_mpi_comm, ierr)
+#else
+   gtmp1 = var1
+#endif
+
+! Looping over halo is unnecessary here because gtmp does not contain
+! any halo points.  I am keeping this here for reference.
+!   if ( LIS_masterproc ) then
+!      count1 = 1
+!      do l = 1, LIS_npes
+!         do r = LIS_nss_halo_ind(n,l), LIS_nse_halo_ind(n,l)
+!            do c = LIS_ews_halo_ind(n,l), LIS_ewe_halo_ind(n,l)
+!               if ( r .ge. LIS_nss_ind(n,l) .and. &
+!                  r .le. LIS_nse_ind(n,l) .and. &
+!                  c .ge. LIS_ews_ind(n,l) .and. &
+!                  c .le. LIS_ewe_ind(n,l) ) then
+!                  gvar(c,r) = gtmp1(count1)
+!                  count1 = count1 + 1
+!               endif
+!            enddo
+!         enddo
+!      enddo
+!   endif
+   if ( LIS_masterproc ) then
+      count1 = 1
+      do l = 1, LIS_npes
+         do r = LIS_nss_ind(n,l), LIS_nse_ind(n,l)
+            do c = LIS_ews_ind(n,l), LIS_ewe_ind(n,l)
+               gvar(c,r) = gtmp1(count1)
+               count1 = count1 + 1
+            enddo
+         enddo
+      enddo
+   endif
+
+
+   deallocate(gtmp1)
+   deallocate(var1)
+end subroutine gather_masterproc_2d_local_to_global_real
 
 end module LIS_historyMod
