@@ -99,6 +99,7 @@ print_walltimes(){
     seconds_to_datetime() {
 	date -d "@$1" '+%Y-%m-%dT%H:%M:%S'
     }
+
     compute_elapse (){
 	local JOB_ID=$1
 
@@ -114,7 +115,6 @@ print_walltimes(){
 	local max_end
 	min_start=$(datetime_to_seconds "${start_times[0]}")
 	max_end=$(datetime_to_seconds "${end_times[0]}")
-
 
 	for start in "${start_times[@]}"; do
             local start_sec
@@ -756,7 +756,6 @@ bcsd_fcst(){
     # --------------------------------------------------------------------------
     jobname=bcsd06
     cmdfile="bcsd06.file"
-    /bin/rm bcsd06*
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
@@ -792,7 +791,7 @@ bcsd_fcst(){
     # ----------------------------------------------------------------------------
     jobname=bcsd08
     cmdfile="bcsd08.file"
-    /bin/rm bcsd08*
+
     for model in $MODELS
     do
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
@@ -825,7 +824,7 @@ bcsd_fcst(){
     
     jobname=bcsd09
     cmdfile="bcsd09-10.file"
-    /bin/rm bcsd09*
+
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
