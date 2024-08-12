@@ -572,6 +572,16 @@ def load_table (table_key):
         rgb_list.append([rgb[0],rgb[1], rgb[2]])
     tables['mono_green'] = rgb_list
 
+    num_steps = 26
+    start_yellow = np.array([255, 255, 153])# Yellow
+    end_orange = np.array([255, 165, 0])    # Orange
+    end_brown = np.array([51, 25, 0])       # Brown
+    gradient_yellow_to_orange = np.linspace(start_yellow, end_orange, num_steps // 2, dtype=int)
+    gradient_orange_to_brown = np.linspace(end_orange, end_brown, num_steps // 2, dtype=int)
+    gradient_yellow_to_brown = np.concatenate((gradient_yellow_to_orange, gradient_orange_to_brown))
+    rgb_list = gradient_yellow_to_brown.tolist()
+    tables['mono_YOB'] = rgb_list    
+
     if table_key[-1] == '_':
         ct_ = tables[table_key[:-1]]
         ct_.reverse()
