@@ -66,17 +66,17 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --nodes=1' + '\n')
         _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
-        if group_jobs:
-            mpc = min(math.ceil(240 / ntasks), 80)
-            _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
-        else:
-            _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             if 'mil' in cfg['SETUP']['CONSTRAINT']:
                 _f.write('#SBATCH --partition=packable'  + '\n')
+            if group_jobs:
+                mpc = min(math.ceil(240 / ntasks), 80)
+                _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+            else:
+                _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
+
         else:
-#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
             _f.write('#SBATCH --exclusive' + '\n')
