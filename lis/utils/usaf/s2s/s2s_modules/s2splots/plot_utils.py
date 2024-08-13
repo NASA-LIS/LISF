@@ -753,12 +753,13 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
             
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
-                             cmap=cmap,zorder=3, alpha=0.8)
+                             cmap=cmap,zorder=3, alpha=0.8,
+                             transform=ccrs.PlateCarree())
         
         if projection is None:
             gl_ = ax_.gridlines(draw_labels=True)
         else:
-            ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
+            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
         gl_.top_labels = False
         gl_.bottom_labels = False
         gl_.left_labels = False
