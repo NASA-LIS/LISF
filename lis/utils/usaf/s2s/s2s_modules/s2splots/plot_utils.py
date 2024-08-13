@@ -38,6 +38,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
 import shapely.geometry as sgeom
+import cartopy.mpl.ticker as cticker
 import requests
 import dask
 import PIL
@@ -722,7 +723,11 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
     cmap.set_over(under_over[1])
 
     nplots = len(titles)
-    fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+    if projection[0] == 'polar':
+        fig = plt.figure(figsize= (FIGWIDTH * ncols, FIGWIDTH * nrows))
+    else:
+        fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+        
     gs_ = gridspec.GridSpec(nrows, ncols, wspace=0.1, hspace=0.1)
     
     if colorbar2 is None:
@@ -748,9 +753,12 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
 
         if projection is None:
             ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
-        else:
+        elif projection[0] == "mol":
             ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Mollweide())
-            
+        elif projection[0] == 'polar':
+            ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Stereographic(central_latitude=projection[1]))
+            ax_.set_extent([domain[2], domain[3], domain[0], domain[1]], crs=ccrs.PlateCarree())
+             
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
                              cmap=cmap,zorder=3, alpha=0.8,
@@ -759,11 +767,27 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if projection is None:
             gl_ = ax_.gridlines(draw_labels=True)
         else:
-            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False)
+            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=4)
+
+        if projection[0] == 'polar':
+            gl_.xformatter = cticker.LongitudeFormatter()  
+            gl_.yformatter = cticker.LatitudeFormatter()  
+            gl_.linewidth = 1  
+            gl_.color = 'gray'  
+            gl_.linestyle = '--'
+
         gl_.top_labels = False
         gl_.bottom_labels = False
         gl_.left_labels = False
         gl_.right_labels = False
+
+        if projection[0] == 'polar':
+            gl_.top_labels = False
+            gl_.bottom_labels = True
+            gl_.left_labels = True
+            gl_.right_labels = True
+            gl_.xformatter = cticker.LongitudeFormatter()
+            gl_.yformatter = cticker.LatitudeFormatter()
 
         plt.title(titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
@@ -784,6 +808,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if (domain[3] - domain[2]) < 180.:
             ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
                             edgecolor='black', facecolor='none')
+            
         if colorbar2 is not None:
             if count_plot < colorbar2['begin']:
                 cax = cax_one
