@@ -723,7 +723,9 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
     cmap.set_over(under_over[1])
 
     nplots = len(titles)
-    if projection[0] == 'polar':
+    if projection is None:
+        fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+    elif projection[0] == 'polar':
         fig = plt.figure(figsize= (FIGWIDTH * ncols, FIGWIDTH * nrows))
     else:
         fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
@@ -768,27 +770,27 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
             gl_ = ax_.gridlines(draw_labels=True)
         else:
             gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=4)
-
-        if projection[0] == 'polar':
-            gl_.xformatter = cticker.LongitudeFormatter()  
-            gl_.yformatter = cticker.LatitudeFormatter()  
-            gl_.linewidth = 1  
-            gl_.color = 'gray'  
-            gl_.linestyle = '--'
+            if projection[0] == 'polar':
+                gl_.xformatter = cticker.LongitudeFormatter()  
+                gl_.yformatter = cticker.LatitudeFormatter()  
+                gl_.linewidth = 1  
+                gl_.color = 'gray'  
+                gl_.linestyle = '--'
 
         gl_.top_labels = False
         gl_.bottom_labels = False
         gl_.left_labels = False
         gl_.right_labels = False
 
-        if projection[0] == 'polar':
-            gl_.top_labels = False
-            gl_.bottom_labels = True
-            gl_.left_labels = True
-            gl_.right_labels = True
-            gl_.xformatter = cticker.LongitudeFormatter()
-            gl_.yformatter = cticker.LatitudeFormatter()
-
+        if projection is not None:
+            if projection[0] == 'polar':
+                gl_.top_labels = False
+                gl_.bottom_labels = True
+                gl_.left_labels = True
+                gl_.right_labels = True
+                gl_.xformatter = cticker.LongitudeFormatter()
+                gl_.yformatter = cticker.LatitudeFormatter()
+                
         plt.title(titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
         if np.mod (count_plot, ncols) == 0:
