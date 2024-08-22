@@ -33,6 +33,7 @@ module USAFSI_espcdMod
 contains
 
   ! Find ESPCD CICE file on file system
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
   subroutine find_espcd_cice_file(rootdir, region, &
        yyyy, mm, dd, hh, filename, &
        aice, nlon, nlat)
@@ -250,6 +251,39 @@ contains
 
   end subroutine find_espcd_cice_file
 
+#else
+
+  ! Dummy version w/o netCDF
+  subroutine find_espcd_cice_file(rootdir, region, &
+       yyyy, mm, dd, hh, filename, &
+       aice, nlon, nlat)
+
+    ! Imports
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    character(len=*), intent(in) :: rootdir
+    character*3, intent(in) :: region
+    integer, intent(in) :: yyyy
+    integer, intent(in) :: mm
+    integer, intent(in) :: dd
+    integer, intent(in) :: hh
+    character*255, intent(out) :: filename
+    real, allocatable, intent(inout) :: aice(:,:,:)
+    integer, intent(out) :: nlon
+    integer, intent(out) :: nlat
+
+    write(LDT_logunit,*) &
+         '[ERR] LDT was compiled without netCDF support!'
+    write(LDT_logunit,*) "[ERR] Recompile and try again!"
+    call LDT_endrun()
+
+  end subroutine find_espcd_cice_file
+#endif
+
   ! Builds path to ESPC-D CICE netcdf file
   subroutine construct_espcd_cice_filename(rootdir, region, &
        yyyy, mm, dd, hh, fh, filename)
@@ -280,6 +314,7 @@ contains
   end subroutine construct_espcd_cice_filename
 
   ! Find ESPC-D SST file on file system
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
   subroutine find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, &
        filename, water_temp, nlat, nlon)
 
@@ -483,6 +518,36 @@ contains
     end do
 
   end subroutine find_espcd_sst_file
+
+#else
+  ! Dummy version w/o netCDF
+  subroutine find_espcd_sst_file(rootdir, yyyy, mm, dd, hh, &
+       filename, water_temp, nlat, nlon)
+
+    ! Imports
+    use LDT_logMod, only: LDT_logunit, LDT_endrun
+
+    ! Defaults
+    implicit none
+
+    ! Arguments
+    character(len=*), intent(in) :: rootdir
+    integer, intent(in) :: yyyy
+    integer, intent(in) :: mm
+    integer, intent(in) :: dd
+    integer, intent(in) :: hh
+    character*255, intent(inout) :: filename
+    real, allocatable, intent(inout) :: water_temp(:,:,:,:)
+    integer, intent(out) :: nlat
+    integer, intent(out) :: nlon
+
+    write(LDT_logunit,*) &
+         '[ERR] LDT was compiled without netCDF support!'
+    write(LDT_logunit,*) "[ERR] Recompile and try again!"
+    call LDT_endrun()
+
+  end subroutine find_espcd_sst_file
+#endif
 
   ! Builds path to ESPC-D SST netcdf file
   subroutine construct_espcd_sst_filename(rootdir, &
