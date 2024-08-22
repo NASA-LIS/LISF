@@ -25,6 +25,7 @@ PARSER = argparse.ArgumentParser()
 PARSER.add_argument('-f', '--JOBFILE', required=False, help='job file name')
 PARSER.add_argument('-t', '--NTASKS', required=False, help='NTASKS')
 PARSER.add_argument('-c', '--CONFIGFILE', required=False, help='config file name')
+PARSER.add_argument('-C', '--group_jobs', required=False, help='list of commands for group jobs')
 PARSER.add_argument('-H', '--HOURS', required=False, help='time HOURS')
 PARSER.add_argument('-j', '--JOBNAME', required=False, help='job-name')
 PARSER.add_argument('-w', '--CWD', required=False, help='current working directory')
@@ -85,4 +86,11 @@ else:
     HOURS = ARGS.HOURS
     JOBNAME = ARGS.JOBNAME
     CWD = ARGS.CWD
-    utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, str(HOURS), CWD)
+    if ARGS.group_jobs is None:
+        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, str(HOURS), CWD)
+    else:
+        with open(ARGS.group_jobs, 'r') as file:
+            commands = [line.strip() for line in file if line.strip()]
+        NTASKS = len(commands)
+
+        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, str(HOURS), CWD, group_jobs=commands)
