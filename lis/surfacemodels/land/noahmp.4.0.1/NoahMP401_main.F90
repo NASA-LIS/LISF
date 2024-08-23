@@ -1030,7 +1030,7 @@ subroutine NoahMP401_main(n)
             xice(:,:)      = 0.0 ! ice fraction is 0
             xice_threshold = 0.5 ! be consistent with hrldas 
             isice          = 100 ! this number should not be one of vegetation type id 
-            isurban        = 13  ! be consistent with hrldas 
+            isurban        = LIS_rc%urbanclass  ! be consistent with hrldas 
             ! soil layer thickness 
             dzs(:) = tmp_sldpth(:) 
             
