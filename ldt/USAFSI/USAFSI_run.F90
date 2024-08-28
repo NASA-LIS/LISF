@@ -74,6 +74,7 @@ subroutine USAFSI_run(n)
   !**  28 Jun 23  Extended station names to 31 characters........Eric Kemp/SSAI
   !**  24 Aug 23  Changed station names to 32 characters.........Eric Kemp/SSAI
 
+  !**  19 Jul 24  Added ESPC-D support...........................Eric Kemp/SSAI
   !*****************************************************************************************
   !*****************************************************************************************
 
@@ -89,6 +90,7 @@ subroutine USAFSI_run(n)
 #endif
   use USAFSI_analysisMod
   use USAFSI_arraysMod, only: USAFSI_arrays
+  use USAFSI_espcdMod
   use USAFSI_galwemMod, only: USAFSI_get_galwem_t2m
   use USAFSI_gofsMod
   use USAFSI_lisMod, only:  read_gr2_t2
@@ -144,20 +146,17 @@ subroutine USAFSI_run(n)
   real, allocatable :: elevations(:,:)
   real, allocatable :: landice(:,:)
   integer :: j
-  character*120 :: line
-  integer :: icount
   integer :: c, r
   real :: arctlatr
   real, allocatable :: climo_tmp(:,:)
   integer :: maxsobs
   integer :: yyyy, mm, dd, hh, fh
   integer :: ierr
-  logical :: found_gofs_cice
+  logical :: found_navy_cice
   logical :: just_12z
 
   ! PMW snow depth retrievals, Yeosang Yoon
   character*255              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
-  integer                    ::  ssmis_option        ! option for snow depth retrieval algorithm
 
   maxsobs = usafsi_settings%maxsobs
 
@@ -238,7 +237,7 @@ subroutine USAFSI_run(n)
      allocate (USAFSI_arrays%ssmis_icecon     (nc,     nr))
      allocate (USAFSI_arrays%sst              (nc,     nr))
      allocate (USAFSI_arrays%viirsmap         (nc,     nr))
-     allocate (USAFSI_arrays%gofs_icecon(nc,nr))
+     allocate (USAFSI_arrays%navy_icecon(nc,nr))
 
      ! RETRIEVE STATIC DATA SETS.
      write (LDT_logunit,*) '[INFO] CALLING GETGEO TO GET STATIC FIELDS'
@@ -341,17 +340,25 @@ subroutine USAFSI_run(n)
         end if
 
         ! RETRIEVE NAVY SEA SURFACE TEMPERATURE (SST) DATA.
-        ! First try the US Navy 0.08 deg GOFS data
+        ! EMK 20240718...Try GOFS or ESPC-D
         read (date10(1: 4), '(i4)', err=4200) yyyy
         read (date10(5: 6), '(i2)', err=4200) mm
         read (date10(7: 8), '(i2)', err=4200) dd
         read (date10(9:10), '(i2)', err=4200) hh
         fh = 0 ! Dummy value
-        write (LDT_logunit,*) &
-             '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
-        call process_gofs_sst(usafsi_settings%gofs_sst_dir, &
-             nc, nr, landmask, usafSI_arrays%sst, &
-             yyyy, mm, dd, hh, fh, ierr)
+        if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+           write (LDT_logunit,*) &
+                '[INFO] CALLING PROCESS_ESPCD_SST TO GET SEA SURFACE TEMPERATURES'
+           call process_espcd_sst(usafsi_settings%espcd_sst_dir, &
+                nc, nr, landmask, usafSI_arrays%sst, &
+                yyyy, mm, dd, hh, ierr)
+        else if (usafsi_settings%source_of_ocean_data == "GOFS") then
+           write (LDT_logunit,*) &
+                '[INFO] CALLING PROCESS_GOFS_SST TO GET SEA SURFACE TEMPERATURES'
+           call process_gofs_sst(usafsi_settings%gofs_sst_dir, &
+                nc, nr, landmask, usafSI_arrays%sst, &
+                yyyy, mm, dd, hh, fh, ierr)
+        end if
         if (ierr .ne. 0) then
            ! Fall back on legacy GETSST for 0.25 deg data.
            write (LDT_logunit,*) &
@@ -413,23 +420,29 @@ subroutine USAFSI_run(n)
         deallocate(staelv)
         deallocate(stadep)
 
-        ! Try to get the GOFS sea ice data
-        write(LDT_logunit,*) &
-             '[INFO] CALLING PROCESS_GOFS_CICE TO GET GOFS SEA ICE DATA'
+        ! EMK 20240718...Choose between ESPC-D and GOFS.
         read (date10(1: 4), '(i4)', err=4200) yyyy
         read (date10(5: 6), '(i2)', err=4200) mm
         read (date10(7: 8), '(i2)', err=4200) dd
         read (date10(9:10), '(i2)', err=4200) hh
         fh = 0 ! Dummy value
-        call process_gofs_cice(usafsi_settings%gofs_cice_dir, &
-             nc, nr, landmask, USAFSI_arrays%gofs_icecon, &
-             yyyy, mm, dd, hh, fh, ierr)
-        if (ierr == 0) then
-           found_gofs_cice = .true.
-        else
-           found_gofs_cice = .false.
+        found_navy_cice = .false.
+        if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+           write(LDT_logunit,*) &
+                '[INFO] CALLING PROCESS_ESPCD_CICE TO GET GOFS SEA ICE DATA'
+           call process_espcd_cice(usafsi_settings%espcd_cice_dir, &
+                nc, nr, landmask, USAFSI_arrays%navy_icecon, &
+                yyyy, mm, dd, hh, ierr)
+           if (ierr == 0) found_navy_cice = .true.
+        else if (usafsi_settings%source_of_ocean_data == "GOFS") then
+           ! Try to get the GOFS sea ice data
+           write(LDT_logunit,*) &
+                '[INFO] CALLING PROCESS_GOFS_CICE TO GET GOFS SEA ICE DATA'
+           call process_gofs_cice(usafsi_settings%gofs_cice_dir, &
+                nc, nr, landmask, USAFSI_arrays%navy_icecon, &
+                yyyy, mm, dd, hh, fh, ierr)
+           if (ierr == 0) found_navy_cice = .true.
         end if
-
 !---------------------------------------------------------------------kyh20201118
         ! Estimates TB-based snow depth
         if (usafsi_settings%TB_option == 1) then       !SSMIS
@@ -475,12 +488,13 @@ subroutine USAFSI_run(n)
              '[INFO] CALLING RUN_SNOW_ANALYSIS_GLACIER'
         call run_snow_analysis_glacier(runcycle, nc, nr, landmask, landice)
 
-        ! FIXME...Try using GOFS data first, and if unsuccessful, then run
-        ! the old SSMIS analysis.
-        if (found_gofs_cice) then
+        ! FIXME...Try using ESPC-D or GOFS data first, and if
+        ! unsuccessful, then run the old SSMIS analysis.
+        if (found_navy_cice) then
            write(LDT_logunit,*) &
-                '[INFO] CALLING RUN_SEAICE_ANALYSIS_GOFS'
-           call run_seaice_analysis_gofs(month, runcycle, nc, nr, landmask)
+                '[INFO] CALLING RUN_SEAICE_ANALYSIS_NAVY'
+           call run_seaice_analysis_navy(month, runcycle, nc, nr, &
+                landmask)
         else
            write(LDT_logunit,*) &
                 '[INFO] CALLING RUN_SEAICE_ANALYSIS_SSMIS'
@@ -525,7 +539,7 @@ subroutine USAFSI_run(n)
      deallocate (usafsi_arrays%ssmis_icecon)
      deallocate (usafsi_arrays%sst)
      deallocate (usafsi_arrays%viirsmap)
-     deallocate (usafsi_arrays%gofs_icecon)
+     deallocate (usafsi_arrays%navy_icecon)
      deallocate(landmask)
      deallocate(elevations)
      deallocate(landice)
