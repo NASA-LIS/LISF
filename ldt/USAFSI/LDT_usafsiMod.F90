@@ -78,8 +78,11 @@ module LDT_usafsiMod
 
      ! Other new settings
      real :: fill_climo
+     character*255 :: source_of_ocean_data ! EMK 20240718
      character*255 :: gofs_sst_dir
      character*255 :: gofs_cice_dir
+     character*255 :: espcd_sst_dir  ! EMK 20240718
+     character*255 :: espcd_cice_dir ! EMK 20240718
      character*255 :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
@@ -107,7 +110,7 @@ contains
     ! Imports
     use ESMF
     use LDT_coreMod, only: LDT_config
-    use LDT_logMod, only: LDT_verify
+    use LDT_logMod, only: LDT_verify, LDT_logunit, LDT_endrun
 
     ! Defaults
     implicit none
@@ -507,23 +510,64 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get gofs_sst_dir
-    cfg_entry = "USAFSI GOFS SST data directory:"
+    ! EMK 20240718...Specify source of ocean data.
+    cfg_entry = "USAFSI source of ocean data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%gofs_sst_dir, &
+         usafsi_settings%source_of_ocean_data, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (usafsi_settings%source_of_ocean_data .ne. "GOFS" .and. &
+         usafsi_settings%source_of_ocean_data .ne. "ESPC-D") then
+       write(LDT_logunit,*)'[ERR] Unrecognized source of ocean data'
+       write(LDT_logunit,*)'[ERR] Must be GOFS or ESPC-D'
+       write(LDT_logunit,*) &
+            "[ERR] Update entry for 'USAFSI source of ocean data:'"
+       write(LDT_logunit,*)'[ERR] LDT will halt.'
+       call LDT_endrun()
+    end if
 
-    ! Get gofs_cice_dir
-    cfg_entry = "USAFSI GOFS CICE data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%gofs_cice_dir, &
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (usafsi_settings%source_of_ocean_data == "GOFS") then
+       ! Get gofs_sst_dir
+       cfg_entry = "USAFSI GOFS SST data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%gofs_sst_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+       ! Get gofs_cice_dir
+       cfg_entry = "USAFSI GOFS CICE data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%gofs_cice_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    else if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+
+       ! Get espcd_sst_dir
+       cfg_entry = "USAFSI ESPC-D SST data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%espcd_sst_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+       ! Get espcd_cice_dir
+       cfg_entry = "USAFSI ESPC-D CICE data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%espcd_cice_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    end if
 
     ! Get lis_grib2_dir
     cfg_entry = "USAFSI LIS GRIB2 data directory:"
