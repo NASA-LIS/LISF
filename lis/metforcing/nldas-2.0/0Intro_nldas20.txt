@@ -1,0 +1,23 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{NLDAS20}
+!The atmospheric forcing used in the North American Land Data
+!Assimilation System Phase 2 (NLDAS-2) features products at an
+!hourly 0.125$^\circ$ spatial resolution, from 25 to 53 North
+!and from -125 to -67 West, from January 1979 to present.
+!For details, see Xia et al. (2012, JGR) and visit:
+!    https://ldas.gsfc.nasa.gov/nldas/v2/forcing
+!
+!This metforcing reader handles the netcdf-4 version 020 format
+!of the NLDAS-2 forcing available from the NASA GES DISC.
+!
+!EOP

@@ -212,6 +212,12 @@ NOTE: Required by PROJ.
 
 NOTE: Required by GeoTIFF and GDAL.
 
+==== PETSc 3.16.1
+
+*URL*: https://petsc.org/
+
+NOTE: Required by RAPID router
+
 === Notes
 
 To install these libraries, follow the instructions provided at the various URL listed above.  These libraries have their own dependencies, which should be documented in their respective documentation.
@@ -242,6 +248,8 @@ If you wish to install all the libraries (required and optional, excluding JCSDA
 . GDAL (optional)
 . FortranGIS (optional) +
   Required to use GDAL
+. PETSc (optional) +
+  Required to use RAPID router
 
 //If not, review the appropriate _$WORKING/arch/configure.lis.*_ file
 //for some hints regarding additional low level libraries needed for

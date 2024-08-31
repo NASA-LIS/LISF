@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,9 +60,11 @@ subroutine NoahMP401_writerst(n)
     logical       :: alarmCheck
     integer       :: ftn
     integer       :: status
+    character*3   :: fnest
     
     ! set restart alarm
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 restart alarm")
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP401 restart alarm "//trim(fnest))
     
     ! set restart file format (read from LIS configration file_
     wformat = trim(NOAHMP401_struc(n)%rformat)

@@ -188,7 +188,6 @@ endif::devonly[]
 Land surface model: Noah.2.7.1
 ....
 
-
 `Number of subLSMs:` specifies the number of sub-level LSMs
 or specialized models that may interface with other LSMs in LIS.
 Entry here can be set to 1 with having a surface model type
@@ -347,7 +346,8 @@ Acceptable values for the sources are:
 |"`GSWP2`"                     | GSWP2
 |"`AGRMET`"                    | AGRMET
 |"`PRINCETON`"                 | Princeton
-|"`NLDAS2`"                    | NLDAS2
+|"`NLDAS2 grib`"               | NLDAS-2 GRIB-1 format
+|"`NLDAS2 netcdf`"             | NLDAS-2 v020 netCDF-4 format
 |"`GLDAS`"                     | GLDAS
 |"`GFS`"                       | GFS
 |"`MERRA2`"                    | MERRA2
@@ -1249,6 +1249,8 @@ Acceptable values are:
 |"`SMOS NRT NN soil moisture`"  | SMOS Level 2 Soil Moisture Near Real Time Neural Network
 |"`THySM`"                      | Thermal Hydraulic disaggregation of Soil Moisture
 |"`SNODAS`"                     | SNODAS snow depth
+|"`GLASS LAI`"                  | GLASS Leaf Area Index (LAI)
+|"`GLASS Albedo`"               | GLASS Albedo (black-sky and white-sky)
 |====
 
 .Example _lis.config_ entry
@@ -2829,6 +2831,54 @@ MCD15A2H LAI apply climatological fill values:                1
 MCD15A2H LAI apply QC flags:                                  1
 ....
 
+[[sssec_glasslaida,GLASS LAI assimilation]]
+==== GLASS LAI assimilation
+
+`GLASS LAI data directory:` specifies the location of the data directory containing the GLASS LAI retrievals.
+
+`GLASS LAI data source:` specifies if the GLASS data source is AVHRR or MODIS.
+
+`GLASS LAI apply temporal smoother between 8-day intervals:` specifies whether to apply temporal smoother between 8-day intervals of the LAI product.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply temporal smoother
+|1     | Apply temporal smoother
+|====
+
+.Example _lis.config_ entry
+....
+GLASS LAI data directory:                                  ./GLASS/LAI
+GLASS LAI data source:                                     "AVHRR"
+GLASS LAI apply temporal smoother between 8-day intervals: 1
+....
+
+[[sssec_glassalbedoda,GLASS Albedo assimilation]]
+==== GLASS Albedo assimilation
+
+`GLASS Albedo data directory:` specifies the location of the data directory containing the GLASS Albedo retrievals.
+
+`GLASS Albedo data source:` specifies if the GLASS data source is AVHRR or MODIS.
+
+`GLASS Albedo apply QC flags:` specifies whether to apply quality-control flags of the GLASS Albedo data to the assimilation.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply QC flags
+|1     | Apply QC flags
+|====
+
+.Example _lis.config_ entry
+....
+GLASS Albedo data directory:                               ./GLASS/Albedo
+GLASS Albedo data source:                                  "AVHRR"
+GLASS Albedo apply QC flags:                               1
+....
+
 [[sssec_simgraceda,Simulated GRACE]]
 ==== Simulated GRACE
 
@@ -3062,8 +3112,8 @@ whether the observation error standard deviation is to be scaled using model
 and observation standard deviation.
 
 `SMAP(NASA) model CDF file:` specifies the name of the model CDF file
-(observations will be scaled into this climatology). 
-Note: Soil moisture CDF grouped (stratified) by land cover or precipitation climatology or both simultaneously also can be used here.  
+(observations will be scaled into this climatology).
+Note: Soil moisture CDF grouped (stratified) by land cover or precipitation climatology or both simultaneously also can be used here.
 
 `SMAP(NASA) observation CDF file:` specifies the name of the observation
 CDF file.
@@ -3141,7 +3191,6 @@ SMAP(NRT) observation CDF file:
 SMAP(NRT) soil moisture number of bins in the CDF:
 SMAP(NRT) CDF read option:
 ....
-
 
 [[sssec_cdftransfersmda,Transfering stratified CDFs from one domain to another]]
 ==== Transfering stratified CDFs from one domain to another
@@ -5455,15 +5504,25 @@ Note that if you wish to use the first guess precip, then it must
 match the first guess source.
 
 `AGRMET radiation derived from:` specifies how to compute
-shortwave and longwave radiation.  Defaults to "`cloud types`".
+shortwave and longwave radiation.
 Acceptable values are:
 
 |====
 |Value                   | Description
 
 |"`cloud types`"         | use cloud types
-|"`cloud optical depth`" | use cloud optical depth
+|"`cod properties`"      | use cloud optical depth properties
+|"`GALWEM_RAD`"          | use radiation fields from GALWEM
 |====
+
+`AGRMET GALWEM radiation data directory:` specifies the location of the GALWEM
+radiation data files.
+
+`AGRMET number of gauge networks to use:` specifies nonnegative number
+of gauge networks to use, to be identified in separate config entry.
+
+`AGRMET gauge networks to use::` specifies list of names of gauge
+networks to be used. (One line of names per domain.)
 
 .Example _lis.config_ entry
 ....
@@ -5536,7 +5595,12 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'cloud types'
+AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET GALWEM radiation data directory: GALWEM_Rad
+AGRMET number of gauge networks to use: 7
+AGRMET gauge networks to use::
+AMIL CANA FAA ICAO WMO HADS NWSLI
+::
 ....
 
 
@@ -5820,15 +5884,14 @@ SCAN forcing directory:   ./input/FORCING/SCAN
 SCAN metadata file:       ./input/FORCING/SCAN/msu_scan.mdata
 ....
 
+[[sssec_forcings_nldas2,NLDAS2 (grib)]]
+==== NLDAS2 (grib)
 
-[[sssec_forcings_nldas2,NLDAS2]]
-==== NLDAS2
+`NLDAS2 forcing directory:` specifies the location of the NLDAS-2
+GRIB-1 forcing files.
 
-`NLDAS2 forcing directory:` specifies the location of the NLDAS2
-forcing files.
-
-`NLDAS2 data center source:` specifies the center that produced
-the NLDAS2 files. (This is specified to distinguish the filenames.)
+`NLDAS2 data center source:` specifies the center that produced the
+NLDAS-2 GRIB-1 files.  (This is specified to distinguish the filenames.)
 Acceptable values are:
 
 |====
@@ -5840,7 +5903,7 @@ Acceptable values are:
 
 `NLDAS2 use model level data:` specifies whether or not to
 read in the model level data (instead of 2/10m fields) from the
-NLDAS2 forcing dataset (will open up and read "`B`" files).
+NLDAS-2 forcing dataset (will open up and read "`B`" files).
 This data is at the height of the NARR lowest model level.
 
 Note that this will read in "`Height of Atmospheric Forcing`"
@@ -5857,7 +5920,7 @@ Acceptable values are:
 
 `NLDAS2 use model based swdown:` specifies whether or not to
 read in the un-bias corrected model downward shortwave radiation
-data (in leiu of the bias corrected data) from the NLDAS2 forcing
+data (in leiu of the bias corrected data) from the NLDAS-2 forcing
 dataset (will open up and read "`B`" files).  The data source is
 the NARR shortwave.
 Acceptable values are:
@@ -5871,7 +5934,7 @@ Acceptable values are:
 
 `NLDAS2 use model based precip:` specifies whether or not
 to read in the model based precipitation data (instead of the
-observation based precipitation) from the NLDAS2 forcing
+observation based precipitation) from the NLDAS-2 forcing
 dataset (will open up and read "`B`" files).  The data source
 is the NARR precipitation.
 Acceptable values are:
@@ -5883,10 +5946,9 @@ Acceptable values are:
 |1     | use
 |====
 
-`NLDAS2 use model based pressure:` specifies whether or
-not to read in the model base pressure data (instead of the
-observation based pressure) from the NLDAS2 forcing dataset
-(will open up and read "`B`" files).  The data source is
+`NLDAS2 use model based pressure:` specifies whether or not
+to read in the model base pressure data from the NLDAS-2 forcing
+dataset (will open up and read "`B`" files).  The data source is
 the pressure at the NARR lowest model level.
 Acceptable values are:
 
@@ -5905,6 +5967,103 @@ NLDAS2 use model level data:            0
 NLDAS2 use model based swdown:          0
 NLDAS2 use model based precip:          0
 NLDAS2 use model based pressure:        0
+....
+
+[[sssec_forcings_nldas20,NLDAS-2.0 (netcdf)]]
+==== NLDAS-2.0 (netcdf)
+
+`NLDAS-2.0 FORA forcing directory:` specifies the location of the
+NLDAS-2.0 v020 "`FORA`" netCDF-4 forcing files.
+
+`NLDAS-2.0 FORB forcing directory:` specifies the location of the
+NLDAS-2.0 v020 "`FORB`" netCDF-4 forcing files.  This config entry
+is not required unless one of the following FORB data use flags is
+set to "`1`".
+
+`NLDAS-2.0 use FORB model level data:` specifies whether or not to
+read in and use the model level data (instead of 2/10-m fields) from
+the NLDAS-2 "`FORB`" forcing dataset.  This data is at the height
+of the NARR lowest model level.  The fields that are used are air
+temperature, air humidity, winds, height of the lowest model level,
+and the aerodynamic conductance.  This config entry is not required,
+and the default will be to not use this FORB data.  However, if the
+FORB model level data is chosen, you must specify the directory of
+the FORB data using the "`NLDAS-2.0 FORB forcing directory:`" config.
+
+Note that this will read in "`Height of Atmospheric Forcing`"
+and "`Surface Exchange Coefficient for Heat`" (aka, aerodynamic
+conductance).  You must make sure that "`Forc_Hgt:`" and "`Ch:`"
+(respectively) are included in your forcing variables list file.
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based SWdown:` specifies whether or not
+to read in and use the un-bias-corrected model downward shortwave
+radiation data (in leiu of the bias-corrected data) from the NLDAS-2
+"`FORB`" forcing dataset.  The data source is the NARR shortwave.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based SWdown is
+chosen, you must specify the directory of the FORB data using the
+"`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based precip:` specifies whether or not
+to read in and use the model-based precipitation data (instead of
+the observation-based precipitation) from the NLDAS-2 "`FORB`"
+forcing dataset.  The data source is the NARR precipitation.
+This config entry is not required, and the default will be to not
+use this FORB data.  However, if the FORB model-based precip is
+chosen, you must specify the directory of the FORB data using the
+"`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+`NLDAS-2.0 use FORB model-based pressure:` specifies whether or
+not to read in and use the pressure data from the NLDAS-2 "`FORB`"
+forcing dataset.  This data is at the height of the NARR lowest
+model level.  This config entry is not required, and the default
+will be to not use this FORB data.  However, if the FORB model-based
+pressure is chosen, you must specify the directory of the FORB data
+using the "`NLDAS-2.0 FORB forcing directory:`" config.
+Acceptable values are:
+
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | do not use
+|1     | use
+|====
+
+.Example _lis.config_ entry
+....
+NLDAS-2.0 FORA forcing directory:               ./input/NLDAS2/FORA
+NLDAS-2.0 FORB forcing directory:               ./input/NLDAS2/FORB
+NLDAS-2.0 use FORB model level data:            0
+NLDAS-2.0 use FORB model-based SWdown:          0
+NLDAS-2.0 use FORB model-based precip:          0
+NLDAS-2.0 use FORB model-based pressure:        0
 ....
 
 [[sssec_forcings_COAMPS,COAMPS]]
@@ -6635,8 +6794,40 @@ of the GALWEM-GE forecast forcing data.
 GALWEM-GE forecast forcing directory:          ./GALWEM_GE
 GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
 GALWEM-GE forecast number of ensemble members: 21
+....
 
+[[sssec_mogrepsgforecast,MOGREPS-G forecast]]
+==== MOGREPS-G Forecast
 
+`MOGREPS-G forecast forcing directory:` specifies the location
+of the MOGREPS-G forecast forcing files.
+
+`MOGREPS-G forecast run mode:` specifies the run mode related
+to the MOGREPS-G dataset, which can either be forecast or analysis
+run mode. Currently, only the forecast mode is supported.
+
+`MOGREPS-G forecast number of ensemble members:` specifies the number of ensembles
+of the MOGREPS-G forecast forcing data.
+
+`Apply MOGREPS-G precipitation bias correction:` specifies whether to enable the precipitation 
+bias correction. Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not enable
+|1     | Enable
+|====
+
+`MOGREPS-G model CDF file:` specifies the location of the MOGREPS-G model CDF file.
+
+.Example _lis.config_ entry
+....
+MOGREPS-G forecast forcing directory:          ./MOGREPS-G
+MOGREPS-G forecast run mode:                   forecast    # forecast | analysis
+MOGREPS-G forecast number of ensemble members: 18
+Apply MOGREPS-G precipitation bias correction: 1 #enter 1 - use; or 0
+MOGREPS-G model CDF file:                      ./input/cdf/MOGREPS_G_leadtime_cdf_10km.nc
 ....
 
 [[ssec_lsm,Land surface models]]
@@ -9640,7 +9831,6 @@ AWRAL600 initial sd: 0.5 0.5
 ### 2/sla
 AWRAL600 initial mleaf: 0.67 0.2
 ....
-
 
 [[ssec_sublsm,Sublevel land surface models]]
 === Sublevel land surface models

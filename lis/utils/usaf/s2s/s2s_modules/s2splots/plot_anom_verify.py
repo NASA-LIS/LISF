@@ -1,9 +1,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -72,7 +72,7 @@ def compute_median (anom, lead):
     ''' compute median anomaly of the specified lad '''
     da_slice=[]
     for da in anom:
-        da_slice.append(da.isel(lead=lead))
+        da_slice.append(da.isel(time=lead))
     da_conc = xr.concat(da_slice, dim = 'ens')
     return da_conc.median(dim = 'ens')
 
@@ -349,6 +349,8 @@ if __name__ == "__main__":
 
         nc_med = compute_median (anoms, lead)
         plot_arr[0,:] = nc_med.values *convf
+        if var == 'Precip':
+           plot_arr[0,:] = plot_arr[0,:]/ndays 
 
         # plotting
         style_color = plot_utils.load_table(load_table)

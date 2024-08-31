@@ -102,3 +102,38 @@ SMOPS V3.0 GRIB Table:
 { 2, 0, 7, 1, 3, 248, "SMAPSMQA", "NASA SMAP Liquid Volumetric Soil Moisture QA", "-"},
 { 2, 0, 7, 1, 3, 249, "RESSM1QA", "Reserved Liquid Volumetric Soil Moisture 1 QA", "-"},
 
+SMPOS V4.0 belnded product table: 
+NPR-SMOPS-CMAP-6hrly_v4r0_blend_syyyymmddhh00000_eyyyymmddxxxxxxx_cyyyymmddxxxxxxx.grib2
+210 = blended soil moisture (Blended_SM)
+214 = ASCAT_B soil moisture (ASCAT_B_SM)
+250 = ASCAT_C soil moisture (ASCAT_C_SM)
+215 = AMSR2 soil moisture (AMSR2_SM)
+216 = GMI SM (GMI_SM)
+217 = NRT SMAP SM (NSMAP_SM)
+218 = SMAP SM (SMAP_SM)
+219 = Blended SM SD (Blended_SM_SD)
+220 = Hour for blended soil moisture (Blended_hour)
+221 = Minute for blended soil moisture (Blended_minute)
+228 = Hour for ASCAT_B soil moisture (ASCAT_B_hour)
+229 = Minute for ASCAT_B soil moisture (ASCAT_B_minute)
+251 = Hour for ASCAT_C soil moisture (ASCAT_C_hour)
+252 = Minute for ASCAT_C soil moisture (ASCAT_C_minute)
+230 = Hour for AMSR2 soil moisture (AMSR2_hour)
+231 = Minute for AMSR2 soil moisture (AMSR2_minute)
+232 = Hour for GMI SM (GMI_hour)
+233 = Minute for GMI SM (GMI_minute)
+234 = Hour for NSMAP SM (NSMAP_hour)
+235 = Minute for NSMAP SM (NSMAP_minute)
+236 = Hour for SMAP SM (SMAP_hour)
+237 = Minute for SMAP SM (SMAP_minute)
+238 = Hour for spare 1 (Blended_SM_SD_hour)
+239 = Minute for spare 1 (Blended_SM_SD_minute)
+240 = QA for blended soil moisture (Blended_QA)
+244 = QA for ASCAT_B soil moisture (ASCAT_B_QA)
+253 = QA for ASCAT_C soil moisture (ASCAT_C_QA)
+245 = QA for AMSR2 soil moisture (AMSR2_QA)
+246 = QA for GMI SM (GMI_QA)
+247 = QA for NSMAP (NSMAP_QA)
+248 = QA for SMAP SM (SMAP_QA)
+249 = QA for spare 1 (Blended_SM_SD_QA)
+
