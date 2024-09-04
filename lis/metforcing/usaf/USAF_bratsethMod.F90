@@ -28,6 +28,8 @@
 !              speed analyses..........................Eric Kemp/SSAI/NASA
 ! 24 May 2024  Export USAF_is_gauge function, and add HADS and
 !              NWSLI gage networks.....................Eric Kemp/SSAI/NASA
+! 29 Aug 2024  Added option to use inverse exponential autocorrelation
+!              function................................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -1602,7 +1604,8 @@ contains
    !     are pending.
    !---------------------------------------------------------------------------
 
-   subroutine USAF_analyzePrecip(precipAll,nest,back,hourindex,mrgp,precipOBA)
+   subroutine USAF_analyzePrecip(precipAll, nest, back, hourindex, &
+        corr_func_type, mrgp, precipOBA)
 
       ! Imports
       use AGRMET_forcingMod, only:  agrmet_struc
@@ -1619,6 +1622,7 @@ contains
       integer,intent(in) :: nest
       real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
       integer, intent(in) :: hourindex
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
       type(OBA), intent(out) :: precipOBA
 
@@ -1674,10 +1678,10 @@ contains
 
       ! Calculate (inverse) data density around each observation.
       sigmaBSqr = agrmet_struc(nest)%bratseth_precip_back_sigma_b_sqr
-      call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
+      call calc_invDataDensities(precipAll, sigmaBSqr, nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           USAF_is_gauge, &
+           USAF_is_gauge, corr_func_type, &
            invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
@@ -1685,18 +1689,21 @@ contains
       ! with the required number of iterations (npasses).  Also return
       ! OBA information for output.
       convergeThresh = 0.01
-      call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
+      call calc_obsAnalysis(precipAll, sigmaBSqr, nobs, &
+           invDataDensities, nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           convergeThresh, USAF_is_gauge, sumObsEstimates, &
+           convergeThresh, USAF_is_gauge, corr_func_type, &
+           sumObsEstimates, &
            npasses, precipOBA)
 
       ! Calculate analysis at grid points.
-      call calc_gridAnalysis(precipAll,nest,sigmaBSqr,nobs,invDataDensities,&
-        sumObsEstimates,npasses,back, &
-        agrmet_struc(nest)%bratseth_precip_max_dist, &
-        agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-        mrgp)
+      call calc_gridAnalysis(precipAll, nest, sigmaBSqr, nobs, &
+           invDataDensities,&
+           sumObsEstimates,npasses,back, &
+           agrmet_struc(nest)%bratseth_precip_max_dist, &
+           agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
+           corr_func_type, mrgp)
 
       ! Clean up
       deallocate(invDataDensities)
@@ -1857,8 +1864,9 @@ contains
    ! correlated.
    !
    ! NOTE:  Requires LIS to be run in lat-lon projection!
-   subroutine calc_invDataDensities(this,sigmaBSqr,nest,max_dist, &
-        backErrScaleLength,isUncorrObType,invDataDensities,silent)
+   subroutine calc_invDataDensities(this, sigmaBSqr, nest, max_dist, &
+        backErrScaleLength, isUncorrObType, corr_func_type, &
+        invDataDensities, silent)
 
       ! Imports
       use LIS_coreMod, only: LIS_localPet, LIS_rc
@@ -1877,6 +1885,7 @@ contains
       real, intent(in) :: max_dist
       real, intent(in) :: backErrScaleLength
       logical, external :: isUncorrObType
+      integer, intent(in) :: corr_func_type
       real, allocatable, intent(out) :: invDataDensities(:)
       logical, intent(in), optional :: silent
 
@@ -1981,7 +1990,8 @@ contains
                   end if
                   if (dist .gt. max_dist) cycle
 
-                  b = backErrCov(sigmaBSqr,dist,backErrScaleLength)
+                  b = backErrCov(sigmaBSqr, dist, backErrScaleLength, &
+                       corr_func_type)
                   num = b
                   if (iob .eq. job) then
                      num = num + this%sigmaOSqr(job)
@@ -2000,7 +2010,7 @@ contains
                         num = num + &
                              obsErrCov(this%sigmaOSqr(job), &
                                        this%oErrScaleLength(job), &
-                                       dist)
+                                       dist, corr_func_type)
                      end if
                   end if
 
@@ -2084,8 +2094,9 @@ contains
    !
    ! The observed, background, and analysis values at the observation
    ! points are also collected in an OBA structure for post-processing.
-   subroutine calc_obsAnalysis(this,sigmaBSqr,nobs,invDataDensities,nest,&
-        max_dist,backErrScaleLength, convergeThresh, isUncorrObType, &
+   subroutine calc_obsAnalysis(this, sigmaBSqr, nobs, &
+        invDataDensities, nest, max_dist, backErrScaleLength, &
+        convergeThresh, isUncorrObType, corr_func_type, &
         sumObsEstimates, npasses, varOBA, &
         skip, silent)
 
@@ -2110,6 +2121,7 @@ contains
       real, intent(in) :: backErrScaleLength
       real, intent(in) :: convergeThresh
       logical, external :: isUncorrObType
+      integer, intent(in) :: corr_func_type
       real, allocatable, intent(out) :: sumObsEstimates(:)
       integer, intent(out) :: npasses
       type(OBA), intent(inout) :: varOBA
@@ -2293,7 +2305,7 @@ contains
                      if (dist .gt. max_dist) cycle
 
                      b = backErrCov(sigmaBSqr,dist, &
-                          backErrScaleLength)
+                          backErrScaleLength, corr_func_type)
 
                      ! First, update the observation estimate
                      weight = b
@@ -2306,7 +2318,7 @@ contains
                            weight = weight + &
                                 obsErrCov(this%sigmaOSqr(job), &
                                 this%oErrScaleLength(job), &
-                                dist)
+                                dist, corr_func_type)
                         end if
                      end if
                      weight = weight * invDataDensities(iob)
@@ -2612,8 +2624,9 @@ contains
    !
    ! NOTE:  Bratseth values are not interpolated to water points.
 
-   subroutine calc_gridAnalysis(this,nest,sigmaBSqr,nobs,invDataDensities,&
-        sumObsEstimates,npasses,back,max_dist,backErrScaleLength,mrgp)
+   subroutine calc_gridAnalysis(this, nest, sigmaBSqr, nobs, &
+        invDataDensities, sumObsEstimates, npasses, back, max_dist, &
+        backErrScaleLength, corr_func_type, mrgp)
 
       ! Imports
       use LIS_coreMod, only: LIS_rc, LIS_domain, &
@@ -2639,6 +2652,7 @@ contains
       real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
       real, intent(in) :: max_dist
       real, intent(in) :: backErrScaleLength
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
 
       ! Local variables
@@ -2735,7 +2749,8 @@ contains
                if (dist .gt. max_dist) cycle
 
                weight = &
-                    backErrCov(sigmaBSqr,dist,backErrScaleLength) &
+                    backErrCov(sigmaBSqr, dist, backErrScaleLength, &
+                    corr_func_type) &
                     * invDataDensities(job)
 
                tmp_mrgp = tmp_mrgp + &
@@ -2801,44 +2816,95 @@ contains
 
    !---------------------------------------------------------------------------
    ! Observation error covariance function.
-   real function obsErrCov(sigmaOSqr,oErrScaleLength,dist)
-      implicit none
-      real, intent(in) :: sigmaOSqr
-      real, intent(in) :: oErrScaleLength ! in meters
-      real, intent(in) :: dist ! in meters
-      obsErrCov = sigmaOSqr*obsErrCorr(oErrScaleLength,dist)
+   real function obsErrCov(sigmaOSqr, oErrScaleLength, dist, &
+        corr_func_type)
+     implicit none
+     real, intent(in) :: sigmaOSqr
+     real, intent(in) :: oErrScaleLength ! in meters
+     real, intent(in) :: dist ! in meters
+     integer, intent(in) :: corr_func_type
+     obsErrCov = sigmaOSqr*obsErrCorr(oErrScaleLength,dist,&
+          corr_func_type)
    end function obsErrCov
 
    !---------------------------------------------------------------------------
-   ! Observation error correlation function.  Currently Gaussian.
-   real function obsErrCorr(oErrScaleLength,dist)
-      implicit none
-      real, intent(in) :: oErrScaleLength ! in meters
-      real, intent(in) :: dist ! in meters
-      real :: invOErrScaleLength
-      invOErrScaleLength = 1. / oErrScaleLength
-      obsErrCorr = exp(-1*dist*dist*invOErrScaleLength*InvOErrScaleLength)
-   end function obsErrCorr
+   ! Observation error correlation function.
+   real function obsErrCorr(oErrScaleLength, dist, corr_func_type)
+
+     ! Imports
+     use LIS_logMod, only: LIS_logunit, LIS_endrun
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     real, intent(in) :: oErrScaleLength ! in meters
+     real, intent(in) :: dist ! in meters
+     integer, intent(in) :: corr_func_type
+
+     ! Locals
+     real :: invOErrScaleLength
+
+     invOErrScaleLength = 1. / oErrScaleLength
+     if (corr_func_type == 1) then ! Gaussian
+         obsErrCorr = &
+              exp(-1*dist*dist*invOErrScaleLength*InvOErrScaleLength)
+      else if (corr_func_type == 2) then ! Inverse Exponential
+         obsErrCorr = &
+              exp(-1*dist*invOErrScaleLength)
+      else
+         write(LIS_logunit,*) '[ERR] Invalid correlation option!'
+         write(LIS_logunit,*) &
+              '[ERR] Expected 1 (Gaussian) or 2 (Inverse Exponential)'
+         write(LIS_logunit,*) '[ERR] Received ', corr_func_type
+         call LIS_endrun()
+      end if
+    end function obsErrCorr
 
    !---------------------------------------------------------------------------
    ! Background error covariance function.
-   real function backErrCov(sigmaBSqr,dist,scale_length)
-      implicit none
-      real, intent(in) :: sigmaBSqr
-      real, intent(in) :: dist ! in meters
-      real, intent(in) :: scale_length
-      backErrCov = sigmaBSqr*backErrCorr(dist,scale_length)
+    real function backErrCov(sigmaBSqr, dist, scale_length, &
+         corr_func_type)
+     implicit none
+     real, intent(in) :: sigmaBSqr
+     real, intent(in) :: dist ! in meters
+     real, intent(in) :: scale_length
+     integer, intent(in) :: corr_func_type
+     backErrCov = sigmaBSqr*backErrCorr(dist, scale_length, &
+          corr_func_type)
    end function backErrCov
 
    !---------------------------------------------------------------------------
-   ! Background error correlation function.  Currently Gaussian.
-   real function backErrCorr(dist,scale_length)
-      implicit none
-      real, intent(in) :: dist ! in meters
-      real, intent(in) :: scale_length
-      real :: inv_scale_length
-      inv_scale_length = 1./scale_length
-      backErrCorr = exp(-1*dist*dist*inv_scale_length*inv_scale_length)
+   ! Background error correlation function.
+   real function backErrCorr(dist, scale_length, corr_func_type)
+
+     ! Imports
+     use LIS_logMod, only: LIS_logunit, LIS_endrun
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     real, intent(in) :: dist ! in meters
+     real, intent(in) :: scale_length
+     integer, intent(in) :: corr_func_type
+
+     ! Locals
+     real :: inv_scale_length
+
+     inv_scale_length = 1. / scale_length
+
+     if (corr_func_type == 1) then ! Gaussian
+        backErrCorr = exp(-1*dist*dist*inv_scale_length*inv_scale_length)
+     else if (corr_func_type == 2) then ! Inverse exponential
+        backErrCorr = exp(-1*dist*inv_scale_length)
+     else
+        write(LIS_logunit,*)'[ERR] Invalid correlation function type!'
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 (Gaussian) or 2 (Inverse exponential)'
+        write(LIS_logunit,*) '[ERR] Found ', corr_func_type
+     end if
+
    end function backErrCorr
 
    !---------------------------------------------------------------------------
@@ -5671,8 +5737,9 @@ contains
    !     function has a much shorter radius of influence that greatly speeds
    !     up the analysis. 
    !---------------------------------------------------------------------------
-   subroutine USAF_analyzeScreen(screenObs,nest,back,sigmaBSqr, &
-        max_dist, backErrScaleLength,analysis, screenOBA)
+   subroutine USAF_analyzeScreen(screenObs, nest, back, sigmaBSqr, &
+        max_dist, backErrScaleLength, corr_func_type, analysis, &
+        screenOBA)
 
       ! Imports
       use AGRMET_forcingMod, only: agrmet_struc
@@ -5691,6 +5758,7 @@ contains
       real, intent(in) :: sigmaBSqr
       real, intent(in) :: max_dist
       real, intent(in) :: backErrScaleLength
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: analysis(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
       type(OBA), intent(out) :: screenOBA
 
@@ -5782,22 +5850,24 @@ contains
       end if
 
       ! Calculate (inverse) data density around each observation.
-      call calc_invDataDensities(screenObsGood,sigmaBSqr,nest, &
-           max_dist,backErrScaleLength,is_stn,invDataDensities)
+      call calc_invDataDensities(screenObsGood, sigmaBSqr, nest, &
+           max_dist, backErrScaleLength, is_stn, corr_func_type, &
+           invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
       ! the corrections at each observation point (in sumObsEstimates), along
       ! with the required number of iterations (npasses).  Also return
       ! OBA information for output.
       convergeThresh = 0.01
-      call calc_obsAnalysis(screenObsGood,sigmaBSqr,nobs,invDataDensities, &
-           nest, max_dist, backErrScaleLength,convergeThresh,is_stn,&
-           sumObsEstimates, npasses, screenOBA)
+      call calc_obsAnalysis(screenObsGood, sigmaBSqr, nobs, &
+           invDataDensities, &
+           nest, max_dist, backErrScaleLength, convergeThresh, &
+           is_stn, corr_func_type, sumObsEstimates, npasses, screenOBA)
 
       ! Calculate analysis at grid points.
-      call calc_gridAnalysis(screenObsGood,nest,sigmaBSqr,nobs, &
-           invDataDensities,sumObsEstimates,npasses,back,max_dist,&
-           backErrScaleLength,analysis)
+      call calc_gridAnalysis(screenObsGood, nest, sigmaBSqr, nobs, &
+           invDataDensities, sumObsEstimates, npasses, back, max_dist,&
+           backErrScaleLength, corr_func_type, analysis)
 
       ! Clean up
       deallocate(invDataDensities)
@@ -6535,6 +6605,8 @@ contains
               agrmet_struc(nest)%galwem_precip_imerg_err_scale_length
          agrmet_struc(nest)%bratseth_precip_imerg_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_imerg_sigma_o_sqr
+         agrmet_struc(nest)%bratseth_precip_corr_func_type = &
+              agrmet_struc(nest)%galwem_precip_corr_func_type
          agrmet_struc(nest)%bratseth_precip_max_dist = &
               agrmet_struc(nest)%galwem_precip_max_dist
 
@@ -6561,6 +6633,8 @@ contains
               agrmet_struc(nest)%gfs_precip_imerg_err_scale_length
          agrmet_struc(nest)%bratseth_precip_imerg_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_imerg_sigma_o_sqr
+         agrmet_struc(nest)%bratseth_precip_corr_func_type = &
+              agrmet_struc(nest)%gfs_precip_corr_func_type
          agrmet_struc(nest)%bratseth_precip_max_dist = &
               agrmet_struc(nest)%gfs_precip_max_dist
 
@@ -6608,6 +6682,8 @@ contains
 
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_t2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_t2m_corr_func_type = &
+              agrmet_struc(n)%galwem_t2m_corr_func_type
          agrmet_struc(n)%bratseth_t2m_max_dist = &
               agrmet_struc(n)%galwem_t2m_max_dist
 
@@ -6617,6 +6693,8 @@ contains
               agrmet_struc(n)%galwem_rh2m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_rh2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_rh2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_rh2m_corr_func_type = &
+              agrmet_struc(n)%galwem_rh2m_corr_func_type
          agrmet_struc(n)%bratseth_rh2m_max_dist = &
               agrmet_struc(n)%galwem_rh2m_max_dist
 
@@ -6626,6 +6704,8 @@ contains
               agrmet_struc(n)%galwem_spd10m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_spd10m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_spd10m_corr_func_type = &
+              agrmet_struc(n)%galwem_spd10m_corr_func_type
          agrmet_struc(n)%bratseth_spd10m_max_dist = &
               agrmet_struc(n)%galwem_spd10m_max_dist
 
@@ -6641,6 +6721,8 @@ contains
 
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_t2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_t2m_corr_func_type = &
+              agrmet_struc(n)%gfs_t2m_corr_func_type
          agrmet_struc(n)%bratseth_t2m_max_dist = &
               agrmet_struc(n)%gfs_t2m_max_dist
 
@@ -6650,6 +6732,8 @@ contains
               agrmet_struc(n)%gfs_rh2m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_rh2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_rh2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_rh2m_corr_func_type = &
+              agrmet_struc(n)%gfs_rh2m_corr_func_type
          agrmet_struc(n)%bratseth_rh2m_max_dist = &
               agrmet_struc(n)%gfs_rh2m_max_dist
 
@@ -6659,6 +6743,8 @@ contains
               agrmet_struc(n)%gfs_spd10m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_spd10m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_spd10m_corr_func_type = &
+              agrmet_struc(n)%gfs_spd10m_corr_func_type
          agrmet_struc(n)%bratseth_spd10m_max_dist = &
               agrmet_struc(n)%gfs_spd10m_max_dist
 

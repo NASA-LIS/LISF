@@ -866,6 +866,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             call USAF_analyzePrecip(precip_3hrly_all, n, &
                  back4(:,:,k),hourindex, &
+                 agrmet_struc(n)%bratseth_precip_corr_func_type, &
                  agrmet_struc(n)%mrgp(:,:,k), precipOBA)
             
             !-----------------------------------------------------------
@@ -1426,6 +1427,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             call USAF_analyzePrecip(precip_3hrly_all, n, &
                  back4(:,:,k),hourindex, &
+                 agrmet_struc(n)%bratseth_precip_corr_func_type, &
                  agrmet_struc(n)%mrgp(:,:,k), precipOBA)
             
             !-----------------------------------------------------------
