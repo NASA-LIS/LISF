@@ -678,12 +678,13 @@ subroutine AGRMET_sfcalc(n)
        call AGRMET_julhr_date10(julhr, yyyymmddhh)
        write(LIS_logunit,*) &
             '[INFO] RUNNING BRATSETH TEMPERATURE ANALYSIS FOR ',yyyymmddhh
-       call USAF_analyzeScreen(t2mObs,n,&
-            agrmet_struc(n)%sfctmp_glb(step_dum,:,:),&
+       call USAF_analyzeScreen(t2mObs, n, &
+            agrmet_struc(n)%sfctmp_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_t2m_max_dist, &
             agrmet_struc(n)%bratseth_t2m_back_err_scale_length, &
-            agrmet_struc(n)%sfctmp(step_dum,:,:),t2mOBA)
+            agrmet_struc(n)%bratseth_t2m_corr_func_type, &
+            agrmet_struc(n)%sfctmp(step_dum,:,:), t2mOBA)
 
        ! Output OBA data
        if (agrmet_struc(n)%oba_switch .eq. 1 .or. &
@@ -704,12 +705,13 @@ subroutine AGRMET_sfcalc(n)
        call USAF_multObsData(rh2mObs,100.)
        agrmet_struc(n)%sfcrlh_glb(step_dum,:,:) = &
             agrmet_struc(n)%sfcrlh_glb(step_dum,:,:)*100.
-       call USAF_analyzeScreen(rh2mObs,n,&
-            agrmet_struc(n)%sfcrlh_glb(step_dum,:,:),&
+       call USAF_analyzeScreen(rh2mObs, n, &
+            agrmet_struc(n)%sfcrlh_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_rh2m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_rh2m_max_dist, &
             agrmet_struc(n)%bratseth_rh2m_back_err_scale_length, &
-            agrmet_struc(n)%sfcrlh(step_dum,:,:),rh2mOBA)
+            agrmet_struc(n)%bratseth_rh2m_corr_func_type, &
+            agrmet_struc(n)%sfcrlh(step_dum,:,:), rh2mOBA)
        ! Make sure RH is between 0 and 1 (convert from percent).
        do r = 1, LIS_rc%lnr(n)
           do c = 1, LIS_rc%lnc(n)
@@ -726,18 +728,19 @@ subroutine AGRMET_sfcalc(n)
              call makeFilename(rh2mPathOBA,yyyymmddhh,1,obaFilename)
              call writeToFile(rh2mOBA,obaFilename)
           end if
-          call destroyOBA(rh2mOBA)       
+          call destroyOBA(rh2mOBA)
        end if
 
        call AGRMET_julhr_date10(julhr, yyyymmddhh)
        write(LIS_logunit,*) &
             '[INFO] RUNNING BRATSETH WIND SPEED ANALYSIS FOR ',yyyymmddhh
-       call USAF_analyzeScreen(spd10mObs,n,&
-            agrmet_struc(n)%sfcspd_glb(step_dum,:,:),&
+       call USAF_analyzeScreen(spd10mObs, n, &
+            agrmet_struc(n)%sfcspd_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_spd10m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_spd10m_max_dist, &
             agrmet_struc(n)%bratseth_spd10m_back_err_scale_length, &
-            agrmet_struc(n)%sfcspd(step_dum,:,:),spd10mOBA)
+            agrmet_struc(n)%bratseth_spd10m_corr_func_type, &
+            agrmet_struc(n)%sfcspd(step_dum,:,:), spd10mOBA)
 
        ! Output OBA data
        if (agrmet_struc(n)%oba_switch .eq. 1 .or. &
