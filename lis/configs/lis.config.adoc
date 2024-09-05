@@ -5616,6 +5616,21 @@ Acceptable values are:
 `AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance
 `AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance
 
+`AGRMET forcing map projection:` specifies map projection type.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|latlon                  | use latitude/longitude projection
+|====
+
+`AGRMET forcing domain lower left lat:` specifies southwest latitude corner
+`AGRMET forcing domain lower left lon:` specifies southwest longitude corner
+`AGRMET forcing domain upper right lat:` specifies northeast latitude corner
+`AGRMET forcing domain upper right lon:` specifies northeast longitude corner
+`AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude
+`AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude
 
 .Example _lis.config_ entry
 ....
@@ -5746,6 +5761,14 @@ AGRMET GFS RH2M station observation error variance:                 66.8
 AGRMET GFS SPD10M background error scale length (m):             86000.
 AGRMET GFS SPD10M background error variance:                         0.57
 AGRMET GFS SPD10M station observation error variance:                2.48
+
+AGRMET forcing map projection:             latlon
+AGRMET forcing domain lower left lat:       -89.9531250
+AGRMET forcing domain lower left lon:      -179.9296875
+AGRMET forcing domain upper right lat:       89.9531250
+AGRMET forcing domain upper right lon:      179.9296875
+AGRMET forcing domain resolution (dx):        0.1406250
+AGRMET forcing domain resolution (dy):        0.0937500
 
 ....
 
