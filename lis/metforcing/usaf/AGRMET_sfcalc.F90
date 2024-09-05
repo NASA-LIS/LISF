@@ -682,7 +682,7 @@ subroutine AGRMET_sfcalc(n)
             agrmet_struc(n)%sfctmp_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_t2m_max_dist, &
-            agrmet_struc(n)%bratseth_t2m_back_err_scale_length, &
+            agrmet_struc(n)%bratseth_t2m_back_err_inv_scale_length, &
             agrmet_struc(n)%bratseth_t2m_corr_func_type, &
             agrmet_struc(n)%sfctmp(step_dum,:,:), t2mOBA)
 
@@ -709,7 +709,7 @@ subroutine AGRMET_sfcalc(n)
             agrmet_struc(n)%sfcrlh_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_rh2m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_rh2m_max_dist, &
-            agrmet_struc(n)%bratseth_rh2m_back_err_scale_length, &
+            agrmet_struc(n)%bratseth_rh2m_back_err_inv_scale_length, &
             agrmet_struc(n)%bratseth_rh2m_corr_func_type, &
             agrmet_struc(n)%sfcrlh(step_dum,:,:), rh2mOBA)
        ! Make sure RH is between 0 and 1 (convert from percent).
@@ -738,7 +738,7 @@ subroutine AGRMET_sfcalc(n)
             agrmet_struc(n)%sfcspd_glb(step_dum,:,:), &
             agrmet_struc(n)%bratseth_spd10m_back_sigma_b_sqr, &
             agrmet_struc(n)%bratseth_spd10m_max_dist, &
-            agrmet_struc(n)%bratseth_spd10m_back_err_scale_length, &
+            agrmet_struc(n)%bratseth_spd10m_back_err_inv_scale_length, &
             agrmet_struc(n)%bratseth_spd10m_corr_func_type, &
             agrmet_struc(n)%sfcspd(step_dum,:,:), spd10mOBA)
 
