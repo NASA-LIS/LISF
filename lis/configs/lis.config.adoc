@@ -5670,6 +5670,45 @@ Acceptable values include:
 
 `AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low
 
+`AGRMET output OBA data:` option for writing OBA (observation, background, analysis) files from Bratseth.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not write OBA files
+|1                       | Write OBA files
+|2                       | Write OBA files w/o actually running Bratseth scheme
+|====
+
+`AGRMET skip backQC:` option to disable backQC step
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip backQC step
+|1                       | Skip backQC step
+|====
+
+`AGRMET skip superstatQC:` option to disable superstatQC step
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip superstatQC step
+|1                       | Skip superstatQC step
+|====
+
+`AGRMET 3hr maximum precip ceiling:` set threshold (mm) above which to reject precipitation
+
+`AGRMET mask file:` path to legacy AGRMET landmask file
+
+`AGRMET terrain file:` path to legacy AGRMET terrain file
+
+|====
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5815,6 +5854,14 @@ AGRMET IMERG product:                      3B-HHR-E        # Early Run
 AGRMET IMERG version:                      V07B # Jun 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
+AGRMET output OBA data: 0
+AGRMET skip backQC: 0
+AGRMET skip superstatQC: 0
+
+AGRMET 3hr maximum precip ceiling: 200.0
+
+AGRMET mask file:                ./input/legacy/all_16/point_switches
+AGRMET terrain file:              ./input/legacy/pst_16/terrain
 ....
 
 
