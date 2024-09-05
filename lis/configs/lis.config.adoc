@@ -5574,6 +5574,48 @@ Acceptable values are:
 |2                       | use WIGOS supported files
 |====
 
+`AGRMET GALWEM Precip background error scale length (m):` specifies scale length for GALWEM precipitation error correlation
+`AGRMET GALWEM Precip background error variance:` specifies GALWEM precipitation error variance
+`AGRMET GALWEM Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance
+`AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation
+`AGRMET GALWEM Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance
+`AGRMET GALWEM Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation
+`AGRMET GALWEM Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance
+`AGRMET GALWEM Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation
+`AGRMET GALWEM Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance
+`AGRMET GALWEM Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation
+`AGRMET GALWEM Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance
+`AGRMET GALWEM T2M background error scale length (m):` specifies scale length for GALWEM 2m temperature error correlation
+`AGRMET GALWEM T2M background error variance:` specifies GALWEM 2m temperature error variance
+`AGRMET GALWEM T2M station observation error variance:` specifies station observation 2m temperature error variance
+`AGRMET GALWEM RH2M background error scale length (m):` specifies scale length for GALWEM 2m relative humidity error correlation
+`AGRMET GALWEM RH2M background error variance:` specifies GALWEM 2m relative humidity error variance
+`AGRMET GALWEM RH2M station observation error variance:` specifies station observation 2m relative humidity error variance
+`AGRMET GALWEM SPD10M background error scale length (m):` specifies scale length for GALWEM 10m wind speed error correlation
+`AGRMET GALWEM SPD10M background error variance:` specifies GALWEM 10m wind speed error variance
+`AGRMET GALWEM SPD10M station observation error variance:` specifies station observation 10 wind speed error variance
+
+`AGRMET GFS Precip background error scale length (m):` specifies scale length for GFS precipitation error correlation
+`AGRMET GFS Precip background error variance:` specifies GFS precipitation error variance
+`AGRMET GFS Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance
+`AGRMET GFS Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation
+`AGRMET GFS Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance
+`AGRMET GFS Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation
+`AGRMET GFS Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance
+`AGRMET GFS Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation
+`AGRMET GFS Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance
+`AGRMET GFS Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation
+`AGRMET GFS Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance
+`AGRMET GFS T2M background error scale length (m):` specifies scale length for GFS 2m temperature error correlation
+`AGRMET GFS T2M background error variance:` specifies GFS 2m temperature error variance
+`AGRMET GFS T2M station observation error variance:` specifies station observation 2m temperature error variance
+`AGRMET GFS RH2M background error scale length (m):` specifies scale length for GFS 2m relative humidity error correlation
+`AGRMET GFS RH2M background error variance:` specifies GFS 2m relative humidity error variance
+`AGRMET GFS RH2M station observation error variance:` specifies station observation 2m relative humidity error variance
+`AGRMET GFS SPD10M background error scale length (m):` specifies scale length for GFS 10m wind speed error correlation
+`AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance
+`AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance
+
 
 .Example _lis.config_ entry
 ....
@@ -5662,6 +5704,48 @@ AGRMET GFS RH2M correlation function type: 1
 AGRMET GFS SPD10M correlation function type: 1
 AGRMET precip obs file format: 1
 AGRMET sfc obs file format: 1
+
+AGRMET GALWEM Precip background error scale length (m):         102000.
+AGRMET GALWEM Precip background error variance:                      0.83
+AGRMET GALWEM Precip Gauge observation error variance:               0.86
+AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
+AGRMET GALWEM Precip GEOPRECIP observation error variance:           1.24
+AGRMET GALWEM Precip SSMI observation error scale length (m):   133000.
+AGRMET GALWEM Precip SSMI observation error variance:                2.58
+AGRMET GALWEM Precip CMORPH observation error scale length (m):  89000.
+AGRMET GALWEM Precip CMORPH observation error variance:              1.15
+AGRMET GALWEM Precip IMERG observation error scale length (m):  101000.
+AGRMET GALWEM Precip IMERG observation error variance:               1.93
+AGRMET GALWEM T2M background error scale length (m):            110000.
+AGRMET GALWEM T2M background error variance:                         1.48
+AGRMET GALWEM T2M station observation error variance:                2.30
+AGRMET GALWEM RH2M background error scale length (m):           119000.
+AGRMET GALWEM RH2M background error variance:                       30.7
+AGRMET GALWEM RH2M station observation error variance:              65.8
+AGRMET GALWEM SPD10M background error scale length (m):          53000.
+AGRMET GALWEM SPD10M background error variance:                      0.62
+AGRMET GALWEM SPD10M station observation error variance:             2.37
+
+AGRMET GFS Precip background error scale length (m):             93000.
+AGRMET GFS Precip background error variance:                         0.47
+AGRMET GFS Precip Gauge observation error variance:                  0.70
+AGRMET GFS Precip GEOPRECIP observation error scale length (m): 131000.
+AGRMET GFS Precip GEOPRECIP observation error variance:              1.06
+AGRMET GFS Precip SSMI observation error scale length (m):      131000.
+AGRMET GFS Precip SSMI observation error variance:                   2.10
+AGRMET GFS Precip CMORPH observation error scale length (m):     91000.
+AGRMET GFS Precip CMORPH observation error variance:                 0.92
+AGRMET GFS Precip IMERG observation error scale length (m):     100000.
+AGRMET GFS Precip IMERG observation error variance:                  1.62
+AGRMET GFS T2M background error scale length (m):               125000.
+AGRMET GFS T2M background error variance:                            1.36
+AGRMET GFS T2M station observation error variance:                   2.38
+AGRMET GFS RH2M background error scale length (m):              197000.
+AGRMET GFS RH2M background error variance:                          51.3
+AGRMET GFS RH2M station observation error variance:                 66.8
+AGRMET GFS SPD10M background error scale length (m):             86000.
+AGRMET GFS SPD10M background error variance:                         0.57
+AGRMET GFS SPD10M station observation error variance:                2.48
 
 ....
 
