@@ -664,6 +664,8 @@ subroutine readcrd_agrmet()
           agrmet_struc(n)%galwem_precip_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
           '[ERR] AGRMET GALWEM Precip background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_precip_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_precip_back_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GALWEM Precip background error variance:",rc=rc)
@@ -693,7 +695,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_precip_geoprecip_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_precip_geoprecip_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_precip_geoprecip_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GALWEM Precip GEOPRECIP observation error variance:",rc=rc)
@@ -713,7 +717,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_precip_ssmi_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-       '[ERR] AGRMET GALWEM Precip SSMI observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM Precip SSMI observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_precip_ssmi_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_precip_ssmi_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GALWEM Precip SSMI observation error variance:",rc=rc)
@@ -733,7 +739,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_precip_cmorph_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-       '[ERR] AGRMET GALWEM Precip CMORPH observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM Precip CMORPH observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_precip_cmorph_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_precip_cmorph_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GALWEM Precip CMORPH observation error variance:",rc=rc)
@@ -755,7 +763,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_precip_imerg_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-       '[ERR] AGRMET GALWEM Precip IMERG observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM Precip IMERG observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_precip_imerg_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_precip_imerg_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GALWEM Precip IMERG observation error variance:",rc=rc)
@@ -815,7 +825,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_t2m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GALWEM T2M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM T2M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_t2m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_t2m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation).  For inverse exponential
      !, max distance is 4 * scale length (for ~0.02 correlation).
@@ -878,7 +890,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_rh2m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GALWEM RH2M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM RH2M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_rh2m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_rh2m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation).  For inverse
      ! exponential correlation, max distance is 4 * scale length (for
@@ -942,7 +956,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%galwem_spd10m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GALWEM SPD10M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GALWEM SPD10M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%galwem_spd10m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%galwem_spd10m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation).  For Inverse Exponential
      ! function, max distance is 4 * scale length (for ~0.02 correlation)
@@ -1007,7 +1023,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_precip_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-       '[ERR] AGRMET GFS Precip background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS Precip background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_precip_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_precip_back_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GFS Precip background error variance:",rc=rc)
@@ -1037,7 +1055,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_precip_geoprecip_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS Precip GEOPRECIP observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS Precip GEOPRECIP observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_precip_geoprecip_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_precip_geoprecip_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GFS Precip GEOPRECIP observation error variance:",rc=rc)
@@ -1057,7 +1077,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_precip_ssmi_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS Precip SSMI observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS Precip SSMI observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_precip_ssmi_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_precip_ssmi_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GFS Precip SSMI observation error variance:",rc=rc)
@@ -1077,7 +1099,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_precip_cmorph_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS Precip CMORPH observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS Precip CMORPH observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_precip_cmorph_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_precip_cmorph_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GFS Precip CMORPH observation error variance:",rc=rc)
@@ -1099,7 +1123,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_precip_imerg_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-       '[ERR] AGRMET GFS Precip IMERG observation error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS Precip IMERG observation error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_precip_imerg_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_precip_imerg_err_scale_length
   enddo ! n
   call ESMF_ConfigFindLabel(LIS_config,&
        "AGRMET GFS Precip IMERG observation error variance:",rc=rc)
@@ -1160,7 +1186,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_t2m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS T2M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS T2M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_t2m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_t2m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation). For Inverse Exponential
      ! function, max distance is 4 * scale length (for ~0.02 correlation)
@@ -1225,7 +1253,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_rh2m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS RH2M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS RH2M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_rh2m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_rh2m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation). For Inverse Exponential
      ! function, max distance is 4 * scale length (for ~0.02 correlation)
@@ -1290,7 +1320,9 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,&
           agrmet_struc(n)%gfs_spd10m_back_err_scale_length,rc=rc)
      call LIS_verify(rc, &
-          '[ERR] AGRMET GFS SPD10M background error scale length (m): value not specified in the config file') 
+          '[ERR] AGRMET GFS SPD10M background error scale length (m): value not specified in the config file')
+     agrmet_struc(n)%gfs_spd10m_back_err_inv_scale_length = &
+          1. / agrmet_struc(n)%gfs_spd10m_back_err_scale_length
      ! Maximum distance for spreading data for Gaussian function correlation
      ! is 2 * scale length (for ~0.02 correlation).  For Inverse Exponential
      ! function, max distance is 4 * scale length (for ~0.02 correlation)
