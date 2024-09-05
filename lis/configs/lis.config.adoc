@@ -5632,6 +5632,44 @@ Acceptable values are:
 `AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude
 `AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude
 
+`AGRMET use IMERG data:` specifies whether to use 30-min IMERG data
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       ! Do not assimilate IMERG
+!1                       | Assimilate IMERG
+|====
+
+`AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals
+`AGRMET IMERG data directory:` top directory to find IMERG files
+`AGRMET IMERG product:` identifies which IMERG run to assimilate
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|3B-HHR-E                | 30-min Early Run
+!3B-HHR-L                | 30-min Late Run
+|3B-HHR                  | 30-min Final Run
+|====
+
+`AGRMET IMERG version:` text string identifying IMERG version to assimilate.  Used to construct file names.  V06x and V07x are supported.
+Acceptable values include:
+
+|====
+|Value                   | Description
+
+|V06B                    | Version 06B
+|V06C                    | Version 06C
+|V06D                    | Version 06D
+|V07B                    | Version 07B
+
+|====
+
+`AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5769,6 +5807,13 @@ AGRMET forcing domain upper right lat:       89.9531250
 AGRMET forcing domain upper right lon:      179.9296875
 AGRMET forcing domain resolution (dx):        0.1406250
 AGRMET forcing domain resolution (dy):        0.0937500
+
+AGRMET use IMERG data:                      1
+AGRMET IMERG temperature threshold:        278
+AGRMET IMERG data directory:               ./input/IMERG/Early_V07B
+AGRMET IMERG product:                      3B-HHR-E        # Early Run
+AGRMET IMERG version:                      V07B # Jun 2024
+AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 ....
 
