@@ -5172,7 +5172,7 @@ x direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved for future use)
 |(3600) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET GEOPRECIP jmax:` specifies the GEOPRECIP grid dimension
@@ -5185,7 +5185,7 @@ y direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved fro future use)
 |(1801) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET SSMI imax:` specifies the SSMI/S grid dimension x direction
@@ -5280,7 +5280,7 @@ Acceptable values are:
 |0     | do not use
 |1     | use the estimate, do not use the rank {emdash}
          assumes that rank of GEOPRECIP is 1;
-         i.e., uses it when it`'s available
+         i.e., uses it when it is available
 |2     | use the estimate and use the rank
 |====
 
@@ -5703,7 +5703,7 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET radiation derived from: GALWEM_RAD
 AGRMET GALWEM radiation data directory: GALWEM_Rad
 AGRMET number of gauge networks to use: 7
 AGRMET gauge networks to use::
