@@ -5473,6 +5473,108 @@ of gauge networks to use, to be identified in separate config entry.
 `AGRMET gauge networks to use::` specifies list of names of gauge
 networks to be used. (One line of names per domain.)
 
+`AGRMET GALWEM Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+
+`AGRMET GFS Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET precip obs file format:` specifies preobs file format
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+`AGRMET sfc obs file format:` specifies sfcobs file format
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5550,6 +5652,17 @@ AGRMET number of gauge networks to use: 7
 AGRMET gauge networks to use::
 AMIL CANA FAA ICAO WMO HADS NWSLI
 ::
+AGRMET GALWEM Precip correlation function type: 1
+AGRMET GALWEM T2M correlation function type: 1
+AGRMET GALWEM RH2M correlation function type: 1
+AGRMET GALWEM SPD10M correlation function type: 1
+AGRMET GFS Precip correlation function type: 1
+AGRMET GFS T2M correlation function type: 1
+AGRMET GFS RH2M correlation function type: 1
+AGRMET GFS SPD10M correlation function type: 1
+AGRMET precip obs file format: 1
+AGRMET sfc obs file format: 1
+
 ....
 
 
