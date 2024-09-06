@@ -317,7 +317,7 @@ contains
           if (use_expanded_station_ids == 1) then
              twfprc_tmp = MISSING
              sixprc_tmp = MISSING
-             read(iunit, 6001, iostat=ierr) YYYYMMDDhhmmss_tmp, &
+             read(iunit, 6001, iostat=ierr, end=700) YYYYMMDDhhmmss_tmp, &
                   network_tmp, plat_id_tmp, ilat_tmp, ilon_tmp, &
                   wmocode_id_tmp, fipscode_id_tmp, wmoblk_tmp, &
                   mscprc_tmp, duration_tmp, pastwx_tmp, preswx_tmp
@@ -326,7 +326,8 @@ contains
              if (wmocode_id_tmp == "  ") wmocode_id_tmp = "??"
              if (fipscode_id_tmp == "  ") fipscode_id_tmp = "??"
           else
-             read(iunit, 6000, iostat=ierr) twfprc_tmp, duration_tmp, &
+             read(iunit, 6000, iostat=ierr, end=700) &
+                  twfprc_tmp, duration_tmp, &
                   sixprc_tmp, &
                   mscprc_tmp, ilat_tmp, ilon_tmp, network_tmp, &
                   plat_id_tmp, &
@@ -340,7 +341,7 @@ contains
 
           if (ierr .ne. 0) then
              write(LIS_logunit,*) &
-                  '[WARN] Problem reading report, skipping line...'
+                  '[WARN] Problem reading report ', i,', skipping line...'
              cycle
           end if
 
@@ -611,11 +612,36 @@ contains
                 cycle
              end if
           end if
+
+          cycle
+
+          ! Handle unexpected end of file
+700       continue
+          if (i < nsize) then
+             write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
+             write(LIS_logunit,*) &
+                  '[WARN] Expected ', nsize, ' reports, found ', i
+             write(LIS_logunit,*)'[WARN] No further reads from ' &
+                  // trim(filename)
+
+             message = ''
+             message(1) = '[WARN] Program:  LIS'
+             message(2) = '  Routine: USAF_read_preobs'
+             message(3) = '  Unexpected end of file reached for ' &
+                  // trim(filename)
+             if (LIS_masterproc) then
+                alert_number = alert_number + 1
+                call LIS_alert('LIS.USAF_read_preobs', &
+                     alert_number, message)
+             end if
+             exit ! Stop reading lines
+          end if
+
        end do
 
        call LIS_releaseUnitNumber(iunit) ! Closes file
 
-       if (use_expanded_station_ids == 1) cycle ! These files are global
+       if (use_expanded_station_ids == 1) exit ! These files are global
     end do ! ihemi
 
     ! Since we combined both the NH and SH files, the resulting list
