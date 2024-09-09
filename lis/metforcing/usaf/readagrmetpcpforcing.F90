@@ -324,6 +324,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
    if ( mod(curr_time, 180.0) .ne. LIS_rc%ts/60.0 .and. &
         agrmet_struc(n)%pcp_ready ) return 
 
+   
    TRACE_ENTER("agrmet_readpcpforc")
 
    p6 = LIS_rc%udef
@@ -350,11 +351,30 @@ subroutine readagrmetpcpforcing(n,findex, order)
    call LIS_get_julhr(LIS_rc%eyr,LIS_rc%emo,LIS_rc%eda,&
         LIS_rc%ehr, LIS_rc%emn,LIS_rc%ess,julend_lis)
 
-   ! when start from fresh (in LIS_init) or first step into a new segment, 
+   ! EMK TEST
+   write(LIS_logunit,*) 'EMK: curr_time = ', curr_time
+   write(LIS_logunit,*) 'EMK: LIS_rc%ts = ', LIS_rc%ts
+   write(LIS_logunit,*) 'EMK: LIS_rc%ts/60 = ', LIS_rc%ts/60
+   write(LIS_logunit,*) 'EMK: 12*60.0+LIS_rc%ts/60 = ', &
+        12*60.0+LIS_rc%ts/60
+   write(LIS_logunit,*) 'EMK: First test = ', &
+        curr_time .EQ. LIS_rc%ts/60
+   write(LIS_logunit,*) 'EMK: Second test = ', &
+        curr_time .EQ. 12*60.0+LIS_rc%ts/60
+   
+   ! when start from fresh (in LIS_init) or first step into a new segment,
    !  precip is not ready. Need to do pcp analysis 
-   if (curr_time .EQ. LIS_rc%ts/60 .or. curr_time .EQ. 12*60.0+LIS_rc%ts/60 ) &
-        agrmet_struc(n)%pcp_ready = .false. 
-  
+   if (curr_time .EQ. LIS_rc%ts/60 .or. curr_time .EQ. 12*60.0+LIS_rc%ts/60 ) then
+
+      ! EMK 9 Sep 2024...Avoid repeating precip analysis 15 minutes into
+      ! the fresh start (precip fields will already be populated)
+      if (agrmet_struc(n)%first_pcp_segment) then
+         agrmet_struc(n)%first_pcp_segment = .false.
+      else
+         agrmet_struc(n)%pcp_ready = .false. 
+      end if
+   end if
+
    call AGRMET_julhr_date10(julbeg, date10_03)
    write(LIS_logunit,*)'[INFO] Entering pcp proc. pcp_ready=', &
         agrmet_struc(n)%pcp_ready, date10_03
@@ -1471,7 +1491,10 @@ subroutine readagrmetpcpforcing(n,findex, order)
    !====================================================================== 
 
    !******** now pcp is ready for model run *******************************
-  
+
+   write(LIS_logunit,*)'EMK: k test = ', &
+        mod(curr_time, 180.0).eq.LIS_rc%ts/60.0
+   
    if ( mod(curr_time, 180.0).eq.LIS_rc%ts/60.0 ) then 
       agrmet_struc(n)%pcp_start = .false.  !once booted up, no need
      
@@ -1497,6 +1520,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
       else
          k = 4
       endif
+
+      write(LIS_logunit,*)'EMK: k = ', k
 
       !simply index into the rigth data. 
       varfield = agrmet_struc(n)%mrgp(:,:,k)
