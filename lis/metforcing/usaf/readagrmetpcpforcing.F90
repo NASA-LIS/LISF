@@ -351,17 +351,6 @@ subroutine readagrmetpcpforcing(n,findex, order)
    call LIS_get_julhr(LIS_rc%eyr,LIS_rc%emo,LIS_rc%eda,&
         LIS_rc%ehr, LIS_rc%emn,LIS_rc%ess,julend_lis)
 
-   ! EMK TEST
-   write(LIS_logunit,*) 'EMK: curr_time = ', curr_time
-   write(LIS_logunit,*) 'EMK: LIS_rc%ts = ', LIS_rc%ts
-   write(LIS_logunit,*) 'EMK: LIS_rc%ts/60 = ', LIS_rc%ts/60
-   write(LIS_logunit,*) 'EMK: 12*60.0+LIS_rc%ts/60 = ', &
-        12*60.0+LIS_rc%ts/60
-   write(LIS_logunit,*) 'EMK: First test = ', &
-        curr_time .EQ. LIS_rc%ts/60
-   write(LIS_logunit,*) 'EMK: Second test = ', &
-        curr_time .EQ. 12*60.0+LIS_rc%ts/60
-   
    ! when start from fresh (in LIS_init) or first step into a new segment,
    !  precip is not ready. Need to do pcp analysis 
    if (curr_time .EQ. LIS_rc%ts/60 .or. curr_time .EQ. 12*60.0+LIS_rc%ts/60 ) then
@@ -1492,9 +1481,6 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
    !******** now pcp is ready for model run *******************************
 
-   write(LIS_logunit,*)'EMK: k test = ', &
-        mod(curr_time, 180.0).eq.LIS_rc%ts/60.0
-   
    if ( mod(curr_time, 180.0).eq.LIS_rc%ts/60.0 ) then 
       agrmet_struc(n)%pcp_start = .false.  !once booted up, no need
      
@@ -1520,8 +1506,6 @@ subroutine readagrmetpcpforcing(n,findex, order)
       else
          k = 4
       endif
-
-      write(LIS_logunit,*)'EMK: k = ', k
 
       !simply index into the rigth data. 
       varfield = agrmet_struc(n)%mrgp(:,:,k)
