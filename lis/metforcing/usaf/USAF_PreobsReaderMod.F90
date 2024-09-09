@@ -326,6 +326,7 @@ contains
              if (wmocode_id_tmp == "  ") wmocode_id_tmp = "??"
              if (fipscode_id_tmp == "  ") fipscode_id_tmp = "??"
           else
+             write(LIS_logunit,*)'EMK: i, nsize = ', i, nsize
              read(iunit, 6000, iostat=ierr, end=700) &
                   twfprc_tmp, duration_tmp, &
                   sixprc_tmp, &
@@ -617,25 +618,23 @@ contains
 
           ! Handle unexpected end of file
 700       continue
-          if (i < nsize) then
-             write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
-             write(LIS_logunit,*) &
-                  '[WARN] Expected ', nsize, ' reports, found ', i
-             write(LIS_logunit,*)'[WARN] No further reads from ' &
-                  // trim(filename)
+          write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
+          write(LIS_logunit,*) &
+               '[WARN] Expected ', nsize, ' reports, found ', i
+          write(LIS_logunit,*)'[WARN] No further reads from ' &
+               // trim(filename)
 
-             message = ''
-             message(1) = '[WARN] Program:  LIS'
-             message(2) = '  Routine: USAF_read_preobs'
-             message(3) = '  Unexpected end of file reached for ' &
-                  // trim(filename)
-             if (LIS_masterproc) then
-                alert_number = alert_number + 1
-                call LIS_alert('LIS.USAF_read_preobs', &
-                     alert_number, message)
-             end if
-             exit ! Stop reading lines
+          message = ''
+          message(1) = '[WARN] Program:  LIS'
+          message(2) = '  Routine: USAF_read_preobs'
+          message(3) = '  Unexpected end of file reached for ' &
+               // trim(filename)
+          if (LIS_masterproc) then
+             alert_number = alert_number + 1
+             call LIS_alert('LIS.USAF_read_preobs', &
+                  alert_number, message)
           end if
+          exit ! Stop reading lines
 
        end do
 
