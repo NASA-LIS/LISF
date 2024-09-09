@@ -485,6 +485,7 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable      :: mrgp(:,:,:)
      logical                :: pcp_start
      logical                :: pcp_ready
+     logical                :: first_pcp_segment ! EMK 6 Sep 2024
      character(len=6)       :: agr_bgrd_src_c
      real, allocatable      :: agr_hgt_c  ( : , : , : )
      real, allocatable      :: agr_rh_c   ( : , : , : )
@@ -2150,7 +2151,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
 
           allocate(agrmet_struc(n)%mrgp(LIS_rc%lnc(n), LIS_rc%lnr(n),4))
           agrmet_struc(n)%pcp_start = .true. 
-          agrmet_struc(n)%pcp_ready = .false. 
+          agrmet_struc(n)%pcp_ready = .false.
+          agrmet_struc(n)%first_pcp_segment = .true. ! EMK 6 Sep 2024
           agrmet_struc(n)%lastSfcalcHour = 0
           agrmet_struc(n)%lastPcpHour = 0
           agrmet_struc(n)%lastRadHour = 0
