@@ -463,25 +463,23 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 
            ! Handle unexpected end of file
 700        continue
-           if (i < nsize) then
-             write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
-             write(LIS_logunit,*) &
-                  '[WARN] Expected ', nsize, ' reports, found ', i
-             write(LIS_logunit,*)'[WARN] No further reads from ' &
-                  // trim(sfcobsfile)
+           write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
+           write(LIS_logunit,*) &
+                '[WARN] Expected ', nsize, ' reports, found ', i
+           write(LIS_logunit,*)'[WARN] No further reads from ' &
+                // trim(sfcobsfile)
 
-             message = ''
-             message(1) = '[WARN] Program:  LIS'
-             message(2) = '  Routine: AGRMET_getsfc'
-             message(3) = '  Unexpected end of file reached for ' &
-                  // trim(sfcobsfile)
-             if (LIS_masterproc) then
-                alert_number = alert_number + 1
-                call LIS_alert('LIS.AGRMET_getsfc', &
-                     alert_number, message)
-             end if
-             exit ! Stop reading lines
-          end if
+           message = ''
+           message(1) = '[WARN] Program:  LIS'
+           message(2) = '  Routine: AGRMET_getsfc'
+           message(3) = '  Unexpected end of file reached for ' &
+                // trim(sfcobsfile)
+           if (LIS_masterproc) then
+              alert_number = alert_number + 1
+              call LIS_alert('LIS.AGRMET_getsfc', &
+                   alert_number, message)
+           end if
+           exit ! Stop reading lines
 
         enddo
 
