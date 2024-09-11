@@ -39,6 +39,8 @@
 ! 04Jan2018: Eric Kemp, disable 6-hr cycle unless 12-hr is not run.
 ! 05Sep2018: Eric Kemp, code clean-up and addition of IMERG.
 ! 07Jan2020: Eric Kemp, added creation of precip_OBA directory.
+! 11Sep2024: Eric Kemp, disabled redundant precip analysis at 0015Z and
+!              1215Z immediately after LIS start time of 0000Z or 1200Z.
 !
 ! !INTERFACE:    
 subroutine readagrmetpcpforcing(n,findex, order)
@@ -321,10 +323,25 @@ subroutine readagrmetpcpforcing(n,findex, order)
    ! which are the time to read in precp data for the upcoming 3 hrs, and it 
    ! is not a fresh start (pcp_ready = false for fresh start). 
 
-   if ( mod(curr_time, 180.0) .ne. LIS_rc%ts/60.0 .and. &
-        agrmet_struc(n)%pcp_ready ) return 
+   write(LIS_logunit,*) 'EMK: curr_time = ', curr_time
+   write(LIS_logunit,*) 'EMK: curr_time test = ', &
+        mod(curr_time, 180.0) .ne. LIS_rc%ts/60.0
+   write(LIS_logunit,*) 'EMK: pcp_ready = ', &
+        agrmet_struc(n)%pcp_ready
 
-   
+
+   ! EMK 10 Sep 2024...Avoid repeating precip analysis 15 minutes into
+   ! the fresh start (precip fields will already be populated).  At
+   ! the fresh start time, first_pcp_segment will be true. Once we
+   ! reach 30 or 45 minutes past the hour, we can safely set it false.
+   if ( mod(curr_time, 180.0) .ne. LIS_rc%ts/60.0 .and. &
+        mod(curr_time, 180.0) .ne. 0) then
+      agrmet_struc(n)%first_pcp_segment = .false.
+   end if
+
+   if ( mod(curr_time, 180.0) .ne. LIS_rc%ts/60.0 .and. &
+        agrmet_struc(n)%pcp_ready ) return
+
    TRACE_ENTER("agrmet_readpcpforc")
 
    p6 = LIS_rc%udef
@@ -355,14 +372,17 @@ subroutine readagrmetpcpforcing(n,findex, order)
    !  precip is not ready. Need to do pcp analysis 
    if (curr_time .EQ. LIS_rc%ts/60 .or. curr_time .EQ. 12*60.0+LIS_rc%ts/60 ) then
 
-      ! EMK 9 Sep 2024...Avoid repeating precip analysis 15 minutes into
-      ! the fresh start (precip fields will already be populated)
-      if (agrmet_struc(n)%first_pcp_segment) then
-         agrmet_struc(n)%first_pcp_segment = .false.
-      else
-         agrmet_struc(n)%pcp_ready = .false. 
+      ! EMK 10 Sep 2024...Avoid repeating precip analysis 15 minutes into
+      ! the fresh start (precip fields will already be populated).
+      if (.not. agrmet_struc(n)%first_pcp_segment) then
+         agrmet_struc(n)%pcp_ready = .false.
       end if
    end if
+
+   write(LIS_logunit,*)'EMK: first_pcp_segment = ', &
+        agrmet_struc(n)%first_pcp_segment
+   write(LIS_logunit,*)'EMK: pcp_ready = ', &
+        agrmet_struc(n)%pcp_ready
 
    call AGRMET_julhr_date10(julbeg, date10_03)
    write(LIS_logunit,*)'[INFO] Entering pcp proc. pcp_ready=', &
@@ -1481,6 +1501,12 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
    !******** now pcp is ready for model run *******************************
 
+   write(LIS_logunit,*) 'EMK: curr_time = ', curr_time
+   write(LIS_logunit,*) 'EMK: mod(curr_time, 180.0) = ', &
+        mod(curr_time, 180.0)
+   write(LIS_logunit,*) 'EMK LIS_rc%ts/60.0 = ', &
+        LIS_rc%ts/60.0
+   
    if ( mod(curr_time, 180.0).eq.LIS_rc%ts/60.0 ) then 
       agrmet_struc(n)%pcp_start = .false.  !once booted up, no need
      
@@ -1506,6 +1532,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
       else
          k = 4
       endif
+
+      write(LIS_logunit,*)'EMK: k = ', k
 
       !simply index into the rigth data. 
       varfield = agrmet_struc(n)%mrgp(:,:,k)
