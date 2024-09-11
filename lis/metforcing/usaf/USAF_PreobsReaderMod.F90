@@ -326,7 +326,6 @@ contains
              if (wmocode_id_tmp == "  ") wmocode_id_tmp = "??"
              if (fipscode_id_tmp == "  ") fipscode_id_tmp = "??"
           else
-             write(LIS_logunit,*)'EMK: i, nsize = ', i, nsize
              read(iunit, 6000, iostat=ierr, end=700) &
                   twfprc_tmp, duration_tmp, &
                   sixprc_tmp, &
