@@ -531,6 +531,11 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 </thead>
 <tbody>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">2.5</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">LISF 557WW 7.5.18 release</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Aug 27, 2024</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">3.0</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">LISF Public 7.5.0 release</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">Jan 10, 2024</p></td>
@@ -9803,10 +9808,41 @@ USAFSI skewed backQC snow depth threshold (m):  0.4</pre>
 <p><code>USAFSI bogus climatology snow depth value (m):</code> bogus value for climatology if not available</p>
 </div>
 <div class="paragraph">
+<p><code>USAFSI source of ocean data:</code> specifies the source of the USAFSI ocean data.  Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">GOFS</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Global Ocean Forecast System</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">ESPC-D</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Earth System Prediction Capability - Deterministic</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
 <p><code>USAFSI GOFS SST data directory:</code> directory with GOFS sea surface temperature netCDF files</p>
 </div>
 <div class="paragraph">
 <p><code>USAFSI GOFS CICE data directory:</code> directory with GOFS sea ice netCDF files</p>
+</div>
+<div class="paragraph">
+<p><code>USAFSI ESPC-D SST data directory:</code> directory with ESPC-D sea surface temperature netCDF files</p>
+</div>
+<div class="paragraph">
+<p><code>USAFSI ESPC-D CICE data directory:</code> directory with ESPC-D sea ice netCDF files</p>
 </div>
 <div class="paragraph">
 <p><code>USAFSI LIS GRIB2 data directory:</code> directory with LIS GRIB2 2-m temperature analyses</p>
@@ -9839,13 +9875,16 @@ USAFSI skewed backQC snow depth threshold (m):  0.4</pre>
 <div class="title">Example <em>ldt.config</em> entry</div>
 <div class="content">
 <pre>USAFSI bogus climatology snow depth value (m): 0.2
-USAFSI GOFS SST data directory: ./SNODEPIN//GOFS
-USAFSI GOFS CICE data directory: ./SNODEPIN//GOFS
-USAFSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
-USAFSI LIS GRIB2 security class: U
-USAFSI LIS GRIB2 data category:  C
+USAFSI source of ocean data: "ESPC-D"
+USAFSI GOFS SST data directory:   ./USAFSIIN/GOFS
+USAFSI GOFS CICE data directory:  ./USAFSIIN/GOFS
+USAFSI ESPC-D SST data directory:   ./USAFSIIN/ESPC-D
+USAFSI ESPC-D CICE data directory:  ./USAFSIIN/ESPC-D
+USAFSI LIS GRIB2 data directory:  ./USAFSIIN/LIS_T2
+USAFSI LIS GRIB2 security class:  U
+USAFSI LIS GRIB2 data category:   C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
-USAFSI LIS GRIB2 area of data: GLOBAL
+USAFSI LIS GRIB2 area of data:    GLOBAL
 USAFSI GALWEM root directory: USAF_FORCING
 USAFSI GALWEM subdirectory: GALWEM
 USAFSI GALWEM use timestamp directories: 1
@@ -17910,7 +17949,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 3.0<br>
-Last updated 2024-07-25 18:08:58 UTC
+Last updated 2024-09-11 18:06:02 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
