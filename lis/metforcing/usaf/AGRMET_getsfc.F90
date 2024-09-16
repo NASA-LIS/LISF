@@ -41,7 +41,8 @@
 !                ..............................Eric Kemp/NASA/SSAI
 !     16 Dec 21  Replaced julhr with YYYYMMDDHH in log...Eric Kemp/NASA/SSAI
 !     07 Nov 23  Added new sfcobs format.......Eric Kemp/NASA/SSAI
-! 
+!     06 Sep 24  Gracefully handle unexpected end-of-file
+!                ..............................Eric Kemp/NASA/SSAI 
 ! !INTERFACE: 
 subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
      ri, rj, obstmp, obsrlh, obsspd, obscnt, &
@@ -400,7 +401,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
               !read(iunit, *, iostat=ierr3) platform(i), dtg(i), &
               !     itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
               !     ispd(i), rptyp(i), netyp(i)
-              read(iunit, *, iostat=ierr3) platform9, dtg(i), &
+              read(iunit, *, iostat=ierr3, end=700) platform9, dtg(i), &
                    itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
                    ispd(i), rptyp8, netyp8
               if (ierr3 == 0) then
@@ -409,7 +410,8 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                  netyp(i) = netyp8
               end if
            else
-              read(iunit, 1000, iostat=ierr3) platform(i), dtg(i), &
+              read(iunit, 1000, iostat=ierr3, end=700) &
+                   platform(i), dtg(i), &
                    itmp(i), idpt(i), irelh(i), ilat(i), ilon(i), &
                    ispd(i), rptyp(i), netyp(i)
 1000          format(a32, 1x, a14, 1x, i9, 1x, i9, 1x, i9, 1x, &
@@ -457,9 +459,31 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
               skip(i) = .true.
            end if
 
+           cycle
+
+           ! Handle unexpected end of file
+700        continue
+           write(LIS_logunit,*)'[WARN] Unexpected end of file reached!'
+           write(LIS_logunit,*) &
+                '[WARN] Expected ', nsize, ' reports, found ', i
+           write(LIS_logunit,*)'[WARN] No further reads from ' &
+                // trim(sfcobsfile)
+
+           message = ''
+           message(1) = '[WARN] Program:  LIS'
+           message(2) = '  Routine: AGRMET_getsfc'
+           message(3) = '  Unexpected end of file reached for ' &
+                // trim(sfcobsfile)
+           if (LIS_masterproc) then
+              alert_number = alert_number + 1
+              call LIS_alert('LIS.AGRMET_getsfc', &
+                   alert_number, message)
+           end if
+           exit ! Stop reading lines
+
         enddo
-        close(iunit)
-        call LIS_releaseUnitNumber(iunit)
+
+        call LIS_releaseUnitNumber(iunit) ! Closes file
 
         !if(ierr2.eq.0.and.ierr3.eq.0) then
         ! EMK Patch...Allow observation storage even if problem occurred
