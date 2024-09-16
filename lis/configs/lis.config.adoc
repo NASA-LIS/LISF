@@ -5638,8 +5638,8 @@ Acceptable values are:
 |====
 |Value                   | Description
 
-|0                       ! Do not assimilate IMERG
-!1                       | Assimilate IMERG
+|0                       | Do not assimilate IMERG
+|1                       | Assimilate IMERG
 |====
 
 `AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals
@@ -5651,7 +5651,7 @@ Acceptable values are:
 |Value                   | Description
 
 |3B-HHR-E                | 30-min Early Run
-!3B-HHR-L                | 30-min Late Run
+|3B-HHR-L                | 30-min Late Run
 |3B-HHR                  | 30-min Final Run
 |====
 
@@ -5706,8 +5706,6 @@ Acceptable values are:
 `AGRMET mask file:` path to legacy AGRMET landmask file
 
 `AGRMET terrain file:` path to legacy AGRMET terrain file
-
-|====
 
 .Example _lis.config_ entry
 ....
