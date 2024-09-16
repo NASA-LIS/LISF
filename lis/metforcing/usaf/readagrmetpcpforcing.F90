@@ -279,7 +279,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
    character(len=20) :: imerg_version
    integer*2 :: imerg_plp_thresh
    real :: imerg_sigmaOSqr
-   real :: imerg_oErrScaleLength
+   real :: imerg_oErrScaleLength, imerg_oErrInvScaleLength
    character(len=32) :: imerg_net, imerg_platform
    real :: sigmaBSqr
    character(len=32) :: new_name
@@ -747,8 +747,10 @@ subroutine readagrmetpcpforcing(n,findex, order)
                  agrmet_struc(n)%bratseth_precip_imerg_sigma_o_sqr
             imerg_oErrScaleLength = &
                  agrmet_struc(n)%bratseth_precip_imerg_err_scale_length
+            imerg_oErrInvScaleLength = &
+                 agrmet_struc(n)%bratseth_precip_imerg_err_inv_scale_length
             imerg_net = "IMERG"
-            imerg_platform = "IMERG"            
+            imerg_platform = "IMERG"
             do ii = 1,2
                write(LIS_logunit,*) &
                     '[INFO] Fetching 6 hours of IMERG data, set ',ii
@@ -756,7 +758,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call fetch3hrImergHH(julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
-                    imerg_oErrScaleLength,imerg_net,imerg_platform,&
+                    imerg_oErrScaleLength, imerg_oErrInvScaleLength, &
+                    imerg_net,imerg_platform,&
                     precip_3hrly_imerg_tmp(ii))
 
                ! Reject observations over water
@@ -866,6 +869,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             call USAF_analyzePrecip(precip_3hrly_all, n, &
                  back4(:,:,k),hourindex, &
+                 agrmet_struc(n)%bratseth_precip_corr_func_type, &
                  agrmet_struc(n)%mrgp(:,:,k), precipOBA)
             
             !-----------------------------------------------------------
@@ -1304,6 +1308,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
                  agrmet_struc(n)%bratseth_precip_imerg_sigma_o_sqr
             imerg_oErrScaleLength = &
                  agrmet_struc(n)%bratseth_precip_imerg_err_scale_length
+            imerg_oErrInvScaleLength = &
+                 agrmet_struc(n)%bratseth_precip_imerg_err_inv_scale_length
             imerg_net = "IMERG"
             imerg_platform = "IMERG"                  
             do ii = 1,4
@@ -1313,7 +1319,8 @@ subroutine readagrmetpcpforcing(n,findex, order)
                call fetch3hrImergHH(julbeg+julbeg_adj, &
                     imerg_datadir,imerg_product, &
                     imerg_version,imerg_plp_thresh,n,imerg_sigmaOSqr,&
-                    imerg_oErrScaleLength,imerg_net,imerg_platform, &
+                    imerg_oErrScaleLength, imerg_oErrInvScaleLength, &
+                    imerg_net,imerg_platform, &
                     precip_3hrly_imerg_tmp(ii))
 
                ! Reject obs over water
@@ -1426,6 +1433,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 
             call USAF_analyzePrecip(precip_3hrly_all, n, &
                  back4(:,:,k),hourindex, &
+                 agrmet_struc(n)%bratseth_precip_corr_func_type, &
                  agrmet_struc(n)%mrgp(:,:,k), precipOBA)
             
             !-----------------------------------------------------------

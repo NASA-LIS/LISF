@@ -1151,7 +1151,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                     float(obs_cur(i)%amt6) * 0.1, &
                     obs_cur(i)%lat, obs_cur(i)%lon,&
                     agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                    0.)
+                    0., 0.)
 
 !-----------------------------------------------------------------------
 !           calculate distance between the current observation and 
@@ -1220,7 +1220,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                  float(obs_cur(i)%amt12) * 0.1, &
                  obs_cur(i)%lat, obs_cur(i)%lon, &
                  agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                 0.)
+                 0., 0.)
             
             newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                  * 100.0
@@ -1288,7 +1288,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                    0.0, &
                    obs_cur(i)%lat, obs_cur(i)%lon, &
                    agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                   0.)
+                   0., 0.)
 
               newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                    * 100.0
@@ -1341,7 +1341,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                       float(obs_cur(i)%amtmsc) * 0.1, &
                       obs_cur(i)%lat, obs_cur(i)%lon, &
                       agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                      0.)
+                      0., 0.)
 
                 newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                      * 100.0
@@ -1399,7 +1399,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                         float(obs_6(i)%amtmsc) * 0.1, &
                         obs_6(i)%lat, obs_6(i)%lon, &
                         agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                        0.)
+                        0., 0.)
                    
                    newd = sumsqr(ri, float(nint(ri)), &
                         rj, float(nint(rj))) * 100.0

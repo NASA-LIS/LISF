@@ -613,7 +613,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                              call USAF_assignObsData(t2mObs,net32, &
                                   platform32,rtmp,rlat,rlon, &
                                   agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr,&
-                                  0.)
+                                  0., 0.)
 
                           end if
                           if (rrelh .gt. 0) then
@@ -630,7 +630,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                              call USAF_assignObsData(rh2mObs,net32, &
                                   platform32,rrelh,rlat,rlon, &
                                   agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr, &
-                                  0.)
+                                  0., 0.)
                           end if
                           if (rspd .gt. 0) then
                              net32 = blank32
@@ -646,7 +646,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
                              call USAF_assignObsData(spd10mObs,net32, &
                                   platform32,rspd,rlat,rlon, &
                                   agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr, &
-                                  0.)
+                                  0., 0.)
                           end if
 
                           obscnt         = obscnt + 1
