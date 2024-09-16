@@ -3860,6 +3860,150 @@ contains
    end subroutine USAF_superstatQC
 
    !---------------------------------------------------------------------------
+   ! QC checks for duplicate gage reports.  Exact duplicates (including
+   ! variable value and lat/long) are rejected, otherwise they are
+   ! preserved for subsequent merging by superstatQC.
+   subroutine USAF_dupQC_new(this)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
+      use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(USAF_ObsData), intent(inout) :: this
+
+      ! Local variables
+      integer :: count_dups
+      integer :: total_reject_count
+      integer :: i, j
+      integer :: nobs
+      double precision :: t1, t2
+      integer :: ierr
+
+      nobs = this%nobs
+      if (nobs .eq. 0) then
+         write(LIS_logunit,*)&
+              '[INFO] dupQC found no observations to test'
+         return
+      endif
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
+      t1 = MPI_Wtime()
+#endif
+
+      total_reject_count = 0
+
+      do j = 1, nobs
+
+         ! Skip if this ob has already been flagged for rejection
+         if (this%qc(j) .eq. QC_REJECT) cycle
+
+         ! Skip if this is a satellite estimate
+         if (this%net(j) .eq. "SSMI") cycle
+         if (this%net(j) .eq. "GEOPRECIP") cycle
+         if (this%net(j) .eq. "CMORPH") cycle
+         if (this%net(j) .eq. "IMERG") cycle
+
+         ! Some CDMS obs are missing station IDs.  We will skip these
+         if ( this%net(j) .eq. "CDMS" .and. &
+              this%platform(j) .eq. "00000000") cycle
+
+         ! Some MOBL obs are missing station IDs.  We will skip.
+         if (this%net(j) .eq. "MOBL" .and. &
+                 this%platform(j) .eq. "00000000") cycle
+
+         ! Get count of duplicates of ob j
+         count_dups = 0
+
+         do i = j+1, nobs
+
+            ! Skip if this ob has already been flagged for rejection
+            if (this%qc(i) .eq. QC_REJECT) cycle
+
+            ! Skip if this is a satellite estimate
+            if (this%net(i) .eq. "SSMI") cycle
+            if (this%net(i) .eq. "GEOPRECIP") cycle
+            if (this%net(i) .eq. "CMORPH") cycle
+            if (this%net(i) .eq. "IMERG") cycle
+
+            ! Some CDMS obs are missing station IDs.  We will skip these
+            if (this%net(i) .eq. "CDMS" .and. &
+                 this%platform(i) .eq. "00000000") cycle
+
+            ! Some MOBL obs are missing station IDs.  We will skip.
+            if (this%net(i) .eq. "MOBL" .and. &
+                 this%platform(i) .eq. "00000000") cycle
+
+            ! Skip if the network or platform ID doesn't match
+            if (this%net(i) .ne. this%net(j)) cycle
+            if (this%platform(i) .ne. this%platform(j)) cycle
+
+            ! Skip if the lat/lon doesn't match. Some minor differences
+            ! exist due to different reporting formats (e.g., SYNOP vs
+            ! BUFR).  We will let superstatQC handle merging such
+            ! cases.
+            if (this%lat(i) .ne. this%lat(j)) cycle
+            if (this%lon(i) .ne. this%lon(j)) cycle
+
+            ! Skip if the observed value differs.  We will let
+            ! superstatQC handle merging values together.
+            if (this%obs(i) .ne. this%obs(j)) cycle
+
+            ! Duplicate found.  Update the count and flag the
+            ! duplicate.
+            ! write(LIS_logunit,*)'[INFO] dupQC found dupe i = ', i, &
+            !      ' net: ',trim(this%net(i)), &
+            !      ' platform: ',trim(this%platform(i)), &
+            !      ' lat: ',this%lat(i), &
+            !      ' lon: ',this%lon(i), &
+            !      ' obs: ',this%obs(i), &
+            !      ' back: ',this%back(i)
+
+            count_dups = count_dups + 1
+            this%qc(i) = QC_REJECT
+
+         end do
+
+         if (count_dups > 0) then
+            write(LIS_logunit,*) &
+                 '[INFO] dupQC rejecting ', count_dups, &
+                 ' exact duplicate(s) of ob j: ', j, &
+                 ' net: ',trim(this%net(j)), &
+                 ' platform: ',trim(this%platform(j)), &
+                 ' lat: ',this%lat(j), &
+                 ' lon: ',this%lon(j), &
+                 ' obs: ',this%obs(j), &
+                 ' back: ',this%back(j)
+            write(LIS_logunit,*) &
+                 '-------------------------------------------------'
+         end if
+
+         total_reject_count = total_reject_count + count_dups
+
+      end do ! j
+
+      write(LIS_logunit,*) &
+           '[INFO] dupQC rejected ', total_reject_count, ' total obs'
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in dupQC is ', t2 - t1, ' seconds'
+#endif
+
+   end subroutine USAF_dupQC_new
+
+   !---------------------------------------------------------------------------
    ! QC checks for duplicate gage reports.  Based on Mahfouf et al (2007).
    !
    ! If duplicates are found for a particular station but all are identical,
