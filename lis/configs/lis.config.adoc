@@ -5554,7 +5554,7 @@ Acceptable values are:
 |2                       | use inverse exponential function
 |====
 
-`AGRMET precip obs file format:` specifies preobs file format
+`AGRMET precip obs file format:` specifies preobs file format.
 Acceptable values are:
 
 |====
@@ -5564,7 +5564,7 @@ Acceptable values are:
 |2                       | use WIGOS supported files
 |====
 
-`AGRMET sfc obs file format:` specifies sfcobs file format
+`AGRMET sfc obs file format:` specifies sfcobs file format.
 Acceptable values are:
 
 |====
@@ -5574,47 +5574,85 @@ Acceptable values are:
 |2                       | use WIGOS supported files
 |====
 
-`AGRMET GALWEM Precip background error scale length (m):` specifies scale length for GALWEM precipitation error correlation
-`AGRMET GALWEM Precip background error variance:` specifies GALWEM precipitation error variance
-`AGRMET GALWEM Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance
-`AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation
-`AGRMET GALWEM Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance
-`AGRMET GALWEM Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation
-`AGRMET GALWEM Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance
-`AGRMET GALWEM Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation
-`AGRMET GALWEM Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance
-`AGRMET GALWEM Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation
-`AGRMET GALWEM Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance
-`AGRMET GALWEM T2M background error scale length (m):` specifies scale length for GALWEM 2m temperature error correlation
-`AGRMET GALWEM T2M background error variance:` specifies GALWEM 2m temperature error variance
-`AGRMET GALWEM T2M station observation error variance:` specifies station observation 2m temperature error variance
-`AGRMET GALWEM RH2M background error scale length (m):` specifies scale length for GALWEM 2m relative humidity error correlation
-`AGRMET GALWEM RH2M background error variance:` specifies GALWEM 2m relative humidity error variance
-`AGRMET GALWEM RH2M station observation error variance:` specifies station observation 2m relative humidity error variance
-`AGRMET GALWEM SPD10M background error scale length (m):` specifies scale length for GALWEM 10m wind speed error correlation
-`AGRMET GALWEM SPD10M background error variance:` specifies GALWEM 10m wind speed error variance
-`AGRMET GALWEM SPD10M station observation error variance:` specifies station observation 10 wind speed error variance
+`AGRMET GALWEM Precip background error scale length (m):` specifies scale length for GALWEM precipitation error correlation.
 
-`AGRMET GFS Precip background error scale length (m):` specifies scale length for GFS precipitation error correlation
-`AGRMET GFS Precip background error variance:` specifies GFS precipitation error variance
-`AGRMET GFS Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance
-`AGRMET GFS Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation
-`AGRMET GFS Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance
-`AGRMET GFS Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation
-`AGRMET GFS Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance
-`AGRMET GFS Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation
-`AGRMET GFS Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance
-`AGRMET GFS Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation
-`AGRMET GFS Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance
-`AGRMET GFS T2M background error scale length (m):` specifies scale length for GFS 2m temperature error correlation
-`AGRMET GFS T2M background error variance:` specifies GFS 2m temperature error variance
-`AGRMET GFS T2M station observation error variance:` specifies station observation 2m temperature error variance
-`AGRMET GFS RH2M background error scale length (m):` specifies scale length for GFS 2m relative humidity error correlation
-`AGRMET GFS RH2M background error variance:` specifies GFS 2m relative humidity error variance
-`AGRMET GFS RH2M station observation error variance:` specifies station observation 2m relative humidity error variance
-`AGRMET GFS SPD10M background error scale length (m):` specifies scale length for GFS 10m wind speed error correlation
-`AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance
-`AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance
+`AGRMET GALWEM Precip background error variance:` specifies GALWEM precipitation error variance.
+
+`AGRMET GALWEM Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GALWEM Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GALWEM Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GALWEM Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GALWEM Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GALWEM Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GALWEM Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GALWEM T2M background error scale length (m):` specifies scale length for GALWEM 2m temperature error correlation.
+
+`AGRMET GALWEM T2M background error variance:` specifies GALWEM 2m temperature error variance.
+
+`AGRMET GALWEM T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GALWEM RH2M background error scale length (m):` specifies scale length for GALWEM 2m relative humidity error correlation.
+
+`AGRMET GALWEM RH2M background error variance:` specifies GALWEM 2m relative humidity error variance.
+
+`AGRMET GALWEM RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GALWEM SPD10M background error scale length (m):` specifies scale length for GALWEM 10m wind speed error correlation.
+
+`AGRMET GALWEM SPD10M background error variance:` specifies GALWEM 10m wind speed error variance.
+
+`AGRMET GALWEM SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
+
+`AGRMET GFS Precip background error scale length (m):` specifies scale length for GFS precipitation error correlation.
+
+`AGRMET GFS Precip background error variance:` specifies GFS precipitation error variance.
+
+`AGRMET GFS Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GFS Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GFS Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GFS Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GFS Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GFS Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GFS Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GFS Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GFS Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GFS T2M background error scale length (m):` specifies scale length for GFS 2m temperature error correlation.
+
+`AGRMET GFS T2M background error variance:` specifies GFS 2m temperature error variance.
+
+`AGRMET GFS T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GFS RH2M background error scale length (m):` specifies scale length for GFS 2m relative humidity error correlation.
+
+`AGRMET GFS RH2M background error variance:` specifies GFS 2m relative humidity error variance.
+
+`AGRMET GFS RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GFS SPD10M background error scale length (m):` specifies scale length for GFS 10m wind speed error correlation.
+
+`AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance.
+
+`AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
 
 `AGRMET forcing map projection:` specifies map projection type.
 Acceptable values are:
@@ -5625,12 +5663,17 @@ Acceptable values are:
 |latlon                  | use latitude/longitude projection
 |====
 
-`AGRMET forcing domain lower left lat:` specifies southwest latitude corner
-`AGRMET forcing domain lower left lon:` specifies southwest longitude corner
-`AGRMET forcing domain upper right lat:` specifies northeast latitude corner
-`AGRMET forcing domain upper right lon:` specifies northeast longitude corner
-`AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude
-`AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude
+`AGRMET forcing domain lower left lat:` specifies southwest latitude corner.
+
+`AGRMET forcing domain lower left lon:` specifies southwest longitude corner.
+
+`AGRMET forcing domain upper right lat:` specifies northeast latitude corner.
+
+`AGRMET forcing domain upper right lon:` specifies northeast longitude corner.
+
+`AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude.
+
+`AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude.
 
 `AGRMET use IMERG data:` specifies whether to use 30-min IMERG data
 Acceptable values are:
@@ -5642,9 +5685,11 @@ Acceptable values are:
 |1                       | Assimilate IMERG
 |====
 
-`AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals
-`AGRMET IMERG data directory:` top directory to find IMERG files
-`AGRMET IMERG product:` identifies which IMERG run to assimilate
+`AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals.
+
+`AGRMET IMERG data directory:` top directory to find IMERG files.
+
+`AGRMET IMERG product:` identifies which IMERG run to assimilate.
 Acceptable values are:
 
 |====
@@ -5665,10 +5710,9 @@ Acceptable values include:
 |V06C                    | Version 06C
 |V06D                    | Version 06D
 |V07B                    | Version 07B
-
 |====
 
-`AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low
+`AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low.
 
 `AGRMET output OBA data:` option for writing OBA (observation, background, analysis) files from Bratseth.
 Acceptable values are:
@@ -5681,7 +5725,7 @@ Acceptable values are:
 |2                       | Write OBA files w/o actually running Bratseth scheme
 |====
 
-`AGRMET skip backQC:` option to disable backQC step
+`AGRMET skip backQC:` option to disable backQC step.
 Acceptable values are:
 
 |====
@@ -5691,7 +5735,7 @@ Acceptable values are:
 |1                       | Skip backQC step
 |====
 
-`AGRMET skip superstatQC:` option to disable superstatQC step
+`AGRMET skip superstatQC:` option to disable superstatQC step.
 Acceptable values are:
 
 |====
@@ -5701,11 +5745,11 @@ Acceptable values are:
 |1                       | Skip superstatQC step
 |====
 
-`AGRMET 3hr maximum precip ceiling:` set threshold (mm) above which to reject precipitation
+`AGRMET 3hr maximum precip ceiling:` set threshold (mm) above which to reject precipitation.
 
-`AGRMET mask file:` path to legacy AGRMET landmask file
+`AGRMET mask file:` path to legacy AGRMET landmask file.
 
-`AGRMET terrain file:` path to legacy AGRMET terrain file
+`AGRMET terrain file:` path to legacy AGRMET terrain file.
 
 .Example _lis.config_ entry
 ....
