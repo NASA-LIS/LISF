@@ -627,93 +627,129 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK NEW...For Bratseth scheme using GALWEM background
      real :: galwem_precip_back_err_scale_length
+     real :: galwem_precip_back_err_inv_scale_length
      real :: galwem_precip_back_sigma_b_sqr
      real :: galwem_precip_gauge_sigma_o_sqr
      real :: galwem_precip_geoprecip_err_scale_length
+     real :: galwem_precip_geoprecip_err_inv_scale_length
      real :: galwem_precip_geoprecip_sigma_o_sqr
      real :: galwem_precip_ssmi_err_scale_length
+     real :: galwem_precip_ssmi_err_inv_scale_length
      real :: galwem_precip_ssmi_sigma_o_sqr
      real :: galwem_precip_cmorph_err_scale_length
+     real :: galwem_precip_cmorph_err_inv_scale_length
      real :: galwem_precip_cmorph_sigma_o_sqr
      real :: galwem_precip_imerg_err_scale_length
+     real :: galwem_precip_imerg_err_inv_scale_length
      real :: galwem_precip_imerg_sigma_o_sqr
+     integer :: galwem_precip_corr_func_type
      real :: galwem_precip_max_dist
 
      real :: galwem_t2m_back_err_scale_length
+     real :: galwem_t2m_back_err_inv_scale_length
      real :: galwem_t2m_back_sigma_b_sqr
      real :: galwem_t2m_stn_sigma_o_sqr
+     integer :: galwem_t2m_corr_func_type
      real :: galwem_t2m_max_dist
 
      real :: galwem_rh2m_back_err_scale_length
+     real :: galwem_rh2m_back_err_inv_scale_length
      real :: galwem_rh2m_back_sigma_b_sqr
      real :: galwem_rh2m_stn_sigma_o_sqr
+     integer :: galwem_rh2m_corr_func_type
      real :: galwem_rh2m_max_dist
 
      real :: galwem_spd10m_back_err_scale_length
+     real :: galwem_spd10m_back_err_inv_scale_length
      real :: galwem_spd10m_back_sigma_b_sqr
      real :: galwem_spd10m_stn_sigma_o_sqr
+     integer :: galwem_spd10m_corr_func_type
      real :: galwem_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme using GFS background
      real :: gfs_precip_back_err_scale_length
+     real :: gfs_precip_back_err_inv_scale_length
      real :: gfs_precip_back_sigma_b_sqr
      real :: gfs_precip_gauge_sigma_o_sqr
      real :: gfs_precip_geoprecip_err_scale_length
+     real :: gfs_precip_geoprecip_err_inv_scale_length
      real :: gfs_precip_geoprecip_sigma_o_sqr
      real :: gfs_precip_ssmi_err_scale_length
+     real :: gfs_precip_ssmi_err_inv_scale_length
      real :: gfs_precip_ssmi_sigma_o_sqr
      real :: gfs_precip_cmorph_err_scale_length
+     real :: gfs_precip_cmorph_err_inv_scale_length
      real :: gfs_precip_cmorph_sigma_o_sqr
      real :: gfs_precip_imerg_err_scale_length
+     real :: gfs_precip_imerg_err_inv_scale_length
      real :: gfs_precip_imerg_sigma_o_sqr
+     integer :: gfs_precip_corr_func_type
      real :: gfs_precip_max_dist
 
      real :: gfs_t2m_back_err_scale_length
+     real :: gfs_t2m_back_err_inv_scale_length
      real :: gfs_t2m_back_sigma_b_sqr
      real :: gfs_t2m_stn_sigma_o_sqr
+     integer :: gfs_t2m_corr_func_type
      real :: gfs_t2m_max_dist
 
      real :: gfs_rh2m_back_err_scale_length
+     real :: gfs_rh2m_back_err_inv_scale_length
      real :: gfs_rh2m_back_sigma_b_sqr
      real :: gfs_rh2m_stn_sigma_o_sqr
+     integer :: gfs_rh2m_corr_func_type
      real :: gfs_rh2m_max_dist
 
      real :: gfs_spd10m_back_err_scale_length
+     real :: gfs_spd10m_back_err_inv_scale_length
      real :: gfs_spd10m_back_sigma_b_sqr
      real :: gfs_spd10m_stn_sigma_o_sqr
+     integer :: gfs_spd10m_corr_func_type
      real :: gfs_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme.  Set dynamically based on available
      ! background field
      real :: bratseth_precip_back_err_scale_length
+     real :: bratseth_precip_back_err_inv_scale_length
      real :: bratseth_precip_back_sigma_b_sqr
      real :: bratseth_precip_gauge_sigma_o_sqr
      real :: bratseth_precip_geoprecip_err_scale_length
+     real :: bratseth_precip_geoprecip_err_inv_scale_length
      real :: bratseth_precip_geoprecip_sigma_o_sqr
      real :: bratseth_precip_ssmi_err_scale_length
+     real :: bratseth_precip_ssmi_err_inv_scale_length
      real :: bratseth_precip_ssmi_sigma_o_sqr
      real :: bratseth_precip_cmorph_err_scale_length
+     real :: bratseth_precip_cmorph_err_inv_scale_length
      real :: bratseth_precip_cmorph_sigma_o_sqr
      real :: bratseth_precip_imerg_err_scale_length
+     real :: bratseth_precip_imerg_err_inv_scale_length
      real :: bratseth_precip_imerg_sigma_o_sqr
+     integer :: bratseth_precip_corr_func_type
      real :: bratseth_precip_max_dist
 
      real :: bratseth_t2m_back_err_scale_length
+     real :: bratseth_t2m_back_err_inv_scale_length
      real :: bratseth_t2m_back_sigma_b_sqr
      real :: bratseth_t2m_stn_sigma_o_sqr
+     integer :: bratseth_t2m_corr_func_type
      real :: bratseth_t2m_max_dist
 
      real :: bratseth_rh2m_back_err_scale_length
+     real :: bratseth_rh2m_back_err_inv_scale_length
      real :: bratseth_rh2m_back_sigma_b_sqr
      real :: bratseth_rh2m_stn_sigma_o_sqr
+     integer :: bratseth_rh2m_corr_func_type
      real :: bratseth_rh2m_max_dist
 
      real :: bratseth_spd10m_back_err_scale_length
+     real :: bratseth_spd10m_back_err_inv_scale_length
      real :: bratseth_spd10m_back_sigma_b_sqr
      real :: bratseth_spd10m_stn_sigma_o_sqr
+     integer :: bratseth_spd10m_corr_func_type
      real :: bratseth_spd10m_max_dist
 
-     integer :: galwem_res ! EMK for GALWEM 10-km     
+     integer :: galwem_res ! EMK for GALWEM 10-km
      integer :: gfs_filename_version ! EMK for new GFS filename convention
 
      ! EMK Add OBA option
