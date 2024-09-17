@@ -144,6 +144,7 @@ subroutine AGRMET_storeobs(n, nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
 !   \end{description}  
 !EOP
   character*10                   :: date10
+  character*32 :: network32
   integer                        :: india_lowlimit
   integer                        :: india_highlimit
   integer                        :: srilanka_lowlimit
@@ -254,7 +255,9 @@ subroutine AGRMET_storeobs(n, nsize, nsize3, isize, obs, obs3, ilat, ilon,  &
 
      ! EMK 20240523...Skip report if network is not recognized. Issue an
      ! alert. Keep track of unknown networks to avoid redundant alerts.
-     if (.not. USAF_is_gauge(network(irecord),n)) then
+     ! EMK 20240917...Fix argument size mismatch
+     network32 = network(irecord)
+     if (.not. USAF_is_gauge(network32,n)) then
         do i = 1, MAX_NEW_NETWORKS
            if (new_networks(i) == network(irecord)) then
               cycle RECORD

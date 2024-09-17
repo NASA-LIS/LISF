@@ -125,7 +125,7 @@ subroutine AGRMET_storeobs_offhour(n, nsize, isize, obs, ilat, ilon,  &
   integer                        :: tempmsc
   real                           :: rlat
   real                           :: rlon
-  
+  character*32 :: network32
   type rain_obs
      sequence
      character*10                 :: net
@@ -216,7 +216,9 @@ subroutine AGRMET_storeobs_offhour(n, nsize, isize, obs, ilat, ilon,  &
 
      ! EMK 20240523...Skip report if network is not recognized. Issue an
      ! alert. Keep track of unknown networks to avoid redundant alerts.
-     if (.not. USAF_is_gauge(network(irecord),n)) then
+     ! EMK 20240917...Fix argument size mismatch
+     network32 = network(irecord)
+     if (.not. USAF_is_gauge(network32,n)) then
         do i = 1, MAX_NEW_NETWORKS
            if (new_networks(i) == network(irecord)) then
               cycle RECORD
