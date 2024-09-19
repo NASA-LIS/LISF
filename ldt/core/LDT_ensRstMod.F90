@@ -21,6 +21,7 @@ module LDT_ensRstMod
 ! !REVISION HISTORY: 
 !  16 Aug 2012    Sujay Kumar  Initial Specification
 !   1 Nov 2017 Augusto Getirana: Add HyMAP2 parameters
+!  21 Jun 2024 Yeosang Yoon: Add an additional sampling strategy for ensemble restart generation.         
 ! 
   use ESMF
   use LDT_coreMod
@@ -270,7 +271,6 @@ module LDT_ensRstMod
          
          call LDT_verify(nf90_enddef(ftn2))
          
-         
          do k=1,nVars
             call LDT_verify(nf90_inquire_variable(ftn,k,varName,ndims=nvardims),&
                  'nf90_inquire_variable failed in LDT_ensRstMod')
@@ -346,6 +346,16 @@ module LDT_ensRstMod
                   endif
                enddo
             enddo
+         ! To avoid speckling issues, only use ensemble member 12
+         elseif(LDT_rc%ensrstsampling.eq."557ww") then
+            allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
+            do i=1,dims(1)/LDT_rc%nens_in
+               do m=1,LDT_rc%nens_out
+                  t2 = (i-1)*LDT_rc%nens_out+m
+                  t1 = (i-1)*LDT_rc%nens_in+12
+                  var_map(t2) = t1
+               enddo
+            enddo
          endif
          
          do k=1,nVars
@@ -378,14 +388,15 @@ module LDT_ensRstMod
                         var_new((t-1)*LDT_rc%nens_out+m,:) = var(t,:)
                      enddo
                   enddo
-               elseif(LDT_rc%ensrstsampling.eq."random sampling") then
+               elseif(LDT_rc%ensrstsampling.eq."random sampling" .or. &
+                      LDT_rc%ensrstsampling.eq."557ww") then
                   do i=1,dims(1)/LDT_rc%nens_in
                      do m=1,LDT_rc%nens_out
                         t2 = (i-1)*LDT_rc%nens_out+m
                         t1 = var_map(t2)
                         var_new(t2,:) = var(t1,:)
                      enddo
-                  enddo                  
+                  enddo              
                endif
                if(nvardims.gt.1) then 
                   call LDT_verify(nf90_put_var(ftn2,k,var_new,(/1,1/),&
@@ -407,7 +418,8 @@ module LDT_ensRstMod
          
          deallocate(dimID2)
          deallocate(dims)
-         if(LDT_rc%ensrstsampling.eq."random sampling") then
+         if(LDT_rc%ensrstsampling.eq."random sampling" .or. &
+                      LDT_rc%ensrstsampling.eq."557ww") then
             deallocate(var_map)
          endif
          call LDT_verify(nf90_close(ftn))
@@ -908,7 +920,6 @@ module LDT_ensRstMod
          allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
          var_map = -1
          do i=1,dims(1)/LDT_rc%nens_in
-
             st = (i-1)*LDT_rc%nens_out+1
             en = (i-1)*LDT_rc%nens_out+LDT_rc%nens_out
 
@@ -935,6 +946,37 @@ module LDT_ensRstMod
                   endif
                enddo
                
+               var_map(t2) = t1
+            enddo
+         enddo
+      ! To avoid speckling issues, only use ensemble member 12
+      elseif(LDT_rc%ensrstsampling.eq."557ww") then
+         allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
+         var_map = -1
+         do i=1,dims(1)/LDT_rc%nens_in
+            st = (i-1)*LDT_rc%nens_out+1
+            en = (i-1)*LDT_rc%nens_out+LDT_rc%nens_out
+
+            do m=1,LDT_rc%nens_out
+               t2 = (i-1)*LDT_rc%nens_out+m
+               cycl_check = .true.
+
+               do while(cycl_check)
+                  t1 = (i-1)*LDT_rc%nens_in+12
+
+                  dupl_check =.false.
+                  do p=st,en
+                     if(t1.eq.var_map(p)) then
+                        dupl_check = .true.
+                     endif
+                  enddo
+                  if(dupl_check) then
+                     cycl_check = .true.
+                  else
+                     cycl_check = .false.
+                  endif
+               enddo
+
                var_map(t2) = t1
             enddo
          enddo
@@ -973,7 +1015,8 @@ module LDT_ensRstMod
                   enddo
                   var_new(t,:) = var_new(t,:)/LDT_rc%nens_in
                enddo
-            elseif(LDT_rc%ensrstsampling.eq."random sampling") then
+            elseif(LDT_rc%ensrstsampling.eq."random sampling" .or. &
+                   LDT_rc%ensrstsampling.eq."557ww") then
                do i=1,dims(1)/LDT_rc%nens_in
                   do m=1,LDT_rc%nens_out
                      t2 = (i-1)*LDT_rc%nens_out+m
@@ -1006,7 +1049,8 @@ module LDT_ensRstMod
       deallocate(dimID2)
       deallocate(dims)
 
-      if(LDT_rc%ensrstsampling.eq."random sampling") then
+      if(LDT_rc%ensrstsampling.eq."random sampling" .or. &
+         LDT_rc%ensrstsampling.eq."557ww") then
          deallocate(var_map)
       endif
 
