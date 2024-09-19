@@ -3303,6 +3303,7 @@ for ensemble restart generation. Options are:
 
 |none | Do not apply random sampling strategy
 |random sampling | Use random sampling strategy
+|557ww | Only use the non-perturbed member
 |===
 
 .Example _ldt.config_ entry
