@@ -346,13 +346,13 @@ module LDT_ensRstMod
                   endif
                enddo
             enddo
-         ! To avoid speckling issues, only use ensemble member 12
-         elseif(LDT_rc%ensrstsampling.eq."557ww") then
+         ! To avoid speckling issues, only use last ensemble member
+         elseif(LDT_rc%ensrstsampling.eq."unperturbed sampling") then
             allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
             do i=1,dims(1)/LDT_rc%nens_in
                do m=1,LDT_rc%nens_out
-                  t2 = (i-1)*LDT_rc%nens_out+m
-                  t1 = (i-1)*LDT_rc%nens_in+12
+                  t2 = (i-1)*LDT_rc%nens_out + m
+                  t1 = (i-1)*LDT_rc%nens_in  + LDT_rc%nens_in
                   var_map(t2) = t1
                enddo
             enddo
@@ -389,7 +389,7 @@ module LDT_ensRstMod
                      enddo
                   enddo
                elseif(LDT_rc%ensrstsampling.eq."random sampling" .or. &
-                      LDT_rc%ensrstsampling.eq."557ww") then
+                      LDT_rc%ensrstsampling.eq."unperturbed sampling") then
                   do i=1,dims(1)/LDT_rc%nens_in
                      do m=1,LDT_rc%nens_out
                         t2 = (i-1)*LDT_rc%nens_out+m
@@ -419,7 +419,7 @@ module LDT_ensRstMod
          deallocate(dimID2)
          deallocate(dims)
          if(LDT_rc%ensrstsampling.eq."random sampling" .or. &
-                      LDT_rc%ensrstsampling.eq."557ww") then
+              LDT_rc%ensrstsampling.eq."unperturbed sampling") then
             deallocate(var_map)
          endif
          call LDT_verify(nf90_close(ftn))
@@ -949,8 +949,8 @@ module LDT_ensRstMod
                var_map(t2) = t1
             enddo
          enddo
-      ! To avoid speckling issues, only use ensemble member 12
-      elseif(LDT_rc%ensrstsampling.eq."557ww") then
+      ! To avoid speckling issues, only use last ensemble member
+      elseif(LDT_rc%ensrstsampling.eq."unperturbed sampling") then
          allocate(var_map(dims(1)*LDT_rc%nens_out/LDT_rc%nens_in))
          var_map = -1
          do i=1,dims(1)/LDT_rc%nens_in
@@ -962,7 +962,7 @@ module LDT_ensRstMod
                cycl_check = .true.
 
                do while(cycl_check)
-                  t1 = (i-1)*LDT_rc%nens_in+12
+                  t1 = (i-1)*LDT_rc%nens_in + LDT_rc%nens_in
 
                   dupl_check =.false.
                   do p=st,en
@@ -1016,7 +1016,7 @@ module LDT_ensRstMod
                   var_new(t,:) = var_new(t,:)/LDT_rc%nens_in
                enddo
             elseif(LDT_rc%ensrstsampling.eq."random sampling" .or. &
-                   LDT_rc%ensrstsampling.eq."557ww") then
+                   LDT_rc%ensrstsampling.eq."unperturbed sampling") then
                do i=1,dims(1)/LDT_rc%nens_in
                   do m=1,LDT_rc%nens_out
                      t2 = (i-1)*LDT_rc%nens_out+m
@@ -1050,7 +1050,7 @@ module LDT_ensRstMod
       deallocate(dims)
 
       if(LDT_rc%ensrstsampling.eq."random sampling" .or. &
-         LDT_rc%ensrstsampling.eq."557ww") then
+         LDT_rc%ensrstsampling.eq."unperturbed sampling") then
          deallocate(var_map)
       endif
 
