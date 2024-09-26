@@ -16,6 +16,7 @@ subroutine LIS_process_cmd_args
 ! !USES: 
   use LIS_coreMod,   only : LIS_masterproc, LIS_rc
   use LIS_logMod,    only : LIS_endrun
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 #if ( defined AIX )
    use xlfutility, only : iargc
 #endif
@@ -47,7 +48,7 @@ subroutine LIS_process_cmd_args
 #endif
 
    integer :: i, numargs
-   character(len=100) :: argi
+   character(len=LIS_CONST_PATH_LEN) :: argi
 
    numargs=iargc()
 

@@ -935,7 +935,7 @@ module LIS_PRIV_rcMod
      character*20           :: distribution_class
      character*20           :: data_category
      character*20           :: area_of_data
-     character*255          :: lis_config_file='lis.config'
+     character(len=LIS_CONST_PATH_LEN) :: lis_config_file='lis.config'
      character*100          :: institution = 'NASA GSFC'
 !RTM related variables
      character*50           :: rtm
