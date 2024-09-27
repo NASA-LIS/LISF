@@ -329,9 +329,10 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            call gefs_shift_longitude( gefs_struc(n)%nc, gefs_struc(n)%nr, &
                 numpts, gefs_grib_data )
            
-           pcp_flag = .true.
            ! Spatially interp GEFS forcing field to LIS domain:
+           pcp_flag = .true.
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
+           pcp_flag = .false.
                   
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)
