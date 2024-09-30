@@ -71,7 +71,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             if 'mil' in cfg['SETUP']['CONSTRAINT']:
                 _f.write('#SBATCH --partition=packable'  + '\n')
             if group_jobs:
-                mpc = min(math.ceil(240 / ntasks), 80)
+                mpc = min(math.ceil(480 / ntasks), 100)
                 _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
                 _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')

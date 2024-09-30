@@ -3,7 +3,7 @@
  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 24 Aug 2023
+  Last Modified 27 Sep 2024
 
 		TABLE OF CONTENTS
 		_________________
@@ -56,26 +56,27 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
     grib configuration settings), and netCDF4 with compression.
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.5_intel_2021.4.0_s2s
+  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
 
-* Python 3.9, with the following extra libraries installed:
+* Python 3.11, with the following extra libraries installed:
                NCCS        HPC
-  - xarray     2022.10.0   2022.11.0
-  - dask       2022.10.0   2022.10.2
-  - xesmf      0.6.3       0.6.3
-  - cfgrib     0.9.10.2    0.9.10.2
-  - dateutil   2.8.2       2.8.2
-  - pandas     1.5.1       1.5.1
-  - numpy      1.23.4      1.23.4
-  - PyYAML     6.0         6.0
-  - GDAL       3.5.2       3.5.2
-  - OSGEO      3.5.2       3.5.2
-  - NetCDF4    1.6.1       1.6.1
-  - Cartopy    0.21.0      0.21.0
-  - Matplotlib 3.6.1       3.6.2
+  - xarray     2024.6.0    2024.6.0
+  - dask       2024.7.0    2024.6.2
+  - xesmf      0.8.6       0.8.5
+  - cfgrib     0.9.13.0    0.9.14.0
+  - dateutil   2.9.0       2.9.0
+  - pandas     2.2.2       2.2.2 
+  - numpy      1.26.4      1.26.4
+  - PyYAML     6.0.1       6.0.01
+  - GDAL       3.8.4       3.8.1
+  - OSGEO      3.8.4       3.8.1
+  - NetCDF4    1.7.1       1.6.5
+  - Cartopy    0.23.0      0.23.0
+  - Matplotlib 3.9.1       3.8.4
 
-  ** Note:  Future tests and any code updates will be
-       made when we upgrade to Python 3.10.
+  ** Note:  Updates to the above libraries and modules
+        could get updated as frequent as every 3- to
+        6-months, depending on the system.
 
 
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
@@ -110,7 +111,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   LISFDIR: [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
   E2ESDIR: [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
   METFORC: [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
-  LISFMOD: lisf_7.5_intel_2021.4.0_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
+  LISFMOD: lisf_7.5_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
   SPCODE: s1189    [YOUR LOCAL MACHINE GROUPID CODE]
   DATATYPE: forecast  [OPTIONS INCLUDE:  "forecast" or "hindcast"]
   supplementarydir:  [YOUR GHI_S2S/supplementary_files DIRECTORY PATH WITH RUNTIME INPUT FILES]
@@ -193,7 +194,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
  To run a single step, you will select the following options, for example 
   the BCSD step:
 
-  sh s2s_app/s2s_run.sh -y 2022 -m 9 -c s2s_config_global_fcst -s BCSD -o Y
+  sh s2s_app/s2s_run.sh -y 2024 -m 9 -c s2s_config_global_fcst -s BCSD -o Y
 
  would run just the BCSD step and scripts.
 
@@ -206,10 +207,10 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
  The report option allows the user to check the order, processing SLURM
   job time, and final computational resource usage and time information.
 
- An example of how to monitor an E2ES set of SLURM jobs, for an 09-2022
+ An example of how to monitor an E2ES set of SLURM jobs, for an 09-2024
   forecast:
 
- sh s2s_app/s2s_run.sh -y 2022 -m 9 -c s2s_config_global_fcst -r Y
+ sh s2s_app/s2s_run.sh -y 2024 -m 9 -c s2s_config_global_fcst -r Y
 
  The "-r" flag option with "Y" set allows the user to see the 
   following information, e.g.:
@@ -220,24 +221,28 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   
             JOB FILE                 WALLTIME (HH:MM:SS)
   
-  1/105  lisda_run.j                         1h 12m  0s
-  2/105  ldtics_run.j                        0h 11m  4s
-  3/105  bcsd01_run.j                        5h 13m 34s
-  4/105  bcsd03_CCM4_run.j                   0h  1m  2s
-  5/105  bcsd03_CCSM4_run.j                  0h  1m  3s
-  6/105  bcsd03_CFSv2_run.j                  0h  1m  5s
-  7/105  bcsd03_GEOSv2_run.j                 0h  0m 54s
-  8/105  bcsd03_GFDL_run.j                   0h  1m  6s
-  9/105  bcsd03_GNEMO5_run.j                 0h  1m  0s
+   1/36 lisda_run.j                           3h 40m 57s
+   2/36 ldtics_run.j                          0h  7m  6s
+   3/36 bcsd01_01_run.j                       0h 50m 53s
+   4/36 bcsd01_02_run.j                       0h 50m 52s
+   5/36 bcsd01_03_run.j                       0h 50m 43s
+   6/36 bcsd01_04_run.j                       0h 51m 11s
+   7/36 bcsd03_run.j                          0h  1m  9s
+   8/36 bcsd04_01_run.j                       3h 11m 46s
+   9/36 bcsd04_02_run.j                       3h 11m 48s
+  10/36 bcsd05_01_run.j                       1h 35m 56s
+  11/36 bcsd05_02_run.j                       2h  9m 44s
  ... 
  ...
-101/105  s2spost_GNEMO5_202301_run.j         0h 29m 32s
-102/105  s2spost_GNEMO5_202302_run.j         0h 27m 14s
-103/105  s2spost_GNEMO5_202303_run.j         0h 29m 11s
-104/105  s2spost_GNEMO5_202304_run.j         0h 29m 23s
-105/105  s2spost_GNEMO5_202305_run.j         0h 29m 58s
+  30/36 lis_fcst_GFDL_07_run.j                2h 45m 44s
+  31/36 lis_fcst_GFDL_08_run.j                2h 51m 39s
+  32/36 s2spost_01_run.j                      1h 38m 44s
+  33/36 s2spost_02_run.j                      2h 15m 31s
+  34/36 s2smetric_run.j                       1h 16m 58s
+  35/36 s2smetric_tiff_run.j                  0h 49m 56s
+  36/36 s2splots_run.j                        1h 39m 15s
   
- ELAPSED TIME :  1d 08h 14m 52s
+ ELAPSED TIME :  2d 7h 39m 13s
  -------------------------------
 
  The above example report output will show all the E2ES
@@ -367,7 +372,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
          files are available yet, a message will be given be along with the 
          following option, for example:
 
-       Precipitation forecasts are available for only 2 NMME models (GEOS5v2 CCM4). 
+       Precipitation forecasts are available for only 2 NMME models (GEOS5v2 CESM1). 
        Do you want to continue (Y/N)?
 
       We recommend the user to wait until all files are available on the IRI/Columbia
@@ -466,7 +471,11 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   - Entries for the NMME and CFSv2 models are found in the main S2S 
     configuration script (e.g., s2s_config_global_fcst):
-     CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO
+     == As of 01-Aug-2024 ==
+     CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5
+
+     == After 01-Aug-2024 ==
+     CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52
 
   4.7 S2S POST-PROCESSING
     s2spost:  S2S forecast output post-process step
