@@ -395,7 +395,10 @@ download_forecasts(){
     
     sed -i "${LINE2}s/.*/${new_line}/1" $CFILE
     
-    declare -A nmme_models=( ["CanSIPS-IC3"]="GNEMO5, CCM4" ["COLA-RSMAS-CCSM4"]="CCSM4" ["GFDL-SPEAR"]="GFDL" ["NASA-GEOSS2S"]="GEOSv2" ["NCEP-CFSv2"]="CFSv2" )
+#   NMME models prior to Aug-2024:
+#    declare -A nmme_models=( ["CanSIPS-IC3"]="GNEMO5, CCM4" ["COLA-RSMAS-CCSM4"]="CCSM4" ["GFDL-SPEAR"]="GFDL" ["NASA-GEOSS2S"]="GEOSv2" ["NCEP-CFSv2"]="CFSv2" )
+#   NMME models since Aug-2024:
+    declare -A nmme_models=( ["CanSIPS-IC4"]="GNEMO52, CanESM5" ["COLA-RSMAS-CESM1"]="CESM1" ["GFDL-SPEAR"]="GFDL" ["NASA-GEOSS2S"]="GEOSv2" ["NCEP-CFSv2"]="CFSv2" )
     have_model="["
     
     if [ `echo $prec_files | wc -w` -lt 5 ]; then
@@ -404,7 +407,8 @@ download_forecasts(){
 	s2s_app/download_nmme_precip.sh ${YYYY} ${Mmm} ${CFILE}
 	prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc`
 	
-	for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
+#	for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
+	for dir in CanSIPS-IC4 COLA-RSMAS-CESM1 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
 	do
 	    fdown=$NMME_RAWDIR/$dir/prec.$dir.mon_${Mmm}.${YYYY}.nc
 	    if [ `file $fdown | rev | cut -d' ' -f1 | rev` == "data" ]; then

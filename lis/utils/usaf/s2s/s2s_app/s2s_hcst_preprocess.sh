@@ -50,7 +50,8 @@ while getopts ":m:c:s:r:" opt; do
        echo "  REPORT:   Once the E2ES process has begun (jobs have been submitted), the REPORT flag can be used to check the progress of SLURM jobs (valid inputs: Y or N)"
        echo "  STEP:     The E2ES process includes three steps that are run sequentially DOWNLOAD (or DOWNLOADNMME), REORG, CLIM"
        echo "            However, the STEP option allows the user to kick start the process from the last completed step."
-       echo "            -s STEP directs s2s_run.sh to start from a specific STEP (valid inputs: DOWNLOAD, DOWNLOADNMME, REORG, CLIM)."
+       echo "            -s STEP directs s2s_run.sh to start from a specific STEP."
+       echo "            Valid inputs: DOWNLOAD, DOWNLOADNMME, REORG, CLIM, REORGNMME, REORGCFSV2, CLIMNMME, CLIMCFSV2, CLIMNAFPA"
        echo "     "                       
        exit 1 
        ;;    
@@ -139,17 +140,20 @@ reorg_cfsv2(){
     # Reorganize CFSv2 Data
     #######################################################################
 
-    clim_mid=$((clim_syr+clim_eyr))
-    clim_mid=$((clim_mid / 2))
+    echo " ... Preprocessing (Reorg) CFSv2 files ... "
     
     cd ${SCRDIR}/reorg/
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=reorg_cfsv2
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_syr -e $clim_mid -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set1
-    ((clim_mid++))
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_mid -e $clim_eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set2
+    iter=1
+    for ((YEAR=$clim_syr; YEAR<=$clim_eyr; YEAR+=6)); do
+	syr=$YEAR
+	eyr=$((YEAR+5))
+	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $syr -e $eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j ${jobname}_set${iter}
+	((iter++))
+    done
     
     job_list="$jobname*.j"
     for jfile in $job_list
@@ -170,29 +174,30 @@ reorg_nmme(){
     # Reorganize NMME Data
     #######################################################################
 
+    echo " ... Preprocessing (Reorg) NMME files ... "
+
     cd ${SCRDIR}/reorg/
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=reorg_nmme
+    cmdfile=${jobname}.file
     nmme_output_dir=${E2ESDIR}/bcsd_fcst/NMME/raw/Monthly/
     mkdir -p -m 775 $nmme_output_dir
-        
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
-    this_model=0
-    for nmme_model in $MODELS; do	
-	COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/nmme_reorg_h.py $MM $nmme_output_dir $nmme_model $BWD/$CFILE"
-	if [ $this_model == 0 ]; then
-	    sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_run.j
-	else
-	    LLINE=`grep -n nmme_reorg_h.py ${jobname}_run.j | tail -1 | cut -d':' -f1`
-	    ((LLINE++))
-	    sed -i "${LLINE}i ${COMMAND}" ${jobname}_run.j
-	fi
-	((this_model++))
+
+    for nmme_model in $MODELS; do
+	echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/nmme_reorg_h.py $MM $nmme_output_dir $nmme_model $BWD/$CFILE" >> "$cmdfile"
     done;
 
-    reorg_nmme_ID=$(submit_job "" "${jobname}_run.j")
+    split -l 3  $cmdfile part_
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_aa"
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_ab"
+    /bin/rm ${cmdfile} "part_aa" "part_ab"
+    
+    reorg_nmme_ID=$(submit_job "" "${jobname}_01_run.j")
+    thisID=$(submit_job "" "${jobname}_02_run.j")
+    reorg_nmme_ID=`echo $reorg_nmme_ID`' '$thisID
+    reorg_nmme_ID=`echo $reorg_nmme_ID | sed "s| |:|g"`
     cd ${BWD}
 }
 
@@ -209,23 +214,17 @@ clim_nafpa(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=clim_nafpa
+    cmdfile=${jobname}.file
     outdir=${E2ESDIR}/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/
     mkdir -p -m 775 $outdir
      
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}    
-    this_var=0
     for var in LWdown_f_tavg Rainf_f_tavg Psurf_f_tavg  Qair_f_tavg SWdown_f_tavg Tair_f_tavg Wind_f_tavg; do
-        COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir"
-	if [ $this_var == 0 ]; then
-	    sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_run.j
-	else
-	    LLINE=`grep -n calc_and_write_observational_climatology.py ${jobname}_run.j | tail -1 | cut -d':' -f1`
-	    ((LLINE++))
-	    sed -i "${LLINE}i ${COMMAND}" ${jobname}_run.j
-	fi	
-	((this_var++))
+        echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir" >> "$cmdfile"
     done;
-
+    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    /bin/rm ${cmdfile}
+    
     clim_nafpa_ID=$(submit_job "" "${jobname}_run.j")
     cd ${BWD}
 
@@ -239,30 +238,30 @@ clim_cfsv2(){
     # Create CFSv2 Climatologies
     #######################################################################
 
+    echo " ... Creating CFSv2 climatology files ... "
+
     cd ${SCRDIR}/clim/
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=clim_cfsv2
+    cmdfile=${jobname}.file
     fcst_indir=${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Monthly/
     outdir=${E2ESDIR}/bcsd_fcst/CFSv2_25km/raw/Climatology/${mmm}01/
     mkdir -p -m 775 ${outdir}
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD}
-    this_var=0
     for var in PRECTOT  LWS  PS  Q2M  SLRSF  T2M  WIND10M; do
-        COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir"
-	if [ $this_var == 0 ]; then
-	    sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_run.j
-	else
-	    LLINE=`grep -n calc_and_write_forecast_climatology.py ${jobname}_run.j | tail -1 | cut -d':' -f1`
-	    ((LLINE++))
-	    sed -i "${LLINE}i ${COMMAND}" ${jobname}_run.j
-	fi	
-	((this_var++))
+        echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir" >> "$cmdfile"
     done;
     
-    clim_cfsv2_ID=$(submit_job $reorg_cfsv2_ID "${jobname}_run.j")
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    /bin/rm ${cmdfile}
+
+    if [ ${reorg_cfsv2_ID} == "" ]; then
+       clim_cfsv2_ID=$(submit_job "" "${jobname}_run.j")
+    else
+       clim_cfsv2_ID=$(submit_job $reorg_cfsv2_ID "${jobname}_run.j")
+    fi
     cd ${BWD}
 }
 
@@ -274,38 +273,34 @@ clim_nmme(){
     # Create NMME Climatologies
     #######################################################################
 
+    echo " ... Creating NMME climatology files ... "
+
     cd ${SCRDIR}/clim/
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=clim_nmme
+    cmdfile=${jobname}.file
     outdir=${E2ESDIR}/bcsd_fcst/NMME/raw/Climatology/${mmm}01/
     mkdir -p -m 775 ${outdir}
     cd ${outdir}
     mkdir -p -m 775 $MODELS
     cd ${SCRDIR}/clim/
  
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD}
-    this_model=0
     for model in $MODELS; do
-
+#        echo " ... NMME model :: "${model}
         nmme_indir=${E2ESDIR}/bcsd_fcst/NMME/raw/Monthly/${mmm}01/${model}/
-        outdir=${E2ESDIR}/bcsd_fcst/NMME/raw/Climatology/${mmm}01/${model}/
-	
-	COMMAND="python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_nmme_forecast_climatology.py 'PRECTOT'  $MM ${model} $BWD/$CFILE $nmme_indir $outdir"
-		
-	if [ $this_model == 0 ]; then
-	    sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_run.j
-	else
-	    LLINE=`grep -n calc_and_write_nmme_forecast_climatology.py ${jobname}_run.j | tail -1 | cut -d':' -f1`
-	    ((LLINE++))
-	    sed -i "${LLINE}i ${COMMAND}" ${jobname}_run.j
-	fi
-	((this_model++))
+        outdir=${E2ESDIR}/bcsd_fcst/NMME/raw/Climatology/${mmm}01/${model}/	
+	echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_nmme_forecast_climatology.py 'PRECTOT'  $MM ${model} $BWD/$CFILE $nmme_indir $outdir" >> "$cmdfile"
     done;
 
-    clim_nmme_ID=$(submit_job $reorg_nmme_ID "${jobname}_run.j")
-    
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    /bin/rm ${cmdfile}
+    if [ ${reorg_nmme_ID} == "0" ]; then
+       clim_nmme_ID=$(submit_job "" "${jobname}_run.j")    
+    else
+       clim_nmme_ID=$(submit_job $reorg_nmme_ID "${jobname}_run.j")    
+    fi
     cd ${BWD}
 }
 
@@ -338,7 +333,7 @@ python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" 
 #######################################################################
 
 reorg_cfsv2_ID=
-reorg_nmme_ID=
+reorg_nmme_ID=0
 clim_nafpa_ID=
 
 case $STEP in
@@ -347,9 +342,15 @@ case $STEP in
 	download_nmme
         ;;
     DOWNLOADNMME)
+        echo "              " 
+        echo "Download NMME forcings"
+        echo "----------------------"
 	download_nmme
         ;;
     REORG)
+        echo " ============================= "
+        echo "  Reorg of forcings step       "
+        echo " ============================= "
 	echo "              " >> $JOB_SCHEDULE
 	echo "(1) Reorganize forcings" >> $JOB_SCHEDULE
 	echo "-----------------------" >> $JOB_SCHEDULE
@@ -357,16 +358,69 @@ case $STEP in
         reorg_cfsv2
 	reorg_nmme
         ;;                
+    REORGNMME)
+        echo " ============================= "
+        echo "  Reorg of NMME forcings step  "
+        echo " ============================= "
+        echo "              " >> $JOB_SCHEDULE
+        echo "(1) Reorg NMME forcings" >> $JOB_SCHEDULE
+        echo "-----------------------" >> $JOB_SCHEDULE
+        echo "              " >> $JOB_SCHEDULE
+        reorg_nmme
+        ;;
+    REORGCFSV2)
+        echo " ============================= "
+        echo "  Reorg of CFSv2 forcings step "
+        echo " ============================= "
+        echo "              " >> $JOB_SCHEDULE
+        echo "(1) Reorg CFSV2 forcings" >> $JOB_SCHEDULE
+        echo "------------------------" >> $JOB_SCHEDULE
+        echo "              " >> $JOB_SCHEDULE
+        reorg_cfsv2
+        ;;
     CLIM)
+        echo " ============================= "
+        echo "  Generate all clim files      "
+        echo " ============================= "
 	echo "              " >> $JOB_SCHEDULE
-	echo "(2) Write climgatological files" >> $JOB_SCHEDULE
+	echo "(2) Write climatological files" >> $JOB_SCHEDULE
 	echo "------------------------------" >> $JOB_SCHEDULE
 	echo "              " >> $JOB_SCHEDULE	
         clim_nafpa
 	clim_cfsv2
 	clim_nmme
         ;;            
+    CLIMNMME)
+        echo " ============================= "
+        echo "  Generate NMME clim files     "
+        echo " ============================= "
+        echo "              " >> $JOB_SCHEDULE
+        echo "(2) Write NMME clim files" >> $JOB_SCHEDULE
+        echo "------------------------------" >> $JOB_SCHEDULE
+        echo "              " >> $JOB_SCHEDULE
+        clim_nmme
+        ;;
+    CLIMCFSV2)
+        echo " ============================= "
+        echo "  Generate CFSv2 clim files    "
+        echo " ============================= "
+        echo "              " >> $JOB_SCHEDULE
+        echo "(2) Write CFSV2 clim files" >> $JOB_SCHEDULE
+        echo "------------------------------" >> $JOB_SCHEDULE
+        echo "              " >> $JOB_SCHEDULE
+        clim_cfsv2
+        ;;
+    CLIMNAFPA)
+        echo "              " >> $JOB_SCHEDULE
+        echo "(2) Write NAFPA clim files" >> $JOB_SCHEDULE
+        echo "------------------------------" >> $JOB_SCHEDULE
+        echo "              " >> $JOB_SCHEDULE
+        clim_nafpa
+        ;;
     *)
+        echo " ============================== "
+        echo "  Running all reorg+clim steps  "
+        echo " ============================== "
 	echo "              " >> $JOB_SCHEDULE
 	echo "(1) Reorganize forcings" >> $JOB_SCHEDULE
 	echo "-----------------------" >> $JOB_SCHEDULE
