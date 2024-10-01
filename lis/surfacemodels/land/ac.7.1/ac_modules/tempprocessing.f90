@@ -904,8 +904,9 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
                      TDayMin_local, TDayMax_local, GetSimulParam_GDDMethod())
             GDDays = roundc(ValPeriod * DayGDD, mold=1_int32)
         else if (GetTemperatureFile() == '(External)') then
+            DayNri = FirstDayPeriod
             RemainingDays = ValPeriod
-            i = 1 
+            i = DayNri - GetSimulation_FromDayNr() + 1
             TDayMin_local = real(GetTminRun_i(i),kind=dp)
             TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
             DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
@@ -1100,8 +1101,9 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
                 NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
             end if
         else if (GetTemperatureFile() == '(External)') then
+            DayNri = FirstDayCrop
             RemainingGDDays = ValGDDays
-            i = GetCrop_Day1()-GetSimulation_FromDayNr()+1
+            i = DayNri-GetSimulation_FromDayNr()+1
             TDayMin_loc = real(GetTminRun_i(i),kind=dp)
             TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
             DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
@@ -1282,8 +1284,9 @@ real(dp) function MaxAvailableGDD(FromDayNr, Tbase, Tupper, TDayMin, TDayMax)
             MaxGDDays = 0._dp
         end if
     else if (GetTemperatureFile() == '(External)') then
+        DayNri = FromDayNr
         MaxGDDays = 0._dp
-        i = GetCrop_Day1()-GetSimulation_FromDayNr()+1
+        i = DayNri - GetSimulation_FromDayNr() + 1
         TDayMin = real(GetTminRun_i(i),kind=dp)
         TDayMax = real(GetTmaxRun_i(i),kind=dp)
         DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
@@ -2020,7 +2023,7 @@ subroutine LoadSimulationRunProject(NrRun)
     character(len=1025) :: TemperatureDescriptionLocal
 
     real(dp) :: TotDepth
-    integer(int8)  :: FertStress
+    integer(int32)  :: FertStress
     type(rep_clim) :: temperature_record
     integer(int8)  :: RedCGC_temp, RedCCX_temp
     type(CompartmentIndividual), dimension(max_No_compartments) :: &
@@ -2190,43 +2193,6 @@ subroutine LoadSimulationRunProject(NrRun)
     end if
 
     call AdjustCalendarCrop(GetCrop_Day1())
-    !test
-    ! Germination
-    if (GetCrop_DaysToGermination().eq.undef_int) then
-        call SetCrop_DaysToGermination(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! Flowering (only for Tuber and grain)
-    if (GetCrop_DaysToFlowering().eq.undef_int) then
-        call SetCrop_DaysToFlowering(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! MaxRooting
-    if (GetCrop_DaysToMaxRooting().eq.undef_int) then
-        call SetCrop_DaysToMaxRooting(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! Senescence
-    if (GetCrop_DaysToSenescence().eq.undef_int) then
-        call SetCrop_DaysToSenescence(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! Harvest
-    if (GetCrop_DaysToHarvest().eq.undef_int) then
-        call SetCrop_DaysToHarvest(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! CCini
-    if (GetCrop_DaysToCCini().eq.undef_int) then
-        call SetCrop_DaysToCCini(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! FullCanopy
-    if (GetCrop_DaysToFullCanopy().eq.undef_int) then
-        call SetCrop_DaysToFullCanopy(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! FullCanopySF
-    if (GetCrop_DaysToFullCanopySF().eq.undef_int) then
-        call SetCrop_DaysToFullCanopySF(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
-    ! HIo
-    if (GetCrop_DaysToHIo().eq.undef_int) then
-        call SetCrop_DaysToHIo(GetSimulation_ToDayNr() - GetCrop_Day1() + 1)
-    endif
 
     call CompleteCropDescription
     ! Onset.Off := true;
@@ -2598,8 +2564,8 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                               GetSimulParam_GDDMethod())
         elseif (GetTemperatureFile() == '(External)') then 
-            Tndayi = real(GetTminRun_i(Dayi),kind=dp)
-            Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
+            Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+            Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
@@ -2754,7 +2720,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      real(dp), intent(in) :: GDtranspLow
      real(dp), intent(in) :: RatDGDD
      real(dp), intent(in) :: SumKcTop
-     integer(int8), intent(in) :: StressInPercent
+     integer(int32), intent(in) :: StressInPercent
      integer(int8), intent(in) :: StrResRedCGC
      integer(int8), intent(in) :: StrResRedCCx
      integer(int8), intent(in) :: StrResRedWP
@@ -2883,8 +2849,8 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
              GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax,&
                                GetSimulParam_GDDMethod())
          elseif (GetTemperatureFile() == '(External)') then 
-             Tndayi = real(GetTminRun_i(Dayi),kind=dp)
-             Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
+             Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+             Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
              GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
          else
@@ -3177,7 +3143,7 @@ real(dp) function BiomassRatio(TempDaysToCCini, TempGDDaysToCCini,&
         TempCCo, TempCCx, TempCGC, TempGDDCGC, TempCDC, TempGDDCDC,&
         TempKc, TempKcDecline, TempCCeffect, TempWP, CO2iLocal,&
         TempTbase, TempTupper, TempTmin, TempTmax, TempGDtranspLow, 1._dp,&
-        SumKcTop, 0_int8, 0_int8, 0_int8, 0_int8, 0_int8, 0_int8,&
+        SumKcTop, 0, 0_int8, 0_int8, 0_int8, 0_int8, 0_int8,&
         0, 0._dp, -0.01_dp, &
         TempModeCycle, FertilityStressOn, .false.)
 
@@ -3189,7 +3155,7 @@ real(dp) function BiomassRatio(TempDaysToCCini, TempGDDaysToCCini,&
         TempCCo, TempCCx, TempCGC, TempGDDCGC, TempCDC, TempGDDCDC,&
         TempKc, TempKcDecline, TempCCeffect, TempWP, CO2iLocal,&
         TempTbase, TempTupper, TempTmin, TempTmax, TempGDtranspLow, RatDGDD,&
-        SumKcTop, SFInfoStress, SFInfo%RedCGC, SFInfo%RedCCX, SFInfo%RedWP,&
+        SumKcTop, int(SFInfoStress, kind=int32), SFInfo%RedCGC, SFInfo%RedCCX, SFInfo%RedWP,&
         SFInfo%RedKsSto, WeedStress, DeltaWeedStress, &
         SFInfo%CDecline, ShapeFweed, TempModeCycle, &
         FertilityStressOn, .false.)
@@ -3254,7 +3220,7 @@ subroutine StressBiomassRelationship(TheDaysToCCini, TheGDDaysToCCini,&
     real(dp), intent(inout) :: BM70
 
     type StressIndexes
-        integer(int8) :: StressProc
+        integer(int32) :: StressProc
             !! Undocumented
         real(dp) :: BioMProc
             !! Undocumented
@@ -3269,7 +3235,7 @@ subroutine StressBiomassRelationship(TheDaysToCCini, TheGDDaysToCCini,&
     real(dp) :: RatDGDD, BNor, BNor100, Yavg, X1avg, X2avg,&
                 y, x1, x2, x1y, x2y, x1Sq, x2Sq, x1x2, &
                 SUMx1y, SUMx2y, SUMx1Sq, SUMx2Sq, SUMx1x2
-    integer(int8) :: SiPr
+    integer(int32) :: SiPr
     real(dp) :: SumKcTop, HIGC, HIGClinear
     integer(int32) :: DaysYieldFormation, tSwitch
     real(dp) :: TDayMax_temp, TDayMin_temp
@@ -3302,7 +3268,7 @@ subroutine StressBiomassRelationship(TheDaysToCCini, TheGDDaysToCCini,&
     do Si = 1, 8
         ! various stress levels
         ! stress effect
-        SiPr = int(10*(Si-1), kind=int8)
+        SiPr = 10*(Si-1)
         StressMatrix(Si)%StressProc = SiPr
         call CropStressParametersSoilFertility(CropSResp, SiPr, StressResponse)
         ! adjusted length of Max canopy cover
@@ -3468,7 +3434,7 @@ subroutine CCxSaltStressRelationship(TheDaysToCCini, TheGDDaysToCCini,&
     real(dp), intent(inout) :: Salt90
 
     type StressIndexes
-        integer(int8) :: CCxReduction
+        integer(int32) :: CCxReduction
             !! Undocumented
         real(dp) :: SaltProc
             !! Undocumented
@@ -3478,7 +3444,8 @@ subroutine CCxSaltStressRelationship(TheDaysToCCini, TheGDDaysToCCini,&
 
     integer(int32) :: L12SS, GDDL12SS, DaysYieldFormation, tSwitch
     real(dp) :: SumKcTop, HIGC, HIGClinear, CCToReach
-    integer(int8) :: Si, SiPr
+    integer(int8) :: Si
+    integer(int32) :: SiPr
     type(StressIndexes), dimension(10) :: StressMatrix
     type(rep_EffectStress) :: StressResponse
     real(dp) :: RatDGDD, BNor, BNor100, BioMProc
@@ -3513,10 +3480,10 @@ subroutine CCxSaltStressRelationship(TheDaysToCCini, TheGDDaysToCCini,&
     do Si = 1, 10
         ! various CCx reduction
         ! CCx reduction
-        SiPr = int(10*(Si-1), kind=int8)
+        SiPr = 10*(Si-1)
         StressMatrix(Si)%CCxReduction = SiPr
         ! adjustment CC
-        call CropStressParametersSoilSalinity(SiPr, TheCCsaltDistortion, &
+        call CropStressParametersSoilSalinity(int(SiPr,kind=int8), TheCCsaltDistortion, &
             CCo, CCx, CGC, GDDCGC, CropDeterm, L12, LFlor, LengthFlor, L123,&
             GDDL12, GDDFlor, GDDLengthFlor, GDDL123, TheModeCycle,&
             StressResponse)

@@ -121,7 +121,10 @@ module Ac71_lsmMod
         character(len=256) :: soil_scheme_name
         real               :: dt
 
+        character(len=256) :: PathNameOutp
         character(len=256) :: PathNameSimul
+        character(len=256) :: PathNameList
+        character(len=256) :: PathNameParam
         character(len=256) :: PathCropFiles
         character(len=256) :: CO2_Filename
         character(len=256) :: Management_Filename
