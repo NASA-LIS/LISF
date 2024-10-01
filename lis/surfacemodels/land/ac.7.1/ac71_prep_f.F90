@@ -142,10 +142,7 @@ subroutine ac71_read_Trecord(n)
     integer               :: yr_start
 
     !Note: this code assumes that the forcing data (tmp) has a length=ntiles
-    !This will need to be tested when running ensembles.
-    !This assumption will likely be valid even without forcing perturbations. 
-    !In this case, the tmp array will just have the same values for the ensemble
-    ! e.g. 24 members --> 24x same temperature value
+    !This will need to be properly tested when running ensembles.
 
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
@@ -214,8 +211,8 @@ subroutine ac71_read_Trecord(n)
     ! Assign Tmax and Tmin arrays to AC71_struc
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
-        AC71_struc(n)%ac71(t)%Tmax_record = daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ
-        AC71_struc(n)%ac71(t)%Tmin_record = daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ
+        AC71_struc(n)%ac71(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
+        AC71_struc(n)%ac71(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
     enddo
 
     deallocate(daily_tmax_arr)

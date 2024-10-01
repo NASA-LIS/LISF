@@ -395,7 +395,8 @@ use ac_global, only:    AdjustSizeCompartments, &
                         setsimulation_swctopsoilconsidered, &
                         settactweedinfested, &
                         setziaqua, &
-                        determinerootzonewc
+                        determinerootzonewc, &
+                        tol
 use ac_inforesults, only:       WriteAssessmentSimulation
 use ac_kinds, only: dp, &
                     int8, &
@@ -532,7 +533,7 @@ integer(int32) :: DayNri
 integer(int32) :: IrriInterval
 integer(int32) :: Tadj, GDDTadj
 integer(int32) :: DayLastCut,NrCut,SumInterval
-integer(int8)  :: PreviousStressLevel, StressSFadjNEW
+integer(int32)  :: PreviousStressLevel, StressSFadjNEW
 
 real(dp) :: Bin
 real(dp) :: Bout
@@ -2610,7 +2611,7 @@ end subroutine SetSumInterval
 integer(int32) function GetPreviousStressLevel()
     !! Getter for the "PreviousStressLevel" global variable.
 
-    GetPreviousStressLevel = int(PreviousStressLevel, kind=int32)
+    GetPreviousStressLevel = PreviousStressLevel
 end function GetPreviousStressLevel
 
 
@@ -2618,14 +2619,14 @@ subroutine SetPreviousStressLevel(PreviousStressLevel_in)
     !! Setter for the "PreviousStressLevel" global variable.
     integer(int32), intent(in) :: PreviousStressLevel_in
 
-    PreviousStressLevel = int(PreviousStressLevel_in, kind=int8)
+    PreviousStressLevel = PreviousStressLevel_in
 end subroutine SetPreviousStressLevel
 
 
-integer(int8) function GetStressSFadjNEW()
+integer(int32) function GetStressSFadjNEW()
     !! Getter for the "StressSFadjNEW" global variable.
 
-    GetStressSFadjNEW = int(StressSFadjNEW, kind=int32)
+    GetStressSFadjNEW = StressSFadjNEW
 end function GetStressSFadjNEW
 
 
@@ -2633,7 +2634,7 @@ subroutine SetStressSFadjNEW(StressSFadjNEW_in)
     !! Setter for the "StressSFadjNEW" global variable.
     integer(int32), intent(in) :: StressSFadjNEW_in
 
-    StressSFadjNEW = int(StressSFadjNEW_in, kind=int8)
+    StressSFadjNEW = StressSFadjNEW_in
 end subroutine SetStressSFadjNEW
 
 
@@ -4766,7 +4767,7 @@ subroutine InitializeSimulationRunPart1()
     real(dp) :: fWeed, fi
     integer(int8) :: Cweed
     integer(int32) :: Day1, Month1, Year1
-    integer(int8) :: FertStress
+    integer(int32) :: FertStress
     type(rep_GwTable) :: GwTable_temp
     integer(int8) :: RedCGC_temp, RedCCX_temp, RCadj_temp
     type(rep_EffectStress) :: EffectStress_temp
@@ -4870,7 +4871,7 @@ subroutine InitializeSimulationRunPart1()
 
     ! No soil fertility stress
     if (GetManagement_FertilityStress() <= 0) then
-        call SetManagement_FertilityStress(0_int8)
+        call SetManagement_FertilityStress(0)
     end if
 
     ! Reset soil fertility parameters to selected value in management
@@ -4892,7 +4893,7 @@ subroutine InitializeSimulationRunPart1()
     call SetSimulation_EffectStress_RedCGC(RedCGC_temp)
     call SetSimulation_EffectStress_RedCCX(RedCCX_temp)
     call SetPreviousStressLevel(int(GetManagement_FertilityStress(),kind=int32))
-    call SetStressSFadjNEW(int(GetManagement_FertilityStress(),kind=int32))
+    call SetStressSFadjNEW(GetManagement_FertilityStress())
     ! soil fertility and GDDays
     if (GetCrop_ModeCycle() == modeCycle_GDDays) then
         if (GetManagement_FertilityStress() /= 0_int8) then
@@ -6773,7 +6774,7 @@ subroutine AdvanceOneTimeStep(WPi, HarvestNow)
     real(dp) :: ECiAqua_temp, TactWeedInfested_temp,&
                 Bin_temp, Bout_temp
     integer(int32) :: TargetTimeVal, TargetDepthVal
-    integer(int8) :: PreviousStressLevel_temp, StressSFadjNEW_temp
+    integer(int32) :: PreviousStressLevel_temp, StressSFadjNEW_temp
     real(dp) :: CCxWitheredTpotNoS_temp, &
                 StressLeaf_temp, StressSenescence_temp, TimeSenescence_temp, &
                 SumKcTopStress_temp, SumKci_temp, WeedRCi_temp, &
@@ -7051,7 +7052,7 @@ subroutine AdvanceOneTimeStep(WPi, HarvestNow)
         call DetermineRootZoneWC(GetRootingDepth(), SWCtopSoilConsidered_temp)
         call SetSimulation_SWCtopSoilConsidered(SWCtopSoilConsidered_temp)
         ! temperature stress affecting crop transpiration
-        if (GetCCiActual() <= 0.0000001_dp) then
+        if (GetCCiActual() <= tol) then
              KsTr = 1._dp
         else
              KsTr = KsTemperature(0._dp, GetCrop_GDtranspLow(), GetGDDayi())
@@ -7130,8 +7131,8 @@ subroutine AdvanceOneTimeStep(WPi, HarvestNow)
          call SetTactWeedInfested(TactWeedInfested_temp)
          call SetBin(Bin_temp)
          call SetBout(Bout_temp)
-         call SetPreviousStressLevel(int(PreviousStressLevel_temp, kind=int32))
-         call SetStressSFadjNEW(int(StressSFadjNEW_temp, kind=int32))
+         call SetPreviousStressLevel(PreviousStressLevel_temp)
+         call SetStressSFadjNEW(StressSFadjNEW_temp)
          call SetCCxWitheredTpotNoS(CCxWitheredTpotNoS_temp)
          call SetSumKcTopStress(SumKcTopStress_temp)
          call SetSumKci(SumKci_temp)
@@ -7534,7 +7535,7 @@ subroutine WriteDailyResults(DAP, WPi)
         end if
 
         ! 4. Air temperature stress
-        if (GetCCiActual() <= 0.0000001_dp) then
+        if (GetCCiActual() <= tol) then
             KsTr = 1._dp
         else
             KsTr = KsTemperature(0._dp, GetCrop_GDtranspLow(), GetGDDayi())
@@ -7547,7 +7548,7 @@ subroutine WriteDailyResults(DAP, WPi)
         end if
 
         ! 5. Relative cover of weeds
-        if (GetCCiActual() <= 0.0000001_dp) then
+        if (GetCCiActual() <= tol) then
             StrW = undef_int
         else
             StrW = roundc(GetWeedRCi(), mold=1)

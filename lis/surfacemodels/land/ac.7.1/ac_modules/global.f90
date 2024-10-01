@@ -31,6 +31,8 @@ real(dp), parameter :: CO2Ref = 369.41_dp;
 real(dp), parameter :: EvapZmin = 15._dp
     !! cm  minimum soil depth for water extraction by evaporation
 real(dp), parameter :: eps =10E-08
+real(dp), parameter :: tol = 10E-06
+! tolerance parameter for if statements
 real(dp), dimension(12), parameter :: ElapsedDays = [0._dp, 31._dp, 59.25_dp, &
                                                     90.25_dp, 120.25_dp, 151.25_dp, &
                                                     181.25_dp, 212.25_dp, 243.25_dp, &
@@ -445,7 +447,7 @@ type rep_Manag
         !! effect Mulch on evaporation before and after growing period
     integer(int8) :: EffectMulchInS
         !! effect Mulch on evaporation in growing period
-    integer(int8) :: FertilityStress
+    integer(int32) :: FertilityStress
         !! Undocumented
     real(dp) :: BundHeight
         !! meter;
@@ -1232,7 +1234,7 @@ end subroutine set_layer_undef
 subroutine CropStressParametersSoilFertility(CropSResp, &
                     StressLevel, StressOUT)
     type(rep_Shapes), intent(in) :: CropSResp
-    integer(int8), intent(in)    :: StressLevel
+    integer(int32), intent(in)    :: StressLevel
     type(rep_EffectStress), intent(inout) :: StressOUT
 
     real(dp) :: Ksi, pULActual, pLLActual
@@ -2101,7 +2103,7 @@ subroutine TimeToMaxCanopySF(CCo, CGC, CCx, L0, L12, L123, LToFlor, LFlor, Deter
     integer(int32), intent(inout) :: L12SF
     integer(int8), intent(inout) :: RedCGC
     integer(int8), intent(inout) :: RedCCx
-    integer(int8), intent(inout) :: ClassSF
+    integer(int32), intent(inout) :: ClassSF
 
     real(dp) :: CCToReach
     integer(int32) :: L12SFmax
@@ -3318,7 +3320,7 @@ subroutine NoManagement()
     call SetManagement_Mulch(0_int8)
     call SetManagement_EffectMulchInS(50_int8)
     ! soil fertility
-    call SetManagement_FertilityStress(0_int8)
+    call SetManagement_FertilityStress(0)
     EffectStress_temp = GetSimulation_EffectStress()
     call CropStressParametersSoilFertility(GetCrop_StressResponse(), &
                                       GetManagement_FertilityStress(), &
@@ -3371,7 +3373,7 @@ subroutine LoadManagement(FullName)
     call SetManagement_EffectMulchInS(TempShortInt)
     ! soil fertility
     read(fhandle, *) TempShortInt ! effect is crop specific
-    call SetManagement_FertilityStress(TempShortInt)
+    call SetManagement_FertilityStress(TempInt)
     EffectStress_temp = GetSimulation_EffectStress()
     call CropStressParametersSoilFertility(GetCrop_StressResponse(), &
                                       GetManagement_FertilityStress(), &
@@ -5422,8 +5424,9 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                                     GetSimulParam_GDDMethod())
         elseif (GetTemperatureFile() == '(External)') then
-            Tndayi = real(GetTminRun_i(Dayi),kind=dp)
-            Txdayi = real(GetTmaxRun_i(Dayi),kind=dp)
+            !TminRun and Tmax run contain the simulation period temperatures from LIS
+            Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+            Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
@@ -5633,7 +5636,7 @@ end function HarvestIndexDay
 subroutine CompleteCropDescription()
 
     logical :: CGCisGiven
-    integer(int8) :: FertStress
+    integer(int32) :: FertStress
     integer(int8) :: RedCGC_temp, RedCCX_temp
     integer(int32) :: Crop_DaysToSenescence_temp
     integer(int32), dimension(4) :: Crop_Length_temp
@@ -5675,7 +5678,7 @@ subroutine CompleteCropDescription()
         call SetCrop_DaysToFullCanopy(DaysToReachCCwithGivenCGC(&
                 (0.98_dp * GetCrop_CCx()), GetCrop_CCo(), &
                      GetCrop_CCx(), GetCrop_CGC(), GetCrop_DaysToGermination()))
-        if (GetManagement_FertilityStress() /= 0_int8) then
+        if (GetManagement_FertilityStress() /= 0) then
             FertStress = GetManagement_FertilityStress()
             Crop_DaysToFullCanopySF_temp = GetCrop_DaysToFullCanopySF()
             RedCGC_temp = GetSimulation_EffectStress_RedCGC()
@@ -7953,7 +7956,7 @@ subroutine CalculateETpot(DAP, L0, L12, L123, LHarvest, DayLastCut, CCi, &
         end if
 
         ! Correction for Air temperature stress
-        if ((CCiAdjusted <= 0.0000001_dp) &
+        if ((CCiAdjusted <= tol) &
             .or. (roundc(GDDayi, mold=1) < 0)) then
             KsTrCold = 1._dp
         else
@@ -8884,6 +8887,12 @@ type(rep_CropFileSet) function GetCropFileSet()
     GetCropFileSet = CropFileSet
 end function GetCropFileSet
 
+subroutine SetCropFileSet(CropFileSet_in)
+    !! Setter for the "CropFileSet" global variable.
+    type(rep_CropFileSet), intent(in) :: CropFileSet_in
+
+    CropFileSet = CropFileSet_in
+end subroutine SetCropFileSet
 
 subroutine SetCropFileSet_DaysFromSenescenceToEnd(DaysFromSenescenceToEnd)
     !! Setter for the "CropFileSet" global variable.
@@ -9055,7 +9064,7 @@ integer(int8) function GetManagement_EffectMulchInS()
 end function GetManagement_EffectMulchInS
 
 
-integer(int8) function GetManagement_FertilityStress()
+integer(int32) function GetManagement_FertilityStress()
     !! Getter for the "Management" global variable.
 
     GetManagement_FertilityStress = Management%FertilityStress
@@ -9160,7 +9169,7 @@ end subroutine SetManagement_EffectMulchInS
 
 subroutine SetManagement_FertilityStress(FertilityStress)
     !! Setter for the "Management" global variable.
-    integer(int8), intent(in) :: FertilityStress
+    integer(int32), intent(in) :: FertilityStress
 
     Management%FertilityStress = FertilityStress
 end subroutine SetManagement_FertilityStress

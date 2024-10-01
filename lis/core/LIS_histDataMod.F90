@@ -439,11 +439,15 @@ module LIS_histDataMod
   public :: LIS_MOC_Tact
   public :: LIS_MOC_Eact
   public :: LIS_MOC_AC71ETo
+  public :: LIS_MOC_AC71Rain
+  public :: LIS_MOC_GD
   public :: LIS_MOC_AC71Irrigation
   public :: LIS_MOC_Tmin
   public :: LIS_MOC_Tmax
   public :: LIS_MOC_RootingDepth
   public :: LIS_MOC_Yield
+  public :: LIS_MOC_StExp
+  public :: LIS_MOC_StSen
   ! end AC71
  
   ! RUC 
@@ -963,11 +967,15 @@ module LIS_histDataMod
    integer :: LIS_MOC_Tact  = -9999
    integer :: LIS_MOC_Eact  = -9999
    integer :: LIS_MOC_AC71ETo  = -9999
+   integer :: LIS_MOC_AC71Rain  = -9999
+   integer :: LIS_MOC_GD = -9999
    integer :: LIS_MOC_AC71Irrigation  = -9999
    integer :: LIS_MOC_Tmin  = -9999
    integer :: LIS_MOC_Tmax  = -9999
    integer :: LIS_MOC_RootingDepth  = -9999
    integer :: LIS_MOC_Yield  = -9999
+   integer :: LIS_MOC_StExp  = -9999
+   integer :: LIS_MOC_StSen  = -9999
 
 !   <- RUC -> 
    integer :: LIS_MOC_QVG = -9999
@@ -4627,6 +4635,30 @@ contains
             model_patch=.true.)
     endif
 
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Rain:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "AC71Rain",&
+         "ac71_rain",&
+         "ac71 rain",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Rain,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"GD:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "GD",&
+         "GD",&
+         "GD",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_GD,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
     call ESMF_ConfigFindLabel(modelSpecConfig,"Irrigation:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Irrigation",&
@@ -4647,7 +4679,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Tmin,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"K"/),1,(/"-"/),1,1,1,&
+            n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
@@ -4659,7 +4691,7 @@ contains
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Tmax,&
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"K"/),1,(/"-"/),1,1,1,&
+            n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
@@ -4684,6 +4716,30 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Yield,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"t/ha"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"StExp:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "StExp",&
+         "stexp",&
+         "stexp",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_StExp,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"%"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"StSen:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "StSen",&
+         "StSen",&
+         "StSen",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_StSen,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
     !LB: AC71
