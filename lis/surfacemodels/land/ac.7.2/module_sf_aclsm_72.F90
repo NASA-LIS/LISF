@@ -7,7 +7,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-MODULE module_sf_aclsm_71
+MODULE module_sf_aclsm_72
 
 ! SOIL PARAMETERS
         INTEGER :: SLCATS
@@ -17,4 +17,4 @@ MODULE module_sf_aclsm_71
         OC, WP, SAT, FC, INFRATE, SD, CL, SI
 
 
-END MODULE module_sf_aclsm_71
+END MODULE module_sf_aclsm_72

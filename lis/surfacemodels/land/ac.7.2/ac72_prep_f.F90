@@ -6,20 +6,20 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-module ac71_prep_f
+module ac72_prep_f
 
 contains
 !BOP
 !
-! !ROUTINE: Ac71_ETo_calc
-! \label{Ac71_ETo_calc}
+! !ROUTINE: AC72_ETo_calc
+! \label{AC72_ETo_calc}
 !
 ! !REVISION HISTORY:
 !  18 FEB 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:
-subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
+subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
 ! !USES:
     use LIS_tbotAdjustMod,  only: LIS_tbotTimeUtil
     use LIS_coreMod,        only: LIS_rc
@@ -97,20 +97,20 @@ subroutine Ac71_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
         eto = 0 ! avoid negative values
     endif
     
-end subroutine Ac71_ETo_calc
+end subroutine AC72_ETo_calc
 
 
 !BOP
 !
-! !ROUTINE: Ac71_read_Trecord
-! \label{Ac71_read_Trecord}
+! !ROUTINE: AC72_read_Trecord
+! \label{AC72_read_Trecord}
 !
 ! !REVISION HISTORY:
 !  24 MAY 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:
-subroutine ac71_read_Trecord(n)
+subroutine ac72_read_Trecord(n)
 ! !USES:
     use ESMF
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
@@ -121,12 +121,12 @@ subroutine ac71_read_Trecord(n)
     use LIS_logMod,         only: LIS_logunit, LIS_verify
     use LIS_constantsMod
     use LIS_FORC_AttributesMod
-    use Ac71_lsmMod
+    use AC72_lsmMod
 
     !
     ! !DESCRIPTION: 
     ! 
-    !  This subroutine stores the mean temperatures for the ac71 simulation
+    !  This subroutine stores the mean temperatures for the ac72 simulation
     !  period required when AquaCrop is run with a crop calibrated in growing
     !  degree days. 
     !
@@ -148,7 +148,7 @@ subroutine ac71_read_Trecord(n)
     type(ESMF_Field)  :: tmpField
     real, pointer     :: tmp(:)
 
-    write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record..."
+    write(LIS_logunit,*) "[INFO] AC72: new simulation period, reading of temperature record..."
 
     ! Save current LIS_rc
     LIS_rc_saved = LIS_rc
@@ -169,13 +169,13 @@ subroutine ac71_read_Trecord(n)
 
     ! Set LIS_rc time to beginning of simulation period (in case of restart)
     ! Check in which year the simulation did start (assuming a 365-366 sim period)
-    if (AC71_struc(n)%Sim_AnnualStartMonth.gt.LIS_rc%mo) then
+    if (AC72_struc(n)%Sim_AnnualStartMonth.gt.LIS_rc%mo) then
         yr_start = LIS_rc%yr - 1
     else
         yr_start = LIS_rc%yr
     endif
-    call LIS_timemgr_set(LIS_rc,yr_start,AC71_struc(n)%Sim_AnnualStartMonth,&
-                         AC71_struc(n)%Sim_AnnualStartDay,LIS_rc%hr+1,LIS_rc%mn,&
+    call LIS_timemgr_set(LIS_rc,yr_start,AC72_struc(n)%Sim_AnnualStartMonth,&
+                         AC72_struc(n)%Sim_AnnualStartDay,LIS_rc%hr+1,LIS_rc%mn,&
                          LIS_rc%ss,LIS_rc%ms,0.0)
     day_loop: do i=1,366
         do j=1,met_ts
@@ -184,10 +184,10 @@ subroutine ac71_read_Trecord(n)
 
             ! Get Tair
             call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)
-            call LIS_verify(status, "Ac71_prep_f: error getting Tair")
+            call LIS_verify(status, "AC72_prep_f: error getting Tair")
 
             call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
-            call LIS_verify(status, "Ac71_prep_f: error retrieving Tair")
+            call LIS_verify(status, "AC72_prep_f: error retrieving Tair")
 
             ! Store temperatures
             subdaily_arr(:,j) = tmp
@@ -198,8 +198,8 @@ subroutine ac71_read_Trecord(n)
         ! Store daily max and min temperatures
         daily_tmax_arr(:,i) = maxval(subdaily_arr,2)
         daily_tmin_arr(:,i) = minval(subdaily_arr,2)
-        if ((LIS_rc%da.eq.AC71_struc(n)%Sim_AnnualStartDay)&
-            .and.(LIS_rc%mo.eq.AC71_struc(n)%Sim_AnnualStartMonth)&
+        if ((LIS_rc%da.eq.AC72_struc(n)%Sim_AnnualStartDay)&
+            .and.(LIS_rc%mo.eq.AC72_struc(n)%Sim_AnnualStartMonth)&
             .and.(LIS_rc%hr.eq.LIS_rc_saved%hr+1)&
             .and.(i.ne.1)) exit day_loop 
             ! Exit if we reach end of sim period
@@ -208,11 +208,11 @@ subroutine ac71_read_Trecord(n)
 
     deallocate(subdaily_arr)
 
-    ! Assign Tmax and Tmin arrays to AC71_struc
+    ! Assign Tmax and Tmin arrays to AC72_struc
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
-        AC71_struc(n)%ac71(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
-        AC71_struc(n)%ac71(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
+        AC72_struc(n)%ac72(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
+        AC72_struc(n)%ac72(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
     enddo
 
     deallocate(daily_tmax_arr)
@@ -236,7 +236,7 @@ subroutine ac71_read_Trecord(n)
         LIS_rc%endtime = 1
     endif
 
-    write(LIS_logunit,*) "[INFO] AC71: new simulation period, reading of temperature record... Done!"
-end subroutine ac71_read_Trecord
+    write(LIS_logunit,*) "[INFO] AC72: new simulation period, reading of temperature record... Done!"
+end subroutine ac72_read_Trecord
 
-end module ac71_prep_f
+end module ac72_prep_f

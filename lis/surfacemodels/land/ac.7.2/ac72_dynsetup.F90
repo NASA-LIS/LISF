@@ -9,29 +9,29 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
-! !ROUTINE: Ac71_dynsetup
-! \label{Ac71_dynsetup}
+! !ROUTINE: AC72_dynsetup
+! \label{AC72_dynsetup}
 !
 ! !REVISION HISTORY:
-!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
-subroutine Ac71_dynsetup(n)
+subroutine AC72_dynsetup(n)
 ! !USES:
     use LIS_logMod, only     : LIS_logunit
     use LIS_coreMod, only    : LIS_rc, LIS_domain, LIS_surface
     use LIS_timeMgrMod, only : LIS_date2time, LIS_tick
     use LIS_fileIOMod, only  : LIS_read_param
-    use Ac71_lsmMod, only : AC71_struc
+    use AC72_lsmMod, only : AC72_struc
 !
 ! !DESCRIPTION:
-!  This routine sets up the time-dependent variables in Ac71
+!  This routine sets up the time-dependent variables in AC72
 !
 !EOP
     implicit none
     integer, intent(in) :: n
  
     !TODO: add code here if needed.
-end subroutine Ac71_dynsetup
+end subroutine AC72_dynsetup
  
 ! generate date/time string for reading time-dependent variables ??Michel

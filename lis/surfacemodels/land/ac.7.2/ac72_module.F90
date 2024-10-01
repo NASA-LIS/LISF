@@ -7,14 +7,14 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-module Ac71_module
+module AC72_module
 !BOP
 !
-! !MODULE: Ac71_module
+! !MODULE: AC72_module
 !
 ! !DESCRIPTION:
 !  The code in this file provides a description of the
-!  data structure containing the Ac71 1-d variables.
+!  data structure containing the AC72 1-d variables.
 !  The variables specified in the data structure include:
 !
 !  \begin{description}      
@@ -66,7 +66,7 @@ module Ac71_module
                 sp
   implicit none
   private
-  type, public :: ac71dec
+  type, public :: ac72dec
     !-------------------------------------------------------------------------
     ! forcing
     !-------------------------------------------------------------------------
@@ -316,5 +316,5 @@ character(len=:), allocatable :: ClimDescription
 character(len=:), allocatable :: OffSeasonDescription
 character(len=:), allocatable :: GroundwaterDescription
      ! OUTPUT
-  end type ac71dec
-end module Ac71_module
+  end type ac72dec
+end module AC72_module

@@ -10,26 +10,26 @@
 #include "LIS_misc.h"
 !BOP
 !
-! !ROUTINE: Ac71_coldstart
-! \label{Ac71_coldstart}
+! !ROUTINE: AC72_coldstart
+! \label{AC72_coldstart}
 !
 ! !REVISION HISTORY: 
-!   18 JAN 2024, Louise Busschaert; initial implementation for AC71
+!   18 JAN 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
-subroutine Ac71_coldstart(mtype)
+subroutine AC72_coldstart(mtype)
 ! !USES:
     use LIS_coreMod, only: LIS_rc
     use LIS_logMod, only: LIS_logunit
     use LIS_timeMgrMod, only: LIS_date2time
-    use Ac71_lsmMod
- !  !AC71
+    use AC72_lsmMod
+ !  !AC72
     use ac_global, only:    GetCompartment_Layer, &
                             GetCompartment_theta         
 !
 ! !DESCRIPTION:
 !
-!  This routine initializes the AC71 state variables with some
+!  This routine initializes the AC72 state variables with some
 !  predefined values constantly for the entire domain. 
 !
 !EOP
@@ -41,10 +41,10 @@ subroutine Ac71_coldstart(mtype)
     
     do n=1, LIS_rc%nnest
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
-            write(LIS_logunit,*) "MSG: Ac71_coldstart -- cold-starting Ac71"
+            write(LIS_logunit,*) "MSG: AC72_coldstart -- cold-starting AC72"
             do t=1, LIS_rc%npatch(n,mtype)
-                do l=1, AC71_struc(n)%ac71(t)%NrCompartments
-                    AC71_struc(n)%ac71(t)%smc(l) = AC71_struc(n)%init_smc(GetCompartment_Layer(l))
+                do l=1, AC72_struc(n)%ac72(t)%NrCompartments
+                    AC72_struc(n)%ac72(t)%smc(l) = AC72_struc(n)%init_smc(GetCompartment_Layer(l))
                 enddo         
             enddo
         endif
@@ -58,7 +58,7 @@ subroutine Ac71_coldstart(mtype)
         
         call LIS_date2time(LIS_rc%time, LIS_rc%doy, LIS_rc%gmt, LIS_rc%yr,      &
                            LIS_rc%mo, LIS_rc%da, LIS_rc%hr, LIS_rc%mn, LIS_rc%ss)
-        write(LIS_logunit,*) "MSG: Ac71_coldstart -- ",     &
+        write(LIS_logunit,*) "MSG: AC72_coldstart -- ",     &
                              "Using the specified start time ", LIS_rc%time
     enddo
-end subroutine Ac71_coldstart
+end subroutine AC72_coldstart
