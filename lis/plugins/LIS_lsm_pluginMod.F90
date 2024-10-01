@@ -236,8 +236,8 @@ subroutine LIS_lsm_plugin
    use summa1_lsmMod,  only : summa1_lsm_ini
 #endif
 
-#if ( defined SM_AC_7_1 )
-   use ac71_lsmMod, only : ac71_ini
+#if ( defined SM_AC_7_2 )
+   use ac72_lsmMod, only : ac72_ini
 #endif
 
 #if ( defined SM_LSM_TEMPLATE )
@@ -527,14 +527,14 @@ subroutine LIS_lsm_plugin
    external summa1_finalize
 #endif
 
-#if ( defined SM_AC_7_1 )
-   external ac71_main
-   external ac71_setup
-   external ac71_readrst
-   external ac71_dynsetup
-   external ac71_f2t
-   external ac71_writerst
-   external ac71_finalize
+#if ( defined SM_AC_7_2 )
+   external ac72_main
+   external ac72_setup
+   external ac72_readrst
+   external ac72_dynsetup
+   external ac72_f2t
+   external ac72_writerst
+   external ac72_finalize
 #endif
 
 #if ( defined SM_LSM_TEMPLATE )
@@ -970,24 +970,24 @@ subroutine LIS_lsm_plugin
         trim(LIS_nuopccplId)//char(0),summa1_f2t)
 #endif
 
-#if ( defined SM_AC_7_1 )
-   call registerlsminit(trim(LIS_ac71Id)//char(0),ac71_ini)
-   call registerlsmsetup(trim(LIS_ac71Id)//char(0),ac71_setup)
-   call registerlsmf2t(trim(LIS_ac71Id)//"+"//trim(LIS_retroId)//char(0),&
-        ac71_f2t)
-   call registerlsmf2t(trim(LIS_ac71Id)//"+"//trim(LIS_nuopccplId)//char(0),&
-        ac71_f2t)
-   call registerlsmf2t(trim(LIS_ac71Id)//"+"//&
-        trim(LIS_smootherDAId)//char(0), ac71_f2t)
-   call registerlsmf2t(trim(LIS_ac71Id)//"+"//&
-        trim(LIS_agrmetrunId)//char(0),ac71_f2t)
-   call registerlsmf2t(trim(LIS_ac71Id)//"+"//&
-        trim(LIS_forecastrunId)//char(0),ac71_f2t)
-   call registerlsmrun(trim(LIS_ac71Id)//char(0),ac71_main)
-   call registerlsmrestart(trim(LIS_ac71Id)//char(0),ac71_readrst)
-   call registerlsmdynsetup(trim(LIS_ac71Id)//char(0),ac71_dynsetup)
-   call registerlsmwrst(trim(LIS_ac71Id)//char(0),ac71_writerst)
-   call registerlsmfinalize(trim(LIS_ac71Id)//char(0),ac71_finalize)
+#if ( defined SM_AC_7_2 )
+   call registerlsminit(trim(LIS_ac72Id)//char(0),ac72_ini)
+   call registerlsmsetup(trim(LIS_ac72Id)//char(0),ac72_setup)
+   call registerlsmf2t(trim(LIS_ac72Id)//"+"//trim(LIS_retroId)//char(0),&
+        ac72_f2t)
+   call registerlsmf2t(trim(LIS_ac72Id)//"+"//trim(LIS_nuopccplId)//char(0),&
+        ac72_f2t)
+   call registerlsmf2t(trim(LIS_ac72Id)//"+"//&
+        trim(LIS_smootherDAId)//char(0), ac72_f2t)
+   call registerlsmf2t(trim(LIS_ac72Id)//"+"//&
+        trim(LIS_agrmetrunId)//char(0),ac72_f2t)
+   call registerlsmf2t(trim(LIS_ac72Id)//"+"//&
+        trim(LIS_forecastrunId)//char(0),ac72_f2t)
+   call registerlsmrun(trim(LIS_ac72Id)//char(0),ac72_main)
+   call registerlsmrestart(trim(LIS_ac72Id)//char(0),ac72_readrst)
+   call registerlsmdynsetup(trim(LIS_ac72Id)//char(0),ac72_dynsetup)
+   call registerlsmwrst(trim(LIS_ac72Id)//char(0),ac72_writerst)
+   call registerlsmfinalize(trim(LIS_ac72Id)//char(0),ac72_finalize)
 #endif
 
 end subroutine LIS_lsm_plugin

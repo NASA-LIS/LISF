@@ -40,7 +40,7 @@ module LIS_histDataMod
 !                 106 and 114 in place for 112 (some variables left alone) 
 !  01 Jun 2017    Augusto Getirana: Add/update HyMAP2 outputs [SWS, differetial and 
 !                      potential evaporation and deep water infiltration (DWI)]
-!  17 Jan 2024    Louise Busschaert: Added AC71
+!  17 Jan 2024    Louise Busschaert: Added AC72
 !  
 !  
 !EOP
@@ -430,7 +430,7 @@ module LIS_histDataMod
   public ::   LIS_MOC_FPICE   
   ! end Noahmp
 
-  ! AC71
+  ! AC72
   public :: LIS_MOC_biomass
   public :: LIS_MOC_CCiActual
   public :: LIS_MOC_RootZoneWC_Actual
@@ -438,17 +438,17 @@ module LIS_histDataMod
   public :: LIS_MOC_RootZoneWC_FC
   public :: LIS_MOC_Tact
   public :: LIS_MOC_Eact
-  public :: LIS_MOC_AC71ETo
-  public :: LIS_MOC_AC71Rain
+  public :: LIS_MOC_AC72ETo
+  public :: LIS_MOC_AC72Rain
   public :: LIS_MOC_GD
-  public :: LIS_MOC_AC71Irrigation
+  public :: LIS_MOC_AC72Irrigation
   public :: LIS_MOC_Tmin
   public :: LIS_MOC_Tmax
   public :: LIS_MOC_RootingDepth
   public :: LIS_MOC_Yield
   public :: LIS_MOC_StExp
   public :: LIS_MOC_StSen
-  ! end AC71
+  ! end AC72
  
   ! RUC 
   public :: LIS_MOC_QVG
@@ -958,7 +958,7 @@ module LIS_histDataMod
     integer ::  LIS_MOC_FPICE   = -9999
 !  <- end Noah MP  ->
 
-!  <- AC71 ->
+!  <- AC72 ->
    integer :: LIS_MOC_Biomass  = -9999
    integer :: LIS_MOC_CCiActual  = -9999
    integer :: LIS_MOC_RootZoneWC_Actual  = -9999
@@ -966,10 +966,10 @@ module LIS_histDataMod
    integer :: LIS_MOC_RootZoneWC_FC  = -9999
    integer :: LIS_MOC_Tact  = -9999
    integer :: LIS_MOC_Eact  = -9999
-   integer :: LIS_MOC_AC71ETo  = -9999
-   integer :: LIS_MOC_AC71Rain  = -9999
+   integer :: LIS_MOC_AC72ETo  = -9999
+   integer :: LIS_MOC_AC72Rain  = -9999
    integer :: LIS_MOC_GD = -9999
-   integer :: LIS_MOC_AC71Irrigation  = -9999
+   integer :: LIS_MOC_AC72Irrigation  = -9999
    integer :: LIS_MOC_Tmin  = -9999
    integer :: LIS_MOC_Tmax  = -9999
    integer :: LIS_MOC_RootingDepth  = -9999
@@ -4537,7 +4537,7 @@ contains
             model_patch=.true.)
     endif
 
-    !LB: AC71
+    !LB: AC72
     call ESMF_ConfigFindLabel(modelSpecConfig,"Biomass:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "Biomass",&
@@ -4623,25 +4623,25 @@ contains
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71ETo:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72ETo:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC71ETo",&
-         "ac71_reference_evapotranspiration",&
-         "ac71 reference evapotranspiration",rc)
+         "AC72ETo",&
+         "ac72_reference_evapotranspiration",&
+         "ac72 reference evapotranspiration",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71ETo,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72ETo,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC71Rain:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72Rain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC71Rain",&
-         "ac71_rain",&
-         "ac71 rain",rc)
+         "AC72Rain",&
+         "ac72_rain",&
+         "ac72 rain",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Rain,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72Rain,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4665,7 +4665,7 @@ contains
          "Irrigation",&
          "Irrigation",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC71Irrigation,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72Irrigation,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
@@ -4742,7 +4742,7 @@ contains
             n,1,ntiles,(/"%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    !LB: AC71
+    !LB: AC72
 
     
     Call ESMF_ConfigFindLabel(modelSpecConfig, "StemMass:", rc = rc)

@@ -8,9 +8,9 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !-----------------------------------------------------------------
-        SUBROUTINE SOIL_PARM_71(SOIL_TBL)
+        SUBROUTINE SOIL_PARM_72(SOIL_TBL)
 !-----------------------------------------------------------------
-        USE module_sf_aclsm_71
+        USE module_sf_aclsm_72
         use LIS_logMod, only  : LIS_logunit
         use LIS_coreMod, only : LIS_masterproc
         IMPLICIT NONE
@@ -33,7 +33,7 @@
 
       READ (19,*)
       READ (19,*)SLCATS,IINDEX
-      WRITE( mess , * ) 'AC71: ', SLCATS,' CATEGORIES'
+      WRITE( mess , * ) 'AC72: ', SLCATS,' CATEGORIES'
       if (LIS_masterproc) then
             write(LIS_logunit, *) trim(mess)
       endif
@@ -46,7 +46,7 @@
            SIZE(CL) < SLCATS .OR. & 
            SIZE(SI) < SLCATS .OR. & 
            SIZE(OC) < SLCATS ) THEN
-         CALL wrf_error_fatal('Table sizes too small for value of SLCATS in AC71')
+         CALL wrf_error_fatal('Table sizes too small for value of SLCATS in AC72')
       ENDIF
       DO LC=1,SLCATS
       READ (19,*) IINDEX, wp(LC), sat(LC), fc(LC), infrate(LC), &
@@ -55,5 +55,5 @@
       CLOSE (19)
 
 !-----------------------------------------------------------------
-      END SUBROUTINE SOIL_PARM_71
+      END SUBROUTINE SOIL_PARM_72
 !-----------------------------------------------------------------

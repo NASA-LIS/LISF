@@ -10,14 +10,14 @@
 #include "LIS_misc.h"
 !BOP
 !
-! !ROUTINE: Ac71_writerst
-! \label{Ac71_writerst}
+! !ROUTINE: AC72_writerst
+! \label{AC72_writerst}
 !
 ! !REVISION HISTORY:
-!   26 FEB 2024: Louise Busschaert; initial implementation for AC71
+!   26 FEB 2024: Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
-subroutine Ac71_writerst(n)
+subroutine AC72_writerst(n)
 ! !USES:
     use LIS_coreMod, only    : LIS_rc, LIS_masterproc
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
@@ -26,7 +26,7 @@ subroutine Ac71_writerst(n)
     use LIS_fileIOMod, only  : LIS_create_output_directory, &
                                LIS_create_restart_filename
     use LIS_constantsMod, only : LIS_CONST_PATH_LEN
-    use Ac71_lsmMod
+    use AC72_lsmMod
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
@@ -37,8 +37,8 @@ subroutine Ac71_writerst(n)
     integer, intent(in) :: n
 !
 ! !DESCRIPTION:
-!  This program writes restart files for Ac71.
-!  This includes all relevant AC71 variables to restart.
+!  This program writes restart files for AC72.
+!  This includes all relevant AC72 variables to restart.
 !
 !  The routines invoked are:
 ! \begin{description}
@@ -46,8 +46,8 @@ subroutine Ac71_writerst(n)
 !  creates a timestamped directory for the restart files
 ! \item[LIS\_create\_restart\_filename](\ref{LIS_create_restart_filename}) \newline
 !  generates a timestamped restart filename
-! \item[Ac71\_dump\_restart](\ref{Ac71_dump_restart}) \newline
-!   writes the Ac71 variables into the restart file
+! \item[AC72\_dump\_restart](\ref{AC72_dump_restart}) \newline
+!   writes the AC72 variables into the restart file
 ! \end{description}
 !EOP
 
@@ -58,15 +58,15 @@ subroutine Ac71_writerst(n)
     integer       :: status
     
     ! set restart alarm
-    alarmCheck = LIS_isAlarmRinging(LIS_rc, "Ac71 restart alarm")
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "AC72 restart alarm")
     
     ! set restart file format (read from LIS configration file_
-    wformat = trim(AC71_struc(n)%rformat)
+    wformat = trim(AC72_struc(n)%rformat)
     
     if(alarmCheck .or. (LIS_rc%endtime ==1)) then
         If (LIS_masterproc) Then
             call LIS_create_output_directory("SURFACEMODEL")
-            call LIS_create_restart_filename(n, filen, "SURFACEMODEL", "AC71",&
+            call LIS_create_restart_filename(n, filen, "SURFACEMODEL", "AC72",&
                                              wformat=wformat)
             if(wformat .eq. "binary") then
                 ftn = LIS_getNextUnitNumber()
@@ -74,16 +74,16 @@ subroutine Ac71_writerst(n)
             elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF4)
                 status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
-                call LIS_verify(status,"Error in nf90_open in Ac71_writerst")
+                call LIS_verify(status,"Error in nf90_open in AC72_writerst")
 #endif
 #if (defined USE_NETCDF3)
                 status = nf90_create(Path = filen, cmode = nf90_clobber, ncid = ftn)
-                call LIS_verify(status, "Error in nf90_open in Ac71_writerst")
+                call LIS_verify(status, "Error in nf90_open in AC72_writerst")
 #endif
              endif
         endif
     
-        call Ac71_dump_restart(n, ftn, wformat)
+        call AC72_dump_restart(n, ftn, wformat)
     
         if (LIS_masterproc) then
             if(wformat .eq. "binary") then
@@ -91,32 +91,32 @@ subroutine Ac71_writerst(n)
             elseif(wformat .eq. "netcdf") then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
                 status = nf90_close(ftn)
-                call LIS_verify(status, "Error in nf90_close in Ac71_writerst")
+                call LIS_verify(status, "Error in nf90_close in AC72_writerst")
 #endif
             endif
-            write(LIS_logunit, *) "Ac71 archive restart written: ", trim(filen)
+            write(LIS_logunit, *) "AC72 archive restart written: ", trim(filen)
         endif
     endif
-end subroutine Ac71_writerst
+end subroutine AC72_writerst
 
 !BOP
 !
-! !ROUTINE: Ac71_dump_restart
-! \label{Ac71_dump_restart}
+! !ROUTINE: AC72_dump_restart
+! \label{AC72_dump_restart}
 !
 ! !REVISION HISTORY:
 !  This subroutine is generated with the Model Implementation Toolkit developed
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the subroutine is defined by Sujay Kumar. 
-!  9/4/14: Shugong Wang, initial implementation for LIS 7 and Ac71
+!  9/4/14: Shugong Wang, initial implementation for LIS 7 and AC72
 ! !INTERFACE:
-subroutine Ac71_dump_restart(n, ftn, wformat)
+subroutine AC72_dump_restart(n, ftn, wformat)
 
 ! !USES:
     use LIS_coreMod, only : LIS_rc, LIS_masterproc
     use LIS_logMod, only  : LIS_logunit
     use LIS_historyMod
-    use Ac71_lsmMod
+    use AC72_lsmMod
 
     implicit none
 
@@ -258,16 +258,16 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
 
     ! write the header of the restart file
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
-         "AC71", &
-         dim1 = AC71_struc(n)%max_No_Compartments, &
-         ! dim2 = AC71_struc(n)%max_No_Compartments*11, & ! number of cells in AC7.1
+         "AC72", &
+         dim1 = AC72_struc(n)%max_No_Compartments, &
+         ! dim2 = AC72_struc(n)%max_No_Compartments*11, & ! number of cells in AC7.1
          dimID = dimID, &
          output_format = trim(wformat))
 
     ! write the header for state variable smc
     call LIS_writeHeader_restart(ftn, n, dimID, smc_ID, "SMC", &
                                  "volumtric soil moisture", &
-                                 "m3/m3", vlevels=AC71_struc(n)%max_No_Compartments , valid_min=-99999.0, valid_max=99999.0, &
+                                 "m3/m3", vlevels=AC72_struc(n)%max_No_Compartments , valid_min=-99999.0, valid_max=99999.0, &
                                  var_flag = "dim1")
     !! reals
     ! write the header for state variable alfaHI
@@ -560,31 +560,31 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
     ! write the header for state variable Compartment_fluxout
     call LIS_writeHeader_restart(ftn, n, dimID, Compartment_fluxout_ID, "Compartment_fluxout", &
                             "Compartment_fluxout at last time step", &
-                            "-", vlevels=AC71_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
+                            "-", vlevels=AC72_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
                             var_flag = "dim1")
 
     ! write the header for state variable Compartment_Smax
     call LIS_writeHeader_restart(ftn, n, dimID, Compartment_Smax_ID, "Compartment_Smax", &
                             "Compartment_Smax at last time step", &
-                            "-", vlevels=AC71_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
+                            "-", vlevels=AC72_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
                             var_flag = "dim1")
 
     ! write the header for state variable Compartment_FCadj
     call LIS_writeHeader_restart(ftn, n, dimID, Compartment_FCadj_ID, "Compartment_FCadj", &
                             "Compartment_FCadj at last time step", &
-                            "-", vlevels=AC71_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
+                            "-", vlevels=AC72_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
                             var_flag = "dim1")
 
     ! write the header for state variable Compartment_WFactor
     call LIS_writeHeader_restart(ftn, n, dimID, Compartment_WFactor_ID, "Compartment_WFactor", &
                             "Compartment_WFactor at last time step", &
-                            "-", vlevels=AC71_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
+                            "-", vlevels=AC72_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
                             var_flag = "dim1")
 
     ! write the header for state variable Compartment_DayAnaero
     call LIS_writeHeader_restart(ftn, n, dimID, Compartment_DayAnaero_ID, "Compartment_DayAnaero", &
                             "Compartment_DayAnaero at last time step", &
-                            "-", vlevels=AC71_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
+                            "-", vlevels=AC72_struc(n)%max_No_Compartments, valid_min=-99999.0, valid_max=99999.0, &
                             var_flag = "dim1")
 
     ! From StressTot
@@ -619,7 +619,7 @@ subroutine Ac71_dump_restart(n, ftn, wformat)
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
 
     ! close header of restart file
-    call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AC71_struc(n)%rstInterval)
+    call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AC72_struc(n)%rstInterval)
 
 
-end subroutine Ac71_dump_restart
+end subroutine AC72_dump_restart

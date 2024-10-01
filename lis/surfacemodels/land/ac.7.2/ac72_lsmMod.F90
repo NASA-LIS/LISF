@@ -8,36 +8,36 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !#include "LIS_misc.h"
-module Ac71_lsmMod
+module AC72_lsmMod
 !BOP
 !
-! !MODULE: Ac71_lsmMod
+! !MODULE: AC72_lsmMod
 !
 ! !DESCRIPTION:
 !
 ! This module provides the definition of derived data type used to
-! control the operation of Ac71 model. It also provides the entry method
-! for the initialization of Ac71-specific variables. The derived
-! data type {\tt Ac71\_struc} includes the variables that specify
+! control the operation of AC72 model. It also provides the entry method
+! for the initialization of AC72-specific variables. The derived
+! data type {\tt AC72\_struc} includes the variables that specify
 ! the runtime options and other control variables as described below:
 !
 ! \begin{description}
 ! \item[rfile]
-!  name of the Ac71 restart file
+!  name of the AC72 restart file
 ! \item[rformat]
-!  format of restart file (binary or netcdf) for Ac71
+!  format of restart file (binary or netcdf) for AC72
 ! \item[LDT\_ncvar\_soiltype]
 !   LDT NetCDF variable name for soil type index
 ! \item[ts]
-!   Ac71 model time step in second
+!   AC72 model time step in second
 ! \item[count]
 !   variable to keep track of the number of timesteps before an output
 ! \item[rstInterval]
 !   restart writing interval
 ! \item[outInterval]
 !   output writing interval
-! \item[ac71]
-!  Ac71 model specific variables
+! \item[ac72]
+!  AC72 model specific variables
 ! \item[forc\_count]
 !   counter of forcing data
 ! \item[soil\_tbl\_name]
@@ -77,10 +77,10 @@ module Ac71_lsmMod
 
 !
 ! !REVISION HISTORY:
-!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !USES:
-    use Ac71_module
+    use AC72_module
 
     implicit none
 
@@ -88,13 +88,13 @@ module Ac71_lsmMod
     !-------------------------------------------------------------------------
     ! PUBLIC MEMBER FUNCTIONS
     !-------------------------------------------------------------------------
-    public :: Ac71_ini
+    public :: AC72_ini
     !-------------------------------------------------------------------------
     ! PUBLIC TYPES
     !-------------------------------------------------------------------------
-    public :: Ac71_struc
+    public :: AC72_struc
 !EOP
-    type, public :: Ac71_type_dec
+    type, public :: AC72_type_dec
         character*256      :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
@@ -138,20 +138,20 @@ module Ac71_lsmMod
         real, pointer      :: Thickness(:)
         real               :: refz_tq
         real               :: refz_uv
-        type(Ac71dec), pointer :: ac71(:)
-    end type Ac71_type_dec
+        type(AC72dec), pointer :: ac72(:)
+    end type AC72_type_dec
 
-    type(Ac71_type_dec), pointer :: AC71_struc(:)
+    type(AC72_type_dec), pointer :: AC72_struc(:)
  
 contains 
 
 !BOP
 !
-! !ROUTINE: Ac71_ini
-! \label{Ac71_ini}
+! !ROUTINE: AC72_ini
+! \label{AC72_ini}
 !
 ! !INTERFACE:
-    subroutine Ac71_ini()
+    subroutine AC72_ini()
 ! !USES:
         use LIS_coreMod, only : LIS_rc
         use LIS_logMod, only : LIS_verify
@@ -160,14 +160,14 @@ contains
         use LIS_surfaceModelDataMod, only : LIS_sfmodel_struc
 ! !DESCRIPTION:
 !
-!  This routine creates the datatypes and allocates memory for Ac71-specific
+!  This routine creates the datatypes and allocates memory for AC72-specific
 !  variables. It also invokes the routine to read the runtime specific options
-!  for Ac71 from the configuration file.
+!  for AC72 from the configuration file.
 !
 !  The routines invoked are:
 !  \begin{description}
-!   \item[Ac71\_readcrd](\ref{Ac71_readcrd}) \newline
-!    reads the runtime options for Ac71 model
+!   \item[AC72\_readcrd](\ref{AC72_readcrd}) \newline
+!    reads the runtime options for AC72 model
 !  \end{description}
 !EOP
         implicit none        
@@ -175,66 +175,66 @@ contains
         integer  :: status   
 
         ! allocate memory for nest 
-        allocate(AC71_struc(LIS_rc%nnest))
+        allocate(AC72_struc(LIS_rc%nnest))
  
         ! read configuation information from lis.config file
-        call Ac71_readcrd()
+        call AC72_readcrd()
 
         do n=1, LIS_rc%nnest
             ! allocate memory for all tiles in current nest 
-            allocate(AC71_struc(n)%ac71(LIS_rc%npatch(n, LIS_rc%lsm_index)))
+            allocate(AC72_struc(n)%ac72(LIS_rc%npatch(n, LIS_rc%lsm_index)))
             !------------------------------------------------------------------------
             ! allocate memory for vector variables passed to model interfaces        
             ! TODO: check the following allocation statements carefully!
             !------------------------------------------------------------------------
-            AC71_struc(n)%max_No_compartments = 12 ! hard coded
+            AC72_struc(n)%max_No_compartments = 12 ! hard coded
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%smc(AC71_struc(n)%max_No_compartments))
+                allocate(AC72_struc(n)%ac72(t)%smc(AC72_struc(n)%max_No_compartments))
             enddo
 
             ! allocate memory for Trecord arrays
             do t=1,LIS_rc%npatch(n, LIS_rc%lsm_index)
-                allocate(AC71_struc(n)%ac71(t)%Tmax_record(366))
-                allocate(AC71_struc(n)%ac71(t)%Tmin_record(366))
+                allocate(AC72_struc(n)%ac72(t)%Tmax_record(366))
+                allocate(AC72_struc(n)%ac72(t)%Tmin_record(366))
             enddo
             
             ! initialize forcing variables to zeros
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC71_struc(n)%ac71(t)%tair = 0.0
-                AC71_struc(n)%ac71(t)%tmax = 0.0
-                AC71_struc(n)%ac71(t)%tmin = 0.0
-                AC71_struc(n)%ac71(t)%tdew = 0.0
-                AC71_struc(n)%ac71(t)%wndspd = 0.0            
-                AC71_struc(n)%ac71(t)%psurf = 0.0
-                AC71_struc(n)%ac71(t)%prcp = 0.0
-                AC71_struc(n)%ac71(t)%eto = 0.0
+                AC72_struc(n)%ac72(t)%tair = 0.0
+                AC72_struc(n)%ac72(t)%tmax = 0.0
+                AC72_struc(n)%ac72(t)%tmin = 0.0
+                AC72_struc(n)%ac72(t)%tdew = 0.0
+                AC72_struc(n)%ac72(t)%wndspd = 0.0            
+                AC72_struc(n)%ac72(t)%psurf = 0.0
+                AC72_struc(n)%ac72(t)%prcp = 0.0
+                AC72_struc(n)%ac72(t)%eto = 0.0
 
                 !LB: Initialize HarvestNow (new in AC7.1)
-                AC71_struc(n)%ac71(t)%HarvestNow = .false.
+                AC72_struc(n)%ac72(t)%HarvestNow = .false.
                 
             enddo ! end of tile (t) loop
 !------------------------------------------------------------------------
 ! Model timestep Alarm
 !------------------------------------------------------------------------
-            AC71_struc(n)%forc_count = 0
+            AC72_struc(n)%forc_count = 0
 
-            call LIS_update_timestep(LIS_rc, n, AC71_struc(n)%ts)
+            call LIS_update_timestep(LIS_rc, n, AC72_struc(n)%ts)
 
-            call LIS_registerAlarm("Ac71 model alarm",&
-                                   AC71_struc(n)%ts, &
-                                   AC71_struc(n)%ts)
+            call LIS_registerAlarm("AC72 model alarm",&
+                                   AC72_struc(n)%ts, &
+                                   AC72_struc(n)%ts)
 
-            call LIS_registerAlarm("Ac71 restart alarm", &
-                                   AC71_struc(n)%ts,&
-                                   AC71_struc(n)%rstInterval)
+            call LIS_registerAlarm("AC72 restart alarm", &
+                                   AC72_struc(n)%ts,&
+                                   AC72_struc(n)%rstInterval)
             ! Set number of soil moisture layers in surface model
-            LIS_sfmodel_struc(n)%nsm_layers = AC71_struc(n)%max_No_compartments
-            allocate(LIS_sfmodel_struc(n)%lyrthk(AC71_struc(n)%max_No_compartments))
+            LIS_sfmodel_struc(n)%nsm_layers = AC72_struc(n)%max_No_compartments
+            allocate(LIS_sfmodel_struc(n)%lyrthk(AC72_struc(n)%max_No_compartments))
             ! Note, the default compartment size (0.10) is stored in the 
             ! SURFACEMODEL output file, but these are spatially variable and included in the
             ! input file produced by LDT
             LIS_sfmodel_struc(n)%lyrthk(:) = 0.10
-            LIS_sfmodel_struc(n)%ts = AC71_struc(n)%ts
+            LIS_sfmodel_struc(n)%ts = AC72_struc(n)%ts
         enddo
-    end subroutine Ac71_ini
-end module Ac71_lsmMod
+    end subroutine AC72_ini
+end module AC72_lsmMod

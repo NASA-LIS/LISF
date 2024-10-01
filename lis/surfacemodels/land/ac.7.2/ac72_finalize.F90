@@ -9,21 +9,21 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
-! !ROUTINE: Ac71_finalize
-! \label{Ac71_finalize}
+! !ROUTINE: AC72_finalize
+! \label{AC72_finalize}
 !
 ! !REVISION HISTORY:
-!  18 JAN 2024, Louise Busschaert; initial implementation for AC71
+!  18 JAN 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
-subroutine Ac71_finalize(n)
+subroutine AC72_finalize(n)
 ! !USES:
     use LIS_coreMod, only : LIS_rc
-    use Ac71_lsmMod
+    use AC72_lsmMod
 !
 ! !DESCRIPTION:
 !
-!  This routine cleans up the allocated memory structures in Ac71
+!  This routine cleans up the allocated memory structures in AC72
 !
 !EOP
     implicit none   
@@ -34,20 +34,20 @@ subroutine Ac71_finalize(n)
     !deallocate all vars
         ! free memory allocated for each tile
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-            deallocate(AC71_struc(n)%ac71(t)%smc)
+            deallocate(AC72_struc(n)%ac72(t)%smc)
         end do  ! tile loop
  
-        ! free memory for ac71, the data at tile level
-        deallocate(AC71_struc(n)%ac71)
+        ! free memory for ac72, the data at tile level
+        deallocate(AC72_struc(n)%ac72)
 
         ! free memory for constant parameter 
-        deallocate(AC71_struc(n)%Thickness)
+        deallocate(AC72_struc(n)%Thickness)
 
         ! free memory for initial state variable
-        deallocate(AC71_struc(n)%init_smc)
+        deallocate(AC72_struc(n)%init_smc)
     end do ! nest loop
   
-    deallocate(AC71_struc)
+    deallocate(AC72_struc)
  
-end subroutine Ac71_finalize
+end subroutine AC72_finalize
 
