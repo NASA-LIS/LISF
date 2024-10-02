@@ -87,8 +87,11 @@ with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
 LEAD_MONS = config['EXP']['lead_months']
 
+# Note: These lines should become connected to the s2s_config file and not specified
+#        directly in this routine.
 #MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
 MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC4', 'COLA-RSMAS-CESM1', 'GFDL-SPEAR']
+###
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
        'Sep', 'Oct', 'Nov', 'Dec']
 MONTH = ['jan01', 'feb01', 'mar01', 'apr01', 'may01', 'jun01', 'jul01', \
