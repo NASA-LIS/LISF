@@ -133,7 +133,7 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
         character(len=1024) :: buffer
         integer :: fOut
         integer(int8) :: Dayi, Monthi
-        integer(int32) :: SkipLines, NCi, NCobs, Yeari
+        integer(int32) :: SkipLines, NCobs, Yeari
         integer(int32) :: i, status
         real(dp) :: VarObsi, VarSimi, VarStdi
         real(dp), dimension(:), allocatable :: dummy_array

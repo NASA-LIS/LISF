@@ -64,7 +64,7 @@ function GetReleaseDate() result(str)
     !! Returns a string containing the month and year of the release.
     character(len=:), allocatable :: str
 
-    str = 'August 2023'
+    str = 'August 2024'
 end function GetReleaseDate
 
 
@@ -72,7 +72,7 @@ function GetVersionString() result(str)
     !! Returns a string containing the version number (major+minor).
     character(len=:), allocatable :: str
 
-    str = '7.1'
+    str = '7.2'
 end function GetVersionString
 
 
@@ -247,5 +247,62 @@ subroutine threestrings2threepointers(string1, string2, string3, &
     f_string3 = string3 // c_null_char
     c_pointer3 = c_loc(f_string3)
 end subroutine threestrings2threepointers
+
+
+subroutine write_file(fhandle, line, advance, iostat)
+    !! Writes one line to a file.
+    integer, intent(in) :: fhandle
+        !! file handle of an already-opened file
+    character(len=*), intent(in) :: line
+        !! line to write to the file
+    logical, intent(in) :: advance
+        !! whether or not to append a newline character
+    integer, intent(out) :: iostat
+        !! IO status returned by write()
+
+    character(len=:), allocatable :: advance_str
+
+    if (advance) then
+        advance_str = 'yes'
+    else
+        advance_str = 'no'
+    end if
+
+    write(fhandle, '(a)', advance=advance_str, iostat=iostat) line
+end subroutine write_file
+
+
+subroutine open_file(fhandle, filename, mode, iostat)
+    !! Opens a file in the given mode.
+    integer, intent(out) :: fhandle
+        !! file handle to be used for the open file
+    character(len=*), intent(in) :: filename
+        !! name of the file to assign the file handle to
+    character, intent(in) :: mode
+        !! open the file for reading ('r'), writing ('w') or appending ('a')
+    integer, intent(out) :: iostat
+        !! IO status returned by open()
+
+    logical :: file_exists
+
+    inquire(file=filename, exist=file_exists)
+
+    if (mode == 'r') then
+        open(newunit=fhandle, file=trim(filename), status='old', &
+             action='read', iostat=iostat)
+    elseif (mode == 'a') then
+        if (file_exists) then
+            open(newunit=fhandle, file=trim(filename), status='old', &
+                 position='append', action='write', iostat=iostat)
+        else
+            open(newunit=fhandle, file=trim(filename), status='new', &
+                 action='write', iostat=iostat)
+        end if
+    elseif (mode == 'w') then
+        open(newunit=fhandle, file=trim(filename), status='replace', &
+             action='write', iostat=iostat)
+    end if
+end subroutine open_file
+
 
 end module ac_utils
