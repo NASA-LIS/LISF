@@ -11,6 +11,7 @@ use ac_global, only:    undef_int, &
                         SetOut5CompWC, &
                         SetOut6CompEC, &
                         SetOut7Clim, &
+                        SetOut8Irri, &
                         SetOutDaily, &
                         SetPart1Mult, &
                         SetPart2Eval, &
@@ -22,6 +23,7 @@ use ac_global, only:    undef_int, &
                         GetOut5CompWC, &
                         GetOut6CompEC, &
                         GetOut7Clim, &
+                        GetOut8Irri, &
                         GetPathNameOutp, &
                         GetOutputAggregate, &
                         GetPart1Mult, &
@@ -46,6 +48,7 @@ use ac_global, only:    undef_int, &
                         SetOut5CompWC, &
                         SetOut6CompEC, &
                         SetOut7Clim, &
+                        SetOut8Irri, &
                         SetOutDaily, &
                         SetPart1Mult, &
                         SetPart2Eval, &
@@ -57,6 +60,7 @@ use ac_global, only:    undef_int, &
                         GetOut5CompWC, &
                         GetOut6CompEC, &
                         GetOut7Clim, &
+                        GetOut8Irri, &
                         GetPathNameOutp, &
                         GetOutputAggregate, &
                         GetPart1Mult, &
@@ -102,6 +106,7 @@ use ac_global, only:    undef_int, &
                         SetSimulParam_IniAbstract, &
                         SetSimulParam_Tmin, &
                         SetTmin, &
+                        SetTmax, &
                         SetSimulParam_Tmax, &
                         SetSimulParam_GDDMethod, &
                         SetSimulParam_EffectiveRain_Method, &
@@ -129,12 +134,12 @@ use ac_kinds, only: int32,&
                     dp
 use ac_project_input, only: GetNumberSimulationRuns, &
                             initialize_project_input
-use ac_run, only: open_file, &
-                  RunSimulation, &
-                  write_file
+use ac_run, only:   RunSimulation
 use ac_utils, only: assert, &
                     upper_case, &
-                    int2str
+                    write_file, &
+                    int2str, &
+                    open_file
 use iso_fortran_env, only: iostat_end
 implicit none
 
@@ -198,6 +203,7 @@ subroutine GetRequestDailyResults()
     call SetOut5CompWC(.false.)
     call SetOut6CompEC(.false.)
     call SetOut7Clim(.false.)
+    call SetOut8Irri(.false.)
 
     FullFileName = GetPathNameSimul() // 'DailyResults.SIM'
     if (FileExists(FullFileName) .eqv. .true.) then
@@ -230,6 +236,9 @@ subroutine GetRequestDailyResults()
                 end if
                 if (TempString(i:i) == '7') then
                     call SetOut7Clim(.true.)
+                end if
+                if (TempString(i:i) == '8') then
+                    call SetOut8Irri(.true.)
                 end if
             end if
             if (rc == iostat_end) exit loop
@@ -367,7 +376,7 @@ subroutine PrepareReport()
         call fProjects_write('None created')
     end select
     call fProjects_write('')
-    if (GetOutDaily()) then
+    if (GetOutDaily() .or. GetOut8Irri()) then
         call fProjects_write('Daily output results:')
         if (GetOut1Wabal()) then
             call fProjects_write('1. - soil water balance')
@@ -393,6 +402,9 @@ subroutine PrepareReport()
         end if
         if (GetOut7Clim()) then
             call fProjects_write('7. - climate input parameters')
+        end if
+        if (GetOut8Irri()) then
+            call fProjects_write('8. - irrigation events and intervals')
         end if
     else
         call fProjects_write('Daily output results: None created')
@@ -777,7 +789,7 @@ subroutine LoadProgramParametersProjectPlugIn(&
                     simul_ed, simul_pCCHIf, simul_SFR, simul_TAWg, &
                     simul_beta, simul_Tswc, simul_EZma, simul_GDD
     real(dp) :: simul_rod, simul_kcWB, simul_RZEma, simul_pfao, &
-                simul_expFsen, simul_Tmi, simul_Tma, Tmin_temp
+                simul_expFsen, simul_Tmi, simul_Tma
 
     if (FileExists(FullFileNameProgramParameters)) then
         ! load set of program parameters
@@ -857,15 +869,15 @@ subroutine LoadProgramParametersProjectPlugIn(&
             ! with equations for CN AMCII and CN converions
 
         ! Temperature
-        read(f0, *) Tmin_temp
+        read(f0, *) simul_Tmi
             ! Default minimum temperature (degC) if no
             ! temperature file is specified
-        call SetTmin(Tmin_temp)
+        call SetTmin(simul_Tmi)
         call SetSimulParam_Tmin(simul_Tmi)
         read(f0, *) simul_Tma
             ! Default maximum temperature (degC) if
             ! no temperature file is specified
-
+        call SetTmax(simul_Tma)
         call SetSimulParam_Tmax(simul_Tma)
         read(f0, *) simul_GDD ! Default method for GDD calculations
         call SetSimulParam_GDDMethod(simul_GDD)

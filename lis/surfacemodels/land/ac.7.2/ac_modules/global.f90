@@ -31,8 +31,7 @@ real(dp), parameter :: CO2Ref = 369.41_dp;
 real(dp), parameter :: EvapZmin = 15._dp
     !! cm  minimum soil depth for water extraction by evaporation
 real(dp), parameter :: eps =10E-08
-real(dp), parameter :: tol = 10E-06
-! tolerance parameter for if statements
+real(dp), parameter :: ac_zero_threshold = 0.000001_dp
 real(dp), dimension(12), parameter :: ElapsedDays = [0._dp, 31._dp, 59.25_dp, &
                                                     90.25_dp, 120.25_dp, 151.25_dp, &
                                                     181.25_dp, 212.25_dp, 243.25_dp, &
@@ -984,6 +983,10 @@ character(len=:), allocatable :: ManDescription
 character(len=:), allocatable :: ClimDescription
 character(len=:), allocatable :: OffSeasonDescription
 character(len=:), allocatable :: GroundwaterDescription
+character(len=:), allocatable :: TnxReferenceFile
+character(len=:), allocatable :: TnxReferenceFileFull
+character(len=:), allocatable :: TnxReference365DaysFile
+character(len=:), allocatable :: TnxReference365DaysFileFull
 
 type(rep_IrriECw) :: IrriECw
 type(rep_Manag) :: Management
@@ -1004,11 +1007,13 @@ type(rep_RootZoneSalt) :: RootZoneSalt
 type(rep_clim)  :: TemperatureRecord, ClimRecord, RainRecord, EToRecord
 type(rep_sim) :: Simulation
 
+
 integer(intEnum) :: GenerateTimeMode
 integer(intEnum) :: GenerateDepthMode
 integer(intEnum) :: IrriMode
 integer(intEnum) :: IrriMethod
 
+integer(int32) :: TnxReferenceYear
 integer(int32) :: DaySubmerged
 integer(int32) :: MaxPlotNew
 integer(int32) :: NrCompartments
@@ -1016,12 +1021,15 @@ integer(int32) :: IrriFirstDayNr
 integer(int32) :: ZiAqua ! Depth of Groundwater table below
                          ! soil surface in centimeter
 
-
 integer(int8) :: IniPercTAW ! Default Value for Percentage TAW for Initial
                             ! Soil Water Content Menu
 integer(int8) :: MaxPlotTr
 integer(int8) :: OutputAggregate
 
+integer :: fTnxReference  ! file handle
+integer :: fTnxReference_iostat  ! IO status
+integer :: fTnxReference365Days  ! file handle
+integer :: fTnxReference365Days_iostat  ! IO status
 
 real(dp) :: CCiActual
 real(dp) :: CCiprev
@@ -1048,10 +1056,17 @@ real(dp) :: Tpot ! mm/day
 real(dp) :: TactWeedInfested !mm/day
 real(dp) :: Tmax ! degC
 real(dp) :: Tmin ! degC
+real(dp) :: TmaxCropReference ! degC
+real(dp) :: TminCropReference ! degC
+real(dp) :: TmaxTnxReference365Days ! degC
+real(dp) :: TminTnxReference365Days ! degC
 real(sp), dimension(1:366) :: TmaxRun, TminRun
+real(sp), dimension(1:12) ::  TmaxTnxReference12MonthsRun, TminTnxReference12MonthsRun
+real(sp), dimension(1:365) :: TmaxCropReferenceRun, TminCropReferenceRun
+real(sp), dimension(1:365) :: TmaxTnxReference365DaysRun, TminTnxReference365DaysRun
 
 logical :: EvapoEntireSoilSurface ! True of soil wetted by RAIN (false = IRRIGATION and fw < 1)
-logical :: PreDay, OutDaily
+logical :: PreDay, OutDaily, Out8Irri
 logical :: Out1Wabal
 logical :: Out2Crop
 logical :: Out3Prof
@@ -1426,8 +1441,7 @@ real(dp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
                                 SFRedCCX)
 
     ! Consider CDecline for limited soil fertiltiy
-    ! IF ((Dayi > L12SF) AND (SFCDecline > 0.000001))
-    if ((Dayi > L12SF) .and. (SFCDecline > 0.000001_dp) .and. (L12SF < L123)) then
+    if ((Dayi > L12SF) .and. (SFCDecline > ac_zero_threshold) .and. (L12SF < L123)) then
         if (Dayi < L123) then
             if (TheModeCycle == modeCycle_CalendarDays) then
                 CCi = CCi - (SFCDecline/100.0_dp)&
@@ -2868,7 +2882,6 @@ subroutine LoadIrriScheduleInfo(FullName)
     real(dp) :: VersionNr
     integer(int8) :: simul_irri_in
     integer(int32) :: simul_percraw
-    character(len=1025) :: StringREAD
 
     open(newunit=fhandle, file=trim(FullName), status='old', action='read')
     read(fhandle, '(a)', iostat=rc) IrriDescription
@@ -3320,7 +3333,7 @@ subroutine NoManagement()
     call SetManagement_Mulch(0_int8)
     call SetManagement_EffectMulchInS(50_int8)
     ! soil fertility
-    call SetManagement_FertilityStress(0)
+    call SetManagement_FertilityStress(0_int32)
     EffectStress_temp = GetSimulation_EffectStress()
     call CropStressParametersSoilFertility(GetCrop_StressResponse(), &
                                       GetManagement_FertilityStress(), &
@@ -3372,7 +3385,7 @@ subroutine LoadManagement(FullName)
     read(fhandle, *) TempShortInt
     call SetManagement_EffectMulchInS(TempShortInt)
     ! soil fertility
-    read(fhandle, *) TempShortInt ! effect is crop specific
+    read(fhandle, *) TempInt ! effect is crop specific
     call SetManagement_FertilityStress(TempInt)
     EffectStress_temp = GetSimulation_EffectStress()
     call CropStressParametersSoilFertility(GetCrop_StressResponse(), &
@@ -5321,7 +5334,7 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
                                      GDDL1234, CCo, CCx, CGC, GDDCGC, CDC, &
                                      GDDCDC, KcTop, KcDeclAgeing, &
                                      CCeffectProcent, Tbase, Tupper, TDayMin, &
-                                     TDayMax, GDtranspLow, CO2i, TheModeCycle)
+                                     TDayMax, GDtranspLow, CO2i, TheModeCycle, ReferenceClimate)
     integer(int32), intent(in) :: TheDaysToCCini
     integer(int32), intent(in) :: TheGDDaysToCCini
     integer(int32), intent(in) :: L0
@@ -5348,6 +5361,7 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     real(dp), intent(in) :: GDtranspLow
     real(dp), intent(in) :: CO2i
     integer(intEnum), intent(in) :: TheModeCycle
+    logical :: ReferenceClimate
 
     integer(int32), parameter :: EToStandard = 5
     real(dp) :: SumGDD, GDDi, SumKcPot, SumGDDforPlot, SumGDDfromDay1
@@ -5356,13 +5370,19 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     integer(int32) :: DayCC, Tadj, GDDTadj
     integer :: fhandle
     integer(int32) :: Dayi
+    integer(int32) :: rc
     logical :: GrowthON
 
     ! 1. Open Temperature file
     if ((GetTemperatureFile() /= '(None)') .and. &
         (GetTemperatureFile() /= '(External)')) then
-        open(newunit=fhandle, file=trim(GetPathNameSimul()//'TCrop.SIM'), &
-             status='old', action='read')
+        if (ReferenceClimate .eqv. .true.) then
+            open(newunit=fhandle, file=trim(GetPathNameSimul()//'TCropReference.SIM'), &
+                 status='old', action='read')
+        else
+            open(newunit=fhandle, file=trim(GetPathNameSimul()//'TCrop.SIM'), &
+                 status='old', action='read')
+        end if
     end if
 
     ! 2. Initialise global settings
@@ -5424,13 +5444,18 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                                     GetSimulParam_GDDMethod())
         elseif (GetTemperatureFile() == '(External)') then
-            !TminRun and Tmax run contain the simulation period temperatures from LIS
-            Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
-            Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+            Tndayi = real(GetTminTnxReference365DaysRun_i(Dayi),kind=dp)
+            Txdayi = real(GetTmaxTnxReference365DaysRun_i(Dayi),kind=dp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
-            read(fhandle, *) Tndayi, Txdayi
+            read(fhandle, *, iostat=rc) Tndayi, Txdayi
+            if ((rc == iostat_end) .and. (ReferenceClimate .eqv. .true.)) then
+                close(fhandle)
+                open(newunit=fhandle, file=trim(GetPathNameSimul()//'TCropReference.SIM'), &
+                    status='old', action='read')
+                read(fhandle, *, iostat=rc) Tndayi, Txdayi
+            end if
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         end if
@@ -5678,7 +5703,7 @@ subroutine CompleteCropDescription()
         call SetCrop_DaysToFullCanopy(DaysToReachCCwithGivenCGC(&
                 (0.98_dp * GetCrop_CCx()), GetCrop_CCo(), &
                      GetCrop_CCx(), GetCrop_CGC(), GetCrop_DaysToGermination()))
-        if (GetManagement_FertilityStress() /= 0) then
+        if (GetManagement_FertilityStress() /= 0_int32) then
             FertStress = GetManagement_FertilityStress()
             Crop_DaysToFullCanopySF_temp = GetCrop_DaysToFullCanopySF()
             RedCGC_temp = GetSimulation_EffectStress_RedCGC()
@@ -7956,7 +7981,7 @@ subroutine CalculateETpot(DAP, L0, L12, L123, LHarvest, DayLastCut, CCi, &
         end if
 
         ! Correction for Air temperature stress
-        if ((CCiAdjusted <= tol) &
+        if ((CCiAdjusted <= ac_zero_threshold) &
             .or. (roundc(GDDayi, mold=1) < 0)) then
             KsTrCold = 1._dp
         else
@@ -8887,12 +8912,6 @@ type(rep_CropFileSet) function GetCropFileSet()
     GetCropFileSet = CropFileSet
 end function GetCropFileSet
 
-subroutine SetCropFileSet(CropFileSet_in)
-    !! Setter for the "CropFileSet" global variable.
-    type(rep_CropFileSet), intent(in) :: CropFileSet_in
-
-    CropFileSet = CropFileSet_in
-end subroutine SetCropFileSet
 
 subroutine SetCropFileSet_DaysFromSenescenceToEnd(DaysFromSenescenceToEnd)
     !! Setter for the "CropFileSet" global variable.
@@ -12936,6 +12955,70 @@ subroutine SetTemperatureFilefull(str)
 end subroutine SetTemperatureFilefull
 
 
+function GetTnxReferenceFile() result(str)
+    !! Getter for the "TnxReferenceFile" global variable.
+    character(len=:), allocatable :: str
+
+    str = TnxReferenceFile
+end function GetTnxReferenceFile
+
+
+subroutine SetTnxReferenceFile(str)
+    !! Setter for the "TnxReferenceFile" global variable.
+    character(len=*), intent(in) :: str
+
+    TnxReferenceFile = str
+end subroutine SetTnxReferenceFile
+
+
+function GetTnxReferenceFileFull() result(str)
+    !! Getter for the "TnxReferenceFileFull" global variable.
+    character(len=:), allocatable :: str
+
+    str = TnxReferenceFileFull
+end function GetTnxReferenceFileFull
+
+
+subroutine SetTnxReferenceFileFull(str)
+    !! Setter for the "TnxReferenceFileFull" global variable.
+    character(len=*), intent(in) :: str
+
+    TnxReferenceFileFull = str
+end subroutine SetTnxReferenceFileFull
+
+
+function GetTnxReference365DaysFile() result(str)
+    !! Getter for the "TnxReference365DaysFile" global variable.
+    character(len=:), allocatable :: str
+
+    str = TnxReference365DaysFile
+end function GetTnxReference365DaysFile
+
+
+subroutine SetTnxReference365DaysFile(str)
+    !! Setter for the "TnxReference365DaysFile" global variable.
+    character(len=*), intent(in) :: str
+
+    TnxReference365DaysFile = str
+end subroutine SetTnxReference365DaysFile
+
+
+function GetTnxReference365DaysFileFull() result(str)
+    !! Getter for the "TnxReference365DaysFileFull" global variable.
+    character(len=:), allocatable :: str
+
+    str = TnxReference365DaysFileFull
+end function GetTnxReference365DaysFileFull
+
+
+subroutine SetTnxReference365DaysFileFull(str)
+    !! Setter for the "TnxReference365DaysFileFull" global variable.
+    character(len=*), intent(in) :: str
+
+    TnxReference365DaysFileFull = str
+end subroutine SetTnxReference365DaysFileFull
+
+
 function GetTemperatureDescription() result(str)
     !! Getter for the "TemperatureDescription" global variable.
     character(len=:), allocatable :: str
@@ -15645,6 +15728,21 @@ subroutine SetDaySubmerged(DaySubmerged_in)
 end subroutine SetDaySubmerged
 
 
+integer(int32) function GetTnxReferenceYear()
+    !! Getter for the "TnxReferenceYear" global variable.
+
+    GetTnxReferenceYear = TnxReferenceYear
+end function GetTnxReferenceYear
+
+
+subroutine SetTnxReferenceYear(TnxReferenceYear_in)
+    !! Setter for the "TnxReferenceYear" global variable.
+    integer(int32), intent(in) :: TnxReferenceYear_in
+
+    TnxReferenceYear = TnxReferenceYear_in
+end subroutine SetTnxReferenceYear
+
+
 real(dp) function GetCRsalt()
     !! Getter for the "CRsalt" global variable.
 
@@ -16126,6 +16224,207 @@ subroutine SetTactWeedInfested(TactWeedInfested_in)
     TactWeedInfested = TactWeedInfested_in
 end subroutine SetTactWeedInfested
 
+! TminTnxReference365Days
+
+function GetTminTnxReference365DaysRun() result(TminTnxReference365DaysRun_out)
+    !! Getter for the "TminTnxReference365DaysRun" global variable.
+    real(sp), dimension(1:365) :: TminTnxReference365DaysRun_out
+
+    TminTnxReference365DaysRun_out = TminTnxReference365DaysRun
+end function GetTminTnxReference365DaysRun
+
+
+function GetTminTnxReference365DaysRun_i(i) result(TminTnxReference365DaysRun_i)
+    !! Getter for individual elements of the "GetTminTnxReference365DaysRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TminTnxReference365DaysRun_i
+
+    TminTnxReference365DaysRun_i = TminTnxReference365DaysRun(i)
+end function GetTminTnxReference365DaysRun_i
+
+
+subroutine SetTminTnxReference365DaysRun(TminTnxReference365DaysRun_in)
+    !! Setter for the "TminTnxReference365DaysRun" global variable.
+    real(sp), dimension(1:365), intent(in) :: TminTnxReference365DaysRun_in
+
+    TminTnxReference365DaysRun = TminTnxReference365DaysRun_in
+end subroutine SetTminTnxReference365DaysRun
+
+
+subroutine SetTminTnxReference365DaysRun_i(i, TminTnxReference365DaysRun_i)
+    !! Setter for individual element for the "TminTnxReference365DaysRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TminTnxReference365DaysRun_i
+
+    TminTnxReference365DaysRun(i) = TminTnxReference365DaysRun_i
+end subroutine SetTminTnxReference365DaysRun_i
+
+! TmaxTnxReference365Days
+
+function GetTmaxTnxReference365DaysRun() result(TmaxTnxReference365DaysRun_out)
+    !! Getter for the "TmaxTnxReference365DaysRun" global variable.
+    real(sp), dimension(1:365) :: TmaxTnxReference365DaysRun_out
+
+    TmaxTnxReference365DaysRun_out = TmaxTnxReference365DaysRun
+end function GetTmaxTnxReference365DaysRun
+
+
+function GetTmaxTnxReference365DaysRun_i(i) result(TmaxTnxReference365DaysRun_i)
+    !! Getter for individual elements of the "GetTmaxTnxReference365DaysRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TmaxTnxReference365DaysRun_i
+
+    TmaxTnxReference365DaysRun_i = TmaxTnxReference365DaysRun(i)
+end function GetTmaxTnxReference365DaysRun_i
+
+
+subroutine SetTmaxTnxReference365DaysRun(TmaxTnxReference365DaysRun_in)
+    !! Setter for the "TmaxTnxReference365DaysRun" global variable.
+    real(sp), dimension(1:365), intent(in) :: TmaxTnxReference365DaysRun_in
+
+    TmaxTnxReference365DaysRun = TmaxTnxReference365DaysRun_in
+end subroutine SetTmaxTnxReference365DaysRun
+
+
+subroutine SetTmaxTnxReference365DaysRun_i(i, TmaxTnxReference365DaysRun_i)
+    !! Setter for individual element for the "TmaxTnxReference365DaysRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TmaxTnxReference365DaysRun_i
+
+    TmaxTnxReference365DaysRun(i) = TmaxTnxReference365DaysRun_i
+end subroutine SetTmaxTnxReference365DaysRun_i
+
+
+real(sp) function GetTminTnxReference365Days()
+    !! Getter for the "TminTnxReference365Days" global variable.
+
+    GetTminTnxReference365Days = TminTnxReference365Days
+end function GetTminTnxReference365Days
+
+
+subroutine SetTminTnxReference365Days(TminTnxReference365Days_in)
+    !! Setter for the "TminTnxReference365Days" global variable.
+    real(sp), intent(in) :: TminTnxReference365Days_in
+
+    TminTnxReference365Days = TminTnxReference365Days_in
+end subroutine SetTminTnxReference365Days
+
+
+real(sp) function GetTmaxTnxReference365Days()
+    !! Getter for the "TmaxTnxReference365Days" global variable.
+
+    GetTmaxTnxReference365Days = TmaxTnxReference365Days
+end function GetTmaxTnxReference365Days
+
+
+subroutine SetTmaxTnxReference365Days(TmaxTnxReference365Days_in)
+    !! Setter for the "TmaxTnxReference365Days" global variable.
+    real(sp), intent(in) :: TmaxTnxReference365Days_in
+
+    TmaxTnxReference365Days = TmaxTnxReference365Days_in
+end subroutine SetTmaxTnxReference365Days
+
+! TminCropReferenceRun
+
+function GetTminCropReferenceRun() result(TminCropReferenceRun_out)
+    !! Getter for the "TminCropReferenceRun" global variable.
+    real(sp), dimension(1:365) :: TminCropReferenceRun_out
+
+    TminCropReferenceRun_out = TminCropReferenceRun
+end function GetTminCropReferenceRun
+
+
+function GetTminCropReferenceRun_i(i) result(TminCropReferenceRun_i)
+    !! Getter for individual elements of the "GetTminCropReferenceRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TminCropReferenceRun_i
+
+    TminCropReferenceRun_i = TminCropReferenceRun(i)
+end function GetTminCropReferenceRun_i
+
+
+subroutine SetTminCropReferenceRun(TminCropReferenceRun_in)
+    !! Setter for the "TminCropReferenceRun" global variable.
+    real(sp), dimension(1:365), intent(in) :: TminCropReferenceRun_in
+
+    TminCropReferenceRun = TminCropReferenceRun_in
+end subroutine SetTminCropReferenceRun
+
+
+subroutine SetTminCropReferenceRun_i(i, TminCropReferenceRun_i)
+    !! Setter for individual element for the "TminCropReferenceRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TminCropReferenceRun_i
+
+    TminCropReferenceRun(i) = TminCropReferenceRun_i
+end subroutine SetTminCropReferenceRun_i
+
+! TmaxCropReferenceRun
+
+function GetTmaxCropReferenceRun() result(TmaxCropReferenceRun_out)
+    !! Getter for the "TmaxCropReferenceRun" global variable.
+    real(sp), dimension(1:365) :: TmaxCropReferenceRun_out
+
+    TmaxCropReferenceRun_out = TmaxCropReferenceRun
+end function GetTmaxCropReferenceRun
+
+
+function GetTmaxCropReferenceRun_i(i) result(TmaxCropReferenceRun_i)
+    !! Getter for individual elements of the "GetTmaxCropReferenceRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TmaxCropReferenceRun_i
+
+    TmaxCropReferenceRun_i = TmaxCropReferenceRun(i)
+end function GetTmaxCropReferenceRun_i
+
+
+subroutine SetTmaxCropReferenceRun(TmaxCropReferenceRun_in)
+    !! Setter for the "TmaxCropReferenceRun" global variable.
+    real(sp), dimension(1:365), intent(in) :: TmaxCropReferenceRun_in
+
+    TmaxCropReferenceRun = TmaxCropReferenceRun_in
+end subroutine SetTmaxCropReferenceRun
+
+
+subroutine SetTmaxCropReferenceRun_i(i, TmaxCropReferenceRun_i)
+    !! Setter for individual element for the "TmaxCropReferenceRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TmaxCropReferenceRun_i
+
+    TmaxCropReferenceRun(i) = TmaxCropReferenceRun_i
+end subroutine SetTmaxCropReferenceRun_i
+
+
+real(sp) function GetTminCropReference()
+    !! Getter for the "TminCropReference" global variable.
+
+    GetTminCropReference = TminCropReference
+end function GetTminCropReference
+
+
+subroutine SetTminCropReference(TminCropReference_in)
+    !! Setter for the "TminCropReference" global variable.
+    real(sp), intent(in) :: TminCropReference_in
+
+    TminCropReference = TminCropReference_in
+end subroutine SetTminCropReference
+
+
+real(sp) function GetTmaxCropReference()
+    !! Getter for the "TmaxCropReference" global variable.
+
+    GetTmaxCropReference = TmaxCropReference
+end function GetTmaxCropReference
+
+
+subroutine SetTmaxCropReference(TmaxCropReference_in)
+    !! Setter for the "TmaxCropReference" global variable.
+    real(sp), intent(in) :: TmaxCropReference_in
+
+    TmaxCropReference = TmaxCropReference_in
+end subroutine SetTmaxCropReference
+
+! TminRun
 
 function GetTminRun() result(TminRun_out)
     !! Getter for the "TminRun" global variable.
@@ -16141,6 +16440,7 @@ function GetTminRun_i(i) result(TminRun_i)
     real(sp) :: TminRun_i
 
     TminRun_i = TminRun(i)
+    !TminRun_i = real(roundc(10000*real(TminRun(i),kind=dp),mold=int32)/10000._sp,kind=sp)
 end function GetTminRun_i
 
 
@@ -16160,6 +16460,7 @@ subroutine SetTminRun_i(i, TminRun_i)
     TminRun(i) = TminRun_i
 end subroutine SetTminRun_i
 
+! TmaxRun
 
 function GetTmaxRun() result(TmaxRun_out)
     !! Getter for the "TmaxRun" global variable.
@@ -16225,6 +16526,79 @@ subroutine SetTmax(Tmax_in)
 end subroutine SetTmax
 
 
+! TminTnxReference12MonthsRun
+
+function GetTminTnxReference12MonthsRun() result(TminTnxReference12MonthsRun_out)
+    !! Getter for the "TminTnxReference12MonthsRun" global variable.
+    real(sp), dimension(1:12) :: TminTnxReference12MonthsRun_out
+
+    TminTnxReference12MonthsRun_out = TminTnxReference12MonthsRun
+end function GetTminTnxReference12MonthsRun
+
+
+function GetTminTnxReference12MonthsRun_i(i) result(TminTnxReference12MonthsRun_i)
+    !! Getter for individual elements of the "GetTminTnxReference12MonthsRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TminTnxReference12MonthsRun_i
+
+    TminTnxReference12MonthsRun_i = TminTnxReference12MonthsRun(i)
+end function GetTminTnxReference12MonthsRun_i
+
+
+subroutine SetTminTnxReference12MonthsRun(TminTnxReference12MonthsRun_in)
+    !! Setter for the "TminTnxReference12MonthsRun" global variable.
+    real(sp), dimension(1:12), intent(in) :: TminTnxReference12MonthsRun_in
+
+    TminTnxReference12MonthsRun = TminTnxReference12MonthsRun_in
+end subroutine SetTminTnxReference12MonthsRun
+
+
+subroutine SetTminTnxReference12MonthsRun_i(i, TminTnxReference12MonthsRun_i)
+    !! Setter for individual element for the "TminTnxReference12MonthsRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TminTnxReference12MonthsRun_i
+
+    TminTnxReference12MonthsRun(i) = TminTnxReference12MonthsRun_i
+end subroutine SetTminTnxReference12MonthsRun_i
+
+! TmaxTnxReference12MonthsRun
+
+function GetTmaxTnxReference12MonthsRun() result(TmaxTnxReference12MonthsRun_out)
+    !! Getter for the "TmaxTnxReference12MonthsRun" global variable.
+    real(sp), dimension(1:12) :: TmaxTnxReference12MonthsRun_out
+
+    TmaxTnxReference12MonthsRun_out = TmaxTnxReference12MonthsRun
+end function GetTmaxTnxReference12MonthsRun
+
+
+function GetTmaxTnxReference12MonthsRun_i(i) result(TmaxTnxReference12MonthsRun_i)
+    !! Getter for individual elements of the "GetTmaxTnxReference12MonthsRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp) :: TmaxTnxReference12MonthsRun_i
+
+    TmaxTnxReference12MonthsRun_i = TmaxTnxReference12MonthsRun(i)
+end function GetTmaxTnxReference12MonthsRun_i
+
+
+subroutine SetTmaxTnxReference12MonthsRun(TmaxTnxReference12MonthsRun_in)
+    !! Setter for the "TmaxTnxReference12MonthsRun" global variable.
+    real(sp), dimension(1:12), intent(in) :: TmaxTnxReference12MonthsRun_in
+
+    TmaxTnxReference12MonthsRun = TmaxTnxReference12MonthsRun_in
+end subroutine SetTmaxTnxReference12MonthsRun
+
+
+subroutine SetTmaxTnxReference12MonthsRun_i(i, TmaxTnxReference12MonthsRun_i)
+    !! Setter for individual element for the "TmaxTnxReference12MonthsRun" global variable.
+    integer(int32), intent(in) :: i
+    real(sp), intent(in) :: TmaxTnxReference12MonthsRun_i
+
+    TmaxTnxReference12MonthsRun(i) = TmaxTnxReference12MonthsRun_i
+end subroutine SetTmaxTnxReference12MonthsRun_i
+
+
+! Surf0
+
 real(dp) function GetSurf0()
     !! Getter for the "Surf0" global variable.
 
@@ -16253,6 +16627,21 @@ subroutine SetOutDaily(OutDaily_in)
 
     OutDaily = OutDaily_in
 end subroutine SetOutDaily
+
+
+logical function GetOut8Irri()
+    !! Getter for the Out8Irri global variable
+
+    GetOut8Irri = Out8Irri
+end function GetOut8Irri
+
+
+subroutine SetOut8Irri(Out8Irri_in)
+    !! Setter for the Out8Irri global variable
+    logical, intent(in) :: Out8Irri_in
+
+    Out8Irri = Out8Irri_in
+end subroutine SetOut8Irri
 
 
 function GetPathNameParam() result(str)
@@ -16315,6 +16704,5 @@ subroutine SetPart2Eval(Part2Eval_in)
 
     Part2Eval = Part2Eval_in
 end subroutine SetPart2Eval
-
 
 end module ac_global

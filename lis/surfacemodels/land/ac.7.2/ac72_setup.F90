@@ -160,6 +160,7 @@ subroutine AC72_setup()
                         GetOut5CompWC,&
                         GetOut6CompEC,&
                         GetOut7Clim,&
+                        GetOut8Irri,&
                         GetPart1Mult,&
                         GetPart2Eval,&
                         SetGenerateTimeMode,&
@@ -275,10 +276,15 @@ subroutine AC72_setup()
                         SetSimulation_MultipleRunWithKeepSWC,&
                             SetTmaxRun,& 
                             SetTminRun,&
-                            GetCropFileSet
+                            SetTminTnxReference12MonthsRun, &
+                            SetTmaxTnxReference12MonthsRun,&
+                            SetTnxReferenceYear,&
+                            SetTnxReferenceFile
            !!! MB_AC72
     !!! MB:
     use ac_project_input, only: ProjectInput, allocate_project_input, set_project_input
+
+    use ac_utils, only: roundc
 
     use ac_run, only:    SetDayNri,&
                         fIrri_close,&
@@ -520,7 +526,9 @@ subroutine AC72_setup()
         integer(int32) :: temp1
 
         logical :: MultipleRunWithKeepSWC_temp    
-        real(dp) :: MultipleRunConstZrx_temp    
+        real(dp) :: MultipleRunConstZrx_temp
+
+        real, dimension(12) :: arr   
 
         mtype = LIS_rc%lsm_index
 
@@ -862,6 +870,20 @@ subroutine AC72_setup()
                 call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
                 call SetTmin(real(AC72_struc(n)%ac72(t)%Tmin_record(1),kind=dp))    
                 call SetTmax(real(AC72_struc(n)%ac72(t)%Tmax_record(1),kind=dp))
+
+                ! Set Tmin and Tmax reference to compute the stress realtions
+                ! For now: define constant value, later --> passed from LDT
+                arr = 20.0
+                call SetTminTnxReference12MonthsRun(arr)
+                arr = 35.0
+                call SetTmaxTnxReference12MonthsRun(arr)
+
+                ! Set reference year for CO2 for stress functions
+                call SetTnxReferenceYear(roundc(LIS_rc%syr + (LIS_rc%eyr - LIS_rc%syr)/2._dp,mold=1_int32))
+                ! For restart: add option in lis.config
+
+                call SetTnxReferenceFile('(External)')
+
                 ! InitializeRunPart1    
                 call InitializeRunPart1(int(AC72_struc(n)%ac72(t)%irun, kind=int8), AC72_struc(n)%ac72(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
@@ -947,6 +969,7 @@ subroutine AC72_setup()
             AC72_struc(n)%AC72(t)%Out5CompWC = GetOut5CompWC()
             AC72_struc(n)%AC72(t)%Out6CompEC = GetOut6CompEC()
             AC72_struc(n)%AC72(t)%Out7Clim = GetOut7Clim()
+            AC72_struc(n)%AC72(t)%Out8Irri = GetOut8Irri()
             AC72_struc(n)%AC72(t)%Part1Mult = GetPart1Mult()
             AC72_struc(n)%AC72(t)%Part2Eval = GetPart2Eval()
 
@@ -1051,9 +1074,6 @@ subroutine AC72_setup()
             AC72_struc(n)%AC72(t)%WaterTableInProfile = GetWaterTableInProfile()
             AC72_struc(n)%AC72(t)%StartMode = GetStartMode()
             AC72_struc(n)%AC72(t)%NoMoreCrop = GetNoMoreCrop()
-
-            ! Test
-            AC72_struc(n)%ac72(t)%CropFileSet = GetCropFileSet()
                 
             !!! MB_AC72
 

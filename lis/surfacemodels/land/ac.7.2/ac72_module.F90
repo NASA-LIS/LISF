@@ -164,6 +164,7 @@ module AC72_module
     logical :: Out5CompWC
     logical :: Out6CompEC
     logical :: Out7Clim
+    logical :: Out8Irri
     logical :: Part1Mult,Part2Eval
 
     real(dp) :: CCiActual
