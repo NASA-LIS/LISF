@@ -101,6 +101,8 @@ module AC72_lsmMod
         ! Parameter file names
         !-------------------------------------------------------------------------
         character*128      :: LDT_ncvar_soiltype
+        character*128      :: LDT_ncvar_tmincli_monthly
+        character*128      :: LDT_ncvar_tmaxcli_monthly
         !-------------------------------------------------------------------------
         ! ts, Count, rstInterval, outInterval
         !-------------------------------------------------------------------------
@@ -138,6 +140,7 @@ module AC72_lsmMod
         real, pointer      :: Thickness(:)
         real               :: refz_tq
         real               :: refz_uv
+        integer            :: tempcli_refyr
         type(AC72dec), pointer :: ac72(:)
     end type AC72_type_dec
 
@@ -190,6 +193,8 @@ contains
             AC72_struc(n)%max_No_compartments = 12 ! hard coded
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 allocate(AC72_struc(n)%ac72(t)%smc(AC72_struc(n)%max_No_compartments))
+                allocate(AC72_struc(n)%ac72(t)%tmincli_monthly(12))
+                allocate(AC72_struc(n)%ac72(t)%tmaxcli_monthly(12))
             enddo
 
             ! allocate memory for Trecord arrays

@@ -260,7 +260,7 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
          "AC72", &
          dim1 = AC72_struc(n)%max_No_Compartments, &
-         ! dim2 = AC72_struc(n)%max_No_Compartments*11, & ! number of cells in AC7.1
+         ! dim2 = AC72_struc(n)%max_No_Compartments*11, & ! number of cells in AC7.2
          dimID = dimID, &
          output_format = trim(wformat))
 

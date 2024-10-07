@@ -573,6 +573,28 @@ subroutine AC72_setup()
                     AC72_struc(n)%ac72(t)%soiltype = placeholder(col, row)
                 enddo 
             endif
+
+            write(LIS_logunit,*) "[INFO] AC72: reading parameter AC_Tmin_clim from ",&
+                trim(LIS_rc%paramfile(n))
+            do k = 1, 12
+                call AC72_read_MULTILEVEL_param(n, AC72_struc(n)%LDT_ncvar_tmincli_monthly, k, placeholder)
+                do t = 1, LIS_rc%npatch(n, mtype)
+                    col = LIS_surface(n, mtype)%tile(t)%col
+                    row = LIS_surface(n, mtype)%tile(t)%row
+                    AC72_struc(n)%ac72(t)%tmincli_monthly(k) = placeholder(col, row)
+                enddo 
+            enddo
+
+            write(LIS_logunit,*) "[INFO] AC72: reading parameter AC_Tmax_clim from ",&
+                trim(LIS_rc%paramfile(n))
+            do k = 1, 12
+                call AC72_read_MULTILEVEL_param(n, AC72_struc(n)%LDT_ncvar_tmaxcli_monthly, k, placeholder)
+                do t = 1, LIS_rc%npatch(n, mtype)
+                    col = LIS_surface(n, mtype)%tile(t)%col
+                    row = LIS_surface(n, mtype)%tile(t)%row
+                    AC72_struc(n)%ac72(t)%tmaxcli_monthly(k) = placeholder(col, row)
+                enddo 
+            enddo 
             deallocate(placeholder)
             ! Read soil table
             call SOIL_PARM_72(AC72_struc(n)%soil_tbl_name)
@@ -612,7 +634,7 @@ subroutine AC72_setup()
                 call set_project_input(l, 'Climate_Info', '(External)')
                 call set_project_input(l, 'Climate_Filename', '(External)')
                 call set_project_input(l, 'Climate_Directory', '(None)')
-                call set_project_input(l, 'VersionNr', 7.1_dp)
+                call set_project_input(l, 'VersionNr', 7.2_dp)
                 call set_project_input(l, 'Temperature_Info', '(None)')
                 call set_project_input(l, 'Temperature_Filename', '(External)')
                 call set_project_input(l, 'Temperature_Directory', '(None)')
@@ -872,14 +894,11 @@ subroutine AC72_setup()
                 call SetTmax(real(AC72_struc(n)%ac72(t)%Tmax_record(1),kind=dp))
 
                 ! Set Tmin and Tmax reference to compute the stress realtions
-                ! For now: define constant value, later --> passed from LDT
-                arr = 20.0
-                call SetTminTnxReference12MonthsRun(arr)
-                arr = 35.0
-                call SetTmaxTnxReference12MonthsRun(arr)
+                call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))
+                call SetTmaxTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmaxcli_monthly(:))
 
                 ! Set reference year for CO2 for stress functions
-                call SetTnxReferenceYear(roundc(LIS_rc%syr + (LIS_rc%eyr - LIS_rc%syr)/2._dp,mold=1_int32))
+                call SetTnxReferenceYear(AC72_struc(n)%tempcli_refyr)
                 ! For restart: add option in lis.config
 
                 call SetTnxReferenceFile('(External)')
@@ -1261,9 +1280,9 @@ subroutine ac72_read_croptype(n)
     
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
-    call ESMF_ConfigFindLabel(LIS_config,"AquaCrop.7.1 crop library directory:",rc=rc)
+    call ESMF_ConfigFindLabel(LIS_config,"AquaCrop.7.2 crop library directory:",rc=rc)
     call ESMF_ConfigGetAttribute(LIS_config,crop_path,rc=rc)
-    call LIS_verify(rc,'AquaCrop.7.1 crop library directory: not specified')
+    call LIS_verify(rc,'AquaCrop.7.2 crop library directory: not specified')
 
  !- Set path to crop files
       AC72_struc(n)%PathCropFiles = trim(crop_path)//"AC_Crop.Files/"

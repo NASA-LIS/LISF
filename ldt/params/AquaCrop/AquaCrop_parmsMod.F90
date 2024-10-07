@@ -56,6 +56,7 @@ module AquaCrop_parmsMod
       integer :: nlayers !  number of soil layers
       real :: lthickness(5) ! thickness of layers, max 5 layers for AC
       integer :: max_comp ! 12 by default
+      integer :: tempcli_refyr ! reference year for cli
       character(len=LDT_CONST_PATH_LEN) :: tempclimdir
       character(125) :: tempclimfile
       character(125) :: tempclim_gridtransform
@@ -138,6 +139,10 @@ contains
     call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempclimdir,rc=rc)
     call LDT_verify(rc,"AquaCrop temperature climatology directory: not defined")
 
+    call ESMF_ConfigFindLabel(LDT_config,"AquaCrop reference year for climatology:",rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempcli_refyr,rc=rc)
+    call LDT_verify(rc,"AquaCrop reference year for climatology: not defined")
+
     call ESMF_ConfigFindLabel(LDT_config,"AquaCrop temperature climatology spatial transform:",rc=rc)
     call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempclim_gridtransform,rc=rc)
     call LDT_verify(rc,"AquaCrop temperature climatology spatial transform: not defined")
@@ -212,6 +217,8 @@ contains
 
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOIL_LAYERS", &
         AquaCrop_struc(n)%nlayers))
+    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"AC_CLIM_REF_YEAR", &
+        AquaCrop_struc(n)%tempcli_refyr))
     do i=1,AquaCrop_struc(n)%nlayers
       write (str, '(i0)') i
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"THICKNESS_LAYER_"//trim(str),&
