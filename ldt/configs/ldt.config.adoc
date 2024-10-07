@@ -87,7 +87,7 @@ Surface model types:  "LSM"
 |Noah.3.9 |Noah 3.9
 |Noah-MP.3.6 |Noah-MP 3.6
 |Noah-MP.4.0.1 |Noah-MP 4.0.1
-|AquaCrop.7.1 |AquaCrop 7.1
+|AquaCrop.7.2 |AquaCrop 7.2
 |CLM.2 |CLM version 2.0
 |CLM.4.5 |CLM version 4.5
 |VIC.4.1.1 |VIC 4.1.1

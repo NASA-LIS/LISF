@@ -142,11 +142,11 @@ contains
          NoahParms_writeData)
 
   ! AquaCrop 7.1 LSM:
-    call registerlsmparamprocinit(trim(LDT_ac71Id)//char(0),&
+    call registerlsmparamprocinit(trim(LDT_ac72Id)//char(0),&
          AquaCropParms_init)
-    call registerlsmparamprocwriteheader(trim(LDT_ac71Id)//char(0),&
+    call registerlsmparamprocwriteheader(trim(LDT_ac72Id)//char(0),&
          AquaCropParms_writeHeader)
-    call registerlsmparamprocwritedata(trim(LDT_ac71Id)//char(0),&
+    call registerlsmparamprocwritedata(trim(LDT_ac72Id)//char(0),&
          AquaCropParms_writeData)
 
   ! CLSM F2.5 LSM:
