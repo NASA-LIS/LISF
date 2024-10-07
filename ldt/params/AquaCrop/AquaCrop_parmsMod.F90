@@ -13,8 +13,6 @@ module AquaCrop_parmsMod
 ! !MODULE: AquaCrop_parmsMod
 !
 ! !DESCRIPTION:
-!  The code in this file implements routines to read greenness fraction
-!  data. 
 !  \subsubsection{Overview}
 !  This routines in this module provides routines to read the AquaCrop
 !  crop type from the AC_Crop.Inventory
@@ -32,6 +30,7 @@ module AquaCrop_parmsMod
   use LDT_paramDataMod
   use LDT_logMod
   use LDT_paramMaskCheckMod
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
 
   implicit none
 
@@ -52,9 +51,14 @@ module AquaCrop_parmsMod
       ! -  AquaCrop LSM-specific:
       type(LDT_paramEntry) :: cropt   ! crop type
       type(LDT_paramEntry) :: comp_size ! compartment size
+      type(LDT_paramEntry) :: tmin_cli ! tmin climatology
+      type(LDT_paramEntry) :: tmax_cli ! tmax climatology
       integer :: nlayers !  number of soil layers
       real :: lthickness(5) ! thickness of layers, max 5 layers for AC
       integer :: max_comp ! 12 by default
+      character(len=LDT_CONST_PATH_LEN) :: tempclimdir
+      character(125) :: tempclimfile
+      character(125) :: tempclim_gridtransform
   end type aquacrop_type_dec
 
   type(aquacrop_type_dec), allocatable :: AquaCrop_struc(:)
@@ -82,8 +86,12 @@ contains
 !EOP
    implicit none
    integer  :: flag
-   integer  :: n,i,c,r,m
+   integer  :: n,i,c,r,m,k
    integer  :: rc
+
+    character*3 :: months(12)
+    data months /'jan','feb','mar','apr','may','jun','jul','aug',&
+                 'sep','oct','nov','dec'/
 
 ! _____________________________________________________________________
 
@@ -123,17 +131,63 @@ contains
               LDT_rc%lnc(n),LDT_rc%lnr(n),&
               Aquacrop_struc(n)%comp_size%vlevels))
       call define_AC_compartments(n, AquaCrop_struc(n)%comp_size%value(:,:,:))
+
+
+    ! Read temperature climatology file
+    call ESMF_ConfigFindLabel(LDT_config,"AquaCrop temperature climatology directory:",rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempclimdir,rc=rc)
+    call LDT_verify(rc,"AquaCrop temperature climatology directory: not defined")
+
+    call ESMF_ConfigFindLabel(LDT_config,"AquaCrop temperature climatology spatial transform:",rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempclim_gridtransform,rc=rc)
+    call LDT_verify(rc,"AquaCrop temperature climatology spatial transform: not defined")
+
+    LDT_rc%monthlyData(n) = .true.
+
+    ! tmin
+        call set_param_attribs(Aquacrop_struc(n)%tmin_cli, "AC_Tmin_clim",&
+          units="K", &
+          full_name="minimum temperature climatology")
+      Aquacrop_struc(n)%tmin_cli%vlevels = 12
+      Aquacrop_struc(n)%tmin_cli%num_bins = 12
+      allocate(Aquacrop_struc(n)%tmin_cli%value(&
+              LDT_rc%lnc(n),LDT_rc%lnr(n),&
+              Aquacrop_struc(n)%tmin_cli%vlevels))
+
+    ! tmax
+        call set_param_attribs(Aquacrop_struc(n)%tmax_cli, "AC_Tmax_clim",&
+          units="K", &
+          full_name="maximum temperature climatology")
+      Aquacrop_struc(n)%tmax_cli%vlevels = 12
+      Aquacrop_struc(n)%tmax_cli%num_bins = 12
+      allocate(Aquacrop_struc(n)%tmax_cli%value(&
+              LDT_rc%lnc(n),LDT_rc%lnr(n),&
+              Aquacrop_struc(n)%tmax_cli%vlevels))
+
+      ! Call function to read monthly data
+      do k = 1,12
+        AquaCrop_struc(n)%tempclimfile = &
+            trim(AquaCrop_struc(n)%tempclimdir)//'tmin.'//&
+            trim(months(k))//'.txt'
+        call read_AC_Tclim(n, AquaCrop_struc(n)%tmin_cli%value(:,:,k))
+        AquaCrop_struc(n)%tempclimfile = &
+            trim(AquaCrop_struc(n)%tempclimdir)//'tmax.'//&
+            trim(months(k))//'.txt'
+        call read_AC_Tclim(n, AquaCrop_struc(n)%tmax_cli%value(:,:,k))
+      enddo ! end months
+  
     enddo ! End nest
     
   end subroutine AquaCropParms_init
 
- subroutine AquaCropParms_writeHeader(n,ftn,dimID)
+ subroutine AquaCropParms_writeHeader(n,ftn,dimID,monthID)
 
     use netcdf
 
     integer   :: n,i 
     integer   :: ftn
     integer   :: dimID(3)
+    integer     :: monthID
 
     integer   :: ndimID(3)  ! 3D, vlevel>1
     character(25) :: str
@@ -143,12 +197,19 @@ contains
 
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             Aquacrop_struc(n)%cropt)
-    call LDT_verify(nf90_def_dim(ftn,'AC_max_compartments',&
+    call LDT_verify(nf90_def_dim(ftn,'compartment',&
           AquaCrop_struc(n)%max_comp,ndimID(3)))
     ndimID(1) = dimID(1)
     ndimID(2) = dimID(2)
     call LDT_writeNETCDFdataHeader(n,ftn,ndimID,&
             Aquacrop_struc(n)%comp_size)
+
+    ndimID(3) = monthID
+    call LDT_writeNETCDFdataHeader(n,ftn,ndimID,&
+            Aquacrop_struc(n)%tmin_cli)
+    call LDT_writeNETCDFdataHeader(n,ftn,ndimID,&
+            Aquacrop_struc(n)%tmax_cli)
+
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOIL_LAYERS", &
         AquaCrop_struc(n)%nlayers))
     do i=1,AquaCrop_struc(n)%nlayers
@@ -166,6 +227,8 @@ contains
 
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%cropt)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%comp_size)
+    call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmin_cli)
+    call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmax_cli)
 
   end subroutine AquaCropParms_writeData
 
