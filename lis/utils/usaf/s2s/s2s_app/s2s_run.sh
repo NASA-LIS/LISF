@@ -863,7 +863,7 @@ bcsd_fcst(){
 	jobname=bcsd09-10
 	/bin/rm bcsd09*.j
 	/bin/rm bcsd10*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
 	bcsd10_ID=
@@ -900,7 +900,7 @@ bcsd_fcst(){
 	jobname=bcsd11-12
 	/bin/rm bcsd11*.j
 	/bin/rm bcsd12*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd11_ID=$(submit_job "$bcsd09_ID" "${jobname}_run.j")
 	bcsd12_ID=
@@ -1198,7 +1198,9 @@ fi
 #     line, since it can slow down over time, given the number of
 #     files in the E2ES directory.
 
-setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/  
+if [ ! -d "$SCRDIR" ]; then
+    setfacl -PRdm u::rwx,g::rwx,o::r ${E2ESDIR}/
+fi
 
 mkdir -p -m 775 ${SCRDIR}/ldt_ics
 mkdir -p -m 775 ${SCRDIR}/bcsd_fcst
