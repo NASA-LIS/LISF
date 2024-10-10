@@ -5372,6 +5372,7 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     integer(int32) :: Dayi
     integer(int32) :: rc
     logical :: GrowthON
+    integer :: i
 
     ! 1. Open Temperature file
     if ((GetTemperatureFile() /= '(None)') .and. &
@@ -5438,14 +5439,19 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     end if
 
     ! 3. Calculate Sum
+    i = 0
     do Dayi = 1, L1234
         ! 3.1 calculate growing degrees for the day
         if (GetTemperatureFile() == '(None)') then
             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                                     GetSimulParam_GDDMethod())
         elseif (GetTemperatureFile() == '(External)') then
-            Tndayi = real(GetTminTnxReference365DaysRun_i(Dayi),kind=dp)
-            Txdayi = real(GetTmaxTnxReference365DaysRun_i(Dayi),kind=dp)
+            i = i + 1
+            if (i == size(GetTminCropReferenceRun())) then
+                i = 1
+            end if
+            Tndayi = real(GetTminCropReferenceRun_i(i),kind=dp)
+            Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=dp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
@@ -8331,6 +8337,70 @@ subroutine CompleteClimateDescription(ClimateRecord)
     ClimateRecord%ToString = dayStr // ' ' // NameMonth(ClimateRecord%ToM) // &
                              ' ' // yearStr
 end subroutine CompleteClimateDescription
+
+integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
+                                        StartDayNr, Tbase, Tupper,&
+                                        TDayMin, TDayMax)
+    integer(int32), intent(in) :: ValGDDays
+    integer(int32), intent(in) :: RefCropDay1
+    integer(int32), intent(in) :: StartDayNr
+    real(dp), intent(in) :: Tbase
+    real(dp), intent(in) :: Tupper
+    real(dp), intent(in) :: TDayMin
+    real(dp), intent(in) :: TDayMax
+
+    integer(int32) :: i
+    integer(int32) :: NrCDays
+    real(dp) :: RemainingGDDays, DayGDD
+    real(dp) :: TDayMin_loc, TDayMax_loc
+    
+    TDayMin_loc = TDayMin
+    TDayMax_loc = TDayMax
+
+    NrCdays = 0
+    if (ValGDDays > 0) then
+        if (GetTnxReferenceFile() == '(None)') then
+            ! given average Tmin and Tmax
+            DayGDD = DegreesDay(Tbase, Tupper, &
+                       TDayMin_loc, TDayMax_loc, GetSimulParam_GDDMethod())
+            if (abs(DayGDD) < epsilon(1._dp)) then
+                NrCDays = 0
+            else
+                NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
+            end if
+        else
+            ! Get TCropReference: mean daily Tnx (365 days) from RefCropDay1 onwards
+            ! determine corresponding calendar days
+            RemainingGDDays = ValGDDays
+
+            ! TminCropReference and TmaxCropReference arrays contain the TemperatureFilefull data
+            i = StartDayNr - RefCropDay1
+
+            do while (RemainingGDDays > 0.1_dp)
+                i = i + 1
+                if (i == size(GetTminCropReferenceRun())) then
+                    i = 1
+                end if
+                TDayMin_loc = GetTminCropReferenceRun_i(i)
+                TDayMax_loc = GetTmaxCropReferenceRun_i(i)
+
+                DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
+                                    TDayMax_loc, &
+                                    GetSimulParam_GDDMethod())
+                if (DayGDD > RemainingGDDays) then
+                    if (roundc((DayGDD-RemainingGDDays)/RemainingGDDays,mold=1) >= 1) then
+                        NrCDays = NrCDays + 1
+                    end if
+                else
+                    NrCDays = NrCDays + 1
+                end if
+                RemainingGDDays = RemainingGDDays - DayGDD
+            end do
+        end if
+    end if
+    SumCalendarDaysReferenceTnx = NrCDays
+end function SumCalendarDaysReferenceTnx
+
 
 
 

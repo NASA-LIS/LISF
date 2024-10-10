@@ -309,7 +309,8 @@ use ac_global , only: undef_int, &
                       TminTnxReference365DaysRun, &
                       TmaxTnxReference365DaysRun, &
                       TminCropReferenceRun, &
-                      TmaxCropReferenceRun
+                      TmaxCropReferenceRun, &
+                      SumCalendarDaysReferenceTnx
 use ac_kinds,  only: sp,&
                      dp, &
                      int8, &
@@ -960,6 +961,10 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
             do while ((RemainingDays > 0) &
                         .and. (i<(GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
                         i = i + 1
+                        ! Later, include rewinding to avoid crash in LIS; for now if harvest is not reached, no sim
+                        if (i == size(GetTminRun())) then
+                            i = 1
+                        endif
                         TDayMin_local = real(GetTminRun_i(i),kind=dp)
                         TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
                         DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
@@ -1157,6 +1162,9 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
             do while ((RemainingGDDays > 0) &
                            .and. (i < (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
                   i = i + 1
+                  if (i == size(GetTminRun())) then
+                      i = 1
+                  endif
                   TDayMin_loc = real(GetTminRun_i(i),kind=dp)
                   TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
 
@@ -1559,7 +1567,8 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
     if (Succes) then
         CGC = (real(GDDL12, kind=dp)/real(D12, kind=dp)) * GDDCGC
         call GDDCDCToCDC(PlantDayNr, D123, GDDL123, GDDHarvest,&
-               CCx, GDDCDC, Tbase, Tupper, tmp_NoTempFileTMin, tmp_NoTempFileTMax, CDC)
+               CCx, GDDCDC, Tbase, Tupper, tmp_NoTempFileTMin, tmp_NoTempFileTMax, CDC, &
+               .false.)
         call DetermineLengthGrowthStages(CCo, CCx, CDC, D0, DHarvest,&
                IsCGCGiven, TheDaysToCCini, &
                ThePlanting, D123, StLength, D12, CGC)
@@ -1667,7 +1676,7 @@ end subroutine AdjustCalendarCrop
 
 subroutine GDDCDCToCDC(PlantDayNr, D123, GDDL123, &
                        GDDHarvest, CCx, GDDCDC, Tbase, Tupper, &
-                       NoTempFileTMin, NoTempFileTMax, CDC)
+                       NoTempFileTMin, NoTempFileTMax, CDC, Reference)
     integer(int32), intent(in) :: PlantDayNr
     integer(int32), intent(in) :: D123
     integer(int32), intent(in) :: GDDL123
@@ -1679,6 +1688,7 @@ subroutine GDDCDCToCDC(PlantDayNr, D123, GDDL123, &
     real(dp), intent(in) :: NoTempFileTMin
     real(dp), intent(in) :: NoTempFileTMax
     real(dp), intent(inout) :: CDC
+    logical, intent(in) :: Reference
 
     integer(int32) :: ti, GDDi
     real(dp) :: CCi
@@ -1697,8 +1707,13 @@ subroutine GDDCDCToCDC(PlantDayNr, D123, GDDL123, &
                  * (exp(real(GDDi,kind=dp)*(GDDCDC*3.33_dp)/(CCx+2.29_dp))-1._dp) )
        ! CC at time ti
     end if
-    ti = SumCalendarDays(GDDi, (PlantDayNr+D123),&
-              Tbase, Tupper, NoTempFileTMin, NoTempFileTMax)
+    if (Reference) then
+        ti = SumCalendarDaysReferenceTnx(GDDi, (PlantDayNr+D123),&
+                (PlantDayNr+D123), Tbase, Tupper, NoTempFileTMin, NoTempFileTMax)
+    else
+        ti = SumCalendarDays(GDDi, (PlantDayNr+D123),&
+                Tbase, Tupper, NoTempFileTMin, NoTempFileTMax)
+    endif
     if (ti > 0) then
         CDC = (((CCx+2.29_dp)/real(ti, kind=dp)) &
                 * log(1._dp + ((1._dp-CCi/CCx)/0.05_dp)))/3.33_dp
@@ -2787,7 +2802,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      real(dp) :: SumGDD, Tndayi, Txdayi, GDDi, CCi,&
                  CCxWitheredForB, TpotForB, EpotTotForB, SumKCi,&
                  fSwitch, WPi, SumBnor, SumKcTopSF, fCCx
-     integer(int32) :: Dayi, DayCC, Tadj, GDDTadj
+     integer(int32) :: Dayi, DayCC, Tadj, GDDTadj, i
      real(dp) :: CCoadj, CCxadj, CDCadj, GDDCDCadj, CCw, CCtotStar, CCwStar
      real(dp) :: SumGDDfromDay1, SumGDDforPlot, CCinitial,&
                  DayFraction, GDDayFraction, fWeed, WeedCorrection
@@ -2884,14 +2899,19 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      end if
 
      ! 5. Calculate Bnormalized
+     i = 0
      do Dayi = 1, L1234
          ! 5.1 growing degrees for dayi
          if (GetTemperatureFile() == '(None)') then
              GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax,&
                                GetSimulParam_GDDMethod())
-         elseif (GetTemperatureFile() == '(External)') then 
-             Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
-             Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+         elseif (GetTemperatureFile() == '(External)') then
+             i = i + 1
+             if (i == size(GetTminCropReferenceRun())) then
+                 i = 1
+             end if
+             Tndayi = real(GetTminCropReferenceRun_i(i),kind=dp)
+             Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=dp)
              GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
          else

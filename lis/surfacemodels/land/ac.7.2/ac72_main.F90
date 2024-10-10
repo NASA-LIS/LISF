@@ -274,7 +274,11 @@ subroutine AC72_main(n)
                     GetTminRun_i, &
                     GetTminRun, &
                     GetTmaxRun_i, &
-                    GetTmaxRun
+                    GetTmaxRun, &
+                    SetTminTnxReference12MonthsRun, &
+                    SetTmaxTnxReference12MonthsRun, &
+                    SetTnxReferenceFile, &
+                    SetTnxReferenceYear
 
            !!! MB_AC70
     !!! MB:
@@ -898,16 +902,25 @@ subroutine AC72_main(n)
                 call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)
                 call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
 
+                ! Set Tmin and Tmax reference to compute the stress realtions
+                call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))
+                call SetTmaxTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmaxcli_monthly(:))
+
+                ! Set reference year for CO2 for stress functions
+                call SetTnxReferenceYear(AC72_struc(n)%tempcli_refyr)
+
+                call SetTnxReferenceFile('(External)')
+
                 ! InitializeRunPart
                 call InitializeRunPart1(int(AC72_struc(n)%ac72(t)%irun,kind=int8), AC72_struc(n)%ac72(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC72_struc(n)%ac72(t)%HarvestNow = .false. ! Initialize to false
                 ! Check if enough GDDays to complete cycle
-                if(GetCrop_ModeCycle().eq.ModeCycle_GDDays)then
-                    if (GetCrop_DaysToHarvest().eq.undef_int) then
-                        AC72_struc(n)%ac72(t)%Crop%ModeCycle = -9
-                    endif
-                endif
+                !if(GetCrop_ModeCycle().eq.ModeCycle_GDDays)then
+                !    if (GetCrop_DaysToHarvest().gt.365) then
+                !        AC72_struc(n)%ac72(t)%Crop%ModeCycle = -9
+                !    endif
+                !endif
 
                 ! Irrigaton file management after InitializeRun
                 if(GetIrriMode().ne.IrriMode_NoIrri) then
@@ -976,9 +989,9 @@ subroutine AC72_main(n)
             end if ! Initialize crop stages done
 
             ! Run AC
-            if (AC72_struc(n)%ac72(t)%Crop%ModeCycle.ne.-9) then ! do not run GDD if not enough
+            !if (AC72_struc(n)%ac72(t)%Crop%ModeCycle.ne.-9) then ! do not run GDD if not enough
                 tmp_wpi = REAL(AC72_struc(n)%ac72(t)%WPi,8)
-                write(LIS_logunit,'(2f10.6)') lat, lon
+                !write(LIS_logunit,'(2f10.6)') lat, lon
                 call AdvanceOneTimeStep(tmp_wpi, AC72_struc(n)%ac72(t)%HarvestNow)
                 AC72_struc(n)%ac72(t)%WPi = tmp_wpi
 
@@ -1230,7 +1243,7 @@ subroutine AC72_main(n)
                 ![ 17] output variable: StSen (unit=%).  *** senescence stress
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_StSen, value = real(GetStressSenescence(),kind=sp), &
                                         vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
-            endif
+            !endif
 
             !  Reset forcings
             AC72_struc(n)%ac72(t)%tair = 0.0
