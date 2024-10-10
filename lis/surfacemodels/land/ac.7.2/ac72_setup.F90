@@ -28,6 +28,7 @@ subroutine AC72_setup()
     use LIS_coreMod,   only: LIS_rc, LIS_surface
     use LIS_timeMgrMod
     use LIS_mpiMod,    only: LIS_mpi_comm
+    use LIS_constantsMod
 
     use module_sf_aclsm_72, only: &
            OC, WP, SAT, FC, INFRATE, SD, CL, SI 
@@ -528,7 +529,7 @@ subroutine AC72_setup()
         logical :: MultipleRunWithKeepSWC_temp    
         real(dp) :: MultipleRunConstZrx_temp
 
-        real, dimension(12) :: arr   
+        real, dimension(366) :: arr   
 
         mtype = LIS_rc%lsm_index
 
@@ -581,7 +582,7 @@ subroutine AC72_setup()
                 do t = 1, LIS_rc%npatch(n, mtype)
                     col = LIS_surface(n, mtype)%tile(t)%col
                     row = LIS_surface(n, mtype)%tile(t)%row
-                    AC72_struc(n)%ac72(t)%tmincli_monthly(k) = placeholder(col, row)
+                    AC72_struc(n)%ac72(t)%tmincli_monthly(k) = anint((placeholder(col, row) - LIS_CONST_TKFRZ)*10000)/10000
                 enddo 
             enddo
 
@@ -592,7 +593,7 @@ subroutine AC72_setup()
                 do t = 1, LIS_rc%npatch(n, mtype)
                     col = LIS_surface(n, mtype)%tile(t)%col
                     row = LIS_surface(n, mtype)%tile(t)%row
-                    AC72_struc(n)%ac72(t)%tmaxcli_monthly(k) = placeholder(col, row)
+                    AC72_struc(n)%ac72(t)%tmaxcli_monthly(k) = anint((placeholder(col, row) - LIS_CONST_TKFRZ)*10000)/10000
                 enddo 
             enddo 
             deallocate(placeholder)
@@ -893,27 +894,40 @@ subroutine AC72_setup()
                 call SetTmin(real(AC72_struc(n)%ac72(t)%Tmin_record(1),kind=dp))    
                 call SetTmax(real(AC72_struc(n)%ac72(t)%Tmax_record(1),kind=dp))
 
+                !arr = 6
+                !call SetTminRun(arr)  
+                !arr = 20  
+                !call SetTmaxRun(arr)
+                !call SetTmin(real(6., kind=dp))    
+                !call SetTmax(real(20., kind=dp))
+
                 ! Set Tmin and Tmax reference to compute the stress realtions
                 call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))
                 call SetTmaxTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmaxcli_monthly(:))
 
                 ! Set reference year for CO2 for stress functions
                 call SetTnxReferenceYear(AC72_struc(n)%tempcli_refyr)
-                ! For restart: add option in lis.config
-
                 call SetTnxReferenceFile('(External)')
 
-                ! InitializeRunPart1    
+                ! InitializeRunPart1
+                !if (t==1116) then
+                !   write(*,*) AC72_struc(n)%ac72(t)%tmincli_monthly(:)
+                !   write(*,*) AC72_struc(n)%ac72(t)%tmaxcli_monthly(:)
+                !endif
+
+                !write (*,*) "t=",t
+                !write (*,*) "row=", row
+                !write (*,*) "col=", col
                 call InitializeRunPart1(int(AC72_struc(n)%ac72(t)%irun, kind=int8), AC72_struc(n)%ac72(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC72_struc(n)%ac72(t)%InitializeRun = 0
                 ! Check if enough GDDays to complete cycle
                 AC72_struc(n)%AC72(t)%crop = GetCrop()
-                if(GetCrop_ModeCycle().eq.ModeCycle_GDDays)then
-                    if (GetCrop_DaysToHarvest().eq.undef_int) then
-                        AC72_struc(n)%ac72(t)%Crop%ModeCycle = -9
-                    endif
-                endif
+                !if(GetCrop_ModeCycle().eq.ModeCycle_GDDays)then
+                !    if (GetCrop_DaysToHarvest().eq.undef_int) then
+                !        AC72_struc(n)%ac72(t)%Crop%ModeCycle = -9
+                !    endif
+                !endif
                 ! Close irrigation file after Run Initialization
                 ! Note: only 2 irrigation records can be passed
                 if((GetIrriMode().eq.IrriMode_Generate)&
@@ -952,7 +966,6 @@ subroutine AC72_setup()
                 do l=1, AC72_struc(n)%AC72(t)%NrCompartments
                      AC72_struc(n)%AC72(t)%smc(l) = GetCompartment_theta(l)
                 enddo
-                !write(*,'(e23.15e3)') AC72_struc(n)%AC72(t)%AC72smc(1)
                 AC72_struc(n)%AC72(t)%IrriECw = GetIrriECw()
                 AC72_struc(n)%AC72(t)%Management = GetManagement()
                 AC72_struc(n)%AC72(t)%PerennialPeriod = GetPerennialPeriod()

@@ -59,7 +59,8 @@ use ac_global, only: CO2ref,&
                      subkind_Grain,  & 
                      subkind_Grain, & 
                      subkind_Tuber, & 
-                     subkind_Vegetative, & 
+                     subkind_Vegetative, &
+                     SumCalendarDaysReferenceTnx, &
                      TimeToMaxCanopySF, & 
                      undef_double, & 
                      undef_int
@@ -87,71 +88,6 @@ implicit none
 
 
 contains
-
-
-integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
-                                        StartDayNr, Tbase, Tupper,&
-                                        TDayMin, TDayMax)
-    integer(int32), intent(in) :: ValGDDays
-    integer(int32), intent(in) :: RefCropDay1
-    integer(int32), intent(in) :: StartDayNr
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-
-    integer(int32) :: i
-    integer(int32) :: NrCDays
-    real(dp) :: RemainingGDDays, DayGDD
-    real(dp) :: TDayMin_loc, TDayMax_loc
-    
-    TDayMin_loc = TDayMin
-    TDayMax_loc = TDayMax
-
-    NrCdays = 0
-    if (ValGDDays > 0) then
-        if (GetTnxReferenceFile() == '(None)') then
-            ! given average Tmin and Tmax
-            DayGDD = DegreesDay(Tbase, Tupper, &
-                       TDayMin_loc, TDayMax_loc, GetSimulParam_GDDMethod())
-            if (abs(DayGDD) < epsilon(1._dp)) then
-                NrCDays = 0
-            else
-                NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
-            end if
-        else
-            ! Get TCropReference: mean daily Tnx (365 days) from RefCropDay1 onwards
-            ! determine corresponding calendar days
-            RemainingGDDays = ValGDDays
-
-            ! TminCropReference and TmaxCropReference arrays contain the TemperatureFilefull data
-            i = StartDayNr - RefCropDay1
-
-            do while (RemainingGDDays > 0.1_dp)
-                i = i + 1
-                if (i == size(GetTminCropReferenceRun())) then
-                    i = 1
-                end if
-                TDayMin_loc = GetTminCropReferenceRun_i(i)
-                TDayMax_loc = GetTmaxCropReferenceRun_i(i)
-
-                DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
-                                    TDayMax_loc, &
-                                    GetSimulParam_GDDMethod())
-                if (DayGDD > RemainingGDDays) then
-                    if (roundc((DayGDD-RemainingGDDays)/RemainingGDDays,mold=1) >= 1) then
-                        NrCDays = NrCDays + 1
-                    end if
-                else
-                    NrCDays = NrCDays + 1
-                end if
-                RemainingGDDays = RemainingGDDays - DayGDD
-            end do
-        end if
-    end if
-    SumCalendarDaysReferenceTnx = NrCDays
-end function SumCalendarDaysReferenceTnx
-
 
 subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
                     Tbase, Tupper, TDayMin, TDayMax, &
@@ -236,7 +172,7 @@ subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
 
     CGC = (real(GDDL12, kind=dp)/real(L12, kind=dp)) * GDDCGC
     call GDDCDCToCDC(PlantDayNr, L123, GDDL123, GDDL1234, CCx, GDDCDC, &
-        Tbase, Tupper, TDayMin, TDayMax, CDC)
+        Tbase, Tupper, TDayMin, TDayMax, CDC, .true.)
     if ((TheCropType == subkind_Grain) .or. (TheCropType == subkind_Tuber)) then
         RatedHIdt = real(RefHI, kind=dp)/real(LHImax, kind=dp)
     end if

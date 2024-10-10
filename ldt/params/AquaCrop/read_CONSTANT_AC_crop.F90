@@ -84,6 +84,11 @@ subroutine read_CONSTANT_AC_crop(n, array)
         crop_index = k    ! Crop_index assignment
         exit
       endif
+      if ( (i.eq.num_types).and.(crop_index.ne.k) ) then
+        write(LDT_logunit,*) "[ERR] AC72: ", trim(croptype), &
+                             " not in AC_Crop.Inventory"
+        call LDT_endrun
+      endif
    end do
    
    call LDT_releaseUnitNumber(ftn)
