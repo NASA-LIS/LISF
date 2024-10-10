@@ -36,6 +36,7 @@ module LIS_DAobservationsMod
 ! !REVISION HISTORY:
 !
 !  21 Jun 2006: Sujay Kumar; Initial implementation
+!  10 Mar 2022: Michel Bechtold (MB); Bug Fix for multiple obstypes
 !
   use ESMF
   use LIS_coreMod
@@ -324,7 +325,7 @@ contains
     integer, allocatable :: deblklist(:,:,:)
     type(ESMF_DistGrid)  :: obsgridDG(LIS_rc%ndas), gridEnsDG(LIS_rc%ndas)
     integer              :: stid, enid
-    integer              :: n, i, k    
+    integer              :: n, i, k, m    
     integer              :: status, ierr
 
     call readObsDomainInput()
@@ -337,8 +338,9 @@ contains
     do n=1,LIS_rc%nnest
 
        do k=1,LIS_rc%ndas
-!          odeltas(k) = LIS_rc%obs_ngrid(k)*LIS_rc%nobtypes(k)
-          odeltas(k) = LIS_rc%obs_ngrid(k)
+       !MB: bug fix multiple obstypes 
+          odeltas(k) = LIS_rc%obs_ngrid(k)*LIS_rc%nobtypes(k)
+!          odeltas(k) = LIS_rc%obs_ngrid(k)
        enddo
 !-----------------------------------------------------------------------------
 !  The grid, tile space sizes of the decomposed domains are gathered 
@@ -375,13 +377,15 @@ contains
           allocate(deblklist(1,2,LIS_npes))
           do i=0,LIS_npes-1
              stid = LIS_ooffsets(k,i)+1
-             enid = stid + LIS_obs_ngrids(k,i)-1
+             !MB: bug fix multiple obstypes 
+             enid = stid + LIS_obs_ngrids(k,i)*LIS_rc%nobtypes(k)-1
              
              deblklist(:,1,i+1) = (/stid/)
              deblklist(:,2,i+1) = (/enid/)
           enddo
+          !MB: bug fix multiple obstypes 
           obsgridDG(k) = ESMF_DistGridCreate(minIndex=(/1/), &
-               maxIndex=(/LIS_rc%obs_glbngrid(k)/),&
+               maxIndex=(/LIS_rc%obs_glbngrid(k)*LIS_rc%nobtypes(k)/),&
                deBlockList=deblklist,rc=status)
           call LIS_verify(status, 'ESMF_DistGridCreate failed: obsgridDG')
           deallocate(deblklist)
@@ -389,13 +393,15 @@ contains
           allocate(deblklist(2,2,LIS_npes))
           do i=0,LIS_npes-1
              stid = LIS_ooffsets(k,i)+1
-             enid = stid+LIS_obs_ngrids(k,i)-1
+             !MB: bug fix multiple obstypes 
+             enid = stid+LIS_obs_ngrids(k,i)*LIS_rc%nobtypes(k)-1
              deblklist(:,1,i+1) = (/stid,1/)
              deblklist(:,2,i+1) = (/enid,LIS_rc%nensem(n)/)
           enddo
 
+             !MB: bug fix multiple obstypes 
           gridEnsDG(k) = ESMF_DistGridCreate(minIndex=(/1,1/),&
-               maxIndex=(/LIS_rc%obs_glbngrid(k),LIS_rc%nensem(n)/),&
+               maxIndex=(/LIS_rc%obs_glbngrid(k)*LIS_rc%nobtypes(k),LIS_rc%nensem(n)/),&
                deBlockList=deblklist,rc=status)
           call LIS_verify(status, 'ESMF_DistGridCreate failed: gridEnsDG')
           
@@ -2035,12 +2041,16 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
 #else 
     gtmp = var
 #endif
-    if(LIS_masterproc) then 
+    if(LIS_masterproc) then
+       !MB: bug fix multiple obstypes 
        do i=1,LIS_rc%nobtypes(k)
+          count1=1 + (i-1)*SUM(LIS_obs_ngrids(k,0:i-2))
           gtmp1 = LIS_rc%udef
-          count1=1
-
           do l=1,LIS_npes
+             count1=count1+MIN0(1,l-1)*&
+             (LIS_rc%nobtypes(k)-i)*LIS_obs_ngrids(k,l-2) +&
+             MIN0(1,l-1)*&
+             (i-1)*LIS_obs_ngrids(k,l-1)
              do t =1, LIS_obs_ngrids(k,l-1)
                 c = LIS_obs_domain(n,k)%glb_col(l,t)
                 r = LIS_obs_domain(n,k)%glb_row(l,t)
@@ -2053,8 +2063,8 @@ subroutine LIS_gather_1dgrid_to_2dgrid_obs(n, k, gtmp, var)
              enddo
           enddo
 #if ( defined USE_NETCDF3 || defined USE_NETCDF4 )
-          ierr = nf90_put_var(ftn,varid,gtmp1,(/1,1,1/),&
-               (/LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k),i/))
+          ierr = nf90_put_var(ftn,varid,gtmp1,(/1,1,i/),&
+               (/LIS_rc%obs_gnc(k),LIS_rc%obs_gnr(k),1/))
           call LIS_verify(ierr,'nf90_put_var failed in LIS_historyMod')
 #endif          
           
