@@ -12,7 +12,7 @@
 
 # source and load shared functions from s2s_run.sh
 source s2s_app/s2s_run.sh --source-only
-# LIS-Hydro_S2S hindcast pre-processor
+# LISF_S2S hindcast pre-processor
 
 ######################################################################
 #                     PROCESS COMMAND LINE ARGUMENTS
@@ -209,6 +209,8 @@ clim_nafpa(){
     # Create NAFPA Climatologies
     #######################################################################
 
+    echo " ... Creating NAFPA climatology files ... "
+
     cd ${SCRDIR}/clim/
     CWD=`pwd`
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
@@ -257,7 +259,7 @@ clim_cfsv2(){
     python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
 
-    if [ ${reorg_cfsv2_ID} == "" ]; then
+    if [ ${reorg_cfsv2_ID} == "0" ]; then
        clim_cfsv2_ID=$(submit_job "" "${jobname}_run.j")
     else
        clim_cfsv2_ID=$(submit_job $reorg_cfsv2_ID "${jobname}_run.j")
@@ -386,6 +388,7 @@ case $STEP in
 	echo "(2) Write climatological files" >> $JOB_SCHEDULE
 	echo "------------------------------" >> $JOB_SCHEDULE
 	echo "              " >> $JOB_SCHEDULE	
+        reorg_cfsv2_ID=0
         clim_nafpa
 	clim_cfsv2
 	clim_nmme
@@ -408,6 +411,7 @@ case $STEP in
         echo "(2) Write CFSV2 clim files" >> $JOB_SCHEDULE
         echo "------------------------------" >> $JOB_SCHEDULE
         echo "              " >> $JOB_SCHEDULE
+        reorg_cfsv2_ID=0
         clim_cfsv2
         ;;
     CLIMNAFPA)

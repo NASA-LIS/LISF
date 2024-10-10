@@ -81,12 +81,13 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             _f.write('#SBATCH --partition=batch' + '\n')
             _f.write('#SBATCH --exclusive' + '\n')
             _f.write('#SBATCH --mem=0' + '\n')
+
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
-        _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        _f.write('#                  Run LISF S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
@@ -220,13 +221,17 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
             _f.write('#SBATCH --exclusive' + '\n')
             _f.write('#SBATCH --mem=0' + '\n')
+
+        # Assign ntasks based on hindcast | forecast LISF step:
         if datatype == 'hindcast':
-            _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+            if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                _f.write('#SBATCH --ntasks=' + ntasks + ' --ntasks-per-socket=48 --ntasks-per-core=1' + '\n')
+            else:
+                _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         else:
             if domain == 'GLOBAL':
                 _f.write('#SBATCH  -N 12' + '\n')
@@ -240,14 +245,17 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
-        _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        _f.write('#                  Run LISF S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
-            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+# KRA TESTING:
+#            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('unset LD_LIBRARY_PATH' + '\n')
+            _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
@@ -255,7 +263,18 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
-        _f.write( this_command + ' || exit 1' + '\n')
+
+        if 'mil' in cfg['SETUP']['CONSTRAINT']:
+            _f.write('export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so' + '\n')
+            _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
+            _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
+            _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
+            _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
+            _f.write('     --cpu-bind="none"  \\' + '\n')
+            _f.write('     ./LIS -f ' + this_command + ' || exit 1' + '\n')
+        else:
+            _f.write( this_command + ' || exit 1' + '\n')
+
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')

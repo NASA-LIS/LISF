@@ -267,6 +267,11 @@ def _driver(config):
                 else:
                     mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
+                if 'mil' in config['SETUP']['CONSTRAINT']:
+                    mpi_cmd = lisconfig_target
+                else:
+                    utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
+                                         in_command=mpi_cmd)
                 utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                  in_command=mpi_cmd)
 

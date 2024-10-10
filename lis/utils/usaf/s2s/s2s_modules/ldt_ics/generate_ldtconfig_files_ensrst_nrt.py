@@ -179,7 +179,8 @@ def _driver():
 
         # Run LDT
         if 'discover' in platform.node() or 'borg' in platform.node():
-            cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+#            cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+            cmd = f"srun {_LDT_EXEC} {ldtconfig_lsm_target}"
         else:
             cmd = f"srun {_LDT_EXEC} {ldtconfig_lsm_target}"
         print(f"[INFO] {cmd}")
