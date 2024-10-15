@@ -55,13 +55,13 @@ Apply external mask:                            0
 External mask directory:                        none
 Compute information theory metrics:             0
 Compute ensemble metrics:                       0
-Metrics attributes file:                        templates/METRICS.TBL
+Metrics attributes file:                        tables/METRICS.TBL
 Observation count threshold:                    0
 Metrics computation frequency: "3hr"
 Spatial averaging mode:                          "pixel-by-pixel"
 Metrics output directory:                         STATS.e_balance
 Metrics output frequency: "3hr"
-Time series location file:                      templates/TS_LOCATIONS.TXT
+Time series location file:                      tables/TS_LOCATIONS.TXT
 Variable-based stratification:                   0
 Compute LSM diagnostics:                         0
 Confidence interval (%):                         95
@@ -92,7 +92,7 @@ LIS output naming style:            "WMO convention"
 
 LIS output methodology:            "1d tilespace"
 LIS output format:                  netcdf
-LIS output attributes file:    ./templates/MODEL_OUTPUT_LIST.TBL.afwa.e_balance
+LIS output attributes file:    ./tables/MODEL_OUTPUT_LIST.TBL.afwa.e_balance
 LIS output maximum number of surface type tiles per grid:     1
 LIS output minimum cutoff percentage (surface type tiles):    0.05
 LIS output maximum number of soil texture tiles per grid:     1
