@@ -20,8 +20,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.jules50"
 
-_STARTDT = datetime.datetime(2022, 8, 2,  9)
-_ENDDT = datetime.datetime(2022, 8, 2,  12)
+_STARTDT = datetime.datetime(2024, 9, 26,  9)
+_ENDDT = datetime.datetime(2024, 9, 26,  12)
 
 _OUTPUT = "netcdf" # For 557 Ops (Fields file)
 #_OUTPUT = "grib2"
@@ -192,17 +192,13 @@ def _main():
     #varlist.append("RHMin_inst")  # RHMin will be handled specially below
     varlist.append("PS41Snow_inst") # PS41 snow vars handled specially below
     varlist.sort()
-    first_var = True
     for var in varlist:
         newlines = []
         for line in lines:
             if "LVT output format:" in line:
                 line = f"LVT output format: {_OUTPUT}\n"
             elif "Process HYCOM data:" in line:
-                if first_var:
-                    line = "Process HYCOM data: 1\n"
-                else:
-                    line = "Process HYCOM data: 0\n"
+                line = "Process HYCOM data: 0\n"
             elif "Apply noise reduction filter:" in line:
                 if var in _SMOOTH_VARS:
                     line = "Apply noise reduction filter: 1\n"
@@ -245,7 +241,7 @@ def _main():
                 line = f"Metrics output directory: OUTPUT/STATS.{var}.3hr\n"
             elif "LIS output attributes file:" in line:
                 line = "LIS output attributes file:"
-                line += f" ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.3hr\n"
+                line += f" ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.3hr\n"
 
             newlines.append(line)
 

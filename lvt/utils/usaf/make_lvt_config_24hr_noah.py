@@ -20,8 +20,8 @@ import os
 
 _TEMPLATE = "templates/lvt.config.template.noah39"
 
-_STARTDT = datetime.datetime(2022, 8, 1, 12)
-_ENDDT = datetime.datetime(2022, 8, 2, 12)
+_STARTDT = datetime.datetime(2024, 9, 25, 12)
+_ENDDT = datetime.datetime(2024, 9, 26, 12)
 
 #_OUTPUT = "netcdf"
 _OUTPUT = "grib2"
@@ -119,7 +119,7 @@ def _main():
                 else:
                     line += f"{_VAR_ATTRIBUTES[var]}\n"
             elif "Metrics attributes file:" in line:
-                line = 'Metrics attributes file: "templates/METRICS.TBL"\n'
+                line = 'Metrics attributes file: "tables/METRICS.TBL"\n'
             elif "Metrics computation frequency:" in line:
                 line = 'Metrics computation frequency: "24hr"\n'
             elif "Metrics output directory:" in line:
@@ -129,7 +129,7 @@ def _main():
             elif "LIS output attributes file:" in line:
                 line = "LIS output attributes file:"
                 line += \
-                 f" ./templates/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.24hr\n"
+                 f" ./tables/MODEL_OUTPUT_LIST.TBL.lvt_557post.{var}.24hr\n"
 
             newlines.append(line)
 
