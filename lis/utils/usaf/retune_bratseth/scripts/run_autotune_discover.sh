@@ -152,7 +152,6 @@ fi
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "INFO, Task $i:  Calling procOBA_Sat for $varname at `date`"
-    echo `ls`
     if [ ! -e procOBA_Sat.$varname.config ] ; then
         echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
     fi
