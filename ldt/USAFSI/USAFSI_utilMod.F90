@@ -79,11 +79,11 @@ contains
       ! Arguments
       character*12, intent(in)    :: program_name     ! NAME OF CALLING ROUTINE
       character*20, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
-      character*90, intent(in)    :: message (msglns) ! ERROR MESSAGE FROM CALLER
+      character(len=*), intent(in) :: message (msglns) ! ERROR MESSAGE FROM CALLER
 
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
-      character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character*255               :: message_file     ! MESSAGE FILE NAME
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
