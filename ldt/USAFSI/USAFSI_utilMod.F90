@@ -78,7 +78,7 @@ contains
 
       ! Arguments
       character*12, intent(in)    :: program_name     ! NAME OF CALLING ROUTINE
-      character*12, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
+      character*20, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
       character*90, intent(in)    :: message (msglns) ! ERROR MESSAGE FROM CALLER
 
       ! Local variables
@@ -140,7 +140,7 @@ contains
 6600  format (1X, 75('*'))
 8000  format (/, 1X, 75('*'),                                          &
            /, 1X, '[ERR]  ABNORMAL ABORT FROM ABORT_MESSAGE ROUTINE',  &
-           /, 1X, '[ERR]  CALLED BY ', A12,                            &
+           /, 1X, '[ERR]  CALLED BY ', A20,                            &
            /, 1X, '[ERR]  ERROR WHILE ', A7, ' MESSAGE FILE',          &
            /, 1X, '[ERR]  ISTAT = ', I6,                               &
            /, 1X, 75('*'))
@@ -213,7 +213,7 @@ contains
       character*10,  intent(in)   :: date10           ! 10-DIGIT DATE-TIME GROUP
       integer,       intent(out)  :: julhr            ! TOTAL JULIAN HOURS
       character*12,  intent(in)   :: program_name     ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)   :: routine_name     ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)   :: routine_name     ! NAME OF CALLING ROUTINE
 
       ! Local variables
       character*90                :: message     (20) ! ERROR MESSAGE ! EMK
@@ -419,6 +419,7 @@ contains
       errmsg(1) = '[WARN] PROGRAM: ' // trim (program_name)
       errmsg(2) = '[WARN] ROUTINE: ' // trim (routine_name)
       do i = 3, nlines
+         if (i > msglns) exit
          errmsg(i) = trim(message(i-2))
       enddo
 
@@ -434,6 +435,25 @@ contains
               yyyymmddhh // '.' // calert_number
          inquire (file=message_file, exist=isfile)
          alert_number = alert_number + 1
+         if (alert_number > 99) then
+            write(LDT_logunit,*) &
+                 '[ERR] Too many alert files in work directory for ', &
+                 'alert.' // trim(routine_name) // '.' // yyyymmddhh
+            write(LDT_logunit,*) &
+                 '[ERR] Please purge alert files and try again'
+            write(LDT_logunit,*) 'LDT will now abort'
+
+            errmsg(1) = '[ERR] PROGRAM: ' // trim (program_name)
+            errmsg(2) = '[ERR] ROUTINE: ' // trim (routine_name)
+            errmsg(3) = &
+                 '[ERR] TOO MANY ALERT FILES, SO REPORTING IN ABORT MESSAGE'
+            do i = 4, nlines
+               if (i > msglns) exit
+               errmsg(i) = trim(message(i-3))
+            enddo
+            call abort_message(program_name, routine_name, errmsg)
+
+         end if
       end do
 
       ! OPEN MESSAGE FILE.
@@ -519,7 +539,7 @@ contains
       integer,        intent(in)  :: julhr            ! AFWA JULIAN HOUR
       character*10,  intent(out)  :: date10           ! 10-DIGIT DATE-TIME GROUP
       character*12,  intent(in)   :: program_name     ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)   :: routine_call     ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)   :: routine_call     ! NAME OF CALLING ROUTINE
 
       ! Local variables
       character*90                :: message     (20) ! ERROR MESSAGE ! EMK
@@ -648,7 +668,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 
@@ -757,7 +777,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 
@@ -866,7 +886,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character(len=*), intent(in) :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 

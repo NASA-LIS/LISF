@@ -551,7 +551,7 @@ contains
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
       character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*90                :: message (msglns) ! ERROR MESSAGE
-      character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
       integer*1, allocatable :: snow_poss_0p25deg(:,:)
       type(proj_info) :: snodep_0p25deg_proj
@@ -1765,7 +1765,7 @@ contains
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
       character*255              :: file_path        ! INPUT FILE PATH AND NAME
       character*90               :: message (msglns) ! ERROR MESSAGE
-      character*12               :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20               :: routine_name     ! NAME OF THIS SUBROUTINE
       character*255              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
       integer                    :: julhr            ! AFWA JULIAN HOUR
@@ -2064,7 +2064,7 @@ contains
 4200  continue
       message(1) = '[ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
       message(2) = '[ERR] DATE10 = ' // date10
-      call abort_message (program_name, program_name, message)
+      call abort_message (program_name, routine_name, message)
       call LDT_endrun()
 
       ! FORMAT STATEMENTS.
@@ -2098,7 +2098,7 @@ contains
       integer :: limit, tries
       integer :: runcycle
       integer :: julhr
-      character*12 :: routine_name
+      character*20 :: routine_name
       character*10 :: date10_prev
       character*90 :: message(msglns)
 
@@ -2167,7 +2167,7 @@ contains
 4200  continue
       message(1) = '[ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
       message(2) = '[ERR] DATE10 = ' // date10
-      call abort_message (program_name, program_name, message)
+      call abort_message (program_name, routine_name, message)
       call LDT_endrun()
 
       ! Other format statements
