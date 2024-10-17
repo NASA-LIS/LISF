@@ -9,18 +9,19 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAFSI_utilMod
-! 
+!
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
 ! 09 May 2019  Eric Kemp  Renamed LDTSI.
 ! 13 Dec 2019  Eric Kemp  Renamed USAFSI.
+! 14 Oct 2024  Eric Kemp  Updates to error_message.
 !
 ! DESCRIPTION:
 ! Source code for util library for Air Force snow depth analysis.
 !-------------------------------------------------------------------------
 
 #include "LDT_misc.h"
-   
+
 module USAFSI_utilMod
 
    !Defaults
@@ -64,7 +65,6 @@ contains
       !**  =======
       !**  11 MAY 11 INITIAL VERSION (FROM ERROR_MESSAGE)...MR LEWISTON/16WS/WXE
       !**  22 Mar 19 Ported to LDT...Eric Kemp, NASA GSFC/SSAI
-      !**
       !*************************************************************************
       !*************************************************************************
       ! Imports
@@ -78,13 +78,13 @@ contains
 
       ! Arguments
       character*12, intent(in)    :: program_name     ! NAME OF CALLING ROUTINE
-      character*12, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
-      character*90, intent(in)    :: message (msglns) ! ERROR MESSAGE FROM CALLER
+      character*20, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
+      character(len=*), intent(in) :: message (msglns) ! ERROR MESSAGE FROM CALLER
 
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
-      character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*40                :: message_file     ! MESSAGE FILE NAME
+      character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      character*255               :: message_file     ! MESSAGE FILE NAME
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
       integer                     :: nlines           ! NUMBER OF LINES IN MESSAGE
@@ -127,7 +127,7 @@ contains
       close (99)
       !call abort
       call LDT_endrun()
-      
+
       ! ERROR-HANDLING SECTION.
 5000  write (ldt_logunit, 8000) routine_name, access_type, istat
       !call abort
@@ -140,7 +140,7 @@ contains
 6600  format (1X, 75('*'))
 8000  format (/, 1X, 75('*'),                                          &
            /, 1X, '[ERR]  ABNORMAL ABORT FROM ABORT_MESSAGE ROUTINE',  &
-           /, 1X, '[ERR]  CALLED BY ', A12,                            &
+           /, 1X, '[ERR]  CALLED BY ', A20,                            &
            /, 1X, '[ERR]  ERROR WHILE ', A7, ' MESSAGE FILE',          &
            /, 1X, '[ERR]  ISTAT = ', I6,                               &
            /, 1X, 75('*'))
@@ -213,7 +213,7 @@ contains
       character*10,  intent(in)   :: date10           ! 10-DIGIT DATE-TIME GROUP
       integer,       intent(out)  :: julhr            ! TOTAL JULIAN HOURS
       character*12,  intent(in)   :: program_name     ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)   :: routine_name     ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)   :: routine_name     ! NAME OF CALLING ROUTINE
 
       ! Local variables
       character*90                :: message     (20) ! ERROR MESSAGE ! EMK
@@ -342,7 +342,8 @@ contains
 
    end subroutine date10_julhr
 
-   subroutine error_message (program_name, routine_name, message)
+   subroutine error_message (program_name, routine_name, yyyymmddhh, &
+        message)
 
       !*************************************************************************
       !*************************************************************************
@@ -371,6 +372,8 @@ contains
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
       !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  15 Oct 24 Extended character lengths, and added valid date/time
+      !**    of USAFSI analysis.
       !**
       !*************************************************************************
       !*************************************************************************
@@ -385,14 +388,16 @@ contains
 
       ! Arguments
       character*12, intent(in)    :: program_name     ! NAME OF CALLING ROUTINE
-      character*12, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
+      character*20, intent(in)    :: routine_name     ! NAME OF CALLING ROUTINE
+      character*10, intent(in) :: yyyymmddhh
+
       character(len=*), intent(in) :: message (msglns) ! ERROR MESSAGE FROM CALLER
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
       !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*40                :: message_file     ! MESSAGE FILE NAME
+      character*255               :: message_file     ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
@@ -414,6 +419,7 @@ contains
       errmsg(1) = '[WARN] PROGRAM: ' // trim (program_name)
       errmsg(2) = '[WARN] ROUTINE: ' // trim (routine_name)
       do i = 3, nlines
+         if (i > msglns) exit
          errmsg(i) = trim(message(i-2))
       enddo
 
@@ -426,9 +432,28 @@ contains
       do while (isfile)
          write (calert_number, '(i2.2)', iostat = istat) alert_number
          message_file = 'alert.' // trim(routine_name) // '.' //         &
-              calert_number
+              yyyymmddhh // '.' // calert_number
          inquire (file=message_file, exist=isfile)
          alert_number = alert_number + 1
+         if (alert_number > 99) then
+            write(LDT_logunit,*) &
+                 '[ERR] Too many alert files in work directory for ', &
+                 'alert.' // trim(routine_name) // '.' // yyyymmddhh
+            write(LDT_logunit,*) &
+                 '[ERR] Please purge alert files and try again'
+            write(LDT_logunit,*) 'LDT will now abort'
+
+            errmsg(1) = '[ERR] PROGRAM: ' // trim (program_name)
+            errmsg(2) = '[ERR] ROUTINE: ' // trim (routine_name)
+            errmsg(3) = &
+                 '[ERR] TOO MANY ALERT FILES, SO REPORTING IN ABORT MESSAGE'
+            do i = 4, nlines
+               if (i > msglns) exit
+               errmsg(i) = trim(message(i-3))
+            enddo
+            call abort_message(program_name, routine_name, errmsg)
+
+         end if
       end do
 
       ! OPEN MESSAGE FILE.
@@ -514,7 +539,7 @@ contains
       integer,        intent(in)  :: julhr            ! AFWA JULIAN HOUR
       character*10,  intent(out)  :: date10           ! 10-DIGIT DATE-TIME GROUP
       character*12,  intent(in)   :: program_name     ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)   :: routine_call     ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)   :: routine_call     ! NAME OF CALLING ROUTINE
 
       ! Local variables
       character*90                :: message     (20) ! ERROR MESSAGE ! EMK
@@ -529,7 +554,7 @@ contains
       message = ' '
 
       call tmjul4( hh, dd, mm, yyyy, julhr )
-     
+
       ! Check for valid hour, day, month, and year
       if( (  hh .lt.    0 .or.   hh .gt.   23) .or.                     &
            (  dd .lt.    1 .or.   dd .gt.   31) .or.                    &
@@ -643,7 +668,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 
@@ -752,7 +777,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 
@@ -861,7 +886,7 @@ contains
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
       character(len=*), intent(in) :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
-      character*12,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
+      character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
       integer,       intent(in)    :: jgrid                      ! SIZE OF GRID IN I-DIRECTION
 

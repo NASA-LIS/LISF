@@ -131,7 +131,7 @@ subroutine USAFSI_run(n)
   logical                    ::  sfctmp_found         ! FLAG FOR SFC TEMP FILE FOUND
   real,       allocatable    ::  sfctmp (:, :)        ! GALWEM OR LIS SHELTER TEMPERATURE DATA
   real,       allocatable    ::  stadep     (:)       ! OBSERVATION SNOW DEPTH (METERS)
-  character*12 :: routine_name
+  character*20 :: routine_name
   type(LDT_bratseth_t) :: bratseth
   character*10 :: network10, platform10
   real :: rob, rlat, rlon, relev
@@ -541,7 +541,7 @@ subroutine USAFSI_run(n)
 
   message(1) = ' [ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
   message(2) = ' [ERR] DATE10 = ' // date10
-  call abort_message (program_name, program_name, message)
+  call abort_message (program_name, routine_name, message)
   call LDT_endrun()
 
   ! FORMAT STATEMENTS.
