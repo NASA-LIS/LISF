@@ -66,7 +66,8 @@ contains
     integer :: yyyy_local, mm_local, dd_local, hh_local
     integer :: fh_local
     character*255 :: message (msglns)
-    character*12 :: routine_name
+    character*20 :: routine_name
+    character*10 :: yyyymmddhh
     integer, parameter :: nlat_arc = 2501
     integer, parameter :: nlat_ant = 1549
     integer :: ncid, aice_varid
@@ -85,6 +86,7 @@ contains
     ! Build the file name.  Note that all ESPC-D CICE runs start at 12Z.
     ! NOTE:  CICE output is 12-hrly.
     call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, julhr)
+    write(yyyymmddhh,'(i4.4,i2.2,i2.2,i2.2)') yyyy, mm, dd, hh
     if (hh == 12) then
        fh_local = 0
     else if (hh == 18) then
@@ -135,7 +137,8 @@ contains
        if (.not. file_exists) then
           message(1) = '[WARN] CANNOT FIND FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           cycle
        end if
 
@@ -146,7 +149,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT OPEN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           cycle
        end if
 
@@ -155,7 +159,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT FIND aice IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           ierr = nf90_close(ncid)
           cycle
        end if
@@ -165,7 +170,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           ierr = nf90_close(ncid)
           cycle
        end if
@@ -174,7 +180,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           deallocate(dimids)
           ierr = nf90_close(ncid)
           cycle
@@ -186,7 +193,8 @@ contains
           if (ierr .ne. nf90_noerr) then
              message(1) = '[WARN] CANNOT GET DIMENSIONS FOR aice IN FILE'
              message(2) = '[WARN] PATH = ' // trim(filename)
-             call error_message(program_name, routine_name, message)
+             call error_message(program_name, routine_name, yyyymmddhh, &
+                  message)
              deallocate(dimids)
              deallocate(lens)
              ierr = nf90_close(ncid)
@@ -205,7 +213,8 @@ contains
                lens(1) .ne. nlon) then
              message(1) = '[WARN] BAD DIMENSIONS FOR aice IN FILE'
              message(2) = '[WARN] PATH = ' // trim(filename)
-             call error_message(program_name, routine_name, message)
+             call error_message(program_name, routine_name, yyyymmddhh, &
+                  message)
              deallocate(lens)
              ierr = nf90_close(ncid)
              cycle
@@ -218,7 +227,8 @@ contains
                lens(1) .ne. nlon) then
              message(1) = '[WARN] BAD DIMENSIONS FOR aice IN FILE'
              message(2) = '[WARN] PATH = ' // trim(filename)
-             call error_message(program_name, routine_name, message)
+             call error_message(program_name, routine_name, yyyymmddhh, &
+                  message)
              deallocate(lens)
              ierr = nf90_close(ncid)
              cycle
@@ -236,7 +246,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT READ aice IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           deallocate(aice)
           ierr = nf90_close(ncid)
           cycle
@@ -344,7 +355,8 @@ contains
     integer :: yyyy_local, mm_local, dd_local, hh_local, fh_local
     logical :: file_exists
     character*255 :: message (msglns)
-    character*12 :: routine_name
+    character*20 :: routine_name
+    character*10 :: yyyymmddhh
     integer :: ncid, water_temp_varid
     integer :: ndims
     integer, allocatable :: dimids(:), lens(:)
@@ -362,6 +374,7 @@ contains
     ! Build the file name.  Note that all ESPC-D SST runs start at 12Z.
     call LDT_get_julhr(yyyy, mm, dd, hh, 0, 0, &
          julhr)
+    write(yyyymmddhh,'(i4.4,i2.2,i2.2,i2.2)') yyyy, mm, dd, hh
     if (hh == 12) then
        fh_local = 0
     else if (hh == 18) then
@@ -407,7 +420,8 @@ contains
        if (.not. file_exists) then
           message(1) = '[WARN] CANNOT FIND FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           cycle
        end if
 
@@ -418,7 +432,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT OPEN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           cycle
        end if
 
@@ -428,7 +443,8 @@ contains
        if (ierr .ne. nf90_noerr) then
           message(1) = '[WARN] CANNOT FIND water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           ierr = nf90_close(ncid)
           cycle
        end if
@@ -439,7 +455,8 @@ contains
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           ierr = nf90_close(ncid)
           cycle
        end if
@@ -447,7 +464,8 @@ contains
           message(1) = &
                '[WARN] BAD DIMENSIONS FOR water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           ierr = nf90_close(ncid)
           cycle
        end if
@@ -457,7 +475,8 @@ contains
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           deallocate(dimids)
           ierr = nf90_close(ncid)
           cycle
@@ -471,7 +490,8 @@ contains
              message(1) = &
                   '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
              message(2) = '[WARN] PATH = ' // trim(filename)
-             call error_message(program_name, routine_name, message)
+             call error_message(program_name, routine_name, yyyymmddhh, &
+                  message)
              deallocate(dimids)
              deallocate(lens)
              ierr = nf90_close(ncid)
@@ -489,7 +509,8 @@ contains
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           deallocate(lens)
           ierr = nf90_close(ncid)
           cycle
@@ -505,7 +526,8 @@ contains
           message(1) = &
                '[WARN] CANNOT READ water_temp IN FILE'
           message(2) = '[WARN] PATH = ' // trim(filename)
-          call error_message(program_name, routine_name, message)
+          call error_message(program_name, routine_name, yyyymmddhh, &
+               message)
           deallocate(water_temp)
           ierr = nf90_close(ncid)
           cycle
