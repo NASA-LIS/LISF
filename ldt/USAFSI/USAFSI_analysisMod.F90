@@ -23,6 +23,7 @@
 !                        run_seaice_analysis_navy to reflect use of
 !                        ESPC-D or GOFS data.  Also fixed uninitialized
 !                        variable.
+! 15 Oct 2024  Eric Kemp Updated error_message logic.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
@@ -331,7 +332,8 @@ contains
       character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       character*90                :: message (msglns) ! ERROR MESSAGE
-      character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*10                :: yyyymmddhh
       integer                     :: fracnt           ! NUMBER OF FRACTIONAL POINTS
       integer                     :: i                ! SNODEP I-COORDINATE
       integer                     :: icount           ! LOOP COUNTER
@@ -351,6 +353,8 @@ contains
       allocate (infrac_0p05deg (igridf, jgridf))
       allocate(pntcnt( ldt_rc%lnc(1), ldt_rc%lnr(1)))
       allocate(snocum( ldt_rc%lnc(1), ldt_rc%lnr(1)))
+
+      yyyymmddhh = date10
 
       ! INITIALIZE VARIABLES.
       fracnt  = 0
@@ -440,7 +444,8 @@ contains
          usafsi_settings%usefrac = .false.
          message(1) = '[WARN]  FRACTIONAL SNOW FILE NOT FOUND'
          message(2) = '[WARN]  PATH = ' // trim(file_path)
-         call error_message (program_name, routine_name, message)
+         call error_message (program_name, routine_name, yyyymmddhh, &
+              message)
          write (LDT_logunit, 6400) routine_name, file_path
 
       end if
@@ -548,7 +553,7 @@ contains
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
       character*255               :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*90                :: message (msglns) ! ERROR MESSAGE
-      character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
       integer*1, allocatable :: snow_poss_0p25deg(:,:)
       type(proj_info) :: snodep_0p25deg_proj
@@ -793,7 +798,8 @@ contains
       character*5,   allocatable  :: oldnet      (:)       ! ARRAY OF NETWORKS FOR OLDSTA
       character*32,   allocatable  :: oldsta      (:)       ! ARRAY OF PROCESSED STATIONS WITH SNOW DEPTHS
 
-      character*12                :: routine_name          ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name          ! NAME OF THIS SUBROUTINE
+      character*10 :: yyyymmddhh
       integer                     :: ctrgrd                ! TEMP HOLDER FOR GROUND OBS INFO
       integer                     :: ctrtmp                ! TEMP HOLDER FOR TOO WARM TEMPERATURE OBS
       integer                     :: ctrtrs                ! TEMP HOLDER FOR TEMP THRES OBS
@@ -833,6 +839,8 @@ contains
       allocate (oldnet (usafsi_settings%maxsobs))
       allocate (oldsta (usafsi_settings%maxsobs))
 
+      yyyymmddhh = date10
+      
       ! INITIALIZE VARIABLES.
       depth        = missing
       istat        = 0
@@ -1115,7 +1123,8 @@ contains
                        '[WARN] NO SURFACE OBSERVATIONS READ FOR ' // &
                        date10
                end if
-               call error_message (program_name, routine_name, message)
+               call error_message (program_name, routine_name, &
+                    yyyymmddhh, message)
 
             end if
 
@@ -1132,7 +1141,8 @@ contains
                     // date10
             end if
             message(2) = '[WARN] Looked for ' // trim(obsfile)
-            call error_message (program_name, routine_name, message)
+            call error_message (program_name, routine_name, &
+                 yyyymmddhh, message)
 
          end if file_check
 
@@ -1255,7 +1265,8 @@ contains
       character*7                 :: iofunc                ! ACTION TO BE PERFORMED
       character*90                :: message     (msglns)  ! ERROR MESSAGE
 
-      character*12                :: routine_name          ! NAME OF THIS ROUTINE
+      character*20                :: routine_name          ! NAME OF THIS ROUTINE
+      character*10 :: yyyymmddhh
       integer                     :: icount                ! LOOP COUNTER
       integer                     :: julhr                 ! AFWA JULIAN HOUR
       logical                     :: isfile                ! FLAG FOR INPUT FILE FOUND
@@ -1268,6 +1279,8 @@ contains
       data routine_name / 'GETSFC      ' /
 
       allocate(sfctmp_lis_0p25deg(igrid, jgrid_lis))
+
+      yyyymmddhh = date10
 
       ! GET LATEST LIS SHELTER TEMPERATURES.
       dtglis       = date10
@@ -1309,7 +1322,8 @@ contains
       ! IF NOT FOUND FOR PAST 24 HOURS, SEND ERROR MESSAGE.
       if (.not. sfctmp_found) then
          message(1) = '[WARN] LIS DATA NOT FOUND FOR PAST 24 HOURS'
-         call error_message (program_name, routine_name, message)
+         call error_message (program_name, routine_name, yyyymmddhh, &
+              message)
          write (ldt_logunit, 6400) routine_name
       end if
 
@@ -1458,7 +1472,8 @@ contains
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*90                :: message     (msglns)  ! ERROR MESSAGE
       character*4                 :: msgval                ! PLACEHOLDER FOR ERROR MESSAGE VALUES
-      character*12                :: routine_name          ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name          ! NAME OF THIS SUBROUTINE
+      character*10 :: yyyymmddhh
       integer                     :: edri16                ! EDR 16TH MESH I-COORDINATE
       integer                     :: edrj16                ! EDR 16TH MESH J-COORDINATE
       integer                     :: edrlat                ! EDR LATITUDE (100THS OF DEGREES)
@@ -1500,6 +1515,8 @@ contains
       data interval     / '.06hr.' /
       data lunsrc       /  43,  44 /
       data routine_name / 'GETSMI      '/
+
+      yyyymmddhh = date10
 
       ! ALLOCATE ARRAYS.
       allocate (icecount_0p25deg (igrid , jgrid))
@@ -1658,7 +1675,7 @@ contains
                end if
             end do
          end do
-         
+
          ! Interpolate the 0.25deg data to the LDT grid
          nr = LDT_rc%lnr(1)
          nc = LDT_rc%lnc(1)
@@ -1702,7 +1719,8 @@ contains
 
       if (msgline > 1) then
 
-         call error_message (program_name, routine_name, message)
+         call error_message (program_name, routine_name, yyyymmddhh, &
+              message)
 
       end if
 
@@ -1812,7 +1830,7 @@ contains
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
       character*255              :: file_path        ! INPUT FILE PATH AND NAME
       character*90               :: message (msglns) ! ERROR MESSAGE
-      character*12               :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20               :: routine_name     ! NAME OF THIS SUBROUTINE
       character*255              :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
       integer                    :: julhr            ! AFWA JULIAN HOUR
@@ -2111,7 +2129,7 @@ contains
 4200  continue
       message(1) = '[ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
       message(2) = '[ERR] DATE10 = ' // date10
-      call abort_message (program_name, program_name, message)
+      call abort_message (program_name, routine_name, message)
       call LDT_endrun()
 
       ! FORMAT STATEMENTS.
@@ -2145,7 +2163,7 @@ contains
       integer :: limit, tries
       integer :: runcycle
       integer :: julhr
-      character*12 :: routine_name
+      character*20 :: routine_name
       character*10 :: date10_prev
       character*90 :: message(msglns)
 
@@ -2214,7 +2232,7 @@ contains
 4200  continue
       message(1) = '[ERR] ERROR CONVERTING DATA FROM CHARACTER TO INTEGER'
       message(2) = '[ERR] DATE10 = ' // date10
-      call abort_message (program_name, program_name, message)
+      call abort_message (program_name, routine_name, message)
       call LDT_endrun()
 
       ! Other format statements
@@ -2292,7 +2310,8 @@ contains
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
       !character*90                :: message (msglns) ! ERROR MESSAGE
       character*255                :: message (msglns) ! ERROR MESSAGE
-      character*12                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
+      character*10 :: yyyymmddhh
       integer                     :: runcycle         ! CYCLE TIME
       integer                     :: hrdiff           ! DIFFERENCE BETWEEN HOURS
       integer                     :: julsno           ! JULIAN HOUR OF SNODEP CYCLE
@@ -2311,6 +2330,8 @@ contains
       integer :: grstat
 
       data routine_name           / 'GETSST      '/
+
+      yyyymmddhh = date10
 
       ! FIND THE DATE/TIME GROUP OF THE PREVIOUS CYCLE.
       ! GET SEA SURFACE TEMPERATURE DATA.
@@ -2387,14 +2408,16 @@ contains
                else
                   message(1) = '[ERR] ERROR READING FILE'
                   message(2) = '[ERR] PATH = ' // file_grib
-                  call error_message(program_name, routine_name, message)
+                  call error_message(program_name, routine_name, &
+                       yyyymmddhh, message)
                   write(ldt_logunit, 6400) routine_name, iofunc, file_grib, &
                        grstat
                end if
             else
                message(1) = '[ERR] ERROR OPENING FILE'
                message(2) = '[ERR] PATH = ' // file_grib
-               call error_message(program_name, routine_name, message)
+               call error_message(program_name, routine_name, &
+                    yyyymmddhh, message)
                write(ldt_logunit, 6400) routine_name, iofunc, file_grib, grstat
             end if
          end if
@@ -2414,7 +2437,8 @@ contains
                message(1) = '  SST DATA IS MORE THAN 24 HOURS OLD'
                message(2) = '  USAFSI CYCLE = ' // date10
                message(3) = '  SEA SFC TEMP = ' // date10_sst
-               call error_message (program_name, routine_name, message)
+               call error_message (program_name, routine_name, &
+                    yyyymmddhh, message)
 
             end if
 
@@ -2423,7 +2447,8 @@ contains
       else
 
          message(1) = '[WARN] SEA SURFACE TEMPERATURE DATA NOT FOUND'
-         call error_message (program_name, routine_name, message)
+         call error_message (program_name, routine_name, &
+              yyyymmddhh, message)
          write (ldt_logunit, 6600) routine_name
 
       end if
@@ -2557,7 +2582,8 @@ contains
       character(255)              :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
       character(7)                :: iofunc           ! ACTION TO BE PERFORMED
       character(90)               :: message (msglns) ! ERROR MESSAGE
-      character(12)               :: routine_name     ! NAME OF THIS SUBROUTINE
+      character(20)               :: routine_name     ! NAME OF THIS SUBROUTINE
+      character(10)               :: yyyymmddhh
       integer                     :: i                ! SNODEP I-COORDINATE
       integer                     :: icount           ! LOOP COUNTER
       integer                     :: julhr            ! AFWA JULIAN HOUR
@@ -2583,11 +2609,13 @@ contains
       write(LDT_logunit,*)&
            '[ERR] Recompile with LIBGEOTIFF support and try again!'
       call LDT_endrun()
-      
+
 #else
       external :: ztif_frac_slice ! EMK 20220113
 
       data routine_name  / 'GETVIIRS    ' /
+
+      yyyymmddhh = date10
 
       ! ALLOCATE DATA ARRAYS.
       nc = LDT_rc%lnc(1)
@@ -2611,7 +2639,7 @@ contains
            idim = igrid_viirs, &
            jdim = jgrid_viirs, &
            proj=viirs_0p005deg_proj)
-      
+
       ! INITIALIZE VARIABLES.
       icount = 0
       iofunc   = 'READING'
@@ -2694,7 +2722,7 @@ contains
 
                   ! No error for this slice, so process
                   do i_viirs = 1, igrid_viirs
-               
+
                      ! Find lat/lon of VIIRS pixel, and then determine which
                      ! LDT grid box this falls in.
                      ri_viirs = real(i_viirs)
@@ -2720,13 +2748,13 @@ contains
                         j = 1
                      else if (j > nr) then
                         j = nr
-                     end if                     
+                     end if
                      pixels(i,j) = pixels(i,j) + 1
 
                      ! Skip if the pixel age is too old.
                      if (agebuf_slice(i_viirs) > &
                           usafsi_settings%maxpixage) cycle
-               
+
                      ! Increment the appropriate snow/bare counter
                      if (mapbuf_slice(i_viirs) .eq. 0) then
                         bare(i,j) = bare(i,j) + 1
@@ -2754,7 +2782,7 @@ contains
 
       end do file_search
 
-      if (map_exists .and. age_exists .and. ierr .eq. 0) then         
+      if (map_exists .and. age_exists .and. ierr .eq. 0) then
 
          ! From the geolocated data, create the final VIIRS snow cover map
          do j = 1, nr
@@ -2780,7 +2808,8 @@ contains
             usafsi_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW MAP FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snomap_path)
-            call error_message (program_name, routine_name, message)
+            call error_message (program_name, routine_name, &
+                 yyyymmddhh, message)
             write (ldt_logunit, 6400) routine_name, snomap_path
          end if
 
@@ -2788,7 +2817,8 @@ contains
             usafsi_settings%useviirs = .false.
             message(1) = '[WARN] VIIRS SNOW AGE FILE NOT FOUND'
             !message(2) = '[WARN] PATH = ' // trim(snoage_path)
-            call error_message (program_name, routine_name, message)
+            call error_message (program_name, routine_name, &
+                 yyyymmddhh, message)
             write (ldt_logunit, 6400) routine_name, snoage_path
          end if
 
