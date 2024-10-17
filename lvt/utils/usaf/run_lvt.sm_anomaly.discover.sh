@@ -3,8 +3,8 @@
 #SBATCH --time=1:00:00
 #SBATCH --account s1189
 #SBATCH --output smanom.slurm.out
-#SBATCH --ntasks=1
-#SBATCH --qos=debug
+#SBATCH --ntasks=1 --constraint="[mil]"
+##SBATCH --qos=debug
 #------------------------------------------------------------------------------
 #
 # SCRIPT: run_lvt.sm_anomaly.discover.sh
@@ -16,6 +16,7 @@
 #
 # REVISION HISTORY:
 # 28 Jun 2021: Eric Kemp (SSAI), first version.
+# 15 Oct 2024: Eric Kemp (SSAI), updated for Milan nodes.
 #
 #------------------------------------------------------------------------------
 
@@ -24,8 +25,8 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 module purge
-module use --append ~/privatemodules
-module load lisf_7_intel_19_1_3_304
+module use --append /home/emkemp/privatemodules/sles15
+module load lisf_7.6_intel_2023.2.1_emk
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
@@ -41,6 +42,5 @@ if [ ! -e OUTPUT/STATS.sm_anomaly/RST ] ; then
 fi
 
 time mpirun -np 1 ./LVT configs/lvt.config.sm_anomaly || exit 1
-
 
 exit 0
