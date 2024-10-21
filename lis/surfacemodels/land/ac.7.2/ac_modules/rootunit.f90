@@ -141,7 +141,7 @@ real(dp) function AdjustedRootingDepth(&
         end if
 
         ! -- 3.3 correction for early senescence
-        if ((CCact <= 0.0_dp) .and. (CCpot > 50.0_dp)) then
+        if ((CCact <= epsilon(0.0_dp)) .and. (CCpot > 50.0_dp)) then
             dZ = 0.0_dp
         end if
 

@@ -21,7 +21,6 @@
         character*128 :: mess , message
 
 !-----SPECIFY SYSTEM PARAMETERS:
-!LB: other parameters could be added  in the future
 !
 !-----READ IN SOIL PROPERTIES FROM SOILPARM.TBL
       OPEN(19, FILE=trim(SOIL_TBL),FORM='FORMATTED',STATUS='OLD',IOSTAT=ierr)

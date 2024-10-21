@@ -225,7 +225,7 @@ subroutine AC72_f2t(n)
 
         ! SNOWF
         ! If there is snowf add it to precipitation.  AC72 does not use
-        ! separate rainf and snowf.  It determines what to do with precipitation.
+        ! separate rainf and snowf.
         if(LIS_Forc_Snowf%selectOpt .eq. 1) then 
            if(snowf(tid).ne.LIS_rc%udef) then
               AC72_struc(n)%ac72(t)%prcp = AC72_struc(n)%ac72(t)%prcp + snowf(tid)

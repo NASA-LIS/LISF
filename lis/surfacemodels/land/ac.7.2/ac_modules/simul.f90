@@ -981,14 +981,14 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
             if (BioAdj <= epsilon(1._dp)) then
                 StressSFadjNEW = 80
             else
-                StressSFadjNEW = roundc(Coeffb0 + Coeffb1*BioAdj + Coeffb2*BioAdj*BioAdj, &
-                                        mold=1_int8)
-                if (StressSFadjNEW < 0) then
+                if ((Coeffb0 + Coeffb1*BioAdj + Coeffb2*BioAdj*BioAdj) < 0) then
                     StressSFadjNEW = GetManagement_FertilityStress()
-                end if
-                if (StressSFadjNEW > 80) then
+                elseif ((Coeffb0 + Coeffb1*BioAdj + Coeffb2*BioAdj*BioAdj) > 80) then
                     StressSFadjNEW = 80
-                end if
+                else
+                    StressSFadjNEW = roundc(Coeffb0 + Coeffb1*BioAdj + Coeffb2*BioAdj*BioAdj, &
+                                            mold=1_int8)
+                endif
             end if
             if (StressSFadjNEW > GetManagement_FertilityStress()) then
                 StressSFadjNEW = GetManagement_FertilityStress()
@@ -3271,7 +3271,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
     real(dp) :: Crop_CCxAdjusted_temp
 
 
-    if ((SumGDDadjCC <= GetCrop_GDDaysToGermination()) &
+    if ((abs(SumGDDadjCC - GetCrop_GDDaysToGermination()) < epsilon(0._dp)) &
           .or. (roundc(SumGDDadjCC, mold=1) > GetCrop_GDDaysToHarvest())) then
         call SetCCiActual(0._dp)
     else

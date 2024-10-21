@@ -127,8 +127,7 @@ subroutine ac72_read_Trecord(n)
     ! !DESCRIPTION: 
     ! 
     !  This subroutine stores the mean temperatures for the ac72 simulation
-    !  period required when AquaCrop is run with a crop calibrated in growing
-    !  degree days. 
+    !  period required when AquaCrop for the dtermination of the GDD stages
     !
     !  
     !EOP
@@ -140,9 +139,6 @@ subroutine ac72_read_Trecord(n)
     type(lisrcdec)        :: LIS_rc_saved
     integer               :: i, j, t, status, met_ts, ierr,m, tid
     integer               :: yr_start
-
-    !Note: this code assumes that the forcing data (tmp) has a length=ntiles
-    !This will need to be properly tested when running ensembles.
 
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
@@ -211,6 +207,7 @@ subroutine ac72_read_Trecord(n)
     ! Assign Tmax and Tmin arrays to AC72_struc
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
         tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
+        ! AquaCrop rounds meteo input to 4 decimals
         AC72_struc(n)%ac72(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
         AC72_struc(n)%ac72(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
     enddo

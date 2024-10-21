@@ -95,25 +95,39 @@ function roundc_int32(x, mold) result(y)
     integer(int32), intent(in) :: mold
         !! Integer determining the kind of the integer result
     integer(int32) :: y
+    real(dp) :: x_clipped
 
-   if (abs(x - floor(x, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
-       if (x > 0) then
-          if (mod(abs(trunc(x)),2) == 0) then
-              y = floor(x, kind=int32)
+    ! Check if x is within the tolerated range for int32 before rounding
+    if (x > 2147483647._dp) then
+        x_clipped = 2147483647._dp
+    elseif (x < -2147483648._dp) then
+        x_clipped = -2147483648._dp
+    else
+        x_clipped = x
+    end if
+
+    ! Rounding logic based on x_clipped
+    if (abs(x_clipped - floor(x_clipped, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
+       if (x_clipped > 0) then
+          if (mod(abs(trunc(x_clipped)),2) == 0) then
+              y = floor(x_clipped, kind=int32)
           else
-              y = ceiling(x, kind=int32)
+              y = ceiling(x_clipped, kind=int32)
           end if
        else
-          if (mod(abs(trunc(x)),2) == 0) then
-              y = ceiling(x, kind=int32)
+          if (mod(abs(trunc(x_clipped)),2) == 0) then
+              y = ceiling(x_clipped, kind=int32)
           else
-              y = floor(x, kind=int32)
+              y = floor(x_clipped, kind=int32)
           end if
        end if
-    else !standard round for values not ending on 0.5
-       y = nint(x, kind=int32)
+    else
+       ! Standard round for values not ending on 0.5
+       y = nint(x_clipped, kind=int32)
     end if
+
 end function roundc_int32
+
 
 
 function roundc_int8(x, mold) result(y)
@@ -123,25 +137,39 @@ function roundc_int8(x, mold) result(y)
     integer(int8), intent(in) :: mold
         !! Integer determining the kind of the integer result
     integer(int8) :: y
+    real(dp) :: x_clipped
 
-    if (abs(x - floor(x, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
-       if (x > 0) then
-          if (mod(abs(trunc(x)),2) == 0) then
-             y = floor(x, kind=int8)
+    ! Check if x is within the tolerated range for int8 before rounding
+    if (x > 127._dp) then
+        x_clipped = 127._dp
+    elseif (x < -128._dp) then
+        x_clipped = -128._dp
+    else
+        x_clipped = x
+    end if
+
+    ! Rounding logic based on x_clipped
+    if (abs(x_clipped - floor(x_clipped, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
+       if (x_clipped > 0) then
+          if (mod(abs(trunc(x_clipped)),2) == 0) then
+             y = floor(x_clipped, kind=int8)
           else
-              y = ceiling(x, kind=int8)
+             y = ceiling(x_clipped, kind=int8)
           end if
        else
-          if (mod(abs(trunc(x)),2) == 0) then
-              y = ceiling(x, kind=int8)
+          if (mod(abs(trunc(x_clipped)),2) == 0) then
+             y = ceiling(x_clipped, kind=int8)
           else
-              y = floor(x, kind=int8)
+             y = floor(x_clipped, kind=int8)
           end if
        end if
-    else !standard round for values not ending on 0.5
-       y = nint(x, kind=int8)
+    else
+       ! Standard round for values not ending on 0.5
+       y = nint(x_clipped, kind=int8)
     end if
+
 end function roundc_int8
+
 
 
 function trunc(x) result(y)
