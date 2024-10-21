@@ -959,10 +959,9 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
             RemainingDays = RemainingDays - 1
 
             do while ((RemainingDays > 0) &
-                        .and. (i<(GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
+                        .and. (i<=(GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
                         i = i + 1
-                        ! Later, include rewinding to avoid crash in LIS; for now if harvest is not reached, no sim
-                        if (i == size(GetTminRun())) then
+                        if (i == 366) then
                             i = 1
                         endif
                         TDayMin_local = real(GetTminRun_i(i),kind=dp)
@@ -1160,9 +1159,9 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
             RemainingGDDays = RemainingGDDays - DayGDD
 
             do while ((RemainingGDDays > 0) &
-                           .and. (i < (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
+                           .and. (i <= (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
                   i = i + 1
-                  if (i == size(GetTminRun())) then
+                  if (i == 366) then
                       i = 1
                   endif
                   TDayMin_loc = real(GetTminRun_i(i),kind=dp)

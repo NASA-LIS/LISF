@@ -188,7 +188,7 @@ subroutine AC72_readcrd()
         enddo
     enddo
 
-    ! Ref year for cli
+    ! Reference year for climatology (stress functions)
     do n=1, LIS_rc%nnest
         ios = nf90_get_att(nids(n), NF90_GLOBAL, 'AC_CLIM_REF_YEAR', AC72_struc(n)%tempcli_refyr)
         call LIS_verify(ios,'Error in nf90_get_att in ac72_readcrd')

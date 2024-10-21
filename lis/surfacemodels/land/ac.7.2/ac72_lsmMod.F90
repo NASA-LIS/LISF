@@ -74,6 +74,8 @@ module AC72_lsmMod
 !   reference height of forcings T and q
 ! \item[refz_uv]
 !   reference height of forcings u and v
+! \item[tempcli_refyr]
+!   reference year for climatology record for stress functions
 
 !
 ! !REVISION HISTORY:

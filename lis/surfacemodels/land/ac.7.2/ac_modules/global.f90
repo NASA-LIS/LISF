@@ -2645,7 +2645,7 @@ real(dp) function KsAny(Wrel, pULActual, pLLActual, ShapeFactor)
 
     pRelativeLLUL = (Wrel - pULActual_local)/(pLLActual - pULActual_local)
 
-    if (pRelativeLLUL <= 0._dp) then
+    if (pRelativeLLUL <= epsilon(0._dp)) then
         KsVal = 1._dp
     elseif (pRelativeLLUL >= 1._dp) then
         KsVal = 0._dp
@@ -16510,7 +16510,6 @@ function GetTminRun_i(i) result(TminRun_i)
     real(sp) :: TminRun_i
 
     TminRun_i = TminRun(i)
-    !TminRun_i = real(roundc(10000*real(TminRun(i),kind=dp),mold=int32)/10000._sp,kind=sp)
 end function GetTminRun_i
 
 
