@@ -8375,6 +8375,9 @@ integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
 
             ! TminCropReference and TmaxCropReference arrays contain the TemperatureFilefull data
             i = StartDayNr - RefCropDay1
+            if (i >= 365) then
+                i = i - 365
+            end if
 
             do while (RemainingGDDays > 0.1_dp)
                 i = i + 1
