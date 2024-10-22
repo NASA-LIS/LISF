@@ -35,14 +35,6 @@ subroutine AC72_readrst()
     use netcdf
 #endif
 
-! AC modules
-    use ac_global,  only: IrriMode_Generate, &
-                          IrriMode_Inet, &
-                          IrriMode_Manual, &
-                          IrriMode_NoIrri, &
-                          undef_int
-    use ac_run,     only: fIrri_open, fIrri_close, &
-                          fIrri_read, fIrri_eof
 !
 ! !DESCRIPTION:
 !  This program reads restart files for AC72.  This
@@ -73,12 +65,6 @@ subroutine AC72_readrst()
     real*8            :: time
     real              :: gmt
     real              :: ts
-
-    !LB for irrigation rst
-    integer           :: i, FromDay_temp, TimeInfo_temp, &
-                         DepthInfo_temp, DNr
-    character*200     :: TempStr
-    real              :: IrriEcw_temp
 
 
     do n=1, LIS_rc%nnest
@@ -163,13 +149,464 @@ subroutine AC72_readrst()
                      dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                    AC72_struc(n)%ac72(t)%smc(l) = tmptilen(t)
-                   ! Also adjust theta ini
-                    !AC72_struc(n)%ac72(t)%Simulation%thetaini(l) = tmptilen(t) !will also be needed for salinity
                 enddo
             enddo
 
             !! From Compartment
+# if 0
+            ! read: Compartment_DayAnaero
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                     varname="Compartment_DayAnaero", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%DayAnaero = tmptilen_int(t)
+                enddo
+            enddo
+                                    
+            ! read: Compartment_fluxout
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_fluxout", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%fluxout = tmptilen(t)
+                enddo
+            enddo
 
+
+            ! read: Compartment_Smax
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_Smax", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%Smax = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_FCadj
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_FCadj", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%FCadj = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_WFactor
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                     varname="Compartment_WFactor", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%WFactor = tmptilen(t)
+                enddo
+            enddo
+
+            ! read: Compartment_DayAnaero
+            do l=1, AC72_struc(n)%max_No_Compartments
+                call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                     varname="Compartment_DayAnaero", &
+                     dim=l, vlevels = AC72_struc(n)%max_No_Compartments, wformat=wformat)
+                do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                   AC72_struc(n)%ac72(t)%Compartment(l)%DayAnaero = tmptilen_int(t)
+                enddo
+            enddo
+
+
+            !! reals
+            ! read: alfaHI
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%alfaHI, &
+                                    varname="alfaHI", wformat=wformat)
+
+            ! read: alfaHIAdj
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%alfaHIAdj, &
+                                    varname="alfaHIAdj", wformat=wformat)
+
+            ! read: Bin
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Bin, &
+                                    varname="Bin", wformat=wformat)
+
+            ! read: Bout
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Bout, &
+                                    varname="Bout", wformat=wformat)
+
+            ! read: CCiActual
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiActual, &
+                                    varname="CCiActual", wformat=wformat)
+
+            ! read: CCiActualWeedInfested
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiActualWeedInfested, &
+                                    varname="CCiActualWeedInfested", wformat=wformat)
+
+            ! read: CCiPrev
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiPrev, &
+                                    varname="CCiPrev", wformat=wformat)
+
+            ! read: CCiTopEarlySen
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiTopEarlySen, &
+                                    varname="CCiTopEarlySen", wformat=wformat)
+
+            ! read: CCxWitheredTpotNoS
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCxWitheredTpotNoS, &
+                                    varname="CCxWitheredTpotNoS", wformat=wformat)
+
+            ! read: DayFraction
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayFraction, &
+                                    varname="DayFraction", wformat=wformat)
+
+            ! read: ECstorage
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ECstorage, &
+                                    varname="ECstorage", wformat=wformat)
+
+            ! read: HItimesAT
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT, &
+                                    varname="HItimesAT", wformat=wformat)
+
+            ! read: HItimesAT1
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT1, &
+                                    varname="HItimesAT1", wformat=wformat)
+
+            ! read: HItimesAT2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT2, &
+                                    varname="HItimesAT2", wformat=wformat)
+
+            ! read: HItimesBEF
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesBEF, &
+                                    varname="HItimesBEF", wformat=wformat)
+
+            ! read: RootZoneWC_Actual
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Actual, &
+                                    varname="RootZoneWC_Actual", wformat=wformat)
+
+            ! read: RootZoneWC_FC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_FC, &
+                                    varname="RootZoneWC_FC", wformat=wformat)
+
+            ! read: RootZoneWC_Leaf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Leaf, &
+                                    varname="RootZoneWC_Leaf", wformat=wformat)
+
+            ! read: RootZoneWC_SAT
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_SAT, &
+                                    varname="RootZoneWC_SAT", wformat=wformat)
+
+            ! read: RootZoneWC_Sen
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Sen, &
+                                    varname="RootZoneWC_Sen", wformat=wformat)
+
+            ! read: RootZoneWC_Thresh
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Thresh, &
+                                    varname="RootZoneWC_Thresh", wformat=wformat)
+
+            ! read: RootZoneWC_WP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_WP, &
+                                    varname="RootZoneWC_WP", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopAct, &
+                                    varname="RootZoneWC_ZtopAct", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopFC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopFC, &
+                                    varname="RootZoneWC_ZtopFC", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopThresh
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopThresh, &
+                                    varname="RootZoneWC_ZtopThresh", wformat=wformat)
+
+            ! read: RootZoneWC_ZtopWP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopWP, &
+                                    varname="RootZoneWC_ZtopWP", wformat=wformat)
+
+            ! read: ScorAT1
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ScorAT1, &
+                                    varname="ScorAT1", wformat=wformat)
+
+            ! read: ScorAT2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ScorAT2, &
+                                    varname="ScorAT2", wformat=wformat)
+
+            ! read: StressLeaf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressLeaf, &
+                                    varname="StressLeaf", wformat=wformat)
+
+            ! read: StressSenescence
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressSenescence, &
+                                    varname="StressSenescence", wformat=wformat)
+
+            ! read: SumGDDcuts
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDcuts, &
+                                    varname="SumGDDcuts", wformat=wformat)
+
+            ! read: SumKci
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKci, &
+                                    varname="SumKci", wformat=wformat)
+
+            ! read: SumKcTopStress
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKcTopStress, &
+                                    varname="SumKcTopStress", wformat=wformat)
+
+            ! read: SurfaceStorage
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SurfaceStorage, &
+                                    varname="SurfaceStorage", wformat=wformat)
+
+            ! read: Tact
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tact, &
+                                    varname="Tact", wformat=wformat)
+
+            ! read: TactWeedInfested
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%TactWeedInfested, &
+                                    varname="TactWeedInfested", wformat=wformat)
+
+            ! read: Tadj
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tadj, &
+                                    varname="Tadj", wformat=wformat)
+
+            ! read: TimeSenescence
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%TimeSenescence, &
+                                    varname="TimeSenescence", wformat=wformat)
+
+            ! read: Tpot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tpot, &
+                                    varname="Tpot", wformat=wformat)
+
+            ! read: WeedRCi
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%WeedRCi, &
+                                    varname="WeedRCi", wformat=wformat)
+            ! read: WPi
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%WPi, &
+                                    varname="WPi", wformat=wformat)
+
+            ! read: Ziprev
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Ziprev, &
+                                    varname="Ziprev", wformat=wformat)
+
+            
+            !! integers
+            ! read: DayNri
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
+                                    varname="DayNri", wformat=wformat)
+
+            ! read: DaySubmerged
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DaySubmerged, &
+                                    varname="DaySubmerged", wformat=wformat)
+
+            ! read: PreviousStressLevel
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%PreviousStressLevel, &
+                                    varname="PreviousStressLevel", wformat=wformat)
+
+            ! read: StressSFadjNEW
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressSFadjNEW, &
+                                    varname="StressSFadjNEW", wformat=wformat)
+
+            ! read: SumInterval
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumInterval, &
+                                    varname="SumInterval", wformat=wformat)
+
+            !! logical
+            !read: NoMoreCrop
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%NoMoreCrop, &
+                                    varname="NoMoreCrop", wformat=wformat)
+
+            !! From StressTot
+            ! read: StressTot_Salt
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Salt", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%Salt = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Temp
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Temp", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%Temp = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Exp
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Exp", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%Exp = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Sto
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Sto", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%Sto = tmptilen(t)
+            enddo
+
+            ! read: StressTot_Weed
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="StressTot_Weed", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%Weed = tmptilen(t)
+            enddo
+
+            ! read: StressTot_NrD
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="StressTot_NrD", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%StressTot%NrD = tmptilen_int(t)
+            enddo
+
+            !! From SumWaBal
+            ! read: SumWaBal_Biomass
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_Biomass", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%Biomass = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassPot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassPot", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%BiomassPot = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassTot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassTot", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%BiomassTot = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_BiomassUnlim
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_BiomassUnlim", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%BiomassUnlim = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_YieldPart
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_YieldPart", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%YieldPart = tmptilen(t)
+            enddo
+
+            !! From Simulation%EffectStress
+            ! read: Simulation_EffectStress_CDecline
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_EffectStress_CDecline", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EffectStress%CDecline = tmptilen(t)
+            enddo
+
+            ! read: Simulation_DayAnaero
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_DayAnaero", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%DayAnaero = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedCGC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedCGC", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedCGC = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedCCx
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedCCx", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedCCx = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedWP
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedWP", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedWP = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EffectStress_RedKsSto
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EffectStress_RedKsSto", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedKsSto = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_SWCtopsoilconsidered
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_SWCtopSoilConsidered", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EvapLimitON
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EvapLimitON", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EvapLimitON = tmptilen_int(t)
+            enddo
+
+            ! read: Simulation_EvapStartStg2
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_EvapStartStg2", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2 = tmptilen_int(t)
+            enddo
+
+            !! From Simulation
+            ! read: Simulation_EvapWCSurf
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_EvapWCSurf", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
+            enddo
+
+            !! From Management
+            ! read: Management_WeedDeltaRC
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Management_WeedDeltaRC", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Management%WeedDeltaRC = tmptilen_int(t)
+            enddo
+
+            !! From Crop
+            ! read: Crop_CCxAdjusted
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_CCxAdjusted", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%CCxAdjusted = tmptilen(t)
+            enddo
+
+            ! read: Crop_CCxWithered
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_CCxWithered", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%CCxWithered = tmptilen(t)
+            enddo
+
+            ! read: Crop_pActStom
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pActStom", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%pActStom = tmptilen(t)
+            enddo
+
+            ! read: Crop_pLeafAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pLeafAct", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%pLeafAct = tmptilen(t)
+            enddo
+
+            ! read: Crop_pSenAct
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_pSenAct", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%pSenAct = tmptilen(t)
+            enddo
+
+#endif
 
             ! close restart file
             if(wformat .eq. "binary") then
@@ -182,100 +619,6 @@ subroutine AC72_readrst()
 #endif
             endif
             deallocate(tmptilen)
-
-            ! Get irrigation file line number from DayNri
-            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                if(AC72_struc(n)%ac72(t)%IrriMode.ne.IrriMode_NoIrri) then
-                    ! For IrriMode_Generate and IrriMode_Manual
-                    if(AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Generate) then
-                        ! Initial LN
-                        if(AC72_struc(n)%ac72(t)%IrriInfoRecord1%NoMoreInfo)then
-                            AC72_struc(n)%ac72(t)%irri_lnr = 11
-                        else
-                            AC72_struc(n)%ac72(t)%irri_lnr = 12
-                            ! re-open irrigation file and read first lines
-                            call fIrri_open(trim(AC72_struc(n)%PathNameSimul)&
-                                            //trim(AC72_struc(n)%Irrigation_Filename), 'r')
-                            do i=1,AC72_struc(n)%ac72(t)%irri_lnr
-                                TempStr = fIrri_read()
-                            enddo
-                            ! Check if we passed the first record
-                            do while ((AC72_struc(n)%ac72(t)%daynri-AC72_struc(n)%ac72(t)%Crop%Day1+1)&
-                            .gt.AC72_struc(n)%ac72(t)%IrriInfoRecord1%ToDay+1) ! +1 because let the main read
-                                ! Read next record
-                                TempStr = fIrri_read()
-                                ! Extract info (copied and adpated from run.f90, GetIrriParam)
-                                if (fIrri_eof()) then
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord1%ToDay = &
-                                            AC72_struc(n)%ac72(t)%Crop%DayN - &
-                                            AC72_struc(n)%ac72(t)%Crop%Day1 + 1
-                                else
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%NoMoreInfo = .false.
-                                    read(TempStr,*) FromDay_temp, &
-                                    TimeInfo_temp, DepthInfo_temp
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%FromDay = FromDay_temp
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%TimeInfo = TimeInfo_temp
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%DepthInfo = DepthInfo_temp
-                                    AC72_struc(n)%ac72(t)%Simulation%IrriEcw = IrriEcw_temp
-                                end if
-                                AC72_struc(n)%ac72(t)%irri_lnr = AC72_struc(n)%ac72(t)%irri_lnr + 1 ! extra record has been read
-                            enddo
-                        endif
-                    elseif(AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Manual) then
-                        ! Initial LN
-                        if(AC72_struc(n)%ac72(t)%IrriInfoRecord1%NoMoreInfo)then
-                            AC72_struc(n)%ac72(t)%irri_lnr = 9
-                        else
-                            AC72_struc(n)%ac72(t)%irri_lnr = 10
-                            ! re-open irrigation file and read the firts lines
-                            call fIrri_open(trim(AC72_struc(n)%PathNameSimul)&
-                                            //trim(AC72_struc(n)%Irrigation_Filename), 'r')
-                            do i=1,AC72_struc(n)%ac72(t)%irri_lnr
-                                TempStr = fIrri_read()
-                            enddo
-                            ! Check if we passed the first record
-                            ! Check start date of schedule
-                            if(AC72_struc(n)%ac72(t)%IrriFirstDayNr.eq.undef_int)then
-                                DNr = AC72_struc(n)%ac72(t)%daynri &
-                                    - AC72_struc(n)%ac72(t)%Crop%Day1 + 1
-                            else
-                                DNr = AC72_struc(n)%ac72(t)%daynri &
-                                    - AC72_struc(n)%ac72(t)%IrriFirstDayNr + 1
-                            endif
-                            do while (DNr.lt.AC72_struc(n)%ac72(t)%IrriInfoRecord1%TimeInfo)
-                                ! Read next record
-                                TempStr = fIrri_read()
-                                ! Extract info (copied and adpated from run.f90, IrriManual)
-                                if (fIrri_eof()) then
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord1%NoMoreInfo = .true.
-                                else
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord1%NoMoreInfo = .false.
-                                    read(TempStr,*) TimeInfo_temp, DepthInfo_temp
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%TimeInfo = TimeInfo_temp
-                                    AC72_struc(n)%ac72(t)%IrriInfoRecord2%DepthInfo = DepthInfo_temp
-                                    AC72_struc(n)%ac72(t)%Simulation%IrriEcw = IrriEcw_temp
-                                endif
-                                AC72_struc(n)%ac72(t)%irri_lnr = AC72_struc(n)%ac72(t)%irri_lnr + 1 ! extra record has been read
-                            enddo
-                        endif
-                    elseif(AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Inet) then
-                        AC72_struc(n)%ac72(t)%irri_lnr = 0 !Inet mode
-                    endif
-                    ! end irrigation method
-                    call fIrri_close() ! close irrigation file
-                endif
-                ! end check if irrigated
-
-                ! For restart: check if we reached end of simul period
-                if (AC72_struc(n)%ac72(t)%DayNri &
-                   .eq. AC72_struc(n)%ac72(t)%Simulation%ToDayNr)  then
-                    AC72_struc(n)%ac72(t)%irun = 2 ! Means that we need to start a new sim
-                    AC72_struc(n)%ac72(t)%InitializeRun = 1
-                endif
-                
-            enddo
-            ! end tile
         endif
     enddo
 end subroutine AC72_readrst
-
