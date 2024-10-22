@@ -260,7 +260,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
          "AC72", &
          dim1 = AC72_struc(n)%max_No_Compartments, &
-         ! dim2 = AC72_struc(n)%max_No_Compartments*11, & ! number of cells in AC7.2
          dimID = dimID, &
          output_format = trim(wformat))
 
@@ -553,8 +552,9 @@ subroutine AC72_dump_restart(n, ftn, wformat)
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
 
     !! from Compartment
-    ! write the header for state variable Compartment_Salt
 
+    ! Restart not implemented for salinity
+    ! write the header for state variable Compartment_Salt
     ! write the header for state variable Compartment_Depo
 
     ! write the header for state variable Compartment_fluxout
@@ -620,6 +620,505 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AC72_struc(n)%rstInterval)
+
+#if 0
+
+    ! write state variables into restart file
+    ! volumtric soil moisture
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC72_struc(n)%ac72(t)%smc(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=smc_ID, dim=l, wformat=wformat)
+    enddo
+
+    !! From Compartment
+    ! Compartment_fluxout
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC72_struc(n)%ac72(t)%Compartment(l)%fluxout
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=Compartment_fluxout_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! Compartment_Smax
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC72_struc(n)%ac72(t)%Compartment(l)%Smax
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=Compartment_Smax_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! Compartment_FCadj
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC72_struc(n)%ac72(t)%Compartment(l)%FCadj
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=Compartment_FCadj_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! Compartment_WFactor
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = AC72_struc(n)%ac72(t)%Compartment(l)%WFactor
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=Compartment_WFactor_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! Compartment_DayAnaero
+    do l=1, AC72_struc(n)%max_No_Compartments
+        tmptilen_int = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen_int(t) = AC72_struc(n)%ac72(t)%Compartment(l)%DayAnaero
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                  varid=Compartment_DayAnaero_ID, dim=l, wformat=wformat)
+    enddo
+
+
+
+    !! reals
+    ! alfaHI
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%alfaHI, &
+                            varid=alfaHI_ID, dim=1, wformat=wformat)
+
+    ! alfaHIAdj
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%alfaHIAdj, &
+                            varid=alfaHIAdj_ID, dim=1, wformat=wformat)
+
+    ! Bin 
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Bin, &
+                            varid=Bin_ID, dim=1, wformat=wformat)
+
+    ! Bout
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Bout, &
+                            varid=Bout_ID, dim=1, wformat=wformat)
+
+    ! CCiActual
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiActual, &
+                            varid=CCiActual_ID, dim=1, wformat=wformat)
+
+    ! CCiActualWeedInfested
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiActualWeedInfested, &
+                            varid=CCiActualWeedInfested_ID, dim=1, wformat=wformat)
+
+    ! CCiPrev
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiPrev, &
+                            varid=CCiPrev_ID, dim=1, wformat=wformat)
+
+    ! CCiTopEarlySen
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCiTopEarlySen, &
+                            varid=CCiTopEarlySen_ID, dim=1, wformat=wformat)
+
+    ! CCxWitheredTpotNoS
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%CCxWitheredTpotNoS, &
+                            varid=CCxWitheredTpotNoS_ID, dim=1, wformat=wformat)
+
+    ! DayFraction
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayFraction, &
+                            varid=DayFraction_ID, dim=1, wformat=wformat)
+
+    ! ECstorage
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ECstorage, &
+                            varid=ECstorage_ID, dim=1, wformat=wformat)
+
+    ! HItimesAT
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT, &
+                            varid=HItimesAT_ID, dim=1, wformat=wformat)
+
+    ! HItimesAT1
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT1, &
+                            varid=HItimesAT1_ID, dim=1, wformat=wformat)
+
+    ! HItimesAT2
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesAT2, &
+                            varid=HItimesAT2_ID, dim=1, wformat=wformat)
+
+    ! HItimesBEF
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%HItimesBEF, &
+                            varid=HItimesBEF_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_Actual
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Actual, &
+                            varid=RootZoneWC_Actual_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_FC
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_FC, &
+                            varid=RootZoneWC_FC_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_Leaf
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Leaf, &
+                            varid=RootZoneWC_Leaf_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_SAT
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_SAT, &
+                            varid=RootZoneWC_SAT_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_Sen
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Sen, &
+                            varid=RootZoneWC_Sen_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_Thresh
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_Thresh, &
+                            varid=RootZoneWC_Thresh_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_WP
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_WP, &
+                            varid=RootZoneWC_WP_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_ZtopAct
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopAct, &
+                            varid=RootZoneWC_ZtopAct_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_ZtopFC
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopFC, &
+                            varid=RootZoneWC_ZtopFC_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_ZtopThresh
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopThresh, &
+                            varid=RootZoneWC_ZtopThresh_ID, dim=1, wformat=wformat)
+
+    ! RootZoneWC_ZtopWP
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%RootZoneWC_ZtopWP, &
+                            varid=RootZoneWC_ZtopWP_ID, dim=1, wformat=wformat)
+
+    ! ScorAT1
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ScorAT1, &
+                            varid=ScorAT1_ID, dim=1, wformat=wformat)
+
+    ! ScorAT2
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%ScorAT2, &
+                            varid=ScorAT2_ID, dim=1, wformat=wformat)
+
+    ! StressLeaf
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressLeaf, &
+                            varid=StressLeaf_ID, dim=1, wformat=wformat)
+
+    ! StressSenescence
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressSenescence, &
+                            varid=StressSenescence_ID, dim=1, wformat=wformat)
+
+    ! SumGDDcuts
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDcuts, &
+                            varid=SumGDDcuts_ID, dim=1, wformat=wformat)
+
+    ! SumKci
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKci, &
+                            varid=SumKci_ID, dim=1, wformat=wformat)
+
+    ! SumKcTopStress
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKcTopStress, &
+                            varid=SumKcTopStress_ID, dim=1, wformat=wformat)
+
+    ! SurfaceStorage
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SurfaceStorage, &
+                            varid=SurfaceStorage_ID, dim=1, wformat=wformat)
+
+    ! Tact
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tact, &
+                            varid=Tact_ID, dim=1, wformat=wformat)
+
+    ! TactWeedInfested
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%TactWeedInfested, &
+                            varid=TactWeedInfested_ID, dim=1, wformat=wformat)
+
+    ! Tadj
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tadj, &
+                            varid=Tadj_ID, dim=1, wformat=wformat)
+
+    ! TimeSenescence
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%TimeSenescence, &
+                            varid=TimeSenescence_ID, dim=1, wformat=wformat)
+
+    ! Tpot
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Tpot, &
+                            varid=Tpot_ID, dim=1, wformat=wformat)
+
+    ! WeedRCi
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%WeedRCi, &
+                            varid=WeedRCi_ID, dim=1, wformat=wformat)
+
+    ! WPi
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%WPi, &
+                            varid=WPi_ID, dim=1, wformat=wformat)
+
+    ! Ziprev
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Ziprev, &
+                            varid=Ziprev_ID, dim=1, wformat=wformat)
+
+    
+    !! integers
+    ! DayNri
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
+                            varid=DayNri_ID, dim=1, wformat=wformat)
+
+    ! DaySubmerged
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DaySubmerged, &
+                            varid=DaySubmerged_ID, dim=1, wformat=wformat)
+
+    ! PreviousStressLevel
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%PreviousStressLevel, &
+                            varid=PreviousStressLevel_ID, dim=1, wformat=wformat)
+
+    ! StressSFadjNEW
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%StressSFadjNEW, &
+                            varid=StressSFadjNEW_ID, dim=1, wformat=wformat)
+
+    ! SumInterval
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumInterval, &
+                            varid=SumInterval_ID, dim=1, wformat=wformat)
+
+    ! Management_WeedDeltaRC
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Management%WeedDeltaRC, &
+                            varid=Management_WeedDeltaRC_ID, dim=1, wformat=wformat)
+
+
+    !! logicals (convert to integer)
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%NoMoreCrop, &
+                            varid=NoMoreCrop_ID, dim=1, wformat=wformat)
+
+
+    !! From Management
+    ! Management_WeedDeltaRC
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Management%WeedDeltaRC
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Management_WeedDeltaRC_ID, dim=1, wformat=wformat)
+
+    !! From Crop
+    ! Crop_CCxAdjusted
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%CCxAdjusted
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_CCxAdjusted_ID, dim=1, wformat=wformat)
+
+    ! Crop_CCxWithered
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%CCxWithered
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_CCxWithered_ID, dim=1, wformat=wformat)
+
+    ! Crop_pActStom
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%pActStom
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_pActStom_ID, dim=1, wformat=wformat)
+
+    ! Crop_pSenAct
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%pSenAct
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_pSenAct_ID, dim=1, wformat=wformat)
+
+    ! Crop_pLeafAct
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%pLeafAct
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_pLeafAct_ID, dim=1, wformat=wformat)
+
+    !! From Simulation
+    ! Simulation_EvapLimitON
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        if (AC72_struc(n)%ac72(t)%Simulation%EvapLimitON) then
+            tmptilen_int(t) = 1
+        else
+            tmptilen_int(t) = 0
+        endif
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EvapLimitON_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SWCtopSoilConsidered
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        if (AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered) then
+            tmptilen_int(t) = 1
+        else
+            tmptilen_int(t) = 0
+        endif
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_SWCtopSoilConsidered_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EvapWCSurf
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%EvapWCsurf
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_EvapWCSurf_ID, dim=1, wformat=wformat)
+
+    !! From Simulation%EffectStress
+    ! Simulation_EffectStress_CDecline
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%EffectStress%CDecline
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_EffectStress_CDecline_ID, dim=1, wformat=wformat)
+
+    ! Simulation_DayAnaero
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%DayAnaero
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_DayAnaero_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EffectStress_RedCGC
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedCGC
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EffectStress_RedCGC_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EffectStress_RedCCx
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedCCx
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EffectStress_RedCCx_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EffectStress_RedWP
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedWP
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EffectStress_RedWP_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EffectStress_RedKsSto
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EffectStress%RedKsSto
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EffectStress_RedKsSto_ID, dim=1, wformat=wformat)
+
+    ! Simulation_EvapStartStg2
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_EvapStartStg2_ID, dim=1, wformat=wformat)
+
+    !! From StressTot
+    ! StressTot_Salt
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%StressTot%Salt
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=StressTot_Salt_ID, dim=1, wformat=wformat)
+
+    ! StressTot_Temp
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%StressTot%Temp
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=StressTot_Temp_ID, dim=1, wformat=wformat)
+
+    ! StressTot_Exp
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%StressTot%Exp
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=StressTot_Exp_ID, dim=1, wformat=wformat)
+                
+    ! StressTot_Sto
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%StressTot%Sto
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=StressTot_Sto_ID, dim=1, wformat=wformat)
+
+    ! StressTot_Weed
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%StressTot%Weed
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=StressTot_Weed_ID, dim=1, wformat=wformat)
+
+    ! StressTot_NrD
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%StressTot%NrD
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=StressTot_NrD_ID, dim=1, wformat=wformat)
+
+    !! From SumWaBal
+    ! SumWaBal_Biomass
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%Biomass
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_Biomass_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_BiomassPot
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%BiomassPot
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_BiomassPot_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_BiomassTot
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%BiomassTot
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_BiomassTot_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_BiomassUnlim
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%BiomassUnlim
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_BiomassUnlim_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_YieldPart
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%YieldPart
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_YieldPart_ID, dim=1, wformat=wformat)
+
+#endif
 
 
 end subroutine AC72_dump_restart
