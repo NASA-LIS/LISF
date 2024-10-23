@@ -131,7 +131,7 @@ use ac_initialsettings, only: InitializeSettings
 use ac_kinds, only: int32,&
                     int8, &
                     intEnum, &
-                    dp
+                    sp
 use ac_project_input, only: GetNumberSimulationRuns, &
                             initialize_project_input
 use ac_run, only:   RunSimulation
@@ -556,7 +556,7 @@ subroutine InitializeProject(iproject, TheProjectFile, TheProjectType)
     integer(int32) :: WrongSimNr
     character(len=1025) :: FullFileNameProgramParametersLocal
     logical :: MultipleRunWithKeepSWC_temp
-    real(dp) :: MultipleRunConstZrx_temp
+    real(sp) :: MultipleRunConstZrx_temp
     type(rep_FileOK) :: FileOK
 
 
@@ -788,7 +788,7 @@ subroutine LoadProgramParametersProjectPlugIn(&
                      simul_saltdiff, simul_saltsolub, simul_root, &
                     simul_ed, simul_pCCHIf, simul_SFR, simul_TAWg, &
                     simul_beta, simul_Tswc, simul_EZma, simul_GDD
-    real(dp) :: simul_rod, simul_kcWB, simul_RZEma, simul_pfao, &
+    real(sp) :: simul_rod, simul_kcWB, simul_RZEma, simul_pfao, &
                 simul_expFsen, simul_Tmi, simul_Tma
 
     if (FileExists(FullFileNameProgramParameters)) then
@@ -811,7 +811,7 @@ subroutine LoadProgramParametersProjectPlugIn(&
         read(f0, *) simul_RZEma ! cm/day
         call SetSimulParam_MaxRootZoneExpansion(simul_RZEma)
 
-        call SetSimulParam_MaxRootZoneExpansion(5.00_dp) ! fixed at 5 cm/day
+        call SetSimulParam_MaxRootZoneExpansion(5.00_sp) ! fixed at 5 cm/day
         read(f0, *) simul_SFR
             ! Shape factor for effect water stress on rootzone expansion
         call SetSimulParam_KsShapeFactorRoot(simul_SFR)

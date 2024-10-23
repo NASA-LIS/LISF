@@ -20,8 +20,7 @@ use ac_global, only:    DaysInMonth, &
                         GetRainRecord_ToY, &
                         LeapYear, &
                         rep_DayEventDbl
-use ac_kinds, only: dp, &
-                    int8, &
+use ac_kinds, only: int8, &
                     int32, &
                     sp
 implicit none
@@ -54,27 +53,27 @@ end subroutine AdjustMONTHandYEAR
 
 
 subroutine GetParameters(C1, C2, C3, UL, LL, Mid)
-    real(dp), intent(in) :: C1
-    real(dp), intent(in) :: C2
-    real(dp), intent(in) :: C3
-    real(dp), intent(inout) :: UL
-    real(dp), intent(inout) :: LL
-    real(dp), intent(inout) :: Mid
+    real(sp), intent(in) :: C1
+    real(sp), intent(in) :: C2
+    real(sp), intent(in) :: C3
+    real(sp), intent(inout) :: UL
+    real(sp), intent(inout) :: LL
+    real(sp), intent(inout) :: Mid
 
-    UL = (C1+C2)/2.0_dp
-    LL = (C2+C3)/2.0_dp
-    Mid = 2.0_dp*C2 - (UL+LL)/2.0_dp
+    UL = (C1+C2)/2.0_sp
+    LL = (C2+C3)/2.0_sp
+    Mid = 2.0_sp*C2 - (UL+LL)/2.0_sp
     ! --previous decade-->/UL/....... Mid ......../LL/<--next decade--
 end subroutine GetParameters
 
 
 subroutine GetInterpolationParameters(C1, C2, C3, aOver3, bOver2, c)
-    real(dp), intent(in) :: C1
-    real(dp), intent(in) :: C2
-    real(dp), intent(in) :: C3
-    real(dp), intent(inout) :: aOver3
-    real(dp), intent(inout) :: bOver2
-    real(dp), intent(inout) :: c
+    real(sp), intent(in) :: C1
+    real(sp), intent(in) :: C2
+    real(sp), intent(in) :: C3
+    real(sp), intent(inout) :: aOver3
+    real(sp), intent(inout) :: bOver2
+    real(sp), intent(inout) :: c
 
     ! n1=n2=n3=30 --> better parabola
     aOver3 = (C1-2*C2+C3)/(6*30*30*30)
@@ -91,8 +90,8 @@ subroutine GetMonthlyEToDataSet(DayNri, EToDataSet)
     integer(int32) :: Dayi, Monthi, Yeari, DayN
     integer(int32) :: DNR
     integer(int32) :: X1, X2, X3, t1, t2
-    real(dp) :: C1, C2, C3
-    real(dp) :: aOver3, bOver2, c
+    real(sp) :: C1, C2, C3
+    real(sp) :: aOver3, bOver2, c
 
     ! GetMonthlyEToDataSet
     call DetermineDate(DayNri, Dayi, Monthi, Yeari)
@@ -118,7 +117,7 @@ subroutine GetMonthlyEToDataSet(DayNri, EToDataSet)
     end do
     do Dayi = (DayN+1), 31
         EToDataSet(Dayi)%DayNr = DNR+DayN-1
-        EToDataSet(Dayi)%Param = 0._dp
+        EToDataSet(Dayi)%Param = 0._sp
     end do
 
 
@@ -128,9 +127,9 @@ subroutine GetMonthlyEToDataSet(DayNri, EToDataSet)
     subroutine GetSetofThreeMonths(Monthi, Yeari, C1, C2, C3, X1, X2, X3, t1)
         integer(int32), intent(in) :: Monthi
         integer(int32), intent(in) :: Yeari
-        real(dp), intent(inout) :: C1
-        real(dp), intent(inout) :: C2
-        real(dp), intent(inout) :: C3
+        real(sp), intent(inout) :: C1
+        real(sp), intent(inout) :: C2
+        real(sp), intent(inout) :: C3
         integer(int32), intent(inout) :: X1
         integer(int32), intent(inout) :: X2
         integer(int32), intent(inout) :: X3
@@ -328,8 +327,8 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
 
     integer(int32) :: Nri, ni, Dayi, Deci, Monthi, Yeari, DayN
     integer(int32) :: DNR
-    real(dp) :: C1, C2, C3
-    real(dp) :: Ul, LL, Mid
+    real(sp) :: C1, C2, C3
+    real(sp) :: Ul, LL, Mid
 
     call DetermineDate(DayNri, Dayi, Monthi, Yeari)
     if (Dayi > 20) then
@@ -353,37 +352,37 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
     end if
     call GetSetofThree(DayN, Deci, Monthi, Yeari, C1, C2, C3)
     call DetermineDayNr(Dayi, Monthi, Yeari, DNR)
-    if (abs(C2) < epsilon(0._dp)) then
+    if (abs(C2) < epsilon(0._sp)) then
         do Nri = 1, ni
             EToDataSet(Nri)%DayNr = DNR+Nri-1
-            EToDataSet(Nri)%Param = 0._dp
+            EToDataSet(Nri)%Param = 0._sp
         end do
     else
         call GetParameters(C1, C2, C3, UL, LL, Mid)
         do Nri = 1, ni
             EToDataSet(Nri)%DayNr = DNR+Nri-1
-            if (Nri <= (ni/2._dp+0.01)) then
-                EToDataSet(Nri)%Param = (2._dp*UL + (Mid-UL)*(2._dp*Nri-1._dp) &
-                                        / (ni/2._dp))/2._dp
+            if (Nri <= (ni/2._sp+0.01)) then
+                EToDataSet(Nri)%Param = (2._sp*UL + (Mid-UL)*(2._sp*Nri-1._sp) &
+                                        / (ni/2._sp))/2._sp
             else
                 if (((ni == 11) .or. (ni == 9)) .and. (Nri < (ni+1.01)/2)) then
                     EToDataSet(Nri)%Param = Mid
                 else
-                    EToDataSet(Nri)%Param = (2._dp*Mid &
+                    EToDataSet(Nri)%Param = (2._sp*Mid &
                                              + (LL-Mid) &
-                                             * (2._dp*Nri &
-                                                -(ni+1._dp))/(ni/2._dp))/2._dp
+                                             * (2._sp*Nri &
+                                                -(ni+1._sp))/(ni/2._sp))/2._sp
                 end if
             end if
-            if (EToDataSet(Nri)%Param < 0._dp) then
-                EToDataSet(Nri)%Param = 0._dp
+            if (EToDataSet(Nri)%Param < 0._sp) then
+                EToDataSet(Nri)%Param = 0._sp
             end if
         end do
     end if
 
     do Nri = (ni+1), 31
         EToDataSet(Nri)%DayNr = DNR+ni-1
-        EToDataSet(Nri)%Param = 0._dp
+        EToDataSet(Nri)%Param = 0._sp
     end do
 
 
@@ -395,9 +394,9 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
         integer(int32), intent(in) :: Deci
         integer(int32), intent(in) :: Monthi
         integer(int32), intent(in) :: Yeari
-        real(dp), intent(inout) :: C1
-        real(dp), intent(inout) :: C2
-        real(dp), intent(inout) :: C3
+        real(sp), intent(inout) :: C1
+        real(sp), intent(inout) :: C2
+        real(sp), intent(inout) :: C3
 
         integer :: fETo
         integer(int32) :: DecFile, Mfile, Yfile, Nri, Obsi
@@ -445,10 +444,10 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
                     read(fETo, *) C3
                     if (Deci == DecFile) then
                         C2 = C3
-                        C3 = C2+(C2-C1)/4._dp
+                        C3 = C2+(C2-C1)/4._sp
                     else
                         C2 = C1
-                        C1 = C2 + (C2-C3)/4._dp
+                        C1 = C2 + (C2-C3)/4._sp
                     end if
             end select
             OK3 = .true.
@@ -460,7 +459,7 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
             read(fETo, *) C1
             C2 = C1
             read(fETo, *) C3
-            C1 = C2 + (C2-C3)/4._dp
+            C1 = C2 + (C2-C3)/4._sp
             OK3 = .true.
         end if
 
@@ -473,7 +472,7 @@ subroutine GetDecadeEToDataSet(DayNri, EToDataSet)
                 end do
                 read(fETo, *) C1
                 read(fETo, *) C2
-                C3 = C2+(C2-C1)/4._dp
+                C3 = C2+(C2-C1)/4._sp
                 OK3 = .true.
             end if
         end if
@@ -520,7 +519,7 @@ subroutine GetDecadeRainDataSet(DayNri, RainDataSet)
     integer(int32) :: DNR
     integer :: fRain
     logical :: OKRain
-    real(dp) :: C
+    real(sp) :: C
 
     call DetermineDate(DayNri, Day1, Monthi, Yeari)
 
@@ -571,7 +570,7 @@ subroutine GetDecadeRainDataSet(DayNri, RainDataSet)
 
     ! 3. Find decade
     OKRain = .false.
-    C = 999._dp
+    C = 999._sp
     loop: do
         if ((Deci == DecFile) .and. (Monthi == Mfile) &
                               .and. (Yeari == Yfile)) then
@@ -596,7 +595,7 @@ subroutine GetDecadeRainDataSet(DayNri, RainDataSet)
     end do
     do Nri = (ni+1), 31
         RainDataSet(Nri)%DayNr = DNR+ni-1
-        RainDataSet(Nri)%Param = 0._dp
+        RainDataSet(Nri)%Param = 0._sp
     end do
 end subroutine GetDecadeRainDataSet
 
@@ -606,7 +605,7 @@ subroutine GetMonthlyRainDataSet(DayNri, RainDataSet)
     type(rep_DayEventDbl), dimension(31), intent(inout) :: RainDataSet
 
     integer(int32) :: Dayi, DayN, Monthi, Yeari
-    real(dp) :: C1, C2, C3, RainDec1, RainDec2, RainDec3
+    real(sp) :: C1, C2, C3, RainDec1, RainDec2, RainDec3
     integer(int32) :: DNR
 
     call DetermineDate(DayNri, Dayi, Monthi, Yeari)
@@ -621,41 +620,41 @@ subroutine GetMonthlyRainDataSet(DayNri, RainDataSet)
     if ((Monthi == 2) .and. LeapYear(Yeari)) then
         DayN = DayN + 1
     end if
-    if (C2 > epsilon(0._dp)) then
-        RainDec1 = (5._dp*C1 + 26._dp*C2 - 4._dp*C3)/(27._dp*3._dp) ! mm/dec
-        RainDec2 = (-C1 + 29._dp*C2 - C3)/(27._dp*3._dp)
-        RainDec3 = (-4._dp*C1 + 26._dp*C2 + 5._dp*C3)/(27._dp*3._dp)
+    if (C2 > epsilon(0._sp)) then
+        RainDec1 = (5._sp*C1 + 26._sp*C2 - 4._sp*C3)/(27._sp*3._sp) ! mm/dec
+        RainDec2 = (-C1 + 29._sp*C2 - C3)/(27._sp*3._sp)
+        RainDec3 = (-4._sp*C1 + 26._sp*C2 + 5._sp*C3)/(27._sp*3._sp)
         do Dayi = 1, 10
             RainDataSet(Dayi)%DayNr = DNR+Dayi-1
-            RainDataSet(Dayi)%Param = RainDec1/10._dp
-            if (RainDataSet(Dayi)%Param < epsilon(0._dp)) then
-                RainDataSet(Dayi)%Param = 0._dp
+            RainDataSet(Dayi)%Param = RainDec1/10._sp
+            if (RainDataSet(Dayi)%Param < epsilon(0._sp)) then
+                RainDataSet(Dayi)%Param = 0._sp
             end if
         end do
         do Dayi = 11, 20
             RainDataSet(Dayi)%DayNr = DNR+Dayi-1
-            RainDataSet(Dayi)%Param = RainDec2/10._dp
-            if (RainDataSet(Dayi)%Param < epsilon(0._dp)) then
-                RainDataSet(Dayi)%Param = 0._dp
+            RainDataSet(Dayi)%Param = RainDec2/10._sp
+            if (RainDataSet(Dayi)%Param < epsilon(0._sp)) then
+                RainDataSet(Dayi)%Param = 0._sp
             end if
         end do
         do Dayi = 21, DayN
             RainDataSet(Dayi)%DayNr = DNR+Dayi-1
-            RainDataSet(Dayi)%Param = RainDec3/(DayN-21._dp+1._dp)
-            if (RainDataSet(Dayi)%Param < epsilon(0._dp)) then
-                RainDataSet(Dayi)%Param = 0._dp
+            RainDataSet(Dayi)%Param = RainDec3/(DayN-21._sp+1._sp)
+            if (RainDataSet(Dayi)%Param < epsilon(0._sp)) then
+                RainDataSet(Dayi)%Param = 0._sp
             end if
         end do
     else
         do Dayi = 1, DayN
         RainDataSet(Dayi)%DayNr = DNR+Dayi-1
-        RainDataSet(Dayi)%Param = 0._dp
+        RainDataSet(Dayi)%Param = 0._sp
         end do
     end if
 
     do Dayi = (DayN+1), 31
         RainDataSet(Dayi)%DayNr = DNR+DayN-1
-        RainDataSet(Dayi)%Param = 0._dp
+        RainDataSet(Dayi)%Param = 0._sp
     end do
 
 
@@ -665,9 +664,9 @@ subroutine GetMonthlyRainDataSet(DayNri, RainDataSet)
     subroutine GetSetofThreeMonths(Monthi, Yeari, C1, C2, C3)
         integer(int32), intent(in) :: Monthi
         integer(int32), intent(in) :: Yeari
-        real(dp), intent(inout) :: C1
-        real(dp), intent(inout) :: C2
-        real(dp), intent(inout) :: C3
+        real(sp), intent(inout) :: C1
+        real(sp), intent(inout) :: C2
+        real(sp), intent(inout) :: C3
 
         integer :: fRain
         integer(int32) :: Mfile, Yfile, Nri, Obsi

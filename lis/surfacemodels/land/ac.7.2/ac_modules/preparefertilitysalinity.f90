@@ -64,8 +64,7 @@ use ac_global, only: CO2ref,&
                      TimeToMaxCanopySF, & 
                      undef_double, & 
                      undef_int
-use ac_kinds, only: dp, &
-                    int8, &
+use ac_kinds, only: int8, &
                     int16, &
                     int32, &
                     intEnum, &
@@ -89,6 +88,8 @@ implicit none
 
 contains
 
+
+
 subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
                     Tbase, Tupper, TDayMin, TDayMax, &
                     GDDL0, GDDL12, GDDFlor, GDDLengthFlor, GDDL123, &
@@ -98,10 +99,10 @@ subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
                     L123, L1234, LHImax, CGC, CDC, RatedHIdt)
     integer(int32), intent(in) :: PlantDayNr
     integer(intEnum), intent(in) :: TheCropType
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDL12
     integer(int32), intent(in) :: GDDFlor
@@ -109,10 +110,10 @@ subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDL1234
     integer(int32), intent(in) :: GDDHImax
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
     integer(int32), intent(in) :: RefHI
     integer(int32), intent(in) :: TheDaysToCCini
     integer(int32), intent(in) :: TheGDDaysToCCini
@@ -124,9 +125,9 @@ subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
     integer(int32), intent(inout) :: L123
     integer(int32), intent(inout) :: L1234
     integer(int32), intent(inout) :: LHImax
-    real(dp), intent(inout) :: CGC
-    real(dp), intent(inout) :: CDC
-    real(dp), intent(inout) :: RatedHIdt
+    real(sp), intent(inout) :: CGC
+    real(sp), intent(inout) :: CDC
+    real(sp), intent(inout) :: RatedHIdt
 
     integer(int32) :: ExtraGDDays, ExtraDays
 
@@ -170,25 +171,25 @@ subroutine AdjustCalendarDaysReferenceTnx(PlantDayNr, TheCropType, &
             PlantDayNr, Tbase, Tupper, TDayMin, TDayMax)
     end select
 
-    CGC = (real(GDDL12, kind=dp)/real(L12, kind=dp)) * GDDCGC
+    CGC = (real(GDDL12, kind=sp)/real(L12, kind=sp)) * GDDCGC
     call GDDCDCToCDC(PlantDayNr, L123, GDDL123, GDDL1234, CCx, GDDCDC, &
         Tbase, Tupper, TDayMin, TDayMax, CDC, .true.)
     if ((TheCropType == subkind_Grain) .or. (TheCropType == subkind_Tuber)) then
-        RatedHIdt = real(RefHI, kind=dp)/real(LHImax, kind=dp)
+        RatedHIdt = real(RefHI, kind=sp)/real(LHImax, kind=sp)
     end if
     if ((TheCropType == subkind_Vegetative) .or. (TheCropType == subkind_Forage)) then
         if (LHImax > 0) then
             if (LHImax > L1234) then
-                RatedHIdt = real(RefHI, kind=dp)/real(L1234, kind=dp)
+                RatedHIdt = real(RefHI, kind=sp)/real(L1234, kind=sp)
             else
-                RatedHIdt = real(RefHI, kind=dp)/real(LHImax, kind=dp)
+                RatedHIdt = real(RefHI, kind=sp)/real(LHImax, kind=sp)
             end if
-            if (RatedHIdt > 100._dp) then
-                RatedHIdt = 100._dp ! 100 is maximum TempdHIdt (See SetdHIdt)
+            if (RatedHIdt > 100._sp) then
+                RatedHIdt = 100._sp ! 100 is maximum TempdHIdt (See SetdHIdt)
                 LHImax = 0
             end if
         else
-            RatedHIdt = 100._dp ! 100 is maximum TempdHIdt (See SetdHIdt)
+            RatedHIdt = 100._sp ! 100 is maximum TempdHIdt (See SetdHIdt)
             LHImax = 0
         end if
     end if
@@ -246,13 +247,13 @@ subroutine DailyTnxReferenceFileCoveringCropPeriod(CropFirstDay)
 end subroutine DailyTnxReferenceFileCoveringCropPeriod
 
 
-real(dp) function CO2ForTnxReferenceYear(TnxReferenceYear)
+real(sp) function CO2ForTnxReferenceYear(TnxReferenceYear)
     integer(int32), intent(in) :: TnxReferenceYear
 
     integer(int32) :: i
     integer(int32) :: fhandle, rc
     character(len=1025) :: TempString
-    real(dp) :: TheCO2, CO2a, CO2b, YearA, YearB
+    real(sp) :: TheCO2, CO2a, CO2b, YearA, YearB
 
     if (TnxReferenceYear == 2000) then
         TheCO2 = CO2Ref
@@ -311,45 +312,45 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
     integer(int32), intent(in) :: GDDL1234
     integer(int32), intent(in) :: WPyield
     integer(int32), intent(in) :: RefHI
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDtranspLow
-    real(dp), intent(in) :: WPveg
-    real(dp), intent(in) :: RatedHIdt
-    real(dp), intent(in) :: CO2TnxReferenceYear
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDtranspLow
+    real(sp), intent(in) :: WPveg
+    real(sp), intent(in) :: RatedHIdt
+    real(sp), intent(in) :: CO2TnxReferenceYear
     integer(int32), intent(in) :: RefCropDay1
     logical, intent(in) :: CropDeterm
     type(rep_Shapes), intent(in) :: CropSResp
     integer(intEnum), intent(in) :: TheCropType
     integer(intEnum), intent(in) :: TheModeCycle
-    real(dp), intent(inout) :: b0
-    real(dp), intent(inout) :: b1
-    real(dp), intent(inout) :: b2
-    real(dp), intent(inout) :: BM10
-    real(dp), intent(inout) :: BM20
-    real(dp), intent(inout) :: BM30
-    real(dp), intent(inout) :: BM40
-    real(dp), intent(inout) :: BM50
-    real(dp), intent(inout) :: BM60
-    real(dp), intent(inout) :: BM70
+    real(sp), intent(inout) :: b0
+    real(sp), intent(inout) :: b1
+    real(sp), intent(inout) :: b2
+    real(sp), intent(inout) :: BM10
+    real(sp), intent(inout) :: BM20
+    real(sp), intent(inout) :: BM30
+    real(sp), intent(inout) :: BM40
+    real(sp), intent(inout) :: BM50
+    real(sp), intent(inout) :: BM60
+    real(sp), intent(inout) :: BM70
 
     type StressIndexes
         integer(int32) :: StressProc
             !! Undocumented
-        real(dp) :: BioMProc
+        real(sp) :: BioMProc
             !! Undocumented
-        real(dp) :: BioMSquare
+        real(sp) :: BioMSquare
             !! Undocumented
     end type StressIndexes
 
@@ -357,13 +358,13 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
     integer(int8) :: Si
     integer(int32) :: L12SF, GDDL12SF
     type(rep_EffectStress) :: StressResponse
-    real(dp) :: RatDGDD, BNor, BNor100, Yavg, X1avg, X2avg,&
+    real(sp) :: RatDGDD, BNor, BNor100, Yavg, X1avg, X2avg,&
                 y, x1, x2, x1y, x2y, x1Sq, x2Sq, x1x2, &
                 SUMx1y, SUMx2y, SUMx1Sq, SUMx2Sq, SUMx1x2
     integer(int32) :: SiPr
-    real(dp) :: SumKcTop, HIGC, HIGClinear
+    real(sp) :: SumKcTop, HIGC, HIGClinear
     integer(int32) :: DaysYieldFormation, tSwitch
-    real(dp) :: TDayMax_temp, TDayMin_temp
+    real(sp) :: TDayMax_temp, TDayMin_temp
 
     ! 1. initialize
     call SetSimulation_DelayedDays(0) ! required for CalculateETpot
@@ -381,11 +382,11 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         ! DaysToFlowering corresponds with Tuberformation
         DaysYieldFormation = roundc(RefHI/RatedHIdt, mold=1)
         if (CropDeterm) then
-            HIGC = HarvestIndexGrowthCoefficient(real(RefHI, kind=dp), RatedHIdt)
+            HIGC = HarvestIndexGrowthCoefficient(real(RefHI, kind=sp), RatedHIdt)
             call GetDaySwitchToLinear(RefHI, RatedHIdt, HIGC, tSwitch,&
                   HIGClinear)
         else
-            tSwitch = roundc(DaysYieldFormation/3._dp, mold=1)
+            tSwitch = roundc(DaysYieldFormation/3._sp, mold=1)
         end if
     end if
 
@@ -413,7 +414,7 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
                                  TDayMin_temp, TDayMax_temp)
             end if
             if ((TheModeCycle == modeCycle_GDDays) .and. (GDDL12SF < GDDL123)) then
-                RatDGDD = (L123-L12SF)*1._dp/(GDDL123-GDDL12SF)
+                RatDGDD = (L123-L12SF)*1._sp/(GDDL123-GDDL12SF)
             end if
         end if
         ! biomass production
@@ -425,16 +426,16 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
                 Tbase, Tupper, TDayMin, TDayMax, GDtranspLow, RatDGDD,&
                 SumKcTop, SiPr, StressResponse%RedCGC, StressResponse%RedCCX,&
                 StressResponse%RedWP, StressResponse%RedKsSto, 0_int8, 0 ,&
-                StressResponse%CDecline, -0.01_dp, TheModeCycle, .true.,&
+                StressResponse%CDecline, -0.01_sp, TheModeCycle, .true.,&
                 .true.)
         if (Si == 1) then
             BNor100 = BNor
-            StressMatrix(1)%BioMProc = 100._dp
+            StressMatrix(1)%BioMProc = 100._sp
         else
-            if (BNor100 > 0.00001_dp) then
-                StressMatrix(Si)%BioMProc = 100._dp * BNor/BNor100
+            if (BNor100 > 0.00001_sp) then
+                StressMatrix(Si)%BioMProc = 100._sp * BNor/BNor100
             else
-                StressMatrix(Si)%BioMProc = 100._dp
+                StressMatrix(Si)%BioMProc = 100._sp
             end if
         end if
         StressMatrix(Si)%BioMSquare =&
@@ -444,23 +445,23 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
     end do
 
     ! 5. Stress - Biomass relationship
-    Yavg = 0._dp
-    X1avg = 0._dp
-    X2avg = 0._dp
+    Yavg = 0._sp
+    X1avg = 0._sp
+    X2avg = 0._sp
     do Si = 1, 8
         ! various stress levels
         Yavg = Yavg + StressMatrix(Si)%StressProc
         X1avg = X1avg + StressMatrix(Si)%BioMProc
         X2avg = X2avg + StressMatrix(Si)%BioMSquare
     end do
-    Yavg  = Yavg/8._dp
-    X1avg = X1avg/8._dp
-    X2avg = X2avg/8._dp
-    SUMx1y  = 0._dp
-    SUMx2y  = 0._dp
-    SUMx1Sq = 0._dp
-    SUMx2Sq = 0._dp
-    SUMx1x2 = 0._dp
+    Yavg  = Yavg/8._sp
+    X1avg = X1avg/8._sp
+    X2avg = X2avg/8._sp
+    SUMx1y  = 0._sp
+    SUMx2y  = 0._sp
+    SUMx1Sq = 0._sp
+    SUMx2Sq = 0._sp
+    SUMx1x2 = 0._sp
     do Si = 1, 8
         ! various stress levels
         y     = StressMatrix(Si)%StressProc - Yavg
@@ -478,7 +479,7 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         SUMx1x2 = SUMx1x2 + x1x2
     end do
 
-    if (abs(roundc(SUMx1x2*1000._dp, mold=1)) /= 0) then
+    if (abs(roundc(SUMx1x2*1000._sp, mold=1)) /= 0) then
         b2 = (SUMx1y - (SUMx2y * SUMx1Sq)/SUMx1x2)/&
              (SUMx1x2 - (SUMx1Sq * SUMx2Sq)/SUMx1x2)
         b1 = (SUMx1y - b2 * SUMx1x2)/SUMx1Sq
@@ -492,9 +493,9 @@ subroutine StressBiomassRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         BM60 =  StressMatrix(7)%BioMProc
         BM70 =  StressMatrix(8)%BioMProc
     else
-        b2 = real(undef_int, kind=dp)
-        b1 = real(undef_int, kind=dp)
-        b0 = real(undef_int, kind=dp)
+        b2 = real(undef_int, kind=sp)
+        b1 = real(undef_int, kind=sp)
+        b0 = real(undef_int, kind=sp)
     end if
 end subroutine StressBiomassRelationshipForTnxReference
 
@@ -523,64 +524,64 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
     integer(int32), intent(in) :: GDDL1234
     integer(int32), intent(in) :: WPyield
     integer(int32), intent(in) :: RefHI
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDbioLow
-    real(dp), intent(in) :: WPveg
-    real(dp), intent(in) :: RatedHIdt
-    real(dp), intent(in) :: CO2TnxReferenceYear
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDbioLow
+    real(sp), intent(in) :: WPveg
+    real(sp), intent(in) :: RatedHIdt
+    real(sp), intent(in) :: CO2TnxReferenceYear
     integer(int32), intent(in) :: CropDNr1
     logical, intent(in) :: CropDeterm
     integer(intEnum), intent(in) :: TheCropType
     integer(intEnum), intent(in) :: TheModeCycle
     integer(int8), intent(in) :: TheCCsaltDistortion
-    real(dp), intent(inout) :: Coeffb0Salt
-    real(dp), intent(inout) :: Coeffb1Salt
-    real(dp), intent(inout) :: Coeffb2Salt
-    real(dp), intent(inout) :: Salt10
-    real(dp), intent(inout) :: Salt20
-    real(dp), intent(inout) :: Salt30
-    real(dp), intent(inout) :: Salt40
-    real(dp), intent(inout) :: Salt50
-    real(dp), intent(inout) :: Salt60
-    real(dp), intent(inout) :: Salt70
-    real(dp), intent(inout) :: Salt80
-    real(dp), intent(inout) :: Salt90
+    real(sp), intent(inout) :: Coeffb0Salt
+    real(sp), intent(inout) :: Coeffb1Salt
+    real(sp), intent(inout) :: Coeffb2Salt
+    real(sp), intent(inout) :: Salt10
+    real(sp), intent(inout) :: Salt20
+    real(sp), intent(inout) :: Salt30
+    real(sp), intent(inout) :: Salt40
+    real(sp), intent(inout) :: Salt50
+    real(sp), intent(inout) :: Salt60
+    real(sp), intent(inout) :: Salt70
+    real(sp), intent(inout) :: Salt80
+    real(sp), intent(inout) :: Salt90
 
     type StressIndexes
         integer(int32) :: CCxReduction
             !! Undocumented
-        real(dp) :: SaltProc
+        real(sp) :: SaltProc
             !! Undocumented
-        real(dp) :: SaltSquare
+        real(sp) :: SaltSquare
             !! Undocumented
     end type StressIndexes
 
     integer(int32) :: L12SS, GDDL12SS, DaysYieldFormation, tSwitch
-    real(dp) :: SumKcTop, HIGC, HIGClinear, CCToReach
+    real(sp) :: SumKcTop, HIGC, HIGClinear, CCToReach
     integer(int32) :: Si, SiPr
     type(StressIndexes), dimension(10) :: StressMatrix
     type(rep_EffectStress) :: StressResponse
-    real(dp) :: RatDGDD, BNor, BNor100, BioMProc
-    real(dp) :: Yavg, X1avg, X2avg, SUMx1y, SUMx2y, SUMx1Sq, &
+    real(sp) :: RatDGDD, BNor, BNor100, BioMProc
+    real(sp) :: Yavg, X1avg, X2avg, SUMx1y, SUMx2y, SUMx1Sq, &
          SUMx2Sq, SUMx1x2, y, x1, x2, x1y, x2y, x1Sq, x2Sq, x1x2
-    real(dp) :: TDayMax_temp, TDayMin_temp
+    real(sp) :: TDayMax_temp, TDayMin_temp
 
     ! 1. initialize
     call SetSimulation_DelayedDays(0) ! required for CalculateETpot
     GDDL12SS = GDDL12 ! to calculate SumKcTop (no stress)
-    BNor100 = real(undef_int, kind=dp)
+    BNor100 = real(undef_int, kind=sp)
     ! Maximum sum Kc (no stress)
     SumKcTop = SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini,&
         L0, L12, L123, L1234, GDDL0, GDDL12, GDDL123, GDDL1234,&
@@ -592,11 +593,11 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         ! DaysToFlowering corresponds with Tuberformation
         DaysYieldFormation = roundc(RefHI/RatedHIdt, mold=1)
         if (CropDeterm) then
-            HIGC = HarvestIndexGrowthCoefficient(real(RefHI, kind=dp), RatedHIdt)
+            HIGC = HarvestIndexGrowthCoefficient(real(RefHI, kind=sp), RatedHIdt)
             call GetDaySwitchToLinear(RefHI, RatedHIdt, &
                     HIGC, tSwitch, HIGClinear)
         else
-            tSwitch = roundc(DaysYieldFormation/3._dp, mold=1)
+            tSwitch = roundc(DaysYieldFormation/3._sp, mold=1)
         end if
     end if
 
@@ -618,10 +619,10 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
             L12SS = L12
             GDDL12SS = GDDL12
         else
-            CCToReach = 0.98_dp*(1._dp-StressResponse%RedCCX/100._dp)*CCx
+            CCToReach = 0.98_sp*(1._sp-StressResponse%RedCCX/100._sp)*CCx
             L12SS = DaysToReachCCwithGivenCGC(CCToReach, CCo, &
-                 (1._dp-StressResponse%RedCCX/100._dp)*CCx,&
-                 CGC*(1._dp-StressResponse%RedCGC/100._dp), L0)
+                 (1._sp-StressResponse%RedCCX/100._sp)*CCx,&
+                 CGC*(1._sp-StressResponse%RedCGC/100._sp), L0)
             if (TheModeCycle == modeCycle_GDDays) then
                 TDayMax_temp = TDayMax
                 TDayMin_temp = TDayMin
@@ -630,7 +631,7 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
             end if
             if ((TheModeCycle == modeCycle_GDDays) .and.&
                 (GDDL12SS < GDDL123)) then
-                RatDGDD = (L123-L12SS)*1._dp/(GDDL123-GDDL12SS)
+                RatDGDD = (L123-L12SS)*1._sp/(GDDL123-GDDL12SS)
             end if
         end if
 
@@ -644,18 +645,18 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
                 Tbase, Tupper, TDayMin, TDayMax, GDbioLow, RatDGDD, SumKcTop,&
                 SiPr, StressResponse%RedCGC, StressResponse%RedCCX,&
                 StressResponse%RedWP, StressResponse%RedKsSto, &
-                0_int8, 0, StressResponse%CDecline, -0.01_dp,&
+                0_int8, 0, StressResponse%CDecline, -0.01_sp,&
                 TheModeCycle, .false., .true.)
         if (Si == 1) then
             BNor100 = BNor
-            BioMProc = 100._dp
-            StressMatrix(1)%SaltProc = 0._dp
+            BioMProc = 100._sp
+            StressMatrix(1)%SaltProc = 0._sp
         else
-            if (BNor100 > 0.00001_dp) then
-                BioMProc = 100._dp * BNor/BNor100
-                StressMatrix(Si)%SaltProc = 100._dp - BioMProc
+            if (BNor100 > 0.00001_sp) then
+                BioMProc = 100._sp * BNor/BNor100
+                StressMatrix(Si)%SaltProc = 100._sp - BioMProc
             else
-                StressMatrix(Si)%SaltProc = 0._dp
+                StressMatrix(Si)%SaltProc = 0._sp
             end if
         end if
         StressMatrix(Si)%SaltSquare = &
@@ -665,23 +666,23 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
     end do
 
     ! 3. CCx - Salt stress relationship
-    Yavg = 0._dp
-    X1avg = 0._dp
-    X2avg = 0._dp
+    Yavg = 0._sp
+    X1avg = 0._sp
+    X2avg = 0._sp
     do Si = 1, 10
         ! various CCx reduction
         Yavg = Yavg + StressMatrix(Si)%CCxReduction
         X1avg = X1avg + StressMatrix(Si)%SaltProc
         X2avg = X2avg + StressMatrix(Si)%SaltSquare
     end do
-    Yavg  = Yavg/10._dp
-    X1avg = X1avg/10._dp
-    X2avg = X2avg/10._dp
-    SUMx1y  = 0._dp
-    SUMx2y  = 0._dp
-    SUMx1Sq = 0._dp
-    SUMx2Sq = 0._dp
-    SUMx1x2 = 0._dp
+    Yavg  = Yavg/10._sp
+    X1avg = X1avg/10._sp
+    X2avg = X2avg/10._sp
+    SUMx1y  = 0._sp
+    SUMx2y  = 0._sp
+    SUMx1Sq = 0._sp
+    SUMx2Sq = 0._sp
+    SUMx1x2 = 0._sp
     do Si = 1, 10
         ! various CCx reduction
         y     = StressMatrix(Si)%CCxReduction - Yavg
@@ -699,7 +700,7 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         SUMx1x2 = SUMx1x2 + x1x2
     end do
 
-    if (abs(roundc(SUMx1x2*1000._dp, mold=1)) /= 0) then
+    if (abs(roundc(SUMx1x2*1000._sp, mold=1)) /= 0) then
         Coeffb2Salt = (SUMx1y - (SUMx2y * SUMx1Sq)/SUMx1x2)/&
                       (SUMx1x2 - (SUMx1Sq * SUMx2Sq)/SUMx1x2)
         Coeffb1Salt = (SUMx1y - Coeffb2Salt * SUMx1x2)/SUMx1Sq
@@ -715,9 +716,9 @@ subroutine CCxSaltStressRelationshipForTnxReference(TheDaysToCCini, TheGDDaysToC
         Salt80 =  StressMatrix(9)%SaltProc
         Salt90 =  StressMatrix(10)%SaltProc
     else
-        Coeffb2Salt = real(undef_int, kind=dp)
-        Coeffb1Salt = real(undef_int, kind=dp)
-        Coeffb0Salt = real(undef_int, kind=dp)
+        Coeffb2Salt = real(undef_int, kind=sp)
+        Coeffb1Salt = real(undef_int, kind=sp)
+        Coeffb0Salt = real(undef_int, kind=sp)
     end if
 end subroutine CCxSaltStressRelationshipForTnxReference
 
@@ -746,37 +747,37 @@ subroutine ReferenceStressBiomassRelationship(TheDaysToCCini, &
     integer(int32), intent(in) :: GDDL1234
     integer(int32), intent(in) :: WPyield
     integer(int32), intent(in) :: RefHI
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDtranspLow
-    real(dp), intent(in) :: WPveg
-    real(dp), intent(in) :: RatedHIdt
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDtranspLow
+    real(sp), intent(in) :: WPveg
+    real(sp), intent(in) :: RatedHIdt
     integer(int32), intent(in) :: CropDNr1
     logical, intent(in) :: CropDeterm
     type(rep_Shapes), intent(in) :: CropSResp
     integer(intEnum), intent(in) :: TheCropType
     integer(intEnum), intent(in) :: TheModeCycle
-    real(dp), intent(inout) :: b0
-    real(dp), intent(inout) :: b1
-    real(dp), intent(inout) :: b2
-    real(dp), intent(inout) :: BM10
-    real(dp), intent(inout) :: BM20
-    real(dp), intent(inout) :: BM30
-    real(dp), intent(inout) :: BM40
-    real(dp), intent(inout) :: BM50
-    real(dp), intent(inout) :: BM60
-    real(dp), intent(inout) :: BM70
+    real(sp), intent(inout) :: b0
+    real(sp), intent(inout) :: b1
+    real(sp), intent(inout) :: b2
+    real(sp), intent(inout) :: BM10
+    real(sp), intent(inout) :: BM20
+    real(sp), intent(inout) :: BM30
+    real(sp), intent(inout) :: BM40
+    real(sp), intent(inout) :: BM50
+    real(sp), intent(inout) :: BM60
+    real(sp), intent(inout) :: BM70
     integer(int32), intent(in) :: GDDFlor
     integer(int32), intent(in) :: GDDLengthFlor
     integer(int32), intent(in) :: GDDHImax
@@ -785,7 +786,7 @@ subroutine ReferenceStressBiomassRelationship(TheDaysToCCini, &
 
     integer(int32) :: RefCropDay1
     integer(int32) :: Dayi, Monthi, Yeari
-    real(dp) :: CO2TnxReferenceYear
+    real(sp) :: CO2TnxReferenceYear
     integer(int32) :: L0_loc
     integer(int32) :: L12_loc
     integer(int32) :: L123_loc
@@ -793,9 +794,9 @@ subroutine ReferenceStressBiomassRelationship(TheDaysToCCini, &
     integer(int32) :: LFlor_loc
     integer(int32) :: LengthFlor_loc
     integer(int32) :: LHImax_loc
-    real(dp) :: CGC_loc
-    real(dp) :: CDC_loc
-    real(dp) :: RatedHIdt_loc
+    real(sp) :: CGC_loc
+    real(sp) :: CDC_loc
+    real(sp) :: RatedHIdt_loc
 
     L0_loc = L0
     L12_loc = L12
@@ -885,46 +886,46 @@ subroutine ReferenceCCxSaltStressRelationship(TheDaysToCCini, &
     integer(int32), intent(in) :: GDDL1234
     integer(int32), intent(in) :: WPyield
     integer(int32), intent(in) :: RefHI
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDbioLow
-    real(dp), intent(in) :: WPveg
-    real(dp), intent(in) :: RatedHIdt
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDbioLow
+    real(sp), intent(in) :: WPveg
+    real(sp), intent(in) :: RatedHIdt
     integer(int32), intent(in) :: CropDNr1
     logical, intent(in) :: CropDeterm
     integer(intEnum), intent(in) :: TheCropType
     integer(intEnum), intent(in) :: TheModeCycle
     integer(int8), intent(in) :: TheCCsaltDistortion
-    real(dp), intent(inout) :: Coeffb0Salt
-    real(dp), intent(inout) :: Coeffb1Salt
-    real(dp), intent(inout) :: Coeffb2Salt
-    real(dp), intent(inout) :: Salt10
-    real(dp), intent(inout) :: Salt20
-    real(dp), intent(inout) :: Salt30
-    real(dp), intent(inout) :: Salt40
-    real(dp), intent(inout) :: Salt50
-    real(dp), intent(inout) :: Salt60
-    real(dp), intent(inout) :: Salt70
-    real(dp), intent(inout) :: Salt80
-    real(dp), intent(inout) :: Salt90
+    real(sp), intent(inout) :: Coeffb0Salt
+    real(sp), intent(inout) :: Coeffb1Salt
+    real(sp), intent(inout) :: Coeffb2Salt
+    real(sp), intent(inout) :: Salt10
+    real(sp), intent(inout) :: Salt20
+    real(sp), intent(inout) :: Salt30
+    real(sp), intent(inout) :: Salt40
+    real(sp), intent(inout) :: Salt50
+    real(sp), intent(inout) :: Salt60
+    real(sp), intent(inout) :: Salt70
+    real(sp), intent(inout) :: Salt80
+    real(sp), intent(inout) :: Salt90
     integer(int32), intent(in) :: GDDHImax
     integer(intEnum), intent(in) :: ThePlanting
     integer(int32), intent(in) :: LHImax
 
     integer(int32) :: RefCropDay1
     integer(int32) :: Dayi, Monthi, Yeari
-    real(dp) :: CO2TnxReferenceYear
+    real(sp) :: CO2TnxReferenceYear
     integer(int32) :: L0_loc
     integer(int32) :: L12_loc
     integer(int32) :: L123_loc
@@ -932,9 +933,9 @@ subroutine ReferenceCCxSaltStressRelationship(TheDaysToCCini, &
     integer(int32) :: LFlor_loc
     integer(int32) :: LengthFlor_loc
     integer(int32) :: LHImax_loc
-    real(dp) :: CGC_loc
-    real(dp) :: CDC_loc
-    real(dp) :: RatedHIdt_loc
+    real(sp) :: CGC_loc
+    real(sp) :: CDC_loc
+    real(sp) :: RatedHIdt_loc
 
     L0_loc = L0
     L12_loc = L12

@@ -1,6 +1,6 @@
 module ac_project_input
 
-use ac_kinds, only: dp, &
+use ac_kinds, only: sp, &
                     int8, &
                     int32
 use ac_utils, only: assert
@@ -10,7 +10,7 @@ implicit none
 
 type ProjectInput_type
     !! Container for project file input data
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
         !! AquaCrop version number (common for all runs)
     character(len=:), allocatable :: Description
         !! Project description (common for all runs)
@@ -114,7 +114,7 @@ end type ProjectInput_type
 
 
 interface get_project_input
-    module procedure get_project_input_dp
+    module procedure get_project_input_sp
     module procedure get_project_input_int8
     module procedure get_project_input_int32
     module procedure get_project_input_string
@@ -122,7 +122,7 @@ end interface get_project_input
 
 
 interface set_project_input
-    module procedure set_project_input_dp
+    module procedure set_project_input_sp
     module procedure set_project_input_int8
     module procedure set_project_input_int32
     module procedure set_project_input_string
@@ -371,35 +371,35 @@ subroutine read_project_file(self, filename, NrRun)
 end subroutine read_project_file
 
 
-function get_project_input_dp(index, key, mold) result(value)
+function get_project_input_sp(index, key, mold) result(value)
     !! Returns the chosen double precision attribute of the
     !! ProjectInput module variable.
     integer, intent(in) :: index
     character(len=*), intent(in) :: key
-    real(dp), intent(in) :: mold
-    real(dp) :: value
+    real(sp), intent(in) :: mold
+    real(sp) :: value
 
     if (key == 'VersionNr') then
         value = ProjectInput(index)%VersionNr
     else
-        call assert(.false., 'Unknown dp key: ' // key)
+        call assert(.false., 'Unknown sp key: ' // key)
     end if
-end function get_project_input_dp
+end function get_project_input_sp
 
 
-subroutine set_project_input_dp(index, key, value)
+subroutine set_project_input_sp(index, key, value)
     !! Sets the chosen double precision attribute of the
     !! ProjectInput module variable.
     integer, intent(in) :: index
     character(len=*), intent(in) :: key
-    real(dp), intent(in) :: value
+    real(sp), intent(in) :: value
 
     if (key == 'VersionNr') then
         ProjectInput(index)%VersionNr = value
     else
-        call assert(.false., 'Unknown dp key: ' // key)
+        call assert(.false., 'Unknown sp key: ' // key)
     end if
-end subroutine set_project_input_dp
+end subroutine set_project_input_sp
 
 
 function get_project_input_int8(index, key, mold) result(value)

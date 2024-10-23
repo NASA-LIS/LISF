@@ -59,8 +59,7 @@ module AC72_module
           rep_Transfer,&
           rep_plotPar
 
-  use ac_kinds, only: dp,&
-                int8,&
+  use ac_kinds, only: int8,&
                 int32,&
                 intEnum,&
                 sp
@@ -165,27 +164,27 @@ module AC72_module
         logical :: Out8Irri
         logical :: Part1Mult,Part2Eval
 
-        real(dp) :: CCiActual
-        real(dp) :: CCiprev
-        real(dp) :: CCiTopEarlySen
-        real(dp) :: CRsalt ! gram/m2
-        real(dp) :: CRwater ! mm/day
-        real(dp) :: ECdrain ! EC drain water dS/m
-        real(dp) :: ECiAqua ! EC of the groundwater table in dS/m
-        real(dp) :: ECstorage !EC surface storage dS/m
-        real(dp) :: Eact ! mm/day
-        real(dp) :: Epot ! mm/day
-        real(dp) :: Drain  ! mm/day
-        real(dp) :: Infiltrated ! mm/day
-        real(dp) :: Irrigation ! mm/day
-        real(dp) :: RootingDepth
-        real(dp) :: Runoff  ! mm/day
-        real(dp) :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
-        real(dp) :: Surf0 ! surface water [mm] begin day
-        real(dp) :: SurfaceStorage !mm/day
-        real(dp) :: Tact ! mm/day
-        real(dp) :: Tpot ! mm/day
-        real(dp) :: TactWeedInfested !mm/day
+        real :: CCiActual
+        real :: CCiprev
+        real :: CCiTopEarlySen
+        real :: CRsalt ! gram/m2
+        real :: CRwater ! mm/day
+        real :: ECdrain ! EC drain water dS/m
+        real :: ECiAqua ! EC of the groundwater table in dS/m
+        real :: ECstorage !EC surface storage dS/m
+        real :: Eact ! mm/day
+        real :: Epot ! mm/day
+        real :: Drain  ! mm/day
+        real :: Infiltrated ! mm/day
+        real :: Irrigation ! mm/day
+        real :: RootingDepth
+        real :: Runoff  ! mm/day
+        real :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
+        real :: Surf0 ! surface water [mm] begin day
+        real :: SurfaceStorage !mm/day
+        real :: Tact ! mm/day
+        real :: Tpot ! mm/day
+        real :: TactWeedInfested !mm/day
 
         ! variables from run.f90
         type(rep_GwTable) :: GwTable
@@ -200,28 +199,28 @@ module AC72_module
 
         integer(int32) :: Tadj, GDDTadj
         integer(int32) :: DayLastCut,NrCut,SumInterval
-        integer(int8)  :: PreviousStressLevel, StressSFadjNEW
+        integer(int32)  :: PreviousStressLevel, StressSFadjNEW
 
-        real(dp) :: Bin
-        real(dp) :: Bout
-        real(dp) :: GDDayi
-        real(dp) :: CO2i
-        real(dp) :: FracBiomassPotSF
-        real(dp) :: SumETo,SumGDD, Ziprev,SumGDDPrev
-        real(dp) :: CCxWitheredTpot,CCxWitheredTpotNoS
-        real(dp) :: Coeffb0,Coeffb1,Coeffb2
-        real(dp) :: Coeffb0Salt,Coeffb1Salt,Coeffb2Salt
-        real(dp) :: StressLeaf,StressSenescence
-        real(dp) :: DayFraction,GDDayFraction
-        real(dp) :: CGCref,GDDCGCref 
-        real(dp) :: TimeSenescence
-        real(dp) :: SumKcTop, SumKcTopStress, SumKci
-        real(dp) :: CCoTotal, CCxTotal, CDCTotal, GDDCDCTotal, CCxCropWeedsNoSFstress
-        real(dp) :: WeedRCi, CCiActualWeedInfested, fWeedNoS, Zeval
-        real(dp) :: BprevSum, YprevSum, SumGDDcuts, HItimesBEF
-        real(dp) :: ScorAT1, ScorAT2, HItimesAT1, HItimesAT2, HItimesAT
-        real(dp) :: alfaHI, alfaHIAdj
-        real(dp) :: WPi
+        real :: Bin
+        real :: Bout
+        real :: GDDayi
+        real :: CO2i
+        real :: FracBiomassPotSF
+        real :: SumETo,SumGDD, Ziprev,SumGDDPrev
+        real :: CCxWitheredTpot,CCxWitheredTpotNoS
+        real :: Coeffb0,Coeffb1,Coeffb2
+        real :: Coeffb0Salt,Coeffb1Salt,Coeffb2Salt
+        real :: StressLeaf,StressSenescence
+        real :: DayFraction,GDDayFraction
+        real :: CGCref,GDDCGCref 
+        real :: TimeSenescence
+        real :: SumKcTop, SumKcTopStress, SumKci
+        real :: CCoTotal, CCxTotal, CDCTotal, GDDCDCTotal, CCxCropWeedsNoSFstress
+        real :: WeedRCi, CCiActualWeedInfested, fWeedNoS, Zeval
+        real :: BprevSum, YprevSum, SumGDDcuts, HItimesBEF
+        real :: ScorAT1, ScorAT2, HItimesAT1, HItimesAT2, HItimesAT
+        real :: alfaHI, alfaHIAdj
+        real :: WPi
         integer(int32) :: NextSimFromDayNr
 
         !! Evaluation
@@ -229,14 +228,14 @@ module AC72_module
         integer(int8)  :: LineNrEval
 
         !! specific for StandAlone
-        real(dp) :: PreviousSumETo, PreviousSumGDD, PreviousBmob,PreviousBsto
+        real :: PreviousSumETo, PreviousSumGDD, PreviousBmob,PreviousBsto
         integer(int8)  :: StageCode
         integer(int32) :: PreviousDayNr
         logical :: NoYear
 
         character(len=:), allocatable :: fEval_filename
 
-        logical :: WaterTableInProfile, StartMode, NoMoreCrop, CGCadjustmentAfterCutting
+        logical :: WaterTableInProfile, StartMode, CGCadjustmentAfterCutting
         logical :: GlobalIrriECw
         logical  :: HarvestNow
         real(sp), pointer :: Tmax_record(:)
@@ -245,6 +244,8 @@ module AC72_module
         logical :: maxR_reached, sene_reached, flowr_reached
         integer :: irri_lnr
 
+        ! Logical converted to int for restart
+        integer :: NoMoreCrop
 
         character(len=:), allocatable :: RainFile
         character(len=:), allocatable :: RainFileFull

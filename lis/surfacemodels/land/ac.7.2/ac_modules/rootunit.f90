@@ -21,8 +21,7 @@ use ac_global, only: undef_int, &
                      KsAny, &
                      SetSimulation_SCor, &
                      SetSoil_RootMax
-use ac_kinds, only: dp, &
-                    int32, &
+use ac_kinds, only: int32, &
                     int16, &
                     int8, &
                     intEnum, &
@@ -34,16 +33,16 @@ implicit none
 contains
 
 
-real(dp) function AdjustedRootingDepth(&
+real(sp) function AdjustedRootingDepth(&
         CCAct, CCpot, Tpot, Tact, StressLeaf, StressSenescence, DAP, L0,&
         LZmax, L1234, GDDL0, GDDLZmax, GDDL1234, SumGDDPrev, SumGDD, Zmin,&
         Zmax, Ziprev, ShapeFactor, TypeDays)
-    real(dp), intent(in) :: CCAct
-    real(dp), intent(in) :: CCpot
-    real(dp), intent(in) :: Tpot
-    real(dp), intent(in) :: Tact
-    real(dp), intent(in) :: StressLeaf
-    real(dp), intent(in) :: StressSenescence
+    real(sp), intent(in) :: CCAct
+    real(sp), intent(in) :: CCpot
+    real(sp), intent(in) :: Tpot
+    real(sp), intent(in) :: Tact
+    real(sp), intent(in) :: StressLeaf
+    real(sp), intent(in) :: StressSenescence
     integer(int32), intent(in) :: DAP
     integer(int32), intent(in) :: L0
     integer(int32), intent(in) :: LZmax
@@ -51,16 +50,16 @@ real(dp) function AdjustedRootingDepth(&
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDLZmax
     integer(int32), intent(in) :: GDDL1234
-    real(dp), intent(in) :: SumGDDPrev
-    real(dp), intent(in) :: SumGDD
-    real(dp), intent(in) :: Zmin
-    real(dp), intent(in) :: Zmax
-    real(dp), intent(in) :: Ziprev
+    real(sp), intent(in) :: SumGDDPrev
+    real(sp), intent(in) :: SumGDD
+    real(sp), intent(in) :: Zmin
+    real(sp), intent(in) :: Zmax
+    real(sp), intent(in) :: Ziprev
     integer(int8), intent(in) :: ShapeFactor
     integer(intEnum), intent(in) :: TypeDays
 
-    real(dp) :: Zi, ZiUnlimM1, ZiUnlim, dZ, ZiTest, Zsoil, ThetaTreshold
-    real(dp) :: TAWcompi, Wrel, pZexp, Zlimit, ZiMax, KsShapeFactorRoot
+    real(sp) :: Zi, ZiUnlimM1, ZiUnlim, dZ, ZiTest, Zsoil, ThetaTreshold
+    real(sp) :: TAWcompi, Wrel, pZexp, Zlimit, ZiMax, KsShapeFactorRoot
     integer(int32) :: compi, layer
 
     if (roundc(Ziprev, mold=1) == undef_int) then
@@ -70,8 +69,8 @@ real(dp) function AdjustedRootingDepth(&
         ! 1. maximum rooting depth (ZiMax) that could have been reached at
         !    time t
         ! -- 1.1 Undo effect of restrictive soil layer(s)
-        if (roundc(GetSoil_RootMax()*1000.0_dp, mold=1)&
-                < roundc(Zmax*1000.0_dp, mold=1)) then
+        if (roundc(GetSoil_RootMax()*1000.0_sp, mold=1)&
+                < roundc(Zmax*1000.0_sp, mold=1)) then
             Zlimit = GetSoil_RootMax()
             call SetSoil_RootMax(real(Zmax, kind=sp))
         else
@@ -96,58 +95,58 @@ real(dp) function AdjustedRootingDepth(&
         !    in ActualRootingDepth
 
         ! -- 3.2 correction for stomatal closure
-        if ((Tpot > 0.0_dp) .and. (Tact < Tpot)&
+        if ((Tpot > 0.0_sp) .and. (Tact < Tpot)&
                 .and. (GetSimulParam_KsShapeFactorRoot() /= undef_int)) then
             if (GetSimulParam_KsShapeFactorRoot() >= 0) then
                 dZ = dZ * (Tact/Tpot)   ! linear
             else
                 KsShapeFactorRoot = real(GetSimulParam_KsShapeFactorRoot(),&
-                                         kind=dp)
-                dZ = dZ * (exp((Tact/Tpot)*KsShapeFactorRoot)-1.0_dp) &
-                        / (exp(KsShapeFactorRoot)-1.0_dp) ! exponential
+                                         kind=sp)
+                dZ = dZ * (exp((Tact/Tpot)*KsShapeFactorRoot)-1.0_sp) &
+                        / (exp(KsShapeFactorRoot)-1.0_sp) ! exponential
             end if
         end if
 
         ! -- 3.2 correction for dry soil at expansion front of actual root
         !        zone
-        if (dZ > 0.001_dp) then
+        if (dZ > 0.001_sp) then
             ! soil water depletion threshold for root deepening
-            pZexp = GetCrop_pdef() + (1-GetCrop_pdef())/2.0_dp
+            pZexp = GetCrop_pdef() + (1-GetCrop_pdef())/2.0_sp
             ! restrictive soil layer is considered by ActualRootingDepth
             ZiTest = Ziprev + dZ
             compi = 0
-            Zsoil = 0.0_dp
+            Zsoil = 0.0_sp
             do while ((Zsoil < ZiTest) .and. (compi < GetNrCompartments()))
                 compi = compi + 1
                 Zsoil = Zsoil + GetCompartment_Thickness(compi)
             end do
             layer = GetCompartment_Layer(compi)
-            TAWcompi = GetSoilLayer_FC(layer)/100.0_dp &
-                        - GetSoilLayer_WP(layer)/100.0_dp
-            ThetaTreshold = GetSoilLayer_FC(layer)/100.0_dp - pZexp * TAWcompi
+            TAWcompi = GetSoilLayer_FC(layer)/100.0_sp &
+                        - GetSoilLayer_WP(layer)/100.0_sp
+            ThetaTreshold = GetSoilLayer_FC(layer)/100.0_sp - pZexp * TAWcompi
             if (GetCompartment_Theta(compi) < ThetaTreshold) then
                 ! expansion is limited due to soil water content at
                 ! expansion front
                 if (GetCompartment_Theta(compi) &
-                        <= GetSoilLayer_WP(layer)/100.0_dp) then
-                    dZ = 0.0_dp
+                        <= GetSoilLayer_WP(layer)/100.0_sp) then
+                    dZ = 0.0_sp
                 else
-                    Wrel = (GetSoilLayer_FC(layer)/100.0_dp - &
+                    Wrel = (GetSoilLayer_FC(layer)/100.0_sp - &
                                 GetCompartment_theta(compi))/TAWcompi
-                    dZ = dZ * KsAny(Wrel, pZexp, 1.0_dp,&
+                    dZ = dZ * KsAny(Wrel, pZexp, 1.0_sp,&
                                     GetCrop_KsShapeFactorStomata())
                 end if
             end if
         end if
 
         ! -- 3.3 correction for early senescence
-        if ((CCact <= epsilon(0.0_dp)) .and. (CCpot > 50.0_dp)) then
-            dZ = 0.0_dp
+        if ((CCact <= epsilon(0.0_sp)) .and. (CCpot > 50.0_sp)) then
+            dZ = 0.0_sp
         end if
 
         ! -- 3.4 correction for no germination
         if (.not. GetSimulation_Germinate()) then
-            dZ = 0.0_dp
+            dZ = 0.0_sp
         end if
 
         ! 4. actual rooting depth (Zi)
@@ -159,14 +158,14 @@ real(dp) function AdjustedRootingDepth(&
             ! Total extraction in restricted root zone (Zi) and max root
             ! zone (ZiMax) should be identical
             call SetSimulation_SCor(real((2*(ZiMax/Zi)&
-                          *((GetCrop_SmaxTop()+GetCrop_SmaxBot())/2.0_dp)&
+                          *((GetCrop_SmaxTop()+GetCrop_SmaxBot())/2.0_sp)&
                           - GetCrop_SmaxTop())/GetCrop_SmaxBot(), kind=sp))
             ! consider part of the restricted deepening due to water stress
             ! (= less roots)
-            if (GetSumWaBal_Tpot() > 0.0_dp) then
+            if (GetSumWaBal_Tpot() > 0.0_sp) then
                 call SetSimulation_SCor(real(GetSimulation_SCor()&
                       * (GetSumWaBal_Tact()/GetSumWaBal_Tpot()), kind=sp))
-                if (GetSimulation_SCor() < 1.0_dp) then
+                if (GetSimulation_SCor() < 1.0_sp) then
                     call SetSimulation_SCor(1.0_sp)
                 end if
             end if

@@ -1,7 +1,6 @@
 module ac_global
 
-use ac_kinds, only: dp, &
-                    int8, &
+use ac_kinds, only: int8, &
                     int16, &
                     int32, &
                     intEnum, &
@@ -16,26 +15,26 @@ use iso_fortran_env, only: iostat_end
 implicit none
 
 
-real(dp), parameter :: equiv = 0.64_dp
+real(sp), parameter :: equiv = 0.64_sp
     !! conversion factor: 1 dS/m = 0.64 g/l
 integer(int32), parameter :: max_SoilLayers = 5
 integer(int32), parameter :: max_No_compartments = 12
-real(dp), parameter :: undef_double = -9.9_dp
-    !! value for 'undefined' real(dp) variables
+real(sp), parameter :: undef_double = -9.9_sp
+    !! value for 'undefined' real(sp) variables
 integer(int32), parameter :: undef_int = -9
     !! value for 'undefined' int32 variables
-real(dp), parameter :: PI = 3.1415926535_dp
-real(dp), parameter :: CO2Ref = 369.41_dp;
+real(sp), parameter :: PI = 3.1415926535_sp
+real(sp), parameter :: CO2Ref = 369.41_sp;
     !! reference CO2 in ppm by volume for year 2000 for Mauna Loa
     !! (Hawaii,USA)
-real(dp), parameter :: EvapZmin = 15._dp
+real(sp), parameter :: EvapZmin = 15._sp
     !! cm  minimum soil depth for water extraction by evaporation
-real(dp), parameter :: eps =10E-08
-real(dp), parameter :: ac_zero_threshold = 0.000001_dp
-real(dp), dimension(12), parameter :: ElapsedDays = [0._dp, 31._dp, 59.25_dp, &
-                                                    90.25_dp, 120.25_dp, 151.25_dp, &
-                                                    181.25_dp, 212.25_dp, 243.25_dp, &
-                                                    273.25_dp, 304.25_dp, 334.25_dp]
+real(sp), parameter :: eps =10E-08
+real(sp), parameter :: ac_zero_threshold = 0.000001_sp
+real(sp), dimension(12), parameter :: ElapsedDays = [0._sp, 31._sp, 59.25_sp, &
+                                                    90.25_sp, 120.25_sp, 151.25_sp, &
+                                                    181.25_sp, 212.25_sp, 243.25_sp, &
+                                                    273.25_sp, 304.25_sp, 334.25_sp]
 integer(int32), dimension (12), parameter :: DaysInMonth = [31,28,31,30,31,30, &
                                                             31,31,30,31,30,31]
 
@@ -178,90 +177,90 @@ type rep_DayEventInt
 end type rep_DayEventInt
 
 type CompartmentIndividual
-    real(dp) :: Thickness
+    real(sp) :: Thickness
         !! meter
-    real(dp) :: theta
+    real(sp) :: theta
         !! m3/m3
-    real(dp) :: fluxout
+    real(sp) :: fluxout
         !! mm/day
     integer(int32) :: Layer
         !! Undocumented
-    real(dp) :: Smax
+    real(sp) :: Smax
         !! Maximum root extraction m3/m3.day
-    real(dp) :: FCadj
+    real(sp) :: FCadj
         !! Vol % at Field Capacity adjusted to Aquifer
     integer(int32) :: DayAnaero
         !! number of days under anaerobic conditions
-    real(dp) :: WFactor
+    real(sp) :: WFactor
         !! weighting factor 0 ... 1
         !! Importance of compartment in calculation of
         !! - relative wetness (RUNOFF)
         !! - evaporation process
         !! - transpiration process *)
     !! salinity factors
-    real(dp), dimension(11) :: Salt
+    real(sp), dimension(11) :: Salt
         !! salt content in solution in cells (g/m2)
-    real(dp), dimension(11) :: Depo
+    real(sp), dimension(11) :: Depo
         !! salt deposit in cells (g/m2)
 end type CompartmentIndividual
 
 type SoilLayerIndividual
     character(len=25) :: Description
         !! Undocumented
-    real(dp) :: Thickness
+    real(sp) :: Thickness
         !! meter
-    real(dp) :: SAT
+    real(sp) :: SAT
         !! Vol % at Saturation
-    real(dp) :: FC
+    real(sp) :: FC
         !! Vol % at Field Capacity
-    real(dp) :: WP
+    real(sp) :: WP
         !! Vol % at Wilting Point
-    real(dp) :: tau
+    real(sp) :: tau
         !! drainage factor 0 ... 1
-    real(dp) :: InfRate
+    real(sp) :: InfRate
         !! Infiltration rate at saturation mm/day
     integer(int8) :: Penetrability
         !! root zone expansion rate in percentage
     integer(int8) :: GravelMass
         !! mass percentage of gravel
-    real(dp) :: GravelVol
+    real(sp) :: GravelVol
         !! volume percentage of gravel
-    real(dp) :: WaterContent
+    real(sp) :: WaterContent
         !! mm
     ! salinity parameters (cells)
     integer(int8) :: Macro
         !! Macropores : from Saturation to Macro [vol%]
-    real(dp), dimension(11) :: SaltMobility
+    real(sp), dimension(11) :: SaltMobility
         !! Mobility of salt in the various salt cellS
     integer(int8) :: SC
         !! number of Saltcels between 0 and SC/(SC+2)*SAT vol%
     integer(int8) :: SCP1
         !! SC + 1   (1 extra Saltcel between SC/(SC+2)*SAT vol% and SAT)
         !! THis last celL is twice as large as the other cels *)
-    real(dp) :: UL
+    real(sp) :: UL
         !! Upper Limit of SC salt cells = SC/(SC+2) * (SAT/100) in m3/m3
-    real(dp) :: Dx
+    real(sp) :: Dx
         !! Size of SC salt cells [m3/m3] = UL/SC
     ! capilary rise parameters
     integer(int8) :: SoilClass
         !! 1 = sandy, 2 = loamy, 3 = sandy clayey, 4 - silty clayey soils
-    real(dp) :: CRa, CRb
+    real(sp) :: CRa, CRb
         !! coefficients for Capillary Rise
 end type SoilLayerIndividual
 
 type rep_Shapes
     integer(int8) :: Stress
         !! Percentage soil fertility stress for calibration
-    real(dp) :: ShapeCGC
+    real(sp) :: ShapeCGC
         !! Shape factor for the response of Canopy Growth Coefficient to soil
         !! fertility stress
-    real(dp) :: ShapeCCX
+    real(sp) :: ShapeCCX
         !! Shape factor for the response of Maximum Canopy Cover to soil
         !! fertility stress
-    real(dp) :: ShapeWP
+    real(sp) :: ShapeWP
         !! Shape factor for the response of Crop Water Producitity to soil
         !! fertility stress
-    real(dp) :: ShapeCDecline
+    real(sp) :: ShapeCDecline
         !! Shape factor for the response of Decline of Canopy Cover to soil
         !! fertility stress
     logical :: Calibrated
@@ -321,11 +320,11 @@ type rep_EndSeason
 end type rep_EndSeason
 
 type rep_Content
-    real(dp) :: BeginDay
+    real(sp) :: BeginDay
         !! at the beginning of the day
-    real(dp) :: EndDay
+    real(sp) :: EndDay
         !! at the end of the day
-    real(dp) :: ErrorDay
+    real(sp) :: ErrorDay
         !! error on WaterContent or SaltContent over the day
 end type rep_Content
 
@@ -336,7 +335,7 @@ type rep_EffectStress
         !! Reduction of CCx (%)
     integer(int8) :: RedWP
         !! Reduction of WP (%)
-    real(dp) :: CDecline
+    real(sp) :: CDecline
         !! Average decrease of CCx in mid season (%/day)
     integer(int8) :: RedKsSto
         !! Reduction of KsSto (%)
@@ -355,38 +354,38 @@ type rep_EffectiveRain
 end type rep_EffectiveRain
 
 type rep_RootZoneWC
-    real(dp) :: Actual
+    real(sp) :: Actual
         !! actual soil water content in rootzone [mm]
-    real(dp) :: FC
+    real(sp) :: FC
         !! soil water content [mm] in rootzone at FC
-    real(dp) :: WP
+    real(sp) :: WP
         !! soil water content [mm] in rootzone at WP
-    real(dp) :: SAT
+    real(sp) :: SAT
         !! soil water content [mm] in rootzone at Sat
-    real(dp) :: Leaf
+    real(sp) :: Leaf
         !! soil water content [mm] in rootzone at upper Threshold for leaf
         !! expansion
-    real(dp) :: Thresh
+    real(sp) :: Thresh
         !! soil water content [mm] in rootzone at Threshold for stomatal
         !! closure
-    real(dp) :: Sen
+    real(sp) :: Sen
         !! soil water content [mm] in rootzone at Threshold for canopy
         !! senescence
-    real(dp) :: ZtopAct
+    real(sp) :: ZtopAct
         !! actual soil water content [mm] in top soil (= top compartment)
-    real(dp) :: ZtopFC
+    real(sp) :: ZtopFC
         !! soil water content [mm] at FC in top soil (= top compartment)
-    real(dp) :: ZtopWP
+    real(sp) :: ZtopWP
         !! soil water content [mm] at WP in top soil (= top compartment)
-    real(dp) :: ZtopThresh
+    real(sp) :: ZtopThresh
         !! soil water content [mm] at Threshold for stomatal closure in top
         !! soil
 end type rep_RootZoneWC
 
 type rep_IrriECw
-    real(dp) :: PreSeason
+    real(sp) :: PreSeason
         !! Undocumented
-    real(dp) :: PostSeason
+    real(sp) :: PostSeason
         !! Undocumented
 end type rep_IrriECw
 
@@ -448,7 +447,7 @@ type rep_Manag
         !! effect Mulch on evaporation in growing period
     integer(int32) :: FertilityStress
         !! Undocumented
-    real(dp) :: BundHeight
+    real(sp) :: BundHeight
         !! meter;
     logical :: RunoffOn
         !! surface runoff
@@ -458,7 +457,7 @@ type rep_Manag
         !! Relative weed cover in percentage at canopy closure
     integer(int32) :: WeedDeltaRC
         !! Increase/Decrease of Relative weed cover in percentage during mid season
-    real(dp) :: WeedShape
+    real(sp) :: WeedShape
         !! Shape factor for crop canopy suppression
     integer(int8) :: WeedAdj
         !! replacement (%) by weeds of the self-thinned part of the Canopy Cover - only for perennials
@@ -471,23 +470,23 @@ type rep_param
     !! crop parameters IN CROP.PAR - with Reset option
     integer(int8) :: EvapDeclineFactor
         !! exponential decline with relative soil water [1 = small ... 8 = sharp]
-    real(dp) :: KcWetBare
+    real(sp) :: KcWetBare
         !! Soil evaporation coefficients from wet bare soil
     integer(int8) :: PercCCxHIfinal
         !! CC threshold below which HI no longer increase (% of 100)
     integer(int32) :: RootPercentZmin
         !! starting depth of root sine function in % of Zmin (sowing depth)
-    real(dp) :: MaxRootZoneExpansion
+    real(sp) :: MaxRootZoneExpansion
         !! maximum root zone expansion in cm/day - fixed at 5 cm/day
     integer(int8) :: KsShapeFactorRoot
         !! shape factro for the effect of water stress on root zone expansion
     integer(int8) :: TAWGermination
         !! Soil water content (% TAW) required at sowing depth for germination
-    real(dp) :: pAdjFAO
+    real(sp) :: pAdjFAO
         !! Adjustment factor for FAO-adjustment of soil water depletion (p) for various ET
     integer(int32) :: DelayLowOxygen
         !! delay [days] for full effect of anaeroby
-    real(dp) :: ExpFsen
+    real(sp) :: ExpFsen
         !! exponent of senescence factor adjusting drop in photosynthetic activity of dying crop
     integer(int8) :: Beta
         !! Percentage decrease of p(senescence) once early canopy senescence is triggered
@@ -497,27 +496,27 @@ type rep_param
     integer(int8) :: EvapZmax
         !! cm  maximum soil depth for water extraction by evaporation
     !! Runoff parameters IN RUNOFF.PAR  - with Reset option
-    real(dp) :: RunoffDepth
+    real(sp) :: RunoffDepth
         !! considered depth (m) of soil profile for calculation of mean soil water content for CN adjustment
     logical :: CNcorrection
         !! correction Antecedent Moisture Class (On/Off)
     !! Temperature parameters IN TEMPERATURE.PAR  - with Reset option
-    real(dp) :: Tmin
+    real(sp) :: Tmin
         !! Default Minimum and maximum air temperature (degC) if no temperature file
-    real(dp) :: Tmax
+    real(sp) :: Tmax
         !! Default Minimum and maximum air temperature (degC) if no temperature file
     integer(int8) :: GDDMethod
         !! 1 for Method 1, 2 for Method 2, 3 for Method 3
     !! General parameters IN GENERAL.PAR
     integer(int32) :: PercRAW
         !! allowable percent RAW depletion for determination Inet
-    real(dp) :: CompDefThick
+    real(sp) :: CompDefThick
         !! Default thickness of soil compartments [m]
     integer(int32) :: CropDay1
         !! First day after sowing/transplanting (DAP = 1)
-    real(dp) :: Tbase
+    real(sp) :: Tbase
         !! Default base and upper temperature (degC) assigned to crop
-    real(dp) :: Tupper
+    real(sp) :: Tupper
         !! Default base and upper temperature (degC) assigned to crop
     integer(int8) :: IrriFwInSeason
         !! Percentage of soil surface wetted by irrigation in crop season
@@ -544,24 +543,24 @@ type rep_param
 end type rep_param
 
 type rep_sum
-    real(dp) :: Epot, Tpot, Rain, Irrigation, Infiltrated
+    real(sp) :: Epot, Tpot, Rain, Irrigation, Infiltrated
         !! Undocumented
-    real(dp) :: Runoff, Drain, Eact, Tact, TrW, ECropCycle, CRwater
+    real(sp) :: Runoff, Drain, Eact, Tact, TrW, ECropCycle, CRwater
         !! mm
-    real(dp) :: Biomass, YieldPart, BiomassPot, BiomassUnlim, BiomassTot
+    real(sp) :: Biomass, YieldPart, BiomassPot, BiomassUnlim, BiomassTot
         !! ton/ha
-    real(dp) :: SaltIn, SaltOut, CRsalt
+    real(sp) :: SaltIn, SaltOut, CRsalt
         !! ton/ha
 end type rep_sum
 
 type rep_RootZoneSalt
-    real(dp) :: ECe
+    real(sp) :: ECe
         !! Electrical conductivity of the saturated soil-paste extract (dS/m)
-    real(dp) :: ECsw
+    real(sp) :: ECsw
         !! Electrical conductivity of the soil water (dS/m)
-    real(dp) :: ECswFC
+    real(sp) :: ECswFC
         !! Electrical conductivity of the soil water at Field Capacity(dS/m)
-    real(dp) :: KsSalt
+    real(sp) :: KsSalt
         !! stress coefficient for salinity
 end type rep_RootZoneSalt
 
@@ -570,18 +569,18 @@ type rep_IniSWC
         !! at specific depths or for specific layers
     integer(int8) :: NrLoc
         !! number of depths or layers considered
-    real(dp), dimension(max_No_compartments) :: Loc
+    real(sp), dimension(max_No_compartments) :: Loc
         !! depth or layer thickness [m]
-    real(dp), dimension(max_No_compartments) :: VolProc
+    real(sp), dimension(max_No_compartments) :: VolProc
         !! soil water content (vol%)
-    real(dp), dimension(max_No_compartments) :: SaltECe
+    real(sp), dimension(max_No_compartments) :: SaltECe
         !! ECe in dS/m
     logical :: AtFC
         !! If iniSWC is at FC
 end type rep_IniSWC
 
 type rep_storage
-    real(dp) :: Btotal
+    real(sp) :: Btotal
         !! assimilates (ton/ha) stored in root systemn by CropString in Storage-Season
     character(len=:), allocatable :: CropString
         !! full name of crop file which stores Btotal during Storage-Season
@@ -596,19 +595,19 @@ type rep_sim
         !! daynumber
     type(rep_IniSWC) :: IniSWC
         !! Undocumented
-    real(dp), dimension(max_No_compartments) :: ThetaIni
+    real(sp), dimension(max_No_compartments) :: ThetaIni
         !! dS/m
-    real(dp), dimension(max_No_compartments) :: ECeIni
+    real(sp), dimension(max_No_compartments) :: ECeIni
         !! dS/m
-    real(dp) :: SurfaceStorageIni
+    real(sp) :: SurfaceStorageIni
         !! Undocumented
-    real(dp) :: ECStorageIni
+    real(sp) :: ECStorageIni
         !! Undocumented
-    real(dp) :: CCini
+    real(sp) :: CCini
         !! Undocumented
-    real(dp) :: Bini
+    real(sp) :: Bini
         !! Undocumented
-    real(dp) :: Zrini
+    real(sp) :: Zrini
         !! Undocumented
     logical :: LinkCropToSimPeriod
         !! Undocumented
@@ -618,11 +617,11 @@ type rep_sim
         !! Undocumented
     logical :: EvapLimitON
         !! soil evap is before late season stage limited due to sheltering effect of (partly) withered canopy cover
-    real(dp) :: EvapWCsurf
+    real(sp) :: EvapWCsurf
         !! remaining water (mm) in surface soil layer for stage 1 evaporation [REW .. 0]
     integer(int8) :: EvapStartStg2
         !! % extra to define upper limit of soil water content at start of stage 2 [100 .. 0]
-    real(dp) :: EvapZ
+    real(sp) :: EvapZ
         !! actual soil depth (m) for water extraction by evaporation  [EvapZmin/100 .. EvapZmax/100]
     integer(int32) :: HIfinal
         !! final Harvest Index might be smaller than HImax due to early canopy decline
@@ -630,11 +629,11 @@ type rep_sim
         !! delayed days since sowing/planting due to water stress (crop cannot germinate)
     logical :: Germinate
         !! germinate is false when crop cannot germinate due to water stress
-    real(dp) :: SumEToStress
+    real(sp) :: SumEToStress
         !! Sum ETo during stress period to delay canopy senescence
-    real(dp) :: SumGDD
+    real(sp) :: SumGDD
         !! Sum of Growing Degree-days
-    real(dp) :: SumGDDfromDay1
+    real(sp) :: SumGDDfromDay1
         !! Sum of Growing Degree-days since Crop.Day1
     real(sp) :: SCor
         !! correction factor for Crop.SmaxBot if restrictive soil layer inhibit root development
@@ -644,9 +643,9 @@ type rep_sim
         !! Undocumented
     logical :: MultipleRunWithKeepSWC
         !! Project with a sequence of simulation runs and initial SWC is once or more KeepSWC
-    real(dp) :: MultipleRunConstZrx
+    real(sp) :: MultipleRunConstZrx
         !! Maximum rooting depth for multiple projects with KeepSWC
-    real(dp) :: IrriECw
+    real(sp) :: IrriECw
         !! quality of irrigation water (dS/m)
     integer(int8) :: DayAnaero
         !! number of days under anaerobic conditions
@@ -675,7 +674,7 @@ end type rep_sim
 type rep_DayEventDbl
     integer(int32) :: DayNr
         !! Undocumented
-    real(dp) :: Param
+    real(sp) :: Param
         !! Undocumented
 end type rep_DayEventDbl
 
@@ -688,27 +687,27 @@ type rep_Crop
         !! 1 = sown, 0 = transplanted, -9 = regrowth
     integer(intEnum) :: pMethod
         !! Undocumented
-    real(dp) :: pdef
+    real(sp) :: pdef
         !! soil water depletion fraction for no stomatal stress as defined (ETo = 5 mm/day)
-    real(dp) :: pActStom
+    real(sp) :: pActStom
         !! actual p for no stomatal stress for ETo of the day
-    real(dp) :: KsShapeFactorLeaf
+    real(sp) :: KsShapeFactorLeaf
         !! Undocumented
-    real(dp) :: KsShapeFactorStomata
+    real(sp) :: KsShapeFactorStomata
         !! Undocumented
-    real(dp) :: KsShapeFactorSenescence
+    real(sp) :: KsShapeFactorSenescence
         !! Undocumented
-    real(dp) :: pLeafDefUL
+    real(sp) :: pLeafDefUL
         !! soil water depletion fraction for leaf expansion (ETo = 5 mm/day)
-    real(dp) :: pLeafDefLL
+    real(sp) :: pLeafDefLL
         !! soil water depletion fraction for leaf expansion (ETo = 5 mm/day)
-    real(dp) :: pLeafAct
+    real(sp) :: pLeafAct
         !! actual p for upper limit leaf expansion for ETo of the day
-    real(dp) :: pSenescence
+    real(sp) :: pSenescence
         !! soil water depletion fraction for canopys senescence (ETo = 5 mm/day)
-    real(dp) :: pSenAct
+    real(sp) :: pSenAct
         !! actual p for canopy senescence for ETo of the day
-    real(dp) :: pPollination
+    real(sp) :: pPollination
         !! soil water depletion fraction for failure of pollination
     integer(int32) :: SumEToDelaySenescence
         !! Undocumented
@@ -724,17 +723,17 @@ type rep_Crop
         !! distortion canopy cover for calibration for simulation of effect of salinity stress (%)
     integer(int32) :: ResponseECsw
         !! Response of Ks stomata to ECsw for calibration: From 0 (none) to +200 (very strong)
-    real(dp) :: SmaxTopQuarter
+    real(sp) :: SmaxTopQuarter
         !! Smax Top 1/4 root zone HOOGLAND
-    real(dp) :: SmaxBotQuarter
+    real(sp) :: SmaxBotQuarter
         !! Smax Bottom 1/4 root zone HOOGLAND
-    real(dp) :: SmaxTop
+    real(sp) :: SmaxTop
         !! Smax Top root zone HOOGLAND
-    real(dp) :: SmaxBot
+    real(sp) :: SmaxBot
         !! Smax Bottom root zone HOOGLAND
-    real(dp) :: KcTop
+    real(sp) :: KcTop
         !! Undocumented
-    real(dp) :: KcDecline
+    real(sp) :: KcDecline
         !! Reduction Kc (%CCx/day) as result of ageing effects, nitrogen defficiency, etc.
     integer(int32) :: CCEffectEvapLate
         !! %
@@ -744,47 +743,47 @@ type rep_Crop
         !! Daynummer: last day = harvest day
     integer(int32), dimension(4) :: Length
         !! Length : rep_int_array; @ 1 .. 4 :  = the four growth stages
-    real(dp) :: RootMin
+    real(sp) :: RootMin
         !! rooting depth in meter
-    real(dp) :: RootMax
+    real(sp) :: RootMax
         !! rooting depth in meter
     integer(int8) :: RootShape
         !! 10 times the root of the root function
-    real(dp) :: Tbase
+    real(sp) :: Tbase
         !! Base Temperature (degC)
-    real(dp) :: Tupper
+    real(sp) :: Tupper
         !! Upper temperature threshold (degC)
     integer(int8) :: Tcold
         !! Minimum air temperature below which pollination starts to fail (cold stress) (degC)
     integer(int8) :: Theat
         !! Maximum air temperature above which pollination starts to fail (heat stress) (degC)
-    real(dp) :: GDtranspLow
+    real(sp) :: GDtranspLow
         !! Minimum growing degrees required for full crop transpiration (degC - day)
-    real(dp) :: SizeSeedling
+    real(sp) :: SizeSeedling
         !! Canopy cover per seedling (cm2)
-    real(dp) :: SizePlant
+    real(sp) :: SizePlant
         !! Canopy cover of plant on 1st day (cm2) when regrowth
     integer(int32) :: PlantingDens
         !! number of plants per hectare
-    real(dp) :: CCo
+    real(sp) :: CCo
         !! starting canopy size  (fraction canopy cover)
-    real(dp) :: CCini
+    real(sp) :: CCini
         !! starting canopy size for regrowth (fraction canopy cover)
-    real(dp) :: CGC
+    real(sp) :: CGC
         !! Canopy growth coefficient (increase of CC in fraction per day)
-    real(dp) :: GDDCGC
+    real(sp) :: GDDCGC
         !! Canopy growth coefficient (increase of CC in fraction per growing-degree day)
-    real(dp) :: CCx
+    real(sp) :: CCx
         !! expected maximum canopy cover  (fraction canopy cover)
-    real(dp) :: CDC
+    real(sp) :: CDC
         !! Canopy Decline Coefficient (decrease of CC in fraction per day)
-    real(dp) :: GDDCDC
+    real(sp) :: GDDCDC
         !! Canopy Decline Coefficient (decrease of CC in fraction per growing-degree day)
-    real(dp) :: CCxAdjusted
+    real(sp) :: CCxAdjusted
         !! maximum canopy cover given water stress
-    real(dp) :: CCxWithered
+    real(sp) :: CCxWithered
         !! maximum existed CC during season (for correction Evap for withered canopy)
-    real(dp) :: CCoAdjusted
+    real(sp) :: CCoAdjusted
         !! initial canopy size after soil water stress
     integer(int32) :: DaysToCCini
         !! required for regrowth (if CCini > CCo)
@@ -826,7 +825,7 @@ type rep_Crop
         !! given or calculated from Calendar Days
     integer(int32) :: GDDaysToHIo
         !! given or calculated from Calendar Days
-    real(dp) :: WP
+    real(sp) :: WP
         !! (normalized) water productivity (gram/m2)
     integer(int32) :: WPy
         !! (normalized) water productivity during yield formation (Percent WP)
@@ -834,13 +833,13 @@ type rep_Crop
         !! Crop performance under elevated atmospheric CO2 concentration (%)
     integer(int32) :: HI
         !! HI harvest index (percentage)
-    real(dp) :: dHIdt
+    real(sp) :: dHIdt
         !! average rate of change in harvest index (% increase per calendar day)
     integer(int8) :: HIincrease
         !! possible increase (%) of HI due to water stress before flowering
-    real(dp) :: aCoeff
+    real(sp) :: aCoeff
         !! coefficient describing impact of restricted vegetative growth at flowering on HI
-    real(dp) :: bCoeff
+    real(sp) :: bCoeff
         !! coefficient describing impact of stomatal closure at flowering on HI
     integer(int8) :: DHImax
         !! allowable maximum increase (%) of specified HI
@@ -850,13 +849,13 @@ type rep_Crop
         !! potential excess of fruits (%) ranging form
     integer(int8) :: DryMatter
         !! dry matter content (%) of fresh yield
-    real(dp) :: RootMinYear1
+    real(sp) :: RootMinYear1
         !! minimum rooting depth in first year in meter (for perennial crops)
     logical :: SownYear1
         !! True = Sown, False = transplanted (for perennial crops)
     integer(int8) :: YearCCx
         !! number of years at which CCx declines to 90 % of its value due to self-thinning - Perennials
-    real(dp) :: CCxRoot
+    real(sp) :: CCxRoot
         !! shape factor of the decline of CCx over the years due to self-thinning - Perennials
     type(rep_Assimilates) :: Assimilates
         !! Undocumented
@@ -877,7 +876,7 @@ type rep_PerennialPeriod
         !! daynumber
     integer(int32) :: OnsetLengthSearchPeriod
         !! days
-    real(dp) :: OnsetThresholdValue
+    real(sp) :: OnsetThresholdValue
         !! degC or degree-days
     integer(int32) :: OnsetPeriodValue
         !! number of successive days
@@ -899,7 +898,7 @@ type rep_PerennialPeriod
         !! daynumber
     integer(int32) :: EndLengthSearchPeriod
         !! days
-    real(dp) :: EndThresholdValue
+    real(sp) :: EndThresholdValue
         !! degC or degree-days
     integer(int32) :: EndPeriodValue
         !! number of successive days
@@ -1031,35 +1030,35 @@ integer :: fTnxReference_iostat  ! IO status
 integer :: fTnxReference365Days  ! file handle
 integer :: fTnxReference365Days_iostat  ! IO status
 
-real(dp) :: CCiActual
-real(dp) :: CCiprev
-real(dp) :: CCiTopEarlySen
-real(dp) :: CRsalt ! gram/m2
-real(dp) :: CRwater ! mm/day
-real(dp) :: ECdrain ! EC drain water dS/m
-real(dp) :: ECiAqua ! EC of the groundwater table in dS/m
-real(dp) :: ECstorage !EC surface storage dS/m
-real(dp) :: Eact ! mm/day
-real(dp) :: Epot ! mm/day
-real(dp) :: ETo ! mm/day
-real(dp) :: Drain  ! mm/day
-real(dp) :: Infiltrated ! mm/day
-real(dp) :: Irrigation ! mm/day
-real(dp) :: Rain  ! mm/day
-real(dp) :: RootingDepth
-real(dp) :: Runoff  ! mm/day
-real(dp) :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
-real(dp) :: Surf0 ! surface water [mm] begin day
-real(dp) :: SurfaceStorage !mm/day
-real(dp) :: Tact ! mm/day
-real(dp) :: Tpot ! mm/day
-real(dp) :: TactWeedInfested !mm/day
-real(dp) :: Tmax ! degC
-real(dp) :: Tmin ! degC
-real(dp) :: TmaxCropReference ! degC
-real(dp) :: TminCropReference ! degC
-real(dp) :: TmaxTnxReference365Days ! degC
-real(dp) :: TminTnxReference365Days ! degC
+real(sp) :: CCiActual
+real(sp) :: CCiprev
+real(sp) :: CCiTopEarlySen
+real(sp) :: CRsalt ! gram/m2
+real(sp) :: CRwater ! mm/day
+real(sp) :: ECdrain ! EC drain water dS/m
+real(sp) :: ECiAqua ! EC of the groundwater table in dS/m
+real(sp) :: ECstorage !EC surface storage dS/m
+real(sp) :: Eact ! mm/day
+real(sp) :: Epot ! mm/day
+real(sp) :: ETo ! mm/day
+real(sp) :: Drain  ! mm/day
+real(sp) :: Infiltrated ! mm/day
+real(sp) :: Irrigation ! mm/day
+real(sp) :: Rain  ! mm/day
+real(sp) :: RootingDepth
+real(sp) :: Runoff  ! mm/day
+real(sp) :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
+real(sp) :: Surf0 ! surface water [mm] begin day
+real(sp) :: SurfaceStorage !mm/day
+real(sp) :: Tact ! mm/day
+real(sp) :: Tpot ! mm/day
+real(sp) :: TactWeedInfested !mm/day
+real(sp) :: Tmax ! degC
+real(sp) :: Tmin ! degC
+real(sp) :: TmaxCropReference ! degC
+real(sp) :: TminCropReference ! degC
+real(sp) :: TmaxTnxReference365Days ! degC
+real(sp) :: TminTnxReference365Days ! degC
 real(sp), dimension(1:366) :: TmaxRun, TminRun
 real(sp), dimension(1:12) ::  TmaxTnxReference12MonthsRun, TminTnxReference12MonthsRun
 real(sp), dimension(1:365) :: TmaxCropReferenceRun, TminCropReferenceRun
@@ -1089,11 +1088,11 @@ type(rep_DayEventInt), dimension(5) :: IrriAfterSeason
 contains
 
 
-real(dp) function DeduceAquaCropVersion(FullNameXXFile)
+real(sp) function DeduceAquaCropVersion(FullNameXXFile)
     character(len=*), intent(in) :: FullNameXXFile
 
     integer :: fhandle
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
 
     open(newunit=fhandle, file=trim(FullNameXXFile), status='old', &
          action='read')
@@ -1108,31 +1107,31 @@ end function DeduceAquaCropVersion
 
 
 real(sp) function RootMaxInSoilProfile(ZmaxCrop, TheNrSoilLayers, TheSoilLayer)
-    real(dp), intent(in) :: ZmaxCrop
+    real(sp), intent(in) :: ZmaxCrop
     integer(int8), intent(in) :: TheNrSoilLayers
     type(SoilLayerIndividual), dimension(max_SoilLayers), intent(in) :: &
                                                                 TheSoilLayer
 
-    real(dp) :: Zmax
-    real(dp) :: Zsoil
+    real(sp) :: Zmax
+    real(sp) :: Zsoil
     integer :: layi
 
     Zmax = ZmaxCrop
-    Zsoil = 0._dp
+    Zsoil = 0._sp
 
     layi = 0
-    do while ((layi < TheNrSoilLayers) .and. (Zmax > 0._dp))
+    do while ((layi < TheNrSoilLayers) .and. (Zmax > 0._sp))
         layi = layi + 1
 
         if ((TheSoilLayer(layi)%Penetrability < 100) .and. &
             (roundc(Zsoil*1000, mold=1_int32) < roundc(ZmaxCrop*1000, mold=1_int32))) then
-            Zmax = real(undef_int, kind=dp)
+            Zmax = real(undef_int, kind=sp)
         end if
 
         Zsoil = Zsoil + TheSoilLayer(layi)%Thickness
     end do
 
-    if (Zmax < 0._dp) then
+    if (Zmax < 0._sp) then
         call ZrAdjustedToRestrictiveLayers(ZmaxCrop, TheNrSoilLayers, &
                                            TheSoilLayer, Zmax)
     end if
@@ -1142,13 +1141,13 @@ end function RootMaxInSoilProfile
 
 
 subroutine ZrAdjustedToRestrictiveLayers(ZrIN, TheNrSoilLayers, TheLayer, ZrOUT)
-    real(dp), intent(in) :: ZrIN
+    real(sp), intent(in) :: ZrIN
     integer(int8), intent(in) :: TheNrSoilLayers
     type(SoilLayerIndividual), dimension(max_SoilLayers), intent(in) :: TheLayer
-    real(dp), intent(inout) :: ZrOUT
+    real(sp), intent(inout) :: ZrOUT
 
     integer :: Layi
-    real(dp) :: Zsoil, ZrAdj, ZrRemain, DeltaZ, ZrTest
+    real(sp) :: Zsoil, ZrAdj, ZrRemain, DeltaZ, ZrTest
     logical :: TheEnd
 
     ZrOUT = ZrIn
@@ -1163,7 +1162,7 @@ subroutine ZrAdjustedToRestrictiveLayers(ZrIN, TheNrSoilLayers, TheLayer, ZrOUT)
 
     ! check succesive layers
     do while (.not. TheEnd)
-        ZrTest = ZrAdj + ZrRemain * (TheLayer(layi)%Penetrability/100._dp)
+        ZrTest = ZrAdj + ZrRemain * (TheLayer(layi)%Penetrability/100._sp)
 
         if ((layi == TheNrSoilLayers) &
             .or. (TheLayer(layi)%Penetrability == 0) &
@@ -1174,7 +1173,7 @@ subroutine ZrAdjustedToRestrictiveLayers(ZrIN, TheNrSoilLayers, TheLayer, ZrOUT)
             ZrOUT = ZrTest
         else
             ZrAdj = Zsoil
-            ZrRemain = ZrRemain - DeltaZ/(TheLayer(layi)%Penetrability/100._dp)
+            ZrRemain = ZrRemain - DeltaZ/(TheLayer(layi)%Penetrability/100._sp)
             layi = layi + 1
             Zsoil = Zsoil + TheLayer(layi)%Thickness
             DeltaZ = TheLayer(layi)%Thickness
@@ -1195,7 +1194,7 @@ subroutine DeclareInitialCondAtFCandNoSalt()
     do layeri = 1, GetSoil_NrSoilLayers()
         call SetSimulation_IniSWC_Loc_i(layeri, GetSoilLayer_Thickness(layeri))
         call SetSimulation_IniSWC_VolProc_i(layeri, GetSoilLayer_FC(layeri))
-        call SetSimulation_IniSWC_SaltECe_i(layeri, 0._dp)
+        call SetSimulation_IniSWC_SaltECe_i(layeri, 0._sp)
     end do
     call SetSimulation_IniSWC_AtFC(.true.)
     do layeri = (GetSoil_NrSoilLayers()+1), max_No_compartments
@@ -1211,8 +1210,8 @@ subroutine DeclareInitialCondAtFCandNoSalt()
         end if
         do celli = 1, GetSoilLayer_SCP1(ind)
             ! salinity in cells
-            call SetCompartment_Salt(compi, celli, 0.0_dp)
-            call SetCompartment_Depo(compi, celli, 0.0_dp)
+            call SetCompartment_Salt(compi, celli, 0.0_sp)
+            call SetCompartment_Depo(compi, celli, 0.0_sp)
         end do
     end do
 end subroutine DeclareInitialCondAtFCandNoSalt
@@ -1252,61 +1251,61 @@ subroutine CropStressParametersSoilFertility(CropSResp, &
     integer(int32), intent(in)    :: StressLevel
     type(rep_EffectStress), intent(inout) :: StressOUT
 
-    real(dp) :: Ksi, pULActual, pLLActual
+    real(sp) :: Ksi, pULActual, pLLActual
 
-    pLLActual = 1._dp
+    pLLActual = 1._sp
 
     ! decline canopy growth coefficient (CGC)
-    pULActual = 0._dp
-    Ksi = KsAny(StressLevel/100._dp, pULActual, pLLActual, CropSResp%ShapeCGC)
-    StressOUT%RedCGC = roundc((1._dp-Ksi)*100._dp, mold=1_int8)
+    pULActual = 0._sp
+    Ksi = KsAny(StressLevel/100._sp, pULActual, pLLActual, CropSResp%ShapeCGC)
+    StressOUT%RedCGC = roundc((1._sp-Ksi)*100._sp, mold=1_int8)
     ! decline maximum canopy cover (CCx)
-    pULActual = 0._dp
-    Ksi = KsAny(StressLevel/100._dp, pULActual, pLLActual, CropSResp%ShapeCCX)
-    StressOUT%RedCCX = roundc((1._dp-Ksi)*100._dp, mold=1_int8)
+    pULActual = 0._sp
+    Ksi = KsAny(StressLevel/100._sp, pULActual, pLLActual, CropSResp%ShapeCCX)
+    StressOUT%RedCCX = roundc((1._sp-Ksi)*100._sp, mold=1_int8)
     ! decline crop water productivity (WP)
-    pULActual = 0._dp
-    Ksi = KsAny(StressLevel/100._dp, pULActual, pLLActual, CropSResp%ShapeWP)
-    StressOUT%RedWP = roundc((1._dp-Ksi)*100._dp, mold=1_int8)
+    pULActual = 0._sp
+    Ksi = KsAny(StressLevel/100._sp, pULActual, pLLActual, CropSResp%ShapeWP)
+    StressOUT%RedWP = roundc((1._sp-Ksi)*100._sp, mold=1_int8)
     ! decline Canopy Cover (CDecline)
-    pULActual = 0._dp
-    Ksi = KsAny(StressLevel/100._dp, pULActual, pLLActual, CropSResp%ShapeCDecline)
-    StressOUT%CDecline = 1._dp - Ksi
+    pULActual = 0._sp
+    Ksi = KsAny(StressLevel/100._sp, pULActual, pLLActual, CropSResp%ShapeCDecline)
+    StressOUT%CDecline = 1._sp - Ksi
     ! inducing stomatal closure (KsSto) not applicable
-    Ksi = 1._dp
-    StressOUT%RedKsSto = roundc((1._dp-Ksi)*100._dp, mold=1_int8)
+    Ksi = 1._sp
+    StressOUT%RedKsSto = roundc((1._sp-Ksi)*100._sp, mold=1_int8)
 end subroutine CropStressParametersSoilFertility
 
 
-real(dp) function TimeRootFunction(t, ShapeFactor, tmax, t0)
-    real(dp), intent(in) :: t
+real(sp) function TimeRootFunction(t, ShapeFactor, tmax, t0)
+    real(sp), intent(in) :: t
     integer(int8), intent(in) :: ShapeFactor
-    real(dp), intent(in) :: tmax
-    real(dp), intent(in) :: t0
+    real(sp), intent(in) :: tmax
+    real(sp), intent(in) :: t0
 
-    TimeRootFunction = exp((10._dp / ShapeFactor) * log((t-t0) / (tmax-t0)))
+    TimeRootFunction = exp((10._sp / ShapeFactor) * log((t-t0) / (tmax-t0)))
 end function TimeRootFunction
 
 
-real(dp) function TimeToReachZroot(Zi, Zo, Zx, ShapeRootDeepening, Lo, LZxAdj)
-    real(dp), intent(in) :: Zi
-    real(dp), intent(in) :: Zo
-    real(dp), intent(in) :: Zx
+real(sp) function TimeToReachZroot(Zi, Zo, Zx, ShapeRootDeepening, Lo, LZxAdj)
+    real(sp), intent(in) :: Zi
+    real(sp), intent(in) :: Zo
+    real(sp), intent(in) :: Zx
     integer(int8), intent(in) :: ShapeRootDeepening
     integer(int32), intent(in) :: Lo
     integer(int32), intent(in) :: LZxAdj
 
-    real(dp) :: ti, T1
+    real(sp) :: ti, T1
 
-    ti = real(undef_int, kind=dp)
+    ti = real(undef_int, kind=sp)
 
     if (roundc(Zi*100, mold=1_int32) >= roundc(Zx*100, mold=1_int32)) then
-        ti = real(LZxAdj, kind=dp)
+        ti = real(LZxAdj, kind=sp)
     else
-        if (((Zo+0.0001_dp) < Zx) .and. (LZxAdj > Lo/2._dp) .and. (LZxAdj > 0) &
+        if (((Zo+0.0001_sp) < Zx) .and. (LZxAdj > Lo/2._sp) .and. (LZxAdj > 0) &
             .and. (ShapeRootDeepening > 0)) then
-            T1 = exp((ShapeRootDeepening/10._dp) * log((Zi-Zo) / (Zx-Zo)))
-            ti = T1 * (LZxAdj - Lo/2._dp) + Lo/2._dp
+            T1 = exp((ShapeRootDeepening/10._sp) * log((Zi-Zo) / (Zx-Zo)))
+            ti = T1 * (LZxAdj - Lo/2._sp) + Lo/2._sp
         end if
     end if
 
@@ -1314,7 +1313,7 @@ real(dp) function TimeToReachZroot(Zi, Zo, Zx, ShapeRootDeepening, Lo, LZxAdj)
 end function TimeToReachZroot
 
 
-real(dp) function CanopyCoverNoStressSF(DAP, L0, L123, &
+real(sp) function CanopyCoverNoStressSF(DAP, L0, L123, &
        LMaturity, GDDL0, GDDL123, GDDLMaturity, CCo, CCx,&
        CGC, CDC, GDDCGC, GDDCDC, SumGDD, TypeDays, SFRedCGC, SFRedCCx)
     integer(int32), intent(in) :: DAP
@@ -1324,13 +1323,13 @@ real(dp) function CanopyCoverNoStressSF(DAP, L0, L123, &
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDLMaturity
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: SumGDD
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: SumGDD
     integer(intEnum), intent(in) :: TypeDays
     integer(int8), intent(in) :: SFRedCGC
     integer(int8), intent(in) :: SFRedCCx
@@ -1348,65 +1347,65 @@ real(dp) function CanopyCoverNoStressSF(DAP, L0, L123, &
     contains
 
 
-    real(dp) function CanopyCoverNoStressDaysSF(DAP, L0, L123,&
+    real(sp) function CanopyCoverNoStressDaysSF(DAP, L0, L123,&
            LMaturity, CCo, CCx, CGC, CDC, SFRedCGC, SFRedCCx)
         integer(int32), intent(in) :: DAP
         integer(int32), intent(in) :: L0
         integer(int32), intent(in) :: L123
         integer(int32), intent(in) :: LMaturity
-        real(dp), intent(in) :: CCo
-        real(dp), intent(in) :: CCx
-        real(dp), intent(in) :: CGC
-        real(dp), intent(in) :: CDC
+        real(sp), intent(in) :: CCo
+        real(sp), intent(in) :: CCx
+        real(sp), intent(in) :: CGC
+        real(sp), intent(in) :: CDC
         integer(int8), intent(in) :: SFRedCGC
         integer(int8), intent(in) :: SFRedCCx
 
-        real(dp) :: CC, CCxAdj, CDCadj
+        real(sp) :: CC, CCxAdj, CDCadj
         integer(int32) :: t
 
         ! CanopyCoverNoStressDaysSF
-        CC = 0.0_dp
+        CC = 0.0_sp
         t = DAP - GetSimulation_DelayedDays()
         ! CC refers to canopy cover at the end of the day
 
-        if ((t >= 1) .and. (t <= LMaturity) .and. (CCo > epsilon(1._dp))) then
+        if ((t >= 1) .and. (t <= LMaturity) .and. (CCo > epsilon(1._sp))) then
             if (t <= L0) then ! before germination or recovering of transplant
-                CC = 0._dp
+                CC = 0._sp
             else
                 if (t < L123) then ! Canopy development and Mid-season stage
-                    CC = CCatTime((t-L0), CCo, ((1._dp-SFRedCGC/100._dp)*CGC),&
-                                  ((1._dp-SFRedCCx/100._dp)*CCx))
+                    CC = CCatTime((t-L0), CCo, ((1._sp-SFRedCGC/100._sp)*CGC),&
+                                  ((1._sp-SFRedCCx/100._sp)*CCx))
                 else
                    ! Late-season stage  (t <= LMaturity)
                     if (CCx < 0.001) then
-                        CC = 0._dp
+                        CC = 0._sp
                     else
                         CCxAdj = CCatTime((L123-L0), CCo, &
-                                  ((1._dp-SFRedCGC/100._dp)*CGC),&
-                                  ((1._dp-SFRedCCx/100._dp)*CCx))
-                        CDCadj = CDC*(CCxAdj+2.29_dp)/(CCx+2.29_dp)
+                                  ((1._sp-SFRedCGC/100._sp)*CGC),&
+                                  ((1._sp-SFRedCCx/100._sp)*CCx))
+                        CDCadj = CDC*(CCxAdj+2.29_sp)/(CCx+2.29_sp)
                         if (CCxAdj < 0.001) then
-                            CC = 0._dp
+                            CC = 0._sp
                         else
-                            CC = CCxAdj * (1._dp - 0.05_dp *&
-                                 (exp((t-L123)*3.33_dp*CDCAdj/(CCxAdj+2.29_dp))-1._dp))
+                            CC = CCxAdj * (1._sp - 0.05_sp *&
+                                 (exp((t-L123)*3.33_sp*CDCAdj/(CCxAdj+2.29_sp))-1._sp))
                         end if
                     end if
                 end if
             end if
         end if
-        if (CC > 1._dp) then
-            CC = 1._dp
+        if (CC > 1._sp) then
+            CC = 1._sp
         end if
-        if (CC < epsilon(1._dp)) then
-            CC = 0._dp
+        if (CC < epsilon(1._sp)) then
+            CC = 0._sp
         end if
         CanopyCoverNoStressDaysSF = CC
     end function CanopyCoverNoStressDaysSF
 end function CanopyCoverNoStressSF
 
 
-real(dp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
+real(sp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
     GDDL12SF, GDDL123, GDDL1234, CCo, CCx, CGC, GDDCGC, CDC, GDDCDC, SumGDD,&
     RatDGDD, SFRedCGC, SFRedCCx, SFCDecline, TheModeCycle)
 
@@ -1419,20 +1418,20 @@ real(dp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
     integer(int32), intent(in) :: GDDL12SF
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDL1234
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: SumGDD
-    real(dp), intent(in) :: RatDGDD
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: SumGDD
+    real(sp), intent(in) :: RatDGDD
     integer(int8), intent(in) :: SFRedCGC
     integer(int8), intent(in) :: SFRedCCx
-    real(dp), intent(in) :: SFCDecline
+    real(sp), intent(in) :: SFCDecline
     integer(intEnum), intent(in) :: TheModeCycle
 
-    real(dp) :: CCi, CCibis, CCxAdj, CDCadj, GDDCDCadj
+    real(sp) :: CCi, CCibis, CCxAdj, CDCadj, GDDCDCadj
 
     ! Calculate CCi
     CCi = CanopyCoverNoStressSF(Dayi, L0, L123, L1234, GDDL0, GDDL123,&
@@ -1444,90 +1443,90 @@ real(dp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
     if ((Dayi > L12SF) .and. (SFCDecline > ac_zero_threshold) .and. (L12SF < L123)) then
         if (Dayi < L123) then
             if (TheModeCycle == modeCycle_CalendarDays) then
-                CCi = CCi - (SFCDecline/100.0_dp)&
-                            * exp(2.0_dp*log(real(Dayi-L12SF, kind=dp)))&
-                            / real(L123-L12SF, kind=dp)
+                CCi = CCi - (SFCDecline/100.0_sp)&
+                            * exp(2.0_sp*log(real(Dayi-L12SF, kind=sp)))&
+                            / real(L123-L12SF, kind=sp)
             else
                 if ((SumGDD > GDDL12SF) .and. (GDDL123 > GDDL12SF)) then
-                    CCi = CCi - (RatDGDD*SFCDecline/100.0_dp)&
-                                * exp(2.0_dp*log(SumGDD-GDDL12SF))&
-                                / real(GDDL123-GDDL12SF, kind=dp)
+                    CCi = CCi - (RatDGDD*SFCDecline/100.0_sp)&
+                                * exp(2.0_sp*log(SumGDD-GDDL12SF))&
+                                / real(GDDL123-GDDL12SF, kind=sp)
                 end if
             end if
-            if (CCi < 0.0_dp) then
-                CCi = 0.0_dp
+            if (CCi < 0.0_sp) then
+                CCi = 0.0_sp
             end if
         else
             if (TheModeCycle == modeCycle_CalendarDays) then
-                CCi = CCatTime((L123-L0), CCo, (CGC*(1.0_dp-SFRedCGC/100.0_dp)),&
-                               ((1.0_dp-SFRedCCX/100.0_dp)*CCx))
+                CCi = CCatTime((L123-L0), CCo, (CGC*(1.0_sp-SFRedCGC/100.0_sp)),&
+                               ((1.0_sp-SFRedCCX/100.0_sp)*CCx))
                 ! CCibis is CC in late season when Canopy decline continues
-                CCibis = CCi  - (SFCDecline/100.0_dp)&
-                                * (exp(2.0_dp*log(real(Dayi-L12SF, kind=dp)))&
-                                   / real(L123-L12SF, kind=dp))
-                if (CCibis < 0.0_dp) then
-                    CCi = 0.0_dp
+                CCibis = CCi  - (SFCDecline/100.0_sp)&
+                                * (exp(2.0_sp*log(real(Dayi-L12SF, kind=sp)))&
+                                   / real(L123-L12SF, kind=sp))
+                if (CCibis < 0.0_sp) then
+                    CCi = 0.0_sp
                 else
-                    CCi = CCi  - ((SFCDecline/100.0_dp) * (L123-L12SF))
+                    CCi = CCi  - ((SFCDecline/100.0_sp) * (L123-L12SF))
                 end if
-                if (CCi < 0.001_dp) then
-                    CCi = 0.0_dp
+                if (CCi < 0.001_sp) then
+                    CCi = 0.0_sp
                 else
                     ! is CCx at start of late season, adjusted for canopy
                     ! decline with soil fertility stress
                     CCxAdj = CCi
-                    CDCadj = CDC * (CCxAdj + 2.29_dp)/(CCx + 2.29_dp)
+                    CDCadj = CDC * (CCxAdj + 2.29_sp)/(CCx + 2.29_sp)
                     if (Dayi < (L123 + LengthCanopyDecline(CCxAdj, CDCadj))) then
-                        CCi = CCxAdj * (1.0_dp &
-                                        - 0.05_dp*(exp((Dayi-L123)*3.33_dp*CDCadj&
-                                                       /(CCxAdj+2.29_dp))&
-                                                   -1.0_dp))
+                        CCi = CCxAdj * (1.0_sp &
+                                        - 0.05_sp*(exp((Dayi-L123)*3.33_sp*CDCadj&
+                                                       /(CCxAdj+2.29_sp))&
+                                                   -1.0_sp))
                         if (CCibis < CCi) then
                             CCi = CCibis ! accept smallest Canopy Cover
                         end if
                     else
-                        CCi = 0.0_dp
+                        CCi = 0.0_sp
                     end if
                 end if
             else
                 CCi = CCatTime((GDDL123-GDDL0), CCo,&
-                               (GDDCGC*(1.0_dp-SFRedCGC/100.0_dp)),&
-                               ((1.0_dp-SFRedCCX/100.0_dp)*CCx))
+                               (GDDCGC*(1.0_sp-SFRedCGC/100.0_sp)),&
+                               ((1.0_sp-SFRedCCX/100.0_sp)*CCx))
                 ! CCibis is CC in late season when Canopy decline continues
                 if ((SumGDD > GDDL12SF) .and. (GDDL123 > GDDL12SF)) then
-                    CCibis = CCi  - (RatDGDD*SFCDecline/100.0_dp)&
-                                    * (exp(2.0_dp*log(SumGDD-GDDL12SF))&
-                                      /real(GDDL123-GDDL12SF, kind=dp))
+                    CCibis = CCi  - (RatDGDD*SFCDecline/100.0_sp)&
+                                    * (exp(2.0_sp*log(SumGDD-GDDL12SF))&
+                                      /real(GDDL123-GDDL12SF, kind=sp))
                 else
                     CCibis = CCi
                 end if
-                if (CCibis < 0.0_dp) then
-                    CCi = 0.0_dp
+                if (CCibis < 0.0_sp) then
+                    CCi = 0.0_sp
                 else
-                    CCi = CCi - ((RatDGDD*SFCDecline/100.0_dp) * (GDDL123-GDDL12SF))
+                    CCi = CCi - ((RatDGDD*SFCDecline/100.0_sp) * (GDDL123-GDDL12SF))
                 end if
-                if (CCi < 0.001_dp) then
-                    CCi = 0.0_dp
+                if (CCi < 0.001_sp) then
+                    CCi = 0.0_sp
                 else
                     ! is CCx at start of late season, adjusted for canopy
                     ! decline with soil fertility stress
                     CCxAdj = CCi
-                    GDDCDCadj = GDDCDC * (CCxAdj + 2.29_dp)/(CCx + 2.29_dp)
+                    GDDCDCadj = GDDCDC * (CCxAdj + 2.29_sp)/(CCx + 2.29_sp)
                     if (SumGDD < (GDDL123 + LengthCanopyDecline(CCxAdj, GDDCDCadj))) then
-                        CCi = CCxAdj * (1.0_dp&
-                                        - 0.05_dp*(exp((SumGDD-GDDL123)*3.33_dp&
-                                                        *GDDCDCadj/(CCxAdj+2.29_dp))&
-                                                    -1.0_dp))
+                        CCi = CCxAdj * (1.0_sp&
+                                        - 0.05_sp*(exp((SumGDD-GDDL123)*3.33_sp&
+                                                        *GDDCDCadj/(CCxAdj+2.29_sp))&
+                                                    -1.0_sp))
                         if (CCibis < CCi) then
                             CCi = CCibis ! accept smallest Canopy Cover
                         end if
                     else
-                        CCi = 0.0_dp
+                        CCi = 0.0_sp
                     end if
                 end if
             end if
-            if (CCi < 0.0_dp) then
-                CCi = 0.0_dp
+            if (CCi < 0.0_sp) then
+                CCi = 0.0_sp
             end if
         end if
     end if
@@ -1535,44 +1534,44 @@ real(dp) function CCiNoWaterStressSF(Dayi, L0, L12SF, L123, L1234, GDDL0,&
 end function CCiNoWaterStressSF
 
 
-real(dp) function FromGravelMassToGravelVolume(PorosityPercent,&
+real(sp) function FromGravelMassToGravelVolume(PorosityPercent,&
                                                GravelMassPercent)
-    real(dp), intent(in)      :: PorosityPercent
+    real(sp), intent(in)      :: PorosityPercent
     integer(int8), intent(in) :: GravelMassPercent
 
-    real(dp), parameter ::  MineralBD = 2.65 !! Mg/m3
-    real(dp) :: MatrixBD, SoilBD
+    real(sp), parameter ::  MineralBD = 2.65 !! Mg/m3
+    real(sp) :: MatrixBD, SoilBD
 
     if (GravelMassPercent > 0) then
-        MatrixBD = MineralBD * (1._dp - PorosityPercent/100._dp)
-        SoilBD = 100._dp/(GravelMassPercent/MineralBD + &
-                          (100._dp-GravelMassPercent)/MatrixBD)
+        MatrixBD = MineralBD * (1._sp - PorosityPercent/100._sp)
+        SoilBD = 100._sp/(GravelMassPercent/MineralBD + &
+                          (100._sp-GravelMassPercent)/MatrixBD)
         FromGravelMassToGravelVolume = GravelMassPercent * (SoilBD/MineralBD)
    else
-       FromGravelMassToGravelVolume = 0.0_dp
+       FromGravelMassToGravelVolume = 0.0_sp
    end if
 end function FromGravelMassToGravelVolume
 
 
 subroutine CheckForWaterTableInProfile(DepthGWTmeter, ProfileComp, WaterTableInProfile)
-    real(dp), intent(in) :: DepthGWTmeter
+    real(sp), intent(in) :: DepthGWTmeter
     type(CompartmentIndividual), dimension(max_No_compartments), &
                                                     intent(in) :: ProfileComp
     logical, intent(inout) :: WaterTableInProfile
 
-    real(dp) :: Ztot, Zi
+    real(sp) :: Ztot, Zi
     integer(int32) :: compi
 
     WaterTableInProfile = .false.
-    Ztot = 0._dp
+    Ztot = 0._sp
     compi = 0
 
-    if (DepthGWTmeter >= epsilon(0._dp)) then
+    if (DepthGWTmeter >= epsilon(0._sp)) then
         ! groundwater table is present
         do while ((.not. WaterTableInProfile) .and. (compi < getNrCompartments()))
             compi = compi + 1
             Ztot = Ztot + ProfileComp(compi)%Thickness
-            Zi = Ztot - ProfileComp(compi)%Thickness/2._dp
+            Zi = Ztot - ProfileComp(compi)%Thickness/2._sp
             if (Zi >= DepthGWTmeter) then
                 WaterTableInProfile = .true.
             end if
@@ -1581,12 +1580,12 @@ subroutine CheckForWaterTableInProfile(DepthGWTmeter, ProfileComp, WaterTableInP
 end subroutine CheckForWaterTableInProfile
 
 
-real(dp) function GetWeedRC(TheDay, GDDayi, fCCx, TempWeedRCinput, TempWeedAdj,&
+real(sp) function GetWeedRC(TheDay, GDDayi, fCCx, TempWeedRCinput, TempWeedAdj,&
                             TempWeedDeltaRC, L12SF, TempL123, GDDL12SF, &
                             TempGDDL123, TheModeCycle)
     integer(int32), intent(in) :: TheDay
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(in) :: fCCx
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(in) :: fCCx
     integer(int8), intent(in) :: TempWeedRCinput
     integer(int8), intent(in) :: TempWeedAdj
     integer(int32), intent(inout) :: TempWeedDeltaRC
@@ -1596,20 +1595,20 @@ real(dp) function GetWeedRC(TheDay, GDDayi, fCCx, TempWeedRCinput, TempWeedAdj,&
     integer(int32), intent(in) :: TempGDDL123
     integer(intEnum), intent(in) :: TheModeCycle
 
-    real(dp) :: WeedRCDayCalc
+    real(sp) :: WeedRCDayCalc
 
     WeedRCDayCalc = TempWeedRCinput
 
     if ((TempWeedRCinput > 0) .and. (TempWeedDeltaRC /= 0)) then
         ! daily RC when increase/decline of RC in season (i.e. TempWeedDeltaRC <> 0)
         ! adjust the slope of increase/decline of RC in case of self-thinning (i.e. fCCx < 1)
-        if ((TempWeedDeltaRC /= 0) .and. (fCCx < 0.999_dp)) then
+        if ((TempWeedDeltaRC /= 0) .and. (fCCx < 0.999_sp)) then
             ! only when self-thinning and there is increase/decline of RC
-            if (fCCx < 0.005_dp) then
+            if (fCCx < 0.005_sp) then
                 TempWeedDeltaRC = 0
             else
                 TempWeedDeltaRC = roundc(TempWeedDeltaRC *&
-                     exp(log(fCCx) * (1+TempWeedAdj/100._dp)), mold=1_int32)
+                     exp(log(fCCx) * (1+TempWeedAdj/100._sp)), mold=1_int32)
             end if
         end if
 
@@ -1618,38 +1617,38 @@ real(dp) function GetWeedRC(TheDay, GDDayi, fCCx, TempWeedRCinput, TempWeedAdj,&
             if (TheDay > L12SF) then
                 if (TheDay >= TempL123) then
                     WeedRCDayCalc = TempWeedRCinput * (1 + &
-                                        TempWeedDeltaRC/100._dp)
+                                        TempWeedDeltaRC/100._sp)
                 else
                     WeedRCDayCalc = TempWeedRCinput * (1 + &
-                                        (TempWeedDeltaRC/100._dp) &
-                                         * (TheDay-L12SF) / real(TempL123-L12SF,kind=dp))
+                                        (TempWeedDeltaRC/100._sp) &
+                                         * (TheDay-L12SF) / real(TempL123-L12SF,kind=sp))
                 end if
             end if
         else
             if (GDDayi > GDDL12SF) then
                 if (GDDayi > TempGDDL123) then
                     WeedRCDayCalc = TempWeedRCinput * (1 + &
-                                        TempWeedDeltaRC/100._dp)
+                                        TempWeedDeltaRC/100._sp)
                 else
                     WeedRCDayCalc = TempWeedRCinput * (1 + &
-                                        (TempWeedDeltaRC/100._dp) &
+                                        (TempWeedDeltaRC/100._sp) &
                                          * (GDDayi-GDDL12SF) &
-                                         / real(TempGDDL123-GDDL12SF,kind=dp))
+                                         / real(TempGDDL123-GDDL12SF,kind=sp))
                 end if
             end if
         end if
 
         ! fine-tuning for over- or undershooting in case of self-thinning
-        if (fCCx < 0.999_dp) then
+        if (fCCx < 0.999_sp) then
             ! only for self-thinning
             if ((fCCx < 1) .and. (fCCx > 0) .and. (WeedRCDayCalc > 98)) then
-                WeedRCDayCalc = 98._dp
+                WeedRCDayCalc = 98._sp
             end if
             if (WeedRCDayCalc < 0) then
-                WeedRCDayCalc = 0._dp
+                WeedRCDayCalc = 0._sp
             end if
             if (fCCx <= 0) then
-                WeedRCDayCalc = 100._dp
+                WeedRCDayCalc = 100._sp
             end if
         end if
     end if
@@ -1661,9 +1660,9 @@ end function GetWeedRC
 subroutine DetermineLengthGrowthStages(CCoVal, CCxVal, CDCVal, L0, TotalLength, &
                                         CGCgiven, TheDaysToCCini, ThePlanting, &
                                          Length123, StLength, Length12, CGCVal)
-    real(dp), intent(in) :: CCoVal
-    real(dp), intent(in) :: CCxVal
-    real(dp), intent(in) :: CDCVal
+    real(sp), intent(in) :: CCoVal
+    real(sp), intent(in) :: CCxVal
+    real(sp), intent(in) :: CDCVal
     integer(int32), intent(in) :: L0
     integer(int32), intent(in) :: TotalLength
     logical, intent(in) :: CGCgiven
@@ -1672,10 +1671,10 @@ subroutine DetermineLengthGrowthStages(CCoVal, CCxVal, CDCVal, L0, TotalLength, 
     integer(int32), intent(inout) :: Length123
     integer(int32), dimension(4), intent(inout) :: StLength
     integer(int32), intent(inout) :: Length12
-    real(dp), intent(inout) :: CGCVal
+    real(sp), intent(inout) :: CGCVal
 
-    real(dp) :: CCxVal_scaled
-    real(dp) :: CCToReach
+    real(sp) :: CCxVal_scaled
+    real(sp) :: CCToReach
     integer(int32) :: L12Adj
 
     if (Length123 < Length12) then
@@ -1692,12 +1691,12 @@ subroutine DetermineLengthGrowthStages(CCoVal, CCxVal, CDCVal, L0, TotalLength, 
         CGCVal = Undef_int
     else
         if (.not. CGCgiven) then ! Length12 is given and CGC has to be determined
-            CGCVal = real((log((0.25_dp*CCxVal/CCoVal)/(1._dp-0.98_dp))&
-                           /real(Length12-L0, kind=dp)), kind=dp)
+            CGCVal = real((log((0.25_sp*CCxVal/CCoVal)/(1._sp-0.98_sp))&
+                           /real(Length12-L0, kind=sp)), kind=sp)
             ! Check if CGC < maximum value (0.40) and adjust Length12 if required
-            if (CGCVal > 0.40_dp) then
-                CGCVal = 0.40_dp
-                CCxVal_scaled = 0.98_dp*CCxVal
+            if (CGCVal > 0.40_sp) then
+                CGCVal = 0.40_sp
+                CCxVal_scaled = 0.98_sp*CCxVal
                 Length12 = DaysToReachCCwithGivenCGC(CCxVal_scaled , CCoVal, &
                                                              CCxVal, CGCVal, L0)
                 if (Length123 < Length12) then
@@ -1706,7 +1705,7 @@ subroutine DetermineLengthGrowthStages(CCoVal, CCxVal, CDCVal, L0, TotalLength, 
             end if
         end if
         ! find StLength[1]
-        CCToReach = 0.10_dp
+        CCToReach = 0.10_sp
         StLength(1) = DaysToReachCCwithGivenCGC(CCToReach, CCoVal, CCxVal, &
                                                                     CGCVal, L0)
         ! find StLength[2]
@@ -1772,22 +1771,22 @@ integer(int32) function TimeToCCini(ThePlantingType, TheCropPlantingDens, &
                           TheSizeSeedling, TheSizePlant, TheCropCCx, TheCropCGC)
     integer(intEnum), intent(in) :: ThePlantingType
     integer(int32), intent(in) :: TheCropPlantingDens
-    real(dp), intent(in) :: TheSizeSeedling
-    real(dp), intent(in) :: TheSizePlant
-    real(dp), intent(in) :: TheCropCCx
-    real(dp), intent(in) :: TheCropCGC
+    real(sp), intent(in) :: TheSizeSeedling
+    real(sp), intent(in) :: TheSizePlant
+    real(sp), intent(in) :: TheCropCCx
+    real(sp), intent(in) :: TheCropCGC
 
     integer(int32) :: ElapsedTime
-    real(dp) :: TheCropCCo
-    real(dp) :: TheCropCCini
+    real(sp) :: TheCropCCo
+    real(sp) :: TheCropCCini
 
     if ((ThePlantingType == plant_seed) .or. (ThePlantingType == plant_transplant) &
                                    .or. (TheSizeSeedling >= TheSizePlant)) then
         ElapsedTime = 0
     else
-        TheCropCCo = (TheCropPlantingDens/10000._dp) * (TheSizeSeedling/10000._dp)
-        TheCropCCini = (TheCropPlantingDens/10000._dp) * (TheSizePlant/10000._dp)
-        if (TheCropCCini >= (0.98_dp*TheCropCCx)) then
+        TheCropCCo = (TheCropPlantingDens/10000._sp) * (TheSizeSeedling/10000._sp)
+        TheCropCCini = (TheCropPlantingDens/10000._sp) * (TheSizePlant/10000._sp)
+        if (TheCropCCini >= (0.98_sp*TheCropCCx)) then
             ElapsedTime = undef_int
         else
             ElapsedTime = DaysToReachCCwithGivenCGC(TheCropCCini, TheCropCCo, &
@@ -1798,22 +1797,22 @@ integer(int32) function TimeToCCini(ThePlantingType, TheCropPlantingDens, &
 end function TimeToCCini
 
 
-real(dp) function MultiplierCCxSelfThinning(Yeari, Yearx, ShapeFactor)
+real(sp) function MultiplierCCxSelfThinning(Yeari, Yearx, ShapeFactor)
     integer(int32), intent(in) :: Yeari
     integer(int32), intent(in) :: Yearx
-    real(dp), intent(in) :: ShapeFactor
+    real(sp), intent(in) :: ShapeFactor
 
-    real(dp) :: fCCx, Year0
+    real(sp) :: fCCx, Year0
 
     fCCx = 1
     if ((Yeari >= 2) .and. (Yearx >= 2) .and. &
-        (roundc(100._dp*ShapeFactor, mold=1_int32) /= 0)) then
-        Year0 = 1._dp + (Yearx-1._dp) * exp(ShapeFactor*log(10._dp))
+        (roundc(100._sp*ShapeFactor, mold=1_int32) /= 0)) then
+        Year0 = 1._sp + (Yearx-1._sp) * exp(ShapeFactor*log(10._sp))
         if (Yeari >= Year0) then
             fCCx = 0
         else
-            fCCx = 0.9_dp + 0.1_dp * (1._dp - exp((1._dp/ShapeFactor) &
-                        *log((Yeari-1._dp)/(Yearx-1._dp))))
+            fCCx = 0.9_sp + 0.1_sp * (1._sp - exp((1._sp/ShapeFactor) &
+                        *log((Yeari-1._sp)/(Yearx-1._sp))))
         end if
         if (fCCx < 0) then
             fCCx = 0
@@ -1825,26 +1824,26 @@ end function MultiplierCCxSelfThinning
 
 integer(int32) function DaysToReachCCwithGivenCGC(CCToReach, CCoVal, &
                                                         CCxVal, CGCVal, L0)
-    real(dp), intent(in) :: CCToReach
-    real(dp), intent(in) :: CCoVal
-    real(dp), intent(in) :: CCxVal
-    real(dp), intent(in) :: CGCVal
+    real(sp), intent(in) :: CCToReach
+    real(sp), intent(in) :: CCoVal
+    real(sp), intent(in) :: CCxVal
+    real(sp), intent(in) :: CGCVal
     integer(int32), intent(in) :: L0
 
-    real(dp) :: L
-    real(dp) :: CCToReach_local
+    real(sp) :: L
+    real(sp) :: CCToReach_local
 
     CCToReach_local = CCToReach
     if ((CCoVal > CCToReach_local) .or. (CCoVal >= CCxVal)) then
         L = 0
     else
-        if (CCToReach_local > (0.98_dp*CCxVal)) then
-            CCToReach_local = 0.98_dp*CCxVal
+        if (CCToReach_local > (0.98_sp*CCxVal)) then
+            CCToReach_local = 0.98_sp*CCxVal
         end if
-        if (CCToReach_local <= CCxVal/2._dp) then
+        if (CCToReach_local <= CCxVal/2._sp) then
             L = log(CCToReach_local/CCoVal)/CGCVal
         else
-            L = log((0.25_dp*CCxVal*CCxVal/CCoVal)/(CCxVal-CCToReach_local))&
+            L = log((0.25_sp*CCxVal*CCxVal/CCoVal)/(CCxVal-CCToReach_local))&
                                                                         /CGCVal
         end if
 
@@ -1854,18 +1853,18 @@ end function DaysToReachCCwithGivenCGC
 
 
 integer(int32) function LengthCanopyDecline(CCx, CDC)
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CDC
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CDC
 
     integer(int32) :: ND
 
     ND = 0
     if (CCx > 0) then
-        if (CDC <= epsilon(1._dp)) then
+        if (CDC <= epsilon(1._sp)) then
             ND = undef_int
         else
-            ND = roundc((((CCx+2.29_dp)/(CDC*3.33_dp))* &
-                         log(1._dp + 1._dp/0.05_dp) + 0.50_dp), mold=1_int32)
+            ND = roundc((((CCx+2.29_sp)/(CDC*3.33_sp))* &
+                         log(1._sp + 1._sp/0.05_sp) + 0.50_sp), mold=1_int32)
                          ! + 0.50 to guarantee that CC is zero
         end if
 
@@ -1874,26 +1873,26 @@ integer(int32) function LengthCanopyDecline(CCx, CDC)
 end function LengthCanopyDecline
 
 
-real(dp) function HarvestIndexGrowthCoefficient(HImax, dHIdt)
-    real(dp), intent(in) :: HImax
-    real(dp), intent(in) :: dHIdt
+real(sp) function HarvestIndexGrowthCoefficient(HImax, dHIdt)
+    real(sp), intent(in) :: HImax
+    real(sp), intent(in) :: dHIdt
 
-    real(dp) :: HIo, HIvar, HIGC, t
+    real(sp) :: HIo, HIvar, HIGC, t
 
     HIo = 1
 
     if (HImax > HIo) then
         t = HImax/dHIdt
-        HIGC = 0.001_dp
-        HIGC = HIGC + 0.001_dp
+        HIGC = 0.001_sp
+        HIGC = HIGC + 0.001_sp
         HIvar = (HIo*HImax)/(HIo+(HImax-HIo)*exp(-HIGC*t))
-        do while (HIvar <= (0.98_dp*HImax))
-            HIGC = HIGC + 0.001_dp
+        do while (HIvar <= (0.98_sp*HImax))
+            HIGC = HIGC + 0.001_sp
             HIvar = (HIo*HImax)/(HIo+(HImax-HIo)*exp(-HIGC*t))
         end do
 
         if (HIvar >= HImax) then
-            HIGC = HIGC - 0.001_dp
+            HIGC = HIGC - 0.001_sp
         end if
     else
         HIGC = undef_int
@@ -1903,48 +1902,48 @@ real(dp) function HarvestIndexGrowthCoefficient(HImax, dHIdt)
 end function HarvestIndexGrowthCoefficient
 
 
-real(dp) function TauFromKsat(Ksat)
-    real(dp), intent(in) :: Ksat
+real(sp) function TauFromKsat(Ksat)
+    real(sp), intent(in) :: Ksat
 
     integer(int32) :: TauTemp
 
-    if (abs(Ksat) < epsilon(1._dp)) then
+    if (abs(Ksat) < epsilon(1._sp)) then
         TauFromKsat = 0
     else
-        TauTemp = roundc(100.0_dp*0.0866_dp*exp(0.35_dp*log(Ksat)), mold=1_int32)
+        TauTemp = roundc(100.0_sp*0.0866_sp*exp(0.35_sp*log(Ksat)), mold=1_int32)
         if (TauTemp < 0) then
             TauTemp = 0
         end if
         if (TauTemp > 100) then
             TauTemp = 100
         end if
-        TauFromKsat = TauTemp/100.0_dp
+        TauFromKsat = TauTemp/100.0_sp
     end if
 end function TauFromKsat
 
 
 integer(int8) function NumberSoilClass(SatvolPro, FCvolPro, PWPvolPro, Ksatmm)
-    real(dp), intent(in) :: SatvolPro
-    real(dp), intent(in) :: FCvolPro
-    real(dp), intent(in) :: PWPvolPro
-    real(dp), intent(in) :: Ksatmm
+    real(sp), intent(in) :: SatvolPro
+    real(sp), intent(in) :: FCvolPro
+    real(sp), intent(in) :: PWPvolPro
+    real(sp), intent(in) :: Ksatmm
 
-    if (SATvolPro <= 55.0_dp) then
-        if (PWPvolPro >= 20.0_dp) then
-            if ((SATvolPro >= 49.0_dp) .and. (FCvolPro >= 40.0_dp)) then
+    if (SATvolPro <= 55.0_sp) then
+        if (PWPvolPro >= 20.0_sp) then
+            if ((SATvolPro >= 49.0_sp) .and. (FCvolPro >= 40.0_sp)) then
                 NumberSoilClass = 4  ! silty clayey soils
             else
                 NumberSoilClass = 3  ! sandy clayey soils
             end if
         else
-            if (FCvolPro < 23.0_dp) then
+            if (FCvolPro < 23.0_sp) then
                 NumberSoilClass = 1 ! sandy soils
             else
-                if ((PWPvolPro > 16.0_dp) .and. (Ksatmm < 100.0_dp)) then
+                if ((PWPvolPro > 16.0_sp) .and. (Ksatmm < 100.0_sp)) then
                     NumberSoilClass = 3 ! sandy clayey soils
                 else
-                    if ((PWPvolPro < 6.0_dp) .and. (FCvolPro < 28.0_dp) &
-                        .and. (Ksatmm >750.0_dp)) then
+                    if ((PWPvolPro < 6.0_sp) .and. (FCvolPro < 28.0_sp) &
+                        .and. (Ksatmm >750.0_sp)) then
                         NumberSoilClass = 1 ! sandy soils
                     else
                         NumberSoilClass = 2  ! loamy soils
@@ -1959,16 +1958,16 @@ end function NumberSoilClass
 
 
 subroutine DeriveSmaxTopBottom(SxTopQ, SxBotQ, SxTop, SxBot)
-    real(dp), intent(in) :: SxTopQ
-    real(dp), intent(in) :: SxBotQ
-    real(dp), intent(inout) :: SxTop
-    real(dp), intent(inout) :: SxBot
+    real(sp), intent(in) :: SxTopQ
+    real(sp), intent(in) :: SxBotQ
+    real(sp), intent(inout) :: SxTop
+    real(sp), intent(inout) :: SxBot
 
-    real(dp) :: x, V1, V2, V11, V22
+    real(sp) :: x, V1, V2, V11, V22
 
     V1 = SxTopQ
     V2 = SxBotQ
-    if (abs(V1 - V2) < 1e-12_dp) then
+    if (abs(V1 - V2) < 1e-12_sp) then
         SxTop = V1
         SxBot = V2
     else
@@ -1976,13 +1975,13 @@ subroutine DeriveSmaxTopBottom(SxTopQ, SxBotQ, SxTop, SxBot)
             V1 = SxBotQ
             V2 = SxTopQ
         end if
-        x = 3.0_dp * V2/(V1-V2)
-        if (x < 0.5_dp) then
-            V11 = (4.0_dp/3.5_dp) * V1
-            V22 = 0.0_dp
+        x = 3.0_sp * V2/(V1-V2)
+        if (x < 0.5_sp) then
+            V11 = (4.0_sp/3.5_sp) * V1
+            V22 = 0.0_sp
         else
-            V11 = (x + 3.5_dp) * V1/(x+3.0_dp)
-            V22 = (x - 0.5_dp) * V2/x
+            V11 = (x + 3.5_sp) * V1/(x+3.0_sp)
+            V22 = (x - 0.5_sp) * V2/x
         end if
         if (SxTopQ > SxBotQ) then
             SxTop = V11
@@ -1995,15 +1994,15 @@ subroutine DeriveSmaxTopBottom(SxTopQ, SxBotQ, SxTop, SxBot)
 end subroutine DeriveSmaxTopBottom
 
 
-real(dp) function KsTemperature(T0, T1, Tin)
-    real(dp), intent(in) :: T0
-    real(dp), intent(in) :: T1
-    real(dp), intent(in) :: Tin
+real(sp) function KsTemperature(T0, T1, Tin)
+    real(sp), intent(in) :: T0
+    real(sp), intent(in) :: T1
+    real(sp), intent(in) :: Tin
 
-    real(dp) :: M
+    real(sp) :: M
     integer(int8) :: a
 
-    M = 1._dp ! no correction applied (TO and/or T1 is undefined, or T0=T1)
+    M = 1._sp ! no correction applied (TO and/or T1 is undefined, or T0=T1)
     if (((roundc(T0, mold=1_int32) /= undef_int) .and. &
          (roundc(T1, mold=1_int32) /= undef_int)) .and. abs(T0-T1)> eps) then
         if (T0 < T1) then
@@ -2015,17 +2014,17 @@ real(dp) function KsTemperature(T0, T1, Tin)
            ! within range for correction
             M = GetKs(T0, T1, Tin)
             if (M < 0) then
-                M = 0._dp
+                M = 0._sp
             end if
             if (M > 1) then
-                M = 1._dp
+                M = 1._sp
             end if
         else
             if (a*Tin <= a*T0) then
-                M = 0._dp
+                M = 0._sp
             end if
             if (a*Tin >= a*T1) then
-                M = 1._dp
+                M = 1._sp
             end if
         end if
     end if
@@ -2035,79 +2034,79 @@ real(dp) function KsTemperature(T0, T1, Tin)
     contains
 
 
-    real(dp) function GetKs(T0, T1, Tin)
-        real(dp), intent(in) :: T0
-        real(dp), intent(in) :: T1
-        real(dp), intent(in) :: Tin
+    real(sp) function GetKs(T0, T1, Tin)
+        real(sp), intent(in) :: T0
+        real(sp), intent(in) :: T1
+        real(sp), intent(in) :: Tin
 
-        real(dp), parameter  :: Mo = 0.02_dp
-        real(dp), parameter  :: Mx = 1.0_dp
+        real(sp), parameter  :: Mo = 0.02_sp
+        real(sp), parameter  :: Mx = 1.0_sp
 
-        real(dp) :: MRate, Ksi, Trel
+        real(sp) :: MRate, Ksi, Trel
 
         Trel = (Tin-T0)/(T1-T0)
         ! derive rate of increase (MRate)
-        MRate = (-1._dp)*(log((Mo*Mx-0.98_dp*Mo)/(0.98_dp*(Mx-Mo))))
+        MRate = (-1._sp)*(log((Mo*Mx-0.98_sp*Mo)/(0.98_sp*(Mx-Mo))))
         ! get Ks from logistic equation
         Ksi = (Mo*Mx)/(Mo+(Mx-Mo)*exp(-MRate*Trel))
         ! adjust for Mo
-        Ksi = Ksi - Mo * (1._dp - Trel)
+        Ksi = Ksi - Mo * (1._sp - Trel)
         GetKs = Ksi
      end function GetKs
 end function KsTemperature
 
 
-real(dp) function KsSalinity(SalinityResponsConsidered, &
+real(sp) function KsSalinity(SalinityResponsConsidered, &
                 ECeN, ECeX, ECeVAR, KsShapeSalinity)
     logical, intent(in) :: SalinityResponsConsidered
     integer(int8), intent(in) :: ECeN
     integer(int8), intent(in) :: ECeX
-    real(dp), intent(in) :: ECeVAR
-    real(dp), intent(in) :: KsShapeSalinity
+    real(sp), intent(in) :: ECeVAR
+    real(sp), intent(in) :: KsShapeSalinity
 
-    real(dp) :: M, tmp_var
+    real(sp) :: M, tmp_var
 
-    M = 1._dp ! no correction applied
+    M = 1._sp ! no correction applied
     if (SalinityResponsConsidered) then
         if ((ECeVAR > ECeN) .and. (ECeVar < ECeX)) then
             ! within range for correction
-            if ((roundc(KsShapeSalinity*10._dp, mold=1_int32) /= 0) .and. &
-                (roundc(KsShapeSalinity*10._dp, mold=1_int32) /= 990)) then
-                tmp_var = real(ECeN, kind=dp)
-                M = KsAny(ECeVar, tmp_var, real(ECeX, kind=dp), KsShapeSalinity)
+            if ((roundc(KsShapeSalinity*10._sp, mold=1_int32) /= 0) .and. &
+                (roundc(KsShapeSalinity*10._sp, mold=1_int32) /= 990)) then
+                tmp_var = real(ECeN, kind=sp)
+                M = KsAny(ECeVar, tmp_var, real(ECeX, kind=sp), KsShapeSalinity)
                 ! convex or concave
             else
-                if (roundc(KsShapeSalinity*10._dp, mold=1_int32) == 0) then
-                    M = 1._dp - (ECeVAR-ECeN)/(ECeX-ECeN)
+                if (roundc(KsShapeSalinity*10._sp, mold=1_int32) == 0) then
+                    M = 1._sp - (ECeVAR-ECeN)/(ECeX-ECeN)
                     ! linear (KsShapeSalinity = 0)
                 else
-                    M = KsTemperature(real(ECeX, kind=dp), real(ECeN, kind=dp), ECeVAR)
+                    M = KsTemperature(real(ECeX, kind=sp), real(ECeN, kind=sp), ECeVAR)
                     ! logistic equation (KsShapeSalinity = 99)
                 end if
             end if
         else
             if (ECeVAR <= ECeN) then
-                M = 1._dp  ! no salinity stress
+                M = 1._sp  ! no salinity stress
             end if
             if (ECeVar >= ECeX) then
-                M = 0._dp  ! full salinity stress
+                M = 0._sp  ! full salinity stress
             end if
         end if
     end if
     if (M > 1) then
-        M = 1._dp
+        M = 1._sp
     end if
     if (M < 0) then
-        M = 0._dp
+        M = 0._sp
     end if
     KsSalinity = M
 end function KsSalinity
 
 
 subroutine TimeToMaxCanopySF(CCo, CGC, CCx, L0, L12, L123, LToFlor, LFlor, DeterminantCrop, L12SF, RedCGC, RedCCx, ClassSF)
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: CCx
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: CCx
     integer(int32), intent(in) :: L0
     integer(int32), intent(in) :: L12
     integer(int32), intent(in) :: L123
@@ -2119,17 +2118,17 @@ subroutine TimeToMaxCanopySF(CCo, CGC, CCx, L0, L12, L123, LToFlor, LFlor, Deter
     integer(int8), intent(inout) :: RedCCx
     integer(int32), intent(inout) :: ClassSF
 
-    real(dp) :: CCToReach
+    real(sp) :: CCToReach
     integer(int32) :: L12SFmax
 
     if ((ClassSF == 0) .or. ((RedCCx == 0) .and. (RedCGC == 0))) then
         L12SF = L12
     else
-        CCToReach = 0.98_dp*(1-RedCCX/100._dp)*CCx
-        L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._dp)*CCx), (CGC*(1-(RedCGC)/100._dp)), L0)
+        CCToReach = 0.98_sp*(1-RedCCX/100._sp)*CCx
+        L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._sp)*CCx), (CGC*(1-(RedCGC)/100._sp)), L0)
         ! determine L12SFmax
         if (DeterminantCrop) then
-            L12SFmax = LToFlor + roundc(LFlor/2._dp, mold=1_int32)
+            L12SFmax = LToFlor + roundc(LFlor/2._sp, mold=1_int32)
         else
             L12SFmax = L123
         end if
@@ -2140,53 +2139,53 @@ subroutine TimeToMaxCanopySF(CCo, CGC, CCx, L0, L12, L123, LToFlor, LFlor, Deter
             ! 1. increase CGC(soil fertility)
             do while ((L12SF > L12SFmax) .and. (RedCGC > 0))
                 RedCGC = RedCGC - 1_int8
-                L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._dp)*CCx), (CGC*(1-(RedCGC)/100._dp)), L0)
+                L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._sp)*CCx), (CGC*(1-(RedCGC)/100._sp)), L0)
             end do
             ! 2. if not sufficient decrease CCx(soil fertility)
-            do while ((L12SF > L12SFmax) .and. ( ((1-RedCCX/100._dp)*CCx) > 0.10_dp) .and. (RedCCx <= 50))
+            do while ((L12SF > L12SFmax) .and. ( ((1-RedCCX/100._sp)*CCx) > 0.10_sp) .and. (RedCCx <= 50))
                 RedCCx = RedCCx + 1_int8
-                CCToReach = 0.98_dp*(1-RedCCX/100._dp)*CCx
-                L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._dp)*CCx), (CGC*(1-(RedCGC)/100._dp)), L0)
+                CCToReach = 0.98_sp*(1-RedCCX/100._sp)*CCx
+                L12SF = DaysToReachCCwithGivenCGC(CCToReach, CCo, ((1-RedCCX/100._sp)*CCx), (CGC*(1-(RedCGC)/100._sp)), L0)
             end do
         end if
     end if
 end subroutine TimeToMaxCanopySF
 
 
-real(dp) function SoilEvaporationReductionCoefficient(Wrel, Edecline)
-    real(dp), intent(in) :: Wrel
-    real(dp), intent(in) :: Edecline
+real(sp) function SoilEvaporationReductionCoefficient(Wrel, Edecline)
+    real(sp), intent(in) :: Wrel
+    real(sp), intent(in) :: Edecline
 
-    if (Wrel <= 0.00001_dp) then
-        SoilEvaporationReductionCoefficient = 0.0_dp
+    if (Wrel <= 0.00001_sp) then
+        SoilEvaporationReductionCoefficient = 0.0_sp
     else
-        if (Wrel >= 0.99999_dp) then
-            SoilEvaporationReductionCoefficient = 1.0_dp
+        if (Wrel >= 0.99999_sp) then
+            SoilEvaporationReductionCoefficient = 1.0_sp
         else
             SoilEvaporationReductionCoefficient =&
-                (exp(Edecline*Wrel) - 1.0_dp)/(exp(Edecline) - 1.0_dp)
+                (exp(Edecline*Wrel) - 1.0_sp)/(exp(Edecline) - 1.0_sp)
         end if
     end if
 end function SoilEvaporationReductionCoefficient
 
 
-real(dp) function MaxCRatDepth(ParamCRa, ParamCRb, Ksat, Zi, DepthGWT)
-    real(dp), intent(in) :: ParamCRa
-    real(dp), intent(in) :: ParamCRb
-    real(dp), intent(in) :: Ksat
-    real(dp), intent(in) :: Zi
-    real(dp), intent(in) :: DepthGWT
+real(sp) function MaxCRatDepth(ParamCRa, ParamCRb, Ksat, Zi, DepthGWT)
+    real(sp), intent(in) :: ParamCRa
+    real(sp), intent(in) :: ParamCRb
+    real(sp), intent(in) :: Ksat
+    real(sp), intent(in) :: Zi
+    real(sp), intent(in) :: DepthGWT
 
-    real(dp) :: CRmax
+    real(sp) :: CRmax
 
-    CRmax = 0._dp
-    if ((Ksat > 0._dp) .and. (DepthGWT > 0._dp) .and. ((DepthGWT-Zi) < 4._dp)) then
+    CRmax = 0._sp
+    if ((Ksat > 0._sp) .and. (DepthGWT > 0._sp) .and. ((DepthGWT-Zi) < 4._sp)) then
         if (Zi >= DepthGWT) then
-            CRmax = 99._dp
+            CRmax = 99._sp
         else
             CRmax = exp((log(DepthGWT - Zi) - ParamCRb)/ParamCRa)
-            if (CRmax > 99._dp) then
-                CRmax = 99._dp
+            if (CRmax > 99._sp) then
+                CRmax = 99._sp
             end if
         end if
     end if
@@ -2194,42 +2193,42 @@ real(dp) function MaxCRatDepth(ParamCRa, ParamCRb, Ksat, Zi, DepthGWT)
 end function MaxCRatDepth
 
 
-real(dp) function CCmultiplierWeed(ProcentWeedCover, CCxCrop, FshapeWeed)
+real(sp) function CCmultiplierWeed(ProcentWeedCover, CCxCrop, FshapeWeed)
     integer(int8), intent(in) :: ProcentWeedCover
-    real(dp), intent(in) :: CCxCrop
-    real(dp), intent(in) :: FshapeWeed
+    real(sp), intent(in) :: CCxCrop
+    real(sp), intent(in) :: FshapeWeed
 
-    real(dp) :: fWeed
+    real(sp) :: fWeed
 
-    if ((ProcentWeedCover > 0) .and. (CCxCrop < 0.9999_dp) .and. (CCxCrop > 0.001_dp)) then
+    if ((ProcentWeedCover > 0) .and. (CCxCrop < 0.9999_sp) .and. (CCxCrop > 0.001_sp)) then
         if (ProcentWeedCover == 100) then
-            fWeed = 1._dp/CCxCrop
+            fWeed = 1._sp/CCxCrop
         else
-            fWeed = 1._dp - (1._dp - 1._dp/CCxCrop) * &
-              (exp(FshapeWeed*ProcentWeedCover/100._dp) - 1._dp)/(exp(FshapeWeed) - 1._dp)
-            if (fWeed > (1._dp/CCxCrop)) then
-                fWeed = 1._dp/CCxCrop
+            fWeed = 1._sp - (1._sp - 1._sp/CCxCrop) * &
+              (exp(FshapeWeed*ProcentWeedCover/100._sp) - 1._sp)/(exp(FshapeWeed) - 1._sp)
+            if (fWeed > (1._sp/CCxCrop)) then
+                fWeed = 1._sp/CCxCrop
             end if
         end if
     else
-        fWeed = 1._dp
+        fWeed = 1._sp
     end if
     CCmultiplierWeed = fWeed
 end function CCmultiplierWeed
 
 
-real(dp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed, fCCx, Yeari, MWeedAdj, RCadj)
+real(sp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed, fCCx, Yeari, MWeedAdj, RCadj)
     integer(int8), intent(in) :: ProcentWeedCover
-    real(dp), intent(in) :: CCxCrop
-    real(dp) :: FshapeWeed
-    real(dp), intent(in) :: fCCx
+    real(sp), intent(in) :: CCxCrop
+    real(sp) :: FshapeWeed
+    real(sp), intent(in) :: fCCx
     integer(int8), intent(in) :: Yeari
     integer(int8), intent(in) :: MWeedAdj
     integer(int8), intent(inout) :: RCadj
 
-    real(dp) :: fWeedi, CCxTot100, CCxTot0, CCxTotM, fweedMax, RCadjD, FshapeMinimum
+    real(sp) :: fWeedi, CCxTot100, CCxTot0, CCxTotM, fweedMax, RCadjD, FshapeMinimum
 
-    fWeedi = 1._dp
+    fWeedi = 1._sp
     RCadj = ProcentWeedCover
     if (ProcentWeedCover > 0) then
         fweedi = CCmultiplierWeed(ProcentWeedCover, CCxCrop, FshapeWeed)
@@ -2237,7 +2236,7 @@ real(dp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed
         if ((GetCrop_subkind() == subkind_Forage) .and. (Yeari > 1) .and. (fCCx < 0.995)) then
             ! need for adjustment
             ! step 1 - adjusment of shape factor to degree of crop replacement by weeds
-            FshapeMinimum = 10 - 20*( (exp(fCCx*3._dp)-1)/(exp(3._dp)-1) + sqrt(MWeedAdj/100._dp))
+            FshapeMinimum = 10 - 20*( (exp(fCCx*3._sp)-1)/(exp(3._sp)-1) + sqrt(MWeedAdj/100._sp))
             if (roundc(FshapeMinimum*10,mold=1_int32) == 0) then
                 FshapeMinimum = 0.1
             end if
@@ -2260,12 +2259,12 @@ real(dp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed
             CCxTot0 = fweedi * (fCCx*CCxCrop)
             ! C. total CC (crop and weeds) with specified weed take over (MWeedAdj)
             CCxTotM = CCxTot0 + (CCxTot100 - CCxTot0)* MWeedAdj/100
-            if (CCxTotM < (fCCx*CCxCrop*(1-ProcentWeedCover/100._dp))) then
-                CCxTotM = fCCx*CCxCrop*(1-ProcentWeedCover/100._dp)
+            if (CCxTotM < (fCCx*CCxCrop*(1-ProcentWeedCover/100._sp))) then
+                CCxTotM = fCCx*CCxCrop*(1-ProcentWeedCover/100._sp)
             end if
             if (fCCx > 0.005) then
                 fweedi = CCxTotM/(fCCx*CCxCrop)
-                fweedMax = 1._dp/(fCCx*CCxCrop)
+                fweedMax = 1._sp/(fCCx*CCxCrop)
                 if (roundc(fweedi*1000,mold=1_int32) > roundc(fWeedMax*1000,mold=1_int32)) then
                     fweedi = fweedMax
                 end if
@@ -2277,8 +2276,8 @@ real(dp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed
                 if (RCadjD < (100*(CCxTotM - fCCx*CCxCrop)/CCxTotM)) then
                     RCadjD = 100*(CCxTotM - fCCx*CCxCrop)/CCxTotM
                 end if
-                if (RCadjD > (100 * (1- (fCCx*CCxCrop*(1-ProcentWeedCover/100._dp)/CCxTotM)))) then
-                    RCadjD = 100*(1- fCCx*CCxCrop*(1-ProcentWeedCover/100._dp)/CCxTotM)
+                if (RCadjD > (100 * (1- (fCCx*CCxCrop*(1-ProcentWeedCover/100._sp)/CCxTotM)))) then
+                    RCadjD = 100*(1- fCCx*CCxCrop*(1-ProcentWeedCover/100._sp)/CCxTotM)
                 end if
             end if
             RCadj = roundc(RCadjD,mold=1_int8)
@@ -2292,88 +2291,88 @@ real(dp) function CCmultiplierWeedAdjusted(ProcentWeedCover, CCxCrop, FshapeWeed
 end function CCmultiplierWeedAdjusted
 
 
-real(dp) function BMRange(HIadj)
+real(sp) function BMRange(HIadj)
     integer(int32), intent(in) :: HIadj
 
-    real(dp) :: BMR
+    real(sp) :: BMR
 
     if (HIadj <= 0) then
-        BMR = 0.0_dp
+        BMR = 0.0_sp
     else
-        BMR = (log(real(HIadj, kind=dp))/0.0562_dp)/100.0_dp
+        BMR = (log(real(HIadj, kind=sp))/0.0562_sp)/100.0_sp
     end if
-    if (BMR > 1.0_dp) then
-        BMR = 1.0_dp
+    if (BMR > 1.0_sp) then
+        BMR = 1.0_sp
     end if
     BMRange = BMR
 end function BMRange
 
 
-real(dp) function HImultiplier(RatioBM, RangeBM, HIadj)
-    real(dp), intent(in) :: RatioBM
-    real(dp), intent(in) :: RangeBM
+real(sp) function HImultiplier(RatioBM, RangeBM, HIadj)
+    real(sp), intent(in) :: RatioBM
+    real(sp), intent(in) :: RangeBM
     integer(int8), intent(in) :: HIadj
 
-    real(dp) :: Rini, Rmax, Rend
+    real(sp) :: Rini, Rmax, Rend
 
-    Rini = 1.0_dp - RangeBM
-    REnd = 1.0_dp
-    RMax = Rini + (2.0_dp/3.0_dp) * (REnd-Rini)
+    Rini = 1.0_sp - RangeBM
+    REnd = 1.0_sp
+    RMax = Rini + (2.0_sp/3.0_sp) * (REnd-Rini)
     if (RatioBM <= RIni) then
-        HImultiplier = 1.0_dp
+        HImultiplier = 1.0_sp
     elseif (RatioBM <= RMax) then
-        HImultiplier = 1.0_dp&
-            + (1.0_dp + sin(PI*(1.5_dp-(RatioBM-RIni)/(RMax-RIni))))&
-            *(HIadj/200.0_dp)
+        HImultiplier = 1.0_sp&
+            + (1.0_sp + sin(PI*(1.5_sp-(RatioBM-RIni)/(RMax-RIni))))&
+            *(HIadj/200.0_sp)
     elseif (RatioBM <= REnd) then
-        HImultiplier = 1.0_dp&
-            + (1.0_dp + sin(PI*(0.5_dp+(RatioBM-RMax)/(REnd-RMax))))&
-            *(HIadj/200.0_dp)
+        HImultiplier = 1.0_sp&
+            + (1.0_sp + sin(PI*(0.5_sp+(RatioBM-RMax)/(REnd-RMax))))&
+            *(HIadj/200.0_sp)
     else
-        HImultiplier = 1.0_dp
+        HImultiplier = 1.0_sp
     end if
 end function HImultiplier
 
 
-real(dp) function AdjustedKsStoToECsw(ECeMin, ECeMax, ResponseECsw, ECei, &
+real(sp) function AdjustedKsStoToECsw(ECeMin, ECeMax, ResponseECsw, ECei, &
             ECswi, ECswFCi, Wrel, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt, KsStoIN)
     integer(int8), intent(in) :: ECeMin
     integer(int8), intent(in) :: ECeMax
     integer(int32), intent(in) :: ResponseECsw
-    real(dp), intent(in) :: ECei
-    real(dp), intent(in) :: ECswi
-    real(dp), intent(in) :: ECswFCi
-    real(dp), intent(in) :: Wrel
-    real(dp), intent(in) :: Coeffb0Salt
-    real(dp), intent(in) :: Coeffb1Salt
-    real(dp), intent(in) :: Coeffb2Salt
-    real(dp), intent(in) :: KsStoIN
+    real(sp), intent(in) :: ECei
+    real(sp), intent(in) :: ECswi
+    real(sp), intent(in) :: ECswFCi
+    real(sp), intent(in) :: Wrel
+    real(sp), intent(in) :: Coeffb0Salt
+    real(sp), intent(in) :: Coeffb1Salt
+    real(sp), intent(in) :: Coeffb2Salt
+    real(sp), intent(in) :: KsStoIN
 
-    real(dp) :: ECswRel, LocalKsShapeFactorSalt, KsSalti, SaltStressi, StoClosure, KsStoOut
+    real(sp) :: ECswRel, LocalKsShapeFactorSalt, KsSalti, SaltStressi, StoClosure, KsStoOut
 
-    if ((ResponseECsw > 0) .and. (Wrel > epsilon(1._dp)) .and. &
+    if ((ResponseECsw > 0) .and. (Wrel > epsilon(1._sp)) .and. &
                             (GetSimulation_SalinityConsidered() .eqv. .true.)) then
         ! adjustment to ECsw considered
-        ECswRel = ECswi - (ECswFCi - ECei) + (ResponseECsw-100._dp)*Wrel
+        ECswRel = ECswi - (ECswFCi - ECei) + (ResponseECsw-100._sp)*Wrel
         if ((ECswRel > ECeMin) .and. (ECswRel < ECeMax)) then
             ! stomatal closure at ECsw relative
-            LocalKsShapeFactorSalt = 3._dp ! CONVEX give best ECsw response
+            LocalKsShapeFactorSalt = 3._sp ! CONVEX give best ECsw response
             KsSalti = KsSalinity(GetSimulation_SalinityConsidered(), ECeMin, &
                                         ECeMax, ECswRel, LocalKsShapeFactorSalt)
-            SaltStressi = (1._dp-KsSalti)*100._dp
+            SaltStressi = (1._sp-KsSalti)*100._sp
             StoClosure = Coeffb0Salt + Coeffb1Salt * SaltStressi + Coeffb2Salt &
                                                     * SaltStressi * SaltStressi
             ! adjusted KsSto
-            KsStoOut = (1._dp - StoClosure/100._dp)
-            if (KsStoOut < 0.0_dp) then
-                KsStoOut = 0._dp
+            KsStoOut = (1._sp - StoClosure/100._sp)
+            if (KsStoOut < 0.0_sp) then
+                KsStoOut = 0._sp
             end if
             if (KsStoOut > KsStoIN) then
                 KsStoOut = KsStoIN
             end if
         else
             if (ECswRel >= ECeMax) then
-                KsStoOut = 0._dp ! full stress
+                KsStoOut = 0._sp ! full stress
             else
                 KsStoOut = KsStoIN ! no extra stress
             end if
@@ -2385,17 +2384,17 @@ real(dp) function AdjustedKsStoToECsw(ECeMin, ECeMax, ResponseECsw, ECei, &
 end function AdjustedKsStoToECsw
 
 
-real(dp) function CCatTime(Dayi, CCoIN, CGCIN, CCxIN)
+real(sp) function CCatTime(Dayi, CCoIN, CGCIN, CCxIN)
     integer(int32), intent(in) :: Dayi
-    real(dp), intent(in) :: CCoIN
-    real(dp), intent(in) :: CGCIN
-    real(dp), intent(in) :: CCxIN
+    real(sp), intent(in) :: CCoIN
+    real(sp), intent(in) :: CGCIN
+    real(sp), intent(in) :: CCxIN
 
-    real(dp) :: CCi
+    real(sp) :: CCi
 
     CCi = CCoIN * exp(CGCIN * Dayi)
-    if (CCi > CCxIN/2._dp) then
-        CCi = CCxIN - 0.25_dp * (CCxIN/CCoIN) * CCxIN * exp(-CGCIN*Dayi)
+    if (CCi > CCxIN/2._sp) then
+        CCi = CCxIN - 0.25_sp * (CCxIN/CCoIN) * CCxIN * exp(-CGCIN*Dayi)
     end if
     CCatTime = CCi
 end function CCatTime
@@ -2407,7 +2406,7 @@ subroutine DetermineDayNr(Dayi, Monthi, Yeari, DayNr)
     integer(int32), intent(in) :: Yeari
     integer(int32), intent(inout) :: DayNr
 
-    DayNr = trunc((Yeari - 1901)*365.25_dp + ElapsedDays(Monthi) + Dayi + 0.05_dp)
+    DayNr = trunc((Yeari - 1901)*365.25_sp + ElapsedDays(Monthi) + Dayi + 0.05_sp)
 end subroutine DetermineDayNr
 
 
@@ -2417,10 +2416,10 @@ subroutine DetermineDate(DayNr, Dayi, Monthi, Yeari)
     integer(int32), intent(inout) :: Monthi
     integer(int32), intent(inout) :: Yeari
 
-    real(dp) :: SumDayMonth
+    real(sp) :: SumDayMonth
 
-    Yeari = trunc((DayNr-0.05_dp)/365.25_dp)
-    SumDayMonth = (DayNr - Yeari*365.25_dp)
+    Yeari = trunc((DayNr-0.05_sp)/365.25_sp)
+    SumDayMonth = (DayNr - Yeari*365.25_sp)
     Yeari = 1901 + Yeari
     Monthi = 1
 
@@ -2428,25 +2427,25 @@ subroutine DetermineDate(DayNr, Dayi, Monthi, Yeari)
         if (SumDayMonth <= ElapsedDays(Monthi+1)) exit
         Monthi = Monthi + 1
     end do
-    Dayi = roundc(SumDayMonth - ElapsedDays(Monthi) + 0.25_dp + 0.06_dp, &
+    Dayi = roundc(SumDayMonth - ElapsedDays(Monthi) + 0.25_sp + 0.06_sp, &
                   mold=1_int32)
 end subroutine DetermineDate
 
 
-real(dp) function DegreesDay(Tbase, Tupper, TDayMin, TDayMax, GDDSelectedMethod)
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
+real(sp) function DegreesDay(Tbase, Tupper, TDayMin, TDayMax, GDDSelectedMethod)
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
     integer(int8), intent(in) :: GDDSelectedMethod
 
-    real(dp) :: TstarMax, TstarMin
-    real(dp) :: Tavg, DgrD
+    real(sp) :: TstarMax, TstarMin
+    real(sp) :: Tavg, DgrD
 
     select case (GDDSelectedMethod)
     case (1)
         ! Method 1. - No adjustemnt of Tmax, Tmin before calculation of Taverage
-        Tavg = (TDayMax+TDayMin)/2._dp
+        Tavg = (TDayMax+TDayMin)/2._sp
         if (Tavg > Tupper) then
             Tavg = Tupper
         end if
@@ -2470,7 +2469,7 @@ real(dp) function DegreesDay(Tbase, Tupper, TDayMin, TDayMax, GDDSelectedMethod)
         if (TDayMin > Tupper) then
             TstarMin = Tupper
         end if
-        Tavg = (TstarMax+TstarMin)/2._dp
+        Tavg = (TstarMax+TstarMin)/2._sp
 
     case default
        ! Method 3.
@@ -2485,7 +2484,7 @@ real(dp) function DegreesDay(Tbase, Tupper, TDayMin, TDayMax, GDDSelectedMethod)
         if (TDayMin > Tupper) then
             TstarMin = Tupper
         end if
-        Tavg = (TstarMax+TstarMin)/2._dp
+        Tavg = (TstarMax+TstarMin)/2._sp
         if (Tavg < Tbase) then
             Tavg = Tbase
         end if
@@ -2500,10 +2499,10 @@ subroutine DetermineCNIandIII(CN2, CN1, CN3)
     integer(int8), intent(inout) :: CN1
     integer(int8), intent(inout) :: CN3
 
-    CN1 = roundc(1.4_dp*(exp(-14*log(10._dp))) + 0.507_dp*CN2 &
-                  - 0.00374_dp*CN2*CN2 + 0.0000867_dp*CN2*CN2*CN2, mold=1_int8)
-    CN3 = roundc(5.6_dp*(exp(-14*log(10._dp))) + 2.33_dp*CN2 &
-                 - 0.0209_dp*CN2*CN2 + 0.000076_dp*CN2*CN2*CN2, mold=1_int8)
+    CN1 = roundc(1.4_sp*(exp(-14*log(10._sp))) + 0.507_sp*CN2 &
+                  - 0.00374_sp*CN2*CN2 + 0.0000867_sp*CN2*CN2*CN2, mold=1_int8)
+    CN3 = roundc(5.6_sp*(exp(-14*log(10._sp))) + 2.33_sp*CN2 &
+                 - 0.0209_sp*CN2*CN2 + 0.000076_sp*CN2*CN2*CN2, mold=1_int8)
 
     if (CN1 <= 0) then
         CN1 = 1
@@ -2522,7 +2521,7 @@ end subroutine DetermineCNIandIII
 
 
 subroutine DetermineCN_default(Infiltr, CN2)
-    real(dp), intent(in) :: Infiltr
+    real(sp), intent(in) :: Infiltr
     integer(int8), intent(inout) :: CN2
 
     if (Infiltr > 864) then
@@ -2537,20 +2536,20 @@ subroutine DetermineCN_default(Infiltr, CN2)
 end subroutine DetermineCN_default
 
 
-real(dp) function ECeComp(Comp)
+real(sp) function ECeComp(Comp)
     type(CompartmentIndividual), intent(in) :: Comp
 
-    real(dp) :: volSat, TotSalt, denominator
+    real(sp) :: volSat, TotSalt, denominator
     integer(int32) :: i
 
     volSAT = GetSoilLayer_SAT(Comp%Layer)
-    TotSalt = 0._dp
+    TotSalt = 0._sp
     do i = 1, GetSoilLayer_SCP1(Comp%Layer)
         TotSalt = TotSalt + Comp%Salt(i) + Comp%Depo(i) ! g/m2
     end do
 
-    denominator = volSAT*10._dp * Comp%Thickness * &
-                  (1._dp - GetSoilLayer_GravelVol(Comp%Layer)/100._dp)
+    denominator = volSAT*10._sp * Comp%Thickness * &
+                  (1._sp - GetSoilLayer_GravelVol(Comp%Layer)/100._sp)
     TotSalt = TotSalt / denominator  ! g/l
 
     if (TotSalt > GetSimulParam_SaltSolub()) then
@@ -2561,11 +2560,11 @@ real(dp) function ECeComp(Comp)
 end function ECeComp
 
 
-real(dp) function ECswComp(Comp, atFC)
+real(sp) function ECswComp(Comp, atFC)
     type(CompartmentIndividual), intent(in) :: Comp
     logical, intent(in) :: atFC
 
-    real(dp) :: TotSalt
+    real(sp) :: TotSalt
     integer(int32) :: i
 
     TotSalt = 0
@@ -2573,11 +2572,11 @@ real(dp) function ECswComp(Comp, atFC)
         TotSalt = TotSalt + Comp%Salt(i) + Comp%Depo(i) ! g/m2
     end do
     if (atFC .eqv. .true.) then
-        TotSalt = TotSalt/ (GetSoilLayer_FC(Comp%Layer)*10._dp*Comp%Thickness &
-                    *(1._dp-GetSoilLayer_GravelVol(Comp%Layer)/100._dp)) ! g/l
+        TotSalt = TotSalt/ (GetSoilLayer_FC(Comp%Layer)*10._sp*Comp%Thickness &
+                    *(1._sp-GetSoilLayer_GravelVol(Comp%Layer)/100._sp)) ! g/l
     else
-        TotSalt = TotSalt/(Comp%theta*1000._dp*Comp%Thickness* &
-                     (1._dp-GetSoilLayer_GravelVol(Comp%Layer)/100._dp)) ! g/l
+        TotSalt = TotSalt/(Comp%theta*1000._sp*Comp%Thickness* &
+                     (1._sp-GetSoilLayer_GravelVol(Comp%Layer)/100._sp)) ! g/l
     end if
     if (TotSalt > GetSimulParam_SaltSolub()) then
         TotSalt = GetSimulParam_SaltSolub()
@@ -2587,9 +2586,9 @@ end function ECswComp
 
 
 subroutine SaltSolutionDeposit(mm, SaltSolution, SaltDeposit) ! mm = l/m2, SaltSol/Saltdepo = g/m2
-    real(dp), intent(in) :: mm
-    real(dp), intent(inout) :: SaltSolution
-    real(dp), intent(inout) :: SaltDeposit
+    real(sp), intent(in) :: mm
+    real(sp), intent(inout) :: SaltSolution
+    real(sp), intent(inout) :: SaltDeposit
 
 
     SaltSolution = SaltSolution + SaltDeposit
@@ -2597,231 +2596,231 @@ subroutine SaltSolutionDeposit(mm, SaltSolution, SaltDeposit) ! mm = l/m2, SaltS
         SaltDeposit = SaltSolution - GetSimulParam_SaltSolub() * mm
         SaltSolution = GetSimulParam_SaltSolub() * mm
     else
-        SaltDeposit = 0._dp
+        SaltDeposit = 0._sp
     end if
 end subroutine SaltSolutionDeposit
 
 
-real(dp) function MultiplierCCoSelfThinning(Yeari, Yearx, ShapeFactor)
+real(sp) function MultiplierCCoSelfThinning(Yeari, Yearx, ShapeFactor)
     integer(int32), intent(in) :: Yeari
     integer(int32), intent(in) :: Yearx
-    real(dp), intent(in) :: ShapeFactor
+    real(sp), intent(in) :: ShapeFactor
 
-    real(dp) :: fCCo, Year0
+    real(sp) :: fCCo, Year0
 
-    fCCo = 1._dp
+    fCCo = 1._sp
     if ((Yeari >= 1) .and. (Yearx >= 2) .and. (roundc(100*ShapeFactor, mold=1_int32) /= 0)) then
-        Year0 = 1._dp + (Yearx-1) * exp(ShapeFactor*log(10._dp))
+        Year0 = 1._sp + (Yearx-1) * exp(ShapeFactor*log(10._sp))
         if ((Yeari >= Year0) .or. (Year0 <= 1)) then
-            fCCo = 0._dp
+            fCCo = 0._sp
         else
-            fCCo = 1._dp - (Yeari-1)/(Year0-1._dp)
+            fCCo = 1._sp - (Yeari-1)/(Year0-1._sp)
         end if
-        if (fCCo < 0._dp) then
-            fCCo = 0._dp
+        if (fCCo < 0._sp) then
+            fCCo = 0._sp
         end if
     end if
     MultiplierCCoSelfThinning = fCCo
 end function MultiplierCCoSelfThinning
 
 
-real(dp) function KsAny(Wrel, pULActual, pLLActual, ShapeFactor)
-    real(dp), intent(in) :: Wrel
-    real(dp), intent(in) :: pULActual
-    real(dp), intent(in) :: pLLActual
-    real(dp), intent(in) :: ShapeFactor
+real(sp) function KsAny(Wrel, pULActual, pLLActual, ShapeFactor)
+    real(sp), intent(in) :: Wrel
+    real(sp), intent(in) :: pULActual
+    real(sp), intent(in) :: pLLActual
+    real(sp), intent(in) :: ShapeFactor
 
-    real(dp) :: pRelativeLLUL, KsVal
-    real(dp) :: pULActual_local
+    real(sp) :: pRelativeLLUL, KsVal
+    real(sp) :: pULActual_local
     ! Wrel : WC in rootzone (negative .... 0=FC ..... 1=WP .... > 1)
     !        FC .. UpperLimit ... LowerLimit .. WP
     ! p relative (negative .... O=UpperLimit ...... 1=LowerLimit .....>1)
 
     pULActual_local = pULActual
 
-    if ((pLLActual - pULActual_local) < 0.0001_dp) then
-        pULActual_local = pLLActual - 0.0001_dp
+    if ((pLLActual - pULActual_local) < 0.0001_sp) then
+        pULActual_local = pLLActual - 0.0001_sp
     end if
 
     pRelativeLLUL = (Wrel - pULActual_local)/(pLLActual - pULActual_local)
 
-    if (pRelativeLLUL <= epsilon(0._dp)) then
-        KsVal = 1._dp
-    elseif (pRelativeLLUL >= 1._dp) then
-        KsVal = 0._dp
+    if (pRelativeLLUL <= epsilon(0._sp)) then
+        KsVal = 1._sp
+    elseif (pRelativeLLUL >= 1._sp) then
+        KsVal = 0._sp
     else
         if (roundc(10*ShapeFactor, mold=1_int32) == 0) then ! straight line
-            KsVal = 1._dp - &
-                    (exp(pRelativeLLUL*0.01_dp)-1._dp)/(exp(0.01_dp)-1._dp)
+            KsVal = 1._sp - &
+                    (exp(pRelativeLLUL*0.01_sp)-1._sp)/(exp(0.01_sp)-1._sp)
         else
-            KsVal = 1._dp - &
-                    (exp(pRelativeLLUL*ShapeFactor)-1._dp)/(exp(ShapeFactor)-1._dp)
+            KsVal = 1._sp - &
+                    (exp(pRelativeLLUL*ShapeFactor)-1._sp)/(exp(ShapeFactor)-1._sp)
         end if
-        if (KsVal > 1._dp) then
-            KsVal = 1._dp
+        if (KsVal > 1._sp) then
+            KsVal = 1._sp
         end if
-        if (KsVal < 0._dp) then
-            KsVal = 0._dp
+        if (KsVal < 0._sp) then
+            KsVal = 0._sp
         end if
     end if
     KsAny = KsVal
 end function KsAny
 
 
-real(dp) function CCatGDD(GDDi, CCoIN, GDDCGCIN, CCxIN)
-    real(dp), intent(in) :: GDDi
-    real(dp), intent(in) :: CCoIN
-    real(dp), intent(in) :: GDDCGCIN
-    real(dp), intent(in) :: CCxIN
+real(sp) function CCatGDD(GDDi, CCoIN, GDDCGCIN, CCxIN)
+    real(sp), intent(in) :: GDDi
+    real(sp), intent(in) :: CCoIN
+    real(sp), intent(in) :: GDDCGCIN
+    real(sp), intent(in) :: CCxIN
 
-    real(dp) :: CCi
+    real(sp) :: CCi
 
     CCi = CCoIN * exp(GDDCGCIN * GDDi)
-    if (CCi > CCxIN/2._dp) then
-        CCi = CCxIN - 0.25_dp * (CCxIN/CCoIN) * CCxIN * exp(-GDDCGCIN*GDDi)
+    if (CCi > CCxIN/2._sp) then
+        CCi = CCxIN - 0.25_sp * (CCxIN/CCoIN) * CCxIN * exp(-GDDCGCIN*GDDi)
     end if
     CCatGDD = CCi
 end function CCatGDD
 
 
-real(dp) function CanopyCoverNoStressGDDaysSF(GDDL0, GDDL123, GDDLMaturity, SumGDD, &
+real(sp) function CanopyCoverNoStressGDDaysSF(GDDL0, GDDL123, GDDLMaturity, SumGDD, &
         CCo, CCx, GDDCGC, GDDCDC, SFRedCGC, SFRedCCx)
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDLMaturity
-    real(dp), intent(in) :: SumGDD
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: SumGDD
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: GDDCDC
     integer(int8), intent(in) :: SFRedCGC
     integer(int8), intent(in) :: SFRedCCx
 
-    real(dp) :: CC, CCxAdj, GDDCDCadj
+    real(sp) :: CC, CCxAdj, GDDCDCadj
 
     ! SumGDD refers to the end of the day and Delayed days are not considered
-    CC = 0._dp
-    if ((SumGDD > 0._dp) .and. (roundc(SumGDD, mold=1_int32) <= GDDLMaturity) .and. (CCo > 0._dp)) then
+    CC = 0._sp
+    if ((SumGDD > 0._sp) .and. (roundc(SumGDD, mold=1_int32) <= GDDLMaturity) .and. (CCo > 0._sp)) then
         if (SumGDD <= GDDL0) then ! before germination or recovering of transplant
-            CC = 0._dp
+            CC = 0._sp
         else
             if (SumGDD < GDDL123) then ! Canopy development and Mid-season stage
-                CC = CCatGDD(real((SumGDD-GDDL0),dp), CCo, ((1._dp-SFRedCGC/100._dp)*GDDCGC), &
-                  ((1._dp-SFRedCCx/100._dp)*CCx))
+                CC = CCatGDD(real((SumGDD-GDDL0),sp), CCo, ((1._sp-SFRedCGC/100._sp)*GDDCGC), &
+                  ((1._sp-SFRedCCx/100._sp)*CCx))
             else
                 ! Late-season stage  (SumGDD <= GDDLMaturity)
-                if (CCx < 0.001_dp) then
-                    CC = 0._dp
+                if (CCx < 0.001_sp) then
+                    CC = 0._sp
                 else
-                    CCxAdj = CCatGDD(real(GDDL123-GDDL0,dp), CCo, ((1_dp-SFRedCGC/100._dp)*GDDCGC), &
-                      ((1._dp-SFRedCCx/100._dp)*CCx))
-                    GDDCDCadj = GDDCDC*(CCxadj+2.29_dp)/(CCx+2.29_dp)
-                    if (CCxAdj < 0.001_dp) then
-                        CC = 0._dp
+                    CCxAdj = CCatGDD(real(GDDL123-GDDL0,sp), CCo, ((1_sp-SFRedCGC/100._sp)*GDDCGC), &
+                      ((1._sp-SFRedCCx/100._sp)*CCx))
+                    GDDCDCadj = GDDCDC*(CCxadj+2.29_sp)/(CCx+2.29_sp)
+                    if (CCxAdj < 0.001_sp) then
+                        CC = 0._sp
                     else
-                        CC = CCxAdj * (1._dp - 0.05_dp*(exp((SumGDD-GDDL123)*3.33_dp*GDDCDCadj/&
-                          (CCxAdj+2.29_dp))-1._dp))
+                        CC = CCxAdj * (1._sp - 0.05_sp*(exp((SumGDD-GDDL123)*3.33_sp*GDDCDCadj/&
+                          (CCxAdj+2.29_sp))-1._sp))
                     end if
                 end if
             end if
         end if
     end if
-    if (CC > 1._dp) then
-        CC = 1._dp
+    if (CC > 1._sp) then
+        CC = 1._sp
     end if
-    if (CC < 0._dp) then
-        CC = 0._dp
+    if (CC < 0._sp) then
+        CC = 0._sp
     end if
     CanopyCoverNoStressGDDaysSF = CC
 end function CanopyCoverNoStressGDDaysSF
 
 
-real(dp) function HIadjWStressAtFlowering(KsVeg, KsSto, a, b)
-    real(dp), intent(in) :: KsVeg
-    real(dp), intent(in) :: KsSto
+real(sp) function HIadjWStressAtFlowering(KsVeg, KsSto, a, b)
+    real(sp), intent(in) :: KsVeg
+    real(sp), intent(in) :: KsSto
     integer(int8), intent(in) :: a
-    real(dp), intent(in) :: b
+    real(sp), intent(in) :: b
 
     if (a == undef_int) then
         if (roundc(b, mold=1_int32) == undef_int) then
-            HIadjWStressAtFlowering = 1._dp
-        elseif (KsSto > 0.001_dp) then
-            HIadjWStressAtFlowering = (exp(0.10_dp*log(KsSto))) * (1._dp-(1._dp-KsSto)/b)
+            HIadjWStressAtFlowering = 1._sp
+        elseif (KsSto > 0.001_sp) then
+            HIadjWStressAtFlowering = (exp(0.10_sp*log(KsSto))) * (1._sp-(1._sp-KsSto)/b)
         else
-            HIadjWStressAtFlowering = 0.0_dp
+            HIadjWStressAtFlowering = 0.0_sp
         end if
     else
         if (roundc(b, mold=1_int32) == undef_int) then
-            HIadjWStressAtFlowering = (1._dp + (1._dp-KsVeg)/a)
-        elseif (KsSto > 0.001_dp) then
-            HIadjWStressAtFlowering = (1._dp + (1._dp-KsVeg)/a) * (exp(0.10_dp*log(KsSto))) &
-              * (1._dp-(1._dp-KsSto)/b)
+            HIadjWStressAtFlowering = (1._sp + (1._sp-KsVeg)/a)
+        elseif (KsSto > 0.001_sp) then
+            HIadjWStressAtFlowering = (1._sp + (1._sp-KsVeg)/a) * (exp(0.10_sp*log(KsSto))) &
+              * (1._sp-(1._sp-KsSto)/b)
         else
-            HIadjWStressAtFlowering = 0._dp
+            HIadjWStressAtFlowering = 0._sp
         end if
     end if
 end function HIadjWStressAtFlowering
 
 
-real(dp) function fAdjustedForCO2(CO2i, WPi, PercentA)
-    real(dp), intent(in) :: CO2i
-    real(dp), intent(in) :: WPi
+real(sp) function fAdjustedForCO2(CO2i, WPi, PercentA)
+    real(sp), intent(in) :: CO2i
+    real(sp), intent(in) :: WPi
     integer(int8), intent(in) :: PercentA
 
-    real(dp) :: fW, fCO2Old, fType, fSink, fShape, CO2rel, fCO2adj, fCO2
+    real(sp) :: fW, fCO2Old, fType, fSink, fShape, CO2rel, fCO2adj, fCO2
 
     ! 1. Correction for crop type: fType
-    if (WPi >= 40._dp) then
-        fType = 0._dp ! no correction for C4 crops
+    if (WPi >= 40._sp) then
+        fType = 0._sp ! no correction for C4 crops
     else
-        if (WPi <= 20._dp) then
-            fType = 1._dp ! full correction for C3 crops
+        if (WPi <= 20._sp) then
+            fType = 1._sp ! full correction for C3 crops
         else
-            fType = (40._dp-WPi)/(40._dp-20._dp)
+            fType = (40._sp-WPi)/(40._sp-20._sp)
         end if
     end if
 
     ! 2. crop sink strength coefficient: fSink
-    fSink = PercentA/100._dp
-    if (fSink < 0._dp) then
-        fSink = 0._dp ! based on FACE expirements
+    fSink = PercentA/100._sp
+    if (fSink < 0._sp) then
+        fSink = 0._sp ! based on FACE expirements
     end if
-    if (fSink > 1._dp) then
-        fSink = 1._dp ! theoretical adjustment
+    if (fSink > 1._sp) then
+        fSink = 1._sp ! theoretical adjustment
     end if
 
     ! 3. Correction coefficient for CO2: fCO2Old
     fCO2Old = undef_int
-    if (CO2i <= 550._dp) then
+    if (CO2i <= 550._sp) then
         ! 3.1 weighing factor for CO2
         if (CO2i <= CO2Ref) then
-            fw = 0._dp
+            fw = 0._sp
         else
-            if (CO2i >= 550._dp) then
-                fW = 1._dp
+            if (CO2i >= 550._sp) then
+                fW = 1._sp
             else
-                fw = 1._dp - (550._dp - CO2i)/(550._dp - CO2Ref)
+                fw = 1._sp - (550._sp - CO2i)/(550._sp - CO2Ref)
             end if
         end if
 
         ! 3.2 adjustment for CO2
-        fCO2Old = (CO2i/CO2Ref)/(1._dp+(CO2i-CO2Ref)*((1._dp-fW)*0.000138_dp&
-            + fW*(0.000138_dp*fSink + 0.001165_dp*(1._dp-fSink))))
+        fCO2Old = (CO2i/CO2Ref)/(1._sp+(CO2i-CO2Ref)*((1._sp-fW)*0.000138_sp&
+            + fW*(0.000138_sp*fSink + 0.001165_sp*(1._sp-fSink))))
     end if
 
     ! 4. Adjusted correction coefficient for CO2: fCO2adj
     fCO2adj = undef_int
     if (CO2i > CO2Ref) then
         ! 4.1 Shape factor
-        fShape = -4.61824_dp - 3.43831_dp*fSink - 5.32587_dp*fSink*fSink
+        fShape = -4.61824_sp - 3.43831_sp*fSink - 5.32587_sp*fSink*fSink
 
         ! 4.2 adjustment for CO2
-        if (CO2i >= 2000._dp) then
-            fCO2adj = 1.58_dp  ! maximum is reached
+        if (CO2i >= 2000._sp) then
+            fCO2adj = 1.58_sp  ! maximum is reached
         else
-            CO2rel = (CO2i-CO2Ref)/(2000._dp-CO2Ref)
-            fCO2adj = 1._dp + 0.58_dp * ((exp(CO2rel*fShape) - 1._dp)/&
-                (exp(fShape) - 1._dp))
+            CO2rel = (CO2i-CO2Ref)/(2000._sp-CO2Ref)
+            fCO2adj = 1._sp + 0.58_sp * ((exp(CO2rel*fShape) - 1._sp)/&
+                (exp(fShape) - 1._sp))
         end if
     end if
 
@@ -2830,13 +2829,13 @@ real(dp) function fAdjustedForCO2(CO2i, WPi, PercentA)
         fCO2 = fCO2Old
     else
         fCO2 = fCO2adj
-        if ((CO2i <= 550._dp) .and. (fCO2Old < fCO2adj)) then
+        if ((CO2i <= 550._sp) .and. (fCO2Old < fCO2adj)) then
             fCO2 = fCO2Old
         end if
     end if
 
     ! 6. final adjustment
-    fAdjustedForCO2 = 1._dp + fType*(fCO2-1._dp)
+    fAdjustedForCO2 = 1._sp + fType*(fCO2-1._sp)
 end function fAdjustedForCO2
 
 
@@ -2859,7 +2858,7 @@ subroutine NoIrrigation()
     call SetIrriMode(IrriMode_NoIrri)
     call SetIrriDescription('Rainfed cropping')
     call SetIrriMethod(IrriMethod_MSprinkler)
-    call SetSimulation_IrriECw(0.0_dp) ! dS/m
+    call SetSimulation_IrriECw(0.0_sp) ! dS/m
     call SetGenerateTimeMode(GenerateTimeMode_AllRAW)
     call SetGenerateDepthMode(GenerateDepthMode_ToFC)
     IrriFirstDayNr = undef_int
@@ -2869,8 +2868,8 @@ subroutine NoIrrigation()
         call SetIrriAfterSeason_DayNr(Nri, 0)
         call SetIrriAfterSeason_Param(Nri, 0)
     end do
-    call SetIrriECw_PreSeason(0.0_dp) ! dS/m
-    call SetIrriECw_PostSeason(0.0_dp) ! dS/m
+    call SetIrriECw_PreSeason(0.0_sp) ! dS/m
+    call SetIrriECw_PostSeason(0.0_sp) ! dS/m
 end subroutine NoIrrigation
 
 
@@ -2879,7 +2878,7 @@ subroutine LoadIrriScheduleInfo(FullName)
 
     integer(int32) :: fhandle
     integer(int32) :: i, rc
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
     integer(int8) :: simul_irri_in
     integer(int32) :: simul_percraw
 
@@ -3003,12 +3002,12 @@ end subroutine SetIrriDescription
 
 subroutine GetDaySwitchToLinear(HImax, dHIdt, HIGC, tSwitch, HIGClinear)
     integer(int32), intent(in) :: HImax
-    real(dp), intent(in) :: dHIdt
-    real(dp), intent(in) :: HIGC
+    real(sp), intent(in) :: dHIdt
+    real(sp), intent(in) :: HIGC
     integer(int32), intent(inout) :: tSwitch
-    real(dp), intent(inout) :: HIGClinear
+    real(sp), intent(inout) :: HIGClinear
 
-    real(dp) :: HIi, HiM1, HIfinal
+    real(sp) :: HIi, HiM1, HIfinal
     integer(int32) :: tmax, ti
     integer(int32), parameter :: HIo = 1
 
@@ -3045,8 +3044,8 @@ end function FileExists
 
 subroutine SplitStringInTwoParams(StringIN, Par1, Par2)
     character(len=*), intent(in) :: StringIN
-    real(dp), intent(inout) :: Par1
-    real(dp), intent(inout) :: Par2
+    real(sp), intent(inout) :: Par1
+    real(sp), intent(inout) :: Par2
 
     integer(int32) :: LengthS, i, Parami
     character :: CharA
@@ -3085,9 +3084,9 @@ end subroutine SplitStringInTwoParams
 
 subroutine SplitStringInThreeParams(StringIN, Par1, Par2, Par3)
     character(len=*), intent(in) :: StringIN
-    real(dp), intent(inout) :: Par1
-    real(dp), intent(inout) :: Par2
-    real(dp), intent(inout) :: Par3
+    real(sp), intent(inout) :: Par1
+    real(sp), intent(inout) :: Par2
+    real(sp), intent(inout) :: Par3
 
     integer(int32) :: LengthS, i, Parami
     character :: CharA
@@ -3127,12 +3126,12 @@ subroutine SplitStringInThreeParams(StringIN, Par1, Par2, Par3)
 end subroutine SplitStringInThreeParams
 
 
-real(dp) function CO2ForSimulationPeriod(FromDayNr, ToDayNr)
+real(sp) function CO2ForSimulationPeriod(FromDayNr, ToDayNr)
     integer(int32), intent(in) :: FromDayNr
     integer(int32), intent(in) :: ToDayNr
 
     integer(int32) :: i, Dayi, Monthi, FromYi, ToYi, rc
-    real(dp) :: CO2From, CO2To, CO2a, CO2b, YearA, YearB
+    real(sp) :: CO2From, CO2To, CO2a, CO2b, YearA, YearB
     integer :: fhandle
     character(len=255) :: TempString
 
@@ -3166,7 +3165,7 @@ real(dp) function CO2ForSimulationPeriod(FromDayNr, ToDayNr)
                 CO2From = CO2b
             else
                 CO2From = CO2a + (CO2b-CO2a)* (FromYi - &
-                roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1),kind=dp)
+                roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1),kind=sp)
             end if
         end if
         ! to year
@@ -3174,7 +3173,7 @@ real(dp) function CO2ForSimulationPeriod(FromDayNr, ToDayNr)
         if ((ToYi > FromYi) .and. (ToYi > roundc(YearA, mold=1))) then
             if (roundc(YearB, mold=1) >= ToYi) then
                 CO2To = CO2a + (CO2b-CO2a)* (ToYi - &
-                roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1), kind=dp)
+                roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1), kind=sp)
             elseif (.not. (rc == iostat_end)) then
                 loop_2: do
                     YearA = YearB
@@ -3188,12 +3187,12 @@ real(dp) function CO2ForSimulationPeriod(FromDayNr, ToDayNr)
                     CO2To = CO2b
                 else
                     CO2To = CO2a + (CO2b-CO2a)* (ToYi - &
-                    roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1), kind=dp)
+                    roundc(YearA, mold=1))/real(roundc(YearB, mold=1)-roundc(YearA, mold=1), kind=sp)
                 end if
             end if
         end if
         Close(fhandle)
-        CO2ForSimulationPeriod = (CO2From+CO2To)/2._dp
+        CO2ForSimulationPeriod = (CO2From+CO2To)/2._sp
     end if
 end function CO2ForSimulationPeriod
 
@@ -3232,7 +3231,7 @@ subroutine ReadSoilSettings()
     integer :: fhandle
     character(len=:), allocatable :: fullName
     integer(int8) :: i, simul_saltdiff, simul_saltsolub, simul_root, simul_iniab
-    real(dp) :: simul_rod
+    real(sp) :: simul_rod
 
     fullName = trim(GetPathNameSimul()) // 'Soil.PAR'
 
@@ -3340,16 +3339,16 @@ subroutine NoManagement()
                                       EffectStress_temp)
     call SetSimulation_EffectStress(EffectStress_temp)
     ! soil bunds
-    call SetManagement_BundHeight(0._dp)
-    call SetSimulation_SurfaceStorageIni(0.0_dp)
-    call SetSimulation_ECStorageIni(0.0_dp)
+    call SetManagement_BundHeight(0._sp)
+    call SetSimulation_SurfaceStorageIni(0.0_sp)
+    call SetSimulation_ECStorageIni(0.0_sp)
     ! surface run-off
     call SetManagement_RunoffOn(.true.)
     call SetManagement_CNcorrection(0)
     ! weed infestation
     call SetManagement_WeedRC(0_int8)
     call SetManagement_WeedDeltaRC(0)
-    call SetManagement_WeedShape(-0.01_dp)
+    call SetManagement_WeedShape(-0.01_sp)
     call SetManagement_WeedAdj(100_int8)
     ! multiple cuttings
     call SetManagement_Cuttings_Considered(.false.)
@@ -3368,10 +3367,10 @@ subroutine LoadManagement(FullName)
 
     integer :: fhandle
     integer(int8) :: i
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
     integer(int8) :: TempShortInt
     integer(int32) :: TempInt
-    real(dp) :: TempDouble
+    real(sp) :: TempDouble
     type(rep_EffectStress) :: EffectStress_temp
     character(len=1025) :: mandescription_temp
 
@@ -3395,8 +3394,8 @@ subroutine LoadManagement(FullName)
     ! soil bunds
     read(fhandle, *) TempDouble
     call SetManagement_BundHeight(TempDouble)
-    call SetSimulation_SurfaceStorageIni(0.0_dp)
-    call SetSimulation_ECStorageIni(0.0_dp)
+    call SetSimulation_SurfaceStorageIni(0.0_sp)
+    call SetSimulation_ECStorageIni(0.0_sp)
     ! surface run-off
     read(fhandle, *) i
     if (i == 1) then
@@ -3416,7 +3415,7 @@ subroutine LoadManagement(FullName)
         ! UPDATE required for Version 3.0, 3.1 and 4.0
         call SetManagement_WeedRC(0_int8) ! relative cover of weeds (%)
         call SetManagement_WeedDeltaRC(0)
-        call SetManagement_WeedShape(-0.01_dp) ! shape factor of the CC expansion
+        call SetManagement_WeedShape(-0.01_sp) ! shape factor of the CC expansion
                                           ! function in a weed infested field
     else
         read(fhandle, *) TempShortInt ! relative cover of weeds (%)
@@ -3615,7 +3614,7 @@ subroutine SaveCrop(totalname)
     '       : Shape factor for water stress coefficient for canopy senescence (0.0 = straight line)'
     write(fhandle, '(i6,a)') GetCrop_SumEToDelaySenescence(), &
     '         : Sum(ETo) during dormant period to be exceeded before crop is permanently wilted'
-    if (abs(GetCrop_pPollination() - undef_int) < epsilon(0._dp)) then
+    if (abs(GetCrop_pPollination() - undef_int) < epsilon(0._sp)) then
         write(fhandle, '(f9.2,a)') GetCrop_pPollination(), &
         '      : Soil water depletion factor for pollination - Not Applicable'
     else
@@ -3628,28 +3627,28 @@ subroutine SaveCrop(totalname)
     ! stress response
     write(fhandle, '(i6,a)') GetCrop_StressResponse_Stress(), &
     '         : Considered soil fertility stress for calibration of stress response (%)'
-    if (GetCrop_StressResponse_ShapeCGC() > 24.9_dp) then
+    if (GetCrop_StressResponse_ShapeCGC() > 24.9_sp) then
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeCGC(), &
         '      : Response of canopy expansion is not considered'
     else
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeCGC(), &
         '      : Shape factor for the response of canopy expansion to soil fertility stress'
     end if
-    if (GetCrop_StressResponse_ShapeCCX() > 24.9_dp) then
+    if (GetCrop_StressResponse_ShapeCCX() > 24.9_sp) then
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeCCX(), &
         '      : Response of maximum canopy cover is not considered'
     else
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeCCX(), &
         '      : Shape factor for the response of maximum canopy cover to soil fertility stress'
     end if
-    if (GetCrop_StressResponse_ShapeWP() > 24.9_dp) then
+    if (GetCrop_StressResponse_ShapeWP() > 24.9_sp) then
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeWP(), &
         '      : Response of crop Water Productivity is not considered'
     else
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeWP(), &
         '      : Shape factor for the response of crop Water Productivity to soil fertility stress'
     end if
-    if (GetCrop_StressResponse_ShapeCDecline() > 24.9_dp) then
+    if (GetCrop_StressResponse_ShapeCDecline() > 24.9_sp) then
         write(fhandle, '(f9.2,a)') GetCrop_StressResponse_ShapeCDecline(), &
         '      : Response of decline of canopy cover is not considered'
     else
@@ -4049,9 +4048,9 @@ end subroutine SaveProfile
 
 subroutine DetermineParametersCR(SoilClass, KsatMM, aParam, bParam)
     integer(int8), intent(in) :: SoilClass
-    real(dp), intent(in) :: KsatMM
-    real(dp), intent(inout) :: aParam
-    real(dp), intent(inout) :: bParam
+    real(sp), intent(in) :: KsatMM
+    real(sp), intent(inout) :: aParam
+    real(sp), intent(inout) :: bParam
 
     ! determine parameters
     if (roundc(KsatMM*1000, mold=1) <= 0) then
@@ -4060,17 +4059,17 @@ subroutine DetermineParametersCR(SoilClass, KsatMM, aParam, bParam)
     else
         select case (SoilClass)
             case(1) ! sandy soils
-                aParam = -0.3112_dp - KsatMM/100000._dp
-                bParam = -1.4936_dp + 0.2416_dp*log(KsatMM)
+                aParam = -0.3112_sp - KsatMM/100000._sp
+                bParam = -1.4936_sp + 0.2416_sp*log(KsatMM)
             case(2) ! loamy soils
-                aParam = -0.4986_dp + 9._dp*KsatMM/100000._dp
-                bParam = -2.1320_dp + 0.4778_dp*log(KsatMM)
+                aParam = -0.4986_sp + 9._sp*KsatMM/100000._sp
+                bParam = -2.1320_sp + 0.4778_sp*log(KsatMM)
             case(3) ! sandy clayey soils
-                aParam = -0.5677_dp - 4._dp*KsatMM/100000._dp
-                bParam = -3.7189_dp + 0.5922_dp*log(KsatMM)
+                aParam = -0.5677_sp - 4._sp*KsatMM/100000._sp
+                bParam = -3.7189_sp + 0.5922_sp*log(KsatMM)
             case default ! silty clayey soils
-            aParam = -0.6366_dp + 8._dp*KsatMM/10000._dp
-            bParam = -1.9165_dp + 0.7063_dp*log(KsatMM)
+            aParam = -0.6366_sp + 8._sp*KsatMM/10000._sp
+            bParam = -1.9165_sp + 0.7063_sp*log(KsatMM)
         end select
     end if
 end subroutine DetermineParametersCR
@@ -4078,14 +4077,14 @@ end subroutine DetermineParametersCR
 
 subroutine DetermineNrandThicknessCompartments()
 
-    real(dp) :: TotalDepthL, TotalDepthC, DeltaZ
+    real(sp) :: TotalDepthL, TotalDepthC, DeltaZ
     integer(int32) :: i
 
-    TotalDepthL = 0._dp
+    TotalDepthL = 0._sp
     do i = 1, GetSoil_NrSoilLayers()
         TotalDepthL = TotalDepthL + GetSoilLayer_Thickness(i)
     end do
-    TotalDepthC = 0._dp
+    TotalDepthC = 0._sp
     call SetNrCompartments(0)
     loop: do
         DeltaZ = (TotalDepthL - TotalDepthC)
@@ -4097,40 +4096,40 @@ subroutine DetermineNrandThicknessCompartments()
         end if
         TotalDepthC = TotalDepthC + GetCompartment_Thickness(GetNrCompartments())
         if ((GetNrCompartments() == max_No_compartments) &
-                .or. (abs(TotalDepthC - TotalDepthL) < 0.0001_dp)) exit loop
+                .or. (abs(TotalDepthC - TotalDepthL) < 0.0001_sp)) exit loop
         end do loop
 end subroutine DetermineNrandThicknessCompartments
 
 
 subroutine DetermineRootZoneSaltContent(RootingDepth, ZrECe, ZrECsw, ZrECswFC, ZrKsSalt)
-    real(dp), intent(in) :: RootingDepth
-    real(dp), intent(inout) :: ZrECe
-    real(dp), intent(inout) :: ZrECsw
-    real(dp), intent(inout) :: ZrECswFC
-    real(dp), intent(inout) :: ZrKsSalt
+    real(sp), intent(in) :: RootingDepth
+    real(sp), intent(inout) :: ZrECe
+    real(sp), intent(inout) :: ZrECsw
+    real(sp), intent(inout) :: ZrECswFC
+    real(sp), intent(inout) :: ZrKsSalt
 
 
-    real(dp) :: CumDepth, Factor, frac_value
+    real(sp) :: CumDepth, Factor, frac_value
     integer(int32) :: compi
 
-    CumDepth = 0._dp
-    compi = 0._dp
-    ZrECe = 0._dp
-    ZrECsw = 0._dp
-    ZrECswFC = 0._dp
-    ZrKsSalt = 1._dp
+    CumDepth = 0._sp
+    compi = 0._sp
+    ZrECe = 0._sp
+    ZrECsw = 0._sp
+    ZrECswFC = 0._sp
+    ZrKsSalt = 1._sp
     if (RootingDepth >= GetCrop_RootMin()) then
         loop: do
             compi = compi + 1
             CumDepth = CumDepth + GetCompartment_Thickness(compi)
             if (CumDepth <= RootingDepth) then
-                Factor = 1._dp
+                Factor = 1._sp
             else
                 frac_value = RootingDepth - (CumDepth - GetCompartment_Thickness(compi))
-                if (frac_value > 0._dp) then
+                if (frac_value > 0._sp) then
                     Factor = frac_value/GetCompartment_Thickness(compi)
                 else
-                    Factor = 0._dp
+                    Factor = 0._sp
                 end if
             end if
             Factor = Factor * (GetCompartment_Thickness(compi))/RootingDepth ! weighting factor
@@ -4141,9 +4140,9 @@ subroutine DetermineRootZoneSaltContent(RootingDepth, ZrECe, ZrECsw, ZrECswFC, Z
         end do loop
         if (((GetCrop_ECemin() /= undef_int) .and. (GetCrop_ECemax() /= undef_int)) .and. &
                                     (GetCrop_ECemin() < GetCrop_ECemax())) then
-            ZrKsSalt = KsSalinity((.true.), GetCrop_ECemin(), GetCrop_ECemax(), ZrECe, (0.0_dp))
+            ZrKsSalt = KsSalinity((.true.), GetCrop_ECemin(), GetCrop_ECemax(), ZrECe, (0.0_sp))
         else
-            ZrKsSalt = KsSalinity((.false.), GetCrop_ECemin(), GetCrop_ECemax(), ZrECe, (0.0_dp))
+            ZrKsSalt = KsSalinity((.false.), GetCrop_ECemin(), GetCrop_ECemax(), ZrECe, (0.0_sp))
         end if
     else
         ZrECe = undef_int
@@ -4155,14 +4154,14 @@ end subroutine DetermineRootZoneSaltContent
 
 
 subroutine CalculateAdjustedFC(DepthAquifer, CompartAdj)
-    real(dp), intent(in) :: DepthAquifer
+    real(sp), intent(in) :: DepthAquifer
     type(CompartmentIndividual), dimension(max_No_compartments), &
                                     intent(inout) :: CompartAdj
 
     integer(int32) :: compi, ic
-    real(dp) :: Zi, Depth, DeltaV, DeltaFC, Xmax
+    real(sp) :: Zi, Depth, DeltaV, DeltaFC, Xmax
 
-    Depth = 0._dp
+    Depth = 0._sp
     do compi = 1, GetNrCompartments()
         Depth = Depth + CompartAdj(compi)%Thickness
     end do
@@ -4170,10 +4169,10 @@ subroutine CalculateAdjustedFC(DepthAquifer, CompartAdj)
     compi = GetNrCompartments()
 
     loop: do
-        Zi = Depth - CompartAdj(compi)%Thickness/2._dp
+        Zi = Depth - CompartAdj(compi)%Thickness/2._sp
         Xmax = NoAdjustment(GetSoilLayer_FC(CompartAdj(compi)%Layer))
 
-        if ((DepthAquifer < 0._dp) &
+        if ((DepthAquifer < 0._sp) &
             .or. ((DepthAquifer - Zi) >= Xmax)) then
             do ic = 1, compi
                 CompartAdj(ic)%FCadj = GetSoilLayer_FC(CompartAdj(ic)%Layer)
@@ -4208,19 +4207,19 @@ subroutine CalculateAdjustedFC(DepthAquifer, CompartAdj)
     contains
 
 
-    real(dp) function NoAdjustment(FCvolPr)
-        real(dp), intent(in) :: FCvolPr
+    real(sp) function NoAdjustment(FCvolPr)
+        real(sp), intent(in) :: FCvolPr
 
-        real(dp) :: pF
+        real(sp) :: pF
 
-        if (FCvolPr <= 10._dp) then
-            NoAdjustment = 1._dp
+        if (FCvolPr <= 10._sp) then
+            NoAdjustment = 1._sp
         else
-            if (FCvolPr >= 30._dp) then
-                NoAdjustment = 2._dp
+            if (FCvolPr >= 30._sp) then
+                NoAdjustment = 2._sp
             else
-                pF = 2._dp + 0.3_dp * (FCvolPr-10._dp)/20._dp
-                NoAdjustment = (exp(pF*log(10._dp)))/100._dp
+                pF = 2._sp + 0.3_sp * (FCvolPr-10._sp)/20._sp
+                NoAdjustment = (exp(pF*log(10._sp)))/100._sp
             end if
         end if
     end function NoAdjustment
@@ -4272,27 +4271,27 @@ end function ActiveCells
 
 
 subroutine DetermineSaltContent(ECe, Comp)
-    real(dp), intent(in) :: ECe
+    real(sp), intent(in) :: ECe
     type(CompartmentIndividual), intent(inout) :: Comp
 
-    real(dp) :: TotSalt, SumDF, SAT, UL, Dx, mm, mm1, mmN
+    real(sp) :: TotSalt, SumDF, SAT, UL, Dx, mm, mm1, mmN
     integer(int32) :: celn, i
 
-    TotSalt = ECe*Equiv*(GetSoilLayer_SAT(Comp%Layer))*10._dp*Comp%Thickness
+    TotSalt = ECe*Equiv*(GetSoilLayer_SAT(Comp%Layer))*10._sp*Comp%Thickness
     celn = ActiveCells(Comp)
-    SAT = (GetSoilLayer_SAT(Comp%Layer))/100._dp  ! m3/m3
+    SAT = (GetSoilLayer_SAT(Comp%Layer))/100._sp  ! m3/m3
     UL = GetSoilLayer_UL(Comp%Layer) ! m3/m3   ! Upper limit of SC salt cel
     Dx = GetSoilLayer_Dx(Comp%Layer)  ! m3/m3  ! Size of salts cel (expect last one)
-    mm1 = Dx*1000._dp*Comp%Thickness &
-                    * (1._dp - GetSoilLayer_GravelVol(Comp%Layer)/100._dp)
+    mm1 = Dx*1000._sp*Comp%Thickness &
+                    * (1._sp - GetSoilLayer_GravelVol(Comp%Layer)/100._sp)
                      ! g/l ! volume [mm]=[l/m2] of cells
-    mmN = (SAT-UL)*1000._dp*Comp%Thickness &
-                    * (1._dp - GetSoilLayer_GravelVol(Comp%Layer)/100._dp)
+    mmN = (SAT-UL)*1000._sp*Comp%Thickness &
+                    * (1._sp - GetSoilLayer_GravelVol(Comp%Layer)/100._sp)
                      ! g/l ! volume [mm]=[l/m2] of last cell
-    SumDF = 0._dp
+    SumDF = 0._sp
     do i = 1, GetSoilLayer_SCP1(Comp%Layer)
-        Comp%Salt(i) = 0._dp
-        Comp%Depo(i) = 0._dp
+        Comp%Salt(i) = 0._sp
+        Comp%Depo(i) = 0._sp
     end do
     do i = 1, celn
         SumDF = SumDF + GetSoilLayer_SaltMobility_i(Comp%Layer, i)
@@ -4630,18 +4629,18 @@ subroutine AdjustYearPerennials(TheYearSeason, Sown1stYear, TheCycleMode, &
     integer(int8), intent(in) :: TheYearSeason
     logical, intent(in) :: Sown1stYear
     integer(intEnum), intent(in) :: TheCycleMode
-    real(dp), intent(in) :: Zmax
-    real(dp), intent(in) :: ZminYear1
-    real(dp), intent(in) :: TheCCo
-    real(dp), intent(in) :: TheSizeSeedling
-    real(dp), intent(in) :: TheCGC
-    real(dp), intent(in) :: TheCCx
-    real(dp), intent(in) :: TheGDDCGC
+    real(sp), intent(in) :: Zmax
+    real(sp), intent(in) :: ZminYear1
+    real(sp), intent(in) :: TheCCo
+    real(sp), intent(in) :: TheSizeSeedling
+    real(sp), intent(in) :: TheCGC
+    real(sp), intent(in) :: TheCCx
+    real(sp), intent(in) :: TheGDDCGC
     integer(int32), intent(in) :: ThePlantingDens
     integer(intEnum), intent(inout) :: TypeOfPlanting
-    real(dp), intent(inout) :: Zmin
-    real(dp), intent(inout) :: TheSizePlant
-    real(dp), intent(inout) :: TheCCini
+    real(sp), intent(inout) :: Zmin
+    real(sp), intent(inout) :: TheSizePlant
+    real(sp), intent(inout) :: TheCCini
     integer(int32), intent(inout) :: TheDaysToCCini
     integer(int32), intent(inout) :: TheGDDaysToCCini
 
@@ -4656,18 +4655,18 @@ subroutine AdjustYearPerennials(TheYearSeason, Sown1stYear, TheCycleMode, &
         TypeOfPlanting = plant_regrowth ! planting
         Zmin = Zmax  ! rooting depth
         ! plant size by regrowth
-        if (roundc(100._dp*TheSizePlant,mold=1_int32) < &
-            roundc(100._dp*TheSizeSeedling,mold=1_int32)) then
-            TheSizePlant = 10._dp * TheSizeSeedling
+        if (roundc(100._sp*TheSizePlant,mold=1_int32) < &
+            roundc(100._sp*TheSizeSeedling,mold=1_int32)) then
+            TheSizePlant = 10._sp * TheSizeSeedling
         end if
-        if (roundc(100._dp*TheSizePlant,mold=1_int32) > &
-            roundc((100._dp*TheCCx*10000._dp)/&
-                   (ThePlantingDens/10000._dp),mold=1_int32)) then
-            TheSizePlant = (TheCCx*10000._dp)/(ThePlantingDens/10000._dp)
+        if (roundc(100._sp*TheSizePlant,mold=1_int32) > &
+            roundc((100._sp*TheCCx*10000._sp)/&
+                   (ThePlantingDens/10000._sp),mold=1_int32)) then
+            TheSizePlant = (TheCCx*10000._sp)/(ThePlantingDens/10000._sp)
             ! adjust size plant to maximum possible
         end if
     end if
-    TheCCini = (ThePlantingDens/10000._dp) * (TheSizePlant/10000._dp)
+    TheCCini = (ThePlantingDens/10000._sp) * (TheSizePlant/10000._sp)
     TheDaysToCCini = TimeToCCini(TypeOfPlanting, ThePlantingDens, &
                        TheSizeSeedling, TheSizePlant, TheCCx, TheCGC)
     if (TheCycleMode == modeCycle_GDDays) then
@@ -4713,7 +4712,7 @@ subroutine AdjustSimPeriod()
     type(CompartmentIndividual), dimension(max_No_compartments) :: Compartment_temp
 
     integer(int32) :: ZiAqua_tmp
-    real(dp) :: ECiAqua_tmp
+    real(sp) :: ECiAqua_tmp
 
     IniSimFromDayNr = GetSimulation_FromDayNr()
     select case(GetSimulation_LinkCropToSimPeriod())
@@ -4763,7 +4762,7 @@ subroutine AdjustSimPeriod()
         call SetZiAqua(ZiAqua_tmp)
         call SetECiAqua(ECiAqua_tmp)
         Compartment_temp = GetCompartment()
-        call CalculateAdjustedFC((GetZiAqua()/100._dp), Compartment_temp)
+        call CalculateAdjustedFC((GetZiAqua()/100._sp), Compartment_temp)
         call SetCompartment(Compartment_temp)
         if (GetSimulation_IniSWC_AtFC()) then
             call ResetSWCToFC
@@ -4784,7 +4783,7 @@ subroutine ResetSWCToFC()
                                             GetSoilLayer_Thickness(layeri))
             call SetSimulation_IniSWC_VolProc_i(layeri, &
                                                 GetSoilLayer_FC(layeri))
-            call SetSimulation_IniSWC_SaltECe_i(layeri, 0._dp)
+            call SetSimulation_IniSWC_SaltECe_i(layeri, 0._sp)
         end do
         do layeri = (GetSoil_NrSoilLayers() + 1), max_No_compartments
             call SetSimulation_IniSWC_Loc_i(layeri, undef_double)
@@ -4798,16 +4797,16 @@ subroutine ResetSWCToFC()
                                             GetCompartment_Thickness(Loci))
             call SetSimulation_IniSWC_VolProc_i(Loci, &
                                                 GetCompartment_FCadj(Loci))
-            call SetSimulation_IniSWC_SaltECe_i(Loci, 0.0_dp)
+            call SetSimulation_IniSWC_SaltECe_i(Loci, 0.0_sp)
         end do
     end if
     do compi = 1, GetNrCompartments()
-        call SetCompartment_Theta(compi, GetCompartment_FCadj(compi)/100._dp)
+        call SetCompartment_Theta(compi, GetCompartment_FCadj(compi)/100._sp)
         call SetSimulation_ThetaIni_i(compi, GetCompartment_Theta(compi))
         do celli = 1, GetSoilLayer_SCP1(GetCompartment_Layer(compi))
             ! salinity in cells
-            call SetCompartment_Salt(compi, celli, 0.0_dp)
-            call SetCompartment_Depo(compi, celli, 0.0_dp)
+            call SetCompartment_Salt(compi, celli, 0.0_sp)
+            call SetCompartment_Depo(compi, celli, 0.0_sp)
         end do
     end do
 end subroutine ResetSWCToFC
@@ -4818,7 +4817,7 @@ subroutine LoadCrop(FullName)
 
     integer :: fhandle
     integer(int32) :: XX, YY
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
     integer(int8) :: TempShortInt, perenperiod_onsetOcc_temp
     integer(int8) :: perenperiod_endOcc_temp
     integer(int32) :: TempInt, perenperiod_onsetFD_temp
@@ -4826,10 +4825,10 @@ subroutine LoadCrop(FullName)
     integer(int32) :: perenperiod_onsetPV_temp, perenperiod_endLD_temp
     integer(int32) :: perenperiod_endLM_temp, perenperiod_extrayears_temp
     integer(int32) :: perenperiod_endLSP_temp, perenperiod_endPV_temp
-    real(dp) :: TempDouble
+    real(sp) :: TempDouble
     logical :: TempBoolean
-    real(dp) :: perenperiod_onsetTV_temp, perenperiod_endTV_temp
-    real(dp) :: Crop_SmaxTop_temp, Crop_SmaxBot_temp
+    real(sp) :: perenperiod_onsetTV_temp, perenperiod_endTV_temp
+    real(sp) :: Crop_SmaxTop_temp, Crop_SmaxBot_temp
     character(len=1024) :: CropDescriptionLocal
 
     open(newunit=fhandle, file=trim(FullName), status='old', action='read')
@@ -4940,10 +4939,10 @@ subroutine LoadCrop(FullName)
     end if
 
     ! continue with soil fertility/salinity stress
-    if ((GetCrop_StressResponse_ShapeCGC() > 24.9_dp) &
-                .and. (GetCrop_StressResponse_ShapeCCX() > 24.9_dp) &
-                .and. (GetCrop_StressResponse_ShapeWP() > 24.9_dp) &
-                .and. (GetCrop_StressResponse_ShapeCDecline() > 24.9_dp)) then
+    if ((GetCrop_StressResponse_ShapeCGC() > 24.9_sp) &
+                .and. (GetCrop_StressResponse_ShapeCCX() > 24.9_sp) &
+                .and. (GetCrop_StressResponse_ShapeWP() > 24.9_sp) &
+                .and. (GetCrop_StressResponse_ShapeCDecline() > 24.9_sp)) then
         call SetCrop_StressResponse_Calibrated(.false.)
     else
         call SetCrop_StressResponse_Calibrated(.true.)
@@ -5032,10 +5031,10 @@ subroutine LoadCrop(FullName)
     end if
     read(fhandle, *) TempInt
     call SetCrop_PlantingDens(TempInt)
-    call SetCrop_CCo((GetCrop_PlantingDens()/10000._dp) &
-                        * (GetCrop_SizeSeedling()/10000._dp))
-    call SetCrop_CCini((GetCrop_PlantingDens()/10000._dp) &
-                        * (GetCrop_SizePlant()/10000._dp))
+    call SetCrop_CCo((GetCrop_PlantingDens()/10000._sp) &
+                        * (GetCrop_SizeSeedling()/10000._sp))
+    call SetCrop_CCini((GetCrop_PlantingDens()/10000._sp) &
+                        * (GetCrop_SizePlant()/10000._sp))
     read(fhandle, *) TempDouble
     call SetCrop_CGC(TempDouble)
 
@@ -5329,7 +5328,7 @@ subroutine LoadCrop(FullName)
 end subroutine LoadCrop
 
 
-real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, &
+real(sp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, &
                                      L123, L1234, GDDL0, GDDL12, GDDL123, &
                                      GDDL1234, CCo, CCx, CGC, GDDCGC, CDC, &
                                      GDDCDC, KcTop, KcDeclAgeing, &
@@ -5345,28 +5344,28 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
     integer(int32), intent(in) :: GDDL12
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDL1234
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDtranspLow
-    real(dp), intent(in) :: CO2i
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDtranspLow
+    real(sp), intent(in) :: CO2i
     integer(intEnum), intent(in) :: TheModeCycle
     logical :: ReferenceClimate
 
     integer(int32), parameter :: EToStandard = 5
-    real(dp) :: SumGDD, GDDi, SumKcPot, SumGDDforPlot, SumGDDfromDay1
-    real(dp) :: Tndayi, Txdayi, CCi, CCxWitheredForB, TpotForB, EpotTotForB
-    real(dp) :: CCinitial, DayFraction, GDDayFraction
+    real(sp) :: SumGDD, GDDi, SumKcPot, SumGDDforPlot, SumGDDfromDay1
+    real(sp) :: Tndayi, Txdayi, CCi, CCxWitheredForB, TpotForB, EpotTotForB
+    real(sp) :: CCinitial, DayFraction, GDDayFraction
     integer(int32) :: DayCC, Tadj, GDDTadj
     integer :: fhandle
     integer(int32) :: Dayi
@@ -5388,14 +5387,14 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
 
     ! 2. Initialise global settings
     call SetSimulation_DelayedDays(0) ! required for CalculateETpot
-    SumKcPot = 0._dp
-    SumGDDforPlot = real(undef_int, kind=dp)
-    SumGDD = real(undef_int, kind=dp)
-    SumGDDfromDay1 = 0._dp
+    SumKcPot = 0._sp
+    SumGDDforPlot = real(undef_int, kind=sp)
+    SumGDD = real(undef_int, kind=sp)
+    SumGDDfromDay1 = 0._sp
     GrowthON = .false.
     GDDTadj = undef_int
-    DayFraction = real(undef_int, kind=dp)
-    GDDayFraction = real(undef_int, kind=dp)
+    DayFraction = real(undef_int, kind=sp)
+    GDDayFraction = real(undef_int, kind=sp)
     ! 2.bis Initialise 1st day
     if (TheDaysToCCini /= 0) then
         ! regrowth
@@ -5423,17 +5422,17 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
                                               (0_int8), (0_int8))
         end if
         ! Time reduction for days between L12 and L123
-        DayFraction = (L123-L12)/real(Tadj + L0 + (L123-L12), kind=dp)
+        DayFraction = (L123-L12)/real(Tadj + L0 + (L123-L12), kind=sp)
         if (TheModeCycle == modeCycle_GDDays) then
             GDDayFraction = (GDDL123-GDDL12)/real(GDDTadj + GDDL0 + &
-                                                  (GDDL123-GDDL12), kind=dp)
+                                                  (GDDL123-GDDL12), kind=sp)
         end if
     else
         ! sowing or transplanting
         Tadj = 0
         if (TheModeCycle == modeCycle_GDDays) then
             GDDTadj = 0
-            SumGDD = 0._dp
+            SumGDD = 0._sp
         end if
         CCinitial = CCo
     end if
@@ -5449,9 +5448,9 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
             i = i + 1
             if (i == size(GetTminCropReferenceRun())) then
                 i = 1
-            end if
-            Tndayi = real(GetTminCropReferenceRun_i(i),kind=dp)
-            Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=dp)
+            endif
+            Tndayi = real(GetTminCropReferenceRun_i(i),kind=sp)
+            Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=sp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
@@ -5473,7 +5472,7 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
         ! 3.2 calculate CCi
         if (GrowthON .eqv. .false.) then
             ! not yet canopy development
-            CCi = 0._dp
+            CCi = 0._sp
             DayCC = Dayi
             if (TheDaysToCCini /= 0) then
                 ! regrowth on 1st day
@@ -5545,14 +5544,14 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
 
         ! 3.4 Calculate Tpot + Adjust for Low temperature
         ! (no transpiration)
-        if (CCi > 0.0001_dp) then
+        if (CCi > 0.0001_sp) then
             call CalculateETpot(DayCC, L0, L12, L123, L1234, (0), CCi, &
-                           real(EToStandard, kind=dp), KcTop, &
+                           real(EToStandard, kind=sp), KcTop, &
                            KcDeclAgeing, CCx, CCxWitheredForB, &
                            CCeffectProcent, CO2i, &
                            GDDi, GDtranspLow, TpotForB, EpotTotForB)
         else
-            TpotForB = 0._dp
+            TpotForB = 0._sp
         end if
 
         ! 3.5 Sum of Sum Of KcPot
@@ -5570,17 +5569,17 @@ real(dp) function SeasonalSumOfKcPot(TheDaysToCCini, TheGDDaysToCCini, L0, L12, 
 end function SeasonalSumOfKcPot
 
 
-real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
+real(sp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
                                   CCxadjusted, TheCCxWithered, &
                                   PercCCxHIfinal, TempPlanting, &
                                   PercentLagPhase, HIfinal)
     integer(int32), intent(in) :: DAP
     integer(int32), intent(in) :: DaysToFlower
     integer(int32), intent(in) :: HImax
-    real(dp), intent(in) :: dHIdt
-    real(dp), intent(in) :: CCi
-    real(dp), intent(in) :: CCxadjusted
-    real(dp), intent(in) :: TheCCxWithered
+    real(sp), intent(in) :: dHIdt
+    real(sp), intent(in) :: CCi
+    real(sp), intent(in) :: CCxadjusted
+    real(sp), intent(in) :: TheCCxWithered
     integer(int8), intent(in) :: PercCCxHIfinal
     integer(intEnum), intent(in) :: TempPlanting
     integer(int8), intent(inout) :: PercentLagPhase
@@ -5588,7 +5587,7 @@ real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
 
 
     integer(int32), parameter :: HIo = 1
-    real(dp) :: HIGC, HIday, HIGClinear, dHIdt_local
+    real(sp) :: HIGC, HIday, HIGClinear, dHIdt_local
     integer(int32) :: t, tMax, tSwitch
 
     dHIdt_local = dHIdt
@@ -5596,27 +5595,27 @@ real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
     ! Simulation.WPyON := false;
     PercentLagPhase = 0_int8
     if (t <= 0) then
-        HIday = 0._dp
+        HIday = 0._sp
     else
         if ((GetCrop_Subkind() == subkind_Vegetative) &
                             .and. (TempPlanting == plant_Regrowth)) then
-            dHIdt_local = 100._dp
+            dHIdt_local = 100._sp
         end if
         if ((GetCrop_Subkind() == subkind_Forage) &
                             .and. (TempPlanting == plant_Regrowth)) then
-            dHIdt_local = 100._dp
+            dHIdt_local = 100._sp
         end if
-        if (dHIdt_local > 99._dp) then
+        if (dHIdt_local > 99._sp) then
             HIday = HImax
             PercentLagPhase = 100_int8
         else
-            HIGC = HarvestIndexGrowthCoefficient(real(HImax, kind=dp), &
+            HIGC = HarvestIndexGrowthCoefficient(real(HImax, kind=sp), &
                                                  dHIdt_local)
             call GetDaySwitchToLinear(HImax, dHIdt_local, HIGC, &
                                       tSwitch, HIGClinear)
             if (t < tSwitch) then
-                PercentLagPhase = roundc(100._dp &
-                                     * (t/real(tSwitch, kind=dp)), mold=1_int8)
+                PercentLagPhase = roundc(100._sp &
+                                     * (t/real(tSwitch, kind=sp)), mold=1_int8)
                 HIday = (HIo*HImax)/ (HIo+(HImax-HIo)*exp(-HIGC*t))
             else
                 PercentLagPhase = 100_int8
@@ -5625,7 +5624,7 @@ real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
                             .or. (GetCrop_subkind() == subkind_Forage)) then
                     ! continue with logistic equation
                     HIday = (HIo*HImax)/ (HIo+(HImax-HIo)*exp(-HIGC*t))
-                    if (HIday >= 0.9799_dp*HImax) then
+                    if (HIday >= 0.9799_sp*HImax) then
                         HIday = HImax
                     end if
                 else
@@ -5637,10 +5636,10 @@ real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
             if (HIday > HImax) then
                 HIday = HImax
             end if
-            if (HIday <= (HIo + 0.4_dp)) then
-                HIday = 0._dp
+            if (HIday <= (HIo + 0.4_sp)) then
+                HIday = 0._sp
             end if
-            if ((HImax - HIday) < 0.4_dp) then
+            if ((HImax - HIday) < 0.4_sp) then
                 HIday = HImax
             end if
         end if
@@ -5648,8 +5647,8 @@ real(dp) function HarvestIndexDay(DAP, DaysToFlower, HImax, dHIdt, CCi, &
         ! adjust HIfinal if required for inadequate photosynthesis (unsufficient green canopy)
         tMax = roundc(HImax/dHIdt_local, mold=1)
         if ((HIfinal == HImax) .and. (t <= tmax) &
-                              .and. ((CCi+epsilon(0._dp)) <= (PercCCxHIfinal/100._dp)) &
-                              .and. (TheCCxWithered > epsilon(0._dp)) &
+                              .and. ((CCi+epsilon(0._sp)) <= (PercCCxHIfinal/100._sp)) &
+                              .and. (TheCCxWithered > epsilon(0._sp)) &
                               .and. (CCi < TheCCxWithered) &
                               .and. (GetCrop_subkind() /= subkind_Vegetative) &
                               .and. (GetCrop_subkind() /= subkind_Forage)) then
@@ -5672,7 +5671,7 @@ subroutine CompleteCropDescription()
     integer(int32) :: Crop_DaysToSenescence_temp
     integer(int32), dimension(4) :: Crop_Length_temp
     integer(int32) :: Crop_DaysToFullCanopy_temp
-    real(dp) :: Crop_CGC_temp
+    real(sp) :: Crop_CGC_temp
     integer(int32) :: Crop_DaysToFullCanopySF_temp
 
     if ((GetCrop_subkind() == subkind_Vegetative) &
@@ -5680,24 +5679,24 @@ subroutine CompleteCropDescription()
         if (GetCrop_DaysToHIo() > 0) then
             if (GetCrop_DaysToHIo() > GetCrop_DaysToHarvest()) then
                 call SetCrop_dHIdt(GetCrop_HI()&
-                                /real(GetCrop_DaysToHarvest(), kind=dp))
+                                /real(GetCrop_DaysToHarvest(), kind=sp))
             else
                 call SetCrop_dHIdt(GetCrop_HI()&
-                                /real(GetCrop_DaysToHIo(), kind=dp))
+                                /real(GetCrop_DaysToHIo(), kind=sp))
             end if
-            if (GetCrop_dHIdt() > 100._dp) then
-                call SetCrop_dHIdt(100._dp)
+            if (GetCrop_dHIdt() > 100._sp) then
+                call SetCrop_dHIdt(100._sp)
             end if
         else
-            call SetCrop_dHIdt(100._dp)
+            call SetCrop_dHIdt(100._sp)
         end if
     else
         !  grain or tuber crops
         if (GetCrop_DaysToHIo() > 0) then
             call SetCrop_dHIdt(GetCrop_HI()&
-                                /real(GetCrop_DaysToHIo(), kind=dp))
+                                /real(GetCrop_DaysToHIo(), kind=sp))
         else
-            call SetCrop_dHIdt(real(undef_int, kind=dp))
+            call SetCrop_dHIdt(real(undef_int, kind=sp))
         end if
     end if
     if (GetCrop_ModeCycle() == modeCycle_CalendarDays) then
@@ -5707,7 +5706,7 @@ subroutine CompleteCropDescription()
                                              GetCrop_SizePlant(), &
                                              GetCrop_CCx(), GetCrop_CGC()))
         call SetCrop_DaysToFullCanopy(DaysToReachCCwithGivenCGC(&
-                (0.98_dp * GetCrop_CCx()), GetCrop_CCo(), &
+                (0.98_sp * GetCrop_CCx()), GetCrop_CCo(), &
                      GetCrop_CCx(), GetCrop_CGC(), GetCrop_DaysToGermination()))
         if (GetManagement_FertilityStress() /= 0_int32) then
             FertStress = GetManagement_FertilityStress()
@@ -5739,8 +5738,8 @@ subroutine CompleteCropDescription()
         call SetCrop_GDDaysToSenescence(undef_int)
         call SetCrop_GDDaysToHarvest(undef_int)
         call SetCrop_GDDaysToMaxRooting(undef_int)
-        call SetCrop_GDDCGC(real(undef_int, kind=dp))
-        call SetCrop_GDDCDC(real(undef_int, kind=dp))
+        call SetCrop_GDDCGC(real(undef_int, kind=sp))
+        call SetCrop_GDDCDC(real(undef_int, kind=sp))
     else
         call SetCrop_GDDaysToCCini(TimeToCCini(GetCrop_Planting(), &
                            GetCrop_PlantingDens(), GetCrop_SizeSeedling(), &
@@ -5750,7 +5749,7 @@ subroutine CompleteCropDescription()
                            GetCrop_PlantingDens(), GetCrop_SizeSeedling(), &
                            GetCrop_SizePlant(), GetCrop_CCx(), GetCrop_CGC()))
         call SetCrop_GDDaysToFullCanopy(DaysToReachCCwithGivenCGC(&
-                    (0.98_dp * GetCrop_CCx()), GetCrop_CCo(), GetCrop_CCx(), &
+                    (0.98_sp * GetCrop_CCx()), GetCrop_CCo(), GetCrop_CCx(), &
                     GetCrop_GDDCGC(), GetCrop_GDDaysToGermination()))
         ! Crop.GDDaysToFullCanopySF is determined in RUN or ManagementUnit if required
     end if
@@ -5776,11 +5775,11 @@ subroutine CompleteCropDescription()
     call SetCrop_CCoAdjusted(GetCrop_CCo())
     call SetCrop_CCxAdjusted(GetCrop_CCx())
     call SetCrop_CCxWithered(GetCrop_CCx())
-    call SetSumWaBal_Biomass(0._dp)
-    call SetSumWaBal_BiomassPot(0._dp)
-    call SetSumWaBal_BiomassUnlim(0._dp)
-    call SetSumWaBal_BiomassTot(0._dp) ! crop and weeds (for soil fertility stress)
-    call SetSumWaBal_YieldPart(0._dp)
+    call SetSumWaBal_Biomass(0._sp)
+    call SetSumWaBal_BiomassPot(0._sp)
+    call SetSumWaBal_BiomassUnlim(0._sp)
+    call SetSumWaBal_BiomassTot(0._sp) ! crop and weeds (for soil fertility stress)
+    call SetSumWaBal_YieldPart(0._sp)
     call SetSimulation_EvapLimitON(.false.)
 end subroutine CompleteCropDescription
 
@@ -5796,12 +5795,12 @@ subroutine NoManagementOffSeason()
     call SetManagement_EffectMulchOffS(50_int8)
     ! off-season irrigation
     call SetSimulParam_IrriFwOffSeason(100_int8)
-    call SetIrriECw_PreSeason(0.0_dp) ! dS/m
+    call SetIrriECw_PreSeason(0.0_sp) ! dS/m
     do Nri = 1, 5
         call SetIrriBeforeSeason_DayNr(Nri, 0)
         call SetIrriBeforeSeason_Param(Nri, 0)
     end do
-    call SetIrriECw_PostSeason(0.0_dp) ! dS/m
+    call SetIrriECw_PostSeason(0.0_sp) ! dS/m
     do Nri = 1, 5
         call SetIrriAfterSeason_DayNr(Nri, 0)
         call SetIrriAfterSeason_Param(Nri, 0)
@@ -5815,10 +5814,10 @@ subroutine LoadOffSeason(FullName)
     integer :: fhandle
     integer(int32) :: Nri, NrEvents1, NrEvents2
     character(len=:), allocatable :: ParamString
-    real(dp) :: Par1, Par2
-    real(dp) :: VersionNr
-    real(dp) :: PreSeason_in
-    real(dp) :: PostSeason_in
+    real(sp) :: Par1, Par2
+    real(sp) :: VersionNr
+    real(sp) :: PreSeason_in
+    real(sp) :: PostSeason_in
     integer(int8) :: TempShortInt, simul_irri_of
     character(len=1025) :: OffSeasonDescr_temp
 
@@ -5850,14 +5849,14 @@ subroutine LoadOffSeason(FullName)
     end do
     read(fhandle, *) NrEvents1 ! number of irrigation events BEFORE growing period
     if (roundc(10*VersionNr, mold=1) < 32) then ! irrigation water quality BEFORE growing period
-        call SetIrriECw_PreSeason(0.0_dp)
+        call SetIrriECw_PreSeason(0.0_sp)
     else
         read(fhandle, *) PreSeason_in
         call SetIrriECw_PreSeason(PreSeason_in)
     end if
     read(fhandle, *) NrEvents2 ! number of irrigation events AFTER growing period
     if (roundc(10*VersionNr, mold=1) < 32) then ! irrigation water quality AFTER growing period
-        call SetIrriECw_PostSeason(0.0_dp)
+        call SetIrriECw_PostSeason(0.0_sp)
     else
         read(fhandle, *) PostSeason_in
         call SetIrriECw_PostSeason(PostSeason_in)
@@ -5894,23 +5893,23 @@ end subroutine LoadOffSeason
 
 subroutine AdjustThetaInitial(PrevNrComp, PrevThickComp, PrevVolPrComp, PrevECdSComp)
     integer(int8), intent(in) :: PrevNrComp
-    real(dp), dimension(max_No_compartments), intent(in) :: PrevThickComp
-    real(dp), dimension(max_No_compartments), intent(in) :: PrevVolPrComp
-    real(dp), dimension(max_No_compartments), intent(in) :: PrevECdSComp
+    real(sp), dimension(max_No_compartments), intent(in) :: PrevThickComp
+    real(sp), dimension(max_No_compartments), intent(in) :: PrevVolPrComp
+    real(sp), dimension(max_No_compartments), intent(in) :: PrevECdSComp
 
     integer(int32) :: layeri, compi
-    real(dp) :: TotDepthC, TotDepthL, Total
+    real(sp) :: TotDepthC, TotDepthL, Total
     type(CompartmentIndividual), &
                         dimension(max_No_compartments) :: Compartment_temp
 
     ! 1. Actual total depth of compartments
-    TotDepthC = 0._dp
+    TotDepthC = 0._sp
     do compi = 1, GetNrCompartments()
         TotDepthC = TotDepthC + GetCompartment_Thickness(compi)
     end do
 
     ! 2. Stretch thickness of bottom soil layer if required
-    TotDepthL = 0._dp
+    TotDepthL = 0._sp
     do layeri = 1, GetSoil_NrSoilLayers()
         TotDepthL = TotDepthL + GetSoilLayer_Thickness(layeri)
     end do
@@ -5958,15 +5957,15 @@ subroutine AdjustThetaInitial(PrevNrComp, PrevThickComp, PrevVolPrComp, PrevECdS
     end if
 
     ! 5. Adjust watercontent in soil layers and determine ThetaIni
-    Total = 0._dp
+    Total = 0._sp
     do layeri = 1, GetSoil_NrSoilLayers()
-        call SetSoilLayer_WaterContent(layeri, 0._dp)
+        call SetSoilLayer_WaterContent(layeri, 0._sp)
     end do
     do compi = 1, GetNrCompartments()
         call SetSimulation_ThetaIni_i(compi, GetCompartment_Theta(compi))
         call SetSoilLayer_WaterContent(GetCompartment_Layer(compi), &
                          GetSoilLayer_WaterContent(GetCompartment_Layer(compi)) &
-                            + GetSimulation_ThetaIni_i(compi)*100._dp*10._dp &
+                            + GetSimulation_ThetaIni_i(compi)*100._sp*10._sp &
                                 * GetCompartment_Thickness(compi))
     end do
     do layeri = 1, GetSoil_NrSoilLayers()
@@ -6025,13 +6024,13 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
     character(len=*), intent(in) :: FullName
     integer(int32), intent(in) :: AtDayNr
     integer(int32), intent(inout) :: Zcm
-    real(dp), intent(inout) :: ECdSm
+    real(sp), intent(inout) :: ECdSm
 
     integer :: fhandle
     integer(int32) :: i, dayi, monthi, yeari, Year1Gwt, rc
     integer(int32) :: DayNr1Gwt, DayNr1, DayNr2, DayNrN, AtDayNr_local
     character(len=255) :: StringREAD
-    real(dp) :: DayDouble, Z1, EC1, Z2, EC2, ZN, ECN
+    real(sp) :: DayDouble, Z1, EC1, Z2, EC2, ZN, ECN
     logical :: TheEnd
 
     logical :: file_exists
@@ -6058,7 +6057,7 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
         case(0)
             ! no groundwater table
             Zcm = undef_int
-            ECdSm = real(undef_int, kind=dp)
+            ECdSm = real(undef_int, kind=sp)
             call SetSimulParam_ConstGwt(.true.)
             TheEnd = .true.
         case(1)
@@ -6086,7 +6085,7 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
         call SplitStringInThreeParams(StringREAD, DayDouble, Z2, EC2)
         if ((i == 1) .or. (rc == iostat_end)) then
             ! Constant groundwater table or single observation
-            Zcm = roundc(100._dp*Z2, mold=1)
+            Zcm = roundc(100._sp*Z2, mold=1)
             ECdSm = EC2
             TheEnd = .true.
         else
@@ -6111,7 +6110,7 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
         if (Year1Gwt /= 1901) then
             ! year is defined
             if (AtDayNr_local <= DayNr2) then
-                Zcm = roundc(100._dp*Z2, mold=1)
+                Zcm = roundc(100._sp*Z2, mold=1)
                 ECdSm = EC2
             else
                 do while (.not. TheEnd)
@@ -6128,7 +6127,7 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
                         TheEnd = .true.
                     end if
                     if ((rc == iostat_end) .and. (.not. TheEnd)) then
-                        Zcm = roundc(100._dp*Z2, mold=1)
+                        Zcm = roundc(100._sp*Z2, mold=1)
                         ECdSm = EC2
                         TheEnd = .true.
                     end if
@@ -6185,19 +6184,19 @@ subroutine LoadGroundWater(FullName, AtDayNr, Zcm, ECdSm)
         integer(int32), intent(in) :: AtDayNr
         integer(int32), intent(in) :: DayNr1
         integer(int32), intent(in) :: DayNr2
-        real(dp), intent(in) :: Z1
-        real(dp), intent(in) :: EC1
-        real(dp), intent(in) :: Z2
-        real(dp), intent(in) :: EC2
+        real(sp), intent(in) :: Z1
+        real(sp), intent(in) :: EC1
+        real(sp), intent(in) :: Z2
+        real(sp), intent(in) :: EC2
         integer(int32), intent(inout) :: Zcm
-        real(dp), intent(inout) :: ECdSm
+        real(sp), intent(inout) :: ECdSm
 
-        Zcm = roundc(100._dp * (Z1 + (Z2-Z1) &
-                    * real(AtDayNr-DayNr1, kind=dp) &
-                    / real(DayNr2-Daynr1, kind=dp)), mold=1)
+        Zcm = roundc(100._sp * (Z1 + (Z2-Z1) &
+                    * real(AtDayNr-DayNr1, kind=sp) &
+                    / real(DayNr2-Daynr1, kind=sp)), mold=1)
         ECdSm = EC1 + (EC2-EC1) &
-                        * real(AtDayNr-DayNr1, kind=dp) &
-                        / real(DayNr2-Daynr1, kind=dp)
+                        * real(AtDayNr-DayNr1, kind=sp) &
+                        / real(DayNr2-Daynr1, kind=sp)
         end subroutine FindValues
 
 end subroutine LoadGroundWater
@@ -6221,34 +6220,34 @@ end subroutine AdjustClimRecordTo
 
 subroutine TranslateIniLayersToSWProfile(NrLay, LayThickness, LayVolPr, LayECdS, NrComp, Comp)
     integer(int8), intent(in) :: NrLay
-    real(dp), dimension(max_No_compartments), intent(in) :: LayThickness
-    real(dp), dimension(max_No_compartments), intent(in) :: LayVolPr
-    real(dp), dimension(max_No_compartments), intent(in) :: LayECdS
+    real(sp), dimension(max_No_compartments), intent(in) :: LayThickness
+    real(sp), dimension(max_No_compartments), intent(in) :: LayVolPr
+    real(sp), dimension(max_No_compartments), intent(in) :: LayECdS
     integer(int32), intent(in) :: NrComp
     type(CompartmentIndividual), dimension(max_No_compartments), intent(inout) :: Comp
 
     integer(int8) :: Compi, Layeri, i
-    real(dp) :: SDLay, SDComp, FracC
+    real(sp) :: SDLay, SDComp, FracC
     logical :: GoOn
 
     ! from specific layers to Compartments
     do Compi = 1, int(NrComp, kind=int8)
-        Comp(Compi)%Theta = 0._dp
-        Comp(Compi)%WFactor = 0._dp  ! used for ECe in this procedure
+        Comp(Compi)%Theta = 0._sp
+        Comp(Compi)%WFactor = 0._sp  ! used for ECe in this procedure
     end do
     Compi = 0_int8
-    SDComp = 0._dp
+    SDComp = 0._sp
     Layeri = 1_int8
     SDLay = LayThickness(1)
     GoOn = .true.
     do while (Compi < NrComp)
-        FracC = 0._dp
+        FracC = 0._sp
         Compi = Compi + 1_int8
         SDComp = SDComp + Comp(compi)%Thickness
         if (SDLay >= SDComp) then
-            Comp(Compi)%Theta = Comp(Compi)%Theta + (1._dp-FracC) &
-                                                *LayVolPr(Layeri)/100._dp
-            Comp(Compi)%WFactor = Comp(Compi)%WFactor + (1._dp-FracC) &
+            Comp(Compi)%Theta = Comp(Compi)%Theta + (1._sp-FracC) &
+                                                *LayVolPr(Layeri)/100._sp
+            Comp(Compi)%WFactor = Comp(Compi)%WFactor + (1._sp-FracC) &
                                                 *LayECdS(Layeri)
         else
             ! go to next layer
@@ -6257,7 +6256,7 @@ subroutine TranslateIniLayersToSWProfile(NrLay, LayThickness, LayVolPr, LayECdS,
                 FracC = (SDLay - (SDComp-Comp(Compi)%Thickness)) &
                                 /(Comp(Compi)%Thickness) - FracC
                 Comp(Compi)%Theta = Comp(Compi)%Theta + &
-                                    FracC*LayVolPr(Layeri)/100._dp
+                                    FracC*LayVolPr(Layeri)/100._sp
                 Comp(Compi)%WFactor = Comp(Compi)%WFactor + FracC*LayECdS(Layeri)
                 FracC = (SDLay - (SDComp-Comp(Compi)%Thickness)) &
                                     /(Comp(Compi)%Thickness)
@@ -6269,16 +6268,16 @@ subroutine TranslateIniLayersToSWProfile(NrLay, LayThickness, LayVolPr, LayECdS,
                     GoOn = .false.
                 end if
             end do
-            Comp(Compi)%Theta = Comp(Compi)%Theta + (1._dp-FracC) &
-                                                    *LayVolPr(Layeri)/100._dp
-            Comp(Compi)%WFactor = Comp(Compi)%WFactor + (1._dp-FracC) &
+            Comp(Compi)%Theta = Comp(Compi)%Theta + (1._sp-FracC) &
+                                                    *LayVolPr(Layeri)/100._sp
+            Comp(Compi)%WFactor = Comp(Compi)%WFactor + (1._sp-FracC) &
                                                     *LayECdS(Layeri)
         end if
         ! next Compartment
     end do
     if (.not. GoOn) then
         do i = (Compi+1_int8), int(NrComp, kind=int8)
-            Comp(i)%Theta = LayVolPr(NrLay)/100._dp
+            Comp(i)%Theta = LayVolPr(NrLay)/100._sp
             Comp(i)%WFactor = LayECdS(NrLay)
         end do
     end if
@@ -6286,9 +6285,9 @@ subroutine TranslateIniLayersToSWProfile(NrLay, LayThickness, LayVolPr, LayECdS,
     ! final check of SWC
     do Compi = 1_int8, int(NrComp, kind=int8)
         if (Comp(Compi)%Theta > &
-                (GetSoilLayer_SAT(Comp(compi)%Layer))/100._dp) then
+                (GetSoilLayer_SAT(Comp(compi)%Layer))/100._sp) then
             Comp(Compi)%Theta = (GetSoilLayer_SAT(Comp(compi)%Layer)) &
-                                                            /100._dp
+                                                            /100._sp
         end if
     end do
     ! salt distribution in cellls
@@ -6301,31 +6300,31 @@ end subroutine TranslateIniLayersToSWProfile
 subroutine TranslateIniPointsToSWProfile(NrLoc, LocDepth, LocVolPr, LocECdS, &
                                                                NrComp, Comp)
     integer(int8), intent(in) :: NrLoc
-    real(dp), dimension(max_No_compartments), intent(in) :: LocDepth
-    real(dp), dimension(max_No_compartments), intent(in) :: LocVolPr
-    real(dp), dimension(max_No_compartments), intent(in) :: LocECdS
+    real(sp), dimension(max_No_compartments), intent(in) :: LocDepth
+    real(sp), dimension(max_No_compartments), intent(in) :: LocVolPr
+    real(sp), dimension(max_No_compartments), intent(in) :: LocECdS
     integer(int32), intent(in) :: NrComp
     type(CompartmentIndividual), dimension(max_No_compartments), &
                                               intent(inout) :: Comp
 
     integer(int32) :: Compi, Loci
-    real(dp) :: TotD, Depthi, D1, D2, Th1, Th2, DTopComp, &
+    real(sp) :: TotD, Depthi, D1, D2, Th1, Th2, DTopComp, &
                 ThTopComp, ThBotComp
-    real(dp) :: EC1, EC2, ECTopComp, ECBotComp
+    real(sp) :: EC1, EC2, ECTopComp, ECBotComp
     logical :: AddComp, TheEnd
 
     TotD = 0
     do Compi = 1, NrComp
-        Comp(Compi)%Theta = 0._dp
-        Comp(Compi)%WFactor = 0._dp ! used for salt in (10*VolSat*dZ * EC)
+        Comp(Compi)%Theta = 0._sp
+        Comp(Compi)%WFactor = 0._sp ! used for salt in (10*VolSat*dZ * EC)
         TotD = TotD + Comp(Compi)%Thickness
     end do
     Compi = 0
-    Depthi = 0._dp
+    Depthi = 0._sp
     AddComp = .true.
     Th2 = LocVolPr(1)
     EC2 = LocECds(1)
-    D2 = 0._dp
+    D2 = 0._sp
     Loci = 0
     do while ((Compi < NrComp) .or. &
                 ((Compi == NrComp) .and. (AddComp .eqv. .false.)))
@@ -6354,15 +6353,15 @@ subroutine TranslateIniPointsToSWProfile(NrLoc, LocDepth, LocVolPr, LocECdS, &
                 Depthi = Depthi + Comp(Compi)%Thickness
             end if
             if (Depthi < D2) then
-                ThBotComp = Th1 + (Th2-Th1)*(Depthi-D1)/real(D2-D1, kind=dp)
+                ThBotComp = Th1 + (Th2-Th1)*(Depthi-D1)/real(D2-D1, kind=sp)
                 Comp(Compi)%Theta = Comp(Compi)%Theta &
-                                   + 10._dp*(Depthi-DTopComp) &
-                                           * ((ThTopComp+ThBotComp)/2._dp)
-                ECBotComp = EC1 + (EC2-EC1)*(Depthi-D1)/real(D2-D1, kind=dp)
+                                   + 10._sp*(Depthi-DTopComp) &
+                                           * ((ThTopComp+ThBotComp)/2._sp)
+                ECBotComp = EC1 + (EC2-EC1)*(Depthi-D1)/real(D2-D1, kind=sp)
                 Comp(Compi)%WFactor = Comp(Compi)%WFactor &
-                                      + (10._dp*(Depthi-DTopComp) &
+                                      + (10._sp*(Depthi-DTopComp) &
                                        *GetSoilLayer_SAT(Comp(Compi)%Layer)) &
-                                       *((ECTopComp+ECbotComp)/2._dp)
+                                       *((ECTopComp+ECbotComp)/2._sp)
                 AddComp = .true.
                 DTopComp = Depthi
                 if (Compi == NrComp) then
@@ -6372,13 +6371,13 @@ subroutine TranslateIniPointsToSWProfile(NrLoc, LocDepth, LocVolPr, LocECdS, &
                 ThBotComp = Th2
                 ECBotComp = EC2
                 Comp(Compi)%Theta = Comp(Compi)%Theta &
-                                  + 10._dp*(D2-DTopComp) &
-                                          * ((ThTopComp+ThBotComp)/2._dp)
+                                  + 10._sp*(D2-DTopComp) &
+                                          * ((ThTopComp+ThBotComp)/2._sp)
                 Comp(Compi)%WFactor = Comp(Compi)%WFactor &
-                                      + (10._dp*(D2-DTopComp) &
+                                      + (10._sp*(D2-DTopComp) &
                                          *GetSoilLayer_SAT(Comp(Compi)%Layer)) &
-                                         *((ECTopComp+ECbotComp)/2._dp)
-                if (abs(Depthi - D2) < epsilon(0._dp)) then
+                                         *((ECTopComp+ECbotComp)/2._sp)
+                if (abs(Depthi - D2) < epsilon(0._sp)) then
                     AddComp = .true.
                 else
                     AddComp = .false.
@@ -6391,27 +6390,27 @@ subroutine TranslateIniPointsToSWProfile(NrLoc, LocDepth, LocVolPr, LocECdS, &
 
     do Compi = 1, NrComp
         ! from mm(water) to theta and final check
-        Comp(Compi)%Theta = Comp(Compi)%Theta/(1000._dp*Comp(Compi)%Thickness)
+        Comp(Compi)%Theta = Comp(Compi)%Theta/(1000._sp*Comp(Compi)%Thickness)
         if (Comp(Compi)%Theta &
-                    > (GetSoilLayer_SAT(Comp(compi)%Layer))/100._dp) then
-            Comp(Compi)%Theta = (GetSoilLayer_SAT(Comp(compi)%Layer))/100._dp
+                    > (GetSoilLayer_SAT(Comp(compi)%Layer))/100._sp) then
+            Comp(Compi)%Theta = (GetSoilLayer_SAT(Comp(compi)%Layer))/100._sp
         end if
-        if (Comp(Compi)%Theta < 0._dp) then
-            Comp(Compi)%Theta = 0._dp
+        if (Comp(Compi)%Theta < 0._sp) then
+            Comp(Compi)%Theta = 0._sp
         end if
     end do
 
     do Compi = 1, NrComp
         ! from (10*VolSat*dZ * EC) to ECe and distribution in cellls
         Comp(Compi)%WFactor = Comp(Compi)%WFactor &
-                                /(10._dp*Comp(Compi)%Thickness &
+                                /(10._sp*Comp(Compi)%Thickness &
                                     *GetSoilLayer_SAT(Comp(Compi)%Layer))
         call DetermineSaltContent(Comp(Compi)%WFactor, Comp(Compi))
     end do
 end subroutine TranslateIniPointsToSWProfile
 
 
-real(dp) function CCiniTotalFromTimeToCCini(TempDaysToCCini, TempGDDaysToCCini, &
+real(sp) function CCiniTotalFromTimeToCCini(TempDaysToCCini, TempGDDaysToCCini, &
                                             L0, L12, L12SF, L123, L1234, GDDL0, &
                                             GDDL12, GDDL12SF, GDDL123, &
                                             GDDL1234, CCo, CCx, CGC, GDDCGC, &
@@ -6430,27 +6429,27 @@ real(dp) function CCiniTotalFromTimeToCCini(TempDaysToCCini, TempGDDaysToCCini, 
     integer(int32), intent(in) :: GDDL12SF
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDL1234
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: RatDGDD
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: RatDGDD
     integer(int8), intent(in) :: SFRedCGC
     integer(int8), intent(in) :: SFRedCCx
-    real(dp), intent(in) :: SFCDecline
-    real(dp), intent(in) :: fWeed
+    real(sp), intent(in) :: SFCDecline
+    real(sp), intent(in) :: fWeed
     integer(intEnum), intent(in) :: TheModeCycle
 
 
     integer(int32) :: DayCC
-    real(dp) :: SumGDDforCCini, TempCCini
+    real(sp) :: SumGDDforCCini, TempCCini
     integer(int32) :: Tadj, GDDTadj
 
     if (TempDaysToCCini /= 0) then
         ! regrowth
-        SumGDDforCCini = real(undef_int, kind=dp)
+        SumGDDforCCini = real(undef_int, kind=sp)
         GDDTadj = undef_int
         ! find adjusted calendar and GDD time
         if (TempDaysToCCini == undef_int) then
@@ -6474,8 +6473,8 @@ real(dp) function CCiniTotalFromTimeToCCini(TempDaysToCCini, TempGDDaysToCCini, 
         TempCCini = CCiNoWaterStressSF(DayCC, L0, L12SF, L123, L1234, GDDL0, &
                                        GDDL12SF, GDDL123, GDDL1234, &
                                        (CCo*fWeed), (CCx*fWeed), CGC, GDDCGC, &
-                                       (CDC*(fWeed*CCx+2.29_dp)/(CCx+2.29_dp)), &
-                                       (GDDCDC*(fWeed*CCx+2.29_dp)/(CCx+2.29_dp)), &
+                                       (CDC*(fWeed*CCx+2.29_sp)/(CCx+2.29_sp)), &
+                                       (GDDCDC*(fWeed*CCx+2.29_sp)/(CCx+2.29_sp)), &
                                        SumGDDforCCini, RatDGDD, SFRedCGC, &
                                        SFRedCCx, SFCDecline, TheModeCycle)
         ! correction for fWeed is already in TempCCini (since DayCC > 0);
@@ -6528,15 +6527,15 @@ end function EndGrowingPeriod
 
 subroutine LoadInitialConditions(SWCiniFileFull, IniSurfaceStorage)
     character(len=*), intent(in) :: SWCiniFileFull
-    real(dp), intent(inout) :: IniSurfaceStorage
+    real(sp), intent(inout) :: IniSurfaceStorage
 
     integer :: fhandle
     integer(int32) :: i
     character(len=1025) :: StringParam, swcinidescr_temp
-    real(dp) :: VersionNr
-    real(dp) :: CCini_temp, Bini_temp, Zrini_temp, ECStorageIni_temp
+    real(sp) :: VersionNr
+    real(sp) :: CCini_temp, Bini_temp, Zrini_temp, ECStorageIni_temp
     integer(int8) :: NrLoc_temp
-    real(dp) :: Loc_i_temp, VolProc_i_temp, SaltECe_i_temp
+    real(sp) :: Loc_i_temp, VolProc_i_temp, SaltECe_i_temp
 
     ! IniSWCRead attribute of the function was removed to fix a
     ! bug occurring when the function was called in TempProcessing.pas
@@ -6546,26 +6545,26 @@ subroutine LoadInitialConditions(SWCiniFileFull, IniSurfaceStorage)
     call SetSWCiniDescription(swcinidescr_temp)
     read(fhandle, *) VersionNr ! AquaCrop Version
     if (roundc(10*VersionNr, mold=1) < 41) then ! initial CC at start of simulation period
-        call SetSimulation_CCini(real(undef_int, kind=dp))
+        call SetSimulation_CCini(real(undef_int, kind=sp))
     else
         read(fhandle, *) CCini_temp
         call SetSimulation_CCini(CCini_temp)
     end if
     if (roundc(10*VersionNr, mold=1) < 41) then ! B produced before start of simulation period
-        call SetSimulation_Bini(0.000_dp)
+        call SetSimulation_Bini(0.000_sp)
     else
         read(fhandle, *) Bini_temp
         call SetSimulation_Bini(Bini_temp)
     end if
     if (roundc(10*VersionNr, mold=1) < 41) then ! initial rooting depth at start of simulation period
-        call SetSimulation_Zrini(real(undef_int, kind=dp))
+        call SetSimulation_Zrini(real(undef_int, kind=sp))
     else
         read(fhandle, *) Zrini_temp
         call SetSimulation_Zrini(Zrini_temp)
     end if
     read(fhandle, *) IniSurfaceStorage
     if (roundc(10*VersionNr, mold=1) < 32) then ! EC of the ini surface storage
-        call SetSimulation_ECStorageIni(0._dp)
+        call SetSimulation_ECStorageIni(0._sp)
     else
         read(fhandle, *) ECStorageIni_temp
         call SetSimulation_ECStorageIni(ECStorageIni_temp)
@@ -6588,7 +6587,7 @@ subroutine LoadInitialConditions(SWCiniFileFull, IniSurfaceStorage)
         if (roundc(10*VersionNr, mold=1) < 32) then ! ECe at the locations
             call SplitStringInTwoParams(StringParam, Loc_i_temp, &
                                                     VolProc_i_temp)
-            call SetSimulation_IniSWC_SaltECe_i(i, 0._dp)
+            call SetSimulation_IniSWC_SaltECe_i(i, 0._sp)
         else
             SaltECe_i_temp = GetSimulation_IniSWC_SaltECe_i(i)
             call SplitStringInThreeParams(StringParam, Loc_i_temp, &
@@ -6604,12 +6603,12 @@ end subroutine LoadInitialConditions
 
 
 subroutine AdjustSizeCompartments(CropZx)
-    real(dp), intent(in) :: CropZx
+    real(sp), intent(in) :: CropZx
 
     integer(int32) :: i , compi
-    real(dp) :: TotDepthC, fAdd
+    real(sp) :: TotDepthC, fAdd
     integer(int8) :: PrevNrComp
-    real(dp), dimension(max_No_Compartments) :: PrevThickComp, &
+    real(sp), dimension(max_No_Compartments) :: PrevThickComp, &
                                                 PrevVolPrComp, &
                                                 PrevECdSComp
 
@@ -6618,11 +6617,11 @@ subroutine AdjustSizeCompartments(CropZx)
     PrevNrComp = int(GetNrCompartments(), kind=int8)
     do compi = 1, PrevNrComp
         PrevThickComp(compi) = GetCompartment_Thickness(compi)
-        PrevVolPrComp(compi) = 100._dp*GetCompartment_Theta(compi)
+        PrevVolPrComp(compi) = 100._sp*GetCompartment_Theta(compi)
     end do
 
     ! 2. Actual total depth of compartments
-    TotDepthC = 0._dp
+    TotDepthC = 0._sp
     do i = 1, GetNrCompartments()
         TotDepthC = TotDepthC + GetCompartment_Thickness(i)
     end do
@@ -6646,33 +6645,33 @@ subroutine AdjustSizeCompartments(CropZx)
     end if
 
     ! 4. Adjust size of compartments (if total depth of compartments < rooting depth)
-    if ((TotDepthC + 0.00001_dp) < CropZx) then
+    if ((TotDepthC + 0.00001_sp) < CropZx) then
         call SetNrCompartments(12)
-        fAdd = (CropZx/0.1_dp - 12._dp)/78._dp
+        fAdd = (CropZx/0.1_sp - 12._sp)/78._sp
         do i = 1, 12
-            call SetCompartment_Thickness(i, 0.1 * (1._dp + i*fAdd))
+            call SetCompartment_Thickness(i, 0.1 * (1._sp + i*fAdd))
             call SetCompartment_Thickness(i, 0.05 &
                     * real(roundc(GetCompartment_Thickness(i) &
-                                    * 20._dp, mold=1), kind=dp))
+                                    * 20._sp, mold=1), kind=sp))
         end do
-        TotDepthC = 0._dp
+        TotDepthC = 0._sp
         do i = 1, GetNrCompartments()
             TotDepthC = TotDepthC + GetCompartment_Thickness(i)
         end do
-        if (TotDepthC < CropZx) then
+        if (CropZx - TotDepthC > ac_zero_threshold) then
             loop2: do
                 call SetCompartment_Thickness(12, &
                                         GetCompartment_Thickness(12) &
-                                                          + 0.05_dp)
-                TotDepthC = TotDepthC + 0.05_dp
+                                                          + 0.05_sp)
+                TotDepthC = TotDepthC + 0.05_sp
                 if (TotDepthC >= CropZx) exit loop2
             end do loop2
         else
-            do while ((TotDepthC - 0.04999999_dp) >= CropZx)
+            do while ((TotDepthC - 0.04999999_sp) >= CropZx)
                 call SetCompartment_Thickness(12, &
                                         GetCompartment_Thickness(12) &
-                                                          - 0.05_dp)
-                TotDepthC = TotDepthC - 0.05_dp
+                                                          - 0.05_sp)
+                TotDepthC = TotDepthC - 0.05_sp
             end do
         end if
     end if
@@ -6688,12 +6687,12 @@ subroutine CheckForKeepSWC(RunWithKeepSWC, ConstZrxForRun)
     !! If this file does not exist, the necessary information is gathered
     !! from the attributes of the Soil global variable instead.
     logical, intent(out) :: RunWithKeepSWC
-    real(dp), intent(out) :: ConstZrxForRun
+    real(sp), intent(out) :: ConstZrxForRun
 
     integer(int32) :: fhandlex, i, Runi, TotalNrOfRuns
     character(len=1025) :: FileName, FullFileName
-    real(dp) :: Zrni, Zrxi, ZrSoili
-    real(dp) :: VersionNrCrop
+    real(sp) :: Zrni, Zrxi, ZrSoili
+    real(sp) :: VersionNrCrop
     integer(int8) :: TheNrSoilLayers
     type(SoilLayerIndividual), dimension(max_SoilLayers) :: TheSoilLayer
     character(len=:), allocatable :: PreviousProfFilefull
@@ -6701,7 +6700,7 @@ subroutine CheckForKeepSWC(RunWithKeepSWC, ConstZrxForRun)
 
     ! 1. Initial settings
     RunWithKeepSWC = .false.
-    ConstZrxForRun = real(undef_int, kind=dp)
+    ConstZrxForRun = real(undef_int, kind=sp)
 
     ! 2. Look for restrictive soil layer
     ! restricted to run 1 since with KeepSWC,
@@ -6738,7 +6737,7 @@ subroutine CheckForKeepSWC(RunWithKeepSWC, ConstZrxForRun)
     end do
 
     if (RunWithKeepSWC .eqv. .false.) then
-        ConstZrxForRun = real(undef_int, kind=dp) ! reset
+        ConstZrxForRun = real(undef_int, kind=sp) ! reset
     end if
 
     ! 4. Look for maximum root zone depth IF RunWithKeepSWC
@@ -6776,7 +6775,7 @@ subroutine CheckForKeepSWC(RunWithKeepSWC, ConstZrxForRun)
 
             ZrSoili = RootMaxInSoilProfile(Zrxi, TheNrSoilLayers, &
                                            TheSoilLayer)
-            if (real(ZrSoili, kind=dp) > ConstZrxForRun) then
+            if (real(ZrSoili, kind=sp) > ConstZrxForRun) then
                 ConstZrxForRun = ZrSoili
             end if
 
@@ -7144,7 +7143,7 @@ logical function LeapYear(Year)
     integer(int32), intent(in) :: Year
 
     LeapYear = .false.
-    if (frac(Year/4._dp) <= 0.01_dp) then
+    if (frac(Year/4._sp) <= 0.01_sp) then
         LeapYear = .true.
     end if
 
@@ -7152,8 +7151,8 @@ logical function LeapYear(Year)
     contains
 
 
-    real(dp) function frac(val)
-        real(dp), intent(in) :: val
+    real(sp) function frac(val)
+        real(sp), intent(in) :: val
 
         frac = val - floor(val)
     end function frac
@@ -7199,31 +7198,31 @@ subroutine GlobalZero(SumWabal)
 
     integer(int32) :: i
 
-    SumWabal%Epot = 0.0_dp
-    SumWabal%Tpot = 0.0_dp
-    SumWabal%Rain = 0.0_dp
-    SumWabal%Irrigation = 0.0_dp
-    SumWabal%Infiltrated = 0.0_dp
-    SumWabal%Runoff = 0.0_dp
-    SumWabal%Drain = 0.0_dp
-    SumWabal%Eact = 0.0_dp
-    SumWabal%Tact = 0.0_dp
-    SumWabal%TrW = 0.0_dp
-    SumWabal%ECropCycle = 0.0_dp
-    SumWabal%Biomass = 0._dp
-    SumWabal%BiomassPot = 0._dp
-    SumWabal%BiomassUnlim = 0._dp
-    SumWabal%BiomassTot = 0._dp ! crop and weeds (for soil fertility stress)
-    SumWabal%YieldPart = 0._dp
-    SumWabal%SaltIn = 0._dp
-    SumWabal%SaltOut = 0._dp
-    SumWabal%CRwater = 0._dp
-    SumWabal%CRsalt = 0._dp
-    call SetTotalWaterContent_BeginDay(0._dp)
+    SumWabal%Epot = 0.0_sp
+    SumWabal%Tpot = 0.0_sp
+    SumWabal%Rain = 0.0_sp
+    SumWabal%Irrigation = 0.0_sp
+    SumWabal%Infiltrated = 0.0_sp
+    SumWabal%Runoff = 0.0_sp
+    SumWabal%Drain = 0.0_sp
+    SumWabal%Eact = 0.0_sp
+    SumWabal%Tact = 0.0_sp
+    SumWabal%TrW = 0.0_sp
+    SumWabal%ECropCycle = 0.0_sp
+    SumWabal%Biomass = 0._sp
+    SumWabal%BiomassPot = 0._sp
+    SumWabal%BiomassUnlim = 0._sp
+    SumWabal%BiomassTot = 0._sp ! crop and weeds (for soil fertility stress)
+    SumWabal%YieldPart = 0._sp
+    SumWabal%SaltIn = 0._sp
+    SumWabal%SaltOut = 0._sp
+    SumWabal%CRwater = 0._sp
+    SumWabal%CRsalt = 0._sp
+    call SetTotalWaterContent_BeginDay(0._sp)
 
     do i =1, GetNrCompartments()
         call SetTotalWaterContent_BeginDay(GetTotalWaterContent_BeginDay() + &
-        GetCompartment_theta(i)*1000._dp*GetCompartment_Thickness(i))
+        GetCompartment_theta(i)*1000._sp*GetCompartment_Thickness(i))
     end do
 end subroutine GlobalZero
 
@@ -7302,7 +7301,7 @@ subroutine CheckFilesInProject(Runi, AllOK, FileOK)
 end subroutine CheckFilesInProject
 
 
-real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
+real(sp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
                                      SumGDD, Zmin, Zmax, ShapeFactor,&
                                      TypeDays)
     integer(int32), intent(in) :: DAP
@@ -7311,13 +7310,13 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
     integer(int32), intent(in) :: L1234
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDLZmax
-    real(dp), intent(in) :: SumGDD
-    real(dp), intent(in) :: Zmin
-    real(dp), intent(in) :: Zmax
+    real(sp), intent(in) :: SumGDD
+    real(sp), intent(in) :: Zmin
+    real(sp), intent(in) :: Zmax
     integer(int8), intent(in) :: ShapeFactor
     integer(intEnum), intent(in) :: TypeDays
 
-    real(dp) :: Zini, Zr
+    real(sp) :: Zini, Zr
     integer(int32) :: VirtualDay, T0, rootmax_rounded, zmax_rounded
 
     select case (TypeDays)
@@ -7331,7 +7330,7 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
     ! restrictive soil layer
     call SetSimulation_SCor(1._sp)
 
-    rootmax_rounded = roundc(real(GetSoil_RootMax()*1000, kind=dp), &
+    rootmax_rounded = roundc(real(GetSoil_RootMax()*1000, kind=sp), &
                              mold=rootmax_rounded)
     zmax_rounded = roundc(Zmax*1000, mold=zmax_rounded)
 
@@ -7346,13 +7345,13 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
     contains
 
 
-    real(dp) function ActualRootingDepthDays(DAP, L0, LZmax, L1234, Zmin, Zmax)
+    real(sp) function ActualRootingDepthDays(DAP, L0, LZmax, L1234, Zmin, Zmax)
         integer(int32), intent(in) :: DAP
         integer(int32), intent(in) :: L0
         integer(int32), intent(in) :: LZmax
         integer(int32), intent(in) :: L1234
-        real(dp), intent(in) :: Zmin
-        real(dp), intent(in) :: Zmax
+        real(sp), intent(in) :: Zmin
+        real(sp), intent(in) :: Zmax
 
         ! Actual rooting depth at the end of Dayi
         VirtualDay = DAP - GetSimulation_DelayedDays()
@@ -7362,17 +7361,17 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
         elseif (VirtualDay >= LZmax) then
             ActualRootingDepthDays = Zmax
         elseif (Zmin < Zmax) then
-            Zini = ZMin * (GetSimulParam_RootPercentZmin()/100._dp)
-            T0 = roundc(L0/2._dp, mold=T0)
+            Zini = ZMin * (GetSimulParam_RootPercentZmin()/100._sp)
+            T0 = roundc(L0/2._sp, mold=T0)
 
             if (LZmax <= T0) then
-                Zr = Zini + (Zmax-Zini)*VirtualDay*1._dp/LZmax
+                Zr = Zini + (Zmax-Zini)*VirtualDay*1._sp/LZmax
             elseif (VirtualDay <= T0) then
                 Zr = Zini
             else
                 Zr = Zini + (Zmax-Zini) &
-                     * TimeRootFunction(real(VirtualDay, kind=dp), ShapeFactor,&
-                                        real(LZmax, kind=dp), real(T0, kind=dp))
+                     * TimeRootFunction(real(VirtualDay, kind=sp), ShapeFactor,&
+                                        real(LZmax, kind=sp), real(T0, kind=sp))
             end if
 
             if (Zr > ZMin) then
@@ -7386,17 +7385,17 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
     end function ActualRootingDepthDays
 
 
-    real(dp) function ActualRootingDepthGDDays(DAP, L1234, GDDL0, GDDLZmax, &
+    real(sp) function ActualRootingDepthGDDays(DAP, L1234, GDDL0, GDDLZmax, &
                                                SumGDD, Zmin, Zmax)
         integer(int32), intent(in) :: DAP
         integer(int32), intent(in) :: L1234
         integer(int32), intent(in) :: GDDL0
         integer(int32), intent(in) :: GDDLZmax
-        real(dp), intent(in) :: SumGDD
-        real(dp), intent(in) :: Zmin
-        real(dp), intent(in) :: Zmax
+        real(sp), intent(in) :: SumGDD
+        real(sp), intent(in) :: Zmin
+        real(sp), intent(in) :: Zmax
 
-        real(dp) :: GDDT0
+        real(sp) :: GDDT0
 
         ! after sowing the crop has roots even when SumGDD = 0
         VirtualDay = DAP - GetSimulation_DelayedDays()
@@ -7406,8 +7405,8 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
         elseif (SumGDD >= GDDLZmax) then
             ActualRootingDepthGDDays = Zmax
         elseif (Zmin < Zmax) then
-            Zini = ZMin * (GetSimulParam_RootPercentZmin()/100._dp)
-            GDDT0 = GDDL0/2._dp
+            Zini = ZMin * (GetSimulParam_RootPercentZmin()/100._sp)
+            GDDT0 = GDDL0/2._sp
 
             if (GDDLZmax <= GDDT0) then
                 Zr = Zini + (Zmax-Zini)*SumGDD/GDDLZmax
@@ -7417,7 +7416,7 @@ real(dp) function ActualRootingDepth(DAP, L0, LZmax, L1234, GDDL0, GDDLZmax, &
                 else
                     Zr = Zini + (Zmax-Zini) &
                          * TimeRootFunction(SumGDD, ShapeFactor, &
-                                            real(GDDLZmax, kind=dp), GDDT0)
+                                            real(GDDLZmax, kind=sp), GDDT0)
                 end if
             end if
 
@@ -7441,27 +7440,27 @@ subroutine DesignateSoilLayerToCompartments(NrCompartments, NrSoilLayers, &
                                         intent(inout) :: Compartment
 
     integer(int32) :: i, layeri, compi
-    real(dp) :: depth, depthi
+    real(sp) :: depth, depthi
     logical :: finished, NextLayer
 
-    depth = 0._dp
-    depthi = 0._dp
+    depth = 0._sp
+    depthi = 0._sp
     layeri = 1
     compi = 1
 
     outer_loop: do
         depth = depth + GetSoilLayer_Thickness(layeri)
         inner_loop: do
-            depthi = depthi + Compartment(compi)%Thickness/2._dp
+            depthi = depthi + Compartment(compi)%Thickness/2._sp
 
             if (depthi <= depth) then
                 Compartment(compi)%Layer = layeri
                 NextLayer = .false.
-                depthi = depthi + Compartment(compi)%Thickness/2._dp
+                depthi = depthi + Compartment(compi)%Thickness/2._sp
                 compi = compi + 1
                 finished = (compi > NrCompartments)
             else
-                depthi = depthi - Compartment(compi)%Thickness/2._dp
+                depthi = depthi - Compartment(compi)%Thickness/2._sp
                 NextLayer = .true.
                 layeri = layeri + 1
                 finished = (layeri > NrSoilLayers)
@@ -7494,7 +7493,7 @@ subroutine specify_soil_layer(NrCompartments, NrSoilLayers, SoilLayer, &
     type(rep_Content), intent(inout) :: TotalWaterContent
 
     integer(int32) :: layeri, compi, celli
-    real(dp) :: Total
+    real(sp) :: Total
 
     call DesignateSoilLayerToCompartments(NrCompartments, NrSoilLayers, &
                                           Compartment)
@@ -7502,29 +7501,29 @@ subroutine specify_soil_layer(NrCompartments, NrSoilLayers, SoilLayer, &
     ! Set soil layers and compartments at Field Capacity and determine Watercontent (mm)
     ! No salinity in soil layers and compartmens
     ! Absence of ground water table (FCadj = FC)
-    Total = 0._dp
+    Total = 0._sp
     do layeri = 1, NrSoilLayers
-        SoilLayer(layeri)%WaterContent = 0._dp
+        SoilLayer(layeri)%WaterContent = 0._sp
     end do
 
     do compi = 1, NrCompartments
-        Compartment(compi)%Theta = SoilLayer(Compartment(compi)%Layer)%FC/100._dp
+        Compartment(compi)%Theta = SoilLayer(Compartment(compi)%Layer)%FC/100._sp
         Compartment(compi)%FCadj = SoilLayer(Compartment(compi)%Layer)%FC
         Compartment(compi)%DayAnaero = 0
 
         do celli = 1, SoilLayer(Compartment(compi)%Layer)%SCP1
             ! salinity in cells
-            Compartment(compi)%Salt(celli) = 0.0_dp
-            Compartment(compi)%Depo(celli) = 0.0_dp
+            Compartment(compi)%Salt(celli) = 0.0_sp
+            Compartment(compi)%Depo(celli) = 0.0_sp
         end do
 
         call SetSimulation_ThetaIni_i(compi, Compartment(compi)%Theta)
-        call SetSimulation_ECeIni_i(compi, 0._dp) ! initial soil salinity in dS/m
+        call SetSimulation_ECeIni_i(compi, 0._sp) ! initial soil salinity in dS/m
 
         SoilLayer(Compartment(compi)%Layer)%WaterContent = &
                 SoilLayer(Compartment(compi)%Layer)%WaterContent &
-                + GetSimulation_ThetaIni_i(compi)*100._dp &
-                             *10._dp*Compartment(compi)%Thickness
+                + GetSimulation_ThetaIni_i(compi)*100._sp &
+                             *10._sp*Compartment(compi)%Thickness
     end do
 
     do layeri = 1, NrSoilLayers
@@ -7544,13 +7543,13 @@ subroutine Calculate_Saltmobility(layer, SaltDiffusion, Macro, Mobil)
     integer(int32), intent(in) :: layer
     integer(int8), intent(in) :: SaltDiffusion
     integer(int8), intent(in) :: Macro
-    real(dp), dimension(11), intent(inout) :: Mobil
+    real(sp), dimension(11), intent(inout) :: Mobil
 
     integer(int32) :: i, CelMax
-    real(dp) :: Mix, a, b, xi, yi, UL
+    real(sp) :: Mix, a, b, xi, yi, UL
 
-    Mix = SaltDiffusion/100._dp ! global salt mobility expressed as a fraction
-    UL = GetSoilLayer_UL(layer) * 100._dp ! upper limit in VOL% of SC cell
+    Mix = SaltDiffusion/100._sp ! global salt mobility expressed as a fraction
+    UL = GetSoilLayer_UL(layer) * 100._sp ! upper limit in VOL% of SC cell
 
     ! 1. convert Macro (vol%) in SaltCelNumber
     if (Macro > UL) then
@@ -7564,39 +7563,39 @@ subroutine Calculate_Saltmobility(layer, SaltDiffusion, Macro, Mobil)
     end if
 
     ! 2. find a and b
-    if (Mix < 0.5_dp) then
-        a = Mix * 2._dp
-        b = exp(10._dp*(0.5_dp-Mix)*log(10._dp))
+    if (Mix < 0.5_sp) then
+        a = Mix * 2._sp
+        b = exp(10._sp*(0.5_sp-Mix)*log(10._sp))
     else
-        a = 2._dp * (1._dp - Mix)
-        b = exp(10._dp*(Mix-0.5_dp)*log(10._dp))
+        a = 2._sp * (1._sp - Mix)
+        b = exp(10._sp*(Mix-0.5_sp)*log(10._sp))
     end if
 
     ! 3. calculate mobility for cells = 1 to Macro
     do i = 1, CelMax-1
-        xi = i *1._dp / (CelMax-1)
+        xi = i *1._sp / (CelMax-1)
 
-        if (Mix > 0._dp) then
-            if (Mix < 0.5_dp) then
+        if (Mix > 0._sp) then
+            if (Mix < 0.5_sp) then
                 yi = exp(log(a)+xi*log(b))
                 Mobil(i) = (yi-a)/(a*b-a)
-            elseif ((Mix >= 0.5_dp - epsilon(0.0_dp)) &
-                    .and. (Mix <= 0.5_dp + epsilon(0.0_dp)))  then
+            elseif ((Mix >= 0.5_sp - epsilon(0.0_sp)) &
+                    .and. (Mix <= 0.5_sp + epsilon(0.0_sp)))  then
                 Mobil(i) = xi
-            elseif (Mix < 1._dp) then
-                yi = exp(log(a)+(1._dp-xi)*log(b))
-                Mobil(i) = 1._dp - (yi-a)/(a*b-a)
+            elseif (Mix < 1._sp) then
+                yi = exp(log(a)+(1._sp-xi)*log(b))
+                Mobil(i) = 1._sp - (yi-a)/(a*b-a)
             else
-                Mobil(i) = 1._dp
+                Mobil(i) = 1._sp
             end if
         else
-            Mobil(i) = 0._dp
+            Mobil(i) = 0._sp
         end if
     end do
 
     ! 4. Saltmobility between Macro and SAT
     do i = CelMax, GetSoilLayer_SCP1(layer)
-        Mobil(i) = 1._dp
+        Mobil(i) = 1._sp
     end do
 end subroutine Calculate_Saltmobility
 
@@ -7638,11 +7637,11 @@ subroutine LoadProfile(FullName)
     integer :: fhandle
     integer(int32) :: i
     character(len=3) :: blank
-    real(dp) :: VersionNr
+    real(sp) :: VersionNr
     integer(int8) :: TempShortInt
     character(len=1024) :: ProfDescriptionLocal
-    real(dp) :: thickness_temp, SAT_temp, FC_temp, WP_temp, infrate_temp
-    real(dp) :: cra_temp, crb_temp
+    real(sp) :: thickness_temp, SAT_temp, FC_temp, WP_temp, infrate_temp
+    real(sp) :: cra_temp, crb_temp
     character(len=25) :: description_temp
     integer(int8) :: penetrability_temp, gravelm_temp
 
@@ -7676,7 +7675,7 @@ subroutine LoadProfile(FullName)
             call SetSoilLayer_Penetrability(i, 100_int8)
             call SetSoilLayer_GravelMass(i, 0_int8)
             ! determine volume gravel
-            call SetSoilLayer_GravelVol(i, 0._dp)
+            call SetSoilLayer_GravelVol(i, 0._sp)
         else
             if (roundc(VersionNr*10, mold=1) < 60) then
                             ! UPDATE required for Version 6.0
@@ -7695,7 +7694,7 @@ subroutine LoadProfile(FullName)
                 call SetSoilLayer_Penetrability(i, 100_int8)
                 call SetSoilLayer_GravelMass(i, 0_int8)
                 ! determine volume gravel
-                call SetSoilLayer_GravelVol(i, 0._dp)
+                call SetSoilLayer_GravelVol(i, 0._sp)
             else
                 read(fhandle, *) thickness_temp, SAT_temp, FC_temp, WP_temp, &
                                  infrate_temp, penetrability_temp, &
@@ -7727,26 +7726,26 @@ end subroutine LoadProfile
 subroutine LoadProfileProcessing(VersionNr)
     !! Further initializations after soil profile attributes have been set
     !! (e.g. via a call to LoadProfile()).
-    real(dp), intent(in) :: VersionNr
+    real(sp), intent(in) :: VersionNr
         !! AquaCrop Version (e.g. 7.0)
 
     integer(int32) :: i
-    real(dp) :: cra_temp, crb_temp, dx_temp
-    real(dp), dimension(11) :: saltmob_temp
+    real(sp) :: cra_temp, crb_temp, dx_temp
+    real(sp), dimension(11) :: saltmob_temp
 
-    call SetSimulation_SurfaceStorageIni(0.0_dp)
-    call SetSimulation_ECStorageIni(0.0_dp)
+    call SetSimulation_SurfaceStorageIni(0.0_sp)
+    call SetSimulation_ECStorageIni(0.0_sp)
 
     do i = 1, GetSoil_NrSoilLayers()
         ! determine drainage coefficient
         call SetSoilLayer_tau(i, TauFromKsat(GetSoilLayer_InfRate(i)))
 
         ! determine number of salt cells based on infiltration rate
-        if (GetSoilLayer_InfRate(i) <= 112._dp) then
+        if (GetSoilLayer_InfRate(i) <= 112._sp) then
             call SetSoilLayer_SCP1(i, 11_int8)
         else
             call SetSoilLayer_SCP1(i, &
-                            roundc(1.6_dp + 1000._dp/GetSoilLayer_InfRate(i), &
+                            roundc(1.6_sp + 1000._sp/GetSoilLayer_InfRate(i), &
                                    mold=1_int8))
             if (GetSoilLayer_SCP1(i) < 2_int8) then
                 call SetSoilLayer_SCP1(i, 2_int8)
@@ -7756,8 +7755,8 @@ subroutine LoadProfileProcessing(VersionNr)
         ! determine parameters for soil salinity
         call SetSoilLayer_SC(i, GetSoilLayer_SCP1(i) - 1_int8)
         call SetSoilLayer_Macro(i, roundc(GetSoilLayer_FC(i), mold=1_int8))
-        call SetSoilLayer_UL(i, ((GetSoilLayer_SAT(i))/100._dp) &
-                    * (GetSoilLayer_SC(i)/(GetSoilLayer_SC(i)+2._dp))) ! m3/m3
+        call SetSoilLayer_UL(i, ((GetSoilLayer_SAT(i))/100._sp) &
+                    * (GetSoilLayer_SC(i)/(GetSoilLayer_SC(i)+2._sp))) ! m3/m3
         dx_temp = (GetSoilLayer_UL(i))/GetSoilLayer_SC(i)
         call SetSoilLayer_Dx(i, dx_temp)  ! m3/m3
 
@@ -7791,132 +7790,132 @@ end subroutine LoadProfileProcessing
 
 
 subroutine DetermineRootZoneWC(RootingDepth, ZtopSWCconsidered)
-    real(dp), intent(in) :: RootingDepth
+    real(sp), intent(in) :: RootingDepth
     logical, intent(inout) :: ZtopSWCconsidered
 
 
-    real(dp) :: CumDepth, Factor, frac_value, DrRel, DZtopRel, TopSoilInMeter
+    real(sp) :: CumDepth, Factor, frac_value, DrRel, DZtopRel, TopSoilInMeter
     integer(int32) :: compi
 
     ! calculate SWC in root zone
-    CumDepth = 0._dp
+    CumDepth = 0._sp
     compi = 0
-    call SetRootZoneWC_Actual(0._dp)
-    call SetRootZoneWC_FC(0._dp)
-    call SetRootZoneWC_WP(0._dp)
-    call SetRootZoneWC_SAT(0._dp)
-    call SetRootZoneWC_Leaf(0._dp)
-    call SetRootZoneWC_Thresh(0._dp)
-    call SetRootZoneWC_Sen(0._dp)
+    call SetRootZoneWC_Actual(0._sp)
+    call SetRootZoneWC_FC(0._sp)
+    call SetRootZoneWC_WP(0._sp)
+    call SetRootZoneWC_SAT(0._sp)
+    call SetRootZoneWC_Leaf(0._sp)
+    call SetRootZoneWC_Thresh(0._sp)
+    call SetRootZoneWC_Sen(0._sp)
     loop: do
         compi = compi + 1
         CumDepth = CumDepth + GetCompartment_Thickness(compi)
         if (CumDepth <= RootingDepth) then
-            Factor = 1._dp
+            Factor = 1._sp
         else
             frac_value = RootingDepth - (CumDepth - GetCompartment_Thickness(compi))
-            if (frac_value > 0._dp) then
+            if (frac_value > 0._sp) then
                 Factor = frac_value/GetCompartment_Thickness(compi)
             else
-                Factor = 0._dp
+                Factor = 0._sp
             end if
         end if
-        call SetRootZoneWC_Actual(GetRootZoneWC_Actual() + Factor * 1000._dp * &
+        call SetRootZoneWC_Actual(GetRootZoneWC_Actual() + Factor * 1000._sp * &
              GetCompartment_Theta(compi) * GetCompartment_Thickness(compi)* &
-             (1._dp - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_FC(GetRootZoneWC_FC() + Factor * 10._dp * &
+             (1._sp - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_FC(GetRootZoneWC_FC() + Factor * 10._sp * &
              GetSoilLayer_FC(GetCompartment_Layer(compi)) * &
-             GetCompartment_Thickness(compi) * (1._dp - &
-             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_Leaf(GetRootZoneWC_Leaf() + Factor * 10._dp * &
+             GetCompartment_Thickness(compi) * (1._sp - &
+             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_Leaf(GetRootZoneWC_Leaf() + Factor * 10._sp * &
              GetCompartment_Thickness(compi) * &
              (GetSoilLayer_FC(GetCompartment_Layer(compi)) - GetCrop_pLeafAct() &
              * (GetSoilLayer_FC(GetCompartment_Layer(compi))- &
-             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._dp &
-             - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_Thresh(GetRootZoneWC_Thresh() + Factor * 10._dp * &
+             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._sp &
+             - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_Thresh(GetRootZoneWC_Thresh() + Factor * 10._sp * &
              GetCompartment_Thickness(compi) * &
              (GetSoilLayer_FC(GetCompartment_Layer(compi)) - GetCrop_pActStom() &
              * (GetSoilLayer_FC(GetCompartment_Layer(compi))- &
-             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._dp - &
-             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_Sen(GetRootZoneWC_Sen() + Factor * 10._dp * &
+             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._sp - &
+             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_Sen(GetRootZoneWC_Sen() + Factor * 10._sp * &
              GetCompartment_Thickness(compi) * &
              (GetSoilLayer_FC(GetCompartment_Layer(compi)) - GetCrop_pSenAct() &
              * (GetSoilLayer_FC(GetCompartment_Layer(compi))- &
-             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._dp - &
-             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_WP(GetRootZoneWC_WP() + Factor * 10._dp * &
+             GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._sp - &
+             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_WP(GetRootZoneWC_WP() + Factor * 10._sp * &
              GetSoilLayer_WP(GetCompartment_Layer(compi))* &
-             GetCompartment_Thickness(compi)* (1._dp - &
-             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-        call SetRootZoneWC_SAT(GetRootZoneWC_SAT()+ Factor * 10._dp * &
+             GetCompartment_Thickness(compi)* (1._sp - &
+             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+        call SetRootZoneWC_SAT(GetRootZoneWC_SAT()+ Factor * 10._sp * &
              GetSoilLayer_SAT(GetCompartment_Layer(compi)) * &
-             GetCompartment_Thickness(compi) * (1._dp - &
-             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
+             GetCompartment_Thickness(compi) * (1._sp - &
+             GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
         if ((CumDepth >= RootingDepth) .or. (compi == NrCompartments)) exit loop
     end do loop
     ! calculate SWC in top soil (top soil in meter = SimulParam.ThicknessTopSWC/100)
-    if ((RootingDepth*100._dp) <= GetSimulParam_ThicknessTopSWC()) then
+    if ((RootingDepth*100._sp) <= GetSimulParam_ThicknessTopSWC()) then
         call SetRootZoneWC_ZtopAct(GetRootZoneWC_Actual())
         call SetRootZoneWC_ZtopFC(GetRootZoneWC_FC())
         call SetRootZoneWC_ZtopWP(GetRootZoneWC_WP())
         call SetRootZoneWC_ZtopThresh(GetRootZoneWC_Thresh())
     else
-        CumDepth = 0._dp
+        CumDepth = 0._sp
         compi = 0
-        call SetRootZoneWC_ZtopAct(0._dp)
-        call SetRootZoneWC_ZtopFC(0._dp)
-        call SetRootZoneWC_ZtopWP(0._dp)
-        call SetRootZoneWC_ZtopThresh(0._dp)
-        TopSoilInMeter = GetSimulParam_ThicknessTopSWC()/100._dp
+        call SetRootZoneWC_ZtopAct(0._sp)
+        call SetRootZoneWC_ZtopFC(0._sp)
+        call SetRootZoneWC_ZtopWP(0._sp)
+        call SetRootZoneWC_ZtopThresh(0._sp)
+        TopSoilInMeter = GetSimulParam_ThicknessTopSWC()/100._sp
         loop_2: do
             compi = compi + 1
             CumDepth = CumDepth + GetCompartment_Thickness(compi)
-            if ((CumDepth*100._dp) <= GetSimulParam_ThicknessTopSWC()) then
-                Factor = 1._dp
+            if ((CumDepth*100._sp) <= GetSimulParam_ThicknessTopSWC()) then
+                Factor = 1._sp
             else
                 frac_value = TopSoilInMeter - (CumDepth - GetCompartment_Thickness(compi))
-                if (frac_value > 0._dp) then
+                if (frac_value > 0._sp) then
                     Factor = frac_value/GetCompartment_Thickness(compi)
                 else
-                    Factor = 0._dp
+                    Factor = 0._sp
                 end if
             end if
             call SetRootZoneWC_ZtopAct(GetRootZoneWC_ZtopAct() + Factor * &
-                 1000._dp * GetCompartment_Theta(compi) * &
-                 GetCompartment_Thickness(compi) * (1._dp - &
-                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-            call SetRootZoneWC_ZtopFC(GetRootZoneWC_ZtopFC() + Factor * 10._dp &
+                 1000._sp * GetCompartment_Theta(compi) * &
+                 GetCompartment_Thickness(compi) * (1._sp - &
+                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+            call SetRootZoneWC_ZtopFC(GetRootZoneWC_ZtopFC() + Factor * 10._sp &
                  * GetSoilLayer_FC(GetCompartment_Layer(compi)) * &
-                 GetCompartment_Thickness(compi) * (1._dp - &
-                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-            call SetRootZoneWC_ZtopWP(GetRootZoneWC_ZtopWP() + Factor * 10._dp &
+                 GetCompartment_Thickness(compi) * (1._sp - &
+                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+            call SetRootZoneWC_ZtopWP(GetRootZoneWC_ZtopWP() + Factor * 10._sp &
                  * GetSoilLayer_WP(GetCompartment_Layer(compi)) * &
-                 GetCompartment_Thickness(compi) * (1._dp - &
-                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
+                 GetCompartment_Thickness(compi) * (1._sp - &
+                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
             call SetRootZoneWC_ZtopThresh(GetRootZoneWC_ZtopThresh() + Factor * &
-                 10._dp * GetCompartment_Thickness(compi) * &
+                 10._sp * GetCompartment_Thickness(compi) * &
                  (GetSoilLayer_FC(GetCompartment_Layer(compi))  - &
                  GetCrop_pActStom() * (GetSoilLayer_FC(GetCompartment_Layer(compi)) &
-                 -GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._dp - &
-                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
+                 -GetSoilLayer_WP(GetCompartment_Layer(compi)))) * (1._sp - &
+                 GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
             if ((CumDepth >= TopSoilInMeter) .or. (compi == NrCompartments)) exit loop_2
         end do loop_2
     end if
 
     ! Relative depletion in rootzone and in top soil
-    if (roundc(1000._dp*(GetRootZoneWc_FC() - GetRootZoneWc_WP()), mold=1) > 0) then
+    if (roundc(1000._sp*(GetRootZoneWc_FC() - GetRootZoneWc_WP()), mold=1) > 0) then
         DrRel = (GetRootZoneWc_FC() - GetRootZoneWC_Actual())/(GetRootZoneWc_FC() &
                                                           - GetRootZoneWc_WP())
     else
-        DrRel = 0._dp
+        DrRel = 0._sp
     end if
-    if (roundc(1000._dp*(GetRootZoneWC_ZtopFC() - GetRootZoneWc_ZtopWP()),mold=1) > 0) then
+    if (roundc(1000._sp*(GetRootZoneWC_ZtopFC() - GetRootZoneWc_ZtopWP()),mold=1) > 0) then
         DZtopRel = (GetRootZoneWC_ZtopFC() - GetRootZoneWc_ZtopAct())/ &
                               (GetRootZoneWC_ZtopFC() - GetRootZoneWc_ZtopWP())
     else
-        DZtopRel = 0._dp
+        DZtopRel = 0._sp
     end if
 
     ! Zone in soil profile considered for determining stress response
@@ -7938,88 +7937,88 @@ subroutine CalculateETpot(DAP, L0, L12, L123, LHarvest, DayLastCut, CCi, &
     integer(int32), intent(in) :: L123
     integer(int32), intent(in) :: LHarvest
     integer(int32), intent(in) :: DayLastCut
-    real(dp), intent(in) :: CCi
-    real(dp), intent(in) :: EToVal
-    real(dp), intent(in) :: KcVal
-    real(dp), intent(in) :: KcDeclineVal
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CCxWithered
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: CO2i
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(in) :: TempGDtranspLow
-    real(dp), intent(inout) :: TpotVal
-    real(dp), intent(inout) :: EpotVal
+    real(sp), intent(in) :: CCi
+    real(sp), intent(in) :: EToVal
+    real(sp), intent(in) :: KcVal
+    real(sp), intent(in) :: KcDeclineVal
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CCxWithered
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: CO2i
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(in) :: TempGDtranspLow
+    real(sp), intent(inout) :: TpotVal
+    real(sp), intent(inout) :: EpotVal
 
-    real(dp) :: KcVal_local
-    real(dp) :: EpotMin, EpotMax, CCiAdjusted, Multiplier, KsTrCold
+    real(sp) :: KcVal_local
+    real(sp) :: EpotMin, EpotMax, CCiAdjusted, Multiplier, KsTrCold
     integer(int32) :: VirtualDay
 
     ! CalculateETpot
     VirtualDay = DAP - GetSimulation_DelayedDays()
-    if (((VirtualDay < L0) .and. (roundc(100._dp*CCi, mold=1) == 0)) &
+    if (((VirtualDay < L0) .and. (roundc(100._sp*CCi, mold=1) == 0)) &
                           .or. (VirtualDay > LHarvest)) then
         ! To handlle Forage crops: Round(100*CCi) = 0
-        TpotVal = 0._dp
+        TpotVal = 0._sp
         EpotVal = GetSimulParam_KcWetBare()*EToVal
     else
         ! Correction for micro-advection
-        CCiAdjusted = 1.72_dp*CCi - 1._dp*(CCi*CCi) + 0.30_dp*(CCi*CCi*CCi)
-        if (CCiAdjusted < epsilon(1._dp)) then
-            CCiAdjusted = 0._dp
+        CCiAdjusted = 1.72_sp*CCi - 1._sp*(CCi*CCi) + 0.30_sp*(CCi*CCi*CCi)
+        if (CCiAdjusted < epsilon(1._sp)) then
+            CCiAdjusted = 0._sp
         end if
-        if (CCiAdjusted > 1._dp) then
-            CCiAdjusted = 1._dp
+        if (CCiAdjusted > 1._sp) then
+            CCiAdjusted = 1._sp
         end if
 
         ! Correction for ageing effects - is a function of calendar days
         if ((VirtualDay-DayLastCut) > (L12+5)) then
-            KcVal_local = KcVal - (VirtualDay-DayLastCut-(L12+5._dp)) &
-                        * (KcDeclineVal/100._dp)*CCxWithered
+            KcVal_local = KcVal - (VirtualDay-DayLastCut-(L12+5._sp)) &
+                        * (KcDeclineVal/100._sp)*CCxWithered
         else
             KcVal_local = KcVal
         end if
 
         ! Correction for elevated atmospheric CO2 concentration
-        if (CO2i > 369.41_dp) then
+        if (CO2i > 369.41_sp) then
             KcVal_local = KcVal_local * &
-                    (1._dp - 0.05_dp * (CO2i-369.41_dp)/(550._dp-369.41_dp))
+                    (1._sp - 0.05_sp * (CO2i-369.41_sp)/(550._sp-369.41_sp))
         end if
 
         ! Correction for Air temperature stress
         if ((CCiAdjusted <= ac_zero_threshold) &
             .or. (roundc(GDDayi, mold=1) < 0)) then
-            KsTrCold = 1._dp
+            KsTrCold = 1._sp
         else
-            KsTrCold = KsTemperature(0._dp, TempGDtranspLow, GDDayi)
+            KsTrCold = KsTemperature(0._sp, TempGDtranspLow, GDDayi)
         end if
 
         ! First estimate of Epot and Tpot
         TpotVal = CCiAdjusted * KsTrCold * KcVal_local * EToVal
-        EpotVal = GetSimulParam_KcWetBare() * (1._dp - CCiAdjusted) * EToVal
+        EpotVal = GetSimulParam_KcWetBare() * (1._sp - CCiAdjusted) * EToVal
 
         ! Maximum Epot with withered canopy as a result of (early) senescence
         EpotMax = GetSimulParam_KcWetBare() * EToVal * &
-                        (1._dp - CCxWithered * CCEffectProcent/100._dp)
+                        (1._sp - CCxWithered * CCEffectProcent/100._sp)
 
         ! Correction Epot for dying crop in late-season stage
-        if ((VirtualDay > L123) .and. (CCx > epsilon(1._dp))) then
-            if (CCi > (CCx/2._dp)) then
+        if ((VirtualDay > L123) .and. (CCx > epsilon(1._sp))) then
+            if (CCi > (CCx/2._sp)) then
                 ! not yet full effect
                 if (CCi > CCx) then
-                    Multiplier = 0._dp  ! no effect
+                    Multiplier = 0._sp  ! no effect
                 else
-                    Multiplier = (CCx-CCi)/(CCx/2._dp)
+                    Multiplier = (CCx-CCi)/(CCx/2._sp)
                 end if
             else
-                Multiplier = 1._dp ! full effect
+                Multiplier = 1._sp ! full effect
             end if
-            EpotVal = EpotVal * (1._dp - CCx * (CCEffectProcent/100._dp) * Multiplier)
+            EpotVal = EpotVal * (1._sp - CCx * (CCEffectProcent/100._sp) * Multiplier)
             EpotMin = GetSimulParam_KcWetBare() &
-                      * (1._dp - 1.72_dp*CCx + 1._dp*(CCx*CCx) &
-                            - 0.30_dp*(CCx*CCx*CCx)) * EToVal
-            if (EpotMin < epsilon(1._dp)) then
-                EpotMin = 0._dp
+                      * (1._sp - 1.72_sp*CCx + 1._sp*(CCx*CCx) &
+                            - 0.30_sp*(CCx*CCx*CCx)) * EToVal
+            if (EpotMin < epsilon(1._sp)) then
+                EpotMin = 0._sp
             end if
             if (EpotVal < EpotMin) then
                 EpotVal = EpotMin
@@ -8038,7 +8037,7 @@ subroutine CalculateETpot(DAP, L0, L12, L123, LHarvest, DayLastCut, CCi, &
 
         ! Correction for drop in photosynthetic capacity of a dying green canopy
         if (CCi < CCxWithered) then
-            if ((CCxWithered > 0.01_dp) .and. (CCi > 0.001_dp)) then
+            if ((CCxWithered > 0.01_sp) .and. (CCi > 0.001_sp)) then
                 TpotVal = TpotVal &
                            * exp(GetSimulParam_ExpFsen() &
                                 * log(CCi/CCxWithered))
@@ -8058,7 +8057,7 @@ subroutine LoadProgramParametersProject(FullFileNameProgramParameters)
                      simul_saltdiff, simul_saltsolub, simul_root, simul_pCCHIf, &
                      simul_SFR, simul_TAWg, simul_beta, simul_Tswc, simul_GDD, &
                      simul_EZma
-    real(dp) :: simul_rod, simul_kcWB, simul_RZEma, simul_pfao, simul_expFsen, &
+    real(sp) :: simul_rod, simul_kcWB, simul_RZEma, simul_pfao, simul_expFsen, &
                 simul_Tmi, simul_Tma
     logical :: file_exists
 
@@ -8080,7 +8079,7 @@ subroutine LoadProgramParametersProject(FullFileNameProgramParameters)
         call SetSimulParam_RootPercentZmin(simul_RpZmi)
         read(fhandle, *) simul_RZEma ! cm/day
         call SetSimulParam_MaxRootZoneExpansion(simul_RZEma)
-        call SetSimulParam_MaxRootZoneExpansion(5.00_dp) ! fixed at 5 cm/day
+        call SetSimulParam_MaxRootZoneExpansion(5.00_sp) ! fixed at 5 cm/day
         read(fhandle, *) simul_SFR ! Shape factor for effect water stress
                                    ! on rootzone expansion
         call SetSimulParam_KsShapeFactorRoot(simul_SFR)
@@ -8176,7 +8175,7 @@ subroutine ReadCropSettingsParameters()
     character(len=:), allocatable :: FullName
     integer(int8) :: simul_ed, simul_pCCHIf, simul_SFR, simul_TAWg, &
                      simul_beta, simul_Tswc
-    real(dp) :: simul_kcWB, simul_RZEma, simul_pfao, simul_expFsen
+    real(sp) :: simul_kcWB, simul_RZEma, simul_pfao, simul_expFsen
     integer(int32) :: simul_RpZmi, simul_lowox
 
     FullName = GetPathNameSimul() // 'Crop.PAR'
@@ -8193,7 +8192,7 @@ subroutine ReadCropSettingsParameters()
     call SetSimulParam_RootPercentZmin(simul_RpZmi)
     read(fhandle, *) simul_RZEma ! cm/day
     call SetSimulParam_MaxRootZoneExpansion(simul_RZEma)
-    call SetSimulParam_MaxRootZoneExpansion(5.00_dp) ! fixed at 5 cm/day
+    call SetSimulParam_MaxRootZoneExpansion(5.00_sp) ! fixed at 5 cm/day
     read(fhandle, *) simul_SFR ! Shape factor for effect water stress on
                                ! rootzone expansion
     call SetSimulParam_KsShapeFactorRoot(simul_SFR)
@@ -8239,7 +8238,7 @@ subroutine ReadTemperatureSettingsParameters()
     integer :: fhandle
     character(len=:), allocatable :: FullName
     integer(int8) :: simul_GDD
-    real(dp) :: simul_Tmi, simul_Tma
+    real(sp) :: simul_Tmi, simul_Tma
 
     FullName = GetPathNameSimul() // 'Temperature.PAR'
     open(newunit=fhandle, file=trim(FullName), status='old', action='read')
@@ -8279,7 +8278,7 @@ subroutine CompleteClimateDescription(ClimateRecord)
             call DetermineDate(ClimateRecord%ToDayNr, ClimateRecord%ToD, &
                                ClimateRecord%ToM, ClimateRecord%ToY)
         case(datatype_decadely)
-            Deci = roundc((ClimateRecord%FromD+9)/10._dp, mold=1) &
+            Deci = roundc((ClimateRecord%FromD+9)/10._sp, mold=1) &
                             + ClimateRecord%NrObs - 1
             ClimateRecord%ToM = ClimateRecord%FromM
             ClimateRecord%ToY = ClimateRecord%FromY
@@ -8344,16 +8343,16 @@ integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
     integer(int32), intent(in) :: ValGDDays
     integer(int32), intent(in) :: RefCropDay1
     integer(int32), intent(in) :: StartDayNr
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
 
     integer(int32) :: i
     integer(int32) :: NrCDays
-    real(dp) :: RemainingGDDays, DayGDD
-    real(dp) :: TDayMin_loc, TDayMax_loc
-    
+    real(sp) :: RemainingGDDays, DayGDD
+    real(sp) :: TDayMin_loc, TDayMax_loc
+
     TDayMin_loc = TDayMin
     TDayMax_loc = TDayMax
 
@@ -8363,7 +8362,7 @@ integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
             ! given average Tmin and Tmax
             DayGDD = DegreesDay(Tbase, Tupper, &
                        TDayMin_loc, TDayMax_loc, GetSimulParam_GDDMethod())
-            if (abs(DayGDD) < epsilon(1._dp)) then
+            if (abs(DayGDD) < epsilon(1._sp)) then
                 NrCDays = 0
             else
                 NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
@@ -8375,11 +8374,13 @@ integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
 
             ! TminCropReference and TmaxCropReference arrays contain the TemperatureFilefull data
             i = StartDayNr - RefCropDay1
+
+            ! For crops with very long cycles (unrealistic but avoid crashing)
             if (i >= 365) then
                 i = i - 365
             end if
 
-            do while (RemainingGDDays > 0.1_dp)
+            do while (RemainingGDDays > 0.1_sp)
                 i = i + 1
                 if (i == size(GetTminCropReferenceRun())) then
                     i = 1
@@ -8403,8 +8404,6 @@ integer(int32) function SumCalendarDaysReferenceTnx(ValGDDays, RefCropDay1,&
     end if
     SumCalendarDaysReferenceTnx = NrCDays
 end function SumCalendarDaysReferenceTnx
-
-
 
 
 !! Global variables section !!
@@ -8481,77 +8480,77 @@ type(rep_RootZoneWC) function GetRootZoneWC()
 end function GetRootZoneWC
 
 
-real(dp) function GetRootZoneWC_Actual()
+real(sp) function GetRootZoneWC_Actual()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_Actual = RootZoneWC%Actual
 end function GetRootZoneWC_Actual
 
 
-real(dp) function GetRootZoneWC_FC()
+real(sp) function GetRootZoneWC_FC()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_FC = RootZoneWC%FC
 end function GetRootZoneWC_FC
 
 
-real(dp) function GetRootZoneWC_WP()
+real(sp) function GetRootZoneWC_WP()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_WP = RootZoneWC%WP
 end function GetRootZoneWC_WP
 
 
-real(dp) function GetRootZoneWC_SAT()
+real(sp) function GetRootZoneWC_SAT()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_SAT = RootZoneWC%SAT
 end function GetRootZoneWC_SAT
 
 
-real(dp) function GetRootZoneWC_Leaf()
+real(sp) function GetRootZoneWC_Leaf()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_Leaf = RootZoneWC%Leaf
 end function GetRootZoneWC_Leaf
 
 
-real(dp) function GetRootZoneWC_Thresh()
+real(sp) function GetRootZoneWC_Thresh()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_Thresh = RootZoneWC%Thresh
 end function GetRootZoneWC_Thresh
 
 
-real(dp) function GetRootZoneWC_Sen()
+real(sp) function GetRootZoneWC_Sen()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_Sen = RootZoneWC%Sen
 end function GetRootZoneWC_Sen
 
 
-real(dp) function GetRootZoneWC_ZtopAct()
+real(sp) function GetRootZoneWC_ZtopAct()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_ZtopAct = RootZoneWC%ZtopAct
 end function GetRootZoneWC_ZtopAct
 
 
-real(dp) function GetRootZoneWC_ZtopFC()
+real(sp) function GetRootZoneWC_ZtopFC()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_ZtopFC = RootZoneWC%ZtopFC
 end function GetRootZoneWC_ZtopFC
 
 
-real(dp) function GetRootZoneWC_ZtopWP()
+real(sp) function GetRootZoneWC_ZtopWP()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_ZtopWP = RootZoneWC%ZtopWP
 end function GetRootZoneWC_ZtopWP
 
 
-real(dp) function GetRootZoneWC_ZtopThresh()
+real(sp) function GetRootZoneWC_ZtopThresh()
     !! Getter for the "Rootzonewc" global variable.
 
     GetRootZoneWC_ZtopThresh = RootZoneWC%ZtopThresh
@@ -8560,7 +8559,7 @@ end function GetRootZoneWC_ZtopThresh
 
 subroutine SetRootZoneWC_Actual(Actual)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: Actual
+    real(sp), intent(in) :: Actual
 
     RootZoneWC%Actual = Actual
 end subroutine SetRootZoneWC_Actual
@@ -8568,7 +8567,7 @@ end subroutine SetRootZoneWC_Actual
 
 subroutine SetRootZoneWC_FC(FC)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: FC
+    real(sp), intent(in) :: FC
 
     RootZoneWC%FC = FC
 end subroutine SetRootZoneWC_FC
@@ -8576,7 +8575,7 @@ end subroutine SetRootZoneWC_FC
 
 subroutine SetRootZoneWC_WP(WP)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: WP
+    real(sp), intent(in) :: WP
 
     RootZoneWC%WP = WP
 end subroutine SetRootZoneWC_WP
@@ -8584,7 +8583,7 @@ end subroutine SetRootZoneWC_WP
 
 subroutine SetRootZoneWC_SAT(SAT)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: SAT
+    real(sp), intent(in) :: SAT
 
     RootZoneWC%SAT = SAT
 end subroutine SetRootZoneWC_SAT
@@ -8592,7 +8591,7 @@ end subroutine SetRootZoneWC_SAT
 
 subroutine SetRootZoneWC_Leaf(Leaf)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: Leaf
+    real(sp), intent(in) :: Leaf
 
     RootZoneWC%Leaf = Leaf
 end subroutine SetRootZoneWC_Leaf
@@ -8600,7 +8599,7 @@ end subroutine SetRootZoneWC_Leaf
 
 subroutine SetRootZoneWC_Thresh(Thresh)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: Thresh
+    real(sp), intent(in) :: Thresh
 
     RootZoneWC%Thresh = Thresh
 end subroutine SetRootZoneWC_Thresh
@@ -8608,7 +8607,7 @@ end subroutine SetRootZoneWC_Thresh
 
 subroutine SetRootZoneWC_Sen(Sen)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: Sen
+    real(sp), intent(in) :: Sen
 
     RootZoneWC%Sen = Sen
 end subroutine SetRootZoneWC_Sen
@@ -8616,7 +8615,7 @@ end subroutine SetRootZoneWC_Sen
 
 subroutine SetRootZoneWC_ZtopAct(ZtopAct)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: ZtopAct
+    real(sp), intent(in) :: ZtopAct
 
     RootZoneWC%ZtopAct = ZtopAct
 end subroutine SetRootZoneWC_ZtopAct
@@ -8624,7 +8623,7 @@ end subroutine SetRootZoneWC_ZtopAct
 
 subroutine SetRootZoneWC_ZtopFC(ZtopFC)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: ZtopFC
+    real(sp), intent(in) :: ZtopFC
 
     RootZoneWC%ZtopFC = ZtopFC
 end subroutine SetRootZoneWC_ZtopFC
@@ -8632,7 +8631,7 @@ end subroutine SetRootZoneWC_ZtopFC
 
 subroutine SetRootZoneWC_ZtopWP(ZtopWP)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: ZtopWP
+    real(sp), intent(in) :: ZtopWP
 
     RootZoneWC%ZtopWP = ZtopWP
 end subroutine SetRootZoneWC_ZtopWP
@@ -8640,7 +8639,7 @@ end subroutine SetRootZoneWC_ZtopWP
 
 subroutine SetRootZoneWC_ZtopThresh(ZtopThresh)
     !! Setter for the "RootZoneWC" global variable.
-    real(dp), intent(in) :: ZtopThresh
+    real(sp), intent(in) :: ZtopThresh
 
     RootZoneWC%ZtopThresh = ZtopThresh
 end subroutine SetRootZoneWC_ZtopThresh
@@ -8749,7 +8748,7 @@ type(rep_IrriECw) function GetIrriECw()
 end function GetIrriECw
 
 
-real(dp) function GetIrriECw_PreSeason()
+real(sp) function GetIrriECw_PreSeason()
     !! Getter for the "IrriECw" global variable.
 
     GetIrriECw_PreSeason = IrriECw%PreSeason
@@ -8766,13 +8765,13 @@ end subroutine SetIrriECw
 
 subroutine SetIrriECw_PreSeason(PreSeason)
     !! Setter for the "IrriECw" global variable.
-    real(dp), intent(in) :: PreSeason
+    real(sp), intent(in) :: PreSeason
 
     IrriECw%PreSeason = PreSeason
 end subroutine SetIrriECw_PreSeason
 
 
-real(dp) function GetIrriECw_PostSeason()
+real(sp) function GetIrriECw_PostSeason()
     !! Getter for the "IrriECw" global variable.
 
     GetIrriECw_PostSeason = IrriECw%PostSeason
@@ -8781,7 +8780,7 @@ end function GetIrriECw_PostSeason
 
 subroutine SetIrriECw_PostSeason(PostSeason)
     !! Setter for the "IrriECw" global variable.
-    real(dp), intent(in) :: PostSeason
+    real(sp), intent(in) :: PostSeason
 
     IrriECw%PostSeason = PostSeason
 end subroutine SetIrriECw_PostSeason
@@ -9163,7 +9162,7 @@ integer(int32) function GetManagement_FertilityStress()
 end function GetManagement_FertilityStress
 
 
-real(dp) function GetManagement_BundHeight()
+real(sp) function GetManagement_BundHeight()
     !! Getter for the "Management" global variable.
 
     GetManagement_BundHeight = Management%BundHeight
@@ -9198,7 +9197,7 @@ integer(int32) function GetManagement_WeedDeltaRC()
 end function GetManagement_WeedDeltaRC
 
 
-real(dp) function GetManagement_WeedShape()
+real(sp) function GetManagement_WeedShape()
     !! Getter for the "Management" global variable.
 
     GetManagement_WeedShape = Management%WeedShape
@@ -9269,7 +9268,7 @@ end subroutine SetManagement_FertilityStress
 
 subroutine SetManagement_BundHeight(BundHeight)
     !! Setter for the "Management" global variable.
-    real(dp), intent(in) :: BundHeight
+    real(sp), intent(in) :: BundHeight
 
     Management%BundHeight = BundHeight
 end subroutine SetManagement_BundHeight
@@ -9309,7 +9308,7 @@ end subroutine SetManagement_WeedDeltaRC
 
 subroutine SetManagement_WeedShape(WeedShape)
     !! Setter for the "Management" global variable.
-    real(dp), intent(in) :: WeedShape
+    real(sp), intent(in) :: WeedShape
 
     Management%WeedShape = WeedShape
 end subroutine SetManagement_WeedShape
@@ -9565,7 +9564,7 @@ end function GetSimulParam_EffectiveRain
 
 function GetSimulParam_KcWetBare() result(KcWetBare)
     !! Getter for the "KcWetBare" attribute of the "simulparam" global variable.
-    real(dp) :: KcWetBare
+    real(sp) :: KcWetBare
 
     KcWetBare = simulparam%KcWetBare
 end function GetSimulParam_KcWetBare
@@ -9589,7 +9588,7 @@ end function GetSimulParam_RootPercentZmin
 
 function GetSimulParam_MaxRootZoneExpansion() result(MaxRootZoneExpansion)
     !! Getter for the "MaxRootZoneExpansion" attribute of the "simulparam" global variable.
-    real(dp) :: MaxRootZoneExpansion
+    real(sp) :: MaxRootZoneExpansion
 
     MaxRootZoneExpansion = simulparam%MaxRootZoneExpansion
 end function GetSimulParam_MaxRootZoneExpansion
@@ -9613,7 +9612,7 @@ end function GetSimulParam_TAWGermination
 
 function GetSimulParam_pAdjFAO() result(pAdjFAO)
     !! Getter for the "pAdjFAO" attribute of the "simulparam" global variable.
-    real(dp) :: pAdjFAO
+    real(sp) :: pAdjFAO
 
     pAdjFAO = simulparam%pAdjFAO
 end function GetSimulParam_pAdjFAO
@@ -9629,7 +9628,7 @@ end function GetSimulParam_DelayLowOxygen
 
 function GetSimulParam_ExpFsen() result(ExpFsen)
     !! Getter for the "ExpFsen" attribute of the "simulparam" global variable.
-    real(dp) :: ExpFsen
+    real(sp) :: ExpFsen
 
     ExpFsen = simulparam%ExpFsen
 end function GetSimulParam_ExpFsen
@@ -9661,7 +9660,7 @@ end function GetSimulParam_EvapZmax
 
 function GetSimulParam_RunoffDepth() result(RunoffDepth)
     !! Getter for the "RunoffDepth" attribute of the "simulparam" global variable.
-    real(dp) :: RunoffDepth
+    real(sp) :: RunoffDepth
 
     RunoffDepth = simulparam%RunoffDepth
 end function GetSimulParam_RunoffDepth
@@ -9677,7 +9676,7 @@ end function GetSimulParam_CNcorrection
 
 function GetSimulParam_Tmin() result(Tmin)
     !! Getter for the "Tmin" attribute of the "simulparam" global variable.
-    real(dp) :: Tmin
+    real(sp) :: Tmin
 
     Tmin = simulparam%Tmin
 end function GetSimulParam_Tmin
@@ -9685,7 +9684,7 @@ end function GetSimulParam_Tmin
 
 function GetSimulParam_Tmax() result(Tmax)
     !! Getter for the "Tmax" attribute of the "simulparam" global variable.
-    real(dp) :: Tmax
+    real(sp) :: Tmax
 
     Tmax = simulparam%Tmax
 end function GetSimulParam_Tmax
@@ -9709,7 +9708,7 @@ end function GetSimulParam_PercRAW
 
 function GetSimulParam_CompDefThick() result(CompDefThick)
     !! Getter for the "CompDefThick" attribute of the "simulparam" global variable.
-    real(dp) :: CompDefThick
+    real(sp) :: CompDefThick
 
     CompDefThick = simulparam%CompDefThick
 end function GetSimulParam_CompDefThick
@@ -9725,7 +9724,7 @@ end function GetSimulParam_CropDay1
 
 function GetSimulParam_Tbase() result(Tbase)
     !! Getter for the "Tbase" attribute of the "simulparam" global variable.
-    real(dp) :: Tbase
+    real(sp) :: Tbase
 
     Tbase = simulparam%Tbase
 end function GetSimulParam_Tbase
@@ -9733,7 +9732,7 @@ end function GetSimulParam_Tbase
 
 function GetSimulParam_Tupper() result(Tupper)
     !! Getter for the "Tupper" attribute of the "simulparam" global variable.
-    real(dp) :: Tupper
+    real(sp) :: Tupper
 
     Tupper = simulparam%Tupper
 end function GetSimulParam_Tupper
@@ -9821,7 +9820,7 @@ end subroutine SetSimulParam_EffectiveRain
 
 subroutine SetSimulParam_KcWetBare(KcWetBare)
     !! Setter for the "KcWetBare" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: KcWetBare
+    real(sp), intent(in) :: KcWetBare
 
     simulparam%KcWetBare = KcWetBare
 end subroutine SetSimulParam_KcWetBare
@@ -9845,7 +9844,7 @@ end subroutine SetSimulParam_RootPercentZmin
 
 subroutine SetSimulParam_MaxRootZoneExpansion(MaxRootZoneExpansion)
     !! Setter for the "MaxRootZoneExpansion" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: MaxRootZoneExpansion
+    real(sp), intent(in) :: MaxRootZoneExpansion
 
     simulparam%MaxRootZoneExpansion = MaxRootZoneExpansion
 end subroutine SetSimulParam_MaxRootZoneExpansion
@@ -9869,7 +9868,7 @@ end subroutine SetSimulParam_TAWGermination
 
 subroutine SetSimulParam_pAdjFAO(pAdjFAO)
     !! Setter for the "pAdjFAO" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: pAdjFAO
+    real(sp), intent(in) :: pAdjFAO
 
     simulparam%pAdjFAO = pAdjFAO
 end subroutine SetSimulParam_pAdjFAO
@@ -9885,7 +9884,7 @@ end subroutine SetSimulParam_DelayLowOxygen
 
 subroutine SetSimulParam_ExpFsen(ExpFsen)
     !! Setter for the "ExpFsen" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: ExpFsen
+    real(sp), intent(in) :: ExpFsen
 
     simulparam%ExpFsen = ExpFsen
 end subroutine SetSimulParam_ExpFsen
@@ -9917,7 +9916,7 @@ end subroutine SetSimulParam_EvapZmax
 
 subroutine SetSimulParam_RunoffDepth(RunoffDepth)
     !! Setter for the "RunoffDepth" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: RunoffDepth
+    real(sp), intent(in) :: RunoffDepth
 
     simulparam%RunoffDepth = RunoffDepth
 end subroutine SetSimulParam_RunoffDepth
@@ -9933,7 +9932,7 @@ end subroutine SetSimulParam_CNcorrection
 
 subroutine SetSimulParam_Tmin(Tmin)
     !! Setter for the "Tmin" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: Tmin
+    real(sp), intent(in) :: Tmin
 
     simulparam%Tmin = Tmin
 end subroutine SetSimulParam_Tmin
@@ -9941,7 +9940,7 @@ end subroutine SetSimulParam_Tmin
 
 subroutine SetSimulParam_Tmax(Tmax)
     !! Setter for the "Tmax" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: Tmax
+    real(sp), intent(in) :: Tmax
 
     simulparam%Tmax = Tmax
 end subroutine SetSimulParam_Tmax
@@ -9965,7 +9964,7 @@ end subroutine SetSimulParam_PercRAW
 
 subroutine SetSimulParam_CompDefThick(CompDefThick)
     !! Setter for the "CompDefThick" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: CompDefThick
+    real(sp), intent(in) :: CompDefThick
 
     simulparam%CompDefThick = CompDefThick
 end subroutine SetSimulParam_CompDefThick
@@ -9981,7 +9980,7 @@ end subroutine SetSimulParam_CropDay1
 
 subroutine SetSimulParam_Tbase(Tbase)
     !! Setter for the "Tbase" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tbase
 
     simulparam%Tbase = Tbase
 end subroutine SetSimulParam_Tbase
@@ -9989,7 +9988,7 @@ end subroutine SetSimulParam_Tbase
 
 subroutine SetSimulParam_Tupper(Tupper)
     !! Setter for the "Tupper" attribute of the "simulparam" global variable.
-    real(dp), intent(in) :: Tupper
+    real(sp), intent(in) :: Tupper
 
     simulparam%Tupper = Tupper
 end subroutine SetSimulParam_Tupper
@@ -10118,140 +10117,140 @@ type(rep_sum) function GetSumWaBal()
 end function GetSumWaBal
 
 
-real(dp) function GetSumWaBal_Epot()
+real(sp) function GetSumWaBal_Epot()
     !! Getter for the "SumWaBal" global variable.
 
      GetSumWaBal_Epot = SumWaBal%Epot
 end function GetSumWaBal_Epot
 
 
-real(dp) function GetSumWaBal_Tpot()
+real(sp) function GetSumWaBal_Tpot()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Tpot = SumWaBal%Tpot
 end function GetSumWaBal_Tpot
 
 
-real(dp) function GetSumWaBal_Rain()
+real(sp) function GetSumWaBal_Rain()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Rain = SumWaBal%Rain
 end function GetSumWaBal_Rain
 
 
-real(dp) function GetSumWaBal_Irrigation()
+real(sp) function GetSumWaBal_Irrigation()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Irrigation = SumWaBal%Irrigation
 end function GetSumWaBal_Irrigation
 
 
-real(dp) function GetSumWaBal_Infiltrated()
+real(sp) function GetSumWaBal_Infiltrated()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Infiltrated = SumWaBal%Infiltrated
 end function GetSumWaBal_Infiltrated
 
 
-real(dp) function GetSumWaBal_Runoff()
+real(sp) function GetSumWaBal_Runoff()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Runoff = SumWaBal%Runoff
 end function GetSumWaBal_Runoff
 
 
-real(dp) function GetSumWaBal_Drain()
+real(sp) function GetSumWaBal_Drain()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Drain = SumWaBal%Drain
 end function GetSumWaBal_Drain
 
 
-real(dp) function GetSumWaBal_Eact()
+real(sp) function GetSumWaBal_Eact()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Eact = SumWaBal%Eact
 end function GetSumWaBal_Eact
 
 
-real(dp) function GetSumWaBal_Tact()
+real(sp) function GetSumWaBal_Tact()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Tact = SumWaBal%Tact
 end function GetSumWaBal_Tact
 
 
-real(dp) function GetSumWaBal_TrW()
+real(sp) function GetSumWaBal_TrW()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_TrW = SumWaBal%TrW
 end function GetSumWaBal_TrW
 
 
-real(dp) function GetSumWaBal_ECropCycle()
+real(sp) function GetSumWaBal_ECropCycle()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_ECropCycle = SumWaBal%ECropCycle
 end function GetSumWaBal_ECropCycle
 
 
-real(dp) function GetSumWaBal_CRwater()
+real(sp) function GetSumWaBal_CRwater()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_CRwater = SumWaBal%CRwater
 end function GetSumWaBal_CRwater
 
 
-real(dp) function GetSumWaBal_Biomass()
+real(sp) function GetSumWaBal_Biomass()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_Biomass = SumWaBal%Biomass
 end function GetSumWaBal_Biomass
 
 
-real(dp) function GetSumWaBal_YieldPart()
+real(sp) function GetSumWaBal_YieldPart()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_YieldPart = SumWaBal%YieldPart
 end function GetSumWaBal_YieldPart
 
 
-real(dp) function GetSumWaBal_BiomassPot()
+real(sp) function GetSumWaBal_BiomassPot()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_BiomassPot = SumWaBal%BiomassPot
 end function GetSumWaBal_BiomassPot
 
 
-real(dp) function GetSumWaBal_BiomassUnlim()
+real(sp) function GetSumWaBal_BiomassUnlim()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_BiomassUnlim = SumWaBal%BiomassUnlim
 end function GetSumWaBal_BiomassUnlim
 
 
-real(dp) function GetSumWaBal_BiomassTot()
+real(sp) function GetSumWaBal_BiomassTot()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_BiomassTot = SumWaBal%BiomassTot
 end function GetSumWaBal_BiomassTot
 
 
-real(dp) function GetSumWaBal_SaltIn()
+real(sp) function GetSumWaBal_SaltIn()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_SaltIn = SumWaBal%SaltIn
 end function GetSumWaBal_SaltIn
 
 
-real(dp) function GetSumWaBal_SaltOut()
+real(sp) function GetSumWaBal_SaltOut()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_SaltOut = SumWaBal%SaltOut
 end function GetSumWaBal_SaltOut
 
 
-real(dp) function GetSumWaBal_CRSalt()
+real(sp) function GetSumWaBal_CRSalt()
     !! Getter for the "SumWaBal" global variable.
 
     GetSumWaBal_CRSalt = SumWaBal%CRSalt
@@ -10268,7 +10267,7 @@ end subroutine SetSumWaBal
 
 subroutine SetSumWaBal_Epot(Epot)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Epot
+    real(sp), intent(in) :: Epot
 
     SumWaBal%Epot = Epot
 end subroutine SetSumWaBal_Epot
@@ -10276,7 +10275,7 @@ end subroutine SetSumWaBal_Epot
 
 subroutine SetSumWaBal_Tpot(Tpot)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Tpot
+    real(sp), intent(in) :: Tpot
 
     SumWaBal%Tpot = Tpot
 end subroutine SetSumWaBal_Tpot
@@ -10284,7 +10283,7 @@ end subroutine SetSumWaBal_Tpot
 
 subroutine SetSumWaBal_Rain(Rain)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Rain
+    real(sp), intent(in) :: Rain
 
     SumWaBal%Rain = Rain
 end subroutine SetSumWaBal_Rain
@@ -10292,7 +10291,7 @@ end subroutine SetSumWaBal_Rain
 
 subroutine SetSumWaBal_Irrigation(Irrigation)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Irrigation
+    real(sp), intent(in) :: Irrigation
 
     SumWaBal%Irrigation = Irrigation
 end subroutine SetSumWaBal_Irrigation
@@ -10300,7 +10299,7 @@ end subroutine SetSumWaBal_Irrigation
 
 subroutine SetSumWaBal_Infiltrated(Infiltrated)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Infiltrated
+    real(sp), intent(in) :: Infiltrated
 
     SumWaBal%Infiltrated = Infiltrated
 end subroutine SetSumWaBal_Infiltrated
@@ -10308,7 +10307,7 @@ end subroutine SetSumWaBal_Infiltrated
 
 subroutine SetSumWaBal_Runoff(Runoff)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Runoff
+    real(sp), intent(in) :: Runoff
 
     SumWaBal%Runoff = Runoff
 end subroutine SetSumWaBal_Runoff
@@ -10316,7 +10315,7 @@ end subroutine SetSumWaBal_Runoff
 
 subroutine SetSumWaBal_Drain(Drain)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Drain
+    real(sp), intent(in) :: Drain
 
     SumWaBal%Drain = Drain
 end subroutine SetSumWaBal_Drain
@@ -10324,7 +10323,7 @@ end subroutine SetSumWaBal_Drain
 
 subroutine SetSumWaBal_Eact(Eact)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Eact
+    real(sp), intent(in) :: Eact
 
     SumWaBal%Eact = Eact
 end subroutine SetSumWaBal_Eact
@@ -10332,7 +10331,7 @@ end subroutine SetSumWaBal_Eact
 
 subroutine SetSumWaBal_Tact(Tact)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Tact
+    real(sp), intent(in) :: Tact
 
     SumWaBal%Tact = Tact
 end subroutine SetSumWaBal_Tact
@@ -10340,7 +10339,7 @@ end subroutine SetSumWaBal_Tact
 
 subroutine SetSumWaBal_TrW(TrW)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: TrW
+    real(sp), intent(in) :: TrW
 
     SumWaBal%TrW = TrW
 end subroutine SetSumWaBal_TrW
@@ -10348,7 +10347,7 @@ end subroutine SetSumWaBal_TrW
 
 subroutine SetSumWaBal_ECropCycle(ECropCycle)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: ECropCycle
+    real(sp), intent(in) :: ECropCycle
 
     SumWaBal%ECropCycle = ECropCycle
 end subroutine SetSumWaBal_ECropCycle
@@ -10356,7 +10355,7 @@ end subroutine SetSumWaBal_ECropCycle
 
 subroutine SetSumWaBal_CRwater(CRwater)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: CRwater
+    real(sp), intent(in) :: CRwater
 
     SumWaBal%CRwater = CRwater
 end subroutine SetSumWaBal_CRwater
@@ -10364,7 +10363,7 @@ end subroutine SetSumWaBal_CRwater
 
 subroutine SetSumWaBal_Biomass(Biomass)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: Biomass
+    real(sp), intent(in) :: Biomass
 
     SumWaBal%Biomass = Biomass
 end subroutine SetSumWaBal_Biomass
@@ -10372,7 +10371,7 @@ end subroutine SetSumWaBal_Biomass
 
 subroutine SetSumWaBal_YieldPart(YieldPart)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: YieldPart
+    real(sp), intent(in) :: YieldPart
 
     SumWaBal%YieldPart = YieldPart
 end subroutine SetSumWaBal_YieldPart
@@ -10380,7 +10379,7 @@ end subroutine SetSumWaBal_YieldPart
 
 subroutine SetSumWaBal_BiomassPot(BiomassPot)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: BiomassPot
+    real(sp), intent(in) :: BiomassPot
 
     SumWaBal%BiomassPot = BiomassPot
 end subroutine SetSumWaBal_BiomassPot
@@ -10388,7 +10387,7 @@ end subroutine SetSumWaBal_BiomassPot
 
 subroutine SetSumWaBal_BiomassUnlim(BiomassUnlim)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: BiomassUnlim
+    real(sp), intent(in) :: BiomassUnlim
 
     SumWaBal%BiomassUnlim = BiomassUnlim
 end subroutine SetSumWaBal_BiomassUnlim
@@ -10396,7 +10395,7 @@ end subroutine SetSumWaBal_BiomassUnlim
 
 subroutine SetSumWaBal_BiomassTot(BiomassTot)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: BiomassTot
+    real(sp), intent(in) :: BiomassTot
 
     SumWaBal%BiomassTot = BiomassTot
 end subroutine SetSumWaBal_BiomassTot
@@ -10404,7 +10403,7 @@ end subroutine SetSumWaBal_BiomassTot
 
 subroutine SetSumWaBal_SaltIn(SaltIn)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: SaltIn
+    real(sp), intent(in) :: SaltIn
 
     SumWaBal%SaltIn = SaltIn
 end subroutine SetSumWaBal_SaltIn
@@ -10412,7 +10411,7 @@ end subroutine SetSumWaBal_SaltIn
 
 subroutine SetSumWaBal_SaltOut(SaltOut)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: SaltOut
+    real(sp), intent(in) :: SaltOut
 
     SumWaBal%SaltOut = SaltOut
 end subroutine SetSumWaBal_SaltOut
@@ -10420,7 +10419,7 @@ end subroutine SetSumWaBal_SaltOut
 
 subroutine SetSumWaBal_CRSalt(CRSalt)
     !! Setter for the "SumWaBal" global variable.
-    real(dp), intent(in) :: CRSalt
+    real(sp), intent(in) :: CRSalt
 
     SumWaBal%CRSalt = CRSalt
 end subroutine SetSumWaBal_CRSalt
@@ -10519,7 +10518,7 @@ end function GetCrop_StressResponse_Stress
 
 function GetCrop_StressResponse_ShapeCGC() result(ShapeCGC)
     !! Getter for the "ShapeCGC" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp) :: ShapeCGC
+    real(sp) :: ShapeCGC
 
     ShapeCGC = crop%StressResponse%ShapeCGC
 end function GetCrop_StressResponse_ShapeCGC
@@ -10527,7 +10526,7 @@ end function GetCrop_StressResponse_ShapeCGC
 
 function GetCrop_StressResponse_ShapeCCX() result(ShapeCCX)
     !! Getter for the "ShapeCCX" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp) :: ShapeCCX
+    real(sp) :: ShapeCCX
 
     ShapeCCX = crop%StressResponse%ShapeCCX
 end function GetCrop_StressResponse_ShapeCCX
@@ -10535,7 +10534,7 @@ end function GetCrop_StressResponse_ShapeCCX
 
 function GetCrop_StressResponse_ShapeWP() result(ShapeWP)
     !! Getter for the "ShapeWP" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp) :: ShapeWP
+    real(sp) :: ShapeWP
 
     ShapeWP = crop%StressResponse%ShapeWP
 end function GetCrop_StressResponse_ShapeWP
@@ -10543,7 +10542,7 @@ end function GetCrop_StressResponse_ShapeWP
 
 function GetCrop_StressResponse_ShapeCDecline() result(ShapeCDecline)
     !! Getter for the "ShapeCDecline" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp) :: ShapeCDecline
+    real(sp) :: ShapeCDecline
 
     ShapeCDecline = crop%StressResponse%ShapeCDecline
 end function GetCrop_StressResponse_ShapeCDecline
@@ -10575,7 +10574,7 @@ end subroutine SetCrop_StressResponse_Stress
 
 subroutine SetCrop_StressResponse_ShapeCGC(ShapeCGC)
     !! Setter for the "ShapeCGC" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp), intent(in) :: ShapeCGC
+    real(sp), intent(in) :: ShapeCGC
 
     crop%StressResponse%ShapeCGC = ShapeCGC
 end subroutine SetCrop_StressResponse_ShapeCGC
@@ -10583,7 +10582,7 @@ end subroutine SetCrop_StressResponse_ShapeCGC
 
 subroutine SetCrop_StressResponse_ShapeCCX(ShapeCCX)
     !! Setter for the "ShapeCCX" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp), intent(in) :: ShapeCCX
+    real(sp), intent(in) :: ShapeCCX
 
     crop%StressResponse%ShapeCCX = ShapeCCX
 end subroutine SetCrop_StressResponse_ShapeCCX
@@ -10591,7 +10590,7 @@ end subroutine SetCrop_StressResponse_ShapeCCX
 
 subroutine SetCrop_StressResponse_ShapeWP(ShapeWP)
     !! Setter for the "ShapeWP" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp), intent(in) :: ShapeWP
+    real(sp), intent(in) :: ShapeWP
 
     crop%StressResponse%ShapeWP = ShapeWP
 end subroutine SetCrop_StressResponse_ShapeWP
@@ -10599,7 +10598,7 @@ end subroutine SetCrop_StressResponse_ShapeWP
 
 subroutine SetCrop_StressResponse_ShapeCDecline(ShapeCDecline)
     !! Setter for the "ShapeCDecline" attribute of the "StressResponse" attribute of the "crop" global variable.
-    real(dp), intent(in) :: ShapeCDecline
+    real(sp), intent(in) :: ShapeCDecline
 
     crop%StressResponse%ShapeCDecline = ShapeCDecline
 end subroutine SetCrop_StressResponse_ShapeCDecline
@@ -10655,7 +10654,7 @@ end function GetCrop_pMethod
 
 function GetCrop_pdef() result(pdef)
     !! Getter for the "pdef" attribute of the "crop" global variable.
-    real(dp) :: pdef
+    real(sp) :: pdef
 
     pdef = crop%pdef
 end function GetCrop_pdef
@@ -10663,7 +10662,7 @@ end function GetCrop_pdef
 
 function GetCrop_pActStom() result(pActStom)
     !! Getter for the "pActStom" attribute of the "crop" global variable.
-    real(dp) :: pActStom
+    real(sp) :: pActStom
 
     pActStom = crop%pActStom
 end function GetCrop_pActStom
@@ -10671,7 +10670,7 @@ end function GetCrop_pActStom
 
 function GetCrop_KsShapeFactorLeaf() result(KsShapeFactorLeaf)
     !! Getter for the "KsShapeFactorLeaf" attribute of the "crop" global variable.
-    real(dp) :: KsShapeFactorLeaf
+    real(sp) :: KsShapeFactorLeaf
 
     KsShapeFactorLeaf = crop%KsShapeFactorLeaf
 end function GetCrop_KsShapeFactorLeaf
@@ -10679,7 +10678,7 @@ end function GetCrop_KsShapeFactorLeaf
 
 function GetCrop_KsShapeFactorStomata() result(KsShapeFactorStomata)
     !! Getter for the "KsShapeFactorStomata" attribute of the "crop" global variable.
-    real(dp) :: KsShapeFactorStomata
+    real(sp) :: KsShapeFactorStomata
 
     KsShapeFactorStomata = crop%KsShapeFactorStomata
 end function GetCrop_KsShapeFactorStomata
@@ -10687,7 +10686,7 @@ end function GetCrop_KsShapeFactorStomata
 
 function GetCrop_KsShapeFactorSenescence() result(KsShapeFactorSenescence)
     !! Getter for the "KsShapeFactorSenescence" attribute of the "crop" global variable.
-    real(dp) :: KsShapeFactorSenescence
+    real(sp) :: KsShapeFactorSenescence
 
     KsShapeFactorSenescence = crop%KsShapeFactorSenescence
 end function GetCrop_KsShapeFactorSenescence
@@ -10695,7 +10694,7 @@ end function GetCrop_KsShapeFactorSenescence
 
 function GetCrop_pLeafDefUL() result(pLeafDefUL)
     !! Getter for the "pLeafDefUL" attribute of the "crop" global variable.
-    real(dp) :: pLeafDefUL
+    real(sp) :: pLeafDefUL
 
     pLeafDefUL = crop%pLeafDefUL
 end function GetCrop_pLeafDefUL
@@ -10703,7 +10702,7 @@ end function GetCrop_pLeafDefUL
 
 function GetCrop_pLeafDefLL() result(pLeafDefLL)
     !! Getter for the "pLeafDefLL" attribute of the "crop" global variable.
-    real(dp) :: pLeafDefLL
+    real(sp) :: pLeafDefLL
 
     pLeafDefLL = crop%pLeafDefLL
 end function GetCrop_pLeafDefLL
@@ -10711,7 +10710,7 @@ end function GetCrop_pLeafDefLL
 
 function GetCrop_pLeafAct() result(pLeafAct)
     !! Getter for the "pLeafAct" attribute of the "crop" global variable.
-    real(dp) :: pLeafAct
+    real(sp) :: pLeafAct
 
     pLeafAct = crop%pLeafAct
 end function GetCrop_pLeafAct
@@ -10719,7 +10718,7 @@ end function GetCrop_pLeafAct
 
 function GetCrop_pSenescence() result(pSenescence)
     !! Getter for the "pSenescence" attribute of the "crop" global variable.
-    real(dp) :: pSenescence
+    real(sp) :: pSenescence
 
     pSenescence = crop%pSenescence
 end function GetCrop_pSenescence
@@ -10727,7 +10726,7 @@ end function GetCrop_pSenescence
 
 function GetCrop_pSenAct() result(pSenAct)
     !! Getter for the "pSenAct" attribute of the "crop" global variable.
-    real(dp) :: pSenAct
+    real(sp) :: pSenAct
 
     pSenAct = crop%pSenAct
 end function GetCrop_pSenAct
@@ -10735,7 +10734,7 @@ end function GetCrop_pSenAct
 
 function GetCrop_pPollination() result(pPollination)
     !! Getter for the "pPollination" attribute of the "crop" global variable.
-    real(dp) :: pPollination
+    real(sp) :: pPollination
 
     pPollination = crop%pPollination
 end function GetCrop_pPollination
@@ -10791,7 +10790,7 @@ end function GetCrop_ResponseECsw
 
 function GetCrop_SmaxTopQuarter() result(SmaxTopQuarter)
     !! Getter for the "SmaxTopQuarter" attribute of the "crop" global variable.
-    real(dp) :: SmaxTopQuarter
+    real(sp) :: SmaxTopQuarter
 
     SmaxTopQuarter = crop%SmaxTopQuarter
 end function GetCrop_SmaxTopQuarter
@@ -10799,7 +10798,7 @@ end function GetCrop_SmaxTopQuarter
 
 function GetCrop_SmaxBotQuarter() result(SmaxBotQuarter)
     !! Getter for the "SmaxBotQuarter" attribute of the "crop" global variable.
-    real(dp) :: SmaxBotQuarter
+    real(sp) :: SmaxBotQuarter
 
     SmaxBotQuarter = crop%SmaxBotQuarter
 end function GetCrop_SmaxBotQuarter
@@ -10807,7 +10806,7 @@ end function GetCrop_SmaxBotQuarter
 
 function GetCrop_SmaxTop() result(SmaxTop)
     !! Getter for the "SmaxTop" attribute of the "crop" global variable.
-    real(dp) :: SmaxTop
+    real(sp) :: SmaxTop
 
     SmaxTop = crop%SmaxTop
 end function GetCrop_SmaxTop
@@ -10815,7 +10814,7 @@ end function GetCrop_SmaxTop
 
 function GetCrop_SmaxBot() result(SmaxBot)
     !! Getter for the "SmaxBot" attribute of the "crop" global variable.
-    real(dp) :: SmaxBot
+    real(sp) :: SmaxBot
 
     SmaxBot = crop%SmaxBot
 end function GetCrop_SmaxBot
@@ -10823,7 +10822,7 @@ end function GetCrop_SmaxBot
 
 function GetCrop_KcTop() result(KcTop)
     !! Getter for the "KcTop" attribute of the "crop" global variable.
-    real(dp) :: KcTop
+    real(sp) :: KcTop
 
     KcTop = crop%KcTop
 end function GetCrop_KcTop
@@ -10831,7 +10830,7 @@ end function GetCrop_KcTop
 
 function GetCrop_KcDecline() result(KcDecline)
     !! Getter for the "KcDecline" attribute of the "crop" global variable.
-    real(dp) :: KcDecline
+    real(sp) :: KcDecline
 
     KcDecline = crop%KcDecline
 end function GetCrop_KcDecline
@@ -10871,7 +10870,7 @@ end function GetCrop_Length
 
 function GetCrop_RootMin() result(RootMin)
     !! Getter for the "RootMin" attribute of the "crop" global variable.
-    real(dp) :: RootMin
+    real(sp) :: RootMin
 
     RootMin = crop%RootMin
 end function GetCrop_RootMin
@@ -10879,7 +10878,7 @@ end function GetCrop_RootMin
 
 function GetCrop_RootMax() result(RootMax)
     !! Getter for the "RootMax" attribute of the "crop" global variable.
-    real(dp) :: RootMax
+    real(sp) :: RootMax
 
     RootMax = crop%RootMax
 end function GetCrop_RootMax
@@ -10895,7 +10894,7 @@ end function GetCrop_RootShape
 
 function GetCrop_Tbase() result(Tbase)
     !! Getter for the "Tbase" attribute of the "crop" global variable.
-    real(dp) :: Tbase
+    real(sp) :: Tbase
 
     Tbase = crop%Tbase
 end function GetCrop_Tbase
@@ -10903,7 +10902,7 @@ end function GetCrop_Tbase
 
 function GetCrop_Tupper() result(Tupper)
     !! Getter for the "Tupper" attribute of the "crop" global variable.
-    real(dp) :: Tupper
+    real(sp) :: Tupper
 
     Tupper = crop%Tupper
 end function GetCrop_Tupper
@@ -10927,7 +10926,7 @@ end function GetCrop_Theat
 
 function GetCrop_GDtranspLow() result(GDtranspLow)
     !! Getter for the "GDtranspLow" attribute of the "crop" global variable.
-    real(dp) :: GDtranspLow
+    real(sp) :: GDtranspLow
 
     GDtranspLow = crop%GDtranspLow
 end function GetCrop_GDtranspLow
@@ -10935,7 +10934,7 @@ end function GetCrop_GDtranspLow
 
 function GetCrop_SizeSeedling() result(SizeSeedling)
     !! Getter for the "SizeSeedling" attribute of the "crop" global variable.
-    real(dp) :: SizeSeedling
+    real(sp) :: SizeSeedling
 
     SizeSeedling = crop%SizeSeedling
 end function GetCrop_SizeSeedling
@@ -10943,7 +10942,7 @@ end function GetCrop_SizeSeedling
 
 function GetCrop_SizePlant() result(SizePlant)
     !! Getter for the "SizePlant" attribute of the "crop" global variable.
-    real(dp) :: SizePlant
+    real(sp) :: SizePlant
 
     SizePlant = crop%SizePlant
 end function GetCrop_SizePlant
@@ -10959,7 +10958,7 @@ end function GetCrop_PlantingDens
 
 function GetCrop_CCo() result(CCo)
     !! Getter for the "CCo" attribute of the "crop" global variable.
-    real(dp) :: CCo
+    real(sp) :: CCo
 
     CCo = crop%CCo
 end function GetCrop_CCo
@@ -10967,7 +10966,7 @@ end function GetCrop_CCo
 
 function GetCrop_CCini() result(CCini)
     !! Getter for the "CCini" attribute of the "crop" global variable.
-    real(dp) :: CCini
+    real(sp) :: CCini
 
     CCini = crop%CCini
 end function GetCrop_CCini
@@ -10975,7 +10974,7 @@ end function GetCrop_CCini
 
 function GetCrop_CGC() result(CGC)
     !! Getter for the "CGC" attribute of the "crop" global variable.
-    real(dp) :: CGC
+    real(sp) :: CGC
 
     CGC = crop%CGC
 end function GetCrop_CGC
@@ -10983,7 +10982,7 @@ end function GetCrop_CGC
 
 function GetCrop_GDDCGC() result(GDDCGC)
     !! Getter for the "GDDCGC" attribute of the "crop" global variable.
-    real(dp) :: GDDCGC
+    real(sp) :: GDDCGC
 
     GDDCGC = crop%GDDCGC
 end function GetCrop_GDDCGC
@@ -10991,7 +10990,7 @@ end function GetCrop_GDDCGC
 
 function GetCrop_CCx() result(CCx)
     !! Getter for the "CCx" attribute of the "crop" global variable.
-    real(dp) :: CCx
+    real(sp) :: CCx
 
     CCx = crop%CCx
 end function GetCrop_CCx
@@ -10999,7 +10998,7 @@ end function GetCrop_CCx
 
 function GetCrop_CDC() result(CDC)
     !! Getter for the "CDC" attribute of the "crop" global variable.
-    real(dp) :: CDC
+    real(sp) :: CDC
 
     CDC = crop%CDC
 end function GetCrop_CDC
@@ -11007,7 +11006,7 @@ end function GetCrop_CDC
 
 function GetCrop_GDDCDC() result(GDDCDC)
     !! Getter for the "GDDCDC" attribute of the "crop" global variable.
-    real(dp) :: GDDCDC
+    real(sp) :: GDDCDC
 
     GDDCDC = crop%GDDCDC
 end function GetCrop_GDDCDC
@@ -11015,7 +11014,7 @@ end function GetCrop_GDDCDC
 
 function GetCrop_CCxAdjusted() result(CCxAdjusted)
     !! Getter for the "CCxAdjusted" attribute of the "crop" global variable.
-    real(dp) :: CCxAdjusted
+    real(sp) :: CCxAdjusted
 
     CCxAdjusted = crop%CCxAdjusted
 end function GetCrop_CCxAdjusted
@@ -11023,7 +11022,7 @@ end function GetCrop_CCxAdjusted
 
 function GetCrop_CCxWithered() result(CCxWithered)
     !! Getter for the "CCxWithered" attribute of the "crop" global variable.
-    real(dp) :: CCxWithered
+    real(sp) :: CCxWithered
 
     CCxWithered = crop%CCxWithered
 end function GetCrop_CCxWithered
@@ -11031,7 +11030,7 @@ end function GetCrop_CCxWithered
 
 function GetCrop_CCoAdjusted() result(CCoAdjusted)
     !! Getter for the "CCoAdjusted" attribute of the "crop" global variable.
-    real(dp) :: CCoAdjusted
+    real(sp) :: CCoAdjusted
 
     CCoAdjusted = crop%CCoAdjusted
 end function GetCrop_CCoAdjusted
@@ -11199,7 +11198,7 @@ end function GetCrop_GDDaysToHIo
 
 function GetCrop_WP() result(WP)
     !! Getter for the "WP" attribute of the "crop" global variable.
-    real(dp) :: WP
+    real(sp) :: WP
 
     WP = crop%WP
 end function GetCrop_WP
@@ -11231,7 +11230,7 @@ end function GetCrop_HI
 
 function GetCrop_dHIdt() result(dHIdt)
     !! Getter for the "dHIdt" attribute of the "crop" global variable.
-    real(dp) :: dHIdt
+    real(sp) :: dHIdt
 
     dHIdt = crop%dHIdt
 end function GetCrop_dHIdt
@@ -11247,7 +11246,7 @@ end function GetCrop_HIincrease
 
 function GetCrop_aCoeff() result(aCoeff)
     !! Getter for the "aCoeff" attribute of the "crop" global variable.
-    real(dp) :: aCoeff
+    real(sp) :: aCoeff
 
     aCoeff = crop%aCoeff
 end function GetCrop_aCoeff
@@ -11255,7 +11254,7 @@ end function GetCrop_aCoeff
 
 function GetCrop_bCoeff() result(bCoeff)
     !! Getter for the "bCoeff" attribute of the "crop" global variable.
-    real(dp) :: bCoeff
+    real(sp) :: bCoeff
 
     bCoeff = crop%bCoeff
 end function GetCrop_bCoeff
@@ -11295,7 +11294,7 @@ end function GetCrop_DryMatter
 
 function GetCrop_RootMinYear1() result(RootMinYear1)
     !! Getter for the "RootMinYear1" attribute of the "crop" global variable.
-    real(dp) :: RootMinYear1
+    real(sp) :: RootMinYear1
 
     RootMinYear1 = crop%RootMinYear1
 end function GetCrop_RootMinYear1
@@ -11319,7 +11318,7 @@ end function GetCrop_YearCCx
 
 function GetCrop_CCxRoot() result(CCxRoot)
     !! Getter for the "CCxRoot" attribute of the "crop" global variable.
-    real(dp) :: CCxRoot
+    real(sp) :: CCxRoot
 
     CCxRoot = crop%CCxRoot
 end function GetCrop_CCxRoot
@@ -11367,7 +11366,7 @@ end subroutine SetCrop_pMethod
 
 subroutine SetCrop_pdef(pdef)
     !! Setter for the "pdef" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pdef
+    real(sp), intent(in) :: pdef
 
     crop%pdef = pdef
 end subroutine SetCrop_pdef
@@ -11375,7 +11374,7 @@ end subroutine SetCrop_pdef
 
 subroutine SetCrop_pActStom(pActStom)
     !! Setter for the "pActStom" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pActStom
+    real(sp), intent(in) :: pActStom
 
     crop%pActStom = pActStom
 end subroutine SetCrop_pActStom
@@ -11383,7 +11382,7 @@ end subroutine SetCrop_pActStom
 
 subroutine SetCrop_KsShapeFactorLeaf(KsShapeFactorLeaf)
     !! Setter for the "KsShapeFactorLeaf" attribute of the "crop" global variable.
-    real(dp), intent(in) :: KsShapeFactorLeaf
+    real(sp), intent(in) :: KsShapeFactorLeaf
 
     crop%KsShapeFactorLeaf = KsShapeFactorLeaf
 end subroutine SetCrop_KsShapeFactorLeaf
@@ -11391,7 +11390,7 @@ end subroutine SetCrop_KsShapeFactorLeaf
 
 subroutine SetCrop_KsShapeFactorStomata(KsShapeFactorStomata)
     !! Setter for the "KsShapeFactorStomata" attribute of the "crop" global variable.
-    real(dp), intent(in) :: KsShapeFactorStomata
+    real(sp), intent(in) :: KsShapeFactorStomata
 
     crop%KsShapeFactorStomata = KsShapeFactorStomata
 end subroutine SetCrop_KsShapeFactorStomata
@@ -11399,7 +11398,7 @@ end subroutine SetCrop_KsShapeFactorStomata
 
 subroutine SetCrop_KsShapeFactorSenescence(KsShapeFactorSenescence)
     !! Setter for the "KsShapeFactorSenescence" attribute of the "crop" global variable.
-    real(dp), intent(in) :: KsShapeFactorSenescence
+    real(sp), intent(in) :: KsShapeFactorSenescence
 
     crop%KsShapeFactorSenescence = KsShapeFactorSenescence
 end subroutine SetCrop_KsShapeFactorSenescence
@@ -11407,7 +11406,7 @@ end subroutine SetCrop_KsShapeFactorSenescence
 
 subroutine SetCrop_pLeafDefUL(pLeafDefUL)
     !! Setter for the "pLeafDefUL" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pLeafDefUL
+    real(sp), intent(in) :: pLeafDefUL
 
     crop%pLeafDefUL = pLeafDefUL
 end subroutine SetCrop_pLeafDefUL
@@ -11415,7 +11414,7 @@ end subroutine SetCrop_pLeafDefUL
 
 subroutine SetCrop_pLeafDefLL(pLeafDefLL)
     !! Setter for the "pLeafDefLL" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pLeafDefLL
+    real(sp), intent(in) :: pLeafDefLL
 
     crop%pLeafDefLL = pLeafDefLL
 end subroutine SetCrop_pLeafDefLL
@@ -11423,7 +11422,7 @@ end subroutine SetCrop_pLeafDefLL
 
 subroutine SetCrop_pLeafAct(pLeafAct)
     !! Setter for the "pLeafAct" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pLeafAct
+    real(sp), intent(in) :: pLeafAct
 
     crop%pLeafAct = pLeafAct
 end subroutine SetCrop_pLeafAct
@@ -11431,7 +11430,7 @@ end subroutine SetCrop_pLeafAct
 
 subroutine SetCrop_pSenescence(pSenescence)
     !! Setter for the "pSenescence" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pSenescence
+    real(sp), intent(in) :: pSenescence
 
     crop%pSenescence = pSenescence
 end subroutine SetCrop_pSenescence
@@ -11439,7 +11438,7 @@ end subroutine SetCrop_pSenescence
 
 subroutine SetCrop_pSenAct(pSenAct)
     !! Setter for the "pSenAct" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pSenAct
+    real(sp), intent(in) :: pSenAct
 
     crop%pSenAct = pSenAct
 end subroutine SetCrop_pSenAct
@@ -11447,7 +11446,7 @@ end subroutine SetCrop_pSenAct
 
 subroutine SetCrop_pPollination(pPollination)
     !! Setter for the "pPollination" attribute of the "crop" global variable.
-    real(dp), intent(in) :: pPollination
+    real(sp), intent(in) :: pPollination
 
     crop%pPollination = pPollination
 end subroutine SetCrop_pPollination
@@ -11503,7 +11502,7 @@ end subroutine SetCrop_ResponseECsw
 
 subroutine SetCrop_SmaxTopQuarter(SmaxTopQuarter)
     !! Setter for the "SmaxTopQuarter" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SmaxTopQuarter
+    real(sp), intent(in) :: SmaxTopQuarter
 
     crop%SmaxTopQuarter = SmaxTopQuarter
 end subroutine SetCrop_SmaxTopQuarter
@@ -11511,7 +11510,7 @@ end subroutine SetCrop_SmaxTopQuarter
 
 subroutine SetCrop_SmaxBotQuarter(SmaxBotQuarter)
     !! Setter for the "SmaxBotQuarter" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SmaxBotQuarter
+    real(sp), intent(in) :: SmaxBotQuarter
 
     crop%SmaxBotQuarter = SmaxBotQuarter
 end subroutine SetCrop_SmaxBotQuarter
@@ -11519,7 +11518,7 @@ end subroutine SetCrop_SmaxBotQuarter
 
 subroutine SetCrop_SmaxTop(SmaxTop)
     !! Setter for the "SmaxTop" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SmaxTop
+    real(sp), intent(in) :: SmaxTop
 
     crop%SmaxTop = SmaxTop
 end subroutine SetCrop_SmaxTop
@@ -11527,7 +11526,7 @@ end subroutine SetCrop_SmaxTop
 
 subroutine SetCrop_SmaxBot(SmaxBot)
     !! Setter for the "SmaxBot" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SmaxBot
+    real(sp), intent(in) :: SmaxBot
 
     crop%SmaxBot = SmaxBot
 end subroutine SetCrop_SmaxBot
@@ -11535,7 +11534,7 @@ end subroutine SetCrop_SmaxBot
 
 subroutine SetCrop_KcTop(KcTop)
     !! Setter for the "KcTop" attribute of the "crop" global variable.
-    real(dp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcTop
 
     crop%KcTop = KcTop
 end subroutine SetCrop_KcTop
@@ -11543,7 +11542,7 @@ end subroutine SetCrop_KcTop
 
 subroutine SetCrop_KcDecline(KcDecline)
     !! Setter for the "KcDecline" attribute of the "crop" global variable.
-    real(dp), intent(in) :: KcDecline
+    real(sp), intent(in) :: KcDecline
 
     crop%KcDecline = KcDecline
 end subroutine SetCrop_KcDecline
@@ -11583,7 +11582,7 @@ end subroutine SetCrop_Length
 
 subroutine SetCrop_RootMin(RootMin)
     !! Setter for the "RootMin" attribute of the "crop" global variable.
-    real(dp), intent(in) :: RootMin
+    real(sp), intent(in) :: RootMin
 
     crop%RootMin = RootMin
 end subroutine SetCrop_RootMin
@@ -11591,7 +11590,7 @@ end subroutine SetCrop_RootMin
 
 subroutine SetCrop_RootMax(RootMax)
     !! Setter for the "RootMax" attribute of the "crop" global variable.
-    real(dp), intent(in) :: RootMax
+    real(sp), intent(in) :: RootMax
 
     crop%RootMax = RootMax
 end subroutine SetCrop_RootMax
@@ -11607,7 +11606,7 @@ end subroutine SetCrop_RootShape
 
 subroutine SetCrop_Tbase(Tbase)
     !! Setter for the "Tbase" attribute of the "crop" global variable.
-    real(dp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tbase
 
     crop%Tbase = Tbase
 end subroutine SetCrop_Tbase
@@ -11615,7 +11614,7 @@ end subroutine SetCrop_Tbase
 
 subroutine SetCrop_Tupper(Tupper)
     !! Setter for the "Tupper" attribute of the "crop" global variable.
-    real(dp), intent(in) :: Tupper
+    real(sp), intent(in) :: Tupper
 
     crop%Tupper = Tupper
 end subroutine SetCrop_Tupper
@@ -11639,7 +11638,7 @@ end subroutine SetCrop_Theat
 
 subroutine SetCrop_GDtranspLow(GDtranspLow)
     !! Setter for the "GDtranspLow" attribute of the "crop" global variable.
-    real(dp), intent(in) :: GDtranspLow
+    real(sp), intent(in) :: GDtranspLow
 
     crop%GDtranspLow = GDtranspLow
 end subroutine SetCrop_GDtranspLow
@@ -11647,7 +11646,7 @@ end subroutine SetCrop_GDtranspLow
 
 subroutine SetCrop_SizeSeedling(SizeSeedling)
     !! Setter for the "SizeSeedling" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SizeSeedling
+    real(sp), intent(in) :: SizeSeedling
 
     crop%SizeSeedling = SizeSeedling
 end subroutine SetCrop_SizeSeedling
@@ -11655,7 +11654,7 @@ end subroutine SetCrop_SizeSeedling
 
 subroutine SetCrop_SizePlant(SizePlant)
     !! Setter for the "SizePlant" attribute of the "crop" global variable.
-    real(dp), intent(in) :: SizePlant
+    real(sp), intent(in) :: SizePlant
 
     crop%SizePlant = SizePlant
 end subroutine SetCrop_SizePlant
@@ -11671,7 +11670,7 @@ end subroutine SetCrop_PlantingDens
 
 subroutine SetCrop_CCo(CCo)
     !! Setter for the "CCo" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCo
+    real(sp), intent(in) :: CCo
 
     crop%CCo = CCo
 end subroutine SetCrop_CCo
@@ -11679,7 +11678,7 @@ end subroutine SetCrop_CCo
 
 subroutine SetCrop_CCini(CCini)
     !! Setter for the "CCini" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCini
+    real(sp), intent(in) :: CCini
 
     crop%CCini = CCini
 end subroutine SetCrop_CCini
@@ -11687,7 +11686,7 @@ end subroutine SetCrop_CCini
 
 subroutine SetCrop_CGC(CGC)
     !! Setter for the "CGC" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CGC
+    real(sp), intent(in) :: CGC
 
     crop%CGC = CGC
 end subroutine SetCrop_CGC
@@ -11695,7 +11694,7 @@ end subroutine SetCrop_CGC
 
 subroutine SetCrop_GDDCGC(GDDCGC)
     !! Setter for the "GDDCGC" attribute of the "crop" global variable.
-    real(dp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: GDDCGC
 
     crop%GDDCGC = GDDCGC
 end subroutine SetCrop_GDDCGC
@@ -11703,7 +11702,7 @@ end subroutine SetCrop_GDDCGC
 
 subroutine SetCrop_CCx(CCx)
     !! Setter for the "CCx" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCx
+    real(sp), intent(in) :: CCx
 
     crop%CCx = CCx
 end subroutine SetCrop_CCx
@@ -11711,7 +11710,7 @@ end subroutine SetCrop_CCx
 
 subroutine SetCrop_CDC(CDC)
     !! Setter for the "CDC" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CDC
+    real(sp), intent(in) :: CDC
 
     crop%CDC = CDC
 end subroutine SetCrop_CDC
@@ -11719,7 +11718,7 @@ end subroutine SetCrop_CDC
 
 subroutine SetCrop_GDDCDC(GDDCDC)
     !! Setter for the "GDDCDC" attribute of the "crop" global variable.
-    real(dp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: GDDCDC
 
     crop%GDDCDC = GDDCDC
 end subroutine SetCrop_GDDCDC
@@ -11727,7 +11726,7 @@ end subroutine SetCrop_GDDCDC
 
 subroutine SetCrop_CCxAdjusted(CCxAdjusted)
     !! Setter for the "CCxAdjusted" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCxAdjusted
+    real(sp), intent(in) :: CCxAdjusted
 
     crop%CCxAdjusted = CCxAdjusted
 end subroutine SetCrop_CCxAdjusted
@@ -11735,7 +11734,7 @@ end subroutine SetCrop_CCxAdjusted
 
 subroutine SetCrop_CCxWithered(CCxWithered)
     !! Setter for the "CCxWithered" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCxWithered
+    real(sp), intent(in) :: CCxWithered
 
     crop%CCxWithered = CCxWithered
 end subroutine SetCrop_CCxWithered
@@ -11743,7 +11742,7 @@ end subroutine SetCrop_CCxWithered
 
 subroutine SetCrop_CCoAdjusted(CCoAdjusted)
     !! Setter for the "CCoAdjusted" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCoAdjusted
+    real(sp), intent(in) :: CCoAdjusted
 
     crop%CCoAdjusted = CCoAdjusted
 end subroutine SetCrop_CCoAdjusted
@@ -11911,7 +11910,7 @@ end subroutine SetCrop_GDDaysToHIo
 
 subroutine SetCrop_WP(WP)
     !! Setter for the "WP" attribute of the "crop" global variable.
-    real(dp), intent(in) :: WP
+    real(sp), intent(in) :: WP
 
     crop%WP = WP
 end subroutine SetCrop_WP
@@ -11943,7 +11942,7 @@ end subroutine SetCrop_HI
 
 subroutine SetCrop_dHIdt(dHIdt)
     !! Setter for the "dHIdt" attribute of the "crop" global variable.
-    real(dp), intent(in) :: dHIdt
+    real(sp), intent(in) :: dHIdt
 
     crop%dHIdt = dHIdt
 end subroutine SetCrop_dHIdt
@@ -11959,7 +11958,7 @@ end subroutine SetCrop_HIincrease
 
 subroutine SetCrop_aCoeff(aCoeff)
     !! Setter for the "aCoeff" attribute of the "crop" global variable.
-    real(dp), intent(in) :: aCoeff
+    real(sp), intent(in) :: aCoeff
 
     crop%aCoeff = aCoeff
 end subroutine SetCrop_aCoeff
@@ -11967,7 +11966,7 @@ end subroutine SetCrop_aCoeff
 
 subroutine SetCrop_bCoeff(bCoeff)
     !! Setter for the "bCoeff" attribute of the "crop" global variable.
-    real(dp), intent(in) :: bCoeff
+    real(sp), intent(in) :: bCoeff
 
     crop%bCoeff = bCoeff
 end subroutine SetCrop_bCoeff
@@ -12007,7 +12006,7 @@ end subroutine SetCrop_DryMatter
 
 subroutine SetCrop_RootMinYear1(RootMinYear1)
     !! Setter for the "RootMinYear1" attribute of the "crop" global variable.
-    real(dp), intent(in) :: RootMinYear1
+    real(sp), intent(in) :: RootMinYear1
 
     crop%RootMinYear1 = RootMinYear1
 end subroutine SetCrop_RootMinYear1
@@ -12031,7 +12030,7 @@ end subroutine SetCrop_YearCCx
 
 subroutine SetCrop_CCxRoot(CCxRoot)
     !! Setter for the "CCxRoot" attribute of the "crop" global variable.
-    real(dp), intent(in) :: CCxRoot
+    real(sp), intent(in) :: CCxRoot
 
     crop%CCxRoot = CCxRoot
 end subroutine SetCrop_CCxRoot
@@ -12423,7 +12422,7 @@ end function GetPerennialPeriod_OnsetLengthSearchPeriod
 
 function GetPerennialPeriod_OnsetThresholdValue() result(OnsetThresholdValue)
     !! Getter for the "OnsetThresholdValue" attribute of the "perennialperiod" global variable.
-    real(dp) :: OnsetThresholdValue
+    real(sp) :: OnsetThresholdValue
 
     OnsetThresholdValue = perennialperiod%OnsetThresholdValue
 end function GetPerennialPeriod_OnsetThresholdValue
@@ -12511,7 +12510,7 @@ end function GetPerennialPeriod_EndLengthSearchPeriod
 
 function GetPerennialPeriod_EndThresholdValue() result(EndThresholdValue)
     !! Getter for the "EndThresholdValue" attribute of the "perennialperiod" global variable.
-    real(dp) :: EndThresholdValue
+    real(sp) :: EndThresholdValue
 
     EndThresholdValue = perennialperiod%EndThresholdValue
 end function GetPerennialPeriod_EndThresholdValue
@@ -12615,7 +12614,7 @@ end subroutine SetPerennialPeriod_OnsetLengthSearchPeriod
 
 subroutine SetPerennialPeriod_OnsetThresholdValue(OnsetThresholdValue)
     !! Setter for the "OnsetThresholdValue" attribute of the "perennialperiod" global variable.
-    real(dp), intent(in) :: OnsetThresholdValue
+    real(sp), intent(in) :: OnsetThresholdValue
 
     perennialperiod%OnsetThresholdValue = OnsetThresholdValue
 end subroutine SetPerennialPeriod_OnsetThresholdValue
@@ -12703,7 +12702,7 @@ end subroutine SetPerennialPeriod_EndLengthSearchPeriod
 
 subroutine SetPerennialPeriod_EndThresholdValue(EndThresholdValue)
     !! Setter for the "EndThresholdValue" attribute of the "perennialperiod" global variable.
-    real(dp), intent(in) :: EndThresholdValue
+    real(sp), intent(in) :: EndThresholdValue
 
     perennialperiod%EndThresholdValue = EndThresholdValue
 end subroutine SetPerennialPeriod_EndThresholdValue
@@ -12748,21 +12747,21 @@ type(rep_Content) function GetTotalSaltContent()
 end function GetTotalSaltContent
 
 
-real(dp) function GetTotalSaltContent_BeginDay()
+real(sp) function GetTotalSaltContent_BeginDay()
     !! Getter for the "TotalSaltContent_BeginDay" global variable.
 
     GetTotalSaltContent_BeginDay = TotalSaltContent%BeginDay
 end function GetTotalSaltContent_BeginDay
 
 
-real(dp) function GetTotalSaltContent_EndDay()
+real(sp) function GetTotalSaltContent_EndDay()
     !! Getter for the "TotalSaltContent_EndDay" global variable.
 
     GetTotalSaltContent_EndDay = TotalSaltContent%EndDay
 end function GetTotalSaltContent_EndDay
 
 
-real(dp) function GetTotalSaltContent_ErrorDay()
+real(sp) function GetTotalSaltContent_ErrorDay()
     !! Getter for the "TotalSaltContent_ErrorDay" global variable.
 
     GetTotalSaltContent_ErrorDay = TotalSaltContent%ErrorDay
@@ -12776,21 +12775,21 @@ type(rep_Content) function GetTotalWaterContent()
 end function GetTotalWaterContent
 
 
-real(dp) function GetTotalWaterContent_BeginDay()
+real(sp) function GetTotalWaterContent_BeginDay()
     !! Getter for the "TotalWaterContent_BeginDay" global variable.
 
     GetTotalWaterContent_BeginDay = TotalWaterContent%BeginDay
 end function GetTotalWaterContent_BeginDay
 
 
-real(dp) function GetTotalWaterContent_EndDay()
+real(sp) function GetTotalWaterContent_EndDay()
     !! Getter for the "TotalWaterContent_EndDay" global variable.
 
     GetTotalWaterContent_EndDay = TotalWaterContent%EndDay
 end function GetTotalWaterContent_EndDay
 
 
-real(dp) function GetTotalWaterContent_ErrorDay()
+real(sp) function GetTotalWaterContent_ErrorDay()
     !! Getter for the "TotalWaterContent_ErrorDay" global variable.
 
     GetTotalWaterContent_ErrorDay = TotalWaterContent%ErrorDay
@@ -12807,7 +12806,7 @@ end subroutine SetTotalSaltContent
 
 subroutine SetTotalSaltContent_BeginDay(BeginDay)
     !! Setter for the "TotalSaltContent" global variable.
-    real(dp), intent(in) :: BeginDay
+    real(sp), intent(in) :: BeginDay
 
     TotalSaltContent%BeginDay = BeginDay
 end subroutine SetTotalSaltContent_BeginDay
@@ -12815,7 +12814,7 @@ end subroutine SetTotalSaltContent_BeginDay
 
 subroutine SetTotalSaltContent_EndDay(EndDay)
     !! Setter for the "TotalSaltContent" global variable.
-    real(dp), intent(in) :: EndDay
+    real(sp), intent(in) :: EndDay
 
     TotalSaltContent%EndDay = EndDay
 end subroutine SetTotalSaltContent_EndDay
@@ -12823,7 +12822,7 @@ end subroutine SetTotalSaltContent_EndDay
 
 subroutine SetTotalSaltContent_ErrorDay(ErrorDay)
     !! Setter for the "TotalSaltContent" global variable.
-    real(dp), intent(in) :: ErrorDay
+    real(sp), intent(in) :: ErrorDay
 
     TotalSaltContent%ErrorDay = ErrorDay
 end subroutine SetTotalSaltContent_ErrorDay
@@ -12839,7 +12838,7 @@ end subroutine SetTotalWaterContent
 
 subroutine SetTotalWaterContent_BeginDay(BeginDay)
     !! Setter for the "TotalWaterContent" global variable.
-    real(dp), intent(in) :: BeginDay
+    real(sp), intent(in) :: BeginDay
 
     TotalWaterContent%BeginDay = BeginDay
 end subroutine SetTotalWaterContent_BeginDay
@@ -12847,7 +12846,7 @@ end subroutine SetTotalWaterContent_BeginDay
 
 subroutine SetTotalWaterContent_EndDay(EndDay)
     !! Setter for the "TotalWaterContent" global variable.
-    real(dp), intent(in) :: EndDay
+    real(sp), intent(in) :: EndDay
 
     TotalWaterContent%EndDay = EndDay
 end subroutine SetTotalWaterContent_EndDay
@@ -12855,7 +12854,7 @@ end subroutine SetTotalWaterContent_EndDay
 
 subroutine SetTotalWaterContent_ErrorDay(ErrorDay)
     !! Setter for the "TotalWaterContent" global variable.
-    real(dp), intent(in) :: ErrorDay
+    real(sp), intent(in) :: ErrorDay
 
     TotalWaterContent%ErrorDay = ErrorDay
 end subroutine SetTotalWaterContent_ErrorDay
@@ -12868,28 +12867,28 @@ type(rep_RootZoneSalt) function GetRootZoneSalt()
 end function GetRootZoneSalt
 
 
-real(dp) function GetRootZoneSalt_ECe()
+real(sp) function GetRootZoneSalt_ECe()
     !! Getter for the "RootZoneSalt" global variable.
 
     GetRootZoneSalt_ECe = RootZoneSalt%ECe
 end function GetRootZoneSalt_ECe
 
 
-real(dp) function GetRootZoneSalt_ECsw()
+real(sp) function GetRootZoneSalt_ECsw()
     !! Getter for the "RootZoneSalt" global variable.
 
     GetRootZoneSalt_ECsw = RootZoneSalt%ECsw
 end function GetRootZoneSalt_ECsw
 
 
-real(dp) function GetRootZoneSalt_ECswFC()
+real(sp) function GetRootZoneSalt_ECswFC()
     !! Getter for the "RootZoneSalt" global variable.
 
     GetRootZoneSalt_ECswFC = RootZoneSalt%ECswFC
 end function GetRootZoneSalt_ECswFC
 
 
-real(dp) function GetRootZoneSalt_KsSalt()
+real(sp) function GetRootZoneSalt_KsSalt()
     !! Getter for the "RootZoneSalt" global variable.
 
     GetRootZoneSalt_KsSalt = RootZoneSalt%KsSalt
@@ -12906,7 +12905,7 @@ end subroutine SetRootZoneSalt
 
 subroutine SetRootZoneSalt_ECe(ECe)
     !! Setter for the "RootZoneSalt" global variable.
-    real(dp), intent(in) :: ECe
+    real(sp), intent(in) :: ECe
 
     RootZoneSalt%ECe = ECe
 end subroutine SetRootZoneSalt_ECe
@@ -12914,7 +12913,7 @@ end subroutine SetRootZoneSalt_ECe
 
 subroutine SetRootZoneSalt_ECsw(ECsw)
     !! Setter for the "RootZoneSalt" global variable.
-    real(dp), intent(in) :: ECsw
+    real(sp), intent(in) :: ECsw
 
     RootZoneSalt%ECsw = ECsw
 end subroutine SetRootZoneSalt_ECsw
@@ -12922,7 +12921,7 @@ end subroutine SetRootZoneSalt_ECsw
 
 subroutine SetRootZoneSalt_ECswFC(ECswFC)
     !! Setter for the "RootZoneSalt" global variable.
-    real(dp), intent(in) :: ECswFC
+    real(sp), intent(in) :: ECswFC
 
     RootZoneSalt%ECswFC = ECswFC
 end subroutine SetRootZoneSalt_ECswFC
@@ -12930,7 +12929,7 @@ end subroutine SetRootZoneSalt_ECswFC
 
 subroutine SetRootZoneSalt_KsSalt(KsSalt)
     !! Setter for the "RootZoneSalt" global variable.
-    real(dp), intent(in) :: KsSalt
+    real(sp), intent(in) :: KsSalt
 
     RootZoneSalt%KsSalt = KsSalt
 end subroutine SetRootZoneSalt_KsSalt
@@ -14112,7 +14111,7 @@ end function GetSimulation_ToDayNr
 function GetSimulation_ThetaIni_i(i) result(ThetaIni_i)
     !! Getter for the "ThetaIni" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: ThetaIni_i
+    real(sp) :: ThetaIni_i
 
     ThetaIni_i = simulation%ThetaIni(i)
 end function GetSimulation_ThetaIni_i
@@ -14121,7 +14120,7 @@ end function GetSimulation_ThetaIni_i
 function GetSimulation_ECeIni_i(i) result(ECeIni_i)
     !! Getter for the "ECeIni" attribute of the "simulation" global variable.
     integer(int32) :: i
-    real(dp) :: ECeIni_i
+    real(sp) :: ECeIni_i
 
     ECeIni_i = simulation%ECeIni(i)
 end function GetSimulation_ECeIni_i
@@ -14129,7 +14128,7 @@ end function GetSimulation_ECeIni_i
 
 function GetSimulation_SurfaceStorageIni() result(SurfaceStorageIni)
     !! Getter for the "SurfaceStorageIni" attribute of the "simulation" global variable.
-    real(dp) :: SurfaceStorageIni
+    real(sp) :: SurfaceStorageIni
 
     SurfaceStorageIni = simulation%SurfaceStorageIni
 end function GetSimulation_SurfaceStorageIni
@@ -14137,7 +14136,7 @@ end function GetSimulation_SurfaceStorageIni
 
 function GetSimulation_ECStorageIni() result(ECStorageIni)
     !! Getter for the "ECStorageIni" attribute of the "simulation" global variable.
-    real(dp) :: ECStorageIni
+    real(sp) :: ECStorageIni
 
     ECStorageIni = simulation%ECStorageIni
 end function GetSimulation_ECStorageIni
@@ -14145,7 +14144,7 @@ end function GetSimulation_ECStorageIni
 
 function GetSimulation_CCini() result(CCini)
     !! Getter for the "CCini" attribute of the "simulation" global variable.
-    real(dp) :: CCini
+    real(sp) :: CCini
 
     CCini = simulation%CCini
 end function GetSimulation_CCini
@@ -14153,7 +14152,7 @@ end function GetSimulation_CCini
 
 function GetSimulation_Bini() result(Bini)
     !! Getter for the "Bini" attribute of the "simulation" global variable.
-    real(dp) :: Bini
+    real(sp) :: Bini
 
     Bini = simulation%Bini
 end function GetSimulation_Bini
@@ -14161,7 +14160,7 @@ end function GetSimulation_Bini
 
 function GetSimulation_Zrini() result(Zrini)
     !! Getter for the "Zrini" attribute of the "simulation" global variable.
-    real(dp) :: Zrini
+    real(sp) :: Zrini
 
     Zrini = simulation%Zrini
 end function GetSimulation_Zrini
@@ -14201,7 +14200,7 @@ end function GetSimulation_EvapLimitON
 
 function GetSimulation_EvapWCsurf() result(EvapWCsurf)
     !! Getter for the "EvapWCsurf" attribute of the "simulation" global variable.
-    real(dp) :: EvapWCsurf
+    real(sp) :: EvapWCsurf
 
     EvapWCsurf = simulation%EvapWCsurf
 end function GetSimulation_EvapWCsurf
@@ -14217,7 +14216,7 @@ end function GetSimulation_EvapStartStg2
 
 function GetSimulation_EvapZ() result(EvapZ)
     !! Getter for the "EvapZ" attribute of the "simulation" global variable.
-    real(dp) :: EvapZ
+    real(sp) :: EvapZ
 
     EvapZ = simulation%EvapZ
 end function GetSimulation_EvapZ
@@ -14249,7 +14248,7 @@ end function GetSimulation_Germinate
 
 function GetSimulation_SumEToStress() result(SumEToStress)
     !! Getter for the "SumEToStress" attribute of the "simulation" global variable.
-    real(dp) :: SumEToStress
+    real(sp) :: SumEToStress
 
     SumEToStress = simulation%SumEToStress
 end function GetSimulation_SumEToStress
@@ -14257,7 +14256,7 @@ end function GetSimulation_SumEToStress
 
 function GetSimulation_SumGDD() result(SumGDD)
     !! Getter for the "SumGDD" attribute of the "simulation" global variable.
-    real(dp) :: SumGDD
+    real(sp) :: SumGDD
 
     SumGDD = simulation%SumGDD
 end function GetSimulation_SumGDD
@@ -14265,7 +14264,7 @@ end function GetSimulation_SumGDD
 
 function GetSimulation_SumGDDfromDay1() result(SumGDDfromDay1)
     !! Getter for the "SumGDDfromDay1" attribute of the "simulation" global variable.
-    real(dp) :: SumGDDfromDay1
+    real(sp) :: SumGDDfromDay1
 
     SumGDDfromDay1 = simulation%SumGDDfromDay1
 end function GetSimulation_SumGDDfromDay1
@@ -14305,7 +14304,7 @@ end function GetSimulation_MultipleRunWithKeepSWC
 
 function GetSimulation_MultipleRunConstZrx() result(MultipleRunConstZrx)
     !! Getter for the "MultipleRunConstZrx" attribute of the "simulation" global variable.
-    real(dp) :: MultipleRunConstZrx
+    real(sp) :: MultipleRunConstZrx
 
     MultipleRunConstZrx = simulation%MultipleRunConstZrx
 end function GetSimulation_MultipleRunConstZrx
@@ -14313,7 +14312,7 @@ end function GetSimulation_MultipleRunConstZrx
 
 function GetSimulation_IrriECw() result(IrriECw)
     !! Getter for the "IrriECw" attribute of the "simulation" global variable.
-    real(dp) :: IrriECw
+    real(sp) :: IrriECw
 
     IrriECw = simulation%IrriECw
 end function GetSimulation_IrriECw
@@ -14418,7 +14417,7 @@ end subroutine SetSimulation_ToDayNr
 subroutine SetSimulation_ThetaIni_i(i, ThetaIni_i)
     !! Setter for the "ThetaIni" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: ThetaIni_i
+    real(sp), intent(in) :: ThetaIni_i
 
     simulation%ThetaIni(i) = ThetaIni_i
 end subroutine SetSimulation_ThetaIni_i
@@ -14427,7 +14426,7 @@ end subroutine SetSimulation_ThetaIni_i
 subroutine SetSimulation_ECeIni_i(i, ECeIni_i)
     !! Setter for the "ECeIni" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: ECeIni_i
+    real(sp), intent(in) :: ECeIni_i
 
     simulation%ECeIni(i) = ECeIni_i
 end subroutine SetSimulation_ECeIni_i
@@ -14435,7 +14434,7 @@ end subroutine SetSimulation_ECeIni_i
 
 subroutine SetSimulation_SurfaceStorageIni(SurfaceStorageIni)
     !! Setter for the "SurfaceStorageIni" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: SurfaceStorageIni
+    real(sp), intent(in) :: SurfaceStorageIni
 
     simulation%SurfaceStorageIni = SurfaceStorageIni
 end subroutine SetSimulation_SurfaceStorageIni
@@ -14443,7 +14442,7 @@ end subroutine SetSimulation_SurfaceStorageIni
 
 subroutine SetSimulation_ECStorageIni(ECStorageIni)
     !! Setter for the "ECStorageIni" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: ECStorageIni
+    real(sp), intent(in) :: ECStorageIni
 
     simulation%ECStorageIni = ECStorageIni
 end subroutine SetSimulation_ECStorageIni
@@ -14451,7 +14450,7 @@ end subroutine SetSimulation_ECStorageIni
 
 subroutine SetSimulation_CCini(CCini)
     !! Setter for the "CCini" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: CCini
+    real(sp), intent(in) :: CCini
 
     simulation%CCini = CCini
 end subroutine SetSimulation_CCini
@@ -14459,7 +14458,7 @@ end subroutine SetSimulation_CCini
 
 subroutine SetSimulation_Bini(Bini)
     !! Setter for the "Bini" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: Bini
+    real(sp), intent(in) :: Bini
 
     simulation%Bini = Bini
 end subroutine SetSimulation_Bini
@@ -14467,7 +14466,7 @@ end subroutine SetSimulation_Bini
 
 subroutine SetSimulation_Zrini(Zrini)
     !! Setter for the "Zrini" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: Zrini
+    real(sp), intent(in) :: Zrini
 
     simulation%Zrini = Zrini
 end subroutine SetSimulation_Zrini
@@ -14507,7 +14506,7 @@ end subroutine SetSimulation_EvapLimitON
 
 subroutine SetSimulation_EvapWCsurf(EvapWCsurf)
     !! Setter for the "EvapWCsurf" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: EvapWCsurf
+    real(sp), intent(in) :: EvapWCsurf
 
     simulation%EvapWCsurf = EvapWCsurf
 end subroutine SetSimulation_EvapWCsurf
@@ -14523,7 +14522,7 @@ end subroutine SetSimulation_EvapStartStg2
 
 subroutine SetSimulation_EvapZ(EvapZ)
     !! Setter for the "EvapZ" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: EvapZ
+    real(sp), intent(in) :: EvapZ
 
     simulation%EvapZ = EvapZ
 end subroutine SetSimulation_EvapZ
@@ -14555,7 +14554,7 @@ end subroutine SetSimulation_Germinate
 
 subroutine SetSimulation_SumEToStress(SumEToStress)
     !! Setter for the "SumEToStress" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: SumEToStress
+    real(sp), intent(in) :: SumEToStress
 
     simulation%SumEToStress = SumEToStress
 end subroutine SetSimulation_SumEToStress
@@ -14563,7 +14562,7 @@ end subroutine SetSimulation_SumEToStress
 
 subroutine SetSimulation_SumGDD(SumGDD)
     !! Setter for the "SumGDD" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: SumGDD
+    real(sp), intent(in) :: SumGDD
 
     simulation%SumGDD = SumGDD
 end subroutine SetSimulation_SumGDD
@@ -14571,7 +14570,7 @@ end subroutine SetSimulation_SumGDD
 
 subroutine SetSimulation_SumGDDfromDay1(SumGDDfromDay1)
     !! Setter for the "SumGDDfromDay1" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: SumGDDfromDay1
+    real(sp), intent(in) :: SumGDDfromDay1
 
     simulation%SumGDDfromDay1 = SumGDDfromDay1
 end subroutine SetSimulation_SumGDDfromDay1
@@ -14611,7 +14610,7 @@ end subroutine SetSimulation_MultipleRunWithKeepSWC
 
 subroutine SetSimulation_MultipleRunConstZrx(MultipleRunConstZrx)
     !! Setter for the "MultipleRunConstZrx" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: MultipleRunConstZrx
+    real(sp), intent(in) :: MultipleRunConstZrx
 
     simulation%MultipleRunConstZrx = MultipleRunConstZrx
 end subroutine SetSimulation_MultipleRunConstZrx
@@ -14619,7 +14618,7 @@ end subroutine SetSimulation_MultipleRunConstZrx
 
 subroutine SetSimulation_IrriECw(IrriECw)
     !! Setter for the "IrriECw" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: IrriECw
+    real(sp), intent(in) :: IrriECw
 
     simulation%IrriECw = IrriECw
 end subroutine SetSimulation_IrriECw
@@ -14724,7 +14723,7 @@ end function GetSimulation_IniSWC_NrLoc
 function GetSimulation_IniSWC_Loc_i(i) result(Loc_i)
     !! Getter for the "Loc" attribute of the "IniSWC" attribute of the "simulation" global variable
     integer(int32), intent(in) :: i
-    real(dp) :: Loc_i
+    real(sp) :: Loc_i
 
     Loc_i = simulation%IniSWC%Loc(i)
 end function GetSimulation_IniSWC_Loc_i
@@ -14733,7 +14732,7 @@ end function GetSimulation_IniSWC_Loc_i
 function GetSimulation_IniSWC_Loc() result(Loc)
     !! Getter for the "Loc" attribute of the "IniSWC" attribute of the "simulation" global variable
 
-    real(dp), dimension(max_No_compartments) :: Loc
+    real(sp), dimension(max_No_compartments) :: Loc
 
     Loc = simulation%IniSWC%Loc
 end function GetSimulation_IniSWC_Loc
@@ -14742,7 +14741,7 @@ end function GetSimulation_IniSWC_Loc
 function GetSimulation_IniSWC_VolProc_i(i) result(VolProc_i)
     !! Getter for the "VolProc" attribute of the "IniSWC" attribute of the "simulation" global variable
     integer(int32), intent(in) :: i
-    real(dp) :: VolProc_i
+    real(sp) :: VolProc_i
 
     VolProc_i = simulation%IniSWC%VolProc(i)
 end function GetSimulation_IniSWC_VolProc_i
@@ -14751,7 +14750,7 @@ end function GetSimulation_IniSWC_VolProc_i
 function GetSimulation_IniSWC_VolProc() result(VolProc)
     !! Getter for the "VolProc" attribute of the "IniSWC" attribute of the "simulation" global variable
 
-    real(dp), dimension(max_No_compartments) :: VolProc
+    real(sp), dimension(max_No_compartments) :: VolProc
 
     VolProc = simulation%IniSWC%VolProc
 end function GetSimulation_IniSWC_VolProc
@@ -14760,7 +14759,7 @@ end function GetSimulation_IniSWC_VolProc
 function GetSimulation_IniSWC_SaltECe_i(i) result(SaltECe_i)
     !! Getter for the "SaltECe" attribute of the "IniSWC" attribute of the "simulation" global variable
     integer(int32), intent(in) :: i
-    real(dp) :: SaltECe_i
+    real(sp) :: SaltECe_i
 
     SaltECe_i = simulation%IniSWC%SaltECe(i)
 end function GetSimulation_IniSWC_SaltECe_i
@@ -14769,7 +14768,7 @@ end function GetSimulation_IniSWC_SaltECe_i
 function GetSimulation_IniSWC_SaltECe() result(SaltECe)
     !! Getter for the "SaltECe" attribute of the "IniSWC" attribute of the "simulation" global variable
 
-    real(dp), dimension(max_No_compartments) :: SaltECe
+    real(sp), dimension(max_No_compartments) :: SaltECe
 
     SaltECe = simulation%IniSWC%SaltECe
 end function GetSimulation_IniSWC_SaltECe
@@ -14810,7 +14809,7 @@ end subroutine SetSimulation_IniSWC_NrLoc
 subroutine SetSimulation_IniSWC_Loc_i(i, Loc_i)
     !! Setter for the "Loc" attribute of the "IniSWC" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Loc_i
+    real(sp), intent(in) :: Loc_i
 
     simulation%IniSWC%Loc(i) = Loc_i
 end subroutine SetSimulation_IniSWC_Loc_i
@@ -14819,7 +14818,7 @@ end subroutine SetSimulation_IniSWC_Loc_i
 subroutine SetSimulation_IniSWC_VolProc_i(i, VolProc_i)
     !! Setter for the "VolProc" attribute of the "IniSWC" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: VolProc_i
+    real(sp), intent(in) :: VolProc_i
 
     simulation%IniSWC%VolProc(i) = VolProc_i
 end subroutine SetSimulation_IniSWC_VolProc_i
@@ -14828,7 +14827,7 @@ end subroutine SetSimulation_IniSWC_VolProc_i
 subroutine SetSimulation_IniSWC_SaltECe_i(i, SaltECe_i)
     !! Setter for the "SaltECe" attribute of the "IniSWC" attribute of the "simulation" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: SaltECe_i
+    real(sp), intent(in) :: SaltECe_i
 
     simulation%IniSWC%SaltECe(i) = SaltECe_i
 end subroutine SetSimulation_IniSWC_SaltECe_i
@@ -14876,7 +14875,7 @@ end function GetSimulation_EffectStress_RedWP
 
 function GetSimulation_EffectStress_CDecline() result(CDecline)
     !! Getter for the "CDecline" attribute of the "EffectStress" attribute of the "simulation" global variable.
-    real(dp) :: CDecline
+    real(sp) :: CDecline
 
     CDecline = simulation%EffectStress%CDecline
 end function GetSimulation_EffectStress_CDecline
@@ -14924,7 +14923,7 @@ end subroutine SetSimulation_EffectStress_RedWP
 
 subroutine SetSimulation_EffectStress_CDecline(CDecline)
     !! Setter for the "CDecline" attribute of the "EffectStress" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: CDecline
+    real(sp), intent(in) :: CDecline
 
     simulation%EffectStress%CDecline = CDecline
 end subroutine SetSimulation_EffectStress_CDecline
@@ -14948,7 +14947,7 @@ end function GetSimulation_Storage
 
 function GetSimulation_Storage_Btotal() result(Btotal)
     !! Getter for the "Btotal" attribute of the "Storage" attribute of the "simulation" global variable.
-    real(dp) :: Btotal
+    real(sp) :: Btotal
 
     Btotal = simulation%Storage%Btotal
 end function GetSimulation_Storage_Btotal
@@ -14980,7 +14979,7 @@ end subroutine SetSimulation_Storage
 
 subroutine SetSimulation_Storage_Btotal(Btotal)
     !! Setter for the "Btotal" attribute of the "Storage" attribute of the "simulation" global variable.
-    real(dp), intent(in) :: Btotal
+    real(sp), intent(in) :: Btotal
 
     simulation%Storage%Btotal = Btotal
 end subroutine SetSimulation_Storage_Btotal
@@ -15031,7 +15030,7 @@ end subroutine SetCompartment_i
 function GetCompartment_Thickness(i) result(Thickness)
     !! Getter for the "Thickness" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: Thickness
+    real(sp) :: Thickness
 
     Thickness = compartment(i)%Thickness
 end function GetCompartment_Thickness
@@ -15040,7 +15039,7 @@ end function GetCompartment_Thickness
 function GetCompartment_theta(i) result(theta)
     !! Getter for the "theta" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: theta
+    real(sp) :: theta
 
     theta = compartment(i)%theta
 end function GetCompartment_theta
@@ -15049,7 +15048,7 @@ end function GetCompartment_theta
 function GetCompartment_fluxout(i) result(fluxout)
     !! Getter for the "fluxout" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: fluxout
+    real(sp) :: fluxout
 
     fluxout = compartment(i)%fluxout
 end function GetCompartment_fluxout
@@ -15067,7 +15066,7 @@ end function GetCompartment_Layer
 function GetCompartment_Smax(i) result(Smax)
     !! Getter for the "Smax" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: Smax
+    real(sp) :: Smax
 
     Smax = compartment(i)%Smax
 end function GetCompartment_Smax
@@ -15076,7 +15075,7 @@ end function GetCompartment_Smax
 function GetCompartment_FCadj(i) result(FCadj)
     !! Getter for the "FCadj" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: FCadj
+    real(sp) :: FCadj
 
     FCadj = compartment(i)%FCadj
 end function GetCompartment_FCadj
@@ -15094,7 +15093,7 @@ end function GetCompartment_DayAnaero
 function GetCompartment_WFactor(i) result(WFactor)
     !! Getter for the "WFactor" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: WFactor
+    real(sp) :: WFactor
 
     WFactor = compartment(i)%WFactor
 end function GetCompartment_WFactor
@@ -15104,7 +15103,7 @@ function GetCompartment_Salt(i1, i2) result(Salt)
     !! Getter for individual elements of "Salt" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i1
     integer(int32), intent(in) :: i2
-    real(dp) :: Salt
+    real(sp) :: Salt
 
     Salt = compartment(i1)%Salt(i2)
 end function GetCompartment_Salt
@@ -15114,7 +15113,7 @@ function GetCompartment_Depo(i1, i2) result(Depo)
     !! Getter for individual elements of "Depo" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i1
     integer(int32), intent(in) :: i2
-    real(dp) :: Depo
+    real(sp) :: Depo
 
     Depo = compartment(i1)%Depo(i2)
 end function GetCompartment_Depo
@@ -15132,7 +15131,7 @@ end subroutine SetCompartment
 subroutine SetCompartment_Thickness(i, Thickness)
     !! Setter for the "Thickness" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Thickness
+    real(sp), intent(in) :: Thickness
 
     compartment(i)%Thickness = Thickness
 end subroutine SetCompartment_Thickness
@@ -15141,7 +15140,7 @@ end subroutine SetCompartment_Thickness
 subroutine SetCompartment_theta(i, theta)
     !! Setter for the "theta" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: theta
+    real(sp), intent(in) :: theta
 
     compartment(i)%theta = theta
 end subroutine SetCompartment_theta
@@ -15150,7 +15149,7 @@ end subroutine SetCompartment_theta
 subroutine SetCompartment_fluxout(i, fluxout)
     !! Setter for the "fluxout" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: fluxout
+    real(sp), intent(in) :: fluxout
 
     compartment(i)%fluxout = fluxout
 end subroutine SetCompartment_fluxout
@@ -15168,7 +15167,7 @@ end subroutine SetCompartment_Layer
 subroutine SetCompartment_Smax(i, Smax)
     !! Setter for the "Smax" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Smax
+    real(sp), intent(in) :: Smax
 
     compartment(i)%Smax = Smax
 end subroutine SetCompartment_Smax
@@ -15177,7 +15176,7 @@ end subroutine SetCompartment_Smax
 subroutine SetCompartment_FCadj(i, FCadj)
     !! Setter for the "FCadj" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: FCadj
+    real(sp), intent(in) :: FCadj
 
     compartment(i)%FCadj = FCadj
 end subroutine SetCompartment_FCadj
@@ -15195,7 +15194,7 @@ end subroutine SetCompartment_DayAnaero
 subroutine SetCompartment_WFactor(i, WFactor)
     !! Setter for the "WFactor" attribute of the "compartment" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: WFactor
+    real(sp), intent(in) :: WFactor
 
     compartment(i)%WFactor = WFactor
 end subroutine SetCompartment_WFactor
@@ -15205,7 +15204,7 @@ subroutine SetCompartment_Salt(i1, i2, Salt)
     !! Setter for individual elements of "Salt" attribute of the "compartment global variable.
     integer(int32), intent(in) :: i1
     integer(int32), intent(in) :: i2
-    real(dp), intent(in) :: Salt
+    real(sp), intent(in) :: Salt
 
     compartment(i1)%Salt(i2) = Salt
 end subroutine SetCompartment_Salt
@@ -15215,7 +15214,7 @@ subroutine SetCompartment_Depo(i1, i2, Depo)
     !! Setter for individual elements of "Depo" attribute of the "compartment global variable.
     integer(int32), intent(in) :: i1
     integer(int32), intent(in) :: i2
-    real(dp), intent(in) :: Depo
+    real(sp), intent(in) :: Depo
 
     compartment(i1)%Depo(i2) = Depo
 end subroutine SetCompartment_Depo
@@ -15250,7 +15249,7 @@ end function GetSoilLayer_Description
 function GetSoilLayer_Thickness(i) result(Thickness)
     !! Getter for the "Thickness" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: Thickness
+    real(sp) :: Thickness
 
     Thickness = soillayer(i)%Thickness
 end function GetSoilLayer_Thickness
@@ -15259,7 +15258,7 @@ end function GetSoilLayer_Thickness
 function GetSoilLayer_SAT(i) result(SAT)
     !! Getter for the "SAT" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: SAT
+    real(sp) :: SAT
 
     SAT = soillayer(i)%SAT
 end function GetSoilLayer_SAT
@@ -15268,7 +15267,7 @@ end function GetSoilLayer_SAT
 function GetSoilLayer_FC(i) result(FC)
     !! Getter for the "FC" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: FC
+    real(sp) :: FC
 
     FC = soillayer(i)%FC
 end function GetSoilLayer_FC
@@ -15277,7 +15276,7 @@ end function GetSoilLayer_FC
 function GetSoilLayer_WP(i) result(WP)
     !! Getter for the "WP" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: WP
+    real(sp) :: WP
 
     WP = soillayer(i)%WP
 end function GetSoilLayer_WP
@@ -15286,7 +15285,7 @@ end function GetSoilLayer_WP
 function GetSoilLayer_tau(i) result(tau)
     !! Getter for the "tau" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: tau
+    real(sp) :: tau
 
     tau = soillayer(i)%tau
 end function GetSoilLayer_tau
@@ -15295,7 +15294,7 @@ end function GetSoilLayer_tau
 function GetSoilLayer_InfRate(i) result(InfRate)
     !! Getter for the "InfRate" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: InfRate
+    real(sp) :: InfRate
 
     InfRate = soillayer(i)%InfRate
 end function GetSoilLayer_InfRate
@@ -15322,7 +15321,7 @@ end function GetSoilLayer_GravelMass
 function GetSoilLayer_GravelVol(i) result(GravelVol)
     !! Getter for the "GravelVol" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: GravelVol
+    real(sp) :: GravelVol
 
     GravelVol = soillayer(i)%GravelVol
 end function GetSoilLayer_GravelVol
@@ -15331,7 +15330,7 @@ end function GetSoilLayer_GravelVol
 function GetSoilLayer_WaterContent(i) result(WaterContent)
     !! Getter for the "WaterContent" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: WaterContent
+    real(sp) :: WaterContent
 
     WaterContent = soillayer(i)%WaterContent
 end function GetSoilLayer_WaterContent
@@ -15349,7 +15348,7 @@ end function GetSoilLayer_Macro
 function GetSoilLayer_SaltMobility(i) result(SaltMobility)
     !! Getter for the "SaltMobility" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), dimension(11) :: SaltMobility
+    real(sp), dimension(11) :: SaltMobility
 
     SaltMobility  = soillayer(i)%SaltMobility
 end function GetSoilLayer_SaltMobility
@@ -15358,7 +15357,7 @@ end function GetSoilLayer_SaltMobility
 function GetSoilLayer_SaltMobility_i(i1, i2) result(SaltMobility_i)
     !! Getter for the "SaltMobility" attribute of the "soillayer" global variable (individual element)
     integer(int32), intent(in) :: i1, i2
-    real(dp) :: SaltMobility_i
+    real(sp) :: SaltMobility_i
 
     SaltMobility_i = soillayer(i1)%SaltMobility(i2)
 end function GetSoilLayer_SaltMobility_i
@@ -15385,7 +15384,7 @@ end function GetSoilLayer_SCP1
 function GetSoilLayer_UL(i) result(UL)
     !! Getter for the "UL" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: UL
+    real(sp) :: UL
 
     UL = soillayer(i)%UL
 end function GetSoilLayer_UL
@@ -15394,7 +15393,7 @@ end function GetSoilLayer_UL
 function GetSoilLayer_Dx(i) result(Dx)
     !! Getter for the "Dx" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: Dx
+    real(sp) :: Dx
 
     Dx = soillayer(i)%Dx
 end function GetSoilLayer_Dx
@@ -15412,7 +15411,7 @@ end function GetSoilLayer_SoilClass
 function GetSoilLayer_CRa(i) result(CRa)
     !! Getter for the "CRa" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: CRa
+    real(sp) :: CRa
 
     CRa = soillayer(i)%CRa
 end function GetSoilLayer_CRa
@@ -15421,7 +15420,7 @@ end function GetSoilLayer_CRa
 function GetSoilLayer_CRb(i) result(CRb)
     !! Getter for the "CRb" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp) :: CRb
+    real(sp) :: CRb
 
     CRb = soillayer(i)%CRb
 end function GetSoilLayer_CRb
@@ -15456,7 +15455,7 @@ end subroutine SetSoilLayer_Description
 subroutine SetSoilLayer_Thickness(i, Thickness)
     !! Setter for the "Thickness" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Thickness
+    real(sp), intent(in) :: Thickness
 
     soillayer(i)%Thickness = Thickness
 end subroutine SetSoilLayer_Thickness
@@ -15465,7 +15464,7 @@ end subroutine SetSoilLayer_Thickness
 subroutine SetSoilLayer_SAT(i, SAT)
     !! Setter for the "SAT" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: SAT
+    real(sp), intent(in) :: SAT
 
     soillayer(i)%SAT = SAT
 end subroutine SetSoilLayer_SAT
@@ -15474,7 +15473,7 @@ end subroutine SetSoilLayer_SAT
 subroutine SetSoilLayer_FC(i, FC)
     !! Setter for the "FC" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: FC
+    real(sp), intent(in) :: FC
 
     soillayer(i)%FC = FC
 end subroutine SetSoilLayer_FC
@@ -15483,7 +15482,7 @@ end subroutine SetSoilLayer_FC
 subroutine SetSoilLayer_WP(i, WP)
     !! Setter for the "WP" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: WP
+    real(sp), intent(in) :: WP
 
     soillayer(i)%WP = WP
 end subroutine SetSoilLayer_WP
@@ -15492,7 +15491,7 @@ end subroutine SetSoilLayer_WP
 subroutine SetSoilLayer_tau(i, tau)
     !! Setter for the "tau" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: tau
+    real(sp), intent(in) :: tau
 
     soillayer(i)%tau = tau
 end subroutine SetSoilLayer_tau
@@ -15501,7 +15500,7 @@ end subroutine SetSoilLayer_tau
 subroutine SetSoilLayer_InfRate(i, InfRate)
     !! Setter for the "InfRate" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: InfRate
+    real(sp), intent(in) :: InfRate
 
     soillayer(i)%InfRate = InfRate
 end subroutine SetSoilLayer_InfRate
@@ -15528,7 +15527,7 @@ end subroutine SetSoilLayer_GravelMass
 subroutine SetSoilLayer_GravelVol(i, GravelVol)
     !! Setter for the "GravelVol" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: GravelVol
+    real(sp), intent(in) :: GravelVol
 
     soillayer(i)%GravelVol = GravelVol
 end subroutine SetSoilLayer_GravelVol
@@ -15537,7 +15536,7 @@ end subroutine SetSoilLayer_GravelVol
 subroutine SetSoilLayer_WaterContent(i, WaterContent)
     !! Setter for the "WaterContent" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: WaterContent
+    real(sp), intent(in) :: WaterContent
 
     soillayer(i)%WaterContent = WaterContent
 end subroutine SetSoilLayer_WaterContent
@@ -15555,7 +15554,7 @@ end subroutine SetSoilLayer_Macro
 subroutine SetSoilLayer_SaltMobility(i, SaltMobility)
     !! Setter for the "SaltMobility" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), dimension(11) :: SaltMobility
+    real(sp), dimension(11) :: SaltMobility
 
     soillayer(i)%SaltMobility = SaltMobility
 end subroutine SetSoilLayer_SaltMobility
@@ -15564,7 +15563,7 @@ end subroutine SetSoilLayer_SaltMobility
 subroutine SetSoilLayer_SaltMobility_i(i1, i2, SaltMobility_i)
     !! Setter for the "SaltMobility" attribute of the "soillayer" global variable (individual element)
     integer(int32), intent(in) :: i1, i2
-    real(dp) :: SaltMobility_i
+    real(sp) :: SaltMobility_i
 
     soillayer(i1)%SaltMobility(i2) = SaltMobility_i
 end subroutine SetSoilLayer_SaltMobility_i
@@ -15591,7 +15590,7 @@ end subroutine SetSoilLayer_SCP1
 subroutine SetSoilLayer_UL(i, UL)
     !! Setter for the "UL" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: UL
+    real(sp), intent(in) :: UL
 
     soillayer(i)%UL = UL
 end subroutine SetSoilLayer_UL
@@ -15600,7 +15599,7 @@ end subroutine SetSoilLayer_UL
 subroutine SetSoilLayer_Dx(i, Dx)
     !! Setter for the "Dx" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Dx
+    real(sp), intent(in) :: Dx
 
     soillayer(i)%Dx = Dx
 end subroutine SetSoilLayer_Dx
@@ -15618,7 +15617,7 @@ end subroutine SetSoilLayer_SoilClass
 subroutine SetSoilLayer_CRa(i, CRa)
     !! Setter for the "CRa" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: CRa
+    real(sp), intent(in) :: CRa
 
     soillayer(i)%CRa = CRa
 end subroutine SetSoilLayer_CRa
@@ -15627,7 +15626,7 @@ end subroutine SetSoilLayer_CRa
 subroutine SetSoilLayer_CRb(i, CRb)
     !! Setter for the "CRb" attribute of the "soillayer" global variable.
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: CRb
+    real(sp), intent(in) :: CRb
 
     soillayer(i)%CRb = CRb
 end subroutine SetSoilLayer_CRb
@@ -15679,7 +15678,7 @@ subroutine SetZiAqua(ZiAqua_in)
 end subroutine SetZiAqua
 
 
-real(dp) function GetDrain()
+real(sp) function GetDrain()
     !! Getter for the "Drain" global variable.
 
     GetDrain = Drain
@@ -15688,13 +15687,13 @@ end function GetDrain
 
 subroutine SetDrain(Drain_in)
     !! Setter for the "Drain" global variable.
-    real(dp), intent(in) :: Drain_in
+    real(sp), intent(in) :: Drain_in
 
     Drain = Drain_in
 end subroutine SetDrain
 
 
-real(dp) function GetRain()
+real(sp) function GetRain()
     !! Getter for the "Rain" global variable.
 
     GetRain = Rain
@@ -15703,13 +15702,13 @@ end function GetRain
 
 subroutine SetRain(Rain_in)
     !! Setter for the "Rain" global variable.
-    real(dp), intent(in) :: Rain_in
+    real(sp), intent(in) :: Rain_in
 
     Rain = Rain_in
 end subroutine SetRain
 
 
-real(dp) function GetRunoff()
+real(sp) function GetRunoff()
     !! Getter for the "Runoff" global variable.
 
     GetRunoff = Runoff
@@ -15718,13 +15717,13 @@ end function GetRunoff
 
 subroutine SetRunoff(Runoff_in)
     !! Setter for the "Runoff" global variable.
-    real(dp), intent(in) :: Runoff_in
+    real(sp), intent(in) :: Runoff_in
 
     Runoff = Runoff_in
 end subroutine SetRunoff
 
 
-real(dp) function GetSurfaceStorage()
+real(sp) function GetSurfaceStorage()
     !! Getter for the "SurfaceStorage" global variable.
     !! mm/day
     GetSurfaceStorage = SurfaceStorage
@@ -15733,13 +15732,13 @@ end function GetSurfaceStorage
 
 subroutine SetSurfaceStorage(SurfaceStorage_in)
     !! Setter for the "SurfaceStorage" global variable.
-    real(dp), intent(in) :: SurfaceStorage_in
+    real(sp), intent(in) :: SurfaceStorage_in
 
     SurfaceStorage = SurfaceStorage_in
 end subroutine SetSurfaceStorage
 
 
-real(dp) function GetECstorage()
+real(sp) function GetECstorage()
     !! Getter for the "ECstorage" global variable.
     !! * EC surface storage dS/m *
     GetECstorage = ECstorage
@@ -15748,7 +15747,7 @@ end function GetECstorage
 
 subroutine SetECstorage(ECstorage_in)
     !! Setter for the "ECstorage" global variable.
-    real(dp), intent(in) :: ECstorage_in
+    real(sp), intent(in) :: ECstorage_in
 
     ECstorage = ECstorage_in
 end subroutine SetECstorage
@@ -15816,7 +15815,7 @@ subroutine SetTnxReferenceYear(TnxReferenceYear_in)
 end subroutine SetTnxReferenceYear
 
 
-real(dp) function GetCRsalt()
+real(sp) function GetCRsalt()
     !! Getter for the "CRsalt" global variable.
 
     GetCRsalt = CRsalt
@@ -15825,7 +15824,7 @@ end function GetCRsalt
 
 subroutine SetCRsalt(CRsalt_in)
     !! Setter for the "CRsalt" global variable.
-    real(dp), intent(in) :: CRsalt_in
+    real(sp), intent(in) :: CRsalt_in
 
     CRsalt = CRsalt_in
 end subroutine SetCRsalt
@@ -16026,7 +16025,7 @@ subroutine SetIniPercTAW(IniPercTAW_in)
 end subroutine SetIniPercTAW
 
 
-real(dp) function GetECiAqua()
+real(sp) function GetECiAqua()
     !! Getter for the "ECiAqua" global variable.
 
     GetECiAqua = ECiAqua
@@ -16035,13 +16034,13 @@ end function GetECiAqua
 
 subroutine SetECiAqua(ECiAqua_in)
     !! Setter for the "ECiAqua" global variable.
-    real(dp), intent(in) :: ECiAqua_in
+    real(sp), intent(in) :: ECiAqua_in
 
     ECiAqua = ECiAqua_in
 end subroutine SetECiAqua
 
 
-real(dp) function GetEact()
+real(sp) function GetEact()
     !! Getter for the "Eact" global variable.
 
     GetEact = Eact
@@ -16050,13 +16049,13 @@ end function GetEact
 
 subroutine SetEact(Eact_in)
     !! Setter for the "Eact" global variable.
-    real(dp), intent(in) :: Eact_in
+    real(sp), intent(in) :: Eact_in
 
     Eact = Eact_in
 end subroutine SetEact
 
 
-real(dp) function GetETo()
+real(sp) function GetETo()
     !! Getter for the "ETo" global variable.
 
     GetETo = ETo
@@ -16065,13 +16064,13 @@ end function GetETo
 
 subroutine SetETo(ETo_in)
     !! Setter for the "ETo" global variable.
-    real(dp), intent(in) :: ETo_in
+    real(sp), intent(in) :: ETo_in
 
     ETo = ETo_in
 end subroutine SetETo
 
 
-real(dp) function GetIrrigation()
+real(sp) function GetIrrigation()
     !! Getter for the "Irrigation" global variable.
 
     GetIrrigation = Irrigation
@@ -16080,13 +16079,13 @@ end function GetIrrigation
 
 subroutine SetIrrigation(Irrigation_in)
     !! Setter for the "Irrigation" global variable.
-    real(dp), intent(in) :: Irrigation_in
+    real(sp), intent(in) :: Irrigation_in
 
     Irrigation = Irrigation_in
 end subroutine SetIrrigation
 
 
-real(dp) function GetInfiltrated()
+real(sp) function GetInfiltrated()
     !! Getter for the "Infiltrated" global variable.
 
     GetInfiltrated = Infiltrated
@@ -16095,13 +16094,13 @@ end function GetInfiltrated
 
 subroutine SetInfiltrated(Infiltrated_in)
     !! Setter for the "Infiltrated" global variable.
-    real(dp), intent(in) :: Infiltrated_in
+    real(sp), intent(in) :: Infiltrated_in
 
     Infiltrated = Infiltrated_in
 end subroutine SetInfiltrated
 
 
-real(dp) function GetCRwater()
+real(sp) function GetCRwater()
     !! Getter for the "CRwater" global variable.
 
     GetCRwater = CRwater
@@ -16110,13 +16109,13 @@ end function GetCRwater
 
 subroutine SetCRwater(CRwater_in)
     !! Setter for the "CRwater" global variable.
-    real(dp), intent(in) :: CRwater_in
+    real(sp), intent(in) :: CRwater_in
 
     CRwater = CRwater_in
 end subroutine SetCRwater
 
 
-real(dp) function GetCCiActual()
+real(sp) function GetCCiActual()
     !! Getter for the "CCiActual" global variable.
 
     GetCCiActual = CCiActual
@@ -16125,13 +16124,13 @@ end function GetCCiActual
 
 subroutine SetCCiActual(CCiActual_in)
     !! Setter for the "CCiActual" global variable.
-    real(dp), intent(in) :: CCiActual_in
+    real(sp), intent(in) :: CCiActual_in
 
     CCiActual = CCiActual_in
 end subroutine SetCCiActual
 
 
-real(dp) function GetEpot()
+real(sp) function GetEpot()
     !! Getter for the "Epot" global variable.
 
     GetEpot = Epot
@@ -16140,13 +16139,13 @@ end function GetEpot
 
 subroutine SetEpot(Epot_in)
     !! Setter for the "Epot" global variable.
-    real(dp), intent(in) :: Epot_in
+    real(sp), intent(in) :: Epot_in
 
     Epot = Epot_in
 end subroutine SetEpot
 
 
-real(dp) function GetTpot()
+real(sp) function GetTpot()
     !! Getter for the "Tpot" global variable.
 
     GetTpot = Tpot
@@ -16155,7 +16154,7 @@ end function GetTpot
 
 subroutine SetTpot(Tpot_in)
     !! Setter for the "Tpot" global variable.
-    real(dp), intent(in) :: Tpot_in
+    real(sp), intent(in) :: Tpot_in
 
     Tpot = Tpot_in
 end subroutine SetTpot
@@ -16193,7 +16192,7 @@ subroutine SetProjectDescription(str)
 end subroutine SetProjectDescription
 
 
-real(dp) function GetRootingDepth()
+real(sp) function GetRootingDepth()
     !! Getter for the "RootingDepth" global variable.
 
     GetRootingDepth = RootingDepth
@@ -16202,13 +16201,13 @@ end function GetRootingDepth
 
 subroutine SetRootingDepth(RootingDepth_in)
     !! Setter for the "RootingDepth" global variable.
-    real(dp), intent(in) :: RootingDepth_in
+    real(sp), intent(in) :: RootingDepth_in
 
     RootingDepth = RootingDepth_in
 end subroutine SetRootingDepth
 
 
-real(dp) function GetCCiPrev()
+real(sp) function GetCCiPrev()
     !! Getter for the "CCiPrev" global variable.
 
     GetCCiPrev = CCiPrev
@@ -16217,13 +16216,13 @@ end function GetCCiPrev
 
 subroutine SetCCiPrev(CCiPrev_in)
     !! Setter for the "CCiPrev" global variable.
-    real(dp), intent(in) :: CCiPrev_in
+    real(sp), intent(in) :: CCiPrev_in
 
     CCiPrev = CCiPrev_in
 end subroutine SetCCiPrev
 
 
-real(dp) function GetCCiTopEarlySen()
+real(sp) function GetCCiTopEarlySen()
     !! Getter for the "CCiTopEarlySen" global variable.
 
     GetCCiTopEarlySen = CCiTopEarlySen
@@ -16232,13 +16231,13 @@ end function GetCCiTopEarlySen
 
 subroutine SetCCiTopEarlySen(CCiTopEarlySen_in)
     !! Setter for the "CCiTopEarlySen" global variable.
-    real(dp), intent(in) :: CCiTopEarlySen_in
+    real(sp), intent(in) :: CCiTopEarlySen_in
 
     CCiTopEarlySen = CCiTopEarlySen_in
 end subroutine SetCCiTopEarlySen
 
 
-real(dp) function GetECDrain()
+real(sp) function GetECDrain()
     !! Getter for the "ECDrain" global variable.
 
     GetECDrain = ECDrain
@@ -16247,13 +16246,13 @@ end function GetECDrain
 
 subroutine SetECDrain(ECDrain_in)
     !! Setter for the "ECDrain" global variable.
-    real(dp), intent(in) :: ECDrain_in
+    real(sp), intent(in) :: ECDrain_in
 
     ECDrain = ECDrain_in
 end subroutine SetECDrain
 
 
-real(dp) function GetSaltInfiltr()
+real(sp) function GetSaltInfiltr()
     !! Getter for the "SaltInfiltr" global variable.
 
     GetSaltInfiltr = SaltInfiltr
@@ -16262,13 +16261,13 @@ end function GetSaltInfiltr
 
 subroutine SetSaltInfiltr(SaltInfiltr_in)
     !! Setter for the "SaltInfiltr" global variable.
-    real(dp), intent(in) :: SaltInfiltr_in
+    real(sp), intent(in) :: SaltInfiltr_in
 
     SaltInfiltr = SaltInfiltr_in
 end subroutine SetSaltInfiltr
 
 
-real(dp) function GetTact()
+real(sp) function GetTact()
     !! Getter for the "Tact" global variable.
 
     GetTact = Tact
@@ -16277,13 +16276,13 @@ end function GetTact
 
 subroutine SetTact(Tact_in)
     !! Setter for the "Tact" global variable.
-    real(dp), intent(in) :: Tact_in
+    real(sp), intent(in) :: Tact_in
 
     Tact = Tact_in
 end subroutine SetTact
 
 
-real(dp) function GetTactWeedInfested()
+real(sp) function GetTactWeedInfested()
     !! Getter for the "TactWeedInfested" global variable.
 
     GetTactWeedInfested = TactWeedInfested
@@ -16292,7 +16291,7 @@ end function GetTactWeedInfested
 
 subroutine SetTactWeedInfested(TactWeedInfested_in)
     !! Setter for the "TactWeedInfested" global variable.
-    real(dp), intent(in) :: TactWeedInfested_in
+    real(sp), intent(in) :: TactWeedInfested_in
 
     TactWeedInfested = TactWeedInfested_in
 end subroutine SetTactWeedInfested
@@ -16513,6 +16512,7 @@ function GetTminRun_i(i) result(TminRun_i)
     real(sp) :: TminRun_i
 
     TminRun_i = TminRun(i)
+    !TminRun_i = real(roundc(10000*real(TminRun(i),kind=sp),mold=int32)/10000._sp,kind=sp)
 end function GetTminRun_i
 
 
@@ -16568,7 +16568,7 @@ subroutine SetTmaxRun_i(i, TmaxRun_i)
 end subroutine SetTmaxRun_i
 
 
-real(dp) function GetTmin()
+real(sp) function GetTmin()
     !! Getter for the "Tmin" global variable.
 
     GetTmin = Tmin
@@ -16577,13 +16577,13 @@ end function GetTmin
 
 subroutine SetTmin(Tmin_in)
     !! Setter for the "Tmin" global variable.
-    real(dp), intent(in) :: Tmin_in
+    real(sp), intent(in) :: Tmin_in
 
     Tmin = Tmin_in
 end subroutine SetTmin
 
 
-real(dp) function GetTmax()
+real(sp) function GetTmax()
     !! Getter for the "Tmax" global variable.
 
     GetTmax = Tmax
@@ -16592,7 +16592,7 @@ end function GetTmax
 
 subroutine SetTmax(Tmax_in)
     !! Setter for the "Tmax" global variable.
-    real(dp), intent(in) :: Tmax_in
+    real(sp), intent(in) :: Tmax_in
 
     Tmax = Tmax_in
 end subroutine SetTmax
@@ -16671,7 +16671,7 @@ end subroutine SetTmaxTnxReference12MonthsRun_i
 
 ! Surf0
 
-real(dp) function GetSurf0()
+real(sp) function GetSurf0()
     !! Getter for the "Surf0" global variable.
 
     GetSurf0 = Surf0
@@ -16680,7 +16680,7 @@ end function GetSurf0
 
 subroutine SetSurf0(Surf0_in)
     !! Setter for the "Surf0" global variable.
-    real(dp), intent(in) :: Surf0_in
+    real(sp), intent(in) :: Surf0_in
 
     Surf0 = Surf0_in
 end subroutine SetSurf0

@@ -196,6 +196,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: ScorAT2_ID
     integer :: Simulation_EffectStress_CDecline_ID
     integer :: Simulation_EvapWCSurf_ID
+    integer :: Simulation_SumGDD_ID
+    integer :: Simulation_SumGDDfromDay1_ID
     integer :: StressLeaf_ID
     integer :: StressSenescence_ID
     integer :: SumGDDcuts_ID
@@ -413,6 +415,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EvapLimitON_ID, "Simulation_EvapLimitON", &
                            "Simulation_EvapLimitON at last time step", &
                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_SumGDD
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SumGDD_ID, "Simulation_SumGDD", &
+                           "Simulation_SumGDD at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_SumGDDFromDay1
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SumGDDFromDay1_ID, "Simulation_SumGDDFromDay1", &
+                           "Simulation_SumGDDFromDay1 at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable Simulation_SWCtopSoilConsidered
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SWCtopSoilConsidered_ID, "Simulation_SWCtopSoilConsidered", &
                            "Simulation_SWCtopSoilConsidered at last time step", &
@@ -620,8 +630,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
     ! close header of restart file
     call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, AC72_struc(n)%rstInterval)
-
-#if 0
 
     ! write state variables into restart file
     ! volumtric soil moisture
@@ -1028,6 +1036,23 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                                 varid=Simulation_EvapStartStg2_ID, dim=1, wformat=wformat)
 
+    ! Simulation_SumGDD
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_SumGDD_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SumGDDFromDay1
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_SumGDDFromDay1_ID, dim=1, wformat=wformat)
+
+
     !! From StressTot
     ! StressTot_Salt
     tmptilen = 0
@@ -1118,7 +1143,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                                 varid=SumWaBal_YieldPart_ID, dim=1, wformat=wformat)
 
-#endif
 
 
 end subroutine AC72_dump_restart

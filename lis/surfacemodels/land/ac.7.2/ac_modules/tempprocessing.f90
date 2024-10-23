@@ -312,7 +312,6 @@ use ac_global , only: undef_int, &
                       TmaxCropReferenceRun, &
                       SumCalendarDaysReferenceTnx
 use ac_kinds,  only: sp,&
-                     dp, &
                      int8, &
                      int16, &
                      int32, &
@@ -326,7 +325,7 @@ implicit none
 
 
 logical :: TemperatureFilefull_exists
-real(dp), dimension(:), allocatable :: Tmin, Tmax  !! (daily) temperature data
+real(sp), dimension(:), allocatable :: Tmin, Tmax  !! (daily) temperature data
 type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
 
 
@@ -418,8 +417,8 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
 
     integer(int32) :: Nri, ni, Dayi, Deci, Monthi, Yeari, DayN
     integer(int32) :: DNR
-    real(dp) :: C1Min, C1Max, C2Min, C2Max, C3Min, C3Max
-    real(dp) :: UlMin, LLMin, MidMin, UlMax, LLMax, MidMax
+    real(sp) :: C1Min, C1Max, C2Min, C2Max, C3Min, C3Max
+    real(sp) :: UlMin, LLMin, MidMin, UlMax, LLMax, MidMax
 
     call DetermineDate(DayNri, Dayi, Monthi, Yeari)
     if (Dayi > 20) then
@@ -448,15 +447,15 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
     call GetParameters(C1Min, C2Min, C3Min, ULMin, LLMin, MidMin)
     do Nri = 1, ni
         TMinDataSet(Nri)%DayNr = DNR+Nri-1
-        if (Nri <= (ni/2._dp+0.01_dp)) then
-            TMinDataSet(Nri)%Param = (2._dp*ULMin + &
-                          (MidMin-ULMin)*(2._dp*Nri-1._dp)/(ni/2._dp))/2._dp
+        if (Nri <= (ni/2._sp+0.01_sp)) then
+            TMinDataSet(Nri)%Param = (2._sp*ULMin + &
+                          (MidMin-ULMin)*(2._sp*Nri-1._sp)/(ni/2._sp))/2._sp
         else
-            if (((ni == 11) .or. (ni == 9)) .and. (Nri < (ni+1.01_dp)/2._dp)) then
+            if (((ni == 11) .or. (ni == 9)) .and. (Nri < (ni+1.01_sp)/2._sp)) then
                 TminDataSet(Nri)%Param = MidMin
             else
-                TminDataSet(Nri)%Param = (2._dp*MidMin + &
-                          (LLMin-MidMin)*(2._dp*Nri-(ni+1))/(ni/2._dp))/2._dp
+                TminDataSet(Nri)%Param = (2._sp*MidMin + &
+                          (LLMin-MidMin)*(2._sp*Nri-(ni+1))/(ni/2._sp))/2._sp
             end if
         end if
     end do
@@ -464,24 +463,24 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
     call GetParameters(C1Max, C2Max, C3Max, ULMax, LLMax, MidMax)
     do Nri = 1, ni
         TMaxDataSet(Nri)%DayNr = DNR+Nri-1
-        if (Nri <= (ni/2._dp+0.01_dp)) then
-            TMaxDataSet(Nri)%Param = (2._dp*ULMax + &
-                          (MidMax-ULMax)*(2._dp*Nri-1)/(ni/2._dp))/2._dp
+        if (Nri <= (ni/2._sp+0.01_sp)) then
+            TMaxDataSet(Nri)%Param = (2._sp*ULMax + &
+                          (MidMax-ULMax)*(2._sp*Nri-1)/(ni/2._sp))/2._sp
         else
-            if (((ni == 11) .or. (ni == 9)) .and. (Nri < (ni+1.01_dp)/2._dp)) then
+            if (((ni == 11) .or. (ni == 9)) .and. (Nri < (ni+1.01_sp)/2._sp)) then
                  TmaxDataSet(Nri)%Param = MidMax
             else
-                TmaxDataSet(Nri)%Param = (2._dp*MidMax + &
-                          (LLMax-MidMax)*(2._dp*Nri-(ni+1))/(ni/2._dp))/2._dp
+                TmaxDataSet(Nri)%Param = (2._sp*MidMax + &
+                          (LLMax-MidMax)*(2._sp*Nri-(ni+1))/(ni/2._sp))/2._sp
             end if
         end if
     end do
 
     do Nri = (ni+1), 31
         TminDataSet(Nri)%DayNr = DNR+ni-1
-        TminDataSet(Nri)%Param = 0._dp
+        TminDataSet(Nri)%Param = 0._sp
         TmaxDataSet(Nri)%DayNr = DNR+ni-1
-        TmaxDataSet(Nri)%Param = 0._dp
+        TmaxDataSet(Nri)%Param = 0._sp
     end do
 
 
@@ -494,12 +493,12 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
         integer(int32), intent(in) :: Deci
         integer(int32), intent(in) :: Monthi
         integer(int32), intent(in) :: Yeari
-        real(dp), intent(inout) :: C1Min
-        real(dp), intent(inout) :: C1Max
-        real(dp), intent(inout) :: C2Min
-        real(dp), intent(inout) :: C2Max
-        real(dp), intent(inout) :: C3Min
-        real(dp), intent(inout) :: C3Max
+        real(sp), intent(inout) :: C1Min
+        real(sp), intent(inout) :: C1Max
+        real(sp), intent(inout) :: C2Min
+        real(sp), intent(inout) :: C2Max
+        real(sp), intent(inout) :: C3Min
+        real(sp), intent(inout) :: C3Max
 
         integer(int32) :: fhandle
         integer(int32) :: DecFile, Mfile, Yfile, Nri, Obsi, rc
@@ -552,13 +551,13 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
                 if (Deci == DecFile) then
                     C2Min = C3Min
                     C2Max = C3Max
-                    C3Min = C2Min+(C2Min-C1Min)/4._dp
-                    C3Max = C2Max+(C2Max-C1Max)/4._dp
+                    C3Min = C2Min+(C2Min-C1Min)/4._sp
+                    C3Max = C2Max+(C2Max-C1Max)/4._sp
                 else
                     C2Min = C1Min
                     C2Max = C1Max
-                    C1Min = C2Min + (C2Min-C3Min)/4._dp
-                    C1Max = C2Max + (C2Max-C3Max)/4._dp
+                    C1Min = C2Min + (C2Min-C3Min)/4._sp
+                    C1Max = C2Max + (C2Max-C3Max)/4._sp
                 end if
             end select
             OK3 = .true.
@@ -572,8 +571,8 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
             C2Max = C1Max
             read(fhandle, '(a)', iostat=rc) StringREAD
             call SplitStringInTwoParams(StringREAD, C3Min, C3Max)
-            C1Min = C2Min + (C2Min-C3Min)/4._dp
-            C1Max = C2Max + (C2Max-C3Max)/4._dp
+            C1Min = C2Min + (C2Min-C3Min)/4._sp
+            C1Max = C2Max + (C2Max-C3Max)/4._sp
             OK3 = .true.
         end if
 
@@ -588,8 +587,8 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
                 call SplitStringInTwoParams(StringREAD, C1Min, C1Max)
                 read(fhandle, '(a)', iostat=rc) StringREAD
                 call SplitStringInTwoParams(StringREAD, C2Min, C2Max)
-                C3Min = C2Min+(C2Min-C1Min)/4._dp
-                C3Max = C2Max+(C2Max-C1Max)/4._dp
+                C3Min = C2Min+(C2Min-C1Min)/4._sp
+                C3Max = C2Max+(C2Max-C1Max)/4._sp
                 OK3 = .true.
             end if
         end if
@@ -630,16 +629,16 @@ subroutine GetDecadeTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
 
 
     subroutine GetParameters(C1, C2, C3, UL, LL, Mid)
-        real(dp), intent(in) :: C1
-        real(dp), intent(in) :: C2
-        real(dp), intent(in) :: C3
-        real(dp), intent(inout) :: UL
-        real(dp), intent(inout) :: LL
-        real(dp), intent(inout) :: Mid
+        real(sp), intent(in) :: C1
+        real(sp), intent(in) :: C2
+        real(sp), intent(in) :: C3
+        real(sp), intent(inout) :: UL
+        real(sp), intent(inout) :: LL
+        real(sp), intent(inout) :: Mid
 
-        UL = (C1+C2)/2._dp
-        LL = (C2+C3)/2._dp
-        Mid = 2._dp*C2 - (UL+LL)/2._dp
+        UL = (C1+C2)/2._sp
+        LL = (C2+C3)/2._sp
+        Mid = 2._sp*C2 - (UL+LL)/2._sp
         ! --previous decade-->/UL/....... Mid ......../LL/<--next decade--
     end subroutine GetParameters
 end subroutine GetDecadeTemperatureDataSet
@@ -653,10 +652,10 @@ subroutine GetMonthlyTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
     integer(int32) :: Dayi, Monthi, Yeari, DayN
     integer(int32) :: DNR
     integer(int32) :: X1, X2, X3, t1, t2
-    real(dp) :: C1Min, C2Min, C3Min
-    real(dp) :: C1Max, C2Max, C3Max
-    real(dp) :: aOver3Min, bOver2Min, cMin
-    real(dp) :: aOver3Max, bOver2Max, cMax
+    real(sp) :: C1Min, C2Min, C3Min
+    real(sp) :: C1Max, C2Max, C3Max
+    real(sp) :: aOver3Min, bOver2Min, cMin
+    real(sp) :: aOver3Max, bOver2Max, cMax
 
     call DetermineDate(DayNri, Dayi, Monthi, Yeari)
     call GetSetofThreeMonths(Monthi, Yeari, &
@@ -686,8 +685,8 @@ subroutine GetMonthlyTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
     do Dayi = (DayN+1), 31
         TminDataSet(Dayi)%DayNr = DNR+DayN-1
         TmaxDataSet(Dayi)%DayNr = DNR+DayN-1
-        TminDataSet(Dayi)%Param = 0._dp
-        TmaxDataSet(Dayi)%Param = 0._dp
+        TminDataSet(Dayi)%Param = 0._sp
+        TmaxDataSet(Dayi)%Param = 0._sp
     end do
 
 
@@ -698,12 +697,12 @@ subroutine GetMonthlyTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
             C1Min, C2Min, C3Min, C1Max, C2Max, C3Max, X1, X2, X3, t1)
         integer(int32), intent(in) :: Monthi
         integer(int32), intent(in) :: Yeari
-        real(dp), intent(inout) :: C1Min
-        real(dp), intent(inout) :: C2Min
-        real(dp), intent(inout) :: C3Min
-        real(dp), intent(inout) :: C1Max
-        real(dp), intent(inout) :: C2Max
-        real(dp), intent(inout) :: C3Max
+        real(sp), intent(inout) :: C1Min
+        real(sp), intent(inout) :: C2Min
+        real(sp), intent(inout) :: C3Min
+        real(sp), intent(inout) :: C1Max
+        real(sp), intent(inout) :: C2Max
+        real(sp), intent(inout) :: C3Max
         integer(int32), intent(inout) :: X1
         integer(int32), intent(inout) :: X2
         integer(int32), intent(inout) :: X3
@@ -887,8 +886,8 @@ subroutine GetMonthlyTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
 
 
     subroutine ReadMonth(CiMin, CiMax, fhandle, rc)
-        real(dp), intent(inout) :: CiMin
-        real(dp), intent(inout) :: CiMax
+        real(sp), intent(inout) :: CiMin
+        real(sp), intent(inout) :: CiMax
         integer(int32), intent(in) :: fhandle
         integer(int32), intent(inout) :: rc
 
@@ -905,17 +904,17 @@ subroutine GetMonthlyTemperatureDataSet(DayNri, TminDataSet, TmaxDataSet)
 
     subroutine GetInterpolationParameters(C1, C2, C3, &
                           aOver3, bOver2, c)
-        real(dp), intent(in) :: C1
-        real(dp), intent(in) :: C2
-        real(dp), intent(in) :: C3
-        real(dp), intent(inout) :: aOver3
-        real(dp), intent(inout) :: bOver2
-        real(dp), intent(inout) :: c
+        real(sp), intent(in) :: C1
+        real(sp), intent(in) :: C2
+        real(sp), intent(in) :: C3
+        real(sp), intent(inout) :: aOver3
+        real(sp), intent(inout) :: bOver2
+        real(sp), intent(inout) :: c
 
         ! n1=n2=n3=30 --> better parabola
-        aOver3 = (C1-2._dp*C2+C3)/(6._dp*30._dp*30._dp*30._dp)
-        bOver2 = (-6._dp*C1+9._dp*C2-3._dp*C3)/(6._dp*30._dp*30._dp)
-        c = (11._dp*C1-7._dp*C2+2._dp*C3)/(6._dp*30._dp)
+        aOver3 = (C1-2._sp*C2+C3)/(6._sp*30._sp*30._sp*30._sp)
+        bOver2 = (-6._sp*C1+9._sp*C2-3._sp*C3)/(6._sp*30._sp*30._sp)
+        c = (11._sp*C1-7._sp*C2+2._sp*C3)/(6._sp*30._sp)
     end subroutine GetInterpolationParameters
 end subroutine GetMonthlyTemperatureDataSet
 
@@ -924,21 +923,21 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
                                           Tupper, TDayMin, TDayMax)
     integer(int32), intent(in) :: ValPeriod
     integer(int32), intent(in) :: FirstDayPeriod
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
 
     integer(int32) :: i, RemainingDays
     integer(int32) :: DayNri
-    real(dp)       :: GDDays, DayGDD
+    real(sp)       :: GDDays, DayGDD
     type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
     logical :: AdjustDayNri
-    real(dp) :: TDayMin_local, TDayMax_local
+    real(sp) :: TDayMin_local, TDayMax_local
 
     TDayMin_local = TDayMin
     TDayMax_local = TDayMax
-    GDDays = 0._dp
+    GDDays = 0._sp
 
     if (ValPeriod > 0) then
         if (GetTemperatureFile() == '(None)') then
@@ -950,8 +949,8 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
             DayNri = FirstDayPeriod
             RemainingDays = ValPeriod
             i = DayNri - GetSimulation_FromDayNr() + 1
-            TDayMin_local = real(GetTminRun_i(i),kind=dp)
-            TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
+            TDayMin_local = real(GetTminRun_i(i),kind=sp)
+            TDayMax_local = real(GetTmaxRun_i(i),kind=sp)
             DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
                                         TDayMax_local, &
                                         GetSimulParam_GDDMethod())
@@ -961,11 +960,12 @@ integer(int32) function GrowingDegreeDays(ValPeriod, FirstDayPeriod, Tbase, &
             do while ((RemainingDays > 0) &
                         .and. (i<=(GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1)))
                         i = i + 1
+                        ! LIS in for now run with a sim period of 365 days
                         if (i == 366) then
                             i = 1
                         endif
-                        TDayMin_local = real(GetTminRun_i(i),kind=dp)
-                        TDayMax_local = real(GetTmaxRun_i(i),kind=dp)
+                        TDayMin_local = real(GetTminRun_i(i),kind=sp)
+                        TDayMax_local = real(GetTmaxRun_i(i),kind=sp)
                         DayGDD = DegreesDay(Tbase, Tupper, TDayMin_local, &
                                             TDayMax_local, &
                                             GetSimulParam_GDDMethod())
@@ -1118,18 +1118,18 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
                                         TDayMin, TDayMax)
     integer(int32), intent(in) :: ValGDDays
     integer(int32), intent(in) :: FirstDayCrop
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
 
     integer(int32) :: i
     integer(int32) :: NrCDays
-    real(dp) :: RemainingGDDays, DayGDD
+    real(sp) :: RemainingGDDays, DayGDD
     integer(int32) :: DayNri
     type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
     logical :: AdjustDayNri
-    real(dp) :: TDayMin_loc, TDayMax_loc
+    real(sp) :: TDayMin_loc, TDayMax_loc
 
     TDayMin_loc = TDayMin
     TDayMax_loc = TDayMax
@@ -1141,7 +1141,7 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
             ! given average Tmin and Tmax
             DayGDD = DegreesDay(Tbase, Tupper, &
                        TDayMin_loc, TDayMax_loc, GetSimulParam_GDDMethod())
-            if (abs(DayGDD) < epsilon(1._dp)) then
+            if (abs(DayGDD) < epsilon(1._sp)) then
                 NrCDays = -9
             else
                 NrCDays = roundc(ValGDDays/DayGDD, mold=1_int32)
@@ -1150,8 +1150,8 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
             DayNri = FirstDayCrop
             RemainingGDDays = ValGDDays
             i = DayNri-GetSimulation_FromDayNr()+1
-            TDayMin_loc = real(GetTminRun_i(i),kind=dp)
-            TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
+            TDayMin_loc = real(GetTminRun_i(i),kind=sp)
+            TDayMax_loc = real(GetTmaxRun_i(i),kind=sp)
             DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
                                         TDayMax_loc, &
                                         GetSimulParam_GDDMethod())
@@ -1164,8 +1164,8 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
                   if (i == 366) then
                       i = 1
                   endif
-                  TDayMin_loc = real(GetTminRun_i(i),kind=dp)
-                  TDayMax_loc = real(GetTmaxRun_i(i),kind=dp)
+                  TDayMin_loc = real(GetTminRun_i(i),kind=sp)
+                  TDayMax_loc = real(GetTmaxRun_i(i),kind=sp)
 
                   DayGDD = DegreesDay(Tbase, Tupper, TDayMin_loc, &
                                        TDayMax_loc, &
@@ -1313,44 +1313,44 @@ integer(int32) function SumCalendarDays(ValGDDays, FirstDayCrop, Tbase, Tupper,&
 end function SumCalendarDays
 
 
-real(dp) function MaxAvailableGDD(FromDayNr, Tbase, Tupper, TDayMin, TDayMax)
+real(sp) function MaxAvailableGDD(FromDayNr, Tbase, Tupper, TDayMin, TDayMax)
     integer(int32), intent(inout) :: FromDayNr
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(inout) :: TDayMin
-    real(dp), intent(inout) :: TDayMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(inout) :: TDayMin
+    real(sp), intent(inout) :: TDayMax
 
     integer(int32) :: i
-    real(dp) :: MaxGDDays, DayGDD
+    real(sp) :: MaxGDDays, DayGDD
     integer(int32) :: DayNri
     type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
 
-    MaxGDDays = 100000._dp
+    MaxGDDays = 100000._sp
     if (GetTemperatureFile() == '(None)') then
         DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                        GetSimulParam_GDDMethod())
-        if (DayGDD <= epsilon(1._dp)) then
-            MaxGDDays = 0._dp
+        if (DayGDD <= epsilon(1._sp)) then
+            MaxGDDays = 0._sp
         end if
     else if (GetTemperatureFile() == '(External)') then
         DayNri = FromDayNr
-        MaxGDDays = 0._dp
+        MaxGDDays = 0._sp
         i = DayNri - GetSimulation_FromDayNr() + 1
-        TDayMin = real(GetTminRun_i(i),kind=dp)
-        TDayMax = real(GetTmaxRun_i(i),kind=dp)
+        TDayMin = real(GetTminRun_i(i),kind=sp)
+        TDayMax = real(GetTmaxRun_i(i),kind=sp)
         DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                                     GetSimulParam_GDDMethod())
         MaxGDDays = MaxGDDays + DayGDD
         do while (i < (GetSimulation_ToDayNr()-GetSimulation_FromDayNr()+1))
             i = i + 1
-            TDayMin = real(GetTminRun_i(i),kind=dp)
-            TDayMax = real(GetTmaxRun_i(i),kind=dp)
+            TDayMin = real(GetTminRun_i(i),kind=sp)
+            TDayMax = real(GetTmaxRun_i(i),kind=sp)
             DayGDD = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                                 GetSimulParam_GDDMethod())
             MaxGDDays = MaxGDDays + DayGDD
         end do
     else
-        MaxGDDays = 0._dp
+        MaxGDDays = 0._sp
         if (FullUndefinedRecord(GetTemperatureRecord_FromY(),&
                GetTemperatureRecord_FromD(), GetTemperatureRecord_FromM(),&
                GetTemperatureRecord_ToD(), GetTemperatureRecord_ToM())) then
@@ -1464,10 +1464,10 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
               CGC, CDC, dHIdt, Succes)
     integer(int32), intent(in) :: PlantDayNr
     integer(intEnum), intent(in) :: InfoCropType
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: NoTempFileTMin
-    real(dp), intent(in) :: NoTempFileTMax
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: NoTempFileTMin
+    real(sp), intent(in) :: NoTempFileTMax
     integer(int32), intent(in) :: GDDL0
     integer(int32), intent(in) :: GDDL12
     integer(int32), intent(in) :: GDDFlor
@@ -1476,10 +1476,10 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
     integer(int32), intent(in) :: GDDHarvest
     integer(int32), intent(in) :: GDDLZmax
     integer(int32), intent(inout) :: GDDHImax
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
     logical, intent(in) :: IsCGCGiven
     integer(int32), intent(in) :: HIndex
     integer(int32), intent(in) :: TheDaysToCCini
@@ -1494,12 +1494,12 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
     integer(int32), intent(inout) :: DLZmax
     integer(int32), intent(inout) :: LHImax
     integer(int32), dimension(4), intent(inout) :: StLength
-    real(dp), intent(inout) :: CGC
-    real(dp), intent(inout) :: CDC
-    real(dp), intent(inout) :: dHIdt
+    real(sp), intent(inout) :: CGC
+    real(sp), intent(inout) :: CDC
+    real(sp), intent(inout) :: dHIdt
     logical, intent(inout) :: Succes
 
-    real(dp) :: tmp_NoTempFileTMin, tmp_NoTempFileTMax
+    real(sp) :: tmp_NoTempFileTMin, tmp_NoTempFileTMax
     integer :: ExtraDays, ExtraGDDays
 
     tmp_NoTempFileTMin = NoTempFileTMin
@@ -1564,7 +1564,7 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
     end if
 
     if (Succes) then
-        CGC = (real(GDDL12, kind=dp)/real(D12, kind=dp)) * GDDCGC
+        CGC = (real(GDDL12, kind=sp)/real(D12, kind=sp)) * GDDCGC
         call GDDCDCToCDC(PlantDayNr, D123, GDDL123, GDDHarvest,&
                CCx, GDDCDC, Tbase, Tupper, tmp_NoTempFileTMin, tmp_NoTempFileTMax, CDC, &
                .false.)
@@ -1572,15 +1572,15 @@ subroutine AdjustCalendarDays(PlantDayNr, InfoCropType,&
                IsCGCGiven, TheDaysToCCini, &
                ThePlanting, D123, StLength, D12, CGC)
         if ((InfoCropType == subkind_Grain) .or. (InfoCropType == subkind_Tuber)) then
-            dHIdt = real(HIndex, kind=dp)/real(LHImax, kind=dp)
+            dHIdt = real(HIndex, kind=sp)/real(LHImax, kind=sp)
         end if
         if ((InfoCropType == subkind_Vegetative) &
             .or. (InfoCropType == subkind_Forage)) then
             if (LHImax > 0) then
                 if (LHImax > DHarvest) then
-                    dHIdt = real(HIndex, kind=dp)/real(DHarvest, kind=dp)
+                    dHIdt = real(HIndex, kind=sp)/real(DHarvest, kind=sp)
                 else
-                    dHIdt = real(HIndex, kind=dp)/real(LHImax, kind=dp)
+                    dHIdt = real(HIndex, kind=sp)/real(LHImax, kind=sp)
                 end if
                 if (dHIdt > 100) then
                     dHIdt = 100 ! 100 is maximum TempdHIdt (See SetdHIdt)
@@ -1610,17 +1610,17 @@ subroutine AdjustCalendarCrop(FirstCropDay)
     integer(int32) :: Crop_DaysToMaxRooting_temp
     integer(int32) :: Crop_DaysToHIo_temp
     integer(int32), dimension(4) :: Crop_Length_temp
-    real(dp) :: Crop_CGC_temp
-    real(dp) :: Crop_CDC_temp
-    real(dp) :: Crop_dHIdt_temp
+    real(sp) :: Crop_CGC_temp
+    real(sp) :: Crop_CDC_temp
+    real(sp) :: Crop_dHIdt_temp
 
     CGCisGiven = .true.
 
     select case (GetCrop_ModeCycle())
     case (modeCycle_GDDays)
         call SetCrop_GDDaysToFullCanopy(GetCrop_GDDaysToGermination() &
-           + roundc(log((0.25_dp*GetCrop_CCx()*GetCrop_CCx()/GetCrop_CCo()) &
-               /(GetCrop_CCx()-(0.98_dp*GetCrop_CCx())))/GetCrop_GDDCGC(), &
+           + roundc(log((0.25_sp*GetCrop_CCx()*GetCrop_CCx()/GetCrop_CCo()) &
+               /(GetCrop_CCx()-(0.98_sp*GetCrop_CCx())))/GetCrop_GDDCGC(), &
                mold=int32))
         if (GetCrop_GDDaysToFullCanopy() > GetCrop_GDDaysToHarvest()) then
             call SetCrop_GDDaysToFullCanopy(GetCrop_GDDaysToHarvest())
@@ -1680,30 +1680,30 @@ subroutine GDDCDCToCDC(PlantDayNr, D123, GDDL123, &
     integer(int32), intent(in) :: D123
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDHarvest
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: NoTempFileTMin
-    real(dp), intent(in) :: NoTempFileTMax
-    real(dp), intent(inout) :: CDC
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: NoTempFileTMin
+    real(sp), intent(in) :: NoTempFileTMax
+    real(sp), intent(inout) :: CDC
     logical, intent(in) :: Reference
 
     integer(int32) :: ti, GDDi
-    real(dp) :: CCi
+    real(sp) :: CCi
 
     GDDi = LengthCanopyDecline(CCx, GDDCDC)
     if ((GDDL123+GDDi) <= GDDHarvest) then
-        CCi = 0._dp ! full decline
+        CCi = 0._sp ! full decline
     else
         ! partly decline
         if (GDDL123 < GDDHarvest) then
             GDDi = GDDHarvest - GDDL123
         else
-            GDDi = 5._dp
+            GDDi = 5._sp
         end if
-        CCi = CCx * (1._dp - 0.05_dp  &
-                 * (exp(real(GDDi,kind=dp)*(GDDCDC*3.33_dp)/(CCx+2.29_dp))-1._dp) )
+        CCi = CCx * (1._sp - 0.05_sp  &
+                 * (exp(real(GDDi,kind=sp)*(GDDCDC*3.33_sp)/(CCx+2.29_sp))-1._sp) )
        ! CC at time ti
     end if
     if (Reference) then
@@ -1714,8 +1714,8 @@ subroutine GDDCDCToCDC(PlantDayNr, D123, GDDL123, &
                 Tbase, Tupper, NoTempFileTMin, NoTempFileTMax)
     endif
     if (ti > 0) then
-        CDC = (((CCx+2.29_dp)/real(ti, kind=dp)) &
-                * log(1._dp + ((1._dp-CCi/CCx)/0.05_dp)))/3.33_dp
+        CDC = (((CCx+2.29_sp)/real(ti, kind=sp)) &
+                * log(1._sp + ((1._sp-CCi/CCx)/0.05_sp)))/3.33_sp
     else
         CDC = undef_int
     end if
@@ -1727,13 +1727,13 @@ integer(int32) function RoundedOffGDD(PeriodGDD, PeriodDay,&
     integer(int32), intent(in) :: PeriodGDD
     integer(int32), intent(in) :: PeriodDay
     integer(int32), intent(in) :: FirstDayPeriod
-    real(dp), intent(in) :: TempTbase
-    real(dp), intent(in) :: TempTupper
-    real(dp), intent(in) :: TempTmin
-    real(dp), intent(in) :: TempTmax
+    real(sp), intent(in) :: TempTbase
+    real(sp), intent(in) :: TempTupper
+    real(sp), intent(in) :: TempTmin
+    real(sp), intent(in) :: TempTmax
 
     integer(int32) :: DayMatch, PeriodUpdatedGDD
-    real(dp) :: TempTmin_t, TempTmax_t
+    real(sp) :: TempTmin_t, TempTmax_t
 
     TempTmin_t = TempTmin
     TempTmax_t = TempTmax
@@ -1783,10 +1783,10 @@ subroutine CropStressParametersSoilSalinity(CCxRed, CCdistortion, &
              GDDL123, TheModeCycle, StressResponse)
     integer(int8), intent(in) :: CCxRed
     integer(int8), intent(in) :: CCdistortion
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
     logical, intent(in) :: CropDeterm
     integer(int32), intent(in) :: L12
     integer(int32), intent(in) :: LFlor
@@ -1799,7 +1799,7 @@ subroutine CropStressParametersSoilSalinity(CCxRed, CCdistortion, &
     integer(intEnum), intent(in) :: TheModeCycle
     type(rep_EffectStress), intent(inout) :: StressResponse
 
-    real(dp) :: CCToReach, CCxAdj, L12Double, L12SS, &
+    real(sp) :: CCToReach, CCxAdj, L12Double, L12SS, &
                 CGCadjMax, CGCAdjMin, L12SSmax, CGCadj, CCxFinal, &
                 GDDL12Double, GDDCGCadjMax, GDDL12SSmax, GDDCGCAdjMin, GDDCGCadj
 
@@ -1811,77 +1811,77 @@ subroutine CropStressParametersSoilSalinity(CCxRed, CCdistortion, &
     GDDL12Double = GDDL12
 
     ! CGC reduction
-    CCToReach = 0.98_dp * CCx
+    CCToReach = 0.98_sp * CCx
     if ((CCo > CCToReach) .or. (CCo >= CCx) .or. (CCxRed == 0)) then
         StressResponse%RedCGC = 0_int8
     else
         StressResponse%RedCGC = undef_int
         ! reference for no salinity stress
         if (TheModeCycle == modeCycle_CalendarDays) then
-            L12Double = log((0.25_dp*CCx*CCx/CCo)/(CCx-CCToReach))/CGC
-            if (L12Double <= epsilon(1._dp)) then
+            L12Double = log((0.25_sp*CCx*CCx/CCo)/(CCx-CCToReach))/CGC
+            if (L12Double <= epsilon(1._sp)) then
                 StressResponse%RedCGC = 0_int8
             end if
         else
-            GDDL12Double = log((0.25_dp*CCx*CCx/CCo)/(CCx-CCToReach))/GDDCGC
-            if (GDDL12Double <= epsilon(1._dp)) then
+            GDDL12Double = log((0.25_sp*CCx*CCx/CCo)/(CCx-CCToReach))/GDDCGC
+            if (GDDL12Double <= epsilon(1._sp)) then
                 StressResponse%RedCGC = 0_int8
             end if
         end if
         ! with salinity stress
-        CCxAdj = 0.90_dp * CCx * (1._dp - CCxRed/100._dp)
-        CCToReach = 0.98_dp * CCxAdj
+        CCxAdj = 0.90_sp * CCx * (1._sp - CCxRed/100._sp)
+        CCToReach = 0.98_sp * CCxAdj
         if ((StressResponse%RedCGC /= 0) .and. &
-            ((CCxAdj-CCToReach) >= 0.0001_dp)) then
+            ((CCxAdj-CCToReach) >= 0.0001_sp)) then
             if (TheModeCycle == modeCycle_CalendarDays) then
-                CGCadjMax = log((0.25_dp*CCxAdj*CCxAdj/CCo)&
+                CGCadjMax = log((0.25_sp*CCxAdj*CCxAdj/CCo)&
                                 /(CCxAdj-CCToReach))/L12Double
-                L12SSmax = L12 + (L123 - L12)/2._dp
+                L12SSmax = L12 + (L123 - L12)/2._sp
                 if (CropDeterm .and. (L12SSmax > &
-                       (LFlor + roundc(LengthFlor/2._dp, mold=1_int32)))) then
-                    L12SSmax = LFlor + roundc(LengthFlor/2._dp, mold=1_int32)
+                       (LFlor + roundc(LengthFlor/2._sp, mold=1_int32)))) then
+                    L12SSmax = LFlor + roundc(LengthFlor/2._sp, mold=1_int32)
                 end if
                 if (L12SSmax > L12Double) then
-                    CGCAdjMin = log((0.25_dp*CCxAdj*CCxAdj/CCo)&
+                    CGCAdjMin = log((0.25_sp*CCxAdj*CCxAdj/CCo)&
                                     /(CCxAdj-CCToReach))/L12SSmax
                 else
                     CGCAdjMin = CGCadjMax
                 end if
                 if (CCxRed < 10) then ! smooth start required
                     CGCadj = CGCadjMax - (CGCadjMax-CGCAdjMin)&
-                     *(exp(CCxRed*log(1.5_dp))/exp(10*log(1.5_dp)))&
-                     *(CCdistortion/100._dp)
+                     *(exp(CCxRed*log(1.5_sp))/exp(10*log(1.5_sp)))&
+                     *(CCdistortion/100._sp)
                 else
                     CGCadj = CGCadjMax - (CGCadjMax-CGCAdjMin)&
-                                         *(CCdistortion/100._dp)
+                                         *(CCdistortion/100._sp)
                 end if
                 StressResponse%RedCGC = &
-                  roundc(100._dp*(CGC-CGCadj)/CGC, mold=1_int8)
+                  roundc(100._sp*(CGC-CGCadj)/CGC, mold=1_int8)
             else
-                GDDCGCadjMax = log((0.25_dp*CCxAdj*CCxAdj/CCo) &
+                GDDCGCadjMax = log((0.25_sp*CCxAdj*CCxAdj/CCo) &
                                    /(CCxAdj-CCToReach))/GDDL12Double
-                GDDL12SSmax = GDDL12 + (GDDL123 - GDDL12)/2._dp
+                GDDL12SSmax = GDDL12 + (GDDL123 - GDDL12)/2._sp
                 if (CropDeterm .and. (GDDL12SSmax > &
-                      (GDDLFlor + roundc(LengthFlor/2._dp, mold=1_int32)))) then
+                      (GDDLFlor + roundc(LengthFlor/2._sp, mold=1_int32)))) then
                     GDDL12SSmax = GDDLFlor + &
-                       roundc(GDDLengthFlor/2._dp, mold=1_int32)
+                       roundc(GDDLengthFlor/2._sp, mold=1_int32)
                 end if
                 if (GDDL12SSmax > GDDL12Double) then
-                    GDDCGCAdjMin = log((0.25_dp*CCxAdj*CCxAdj/CCo) &
+                    GDDCGCAdjMin = log((0.25_sp*CCxAdj*CCxAdj/CCo) &
                                        /(CCxAdj-CCToReach))/GDDL12SSmax
                 else
                     GDDCGCAdjMin = GDDCGCadjMax
                 end if
                 if (CCxRed < 10) then ! smooth start required
                     GDDCGCadj = GDDCGCadjMax - (GDDCGCadjMax-GDDCGCAdjMin)*&
-                                   (exp(real(CCxRed, kind=dp))/&
-                                    exp(10._dp))*(CCdistortion/100._dp)
+                                   (exp(real(CCxRed, kind=sp))/&
+                                    exp(10._sp))*(CCdistortion/100._sp)
                 else
                     GDDCGCadj = GDDCGCadjMax - &
-                      (GDDCGCadjMax-GDDCGCAdjMin)*(CCdistortion/100._dp)
+                      (GDDCGCadjMax-GDDCGCAdjMin)*(CCdistortion/100._sp)
                 end if
                 StressResponse%RedCGC = &
-                      roundc(100._dp*(GDDCGC-GDDCGCadj)/GDDCGC, mold=1_int8)
+                      roundc(100._sp*(GDDCGC-GDDCGCadj)/GDDCGC, mold=1_int8)
            end if
         else
             StressResponse%RedCGC = 0_int8
@@ -1890,31 +1890,31 @@ subroutine CropStressParametersSoilSalinity(CCxRed, CCdistortion, &
 
     ! Canopy decline
     if (CCxRed == 0) then
-        StressResponse%CDecline = 0._dp
+        StressResponse%CDecline = 0._sp
     else
-        CCxAdj = 0.98_dp*CCx*(1._dp - CCxRed/100._dp)
-        L12SS = L12SSmax - (L12SSmax-L12Double) * (CCdistortion/100._dp)
+        CCxAdj = 0.98_sp*CCx*(1._sp - CCxRed/100._sp)
+        L12SS = L12SSmax - (L12SSmax-L12Double) * (CCdistortion/100._sp)
         if ((L123 > L12SS) .and. (CCdistortion > 0)) then
             if (CCxRed < 10) then ! smooth start required
                 CCxFinal = CCxAdj - &
-                  (exp(CCxRed*log(1.5_dp))/exp(10._dp*log(1.5_dp)))* &
-                  (0.5_dp*CCdistortion/100._dp)*(CCxAdj - CCo)
+                  (exp(CCxRed*log(1.5_sp))/exp(10._sp*log(1.5_sp)))* &
+                  (0.5_sp*CCdistortion/100._sp)*(CCxAdj - CCo)
             else
-                CCxFinal = CCxAdj - (0.5_dp*CCdistortion/100._dp)*(CCxAdj - CCo)
+                CCxFinal = CCxAdj - (0.5_sp*CCdistortion/100._sp)*(CCxAdj - CCo)
             end if
             if (CCxFinal < CCo) then
                 CCxFinal = CCo
             end if
             StressResponse%CDecline = &
-                100._dp*(CCxAdj - CCxFinal)/real(L123 - L12SS, kind=dp)
+                100._sp*(CCxAdj - CCxFinal)/real(L123 - L12SS, kind=sp)
             if (StressResponse%CDecline > 1) then
-                StressResponse%CDecline = 1.0_dp
+                StressResponse%CDecline = 1.0_sp
             end if
-            if (StressResponse%CDecline <= epsilon(1._dp)) then
-                StressResponse%CDecline = 0.001_dp
+            if (StressResponse%CDecline <= epsilon(1._sp)) then
+                StressResponse%CDecline = 0.001_sp
             end if
         else
-            StressResponse%CDecline = 0.001_dp ! no shift of maturity
+            StressResponse%CDecline = 0.001_sp ! no shift of maturity
         end if
     end if
 
@@ -1931,7 +1931,7 @@ subroutine TemperatureFileCoveringCropPeriod(CropFirstDay, CropLastDay)
     integer(int32) :: fhandle
     integer(int32) :: i, RunningDay
     type(rep_DayEventDbl), dimension(31) :: TminDataSet, TmaxDataSet
-    real(dp) :: Tlow, Thigh
+    real(sp) :: Tlow, Thigh
 
     if (TemperatureFilefull_exists) then
         ! open file and find first day of cropping period
@@ -2025,14 +2025,14 @@ subroutine AdjustCropFileParameters(TheCropFileSet, LseasonDays,&
     integer(int32), intent(in) :: LseasonDays
     integer(int32), intent(in) :: TheCropDay1
     integer(intEnum), intent(in) :: TheModeCycle
-    real(dp), intent(in) :: TheTbase
-    real(dp), intent(in) :: TheTupper
+    real(sp), intent(in) :: TheTbase
+    real(sp), intent(in) :: TheTupper
     integer(int32), intent(inout) :: L123
     integer(int32), intent(inout) :: L1234
     integer(int32), intent(inout) :: GDD123
     integer(int32), intent(inout) :: GDD1234
 
-    real(dp) :: Tmin_tmp, Tmax_tmp
+    real(sp) :: Tmin_tmp, Tmax_tmp
 
     ! Adjust some crop parameters (CROP.*) as specified by the generated length
     ! season (LseasonDays)
@@ -2078,14 +2078,14 @@ subroutine LoadSimulationRunProject(NrRun)
     character(len=1025) :: CalendarDescriptionLocal
     character(len=1025) :: TemperatureDescriptionLocal
 
-    real(dp) :: TotDepth
+    real(sp) :: TotDepth
     integer(int32)  :: FertStress
     type(rep_clim) :: temperature_record
     integer(int8)  :: RedCGC_temp, RedCCX_temp
     type(CompartmentIndividual), dimension(max_No_compartments) :: &
                       Compartment_temp
     integer(intEnum) :: Crop_Planting_temp
-    real(dp) :: Crop_CCini_temp, Crop_RootMin_temp, Crop_SizePlant_temp
+    real(sp) :: Crop_CCini_temp, Crop_RootMin_temp, Crop_SizePlant_temp
     integer(int32) :: Crop_DaysToCCini_temp, Crop_GDDaysToCCini_temp
     integer(int32) :: Crop_DaysToSenescence_temp, Crop_DaysToHarvest_temp
     integer(int32) :: Crop_GDDaysToSenescence_temp, Crop_GDDaysToHarvest_temp
@@ -2094,7 +2094,7 @@ subroutine LoadSimulationRunProject(NrRun)
     integer(int32) :: Crop_DaysToFullCanopySF_temp
     integer(int32) :: ZiAqua_temp
     type(rep_clim) :: etorecord_tmp, rainrecord_tmp
-    real(dp)       :: ECiAqua_temp, SurfaceStorage_temp
+    real(sp)       :: ECiAqua_temp, SurfaceStorage_temp
 
     ! 0. Year of cultivation and Simulation and Cropping period
     call SetSimulation_YearSeason(ProjectInput(NrRun)%Simulation_YearSeason)
@@ -2365,30 +2365,30 @@ subroutine LoadSimulationRunProject(NrRun)
         call CompleteProfileDescription
 
         ! Adjust size of compartments if required
-        TotDepth = 0._dp
+        TotDepth = 0._sp
         do i = 1, GetNrCompartments()
             TotDepth = TotDepth + GetCompartment_Thickness(i)
         end do
         if (GetSimulation_MultipleRunWithKeepSWC()) then
         ! Project with a sequence of simulation runs and KeepSWC
-            if (roundc(GetSimulation_MultipleRunConstZrx()*1000._dp, mold=1) > &
-                roundc(TotDepth*1000._dp, mold=1)) then
+            if (roundc(GetSimulation_MultipleRunConstZrx()*1000._sp, mold=1) > &
+                roundc(TotDepth*1000._sp, mold=1)) then
                 call AdjustSizeCompartments(GetSimulation_MultipleRunConstZrx())
             end if
         else
-            if (roundc(GetCrop_RootMax()*1000._dp, mold=1) > &
-                roundc(TotDepth*1000._dp, mold=1)) then
-                if (roundc(GetSoil_RootMax()*1000._dp, mold=1) == &
-                    roundc(GetCrop_RootMax()*1000._dp, mold=1)) then
+            if (roundc(GetCrop_RootMax()*1000._sp, mold=1) > &
+                roundc(TotDepth*1000._sp, mold=1)) then
+                if (roundc(GetSoil_RootMax()*1000._sp, mold=1) == &
+                    roundc(GetCrop_RootMax()*1000._sp, mold=1)) then
                     call AdjustSizeCompartments(&
-                            real(GetCrop_RootMax(), kind=dp))
+                            real(GetCrop_RootMax(), kind=sp))
                     ! no restrictive soil layer
                 else
                     ! restrictive soil layer
-                    if (roundc(GetSoil_RootMax()*1000._dp, mold=1) > &
-                        roundc(TotDepth*1000._dp, mold=1)) then
+                    if (roundc(GetSoil_RootMax()*1000._sp, mold=1) > &
+                        roundc(TotDepth*1000._sp, mold=1)) then
                         call AdjustSizeCompartments(&
-                            real(GetSoil_RootMax(), kind=dp))
+                            real(GetSoil_RootMax(), kind=sp))
                     end if
                 end if
             end if
@@ -2435,7 +2435,7 @@ subroutine LoadSimulationRunProject(NrRun)
             end do
             ! ADDED WHEN DESINGNING 4.0 BECAUSE BELIEVED TO HAVE FORGOTTEN -
             ! CHECK LATER
-            if (GetManagement_BundHeight() >= 0.01_dp) then
+            if (GetManagement_BundHeight() >= 0.01_sp) then
                  call SetSimulation_SurfaceStorageIni(GetSurfaceStorage())
                  call SetSimulation_ECStorageIni(GetECStorage())
              end if
@@ -2455,11 +2455,11 @@ subroutine LoadSimulationRunProject(NrRun)
         call SetECiAqua(ECiAqua_temp)
     else
         call SetZiAqua(undef_int)
-        call SetECiAqua(real(undef_int, kind=dp))
+        call SetECiAqua(real(undef_int, kind=sp))
         call SetSimulParam_ConstGwt(.true.)
     end if
     Compartment_temp = GetCompartment()
-    call CalculateAdjustedFC((GetZiAqua()/100._dp), Compartment_temp)
+    call CalculateAdjustedFC((GetZiAqua()/100._sp), Compartment_temp)
     call SetCompartment(Compartment_temp)
     if (GetSimulation_IniSWC_AtFC() .and. (GetSWCIniFile() /= 'KeepSWC')) then
         call ResetSWCToFC()
@@ -2524,33 +2524,33 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
     integer(int32), intent(in) :: GDDL12
     integer(int32), intent(in) :: GDDL123
     integer(int32), intent(in) :: GDDL1234
-    real(dp), intent(in) :: CCo
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CGC
-    real(dp), intent(in) :: GDDCGC
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: GDDCDC
-    real(dp), intent(in) :: KcTop
-    real(dp), intent(in) :: KcDeclAgeing
-    real(dp), intent(in) :: CCeffectProcent
-    real(dp), intent(in) :: WPbio
-    real(dp), intent(in) :: TheCO2
-    real(dp), intent(in) :: Tbase
-    real(dp), intent(in) :: Tupper
-    real(dp), intent(in) :: TDayMin
-    real(dp), intent(in) :: TDayMax
-    real(dp), intent(in) :: GDtranspLow
-    real(dp), intent(in) :: RatDGDD
+    real(sp), intent(in) :: CCo
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CGC
+    real(sp), intent(in) :: GDDCGC
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: GDDCDC
+    real(sp), intent(in) :: KcTop
+    real(sp), intent(in) :: KcDeclAgeing
+    real(sp), intent(in) :: CCeffectProcent
+    real(sp), intent(in) :: WPbio
+    real(sp), intent(in) :: TheCO2
+    real(sp), intent(in) :: Tbase
+    real(sp), intent(in) :: Tupper
+    real(sp), intent(in) :: TDayMin
+    real(sp), intent(in) :: TDayMax
+    real(sp), intent(in) :: GDtranspLow
+    real(sp), intent(in) :: RatDGDD
     integer(intEnum), intent(in) :: TheModeCycle
     integer(int32), intent(in) :: TempAssimPeriod
     integer(int8), intent(in) :: TempAssimStored
-    real(dp), intent(inout) :: SumBtot
-    real(dp), intent(inout) :: SumBstored
+    real(sp), intent(inout) :: SumBtot
+    real(sp), intent(inout) :: SumBstored
 
-    real(dp), parameter :: EToStandard = 5._dp
+    real(sp), parameter :: EToStandard = 5._sp
 
     integer(int32) :: fTemp, rc
-    real(dp) :: SumGDDfromDay1, SumGDDforPlot, SumGDD, DayFraction, &
+    real(sp) :: SumGDDfromDay1, SumGDDforPlot, SumGDD, DayFraction, &
                 GDDayFraction, CCinitial, Tndayi, Txdayi, GDDi, CCi, &
                 CCxWitheredForB, TpotForB, EpotTotForB
     logical :: GrowthON
@@ -2564,17 +2564,17 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
     end if
      ! 2. initialize
     call SetSimulation_DelayedDays(0) ! required for CalculateETpot
-    SumBtot = 0._dp
-    SumBstored = 0._dp
+    SumBtot = 0._sp
+    SumBstored = 0._sp
     SumGDDforPlot = undef_int
     SumGDD = undef_int
-    SumGDDfromDay1 = 0._dp
+    SumGDDfromDay1 = 0._sp
     GrowthON = .false.
     GDDTadj = undef_int
     DayFraction = undef_int
     GDDayFraction = undef_int
     StartStorage = L1234 - TempAssimPeriod + 1
-    CCxWitheredForB = 0._dp
+    CCxWitheredForB = 0._sp
 
     ! 3. Initialise 1st day
     if (TheDaysToCCini /= 0) then
@@ -2602,18 +2602,18 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
                 GDDCGC, GDDCDC, SumGDDforPlot, TheModeCycle, 0_int8, 0_int8)
         end if
         ! Time reduction for days between L12 and L123
-        DayFraction = (L123-L12) *1._dp/ &
-                      real(Tadj + L0 + (L123-L12), kind=dp)
+        DayFraction = (L123-L12) *1._sp/ &
+                      real(Tadj + L0 + (L123-L12), kind=sp)
         if (TheModeCycle == modeCycle_GDDays) then
-            GDDayFraction = (GDDL123-GDDL12) *1._dp/&
-                            real(GDDTadj + GDDL0 + (GDDL123-GDDL12), kind=dp)
+            GDDayFraction = (GDDL123-GDDL12) *1._sp/&
+                            real(GDDTadj + GDDL0 + (GDDL123-GDDL12), kind=sp)
         end if
     else
         ! growth starts after germination/recover
         Tadj = 0
         if (TheModeCycle == modeCycle_GDDays) then
-            GDDTadj = 0._dp
-            SumGDD = 0._dp
+            GDDTadj = 0._sp
+            SumGDD = 0._sp
         end if
         CCinitial = CCo
     end if
@@ -2625,8 +2625,8 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
             GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax, &
                               GetSimulParam_GDDMethod())
         elseif (GetTemperatureFile() == '(External)') then 
-            Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
-            Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=dp)
+            Tndayi = real(GetTminRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=sp)
+            Txdayi = real(GetTmaxRun_i(GetCrop_Day1()-GetSimulation_FromDayNr()+Dayi),kind=sp)
             GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
         else
@@ -2643,7 +2643,7 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
         DayCC = Dayi
         if (GrowthON .eqv. .false.) then
             ! not yet canopy development
-            CCi = 0._dp
+            CCi = 0._sp
             if (TheDaysToCCini /= 0) then
                 ! regrowth
                 CCi = CCinitial
@@ -2673,7 +2673,7 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
                 if (DayCC > L12) then
                     if (Dayi <= L123) then
                         DayCC = L12 + roundc(DayFraction *&
-                             real(Dayi+Tadj+L0 - L12, kind=dp),mold=1) ! slow down
+                             real(Dayi+Tadj+L0 - L12, kind=sp),mold=1) ! slow down
                     else
                         DayCC = Dayi ! switch time scale
                     end if
@@ -2691,7 +2691,7 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
                         if (SumGDDfromDay1 <= GDDL123) then
                             SumGDDforPlot = GDDL12 + real(GDDayFraction * &
                               real(SumGDDfromDay1+GDDTadj+GDDL0 - GDDL12,&
-                                   kind=dp)) ! slow down
+                                   kind=sp)) ! slow down
                         else
                             SumGDDforPlot = SumGDDfromDay1 ! switch time scale
                         end if
@@ -2699,31 +2699,31 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
                     CCi = CCiNoWaterStressSF(DayCC, L0, L12, L123, L1234,&
                         GDDL0, GDDL12, GDDL123, GDDL1234,&
                         CCo, CCx, CGC, GDDCGC, CDC, GDDCDC, SumGDDforPlot,&
-                        RatDGDD, 0_int8, 0_int8, 0._dp, TheModeCycle)
+                        RatDGDD, 0_int8, 0_int8, 0._sp, TheModeCycle)
                 end if
                 if (CCi > CCxWitheredForB) then
                      CCxWitheredForB = CCi
                 end if
 
                 ! 4.3 potential transpiration (TpotForB)
-                if (CCi > 0.0001_dp) then
+                if (CCi > 0.0001_sp) then
                     ! 5.3 potential transpiration of total canopy cover
                     call CalculateETpot(DayCC, L0, L12, L123, L1234, (0), CCi,&
                          EToStandard, KcTop, KcDeclAgeing,&
                          CCx, CCxWitheredForB, CCeffectProcent, TheCO2, GDDi, &
                          GDtranspLow, TpotForB, EpotTotForB)
                 else
-                    TpotForB = 0._dp
+                    TpotForB = 0._sp
                 end if
 
                 ! 4.4 Biomass (B)
                 if (Dayi >= StartStorage) then
                     SumBtot = SumBtot +  WPbio * (TpotForB/EToStandard)
                     SumBstored = SumBstored + WPbio*(TpotForB/EToStandard)*&
-                            (0.01_dp*TempAssimStored)*&
-                            (1-KsAny(((Dayi-StartStorage+1._dp)/&
-                               real(TempAssimPeriod, kind=dp)),&
-                               0._dp,1._dp,-5._dp));
+                            (0.01_sp*TempAssimStored)*&
+                            (1-KsAny(((Dayi-StartStorage+1._sp)/&
+                               real(TempAssimPeriod, kind=sp)),&
+                               0._sp,1._sp,-5._sp));
                end if
            end if
 
@@ -2737,7 +2737,7 @@ subroutine BTransferPeriod(TheDaysToCCini, TheGDDaysToCCini,&
 end subroutine BTransferPeriod
 
 
-real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
+real(sp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
             L0, L12, L12SF, L123, L1234, LFlor, &
             GDDL0, GDDL12, GDDL12SF, GDDL123, GDDL1234, &
             WPyield, DaysYieldFormation, tSwitch, CCo, CCx, &
@@ -2763,24 +2763,24 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      integer(int32), intent(in) :: WPyield
      integer(int32), intent(in) :: DaysYieldFormation
      integer(int32), intent(in) :: tSwitch
-     real(dp), intent(in) :: CCo
-     real(dp), intent(in) :: CCx
-     real(dp), intent(in) :: CGC
-     real(dp), intent(in) :: GDDCGC
-     real(dp), intent(in) :: CDC
-     real(dp), intent(in) :: GDDCDC
-     real(dp), intent(in) :: KcTop
-     real(dp), intent(in) :: KcDeclAgeing
-     real(dp), intent(in) :: CCeffectProcent
-     real(dp), intent(in) :: WPbio
-     real(dp), intent(in) :: TheCO2
-     real(dp), intent(in) :: Tbase
-     real(dp), intent(in) :: Tupper
-     real(dp), intent(in) :: TDayMin
-     real(dp), intent(in) :: TDayMax
-     real(dp), intent(in) :: GDtranspLow
-     real(dp), intent(in) :: RatDGDD
-     real(dp), intent(in) :: SumKcTop
+     real(sp), intent(in) :: CCo
+     real(sp), intent(in) :: CCx
+     real(sp), intent(in) :: CGC
+     real(sp), intent(in) :: GDDCGC
+     real(sp), intent(in) :: CDC
+     real(sp), intent(in) :: GDDCDC
+     real(sp), intent(in) :: KcTop
+     real(sp), intent(in) :: KcDeclAgeing
+     real(sp), intent(in) :: CCeffectProcent
+     real(sp), intent(in) :: WPbio
+     real(sp), intent(in) :: TheCO2
+     real(sp), intent(in) :: Tbase
+     real(sp), intent(in) :: Tupper
+     real(sp), intent(in) :: TDayMin
+     real(sp), intent(in) :: TDayMax
+     real(sp), intent(in) :: GDtranspLow
+     real(sp), intent(in) :: RatDGDD
+     real(sp), intent(in) :: SumKcTop
      integer(int32), intent(in) :: StressInPercent
      integer(int8), intent(in) :: StrResRedCGC
      integer(int8), intent(in) :: StrResRedCCx
@@ -2788,22 +2788,22 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      integer(int8), intent(in) :: StrResRedKsSto
      integer(int8), intent(in) :: WeedStress
      integer(int32), intent(in) :: DeltaWeedStress
-     real(dp), intent(in) :: StrResCDecline
-     real(dp), intent(in) :: ShapeFweed
+     real(sp), intent(in) :: StrResCDecline
+     real(sp), intent(in) :: ShapeFweed
      integer(intEnum), intent(in) :: TheModeCycle
      logical, intent(in) :: FertilityStressOn
      logical, intent(in) :: ReferenceClimate
 
-     real(dp), parameter :: EToStandard = 5._dp
+     real(sp), parameter :: EToStandard = 5._sp
      integer(int32), parameter :: k = 2
 
      integer(int32) ::  fTemp, rc
-     real(dp) :: SumGDD, Tndayi, Txdayi, GDDi, CCi,&
+     real(sp) :: SumGDD, Tndayi, Txdayi, GDDi, CCi,&
                  CCxWitheredForB, TpotForB, EpotTotForB, SumKCi,&
                  fSwitch, WPi, SumBnor, SumKcTopSF, fCCx
      integer(int32) :: Dayi, DayCC, Tadj, GDDTadj, i
-     real(dp) :: CCoadj, CCxadj, CDCadj, GDDCDCadj, CCw, CCtotStar, CCwStar
-     real(dp) :: SumGDDfromDay1, SumGDDforPlot, CCinitial,&
+     real(sp) :: CCoadj, CCxadj, CDCadj, GDDCDCadj, CCw, CCtotStar, CCwStar
+     real(sp) :: SumGDDfromDay1, SumGDDforPlot, CCinitial,&
                  DayFraction, GDDayFraction, fWeed, WeedCorrection
      logical :: GrowthON
      integer(int32) :: DeltaWeedStress_local
@@ -2811,14 +2811,14 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      ! 1. Adjustment for weed infestation
      if (WeedStress > 0) then
          if (StressInPercent > 0) then ! soil fertility stress
-             fWeed = 1._dp  ! no expansion of canopy cover possible
+             fWeed = 1._sp  ! no expansion of canopy cover possible
          else
              fWeed = CCmultiplierWeed(WeedStress, CCx, ShapeFweed)
          end if
          CCoadj = CCo*fWeed
          CCxadj = CCx*fWeed
-         CDCadj = CDC*(fWeed*CCx + 2.29_dp)/(CCx + 2.29_dp)
-         GDDCDCadj = GDDCDC*(fWeed*CCx + 2.29_dp)/(CCx + 2.29_dp)
+         CDCadj = CDC*(fWeed*CCx + 2.29_sp)/(CCx + 2.29_sp)
+         GDDCDCadj = GDDCDC*(fWeed*CCx + 2.29_sp)/(CCx + 2.29_sp)
      else
          CCoadj = CCo
          CCxadj = CCx
@@ -2839,20 +2839,20 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
      end if
 
      ! 3. Initialize
-     SumKcTopSF = (1._dp - real(StressInPercent, kind=dp)/100._dp) * SumKcTop
+     SumKcTopSF = (1._sp - real(StressInPercent, kind=sp)/100._sp) * SumKcTop
      !! only required for soil fertility stress
 
      call SetSimulation_DelayedDays(0) ! required for CalculateETpot
-     SumKci = 0._dp
-     SumBnor = 0._dp
+     SumKci = 0._sp
+     SumBnor = 0._sp
      SumGDDforPlot = undef_int
      SumGDD = undef_int
-     SumGDDfromDay1 = 0._dp
+     SumGDDfromDay1 = 0._sp
      GrowthON = .false.
      GDDTadj = undef_int
      DayFraction = undef_int
      GDDayFraction = undef_int
-     CCxWitheredForB = 0._dp
+     CCxWitheredForB = 0._sp
 
      ! 4. Initialise 1st day
      if (TheDaysToCCini /= 0) then
@@ -2865,7 +2865,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
                  GDDTadj = GDDL12 - GDDL0
                  SumGDD = GDDL12
              end if
-             CCinitial = CCxadj * (1._dp-StrResRedCCX/100._dp)
+             CCinitial = CCxadj * (1._sp-StrResRedCCX/100._sp)
          else
          ! CC on 1st day is < CCx
              Tadj = TheDaysToCCini
@@ -2881,10 +2881,10 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
                  StrResRedCGC, StrResRedCCX)
          end if
          ! Time reduction for days between L12 and L123
-         DayFraction = (L123-L12) * 1._dp/&
-                       real(Tadj + L0 + (L123-L12) ,kind=dp)
+         DayFraction = (L123-L12) * 1._sp/&
+                       real(Tadj + L0 + (L123-L12) ,kind=sp)
          if (TheModeCycle == modeCycle_GDDays) then
-             GDDayFraction = (GDDL123-GDDL12) * 1._dp/&
+             GDDayFraction = (GDDL123-GDDL12) * 1._sp/&
                              (GDDTadj + GDDL0 + (GDDL123-GDDL12))
          end if
      else
@@ -2892,7 +2892,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
          Tadj = 0
          if (TheModeCycle == modeCycle_GDDays) then
              GDDTadj = 0
-             SumGDD = 0._dp
+             SumGDD = 0._sp
          end if
          CCinitial = CCoadj
      end if
@@ -2904,13 +2904,13 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
          if (GetTemperatureFile() == '(None)') then
              GDDi = DegreesDay(Tbase, Tupper, TDayMin, TDayMax,&
                                GetSimulParam_GDDMethod())
-         elseif (GetTemperatureFile() == '(External)') then
+         elseif (GetTemperatureFile() == '(External)') then 
              i = i + 1
              if (i == size(GetTminCropReferenceRun())) then
                  i = 1
              end if
-             Tndayi = real(GetTminCropReferenceRun_i(i),kind=dp)
-             Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=dp)
+             Tndayi = real(GetTminCropReferenceRun_i(i),kind=sp)
+             Txdayi = real(GetTmaxCropReferenceRun_i(i),kind=sp)
              GDDi = DegreesDay(Tbase, Tupper, Tndayi, Txdayi, &
                                     GetSimulParam_GDDMethod())
          else
@@ -2931,7 +2931,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
          DayCC = Dayi
          if (GrowthON .eqv. .false.) then
              ! not yet canopy development
-             CCi = 0._dp
+             CCi = 0._sp
              if (TheDaysToCCini /= 0) then
                  ! regrowth
                  CCi = CCinitial
@@ -3000,11 +3000,11 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
              CCxWitheredForB = CCi
          end if
          if (DayCC >= L12SF) then
-             CCxWitheredForB = CCxadj*(1._dp-StrResRedCCX/100._dp)
+             CCxWitheredForB = CCxadj*(1._sp-StrResRedCCX/100._sp)
          end if
          CCw = CCi
 
-         if (CCi > 0.0001_dp) then
+         if (CCi > 0.0001_sp) then
              ! 5.3 potential transpiration of total canopy cover (crop and weed)
              call CalculateETpot(DayCC, L0, L12, L123, L1234, (0), CCi, &
                             EToStandard, KcTop, KcDeclAgeing,&
@@ -3018,7 +3018,7 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
              if (WeedStress > 0) then
                  ! green canopy cover of the crop (CCw) in weed-infested field
                  ! (CCi is CC of crop and weeds)
-                 fCCx = 1.0_dp ! only for non perennials (no self-thinning)
+                 fCCx = 1.0_sp ! only for non perennials (no self-thinning)
                  if (DeltaWeedStress /= 0) then
                      DeltaWeedStress_local = DeltaWeedStress
                      WeedCorrection = GetWeedRC(DayCC, SumGDDforPlot, fCCx,&
@@ -3028,30 +3028,30 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
                  else
                      WeedCorrection = WeedStress
                  end if
-                 CCw = CCi * (1._dp - WeedCorrection/100._dp)
+                 CCw = CCi * (1._sp - WeedCorrection/100._sp)
                  ! correction for micro-advection
-                 CCtotStar = 1.72_dp*CCi - 1._dp*(CCi*CCi) + &
-                                 0.30_dp*(CCi*CCi*CCi)
-                 if (CCtotStar < 0._dp) then
-                     CCtotStar = 0._dp
+                 CCtotStar = 1.72_sp*CCi - 1._sp*(CCi*CCi) + &
+                                 0.30_sp*(CCi*CCi*CCi)
+                 if (CCtotStar < 0._sp) then
+                     CCtotStar = 0._sp
                  end if
-                 if (CCtotStar > 1._dp) then
-                     CCtotStar = 1._dp
+                 if (CCtotStar > 1._sp) then
+                     CCtotStar = 1._sp
                  end if
-                 if (CCw > 0.0001_dp) then
+                 if (CCw > 0.0001_sp) then
                      CCwStar = CCw + (CCtotStar - CCi)
                  else
-                     CCwStar = 0._dp
+                     CCwStar = 0._sp
                  end if
                  ! crop transpiration in weed-infested field
-                 if (CCtotStar <= 0.0001_dp) then
-                     TpotForB = 0._dp
+                 if (CCtotStar <= 0.0001_sp) then
+                     TpotForB = 0._sp
                  else
                      TpotForB = TpotForB * (CCwStar/CCtotStar)
                  end if
              end if
          else
-             TpotForB = 0._dp
+             TpotForB = 0._sp
          end if
 
          ! 5.6 biomass water productivity (WP)
@@ -3061,34 +3061,34 @@ real(dp) function Bnormalized(TheDaysToCCini, TheGDDaysToCCini,&
              .or. (GetCrop_subkind() == subkind_Grain)) .and.&
              (WPyield < 100) .and. (Dayi > LFlor)) then
              ! yield formation stage
-             fSwitch = 1._dp
+             fSwitch = 1._sp
              if ((DaysYieldFormation > 0) .and. (tSwitch > 0)) then
-                 fSwitch = (Dayi-LFlor) * 1._dp/real(tSwitch, kind=dp)
+                 fSwitch = (Dayi-LFlor) * 1._sp/real(tSwitch, kind=sp)
                  if (fSwitch > 1) then
-                     fSwitch = 1._dp
+                     fSwitch = 1._sp
                  end if
              end if
-             WPi = WPi * (1._dp - (1._dp - WPyield/100._dp)*fSwitch)
+             WPi = WPi * (1._sp - (1._sp - WPyield/100._sp)*fSwitch)
          end if
 
          ! 5.7 Biomass (B)
          if (FertilityStressOn) then
              ! 5.7a - reduction for soil fertiltiy
-             if ((StrResRedWP > 0) .and. (SumKci > 0._dp) &
+             if ((StrResRedWP > 0) .and. (SumKci > 0._sp) &
                  .and. (SumKcTopSF > epsilon(1.0))) then
                  if (SumKci < SumKcTopSF) then
                      if (SumKci > 0) then
-                         WPi = WPi * (1._dp - (StrResRedWP/100._dp) *&
+                         WPi = WPi * (1._sp - (StrResRedWP/100._sp) *&
                                  exp(k*log(SumKci/SumKcTopSF)))
                      end if
                  else
-                     WPi = WPi * (1._dp - StrResRedWP/100._dp)
+                     WPi = WPi * (1._sp - StrResRedWP/100._sp)
                  end if
              end if
              ! 5.7b - Biomass (B)
              SumBnor = SumBnor +  WPi * (TpotForB/EToStandard)
          else
-             SumBnor = SumBnor +  WPi * (1._dp - StrResRedKsSto/100._dp) *&
+             SumBnor = SumBnor +  WPi * (1._sp - StrResRedKsSto/100._sp) *&
                            (TpotForB/EToStandard) ! for salinity stress
          end if
 
@@ -3158,12 +3158,12 @@ subroutine CreateTnxReferenceFile(TemperatureFile, TnxReferenceFile, TnxReferenc
     character(len=*), intent(in) :: TnxReferenceFile
     integer(int32), intent(in) :: TnxReferenceYear
 
-    real(dp), dimension(12) :: MonthVal1, MonthVal2
+    real(sp), dimension(12) :: MonthVal1, MonthVal2
     character(len=:), allocatable :: FullName
     integer(int32)   :: fhandle, rc
     integer(int32) :: i, NrYears
     integer(int32) :: Yeari, Monthi, MonthDays, MonthDecs, Deci, Dayi
-    real(dp) :: SUM1, SUM2, Val1, Val2
+    real(sp) :: SUM1, SUM2, Val1, Val2
     integer(int32) :: DayNri, EndDayNr
     logical :: EndMonth
     integer(int32), dimension(12) :: MonthNrYears
@@ -3194,7 +3194,7 @@ subroutine CreateTnxReferenceFile(TemperatureFile, TnxReferenceFile, TnxReferenc
         ! Get Number of Years
         NrYears = GetTemperatureRecord_ToY() - GetTemperatureRecord_FromY() + 1
         ! Get TnxReferenceYear
-        call SetTnxReferenceYear(roundc((GetTemperatureRecord_FromY()+GetTemperatureRecord_ToY())/2._dp,mold=1_int32))
+        call SetTnxReferenceYear(roundc((GetTemperatureRecord_FromY()+GetTemperatureRecord_ToY())/2._sp,mold=1_int32))
         if (GetTnxReferenceYear() == 1901) then
             call SetTnxReferenceYear(2000)
         end if
@@ -3217,8 +3217,8 @@ subroutine CreateTnxReferenceFile(TemperatureFile, TnxReferenceFile, TnxReferenc
                 
         ! initialize
         do Monthi = 1, 12
-            MonthVal1(Monthi) = 0._dp ! Tmin data
-            MonthVal2(Monthi) = 0._dp ! Tmax data
+            MonthVal1(Monthi) = 0._sp ! Tmin data
+            MonthVal2(Monthi) = 0._sp ! Tmax data
         end do
         Yeari = GetTemperatureRecord_FromY()
         Monthi = GetTemperatureRecord_FromM()
@@ -3226,8 +3226,8 @@ subroutine CreateTnxReferenceFile(TemperatureFile, TnxReferenceFile, TnxReferenc
         EndMonth = .false.
         EndDayNr = undef_int
         Deci = undef_int
-        SUM1 = 0._dp
-        SUM2 = 0._dp
+        SUM1 = 0._sp
+        SUM2 = 0._sp
         MonthDays = 0
         MonthDecs = 0
         select case (GetTemperatureRecord_DataType())
@@ -3282,17 +3282,17 @@ subroutine CreateTnxReferenceFile(TemperatureFile, TnxReferenceFile, TnxReferenc
                 ! mean monthly values Tmin and Tmax
                 select case (GetTemperatureRecord_DataType())
                 case (datatype_daily)
-                    SUM1 = SUM1/real(MonthDays, kind=dp)
-                    SUM2 = SUM2/real(MonthDays, kind=dp)
+                    SUM1 = SUM1/real(MonthDays, kind=sp)
+                    SUM2 = SUM2/real(MonthDays, kind=sp)
                 case (datatype_decadely)
-                    SUM1 = SUM1/real(MonthDecs, kind=dp)
-                    SUM2 = SUM2/real(MonthDecs, kind=dp)
+                    SUM1 = SUM1/real(MonthDecs, kind=sp)
+                    SUM2 = SUM2/real(MonthDecs, kind=sp)
                 end select
-                MonthVal1(Monthi) = MonthVal1(Monthi) + SUM1/real(MonthNrYears(Monthi),kind=dp) ! Tmin
-                MonthVal2(Monthi) = MonthVal2(Monthi) + SUM2/real(MonthNrYears(Monthi),kind=dp) ! Tmax
+                MonthVal1(Monthi) = MonthVal1(Monthi) + SUM1/real(MonthNrYears(Monthi),kind=sp) ! Tmin
+                MonthVal2(Monthi) = MonthVal2(Monthi) + SUM2/real(MonthNrYears(Monthi),kind=sp) ! Tmax
                 ! Next month
-                SUM1 = 0._dp
-                SUM2 = 0._dp
+                SUM1 = 0._sp
+                SUM2 = 0._sp
                 if (Monthi == 12) then
                     Monthi = 1
                     Yeari = Yeari + 1
@@ -3378,7 +3378,7 @@ integer(int32) function GetTminDataSet_DayNr(i)
 end function GetTminDataSet_DayNr
 
 
-real(dp) function GetTminDataSet_Param(i)
+real(sp) function GetTminDataSet_Param(i)
     integer(int32), intent(in) :: i
 
     GetTminDataSet_Param = TminDataSet(i)%Param
@@ -3412,7 +3412,7 @@ end subroutine SetTminDataSet_DayNr
 
 subroutine SetTminDataSet_Param(i, Param_in)
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Param_in
+    real(sp), intent(in) :: Param_in
 
     TminDataSet(i)%Param = Param_in
 end subroutine SetTminDataSet_Param
@@ -3443,7 +3443,7 @@ integer(int32) function GetTmaxDataSet_DayNr(i)
 end function GetTmaxDataSet_DayNr
 
 
-real(dp) function GetTmaxDataSet_Param(i)
+real(sp) function GetTmaxDataSet_Param(i)
     integer(int32), intent(in) :: i
 
     GetTmaxDataSet_Param = TmaxDataSet(i)%Param
@@ -3477,7 +3477,7 @@ end subroutine SetTmaxDataSet_DayNr
 
 subroutine SetTmaxDataSet_Param(i, Param_in)
     integer(int32), intent(in) :: i
-    real(dp), intent(in) :: Param_in
+    real(sp), intent(in) :: Param_in
 
     TmaxDataSet(i)%Param = Param_in
 end subroutine SetTmaxDataSet_Param
@@ -3573,10 +3573,10 @@ subroutine GetMonthlyTemperatureDataSetFromTnxReferenceFile(Monthi, TminDataSet,
     integer(int32) :: Dayi, DayN
     integer(int32) :: DNR
     integer(int32) :: t1, t2, ni
-    real(dp) :: C1Min, C2Min, C3Min
-    real(dp) :: C1Max, C2Max, C3Max
-    real(dp) :: aOver3Min, bOver2Min, cMin
-    real(dp) :: aOver3Max, bOver2Max, cMax
+    real(sp) :: C1Min, C2Min, C3Min
+    real(sp) :: C1Max, C2Max, C3Max
+    real(sp) :: aOver3Min, bOver2Min, cMin
+    real(sp) :: aOver3Max, bOver2Max, cMax
 
     ni=30
 
@@ -3626,8 +3626,8 @@ subroutine GetMonthlyTemperatureDataSetFromTnxReferenceFile(Monthi, TminDataSet,
     do Dayi = (DayN+1), 31 ! Give to remaining days (day 29,30 or 31) the DayNr of the last day of the month
         TminDataSet(Dayi)%DayNr = DNR+DayN-1
         TmaxDataSet(Dayi)%DayNr = DNR+DayN-1
-        TminDataSet(Dayi)%Param = 0._dp
-        TmaxDataSet(Dayi)%Param = 0._dp
+        TminDataSet(Dayi)%Param = 0._sp
+        TmaxDataSet(Dayi)%Param = 0._sp
     end do
 
     contains
@@ -3635,17 +3635,17 @@ subroutine GetMonthlyTemperatureDataSetFromTnxReferenceFile(Monthi, TminDataSet,
 
     subroutine GetInterpolationParameters(C1, C2, C3, &
                           aOver3, bOver2, c)
-        real(dp), intent(in) :: C1
-        real(dp), intent(in) :: C2
-        real(dp), intent(in) :: C3
-        real(dp), intent(inout) :: aOver3
-        real(dp), intent(inout) :: bOver2
-        real(dp), intent(inout) :: c
+        real(sp), intent(in) :: C1
+        real(sp), intent(in) :: C2
+        real(sp), intent(in) :: C3
+        real(sp), intent(inout) :: aOver3
+        real(sp), intent(inout) :: bOver2
+        real(sp), intent(inout) :: c
 
         ! n1=n2=n3=30 --> better parabola
-        aOver3 = (C1-2._dp*C2+C3)/(6._dp*30._dp*30._dp*30._dp)
-        bOver2 = (-6._dp*C1+9._dp*C2-3._dp*C3)/(6._dp*30._dp*30._dp)
-        c = (11._dp*C1-7._dp*C2+2._dp*C3)/(6._dp*30._dp)
+        aOver3 = (C1-2._sp*C2+C3)/(6._sp*30._sp*30._sp*30._sp)
+        bOver2 = (-6._sp*C1+9._sp*C2-3._sp*C3)/(6._sp*30._sp*30._sp)
+        c = (11._sp*C1-7._sp*C2+2._sp*C3)/(6._sp*30._sp)
     end subroutine GetInterpolationParameters
 end subroutine GetMonthlyTemperatureDataSetFromTnxReferenceFile
 

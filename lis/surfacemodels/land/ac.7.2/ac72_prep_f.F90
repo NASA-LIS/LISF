@@ -114,9 +114,9 @@ subroutine ac72_read_Trecord(n)
 ! !USES:
     use ESMF
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
-    use LIS_timeMgrMod,     only: LIS_timemgr_set, LIS_advance_timestep, &
-                                  LIS_update_clock, LIS_is_last_step
-    use LIS_coreMod,        only: LIS_rc, LIS_surface
+    use LIS_timeMgrMod,     only: LIS_advance_timestep, LIS_is_last_step,&
+                                  LIS_timemgr_set
+    use LIS_coreMod,        only: LIS_rc, LIS_surface, LIS_resetTimeMgr
     use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
     use LIS_constantsMod
@@ -154,8 +154,6 @@ subroutine ac72_read_Trecord(n)
         call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
     enddo
     LIS_rc%rstflag(n) = 1
-    ! Make sure it is the right met time step
-    call LIS_update_clock(LIS_rc%ts)
 
     met_ts = int(86400./LIS_rc%ts)
 
@@ -170,9 +168,12 @@ subroutine ac72_read_Trecord(n)
     else
         yr_start = LIS_rc%yr
     endif
-    call LIS_timemgr_set(LIS_rc,yr_start,AC72_struc(n)%Sim_AnnualStartMonth,&
-                         AC72_struc(n)%Sim_AnnualStartDay,LIS_rc%hr+1,LIS_rc%mn,&
-                         LIS_rc%ss,LIS_rc%ms,0.0)
+    ! Set LIS_rc to reset clock
+    LIS_rc%syr = yr_start
+    LIS_rc%smo = AC72_struc(n)%Sim_AnnualStartMonth
+    LIS_rc%sda = AC72_struc(n)%Sim_AnnualStartDay
+    LIS_rc%shr = LIS_rc%hr+1
+    call LIS_resetTimeMgr
     day_loop: do i=1,366
         do j=1,met_ts
             ! read met forcing

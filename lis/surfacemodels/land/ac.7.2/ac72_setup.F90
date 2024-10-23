@@ -467,7 +467,6 @@ subroutine AC72_setup()
         use ac_kinds, only: intEnum, &
                             int32, &
                             int8, &
-                            dp,&
                             sp
                              
         use ac_startunit, only:  GetListProjectsFile, &
@@ -525,7 +524,7 @@ subroutine AC72_setup()
         integer(int32) :: temp1
 
         logical :: MultipleRunWithKeepSWC_temp    
-        real(dp) :: MultipleRunConstZrx_temp
+        real    :: MultipleRunConstZrx_temp
 
         real, dimension(366) :: arr   
 
@@ -635,7 +634,7 @@ subroutine AC72_setup()
                 call set_project_input(l, 'Climate_Info', '(External)')
                 call set_project_input(l, 'Climate_Filename', '(External)')
                 call set_project_input(l, 'Climate_Directory', '(None)')
-                call set_project_input(l, 'VersionNr', 7.2_dp)
+                call set_project_input(l, 'VersionNr', 7.2)
                 call set_project_input(l, 'Temperature_Info', '(None)')
                 call set_project_input(l, 'Temperature_Filename', '(External)')
                 call set_project_input(l, 'Temperature_Directory', '(None)')
@@ -767,8 +766,8 @@ subroutine AC72_setup()
                 endif
                 
                 ! define default REW (only top layer will be used)
-                Z_surf = 0.04_dp
-                REW=nint(10.0_dp*(AC72_struc(n)%ac72(t)%SoilLayer(1)%fc-(AC72_struc(n)%ac72(t)%SoilLayer(1)%wp/2.0))*Z_surf)
+                Z_surf = 0.04
+                REW=nint(10.0*(AC72_struc(n)%ac72(t)%SoilLayer(1)%fc-(AC72_struc(n)%ac72(t)%SoilLayer(1)%wp/2.0))*Z_surf)
                 if (REW < 0) REW = 0
                 if (REW > 15) REW = 15
                 AC72_struc(n)%ac72(t)%Soil%REW = REW
@@ -886,20 +885,13 @@ subroutine AC72_setup()
                 call SetClimRecord_toy(0)
                 call SetClimFile('(External)')
 
-                AC72_struc(n)%ac72(t)%WPi = 0._dp
+                AC72_struc(n)%ac72(t)%WPi = 0.
 
                 ! Set Global variable to pass T record to AquaCrop
                 call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)    
                 call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
-                call SetTmin(real(AC72_struc(n)%ac72(t)%Tmin_record(1),kind=dp))    
-                call SetTmax(real(AC72_struc(n)%ac72(t)%Tmax_record(1),kind=dp))
-
-                !arr = 6
-                !call SetTminRun(arr)  
-                !arr = 20  
-                !call SetTmaxRun(arr)
-                !call SetTmin(real(6., kind=dp))    
-                !call SetTmax(real(20., kind=dp))
+                call SetTmin(AC72_struc(n)%ac72(t)%Tmin_record(1))    
+                call SetTmax(AC72_struc(n)%ac72(t)%Tmax_record(1))
 
                 ! Set Tmin and Tmax reference to compute the stress realtions
                 call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))
@@ -1100,10 +1092,16 @@ subroutine AC72_setup()
                 AC72_struc(n)%AC72(t)%NoYear = GetNoYear()
                 AC72_struc(n)%AC72(t)%WaterTableInProfile = GetWaterTableInProfile()
                 AC72_struc(n)%AC72(t)%StartMode = GetStartMode()
-                AC72_struc(n)%AC72(t)%NoMoreCrop = GetNoMoreCrop()
 
-            AC72_struc(n)%AC72(t)%NrRuns = NrRuns
-            AC72_struc(n)%AC72(t)%TheProjectType = TheProjectType
+                ! logicals for restart
+                if (GetNoMoreCrop()) then
+                    AC72_struc(n)%AC72(t)%NoMoreCrop = 1
+                else
+                    AC72_struc(n)%AC72(t)%NoMoreCrop = 0
+                endif
+
+                AC72_struc(n)%AC72(t)%NrRuns = NrRuns
+                AC72_struc(n)%AC72(t)%TheProjectType = TheProjectType
 
                 ! Check for irrigation (irrigation file management)
                 if(AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Manual)then

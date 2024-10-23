@@ -153,7 +153,6 @@ subroutine AC72_readrst()
             enddo
 
             !! From Compartment
-# if 0
             ! read: Compartment_DayAnaero
             do l=1, AC72_struc(n)%max_No_Compartments
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
@@ -562,6 +561,20 @@ subroutine AC72_readrst()
                 AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
             enddo
 
+            ! read: Simulation_SumGDD
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_SumGDD", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
+            enddo
+
+            ! read: Simulation_SumGDDFromDay1
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_SumGDDFromDay1", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
+            enddo
+
             !! From Management
             ! read: Management_WeedDeltaRC
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
@@ -606,7 +619,6 @@ subroutine AC72_readrst()
                 AC72_struc(n)%ac72(t)%Crop%pSenAct = tmptilen(t)
             enddo
 
-#endif
 
             ! close restart file
             if(wformat .eq. "binary") then
