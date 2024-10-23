@@ -114,8 +114,7 @@ subroutine ac72_read_Trecord(n)
 ! !USES:
     use ESMF
     use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
-    use LIS_timeMgrMod,     only: LIS_advance_timestep, LIS_is_last_step,&
-                                  LIS_timemgr_set
+    use LIS_timeMgrMod,     only: LIS_advance_timestep, LIS_is_last_step
     use LIS_coreMod,        only: LIS_rc, LIS_surface, LIS_resetTimeMgr
     use LIS_PRIV_rcMod,     only: lisrcdec
     use LIS_logMod,         only: LIS_logunit, LIS_verify
@@ -218,10 +217,12 @@ subroutine ac72_read_Trecord(n)
 
     ! Reset LIS_rc
     LIS_rc = LIS_rc_saved
-    ! Reset time manager
-    call LIS_timemgr_set(LIS_rc,LIS_rc_saved%yr,LIS_rc_saved%mo,LIS_rc_saved%da,&
-                        LIS_rc_saved%hr,LIS_rc_saved%mn,LIS_rc_saved%ss,LIS_rc_saved%ms,&
-                        0.0)
+    ! Set LIS_rc to reset clock
+    LIS_rc%syr = LIS_rc_saved%yr
+    LIS_rc%smo = LIS_rc_saved%mo
+    LIS_rc%sda = LIS_rc_saved%da
+    LIS_rc%shr = LIS_rc_saved%hr
+    call LIS_resetTimeMgr
     ! Re-initialize met forcings
     do m=1,LIS_rc%nmetforc
         call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
