@@ -8,7 +8,7 @@ use ac_global, only:    typeObsSim_ObsSimCC, &
                         GetSimulation_FromDayNr, &
                         typeProject_TypePRM, &
                         NameMonth
-use ac_kinds, only: dp, &
+use ac_kinds, only: sp, &
                     int8, &
                     int16, &
                     int32, &
@@ -20,11 +20,11 @@ implicit none
 
 
 type rep_EventObsSim
-    real(dp) :: Obsi
+    real(sp) :: Obsi
         !! Undocumented
-    real(dp) :: StdObsi
+    real(sp) :: StdObsi
         !! Undocumented
-    real(dp) :: Simi
+    real(sp) :: Simi
         !! Undocumented
     integer(int8) :: DDi
         !! Undocumented
@@ -46,28 +46,28 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
     integer(int32), intent(in) :: RangeObsMax
     character(len=*), intent(in) :: StrNr
     integer(int32), intent(inout) :: Nobs
-    real(dp), intent(inout) :: ObsAver
-    real(dp), intent(inout) :: SimAver
-    real(dp), intent(inout) :: PearsonCoeff
-    real(dp), intent(inout) :: RMSE
-    real(dp), intent(inout) :: NRMSE
-    real(dp), intent(inout) :: NScoeff
-    real(dp), intent(inout) :: IndexAg
+    real(sp), intent(inout) :: ObsAver
+    real(sp), intent(inout) :: SimAver
+    real(sp), intent(inout) :: PearsonCoeff
+    real(sp), intent(inout) :: RMSE
+    real(sp), intent(inout) :: NRMSE
+    real(sp), intent(inout) :: NScoeff
+    real(sp), intent(inout) :: IndexAg
     type(rep_EventObsSim), dimension(100), intent(inout) :: ArrayObsSim
 
     integer(int32) :: Nri
-    real(dp) :: dDeNom, R2tel, SumSqrDobs, SumSqrDsim, SumSqrDiv, DeNom
+    real(sp) :: dDeNom, R2tel, SumSqrDobs, SumSqrDsim, SumSqrDiv, DeNom
 
     ! get data
     call GetObsSim(RangeObsMin, RangeObsMax, StrNr, Nobs, ArrayObsSim, &
                    ObsAver, SimAver)
     ! statistical evaluation
     if (Nobs > 1) then
-        R2tel = 0._dp
-        SumSqrDobs = 0._dp
-        SumSqrDsim = 0._dp
-        SumSqrDiv = 0._dp
-        dDeNom = 0._dp
+        R2tel = 0._sp
+        SumSqrDobs = 0._sp
+        SumSqrDsim = 0._sp
+        SumSqrDiv = 0._sp
+        dDeNom = 0._sp
         do Nri = 1, Nobs
             R2tel = R2tel + (ArrayObsSim(Nri)%Obsi-ObsAver) &
                             * (ArrayObsSim(Nri)%Simi-SimAver)
@@ -80,39 +80,39 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
         end do
         ! R2
         DeNom = sqrt(SumSqrDobs*SumSqrDsim)
-        if (DeNom > 0._dp) then
+        if (DeNom > 0._sp) then
             PearsonCoeff = R2tel/DeNom
         else
-            PearsonCoeff = real(undef_int, kind=dp)
+            PearsonCoeff = real(undef_int, kind=sp)
         end if
         ! RMSE
         RMSE = sqrt(SumSqrDiv/NObs)
         ! NRMSE
-        if (ObsAver > 0._dp) then
-            NRMSE = 100._dp*(RMSE/ObsAver)
+        if (ObsAver > 0._sp) then
+            NRMSE = 100._sp*(RMSE/ObsAver)
         else
-            NRMSE = real(undef_int, kind=dp)
+            NRMSE = real(undef_int, kind=sp)
         end if
         ! Nash-Sutcliffe coefficient (EF)
-        if (SumSqrDobs > 0._dp) then
-            NScoeff = 1._dp - (SumSqrDiv/SumSqrDobs)
+        if (SumSqrDobs > 0._sp) then
+            NScoeff = 1._sp - (SumSqrDiv/SumSqrDobs)
         else
-            NScoeff = real(undef_int, kind=dp)
+            NScoeff = real(undef_int, kind=sp)
         end if
         ! Index of agreement (d)
-        if (dDeNom > 0._dp) then
-            IndexAg = 1._dp - (SumSqrDiv/dDeNom)
+        if (dDeNom > 0._sp) then
+            IndexAg = 1._sp - (SumSqrDiv/dDeNom)
         else
-            IndexAg = real(undef_int, kind=dp)
+            IndexAg = real(undef_int, kind=sp)
         end if
     else
-        ObsAver = real(undef_int, kind=dp)
-        SimAver = real(undef_int, kind=dp)
-        PearsonCoeff = real(undef_int, kind=dp)
-        RMSE = real(undef_int, kind=dp)
-        NRMSE = real(undef_int, kind=dp)
-        NScoeff = real(undef_int, kind=dp)
-        IndexAg = real(undef_int, kind=dp)
+        ObsAver = real(undef_int, kind=sp)
+        SimAver = real(undef_int, kind=sp)
+        PearsonCoeff = real(undef_int, kind=sp)
+        RMSE = real(undef_int, kind=sp)
+        NRMSE = real(undef_int, kind=sp)
+        NScoeff = real(undef_int, kind=sp)
+        IndexAg = real(undef_int, kind=sp)
     end if
 
 
@@ -126,8 +126,8 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
         character(len=*), intent(in) :: StrNr
         integer(int32), intent(inout) :: Nobs
         type(rep_EventObsSim), dimension(100), intent(inout) :: ArrayObsSim
-        real(dp), intent(inout) :: ObsAver
-        real(dp), intent(inout) :: SimAver
+        real(sp), intent(inout) :: ObsAver
+        real(sp), intent(inout) :: SimAver
 
         character(len=:), allocatable :: OutputName
         character(len=1024) :: buffer
@@ -135,12 +135,12 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
         integer(int8) :: Dayi, Monthi
         integer(int32) :: SkipLines, NCobs, Yeari
         integer(int32) :: i, status
-        real(dp) :: VarObsi, VarSimi, VarStdi
-        real(dp), dimension(:), allocatable :: dummy_array
+        real(sp) :: VarObsi, VarSimi, VarStdi
+        real(sp), dimension(:), allocatable :: dummy_array
 
         Nobs = 0
-        ObsAver = 0._dp
-        SimAver = 0._dp
+        ObsAver = 0._sp
+        SimAver = 0._sp
 
         ! open file
         OutputName = GetPathNameSimul() // 'EvalData' // trim(StrNr) // '.OUT'
@@ -198,8 +198,8 @@ subroutine StatisticAnalysis(TypeObsSim, RangeObsMin, RangeObsMax, StrNr, &
 
         ! calculate averages
         if (Nobs > 0) then
-            ObsAver = ObsAver/real(Nobs, kind=dp)
-            SimAver = SimAver/real(Nobs, kind=dp)
+            ObsAver = ObsAver/real(Nobs, kind=sp)
+            SimAver = SimAver/real(Nobs, kind=sp)
         end if
     end subroutine GetObsSim
 end subroutine StatisticAnalysis
@@ -216,7 +216,7 @@ subroutine WriteAssessmentSimulation(StrNr, totalnameEvalStat, &
     integer :: fAssm
     integer(intEnum) :: TypeObsSim
     integer(int32) :: Nobs, Nri
-    real(dp) :: ObsAver, SimAver, PearsonCoeff, RMSE, NRMSE, &
+    real(sp) :: ObsAver, SimAver, PearsonCoeff, RMSE, NRMSE, &
                 NScoeff, IndexAg
     type(rep_EventObsSim), dimension(100) :: ArrayObsSim
     character(len=:), allocatable :: YearString

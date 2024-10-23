@@ -17,9 +17,5 @@ The AquaCrop v7.0 and higher versions open source code in Fortran has been estab
 * Samuel Scherrer
 * Maxime Van den Bossche
 
-**FAO**
-* Maher Salman
-
-For the development of the first open source code version in Fortran (AquaCrop version 7.0), funding has been received from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 773903. 
-
+For the development of the first open source code version in Fortran (AquaCrop version 7.0), funding has been received from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 773903. Subsequent developments have been funded by Belspo, FWO and C1 KU Leuven.
 

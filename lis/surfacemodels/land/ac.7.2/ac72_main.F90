@@ -462,7 +462,6 @@ subroutine AC72_main(n)
     use ac_kinds, only: intEnum, &
                         int32, &
                         int8, &
-                        dp,&
                         sp
 
 ! From ac_startunit
@@ -514,7 +513,7 @@ subroutine AC72_main(n)
     real                 :: tmp_tdew, tmp_swrad, tmp_wind, tmp_eto     ! Weather Forcing
 
     ! For type problem in AdvanceOneTimeStep
-    real(dp)             :: tmp_wpi
+    real                 :: tmp_wpi
 !
 ! !DESCRIPTION:
 !  This is the entry point for calling the AC72 physics.
@@ -623,17 +622,17 @@ subroutine AC72_main(n)
             AC72_struc(n)%ac72(t)%eto = tmp_eto
 
             ! setting all global variables
-            call SetRootZoneWC_Actual(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_Actual,8))
-            call SetRootZoneWC_FC(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_FC,8))
-            call SetRootZoneWC_WP(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_WP,8))
-            call SetRootZoneWC_SAT(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_SAT,8))
-            call SetRootZoneWC_Leaf(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_Leaf,8))
-            call SetRootZoneWC_Thresh(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_Thresh,8))
-            call SetRootZoneWC_Sen(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_Sen,8))
-            call SetRootZoneWC_ZtopAct(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopAct,8))
-            call SetRootZoneWC_ZtopFC(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopFC,8))
-            call SetRootZoneWC_ZtopWP(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopWP,8))
-            call SetRootZoneWC_ZtopThresh(REAL(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopThresh,8))
+            call SetRootZoneWC_Actual(AC72_struc(n)%ac72(t)%RootZoneWC_Actual)
+            call SetRootZoneWC_FC(AC72_struc(n)%ac72(t)%RootZoneWC_FC)
+            call SetRootZoneWC_WP(AC72_struc(n)%ac72(t)%RootZoneWC_WP)
+            call SetRootZoneWC_SAT(AC72_struc(n)%ac72(t)%RootZoneWC_SAT)
+            call SetRootZoneWC_Leaf(AC72_struc(n)%ac72(t)%RootZoneWC_Leaf)
+            call SetRootZoneWC_Thresh(AC72_struc(n)%ac72(t)%RootZoneWC_Thresh)
+            call SetRootZoneWC_Sen(AC72_struc(n)%ac72(t)%RootZoneWC_Sen)
+            call SetRootZoneWC_ZtopAct(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopAct)
+            call SetRootZoneWC_ZtopFC(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopFC)
+            call SetRootZoneWC_ZtopWP(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopWP)
+            call SetRootZoneWC_ZtopThresh(AC72_struc(n)%ac72(t)%RootZoneWC_ZtopThresh)
             call SetCompartment(AC72_struc(n)%ac72(t)%Compartment)
             call SetTotalSaltContent(AC72_struc(n)%ac72(t)%TotalSaltContent)
             call SetTotalWaterContent(AC72_struc(n)%ac72(t)%TotalWaterContent)
@@ -644,9 +643,9 @@ subroutine AC72_main(n)
             call SetIrriInterval(AC72_struc(n)%ac72(t)%IrriInterval)
             call SetIrriInfoRecord1(AC72_struc(n)%ac72(t)%IrriInfoRecord1)
             call SetIrriInfoRecord2(AC72_struc(n)%ac72(t)%IrriInfoRecord2)
-            call SetIrrigation(REAL(AC72_struc(n)%ac72(t)%Irrigation,8))
+            call SetIrrigation(AC72_struc(n)%ac72(t)%Irrigation)
             do l=1, AC72_struc(n)%ac72(t)%NrCompartments
-                 call SetCompartment_theta(l,REAL(AC72_struc(n)%ac72(t)%smc(l),8))
+                 call SetCompartment_theta(l,AC72_struc(n)%ac72(t)%smc(l))
             enddo
             call SetIrriECw(AC72_struc(n)%ac72(t)%IrriECw) 
             call SetManagement(AC72_struc(n)%ac72(t)%Management) 
@@ -723,8 +722,8 @@ subroutine AC72_main(n)
             call SetDayLastCut(AC72_struc(n)%ac72(t)%DayLastCut)
             call SetNrCut(AC72_struc(n)%ac72(t)%NrCut)
             call SetSumInterval(AC72_struc(n)%ac72(t)%SumInterval)
-            call SetPreviousStressLevel(int(AC72_struc(n)%ac72(t)%PreviousStressLevel,kind=int32))
-            call SetStressSFadjNEW(int(AC72_struc(n)%ac72(t)%StressSFadjNEW,kind=int32))
+            call SetPreviousStressLevel(AC72_struc(n)%ac72(t)%PreviousStressLevel)
+            call SetStressSFadjNEW(AC72_struc(n)%ac72(t)%StressSFadjNEW)
             call SetBin(AC72_struc(n)%ac72(t)%Bin)
             call SetBout(AC72_struc(n)%ac72(t)%Bout)
             call SetCO2i(AC72_struc(n)%ac72(t)%CO2i)
@@ -783,9 +782,15 @@ subroutine AC72_main(n)
             call SetNoYear(AC72_struc(n)%ac72(t)%NoYear)
             call SetWaterTableInProfile(AC72_struc(n)%ac72(t)%WaterTableInProfile)
             call SetStartMode(AC72_struc(n)%ac72(t)%StartMode)
-            call SetNoMoreCrop(AC72_struc(n)%ac72(t)%NoMoreCrop)
-            !call SetSimulation_ToDayNr(AC72_struc(n)%ac72(t)%Simulation%ToDayNr)
             call SetGDDayi(AC72_struc(n)%ac72(t)%GDDayi)
+
+            ! logicals for restart
+            if (AC72_struc(n)%AC72(t)%NoMoreCrop.eq.1) then
+                call SetNoMoreCrop(.true.)
+            else
+                call SetNoMoreCrop(.false.)
+            endif
+        
 
             ! Fixed var
             call SetOut3Prof(.true.) ! needed for correct rootzone sm
@@ -798,13 +803,13 @@ subroutine AC72_main(n)
             ! Set climate variables
             ! Round them to 4 digits after the comma as done in the AC standalone
             tmp_precip = anint(tmp_precip*10000)/10000
-            call SetRain(real(tmp_precip, kind=dp))
+            call SetRain(tmp_precip)
             tmp_tmin = anint(tmp_tmin*10000)/10000
-            call SetTmin(real(tmp_tmin, kind=dp))
+            call SetTmin(tmp_tmin)
             tmp_tmax = anint(tmp_tmax*10000)/10000
-            call SetTmax(real(tmp_tmax, kind=dp))
+            call SetTmax(tmp_tmax)
             tmp_eto = anint(tmp_eto*10000)/10000
-            call SetETo(real(tmp_eto, kind=dp))
+            call SetETo(tmp_eto)
             
             ! SumGDD calculation needed only for second day when not done within InitializeSimulationRunPart2
             if (GetDayNri()>GetSimulation_FromDayNr()) then
@@ -881,7 +886,7 @@ subroutine AC72_main(n)
                 call SetClimRecord_toy(0)
                 call SetClimFile('(External)')
 
-                AC72_struc(n)%ac72(t)%WPi = 0._dp
+                AC72_struc(n)%ac72(t)%WPi = 0.
 
                 ! Set crop file (crop parameters are read when calling InitializeRunPart1)
                 call set_project_input(AC72_struc(n)%ac72(t)%irun, &
@@ -982,7 +987,7 @@ subroutine AC72_main(n)
             end if ! Initialize crop stages done
 
             ! Run AC
-            tmp_wpi = REAL(AC72_struc(n)%ac72(t)%WPi,8)
+            tmp_wpi = AC72_struc(n)%ac72(t)%WPi
             call AdvanceOneTimeStep(tmp_wpi, AC72_struc(n)%ac72(t)%HarvestNow)
             AC72_struc(n)%ac72(t)%WPi = tmp_wpi
 
@@ -1167,7 +1172,13 @@ subroutine AC72_main(n)
             AC72_struc(n)%ac72(t)%NoYear = GetNoYear()
             AC72_struc(n)%ac72(t)%WaterTableInProfile = GetWaterTableInProfile()
             AC72_struc(n)%ac72(t)%StartMode = GetStartMode()
-            AC72_struc(n)%ac72(t)%NoMoreCrop = GetNoMoreCrop()
+
+            ! logicals for restart
+            if (GetNoMoreCrop()) then
+                AC72_struc(n)%AC72(t)%NoMoreCrop = 1
+            else
+                AC72_struc(n)%AC72(t)%NoMoreCrop = 0
+            endif
 
             ! Check for end of simulation period 
             ! (DayNri - 1 because DayNri is already for next day)
@@ -1184,55 +1195,55 @@ subroutine AC72_main(n)
                                                     vlevel=i, unit="m^3 m-3", direction="-", surface_type = LIS_rc%lsm_index)
             end do
             ![ 2] output variable: biomass (unit=t/ha).  *** cummulative biomass
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_biomass, value = real(AC72_struc(n)%ac72(t)%SumWaBal%Biomass,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_biomass, value = AC72_struc(n)%ac72(t)%SumWaBal%Biomass, &
                                                 vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 3] output variable: biomass (unit=mm).  *** actual rootzone water content
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_Actual, value = real(AC72_struc(n)%ac72(t)%RootZoneWC_Actual,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_Actual, value = AC72_struc(n)%ac72(t)%RootZoneWC_Actual, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 4] output variable: RootZoneWC_WP (unit=mm).  *** rootzone water content at wilting point
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_WP, value = real(AC72_struc(n)%ac72(t)%RootZoneWC_WP,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_WP, value = AC72_struc(n)%ac72(t)%RootZoneWC_WP, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 5] output variable: RootZoneWC_FC (unit=mm).  *** rootzone water content at field capacity
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_FC, value = real(AC72_struc(n)%ac72(t)%RootZoneWC_FC,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootZoneWC_FC, value = AC72_struc(n)%ac72(t)%RootZoneWC_FC, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 6] output variable: Tact (unit=mm).  *** actual transpiration
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tact, value = real(AC72_struc(n)%ac72(t)%Tact,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tact, value = AC72_struc(n)%ac72(t)%Tact, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 7] output variable: Eact (unit=mm).  *** actual evaporation
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Eact, value = real(AC72_struc(n)%ac72(t)%Eact,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Eact, value = AC72_struc(n)%ac72(t)%Eact, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 8] output variable: AC72ETo (unit=mm).  *** reference evapotranspiration (Penman-Monteith)
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72ETo, value = real(AC72_struc(n)%ac72(t)%eto,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72ETo, value = AC72_struc(n)%ac72(t)%eto, &
                                                 vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 9] output variable: RootingDepth (unit=m).  *** rooting depth
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = real(AC72_struc(n)%ac72(t)%RootingDepth,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RootingDepth, value = AC72_struc(n)%ac72(t)%RootingDepth, &
                                                 vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 10] output variable: CCiActual (unit=-).  *** canopy cover
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = real(AC72_struc(n)%ac72(t)%CCiActual,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_CCiActual, value = AC72_struc(n)%ac72(t)%CCiActual, &
                                                 vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 11] output variable: AC72Tmin (unit=deg C).  *** daily minimum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = real(tmp_tmin,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmin, value = tmp_tmin, &
                                     vlevel=1, unit="degC", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 12] output variable: AC72Tmax (unit=deg C).  *** daily maximum temperature
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = real(tmp_tmax,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Tmax, value = tmp_tmax, &
                                     vlevel=1, unit="degC", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 13] output variable: AC72Rain (unit=mm).  *** precipitation rate
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72Rain, value = real(tmp_precip,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72Rain, value = tmp_precip, &
                                     vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 13] output variable: GD (unit=degC).  *** growing degrees
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_GD, value = real(GetGDDayi(),kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_GD, value = GetGDDayi(), &
                                     vlevel=1, unit="degC", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 14] output variable: yield (unit=t ha-1).  *** yield
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Yield, value = real(AC72_struc(n)%ac72(t)%SumWaBal%YieldPart,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_Yield, value = AC72_struc(n)%ac72(t)%SumWaBal%YieldPart, &
                                     vlevel=1, unit="t ha-1", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 15] output variable: irrigation (unit=mm).  *** irrigation
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72Irrigation, value = real(AC72_struc(n)%ac72(t)%Irrigation,kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72Irrigation, value = AC72_struc(n)%ac72(t)%Irrigation, &
                                     vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 16] output variable: StExp (unit=%).  *** expansion stress
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_StExp, value = real(GetStressLeaf(),kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_StExp, value = GetStressLeaf(), &
                                     vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 17] output variable: StSen (unit=%).  *** senescence stress
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_StSen, value = real(GetStressSenescence(),kind=sp), &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_StSen, value = GetStressSenescence(), &
                                     vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
             ![ 18] output variable: cycle_complete (unit=binary).  *** Flag for completion of crop cycle within sim period
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_AC72cycle_complete, value = real(AC72_struc(n)%ac72(t)%cycle_complete), &

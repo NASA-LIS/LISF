@@ -380,7 +380,7 @@ use ac_global, only: ActiveCells, &
                      TimeToMaxCanopySF, &
                      undef_double, &
                      undef_int
-use ac_kinds, only:  dp, &
+use ac_kinds, only:  sp, &
                      int8, &
                      int32, &
                      intEnum
@@ -410,42 +410,42 @@ integer(intEnum), parameter :: control_end_day = 1
 contains
 
 
-real(dp) function GetCDCadjustedNoStressNew(CCx, CDC, CCxAdjusted)
-    real(dp), intent(in) :: CCx
-    real(dp), intent(in) :: CDC
-    real(dp), intent(in) :: CCxAdjusted
+real(sp) function GetCDCadjustedNoStressNew(CCx, CDC, CCxAdjusted)
+    real(sp), intent(in) :: CCx
+    real(sp), intent(in) :: CDC
+    real(sp), intent(in) :: CCxAdjusted
 
-    real(dp) :: CDCadjusted
+    real(sp) :: CDCadjusted
 
-    CDCadjusted = CDC * ((CCxadjusted+2.29_dp)/(CCx+2.29_dp))
+    CDCadjusted = CDC * ((CCxadjusted+2.29_sp)/(CCx+2.29_sp))
     GetCDCadjustedNoStressNew = CDCadjusted
 end function GetCDCadjustedNoStressNew
 
 
 subroutine AdjustpLeafToETo(EToMean, pLeafULAct, pLeafLLAct)
-    real(dp), intent(in) :: EToMean
-    real(dp), intent(inout) :: pLeafULAct
-    real(dp), intent(inout) :: pLeafLLAct
+    real(sp), intent(in) :: EToMean
+    real(sp), intent(inout) :: pLeafULAct
+    real(sp), intent(inout) :: pLeafLLAct
 
 
     pLeafLLAct = GetCrop_pLeafDefLL()
     pLeafULAct = GetCrop_pLeafDefUL()
     if (GetCrop_pMethod() == pMethod_FAOCorrection) then
-        pLeafLLAct = GetCrop_pLeafDefLL() + GetSimulParam_pAdjFAO()* 0.04_dp &
-                        *(5._dp-EToMean)*log10(10._dp-9._dp*GetCrop_pLeafDefLL())
+        pLeafLLAct = GetCrop_pLeafDefLL() + GetSimulParam_pAdjFAO()* 0.04_sp &
+                        *(5._sp-EToMean)*log10(10._sp-9._sp*GetCrop_pLeafDefLL())
         if (pLeafLLAct > 1.0) then
-            pLeafLLAct = 1.0_dp
+            pLeafLLAct = 1.0_sp
         end if
         if (pLeafLLAct < 0) then
-            pLeafLLAct = 0._dp
+            pLeafLLAct = 0._sp
         end if
-        pLeafULAct = GetCrop_pLeafDefUL() + GetSimulParam_pAdjFAO()* 0.04_dp &
-                        *(5._dp-EToMean)*log10(10._dp-9._dp*GetCrop_pLeafDefUL())
+        pLeafULAct = GetCrop_pLeafDefUL() + GetSimulParam_pAdjFAO()* 0.04_sp &
+                        *(5._sp-EToMean)*log10(10._sp-9._sp*GetCrop_pLeafDefUL())
         if (pLeafULAct > 1.0) then
-            pLeafULAct = 1.0_dp
+            pLeafULAct = 1.0_sp
         end if
         if (pLeafULAct < 0) then
-            pLeafULAct = 0._dp
+            pLeafULAct = 0._sp
         end if
     end if
 end subroutine AdjustpLeafToETo
@@ -454,15 +454,15 @@ end subroutine AdjustpLeafToETo
 subroutine DeterminePotentialBiomass(VirtualTimeCC, SumGDDadjCC, CO2i, GDDayi, &
                                               CCxWitheredTpotNoS, BiomassUnlim)
     integer(int32), intent(in) :: VirtualTimeCC
-    real(dp), intent(in) :: SumGDDadjCC
-    real(dp), intent(in) :: CO2i
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(inout) :: CCxWitheredTpotNoS
-    real(dp), intent(inout) :: BiomassUnlim
+    real(sp), intent(in) :: SumGDDadjCC
+    real(sp), intent(in) :: CO2i
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(inout) :: CCxWitheredTpotNoS
+    real(sp), intent(inout) :: BiomassUnlim
 
-    real(dp) :: CCiPot,  WPi, fSwitch, TpotForB, EpotTotForB
+    real(sp) :: CCiPot,  WPi, fSwitch, TpotForB, EpotTotForB
     integer(int32) :: DAP, DaysYieldFormation, DayiAfterFlowering
-    real(dp) :: Tmin_local, Tmax_local
+    real(sp) :: Tmin_local, Tmax_local
 
     ! potential biomass - unlimited soil fertiltiy
     ! 1. - CCi
@@ -473,8 +473,8 @@ subroutine DeterminePotentialBiomass(VirtualTimeCC, SumGDDadjCC, CO2i, GDDayi, &
                                   GetCrop_CCo(), GetCrop_CCx(), GetCrop_CGC(), &
                                   GetCrop_CDC(), GetCrop_GDDCGC(), GetCrop_GDDCDC(), &
                                   SumGDDadjCC, GetCrop_ModeCycle(), 0_int8, 0_int8)
-    if (CCiPot < 0._dp) then
-        CCiPot = 0._dp
+    if (CCiPot < 0._sp) then
+        CCiPot = 0._sp
     end if
     if (CCiPot > CCxWitheredTpotNoS) then
         CCxWitheredTpotNoS = CCiPot
@@ -494,34 +494,34 @@ subroutine DeterminePotentialBiomass(VirtualTimeCC, SumGDDadjCC, CO2i, GDDayi, &
     call CalculateETpot(DAP, GetCrop_DaysToGermination(), GetCrop_DaysToFullCanopy(), &
                    GetCrop_DaysToSenescence(), GetCrop_DaysToHarvest(), 0, CCiPot, &
                    GetETo(), GetCrop_KcTop(), GetCrop_KcDecline(), GetCrop_CCx(), &
-                   CCxWitheredTpotNoS, real(GetCrop_CCEffectEvapLate(), kind=dp), CO2i, GDDayi, &
+                   CCxWitheredTpotNoS, real(GetCrop_CCEffectEvapLate(), kind=sp), CO2i, GDDayi, &
                    GetCrop_GDtranspLow(), TpotForB, EpotTotForB)
 
     ! 3. - WPi for that day
     ! 3a - given WPi
-    WPi = (GetCrop_WP()/100._dp)
+    WPi = (GetCrop_WP()/100._sp)
     ! 3b - WPi decline in reproductive stage  (works with calendar days)
     if (((GetCrop_subkind() == subkind_Grain) .or. (GetCrop_subkind() == subkind_Tuber)) &
-        .and. (GetCrop_WPy() < 100._dp) .and. (GetCrop_dHIdt() > 0._dp) &
+        .and. (GetCrop_WPy() < 100._sp) .and. (GetCrop_dHIdt() > 0._sp) &
         .and. (VirtualTimeCC >= GetCrop_DaysToFlowering())) then
         ! WPi in reproductive stage
-        fSwitch = 1._dp
+        fSwitch = 1._sp
         DaysYieldFormation = roundc(GetCrop_HI()/GetCrop_dHIdt(), mold=1)
         DayiAfterFlowering = VirtualTimeCC - GetCrop_DaysToFlowering()
         if ((DaysYieldFormation > 0) .and. (DayiAfterFlowering < &
-                                              (DaysYieldFormation/3._dp))) then
-            fSwitch = DayiAfterFlowering/(DaysYieldFormation/3._dp)
+                                              (DaysYieldFormation/3._sp))) then
+            fSwitch = DayiAfterFlowering/(DaysYieldFormation/3._sp)
         end if
-        WPi =  WPi * (1._dp - (1._dp-GetCrop_WPy()/100._dp)*fSwitch)
+        WPi =  WPi * (1._sp - (1._sp-GetCrop_WPy()/100._sp)*fSwitch)
     end if
     ! 3c - adjustment WPi for CO2
-    if (roundc(100._dp*CO2i, mold=1) /= roundc(100._dp*CO2Ref, mold=1)) then
+    if (roundc(100._sp*CO2i, mold=1) /= roundc(100._sp*CO2Ref, mold=1)) then
         WPi = WPi * fAdjustedForCO2(CO2i, GetCrop_WP(), GetCrop_AdaptedToCO2())
     end if
 
     ! 4. - Potential Biomass
-    if (GetETo() > 0._dp) then
-        BiomassUnlim = BiomassUnlim + WPi * TpotForB/real(GetETo(), kind=dp) ! ton/ha
+    if (GetETo() > 0._sp) then
+        BiomassUnlim = BiomassUnlim + WPi * TpotForB/real(GetETo(), kind=sp) ! ton/ha
     end if
 end subroutine DeterminePotentialBiomass
 
@@ -543,61 +543,61 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
                                     AssimMobilized, Bin, Bout, TESTVAL)
 
     integer(int32), intent(in) :: dayi
-    real(dp), intent(in) :: ETo
-    real(dp), intent(in) :: TminOnDay
-    real(dp), intent(in) :: TmaxOnDay
-    real(dp), intent(in) :: CO2i
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(in) :: Tact
-    real(dp), intent(in) :: SumKcTop
-    real(dp), intent(in) :: CGCref
-    real(dp), intent(in) :: GDDCGCref
-    real(dp), intent(in) :: Coeffb0
-    real(dp), intent(in) :: Coeffb1
-    real(dp), intent(in) :: Coeffb2
-    real(dp), intent(in) :: FracBiomassPotSF
-    real(dp), intent(in) :: Coeffb0Salt
-    real(dp), intent(in) :: Coeffb1Salt
-    real(dp), intent(in) :: Coeffb2Salt
-    real(dp), intent(in) :: AverageSaltStress
-    real(dp), intent(in) :: SumGDDadjCC
-    real(dp), intent(in) :: CCtot
-    real(dp), intent(inout) :: FracAssim
+    real(sp), intent(in) :: ETo
+    real(sp), intent(in) :: TminOnDay
+    real(sp), intent(in) :: TmaxOnDay
+    real(sp), intent(in) :: CO2i
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(in) :: Tact
+    real(sp), intent(in) :: SumKcTop
+    real(sp), intent(in) :: CGCref
+    real(sp), intent(in) :: GDDCGCref
+    real(sp), intent(in) :: Coeffb0
+    real(sp), intent(in) :: Coeffb1
+    real(sp), intent(in) :: Coeffb2
+    real(sp), intent(in) :: FracBiomassPotSF
+    real(sp), intent(in) :: Coeffb0Salt
+    real(sp), intent(in) :: Coeffb1Salt
+    real(sp), intent(in) :: Coeffb2Salt
+    real(sp), intent(in) :: AverageSaltStress
+    real(sp), intent(in) :: SumGDDadjCC
+    real(sp), intent(in) :: CCtot
+    real(sp), intent(inout) :: FracAssim
     integer(int32), intent(in) :: VirtualTimeCC
     integer(int32), intent(in) :: SumInterval
-    real(dp), intent(inout) :: Biomass
-    real(dp), intent(inout) :: BiomassPot
-    real(dp), intent(inout) :: BiomassUnlim
-    real(dp), intent(inout) :: BiomassTot
-    real(dp), intent(inout) :: YieldPart
-    real(dp), intent(inout) :: WPi
-    real(dp), intent(inout) :: HItimesBEF
-    real(dp), intent(inout) :: ScorAT1
-    real(dp), intent(inout) :: ScorAT2
-    real(dp), intent(inout) :: HItimesAT1
-    real(dp), intent(inout) :: HItimesAT2
-    real(dp), intent(inout) :: HItimesAT
-    real(dp), intent(inout) :: alfa
-    real(dp), intent(inout) :: alfaMax
-    real(dp), intent(inout) :: SumKcTopStress
-    real(dp), intent(inout) :: SumKci
-    real(dp), intent(inout) :: WeedRCi
-    real(dp), intent(inout) :: CCw
-    real(dp), intent(inout) :: Trw
+    real(sp), intent(inout) :: Biomass
+    real(sp), intent(inout) :: BiomassPot
+    real(sp), intent(inout) :: BiomassUnlim
+    real(sp), intent(inout) :: BiomassTot
+    real(sp), intent(inout) :: YieldPart
+    real(sp), intent(inout) :: WPi
+    real(sp), intent(inout) :: HItimesBEF
+    real(sp), intent(inout) :: ScorAT1
+    real(sp), intent(inout) :: ScorAT2
+    real(sp), intent(inout) :: HItimesAT1
+    real(sp), intent(inout) :: HItimesAT2
+    real(sp), intent(inout) :: HItimesAT
+    real(sp), intent(inout) :: alfa
+    real(sp), intent(inout) :: alfaMax
+    real(sp), intent(inout) :: SumKcTopStress
+    real(sp), intent(inout) :: SumKci
+    real(sp), intent(inout) :: WeedRCi
+    real(sp), intent(inout) :: CCw
+    real(sp), intent(inout) :: Trw
     integer(int32), intent(inout) :: StressSFadjNEW
     integer(int32), intent(inout) :: PreviousStressLevel
     logical, intent(inout) :: StoreAssimilates
     logical, intent(inout) :: MobilizeAssimilates
-    real(dp), intent(inout) :: AssimToMobilize
-    real(dp), intent(inout) :: AssimMobilized
-    real(dp), intent(inout) :: Bin
-    real(dp), intent(inout) :: Bout
-    real(dp), intent(inout) :: TESTVAL
+    real(sp), intent(inout) :: AssimToMobilize
+    real(sp), intent(inout) :: AssimMobilized
+    real(sp), intent(inout) :: Bin
+    real(sp), intent(inout) :: Bout
+    real(sp), intent(inout) :: TESTVAL
 
-    real(dp), parameter :: TempRange = 5._dp
-    real(dp), parameter :: k = 2._dp
+    real(sp), parameter :: TempRange = 5._sp
+    real(sp), parameter :: k = 2._sp
 
-    real(dp) :: RatioBM, RBM, HItimesTotal, pLeafULAct, pLeafLLAct, &
+    real(sp) :: RatioBM, RBM, HItimesTotal, pLeafULAct, pLeafLLAct, &
                 pStomatULAct, pLL, Ksleaf, Ksstomatal, KsPolWS, KsPolCs, &
                 KsPolHs, KsPol, Wrel, Dcor, fFlor, fSwitch, fCCx,WPsf, WPunlim, &
                 BioAdj,CCtotStar, CCwStar, croppol_temp
@@ -629,36 +629,36 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
     end if
 
 
-    WPi = (GetCrop_WP()/100._dp)
+    WPi = (GetCrop_WP()/100._sp)
 
     ! 1. biomass
-    if (ETo > 0._dp) then
+    if (ETo > 0._sp) then
         ! 1.1 WPi for that day
         ! 1.1a - given WPi
-        WPi = (GetCrop_WP()/100._dp)
+        WPi = (GetCrop_WP()/100._sp)
         ! 1.1b - adjustment WPi for reproductive stage (works with calendar days)
         if (((GetCrop_subkind() == Subkind_Tuber) .or. &
-                    (GetCrop_Subkind() == Subkind_grain)) .and. (alfa > 0._dp)) then
+                    (GetCrop_Subkind() == Subkind_grain)) .and. (alfa > 0._sp)) then
             ! WPi switch to WP for reproductive stage
-            fSwitch = 1._dp
+            fSwitch = 1._sp
             DaysYieldFormation = roundc(GetCrop_HI()/GetCrop_dHIdt(), mold=1)
             if (DaysYieldFormation > 0) then
                 if (GetCrop_DeterminancyLinked()) then
-                    fSwitch = PercentLagPhase/100._dp
+                    fSwitch = PercentLagPhase/100._sp
                 else
                     DayiAfterFlowering = dayi - GetSimulation_DelayedDays() - &
                                       GetCrop_Day1() - GetCrop_DaysToFlowering()
-                    if (DayiAfterFlowering < (DaysYieldFormation/3._dp)) then
-                        fSwitch = DayiAfterFlowering/(DaysYieldFormation/3._dp)
+                    if (DayiAfterFlowering < (DaysYieldFormation/3._sp)) then
+                        fSwitch = DayiAfterFlowering/(DaysYieldFormation/3._sp)
                     end if
                 end if
             end if
-            WPi =  WPi * (1._dp - (1._dp-GetCrop_WPy()/100._dp)*fSwitch)  ! switch in Lag Phase
+            WPi =  WPi * (1._sp - (1._sp-GetCrop_WPy()/100._sp)*fSwitch)  ! switch in Lag Phase
         end if
 
 
         ! 1.1c - adjustment WPi for CO2
-        if (roundc(100._dp*CO2i, mold=1) /= roundc(100._dp*CO2Ref, mold=1)) then
+        if (roundc(100._sp*CO2i, mold=1) /= roundc(100._sp*CO2Ref, mold=1)) then
             WPi = WPi * fAdjustedForCO2(CO2i, GetCrop_WP(), GetCrop_AdaptedToCO2())
         end if
 
@@ -666,26 +666,26 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
         ! 1.1d - adjustment WPi for Soil Fertility
         WPsf = WPi          ! no water stress, but fertility stress
         WPunlim = WPi       ! no water stress, no fertiltiy stress
-        if (GetSimulation_EffectStress_RedWP() > 0._dp) then ! Reductions are zero if no fertility stress
+        if (GetSimulation_EffectStress_RedWP() > 0._sp) then ! Reductions are zero if no fertility stress
             ! water stress and fertility stress
-            if ((SumKci/real(SumKcTopStress, dp)) < 1._dp) then
-                if (ETo > 0._dp) then
+            if ((SumKci/real(SumKcTopStress, sp)) < 1._sp) then
+                if (ETo > 0._sp) then
                     SumKci = SumKci + Tact/ETo
                 end if
-                if (SumKci > 0._dp) then
-                    WPi = WPi * (1._dp - (GetSimulation_EffectStress_RedWP()/100._dp) &
+                if (SumKci > 0._sp) then
+                    WPi = WPi * (1._sp - (GetSimulation_EffectStress_RedWP()/100._sp) &
                                             * exp(k*log(SumKci/SumKcTopStress)) )
                 end if
             else
-                WPi = WPi * (1._dp - GetSimulation_EffectStress_RedWP()/100._dp)
+                WPi = WPi * (1._sp - GetSimulation_EffectStress_RedWP()/100._sp)
             end if
-        elseif (ETo > 0._dp) then
+        elseif (ETo > 0._sp) then
             SumKci = SumKci + Tact/ETo
         end if
 
 
         ! 1.2 actual biomass
-        if ((GetSimulation_RCadj() > 0._dp) .and. (roundc(CCtot*10000._dp, mold=1) > 0._dp)) then
+        if ((GetSimulation_RCadj() > 0._sp) .and. (roundc(CCtot*10000._sp, mold=1) > 0._sp)) then
             ! weed infestation
             ! green canopy cover of the crop in weed-infested field
             if (GetManagement_WeedDeltaRC() /= 0) then
@@ -693,7 +693,7 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
                     fCCx = MultiplierCCxSelfThinning(int(GetSimulation_YearSeason(), kind=int32), &
                                            int(GetCrop_YearCCx(), kind=int32), GetCrop_CCxRoot())
                 else
-                    fCCx = 1._dp
+                    fCCx = 1._sp
                 end if
                 wdrc_temp = GetManagement_WeedDeltaRC()
                 WeedRCi = GetWeedRC(VirtualTimeCC, SumGDDadjCC, fCCx, &
@@ -705,30 +705,30 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
             else
                 WeedRCi = GetSimulation_RCadj()
             end if
-            CCw = CCtot * (1._dp-WeedRCi/100._dp)
+            CCw = CCtot * (1._sp-WeedRCi/100._sp)
             ! correction for micro-advection
-            CCtotStar = 1.72_dp*CCtot - 1._dp*(CCtot*CCtot) + 0.30_dp*(CCtot*CCtot*CCtot)
-            if (CCtotStar < 0._dp) then
-                CCtotStar = 0._dp
+            CCtotStar = 1.72_sp*CCtot - 1._sp*(CCtot*CCtot) + 0.30_sp*(CCtot*CCtot*CCtot)
+            if (CCtotStar < 0._sp) then
+                CCtotStar = 0._sp
             end if
             if (CCtotStar > 1) then
-                CCtotStar = 1._dp
+                CCtotStar = 1._sp
             end if
-            if (CCw > 0.0001_dp) then
+            if (CCw > 0.0001_sp) then
                 CCwStar = CCw + (CCtotStar - CCtot)
             else
-                CCwStar = 0._dp
+                CCwStar = 0._sp
             end if
             ! crop transpiration in weed-infested field
-            if (CCtotStar <= 0.0001_dp) then
-                TrW = 0._dp
+            if (CCtotStar <= 0.0001_sp) then
+                TrW = 0._sp
             else
                 TrW = Tact * (CCwStar/CCtotStar)
             end if
             ! crop biomass in weed-infested field
             Biomass = Biomass + WPi *(TrW/ETo)  ! ton/ha
         else
-            WeedRCi = 0.0_dp
+            WeedRCi = 0.0_sp
             CCw = CCtot
             TrW = Tact
             Biomass = Biomass + WPi *(Tact/ETo)  ! ton/ha
@@ -747,8 +747,8 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
                 ! cumulative mass mobilized
                 AssimMobilized = AssimMobilized + Bin
                 ! switch mobilize off when all mass is transfered
-                if (roundc(1000._dp*AssimToMobilize, mold=1) &
-                   <= roundc(1000._dp *AssimMobilized, mold=1)) then
+                if (roundc(1000._sp*AssimToMobilize, mold=1) &
+                   <= roundc(1000._sp *AssimMobilized, mold=1)) then
                     MobilizeAssimilates = .false.
                 end if
             end if
@@ -785,26 +785,26 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
 
             ! 2.2 determine HImultiplier at the start of flowering
             ! effect of water stress before flowering (HItimesBEF)
-            if (HItimesBEF < - 0.1_dp) then
+            if (HItimesBEF < - 0.1_sp) then
                 ! i.e. undefined at the start of flowering
-                if (BiomassPot < 0.0001_dp) then
-                    HItimesBEF = 1._dp
+                if (BiomassPot < 0.0001_sp) then
+                    HItimesBEF = 1._sp
                 else
                     RatioBM = Biomass/BiomassPot
                     ! Not correct if weed infestation and no fertility stress
                     ! for that case BiomassPot might be larger (but cannot be calculated since WP is unknown)
-                    if (RatioBM > 1._dp) then
-                        RatioBM = 1_dp
+                    if (RatioBM > 1._sp) then
+                        RatioBM = 1_sp
                     end if
                     RBM = BMRange(int(GetCrop_HIincrease(), kind=int32))
                     HItimesBEF = HImultiplier(RatioBM, RBM, GetCrop_HIincrease())
                 end if
-                if (GetCCiActual() <= 0.01_dp) then
-                    if ((GetCrop_CCxWithered() > 0._dp) &
+                if (GetCCiActual() <= 0.01_sp) then
+                    if ((GetCrop_CCxWithered() > 0._sp) &
                         .and. (GetCCiActual() < GetCrop_CCxWithered())) then
-                        HItimesBEF = 0._dp ! no green canopy cover left at start of flowering;
+                        HItimesBEF = 0._sp ! no green canopy cover left at start of flowering;
                     else
-                        HItimesBEF = 1._dp
+                        HItimesBEF = 1._sp
                     end if
                 end if
             end if
@@ -825,18 +825,18 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
             if (GetCrop_Subkind() == Subkind_grain) then ! - only valid for fruit/grain crops (flowers)
                 if ((dayi <= (GetSimulation_DelayedDays() + GetCrop_Day1() + &
                    GetCrop_DaysToFlowering() + GetCrop_LengthFlowering())) & ! calculation limited to flowering period
-                    .and. ((GetCCiactual()*100._dp) > GetSimulParam_PercCCxHIfinal())) then
+                    .and. ((GetCCiactual()*100._sp) > GetSimulParam_PercCCxHIfinal())) then
                     ! sufficient green canopy remains
                     ! 2.4a - Fraction of flowers which are flowering on day  (fFlor)
                     fFlor = FractionFlowering(dayi)
                     ! 2.4b - Ks(pollination) water stress
-                    pLL = 1._dp
+                    pLL = 1._sp
                     croppol_temp = GetCrop_pPollination()
-                    KsPolWS = KsAny(Wrel, croppol_temp, pLL, 0._dp)
+                    KsPolWS = KsAny(Wrel, croppol_temp, pLL, 0._sp)
                     ! 2.4c - Ks(pollination) cold stress
-                    KsPolCS = KsTemperature((GetCrop_Tcold()-TempRange), real(GetCrop_Tcold(), kind=dp), TminOnDay)
+                    KsPolCS = KsTemperature((GetCrop_Tcold()-TempRange), real(GetCrop_Tcold(), kind=sp), TminOnDay)
                     ! 2.4d - Ks(pollination) heat stress
-                    KsPolHS = KsTemperature((GetCrop_Theat()+TempRange), real(GetCrop_Theat(), kind=dp), TmaxOnDay)
+                    KsPolHS = KsTemperature((GetCrop_Theat()+TempRange), real(GetCrop_Theat(), kind=sp), TmaxOnDay)
                     ! 2.4e - Adjust alfa
                     KsPol = KsPolWS
                     if (KsPol > KsPolCS) then
@@ -845,7 +845,7 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
                     if (KsPol > KsPolHS) then
                         KsPol = KsPolHS
                     end if
-                    alfaMax = alfaMax + (KsPol * (1 + GetCrop_fExcess()/100._dp) * fFlor * GetCrop_HI())
+                    alfaMax = alfaMax + (KsPol * (1 + GetCrop_fExcess()/100._sp) * fFlor * GetCrop_HI())
                     if (alfaMax > GetCrop_HI()) then
                         alfaMax = GetCrop_HI()
                     end if
@@ -857,63 +857,63 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
             ! 2.5 determine effect of water stress affecting leaf expansion after flowering
             ! from start flowering till end of determinancy
             if (GetCrop_DeterminancyLinked()) then
-                tmax1 = roundc(GetCrop_LengthFlowering()/2._dp, mold=1)
+                tmax1 = roundc(GetCrop_LengthFlowering()/2._sp, mold=1)
             else
                 tmax1 = (GetCrop_DaysToSenescence() - GetCrop_DaysToFlowering())
             end if
-            if ((HItimesBEF > 0.99_dp) & ! there is green canopy cover at start of flowering;
+            if ((HItimesBEF > 0.99_sp) & ! there is green canopy cover at start of flowering;
                 .and. (dayi <= (GetSimulation_DelayedDays() + GetCrop_Day1() &
                       + GetCrop_DaysToFlowering()+ tmax1)) & ! and not yet end period
                 .and. (tmax1 > 0) & ! otherwise no effect
                 .and. (roundc(GetCrop_aCoeff(), mold=1) /= undef_int) & ! otherwise no effect
                 ! possible precision issue in pascal code
-                ! added -epsilon(0._dp) for zero-diff with pascal version output
-                .and. (GetCCiactual() > (0.001_dp-epsilon(0._dp)))) then ! and as long as green canopy cover remains (for correction to stresses)
+                ! added -epsilon(0._sp) for zero-diff with pascal version output
+                .and. (GetCCiactual() > (0.001_sp-epsilon(0._sp)))) then ! and as long as green canopy cover remains (for correction to stresses)
                 ! determine KsLeaf
                 call AdjustpLeafToETo(ETo, pLeafULAct, pLeafLLAct)
                 Ksleaf = KsAny(Wrel, pLeafULAct, pLeafLLAct, GetCrop_KsShapeFactorLeaf())
                 ! daily correction
-                Dcor = (1._dp + (1._dp-Ksleaf)/GetCrop_aCoeff())
+                Dcor = (1._sp + (1._sp-Ksleaf)/GetCrop_aCoeff())
                 ! weighted correction
                 ScorAT1 = ScorAT1 + Dcor/tmax1
                 DayCor = dayi - (GetSimulation_DelayedDays() + GetCrop_Day1() + GetCrop_DaysToFlowering())
-                HItimesAT1  = (tmax1*1._dp/DayCor) * ScorAT1
+                HItimesAT1  = (tmax1*1._sp/DayCor) * ScorAT1
             end if
 
             ! 2.6 determine effect of water stress affecting stomatal closure after flowering
             ! during yield formation
-            if (GetCrop_dHIdt() > 99._dp) then
+            if (GetCrop_dHIdt() > 99._sp) then
                 tmax2 = 0
             else
                 tmax2 = roundc(GetCrop_HI()/GetCrop_dHIdt(), mold=1)
             end if
-            if ((HItimesBEF > 0.99_dp) & ! there is green canopy cover at start of flowering;
+            if ((HItimesBEF > 0.99_sp) & ! there is green canopy cover at start of flowering;
                 .and. (dayi <= (GetSimulation_DelayedDays() + GetCrop_Day1() &
                       + GetCrop_DaysToFlowering() + tmax2)) & ! and not yet end period
                 .and. (tmax2 > 0) & ! otherwise no effect
                 .and. (roundc(GetCrop_bCoeff(), mold=1) /= undef_int) & ! otherwise no effect
                 ! possible precision issue in pascal code
-                ! added -epsilon(0._dp) for zero-diff with pascal version output
-                .and. (GetCCiactual() > (0.001_dp-epsilon(0._dp)))) then ! and as long as green canopy cover remains (for correction to stresses)
+                ! added -epsilon(0._sp) for zero-diff with pascal version output
+                .and. (GetCCiactual() > (0.001_sp-epsilon(0._sp)))) then ! and as long as green canopy cover remains (for correction to stresses)
                 ! determine KsStomatal
                 call AdjustpStomatalToETo(ETo, pStomatULAct)
-                pLL = 1._dp
+                pLL = 1._sp
                 Ksstomatal = KsAny(Wrel, pStomatULAct, pLL, GetCrop_KsShapeFactorStomata())
                 ! daily correction
-                if (Ksstomatal > 0.001_dp) then
-                    Dcor = (exp(0.10_dp*log(Ksstomatal))) * (1._dp-(1._dp-Ksstomatal)/GetCrop_bCoeff())
+                if (Ksstomatal > 0.001_sp) then
+                    Dcor = (exp(0.10_sp*log(Ksstomatal))) * (1._sp-(1._sp-Ksstomatal)/GetCrop_bCoeff())
                 else
-                    Dcor = 0._dp
+                    Dcor = 0._sp
                 end if
                 ! weighted correction
                 ScorAT2 = ScorAT2 + Dcor/tmax2
                 DayCor = dayi - (GetSimulation_DelayedDays() + GetCrop_Day1() + GetCrop_DaysToFlowering())
-                HItimesAT2  = (tmax2*1._dp/DayCor) * ScorAT2
+                HItimesAT2  = (tmax2*1._sp/DayCor) * ScorAT2
             end if
 
             ! 2.7 total multiplier after flowering
             if ((tmax2 == 0) .and. (tmax1 == 0)) then
-                HItimesAT = 1._dp
+                HItimesAT = 1._sp
             else
                 if (tmax2 == 0) then
                     HItimesAT = HItimesAT1
@@ -942,15 +942,15 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
 
             ! 2.8 Limit HI to allowable maximum increase
             HItimesTotal = HItimesBEF * HItimesAT
-            if (HItimesTotal > (1._dp +(GetCrop_DHImax()/100._dp))) then
-                HItimesTotal = 1._dp +(GetCrop_DHImax()/100._dp)
+            if (HItimesTotal > (1._sp +(GetCrop_DHImax()/100._sp))) then
+                HItimesTotal = 1._sp +(GetCrop_DHImax()/100._sp)
             end if
 
             ! 2.9 Yield
             if (alfaMax >= alfa) then
-                YieldPart = Biomass * HItimesTotal*(alfa/100._dp)
+                YieldPart = Biomass * HItimesTotal*(alfa/100._sp)
             else
-                YieldPart = Biomass * HItimesTotal*(alfaMax/100._dp)
+                YieldPart = Biomass * HItimesTotal*(alfaMax/100._sp)
             end if
         end if
     end if
@@ -959,12 +959,12 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
     if ((GetCrop_subkind() == subkind_Vegetative) .or. (GetCrop_subkind() == subkind_Forage)) then
         if (dayi >= (GetSimulation_DelayedDays() + GetCrop_Day1() + GetCrop_DaysToFlowering())) then
             ! calculation starts at crop day 1 (since days to flowering is 0)
-            if (roundc(100._dp*ETo, mold=1)> 0._dp) then
+            if (roundc(100._sp*ETo, mold=1)> 0._sp) then
                 ! with correction for transferred assimilates
-                if (GetSimulation_RCadj() > 0._dp) then
-                    YieldPart = YieldPart + (WPi*(TrW/ETo) + Bin - Bout) * (alfa/100._dp)
+                if (GetSimulation_RCadj() > 0._sp) then
+                    YieldPart = YieldPart + (WPi*(TrW/ETo) + Bin - Bout) * (alfa/100._sp)
                 else
-                    YieldPart = YieldPart + (WPi*(Tact/ETo) + Bin - Bout) * (alfa/100._dp)
+                    YieldPart = YieldPart + (WPi*(Tact/ETo) + Bin - Bout) * (alfa/100._sp)
                 end if
             end if
         end if
@@ -972,13 +972,13 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
 
 
     ! 3. Dynamic adjustment of soil fertility stress
-    if ((GetManagement_FertilityStress() > 0) .and. (BiomassUnlim > 0.001_dp) &
+    if ((GetManagement_FertilityStress() > 0) .and. (BiomassUnlim > 0.001_sp) &
                             .and. GetCrop_StressResponse_Calibrated()) then
-        BioAdj = 100._dp * (FracBiomassPotSF + (FracBiomassPotSF - BiomassTot/BiomassUnlim))
-        if (BioAdj >= 100._dp) then
+        BioAdj = 100._sp * (FracBiomassPotSF + (FracBiomassPotSF - BiomassTot/BiomassUnlim))
+        if (BioAdj >= 100._sp) then
             StressSFadjNEW = 0
         else
-            if (BioAdj <= epsilon(1._dp)) then
+            if (BioAdj <= epsilon(1._sp)) then
                 StressSFadjNEW = 80
             else
                 if ((Coeffb0 + Coeffb1*BioAdj + Coeffb2*BioAdj*BioAdj) < 0) then
@@ -1017,20 +1017,20 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
     end if
 
     PreviousStressLevel = StressSFadjNEW
-    SumKcTopStress = (1._dp - StressSFadjNEW/100._dp) * SumKcTop
+    SumKcTopStress = (1._sp - StressSFadjNEW/100._sp) * SumKcTop
 
 
     contains
 
 
-    real(dp) function FractionFlowering(Dayi)
+    real(sp) function FractionFlowering(Dayi)
       integer(int32), intent(in) :: Dayi
 
-      real(dp) :: f1, f2, F
+      real(sp) :: f1, f2, F
       integer(int32) :: DiFlor
 
       if (GetCrop_LengthFlowering() <= 1) then
-          F = 1._dp
+          F = 1._sp
       else
           DiFlor = dayi - (GetSimulation_DelayedDays() + &
                             GetCrop_Day1() + GetCrop_DaysToFlowering())
@@ -1039,31 +1039,31 @@ subroutine DetermineBiomassAndYield(dayi, ETo, TminOnDay, TmaxOnDay, CO2i, &
                             GetCrop_Day1() + GetCrop_DaysToFlowering())
           f1 = FractionPeriod(DiFlor)
           if (abs(f1-f2) < ac_zero_threshold) then
-              F = 0._dp
+              F = 0._sp
           else
-              F = (100._dp * ((f1+f2)/2._dp)/GetCrop_LengthFlowering())
+              F = (100._sp * ((f1+f2)/2._sp)/GetCrop_LengthFlowering())
           end if
       end if
       FractionFlowering = F
     end function FractionFlowering
 
 
-    real(dp) function FractionPeriod(DiFlor)
+    real(sp) function FractionPeriod(DiFlor)
         integer(int32), intent(in) :: DiFlor
 
-        real(dp) :: fi, TimePerc
+        real(sp) :: fi, TimePerc
 
-        if (DiFlor <= epsilon(1._dp)) then
-            fi = 0._dp
+        if (DiFlor <= epsilon(1._sp)) then
+            fi = 0._sp
         else
-            TimePerc = 100._dp * (DiFlor * 1._dp/GetCrop_LengthFlowering())
-            if (TimePerc > 100._dp) then
-                fi = 1._dp
+            TimePerc = 100._sp * (DiFlor * 1._sp/GetCrop_LengthFlowering())
+            if (TimePerc > 100._sp) then
+                fi = 1._sp
             else
-                fi = 0.00558_dp * exp(0.63_dp*log(TimePerc)) - &
-                     0.000969_dp * TimePerc - 0.00383_dp
-                if (fi < 0._dp) then
-                    fi = 0._dp
+                fi = 0.00558_sp * exp(0.63_sp*log(TimePerc)) - &
+                     0.000969_sp * TimePerc - 0.00383_sp
+                if (fi < 0._sp) then
+                    fi = 0._sp
                 end if
             end if
         end if
@@ -1083,8 +1083,8 @@ end subroutine DetermineBiomassAndYield
 
 
 subroutine AdjustpStomatalToETo(MeanETo, pStomatULAct)
-    real(dp), intent(in) :: MeanETo
-    real(dp), intent(inout) :: pStomatULAct
+    real(sp), intent(in) :: MeanETo
+    real(sp), intent(inout) :: pStomatULAct
 
 
     select case (GetCrop_pMethod())
@@ -1093,36 +1093,36 @@ subroutine AdjustpStomatalToETo(MeanETo, pStomatULAct)
 
         case (pMethod_FAOCorrection)
              pStomatULAct = GetCrop_pdef() + GetSimulParam_pAdjFAO() * &
-             (0.04_dp *(5._dp-MeanETo))*log10(10._dp-9._dp*GetCrop_pdef())
+             (0.04_sp *(5._sp-MeanETo))*log10(10._sp-9._sp*GetCrop_pdef())
     end select
     if (pStomatULAct > 1) then
-        pStomatULAct = 1._dp
+        pStomatULAct = 1._sp
     end if
-    if (pStomatULAct < 0._dp) then
-        pStomatULAct = 0._dp
+    if (pStomatULAct < 0._sp) then
+        pStomatULAct = 0._sp
     end if
 end subroutine AdjustpStomatalToETo
 
 
 subroutine AdjustpSenescenceToETo(EToMean, TimeSenescence, WithBeta, pSenAct)
-    real(dp), intent(in) :: EToMean
-    real(dp), intent(in) :: TimeSenescence
+    real(sp), intent(in) :: EToMean
+    real(sp), intent(in) :: TimeSenescence
     logical, intent(in) :: WithBeta
-    real(dp), intent(inout) :: pSenAct
+    real(sp), intent(inout) :: pSenAct
 
     pSenAct = GetCrop_pSenescence()
     if (GetCrop_pMethod() == pMethod_FAOCorrection) then
         pSenAct = GetCrop_pSenescence() + GetSimulParam_pAdjFAO() &
-                            * 0.04_dp*(5._dp-EToMean) &
-                            * log10(10._dp-9._dp*GetCrop_pSenescence())
-        if ((TimeSenescence > 0.0001_dp) .and. WithBeta) then
-            pSenAct = pSenAct * (1._dp-GetSimulParam_Beta()/100._dp)
+                            * 0.04_sp*(5._sp-EToMean) &
+                            * log10(10._sp-9._sp*GetCrop_pSenescence())
+        if ((TimeSenescence > 0.0001_sp) .and. WithBeta) then
+            pSenAct = pSenAct * (1._sp-GetSimulParam_Beta()/100._sp)
         end if
-        if (pSenAct < 0._dp) then
-            pSenAct = 0._dp
+        if (pSenAct < 0._sp) then
+            pSenAct = 0._sp
         end if
-        if (pSenAct >= 1.0_dp) then
-            pSenAct = 0.98_dp ! otherwise senescence is not possible at WP
+        if (pSenAct >= 1.0_sp) then
+            pSenAct = 0.98_sp ! otherwise senescence is not possible at WP
         end if
     end if
 end subroutine AdjustpSenescenceToETo
@@ -1130,7 +1130,7 @@ end subroutine AdjustpSenescenceToETo
 
 subroutine CheckGermination()
 
-    real(dp) :: Zroot, WCGermination
+    real(sp) :: Zroot, WCGermination
     logical :: SWCtopSoilConsidered_temp
 
     ! total root zone is considered
@@ -1139,10 +1139,10 @@ subroutine CheckGermination()
     call DetermineRootZoneWC(Zroot, SWCtopSoilConsidered_temp)
     call SetSimulation_SWCtopSoilConsidered(SWCtopSoilConsidered_temp)
     WCGermination = GetRootZoneWC_WP() + (GetRootZoneWC_FC() - &
-                    GetRootZoneWC_WP()) * (GetSimulParam_TAWGermination()/100._dp)
+                    GetRootZoneWC_WP()) * (GetSimulParam_TAWGermination()/100._sp)
     if (GetRootZoneWC_Actual() < WCGermination) then
         call SetSimulation_DelayedDays(GetSimulation_DelayedDays() + 1)
-        call SetSimulation_SumGDD(0._dp)
+        call SetSimulation_SumGDD(0._sp)
     else
         call SetSimulation_Germinate(.true.)
         if (GetCrop_Planting() == plant_Seed) then
@@ -1155,25 +1155,25 @@ end subroutine CheckGermination
 
 
 subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
-    real(dp), intent(in) :: Tpot
-    real(dp), intent(in) :: Coeffb0Salt
-    real(dp), intent(in) :: Coeffb1Salt
-    real(dp), intent(in) :: Coeffb2Salt
+    real(sp), intent(in) :: Tpot
+    real(sp), intent(in) :: Coeffb0Salt
+    real(sp), intent(in) :: Coeffb1Salt
+    real(sp), intent(in) :: Coeffb2Salt
 
-    real(dp) :: WtoExtract, theta_critical, alfa, sinkMM
+    real(sp) :: WtoExtract, theta_critical, alfa, sinkMM
     integer(int32) :: compi, layeri, pre_layer
-    real(dp) :: DeltaWC, InetThreshold
-    real(dp) :: TpotMAX, RedFact, RedFactECsw
-    real(dp) :: Wrel, WrelSalt, pStomatLLAct, crop_pActStom_tmp
-    real(dp) :: CompiECe, CompiECsw, CompiECswFC
+    real(sp) :: DeltaWC, InetThreshold
+    real(sp) :: TpotMAX, RedFact, RedFactECsw
+    real(sp) :: Wrel, WrelSalt, pStomatLLAct, crop_pActStom_tmp
+    real(sp) :: CompiECe, CompiECsw, CompiECswFC
     logical :: SWCtopSoilConsidered_temp
     type(CompartmentIndividual), dimension(max_No_compartments) :: Comp_temp
     type(CompartmentIndividual) :: Compi_temp
 
 
-    call SetTact(0.0_dp)
+    call SetTact(0.0_sp)
 
-    if (Tpot > 0._dp) then
+    if (Tpot > 0._sp) then
         ! 1. maximum transpiration in actual root zone
         if (GetIrriMode() == IrriMode_Inet) then
             ! salinity stress not considered
@@ -1188,38 +1188,38 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                        (GetRootZoneWC_FC()-GetRootZoneWC_WP())
 
             ! --- 2. Effect of water stress
-            pStomatLLAct = 1._dp
+            pStomatLLAct = 1._sp
             if (GetSimulation_SWCtopSoilConsidered() .eqv. .true.) then
                 ! top soil is relative wetter than total root zone
                 if (GetRootZoneWC_ZtopAct() < &
-                                  (0.999_dp * GetRootZoneWC_ZtopThresh())) then
+                                  (0.999_sp * GetRootZoneWC_ZtopThresh())) then
                     Wrel = (GetRootZoneWC_ZtopFC() - GetRootZoneWC_ZtopAct())/ &
                            (GetRootZoneWC_ZtopFC() - GetRootZoneWC_ZtopWP())
                     crop_pActStom_tmp = GetCrop_pActStom()
-                    RedFact = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp) &
-                              * KsAny(Wrel, crop_pActStom_tmp, pStomatLLAct, 0.0_dp) ! where (0.0) is linear
+                    RedFact = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp) &
+                              * KsAny(Wrel, crop_pActStom_tmp, pStomatLLAct, 0.0_sp) ! where (0.0) is linear
                 else
-                    RedFact = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp)
+                    RedFact = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp)
                 end if
             else
                 ! total root zone
-                if (GetRootZoneWC_Actual() < (0.999_dp * GetRootZoneWC_Thresh())) then
+                if (GetRootZoneWC_Actual() < (0.999_sp * GetRootZoneWC_Thresh())) then
                     Wrel = (GetRootZoneWC_FC()-GetRootZoneWC_Actual())/ &
                             (GetRootZoneWC_FC()-GetRootZoneWC_WP())
                     crop_pActStom_tmp = GetCrop_pActStom()
-                    RedFact = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp) &
-                              * KsAny(Wrel, crop_pActStom_tmp, pStomatLLAct, 0.0_dp) ! where (0.0) is linear
+                    RedFact = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp) &
+                              * KsAny(Wrel, crop_pActStom_tmp, pStomatLLAct, 0.0_sp) ! where (0.0) is linear
                     call SetCrop_pActStom(crop_pActStom_tmp)
                 else
-                    RedFact = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp)
+                    RedFact = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp)
                 end if
             end if
 
-            if (RedFact < 0._dp) then
-                RedFact = 0._dp
+            if (RedFact < 0._sp) then
+                RedFact = 0._sp
             end if
-            if (RedFact > 1._dp) then
-                RedFact = 1._dp
+            if (RedFact > 1._sp) then
+                RedFact = 1._sp
             end if
 
             ! --- 3. Extra effect of ECsw (salt in total root zone is considered)
@@ -1239,7 +1239,7 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
             ! 1.b anaerobic conditions in root zone (total root zone is considered)
             call DetermineRootZoneAnaeroConditions(GetRootZoneWC_SAT(), &
                                               GetRootZoneWC_Actual(), &
-                                              real(GetCrop_AnaeroPoint(), kind=dp), &
+                                              real(GetCrop_AnaeroPoint(), kind=sp), &
                                               GetRootingDepth(), RedFact)
             TpotMAX = RedFact * TpotMax
         end if
@@ -1261,35 +1261,35 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
             end if
             ! 2.b calculate alfa
             if (GetIrriMode() == IrriMode_Inet) then
-                alfa = 1._dp
+                alfa = 1._sp
             else
                 ! effect of water stress and ECe
                 if (GetCompartment_theta(compi) >= theta_critical) then
-                    alfa = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp)
-                elseif (GetCompartment_theta(compi) > (GetSoilLayer_WP(layeri)/100._dp)) then
-                    if (theta_critical > (GetSoilLayer_WP(layeri)/100._dp)) then
-                        Wrel = (GetSoilLayer_FC(layeri)/100._dp &
+                    alfa = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp)
+                elseif (GetCompartment_theta(compi) > (GetSoilLayer_WP(layeri)/100._sp)) then
+                    if (theta_critical > (GetSoilLayer_WP(layeri)/100._sp)) then
+                        Wrel = (GetSoilLayer_FC(layeri)/100._sp &
                         - GetCompartment_theta(compi)) &
-                            /(GetSoilLayer_FC(layeri)/100._dp &
-                                - GetSoilLayer_WP(layeri)/100._dp)
-                        pStomatLLAct = 1._dp
+                            /(GetSoilLayer_FC(layeri)/100._sp &
+                                - GetSoilLayer_WP(layeri)/100._sp)
+                        pStomatLLAct = 1._sp
                         crop_pActStom_tmp = GetCrop_pActStom()
-                        alfa = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp) &
+                        alfa = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp) &
                                * KsAny(Wrel, crop_pActStom_tmp, pStomatLLAct, &
                                                  GetCrop_KsShapeFactorStomata())
                         call SetCrop_pActStom(crop_pActStom_tmp)
                     else
-                        alfa = (1._dp - GetSimulation_EffectStress_RedKsSto()/100._dp)
+                        alfa = (1._sp - GetSimulation_EffectStress_RedKsSto()/100._sp)
                     end if
                 else
-                    alfa = 0._dp
+                    alfa = 0._sp
                 end if
                 ! extra effect of ECsw
                 if (GetSimulation_SalinityConsidered()) then
-                    WrelSalt = (GetSoilLayer_FC(layeri)/100._dp &
+                    WrelSalt = (GetSoilLayer_FC(layeri)/100._sp &
                                 - GetCompartment_theta(compi)) &
-                                    /(GetSoilLayer_FC(layeri)/100._dp &
-                                        - GetSoilLayer_WP(layeri)/100._dp)
+                                    /(GetSoilLayer_FC(layeri)/100._sp &
+                                        - GetSoilLayer_WP(layeri)/100._sp)
                     CompiECe = ECeComp(GetCompartment_i(compi))
                     CompiECsw = ECswComp(GetCompartment_i(compi), .false.)
                     CompiECswFC = ECswComp(GetCompartment_i(compi), .true.)
@@ -1302,24 +1302,24 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                 end if
                 alfa = RedFactECsw
             end if
-            if (GetCrop_AnaeroPoint() > 0._dp) then
+            if (GetCrop_AnaeroPoint() > 0._sp) then
                 Compi_temp = GetCompartment_i(compi)
                 call Correction_Anaeroby(Compi_temp, alfa)
                 call SetCompartment_i(compi, Compi_temp)
             end if
             ! 2.c extract water
-            sinkMM = 1000._dp * (alfa * GetCompartment_WFactor(compi) * &
+            sinkMM = 1000._sp * (alfa * GetCompartment_WFactor(compi) * &
                     GetCompartment_Smax(compi)) * GetCompartment_Thickness(compi)
             WtoExtract = TpotMAX-GetTact()
             if (WtoExtract < sinkMM) then
                 sinkMM = WtoExtract
             end if
             call SetCompartment_theta(compi, GetCompartment_theta(compi) &
-                 - sinkMM/(1000._dp*GetCompartment_Thickness(compi)* &
-                 (1._dp - GetSoilLayer_GravelVol(layeri)/100._dp)))
+                 - sinkMM/(1000._sp*GetCompartment_Thickness(compi)* &
+                 (1._sp - GetSoilLayer_GravelVol(layeri)/100._sp)))
             WtoExtract = WtoExtract - sinkMM
             call SetTact(GetTact() + sinkMM)
-            if ((WtoExtract < epsilon(1._dp) .or. &
+            if ((WtoExtract < epsilon(1._sp) .or. &
                                     (compi == GetNrCompartments()))) exit loop
         end do loop
 
@@ -1330,7 +1330,7 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
             SWCtopSoilConsidered_temp = GetSimulation_SWCtopSoilConsidered()
             call DetermineRootZoneWC(GetRootingDepth(), SWCtopSoilConsidered_temp)
             call SetSimulation_SWCtopSoilConsidered(SWCtopSoilConsidered_temp)
-            InetThreshold = GetRootZoneWC_FC() - GetSimulParam_PercRAW()/100._dp &
+            InetThreshold = GetRootZoneWC_FC() - GetSimulParam_PercRAW()/100._sp &
                             *(GetRootZoneWC_FC() - GetRootZoneWC_Thresh())
             if (GetRootZoneWC_Actual() < InetThreshold) then
                 pre_layer = 0
@@ -1338,18 +1338,18 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                     layeri = GetCompartment_Layer(compi)
                     if (layeri > pre_layer) then
                         call calculate_theta_critical(layeri, theta_critical)
-                        InetThreshold = GetSoilLayer_FC(layeri)/100._dp - &
-                                        GetSimulParam_PercRAW()/100._dp* &
-                                        (GetSoilLayer_FC(layeri)/100._dp - theta_critical)
+                        InetThreshold = GetSoilLayer_FC(layeri)/100._sp - &
+                                        GetSimulParam_PercRAW()/100._sp* &
+                                        (GetSoilLayer_FC(layeri)/100._sp - theta_critical)
                         pre_layer = layeri
                     end if
                     DeltaWC = GetCompartment_WFactor(compi) * &
                               (InetThreshold - GetCompartment_Theta(compi)) &
-                              *1000._dp*GetCompartment_Thickness(compi)* &
-                              (1._dp - GetSoilLayer_GravelVol(layeri)/100._dp)
+                              *1000._sp*GetCompartment_Thickness(compi)* &
+                              (1._sp - GetSoilLayer_GravelVol(layeri)/100._sp)
                     call SetCompartment_Theta(compi, GetCompartment_theta(compi) &
-                         + DeltaWC/(1000._dp*GetCompartment_Thickness(compi)* &
-                        (1._dp - GetSoilLayer_GravelVol(layeri)/100._dp)))
+                         + DeltaWC/(1000._sp*GetCompartment_Thickness(compi)* &
+                        (1._sp - GetSoilLayer_GravelVol(layeri)/100._sp)))
                     call SetIrrigation(GetIrrigation() + DeltaWC)
                 end do
             end if
@@ -1362,26 +1362,26 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
 
     subroutine calculate_theta_critical(layeri, theta_critical)
         integer(int32), intent(in) :: layeri
-        real(dp), intent(inout) :: theta_critical
+        real(sp), intent(inout) :: theta_critical
 
-        real(dp) :: theta_TAW
+        real(sp) :: theta_TAW
 
-        theta_TAW = GetSoilLayer_FC(layeri)/100._dp &
-                                             - GetSoilLayer_WP(layeri)/100._dp
-        theta_critical = GetSoilLayer_FC(layeri)/100._dp - theta_TAW &
+        theta_TAW = GetSoilLayer_FC(layeri)/100._sp &
+                                             - GetSoilLayer_WP(layeri)/100._sp
+        theta_critical = GetSoilLayer_FC(layeri)/100._sp - theta_TAW &
                                                            * GetCrop_pActStom()
     end subroutine calculate_theta_critical
 
 
     subroutine calculate_rootfraction_compartment(RootingDepth, Compartment)
-        real(dp), intent(in) :: RootingDepth
+        real(sp), intent(in) :: RootingDepth
         type(CompartmentIndividual), dimension(max_No_compartments), &
                                     intent(inout) :: Compartment
 
-        real(dp) ::  frac_value, cumdepth
+        real(sp) ::  frac_value, cumdepth
         integer(int32) :: compi, i
 
-        cumdepth = 0._dp
+        cumdepth = 0._sp
         compi = 0
         loop: do
             compi = compi + 1
@@ -1390,39 +1390,39 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                 Compartment(compi)%WFactor = 1
             else
                 frac_value = RootingDepth - (cumdepth - Compartment(compi)%Thickness)
-                if (frac_value > 0._dp) then
+                if (frac_value > 0._sp) then
                     Compartment(compi)%WFactor = frac_value/Compartment(compi)%Thickness
                 else
-                    Compartment(compi)%WFactor = 0._dp
+                    Compartment(compi)%WFactor = 0._sp
                 end if
             end if
             if ((cumdepth >= RootingDepth) .or. &
                                       (compi == GetNrCompartments())) exit loop
         end do loop
         do i = compi+1, GetNrCompartments()
-            Compartment(i)%WFactor = 0._dp
+            Compartment(i)%WFactor = 0._sp
         end do
     end subroutine calculate_rootfraction_compartment
 
 
     subroutine calculate_sink_values(Tpot, RootingDepth, Compartment, Crop)
-        real(dp), intent(in) :: Tpot
-        real(dp), intent(in) :: RootingDepth
+        real(sp), intent(in) :: Tpot
+        real(sp), intent(in) :: RootingDepth
         type(CompartmentIndividual), dimension(max_No_compartments), &
                                     intent(inout) :: Compartment
         type(rep_crop), intent(in) :: Crop
 
 
-        real(dp) ::       sink_value, StopComp, SbotComp, cumdepth
+        real(sp) ::       sink_value, StopComp, SbotComp, cumdepth
         integer(int32) :: compi, i
 
         if (GetIrriMode() == IrriMode_Inet) then
-            sink_value = (GetCrop_SmaxTop() + GetCrop_SmaxBot())/2._dp
+            sink_value = (GetCrop_SmaxTop() + GetCrop_SmaxBot())/2._sp
             do compi = 1, GetNrCompartments()
                 Compartment(compi)%Smax = sink_value
             end do
         else
-            cumdepth = 0._dp
+            cumdepth = 0._sp
             compi = 0
             SbotComp = GetCrop_SmaxTop()
             loop: do
@@ -1437,15 +1437,15 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                 else
                     SbotComp = GetCrop_SmaxBot()*GetSimulation_SCor()
                 end if
-                Compartment(compi)%Smax = ((StopComp + SbotComp)/2._dp)
-                if (Compartment(compi)%Smax > 0.06_dp) then
-                    Compartment(compi)%Smax = 0.06_dp
+                Compartment(compi)%Smax = ((StopComp + SbotComp)/2._sp)
+                if (Compartment(compi)%Smax > 0.06_sp) then
+                    Compartment(compi)%Smax = 0.06_sp
                 end if
                 if ((cumdepth >= RootingDepth) .or. &
                                       (compi == GetNrCompartments())) exit loop
             end do loop
             do i = (compi + 1), GetNrCompartments()
-                Compartment(i)%Smax = 0._dp
+                Compartment(i)%Smax = 0._sp
             end do
         end if
     end subroutine calculate_sink_values
@@ -1453,15 +1453,15 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
 
     subroutine Correction_Anaeroby(Comp, alfa)
         type(CompartmentIndividual), intent(inout) :: Comp
-        real(dp), intent(inout) :: alfa
+        real(sp), intent(inout) :: alfa
 
-        real(dp) :: alfaAN
+        real(sp) :: alfaAN
         integer(int32) :: ini
         if ((GetDaySubmerged() >= GetSimulParam_DelayLowOxygen()) .and. &
-                                         (GetCrop_AnaeroPoint() > 0._dp)) then
-            alfaAN = 0._dp
+                                         (GetCrop_AnaeroPoint() > 0._sp)) then
+            alfaAN = 0._sp
         elseif (Comp%theta > (GetSoilLayer_SAT(Comp%Layer) &
-                        - GetCrop_AnaeroPoint())/100._dp) then
+                        - GetCrop_AnaeroPoint())/100._sp) then
             Comp%DayAnaero = Comp%DayAnaero + 1
             if (Comp%DayAnaero >= GetSimulParam_DelayLowOxygen()) then
                 ini = 0
@@ -1469,18 +1469,18 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
             else
                 ini = 1
             end if
-            alfaAN = (GetSoilLayer_SAT(Comp%Layer)/100._dp &
-                          - Comp%theta)/(GetCrop_AnaeroPoint()/100._dp)
-            if (alfaAN < 0._dp) then
-                alfaAN = 0._dp
+            alfaAN = (GetSoilLayer_SAT(Comp%Layer)/100._sp &
+                          - Comp%theta)/(GetCrop_AnaeroPoint()/100._sp)
+            if (alfaAN < 0._sp) then
+                alfaAN = 0._sp
             end if
-            if (GetSimulParam_DelayLowOxygen() > 1._dp) then
-                alfaAN = (ini+(Comp%DayAnaero-1._dp)*alfaAN) &
-                            /(ini+Comp%DayAnaero-1._dp)
+            if (GetSimulParam_DelayLowOxygen() > 1._sp) then
+                alfaAN = (ini+(Comp%DayAnaero-1._sp)*alfaAN) &
+                            /(ini+Comp%DayAnaero-1._sp)
             end if
         else
-            alfaAN = 1._dp
-            Comp%DayAnaero = 0._dp
+            alfaAN = 1._sp
+            Comp%DayAnaero = 0._sp
         end if
         if (alfa > alfaAN) then
             alfa = alfaAN
@@ -1489,17 +1489,17 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
 
 
     subroutine DetermineRootZoneAnaeroConditions(Wsat, Wact, AnaeVol, Zr, RedFact)
-        real(dp), intent(in) :: Wsat
-        real(dp), intent(in) :: Wact
-        real(dp), intent(in) :: AnaeVol
-        real(dp), intent(in) :: Zr
-        real(dp), intent(inout) :: RedFact
+        real(sp), intent(in) :: Wsat
+        real(sp), intent(in) :: Wact
+        real(sp), intent(in) :: AnaeVol
+        real(sp), intent(in) :: Zr
+        real(sp), intent(inout) :: RedFact
 
-        real(dp) :: SATVol, ACTVol
+        real(sp) :: SATVol, ACTVol
         RedFact = 1
-        if ((AnaeVol > 0._dp) .and. (Zr > 0._dp)) then
-            SATVol = Wsat/(10._dp*Zr)
-            ACTVol = Wact/(10._dp*Zr)
+        if ((AnaeVol > 0._sp) .and. (Zr > 0._sp)) then
+            SATVol = Wsat/(10._sp*Zr)
+            ACTVol = Wact/(10._sp*Zr)
             if (ACTVol > SATVol) then
                 ACTVol = SATVol
             end if
@@ -1508,8 +1508,8 @@ subroutine calculate_transpiration(Tpot, Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
                 if (GetSimulation_DayAnaero() > GetSimulParam_DelayLowOxygen()) then
                     call SetSimulation_DayAnaero(int(GetSimulParam_DelayLowOxygen(), kind=int8))
                 end if
-                RedFact = 1._dp - (1._dp-((SATVol - ACTVol)/AnaeVol)) &
-                                * (GetSimulation_DayAnaero()*1._dp &
+                RedFact = 1._sp - (1._sp-((SATVol - ACTVol)/AnaeVol)) &
+                                * (GetSimulation_DayAnaero()*1._sp &
                                     /GetSimulParam_DelayLowOxygen())
             else
                 call SetSimulation_DayAnaero(0_int8)
@@ -1522,14 +1522,14 @@ end subroutine calculate_transpiration
 
 
 subroutine surface_transpiration(Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
-    real(dp), intent(in) :: Coeffb0Salt
-    real(dp), intent(in) :: Coeffb1Salt
-    real(dp), intent(in) :: Coeffb2Salt
+    real(sp), intent(in) :: Coeffb0Salt
+    real(sp), intent(in) :: Coeffb1Salt
+    real(sp), intent(in) :: Coeffb2Salt
 
-    real(dp) :: Part
+    real(sp) :: Part
     integer(int32) :: compi
-    real(dp) :: KsReduction, SaltSurface
-    real(dp) :: Tact_temp
+    real(sp) :: KsReduction, SaltSurface
+    real(sp) :: Tact_temp
 
     call SetDaySubmerged(GetDaySubmerged() + 1)
     do compi = 1, GetNrCompartments()
@@ -1538,13 +1538,13 @@ subroutine surface_transpiration(Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
             call SetCompartment_DayAnaero(compi, GetSimulParam_DelayLowOxygen())
         end if
     end do
-    if (GetCrop_AnaeroPoint() > 0._dp) then
-        Part = (1._dp-GetDaySubmerged()/real(GetSimulParam_DelayLowOxygen(), kind=dp))
+    if (GetCrop_AnaeroPoint() > 0._sp) then
+        Part = (1._sp-GetDaySubmerged()/real(GetSimulParam_DelayLowOxygen(), kind=sp))
     else
-        Part = 1._dp
+        Part = 1._sp
     end if
     KsReduction = KsSalinity(GetSimulation_SalinityConsidered(), GetCrop_ECemin(), &
-                  GetCrop_ECemax(), GetECstorage(), 0.0_dp)
+                  GetCrop_ECemax(), GetECstorage(), 0.0_sp)
     SaltSurface = GetSurfaceStorage()*GetECstorage()*Equiv
     if (GetSurfaceStorage() > KsReduction*Part*GetTpot()) then
         call SetSurfaceStorage(GetSurfaceStorage() - KsReduction*Part*GetTpot())
@@ -1552,8 +1552,8 @@ subroutine surface_transpiration(Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
         ! salinisation of surface storage layer
         call SetECstorage(SaltSurface/(GetSurfaceStorage()*Equiv))
     else
-        call SetTact(GetSurfaceStorage() -0.1_dp)
-        call SetSurfaceStorage(0.1_dp) ! zero give error in already updated salt balance
+        call SetTact(GetSurfaceStorage() -0.1_sp)
+        call SetSurfaceStorage(0.1_sp) ! zero give error in already updated salt balance
     end if
     if (GetTact() < KsReduction*Part*GetTpot()) then
         Tact_temp = GetTact()   !(*Protect Tact from changes in the next routine*)
@@ -1568,26 +1568,26 @@ end subroutine surface_transpiration
 ! BUDGET_module
 !-----------------------------------------------------------------------------
 
-real(dp) function calculate_delta_theta(theta_in, thetaAdjFC, NrLayer)
-    real(dp), intent(in) :: theta_in
-    real(dp), intent(in) :: thetaAdjFC
+real(sp) function calculate_delta_theta(theta_in, thetaAdjFC, NrLayer)
+    real(sp), intent(in) :: theta_in
+    real(sp), intent(in) :: thetaAdjFC
     integer(int32), intent(in) :: NrLayer
 
-    real(dp) :: DeltaX, theta, theta_sat, theta_fc
+    real(sp) :: DeltaX, theta, theta_sat, theta_fc
 
     theta = theta_in
-    theta_sat = GetSoilLayer_SAT(NrLayer) / 100.0_dp
-    theta_fc = GetSoilLayer_FC(NrLayer) / 100.0_dp
+    theta_sat = GetSoilLayer_SAT(NrLayer) / 100.0_sp
+    theta_fc = GetSoilLayer_FC(NrLayer) / 100.0_sp
     if (theta > theta_sat) then
         theta = theta_sat
     end if
-    if (theta <= thetaAdjFC/100.0_dp) then
-        DeltaX = 0.0_dp
+    if (theta <= thetaAdjFC/100.0_sp) then
+        DeltaX = 0.0_sp
     else
         DeltaX = GetSoilLayer_tau(NrLayer)&
                  * (theta_sat - theta_fc)&
-                 * (exp(theta - theta_fc) - 1.0_dp)&
-                 / (exp(theta_sat - theta_fc) - 1.0_dp)
+                 * (exp(theta - theta_fc) - 1.0_sp)&
+                 / (exp(theta_sat - theta_fc) - 1.0_sp)
         if ((theta - DeltaX) < thetaAdjFC) then
             DeltaX = theta - thetaAdjFC
         end if
@@ -1596,30 +1596,30 @@ real(dp) function calculate_delta_theta(theta_in, thetaAdjFC, NrLayer)
 end function calculate_delta_theta
 
 
-real(dp) function calculate_theta(delta_theta, thetaAdjFC, NrLayer)
-    real(dp), intent(in) :: delta_theta
-    real(dp), intent(in) :: thetaAdjFC
+real(sp) function calculate_theta(delta_theta, thetaAdjFC, NrLayer)
+    real(sp), intent(in) :: delta_theta
+    real(sp), intent(in) :: thetaAdjFC
     integer(int32), intent(in) :: NrLayer
 
-    real(dp) :: ThetaX, theta_sat, theta_fc, tau
+    real(sp) :: ThetaX, theta_sat, theta_fc, tau
 
-    theta_sat = GetSoilLayer_SAT(NrLayer) / 100.0_dp
-    theta_fc = GetSoilLayer_FC(NrLayer) / 100.0_dp
+    theta_sat = GetSoilLayer_SAT(NrLayer) / 100.0_sp
+    theta_fc = GetSoilLayer_FC(NrLayer) / 100.0_sp
     tau = GetSoilLayer_tau(NrLayer)
-    if (delta_theta <= epsilon(0.0_dp)) then
+    if (delta_theta <= epsilon(0.0_sp)) then
         ThetaX = thetaAdjFC
-    elseif (tau > 0.0_dp) then
+    elseif (tau > 0.0_sp) then
         ThetaX = theta_fc&
-            + log(1.0_dp&
+            + log(1.0_sp&
                   + delta_theta&
-                  * (exp(theta_sat - theta_fc) - 1.0_dp)&
+                  * (exp(theta_sat - theta_fc) - 1.0_sp)&
                   / (tau * (theta_sat - theta_fc)))
         if (ThetaX < thetaAdjFC) then
             ThetaX = thetaAdjFC
         end if
     else
         ! to stop draining
-        ThetaX = theta_sat + 0.1_dp
+        ThetaX = theta_sat + 0.1_sp
     end if
     calculate_theta = ThetaX
 end function calculate_theta
@@ -1627,35 +1627,35 @@ end function calculate_theta
 
 subroutine calculate_drainage()
     integer(int32) ::  i, compi, layeri, pre_nr
-    real(dp) :: drainsum, delta_theta, drain_comp, drainmax, theta_x, excess
-    real(dp) :: pre_thick
+    real(sp) :: drainsum, delta_theta, drain_comp, drainmax, theta_x, excess
+    real(sp) :: pre_thick
     logical :: drainability
 
-    drainsum = 0.0_dp
+    drainsum = 0.0_sp
     do compi=1, GetNrCompartments()
         ! 1. Calculate drainage of compartment
         ! ====================================
         layeri = GetCompartment_Layer(compi)
         if (GetCompartment_theta(compi) &
-                 > GetCompartment_FCadj(compi)/100.0_dp) then
+                 > GetCompartment_FCadj(compi)/100.0_sp) then
             delta_theta = calculate_delta_theta(GetCompartment_theta(compi), &
-                (GetCompartment_FCadj(compi)/100.0_dp), layeri)
+                (GetCompartment_FCadj(compi)/100.0_sp), layeri)
         else
-            delta_theta = 0.0_dp
+            delta_theta = 0.0_sp
         end if
-        drain_comp = delta_theta * 1000.0_dp * GetCompartment_Thickness(compi) &
-                      * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+        drain_comp = delta_theta * 1000.0_sp * GetCompartment_Thickness(compi) &
+                      * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
 
 
         ! 2. Check drainability
         ! =====================
-        excess = 0.0_dp
-        pre_thick = 0.0_dp
+        excess = 0.0_sp
+        pre_thick = 0.0_sp
         do i = 1, (compi-1)
             pre_thick = pre_thick + GetCompartment_Thickness(i)
         end do
-        drainmax = delta_theta * 1000.0_dp * pre_thick &
-                   * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+        drainmax = delta_theta * 1000.0_sp * pre_thick &
+                   * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
         if (drainsum <= drainmax) then
             drainability = .true.
         else
@@ -1670,85 +1670,85 @@ subroutine calculate_drainage()
             drainsum = drainsum + drain_comp
             call CheckDrainsum(layeri, drainsum, excess)
         else  ! drainability == .false.
-            delta_theta = drainsum/(1000.0_dp * pre_thick&
-                                    *(1-GetSoilLayer_GravelVol(layeri)/100.0_dp))
+            delta_theta = drainsum/(1000.0_sp * pre_thick&
+                                    *(1-GetSoilLayer_GravelVol(layeri)/100.0_sp))
             theta_x = calculate_theta(delta_theta, &
-                (GetCompartment_FCadj(compi)/100.0_dp), layeri)
+                (GetCompartment_FCadj(compi)/100.0_sp), layeri)
 
-            if (theta_x <= GetSoilLayer_SAT(layeri)/100.0_dp) then
+            if (theta_x <= GetSoilLayer_SAT(layeri)/100.0_sp) then
                 call SetCompartment_theta(compi, &
                          GetCompartment_theta(compi) &
-                         + drainsum/(1000.0_dp*GetCompartment_Thickness(compi) &
-                                     *(1-GetSoilLayer_GravelVol(layeri)/100.0_dp)))
+                         + drainsum/(1000.0_sp*GetCompartment_Thickness(compi) &
+                                     *(1-GetSoilLayer_GravelVol(layeri)/100.0_sp)))
                 if (GetCompartment_theta(compi) > theta_x) then
                     drainsum = (GetCompartment_theta(compi) - theta_x) &
-                               * 1000.0_dp * GetCompartment_Thickness(compi) &
-                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+                               * 1000.0_sp * GetCompartment_Thickness(compi) &
+                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
                     delta_theta = calculate_delta_theta(theta_x, &
-                        (GetCompartment_FCadj(compi)/100.0_dp), layeri)
-                    drainsum = drainsum +  delta_theta * 1000.0_dp &
+                        (GetCompartment_FCadj(compi)/100.0_sp), layeri)
+                    drainsum = drainsum +  delta_theta * 1000.0_sp &
                                            * GetCompartment_Thickness(compi) &
                                            * (1 - GetSoilLayer_GravelVol(layeri)&
-                                                  /100.0_dp)
+                                                  /100.0_sp)
                     call CheckDrainsum(layeri, drainsum, excess)
                     call SetCompartment_theta(compi, theta_x - delta_theta)
                 elseif (GetCompartment_theta(compi) &
-                         > GetCompartment_FCadj(compi)/100.0_dp) then
+                         > GetCompartment_FCadj(compi)/100.0_sp) then
                     delta_theta = calculate_delta_theta(&
                         GetCompartment_theta(compi), &
-                        (GetCompartment_FCadj(compi)/100.0_dp), &
+                        (GetCompartment_FCadj(compi)/100.0_sp), &
                         layeri)
                     call SetCompartment_theta(compi, &
                              GetCompartment_theta(compi) - delta_theta)
-                    drainsum = delta_theta * 1000.0_dp &
+                    drainsum = delta_theta * 1000.0_sp &
                                * GetCompartment_Thickness(compi) &
-                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
                     call CheckDrainsum(layeri, drainsum, excess)
                 else
-                    drainsum = 0.0_dp
+                    drainsum = 0.0_sp
                 end if
             end if ! theta_x <= SoilLayer[layeri].SAT/100
 
-            if (theta_x > GetSoilLayer_SAT(layeri)/100.0_dp) then
+            if (theta_x > GetSoilLayer_SAT(layeri)/100.0_sp) then
                 call SetCompartment_theta(compi,&
                          GetCompartment_theta(compi)&
-                         + drainsum/(1000.0_dp*GetCompartment_Thickness(compi) &
-                                     *(1-GetSoilLayer_GravelVol(layeri)/100.0_dp)))
+                         + drainsum/(1000.0_sp*GetCompartment_Thickness(compi) &
+                                     *(1-GetSoilLayer_GravelVol(layeri)/100.0_sp)))
                 if (GetCompartment_theta(compi) &
-                         <= GetSoilLayer_SAT(layeri)/100.0_dp) then
+                         <= GetSoilLayer_SAT(layeri)/100.0_sp) then
                     if (GetCompartment_theta(compi) &
-                            > GetCompartment_FCadj(compi)/100.0_dp) then
+                            > GetCompartment_FCadj(compi)/100.0_sp) then
                         delta_theta = calculate_delta_theta(&
                             GetCompartment_theta(compi), &
-                            (GetCompartment_FCadj(compi)/100.0_dp),&
+                            (GetCompartment_FCadj(compi)/100.0_sp),&
                             layeri)
                         call SetCompartment_theta(compi, &
                                  GetCompartment_theta(compi) - delta_theta)
-                        drainsum = delta_theta * 1000.0_dp &
+                        drainsum = delta_theta * 1000.0_sp &
                                    * GetCompartment_Thickness(compi) &
-                                   *(1-GetSoilLayer_GravelVol(layeri)/100.0_dp)
+                                   *(1-GetSoilLayer_GravelVol(layeri)/100.0_sp)
                         call CheckDrainsum(layeri, drainsum, excess)
                     else
-                        drainsum = 0.0_dp
+                        drainsum = 0.0_sp
                     end if
                 end if
                 if (GetCompartment_theta(compi)&
-                        > GetSoilLayer_SAT(layeri)/100.0_dp) then
+                        > GetSoilLayer_SAT(layeri)/100.0_sp) then
                     excess = (GetCompartment_theta(compi)&
-                               - (GetSoilLayer_SAT(layeri)/100.0_dp)) &
-                             * 1000.0_dp * GetCompartment_Thickness(compi) &
-                             * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+                               - (GetSoilLayer_SAT(layeri)/100.0_sp)) &
+                             * 1000.0_sp * GetCompartment_Thickness(compi) &
+                             * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
                     delta_theta = calculate_delta_theta(&
                          GetCompartment_theta(compi), &
                          (GetCompartment_FCadj(compi)/100),&
                          layeri)
                     call SetCompartment_theta(compi, &
-                             GetSoilLayer_SAT(layeri)/100.0_dp - delta_theta)
-                    drain_comp = delta_theta * 1000.0_dp&
+                             GetSoilLayer_SAT(layeri)/100.0_sp - delta_theta)
+                    drain_comp = delta_theta * 1000.0_sp&
                                  * GetCompartment_Thickness(compi)&
-                                 * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
-                    drainmax = delta_theta * 1000.0_dp * pre_thick&
-                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_dp)
+                                 * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
+                    drainmax = delta_theta * 1000.0_sp * pre_thick&
+                               * (1 - GetSoilLayer_GravelVol(layeri)/100.0_sp)
                     if (drainmax > excess) then
                         drainmax = excess
                     end if
@@ -1764,7 +1764,7 @@ subroutine calculate_drainage()
 
         ! 4. Redistribute excess
         ! ======================
-        if (excess > 0.0_dp) then
+        if (excess > 0.0_sp) then
             pre_nr = compi + 1
             loop: do
                 pre_nr = pre_nr - 1
@@ -1776,22 +1776,22 @@ subroutine calculate_drainage()
                 call SetCompartment_theta(pre_nr,&
                     GetCompartment_theta(pre_nr)&
                     + excess&
-                    / (1000.0_dp*GetCompartment_Thickness(pre_nr)&
+                    / (1000.0_sp*GetCompartment_Thickness(pre_nr)&
                        *(1-GetSoilLayer_GravelVol(GetCompartment_Layer(pre_nr))&
-                           /100.0_dp)))
+                           /100.0_sp)))
                 if (GetCompartment_theta(pre_nr) &
-                        > GetSoilLayer_SAT(layeri)/100.0_dp) then
+                        > GetSoilLayer_SAT(layeri)/100.0_sp) then
                     excess = (GetCompartment_theta(pre_nr) &
                               - GetSoilLayer_SAT(layeri)/100) &
-                             * 1000.0_dp * GetCompartment_Thickness(pre_nr) &
+                             * 1000.0_sp * GetCompartment_Thickness(pre_nr) &
                              * (1-GetSoilLayer_GravelVol(GetCompartment_Layer(pre_nr))&
-                                    /100.0_dp)
+                                    /100.0_sp)
                     call SetCompartment_theta(pre_nr,&
-                             GetSoilLayer_SAT(layeri)/100.0_dp)
+                             GetSoilLayer_SAT(layeri)/100.0_sp)
                 else
-                    excess = 0.0_dp
+                    excess = 0.0_sp
                 end if
-                if ((abs(excess) < epsilon(0._dp)) .or. (pre_nr == 1)) exit loop
+                if ((abs(excess) < epsilon(0._sp)) .or. (pre_nr == 1)) exit loop
             end do loop
             ! redistribute excess
         end if
@@ -1806,8 +1806,8 @@ subroutine calculate_drainage()
 
     subroutine CheckDrainsum(layeri, drainsum, excess)
         integer(int32), intent(in) :: layeri
-        real(dp), intent(inout) :: drainsum
-        real(dp), intent(inout) :: excess
+        real(sp), intent(inout) :: drainsum
+        real(sp), intent(inout) :: excess
 
         if (drainsum > GetSoilLayer_InfRate(layeri)) then
             excess = excess + drainsum - GetSoilLayer_InfRate(layeri)
@@ -1818,14 +1818,14 @@ end subroutine calculate_drainage
 
 
 subroutine calculate_weighting_factors(Depth, Compartment)
-    real(dp), intent(in) :: Depth
+    real(sp), intent(in) :: Depth
     type(CompartmentIndividual), dimension(max_No_compartments), intent(inout) :: Compartment
 
     integer(int32) :: i, compi
-    real(dp) :: CumDepth, xx, wx
+    real(sp) :: CumDepth, xx, wx
 
-    CumDepth = 0.0_dp
-    xx = 0.0_dp
+    CumDepth = 0.0_sp
+    xx = 0.0_sp
     compi = 0
     loop: do
         compi = compi + 1
@@ -1833,62 +1833,62 @@ subroutine calculate_weighting_factors(Depth, Compartment)
         if (CumDepth > Depth) then
             CumDepth = Depth
         end if
-        wx = 1.016_dp * (1.0_dp - EXP(-4.16_dp * CumDepth/Depth))
+        wx = 1.016_sp * (1.0_sp - EXP(-4.16_sp * CumDepth/Depth))
         Compartment(compi)%WFactor = wx - xx
-        if (Compartment(compi)%WFactor > 1.0_dp) then
-            Compartment(compi)%WFactor = 1.0_dp
+        if (Compartment(compi)%WFactor > 1.0_sp) then
+            Compartment(compi)%WFactor = 1.0_sp
         end if
-        if (Compartment(compi)%WFactor < 0.0_dp) then
-            Compartment(compi)%WFactor = 0.0_dp
+        if (Compartment(compi)%WFactor < 0.0_sp) then
+            Compartment(compi)%WFactor = 0.0_sp
         end if
         xx = wx
         if ((CumDepth >= Depth) .or. (compi == GetNrCompartments())) exit loop
     enddo loop
     do i = (compi + 1), GetNrCompartments()
-        Compartment(i)%WFactor = 0.0_dp
+        Compartment(i)%WFactor = 0.0_sp
     end do
 end subroutine calculate_weighting_factors
 
 
 subroutine calculate_runoff(MaxDepth)
-    real(dp), intent(in) :: MaxDepth
+    real(sp), intent(in) :: MaxDepth
 
-    real(dp) :: SUM, CNA, Shower, term, S
+    real(sp) :: SUM, CNA, Shower, term, S
     integer(int8) :: CN2, CN1, CN3
 
     CN2 = roundc(GetSoil_CNvalue()&
-                 * (100 + GetManagement_CNcorrection())/100.0_dp,&
+                 * (100 + GetManagement_CNcorrection())/100.0_sp,&
                  mold=1_int8)
     if (GetRainRecord_DataType() == datatype_daily) then
         if (GetSimulParam_CNcorrection()) then
             call calculate_relative_wetness_topsoil(SUM)
             call DetermineCNIandIII(CN2, CN1, CN3)
-            CNA = real(roundc(CN1+(CN3-CN1)*SUM, mold=1_int32), kind=dp)
+            CNA = real(roundc(CN1+(CN3-CN1)*SUM, mold=1_int32), kind=sp)
         else
-            CNA = real(CN2, kind=dp)
+            CNA = real(CN2, kind=sp)
         end if
         Shower = GetRain()
     else
-        CNA = real(CN2, kind=dp)
-        Shower = (GetRain()*10.0_dp) &
+        CNA = real(CN2, kind=sp)
+        Shower = (GetRain()*10.0_sp) &
                  / GetSimulParam_EffectiveRain_ShowersInDecade()
     end if
-    S = 254.0_dp * (100.0_dp/CNA - 1.0_dp)
-    term = Shower - (GetSimulParam_IniAbstract()/100.0_dp) * S
-    if (term <= epsilon(0.0_dp)) then
-        call SetRunoff(0.0_dp);
+    S = 254.0_sp * (100.0_sp/CNA - 1.0_sp)
+    term = Shower - (GetSimulParam_IniAbstract()/100.0_sp) * S
+    if (term <= epsilon(0.0_sp)) then
+        call SetRunoff(0.0_sp);
     else
         call SetRunoff(term**2&
-             / (Shower + (1.0_dp - (GetSimulParam_IniAbstract()/100.0_dp)) * S))
+             / (Shower + (1.0_sp - (GetSimulParam_IniAbstract()/100.0_sp)) * S))
     end if
-    if ((GetRunoff() > 0.0_dp) .and. ( &
+    if ((GetRunoff() > 0.0_sp) .and. ( &
             (GetRainRecord_DataType() == datatype_decadely)&
              .or. (GetRainRecord_DataType() == datatype_monthly))) then
         if (GetRunoff() >= Shower) then
             call SetRunoff(GetRain())
         else
             call SetRunoff(GetRunoff() &
-                   * (GetSimulParam_EffectiveRain_ShowersInDecade()/10.14_dp))
+                   * (GetSimulParam_EffectiveRain_ShowersInDecade()/10.14_sp))
             if (GetRunoff() > GetRain()) then
                 call SetRunoff(GetRain())
             end if
@@ -1900,50 +1900,50 @@ subroutine calculate_runoff(MaxDepth)
 
 
     subroutine calculate_relative_wetness_topsoil(SUM)
-        real(dp), intent(inout) :: SUM
+        real(sp), intent(inout) :: SUM
 
-        real(dp) :: CumDepth, theta
+        real(sp) :: CumDepth, theta
         integer(int32) :: compi, layeri
         type(CompartmentIndividual), dimension(max_No_compartments) :: Compartment_temp
 
         Compartment_temp = GetCompartment()
         call calculate_weighting_factors(MaxDepth, Compartment_temp)
         call SetCompartment(Compartment_temp)
-        SUM = 0.0_dp
+        SUM = 0.0_sp
         compi = 0
-        CumDepth = 0.0_dp
+        CumDepth = 0.0_sp
 
         loop : do
             compi = compi + 1
             layeri = GetCompartment_Layer(compi)
             CumDepth = CumDepth + GetCompartment_Thickness(compi)
-            if (GetCompartment_theta(compi) < GetSoilLayer_WP(layeri)/100.0_dp) then
-                theta = GetSoilLayer_WP(layeri)/100.0_dp
+            if (GetCompartment_theta(compi) < GetSoilLayer_WP(layeri)/100.0_sp) then
+                theta = GetSoilLayer_WP(layeri)/100.0_sp
             else
                 theta = GetCompartment_theta(compi)
             end if
             SUM = SUM + GetCompartment_WFactor(compi) &
-                 * (theta-GetSoilLayer_WP(layeri)/100.0_dp) &
-                 / (GetSoilLayer_FC(layeri)/100.0_dp - GetSoilLayer_WP(layeri)/100.0_dp)
+                 * (theta-GetSoilLayer_WP(layeri)/100.0_sp) &
+                 / (GetSoilLayer_FC(layeri)/100.0_sp - GetSoilLayer_WP(layeri)/100.0_sp)
             if ((CumDepth >= MaxDepth) .or. (compi == GetNrCompartments())) exit loop
         end do loop
 
-        if (SUM < 0.0_dp) then
-            SUM = 0.0_dp
+        if (SUM < 0.0_sp) then
+            SUM = 0.0_sp
         end if
-        if (SUM > 1.0_dp) then
-            SUM = 1.0_dp
+        if (SUM > 1.0_sp) then
+            SUM = 1.0_sp
         end if
     end subroutine calculate_relative_wetness_topsoil
 end subroutine calculate_runoff
 
 
 subroutine Calculate_irrigation(SubDrain, TargetTimeVal, TargetDepthVal)
-    real(dp), intent(inout) :: SubDrain
+    real(sp), intent(inout) :: SubDrain
     integer(int32), intent(inout) :: TargetTimeVal
     integer(int32), intent(in) :: TargetDepthVal
 
-    real(dp) :: ZrWC, RAWi
+    real(sp) :: ZrWC, RAWi
     logical :: SWCtopSoilConsidered_temp
 
     ! total root zone is considered
@@ -1960,7 +1960,7 @@ subroutine Calculate_irrigation(SubDrain, TargetTimeVal, TargetDepthVal)
         end if
     end if
     if (GetGenerateTimeMode() == GenerateTimeMode_AllRAW) then
-        RAWi = TargetTimeVal/100._dp &
+        RAWi = TargetTimeVal/100._sp &
                 * (GetRootZoneWC_FC() - GetRootZoneWC_Thresh())
         if ((GetRootZoneWC_FC() - ZrWC) >= RAWi) then
             TargetTimeVal = 1
@@ -1970,49 +1970,49 @@ subroutine Calculate_irrigation(SubDrain, TargetTimeVal, TargetDepthVal)
     end if
     if (TargetTimeVal == 1) then
         if (GetGenerateDepthMode() == GenerateDepthMode_FixDepth) then
-            call SetIrrigation(real(TargetDepthVal, kind=dp))
+            call SetIrrigation(real(TargetDepthVal, kind=sp))
         else
             call SetIrrigation((GetRootZoneWC_FC() - ZrWc) &
                                             + TargetDepthVal)
-            if (GetIrrigation() < 0._dp) then
-                call SetIrrigation(0._dp)
+            if (GetIrrigation() < 0._sp) then
+                call SetIrrigation(0._sp)
             end if
         end if
     else
-        call SetIrrigation(0._dp)
+        call SetIrrigation(0._sp)
     end if
 end subroutine Calculate_irrigation
 
 
 subroutine CalculateEffectiveRainfall(SubDrain)
-    real(dp), intent(inout) :: SubDrain
+    real(sp), intent(inout) :: SubDrain
 
-    real(dp) :: EffecRain, ETcropMonth, RainMonth, &
+    real(sp) :: EffecRain, ETcropMonth, RainMonth, &
                 DrainMax, Zr, depthi, DTheta, RestTheta
     integer(int32) :: compi
 
-    if (GetRain() > 0._dp) then
+    if (GetRain() > 0._sp) then
         ! 1. Effective Rainfall
         EffecRain = (GetRain()-GetRunoff())
         select case (GetSimulParam_EffectiveRain_Method())
         case (EffectiveRainMethod_Percentage)
-            EffecRain = (GetSimulParam_EffectiveRain_PercentEffRain()/100._dp) &
+            EffecRain = (GetSimulParam_EffectiveRain_PercentEffRain()/100._sp) &
                                 * (GetRain()-GetRunoff())
         case (EffectiveRainMethod_USDA)
-            ETcropMonth = ((GetEpot()+GetTpot())*30._dp)/25.4_dp ! inch/month
-            RainMonth = ((GetRain()-GetRunoff())*30._dp)/25.4_dp ! inch/Month
-            if (RainMonth > 0.1_dp) then
-                EffecRain = (0.70917_dp*exp(0.82416_dp*log(RainMonth))-0.11556_dp) &
-                                * (exp(0.02426_dp*ETcropMonth*log(10._dp)))
+            ETcropMonth = ((GetEpot()+GetTpot())*30._sp)/25.4_sp ! inch/month
+            RainMonth = ((GetRain()-GetRunoff())*30._sp)/25.4_sp ! inch/Month
+            if (RainMonth > 0.1_sp) then
+                EffecRain = (0.70917_sp*exp(0.82416_sp*log(RainMonth))-0.11556_sp) &
+                                * (exp(0.02426_sp*ETcropMonth*log(10._sp)))
                                                                  ! inch/month
             else
                 EffecRain = RainMonth
             end if
-            EffecRain = EffecRain*(25.4_dp/30._dp) ! mm/day
+            EffecRain = EffecRain*(25.4_sp/30._sp) ! mm/day
         end select
     end if
-    if (EffecRain < 0._dp) then
-        EffecRain = 0._dp
+    if (EffecRain < 0._sp) then
+        EffecRain = 0._sp
     end if
     if (EffecRain > (GetRain()-GetRunoff())) then
         EffecRain = (GetRain()-GetRunoff())
@@ -2020,25 +2020,25 @@ subroutine CalculateEffectiveRainfall(SubDrain)
     SubDrain = (GetRain()-GetRunoff()) - EffecRain
 
     ! 2. Verify Possibility of SubDrain
-    if (SubDrain > 0._dp) then
+    if (SubDrain > 0._sp) then
         DrainMax = GetSoilLayer_InfRate(1)
-        if (GetSurfaceStorage() > 0._dp) then
-            DrainMax = 0._dp
+        if (GetSurfaceStorage() > 0._sp) then
+            DrainMax = 0._sp
         else
             Zr = GetRootingDepth()
-            if (Zr <= epsilon(0._dp)) then
-                Zr = (GetSimulParam_EvapZmax()/100._dp)
+            if (Zr <= epsilon(0._sp)) then
+                Zr = (GetSimulParam_EvapZmax()/100._sp)
             end if
             compi = 0
-            depthi = 0._dp
-            DTheta = (EffecRain/Zr)/1000._dp
+            depthi = 0._sp
+            DTheta = (EffecRain/Zr)/1000._sp
             loop: do
                 compi = compi + 1
                 depthi = depthi + GetCompartment_Thickness(compi)
                 RestTheta = GetSoilLayer_SAT(GetCompartment_Layer(compi)) &
-                            /100._dp - (GetCompartment_theta(compi) + DTheta)
-                if (RestTheta <= epsilon(0._dp)) then
-                    DrainMax = 0._dp
+                            /100._sp - (GetCompartment_theta(compi) + DTheta)
+                if (RestTheta <= epsilon(0._sp)) then
+                    DrainMax = 0._sp
                 end if
                 if (GetSoilLayer_InfRate(GetCompartment_Layer(compi)) &
                                                         < DrainMax) then
@@ -2049,7 +2049,7 @@ subroutine CalculateEffectiveRainfall(SubDrain)
             end do loop
         end if
         if (SubDrain > DrainMax) then
-            if (GetManagement_Bundheight() < 0.001_dp) then
+            if (GetManagement_Bundheight() < 0.001_sp) then
                 call SetRunoff(GetRunoff() + (SubDrain-DrainMax))
             end if
             SubDrain = DrainMax
@@ -2059,15 +2059,15 @@ end subroutine CalculateEffectiveRainfall
 
 
 subroutine calculate_CapillaryRise(CRwater, CRsalt)
-    real(dp), intent(inout) :: CRwater
-    real(dp), intent(inout) :: CRsalt
+    real(sp), intent(inout) :: CRwater
+    real(sp), intent(inout) :: CRsalt
 
-    real(dp) :: Zbottom, MaxMM, DThetaMax, DTheta, LimitMM, &
+    real(sp) :: Zbottom, MaxMM, DThetaMax, DTheta, LimitMM, &
                 CRcomp, SaltCRi, DrivingForce, ZtopNextLayer, &
                 Krel, ThetaThreshold
     integer(int32) :: compi, SCellAct, layeri
 
-    Zbottom = 0._dp
+    Zbottom = 0._sp
     do compi = 1, GetNrCompartments()
         Zbottom = Zbottom + GetCompartment_Thickness(compi)
     end do
@@ -2077,91 +2077,91 @@ subroutine calculate_CapillaryRise(CRwater, CRsalt)
     MaxMM = MaxCRatDepth(GetSoilLayer_CRa(GetCompartment_Layer(compi)), &
                          GetSoilLayer_CRb(GetCompartment_Layer(compi)), &
                          GetSoilLayer_InfRate(GetCompartment_Layer(compi)), &
-                         (Zbottom - GetCompartment_Thickness(compi)/2._dp), &
-                         (GetZiAqua()/100._dp))
+                         (Zbottom - GetCompartment_Thickness(compi)/2._sp), &
+                         (GetZiAqua()/100._sp))
 
     ! check restrictions on CR from soil layers below
-    ZtopNextLayer = 0._dp
+    ZtopNextLayer = 0._sp
     do layeri = 1, GetCompartment_Layer(GetNrCompartments())
         ZtopNextLayer = ZtopNextLayer + GetSoilLayer_Thickness(layeri)
     end do
     layeri = GetCompartment_Layer(GetNrCompartments())
-    do while ((ZtopNextLayer < (GetZiAqua()/100._dp)) &
+    do while ((ZtopNextLayer < (GetZiAqua()/100._sp)) &
                 .and. (layeri < GetSoil_NrSoilLayers()))
         layeri = layeri + 1
         LimitMM = MaxCRatDepth(GetSoilLayer_CRa(layeri), &
                                GetSoilLayer_CRb(layeri), &
                                GetSoilLayer_InfRate(layeri), &
-                               ZtopNextLayer, (GetZiAqua()/100._dp))
+                               ZtopNextLayer, (GetZiAqua()/100._sp))
         if (MaxMM > LimitMM) then
             MaxMM = LimitMM
         end if
         ZtopNextLayer = ZtopNextLayer + GetSoilLayer_Thickness(layeri)
     end do
 
-    loop: do while ((roundc(MaxMM*1000._dp, mold=1) > 0) &
+    loop: do while ((roundc(MaxMM*1000._sp, mold=1) > 0) &
             .and. (compi > 0) &
-            .and. (roundc(GetCompartment_fluxout(compi)*1000._dp, mold=1) == 0))
+            .and. (roundc(GetCompartment_fluxout(compi)*1000._sp, mold=1) == 0))
         ! Driving force
         if ((GetCompartment_theta(compi) &
-                >= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp) &
+                >= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp) &
             .and. (GetSimulParam_RootNrDF() > 0_int8)) then
-            DrivingForce = 1._dp &
+            DrivingForce = 1._sp &
                           - (exp(GetSimulParam_RootNrDF() &
                             * log(GetCompartment_theta(compi) &
                                 - GetSoilLayer_WP(GetCompartment_Layer(compi)) &
-                                                                    /100._dp)) &
+                                                                    /100._sp)) &
                           /exp(GetSimulParam_RootNrDF() &
-                            *log(GetCompartment_FCadj(compi)/100._dp &
-                      - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp)))
+                            *log(GetCompartment_FCadj(compi)/100._sp &
+                      - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp)))
         else
-            DrivingForce = 1._dp
+            DrivingForce = 1._sp
         end if
         ! relative hydraulic conductivity
-        ThetaThreshold = (GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp &
+        ThetaThreshold = (GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp &
                           + GetSoilLayer_FC(GetCompartment_Layer(compi)) &
-                                                                /100._dp)/2._dp
+                                                                /100._sp)/2._sp
         if (GetCompartment_Theta(compi) < ThetaThreshold) then
             if ((GetCompartment_Theta(compi) &
-                <= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp) &
+                <= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp) &
               .or. (ThetaThreshold &
-                <= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp)) then
-                Krel = 0._dp
+                <= GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp)) then
+                Krel = 0._sp
             else
                 Krel = (GetCompartment_Theta(compi) &
-                        - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp) &
+                        - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp) &
                       /(ThetaThreshold &
-                        - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._dp)
+                        - GetSoilLayer_WP(GetCompartment_Layer(compi))/100._sp)
             end if
         else
-            Krel = 1._dp
+            Krel = 1._sp
         end if
 
         ! room available to store water
-        DTheta = GetCompartment_FCadj(compi)/100._dp &
+        DTheta = GetCompartment_FCadj(compi)/100._sp &
                 - GetCompartment_Theta(compi)
-        if ((DTheta > 0._dp) &
-            .and. ((Zbottom - GetCompartment_Thickness(compi)/2._dp) &
-                    < (GetZiAqua()/100._dp))) then
+        if ((DTheta > 0._sp) &
+            .and. ((Zbottom - GetCompartment_Thickness(compi)/2._sp) &
+                    < (GetZiAqua()/100._sp))) then
             ! water stored
             DThetaMax = Krel * DrivingForce &
-                        * MaxMM/(1000._dp*GetCompartment_Thickness(compi))
+                        * MaxMM/(1000._sp*GetCompartment_Thickness(compi))
             if (DTheta >= DThetaMax) then
                 call SetCompartment_Theta(compi, &
                                           GetCompartment_Theta(compi) &
                                                          + DThetaMax)
-                CRcomp = DThetaMax*1000._dp*GetCompartment_Thickness(compi) &
-                         * (1._dp &
+                CRcomp = DThetaMax*1000._sp*GetCompartment_Thickness(compi) &
+                         * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
-                MaxMM = 0._dp
+                                                                      /100._sp)
+                MaxMM = 0._sp
             else
                 call SetCompartment_Theta(compi, &
-                                         GetCompartment_FCadj(compi)/100._dp)
-                CRcomp = DTheta*1000._dp*GetCompartment_Thickness(compi) &
-                         * (1._dp &
+                                         GetCompartment_FCadj(compi)/100._sp)
+                CRcomp = DTheta*1000._sp*GetCompartment_Thickness(compi) &
+                         * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                 MaxMM = Krel * MaxMM - CRcomp
             end if
             CRwater = CRwater + CRcomp
@@ -2180,8 +2180,8 @@ subroutine calculate_CapillaryRise(CRwater, CRsalt)
                     GetSoilLayer_CRa(GetCompartment_Layer(compi)), &
                     GetSoilLayer_CRb(GetCompartment_Layer(compi)), &
                     GetSoilLayer_InfRate(GetCompartment_Layer(compi)), &
-                    (Zbottom - GetCompartment_Thickness(compi)/2._dp), &
-                    (GetZiAqua()/100._dp))
+                    (Zbottom - GetCompartment_Thickness(compi)/2._sp), &
+                    (GetZiAqua()/100._sp))
         if (MaxMM > LimitMM) then
             MaxMM = LimitMM
         end if
@@ -2195,61 +2195,61 @@ subroutine CheckWaterSaltBalance(dayi,&
               InfiltratedStorage, Surf0, ECInfilt, ECdrain, &
               HorizontalWaterFlow, HorizontalSaltFlow, SubDrain)
     integer(int32), intent(in) :: dayi
-    real(dp), intent(in) :: InfiltratedRain
+    real(sp), intent(in) :: InfiltratedRain
     integer(intEnum), intent(in) :: control
-    real(dp), intent(in) :: InfiltratedIrrigation
-    real(dp), intent(in) :: InfiltratedStorage
-    real(dp), intent(inout) :: Surf0
-    real(dp), intent(inout) :: ECInfilt
-    real(dp), intent(inout) :: ECdrain
-    real(dp), intent(inout) :: HorizontalWaterFlow
-    real(dp), intent(inout) :: HorizontalSaltFlow
-    real(dp), intent(inout) :: SubDrain
+    real(sp), intent(in) :: InfiltratedIrrigation
+    real(sp), intent(in) :: InfiltratedStorage
+    real(sp), intent(inout) :: Surf0
+    real(sp), intent(inout) :: ECInfilt
+    real(sp), intent(inout) :: ECdrain
+    real(sp), intent(inout) :: HorizontalWaterFlow
+    real(sp), intent(inout) :: HorizontalSaltFlow
+    real(sp), intent(inout) :: SubDrain
 
     integer(int32) :: compi, layeri, celli
-    real(dp) :: Surf1, ECw
+    real(sp) :: Surf1, ECw
 
     select case (control)
     case (control_begin_day)
-        call SetTotalWaterContent_BeginDay(0._dp) ! mm
+        call SetTotalWaterContent_BeginDay(0._sp) ! mm
         Surf0 = GetSurfaceStorage() ! mm
-        call SetTotalSaltContent_BeginDay(0._dp) ! Mg/ha
+        call SetTotalSaltContent_BeginDay(0._sp) ! Mg/ha
         do compi =1, GetNrCompartments()
             call SetTotalWaterContent_BeginDay(GetTotalWaterContent_BeginDay() &
-               + GetCompartment_theta(compi)*1000._dp* &
+               + GetCompartment_theta(compi)*1000._sp* &
                  GetCompartment_Thickness(compi) &
-               * (1._dp - &
-                  GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
-            call SetCompartment_fluxout(compi, 0._dp)
+               * (1._sp - &
+                  GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
+            call SetCompartment_fluxout(compi, 0._sp)
             do celli = 1, GetSoilLayer_SCP1(GetCompartment_Layer(compi))
                 call SetTotalSaltContent_BeginDay(&
                        GetTotalSaltContent_BeginDay() &
                        + (GetCompartment_Salt(compi, celli) + &
-                          GetCompartment_Depo(compi, celli))/100._dp) ! Mg/ha
+                          GetCompartment_Depo(compi, celli))/100._sp) ! Mg/ha
             end do
         end do
-        call SetDrain(0._dp)
-        call SetRunoff(0._dp)
+        call SetDrain(0._sp)
+        call SetRunoff(0._sp)
         ! Eact is set to 0 at the beginning of the evaporation process
-        call SetTact(0._dp)
-        call SetInfiltrated(0._dp)
-        ECinfilt = 0._dp
-        SubDrain = 0._dp
-        ECdrain = 0._dp
-        HorizontalWaterFlow = 0._dp
-        HorizontalSaltFlow = 0._dp
-        call SetCRwater(0._dp)
-        call SetCRsalt(0._dp)
+        call SetTact(0._sp)
+        call SetInfiltrated(0._sp)
+        ECinfilt = 0._sp
+        SubDrain = 0._sp
+        ECdrain = 0._sp
+        HorizontalWaterFlow = 0._sp
+        HorizontalSaltFlow = 0._sp
+        call SetCRwater(0._sp)
+        call SetCRsalt(0._sp)
 
     case (control_end_day)
         call SetInfiltrated(InfiltratedRain+InfiltratedIrrigation &
                             +InfiltratedStorage)
         do layeri = 1, GetSoil_NrSoilLayers()
-            call SetSoilLayer_WaterContent(layeri, 0._dp)
+            call SetSoilLayer_WaterContent(layeri, 0._sp)
         end do
-        call SetTotalWaterContent_EndDay(0._dp)
+        call SetTotalWaterContent_EndDay(0._sp)
         Surf1 = GetSurfaceStorage()
-        call SetTotalSaltContent_EndDay(0._dp)
+        call SetTotalSaltContent_EndDay(0._sp)
 
         ! quality of irrigation water
         if (dayi < GetCrop_Day1()) then
@@ -2263,20 +2263,20 @@ subroutine CheckWaterSaltBalance(dayi,&
 
         do compi = 1, GetNrCompartments()
             call SetTotalWaterContent_EndDay(GetTotalWaterContent_EndDay() &
-               + GetCompartment_theta(compi)*1000._dp*&
+               + GetCompartment_theta(compi)*1000._sp*&
                  GetCompartment_Thickness(compi) &
-               * (1._dp -&
-                  GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
+               * (1._sp -&
+                  GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
             call SetSoilLayer_WaterContent(GetCompartment_Layer(compi), &
                     GetSoilLayer_WaterContent(GetCompartment_Layer(compi)) &
-                    + GetCompartment_theta(compi)*1000._dp*&
+                    + GetCompartment_theta(compi)*1000._sp*&
                           GetCompartment_theta(compi) &
-                    * (1._dp - &
-                       GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp))
+                    * (1._sp - &
+                       GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp))
             do celli = 1, GetSoilLayer_SCP1(GetCompartment_Layer(compi))
                 call SetTotalSaltContent_EndDay(GetTotalSaltContent_EndDay() &
                    + (GetCompartment_Salt(compi, celli) + &
-                      GetCompartment_Depo(compi, celli))/100._dp) ! Mg/ha
+                      GetCompartment_Depo(compi, celli))/100._sp) ! Mg/ha
             end do
         end do
         call SetTotalWaterContent_ErrorDay(GetTotalWaterContent_BeginDay() &
@@ -2285,10 +2285,10 @@ subroutine CheckWaterSaltBalance(dayi,&
                 + GetTact()+Surf1-GetRain()-GetIrrigation()-GetCRwater()-HorizontalWaterFlow))
         call SetTotalSaltContent_ErrorDay(GetTotalSaltContent_BeginDay() &
                 - GetTotalSaltContent_EndDay() & ! Mg/ha
-                + InfiltratedIrrigation*ECw*Equiv/100._dp &
-                + InfiltratedStorage*ECinfilt*Equiv/100._dp &
-                - GetDrain()*ECdrain*Equiv/100._dp &
-                + GetCRsalt()/100._dp &
+                + InfiltratedIrrigation*ECw*Equiv/100._sp &
+                + InfiltratedStorage*ECinfilt*Equiv/100._sp &
+                - GetDrain()*ECdrain*Equiv/100._sp &
+                + GetCRsalt()/100._sp &
                 + HorizontalSaltFlow)
         call SetSumWaBal_Epot(GetSumWaBal_Epot() + GetEpot())
         call SetSumWaBal_Tpot(GetSumWaBal_Tpot() + GetTpot())
@@ -2306,10 +2306,10 @@ subroutine CheckWaterSaltBalance(dayi,&
         if (((dayi-GetSimulation_DelayedDays()) >= GetCrop_Day1() ) &
             .and. ((dayi-GetSimulation_DelayedDays()) <= GetCrop_DayN())) then
             ! in growing cycle
-            if (GetSumWaBal_Biomass() > 0._dp) then
+            if (GetSumWaBal_Biomass() > 0._sp) then
                 ! biomass was already produced (i.e. CC present)
                 ! and still canopy cover
-                if (GetCCiActual() > 0._dp) then
+                if (GetCCiActual() > 0._sp) then
                     call SetSumWaBal_ECropCycle(GetSumWaBal_ECropCycle() &
                            + GetEact())
                 end if
@@ -2318,31 +2318,31 @@ subroutine CheckWaterSaltBalance(dayi,&
                            + GetEact()) ! before germination
             end if
         end if
-        call SetSumWaBal_CRsalt(GetSumWaBal_CRsalt() + GetCRsalt()/100._dp)
+        call SetSumWaBal_CRsalt(GetSumWaBal_CRsalt() + GetCRsalt()/100._sp)
         call SetSumWaBal_SaltIn(GetSumWaBal_SaltIn() + &
-               (InfiltratedIrrigation*ECw+InfiltratedStorage*ECinfilt)*Equiv/100._dp)
+               (InfiltratedIrrigation*ECw+InfiltratedStorage*ECinfilt)*Equiv/100._sp)
         call SetSumWaBal_SaltOut(GetSumWaBal_SaltOut() + &
-                GetDrain()*ECdrain*Equiv/100._dp)
+                GetDrain()*ECdrain*Equiv/100._sp)
     end select
 end subroutine CheckWaterSaltBalance
 
 
 subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
                                  InfiltratedStorage, SubDrain, dayi)
-    real(dp), intent(in) :: InfiltratedRain
-    real(dp), intent(in) :: InfiltratedIrrigation
-    real(dp), intent(in) :: InfiltratedStorage
+    real(sp), intent(in) :: InfiltratedRain
+    real(sp), intent(in) :: InfiltratedIrrigation
+    real(sp), intent(in) :: InfiltratedStorage
     integer(int32), intent(in) :: dayi
-    real(dp), intent(in) :: SubDrain
+    real(sp), intent(in) :: SubDrain
 
-    real(dp) ::   SaltIN, SaltOUT, mmIN, DeltaTheta, Theta, SAT, &
+    real(sp) ::   SaltIN, SaltOUT, mmIN, DeltaTheta, Theta, SAT, &
                   mm1, mm2, Dx, limit, Dif, UL
-    real(dp) :: Zr, depthi, ECsubdrain, ECcel, DeltaZ, ECsw1, ECsw2, &
+    real(sp) :: Zr, depthi, ECsubdrain, ECcel, DeltaZ, ECsw1, ECsw2, &
                 ECsw, SM1, SM2, DS1, DS2, DS
 
     integer(int32) :: compi, celi, celiM1, Ni
-    real(dp) :: ECw
-    real(dp) :: Salt_temp, Salt2_temp, Depo_temp, Depo2_temp
+    real(sp) :: ECw
+    real(sp) :: Salt_temp, Salt2_temp, Depo_temp, Depo2_temp
     type(CompartmentIndividual) :: Compi_temp
 
 
@@ -2361,14 +2361,14 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
     ! initialise salt balance
     SaltIN = InfiltratedIrrigation*ECw*Equiv &
             + InfiltratedStorage*GetECstorage()*Equiv
-    call SetSaltInfiltr(SaltIN/100._dp)
+    call SetSaltInfiltr(SaltIN/100._sp)
                 ! salt infiltrated in soil profile kg/ha
-    SaltOut= 0._dp
+    SaltOut= 0._sp
 
 
     do compi = 1, GetNrCompartments()
         ! 0. Set compartment parameters
-        SAT = (GetSoilLayer_SAT(GetCompartment_Layer(compi)))/100._dp  ! m3/m3
+        SAT = (GetSoilLayer_SAT(GetCompartment_Layer(compi)))/100._sp  ! m3/m3
         UL = GetSoilLayer_UL(GetCompartment_Layer(compi)) ! m3/m3
                                       ! Upper limit of SC salt cel
         Dx = GetSoilLayer_Dx(GetCompartment_Layer(compi)) ! m3/m3
@@ -2376,12 +2376,12 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
 
         ! 1. Initial situation before drain and infiltration
         DeltaTheta = mmIN &
-           /(1000._dp*GetCompartment_Thickness(compi) &
-               *(1._dp - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                  /100._dp))
+           /(1000._sp*GetCompartment_Thickness(compi) &
+               *(1._sp - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
+                                                                  /100._sp))
         Theta = GetCompartment_theta(compi) - DeltaTheta &
                 + GetCompartment_fluxout(compi) &
-                        /(1000._dp*GetCompartment_Thickness(compi))
+                        /(1000._sp*GetCompartment_Thickness(compi))
 
         ! 2. Determine active SaltCels and Add IN
         Theta = Theta + DeltaTheta
@@ -2396,7 +2396,7 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         if (celi == 0) then
             celi = 1  ! XXX would be best to avoid celi=0 to begin with
         end if
-        if (DeltaTheta > 0._dp) then
+        if (DeltaTheta > 0._sp) then
             call SetCompartment_Salt(compi, celi, &
                                      GetCompartment_Salt(compi, celi) &
                                         + SaltIN)
@@ -2405,22 +2405,22 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         ! 3. Mixing
         if (celi > 1) then
             do Ni = 1, (celi-1)
-                mm1 = Dx*1000._dp*GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                mm1 = Dx*1000._sp*GetCompartment_Thickness(compi) &
+                        * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                 if (Ni < GetSoilLayer_SC(GetCompartment_Layer(compi))) then
                     mm2 = mm1
                 elseif (Theta > SAT) then
-                    mm2 = (Theta-UL)*1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                    mm2 = (Theta-UL)*1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                 else
-                    mm2 = (SAT-UL)*1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                    mm2 = (SAT-UL)*1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                 end if
                 Dif = GetSoilLayer_SaltMobility_i(GetCompartment_Layer(compi), &
                                                     Ni)
@@ -2438,33 +2438,33 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         end if
 
         ! 4. Drain
-        SaltOut = 0._dp
-        if (GetCompartment_fluxout(compi) > 0._dp) then
+        SaltOut = 0._sp
+        if (GetCompartment_fluxout(compi) > 0._sp) then
             DeltaTheta = GetCompartment_fluxout(compi) &
-                         /(1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                         /(1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                     /100._dp))
-            do while (DeltaTheta > 0._dp)
+                                                                     /100._sp))
+            do while (DeltaTheta > 0._sp)
                 if (celi < GetSoilLayer_SCP1(GetCompartment_Layer(compi))) then
-                    limit = (celi-1._dp)*Dx
+                    limit = (celi-1._sp)*Dx
                 else
                     limit = UL
                 end if
                 if ((Theta - DeltaTheta) < limit) then
                     SaltOut = SaltOut + GetCompartment_Salt(compi, celi) &
                               + GetCompartment_Depo(compi, celi)
-                    call SetCompartment_Salt(compi, celi, 0._dp)
-                    mm1 = (Theta - limit)*1000._dp &
-                           * GetCompartment_Thickness(compi) * (1._dp &
+                    call SetCompartment_Salt(compi, celi, 0._sp)
+                    mm1 = (Theta - limit)*1000._sp &
+                           * GetCompartment_Thickness(compi) * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                     if (SaltOut > (GetSimulParam_SaltSolub() * mm1)) then
                         call SetCompartment_Depo(compi, celi, &
                                    SaltOut - (GetSimulParam_SaltSolub() * mm1))
                         SaltOut = (GetSimulParam_SaltSolub() * mm1)
                     else
-                        call SetCompartment_Depo(compi, celi, 0._dp)
+                        call SetCompartment_Depo(compi, celi, 0._sp)
                     end if
                     DeltaTheta = DeltaTheta - (Theta-limit)
                     Theta = limit
@@ -2476,14 +2476,14 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
                               * (DeltaTheta/(Theta-limit))
                     call SetCompartment_Salt(compi, celi, &
                                              GetCompartment_Salt(compi, celi) &
-                                             * (1._dp-DeltaTheta/(Theta-limit)))
+                                             * (1._sp-DeltaTheta/(Theta-limit)))
                     call SetCompartment_Depo(compi, celi, &
                                              GetCompartment_Depo(compi, celi) &
-                                             * (1._dp-DeltaTheta/(Theta-limit)))
-                    mm1 = DeltaTheta*1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                                             * (1._sp-DeltaTheta/(Theta-limit)))
+                    mm1 = DeltaTheta*1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                     if (SaltOut > (GetSimulParam_SaltSolub() * mm1)) then
                         call SetCompartment_Depo(&
                                 compi, celi, &
@@ -2492,14 +2492,14 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
                                                                     * mm1))
                         SaltOut = (GetSimulParam_SaltSolub() * mm1)
                     end if
-                    DeltaTheta = 0._dp
+                    DeltaTheta = 0._sp
                     mm1 = GetSoilLayer_Dx(GetCompartment_Layer(compi)) &
-                            *1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                            *1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
                     if (celi == GetSoilLayer_SCP1(GetCompartment_Layer(compi))) then
-                        mm1 = 2._dp*mm1
+                        mm1 = 2._sp*mm1
                     end if
                     Salt_temp = GetCompartment_Salt(compi, celi)
                     Depo_temp = GetCompartment_Depo(compi, celi)
@@ -2514,16 +2514,16 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         SaltIN = SaltOUT
     end do
 
-    if (GetDrain() > 0.001_dp) then
+    if (GetDrain() > 0.001_sp) then
         call SetECdrain(SaltOUT/(GetDrain()*Equiv))
     end if
 
     ! 5. vertical salt diffusion
     celi = ActiveCells(GetCompartment_i(1))
-    SM2 = GetSoilLayer_SaltMobility_i(GetCompartment_Layer(1), celi)/4._dp
+    SM2 = GetSoilLayer_SaltMobility_i(GetCompartment_Layer(1), celi)/4._sp
     ECsw2 = ECswComp(GetCompartment_i(1), .false.) ! not at FC
-    mm2 = GetCompartment_Theta(1)*1000._dp*GetCompartment_Thickness(1) &
-            * (1._dp - GetSoilLayer_GravelVol(GetCompartment_Layer(1))/100._dp)
+    mm2 = GetCompartment_Theta(1)*1000._sp*GetCompartment_Thickness(1) &
+            * (1._sp - GetSoilLayer_GravelVol(GetCompartment_Layer(1))/100._sp)
     do compi = 2, GetNrCompartments()
         celiM1 = celi
         SM1 = SM2
@@ -2531,13 +2531,13 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         mm1 = mm2
         celi =  ActiveCells(GetCompartment_i(compi))
         SM2 = GetSoilLayer_SaltMobility_i(GetCompartment_Layer(compi), &
-                                          celi)/4._dp
+                                          celi)/4._sp
         ECsw2 = ECswComp(GetCompartment_i(compi), .false.) ! not at FC
-        mm2 = GetCompartment_Theta(compi)*1000._dp &
+        mm2 = GetCompartment_Theta(compi)*1000._sp &
                 * GetCompartment_Thickness(compi) &
-                * (1._dp &
+                * (1._sp &
                     - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                /100._dp)
+                                                                /100._sp)
         ECsw = (ECsw1*mm1+ECsw2*mm2)/(mm1+mm2)
         DS1 = (ECsw1 - (ECsw1+(ECsw-ECsw1)*SM1))*mm1*Equiv
         DS2 = (ECsw2 - (ECsw2+(ECsw-ECsw2)*SM2))*mm2*Equiv
@@ -2546,14 +2546,14 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
         else
             DS = abs(DS1)
         end if
-        if (DS > 0._dp) then
+        if (DS > 0._sp) then
             if (ECsw1 > ECsw) then
-                DS = DS*(-1._dp)
+                DS = DS*(-1._sp)
             end if
             Compi_temp = GetCompartment_i(compi-1)
             call MoveSaltTo(Compi_temp, celiM1, DS)
             call SetCompartment_i(compi-1, Compi_temp)
-            DS = DS*(-1._dp)
+            DS = DS*(-1._sp)
             Compi_temp = GetCompartment_i(compi)
             call MoveSaltTo(Compi_temp, celi, DS)
             call SetCompartment_i(compi, Compi_temp)
@@ -2562,14 +2562,14 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
 
     ! 6. Internal salt movement as a result of SubDrain
     ! SubDrain part of non-effective rainfall (10-day & monthly input)
-    if (SubDrain > 0._dp) then
+    if (SubDrain > 0._sp) then
         Zr = GetRootingDepth()
-        if (Zr >= epsilon(0._dp)) then
-            Zr = (GetSimulParam_EvapZmax()/100._dp) ! in meter
+        if (Zr >= epsilon(0._sp)) then
+            Zr = (GetSimulParam_EvapZmax()/100._sp) ! in meter
         end if
         compi = 0
-        depthi = 0._dp
-        ECsubdrain = 0._dp
+        depthi = 0._sp
+        ECsubdrain = 0._sp
 
         ! extract
         loop: do
@@ -2582,17 +2582,17 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
             end if
             celi = ActiveCells(GetCompartment_i(compi))
             if (celi < GetSoilLayer_SCP1(GetCompartment_Layer(compi))) then
-                mm1 = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000._dp &
+                mm1 = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000._sp &
                         * GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                        * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
             else
-                mm1 = 2._dp*GetSoilLayer_Dx(GetCompartment_Layer(compi)) &
-                        *1000._dp*GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                mm1 = 2._sp*GetSoilLayer_Dx(GetCompartment_Layer(compi)) &
+                        *1000._sp*GetCompartment_Thickness(compi) &
+                        * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
             end if
             ECcel = GetCompartment_Salt(compi, celi)/(mm1*Equiv)
             ECsubdrain = (ECcel*mm1*(DeltaZ/GetCompartment_Thickness(compi)) &
@@ -2601,7 +2601,7 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
                                                               +SubDrain)
             call SetCompartment_Salt(&
                     compi, celi, &
-                    (1._dp - (DeltaZ/GetCompartment_Thickness(compi))) &
+                    (1._sp - (DeltaZ/GetCompartment_Thickness(compi))) &
                         * GetCompartment_Salt(compi, celi) &
                     + (DeltaZ/GetCompartment_Thickness(compi)) &
                         *ECsubdrain*mm1*Equiv)
@@ -2621,17 +2621,17 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
             compi = compi + 1
             celi = ActiveCells(GetCompartment_i(compi))
             if (celi < GetSoilLayer_SCP1(GetCompartment_Layer(compi))) then
-                mm1 = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000._dp &
+                mm1 = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000._sp &
                         * GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                        * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
             else
-                mm1 = 2._dp*GetSoilLayer_Dx(GetCompartment_Layer(compi)) &
-                        *1000._dp*GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                mm1 = 2._sp*GetSoilLayer_Dx(GetCompartment_Layer(compi)) &
+                        *1000._sp*GetCompartment_Thickness(compi) &
+                        * (1._sp &
                           - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                      /100._dp)
+                                                                      /100._sp)
             end if
             call SetCompartment_Salt(compi, celi, &
                                      GetCompartment_Salt(compi, celi) &
@@ -2649,15 +2649,15 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
 
 
     subroutine Mixing(Dif, mm1, mm2, Salt1, Salt2, Depo1, Depo2)
-        real(dp), intent(in) :: Dif
-        real(dp), intent(in) :: mm1
-        real(dp), intent(in) :: mm2
-        real(dp), intent(inout) :: Salt1
-        real(dp), intent(inout) :: Salt2
-        real(dp), intent(inout) :: Depo1
-        real(dp), intent(inout) :: Depo2
+        real(sp), intent(in) :: Dif
+        real(sp), intent(in) :: mm1
+        real(sp), intent(in) :: mm2
+        real(sp), intent(inout) :: Salt1
+        real(sp), intent(inout) :: Salt2
+        real(sp), intent(inout) :: Depo1
+        real(sp), intent(inout) :: Depo2
 
-        real(dp) :: EC1, EC2, ECmix
+        real(sp) :: EC1, EC2, ECmix
 
         call SaltSolutionDeposit(mm1, Salt1, Depo1)
         EC1 = Salt1/(mm1*Equiv)
@@ -2676,30 +2676,30 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
     subroutine MoveSaltTo(Compx, celx, DS)
         type(CompartmentIndividual), intent(inout) :: Compx
         integer(int32), intent(in) :: celx
-        real(dp), intent(in) :: DS
+        real(sp), intent(in) :: DS
 
-        real(dp) :: mmx
+        real(sp) :: mmx
         integer(int32) :: celx_local
 
         celx_local = celx
-        if (DS >= epsilon(0._dp)) then
+        if (DS >= epsilon(0._sp)) then
             Compx%Salt(celx_local) = Compx%Salt(celx_local) + DS
-            mmx = GetSoilLayer_Dx(Compx%Layer)*1000._dp*Compx%Thickness &
-                    * (1._dp - GetSoilLayer_GravelVol(Compx%Layer)/100._dp)
+            mmx = GetSoilLayer_Dx(Compx%Layer)*1000._sp*Compx%Thickness &
+                    * (1._sp - GetSoilLayer_GravelVol(Compx%Layer)/100._sp)
             if (celx_local == GetSoilLayer_SCP1(Compx%Layer)) then
-                mmx = 2._dp*mmx
+                mmx = 2._sp*mmx
             end if
             call SaltSolutionDeposit(mmx, Compx%Salt(celx_local), &
                                      Compx%Depo(celx_local))
         else
             celx_local = GetSoilLayer_SCP1(Compx%Layer)
             Compx%Salt(celx_local) = Compx%Salt(celx_local) + DS
-            mmx = 2._dp*GetSoilLayer_Dx(Compx%Layer)*1000._dp*Compx%Thickness &
-                    * (1._dp - GetSoilLayer_GravelVol(Compx%Layer)/100._dp)
+            mmx = 2._sp*GetSoilLayer_Dx(Compx%Layer)*1000._sp*Compx%Thickness &
+                    * (1._sp - GetSoilLayer_GravelVol(Compx%Layer)/100._sp)
             call SaltSolutionDeposit(mmx, Compx%Salt(celx_local), &
                                      Compx%Depo(celx_local))
-            mmx = mmx/2._dp
-            do while (Compx%Salt(celx_local) < 0._dp)
+            mmx = mmx/2._sp
+            do while (Compx%Salt(celx_local) < 0._sp)
                 ! index zero problem
                 ! TO DO: likely also happened with original Pascal code, 
                 !        but Pascal code tolerates it
@@ -2708,7 +2708,7 @@ subroutine calculate_saltcontent(InfiltratedRain, InfiltratedIrrigation, &
                 end if
                 Compx%Salt(celx_local-1) = Compx%Salt(celx_local-1) &
                                            + Compx%Salt(celx_local)
-                Compx%Salt(celx_local) = 0._dp
+                Compx%Salt(celx_local) = 0._sp
                 celx_local = celx_local - 1
                 call SaltSolutionDeposit(mmx, Compx%Salt(celx_local), &
                                          Compx%Depo(celx_local))
@@ -2720,27 +2720,27 @@ end subroutine calculate_saltcontent
 
 subroutine calculate_Extra_runoff(InfiltratedRain, InfiltratedIrrigation, &
                                   InfiltratedStorage, SubDrain)
-    real(dp), intent(inout) :: InfiltratedRain
-    real(dp), intent(inout) :: InfiltratedIrrigation
-    real(dp), intent(inout) :: InfiltratedStorage
-    real(dp), intent(inout) :: SubDrain
+    real(sp), intent(inout) :: InfiltratedRain
+    real(sp), intent(inout) :: InfiltratedIrrigation
+    real(sp), intent(inout) :: InfiltratedStorage
+    real(sp), intent(inout) :: SubDrain
 
-    real(dp) :: FracSubDrain
+    real(sp) :: FracSubDrain
 
-    InfiltratedStorage = 0._dp
+    InfiltratedStorage = 0._sp
     InfiltratedRain = GetRain() - GetRunoff()
-    if (InfiltratedRain > 0._dp) then
+    if (InfiltratedRain > 0._sp) then
         FracSubDrain = SubDrain/InfiltratedRain
     else
-        FracSubDrain = 0._dp
+        FracSubDrain = 0._sp
     end if
     if ((GetIrrigation()+InfiltratedRain) &
             > GetSoilLayer_InfRate(GetCompartment_Layer(1))) then
         if (GetIrrigation() > GetSoilLayer_InfRate(GetCompartment_Layer(1))) then
             InfiltratedIrrigation = GetSoilLayer_InfRate(GetCompartment_Layer(1))
             call SetRunoff(GetRain() + (GetIrrigation()-InfiltratedIrrigation))
-            InfiltratedRain = 0._dp
-            SubDrain = 0._dp
+            InfiltratedRain = 0._sp
+            SubDrain = 0._sp
         else
             InfiltratedIrrigation = GetIrrigation()
             InfiltratedRain = GetSoilLayer_InfRate(GetCompartment_Layer(1)) &
@@ -2757,25 +2757,25 @@ end subroutine calculate_Extra_runoff
 subroutine calculate_surfacestorage(InfiltratedRain, InfiltratedIrrigation, &
                                     InfiltratedStorage, ECinfilt, SubDrain, &
                                     dayi)
-    real(dp), intent(inout) :: InfiltratedRain
-    real(dp), intent(inout) :: InfiltratedIrrigation
-    real(dp), intent(inout) :: InfiltratedStorage
-    real(dp), intent(inout) :: ECinfilt
-    real(dp), intent(in) :: SubDrain
+    real(sp), intent(inout) :: InfiltratedRain
+    real(sp), intent(inout) :: InfiltratedIrrigation
+    real(sp), intent(inout) :: InfiltratedStorage
+    real(sp), intent(inout) :: ECinfilt
+    real(sp), intent(in) :: SubDrain
     integer(int32), intent(in) :: dayi
 
-    real(dp) :: Sum
-    real(dp) :: ECw
+    real(sp) :: Sum
+    real(sp) :: ECw
 
-    InfiltratedRain = 0._dp
-    InfiltratedIrrigation = 0._dp
+    InfiltratedRain = 0._sp
+    InfiltratedIrrigation = 0._sp
     if (GetRainRecord_DataType() == datatype_Daily) then
         Sum = GetSurfaceStorage() + GetIrrigation() + GetRain()
     else
         Sum = GetSurfaceStorage() + GetIrrigation() + GetRain() &
               - GetRunoff() - SubDrain
     end if
-    if (Sum > 0._dp) then
+    if (Sum > 0._sp) then
         ! quality of irrigation water
         if (dayi < GetCrop_Day1()) then
             ECw = GetIrriECw_PreSeason()
@@ -2802,34 +2802,34 @@ subroutine calculate_surfacestorage(InfiltratedRain, InfiltratedIrrigation, &
                 InfiltratedStorage = GetSurfaceStorage() + GetIrrigation()
                 InfiltratedRain = GetRain() - GetRunoff()
             end if
-            call SetSurfaceStorage(0._dp)
+            call SetSurfaceStorage(0._sp)
         end if
         ! extra run-off
-        if (GetSurfaceStorage() > (GetManagement_BundHeight()*1000._dp)) then
+        if (GetSurfaceStorage() > (GetManagement_BundHeight()*1000._sp)) then
             call SetRunoff(GetRunoff() &
                             + (GetSurfaceStorage() &
-                            - GetManagement_BundHeight()*1000._dp))
-            call SetSurfaceStorage(GetManagement_BundHeight()*1000._dp)
+                            - GetManagement_BundHeight()*1000._sp))
+            call SetSurfaceStorage(GetManagement_BundHeight()*1000._sp)
         end if
     else
-        InfiltratedStorage = 0._dp
-        call SetECstorage(0._dp)
+        InfiltratedStorage = 0._sp
+        call SetECstorage(0._sp)
     end if
 end subroutine calculate_surfacestorage
 
 
 subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
                                   InfiltratedStorage, SubDrain)
-    real(dp), intent(inout) :: InfiltratedRain
-    real(dp), intent(inout) :: InfiltratedIrrigation
-    real(dp), intent(inout) :: InfiltratedStorage
-    real(dp), intent(inout) :: SubDrain
+    real(sp), intent(inout) :: InfiltratedRain
+    real(sp), intent(inout) :: InfiltratedIrrigation
+    real(sp), intent(inout) :: InfiltratedStorage
+    real(sp), intent(inout) :: SubDrain
 
     integer(int32) :: compi, layeri, pre_comp
-    real(dp) :: RunoffIni, amount_still_to_store, factor, &
+    real(sp) :: RunoffIni, amount_still_to_store, factor, &
                 delta_theta_nul, delta_theta_SAT, theta_nul, &
                 drain_max, diff, excess
-    real(dp) :: EffecRain, Zr, depthi, DeltaZ, StorableMM
+    real(sp) :: EffecRain, Zr, depthi, DeltaZ, StorableMM
 
 
     ! calculate_infiltration
@@ -2837,14 +2837,14 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
     if (GetRainRecord_DataType() == datatype_Daily) then
         amount_still_to_store = InfiltratedRain + InfiltratedIrrigation &
                                 + InfiltratedStorage
-        EffecRain = 0._dp
+        EffecRain = 0._sp
     else
         amount_still_to_store = InfiltratedIrrigation + InfiltratedStorage
         EffecRain = InfiltratedRain - SubDrain
     end if
 
     ! B - INFILTRATION through TOP soil surface
-    if (amount_still_to_store > 0._dp) then
+    if (amount_still_to_store > 0._sp) then
         RunoffIni = GetRunoff()
         compi = 0
 
@@ -2859,37 +2859,37 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
             !2. Calculate theta nul
             !========================
             delta_theta_nul = amount_still_to_store &
-                             /(1000._dp * GetCompartment_Thickness(compi) &
-                              * (1._dp-GetSoilLayer_GravelVol(layeri)/100._dp))
+                             /(1000._sp * GetCompartment_Thickness(compi) &
+                              * (1._sp-GetSoilLayer_GravelVol(layeri)/100._sp))
             delta_theta_SAT = calculate_delta_theta(&
-                                GetSoilLayer_SAT(layeri)/100._dp, &
-                                GetSoilLayer_FC(layeri)/100._dp, &
+                                GetSoilLayer_SAT(layeri)/100._sp, &
+                                GetSoilLayer_FC(layeri)/100._sp, &
                                 layeri)
 
             if (delta_theta_nul < delta_theta_SAT) then
                 theta_nul = calculate_theta(delta_theta_nul, &
-                                            GetSoilLayer_FC(layeri)/100._dp, &
+                                            GetSoilLayer_FC(layeri)/100._sp, &
                                             layeri)
-                if (theta_nul <= (GetCompartment_FCadj(compi)/100._dp)) then
-                    theta_nul = GetCompartment_FCadj(compi)/100._dp
+                if (theta_nul <= (GetCompartment_FCadj(compi)/100._sp)) then
+                    theta_nul = GetCompartment_FCadj(compi)/100._sp
                     delta_theta_nul = calculate_delta_theta( &
                                         theta_nul, &
-                                        GetSoilLayer_FC(layeri)/100._dp, &
+                                        GetSoilLayer_FC(layeri)/100._sp, &
                                         layeri)
                 end if
-                if (theta_nul > GetSoilLayer_SAT(layeri)/100._dp) then
-                    theta_nul = GetSoilLayer_SAT(layeri)/100._dp
+                if (theta_nul > GetSoilLayer_SAT(layeri)/100._sp) then
+                    theta_nul = GetSoilLayer_SAT(layeri)/100._sp
                 end if
             else
-                theta_nul = GetSoilLayer_SAT(layeri)/100._dp
+                theta_nul = GetSoilLayer_SAT(layeri)/100._sp
                 delta_theta_nul = delta_theta_SAT
             end if
 
             !3. Calculate drain max
             !========================
-            drain_max = factor * delta_theta_nul * 1000._dp &
+            drain_max = factor * delta_theta_nul * 1000._sp &
                             * GetCompartment_Thickness(compi) &
-                            * (1._dp-GetSoilLayer_GravelVol(layeri)/100._dp)
+                            * (1._sp-GetSoilLayer_GravelVol(layeri)/100._sp)
             if ((GetCompartment_fluxout(compi) + drain_max) &
                         > GetSoilLayer_InfRate(layeri)) then
                 drain_max = GetSoilLayer_InfRate(layeri) &
@@ -2899,21 +2899,21 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
             !4. Store water
             !================
             diff = theta_nul - GetCompartment_theta(compi)
-            if (diff > 0._dp) then
+            if (diff > 0._sp) then
                 call SetCompartment_theta(compi, GetCompartment_theta(compi) &
                            + amount_still_to_store &
-                             /(1000._dp * GetCompartment_Thickness(compi) &
-                                 * (1._dp &
-                                    - GetSoilLayer_GravelVol(layeri)/100._dp)))
+                             /(1000._sp * GetCompartment_Thickness(compi) &
+                                 * (1._sp &
+                                    - GetSoilLayer_GravelVol(layeri)/100._sp)))
                 if (GetCompartment_theta(compi) > theta_nul) then
                     amount_still_to_store = (GetCompartment_theta(compi) &
                                                 - theta_nul) &
-                               * 1000._dp &
+                               * 1000._sp &
                                * GetCompartment_Thickness(compi) &
-                               * (1._dp-GetSoilLayer_GravelVol(layeri)/100._dp)
+                               * (1._sp-GetSoilLayer_GravelVol(layeri)/100._sp)
                     call SetCompartment_theta(compi, theta_nul)
                 else
-                    amount_still_to_store = 0.0_dp
+                    amount_still_to_store = 0.0_sp
                 end if
             end if
             call SetCompartment_fluxout(compi, GetCompartment_fluxout(compi) &
@@ -2922,12 +2922,12 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
             !5. Redistribute excess
             !========================
             excess = amount_still_to_store - drain_max
-            if (excess < 0._dp) then
-                excess = 0._dp
+            if (excess < 0._sp) then
+                excess = 0._sp
             end if
             amount_still_to_store = amount_still_to_store - excess
 
-            if (excess > 0._dp) then
+            if (excess > 0._sp) then
                 pre_comp = compi + 1
                 loop2: do
                     pre_comp = pre_comp - 1
@@ -2937,63 +2937,63 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
                                                            - excess)
                     call SetCompartment_theta(&
                             pre_comp, GetCompartment_theta(pre_comp) &
-                               + excess/(1000._dp &
+                               + excess/(1000._sp &
                                   * GetCompartment_Thickness(pre_comp) &
-                                  * (1._dp &
+                                  * (1._sp &
                         - GetSoilLayer_GravelVol(GetCompartment_Layer(pre_comp))&
-                                                                    /100._dp)))
+                                                                    /100._sp)))
                     if (GetCompartment_theta(pre_comp) &
-                            > GetSoilLayer_SAT(layeri)/100._dp) then
+                            > GetSoilLayer_SAT(layeri)/100._sp) then
                         excess = (GetCompartment_theta(pre_comp) &
-                            - GetSoilLayer_SAT(layeri)/100._dp) * 1000._dp &
+                            - GetSoilLayer_SAT(layeri)/100._sp) * 1000._sp &
                                 * GetCompartment_Thickness(pre_comp) &
-                                * (1._dp &
+                                * (1._sp &
                         -GetSoilLayer_GravelVol(GetCompartment_Layer(pre_comp))&
-                                                                      /100._dp)
+                                                                      /100._sp)
                         call SetCompartment_theta( &
                                 pre_comp, &
-                                GetSoilLayer_SAT(layeri)/100._dp)
+                                GetSoilLayer_SAT(layeri)/100._sp)
                     else
-                        excess = 0.0_dp
+                        excess = 0.0_sp
                     end if
-                    if ((excess < epsilon(0._dp)) .or. (pre_comp == 1)) exit loop2
+                    if ((excess < epsilon(0._sp)) .or. (pre_comp == 1)) exit loop2
                 end do loop2
-                if (excess > 0._dp) then
+                if (excess > 0._sp) then
                     call SetRunoff(GetRunoff() + excess)
                 end if
             end if
 
-            if ((amount_still_to_store <= epsilon(0._dp)) &
+            if ((amount_still_to_store <= epsilon(0._sp)) &
                     .or. (compi == GetNrCompartments())) exit loop1
         end do loop1
-        if (amount_still_to_store > 0._dp) then
+        if (amount_still_to_store > 0._sp) then
             call SetDrain(GetDrain() + amount_still_to_store)
         end if
 
         !6. Adjust infiltrated water
         !=============================
         if (GetRunoff() > RunoffIni) then
-            if (GetManagement_Bundheight() >= 0.01_dp) then
+            if (GetManagement_Bundheight() >= 0.01_sp) then
                 call SetSurfaceStorage(GetSurfaceStorage() &
                                         + (GetRunoff() &
                                         - RunoffIni))
                 InfiltratedStorage = InfiltratedStorage &
                                      - (GetRunoff()-RunoffIni)
                 if (GetSurfaceStorage() &
-                            > GetManagement_BundHeight()*1000._dp) then
+                            > GetManagement_BundHeight()*1000._sp) then
                     call SetRunoff(RunoffIni &
                                    + (GetSurfaceStorage() &
-                                        - GetManagement_BundHeight()*1000._dp))
-                    call SetSurfaceStorage(GetManagement_BundHeight()*1000._dp)
+                                        - GetManagement_BundHeight()*1000._sp))
+                    call SetSurfaceStorage(GetManagement_BundHeight()*1000._sp)
                 else
                     call SetRunoff(RunoffIni)
                 end if
             else
                 InfiltratedRain = InfiltratedRain - (GetRunoff()-RunoffIni)
-                if (InfiltratedRain < 0._dp) then
+                if (InfiltratedRain < 0._sp) then
                     InfiltratedIrrigation = InfiltratedIrrigation &
                                             + InfiltratedRain
-                    InfiltratedRain = 0._dp
+                    InfiltratedRain = 0._sp
                 end if
             end if
 
@@ -3002,16 +3002,16 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
     end if
 
     ! C - STORAGE in Subsoil (= SubDrain)
-    if (SubDrain > 0._dp) then
+    if (SubDrain > 0._sp) then
         amount_still_to_store = SubDrain
 
         ! Where to store
         Zr = GetRootingDepth()
-        if (Zr <= 0._dp) then
-            Zr = GetSimulParam_EvapZmax()/100._dp
+        if (Zr <= 0._sp) then
+            Zr = GetSimulParam_EvapZmax()/100._sp
         end if
         compi = 0
-        depthi = 0._dp
+        depthi = 0._sp
         loop3: do
             compi = compi + 1
             depthi = depthi + GetCompartment_Thickness(compi)
@@ -3021,45 +3021,45 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
         if (depthi > Zr) then
             DeltaZ = (depthi - Zr)
         else
-            DeltaZ = 0._dp
+            DeltaZ = 0._sp
         end if
 
         ! Store
-        do while((amount_still_to_store > 0._dp) &
+        do while((amount_still_to_store > 0._sp) &
                 .and. ((compi < GetNrCompartments()) &
-                    .or. (DeltaZ > 0._dp)))
-            if (abs(DeltaZ) < epsilon(0._dp)) then
+                    .or. (DeltaZ > 0._sp)))
+            if (abs(DeltaZ) < epsilon(0._sp)) then
                 compi = compi + 1
                 DeltaZ = GetCompartment_Thickness(compi)
             end if
             StorableMM = (GetSoilLayer_SAT(GetCompartment_Layer(compi))&
-                                                            /100._dp &
-                            - GetCompartment_Theta(compi)) * 1000._dp &
-                                 * DeltaZ * (1._dp &
+                                                            /100._sp &
+                            - GetCompartment_Theta(compi)) * 1000._sp &
+                                 * DeltaZ * (1._sp &
                      - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))&
-                                                                 /100._dp)
+                                                                 /100._sp)
             if (StorableMM > amount_still_to_store) then
                call SetCompartment_theta(&
                       compi, &
                       GetCompartment_Theta(compi) &
                        + (amount_still_to_store)&
-                          /(1000._dp*GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                          /(1000._sp*GetCompartment_Thickness(compi) &
+                            * (1._sp &
                     - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))&
-                                                                /100._dp)))
-                amount_still_to_store = 0._dp
+                                                                /100._sp)))
+                amount_still_to_store = 0._sp
             else
                 amount_still_to_store = amount_still_to_store - StorableMM
                 call SetCompartment_theta(&
                         compi, &
                         GetCompartment_Theta(compi) &
-                        + (StorableMM)/(1000._dp &
+                        + (StorableMM)/(1000._sp &
                             * GetCompartment_Thickness(compi) &
-                            * (1._dp &
+                            * (1._sp &
                      - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))&
-                                                                /100._dp)))
+                                                                /100._sp)))
             end if
-            DeltaZ = 0._dp
+            DeltaZ = 0._sp
             if (amount_still_to_store &
                   > GetSoilLayer_InfRate(GetCompartment_Layer(compi))) then
                 SubDrain = SubDrain &
@@ -3074,24 +3074,24 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
         end do
 
         ! excess
-        if (amount_still_to_store > 0._dp) then
+        if (amount_still_to_store > 0._sp) then
             call SetDrain(GetDrain() + amount_still_to_store)
         end if
         ! STORAGE in Subsoil (= SubDrain)
     end if
 
     ! D - STORAGE in Rootzone (= EffecRain)
-    if (EffecRain > 0._dp) then
+    if (EffecRain > 0._sp) then
         Zr = GetRootingDepth()
-        if (Zr <= epsilon(0._dp)) then
-            Zr = GetSimulParam_EvapZmax()/100._dp
+        if (Zr <= epsilon(0._sp)) then
+            Zr = GetSimulParam_EvapZmax()/100._sp
         end if
         amount_still_to_store = EffecRain
 
         ! Store
         ! step 1 fill to FC (from top to bottom)
         compi = 0
-        depthi = 0._dp
+        depthi = 0._sp
         loop4: do
             compi = compi + 1
             depthi = depthi + GetCompartment_Thickness(compi)
@@ -3101,43 +3101,43 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
                 DeltaZ = GetCompartment_Thickness(compi) &
                          - (depthi-Zr)
             end if
-            StorableMM = (GetCompartment_FCadj(compi)/100._dp &
-                            - GetCompartment_Theta(compi))*1000._dp*DeltaZ &
-                            * (1._dp &
+            StorableMM = (GetCompartment_FCadj(compi)/100._sp &
+                            - GetCompartment_Theta(compi))*1000._sp*DeltaZ &
+                            * (1._sp &
                       - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                  /100._dp)
-            if (StorableMM < 0._dp) then
-                StorableMM = 0._dp
+                                                                  /100._sp)
+            if (StorableMM < 0._sp) then
+                StorableMM = 0._sp
             end if
             if (StorableMM > amount_still_to_store) then
                 call SetCompartment_theta(&
                         compi, &
                         GetCompartment_Theta(compi) &
                         + amount_still_to_store &
-                            /(1000._dp*GetCompartment_Thickness(compi) &
-                              *(1._dp &
+                            /(1000._sp*GetCompartment_Thickness(compi) &
+                              *(1._sp &
                        - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                 /100._dp)))
-                amount_still_to_store = 0._dp
-            elseif (StorableMM > 0._dp) then
+                                                                 /100._sp)))
+                amount_still_to_store = 0._sp
+            elseif (StorableMM > 0._sp) then
                 call SetCompartment_theta(&
                         compi, &
                         GetCompartment_Theta(compi) &
                         + StorableMM &
-                            /(1000._dp*GetCompartment_Thickness(compi) &
-                                * (1._dp &
+                            /(1000._sp*GetCompartment_Thickness(compi) &
+                                * (1._sp &
                     - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                              /100._dp)))
+                                                              /100._sp)))
                 amount_still_to_store = amount_still_to_store - StorableMM
             end if
             if ((depthi >= Zr) &
                     .or. (compi >= GetNrCompartments()) &
-                    .or. (amount_still_to_store <= epsilon(0._dp))) &
+                    .or. (amount_still_to_store <= epsilon(0._sp))) &
                             exit loop4
         end do loop4
 
         ! step 2 fill to SATURATION (from bottom to top)
-        if (amount_still_to_store > 0._dp) then
+        if (amount_still_to_store > 0._sp) then
             loop5: do
                 if (depthi > Zr) then
                     DeltaZ = GetCompartment_Thickness(compi) - (depthi-Zr)
@@ -3145,59 +3145,59 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
                     DeltaZ = GetCompartment_Thickness(compi)
                 end if
                 StorableMM = (GetSoilLayer_SAT(GetCompartment_Layer(compi)) &
-                                                                   /100._dp &
-                             - GetCompartment_Theta(compi))*1000._dp*DeltaZ &
-                                * (1._dp &
+                                                                   /100._sp &
+                             - GetCompartment_Theta(compi))*1000._sp*DeltaZ &
+                                * (1._sp &
                       - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                  /100._dp)
-                if (StorableMM < 0._dp) then
-                    StorableMM = 0._dp
+                                                                  /100._sp)
+                if (StorableMM < 0._sp) then
+                    StorableMM = 0._sp
                 end if
                 if (StorableMM > amount_still_to_store) then
                     call SetCompartment_theta(&
                             compi, &
                             GetCompartment_theta(compi) &
                             + amount_still_to_store &
-                                /(1000._dp*GetCompartment_Thickness(compi) &
-                                    * (1._dp &
+                                /(1000._sp*GetCompartment_Thickness(compi) &
+                                    * (1._sp &
                       - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                /100._dp)))
-                    amount_still_to_store = 0._dp
-                elseif (StorableMM > 0._dp) then
+                                                                /100._sp)))
+                    amount_still_to_store = 0._sp
+                elseif (StorableMM > 0._sp) then
                     call SetCompartment_theta(&
                             compi, &
                             GetCompartment_Theta(compi) &
                             + StorableMM &
-                                /(1000._dp*GetCompartment_Thickness(compi) &
-                                    *(1._dp &
+                                /(1000._sp*GetCompartment_Thickness(compi) &
+                                    *(1._sp &
                       - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                /100._dp)))
+                                                                /100._sp)))
                     amount_still_to_store = amount_still_to_store &
                                            - StorableMM
                 end if
                 compi = compi - 1
                 depthi = depthi - GetCompartment_Thickness(compi)
                 if ((compi == 0) &
-                    .or. (amount_still_to_store <= epsilon(0._dp))) &
+                    .or. (amount_still_to_store <= epsilon(0._sp))) &
                             exit loop5
             end do loop5
         end if
 
         ! excess
-        if (amount_still_to_store > 0._dp) then
-            if (InfiltratedRain > 0._dp) then
+        if (amount_still_to_store > 0._sp) then
+            if (InfiltratedRain > 0._sp) then
                 InfiltratedRain = InfiltratedRain - amount_still_to_store
             end if
-            if (GetManagement_Bundheight() >= 0.01_dp) then
+            if (GetManagement_Bundheight() >= 0.01_sp) then
                 call SetSurfaceStorage(GetSurfaceStorage() &
                                       + amount_still_to_store)
                 if (GetSurfaceStorage() &
-                        > (GetManagement_BundHeight()*1000._dp)) then
+                        > (GetManagement_BundHeight()*1000._sp)) then
                     call SetRunoff(GetRunoff() &
                                    + (GetSurfaceStorage() &
-                                   - GetManagement_BundHeight()*1000._dp))
+                                   - GetManagement_BundHeight()*1000._sp))
                     call SetSurfaceStorage(GetManagement_BundHeight() &
-                                                            *1000._dp)
+                                                            *1000._sp)
                 end if
             else
                 call SetRunoff(GetRunoff() + amount_still_to_store)
@@ -3210,23 +3210,23 @@ subroutine calculate_infiltration(InfiltratedRain, InfiltratedIrrigation, &
     contains
 
 
-    real(dp) function Calculate_factor(layeri, compi)
+    real(sp) function Calculate_factor(layeri, compi)
         integer(int32), intent(in) :: layeri
         integer(int32), intent(in) :: compi
 
-        real(dp) :: delta_theta_SAT
+        real(sp) :: delta_theta_SAT
 
-        delta_theta_SAT = calculate_delta_theta(GetSoilLayer_SAT(layeri)/100._dp, &
-                                                GetSoilLayer_FC(layeri)/100._dp, &
+        delta_theta_SAT = calculate_delta_theta(GetSoilLayer_SAT(layeri)/100._sp, &
+                                                GetSoilLayer_FC(layeri)/100._sp, &
                                                 layeri)
-        if (delta_theta_SAT > 0._dp) then
+        if (delta_theta_SAT > 0._sp) then
             Calculate_factor = GetSoilLayer_InfRate(layeri)&
-                                /(delta_theta_SAT * 1000._dp &
+                                /(delta_theta_SAT * 1000._sp &
                                     * GetCompartment_Thickness(compi) &
-                                    * (1._dp-GetSoilLayer_GravelVol(layeri) &
-                                                                    /100._dp))
+                                    * (1._sp-GetSoilLayer_GravelVol(layeri) &
+                                                                    /100._sp))
         else
-            Calculate_factor = 1._dp
+            Calculate_factor = 1._sp
         end if
     end function Calculate_factor
 end subroutine calculate_infiltration
@@ -3238,26 +3238,26 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                            StressSenescence, TimeSenescence, NoMoreCrop, &
                            CDCTotal, GDDayFraction, &
                            GDDayi, GDDCDCTotal, GDDTadj)
-    real(dp), intent(in) :: CCxTotal
-    real(dp), intent(in) :: CCoTotal
-    real(dp), intent(inout) :: StressLeaf
-    real(dp), intent(in) :: FracAssim
+    real(sp), intent(in) :: CCxTotal
+    real(sp), intent(in) :: CCoTotal
+    real(sp), intent(inout) :: StressLeaf
+    real(sp), intent(in) :: FracAssim
     logical, intent(in) :: MobilizationON
     logical, intent(in) :: StorageON
-    real(dp), intent(in) :: SumGDDAdjCC
+    real(sp), intent(in) :: SumGDDAdjCC
     integer(int32), intent(in) :: VirtualTimeCC
-    real(dp), intent(inout) :: StressSenescence
-    real(dp), intent(inout) :: TimeSenescence
+    real(sp), intent(inout) :: StressSenescence
+    real(sp), intent(inout) :: TimeSenescence
     logical, intent(inout) :: NoMoreCrop
-    real(dp), intent(in) :: CDCTotal
-    real(dp), intent(in) :: GDDayFraction
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(in) :: GDDCDCTotal
+    real(sp), intent(in) :: CDCTotal
+    real(sp), intent(in) :: GDDayFraction
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(in) :: GDDCDCTotal
     integer(int32), intent(in) :: GDDTadj
 
-    real(dp), parameter :: CCdormant = 0.05_dp
+    real(sp), parameter :: CCdormant = 0.05_sp
 
-    real(dp) :: pLeafLLAct , GDDCGCadjusted, GDDCDCadjusted, &
+    real(sp) :: pLeafLLAct , GDDCGCadjusted, GDDCDCadjusted, &
                 CCiSen, GDDtTemp, CCxSF, CGCGDDSF, CCxSFCD, &
                 RatDGDD, KsRED, CCibis
     integer(int32) :: GDDtFinalCCx
@@ -3265,31 +3265,31 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
     logical :: TheSenescenceON
 
     !! test Version 6.2
-    real(dp) :: KsSen
-    real(dp) :: Crop_pLeafAct_temp
-    real(dp) :: Crop_pSenAct_temp
-    real(dp) :: Crop_CCxAdjusted_temp
+    real(sp) :: KsSen
+    real(sp) :: Crop_pLeafAct_temp
+    real(sp) :: Crop_pSenAct_temp
+    real(sp) :: Crop_CCxAdjusted_temp
 
 
-    if ((SumGDDadjCC - GetCrop_GDDaysToGermination() < epsilon(0._dp)) &
+    if ((SumGDDadjCC - GetCrop_GDDaysToGermination() < epsilon(0._sp)) &
           .or. (roundc(SumGDDadjCC, mold=1) > GetCrop_GDDaysToHarvest())) then
-        call SetCCiActual(0._dp)
+        call SetCCiActual(0._sp)
     else
         ! growing season (once germinated)
         ! 1. find some parameters
         CGCGDDSF = GetCrop_GDDCGC() &
-                    * (1._dp - GetSimulation_EffectStress_RedCGC()/100._dp)
+                    * (1._sp - GetSimulation_EffectStress_RedCGC()/100._sp)
         GDDCGCadjusted = CGCGDDSF
 
-        RatDGDD = 1._dp
+        RatDGDD = 1._sp
         if (GetCrop_GDDaysToFullCanopySF() < GetCrop_GDDaysToSenescence()) then
             RatDGDD = (GetCrop_DaysToSenescence() &
                         - GetCrop_DaysToFullCanopySF()) &
                       /real(GetCrop_GDDaysToSenescence() &
-                        - GetCrop_GDDaysToFullCanopySF(), kind=dp)
+                        - GetCrop_GDDaysToFullCanopySF(), kind=sp)
         end if
 
-        CCxSF = CCxTotal*(1._dp - GetSimulation_EffectStress_RedCCX()/100._dp)
+        CCxSF = CCxTotal*(1._sp - GetSimulation_EffectStress_RedCCX()/100._sp)
         ! maximum canopy cover than can be reached
         ! (considering soil fertility/salinity, weed stress)
         if (SumGDDadjCC <= GetCrop_GDDaysToFullCanopySF()) then
@@ -3317,16 +3317,16 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
             else
                 CCxSFCD = CCxSF &
                           - (RatDGDD &
-                                * GetSimulation_EffectStress_CDecline()/100._dp) &
+                                * GetSimulation_EffectStress_CDecline()/100._sp) &
                           * (GetCrop_GDDaysToSenescence() &
                                 - GetCrop_GDDaysToFullCanopySF())
             end if
-            if (CCxSFCD < 0._dp) then
-                CCxSFCD = 0._dp
+            if (CCxSFCD < 0._sp) then
+                CCxSFCD = 0._sp
             end if
         end if
         StressLeaf = undef_int
-        if ((abs(SumGDDadjCC - GetCrop_GDDaysToGermination()) < epsilon(0._dp)) &
+        if ((abs(SumGDDadjCC - GetCrop_GDDaysToGermination()) < epsilon(0._sp)) &
                 .and. (GetCrop_DaysToCCini() == 0)) then
             call SetCCiPrev(CCoTotal)
         end if
@@ -3343,7 +3343,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                + roundc(GDDayFraction &
                                         * (GetCrop_GDDaysToFlowering() &
                                             + (GetCrop_GDDLengthFlowering() &
-                                                                    /2._dp) &
+                                                                    /2._sp) &
                                             + GDDTadj &
                                             + GetCrop_GDDaysToGermination() &
                                             - GetCrop_GDDaysToFullCanopy()), &
@@ -3351,7 +3351,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
             else
                 ! sown or transplant
                 GDDtFinalCCx = GetCrop_GDDaysToFlowering() &
-                               + roundc(GetCrop_GDDLengthFlowering()/2._dp, &
+                               + roundc(GetCrop_GDDLengthFlowering()/2._sp, &
                                                                     mold=1)
             end if
             if (GDDtFinalCCx > GetCrop_GDDaysToSenescence()) then
@@ -3374,7 +3374,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
             if ((GetCCiPrev() <= GetCrop_CCoAdjusted()) &
                 .or. (SumGDDadjCC <= GDDayi) &
                 .or. ((GetSimulation_ProtectedSeedling()) &
-                        .and. (GetCCiPrev() <= (1.25_dp * CCoTotal)))) then
+                        .and. (GetCCiPrev() <= (1.25_sp * CCoTotal)))) then
                 ! 2.a First day or very small CC as a result of senescence
                 ! (no adjustment for leaf stress)
                 if (GetSimulation_ProtectedSeedling()) then
@@ -3392,7 +3392,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                  GetCrop_ModeCycle(), &
                                  GetSimulation_EffectStress_RedCGC(), &
                                  GetSimulation_EffectStress_RedCCX()))
-                    if (GetCCiActual() > (1.25_dp * CCoTotal)) then
+                    if (GetCCiActual() > (1.25_sp * CCoTotal)) then
                         call SetSimulation_ProtectedSeedling(.false.)
                     end if
                 else
@@ -3400,17 +3400,17 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                 end if
             ! 2.b CC > CCo
             else
-                if (GetCCiPrev() < (0.97999_dp*CCxSF)) then
+                if (GetCCiPrev() < (0.97999_sp*CCxSF)) then
                     call DetermineGDDCGCadjusted(GDDCGCadjusted)
                     if (GDDCGCadjusted > ac_zero_threshold) then
                         ! Crop.GDDCGC or GDDCGCadjusted > 0
                         Crop_CCxAdjusted_temp = GetCrop_CCxAdjusted()
                         call DetermineCCxAdjusted(Crop_CCxAdjusted_temp)
                         call SetCrop_CCxAdjusted(Crop_CCxAdjusted_temp)
-                        if (GetCrop_CCxAdjusted() < 0._dp) then
+                        if (GetCrop_CCxAdjusted() < 0._sp) then
                             call SetCCiActual(GetCCiPrev())
-                        elseif (abs(GetCCiPrev() - 0.97999_dp*CCxSF) &
-                                    < 0.001_dp) then
+                        elseif (abs(GetCCiPrev() - 0.97999_sp*CCxSF) &
+                                    < 0.001_sp) then
                             call SetCCiActual(CanopyCoverNoStressSF(&
                                 (VirtualTimeCC+GetSimulation_DelayedDays()+1), &
                                 GetCrop_DaysToGermination(), &
@@ -3429,7 +3429,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                                    GetCrop_CCoAdjusted(), &
                                                    GetCrop_CCxAdjusted(), &
                                                    GDDCGCadjusted)
-                            if (GDDtTemp < 0._dp) then
+                            if (GDDtTemp < 0._sp) then
                                 call SetCCiActual(GetCCiPrev())
                             else
                                 GDDtTemp = GDDtTemp + GDDayi
@@ -3463,11 +3463,11 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                             GetSimulation_EffectStress_RedCGC(), &
                             GetSimulation_EffectStress_RedCCX()))
                     call SetCrop_CCoAdjusted(CCoTotal)
-                    StressLeaf = -33._dp ! maximum canopy is reached;
+                    StressLeaf = -33._sp ! maximum canopy is reached;
                 end if
                 if (GetCCiActual() > CCxSFCD) then
                     call SetCCiActual(CCxSFCD)
-                    StressLeaf = -33._dp ! maximum canopy is reached;
+                    StressLeaf = -33._sp ! maximum canopy is reached;
                 end if
             end if
             call SetCrop_CCxAdjusted(GetCCiActual())
@@ -3475,13 +3475,13 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
         ! 3. Canopy can no longer develop
         ! (Mid-season (from tFinalCCx) or Late season stage)
         else
-            StressLeaf = -33._dp ! maximum canopy is reached;
-            if (GetCrop_CCxAdjusted() < 0._dp) then
+            StressLeaf = -33._sp ! maximum canopy is reached;
+            if (GetCrop_CCxAdjusted() < 0._sp) then
                 call SetCrop_CCxAdjusted(GetCCiPrev())
             end if
 
             if (SumGDDadjCC < GetCrop_GDDaysToSenescence()) then ! mid-season
-                if (GetCrop_CCxAdjusted() > 0.97999_dp*CCxSF) then
+                if (GetCrop_CCxAdjusted() > 0.97999_sp*CCxSF) then
                     call SetCCiActual(CanopyCoverNoStressSF(&
                                 (VirtualTimeCC+GetSimulation_DelayedDays()+1), &
                                 GetCrop_DaysToGermination(), &
@@ -3508,9 +3508,9 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                 GetCrop_GDDaysToHarvest(), &
                                 CCoTotal, &
                                 (GetCrop_CCxAdjusted() &
-                                    /(1._dp &
+                                    /(1._sp &
                                        - GetSimulation_EffectStress_RedCCx() &
-                                                                   /100._dp)), &
+                                                                   /100._sp)), &
                                 GetCrop_CGC(), CDCTotal, GetCrop_GDDCGC(), &
                                 GDDCDCadjusted, SumGDDadjCC, &
                                 GetCrop_ModeCycle(), &
@@ -3527,8 +3527,8 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                 if (GetCrop_CCxAdjusted() > CCxSFCD) then
                     call SetCrop_CCxAdjusted(CCxSFCD)
                 end if
-                if (GetCrop_CCxAdjusted() < 0.01_dp) then
-                    call SetCCiActual(0._dp)
+                if (GetCrop_CCxAdjusted() < 0.01_sp) then
+                    call SetCCiActual(0._sp)
                 else
                     ! calculate CC in late season
                     ! CCibis = CC which canopy declines
@@ -3538,15 +3538,15 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                     else
                         CCibis = CCxSF &
                                 - (RatDGDD*GetSimulation_EffectStress_CDecline() &
-                                                                       /100._dp) &
-                                * (exp(2._dp &
+                                                                       /100._sp) &
+                                * (exp(2._sp &
                                       * log(SumGDDadjCC &
                                             - GetCrop_GDDaysToFullCanopySF())) &
                                     /(GetCrop_GDDaysToSenescence() &
                                         - GetCrop_GDDaysToFullCanopySF()))
                     end if
-                    if (CCibis < 0._dp) then
-                        call SetCCiActual(0._dp)
+                    if (CCibis < 0._sp) then
+                        call SetCCiActual(0._sp)
                     else
                         ! CCiActual = CC with natural senescence in late season
                         GDDCDCadjusted = GetGDDCDCadjustedNoStress(&
@@ -3559,20 +3559,20 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                                     GetCrop_CCxAdjusted(), &
                                                     GDDCDCadjusted))) then
                             call SetCCiActual(GetCrop_CCxAdjusted() &
-                                 * (1._dp - 0.05_dp &
+                                 * (1._sp - 0.05_sp &
                                     * (exp((SumGDDadjCC &
                                             - GetCrop_GDDaysToSenescence()) &
-                                          * 3.33_dp &
+                                          * 3.33_sp &
                                           * GDDCDCadjusted &
                                                 /(GetCrop_CCxAdjusted() &
-                                                            + 2.29_dp)) &
-                                        - 1._dp)))
+                                                            + 2.29_sp)) &
+                                        - 1._sp)))
                             ! CCiActual becomes CCibis, when canopy decline is more severe
                             if (CCibis < GetCCiActual()) then
                                 call SetCCiActual(CCibis)
                             end if
                         else
-                            call SetCCiActual(0._dp)
+                            call SetCCiActual(0._sp)
                         end if
                     end if
                 end if
@@ -3585,16 +3585,16 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
         ! 4. Canopy senescence due to water stress ?
         if ((SumGDDadjCC < GetCrop_GDDaysToSenescence()) &
                             ! not yet late season stage
-            .or. (TimeSenescence > 0._dp)) then
+            .or. (TimeSenescence > 0._sp)) then
             ! in late season with ongoing early senesence
             ! (TimeSenescence in GDD)
-            StressSenescence = 0._dp
+            StressSenescence = 0._sp
             WithBeta = .true.
             Crop_pSenAct_temp = GetCrop_pSenAct()
             call AdjustpSenescenceToETo(GetETo(), TimeSenescence, &
                                         WithBeta, Crop_pSenAct_temp)
             call SetCrop_pSenAct(Crop_pSenAct_temp)
-            KsRED = 1._dp ! effect of soil salinity
+            KsRED = 1._sp ! effect of soil salinity
                           ! on the threshold for senescence
             if (GetSimulation_SWCtopSoilConsidered()) then
                 ! top soil is relative wetter than total root zone
@@ -3624,20 +3624,20 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                 ! CanopySenescence
                 call SetSimulation_EvapLimitON(.true.)
                 ! consider withered crop when not yet in late season
-                if (abs(TimeSenescence) < epsilon(0._dp)) then
+                if (abs(TimeSenescence) < epsilon(0._sp)) then
                     call SetCCiTopEarlySen(GetCCiActual()) ! CC before canopy decline
                 end if
                 TimeSenescence = TimeSenescence + GDDayi
                 call DetermineGDDCDCadjustedWaterStress(GDDCDCadjusted, KsSen)
-                if (GetCCiTopEarlySen() < 0.001_dp) then
+                if (GetCCiTopEarlySen() < 0.001_sp) then
                     if ((GetSimulation_SumEToStress() &
                             > GetCrop_SumEToDelaySenescence()) &
-                      .or. (abs(GetCrop_SumEToDelaySenescence()) < epsilon(0._dp))) then
-                        CCiSen = 0._dp ! no crop anymore
+                      .or. (abs(GetCrop_SumEToDelaySenescence()) < epsilon(0._sp))) then
+                        CCiSen = 0._sp ! no crop anymore
                     else
                         if (CCdormant > GetCrop_CCo()) then
                             CCiSen = GetCrop_CCo() &
-                                    + (1._dp &
+                                    + (1._sp &
                                        - GetSimulation_SumEToStress() &
                                         / GetCrop_SumEToDelaySenescence()) &
                                     * (CCdormant - GetCrop_CCo())
@@ -3646,19 +3646,19 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                         end if
                     end if
                 else
-                    if (((TimeSenescence*GDDCDCadjusted*3.33_dp) &
-                                /(GetCCiTopEarlySen()+2.29_dp) > 100._dp) &
+                    if (((TimeSenescence*GDDCDCadjusted*3.33_sp) &
+                                /(GetCCiTopEarlySen()+2.29_sp) > 100._sp) &
                         ! e power too large and in any case CCisen << 0
-                        .or. (GetCCiprev() >= 1.05_dp * GetCCiTopEarlySen())) then
+                        .or. (GetCCiprev() >= 1.05_sp * GetCCiTopEarlySen())) then
                         ! Ln of negative or zero value
                         if ((GetSimulation_SumEToStress() &
                             > GetCrop_SumEToDelaySenescence()) &
-                            .or. (abs(GetCrop_SumEToDelaySenescence()) < epsilon(0._dp))) then
-                            CCiSen = 0._dp ! no crop anymore
+                            .or. (abs(GetCrop_SumEToDelaySenescence()) < epsilon(0._sp))) then
+                            CCiSen = 0._sp ! no crop anymore
                         else
                             if (CCdormant > GetCrop_CCo()) then
                                 CCiSen = GetCrop_CCo() &
-                                         + (1._dp &
+                                         + (1._sp &
                                             - GetSimulation_SumEToStress() &
                                                 /GetCrop_SumEToDelaySenescence()) &
                                          * (CCdormant - GetCrop_CCo())
@@ -3669,32 +3669,32 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                     else
                         ! GDDCDC is adjusted to degree of stress
                         ! time required to reach CCiprev with GDDCDCadjusted
-                        GDDtTemp = (log(1._dp &
-                                        + (1._dp - GetCCiprev()/GetCCiTopEarlySen()) &
-                                                                     /0.05_dp)) &
+                        GDDtTemp = (log(1._sp &
+                                        + (1._sp - GetCCiprev()/GetCCiTopEarlySen()) &
+                                                                     /0.05_sp)) &
                                     /(GDDCDCadjusted &
-                                        * 3.33_dp/(GetCCiTopEarlySen() + 2.29_dp))
+                                        * 3.33_sp/(GetCCiTopEarlySen() + 2.29_sp))
                         ! add 1 day to tTemp and calculate CCiSen with CDCadjusted
                         CCiSen = GetCCiTopEarlySen() &
-                                * (1._dp &
-                                    - 0.05_dp &
+                                * (1._sp &
+                                    - 0.05_sp &
                                         * (exp((GDDtTemp+GDDayi) &
                                                 * GDDCDCadjusted &
-                                                * 3.33_dp &
-                                                /(GetCCiTopEarlySen()+2.29_dp)) &
-                                           -1._dp))
+                                                * 3.33_sp &
+                                                /(GetCCiTopEarlySen()+2.29_sp)) &
+                                           -1._sp))
                     end if
-                    if (CCiSen < 0._dp) then
-                        CCiSen = 0._dp
+                    if (CCiSen < 0._sp) then
+                        CCiSen = 0._sp
                     end if
-                    if ((GetCrop_SumEToDelaySenescence() > 0._dp) &
+                    if ((GetCrop_SumEToDelaySenescence() > 0._sp) &
                         .and. (GetSimulation_SumEToStress() &
                                 <= GetCrop_SumEToDelaySenescence())) then
                         if ((CCiSen < GetCrop_CCo()) &
                             .or. (CCiSen < CCdormant)) then
                             if (CCdormant > GetCrop_CCo()) then
                                 CCiSen = GetCrop_CCo() &
-                                         + (1._dp &
+                                         + (1._sp &
                                             - GetSimulation_SumEToStress() &
                                                /GetCrop_SumEToDelaySenescence()) &
                                             * (CCdormant - GetCrop_CCo())
@@ -3727,15 +3727,15 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                     end if
                 end if
 
-                if ((roundc(10000._dp*CCiSen, mold=1) <= (10000._dp*CCdormant)) &
-                    .or. (roundc(10000._dp*CCiSen, mold=1) &
-                            <= roundc(10000._dp*GetCrop_CCo(), mold=1))) then
+                if ((roundc(10000._sp*CCiSen, mold=1) <= (10000._sp*CCdormant)) &
+                    .or. (roundc(10000._sp*CCiSen, mold=1) &
+                            <= roundc(10000._sp*GetCrop_CCo(), mold=1))) then
                     call SetSimulation_SumEToStress(GetSimulation_SumEToStress() &
                                                     + GetETo())
                 end if
             else
                 ! no water stress, resulting in canopy senescence
-                if ((TimeSenescence > 0._dp) &
+                if ((TimeSenescence > 0._sp) &
                     .and. (SumGDDadjCC > GetCrop_GDDaysToSenescence())) then
                     ! rewatering in late season of an early declining canopy
                     Crop_CCxAdjusted_temp = GetCrop_CCxAdjusted()
@@ -3753,17 +3753,17 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                 GetCrop_GDDaysToHarvest(), &
                                 CCoTotal, &
                                 (GetCrop_CCxAdjusted() &
-                                    /(1._dp - GetSimulation_EffectStress_RedCCx() &
-                                                                       /100._dp)), &
+                                    /(1._sp - GetSimulation_EffectStress_RedCCx() &
+                                                                       /100._sp)), &
                                 GetCrop_CGC(), CDCTotal, GetCrop_GDDCGC(), &
                                 GDDCDCadjusted,SumGDDadjCC, &
                                 GetCrop_ModeCycle(), &
                                 GetSimulation_EffectStress_RedCGC(), &
                                 GetSimulation_EffectStress_RedCCX()))
                 end if
-                TimeSenescence = 0._dp  ! No early senescence or back to normal
-                StressSenescence = 0._dp
-                call SetSimulation_SumEToStress(0._dp)
+                TimeSenescence = 0._sp  ! No early senescence or back to normal
+                StressSenescence = 0._sp
+                call SetSimulation_SumEToStress(0._sp)
             end if
         end if
 
@@ -3781,7 +3781,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
         end if
 
         ! 7. no crop as a result of fertiltiy and/or water stress
-        if (roundc(1000._dp*GetCCiActual(), mold=1) <= 0) then
+        if (roundc(1000._sp*GetCCiActual(), mold=1) <= 0) then
             NoMoreCrop = .true.
         end if
     end if
@@ -3791,11 +3791,11 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
 
 
     subroutine DetermineGDDCGCadjusted(GDDCGCadjusted)
-        real(dp), intent(inout) :: GDDCGCadjusted
+        real(sp), intent(inout) :: GDDCGCadjusted
 
-        real(dp) :: Wrelative
-        real(dp) :: KsLeaf
-        real(dp) :: SWCeffectiveRootZone, FCeffectiveRootZone, &
+        real(sp) :: Wrelative
+        real(sp) :: KsLeaf
+        real(sp) :: SWCeffectiveRootZone, FCeffectiveRootZone, &
                     WPeffectiveRootZone
 
         ! determine FC and PWP
@@ -3820,44 +3820,44 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
         ! Canopy stress and effect of water stress on CGCGDD
         if (SWCeffectiveRootZone >= FCeffectiveRootZone) then
             GDDCGCadjusted = CGCGDDSF
-            StressLeaf = 0._dp
+            StressLeaf = 0._sp
         else
             if (SWCeffectiveRootZone <= WPeffectiveRootZone) then
-                GDDCGCadjusted = 0._dp
-                StressLeaf = 100._dp
+                GDDCGCadjusted = 0._sp
+                StressLeaf = 100._sp
             else
                 if (Wrelative <= GetCrop_pLeafAct()) then
                     GDDCGCadjusted = CGCGDDSF
-                    StressLeaf = 0._dp
+                    StressLeaf = 0._sp
                 elseif (Wrelative >= pLeafLLAct) then
-                    GDDCGCadjusted = 0._dp
-                    StressLeaf = 100._dp
+                    GDDCGCadjusted = 0._sp
+                    StressLeaf = 100._sp
                 else
                     KsLeaf = KsAny(Wrelative, GetCrop_pLeafAct(), &
                                    pLeafLLAct, GetCrop_KsShapeFactorLeaf())
                     GDDCGCadjusted = CGCGDDSF * KsLeaf
-                    StressLeaf = 100._dp * (1._dp - KsLeaf)
+                    StressLeaf = 100._sp * (1._sp - KsLeaf)
                 end if
             end if
         end if
     end subroutine DetermineGDDCGCadjusted
 
 
-    real(dp) function RequiredGDD(CCiToFind, CCo, CCx, GDDCGCadjusted)
-        real(dp), intent(in) :: CCiToFind
-        real(dp), intent(in) :: CCo
-        real(dp), intent(in) :: CCx
-        real(dp), intent(in) :: GDDCGCadjusted
+    real(sp) function RequiredGDD(CCiToFind, CCo, CCx, GDDCGCadjusted)
+        real(sp), intent(in) :: CCiToFind
+        real(sp), intent(in) :: CCo
+        real(sp), intent(in) :: CCx
+        real(sp), intent(in) :: GDDCGCadjusted
 
-        real(dp) :: GDDCGCx
+        real(sp) :: GDDCGCx
 
         ! Only when SumGDDadj > GDDayi
         ! and CCx < CCiToFind
         ! 1. GDDCGCx to reach CCiToFind on previous day (= SumGDDadj - GDDayi )
-        if (CCiToFind <= CCx/2._dp) then
+        if (CCiToFind <= CCx/2._sp) then
             GDDCGCx = (log(CCiToFind/CCo))/(SumGDDadjCC-GDDayi)
         else
-            GDDCGCx = (log((0.25_dp*CCx*CCx/CCo) &
+            GDDCGCx = (log((0.25_sp*CCx*CCx/CCo) &
                                 /(CCx-CCiToFind)))/(SumGDDadjCC-GDDayi)
         end if
         ! 2. Required GDD
@@ -3865,18 +3865,18 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
     end function RequiredGDD
 
 
-    real(dp) function CCatGDDTime(GDDtfictive, CCoGiven, GDDCGCGiven, CCxGiven)
-        real(dp), intent(in) :: GDDtfictive
-        real(dp), intent(in) :: CCoGiven
-        real(dp), intent(in) :: GDDCGCGiven
-        real(dp), intent(in) :: CCxGiven
+    real(sp) function CCatGDDTime(GDDtfictive, CCoGiven, GDDCGCGiven, CCxGiven)
+        real(sp), intent(in) :: GDDtfictive
+        real(sp), intent(in) :: CCoGiven
+        real(sp), intent(in) :: GDDCGCGiven
+        real(sp), intent(in) :: CCxGiven
 
-        real(dp) :: CCi
+        real(sp) :: CCi
 
         CCi = CCoGiven * exp(GDDCGCGiven * GDDtfictive)
-        if (CCi > CCxGiven/2._dp) then
+        if (CCi > CCxGiven/2._sp) then
             CCi = CCxGiven &
-                  - 0.25_dp * (CCxGiven/CCoGiven) &
+                  - 0.25_sp * (CCxGiven/CCoGiven) &
                             * CCxGiven &
                             * exp(-GDDCGCGiven*GDDtfictive)
         end if
@@ -3885,9 +3885,9 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
 
 
     subroutine DetermineCCxAdjusted(CCxAdjusted)
-        real(dp), intent(inout) :: CCxAdjusted
+        real(sp), intent(inout) :: CCxAdjusted
 
-        real(dp) :: GDDtfictive
+        real(sp) :: GDDtfictive
 
         ! 1. find time (GDDtfictive) required to reach CCiPrev
         ! (CCi of previous day) with GDDCGCadjusted
@@ -3895,7 +3895,7 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
                                   CCxSF, GDDCGCadjusted)
 
         ! 2. Get CCxadjusted (reached at end of stretched crop development)
-        if (GDDtfictive > 0._dp) then
+        if (GDDtfictive > 0._sp) then
             GDDtfictive = GDDtfictive &
                           + (GDDtFinalCCx - SumGDDadjCC) &
                           + GDDayi
@@ -3907,28 +3907,28 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
     end subroutine DetermineCCxAdjusted
 
 
-    real(dp) function GetGDDCDCadjustedNoStress(CCx, GDDCDC, CCxAdjusted)
-        real(dp), intent(in) :: CCx
-        real(dp), intent(in) :: GDDCDC
-        real(dp), intent(in) :: CCxAdjusted
+    real(sp) function GetGDDCDCadjustedNoStress(CCx, GDDCDC, CCxAdjusted)
+        real(sp), intent(in) :: CCx
+        real(sp), intent(in) :: GDDCDC
+        real(sp), intent(in) :: CCxAdjusted
 
-        real(dp) :: GDDCDCadjusted
+        real(sp) :: GDDCDCadjusted
 
-        GDDCDCadjusted = GDDCDC * ((CCxadjusted+2.29_dp)/(CCx+2.29_dp))
+        GDDCDCadjusted = GDDCDC * ((CCxadjusted+2.29_sp)/(CCx+2.29_sp))
         GetGDDCDCadjustedNoStress = GDDCDCadjusted
     end function GetGDDCDCadjustedNoStress
 
 
     subroutine DetermineGDDCDCadjustedWaterStress(GDDCDCadjusted, KsSen)
-        real(dp), intent(inout) :: GDDCDCadjusted
-        real(dp), intent(inout) :: KsSen
+        real(sp), intent(inout) :: GDDCDCadjusted
+        real(sp), intent(inout) :: KsSen
 
-        real(dp) :: Wrelative
-        real(dp) :: pSenLL
-        real(dp) :: pSenAct
+        real(sp) :: Wrelative
+        real(sp) :: pSenLL
+        real(sp) :: pSenAct
         logical :: WithBeta
 
-        pSenLL = 0.999_dp ! WP
+        pSenLL = 0.999_sp ! WP
         if (GetSimulation_SWCtopSoilConsidered()) then
         ! top soil is relative wetter than total root zone
             Wrelative = (GetRootZoneWC_ZtopFC() - GetRootZoneWC_ZtopAct()) &
@@ -3944,26 +3944,26 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
         call AdjustpSenescenceToETo(GetETo(), TimeSenescence, &
                                     WithBeta, pSenAct)
         if (Wrelative <= pSenAct) then
-            GDDCDCadjusted = 0.0001_dp ! extreme small decline
-            StressSenescence = 0._dp
-            KsSen = 1._dp
+            GDDCDCadjusted = 0.0001_sp ! extreme small decline
+            StressSenescence = 0._sp
+            KsSen = 1._sp
         elseif (Wrelative >= pSenLL) then
             GDDCDCadjusted = GDDCDCTotal &
-                            * ((CCxSFCD+2.29_dp)/(CCxTotal+2.29_dp))
+                            * ((CCxSFCD+2.29_sp)/(CCxTotal+2.29_sp))
                                                         ! full speed
-            StressSenescence = 100._dp
-            KsSen = 0._dp
+            StressSenescence = 100._sp
+            KsSen = 0._sp
         else
             KsSen = KsAny(Wrelative, pSenAct, pSenLL, &
                           GetCrop_KsShapeFactorSenescence())
             if (KsSen > ac_zero_threshold) then
                 GDDCDCadjusted = GDDCDCTotal &
-                                 * ((CCxSFCD+2.29_dp)/(CCxTotal+2.29_dp)) &
-                                 * (1._dp - exp(8._dp*log(KsSen)))
-                StressSenescence = 100._dp * (1._dp - KsSen)
+                                 * ((CCxSFCD+2.29_sp)/(CCxTotal+2.29_sp)) &
+                                 * (1._sp - exp(8._sp*log(KsSen)))
+                StressSenescence = 100._sp * (1._sp - KsSen)
             else
-                GDDCDCadjusted = 0.0001_dp ! extreme small decline
-                StressSenescence = 0._dp
+                GDDCDCadjusted = 0.0001_sp ! extreme small decline
+                StressSenescence = 0._sp
             end if
         end if
     end subroutine DetermineGDDCDCadjustedWaterStress
@@ -3971,18 +3971,18 @@ subroutine DetermineCCiGDD(CCxTotal, CCoTotal, &
 
     subroutine GetNewCCxandGDDCDC(CCiPrev, GDDCDC, CCx, CCxAdjusted, &
                                  GDDCDCadjusted)
-        real(dp), intent(in) :: CCiPrev
-        real(dp), intent(in) :: GDDCDC
-        real(dp), intent(in) :: CCx
-        real(dp), intent(inout) :: CCxAdjusted
-        real(dp), intent(inout) :: GDDCDCadjusted
+        real(sp), intent(in) :: CCiPrev
+        real(sp), intent(in) :: GDDCDC
+        real(sp), intent(in) :: CCx
+        real(sp), intent(inout) :: CCxAdjusted
+        real(sp), intent(inout) :: GDDCDCadjusted
 
         CCxAdjusted = CCiPrev &
-                        /(1._dp - 0.05_dp &
+                        /(1._sp - 0.05_sp &
                                 *(exp((SumGDDadjCC - GDDayi &
                                        - GetCrop_GDDaysToSenescence()) &
-                                      * GDDCDC * 3.33_dp/(CCX+2.29_dp))-1._dp))
-        GDDCDCadjusted = GDDCDC * (CCxAdjusted+2.29_dp)/(CCx+2.29_dp)
+                                      * GDDCDC * 3.33_sp/(CCX+2.29_sp))-1._sp))
+        GDDCDCadjusted = GDDCDC * (CCxAdjusted+2.29_sp)/(CCx+2.29_sp)
     end subroutine GetNewCCxandGDDCDC
 end subroutine DetermineCCiGDD
 
@@ -3992,15 +3992,15 @@ subroutine EffectSoilFertilitySalinityStress(StressSFadjNEW, Coeffb0Salt, &
                                              NrDayGrow, StressTotSaltPrev, &
                                              VirtualTimeCC)
     integer(int32), intent(inout) :: StressSFadjNEW
-    real(dp), intent(in) :: Coeffb0Salt, Coeffb1Salt, Coeffb2Salt
+    real(sp), intent(in) :: Coeffb0Salt, Coeffb1Salt, Coeffb2Salt
     integer(int32), intent(in) :: NrDayGrow
-    real(dp), intent(in) :: StressTotSaltPrev
+    real(sp), intent(in) :: StressTotSaltPrev
     integer(int32), intent(in) :: VirtualTimeCC
 
     type(rep_EffectStress) :: FertilityEffectStress, SalinityEffectStress
-    real(dp) :: SaltStress, CCxRedD
+    real(sp) :: SaltStress, CCxRedD
     integer(int8) :: CCxRed
-    real(dp) :: ECe_temp, ECsw_temp, ECswFC_temp, KsSalt_temp
+    real(sp) :: ECe_temp, ECsw_temp, ECswFC_temp, KsSalt_temp
     integer(int8) :: RedCGC_temp, RedCCX_temp
     integer(int32) :: Crop_DaysToFullCanopySF_temp
     type(rep_EffectStress) :: EffectStress_temp
@@ -4017,16 +4017,16 @@ subroutine EffectSoilFertilitySalinityStress(StressSFadjNEW, Coeffb0Salt, &
         call SetRootZoneSalt_ECsw(ECsw_temp)
         call SetRootZoneSalt_ECswFC(ECswFC_temp)
         call SetRootZoneSalt_KsSalt(KsSalt_temp)
-        SaltStress = (NrDayGrow*StressTotSaltPrev + 100._dp &
-                            *(1._dp-GetRootZoneSalt_KsSalt())) &
-                     /(NrDayGrow+1._dp)
+        SaltStress = (NrDayGrow*StressTotSaltPrev + 100._sp &
+                            *(1._sp-GetRootZoneSalt_KsSalt())) &
+                     /(NrDayGrow+1._sp)
     else
-        SaltStress = 0._dp
+        SaltStress = 0._sp
     end if
     if ((VirtualTimeCC < GetCrop_DaysToGermination()) &
             .or. (VirtualTimeCC > (GetCrop_DayN()-GetCrop_Day1())) &
             .or. (GetSimulation_Germinate() .eqv. .false.) &
-            .or. ((StressSFAdjNEW == 0) .and. (SaltStress <= 0.1_dp))) then
+            .or. ((StressSFAdjNEW == 0) .and. (SaltStress <= 0.1_sp))) then
         ! no soil fertility and salinity stress
         EffectStress_temp = GetSimulation_EffectStress()
         call NoEffectStress(EffectStress_temp)
@@ -4047,13 +4047,13 @@ subroutine EffectSoilFertilitySalinityStress(StressSFadjNEW, Coeffb0Salt, &
         ! Soil Salinity
         CCxRedD = real(roundc(Coeffb0Salt + Coeffb1Salt * SaltStress &
                               + Coeffb2Salt * SaltStress * SaltStress, &
-                                                      mold=1), kind=dp)
-        if ((CCxRedD < 0._dp) &
-                .or. (SaltStress <= 0.1_dp) &
+                                                      mold=1), kind=sp)
+        if ((CCxRedD < 0._sp) &
+                .or. (SaltStress <= 0.1_sp) &
                 .or. (GetSimulation_SalinityConsidered() .eqv. .false.)) then
             call NoEffectStress(SalinityEffectStress)
         else
-            if ((CCxRedD > 100._dp) .or. (SaltStress >= 99.9_dp)) then
+            if ((CCxRedD > 100._sp) .or. (SaltStress >= 99.9_sp)) then
                 CCxRed = 100_int8
             else
                 CCxRed = roundc(CCxRedD, mold=1_int8)
@@ -4111,8 +4111,8 @@ subroutine EffectSoilFertilitySalinityStress(StressSFadjNEW, Coeffb0Salt, &
         call SetSimulation_EffectStress_RedCCX(RedCCX_temp)
         call SetCrop_DaysToFullCanopySF(Crop_DaysToFullCanopySF_temp)
         if (GetCrop_ModeCycle() == modeCycle_GDDays) then
-            if ((abs(GetManagement_FertilityStress()) > epsilon(0._dp)) &
-                    .or. (abs(SaltStress) > epsilon(0._dp))) then
+            if ((abs(GetManagement_FertilityStress()) > epsilon(0._sp)) &
+                    .or. (abs(SaltStress) > epsilon(0._sp))) then
                 call SetCrop_GDDaysToFullCanopySF(&
                              GrowingDegreeDays(GetCrop_DaysToFullCanopySF(), &
                                                GetCrop_Day1(), &
@@ -4133,11 +4133,11 @@ subroutine EffectSoilFertilitySalinityStress(StressSFadjNEW, Coeffb0Salt, &
     subroutine NoEffectStress(TheEffectStress)
         type(rep_EffectStress), intent(inout) :: TheEffectStress
 
-        TheEffectStress%RedCGC = 0._dp
-        TheEffectStress%RedCCX = 0._dp
-        TheEffectStress%RedWP = 0._dp
-        TheEffectStress%CDecline = 0._dp
-        TheEffectStress%RedKsSto = 0._dp
+        TheEffectStress%RedCGC = 0._sp
+        TheEffectStress%RedCCX = 0._sp
+        TheEffectStress%RedWP = 0._sp
+        TheEffectStress%CDecline = 0._sp
+        TheEffectStress%RedKsSto = 0._sp
     end subroutine NoEffectStress
 end subroutine EffectSoilFertilitySalinityStress
 
@@ -4148,65 +4148,65 @@ subroutine PrepareStage1()
     Soil_temp = GetSoil()
 
     if (GetSurfaceStorage() > ac_zero_threshold) then
-        call SetSimulation_EvapWCsurf(Soil_temp%REW*1._dp)
+        call SetSimulation_EvapWCsurf(Soil_temp%REW*1._sp)
     else
         call SetSimulation_EvapWCsurf(GetRain() + GetIrrigation() - GetRunOff())
         if (GetSimulation_EvapWCsurf() > Soil_temp%REW) then
-            call SetSimulation_EvapWCsurf(Soil_temp%REW*1._dp)
+            call SetSimulation_EvapWCsurf(Soil_temp%REW*1._sp)
         end if
     end if
     call SetSimulation_EvapStartStg2(int(undef_int,kind=int8))
-    call SetSimulation_EvapZ(EvapZmin/100._dp)
+    call SetSimulation_EvapZ(EvapZmin/100._sp)
 end subroutine PrepareStage1
 
 
-real(dp) function WCEvapLayer(Zlayer, AtTheta)
-    real(dp), intent(in) :: Zlayer
+real(sp) function WCEvapLayer(Zlayer, AtTheta)
+    real(sp), intent(in) :: Zlayer
     integer(intEnum), intent(in) :: AtTheta
 
-    real(dp) :: Ztot, Wx, fracZ
+    real(sp) :: Ztot, Wx, fracZ
     integer(int32) :: compi
 
-    Wx = 0.0_dp
-    Ztot = 0.0_dp
+    Wx = 0.0_sp
+    Ztot = 0.0_sp
     compi = 0
-    do while ((abs(Zlayer-Ztot) > 0.0001_dp) &
+    do while ((abs(Zlayer-Ztot) > 0.0001_sp) &
             .and. (compi < GetNrCompartments()))
         compi = compi + 1
         if ((Ztot + GetCompartment_Thickness(compi)) > Zlayer) then
             fracZ = (Zlayer - Ztot)/(GetCompartment_Thickness(compi))
         else
-            fracZ = 1._dp
+            fracZ = 1._sp
         end if
         select case (AtTheta)
             case(whichtheta_AtSAT)
-            Wx = Wx + 10._dp &
+            Wx = Wx + 10._sp &
                     * GetSoilLayer_SAT(GetCompartment_Layer(compi)) &
                     * fracZ * GetCompartment_Thickness(compi) &
-                    * (1._dp &
+                    * (1._sp &
                         - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                    /100._dp)
+                                                                    /100._sp)
             case (whichtheta_AtFC)
-            Wx = Wx + 10._dp &
+            Wx = Wx + 10._sp &
                     * GetSoilLayer_FC(GetCompartment_Layer(compi)) &
                     * fracZ * GetCompartment_Thickness(compi) &
-                    * (1._dp &
+                    * (1._sp &
                         - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                    /100._dp)
+                                                                    /100._sp)
             case (whichtheta_AtWP)
-            Wx = Wx + 10._dp &
+            Wx = Wx + 10._sp &
                     * GetSoilLayer_WP(GetCompartment_Layer(compi)) &
                     * fracZ * GetCompartment_Thickness(compi) &
-                    * (1._dp &
+                    * (1._sp &
                         - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                    /100._dp)
+                                                                    /100._sp)
             case default
-                Wx = Wx + 1000._dp &
+                Wx = Wx + 1000._sp &
                         * GetCompartment_Theta(compi) * fracZ &
                         * GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                        * (1._sp &
                             - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                        /100._dp)
+                                                                        /100._sp)
         end select
         Ztot = Ztot + fracZ * GetCompartment_Thickness(compi)
     end do
@@ -4218,7 +4218,7 @@ subroutine PrepareStage2()
 
     integer(intEnum) :: AtTheta
     integer(int8) :: EvapStartStg2
-    real(dp) :: WSAT, WFC, Wact
+    real(sp) :: WSAT, WFC, Wact
 
     call SetSimulation_EvapZ(EvapZmin/100)
     AtTheta = whichtheta_AtSat
@@ -4228,10 +4228,10 @@ subroutine PrepareStage2()
     AtTheta = whichtheta_AtAct
     Wact = WCEvapLayer(GetSimulation_EvapZ(), AtTheta)
 
-    if ((Wact - (WFC-GetSoil_REW())) <= epsilon(0._dp)) then
+    if ((Wact - (WFC-GetSoil_REW())) <= epsilon(0._sp)) then
         EvapStartStg2 = 0_int8
     else
-        EvapStartStg2 = roundc(100._dp * (Wact - (WFC-GetSoil_REW())) &
+        EvapStartStg2 = roundc(100._sp * (Wact - (WFC-GetSoil_REW())) &
                                / (WSAT - (WFC-GetSoil_REW())), mold=1_int8)
     end if
     call SetSimulation_EvapStartStg2(EvapStartStg2)
@@ -4240,7 +4240,7 @@ end subroutine PrepareStage2
 
 subroutine CalculateEvaporationSurfaceWater()
 
-    real(dp) :: SaltSurface
+    real(sp) :: SaltSurface
 
     if (GetSurfaceStorage() > GetEpot()) then
         SaltSurface = GetSurfaceStorage()*GetECstorage()*Equiv
@@ -4250,10 +4250,10 @@ subroutine CalculateEvaporationSurfaceWater()
             ! salinisation of surface storage layer
     else
         call SetEact(GetSurfaceStorage())
-        call SetSurfaceStorage(0._dp)
-        call SetSimulation_EvapWCsurf(real(GetSoil_REW(), kind=dp))
-        call SetSimulation_EvapZ(EvapZmin/100._dp)
-        if (GetSimulation_EvapWCsurf() < 0.0001_dp) then
+        call SetSurfaceStorage(0._sp)
+        call SetSimulation_EvapWCsurf(real(GetSoil_REW(), kind=sp))
+        call SetSimulation_EvapZ(EvapZmin/100._sp)
+        if (GetSimulation_EvapWCsurf() < 0.0001_sp) then
             call PrepareStage2()
         else
             call SetSimulation_EvapStartStg2(int(undef_int, kind=int8))
@@ -4264,29 +4264,29 @@ end subroutine CalculateEvaporationSurfaceWater
 
 subroutine AdjustEpotMulchWettedSurface(dayi, EpotTot, Epot, EvapWCsurface)
     integer(int32), intent(in) :: dayi
-    real(dp), intent(in) :: EpotTot
-    real(dp), intent(inout) :: Epot
-    real(dp), intent(inout) :: EvapWCsurface
+    real(sp), intent(in) :: EpotTot
+    real(sp), intent(inout) :: Epot
+    real(sp), intent(inout) :: EvapWCsurface
 
-    real(dp) :: EpotIrri
+    real(sp) :: EpotIrri
 
     ! 1. Mulches (reduction of EpotTot to Epot)
     if (GetSurfaceStorage() <= ac_zero_threshold) then
         if (dayi < GetCrop_Day1()) then ! before season
             Epot = EpotTot &
-                    * (1._dp - (GetManagement_EffectMulchOffS()/100._dp) &
-                               *(GetManagement_SoilCoverBefore()/100._dp))
+                    * (1._sp - (GetManagement_EffectMulchOffS()/100._sp) &
+                               *(GetManagement_SoilCoverBefore()/100._sp))
         else
             if (dayi < GetCrop_Day1()+GetCrop_DaysToHarvest()) then ! in season
                 Epot = EpotTot &
-                        * (1._dp &
-                            - (GetManagement_EffectMulchInS()/100._dp) &
-                             * (GetManagement_Mulch()/100._dp))
+                        * (1._sp &
+                            - (GetManagement_EffectMulchInS()/100._sp) &
+                             * (GetManagement_Mulch()/100._sp))
             else
                 Epot = EpotTot &
-                        * (1._dp &
-                            - (GetManagement_EffectMulchOffS()/100._dp) &
-                             * (GetManagement_SoilCoverAfter()/100._dp))
+                        * (1._sp &
+                            - (GetManagement_EffectMulchOffS()/100._sp) &
+                             * (GetManagement_SoilCoverAfter()/100._sp))
             end if
         end if
     else
@@ -4294,7 +4294,7 @@ subroutine AdjustEpotMulchWettedSurface(dayi, EpotTot, Epot, EvapWCsurface)
     end if
 
     ! 2a. Entire soil surface wetted ?
-    if (GetIrrigation() > 0._dp) then
+    if (GetIrrigation() > 0._sp) then
         ! before season
         if ((dayi < GetCrop_Day1()) &
             .and. (GetSimulParam_IrriFwOffSeason() < 100)) then
@@ -4312,7 +4312,7 @@ subroutine AdjustEpotMulchWettedSurface(dayi, EpotTot, Epot, EvapWCsurface)
             call SetEvapoEntireSoilSurface(.false.)
         end if
     end if
-    if ((GetRain() > 1._dp) .or. (GetSurfaceStorage() > 0._dp)) then
+    if ((GetRain() > 1._sp) .or. (GetSurfaceStorage() > 0._sp)) then
         call SetEvapoEntireSoilSurface(.true.)
     end if
     if ((dayi >= GetCrop_Day1()) &
@@ -4327,13 +4327,13 @@ subroutine AdjustEpotMulchWettedSurface(dayi, EpotTot, Epot, EvapWCsurface)
             .and. (dayi < GetCrop_Day1()+GetCrop_DaysToHarvest())) then
             ! in season
             EvapWCsurface = EvapWCsurface &
-                            * (GetSimulParam_IrriFwInSeason()/100._dp)
-            EpotIrri = EpotTot * (GetSimulParam_IrriFwInSeason()/100._dp)
+                            * (GetSimulParam_IrriFwInSeason()/100._sp)
+            EpotIrri = EpotTot * (GetSimulParam_IrriFwInSeason()/100._sp)
         else
             ! off-season
             EvapWCsurface = EvapWCsurface &
-                            * (GetSimulParam_IrriFwOffSeason()/100._dp)
-            EpotIrri = EpotTot * (GetSimulParam_IrriFwOffSeason()/100._dp)
+                            * (GetSimulParam_IrriFwOffSeason()/100._sp)
+            EpotIrri = EpotTot * (GetSimulParam_IrriFwOffSeason()/100._sp)
         end if
         if (GetEact() > EpotIrri) then
             EpotIrri = GetEact()  ! Eact refers to the previous day
@@ -4348,27 +4348,27 @@ end subroutine AdjustEpotMulchWettedSurface
 subroutine ConcentrateSalts()
 
     integer(int32) :: compi, celWet, celi
-    real(dp) :: SaltTot, mm
-    real(dp) :: Salt_temp, Depo_temp
+    real(sp) :: SaltTot, mm
+    real(sp) :: Salt_temp, Depo_temp
 
     do compi = 1, GetNrCompartments()
-        SaltTot = 0.0_dp
+        SaltTot = 0.0_sp
         celWet = ActiveCells(GetCompartment_i(compi))
         if (celWet < GetSoilLayer_SCP1(GetCompartment_Layer(compi))) then
             do celi = (celWet+1), GetSoilLayer_SCP1(GetCompartment_Layer(compi))
                 SaltTot = SaltTot + GetCompartment_Salt(compi, celi)&
                           + GetCompartment_Depo(compi, celi)
-                call SetCompartment_Salt(compi, celi, 0.0_dp)
-                call SetCompartment_Depo(compi, celi, 0.0_dp)
+                call SetCompartment_Salt(compi, celi, 0.0_sp)
+                call SetCompartment_Depo(compi, celi, 0.0_sp)
             end do
         end if
-        if (SaltTot > 0.0_dp) then
+        if (SaltTot > 0.0_sp) then
             call SetCompartment_Salt(compi, celWet, &
                 GetCompartment_Salt(compi, celWet) + SaltTot)
-            mm = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000.0_dp&
+            mm = GetSoilLayer_Dx(GetCompartment_Layer(compi))*1000.0_sp&
                  * GetCompartment_Thickness(compi)&
                  * (1 - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))&
-                        / 100.0_dp)
+                        / 100.0_sp)
             Salt_temp = GetCompartment_Salt(compi, celWet)
             Depo_temp = GetCompartment_Depo(compi, celWet)
             call SaltSolutionDeposit(mm, Salt_temp, Depo_temp)
@@ -4380,36 +4380,36 @@ end subroutine ConcentrateSalts
 
 
 subroutine ExtractWaterFromEvapLayer(EvapToLose, Zact, Stg1)
-    real(dp), intent(in) :: EvapToLose
-    real(dp), intent(in) :: Zact
+    real(sp), intent(in) :: EvapToLose
+    real(sp), intent(in) :: Zact
     logical, intent(in) :: Stg1
 
-    real(dp) :: EvapLost, Wx, Wairdry, AvailableW, &
+    real(sp) :: EvapLost, Wx, Wairdry, AvailableW, &
                 Ztot, fracZ, StillToExtract
     integer(int32) :: compi
 
-    EvapLost = 0._dp
+    EvapLost = 0._sp
     compi = 0
-    Ztot = 0._dp
+    Ztot = 0._sp
     loop: do
         compi = compi + 1
         if ((Ztot + GetCompartment_Thickness(compi)) > Zact) then
             fracZ = (Zact-Ztot)/GetCompartment_Thickness(compi)
         else
-            fracZ = 1._dp
+            fracZ = 1._sp
         end if
-        Wairdry = 10._dp &
-                  * GetSoilLayer_WP(GetCompartment_Layer(compi))/2._dp &
+        Wairdry = 10._sp &
+                  * GetSoilLayer_WP(GetCompartment_Layer(compi))/2._sp &
                   * GetCompartment_Thickness(compi) &
-                  * (1._dp &
-                     - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp)
-        Wx = 1000._dp * GetCompartment_Theta(compi) &
+                  * (1._sp &
+                     - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp)
+        Wx = 1000._sp * GetCompartment_Theta(compi) &
              * GetCompartment_Thickness(compi) &
-             * (1._dp &
-                  - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._dp)
+             * (1._sp &
+                  - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))/100._sp)
         AvailableW = (Wx-Wairdry)*fracZ
         StillToExtract = (EvapToLose-EvapLost)
-        if (AvailableW > 0._dp) then
+        if (AvailableW > 0._sp) then
             if (AvailableW > StillToExtract) then
                 call SetEact(GetEact() + StillToExtract)
                 EvapLost = EvapLost + StillToExtract
@@ -4421,21 +4421,21 @@ subroutine ExtractWaterFromEvapLayer(EvapToLose, Zact, Stg1)
             end if
             call SetCompartment_Theta(&
                     compi, &
-                    Wx/(1000._dp * GetCompartment_Thickness(compi) &
-                        * (1._dp &
+                    Wx/(1000._sp * GetCompartment_Thickness(compi) &
+                        * (1._sp &
                            - GetSoilLayer_GravelVol(GetCompartment_Layer(compi))&
-                                                                     /100._dp)))
+                                                                     /100._sp)))
         end if
         Ztot = Ztot + fracZ * (GetCompartment_Thickness(compi))
         if ((Compi >= GetNrCompartments()) &
             .or. (abs(StillToExtract) < ac_zero_threshold) &
-            .or. (Ztot >= 0.999999_dp*Zact)) exit loop
+            .or. (Ztot >= 0.999999_sp*Zact)) exit loop
     end do loop
     if (Stg1) then
         call SetSimulation_EvapWCsurf(GetSimulation_EvapWCsurf() - EvapLost)
-        if (abs(EvapToLose-EvapLost) > 0.0001_dp) then
+        if (abs(EvapToLose-EvapLost) > 0.0001_sp) then
             ! not enough water left in the compartment to store WCsurf
-            call SetSimulation_EvapWCsurf(0._dp)
+            call SetSimulation_EvapWCsurf(0._sp)
         end if
     end if
 end subroutine ExtractWaterFromEvapLayer
@@ -4443,7 +4443,7 @@ end subroutine ExtractWaterFromEvapLayer
 
 subroutine CalculateSoilEvaporationStage1()
 
-    real(dp) :: Eremaining
+    real(sp) :: Eremaining
     logical :: Stg1
 
     Stg1 = .true.
@@ -4463,13 +4463,13 @@ end subroutine CalculateSoilEvaporationStage1
 subroutine CalculateSoilEvaporationStage2()
 
     integer(int32), parameter :: NrOfStepsInDay = 20
-    real(dp), parameter :: FractionWtoExpandZ = 0.4_dp
+    real(sp), parameter :: FractionWtoExpandZ = 0.4_sp
     integer(intEnum) :: AtTheta
-    real(dp) :: Wupper, Wlower, Wact, Eremaining, Wrel, Kr, &
+    real(sp) :: Wupper, Wlower, Wact, Eremaining, Wrel, Kr, &
                 Elost, MaxSaltExDepth, SX, Zi, SaltDisplaced, UL, DeltaX
     integer(int32) :: i, compi, SCell1, SCellEnd
     logical :: Stg1, BoolCell
-    real(dp), dimension(11) :: ThetaIniEvap
+    real(sp), dimension(11) :: ThetaIniEvap
     integer(int32), dimension(11) :: SCellIniEvap
 
     ! Step 1. Conditions before soil evaporation
@@ -4486,7 +4486,7 @@ subroutine CalculateSoilEvaporationStage2()
     ! Step 2. Soil evaporation
     Stg1 = .false.
     Eremaining = GetEpot() - GetEact()
-    call GetLimitsEvapLayer(real(GetSimulation_EvapStartStg2(), kind=dp), &
+    call GetLimitsEvapLayer(real(GetSimulation_EvapStartStg2(), kind=sp), &
                             Wupper, Wlower)
     do i = 1, NrOfStepsInDay
         AtTheta = whichtheta_AtAct
@@ -4495,22 +4495,22 @@ subroutine CalculateSoilEvaporationStage2()
         if (GetSimulParam_EvapZmax() > EvapZmin) then
             do while ((Wrel < (FractionWtoExpandZ &
                 * (GetSimulParam_EvapZmax() &
-                    -(100._dp*GetSimulation_EvapZ())) &
+                    -(100._sp*GetSimulation_EvapZ())) &
                         /(GetSimulParam_EvapZmax()-EvapZmin))) &
                 .and. (GetSimulation_EvapZ() &
-                            < GetSimulParam_EvapZmax()/100._dp))
-                call SetSimulation_EvapZ(GetSimulation_EvapZ() + 0.001_dp)
+                            < GetSimulParam_EvapZmax()/100._sp))
+                call SetSimulation_EvapZ(GetSimulation_EvapZ() + 0.001_sp)
                                                                 ! add 1 mm
-                call GetLimitsEvapLayer(real(GetSimulation_EvapStartStg2(), kind=dp), &
+                call GetLimitsEvapLayer(real(GetSimulation_EvapStartStg2(), kind=sp), &
                                         Wupper, Wlower)
                 AtTheta = whichtheta_AtAct
                 Wact = WCEvapLayer(GetSimulation_EvapZ(), AtTheta)
                 Wrel = (Wact-Wlower)/(Wupper-Wlower)
             end do
             Kr = SoilEvaporationReductionCoefficient(Wrel, &
-                               real(GetSimulParam_EvapDeclineFactor(), kind=dp))
+                               real(GetSimulParam_EvapDeclineFactor(), kind=sp))
         end if
-        if (abs(GetETo() - 5._dp) > 0.01_dp) then
+        if (abs(GetETo() - 5._sp) > 0.01_sp) then
             ! correction for evaporative demand
             ! adjustment of Kr (not considered yet)
         end if
@@ -4520,15 +4520,15 @@ subroutine CalculateSoilEvaporationStage2()
 
     ! Step 3. Upward salt transport
     SX = SaltTransportFactor(Getcompartment_Theta(1))
-    if (SX > 0.01_dp) then
+    if (SX > 0.01_sp) then
         SCell1 = ActiveCells(GetCompartment_i(1))
         compi = 2
         Zi = GetCompartment_Thickness(1) + GetCompartment_Thickness(2)
-        do while ((roundc(Zi*100._dp, mold=1) &
-                    <= roundc(MaxSaltExDepth*100._dp, mold=1)) &
+        do while ((roundc(Zi*100._sp, mold=1) &
+                    <= roundc(MaxSaltExDepth*100._sp, mold=1)) &
             .and. (compi <= GetNrCompartments()) &
-            .and. (roundc(ThetaIniEvap(compi-1)*100000._dp, mold=1) &
-                    /= roundc(GetCompartment_theta(compi)*100000._dp, mold=1)))
+            .and. (roundc(ThetaIniEvap(compi-1)*100000._sp, mold=1) &
+                    /= roundc(GetCompartment_theta(compi)*100000._sp, mold=1)))
             ! move salt to compartment 1
             SCellEnd = ActiveCells(GetCompartment_i(compi))
             BoolCell = .false.
@@ -4578,18 +4578,18 @@ subroutine CalculateSoilEvaporationStage2()
 
 
     subroutine GetLimitsEvapLayer(xProc, Wupper, Wlower)
-        real(dp), intent(in) :: xProc
-        real(dp), intent(inout) :: Wupper
-        real(dp), intent(inout) :: Wlower
+        real(sp), intent(in) :: xProc
+        real(sp), intent(inout) :: Wupper
+        real(sp), intent(inout) :: Wlower
 
         integer(intEnum) :: AtTheta
-        real(dp) :: WSAT, WFC
+        real(sp) :: WSAT, WFC
 
         AtTheta = whichtheta_AtSat
         WSAT = WCEvapLayer(GetSimulation_EvapZ(), AtTheta)
         AtTheta = whichtheta_AtFC
         WFC = WCEvapLayer(GetSimulation_EvapZ(), AtTheta)
-        Wupper = (xProc/100._dp) &
+        Wupper = (xProc/100._sp) &
                  * (WSAT - (WFC-GetSoil_REW())) &
                  + (WFC-GetSoil_REW())
         AtTheta = whichtheta_AtWP
@@ -4597,17 +4597,17 @@ subroutine CalculateSoilEvaporationStage2()
     end subroutine GetLimitsEvapLayer
 
 
-    real(dp) function SaltTransportFactor(theta)
-        real(dp), intent(in) :: theta
+    real(sp) function SaltTransportFactor(theta)
+        real(sp), intent(in) :: theta
 
-        real(dp) :: x
+        real(sp) :: x
 
-        if (theta <= GetSoilLayer_WP(1)/200._dp) then
-            SaltTransportFactor = 0._dp
+        if ((theta-GetSoilLayer_WP(1)/200._sp) <= ac_zero_threshold) then
+            SaltTransportFactor = 0._sp
         else
-            x = (theta*100._dp - GetSoilLayer_WP(1)/2._dp) &
-                /(GetSoilLayer_SAT(1) - GetSoilLayer_WP(1)/2._dp)
-            SaltTransportFactor = exp(x*log(10._dp)+log(x/10._dp))
+            x = (theta*100._sp - GetSoilLayer_WP(1)/2._sp) &
+                /(GetSoilLayer_SAT(1) - GetSoilLayer_WP(1)/2._sp)
+            SaltTransportFactor = exp(x*log(10._sp)+log(x/10._sp))
         end if
     end function SaltTransportFactor
 end subroutine CalculateSoilEvaporationStage2
@@ -4618,46 +4618,46 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                         StressSenescence, TimeSenescence, NoMoreCrop, &
                         CDCTotal, DayFraction, &
                         GDDCDCTotal, TESTVAL)
-    real(dp), intent(in) :: CCxTotal
-    real(dp), intent(in) :: CCoTotal
-    real(dp), intent(inout) :: StressLeaf
-    real(dp), intent(in) :: FracAssim
+    real(sp), intent(in) :: CCxTotal
+    real(sp), intent(in) :: CCoTotal
+    real(sp), intent(inout) :: StressLeaf
+    real(sp), intent(in) :: FracAssim
     logical, intent(in) :: MobilizationON
     logical, intent(in) :: StorageON
     integer(int32), intent(in) :: Tadj
     integer(int32), intent(in) :: VirtualTimeCC
-    real(dp), intent(inout) :: StressSenescence
-    real(dp), intent(inout) :: TimeSenescence
+    real(sp), intent(inout) :: StressSenescence
+    real(sp), intent(inout) :: TimeSenescence
     logical, intent(inout) :: NoMoreCrop
-    real(dp), intent(in) :: CDCTotal
-    real(dp), intent(in) :: DayFraction
-    real(dp), intent(in) :: GDDCDCTotal
-    real(dp), intent(inout) :: TESTVAL
+    real(sp), intent(in) :: CDCTotal
+    real(sp), intent(in) :: DayFraction
+    real(sp), intent(in) :: GDDCDCTotal
+    real(sp), intent(inout) :: TESTVAL
 
-    real(dp), parameter :: CCdormant = 0.05_dp
-    real(dp) :: pLeafLLAct , CGCadjusted, CDCadjusted, &
+    real(sp), parameter :: CCdormant = 0.05_sp
+    real(sp) :: pLeafLLAct , CGCadjusted, CDCadjusted, &
                 CCiSen, tTemp, CCxSF, CGCSF, CCxSFCD, KsRED, CCibis
     integer(int32) :: tFinalCCx
     logical :: WithBeta
     logical :: TheSenescenceON
-    real(dp) :: KsSen
+    real(sp) :: KsSen
     !! test Version 6.2
-    real(dp) :: Crop_pLeafAct_temp
-    real(dp) :: Crop_pSenAct_temp
-    real(dp) :: Crop_CCxAdjusted_temp
+    real(sp) :: Crop_pLeafAct_temp
+    real(sp) :: Crop_pSenAct_temp
+    real(sp) :: Crop_CCxAdjusted_temp
 
     ! DetermineCCi
     if ((VirtualTimeCC < GetCrop_DaysToGermination()) &
         .or. (VirtualTimeCC > (GetCrop_DayN()-GetCrop_Day1()))) then
-        call SetCCiActual(0._dp)
+        call SetCCiActual(0._sp)
     else
         ! growing season (once germinated)
         ! 1. find some parameters
         CGCSF = GetCrop_CGC() &
-                * (1._dp - GetSimulation_EffectStress_RedCGC()/100._dp)
+                * (1._sp - GetSimulation_EffectStress_RedCGC()/100._sp)
         CGCadjusted = CGCSF
         CCxSF = CCxTotal &
-                * (1._dp - GetSimulation_EffectStress_RedCCX()/100._dp)
+                * (1._sp - GetSimulation_EffectStress_RedCCX()/100._sp)
 
         ! maximum canopy cover than can be reached
         ! (considering soil fertility/salinity, weed stress)
@@ -4677,19 +4677,19 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                             GetCrop_GDDaysToHarvest(), &
                             CCoTotal, CCxTotal, GetCrop_CGC(), &
                             GetCrop_GDDCGC(), CDCTotal, GDDCDCTotal, &
-                            GetSimulation_SumGDD(), 1._dp, &
+                            GetSimulation_SumGDD(), 1._sp, &
                             GetSimulation_EffectStress_RedCGC(), &
                             GetSimulation_EffectStress_RedCCX(), &
                             GetSimulation_EffectStress_CDecline(), &
                             GetCrop_ModeCycle())
             else
                 CCxSFCD = CCxSF &
-                          - (GetSimulation_EffectStress_CDecline()/100._dp) &
+                          - (GetSimulation_EffectStress_CDecline()/100._sp) &
                           * (GetCrop_DaysToSenescence() &
                                 - GetCrop_DaysToFullCanopySF())
             end if
-            if (CCxSFCD < 0._dp) then
-                CCxSFCD = 0._dp
+            if (CCxSFCD < 0._sp) then
+                CCxSFCD = 0._sp
             end if
         end if
         StressLeaf = undef_int
@@ -4708,14 +4708,14 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                 tFinalCCx = GetCrop_DaysToFullCanopy() &
                             + roundc(DayFraction &
                                 * ((GetCrop_DaysToFlowering() &
-                                    + (GetCrop_LengthFlowering()/2._dp) &
+                                    + (GetCrop_LengthFlowering()/2._sp) &
                                     - GetSimulation_DelayedDays()) &
                                     + Tadj + GetCrop_DaysToGermination() &
                                     - GetCrop_DaysToFullCanopy()), mold=1)
             else
                 ! sown or transplant
                 tFinalCCx = GetCrop_DaysToFlowering() &
-                            + roundc(GetCrop_LengthFlowering()/2._dp, mold=1)
+                            + roundc(GetCrop_LengthFlowering()/2._sp, mold=1)
             end if
             if (tFinalCCx > GetCrop_DaysToSenescence()) then
                 tFinalCCx = GetCrop_DaysToSenescence()
@@ -4739,7 +4739,7 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
             if ((GetCCiPrev() <= GetCrop_CCoAdjusted()) &
                 .or. (VirtualTimeCC <= 1) &
                 .or. ((GetSimulation_ProtectedSeedling()) &
-                    .and. (GetCCiPrev() <= (1.25_dp * CCoTotal)))) then
+                    .and. (GetCCiPrev() <= (1.25_sp * CCoTotal)))) then
                 ! 2.a first day or very small CC as a result of senescence
                 ! (no adjustment for leaf stress)
                 if (GetSimulation_ProtectedSeedling()) then
@@ -4756,7 +4756,7 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                             GetSimulation_SumGDD(), GetCrop_ModeCycle(), &
                             GetSimulation_EffectStress_RedCGC(), &
                             GetSimulation_EffectStress_RedCCX()))
-                    if (GetCCiActual() > (1.25_dp * CCoTotal)) then
+                    if (GetCCiActual() > (1.25_sp * CCoTotal)) then
                         call SetSimulation_ProtectedSeedling(.false.)
                     end if
                 else
@@ -4764,16 +4764,16 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                     ! becomes smaller than CCini)
                     if (VirtualTimeCC == 1) then
                         call SetCCiActual(GetCrop_CCoAdjusted() &
-                                            * exp(CGCSF*2._dp))
+                                            * exp(CGCSF*2._sp))
                     else
                         call SetCCiActual(GetCrop_CCoAdjusted() &
-                                            * exp(CGCSF*1._dp))
+                                            * exp(CGCSF*1._sp))
                     end if
                 end if
 
                 ! 2.b CC > CCo
             else
-                if (GetCCiPrev() < 0.97999_dp*CCxSF) then
+                if (GetCCiPrev() < 0.97999_sp*CCxSF) then
                     call DetermineCGCadjusted(CGCadjusted)
                     if (CGCadjusted > ac_zero_threshold) then
                         ! CGCSF or CGCadjusted > 0
@@ -4782,7 +4782,7 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                         call SetCrop_CCxAdjusted(Crop_CCxAdjusted_temp)
                         if (GetCrop_CCxAdjusted() < 0) then
                             call SetCCiActual(GetCCiPrev())
-                        elseif (abs(GetCCiPrev() - 0.97999_dp*CCxSF) < 0.001_dp) then
+                        elseif (abs(GetCCiPrev() - 0.97999_sp*CCxSF) < 0.001_sp) then
                             call SetCCiActual(CanopyCoverNoStressSF(&
                                 (VirtualTimeCC+GetSimulation_DelayedDays()+1), &
                                 GetCrop_DaysToGermination(), &
@@ -4801,10 +4801,10 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                                                     GetCrop_CCoAdjusted(), &
                                                     GetCrop_CCxAdjusted(), &
                                                     CGCadjusted)
-                            if (tTemp < 0._dp) then
+                            if (tTemp < 0._sp) then
                                 call SetCCiActual(GetCCiPrev())
                             else
-                                tTemp = tTemp + 1._dp
+                                tTemp = tTemp + 1._sp
                                 call SetCCiActual(CCatTime(&
                                         tTemp, GetCrop_CCoAdjusted(), CGCadjusted, &
                                         GetCrop_CCxAdjusted()))
@@ -4834,12 +4834,12 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                             GetSimulation_EffectStress_RedCGC(), &
                             GetSimulation_EffectStress_RedCCX()))
                     call SetCrop_CCoAdjusted(CCoTotal)
-                    StressLeaf = -33._dp ! maximum canopy is reached;
+                    StressLeaf = -33._sp ! maximum canopy is reached;
                     ! no increase anymore of CGC after cutting
                 end if
                 if (GetCCiActual() > CCxSFCD) then
                     call SetCCiActual(CCxSFCD)
-                    StressLeaf = -33._dp ! maximum canopy is reached;
+                    StressLeaf = -33._sp ! maximum canopy is reached;
                     ! no increase anymore of CGC after cutting
                 end if
             end if
@@ -4847,13 +4847,13 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
 
             ! 3. Canopy can no longer develop (Mid-season (from tFinalCCx) or Late season stage)
         else
-            StressLeaf = -33._dp ! maximum canopy is reached;
-            if (GetCrop_CCxAdjusted() < 0._dp) then
+            StressLeaf = -33._sp ! maximum canopy is reached;
+            if (GetCrop_CCxAdjusted() < 0._sp) then
                 call SetCrop_CCxAdjusted(GetCCiPrev())
             end if
 
             if (VirtualTimeCC < GetCrop_DaysToSenescence()) then ! mid-season
-                if (GetCrop_CCxAdjusted() > 0.97999_dp*CCxSF) then
+                if (GetCrop_CCxAdjusted() > 0.97999_sp*CCxSF) then
                     call SetCCiActual(CanopyCoverNoStressSF(&
                             (VirtualTimeCC+GetSimulation_DelayedDays()+1), &
                             GetCrop_DaysToGermination(), &
@@ -4879,8 +4879,8 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                             GetCrop_GDDaysToHarvest(), &
                             CCoTotal, &
                             (GetCrop_CCxAdjusted() &
-                                /(1._dp - GetSimulation_EffectStress_RedCCx() &
-                                                                  /100._dp)), &
+                                /(1._sp - GetSimulation_EffectStress_RedCCx() &
+                                                                  /100._sp)), &
                             GetCrop_CGC(), CDCTotal, GetCrop_GDDCGC(), &
                             GDDCDCTotal, GetSimulation_SumGDD(), &
                             GetCrop_ModeCycle(), &
@@ -4897,21 +4897,21 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                 if (GetCrop_CCxAdjusted() > CCxSFCD) then
                     call SetCrop_CCxAdjusted(CCxSFCD)
                 end if
-                if (GetCrop_CCxAdjusted() < 0.01_dp) then
-                    call SetCCiActual(0._dp)
+                if (GetCrop_CCxAdjusted() < 0.01_sp) then
+                    call SetCCiActual(0._sp)
                 else
                     ! calculate CC in late season
                     ! CCibis = CC which canopy declines
                     ! (soil fertility/salinity stress) further in late season
                     CCibis = CCxSF - (GetSimulation_EffectStress_CDecline() &
-                                                                  /100._dp) &
-                            * (exp(2._dp * log( &
-                                (VirtualTimeCC+GetSimulation_DelayedDays()+1._dp) &
+                                                                  /100._sp) &
+                            * (exp(2._sp * log( &
+                                (VirtualTimeCC+GetSimulation_DelayedDays()+1._sp) &
                                     - GetCrop_DaysToFullCanopySF())) &
                                 /(GetCrop_DaysToSenescence() &
                                   - GetCrop_DaysToFullCanopySF()))
-                    if (CCibis < 0._dp) then
-                        call SetCCiActual(0._dp)
+                    if (CCibis < 0._sp) then
+                        call SetCCiActual(0._sp)
                     else
                         ! CCiActual = CC with natural senescence in late season
                         Crop_CCxAdjusted_temp = GetCrop_CCxAdjusted()
@@ -4924,18 +4924,18 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                                 + LengthCanopyDecline(GetCrop_CCxAdjusted(), &
                                                       CDCadjusted))) then
                             call SetCCiActual(GetCrop_CCxAdjusted() &
-                                     * (1._dp - 0.05_dp * (exp(&
+                                     * (1._sp - 0.05_sp * (exp(&
                                 ((VirtualTimeCC+GetSimulation_DelayedDays()+1) &
                                     - GetCrop_DaysToSenescence()) &
-                                * 3.33_dp &
-                                * CDCadjusted/(GetCrop_CCxAdjusted() + 2.29_dp)) &
-                                                                     - 1._dp)))
+                                * 3.33_sp &
+                                * CDCadjusted/(GetCrop_CCxAdjusted() + 2.29_sp)) &
+                                                                     - 1._sp)))
                             ! CCiActual becomes CCibis, when canopy decline is more severe
                             if (CCibis < GetCCiActual()) then
                                 call SetCCiActual(CCibis)
                             end if
                         else
-                            call SetCCiActual(0._dp)
+                            call SetCCiActual(0._sp)
                         end if
                     end if
                     ! late season
@@ -4948,16 +4948,16 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
         ! 4. Canopy senescence due to water stress ?
         if ((VirtualTimeCC < GetCrop_DaysToSenescence()) &
                                 ! not yet late season stage
-            .or. (TimeSenescence > 0._dp)) then
+            .or. (TimeSenescence > 0._sp)) then
             ! in late season with ongoing early senesence
             ! (TimeSenescence in days)
-            StressSenescence = 0._dp
+            StressSenescence = 0._sp
             WithBeta = .true.
             Crop_pSenAct_temp = GetCrop_pSenAct()
             call AdjustpSenescenceToETo(GetETo(), TimeSenescence, &
                                         WithBeta, Crop_pSenAct_temp)
             call SetCrop_pSenAct(Crop_pSenAct_temp)
-            KsRED = 1._dp  ! effect of soil salinity on the
+            KsRED = 1._sp  ! effect of soil salinity on the
                            ! threshold for senescence
             if (GetSimulation_SWCtopSoilConsidered()) then
                 ! top soil is relative wetter than total root zone
@@ -4987,22 +4987,22 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                 ! CanopySenescence
                 call SetSimulation_EvapLimitON(.true.)
                 ! consider withered crop when not yet in late season
-                if (abs(TimeSenescence) < epsilon(0._dp)) then
+                if (abs(TimeSenescence) < epsilon(0._sp)) then
                     call SetCCiTopEarlySen(GetCCiActual())
                     ! CC before canopy decline
                 end if
-                TimeSenescence = TimeSenescence + 1._dp  ! add 1 day
+                TimeSenescence = TimeSenescence + 1._sp  ! add 1 day
                 call DetermineCDCadjustedWaterStress(CDCadjusted, KsSen)
-                if (GetCCiTopEarlySen() < 0.001_dp) then
+                if (GetCCiTopEarlySen() < 0.001_sp) then
                     if ((GetSimulation_SumEToStress() &
                         > GetCrop_SumEToDelaySenescence()) &
                         .or. (abs(GetCrop_SumEToDelaySenescence()) &
-                              < epsilon(0._dp))) then
-                        CCiSen = 0._dp ! no crop anymore
+                              < epsilon(0._sp))) then
+                        CCiSen = 0._sp ! no crop anymore
                     else
                         if (CCdormant > GetCrop_CCo()) then
                             CCiSen = GetCrop_CCo() &
-                                + (1._dp &
+                                + (1._sp &
                                   - GetSimulation_SumEToStress() &
                                         /GetCrop_SumEToDelaySenescence()) &
                                 * (CCdormant - GetCrop_CCo())
@@ -5011,21 +5011,21 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                         end if
                     end if
                 else
-                    if (((TimeSenescence*CDCTotal*3.33_dp) &
-                            /(GetCCiTopEarlySen()+2.29_dp) > 100._dp) &
+                    if (((TimeSenescence*CDCTotal*3.33_sp) &
+                            /(GetCCiTopEarlySen()+2.29_sp) > 100._sp) &
                             ! e power too large and in any case CCisen << 0
                         .or. (GetCCiPrev() &
-                                >= 1.05_dp * GetCCiTopEarlySen())) then
+                                >= 1.05_sp * GetCCiTopEarlySen())) then
                                 ! Ln of negative or zero value
                         if ((GetSimulation_SumEToStress() &
                                 > GetCrop_SumEToDelaySenescence()) &
                             .or. (abs(GetCrop_SumEToDelaySenescence()) &
-                                    < epsilon(0._dp))) then
-                            CCiSen = 0._dp ! no crop anymore
+                                    < epsilon(0._sp))) then
+                            CCiSen = 0._sp ! no crop anymore
                         else
                             if (CCdormant > GetCrop_CCo()) then
                                 CCiSen = GetCrop_CCo() &
-                                    + (1._dp &
+                                    + (1._sp &
                                         - GetSimulation_SumEToStress() &
                                             /GetCrop_SumEToDelaySenescence()) &
                                     * (CCdormant - GetCrop_CCo())
@@ -5036,41 +5036,41 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                     else
                         ! CDC is adjusted to degree of stress
                         ! time required to reach CCiprev with CDCadjusted
-                        if (abs(GetCCiTopEarlySen()) < epsilon(0._dp)) then
-                            call SetCCiTopEarlySen(epsilon(1._dp))
+                        if (abs(GetCCiTopEarlySen()) < epsilon(0._sp)) then
+                            call SetCCiTopEarlySen(epsilon(1._sp))
                         end if
-                        if (abs(CDCadjusted) < epsilon(0._dp)) then
-                            CDCadjusted = epsilon(1._dp)
+                        if (abs(CDCadjusted) < epsilon(0._sp)) then
+                            CDCadjusted = epsilon(1._sp)
                         end if
-                        tTemp = (log(1._dp &
-                                     + (1._dp &
+                        tTemp = (log(1._sp &
+                                     + (1._sp &
                                         - GetCCiPrev()/GetCCiTopEarlySen()) &
-                                                                    /0.05_dp)) &
-                                /(CDCadjusted*3.33_dp &
-                                    /(GetCCiTopEarlySen()+2.29_dp))
+                                                                    /0.05_sp)) &
+                                /(CDCadjusted*3.33_sp &
+                                    /(GetCCiTopEarlySen()+2.29_sp))
                         ! add 1 day to tTemp and calculate CCiSen
                         ! with CDCadjusted
                         CCiSen = GetCCiTopEarlySen() &
-                                 * (1._dp - 0.05_dp &
-                                            * (exp((tTemp+1._dp) &
+                                 * (1._sp - 0.05_sp &
+                                            * (exp((tTemp+1._sp) &
                                                     *CDCadjusted &
-                                                    *3.33_dp &
+                                                    *3.33_sp &
                                                     /(GetCCiTopEarlySen() &
                                                                   +2.29)) &
                                                 -1))
                     end if
 
-                    if (CCiSen < 0._dp) then
-                        CCiSen = 0._dp
+                    if (CCiSen < 0._sp) then
+                        CCiSen = 0._sp
                     end if
-                    if ((GetCrop_SumEToDelaySenescence() > 0._dp) &
+                    if ((GetCrop_SumEToDelaySenescence() > 0._sp) &
                         .and. (GetSimulation_SumEToStress() &
                                 <= GetCrop_SumEToDelaySenescence())) then
                         if ((CCiSen < GetCrop_CCo()) &
                             .or. (CCiSen < CCdormant)) then
                             if (CCdormant > GetCrop_CCo()) then
                                 CCiSen = GetCrop_CCo() &
-                                        + (1._dp &
+                                        + (1._sp &
                                             - GetSimulation_SumEToStress() &
                                               /GetCrop_SumEToDelaySenescence()) &
                                         * (CCdormant - GetCrop_CCo())
@@ -5104,19 +5104,19 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                     end if
                 end if
 
-                if ((roundc(10000._dp*CCiSen, mold=1) &
-                    <= (10000._dp*CCdormant)) &
-                    .or. (roundc(10000._dp*CCiSen, mold=1) &
-                            <= roundc(10000._dp*GetCrop_CCo(), mold=1))) then
+                if ((roundc(10000._sp*CCiSen, mold=1) &
+                    <= (10000._sp*CCdormant)) &
+                    .or. (roundc(10000._sp*CCiSen, mold=1) &
+                            <= roundc(10000._sp*GetCrop_CCo(), mold=1))) then
                     call SetSimulation_SumEToStress(&
                             GetSimulation_SumEToStress() + GetETo())
                 end if
             else
                 ! no water stress, resulting in canopy senescence
-                TimeSenescence = 0._dp
+                TimeSenescence = 0._sp
                 ! No early senescence or back to normal
-                StressSenescence = 0._dp
-                call SetSimulation_SumEToStress(0._dp)
+                StressSenescence = 0._sp
+                call SetSimulation_SumEToStress(0._sp)
                 if ((VirtualTimeCC > GetCrop_DaysToSenescence()) &
                     .and. (GetCCiActual() > GetCCiPrev())) then
                     ! result of a rewatering in late season of
@@ -5136,8 +5136,8 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                             GetCrop_GDDaysToHarvest(), &
                             CCoTotal, &
                             (GetCrop_CCxAdjusted() &
-                                /(1._dp - GetSimulation_EffectStress_RedCCx() &
-                                                                    /100._dp)), &
+                                /(1._sp - GetSimulation_EffectStress_RedCCx() &
+                                                                    /100._sp)), &
                             GetCrop_CGC(), CDCadjusted, &
                             GetCrop_GDDCGC(), GDDCDCTotal, &
                             GetSimulation_SumGDD(), GetCrop_ModeCycle(), &
@@ -5161,7 +5161,7 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
         end if
 
         ! 7. no crop as a result of fertiltiy and/or water stress
-        if (roundc(1000._dp*GetCCiActual(), mold=1) <= 0) then
+        if (roundc(1000._sp*GetCCiActual(), mold=1) <= 0) then
             NoMoreCrop = .true.
         end if
 
@@ -5174,11 +5174,11 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
 
 
     subroutine DetermineCGCadjusted(CGCadjusted)
-        real(dp), intent(inout) :: CGCadjusted
+        real(sp), intent(inout) :: CGCadjusted
 
-        real(dp) :: Wrelative
-        real(dp) :: KsLeaf
-        real(dp) :: SWCeffectiveRootZone, FCeffectiveRootZone, &
+        real(sp) :: Wrelative
+        real(sp) :: KsLeaf
+        real(sp) :: SWCeffectiveRootZone, FCeffectiveRootZone, &
                     WPeffectiveRootZone
 
         ! determine FC and PWP
@@ -5202,22 +5202,22 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
         ! Canopy stress and effect of soil water stress on CGC
         if (SWCeffectiveRootZone >= FCeffectiveRootZone) then
             CGCadjusted = CGCSF
-            StressLeaf = 0._dp
+            StressLeaf = 0._sp
         elseif (SWCeffectiveRootZone <= WPeffectiveRootZone) then
-            CGCadjusted = 0._dp
-            StressLeaf = 100._dp
+            CGCadjusted = 0._sp
+            StressLeaf = 100._sp
         else
             if (Wrelative <= GetCrop_pLeafAct()) then
                 CGCadjusted = CGCSF
-                StressLeaf = 0._dp
+                StressLeaf = 0._sp
             elseif (Wrelative >= pLeafLLAct) then
-                CGCadjusted = 0._dp
-                StressLeaf = 100._dp
+                CGCadjusted = 0._sp
+                StressLeaf = 100._sp
             else
                 KsLeaf = KsAny(Wrelative, GetCrop_pLeafAct(), &
                                pLeafLLAct, GetCrop_KsShapeFactorLeaf())
                 CGCadjusted = CGCSF * KsLeaf
-                StressLeaf = 100._dp * (1._dp - KsLeaf)
+                StressLeaf = 100._sp * (1._sp - KsLeaf)
             end if
         end if
 
@@ -5225,15 +5225,15 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
 
 
     subroutine DetermineCDCadjustedWaterStress(CDCadjusted, KsSen)
-        real(dp), intent(inout) :: CDCadjusted
-        real(dp), intent(inout) :: KsSen
+        real(sp), intent(inout) :: CDCadjusted
+        real(sp), intent(inout) :: KsSen
 
-        real(dp) :: Wrelative
-        real(dp) :: pSenLL
-        real(dp) :: pSenAct
+        real(sp) :: Wrelative
+        real(sp) :: pSenLL
+        real(sp) :: pSenAct
         logical :: WithBeta
 
-        pSenLL = 0.999_dp ! WP
+        pSenLL = 0.999_sp ! WP
         if (GetSimulation_SWCtopSoilConsidered()) then
         ! top soil is relative wetter than total root zone
             Wrelative = (GetRootZoneWC_ZtopFC() - GetRootZoneWC_ZtopAct()) &
@@ -5248,62 +5248,62 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
         call AdjustpSenescenceToETo(GetETo(), TimeSenescence, &
                                     WithBeta, pSenAct)
         if (Wrelative <= pSenAct) then
-            CDCadjusted = 0.001_dp ! extreme small decline
-            StressSenescence = 0._dp
-            KsSen = 1._dp
+            CDCadjusted = 0.001_sp ! extreme small decline
+            StressSenescence = 0._sp
+            KsSen = 1._sp
         elseif (Wrelative >= pSenLL) then
-            CDCadjusted = CDCTotal * (CCxSFCD+2.29_dp)/(CCxTotal+2.29_dp)
+            CDCadjusted = CDCTotal * (CCxSFCD+2.29_sp)/(CCxTotal+2.29_sp)
                                                             ! full speed
-            StressSenescence = 100._dp
-            KsSen = 0._dp
+            StressSenescence = 100._sp
+            KsSen = 0._sp
         else
             KsSen = KsAny(Wrelative, pSenAct, pSenLL, &
                           GetCrop_KsShapeFactorSenescence())
             if (KsSen > ac_zero_threshold) then
                 CDCadjusted = CDCTotal &
-                              * ((CCxSFCD+2.29_dp)/(CCxTotal+2.29_dp)) &
-                                    * (1._dp - exp(8._dp*log(KsSen)))
-                StressSenescence = 100._dp * (1._dp - KsSen)
+                              * ((CCxSFCD+2.29_sp)/(CCxTotal+2.29_sp)) &
+                                    * (1._sp - exp(8._sp*log(KsSen)))
+                StressSenescence = 100._sp * (1._sp - KsSen)
             else
-                CDCadjusted = 0._dp
-                StressSenescence = 0._dp
+                CDCadjusted = 0._sp
+                StressSenescence = 0._sp
             end if
         end if
     end subroutine DetermineCDCadjustedWaterStress
 
 
-    real(dp) function RequiredTimeNew(CCiToFind, CCo, CCx, CGCadjusted)
-        real(dp), intent(in) :: CCiToFind
-        real(dp), intent(in) :: CCo
-        real(dp), intent(in) :: CCx
-        real(dp), intent(in) :: CGCadjusted
+    real(sp) function RequiredTimeNew(CCiToFind, CCo, CCx, CGCadjusted)
+        real(sp), intent(in) :: CCiToFind
+        real(sp), intent(in) :: CCo
+        real(sp), intent(in) :: CCx
+        real(sp), intent(in) :: CGCadjusted
 
-        real(dp) :: CGCx
+        real(sp) :: CGCx
 
         ! Only when VirtualTime > 1
         ! and CCx < CCiToFind
         ! 1. CGCx to reach CCiToFind on previous day (= VirtualTime -1 )
-        if (CCiToFind <= CCx/2._dp) then
+        if (CCiToFind <= CCx/2._sp) then
             CGCx = (log(CCiToFind/CCo))/VirtualTimeCC
         else
-            CGCx = (log((0.25_dp*CCx*CCx/CCo)/(CCx-CCiToFind)))/VirtualTimeCC
+            CGCx = (log((0.25_sp*CCx*CCx/CCo)/(CCx-CCiToFind)))/VirtualTimeCC
         end if
         ! 2. Required time
         RequiredTimeNew = VirtualTimeCC * CGCx/CGCadjusted
     end function RequiredTimeNew
 
 
-    real(dp) function CCatTime(tfictive, CCoGiven, CGCGiven, CCxGiven)
-        real(dp), intent(in) :: tfictive
-        real(dp), intent(in) :: CCoGiven
-        real(dp), intent(in) :: CGCGiven
-        real(dp), intent(in) :: CCxGiven
+    real(sp) function CCatTime(tfictive, CCoGiven, CGCGiven, CCxGiven)
+        real(sp), intent(in) :: tfictive
+        real(sp), intent(in) :: CCoGiven
+        real(sp), intent(in) :: CGCGiven
+        real(sp), intent(in) :: CCxGiven
 
-        real(dp) :: CCi
+        real(sp) :: CCi
 
         CCi = CCoGiven * exp(CGCGiven * tfictive)
-        if (CCi > CCxGiven/2._dp) then
-            CCi = CCxGiven - 0.25_dp &
+        if (CCi > CCxGiven/2._sp) then
+            CCi = CCxGiven - 0.25_sp &
                              * (CCxGiven/CCoGiven) &
                              * CCxGiven &
                              * exp(-CGCGiven*tfictive)
@@ -5313,9 +5313,9 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
 
 
     subroutine DetermineCCxAdjusted(CCxAdjusted)
-        real(dp), intent(inout) :: CCxAdjusted
+        real(sp), intent(inout) :: CCxAdjusted
 
-        real(dp) :: tfictive
+        real(sp) :: tfictive
 
         ! 1. find time (tfictive) required to reach CCiPrev
         !    (CCi of previous day) with CGCadjusted
@@ -5323,7 +5323,7 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
                                    CCxSF, CGCadjusted)
 
         ! 2. Get CCxadjusted (reached at end of stretched crop development)
-        if (tfictive > 0._dp) then
+        if (tfictive > 0._sp) then
             tfictive = tfictive + (tFinalCCx - VirtualTimeCC)
             CCxAdjusted = CCatTime(tfictive, GetCrop_CCoAdjusted(), &
                                    CGCadjusted, CCxSF)
@@ -5334,27 +5334,27 @@ subroutine DetermineCCi(CCxTotal, CCoTotal, StressLeaf, FracAssim, &
 
 
     subroutine GetNewCCxandCDC(CCiPrev, CDC, CCx, CCxAdjusted, CDCadjusted)
-        real(dp), intent(in) :: CCiPrev
-        real(dp), intent(in) :: CDC
-        real(dp), intent(in) :: CCx
-        real(dp), intent(inout) :: CCxAdjusted
-        real(dp), intent(inout) :: CDCadjusted
+        real(sp), intent(in) :: CCiPrev
+        real(sp), intent(in) :: CDC
+        real(sp), intent(in) :: CCx
+        real(sp), intent(inout) :: CCxAdjusted
+        real(sp), intent(inout) :: CDCadjusted
 
         CCxAdjusted = CCiPrev &
-                      /(1._dp - 0.05_dp &
+                      /(1._sp - 0.05_sp &
                             * (exp((VirtualTimeCC-GetCrop_DaysToSenescence()) &
-                                          *CDC*3.33_dp/(CCX+2.29_dp))-1._dp))
+                                          *CDC*3.33_sp/(CCX+2.29_sp))-1._sp))
         ! CDCadjusted := CDC * CCxAdjusted/CCx;
-        CDCadjusted = CDC * (CCxAdjusted+2.29_dp)/(CCx+2.29_dp)
+        CDCadjusted = CDC * (CCxAdjusted+2.29_sp)/(CCx+2.29_sp)
     end subroutine GetNewCCxandCDC
 end subroutine DetermineCCi
 
 
 subroutine FeedbackCC()
 
-    if (((GetCCiActual() - GetCCiPrev()) > 0.005_dp) &
+    if (((GetCCiActual() - GetCCiPrev()) > 0.005_sp) &
         ! canopy is still developing
-        .and. (GetTact() < epsilon(0._dp))) then
+        .and. (GetTact() < epsilon(0._sp))) then
         ! due to aeration stress or ETo = 0
         call SetCCiActual(GetCCiPrev())
         ! no transpiration, no crop developmentc
@@ -5364,53 +5364,53 @@ end subroutine FeedbackCC
 
 subroutine HorizontalInflowGWTable(DepthGWTmeter, HorizontalSaltFlow, &
                                    HorizontalWaterFlow)
-    real(dp), intent(in) :: DepthGWTmeter
-    real(dp), intent(inout) :: HorizontalSaltFlow
-    real(dp), intent(inout) :: HorizontalWaterFlow
+    real(sp), intent(in) :: DepthGWTmeter
+    real(sp), intent(inout) :: HorizontalSaltFlow
+    real(sp), intent(inout) :: HorizontalWaterFlow
 
-    real(dp) :: Ztot, Zi, DeltaTheta, SaltAct, SaltAdj
+    real(sp) :: Ztot, Zi, DeltaTheta, SaltAct, SaltAdj
     integer(int32) :: compi, celli
     type(CompartmentIndividual) :: Compi_temp
 
-    Ztot = 0._dp
+    Ztot = 0._sp
     do compi = 1, GetNrCompartments()
         Ztot = Ztot + GetCompartment_Thickness(compi)
-        Zi = Ztot - GetCompartment_Thickness(compi)/2._dp
+        Zi = Ztot - GetCompartment_Thickness(compi)/2._sp
         if (Zi >= DepthGWTmeter) then
             ! soil water content is at saturation
             if (GetCompartment_Theta(compi) &
-                < GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._dp) then
-                DeltaTheta = GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._dp &
+                < GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._sp) then
+                DeltaTheta = GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._sp &
                             - GetCompartment_Theta(compi)
                 call SetCompartment_theta(&
                         compi, &
-                        GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._dp)
+                        GetSoilLayer_SAT(GetCompartment_Layer(compi))/100._sp)
                 HorizontalWaterFlow = HorizontalWaterFlow &
-                                      + 1000._dp * DeltaTheta &
+                                      + 1000._sp * DeltaTheta &
                                             * GetCompartment_Thickness(compi) &
-                                            * (1._dp &
+                                            * (1._sp &
                       - GetSoilLayer_GravelVol(GetCompartment_Layer(compi)) &
-                                                                  /100._dp)
+                                                                  /100._sp)
             end if
             ! ECe is equal to the EC of the groundwater table
             if (abs(ECeComp(GetCompartment_i(compi)) - GetECiAqua()) &
-                        > 0.0001_dp) then
-                SaltAct = 0._dp
+                        > 0.0001_sp) then
+                SaltAct = 0._sp
                 do celli = 1, GetSoilLayer_SCP1(GetCompartment_Layer(compi))
                     SaltAct = SaltAct &
                               + (GetCompartment_Salt(compi, celli) &
                                     + GetCompartment_Depo(compi, celli))&
-                                /100._dp ! Mg/ha
+                                /100._sp ! Mg/ha
                 end do
                 Compi_temp = GetCompartment_i(compi)
                 call DetermineSaltContent(GetECiAqua(), Compi_temp)
                 call SetCompartment_i(compi, Compi_temp)
-                SaltAdj = 0._dp
+                SaltAdj = 0._sp
                 do celli = 1, GetSoilLayer_SCP1(GetCompartment_Layer(compi))
                     SaltAdj = SaltAdj &
                               + (GetCompartment_Salt(compi, celli) &
                                     + GetCompartment_Depo(compi, celli))&
-                                 /100._dp ! Mg/ha
+                                 /100._sp ! Mg/ha
                 end do
                 HorizontalSaltFlow = HorizontalSaltFlow + (SaltAdj - SaltAct)
             end if
@@ -5437,45 +5437,45 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
     integer(int32), intent(in) :: NrDayGrow
     integer(int32), intent(in) :: Tadj
     integer(int32), intent(in) :: GDDTadj
-    real(dp), intent(in) :: GDDayi
-    real(dp), intent(in) :: CGCref
-    real(dp), intent(in) :: GDDCGCref
-    real(dp), intent(in) :: CO2i
-    real(dp), intent(in) :: CCxTotal
-    real(dp), intent(in) :: CCoTotal
-    real(dp), intent(in) :: CDCTotal
-    real(dp), intent(in) :: GDDCDCTotal
-    real(dp), intent(in) :: SumGDDadjCC
-    real(dp), intent(in) :: Coeffb0Salt
-    real(dp), intent(in) :: Coeffb1Salt
-    real(dp), intent(in) :: Coeffb2Salt
-    real(dp), intent(in) :: StressTotSaltPrev
-    real(dp), intent(in) :: DayFraction
-    real(dp), intent(in) :: GDDayFraction
-    real(dp), intent(in) :: FracAssim
+    real(sp), intent(in) :: GDDayi
+    real(sp), intent(in) :: CGCref
+    real(sp), intent(in) :: GDDCGCref
+    real(sp), intent(in) :: CO2i
+    real(sp), intent(in) :: CCxTotal
+    real(sp), intent(in) :: CCoTotal
+    real(sp), intent(in) :: CDCTotal
+    real(sp), intent(in) :: GDDCDCTotal
+    real(sp), intent(in) :: SumGDDadjCC
+    real(sp), intent(in) :: Coeffb0Salt
+    real(sp), intent(in) :: Coeffb1Salt
+    real(sp), intent(in) :: Coeffb2Salt
+    real(sp), intent(in) :: StressTotSaltPrev
+    real(sp), intent(in) :: DayFraction
+    real(sp), intent(in) :: GDDayFraction
+    real(sp), intent(in) :: FracAssim
     integer(int32), intent(in) :: StressSFadjNEW
     logical, intent(in) :: StorageON
     logical, intent(in) :: MobilizationON
-    real(dp), intent(inout) :: StressLeaf
-    real(dp), intent(inout) :: StressSenescence
-    real(dp), intent(inout) :: TimeSenescence
+    real(sp), intent(inout) :: StressLeaf
+    real(sp), intent(inout) :: StressSenescence
+    real(sp), intent(inout) :: TimeSenescence
     logical, intent(inout) :: NoMoreCrop
-    real(dp), intent(inout) :: TESTVAL
+    real(sp), intent(inout) :: TESTVAL
 
 
     integer(intEnum) ::  control
-    real(dp) :: InfiltratedRain, InfiltratedIrrigation, &
+    real(sp) :: InfiltratedRain, InfiltratedIrrigation, &
                 InfiltratedStorage, EpotTot, SubDrain
     integer(int32) :: DAP
-    real(dp) :: ECInfilt
+    real(sp) :: ECInfilt
         !! EC of the infiltrated water (surface storage)
     logical :: WaterTableInProfile
-    real(dp) :: HorizontalWaterFlow, HorizontalSaltFlow
+    real(sp) :: HorizontalWaterFlow, HorizontalSaltFlow
     logical :: SWCtopSoilConsidered_temp
-    real(dp) :: EvapWCsurf_temp, CRwater_temp, Tpot_temp, Epot_temp
+    real(sp) :: EvapWCsurf_temp, CRwater_temp, Tpot_temp, Epot_temp
     type(CompartmentIndividual), dimension(max_No_compartments) :: Comp_temp
-    real(dp) :: Crop_pActStom_temp
-    real(dp) :: CRsalt_temp, ECdrain_temp, Surf0_temp
+    real(sp) :: Crop_pActStom_temp
+    real(sp) :: CRsalt_temp, ECdrain_temp, Surf0_temp
     integer(int32) :: TargetTimeVal_loc
     integer(int32) :: StressSFadjNEW_loc
 
@@ -5495,19 +5495,19 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
     call SetSurf0(Surf0_temp)
 
     ! 2. Adjustments in presence of Groundwater table
-    call CheckForWaterTableInProfile(GetZiAqua()/100._dp, GetCompartment(), &
+    call CheckForWaterTableInProfile(GetZiAqua()/100._sp, GetCompartment(), &
                                      WaterTableInProfile)
     Comp_temp = GetCompartment()
-    call CalculateAdjustedFC(GetZiAqua()/100._dp, Comp_temp)
+    call CalculateAdjustedFC(GetZiAqua()/100._sp, Comp_temp)
     call SetCompartment(Comp_temp)
 
     ! 3. Drainage
     call calculate_drainage()
 
     ! 4. Runoff
-    if (GetManagement_Bundheight() < 0.001_dp) then
+    if (GetManagement_Bundheight() < 0.001_sp) then
         call SetDaySubmerged(0)
-        if ((GetManagement_RunoffON()) .and. (GetRain() > 0.1_dp)) then
+        if ((GetManagement_RunoffON()) .and. (GetRain() > 0.1_sp)) then
             call calculate_runoff(GetSimulParam_RunoffDepth())
         end if
     end if
@@ -5518,11 +5518,11 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
         call CalculateEffectiveRainfall(SubDrain)
     end if
     if (((GetIrriMode() == IrriMode_Generate) &
-        .and. (GetIrrigation() < epsilon(0._dp))) &
+        .and. (GetIrrigation() < epsilon(0._sp))) &
             .and. (TargetTimeVal_loc /= -999)) then
         call Calculate_irrigation(SubDrain, TargetTimeVal_loc, TargetDepthVal)
     end if
-    if (GetManagement_Bundheight() >= 0.01_dp) then
+    if (GetManagement_Bundheight() >= 0.01_sp) then
         call calculate_surfacestorage(InfiltratedRain, InfiltratedIrrigation, &
                                       InfiltratedStorage, ECinfilt, SubDrain, &
                                       dayi)
@@ -5603,7 +5603,7 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
                         GetCrop_DaysToHarvest(), DayLastCut, GetCCiActual(), &
                         GetETo(), GetCrop_KcTop(), GetCrop_KcDecline(), &
                         GetCrop_CCxAdjusted(), GetCrop_CCxWithered(), &
-                        real(GetCrop_CCEffectEvapLate(), kind=dp), CO2i, &
+                        real(GetCrop_CCEffectEvapLate(), kind=sp), CO2i, &
                         GDDayi, GetCrop_GDtranspLow(), Tpot_temp, EpotTot)
     call SetTpot(Tpot_temp)
     call SetEpot(EpotTot)
@@ -5617,8 +5617,8 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
         call PrepareStage2()
             ! Initialize Simulation.EvapstartStg2 (REW is gone)
     end if
-    if ((GetRain() > 0._dp) &
-        .or. ((GetIrrigation() > 0._dp) &
+    if ((GetRain() > 0._sp) &
+        .or. ((GetIrrigation() > 0._sp) &
             .and. (GetIrriMode() /= IrriMode_Inet))) then
         call PrepareStage1()
     end if
@@ -5632,19 +5632,19 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
         .and. (GetSimulParam_EffectiveRain_RootNrEvap() > 0)) then
         ! reduction soil evaporation
         call SetEpot(GetEpot() &
-                    * (exp((1._dp/GetSimulParam_EffectiveRain_RootNrEvap())&
-                            *log((GetSoil_REW()+1._dp)/20._dp))))
+                    * (exp((1._sp/GetSimulParam_EffectiveRain_RootNrEvap())&
+                            *log((GetSoil_REW()+1._sp)/20._sp))))
     end if
     ! actual evaporation
-    call SetEact(0._dp)
-    if (GetEpot() > 0._dp) then
+    call SetEact(0._sp)
+    if (GetEpot() > 0._sp) then
         ! surface water
-        if (GetSurfaceStorage() > 0._dp) then
+        if (GetSurfaceStorage() > 0._sp) then
             call CalculateEvaporationSurfaceWater
         end if
         ! stage 1 evaporation
         if ((abs(GetEpot() - GetEact()) > ac_zero_threshold) &
-            .and. (GetSimulation_EvapWCsurf() > 0._dp)) then
+            .and. (GetSimulation_EvapWCsurf() > 0._sp)) then
             call CalculateSoilEvaporationStage1()
         end if
         ! stage 2 evaporation
@@ -5655,16 +5655,16 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
     ! Reset redcution Epot for 10-day or monthly rainfall data
     if (((GetRainRecord_DataType() == datatype_Decadely) &
             .or. (GetRainRecord_DataType() == datatype_Monthly)) &
-        .and. (GetSimulParam_EffectiveRain_RootNrEvap() > 0._dp)) then
+        .and. (GetSimulParam_EffectiveRain_RootNrEvap() > 0._sp)) then
         call SetEpot(GetEpot()&
-                    /(exp((1._dp/GetSimulParam_EffectiveRain_RootNrEvap()) &
-                           *log((GetSoil_REW()+1._dp)/20._dp))))
+                    /(exp((1._sp/GetSimulParam_EffectiveRain_RootNrEvap()) &
+                           *log((GetSoil_REW()+1._sp)/20._sp))))
     end if
 
 
     ! 13. Transpiration
-    if ((.not. NoMoreCrop) .and. (GetRootingDepth() > 0.0001_dp)) then
-        if ((GetSurfaceStorage() > 0._dp) &
+    if ((.not. NoMoreCrop) .and. (GetRootingDepth() > 0.0001_sp)) then
+        if ((GetSurfaceStorage() > 0._sp) &
             .and. ((GetCrop_AnaeroPoint() == 0) &
                   .or. (GetDaySubmerged() < GetSimulParam_DelayLowOxygen()))) then
             call surface_transpiration(Coeffb0Salt, Coeffb1Salt, Coeffb2Salt)
@@ -5673,14 +5673,14 @@ subroutine BUDGET_module(dayi, TargetTimeVal, TargetDepthVal, VirtualTimeCC, &
                                          Coeffb2Salt)
         end if
     end if
-    if (GetSurfaceStorage() < epsilon(0._dp)) then
+    if (GetSurfaceStorage() < epsilon(0._sp)) then
         call SetDaySubmerged(0)
     end if
     call FeedbackCC()
 
     ! 14. Adjustment to groundwater table
     if (WaterTableInProfile) then
-        call HorizontalInflowGWTable(GetZiAqua()/100._dp, HorizontalSaltFlow, &
+        call HorizontalInflowGWTable(GetZiAqua()/100._sp, HorizontalSaltFlow, &
                                      HorizontalWaterFlow)
     end if
 
