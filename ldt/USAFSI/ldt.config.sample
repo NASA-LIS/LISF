@@ -98,8 +98,11 @@ USAFSI elevQC difference threshold (m): 400.
 USAFSI skewed backQC snow depth threshold (m):  0.4
 # Other new settings
 USAFSI bogus climatology snow depth value (m): 0.2
+USAFSI source of ocean data: "ESPC-D"
 USAFSI GOFS SST data directory:   ./USAFSIIN/GOFS
 USAFSI GOFS CICE data directory:  ./USAFSIIN/GOFS
+USAFSI ESPC-D SST data directory:   ./USAFSIIN/ESPC-D
+USAFSI ESPC-D CICE data directory:  ./USAFSIIN/ESPC-D
 USAFSI LIS GRIB2 data directory:  ./USAFSIIN/LIS_T2
 USAFSI LIS GRIB2 security class:  U
 USAFSI LIS GRIB2 data category:   C

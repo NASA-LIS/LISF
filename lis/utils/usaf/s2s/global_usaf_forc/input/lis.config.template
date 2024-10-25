@@ -22,6 +22,7 @@ Forcing variables list file:            ./input/forcing_variables.txt
 Output methodology:                     "2d gridspace"
 Output model restart files:             1
 Output data format:                     grib1
+#Output data format:                     netcdf
 
 #Required for GRIB1 output
 Output GRIB Table Version:                 128
@@ -33,19 +34,19 @@ Output GRIB Packing Type:                  grid_simple
 
 Output naming style:                    "WMO convention"
 Enable output statistics:               .false.
-Start mode:                             restart
-Starting year:                          2022
-Starting month:                           08
-Starting day:                             01
-Starting hour:                             0
-Starting minute:                           0
-Starting second:                           0
-Ending year:                            2022
-Ending month:                             08
-Ending day:                               02
-Ending hour:                               0
-Ending minute:                             5
-Ending second:                             0
+Start mode: restart
+Starting year: 2024
+Starting month:  6
+Starting day:    1
+Starting hour:   0
+Starting minute: 0
+Starting second: 0
+Ending year: 2024
+Ending month:  6
+Ending day:    2
+Ending hour:   0
+Ending minute: 5
+Ending second: 0
 Undefined value:                       -9999
 Output directory:                       ./output
 Diagnostic output file:                 ./output/logs/lislog
@@ -103,9 +104,12 @@ Bias estimation start mode:                           none                      
 Bias estimation restart file:                         none                                    none                                    none
 
 #Perturbation options
-Perturbations start mode:                             restart                                 restart                                 restart
+#Perturbations start mode:                             restart            #                     restart                                 restart
+# NOTE:  In Ops, use restart mode with appropriate restart files.
+Perturbations start mode:                    coldstart coldstart coldstart
+
 Perturbations restart output interval:                12hr                                    12hr                                    12hr
-Perturbations restart filename:   ./input/restarts/LIS_DAPERT_202104130000.d01.bin   ./input/restarts/LIS_DAPERT_202104130000.d01.bin   ./input/restarts/LIS_DAPERT_202104130000.d01.bin
+Perturbations restart filename:   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin   ./input/rstfiles/LIS_DAPERT_202104130000.d01.bin
 Apply perturbation bias correction:                   1                                       1                                       1
 
 Forcing perturbation algorithm: none none none
@@ -246,9 +250,12 @@ AGRMET CMORPH minimum temperature threshold:      273
 # Use IMERG rainfall data
 AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
-AGRMET IMERG data directory:               ./input/IMERG
+AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-AGRMET IMERG version:                      V06E            # V06E started 8 Nov 2023
+## S2S June-2024 forecast – use the following option:
+#AGRMET IMERG version:                      V06E            # FOR MAY-2024 dates
+## S2S July-2024 forecast and after – use the following option:
+AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
 
 # Bratseth runtime settings
@@ -336,6 +343,23 @@ AGRMET cloud data directory:               WWMCA_GRIB
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
+# S2S AGRMET/Bratseth forcing generation step guidance:
+##  FOR JUNE-2024 S2S Forecast – use following options up to June 1, 2024, 00Z:
+AGRMET radiation derived from:      "cloud types"
+AGRMET cloud data directory:               WWMCA_GRIB              #  Original input WWMCA GRIB-1 files
+#
+##  FOR JULY-2024 S2S Forecast – use following options up to June 24, 2024, 00Z:
+#AGRMET radiation derived from:      "cloud types"
+#AGRMET cloud data directory:               WWMCA_GRIB            #  Original input WWMCA GRIB-1 files
+#  -- June 24, 00Z to July 2, 2024, 00Z
+#AGRMET radiation derived from:      "cloud types"
+#AGRMET cloud data directory:               WWMCA_GRIB_LOOKALIKE     #  WWMCA GRIB Look-alike files target directory
+#
+## FOR AUG-2024 and after S2S Forecast runs – use the following options:
+#  -- July 2, 2024, 00Z and onward:
+#AGRMET radiation derived from:      "GALWEM_RAD"                               # GALWEM Radiation files
+#AGRMET cloud data directory:            GALWEM     #  GALWEM forcing directory
+AGRMET GALWEM radiation data directory:   GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
@@ -371,7 +395,7 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         12hr
-Noah.3.9 restart file:                    ./input/restarts/LIS_RST_NOAH39_202208010000.d01.nc
+Noah.3.9 restart file: ./input/rstfiles/LIS_RST_NOAH39_202406010000.d01.nc
 
 Noah.3.9 restart file format:             netcdf
 Noah.3.9 vegetation parameter table:      ./input/noah39_parms/VEGPARM.TBL

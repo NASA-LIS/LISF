@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,14 @@
 !              ........................................Eric Kemp/SSAI/NASA
 ! 03 Jun 2020  Removed Box-Cox transform in precipitation analysis
 !              ........................................Eric Kemp/SSAI/NASA
+! 29 Nov 2023  Pass QC-rejected obs to OBA files.......Eric Kemp/SSAI/NASA
+! 12 Mar 2024  Restrict BackQC and SuperstatQC to gage reports. Fixed
+!              typo in SuperstatQC threshold...........Eric Kemp/SSAI/NASA
+! 21 Mar 2024  Changed internal BackQC and SuperstatQC logic to only
+!              skip for IMERG.  This allows use with T, RH, and wind
+!              speed analyses..........................Eric Kemp/SSAI/NASA
+! 24 May 2024  Export USAF_is_gauge function, and add HADS and
+!              NWSLI gage networks.....................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -34,7 +42,7 @@
 !
 ! Bratseth, A M, 1986:  Statistical interpolation by means of successive
 !   corrections.  Tellus, 38A, 439-447.
-! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition,
 !   Wiley, New York, 928 pp.
 ! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
 !   Cambridge, UK, 457 pp.
@@ -133,6 +141,8 @@ module USAF_bratsethMod
    public :: USAF_snowDepthQC
    public :: USAF_backQC
    public :: USAF_superstatQC
+   ! EMK 20240524
+   public :: USAF_is_gauge
 
    ! A simple linked list type that can be used in a hash table.  Intended
    ! to store indices of arrays in the USAF_obsData type for efficient look-up.
@@ -143,12 +153,6 @@ module USAF_bratsethMod
 
    ! Private constants
    real, parameter :: MISSING = -9999
-
-   ! Quality control flags.  Should these be public?
-   integer, parameter :: QC_UNKNOWN = 0
-   integer, parameter :: QC_GOOD = 1
-   integer, parameter :: QC_SUSPECT = 2
-   integer, parameter :: QC_REJECT = 3
 
 contains
 
@@ -227,6 +231,9 @@ contains
    ! FIXME: Merge with USAF_createObsData
    subroutine initObsData(this)
 
+      ! Imports
+      use USAF_OBAMod, only: QC_UNKNOWN
+
       ! Defaults
       implicit none
 
@@ -248,9 +255,10 @@ contains
    end subroutine InitObsData
 
    !---------------------------------------------------------------------------
-   ! Loops through contents of ObsData structure and counts all obs with
-   ! "good" quality control flag.
+   ! Loops through contents of ObsData structure and counts all obs
+   ! not flagged for rejection.
    function USAF_countGoodObs(this) result(goodObs)
+      use USAF_OBAMod, only: QC_REJECT
       implicit none
       type(USAF_ObsData), intent(in) :: this
       integer :: goodObs
@@ -259,6 +267,7 @@ contains
       goodObs = 0
       do i = 1, this%nobs
          if (this%qc(i) .ne. QC_REJECT) then
+            ! QC_SUSPECT obs count as "good" so they are included in OBA
             goodObs = goodObs + 1
          end if
       end do ! i
@@ -270,10 +279,11 @@ contains
    ! background field at observation is optional (useful for adding
    ! "superobservations").
    subroutine USAF_assignObsData(this,net,platform,ob,lat,lon,sigmaOSqr, &
-        oErrScaleLength,back)
+        oErrScaleLength,back,qc)
 
       ! Imports
       use LIS_logmod, only : LIS_logunit
+      use USAF_OBAmod, only: QC_UNKNOWN
 
       ! Defaults
       implicit none
@@ -288,6 +298,7 @@ contains
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
       real, optional, intent(in) :: back
+      integer, optional, intent(in) :: qc
 
       ! Local variables
       integer :: nobs
@@ -318,11 +329,16 @@ contains
       end if
       this%sigmaOSqr(nobs) = sigmaOSqr
       this%oErrScaleLength(nobs) = oErrScaleLength
-      this%qc(nobs) = QC_UNKNOWN
       this%nobs = nobs
       if (present(back)) then
          this%back(nobs) = back
       end if
+      if (present(qc)) then
+         this%qc(nobs) = qc
+      else
+         this%qc(nobs) = QC_UNKNOWN
+      end if
+
 !      TRACE_EXIT("bratseth_assign")
 
    end subroutine USAF_assignObsData
@@ -358,6 +374,7 @@ contains
    subroutine USAF_split6hrGaugeObsData(this,nest,imax,jmax,back4,pcap,p3,p6)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -372,7 +389,7 @@ contains
       type(USAF_ObsData),intent(out) :: p3
       type(USAF_ObsData),intent(out) :: p6
 
-      ! Local variables 
+      ! Local variables
       integer :: nobs6
       real :: tmp_back2(2)
       real :: tmp_obs2(2)
@@ -444,7 +461,7 @@ contains
             end if
          end do
 
-         ! Assign 
+         ! Assign
          if (tmp_obs2(1) .ne. MISSING) then
             call USAF_assignObsData(p3, this%net(n), this%platform(n), &
                  tmp_obs2(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
@@ -468,6 +485,7 @@ contains
         p9,p12)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -1590,7 +1608,8 @@ contains
       use AGRMET_forcingMod, only:  agrmet_struc
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
-      use USAF_OBAMod, only: OBA, createOBA,assignOBA
+      use LIS_logMod, only: LIS_logunit
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -1646,7 +1665,7 @@ contains
                  precipAll%net(j), precipAll%platform(j), &
                  precipAll%lat(j), precipAll%lon(j), &
                  precipAll%obs(j), precipAll%back(j), &
-                 A=0.)
+                 A=0., qc=precipAll%qc(j), set_qc_good=.true.)
          end do ! j
          call USAF_destroyObsData(precipAll)
          TRACE_EXIT("bratseth_analyzePrcp")
@@ -1658,7 +1677,7 @@ contains
       call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           is_gauge, &
+           USAF_is_gauge, &
            invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
@@ -1669,7 +1688,7 @@ contains
       call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
            agrmet_struc(nest)%bratseth_precip_max_dist, &
            agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           convergeThresh, is_gauge, sumObsEstimates, &
+           convergeThresh, USAF_is_gauge, sumObsEstimates, &
            npasses, precipOBA)
 
       ! Calculate analysis at grid points.
@@ -1845,6 +1864,8 @@ contains
       use LIS_coreMod, only: LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAmod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -1937,8 +1958,19 @@ contains
             ! contributions from neighbors.
             do j = 1, nobs_cr
                job = jobs_cr_vector(j)
+               if (this%qc(job) .eq. QC_REJECT) cycle
+               ! QC_SUSPECT data not used in analysis, but saved for OBA
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+
                do i = 1, nobs_neighbors
                   iob = iobs_neighbors_vector(i)
+
+                  if (this%qc(iob) .eq. QC_REJECT) cycle
+                  ! QC_SUSPECT data not used in analysis, but saved
+                  ! for OBA
+                  if (this%qc(iob) .eq. QC_SUSPECT_BACKQC) cycle
+                  if (this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                   if (iob .eq. job) then
                      dist = 0
@@ -1955,7 +1987,7 @@ contains
                      num = num + this%sigmaOSqr(job)
                   else if (trim(this%net(iob)) .eq. trim(this%net(job))) then
                      ! Satellite observations have correlated errors.
-                     if (.not. isUncorrObType(this%net(job))) then
+                     if (.not. isUncorrObType(this%net(job),nest)) then
                         if (.not. this%oErrScaleLength(job) > 0 .and. &
                              .not. this%oErrScaleLength(job) < 0) then
                            write(LIS_logunit,*) &
@@ -2015,6 +2047,9 @@ contains
       do j = 1, nobs
          ! Skip bad data
          if ( this%qc(j) .eq. QC_REJECT) cycle
+         ! QC_SUSPECT data not used in analysis, but saved for OBA
+         if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+         if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
          invDataDensities(j) = &
               invDataDensities(j)*(sigmaBSqr + this%sigmaOSqr(j))
          invDataDensities(j) = 1. / invDataDensities(j)
@@ -2059,7 +2094,8 @@ contains
       use LIS_coreMod, only : LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_mpiMod
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT, &
+           QC_SUSPECT_BACKQC, QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2162,6 +2198,11 @@ contains
       allocate(pprev_ana(nobs))
       allocate(pprev_est(nobs))
 
+      pnew_ana = 0
+      pnew_ana_pet = 0
+      pnew_est = 0
+      pnew_est_pet = 0
+
       pprev_est(:) = this%back(:) ! First guess
       pprev_ana(:) = this%back(:) ! First guess
       sumObsEstimates(:) = 0
@@ -2221,15 +2262,23 @@ contains
                do j = 1, nobs_cr
                   job = jobs_cr_vector(j)
 
-                  if (this%qc(job) .eq. QC_REJECT) then
-                     sumObsEstimates_pet(j) = 0
+                  if (this%qc(job) .eq. QC_REJECT .or. &
+                       this%qc(job) .eq. QC_SUSPECT_BACKQC .or. &
+                       this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) then
+                     !sumObsEstimates_pet(j) = 0
+                     sumObsEstimates_pet(job) = 0 ! EMK FIX 20231129
                      cycle
                   endif
+                  ! We will allow analysis to be calculated at points
+                  ! being monitored, but these points will not contribute
+                  ! observation data.
 
                   do i = 1, nobs_neighbors
                      iob = iobs_neighbors_vector(i)
 
-                     if (this%qc(iob) .eq. QC_REJECT) then
+                     if (this%qc(iob) .eq. QC_REJECT .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_BACKQC .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) then
                         sumObsEstimates_pet(iob) = 0
                         cycle
                      endif
@@ -2253,7 +2302,7 @@ contains
                      else if (trim(this%net(iob)) .eq. &
                               trim(this%net(job))) then
                         ! Satellite data have horizontal error correlations
-                        if (.not. isUncorrObType(this%net(job))) then
+                        if (.not. isUncorrObType(this%net(job),nest)) then
                            weight = weight + &
                                 obsErrCov(this%sigmaOSqr(job), &
                                 this%oErrScaleLength(job), &
@@ -2349,7 +2398,9 @@ contains
 
          do j = 1, nobs
 
-            if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_REJECT .or. &
+                 this%qc(j) .eq. QC_SUSPECT_BACKQC .or. &
+                 this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             ! Check for convergence
             y_prev = pprev_ana(j)
@@ -2362,7 +2413,8 @@ contains
                done = .false.
             end if
 
-            ! Updates mean absolute differences against observed values
+            ! Updates mean absolute differences against observed
+            ! values
             if (verbose) then
                icount = icount + 1
                y_est = pnew_est(j)
@@ -2373,12 +2425,13 @@ contains
                diff = y_ana - y_obs
                mad_ana = mad_ana + abs(diff)
 
-               ! A crude check for unusually high normalized deviations.
-               normdev = (y_obs - y_ana)*(y_obs - y_ana)/this%sigmaOSqr(j)
+               ! A crude check for unusually high normalized
+               ! deviations.
+               normdev = (y_obs - y_ana)*(y_obs - y_ana) / &
+                    this%sigmaOSqr(j)
                if (normdev .gt. 9) then
                   num_high_dev = num_high_dev + 1
                end if
-
             end if
 
             pprev_est(j) = pnew_est(j)
@@ -2494,6 +2547,8 @@ contains
          icount = 0
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             if (present(skip)) then
                if (skip(j)) cycle
@@ -2510,6 +2565,7 @@ contains
          varOBA = createOBA(nest, maxobs=good_obs)
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            ! Keep QC_SUSPECT obs for OBA
             if (present(skip)) then
                if (skip(j)) cycle
             end if
@@ -2519,7 +2575,7 @@ contains
             call assignOBA(varOBA, &
                  this%net(j), this%platform(j), &
                  this%lat(j), this%lon(j), &
-                 O, B, A)
+                 O, B, A, this%qc(j), set_qc_good=.true.)
          end do ! j
       end if
 
@@ -2566,6 +2622,8 @@ contains
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2669,6 +2727,8 @@ contains
 
                ! Skip bad observations.
                if (this%qc(job) .eq. QC_REJECT) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                dist = great_circle_distance(locallat,locallon, &
                     this%lat(job), this%lon(job))
@@ -2911,6 +2971,7 @@ contains
 
          yr_2d = mod(yr1,100)
          if (yr_2d.eq.0) yr_2d = 100
+
          if (src .eq. "GFS") then
             ! EMK...Added support for new GFS filename convention
             call getAVNfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
@@ -3271,12 +3332,14 @@ contains
    !
    ! This implementation is parallelized by distributing work among the
    ! different LIS ESMF PETs.
-   subroutine USAF_superstatQC(this,nest,new_name,network,silent_rejects)
+   subroutine USAF_superstatQC(this,nest,new_name,silent_rejects)
 
       ! Imports
       use LIS_coreMod, only: LIS_domain, LIS_rc, LIS_localPet
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -3285,7 +3348,6 @@ contains
       type(USAF_ObsData), intent(inout) :: this
       integer,intent(in) :: nest
       character(len=32), intent(in) :: new_name
-      character(len=*), optional :: network
       logical,optional,intent(in) :: silent_rejects
 
       ! Local variables
@@ -3404,21 +3466,12 @@ contains
 
             ! Skip bad data
             if ( this%qc(j) .eq. QC_REJECT) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
-            ! Screen by type
-            if (present(network)) then
-               if (trim(network) .eq. "SSMI") then
-                  if (.not. is_ssmi(this%net(j))) cycle
-               else if (trim(network) .eq. "GEOPRECIP") then
-                  if (.not. is_geoprecip(this%net(j))) cycle
-               else if (trim(network) .eq. "CMORPH") then
-                  if (.not. is_cmorph(this%net(j))) cycle
-               else if (trim(network) .eq. "IMERG") then
-                  if (.not. is_imerg(this%net(j))) cycle
-               end if
-            else ! Gauges
-               if (.not. is_gauge(this%net(j))) cycle
-            end if
+            ! Do not apply to IMERG.  But allow application to other
+            ! data sources.
+            if ( is_imerg(this%net(j)) ) cycle
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
             found = .false.
@@ -3462,7 +3515,8 @@ contains
                if (means(gindex) .eq. MISSING) cycle
 
                icount = superob_count(gindex)
-               threshold = 3 * this%sigmaOSqr(j) * &
+               ! EMK 12 Mar 2024...Fixed typo in threshold eqn
+               threshold = 4 * sqrt(this%sigmaOSqr(j)) * &
                     sqrt(real(icount) / real(icount-1))
 
                if (abs(means(gindex) - this%obs(j)) .gt. threshold) then
@@ -3636,7 +3690,8 @@ contains
       num_rejected_obs = 0
       do j = 1, nobs
          if (actions(j) .eq. -1) then
-            this%qc(j) = QC_REJECT
+            !this%qc(j) = QC_REJECT
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             if (.not. silent_rejects_local) then
                write(LIS_logunit,*) &
                     '[INFO] superstatQC rejection j: ',j, &
@@ -3649,7 +3704,8 @@ contains
             endif
             num_rejected_obs = num_rejected_obs + 1
          else if (actions(j) .eq. 1) then
-            this%qc(j) = QC_REJECT ! Was merged into superob
+            !this%qc(j) = QC_REJECT ! Was merged into superob
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             num_merged_obs = num_merged_obs + 1
          end if
       end do ! j
@@ -3727,6 +3783,7 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -4131,6 +4188,8 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -4177,12 +4236,19 @@ contains
 
          ! Skip bad data
          if ( this%qc(r) .eq. QC_REJECT) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_BACKQC) cycle
+
+         ! Do not apply to IMERG.  But allow application to other data
+         ! sources.
+         if ( .not. is_imerg(this%net(r)) ) cycle
 
          errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))
          absDiff = abs(this%obs(r) - this%back(r))
 
          if (absDiff .gt. errorThresh) then
-            this%qc(r) = QC_REJECT
+            !this%qc(r) = QC_REJECT
+            this%qc(r) = QC_SUSPECT_BACKQC ! Don't use, but save for OBA
 
             reject_count = reject_count + 1
 
@@ -4196,7 +4262,8 @@ contains
                     ' obs: ',this%obs(r), &
                     ' back: ',this%back(r), &
                     ' abs diff: ', abs(this%obs(r) - this%back(r)), &
-                    ' errorThresh ', errorThresh
+                    ' errorThresh ', errorThresh, &
+                    ' qc: ', this%qc(r)
             end if
          end if
 
@@ -4218,22 +4285,38 @@ contains
 
    !---------------------------------------------------------------------------
    ! Checks if observation network is recognized as a gauge.
-   logical function is_gauge(net)
-      implicit none
-      character(len=32), intent(in) :: net
-      logical :: answer
-      answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
-      ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
-      is_gauge = answer
-   end function is_gauge
+   logical function USAF_is_gauge(net, n) result(answer)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=32), intent(in) :: net
+     integer, intent(in) :: n
+
+     ! Locals
+     integer :: j
+
+     answer = .false. ! First guess
+
+     ! Two special cases
+     if (trim(net) .eq. "SUPERGAGE" .or. &
+          trim(net) .eq. "CDMS") then
+        answer = .true.
+        return
+     end if
+
+     ! General case:  Check list from LIS config file
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        if (net == agrmet_struc(n)%gage_networks(j)) then
+           answer = .true.
+           exit
+        end if
+     end do
+   end function USAF_is_gauge
 
    !---------------------------------------------------------------------------
    ! Dummy function for establishing a surface station is uncorrelated.
@@ -4241,9 +4324,10 @@ contains
    ! Bratseth routines that need to know which reports in a collection
    ! have correlated errors.  When analyzing screen-level variables with
    ! surface stations, all observations should have uncorrelated errors.
-   logical function is_stn(net)
+   logical function is_stn(net, n)
       implicit none
       character(len=32), intent(in) :: net
+      integer, intent(in) :: n
       logical :: answer
       answer = .true.
       is_stn = answer
@@ -4913,6 +4997,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_localPet
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5068,6 +5153,7 @@ contains
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5166,6 +5252,7 @@ contains
            LIS_ews_ind, LIS_ewe_ind, LIS_nss_ind, LIS_nse_ind
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5358,6 +5445,7 @@ contains
       use LIS_logMod, only: LIS_logunit
       use LIS_snowMod, only: LIS_snow_struc
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5591,7 +5679,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
       use LIS_logMod, only: LIS_logunit
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -5644,24 +5732,6 @@ contains
       write(LIS_logunit,*)'[INFO] Running dupQC on surface observations'
       call USAF_dupQC(screenObs)
 
-      ! EMK...Option 2 just captures O and B info, and skips the
-      ! analysis.
-      if (agrmet_struc(nest)%oba_switch .eq. 2) then
-         goodObs = USAF_countGoodObs(screenObs)
-         screenOBA = createOBA(nest,maxobs=goodObs)
-         do j = 1, screenObs%nobs
-            if (screenObs%qc(j) .eq. QC_REJECT) cycle
-            call assignOBA(screenOBA, &
-                 screenObs%net(j), screenObs%platform(j), &
-                 screenObs%lat(j), screenObs%lon(j), &
-                 screenObs%obs(j), screenObs%back(j), &
-                 A=0.)
-         end do ! j
-         call USAF_destroyObsData(screenObs)
-         TRACE_EXIT("bratseth_analyzeScrn")
-         return ! EMK TEST for O-B
-      end if
-
       ! Compare with background field
       write(LIS_logunit,*)'[INFO] Running backQC on surface observations'
       call USAF_backQC(screenObs,sigmaBSqr)
@@ -5674,6 +5744,25 @@ contains
       type = new_name
       call USAF_interpBackToTypeObsData(screenObs,nest, &
            LIS_rc%gnc(nest),LIS_rc%gnr(nest),back,type)
+
+      ! EMK...Option 2 just captures O and B info, and skips the
+      ! analysis.
+      if (agrmet_struc(nest)%oba_switch .eq. 2) then
+         goodObs = USAF_countGoodObs(screenObs)
+         screenOBA = createOBA(nest,maxobs=goodObs)
+         do j = 1, screenObs%nobs
+            if (screenObs%qc(j) .eq. QC_REJECT) cycle
+            ! Include the QC_SUSPECT obs in the OBA file
+            call assignOBA(screenOBA, &
+                 screenObs%net(j), screenObs%platform(j), &
+                 screenObs%lat(j), screenObs%lon(j), &
+                 screenObs%obs(j), screenObs%back(j), &
+                 A=0., qc=screenObs%qc(j), set_qc_good=.true.)
+         end do ! j
+         call USAF_destroyObsData(screenObs)
+         TRACE_EXIT("bratseth_analyzeScrn")
+         return ! EMK TEST for O-B
+      end if
 
       ! At this point, QC is done.  Copy the good obs into a new structure
       ! for the analysis (this will speed up analysis calculations by
@@ -5723,6 +5812,9 @@ contains
    ! been flagged for rejection by quality control.
    subroutine USAF_filterObsData(this,obsData)
 
+      ! Imports
+      use USAF_OBAMod, only: QC_REJECT
+
       ! Defaults
       implicit none
 
@@ -5731,18 +5823,20 @@ contains
       type(USAF_ObsData), intent(in) :: obsData
 
       ! Local variables
-      integer :: j
+      integer :: j, qc
 
       if ( obsData%nobs .eq. 0) return
 
       do j = 1, obsData%nobs
          if (obsData%qc(j) .eq. QC_REJECT) cycle
+         qc = obsData%qc(j) ! Keep QC_SUSPECT obs for OBA
          call USAF_assignObsData(this, &
               obsData%net(j),obsData%platform(j), &
               obsData%obs(j),obsData%lat(j),obsData%lon(j), &
               obsData%sigmaOSqr(j), &
               obsData%oErrScaleLength(j), &
-              back = obsData%back(j))
+              back=obsData%back(j), &
+              qc=qc)
       end do ! j
 
    end subroutine USAF_filterObsData

@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -649,7 +649,7 @@ subroutine read_SMAPEOPLsm_data(n, k,fname, smobs_inp, time)
      do c = 1, nlon
         if (tmp(c,r,1) >= 0 .and. &
              tmp(c,r,1) <= 1) then
-           sm_in(c + (r-1)*nc) = tmp(c,r,1)*100
+           sm_in(c + (r-1)*nc) = tmp(c,r,1)
            sm_data_b(c + (r-1)*nc) = .true.
         end if
      end do

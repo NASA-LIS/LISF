@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,19 +23,19 @@
 #------------------------------------------------------------------------------
 """
 
-
 import glob
 import os
 import platform
 import re
 import datetime
 import numpy as np
+import math
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
 
 def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command = None,
-               command2 = None, command_list = None):
+               command2 = None, command_list = None, group_jobs=None):
     ''' writes SLURM job script '''
     if in_command is None:
         this_command = 'COMMAND'
@@ -63,14 +63,24 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        _f.write('#SBATCH --nodes=1' + '\n')
+        _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+            if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                _f.write('#SBATCH --partition=packable'  + '\n')
+            if group_jobs:
+                mpc = min(math.ceil(240 / ntasks), 80)
+                _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+            else:
+                _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
+
         else:
-#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
@@ -92,12 +102,18 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
 
-        if  command_list is None:
-            _f.write( this_command + ' || exit 1' + '\n')
-            _f.write( sec_command + '\n')
+        if command_list is None and group_jobs is None:
+            _f.write(f"{this_command} || exit 1\n")
+            _f.write(f"{sec_command}\n")
         else:
-            for this_command in command_list:
-                _f.write( this_command + '\n')
+            if group_jobs:
+                for cmd in group_jobs:
+                    _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
+                _f.write("wait\n")
+            if command_list:
+                for cmd in command_list:
+                    _f.write(f"{cmd}\n")
+        
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
@@ -125,7 +141,7 @@ def print_status_report (e2es, yyyymm):
                     if (not re.search(pattern_not1, line)) and (not re.search(pattern_not2, line)):
                         _l2 = [int(x) for x in line.split(":")[1:4]]
                 if re.search(pattern_sbu, line):
-                    sbu = np.float (line.split(":")[1])
+                    sbu = float (line.split(":")[1])
         file.close()
         print ('{:>3}/{:>3}  {:<35}{:>2}h {:>2}m {:>2}s'.format
                (this_no,nfiles,job_file,_l2[0],_l2[1],_l2[2]))
@@ -207,6 +223,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
 #            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
         if datatype == 'hindcast':
             _f.write('#SBATCH --ntasks=' + ntasks + '\n')
         else:
@@ -256,8 +274,8 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     if extent is not None:
         lon = np.array(ldt['lon'])
         lat = np.array(ldt['lat'])
-        return np.int(np.floor(np.min(lat[:,0]))), np.int(np.ceil(np.max(lat[:,0]))), \
-            np.int(np.floor(np.min(lon[0,:]))), np.int(np.ceil(np.max(lon[0,:])))
+        return int(np.floor(np.min(lat[:,0]))), int(np.ceil(np.max(lat[:,0]))), \
+            int(np.floor(np.min(lon[0,:]))), int(np.ceil(np.max(lon[0,:])))
 
     if coord is not None:
         lon = np.array(ldt['lon'])
