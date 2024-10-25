@@ -123,6 +123,8 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
         f"{args['indir']}/" + \
         f"{args['comparison_name']}"
 
+    # Run checks on the CFSv2 grib files here:
+
     ds_ = None
     ds_ = _check_replace_missing (args)
 
