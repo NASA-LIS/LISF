@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -379,90 +379,90 @@ subroutine AC72_setup()
                         SetTadj,&
                         SetGDDTadj,&
                         SetDayLastCut,&
-                            SetNrCut,&
-                            SetSumInterval,&
-                            SetPreviousStressLevel,&
-                            SetStressSFadjNEW,&
-                            SetBin,&
-                            SetBout,&
-                            SetGDDayi,&
-                            SetCO2i,&
-                            SetFracBiomassPotSF,&
-                            SetSumETo,&
-                            SetSumGDD,&
-                            SetZiprev,&
-                            SetSumGDDPrev,&
-                            SetCCxWitheredTpotNoS,&
-                            SetCoeffb0,&
-                            SetCoeffb1,&
-                            SetCoeffb2,&
-                            SetCoeffb0Salt,&
-                            SetCoeffb1Salt,&
-                            SetCoeffb2Salt,&
-                            SetStressLeaf,&
-                            SetStressSenescence ,&
-                            SetDayFraction,&
-                            SetGDDayFraction,&
-                            SetCGCref,&
-                            SetGDDCGCref ,&
-                            SetTimeSenescence ,&
-                            SetSumKcTop,&
-                            SetSumKcTopStress,&
-                            SetSumKci,&
-                            SetCCoTotal,&
-                            SetCCxTotal,&
-                            SetCDCTotal,&
-                            SetGDDCDCTotal,&
-                            SetCCxCropWeedsNoSFstress,&
-                            SetWeedRCi,&
-                            SetCCiActualWeedInfested,&
-                            SetfWeedNoS,&
-                            SetZeval,&
-                            SetBprevSum,&
-                            SetYprevSum,&
-                            SetSumGDDcuts,&
-                            SetHItimesBEF,&
-                            SetScorAT1,&
-                            SetScorAT2,&
-                            SetHItimesAT1,&
-                            SetHItimesAT2,&
-                            SetHItimesAT,&
-                            SetalfaHI,&
-                            SetalfaHIAdj,&
-                            SetNextSimFromDayNr ,&
-                            SetDayNr1Eval,&
-                            SetDayNrEval,&
-                            SetLineNrEval,&
-                            SetPreviousSumETo,&
-                            SetPreviousSumGDD,&
-                            SetPreviousBmob,&
-                            SetPreviousBsto,&
-                            SetStageCode,&
-                            SetPreviousDayNr,&
-                            SetNoYear,&
-                            SetWaterTableInProfile,&
-                            SetStartMode,&
-                            SetNoMoreCrop,&
-                            AdvanceOneTimeStep, &
-                            ReadClimateNextDay, &
-                            SetGDDVariablesNextDay, &
-                             FinalizeRun1, &
-                             FinalizeRun2, &
-                             GetDayNri,&
-                             GetCrop_Tbase, &
-                             GetCrop_Tupper, &
-                             FinalizeSimulation, &
-                             InitializeSimulation ,&
-                             InitializeRunPart1 ,&
-                             InitializeRunPart2 ,&
-                             InitializeClimate,&
-                             GetSimulation_ToDayNr, &
-                             SetRain,& 
-                             SetTmin,&
-                             SetTmax,& 
-                             SetETo,&
-                             InitializeClimate, &
-                             SetTheProjectFile
+                        SetNrCut,&
+                        SetSumInterval,&
+                        SetPreviousStressLevel,&
+                        SetStressSFadjNEW,&
+                        SetBin,&
+                        SetBout,&
+                        SetGDDayi,&
+                        SetCO2i,&
+                        SetFracBiomassPotSF,&
+                        SetSumETo,&
+                        SetSumGDD,&
+                        SetZiprev,&
+                        SetSumGDDPrev,&
+                        SetCCxWitheredTpotNoS,&
+                        SetCoeffb0,&
+                        SetCoeffb1,&
+                        SetCoeffb2,&
+                        SetCoeffb0Salt,&
+                        SetCoeffb1Salt,&
+                        SetCoeffb2Salt,&
+                        SetStressLeaf,&
+                        SetStressSenescence ,&
+                        SetDayFraction,&
+                        SetGDDayFraction,&
+                        SetCGCref,&
+                        SetGDDCGCref ,&
+                        SetTimeSenescence ,&
+                        SetSumKcTop,&
+                        SetSumKcTopStress,&
+                        SetSumKci,&
+                        SetCCoTotal,&
+                        SetCCxTotal,&
+                        SetCDCTotal,&
+                        SetGDDCDCTotal,&
+                        SetCCxCropWeedsNoSFstress,&
+                        SetWeedRCi,&
+                        SetCCiActualWeedInfested,&
+                        SetfWeedNoS,&
+                        SetZeval,&
+                        SetBprevSum,&
+                        SetYprevSum,&
+                        SetSumGDDcuts,&
+                        SetHItimesBEF,&
+                        SetScorAT1,&
+                        SetScorAT2,&
+                        SetHItimesAT1,&
+                        SetHItimesAT2,&
+                        SetHItimesAT,&
+                        SetalfaHI,&
+                        SetalfaHIAdj,&
+                        SetNextSimFromDayNr ,&
+                        SetDayNr1Eval,&
+                        SetDayNrEval,&
+                        SetLineNrEval,&
+                        SetPreviousSumETo,&
+                        SetPreviousSumGDD,&
+                        SetPreviousBmob,&
+                        SetPreviousBsto,&
+                        SetStageCode,&
+                        SetPreviousDayNr,&
+                        SetNoYear,&
+                        SetWaterTableInProfile,&
+                        SetStartMode,&
+                        SetNoMoreCrop,&
+                        AdvanceOneTimeStep, &
+                        ReadClimateNextDay, &
+                        SetGDDVariablesNextDay, &
+                        FinalizeRun1, &
+                        FinalizeRun2, &
+                        GetDayNri,&
+                        GetCrop_Tbase, &
+                        GetCrop_Tupper, &
+                        FinalizeSimulation, &
+                        InitializeSimulation ,&
+                        InitializeRunPart1 ,&
+                        InitializeRunPart2 ,&
+                        InitializeClimate,&
+                        GetSimulation_ToDayNr, &
+                        SetRain,& 
+                        SetTmin,&
+                        SetTmax,& 
+                        SetETo,&
+                        InitializeClimate, &
+                        SetTheProjectFile
 
         use ac_kinds, only: intEnum, &
                             int32, &
@@ -681,7 +681,7 @@ subroutine AC72_setup()
             end do
 
             ! Read annual temperature record
-            !call ac72_read_Trecord(n)
+            call ac72_read_Trecord(n)
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
@@ -888,17 +888,10 @@ subroutine AC72_setup()
                 AC72_struc(n)%ac72(t)%WPi = 0.
 
                 ! Set Global variable to pass T record to AquaCrop
-                !call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)    
-                !call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
-                !call SetTmin(AC72_struc(n)%ac72(t)%Tmin_record(1))    
-                !call SetTmax(AC72_struc(n)%ac72(t)%Tmax_record(1))
-
-                arr = 6.
-                call SetTminRun(arr)  
-                arr = 20.
-                call SetTmaxRun(arr)
-                call SetTmin(6.)    
-                call SetTmax(20.)
+                call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)    
+                call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
+                call SetTmin(AC72_struc(n)%ac72(t)%Tmin_record(1))    
+                call SetTmax(AC72_struc(n)%ac72(t)%Tmax_record(1))
 
                 ! Set Tmin and Tmax reference to compute the stress realtions
                 call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))
@@ -1003,27 +996,27 @@ subroutine AC72_setup()
                 AC72_struc(n)%AC72(t)%CCiActual = GetCCiActual()
                 AC72_struc(n)%AC72(t)%CCiprev = GetCCiprev()
                 AC72_struc(n)%AC72(t)%CCiTopEarlySen = GetCCiTopEarlySen()
-                AC72_struc(n)%AC72(t)%CRsalt = GetCRsalt () ! gram/m2
-                AC72_struc(n)%AC72(t)%CRwater = GetCRwater() ! mm/day
-                AC72_struc(n)%AC72(t)%ECdrain = GetECdrain() ! EC drain water dS/m
-                AC72_struc(n)%AC72(t)%ECiAqua = GetECiAqua() ! EC of the groundwater table in dS/m
-                AC72_struc(n)%AC72(t)%ECstorage = GetECstorage() !EC surface storage dS/m
-                AC72_struc(n)%AC72(t)%Eact = GetEact() ! mm/day
-                AC72_struc(n)%AC72(t)%Epot = GetEpot() ! mm/day
-                AC72_struc(n)%AC72(t)%ETo = GetETo() ! mm/day
-                AC72_struc(n)%AC72(t)%Drain = GetDrain()  ! mm/day
-                AC72_struc(n)%AC72(t)%Infiltrated = GetInfiltrated() ! mm/day
-                AC72_struc(n)%AC72(t)%prcp = GetRain()  ! mm/day
+                AC72_struc(n)%AC72(t)%CRsalt = GetCRsalt ()
+                AC72_struc(n)%AC72(t)%CRwater = GetCRwater()
+                AC72_struc(n)%AC72(t)%ECdrain = GetECdrain()
+                AC72_struc(n)%AC72(t)%ECiAqua = GetECiAqua()
+                AC72_struc(n)%AC72(t)%ECstorage = GetECstorage()
+                AC72_struc(n)%AC72(t)%Eact = GetEact()
+                AC72_struc(n)%AC72(t)%Epot = GetEpot()
+                AC72_struc(n)%AC72(t)%ETo = GetETo()
+                AC72_struc(n)%AC72(t)%Drain = GetDrain()
+                AC72_struc(n)%AC72(t)%Infiltrated = GetInfiltrated()
+                AC72_struc(n)%AC72(t)%prcp = GetRain()
                 AC72_struc(n)%AC72(t)%RootingDepth = GetRootingDepth()
-                AC72_struc(n)%AC72(t)%Runoff = GetRunoff()  ! mm/day
-                AC72_struc(n)%AC72(t)%SaltInfiltr = GetSaltInfiltr() ! salt infiltrated in soil profile Mg/ha
-                AC72_struc(n)%AC72(t)%Surf0 = GetSurf0()  ! surface water [mm] begin day
-                AC72_struc(n)%AC72(t)%SurfaceStorage = GetSurfaceStorage() !mm/day
-                AC72_struc(n)%AC72(t)%Tact = GetTact() ! mm/day
-                AC72_struc(n)%AC72(t)%Tpot = GetTpot() ! mm/day
-                AC72_struc(n)%AC72(t)%TactWeedInfested = GetTactWeedInfested() !mm/day
-                AC72_struc(n)%AC72(t)%Tmax = GetTmax() ! degC
-                AC72_struc(n)%AC72(t)%Tmin =GetTmin() ! degC
+                AC72_struc(n)%AC72(t)%Runoff = GetRunoff()
+                AC72_struc(n)%AC72(t)%SaltInfiltr = GetSaltInfiltr()
+                AC72_struc(n)%AC72(t)%Surf0 = GetSurf0()
+                AC72_struc(n)%AC72(t)%SurfaceStorage = GetSurfaceStorage()
+                AC72_struc(n)%AC72(t)%Tact = GetTact()
+                AC72_struc(n)%AC72(t)%Tpot = GetTpot()
+                AC72_struc(n)%AC72(t)%TactWeedInfested = GetTactWeedInfested()
+                AC72_struc(n)%AC72(t)%Tmax = GetTmax()
+                AC72_struc(n)%AC72(t)%Tmin =GetTmin()
 
 
                 AC72_struc(n)%AC72(t)%GwTable = GetGwTable()

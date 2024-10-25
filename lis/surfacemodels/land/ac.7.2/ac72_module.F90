@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2025 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,12 +16,6 @@ module AC72_module
 !  The code in this file provides a description of the
 !  data structure containing the AC72 1-d variables.
 !  The variables specified in the data structure include:
-!
-!  \begin{description}      
-!   \item[landuse\_tbl\_name]
-!     Noah model landuse parameter table. unit: -
-!   !!!!!LB provide documentation and units
-!   \end{description}
 !
 ! !REVISION HISTORY:
 !  06 MAR 2024; Louise Busschaert, initial implementation
@@ -167,24 +161,24 @@ module AC72_module
         real :: CCiActual
         real :: CCiprev
         real :: CCiTopEarlySen
-        real :: CRsalt ! gram/m2
-        real :: CRwater ! mm/day
-        real :: ECdrain ! EC drain water dS/m
-        real :: ECiAqua ! EC of the groundwater table in dS/m
-        real :: ECstorage !EC surface storage dS/m
-        real :: Eact ! mm/day
-        real :: Epot ! mm/day
-        real :: Drain  ! mm/day
-        real :: Infiltrated ! mm/day
-        real :: Irrigation ! mm/day
+        real :: CRsalt
+        real :: CRwater
+        real :: ECdrain
+        real :: ECiAqua
+        real :: ECstorage
+        real :: Eact
+        real :: Epot
+        real :: Drain
+        real :: Infiltrated
+        real :: Irrigation
         real :: RootingDepth
-        real :: Runoff  ! mm/day
-        real :: SaltInfiltr ! salt infiltrated in soil profile Mg/ha
-        real :: Surf0 ! surface water [mm] begin day
-        real :: SurfaceStorage !mm/day
-        real :: Tact ! mm/day
-        real :: Tpot ! mm/day
-        real :: TactWeedInfested !mm/day
+        real :: Runoff
+        real :: SaltInfiltr
+        real :: Surf0
+        real :: SurfaceStorage
+        real :: Tact
+        real :: Tpot
+        real :: TactWeedInfested
 
         ! variables from run.f90
         type(rep_GwTable) :: GwTable

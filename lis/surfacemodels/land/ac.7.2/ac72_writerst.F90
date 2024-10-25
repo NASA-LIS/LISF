@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -209,6 +209,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: SumWaBal_BiomassPot_ID
     integer :: SumWaBal_BiomassTot_ID
     integer :: SumWaBal_BiomassUnlim_ID
+    integer :: SumWaBal_Tact_ID
+    integer :: SumWaBal_Tpot_ID
     integer :: SumWaBal_YieldPart_ID
     integer :: SurfaceStorage_ID
     integer :: Tact_ID
@@ -221,6 +223,7 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: Ziprev_ID
 
     !! integers
+    integer :: Crop_DaysToFullCanopySF_ID
     integer :: DayNri_ID
     integer :: DaySubmerged_ID
     integer :: Management_WeedDeltaRC_ID
@@ -474,6 +477,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, SumWaBal_BiomassUnlim_ID, "SumWaBal_BiomassUnlim", &
                             "SumWaBal_BiomassUnlim at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable SumWaBal_Tact
+    call LIS_writeHeader_restart(ftn, n, dimID, SumWaBal_Tact_ID, "SumWaBal_Tact", &
+                            "SumWaBal_Tact at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable SumWaBal_Tpot
+    call LIS_writeHeader_restart(ftn, n, dimID, SumWaBal_Tpot_ID, "SumWaBal_Tpot", &
+                            "SumWaBal_Tpot at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable SumWaBal_YieldPart
     call LIS_writeHeader_restart(ftn, n, dimID, SumWaBal_YieldPart_ID, "SumWaBal_YieldPart", &
                             "SumWaBal_YieldPart at last time step", &
@@ -517,6 +528,9 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     
 
     !! integers
+    call LIS_writeHeader_restart(ftn, n, dimID, Crop_DaysToFullCanopySF_ID, "Crop_DaysToFullCanopySF", &
+                            "Crop_DaysToFullCanopySF at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable DayNri
     call LIS_writeHeader_restart(ftn, n, dimID, DayNri_ID, "DayNri", &
                             "DayNri at last time step", &
@@ -881,6 +895,9 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
     
     !! integers
+    ! Crop_DaysToFullCanopySF
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Crop%DaysToFullCanopySF, &
+                            varid=Crop_DaysToFullCanopySF_ID, dim=1, wformat=wformat)
     ! DayNri
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
                             varid=DayNri_ID, dim=1, wformat=wformat)
@@ -1175,6 +1192,22 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                                 varid=SumWaBal_BiomassUnlim_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_Tact
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%Tact
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_Tact_ID, dim=1, wformat=wformat)
+
+    ! SumWaBal_Tpot
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%SumWaBal%Tpot
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=SumWaBal_Tpot_ID, dim=1, wformat=wformat)
 
     ! SumWaBal_YieldPart
     tmptilen = 0
