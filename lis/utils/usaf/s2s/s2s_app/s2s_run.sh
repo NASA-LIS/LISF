@@ -12,7 +12,7 @@
 #
 # Purpose:  GHI-S2S End-to-End (E2E) subsystem runtime script 
 #
-#  Date: 08-01-2023;  Latest version
+#  Date: 10-24-2024;  Latest version
 #
 
 ######################################################################
@@ -42,7 +42,7 @@ set_permission(){
 	line1=
 	line2=
     else
-	line1="#SBATCH --cluster-constraint=green"
+	line1="#SBATCH --cluster-constraint=blue"
 	line2="#SBATCH --partition=batch"
     fi
 	
@@ -274,6 +274,7 @@ export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
+export CONSTRAINT=`grep CONSTRAINT  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DATATYPE=`grep DATATYPE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export E2ESROOT=`grep E2ESDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export DOMAIN=`grep DOMAIN $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -378,18 +379,23 @@ download_forecasts(){
     #                     Download CFSv2 and NMME forecasts
     #######################################################################
 
-    # CFSv2 forecast
+    # CFSv2 forecast files:
     sh s2s_app/wget_cfsv2_oper_ts_e2es.sh -y ${YYYY} -m ${MM} -c ${BWD}/${CFILE} -d N
     ret_code=$?
     if [ $ret_code -gt 0 ]; then
      	exit
     fi
 
-    # NMME Precipitation
+    # NMME Precipitation forecast files:
+    echo "[INFO] Checking NMME Forecast Files "
     Mmm=`date -d "${YYYY}-${MM}-01" +%b`
     NMME_RAWDIR=`grep nmme_download_dir $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
     prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc`
+    echo "[INFO] Current NMME files present: "
+     ls -1 $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc
+
     all_models=`grep -n NMME_ALL: $CFILE | cut -d':' -f3`
+    echo "[INFO] All NMME models: "${all_models}
     LINE2=`grep -n NMME_models: $CFILE | cut -d':' -f1`
     new_line="  NMME_models: "`echo ${all_models}`
     
@@ -400,15 +406,23 @@ download_forecasts(){
 #   NMME models since Aug-2024:
     declare -A nmme_models=( ["CanSIPS-IC4"]="GNEMO52, CanESM5" ["COLA-RSMAS-CESM1"]="CESM1" ["GFDL-SPEAR"]="GFDL" ["NASA-GEOSS2S"]="GEOSv2" ["NCEP-CFSv2"]="CFSv2" )
     have_model="["
-    
+
+#   Check for the five NMME directories are present ...
+#    If 5 directories are present - skip any further downloads for current month ...
+#     -- Note: We will incorporate better file checks in the future.
+
     if [ `echo $prec_files | wc -w` -lt 5 ]; then
-	
+
+        echo "[WARN] -- Some NMME model data may be missing or not available ... "
+        
 	# download NMME precip forecasts
 	s2s_app/download_nmme_precip.sh ${YYYY} ${Mmm} ${CFILE}
 	prec_files=`ls $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc`
-	
-#	for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
-	for dir in CanSIPS-IC4 COLA-RSMAS-CESM1 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
+        echo " ... New NMME files downloaded: "
+         ls -1 $NMME_RAWDIR/*/*${Mmm}.${YYYY}.nc
+        
+#        for dir in CanSIPS-IC3 COLA-RSMAS-CCSM4 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
+        for dir in CanSIPS-IC4 COLA-RSMAS-CESM1 GFDL-SPEAR NASA-GEOSS2S NCEP-CFSv2
 	do
 	    fdown=$NMME_RAWDIR/$dir/prec.$dir.mon_${Mmm}.${YYYY}.nc
 	    if [ `file $fdown | rev | cut -d' ' -f1 | rev` == "data" ]; then
@@ -482,9 +496,13 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/s2s_api.py -c ${BWD}/${CFILE} -f lisda_run.j -H 4 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/s2s_app/s2s_api.py -c ${BWD}/${CFILE} -f lisda_run.j -H 5 -j lisda_ -w ${CWD} -L Y
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+        if [[ $CONSTRAINT =~ "mil" ]]; then
+           COMMAND='./LIS '
+        else
+           COMMAND='mpirun -np $SLURM_NTASKS ./LIS'
+        fi
     else
 	COMMAND='srun ./LIS'
     fi
@@ -618,6 +636,7 @@ bcsd_fcst(){
 	# --------------------------------------------------------------------------
 	cmdfile="bcsd01.file"
 	jobname=bcsd01
+        [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	job_list="$jobname*.j"
 	bcsd01_ID=
@@ -654,6 +673,7 @@ bcsd_fcst(){
 	# --------------------------------------------------------------
 	jobname=bcsd03
 	cmdfile="bcsd03.file"
+        [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	
 	unset job_list
@@ -683,6 +703,7 @@ bcsd_fcst(){
     # -------------------------------------------------------------------------------
     jobname=bcsd04
     cmdfile="bcsd04.file"
+    [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
@@ -720,6 +741,7 @@ bcsd_fcst(){
     # ------------------------------------------------------------------------------
     jobname=bcsd05
     cmdfile="bcsd05.file"
+    [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
     for model in $MODELS
     do
 	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
@@ -760,6 +782,7 @@ bcsd_fcst(){
     # --------------------------------------------------------------------------
     jobname=bcsd06
     cmdfile="bcsd06.file"
+    [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
@@ -778,7 +801,7 @@ bcsd_fcst(){
     if [ $GROUP_JOBS == "Y" ]; then
 	bcsd06_ID=
 	/bin/rm bcsd06*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd06_ID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jobname}_run.j")
     fi
@@ -795,6 +818,7 @@ bcsd_fcst(){
     # ----------------------------------------------------------------------------
     jobname=bcsd08
     cmdfile="bcsd08.file"
+    [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
 
     for model in $MODELS
     do
@@ -817,7 +841,7 @@ bcsd_fcst(){
     bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm bcsd08*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd08_ID=$(submit_job "$bcsd06_ID" "${jobname}_run.j")
     fi
@@ -828,6 +852,7 @@ bcsd_fcst(){
     
     jobname=bcsd09
     cmdfile="bcsd09-10.file"
+    [ -e "${jobname}-10_run.j" ] && /bin/rm ${jobname}-10_*.j
 
     python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
     if [ $GROUP_JOBS == "Y" ]; then
@@ -863,7 +888,7 @@ bcsd_fcst(){
 	jobname=bcsd09-10
 	/bin/rm bcsd09*.j
 	/bin/rm bcsd10*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
 	bcsd10_ID=
@@ -900,7 +925,7 @@ bcsd_fcst(){
 	jobname=bcsd11-12
 	/bin/rm bcsd11*.j
 	/bin/rm bcsd12*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd11_ID=$(submit_job "$bcsd09_ID" "${jobname}_run.j")
 	bcsd12_ID=
@@ -1020,6 +1045,7 @@ s2spost(){
     done
     
     cd ${SCRDIR}/s2spost
+    [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
     
     /bin/ln -s ${E2ESDIR}/lis_fcst/${YYYY}${MM}/ lis_fcst
     /bin/ln -s ${E2ESDIR}/lis_fcst/input
@@ -1085,11 +1111,12 @@ s2smetrics(){
     cd ${SCRDIR}/s2smetric
     /bin/ln -s ${E2ESDIR}/s2spost
     /bin/ln -s ${E2ESDIR}/s2smetric
+    [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
     
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
+	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     
     job_list=`ls $jobname*anom_run.j`
@@ -1107,13 +1134,13 @@ s2smetrics(){
     s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2smetric_*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C $cmdfile
+	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C $cmdfile
 	/bin/rm ${cmdfile}
 	s2smetric_ID=$(submit_job "$s2spost_ID" "${jobname}_run.j")
     fi
     
     # write tiff file
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 2 -j ${jobname}_tiff_ -w ${CWD}
+    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 3 -j ${jobname}_tiff_ -w ${CWD}
     COMMAND="srun --exclusive --ntasks 1 python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_tiff_run.j
 

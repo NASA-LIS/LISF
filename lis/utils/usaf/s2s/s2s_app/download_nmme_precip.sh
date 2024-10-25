@@ -1,8 +1,8 @@
 #!/bin/bash
 # 
-#  SCRIPT:  download_nmme_hindcasts_sshukla.csh
+#  SCRIPT:  download_nmme_precip.sh
 #
-#  PURPOSE:  Download monthly hindcasts of the NMME (version-2) 
+#  PURPOSE:  Download monthly NMME forecast data for the
 #            ensemble of climate forecast models.
 #
 #  AUTHOR:  Shrad Shukla, UCSB, MAY-2016

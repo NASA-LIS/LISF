@@ -89,6 +89,7 @@ def _handle_dates(year, month, input_numfcstmons):
 def _customize_lisconfig(lisconfig_target, config, dates, \
                          nmme_model, fcstdir, ic_date = None, jobid = None):
     """Create customized lis.config file"""
+
     with open(lisconfig_target, "rt", encoding='ascii') as file_obj:
         data = file_obj.read()
     data = data.replace("NUMPROCX", f"{config['FCST']['numprocx']}")
@@ -224,7 +225,10 @@ def _driver(config):
             jobname = JOB_NAME + '_' + nmme_model + '_'
 
             if 'discover' in platform.node() or 'borg' in platform.node():
-                mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
+                if 'mil' in config['SETUP']['CONSTRAINT']:
+                    mpi_cmd = lisconfig_target
+                else:
+                    mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
             else:
                 mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
@@ -263,15 +267,14 @@ def _driver(config):
                 print(lisconfig_target)
 
                 if 'discover' in platform.node() or 'borg' in platform.node():
-                    mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
+                    if 'mil' in config['SETUP']['CONSTRAINT']:
+                        mpi_cmd = lisconfig_target
+                    else:
+                        mpi_cmd = 'mpirun -np $SLURM_NTASKS ./LIS' + ' -f ' + lisconfig_target
+
                 else:
                     mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
-                if 'mil' in config['SETUP']['CONSTRAINT']:
-                    mpi_cmd = lisconfig_target
-                else:
-                    utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
-                                         in_command=mpi_cmd)
                 utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
                                  in_command=mpi_cmd)
 

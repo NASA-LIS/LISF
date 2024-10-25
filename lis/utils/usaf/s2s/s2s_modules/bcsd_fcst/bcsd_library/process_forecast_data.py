@@ -216,9 +216,9 @@ def _print_reftime(fcst_init, ens_num):
     reftime = \
         f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
     reftime += f",{fcst_init['hour']}:00:00,1hour"
-    txt = f"[INFO] ENS{ens_num}: " + \
+    txt = f"[INFO] CFSv2 ENS-MEM #{ens_num}: " + \
         f"{fcst_init['year']}-{fcst_init['monthday']}:" + \
-        f"{fcst_init['hour']}"
+        f"{fcst_init['hour']} cycle"
     print(txt)
 
 def _driver():
@@ -232,7 +232,8 @@ def _driver():
 
     year = int(args['syr'])
     ens_num = int(args['ens_num'])
-    print(f"[INFO] {fcst_init['monthday']} {year}")
+    print(f" --- ")
+    print(f"[INFO] Forecast Init Date: {fcst_init['monthday']} {year}")
 
     fcst_init["year"] = year
     if fcst_init['monthday'] == "jan01":
@@ -260,23 +261,28 @@ def _driver():
         wanted_months.append(i)
     wanted_months = wanted_months[1:10]
 
+    # Print Ensemble member and reference date+cycle time:
     _print_reftime(fcst_init, ens_num)
 
+    # 6-hourly output dir:
     outdirs['outdir_6hourly'] = \
         f"{args['outdir']}/6-Hourly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_6hourly']):
         os.makedirs(outdirs['outdir_6hourly'])
+
+    # Monthly output dir:
     outdirs['outdir_monthly'] = \
         f"{args['outdir']}/Monthly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_monthly']):
         os.makedirs(outdirs['outdir_monthly'])
 
+    # Loop over CFSv2 variables:
     cfsv2 = []         
     for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                     "q2m", "wnd10m"]:
-        print(f"[INFO] {varname}")
+        print(f"[INFO] CFSv2 variable: {varname}")
         subdir, file_pfx, file_sfx = \
             _set_input_file_info(fcst_init['year_cfsv2'],
                                  fcst_init['month'],
@@ -286,6 +292,12 @@ def _driver():
             indir = f"{args['forcedir']}/"
             
         indir += f"{fcst_init['year_cfsv2']}/{fcst_init['date']}"
+
+        # Checking CFSv2 member-date subdir presence:
+        if not os.path.isdir(indir):
+            print(f"[ERR] CFSV2 directory, {indir}, does NOT exist.")
+            print(f"[ERR]  Exiting from this one process_forecast_data.py job (others may continue to run in parallel) ...")
+            sys.exit(1)  # Exit with an error code
 
         # Convert GRIB file to netCDF and handle missing/corrupted data
         cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
