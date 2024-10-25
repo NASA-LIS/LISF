@@ -1,7 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
 ! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
@@ -385,6 +385,13 @@ subroutine AC72_readrst()
 
             
             !! integers
+            ! read: Crop_DaysToFullCanopySF
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                    varname="Crop_DaysToFullCanopySF", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%DaysToFullCanopySF = tmptilen_int(t)
+            enddo
+
             ! read: DayNri
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
                                     varname="DayNri", wformat=wformat)
@@ -487,6 +494,20 @@ subroutine AC72_readrst()
                     varname="SumWaBal_BiomassUnlim", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 AC72_struc(n)%ac72(t)%SumWaBal%BiomassUnlim = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_Tact
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_Tact", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%Tact = tmptilen(t)
+            enddo
+
+            ! read: SumWaBal_Tpot
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="SumWaBal_Tpot", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%SumWaBal%Tpot = tmptilen(t)
             enddo
 
             ! read: SumWaBal_YieldPart
