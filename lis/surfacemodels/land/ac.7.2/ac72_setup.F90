@@ -681,7 +681,7 @@ subroutine AC72_setup()
             end do
 
             ! Read annual temperature record
-            call ac72_read_Trecord(n)
+            !call ac72_read_Trecord(n)
 
             do t = 1, LIS_rc%npatch(n, mtype)
                 
@@ -888,10 +888,17 @@ subroutine AC72_setup()
                 AC72_struc(n)%ac72(t)%WPi = 0.
 
                 ! Set Global variable to pass T record to AquaCrop
-                call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)    
-                call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
-                call SetTmin(AC72_struc(n)%ac72(t)%Tmin_record(1))    
-                call SetTmax(AC72_struc(n)%ac72(t)%Tmax_record(1))
+                !call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)    
+                !call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
+                !call SetTmin(AC72_struc(n)%ac72(t)%Tmin_record(1))    
+                !call SetTmax(AC72_struc(n)%ac72(t)%Tmax_record(1))
+
+                arr = 6.
+                call SetTminRun(arr)  
+                arr = 20.
+                call SetTmaxRun(arr)
+                call SetTmin(6.)    
+                call SetTmax(20.)
 
                 ! Set Tmin and Tmax reference to compute the stress realtions
                 call SetTminTnxReference12MonthsRun(AC72_struc(n)%ac72(t)%tmincli_monthly(:))

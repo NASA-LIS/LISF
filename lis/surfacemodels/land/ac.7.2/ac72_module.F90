@@ -244,8 +244,7 @@ module AC72_module
         logical :: maxR_reached, sene_reached, flowr_reached
         integer :: irri_lnr
 
-        ! Logical converted to int for restart
-        integer :: NoMoreCrop
+        logical :: NoMoreCrop
 
         character(len=:), allocatable :: RainFile
         character(len=:), allocatable :: RainFileFull
