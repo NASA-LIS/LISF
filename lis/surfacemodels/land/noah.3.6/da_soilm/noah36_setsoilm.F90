@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,8 @@
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
 ! 28Aug2017: Mahdi Navari; Updated to take into account the latest developments in the SM DA 
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix
+!                           (add check for frozen soil) 
 !
 ! !INTERFACE:
 subroutine noah36_setsoilm(n, LSM_State)
@@ -23,6 +25,7 @@ subroutine noah36_setsoilm(n, LSM_State)
   use LIS_coreMod 
   use LIS_logMod
   use noah36_lsmMod
+  use LIS_constantsMod, only : LIS_CONST_TKFRZ
 
   implicit none
 ! !ARGUMENTS: 
@@ -144,7 +147,8 @@ subroutine noah36_setsoilm(n, LSM_State)
      ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
      if(noah36_struc(n)%noah(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
           noah36_struc(n)%noah(t)%sh2o(1)+delta1.lt.&
-          sm_threshold) then 
+          sm_threshold .and.&
+          noah36_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         ! MN save the flag for each tile (col*row*ens)   (64*44)*20
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
@@ -153,7 +157,8 @@ subroutine noah36_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah36_struc(n)%noah(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          noah36_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold) then 
+          noah36_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold .and.&
+          noah36_struc(n)%noah(t)%stc(2) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -161,7 +166,8 @@ subroutine noah36_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah36_struc(n)%noah(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          noah36_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold) then 
+          noah36_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold .and.&
+          noah36_struc(n)%noah(t)%stc(3) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else
@@ -169,7 +175,8 @@ subroutine noah36_setsoilm(n, LSM_State)
         update_flag_tile(t) = update_flag_tile(t).and.(.false.)
      endif
      if(noah36_struc(n)%noah(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          noah36_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold) then 
+          noah36_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold .and.&
+          noah36_struc(n)%noah(t)%stc(4) .gt. LIS_CONST_TKFRZ) then 
         update_flag(gid) = update_flag(gid).and.(.true.)
         update_flag_tile(t) = update_flag_tile(t).and.(.true.)
      else

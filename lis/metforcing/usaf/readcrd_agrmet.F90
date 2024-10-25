@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,6 +31,7 @@
 ! 28 Aug 2018 Added IMERG...........................Eric Kemp/NASA/SSAI
 ! 21 Feb 2020 added support for 10-km GALWEM........Eric Kemp/NASA/SSAI
 ! 05 Mar 2020 added support for new GFS filename version...Eric Kemp/NASA/SSAI
+! 28 May 2024 added list of gauge networks to use..........Eric Kemp/NASA/SSAI
 !
 ! !INTERFACE:    
 subroutine readcrd_agrmet()
@@ -53,7 +54,7 @@ subroutine readcrd_agrmet()
 !  the LIS configuration file. 
 !  
 !EOP
-  integer:: n,rc
+  integer:: n,rc,j
   character(len=10)       :: cdate
   character(len=255) :: message(20) ! EMK
   real :: tmp_max_dist ! EMK
@@ -508,10 +509,30 @@ subroutine readcrd_agrmet()
      call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%retroFileRoot,rc=rc)
   enddo
 
+  ! KRA/EMK 4 Jun 2024 New AGRMET radiation option
   call ESMF_ConfigFindLabel(LIS_config,"AGRMET radiation derived from:",rc=rc)
+  call LIS_verify(rc, &
+          '[ERR] AGRMET radiation derived from: option not specified in the config file')
   do n=1,LIS_rc%nnest
-     call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%compute_radiation,default="cloud types", rc=rc)
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%compute_radiation, rc=rc)
+     call LIS_verify(rc, &
+          '[ERR] AGRMET radiation derived from: option not specified in the config file')
+     if (agrmet_struc(n)%compute_radiation .ne. "cloud types" .and. &
+          agrmet_struc(n)%compute_radiation .ne. "cod properties" .and. &
+          agrmet_struc(n)%compute_radiation .ne. "GALWEM_RAD") then
+        call LIS_verify(1, &
+             '[ERR] AGRMET radiation derived from: invalid option, must be "cloud types", "cod properties", or "GALWEM_RAD"')
+     end if
   enddo
+
+! KRA/EMK 4 Jun 2024 GALWEM RADIATION FILE READER:
+  call ESMF_ConfigFindLabel(LIS_config,"AGRMET GALWEM radiation data directory:",rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,agrmet_struc(n)%galwemraddir,rc=rc)
+  enddo
+
+
 
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%security_class,&
        label="AGRMET security classification:",rc=rc)
@@ -1204,6 +1225,49 @@ subroutine readcrd_agrmet()
              "[ERR] AGRMET PPT GALWEM NRT bias file: not specified in config file")
      end do
   end if
+
+  ! EMK Get list of gage networks to use
+  call ESMF_ConfigFindLabel(LIS_config, &
+       "AGRMET number of gauge networks to use:", rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET number of gauge networks to use: not specified in config file")
+  do n=1, LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config, &
+          agrmet_struc(n)%num_gage_networks, rc=rc)
+     call LIS_verify(rc, &
+             "[ERR] AGRMET number of gauge networks to use: not specified in config file")
+     if (agrmet_struc(n)%num_gage_networks < 0) then
+        write(LIS_logunit,*) &
+             '[ERR] AGRMET number of gauge networks to use: must be nonnegative!'
+        write(LIS_logunit,*) &
+             '[ERR] Found ', agrmet_struc(n)%num_gage_networks
+        write(LIS_logunit, *) &
+             '[ERR] LIS will end!'
+        call LIS_verify(1, &
+             '[ERR] AGRMET number of gauge networks to use: must be nonnegative!')
+     end if
+     allocate(agrmet_struc(n)%gage_networks(agrmet_struc(n)%num_gage_networks))
+  end do
+  call ESMF_ConfigFindLabel(LIS_config, &
+       'AGRMET gauge networks to use::', rc=rc)
+  call LIS_verify(rc, &
+       "[ERR] AGRMET gauge networks to use:: not specified in config file")
+  do n=1, LIS_rc%nnest
+     call ESMF_ConfigNextLine(LIS_config, rc=rc)
+     call LIS_verify(rc, &
+          '[ERR] AGRMET gauge networks to use:: problem reading next line')
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        call ESMF_ConfigGetAttribute(LIS_config, &
+             agrmet_struc(n)%gage_networks(j), rc=rc)
+        call LIS_verify(rc, &
+             '[ERR] AGRMET gauge networks to use:: problem reading entry')
+     end do
+     write(LIS_logunit,*) &
+          '[INFO] Will use following gauge networks for domain ', n
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        write(LIS_logunit,*) trim(agrmet_struc(n)%gage_networks(j))
+     end do
+  end do
 
   do n=1,LIS_rc%nnest
      agrmet_struc(n)%radProcessInterval = 1

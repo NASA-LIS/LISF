@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -343,6 +343,9 @@ module AGRMET_forcingMod
      character*100          :: geodir
      character*100          :: gfsdir
      character*100          :: galwemdir
+! TEMP -- KRA
+     character*180          :: galwemraddir
+! TEMP -- KRA
      character*100          :: cdmsdir
      character*100          :: cmordir
      character*100          :: analysisdir
@@ -556,8 +559,9 @@ integer, allocatable   :: n112_sh4(:)
 ! EMK END
      integer                :: lastSfcalcHour
      integer                :: lastPcpHour
+     integer                :: lastRadHour
 !new 
-     integer            :: ncol, nrow
+     integer                :: ncol, nrow
      integer, allocatable   :: n11_1_gfs(:)
      integer, allocatable   :: n12_1_gfs(:)
      integer, allocatable   :: n21_1_gfs(:)
@@ -730,6 +734,10 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable :: gfs_nrt_bias_ratio(:,:)
      real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
+
+     ! EMK Add list of gage networks to use
+     integer :: num_gage_networks
+     character(32), allocatable :: gage_networks(:)
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)
@@ -2145,6 +2153,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
           agrmet_struc(n)%pcp_ready = .false. 
           agrmet_struc(n)%lastSfcalcHour = 0
           agrmet_struc(n)%lastPcpHour = 0
+          agrmet_struc(n)%lastRadHour = 0
+
           call AGRMET_read_pcpclimodata(n)
 
           agrmet_struc(n)%albAlarmTime = 0.0

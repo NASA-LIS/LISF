@@ -207,8 +207,8 @@ Model output attributes file:           ./input/tables/MODEL_OUTPUT_LIST.TBL.noa
 # ROUTING MODEL:  RAPID
 Routing model:                               "RAPID router"
 
-RAPID routing model time step:               "1da"
-RAPID river routing time step:               "15mn"   # less than routing model time step
+RAPID routing model time step:               "3hr"   # must match 'Surface model output interval:'
+RAPID river routing time step:               "15mn"   # must match 'LSM model timestep:'
 RAPID routing model output interval:         "3hr"
 RAPID routing model restart interval:        "1mo"
 

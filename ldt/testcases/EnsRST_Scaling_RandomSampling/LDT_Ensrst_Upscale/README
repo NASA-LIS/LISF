@@ -1,0 +1,34 @@
+Focus: Upscaling 12 Member Ensemble Restart File to 20 Member Restart File
+
+Description:  This case involves the upscaling or generating a twenty-member
+     restart file from a twelve-member restart file using the "random sampling"
+     sampling strategy.
+
+
+This test case uses the following files:
+  (a) this README file
+  (b) the ldt.config input file used by LDT 
+
+To run such a case: 
+ 
+  (a) Obtain an ensemble-based restart file from one of your LIS 
+      model run directories, such as:
+        LIS_RST_NOAH33_201212312330.d01.nc
+
+  (b) Generate the LDT executable and copy to your working directory.
+
+  (c) Modify the ldt.config file provided for your case.
+
+  (d) Run the LDT executable with the provided ldt.config file by typing:
+      ./LDT ldt.config
+
+  (e) View the NetCDF (*.nc) output using a tool, like
+       the ncview executable (if you have it installed).
+
+Caveats: 
+  (a) Please note that this is a more basic functional test for purpose
+      of learning major LDT features.
+
+Notes:
+    This feature was added in pull request #853:
+    https://github.com/NASA-LIS/LISF/pull/853

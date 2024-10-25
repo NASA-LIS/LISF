@@ -1,0 +1,38 @@
+GEFS Meteorological Forcing Reader - Operational @ 0.5 deg
+
+This is a testcase that uses:
+  (a) Latlon grid  
+  (b) A domain spanning Minnesota to Utah
+  (c) The Noah version 3.6 land surface model
+  (d) GEFS operational forcing files
+  (e) A time period from 00:00Z 1 Jan 2022 to 00:00Z 2 Jan 2022
+  (f) 3-hourly output files, written as NetCDF
+
+This directory contains:
+  (a) This README file
+  (b) An "input.ctl" file used to open the LDT parameters in GrADS
+  (c) The "lis.config" file used for this testcase
+  (d) The "MODEL_OUTPUT_LIST.TBL" file used by the lis.config file
+      to select the output variables
+  (e) An "output.ctl" file used to display the output in GrADS from
+      the LIS run
+  (f) A "testcase.ctl" file used to display the packaged output in
+      GrADS from the OUTPUT tar file provided by the testcase
+
+To run this testcase:
+  (a) Run the LIS executable using the "lis.config" file with the
+      testcase input data
+  (b) View the netcdf output using the testcase GrADS files
+
+Caveats:
+  (a) Please note that this is a simple functional test and the output
+      from the testcase is not expected to be used for any scientific
+      evaluation.
+
+Additional information:
+
+This feature was added in pull request #699 
+(https://github.com/NASA-LIS/LISF/pull/699).
+
+The GEFS operational forcing data was downloaded from 
+https://nomads.ncep.noaa.gov/pub/data/nccf/com/gens/prod/<date>/<fhour>/atmos/pgrb2ap5/<filename>

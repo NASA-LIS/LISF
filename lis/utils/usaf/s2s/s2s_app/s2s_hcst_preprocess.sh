@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
-# 
-# Copyright (c) 2022 United States Government as represented by the
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # -------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -147,9 +147,9 @@ reorg_cfsv2(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst/
     
     jobname=reorg_cfsv2
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_syr -e $clim_mid -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set1
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_syr -e $clim_mid -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j ${jobname}_set1
     ((clim_mid++))
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_mid -e $clim_eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 9 -j ${jobname}_set2
+    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $clim_mid -e $clim_eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 10 -j ${jobname}_set2
     
     job_list="$jobname*.j"
     for jfile in $job_list

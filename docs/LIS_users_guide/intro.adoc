@@ -46,6 +46,20 @@ This document consists of 12 sections, described as follows:
 === What's New
 //\attention{See _RELEASE_NOTES_ found in the _source.tar.gz_ file for more details.  (See Section <<sec_obtain-src>>.)}
 
+==== Version 7.5
+
+. Supports additional metforcing datasets
+* GALWEM 17km or 0.25deg deterministic forecast reader (galwem)
+* GALWEM-GE forecast reader (galwem_ge)
+* GEOS-IT (geos_it)
+. Supports additional data assimilation observation datasets
+* CDFS green vegetation fraction (CDFS_GVF)
+* CDF_Transfer_NASA_SMAPsm
+* Operation Enhanced (9-km) SMAP soil moisture (SMAP_E_OPLsm)
+* VIIRS green vegetation fraction (VIIRS_GVF)
+* Margulis Western US Snow Reanalysis dataset (WUS_UCLAsnow)
+. Includes RAPID router
+
 ==== Version 7.4
 
 . Includes new runmodes

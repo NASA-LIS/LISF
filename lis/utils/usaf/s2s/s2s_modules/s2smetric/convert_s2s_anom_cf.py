@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,6 +47,7 @@ from netCDF4 import Dataset #pylint: disable=no-name-in-module
 # Units for variable anomalies.  Standardized anomalies will be dimensionless.
 _UNITS_ANOM = {
     "RZSM" : "m3 m-3",
+    "TOP40SM" : "m3 m-3",
     "SFCSM" : "m3 m-3",
     "TWS" : "mm",
     "Precip" : "kg m-2",
@@ -56,6 +57,7 @@ _UNITS_ANOM = {
 }
 _LONG_NAMES_SANOM = {
     "RZSM" : "Root zone soil moisture standardized anomaly",
+    "TOP40SM" : "Top 0-40 cm soil moisture standardized anomaly",
     "SFCSM" : "Surface soil moisture standardized anomaly",
     "TWS" : "Terrestrial water storage standardized anomaly",
     "Precip" : "Total precipitation amount standardized anomaly",
@@ -65,6 +67,7 @@ _LONG_NAMES_SANOM = {
 }
 _LONG_NAMES_ANOM = {
     "RZSM" : "Root zone soil moisture anomaly",
+    "TOP40SM" : "Top 0-40 cm soil moisture anomaly",
     "SFCSM" : "Surface soil moisture anomaly",
     "TWS" : "Terrestrial water storage anomaly",
     "Precip" : "Total precipitation amount anomaly",

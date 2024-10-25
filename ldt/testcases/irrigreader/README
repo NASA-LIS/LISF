@@ -1,0 +1,22 @@
+LDT Irrigation Fraction Reader Testcase
+
+This testcase processes (reads) irrigation fraction data.
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* The input.ctl GrADS descriptor file used to display the input parameter file. 
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data.
+
+NOTES:
+
+* This feature was added in pull request #455
+  (https://github.com/NASA-LIS/LISF/pull/455)

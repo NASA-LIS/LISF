@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -329,9 +329,10 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
            call gefs_shift_longitude( gefs_struc(n)%nc, gefs_struc(n)%nr, &
                 numpts, gefs_grib_data )
            
-           pcp_flag = .true.
            ! Spatially interp GEFS forcing field to LIS domain:
+           pcp_flag = .true.
            call interp_gefs(n, findex, gefs_grib_data, pcp_flag, varfield )
+           pcp_flag = .false.
                   
            do r=1,LIS_rc%lnr(n)
               do c=1,LIS_rc%lnc(n)

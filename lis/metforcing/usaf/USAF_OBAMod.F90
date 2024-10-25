@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -13,6 +13,7 @@
 ! REVISION HISTORY:
 ! 22 Jun 2017  Initial version.........................Eric Kemp/SSAI/NASA
 ! 07 Sep 2018  Changed EMK_ prefix to USAF_............Eric Kemp/SSAI/NASA
+! 29 Nov 2023  Add QC flags............................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 ! Contains data structure and methods for collecting observed, background,
@@ -38,6 +39,7 @@ module USAF_OBAMod
       real, allocatable :: O(:) ! Observation values
       real, allocatable :: B(:) ! Background values
       real, allocatable :: A(:) ! Analysis values
+      integer, allocatable :: qc(:) ! QC code
    end type OBA
    public :: OBA
 
@@ -53,6 +55,21 @@ module USAF_OBAMod
    public :: assignOBA
    public :: writeToFile
    public :: makeFilename
+
+   ! Public parameters
+   integer, parameter, public :: QC_UNKNOWN = 0
+   integer, parameter, public :: QC_GOOD = 1
+   integer, parameter, public :: QC_REJECT = 2
+   integer, parameter, public :: QC_SUSPECT_BACKQC = 3
+   integer, parameter, public :: QC_SUSPECT_SUPERSTATQC = 4
+
+   ! Private parameter
+   character(11), parameter :: qc_string(5) = (/ &
+        'UNKNOWN    ', &
+        'GOOD       ', &
+        'REJECT     ', &
+        'BACKQC     ', &
+        'SUPERSTATQC'/)
 
 contains
 
@@ -75,7 +92,7 @@ contains
 
       ! Local variables
       integer :: maxnobs
-      
+
       if (present(maxobs)) then
          maxnobs = maxobs
       else
@@ -91,14 +108,16 @@ contains
       allocate(this%O(maxnobs))
       allocate(this%B(maxnobs))
       allocate(this%A(maxnobs))
+      allocate(this%qc(maxnobs))
 
-      this%networks(:) = "NULL"
-      this%platforms(:) = "NULL"
-      this%latitudes(:) = 0
-      this%longitudes(:) = 0
-      this%O(:) = 0
-      this%B(:) = 0
-      this%A(:) = 0
+      this%networks = "NULL"
+      this%platforms = "NULL"
+      this%latitudes = 0
+      this%longitudes = 0
+      this%O = 0
+      this%B = 0
+      this%A = 0
+      this%qc = QC_UNKNOWN
 
    end function newOBA
 
@@ -118,14 +137,16 @@ contains
       deallocate(this%latitudes)
       deallocate(this%longitudes)
       deallocate(this%O)
-      deallocate(this%B) 
+      deallocate(this%B)
       deallocate(this%A)
+      deallocate(this%qc)
 
    end subroutine destroyOBA
 
    !---------------------------------------------------------------------------
    ! Add new diagnostics from one observation to the data structure.
-   subroutine assignOBA(this,network,platform,latitude,longitude,O,B,A)
+   subroutine assignOBA(this,network,platform,latitude,longitude,O,B,A, &
+        qc, set_qc_good)
 
       ! Imports
       use LIS_logmod, only : LIS_logunit
@@ -142,10 +163,12 @@ contains
       real, intent(in) :: O
       real, intent(in) :: B
       real, intent(in) :: A
+      integer, intent(in) :: qc
+      logical, optional, intent(in) :: set_qc_good
 
       ! Local variables
       integer :: nobs
-      
+
       ! Sanity check.  Since this is intended for an operational system,
       ! just print a warning and return if we see an array bounds problem.
       nobs = this%nobs
@@ -165,7 +188,15 @@ contains
       this%O(nobs) = O
       this%B(nobs) = B
       this%A(nobs) = A
-
+      if (present(set_qc_good)) then
+         if (set_qc_good .and. qc == QC_UNKNOWN) then
+            this%qc(nobs) = QC_GOOD
+         else
+            this%qc(nobs) = qc
+         end if
+      else
+         this%qc(nobs) = qc
+      end if
    end subroutine assignOBA
 
    !---------------------------------------------------------------------------
@@ -200,12 +231,16 @@ contains
 
       ! Write OBA information to file
       write(iunit, *, iostat=istat) &
-           '# Network Platform latitude longitude O   B   A'
+           '# Network Platform latitude longitude O   B   A   QC'
       do j = 1, this%nobs
+         if (this%qc(j) == QC_REJECT) cycle
+         if (trim(this%networks(j)) == "SUPEROB") cycle
+         if (trim(this%networks(j)) == "SUPERGAGE") cycle
          write(iunit, 1000, iostat=istat) trim(this%networks(j)), &
-              trim(this%platforms(j)), this%latitudes(j), this%longitudes(j),&
-              this%O(j), this%B(j), this%A(j)
-         1000 format(a10,1x,a10,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3)
+              trim(this%platforms(j)), this%latitudes(j), &
+              this%longitudes(j),&
+              this%O(j), this%B(j), this%A(j), qc_string(this%qc(j)+1)
+1000     format(a10,1x,a10,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,f8.3,1x,a11)
       end do ! j
 
       ! Close file

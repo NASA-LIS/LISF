@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAF_PreobsReaderMod
 !
@@ -23,7 +32,7 @@ contains
 
   ! Read preobs files, perform simple preprocessing, and store
   ! in database.
-  subroutine USAF_read_preobs(preobsdir, presavdir, &
+  subroutine USAF_read_preobs(n, preobsdir, presavdir, &
        use_timestamp, &
        year, month, day, hour, use_expanded_station_ids, &
        alert_number)
@@ -34,12 +43,14 @@ contains
     use LIS_logMod, only:  LIS_logunit, LIS_alert, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber
     use LIS_mpiMod, only:  LIS_mpi_comm
+    use USAF_bratsethMod, only: USAF_is_gauge ! EMK 20240524
     use USAF_GagesMod, only: USAF_Gages_t
 
     ! Defaults
     implicit none
 
     ! Arguments
+    integer, intent(in) :: n
     character(*), intent(in) :: preobsdir
     character(*), intent(in) :: presavdir
     integer, intent(in) :: use_timestamp
@@ -115,6 +126,28 @@ contains
     character(255) :: timestring
     integer :: iunit
     character(255) :: message(20)
+    integer, parameter :: MAX_NEW_NETWORKS = 20
+    character(10), save :: new_networks(MAX_NEW_NETWORKS) = &
+         (/"NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      ", &
+         "NULL      "/)
 
     message = ''
 
@@ -138,6 +171,7 @@ contains
        inquire(file=trim(filename), exist=found_file)
        if (.not. found_file) then
           write(LIS_logunit,*) '[WARN] Cannot find ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot find file ' // trim(filename)
@@ -154,6 +188,7 @@ contains
        open(iunit, file=trim(filename), status='old', iostat=ierr)
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem opening ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot open file ' // trim(filename)
@@ -162,6 +197,7 @@ contains
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
           end if
+          call LIS_releaseUnitNumber(iunit)
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
@@ -170,6 +206,7 @@ contains
        read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
           write(LIS_logunit,*) '[WARN] Problem reading ', trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Problem reading file ' // trim(filename)
@@ -178,8 +215,7 @@ contains
              call LIS_alert('LIS.USAF_read_preobs', &
                   alert_number, message)
           end if
-          close(iunit)
-          call LIS_releaseUnitNumber(iunit)
+          call LIS_releaseUnitNumber(iunit) ! Closes file
           if (use_expanded_station_ids == 1) exit ! These files are global
           cycle
        end if
@@ -187,6 +223,7 @@ contains
        if (nsize == 0) then
           write(LIS_logunit,*)'[WARN] No precip obs found in ', &
                trim(filename)
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  No precip obs found in ' // trim(filename)
@@ -200,9 +237,7 @@ contains
        end if
 
        nsize_total = nsize_total + nsize
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
-
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        if (use_expanded_station_ids == 1) exit ! These files are global
     end do
 
@@ -265,13 +300,14 @@ contains
 
        iunit = LIS_getNextUnitNumber()
        open(iunit, file=trim(filename), status='old', iostat=ierr)
-       if (ierr .ne. 0) cycle
-
+       if (ierr .ne. 0) then
+          call LIS_releaseUnitNumber(iunit)
+          cycle
+       end if
        nsize = 0
        read(iunit, *, iostat=ierr) nsize
        if (ierr .ne. 0) then
-          close(iunit)
-          call LIS_releaseUnitNumber(iunit)
+          call LIS_releaseUnitNumber(iunit) ! Closes file
           if (use_expanded_station_ids == 1) exit
           cycle
        end if
@@ -310,6 +346,39 @@ contains
 
           ! Skip if lat/lon is 0 (this is interpreted as missing).
           if (ilat_tmp == 0 .and. ilon_tmp == 0) cycle
+
+          ! EMK 20240524...Skip report if network is not recognized.
+          ! Issue an alert. Keep track of unknown networks to avoid
+          ! redundant alerts.
+          if (.not. USAF_is_gauge(network_tmp, n)) then
+             do j = 1, MAX_NEW_NETWORKS
+                if (new_networks(j) == network_tmp) then
+                   exit ! Out of immediate do loop
+                else if (new_networks(j) == "NULL") then
+                   new_networks(j) = network_tmp
+                   write(LIS_logunit,*) &
+                        '[WARN] Found unrecognized network ', &
+                        trim(network_tmp)
+                   write(LIS_logunit,*) &
+                        '[WARN] Will skip report in preobs file'
+                   message = ''
+                   message(1) = '[WARN] Program:  LIS'
+                   message(2) = '  Routine: USAF_read_preobs'
+                   message(3) = '  Found unrecognized network in '// &
+                        trim(filename)
+                   message(4) = '  Network '//trim(network_tmp)
+                   message(5) = &
+                        '  Modify lis.config to add this network'
+                   if (LIS_masterproc) then
+                      alert_number = alert_number + 1
+                      call LIS_alert('LIS.USAF_read_preobs', &
+                           alert_number, message)
+                   end if
+                   exit ! Out of immediate do loop
+                end if
+             end do
+             cycle ! Read next report
+          end if
 
           ! Skip reports that are too much after the analysis time
           ! (but allow earlier reports).  This is a crude way of
@@ -544,6 +613,8 @@ contains
           end if
        end do
 
+       call LIS_releaseUnitNumber(iunit) ! Closes file
+
        if (use_expanded_station_ids == 1) cycle ! These files are global
     end do ! ihemi
 
@@ -726,6 +797,7 @@ contains
           write(LIS_logunit,*) &
                '[WARN] Will skip reconciling with obs from ', &
                abs(deltahr),' hours ago'
+          message = ''
           message(1) = '[WARN] Program:  LIS'
           message(2) = '  Routine: USAF_read_preobs'
           message(3) = '  Cannot find earlier presav2 file ' // &
