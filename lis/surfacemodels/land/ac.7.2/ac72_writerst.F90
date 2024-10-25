@@ -196,6 +196,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: ScorAT2_ID
     integer :: Simulation_EffectStress_CDecline_ID
     integer :: Simulation_EvapWCSurf_ID
+    integer :: Simulation_SumEToStress_ID
+    integer :: Simulation_Scor_ID
     integer :: Simulation_SumGDD_ID
     integer :: Simulation_SumGDDfromDay1_ID
     integer :: StressLeaf_ID
@@ -224,6 +226,7 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: Management_WeedDeltaRC_ID
     integer :: PreviousStressLevel_ID
     integer :: Simulation_DayAnaero_ID
+    integer :: Simulation_DelayedDays_ID
     integer :: Simulation_EffectStress_RedCGC_ID
     integer :: Simulation_EffectStress_RedCCx_ID
     integer :: Simulation_EffectStress_RedWP_ID
@@ -411,6 +414,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EvapWCSurf_ID, "Simulation_EvapWCSurf", &
                            "Simulation_EvapWCSurf at last time step", &
                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_SCor
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SCor_ID, "Simulation_SCor", &
+                           "Simulation_SCor at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_SumEToStress
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SumEToStress_ID, "Simulation_SumEToStress", &
+                           "Simulation_SumEToStress at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable Simulation_EvapLimitON
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EvapLimitON_ID, "Simulation_EvapLimitON", &
                            "Simulation_EvapLimitON at last time step", &
@@ -533,6 +544,10 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     ! write the header for state variable Simulation_DayAnaero
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_DayAnaero_ID, "Simulation_DayAnaero", &
                             "Simulation_DayAnaero at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_DelayedDays
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_DelayedDays_ID, "Simulation_DelayedDays", &
+                            "Simulation_DelayedDays at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable Simulation_EffectStress_RedCGC
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EffectStress_RedCGC_ID, "Simulation_EffectStress_RedCGC", &
@@ -892,7 +907,13 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
 
     !! logicals (convert to integer)
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%NoMoreCrop, &
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        if (AC72_struc(n)%ac72(t)%NoMoreCrop) then
+            tmptilen_int(t) = 1
+        endif
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                             varid=NoMoreCrop_ID, dim=1, wformat=wformat)
 
 
@@ -952,8 +973,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
         if (AC72_struc(n)%ac72(t)%Simulation%EvapLimitON) then
             tmptilen_int(t) = 1
-        else
-            tmptilen_int(t) = 0
         endif
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
@@ -964,8 +983,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
         if (AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered) then
             tmptilen_int(t) = 1
-        else
-            tmptilen_int(t) = 0
         endif
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
@@ -978,6 +995,38 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                                 varid=Simulation_EvapWCSurf_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SCor
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%SCor
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_SCor_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SumEToStress
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%SumEToStress
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_SumEToStress_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SumGDD
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%SumGDD
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_SumGDD_ID, dim=1, wformat=wformat)
+
+    ! Simulation_SumGDDFromDay1
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Simulation%SumGDDFromDay1
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Simulation_SumGDDFromDay1_ID, dim=1, wformat=wformat)
 
     !! From Simulation%EffectStress
     ! Simulation_EffectStress_CDecline
@@ -995,6 +1044,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                                 varid=Simulation_DayAnaero_ID, dim=1, wformat=wformat)
+
+    ! Simulation_DelayedDays
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%DelayedDays
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_DelayedDays_ID, dim=1, wformat=wformat)
 
     ! Simulation_EffectStress_RedCGC
     tmptilen_int = 0
@@ -1035,22 +1092,6 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                                 varid=Simulation_EvapStartStg2_ID, dim=1, wformat=wformat)
-
-    ! Simulation_SumGDD
-    tmptilen_int = 0
-    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2
-    enddo
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
-                                varid=Simulation_SumGDD_ID, dim=1, wformat=wformat)
-
-    ! Simulation_SumGDDFromDay1
-    tmptilen_int = 0
-    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2
-    enddo
-    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
-                                varid=Simulation_SumGDDFromDay1_ID, dim=1, wformat=wformat)
 
 
     !! From StressTot

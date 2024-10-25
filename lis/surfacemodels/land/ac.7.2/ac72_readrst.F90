@@ -406,9 +406,16 @@ subroutine AC72_readrst()
                                     varname="SumInterval", wformat=wformat)
 
             !! logical
-            !read: NoMoreCrop
-            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%NoMoreCrop, &
-                                    varname="NoMoreCrop", wformat=wformat)
+            ! read: NoMoreCrop
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="NoMoreCrop", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                if (tmptilen_int(t).eq.1) then
+                    AC72_struc(n)%ac72(t)%NoMoreCrop = .true.
+                else
+                    AC72_struc(n)%ac72(t)%NoMoreCrop = .false.
+                endif            
+            enddo
 
             !! From StressTot
             ! read: StressTot_Salt
@@ -504,6 +511,13 @@ subroutine AC72_readrst()
                 AC72_struc(n)%ac72(t)%Simulation%DayAnaero = tmptilen_int(t)
             enddo
 
+            ! read: Simulation_DelayedDays
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_DelayedDays", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%DelayedDays = tmptilen_int(t)
+            enddo
+
             ! read: Simulation_EffectStress_RedCGC
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                     varname="Simulation_EffectStress_RedCGC", wformat=wformat)
@@ -536,14 +550,22 @@ subroutine AC72_readrst()
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                     varname="Simulation_SWCtopSoilConsidered", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered = tmptilen_int(t)
+                if (tmptilen_int(t).eq.1) then
+                    AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered = .true.
+                else
+                    AC72_struc(n)%ac72(t)%Simulation%SWCtopSoilConsidered = .false.
+                endif           
             enddo
 
             ! read: Simulation_EvapLimitON
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                     varname="Simulation_EvapLimitON", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC72_struc(n)%ac72(t)%Simulation%EvapLimitON = tmptilen_int(t)
+                if (tmptilen_int(t).eq.1) then
+                    AC72_struc(n)%ac72(t)%Simulation%EvapLimitON = .true.
+                else
+                    AC72_struc(n)%ac72(t)%Simulation%EvapLimitON = .false.
+                endif         
             enddo
 
             ! read: Simulation_EvapStartStg2
@@ -561,18 +583,32 @@ subroutine AC72_readrst()
                 AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
             enddo
 
+            ! read: Simulation_SCor
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_SCor", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%SCor = tmptilen(t)
+            enddo
+
+            ! read: Simulation_SumEToStress
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Simulation_SumEToStress", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%SumEToStress = tmptilen(t)
+            enddo
+
             ! read: Simulation_SumGDD
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                     varname="Simulation_SumGDD", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
+                AC72_struc(n)%ac72(t)%Simulation%SumGDD = tmptilen(t)
             enddo
 
             ! read: Simulation_SumGDDFromDay1
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                     varname="Simulation_SumGDDFromDay1", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-                AC72_struc(n)%ac72(t)%Simulation%EvapWCSurf = tmptilen(t)
+                AC72_struc(n)%ac72(t)%Simulation%SumGDDFromDay1 = tmptilen(t)
             enddo
 
             !! From Management
@@ -617,6 +653,11 @@ subroutine AC72_readrst()
                     varname="Crop_pSenAct", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 AC72_struc(n)%ac72(t)%Crop%pSenAct = tmptilen(t)
+            enddo
+
+            ! Set PreDay to true for restart
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%PreDay = .true.
             enddo
 
 

@@ -540,6 +540,9 @@ subroutine AC72_main(n)
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
             tmp_elev = LIS_domain(n)%tile(t)%elev
+            if((LIS_rc%da.eq.1).and.(LIS_rc%mo.eq.8).and.(row.eq.26).and.(col.eq.80)) then
+                write(*,*) "stop here"
+            endif
 
             !!------ This Block Is Where We Obtain Weather Forcing ------------------------------!!
             ! retrieve forcing data from AC72_struc(n)%ac72(t) and assign to local variables
@@ -783,13 +786,7 @@ subroutine AC72_main(n)
             call SetWaterTableInProfile(AC72_struc(n)%ac72(t)%WaterTableInProfile)
             call SetStartMode(AC72_struc(n)%ac72(t)%StartMode)
             call SetGDDayi(AC72_struc(n)%ac72(t)%GDDayi)
-
-            ! logicals for restart
-            if (AC72_struc(n)%AC72(t)%NoMoreCrop.eq.1) then
-                call SetNoMoreCrop(.true.)
-            else
-                call SetNoMoreCrop(.false.)
-            endif
+            call SetNoMoreCrop(AC72_struc(n)%AC72(t)%NoMoreCrop)
         
 
             ! Fixed var
@@ -1172,13 +1169,7 @@ subroutine AC72_main(n)
             AC72_struc(n)%ac72(t)%NoYear = GetNoYear()
             AC72_struc(n)%ac72(t)%WaterTableInProfile = GetWaterTableInProfile()
             AC72_struc(n)%ac72(t)%StartMode = GetStartMode()
-
-            ! logicals for restart
-            if (GetNoMoreCrop()) then
-                AC72_struc(n)%AC72(t)%NoMoreCrop = 1
-            else
-                AC72_struc(n)%AC72(t)%NoMoreCrop = 0
-            endif
+            AC72_struc(n)%AC72(t)%NoMoreCrop = GetNoMoreCrop()
 
             ! Check for end of simulation period 
             ! (DayNri - 1 because DayNri is already for next day)
