@@ -29,8 +29,8 @@ import os
 import platform
 import re
 import datetime
-import numpy as np
 import math
+import numpy as np
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
@@ -115,7 +115,6 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             if command_list:
                 for cmd in command_list:
                     _f.write(f"{cmd}\n")
-        
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
@@ -327,9 +326,7 @@ def tiff_to_da(file):
     crs = dataset.crs
     x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
     y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
-    
+
     # Create an xarray DataArray
     da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
-    
     return da
-
