@@ -33,5 +33,3 @@ subroutine AC72_dynsetup(n)
  
     !TODO: add code here if needed.
 end subroutine AC72_dynsetup
- 
-! generate date/time string for reading time-dependent variables ??Michel

@@ -1,10 +1,5 @@
 module ac_utils
 !! A place for various small utilities.
-use iso_fortran_env, only: int8, &
-                           int16, &
-                           int32, &
-                           real32, &
-                           real64
 
 use, intrinsic :: iso_c_binding, only: c_f_pointer, &
                                        c_loc, &
@@ -12,9 +7,6 @@ use, intrinsic :: iso_c_binding, only: c_f_pointer, &
                                        c_ptr
 
 implicit none
-integer, parameter :: dp = real64
-    !! double precision real kind
-
 
 interface roundc
     module procedure roundc_int8
@@ -33,7 +25,7 @@ function roundc_int32(x, mold) result(y)
         !! Integer determining the kind of the integer result
     integer(int32) :: y
 
-   if (abs(x - floor(x, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
+   if (abs(x - floor(x, kind=int32) - 0.5) < epsilon(0.)) then
        if (x > 0) then
           if (mod(abs(trunc(x)),2) == 0) then
               y = floor(x, kind=int32)
@@ -61,7 +53,7 @@ function roundc_int8(x, mold) result(y)
         !! Integer determining the kind of the integer result
     integer(int8) :: y
 
-    if (abs(x - floor(x, kind=int32) - 0.5_dp) < epsilon(0._dp)) then
+    if (abs(x - floor(x, kind=int32) - 0.5) < epsilon(0.)) then
        if (x > 0) then
           if (mod(abs(trunc(x)),2) == 0) then
              y = floor(x, kind=int8)

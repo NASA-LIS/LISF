@@ -340,6 +340,10 @@ subroutine AC72_readrst()
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDcuts, &
                                     varname="SumGDDcuts", wformat=wformat)
 
+            ! read: SumGDDPrev
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDPrev, &
+                                    varname="SumGDDPrev", wformat=wformat)
+
             ! read: SumKci
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKci, &
                                     varname="SumKci", wformat=wformat)
@@ -392,6 +396,17 @@ subroutine AC72_readrst()
                 AC72_struc(n)%ac72(t)%Crop%DaysToFullCanopySF = tmptilen_int(t)
             enddo
 
+            ! read: Crop_GDDaysToFullCanopySF
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                    varname="Crop_GDDaysToFullCanopySF", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%GDDaysToFullCanopySF = tmptilen_int(t)
+            enddo
+
+            ! read: DayLastCut
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayLastCut, &
+                                    varname="DayLastCut", wformat=wformat)
+
             ! read: DayNri
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
                                     varname="DayNri", wformat=wformat)
@@ -423,6 +438,22 @@ subroutine AC72_readrst()
                     AC72_struc(n)%ac72(t)%NoMoreCrop = .false.
                 endif            
             enddo
+
+            !! From PlotVarCrop
+            ! read: PlotVarCrop_ActVal
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="PlotVarCrop_ActVal", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%PlotVarCrop%ActVal = tmptilen(t)
+            enddo
+
+            ! read: PlotVarCrop_PotVal
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="PlotVarCrop_PotVal", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%PlotVarCrop%PotVal = tmptilen(t)
+            enddo
+
 
             !! From StressTot
             ! read: StressTot_Salt
@@ -589,12 +620,42 @@ subroutine AC72_readrst()
                 endif         
             enddo
 
+            ! read: Simulation_Germinate
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_Germinate", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                if (tmptilen_int(t).eq.1) then
+                    AC72_struc(n)%ac72(t)%Simulation%Germinate = .true.
+                else
+                    AC72_struc(n)%ac72(t)%Simulation%Germinate = .false.
+                endif         
+            enddo
+
+            ! read: Simulation_ProtectedSeedling
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_ProtectedSeedling", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                if (tmptilen_int(t).eq.1) then
+                    AC72_struc(n)%ac72(t)%Simulation%ProtectedSeedling = .true.
+                else
+                    AC72_struc(n)%ac72(t)%Simulation%ProtectedSeedling = .false.
+                endif         
+            enddo
+
             ! read: Simulation_EvapStartStg2
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                     varname="Simulation_EvapStartStg2", wformat=wformat)
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
                 AC72_struc(n)%ac72(t)%Simulation%EvapStartStg2 = tmptilen_int(t)
             enddo
+
+            ! read: Simulation_HIfinal
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                    varname="Simulation_HIfinal", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Simulation%HIfinal = tmptilen_int(t)
+            enddo
+
 
             !! From Simulation
             ! read: Simulation_EvapWCSurf
@@ -641,6 +702,13 @@ subroutine AC72_readrst()
             enddo
 
             !! From Crop
+            ! read: Crop_CCoAdjusted
+            call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                    varname="Crop_CCoAdjusted", wformat=wformat)
+            do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+                AC72_struc(n)%ac72(t)%Crop%CCoAdjusted = tmptilen(t)
+            enddo
+
             ! read: Crop_CCxAdjusted
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
                     varname="Crop_CCxAdjusted", wformat=wformat)

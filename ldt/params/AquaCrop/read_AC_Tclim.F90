@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -196,7 +196,7 @@ subroutine read_AC_Tclim(n, array)
               LDT_rc%udef, iret)
         deallocate( n111, n121, n211, n221, w111, w121, w211, w221 )
 
-    !- When no transform is performed:
+    !- When no transform is performed (must be same grid as LDT grid!):
       case ( "none" )
           write(LDT_logunit,*) "[INFO] No aggregation applied for parameter file ... "
           go1(:) = gi1(:)

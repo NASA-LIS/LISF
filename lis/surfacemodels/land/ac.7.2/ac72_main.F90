@@ -496,7 +496,6 @@ subroutine AC72_main(n)
 
     integer              :: tid
 
-    !!! MB_AC72
     integer              :: daynr, todaynr, iproject, nprojects
     logical              :: ListProjectFileExist, phenological_stages_ensemble
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
@@ -504,15 +503,13 @@ subroutine AC72_main(n)
     integer              :: Crop_DaysToHarvest, Crop_DaysTosenescence, Crop_DaysToCCini
     integer              :: Crop_DaysToFullCanopy, Crop_DaysToFullCanopySF, Crop_DaysToHIo
     integer(int32) :: temp1    
-
-    !LB AC72
     integer              :: irr_record_flag, DNr ! for irri file management
     character(250)       :: TempStr 
 
     real                 :: tmp_pres, tmp_precip, tmp_tmax, tmp_tmin   ! Weather Forcing
     real                 :: tmp_tdew, tmp_swrad, tmp_wind, tmp_eto     ! Weather Forcing
 
-    ! For type problem in AdvanceOneTimeStep
+    ! For AdvanceOneTimeStep
     real                 :: tmp_wpi
 !
 ! !DESCRIPTION:
@@ -531,6 +528,7 @@ subroutine AC72_main(n)
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "AC72 model alarm")
     if (alarmCheck) Then
         if (AC72_struc(n)%ac72(1)%InitializeRun.eq.1) then
+        ! Read T record of next sim period
             call ac72_read_Trecord(n)
         endif
         do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -540,7 +538,8 @@ subroutine AC72_main(n)
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
             tmp_elev = LIS_domain(n)%tile(t)%elev
-            if((LIS_rc%da.eq.1).and.(LIS_rc%mo.eq.8).and.(row.eq.26).and.(col.eq.80)) then
+            ! debugging lines (do not forget to remove them)
+            if((LIS_rc%da.eq.1).and.(LIS_rc%mo.eq.5).and.(row.eq.9).and.(col.eq.100)) then
                 write(*,*) "stop here"
             endif
 
@@ -609,7 +608,6 @@ subroutine AC72_main(n)
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
-
 
             ! check validity of WIND
             if(tmp_wind .eq. LIS_rc%udef) then
@@ -787,7 +785,6 @@ subroutine AC72_main(n)
             call SetStartMode(AC72_struc(n)%ac72(t)%StartMode)
             call SetGDDayi(AC72_struc(n)%ac72(t)%GDDayi)
             call SetNoMoreCrop(AC72_struc(n)%AC72(t)%NoMoreCrop)
-        
 
             ! Fixed var
             call SetOut3Prof(.true.) ! needed for correct rootzone sm
@@ -795,7 +792,6 @@ subroutine AC72_main(n)
 
             call SetTminRun(AC72_struc(n)%ac72(t)%Tmin_record)
             call SetTmaxRun(AC72_struc(n)%ac72(t)%Tmax_record)
-            
 
             ! Set climate variables
             ! Round them to 4 digits after the comma as done in the AC standalone
@@ -1027,7 +1023,6 @@ subroutine AC72_main(n)
             do l=1, AC72_struc(n)%ac72(t)%NrCompartments
                 AC72_struc(n)%ac72(t)%smc(l) = GetCompartment_theta(l)
             enddo
-            !write(*,'(e23.15e3)') AC72_struc(n)%ac72(t)%AC72smc(1)
             AC72_struc(n)%ac72(t)%IrriECw = GetIrriECw()
             AC72_struc(n)%ac72(t)%Management = GetManagement()
             AC72_struc(n)%ac72(t)%PerennialPeriod = GetPerennialPeriod()
@@ -1073,27 +1068,27 @@ subroutine AC72_main(n)
             AC72_struc(n)%ac72(t)%CCiActual = GetCCiActual()
             AC72_struc(n)%ac72(t)%CCiprev = GetCCiprev()
             AC72_struc(n)%ac72(t)%CCiTopEarlySen = GetCCiTopEarlySen()
-            AC72_struc(n)%ac72(t)%CRsalt = GetCRsalt () ! gram/m2
-            AC72_struc(n)%ac72(t)%CRwater = GetCRwater() ! mm/day
-            AC72_struc(n)%ac72(t)%ECdrain = GetECdrain() ! EC drain water dS/m
-            AC72_struc(n)%ac72(t)%ECiAqua = GetECiAqua() ! EC of the groundwater table in dS/m
-            AC72_struc(n)%ac72(t)%ECstorage = GetECstorage() !EC surface storage dS/m
-            AC72_struc(n)%ac72(t)%Eact = GetEact() ! mm/day
-            AC72_struc(n)%ac72(t)%Epot = GetEpot() ! mm/day
-            AC72_struc(n)%ac72(t)%ETo = GetETo() ! mm/day
-            AC72_struc(n)%ac72(t)%Drain = GetDrain()  ! mm/day
-            AC72_struc(n)%ac72(t)%Infiltrated = GetInfiltrated() ! mm/day
-            AC72_struc(n)%ac72(t)%prcp = GetRain()  ! mm/day
+            AC72_struc(n)%ac72(t)%CRsalt = GetCRsalt ()
+            AC72_struc(n)%ac72(t)%CRwater = GetCRwater()
+            AC72_struc(n)%ac72(t)%ECdrain = GetECdrain()
+            AC72_struc(n)%ac72(t)%ECiAqua = GetECiAqua()
+            AC72_struc(n)%ac72(t)%ECstorage = GetECstorage()
+            AC72_struc(n)%ac72(t)%Eact = GetEact()
+            AC72_struc(n)%ac72(t)%Epot = GetEpot()
+            AC72_struc(n)%ac72(t)%ETo = GetETo()
+            AC72_struc(n)%ac72(t)%Drain = GetDrain()
+            AC72_struc(n)%ac72(t)%Infiltrated = GetInfiltrated()
+            AC72_struc(n)%ac72(t)%prcp = GetRain()
             AC72_struc(n)%ac72(t)%RootingDepth = GetRootingDepth()
-            AC72_struc(n)%ac72(t)%Runoff = GetRunoff()  ! mm/day
-            AC72_struc(n)%ac72(t)%SaltInfiltr = GetSaltInfiltr() ! salt infiltrated in soil profile Mg/ha
-            AC72_struc(n)%ac72(t)%Surf0 = GetSurf0()  ! surface water [mm] begin day
-            AC72_struc(n)%ac72(t)%SurfaceStorage = GetSurfaceStorage() !mm/day
-            AC72_struc(n)%ac72(t)%Tact = GetTact() ! mm/day
-            AC72_struc(n)%ac72(t)%Tpot = GetTpot() ! mm/day
-            AC72_struc(n)%ac72(t)%TactWeedInfested = GetTactWeedInfested() !mm/day
-            AC72_struc(n)%ac72(t)%tmax = GetTmax() ! degC
-            AC72_struc(n)%ac72(t)%tmin =GetTmin() ! degC
+            AC72_struc(n)%ac72(t)%Runoff = GetRunoff()
+            AC72_struc(n)%ac72(t)%SaltInfiltr = GetSaltInfiltr()
+            AC72_struc(n)%ac72(t)%Surf0 = GetSurf0()
+            AC72_struc(n)%ac72(t)%SurfaceStorage = GetSurfaceStorage()
+            AC72_struc(n)%ac72(t)%Tact = GetTact()
+            AC72_struc(n)%ac72(t)%Tpot = GetTpot()
+            AC72_struc(n)%ac72(t)%TactWeedInfested = GetTactWeedInfested()
+            AC72_struc(n)%ac72(t)%tmax = GetTmax()
+            AC72_struc(n)%ac72(t)%tmin =GetTmin()
 
 
             AC72_struc(n)%ac72(t)%GwTable = GetGwTable()
@@ -1177,7 +1172,6 @@ subroutine AC72_main(n)
                 AC72_struc(n)%ac72(t)%InitializeRun = 1
                 AC72_struc(n)%ac72(t)%irun = AC72_struc(n)%ac72(t)%irun + 1
             end if
-
 
             ! Diagnostic output variables
             ![ 1] output variable: smc (unit=m^3 m-3 ). ***  volumetric soil moisture

@@ -77,6 +77,7 @@ subroutine AC72_setup()
                          GetSimulation,&
                          GetSimulation_SumGDD,&
                          GetSimulation_SumGDDfromDay1,&
+                         GetSimulation_ToDayNr,&
                          SetTotalSaltContent,&
                          SetTotalWaterContent,&
                          Seteffectiverain,&
@@ -1118,6 +1119,15 @@ subroutine AC72_setup()
                     endif
                 else ! no irrigation, set to 0
                     AC72_struc(n)%ac72(t)%irri_lnr = 0
+                endif
+
+                ! Check if we need to start a new sim period
+                call LIS_get_julhr(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
+                                  0,0,0,time1julhours)
+                time1days = (time1julhours - timerefjulhours)/24
+                if (time1days.eq.GetSimulation_ToDayNr()) then
+                    AC72_struc(n)%ac72(t)%irun = 2 ! Means that we need to start a new sim
+                    AC72_struc(n)%ac72(t)%InitializeRun = 1
                 endif
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
