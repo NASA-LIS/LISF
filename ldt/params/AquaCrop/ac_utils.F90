@@ -1,12 +1,22 @@
 module ac_utils
 !! A place for various small utilities.
 
+!! A place for various small utilities.
+use iso_fortran_env, only: int8, &
+                           int32, &
+                           real32
+
 use, intrinsic :: iso_c_binding, only: c_f_pointer, &
                                        c_loc, &
                                        c_null_char, &
                                        c_ptr
 
 implicit none
+integer, parameter :: sp = real32
+    !! double precision real kind
+real(sp), parameter :: ac_zero_threshold = 0.000001_sp
+
+
 
 interface roundc
     module procedure roundc_int8
@@ -19,7 +29,7 @@ contains
 
 function roundc_int32(x, mold) result(y)
     !! Returns commercial rounds, following Pascal's banker's rules for rounding
-    real(dp), intent(in) :: x
+    real(sp), intent(in) :: x
         !! Value to be rounded to an integer
     integer(int32), intent(in) :: mold
         !! Integer determining the kind of the integer result
@@ -47,7 +57,7 @@ end function roundc_int32
 
 function roundc_int8(x, mold) result(y)
     !! Returns commercial rounds, following Pascal's banker's rules for rounding
-    real(dp), intent(in) :: x
+    real(sp), intent(in) :: x
         !! Value to be rounded to an integer
     integer(int8), intent(in) :: mold
         !! Integer determining the kind of the integer result
@@ -76,7 +86,7 @@ end function roundc_int8
 function trunc(x) result(y)
     !! Returns the integer part of x, which is always smaller than (or equal to) x
     !! in absolute value.
-    real(dp), intent(in) :: x
+    real(sp), intent(in) :: x
     integer(int32) :: y
 
     if (x > 0) then
