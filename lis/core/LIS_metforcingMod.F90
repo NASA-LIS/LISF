@@ -62,7 +62,9 @@ module LIS_metforcingMod
 !                                 from LIS_MOC_RAINFCONV to LIS_MOC_CRAINFFORC.
 !                              Added units of [kg/m^2] for PET and CRainf.
 !  13 Aug 2023    Jules Kouatchou Introduce calls for time profiling.
-! 
+!  13 Sep 2024    Sujay Kumar, Initial code for using dynamic lapse rate
+!  31 Oct 2024    David Mocko, Final code for using dynamic lapse rate
+!
   use ESMF
   use LIS_FORC_AttributesMod
   use LIS_spatialDownscalingMod
@@ -97,6 +99,7 @@ module LIS_metforcingMod
 
   type, public :: forc_dec_type
      real, allocatable :: modelelev(:)
+     real, allocatable :: lapserate(:)
   end type forc_dec_type
 
 !BOP
@@ -170,6 +173,10 @@ contains
                 write(LIS_logunit,*) "[INFO] Elevation correction turned on for:  ",&
                 trim(LIS_rc%metforc(m))
                 allocate(LIS_forc(n,m)%modelelev(LIS_rc%ngrid(n)))
+                allocate(LIS_forc(n,m)%lapserate(LIS_rc%ngrid(n)))
+
+                !initialized to the uniform value
+                LIS_forc(n,m)%lapserate = -0.0065
              endif
           enddo
        enddo
@@ -1042,6 +1049,7 @@ contains
   subroutine LIS_get_met_forcing(n)
 
 ! !USES:
+    use LIS_histDataMod
 
 ! !ARGUMENTS:
     integer,intent(in) :: n
@@ -1083,7 +1091,8 @@ contains
 ! \end{description}
 !EOP
 
-    integer :: m
+    integer :: m,t,index
+    real, allocatable  :: lapserateout(:)
 
     TRACE_ENTER("metf_get")
     if (LIS_rc%do_ftiming) call LIS_Ftiming_On("LIS_run/metf_get")
@@ -1104,8 +1113,20 @@ contains
                 call LIS_endrun
              endif
 
-             call LIS_lapseRateCorrection(n,LIS_forc(n,m)%modelelev,&
+             call LIS_lapseRateCorrection(n,&
+                  LIS_forc(n,m)%modelelev,&
+                  LIS_forc(n,m)%lapserate,&
                   LIS_FORC_Base_State(n,m))
+
+             allocate(lapserateout(LIS_rc%ntiles(n)))
+             do t=1,LIS_rc%ntiles(n)
+                index = LIS_domain(n)%tile(t)%index
+                lapserateout(t) = LIS_forc(n,m)%lapserate(index) * 1000.0
+                call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_LAPSERATE,value=&
+                         lapserateout(t),vlevel=1,unit="K/km",direction="UP", &
+                         valid_min=-100.0,valid_max=100.0)
+             enddo
+             deallocate(lapserateout)
 
           elseif(LIS_rc%met_ecor(m).eq."slope-aspect") then 
 
@@ -1132,9 +1153,21 @@ contains
                 call LIS_endrun
              endif
 
-             call LIS_lapseRateCorrection(n, LIS_forc(n,m)%modelelev,&
+             call LIS_lapseRateCorrection(n, &
+                  LIS_forc(n,m)%modelelev,&
+                  LIS_forc(n,m)%lapserate,&
                   LIS_FORC_Base_State(n,m))
              call LIS_slopeAspectCorrection(n, LIS_FORC_Base_State(n,m))
+
+             allocate(lapserateout(LIS_rc%ntiles(n)))
+             do t=1,LIS_rc%ntiles(n)
+                index = LIS_domain(n)%tile(t)%index
+                lapserateout(t) = LIS_forc(n,m)%lapserate(index) * 1000.0
+                call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_LAPSERATE,value=&
+                         lapserateout(t),vlevel=1,unit="K/km",direction="UP", &
+                         valid_min=-100.0,valid_max=100.0)
+             enddo
+             deallocate(lapserateout)
 
           ! New MicroMet option:
           elseif(LIS_rc%met_ecor(m).eq."micromet") then

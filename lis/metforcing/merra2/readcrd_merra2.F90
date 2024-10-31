@@ -14,6 +14,8 @@
 !
 ! !REVISION HISTORY:
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
+! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
+! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 !
 ! !INTERFACE:    
 subroutine readcrd_merra2()
@@ -32,6 +34,7 @@ subroutine readcrd_merra2()
   implicit none
 
   integer :: n,t,rc
+  logical :: usedynlapserate
 
   call ESMF_ConfigFindLabel(LIS_config,"MERRA2 forcing directory:",rc=rc)
   do n=1,LIS_rc%nnest
@@ -58,6 +61,32 @@ subroutine readcrd_merra2()
      call LIS_verify(rc,&
           'MERRA2 use corrected total precipitation: not defined')
   enddo
+
+  call ESMF_ConfigFindLabel(LIS_config,"MERRA2 apply dynamic lapse rates:",rc=rc)
+  do n=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,merra2_struc(n)%usedynlapserate,&
+          default=0, rc=rc)
+     call LIS_verify(rc,&
+          'MERRA2 apply dynamic lapse rates: not defined')
+  enddo
+
+  usedynlapserate = .true.
+  
+  do n=1,LIS_rc%nnest
+     if(merra2_struc(n)%usedynlapserate.eq.0) then
+        usedynlapserate = .false. 
+     endif
+  enddo
+
+  if(usedynlapserate) then
+     call ESMF_ConfigFindLabel(LIS_config,"MERRA2 dynamic lapse rate data directory:",rc=rc)
+     do n=1,LIS_rc%nnest
+        call ESMF_ConfigGetAttribute(LIS_config,merra2_struc(n)%dynlapseratedir,&
+             rc=rc)
+        call LIS_verify(rc,&
+             'MERRA2 dynamic lapse rate data directory: not defined')
+     enddo
+  endif
 
   do n=1,LIS_rc%nnest
      merra2_struc(n)%usescalef = 0 

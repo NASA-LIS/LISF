@@ -252,6 +252,9 @@ Density_f:    0  kg/m3   -    1 0 0 1 256 1       # Atmospheric density
 VaporPress_f: 0  -       -    1 0 0 1 256 1       # Vapor pressure
 VaporPressDeficit_f: 0  -  -  1 0 0 1 256 1       # Vapor pressure deficit
 
+#Lapserate
+Lapserate:    1  K/km    UP   1 0 0 1 255 10      # Lapse rate
+
 #Additional FEWSNET Forcings
 PET_f:         0 kg/m2s  -    0 0 0 1 228 1000    # Average PET rate 
 RefET_f:       0 kg/m2s  -    0 0 0 1 256 1000    # Average RefET rate 
