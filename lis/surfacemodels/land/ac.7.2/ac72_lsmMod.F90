@@ -234,7 +234,8 @@ contains
             call LIS_registerAlarm("AC72 restart alarm", &
                                    AC72_struc(n)%ts,&
                                    AC72_struc(n)%rstInterval)
-            ! Set number of soil moisture layers in surface model
+            ! Set number of soil moisture layers in surface model (corresponding to
+            ! the compartments for AquaCrop)
             LIS_sfmodel_struc(n)%nsm_layers = AC72_struc(n)%max_No_compartments
             allocate(LIS_sfmodel_struc(n)%lyrthk(AC72_struc(n)%max_No_compartments))
             ! Note, the default compartment size (0.10) is stored in the 

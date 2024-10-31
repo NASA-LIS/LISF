@@ -1,5 +1,6 @@
 module ac_utils
-!! A place for various small utilities.
+!! A place for various small utilities used in the
+!! AquaCrop source code
 
 !! A place for various small utilities.
 use iso_fortran_env, only: int8, &

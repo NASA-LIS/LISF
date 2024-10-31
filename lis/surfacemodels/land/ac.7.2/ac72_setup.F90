@@ -35,454 +35,452 @@ subroutine AC72_setup()
     use AC72_lsmMod
     use ac72_prep_f,    only: ac72_read_Trecord
 
-    use ac_global, only: typeproject_typeprm, &
-                        ModeCycle_GDDays, &
-                        GetCrop_ModeCycle,&
-                        undef_int,&
-                        GetCrop_DaysToHarvest,&
-                         typeproject_typepro, &
-                         GetSimulParam_ThicknessTopSWC, &
-                         GetRootZoneWC_Actual,&
-                         GetRootZoneWC_FC,&
-                         GetRootZoneWC_WP,&
-                         GetRootZoneWC_SAT,&
-                         GetRootZoneWC_Leaf,&
-                         GetRootZoneWC_Thresh,&
-                         GetRootZoneWC_Sen,&
-                         GetRootZoneWC_ZtopAct,&
-                         GetRootZoneWC_ZtopFC,&
-                         GetRootZoneWC_ZtopWP,&
-                         GetRootZoneWC_ZtopThresh,&
-                         SetSimulParam_ThicknessTopSWC, &
-                         SetRootZoneWC_Actual,&
-                         SetRootZoneWC_FC,&
-                         SetRootZoneWC_WP,&
-                         SetRootZoneWC_SAT,&
-                         SetRootZoneWC_Leaf,&
-                         SetRootZoneWC_Thresh,&
-                         SetRootZoneWC_Sen,&
-                         SetRootZoneWC_ZtopAct,&
-                         SetRootZoneWC_ZtopFC,&
-                         SetRootZoneWC_ZtopWP,&
-                         SetRootZoneWC_ZtopThresh,&
-                         GetCompartment,&
-                         SetCompartment,&
-                         GetSoilLayer,&
-                         SetSoilLayer,&
-                         GetTotalSaltContent,&
-                         GetTotalWaterContent,&
-                         Geteffectiverain,&
-                         GetSumWaBal,&
-                         GetRootZoneSalt,&
-                         GetSimulation,&
-                         GetSimulation_SumGDD,&
-                         GetSimulation_SumGDDfromDay1,&
-                         GetSimulation_ToDayNr,&
-                         SetTotalSaltContent,&
-                         SetTotalWaterContent,&
-                         Seteffectiverain,&
-                         SetSumWaBal,&
-                         SetRootZoneSalt,&
-                         SetSimulation,&
-                         GetIrrigation,&
-                         SetIrrigation,&
-                         GetCompartment_theta,&
-                         SetCompartment_theta,&
-                         GetIrriECw,&
-                         GetManagement,&
-                         GetPerennialPeriod,&
-                         GetSimulParam,&
-                         GetManagement_Cuttings,&
-                         GetOnset,&
-                         GetEndSeason,&
-                         GetCrop,&
-                         GetSoil,&
-                         GetTemperatureRecord,&
-                         GetClimRecord,&
-                         GetRainRecord,&
-                         GetEToRecord,&
-                         SetIrriECw,&
-                         SetManagement,&
-                         SetPerennialPeriod,&
-                         SetSimulParam,&
-                         SetManagement_Cuttings,&
-                         SetOnset,&
-                         SetEndSeason,&
-                         SetCrop,&
-                         SetSoil,&
-                         SetTemperatureRecord,&
-                         SetEToRecord,&
-                         SetRainRecord,&
-                         SetClimRecord,&
-                         SetRainRecord,&
-                         SetEToRecord,&
-                         GetSimulParam_GDDMethod,&
-                        GetClimRecord_FromY,&
-                        GetClimRecord_FromDayNr,&
-                        GetClimRecord_ToDayNr,&
-                        GetClimRecord_FromString,&
-                        GetClimRecord_ToString,&
-                        SetClimRecord_FromY,&
-                        SetClimRecord_FromDayNr,&
-                        SetClimRecord_ToDayNr,&
-                        SetClimRecord_FromString,&
-                        SetClimRecord_ToString,&
-                        SetClimFile,&
-                        SetClimDescription,&
-                        SetClimRecord_DataType, &
-                        SetClimRecord_fromd, &
-                        SetClimRecord_fromm, &
-                        SetClimRecord_fromy, &
-                        SetClimRecord_NrObs, &
-                        SetClimRecord_tod, &
-                        SetClimRecord_tom, &
-                        SetClimRecord_toy,&
-                        SetCO2Description,&
-                        SetProfFilefull,&
-                        SetSimulation_Storage_CropString,&
-                        GetGenerateTimeMode,&
-                        GetGenerateDepthMode,&
-                        GetIrriMode,&
-                        GetIrriMethod,&
-                        GetDaySubmerged,&
-                        GetMaxPlotNew,&
-                        GetNrCompartments,&
-                        GetIrriFirstDayNr,&
-                        GetZiAqua,&
-                        GetIniPercTAW,&
-                        GetMaxPlotTr,&
-                        GetOutputAggregate,&
-                        GetEvapoEntireSoilSurface,&
-                        GetPreDay,&
-                        GetOutDaily,&
-                        GetOut1Wabal,&
-                        GetOut2Crop,&
-                        GetOut3Prof,&
-                        GetOut4Salt,&
-                        GetOut5CompWC,&
-                        GetOut6CompEC,&
-                        GetOut7Clim,&
-                        GetOut8Irri,&
-                        GetPart1Mult,&
-                        GetPart2Eval,&
-                        SetGenerateTimeMode,&
-                        SetGenerateDepthMode,&
-                        SetIrriMode,&
-                        SetIrriMethod,&
-                        SetDaySubmerged,&
-                        SetMaxPlotNew,&
-                        SetNrCompartments,&
-                        SetIrriFirstDayNr,&
-                        SetZiAqua,&
-                        SetIniPercTAW,&
-                        SetMaxPlotTr,&
-                        SetOutputAggregate,&
-                        SetEvapoEntireSoilSurface,&
-                        SetPreDay,&
-                        SetOutDaily,&
-                        SetOut1Wabal,&
-                        SetOut2Crop,&
-                        SetOut3Prof,&
-                        SetOut4Salt,&
-                        SetOut5CompWC,&
-                        SetOut6CompEC,&
-                        SetOut7Clim,&
-                        SetPart1Mult,&
-                        SetPart2Eval,&
-                        GetCCiActual,&
-                        GetCCiprev,&
-                        GetCCiTopEarlySen,&
-                        GetCRsalt,&  
-                        GetCRwater,& 
-                        GetECdrain,& 
-                        GetECiAqua,& 
-                        GetECstorage,& 
-                        GetEact,& 
-                        GetEpot,& 
-                        GetETo,&
-                        GetDrain,&  
-                        GetInfiltrated,&
-                        GetRain,& 
-                        GetRootingDepth,&
-                        GetRunoff,& 
-                        GetSaltInfiltr,&
-                        GetSurf0,& 
-                        GetSurfaceStorage,&
-                        GetTact,&
-                        GetTpot,&
-                        GetTactWeedInfested,&
-                        GetTmax,& 
-                        GetTmin,& 
-                        SetCCiActual,&
-                        SetCCiprev,&
-                        SetCCiTopEarlySen,&
-                        SetCRsalt,&  
-                        SetCRwater,& 
-                        SetECdrain,& 
-                        SetECiAqua,& 
-                        SetECstorage,& 
-                        SetEact,& 
-                        SetEpot,& 
-                        SetETo,&
-                        SetDrain,&  
-                        SetInfiltrated,&
-                        SetRain,& 
-                        SetRootingDepth,&
-                        SetRunoff,& 
-                        SetSaltInfiltr,&
-                        SetSurf0,& 
-                        SetSurfaceStorage,&
-                        SetTact,&
-                        SetTpot,&
-                        SetTactWeedInfested,&
-                        SetTmax,& 
-                        SetTmin,&
-                        GetIrriBeforeSeason,&
-                        SetIrriBeforeSeason,&
-                        GetIrriAfterSeason,&
-                        SetIrriAfterSeason,&
-                        GetCrop_Day1,&
-                        DegreesDay,&
-                         GetSimulation_ToDayNr, &
-                         SetSimulation_ToDayNr, &
-                        SetSimulation_SumGDDfromDay1,&
-                        SetSimulation_SumGDD, &
-                        SetSimulation_NrRuns, &
-                        SetFullFileNameProgramParameters, &
-                        SetSimulation_MultipleRun, &
-                        GetSimulation_MultipleRunWithKeepSWC, &
-                        GetSimulation_MultipleRunConstZrx, &
-                        SetSimulation_MultipleRunConstZrx, &
-                        CheckForKeepSWC, &
-                        GetMultipleProjectFileFull, &
-                        GetMultipleProjectFile, &
-                        SetSimulation_MultipleRunWithKeepSWC, &
-                        GetFullFileNameProgramParameters, &
-                        SetMultipleProjectDescription, &
-                        GetNumberSimulationRuns, &
-                        SetMultipleProjectFile, &
-                        SetMultipleProjectFileFull, &
-                        SetPathNameOutp, &
-                        SetPathNameSimul, &
-                        SetPathNameList, &
-                        SetPathNameParam, &
-                        SetPathNameProg, &
-                        GetPathNameList,&
-                        FromGravelMassToGravelVolume,&
-                            IrriMode_Generate,&
-                            IrriMode_Manual, &
-                        SetSimulation_MultipleRun, &
-                        GetSimulation_MultipleRunWithKeepSWC, &
-                        GetSimulation_MultipleRunConstZrx, &
-                        SetSimulation_MultipleRunConstZrx,&
-                        SetSimulation_MultipleRunWithKeepSWC,&
-                            SetTmaxRun,& 
-                            SetTminRun,&
-                            SetTminTnxReference12MonthsRun, &
-                            SetTmaxTnxReference12MonthsRun,&
-                            SetTnxReferenceYear,&
-                            SetTnxReferenceFile
+    use ac_global, only: &
+            CheckForKeepSWC, &
+            DegreesDay,&
+            FromGravelMassToGravelVolume,&
+            GetCCiActual,&
+            GetCCiprev,&
+            GetCCiTopEarlySen,&
+            GetClimRecord,&
+            GetClimRecord_FromDayNr,&
+            GetClimRecord_FromString,&
+            GetClimRecord_FromY,&
+            GetClimRecord_ToDayNr,&
+            GetClimRecord_ToString,&
+            GetCompartment,&
+            GetCompartment_theta,&
+            GetCrop,&
+            GetCrop_Day1,&
+            GetCrop_DaysToHarvest,&
+            GetCrop_ModeCycle,&
+            GetCRsalt,&  
+            GetCRwater,& 
+            GetDaySubmerged,&
+            GetDrain,&  
+            GetEact,& 
+            GetECdrain,& 
+            GetECiAqua,& 
+            GetECstorage,& 
+            Geteffectiverain,&
+            GetEndSeason,&
+            GetEpot,& 
+            GetETo,&
+            GetEToRecord,&
+            GetEvapoEntireSoilSurface,&
+            GetFullFileNameProgramParameters, &
+            GetGenerateDepthMode,&
+            GetGenerateTimeMode,&
+            GetInfiltrated,&
+            GetIniPercTAW,&
+            GetIrriAfterSeason,&
+            GetIrriBeforeSeason,&
+            GetIrriECw,&
+            GetIrriFirstDayNr,&
+            GetIrrigation,&
+            GetIrriMethod,&
+            GetIrriMode,&
+            GetManagement,&
+            GetManagement_Cuttings,&
+            GetMaxPlotNew,&
+            GetMaxPlotTr,&
+            GetMultipleProjectFile, &
+            GetMultipleProjectFileFull, &
+            GetNrCompartments,&
+            GetNumberSimulationRuns,&
+            GetOnset,&
+            GetOut1Wabal,&
+            GetOut2Crop,&
+            GetOut3Prof,&
+            GetOut4Salt,&
+            GetOut5CompWC,&
+            GetOut6CompEC,&
+            GetOut7Clim,&
+            GetOut8Irri,&
+            GetOutDaily,&
+            GetOutputAggregate,&
+            GetPart1Mult,&
+            GetPart2Eval,&
+            GetPathNameList,&
+            GetPerennialPeriod,&
+            GetPreDay,&
+            GetRain,& 
+            GetRainRecord,&
+            GetRootingDepth,&
+            GetRootZoneSalt,&
+            GetRootZoneWC_Actual,&
+            GetRootZoneWC_FC,&
+            GetRootZoneWC_Leaf,&
+            GetRootZoneWC_SAT,&
+            GetRootZoneWC_Sen,&
+            GetRootZoneWC_Thresh,&
+            GetRootZoneWC_WP,&
+            GetRootZoneWC_ZtopAct,&
+            GetRootZoneWC_ZtopFC,&
+            GetRootZoneWC_ZtopThresh,&
+            GetRootZoneWC_ZtopWP,&
+            GetRunoff,& 
+            GetSaltInfiltr,&
+            GetSimulation,&
+            GetSimulation_MultipleRunConstZrx,&
+            GetSimulation_MultipleRunConstZrx,&
+            GetSimulation_MultipleRunWithKeepSWC,&
+            GetSimulation_MultipleRunWithKeepSWC,&
+            GetSimulation_SumGDD,&
+            GetSimulation_SumGDDfromDay1,&
+            GetSimulation_ToDayNr,&
+            GetSimulation_ToDayNr,&
+            GetSimulParam,&
+            GetSimulParam_GDDMethod,&
+            GetSimulParam_ThicknessTopSWC,&
+            GetSoil,&
+            GetSoilLayer,&
+            GetSumWaBal,&
+            GetSurf0,& 
+            GetSurfaceStorage,&
+            GetTact,&
+            GetTactWeedInfested,&
+            GetTemperatureRecord,&
+            GetTmax,& 
+            GetTmin,& 
+            GetTotalSaltContent,&
+            GetTotalWaterContent,&
+            GetTpot,&
+            GetZiAqua,&
+            IrriMode_Generate,&
+            IrriMode_Manual, &
+            ModeCycle_GDDays, &
+            SetCCiActual,&
+            SetCCiprev,&
+            SetCCiTopEarlySen,&
+            SetClimDescription,&
+            SetClimFile,&
+            SetClimRecord,&
+            SetClimRecord_DataType,&
+            SetClimRecord_fromd,&
+            SetClimRecord_FromDayNr,&
+            SetClimRecord_fromm,&
+            SetClimRecord_FromString,&
+            SetClimRecord_fromy,&
+            SetClimRecord_FromY,&
+            SetClimRecord_NrObs,&
+            SetClimRecord_tod,&
+            SetClimRecord_ToDayNr,&
+            SetClimRecord_tom, &
+            SetClimRecord_ToString,&
+            SetClimRecord_toy,&
+            SetCO2Description,&
+            SetCompartment,&
+            SetCompartment_theta,&
+            SetCrop,&
+            SetCRsalt,&  
+            SetCRwater,& 
+            SetDaySubmerged,&
+            SetDrain,&  
+            SetEact,& 
+            SetECdrain,& 
+            SetECiAqua,& 
+            SetECstorage,& 
+            Seteffectiverain,&
+            SetEndSeason,&
+            SetEpot,& 
+            SetETo,&
+            SetEToRecord,&
+            SetEToRecord,&
+            SetEvapoEntireSoilSurface,&
+            SetFullFileNameProgramParameters,&
+            SetGenerateDepthMode,&
+            SetGenerateTimeMode,&
+            SetInfiltrated,&
+            SetIniPercTAW,&
+            SetIrriAfterSeason,&
+            SetIrriBeforeSeason,&
+            SetIrriECw,&
+            SetIrriFirstDayNr,&
+            SetIrrigation,&
+            SetIrriMethod,&
+            SetIrriMode,&
+            SetManagement,&
+            SetManagement_Cuttings,&
+            SetMaxPlotNew,&
+            SetMaxPlotTr,&
+            SetMultipleProjectDescription,&
+            SetMultipleProjectFile, &
+            SetMultipleProjectFileFull,&
+            SetNrCompartments,&
+            SetOnset,&
+            SetOut1Wabal,&
+            SetOut2Crop,&
+            SetOut3Prof,&
+            SetOut4Salt,&
+            SetOut5CompWC,&
+            SetOut6CompEC,&
+            SetOut7Clim,&
+            SetOutDaily,&
+            SetOutputAggregate,&
+            SetPart1Mult,&
+            SetPart2Eval,&
+            SetPathNameList,&
+            SetPathNameOutp,&
+            SetPathNameParam,&
+            SetPathNameProg,&
+            SetPathNameSimul,&
+            SetPerennialPeriod,&
+            SetPreDay,&
+            SetProfFilefull,&
+            SetRain,& 
+            SetRainRecord,&
+            SetRainRecord,&
+            SetRootingDepth,&
+            SetRootZoneSalt,&
+            SetRootZoneWC_Actual,&
+            SetRootZoneWC_FC,&
+            SetRootZoneWC_Leaf,&
+            SetRootZoneWC_SAT,&
+            SetRootZoneWC_Sen,&
+            SetRootZoneWC_Thresh,&
+            SetRootZoneWC_WP,&
+            SetRootZoneWC_ZtopAct,&
+            SetRootZoneWC_ZtopFC,&
+            SetRootZoneWC_ZtopThresh,&
+            SetRootZoneWC_ZtopWP,&
+            SetRunoff,& 
+            SetSaltInfiltr,&
+            SetSimulation,&
+            SetSimulation_MultipleRun,&
+            SetSimulation_MultipleRunConstZrx,&
+            SetSimulation_MultipleRunWithKeepSWC,&
+            SetSimulation_NrRuns, &
+            SetSimulation_Storage_CropString,&
+            SetSimulation_SumGDD, &
+            SetSimulation_SumGDDfromDay1,&
+            SetSimulation_ToDayNr, &
+            SetSimulParam,&
+            SetSimulParam_ThicknessTopSWC, &
+            SetSoil,&
+            SetSoilLayer,&
+            SetSumWaBal,&
+            SetSurf0,& 
+            SetSurfaceStorage,&
+            SetTact,&
+            SetTactWeedInfested,&
+            SetTemperatureRecord,&
+            SetTmax,& 
+            SetTmaxRun,& 
+            SetTmaxTnxReference12MonthsRun,&
+            SetTmin,&
+            SetTminRun,&
+            SetTminTnxReference12MonthsRun, &
+            SetTnxReferenceFile,&
+            SetTnxReferenceYear,&
+            SetTotalSaltContent,&
+            SetTotalWaterContent,&
+            SetTpot,&
+            SetZiAqua,&
+            typeproject_typeprm,&
+            typeproject_typepro,&
+            undef_int
     use ac_project_input, only: ProjectInput, allocate_project_input, set_project_input
 
-    use ac_utils, only: roundc
-
-    use ac_run, only:    SetDayNri,&
-                        fIrri_close,&
-                        InitializeSimulationRunPart2,&
-                         GetIrriInterval,&
-                         GetIrriInfoRecord1,&
-                         GetIrriInfoRecord2,&
-                         SetIrriInterval,&
-                         SetIrriInfoRecord1,&
-                         SetIrriInfoRecord2,&
-                         GetTheProjectFile,&
-                        GetGwTable,&
-                        GetPlotVarCrop,&
-                        GetStressTot,&
-                        GetCutInfoRecord1,&
-                        GetCutInfoRecord2,&
-                        GetTransfer,&
-                        GetPreviousSum,&
-                        GetTadj,&
-                        GetGDDTadj,&
-                        GetDayLastCut,&
-                        GetNrCut,&
-                        GetSumInterval,&
-                        GetPreviousStressLevel,&
-                        GetStressSFadjNEW,&
-                        GetBin,&
-                        GetBout,&
-                        GetGDDayi,&
-                        GetCO2i,&
-                        GetFracBiomassPotSF,&
-                        GetSumETo,&
-                        GetSumGDD,&
-                        GetZiprev,&
-                        GetSumGDDPrev,&
-                        GetCCxWitheredTpotNoS,&
-                        GetCoeffb0,&
-                        GetCoeffb1,&
-                        GetCoeffb2,&
-                        GetCoeffb0Salt,&
-                        GetCoeffb1Salt,&
-                        GetCoeffb2Salt,&
-                        GetStressLeaf,&
-                        GetStressSenescence ,&
-                        GetDayFraction,&
-                        GetGDDayFraction,&
-                        GetCGCref,&
-                        GetGDDCGCref ,&
-                        GetTimeSenescence ,&
-                        GetSumKcTop,&
-                        GetSumKcTopStress,&
-                        GetSumKci,&
-                        GetCCoTotal,&
-                        GetCCxTotal,&
-                        GetCDCTotal,&
-                        GetGDDCDCTotal,&
-                        GetCCxCropWeedsNoSFstress,&
-                        GetWeedRCi,&
-                        GetCCiActualWeedInfested,&
-                        GetfWeedNoS,&
-                        GetZeval,&
-                        GetBprevSum,&
-                        GetYprevSum,&
-                        GetSumGDDcuts,&
-                        GetHItimesBEF,&
-                        GetScorAT1,&
-                        GetScorAT2,&
-                        GetHItimesAT1,&
-                        GetHItimesAT2,&
-                        GetHItimesAT,&
-                        GetalfaHI,&
-                        GetalfaHIAdj,&
-                        GetNextSimFromDayNr ,&
-                        GetDayNr1Eval,&
-                        GetDayNrEval,&
-                        GetLineNrEval,&
-                        GetPreviousSumETo,&
-                        GetPreviousSumGDD,&
-                        GetPreviousBmob,&
-                        GetPreviousBsto,&
-                        GetStageCode,&
-                        GetPreviousDayNr,&
-                        GetNoYear,&
-                        GetWaterTableInProfile,&
-                        GetStartMode,&
-                        GetNoMoreCrop,&
-                        SetGwTable,&
-                        SetPlotVarCrop,&
-                        SetStressTot,&
-                        SetCutInfoRecord1,&
-                        SetCutInfoRecord2,&
-                        SetTransfer,&
-                        SetPreviousSum,&
-                        SetTadj,&
-                        SetGDDTadj,&
-                        SetDayLastCut,&
-                        SetNrCut,&
-                        SetSumInterval,&
-                        SetPreviousStressLevel,&
-                        SetStressSFadjNEW,&
-                        SetBin,&
-                        SetBout,&
-                        SetGDDayi,&
-                        SetCO2i,&
-                        SetFracBiomassPotSF,&
-                        SetSumETo,&
-                        SetSumGDD,&
-                        SetZiprev,&
-                        SetSumGDDPrev,&
-                        SetCCxWitheredTpotNoS,&
-                        SetCoeffb0,&
-                        SetCoeffb1,&
-                        SetCoeffb2,&
-                        SetCoeffb0Salt,&
-                        SetCoeffb1Salt,&
-                        SetCoeffb2Salt,&
-                        SetStressLeaf,&
-                        SetStressSenescence ,&
-                        SetDayFraction,&
-                        SetGDDayFraction,&
-                        SetCGCref,&
-                        SetGDDCGCref ,&
-                        SetTimeSenescence ,&
-                        SetSumKcTop,&
-                        SetSumKcTopStress,&
-                        SetSumKci,&
-                        SetCCoTotal,&
-                        SetCCxTotal,&
-                        SetCDCTotal,&
-                        SetGDDCDCTotal,&
-                        SetCCxCropWeedsNoSFstress,&
-                        SetWeedRCi,&
-                        SetCCiActualWeedInfested,&
-                        SetfWeedNoS,&
-                        SetZeval,&
-                        SetBprevSum,&
-                        SetYprevSum,&
-                        SetSumGDDcuts,&
-                        SetHItimesBEF,&
-                        SetScorAT1,&
-                        SetScorAT2,&
-                        SetHItimesAT1,&
-                        SetHItimesAT2,&
-                        SetHItimesAT,&
-                        SetalfaHI,&
-                        SetalfaHIAdj,&
-                        SetNextSimFromDayNr ,&
-                        SetDayNr1Eval,&
-                        SetDayNrEval,&
-                        SetLineNrEval,&
-                        SetPreviousSumETo,&
-                        SetPreviousSumGDD,&
-                        SetPreviousBmob,&
-                        SetPreviousBsto,&
-                        SetStageCode,&
-                        SetPreviousDayNr,&
-                        SetNoYear,&
-                        SetWaterTableInProfile,&
-                        SetStartMode,&
-                        SetNoMoreCrop,&
-                        AdvanceOneTimeStep, &
-                        ReadClimateNextDay, &
-                        SetGDDVariablesNextDay, &
-                        FinalizeRun1, &
-                        FinalizeRun2, &
-                        GetDayNri,&
-                        GetCrop_Tbase, &
-                        GetCrop_Tupper, &
-                        FinalizeSimulation, &
-                        InitializeSimulation ,&
-                        InitializeRunPart1 ,&
-                        InitializeRunPart2 ,&
-                        InitializeClimate,&
-                        GetSimulation_ToDayNr, &
-                        SetRain,& 
-                        SetTmin,&
-                        SetTmax,& 
-                        SetETo,&
-                        InitializeClimate, &
-                        SetTheProjectFile
+    use ac_run, only:    
+            AdvanceOneTimeStep,&
+            FinalizeRun1,&
+            FinalizeRun2,&
+            FinalizeSimulation,&
+            fIrri_close,&
+            GetalfaHI,&
+            GetalfaHIAdj,&
+            GetBin,&
+            GetBout,&
+            GetBprevSum,&
+            GetCCiActualWeedInfested,&
+            GetCCoTotal,&
+            GetCCxCropWeedsNoSFstress,&
+            GetCCxTotal,&
+            GetCCxWitheredTpotNoS,&
+            GetCDCTotal,&
+            GetCGCref,&
+            GetCO2i,&
+            GetCoeffb0,&
+            GetCoeffb0Salt,&
+            GetCoeffb1,&
+            GetCoeffb1Salt,&
+            GetCoeffb2,&
+            GetCoeffb2Salt,&
+            GetCrop_Tbase, &
+            GetCrop_Tupper, &
+            GetCutInfoRecord1,&
+            GetCutInfoRecord2,&
+            GetDayFraction,&
+            GetDayLastCut,&
+            GetDayNr1Eval,&
+            GetDayNrEval,&
+            GetDayNri,&
+            GetFracBiomassPotSF,&
+            GetfWeedNoS,&
+            GetGDDayFraction,&
+            GetGDDayi,&
+            GetGDDCDCTotal,&
+            GetGDDCGCref ,&
+            GetGDDTadj,&
+            GetGwTable,&
+            GetHItimesAT,&
+            GetHItimesAT1,&
+            GetHItimesAT2,&
+            GetHItimesBEF,&
+            GetIrriInfoRecord1,&
+            GetIrriInfoRecord2,&
+            GetIrriInterval,&
+            GetLineNrEval,&
+            GetNextSimFromDayNr,&
+            GetNoMoreCrop,&
+            GetNoYear,&
+            GetNrCut,&
+            GetPlotVarCrop,&
+            GetPreviousBmob,&
+            GetPreviousBsto,&
+            GetPreviousDayNr,&
+            GetPreviousStressLevel,&
+            GetPreviousSum,&
+            GetPreviousSumETo,&
+            GetPreviousSumGDD,&
+            GetScorAT1,&
+            GetScorAT2,&
+            GetSimulation_ToDayNr,&
+            GetStageCode,&
+            GetStartMode,&
+            GetStressLeaf,&
+            GetStressSenescence,&
+            GetStressSFadjNEW,&
+            GetStressTot,&
+            GetSumETo,&
+            GetSumGDD,&
+            GetSumGDDcuts,&
+            GetSumGDDPrev,&
+            GetSumInterval,&
+            GetSumKci,&
+            GetSumKcTop,&
+            GetSumKcTopStress,&
+            GetTadj,&
+            GetTheProjectFile,&
+            GetTimeSenescence ,&
+            GetTransfer,&
+            GetWaterTableInProfile,&
+            GetWeedRCi,&
+            GetYprevSum,&
+            GetZeval,&
+            GetZiprev,&
+            InitializeClimate,&
+            InitializeClimate,&
+            InitializeRunPart1,&
+            InitializeRunPart2,&
+            InitializeSimulation,&
+            InitializeSimulationRunPart2,&
+            ReadClimateNextDay,&
+            SetalfaHI,&
+            SetalfaHIAdj,&
+            SetBin,&
+            SetBout,&
+            SetBprevSum,&
+            SetCCiActualWeedInfested,&
+            SetCCoTotal,&
+            SetCCxCropWeedsNoSFstress,&
+            SetCCxTotal,&
+            SetCCxWitheredTpotNoS,&
+            SetCDCTotal,&
+            SetCGCref,&
+            SetCO2i,&
+            SetCoeffb0,&
+            SetCoeffb0Salt,&
+            SetCoeffb1,&
+            SetCoeffb1Salt,&
+            SetCoeffb2,&
+            SetCoeffb2Salt,&
+            SetCutInfoRecord1,&
+            SetCutInfoRecord2,&
+            SetDayFraction,&
+            SetDayLastCut,&
+            SetDayNr1Eval,&
+            SetDayNrEval,&
+            SetDayNri,&
+            SetETo,&
+            SetFracBiomassPotSF,&
+            SetfWeedNoS,&
+            SetGDDayFraction,&
+            SetGDDayi,&
+            SetGDDCDCTotal,&
+            SetGDDCGCref,&
+            SetGDDTadj,&
+            SetGDDVariablesNextDay,&
+            SetGwTable,&
+            SetHItimesAT,&
+            SetHItimesAT1,&
+            SetHItimesAT2,&
+            SetHItimesBEF,&
+            SetIrriInfoRecord1,&
+            SetIrriInfoRecord2,&
+            SetIrriInterval,&
+            SetLineNrEval,&
+            SetNextSimFromDayNr,&
+            SetNoMoreCrop,&
+            SetNoYear,&
+            SetNrCut,&
+            SetPlotVarCrop,&
+            SetPreviousBmob,&
+            SetPreviousBsto,&
+            SetPreviousDayNr,&
+            SetPreviousStressLevel,&
+            SetPreviousSum,&
+            SetPreviousSumETo,&
+            SetPreviousSumGDD,&
+            SetRain,& 
+            SetScorAT1,&
+            SetScorAT2,&
+            SetStageCode,&
+            SetStartMode,&
+            SetStressLeaf,&
+            SetStressSenescence ,&
+            SetStressSFadjNEW,&
+            SetStressTot,&
+            SetSumETo,&
+            SetSumGDD,&
+            SetSumGDDcuts,&
+            SetSumGDDPrev,&
+            SetSumInterval,&
+            SetSumKci,&
+            SetSumKcTop,&
+            SetSumKcTopStress,&
+            SetTadj,&
+            SetTheProjectFile,&
+            SetTimeSenescence,&
+            SetTmax,& 
+            SetTmin,&
+            SetTransfer,&
+            SetWaterTableInProfile,&
+            SetWeedRCi,&
+            SetYprevSum,&
+            SetZeval,&
+            SetZiprev
 
         use ac_kinds, only: intEnum, &
                             int32, &
                             int8, &
                             sp
                              
-        use ac_startunit, only:  GetListProjectsFile, &
-                             GetNumberOfProjects, &
-                             GetProjectFileName, &
-                             GetProjectType, &
-                             GetSimulation_NrRuns, &
-                             InitializeTheProgram, &
-                             InitializeProject, &
-                             WriteProjectsInfo, &
-                             GetTimeAggregationResults, &
-                             GetRequestDailyResults, &
-                             GetRequestParticularResults, &
-                            LoadProgramParametersProjectPlugIn, &
-                            ComposeFileForProgramParameters
+        use ac_startunit, only: &
+            ComposeFileForProgramParameters, &
+            GetListProjectsFile, &
+            GetNumberOfProjects, &
+            GetProjectFileName, &
+            GetProjectType, &
+            GetRequestDailyResults, &
+            GetRequestParticularResults, &
+            GetSimulation_NrRuns, &
+            GetTimeAggregationResults, &
+            InitializeProject, &
+            InitializeTheProgram, &
+            LoadProgramParametersProjectPlugIn, &
+            WriteProjectsInfo
 
         use ac_initialsettings, only: InitializeSettings
 
@@ -513,7 +511,6 @@ subroutine AC72_setup()
         integer           :: time1julhours, timerefjulhours
         integer           :: time1days, time2days
         integer           :: yr2, mo2, da2, hr2, mn2
-        integer           :: simul_len
         
         integer :: daynr, todaynr, iproject, nprojects, NrRuns
         integer(intEnum) :: TheProjectType
@@ -522,12 +519,9 @@ subroutine AC72_setup()
 
         logical ::  ProgramParametersAvailable 
         integer(int32) :: TotalSimRuns
-        integer(int32) :: temp1
 
         logical :: MultipleRunWithKeepSWC_temp    
         real    :: MultipleRunConstZrx_temp
-
-        real, dimension(366) :: arr   
 
         mtype = LIS_rc%lsm_index
 
@@ -668,7 +662,8 @@ subroutine AC72_setup()
                 call set_project_input(l, 'Soil_Directory', '(External)')
                 call set_project_input(l, 'SWCIni_Info', '(None)')
                 if (l == 1) then
-                    call set_project_input(l, 'SWCIni_Filename', '(None)') !Initial conditions are deifned in config
+                    call set_project_input(l, 'SWCIni_Filename', '(None)') 
+                    !Initial conditions are deifned in config
                 else
                     call set_project_input(l, 'SWCIni_Filename', 'KeepSWC')
                 end if
@@ -695,7 +690,7 @@ subroutine AC72_setup()
                 ! It uses the defaults anyway
                 ! Set crop file (crop parameters are read when calling InitializeRunPart1)
                 ! Set the crop type cst in time
-                do l=1, TotalSimRuns  ! TotalSimRuns
+                do l=1, TotalSimRuns
                     call set_project_input(l, 'Crop_Filename', &
                                         trim(AC72_struc(n)%ac72(t)%cropt)//'.CRO')
                 enddo
@@ -732,7 +727,7 @@ subroutine AC72_setup()
                 call SetTemperatureRecord(GetClimRecord())
                 call SetEToRecord(GetClimRecord())
                 call SetRainRecord(GetClimRecord())
-                call SetSimulation_Storage_CropString('None') ! perennial crops for later
+                call SetSimulation_Storage_CropString('None')
 
                 call SetMultipleProjectDescription('undefined')
                 ProgramParametersAvailable = .false.
@@ -862,7 +857,8 @@ subroutine AC72_setup()
                 !
                 call SetMultipleProjectDescription('undefined')
                 ProgramParametersAvailable = .false.
-                call SetFullFileNameProgramParameters("(None)") ! Running with default rogram parameters
+                ! Running with default program parameters
+                call SetFullFileNameProgramParameters("(None)")
                 call LoadProgramParametersProjectPlugIn(&
                       GetFullFileNameProgramParameters(), &
                              ProgramParametersAvailable)
@@ -1093,14 +1089,6 @@ subroutine AC72_setup()
                 AC72_struc(n)%AC72(t)%NoYear = GetNoYear()
                 AC72_struc(n)%AC72(t)%WaterTableInProfile = GetWaterTableInProfile()
                 AC72_struc(n)%AC72(t)%StartMode = GetStartMode()
-
-                ! logicals for restart
-                if (GetNoMoreCrop()) then
-                    AC72_struc(n)%AC72(t)%NoMoreCrop = 1
-                else
-                    AC72_struc(n)%AC72(t)%NoMoreCrop = 0
-                endif
-
                 AC72_struc(n)%AC72(t)%NrRuns = NrRuns
                 AC72_struc(n)%AC72(t)%TheProjectType = TheProjectType
 

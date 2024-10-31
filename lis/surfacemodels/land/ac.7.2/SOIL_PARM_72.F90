@@ -1,7 +1,7 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
 ! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
@@ -36,7 +36,7 @@
       if (LIS_masterproc) then
             write(LIS_logunit, *) trim(mess)
       endif
-! prevent possible array overwrite, Bill Bovermann, IBM, May 6, 2008
+! prevent possible array overwrite
       IF ( SIZE(WP) < SLCATS .OR. & 
            SIZE(SAT) < SLCATS .OR. & 
            SIZE(FC) < SLCATS .OR. & 

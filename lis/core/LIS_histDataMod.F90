@@ -40,7 +40,6 @@ module LIS_histDataMod
 !                 106 and 114 in place for 112 (some variables left alone) 
 !  01 Jun 2017    Augusto Getirana: Add/update HyMAP2 outputs [SWS, differetial and 
 !                      potential evaporation and deep water infiltration (DWI)]
-!  17 Jan 2024    Louise Busschaert: Added AC72
 !  
 !  
 !EOP
@@ -430,26 +429,25 @@ module LIS_histDataMod
   public ::   LIS_MOC_FPICE   
   ! end Noahmp
 
-  ! AC72
-  public :: LIS_MOC_biomass
-  public :: LIS_MOC_CCiActual
-  public :: LIS_MOC_RootZoneWC_Actual
-  public :: LIS_MOC_RootZoneWC_WP
-  public :: LIS_MOC_RootZoneWC_FC
-  public :: LIS_MOC_Tact
-  public :: LIS_MOC_Eact
-  public :: LIS_MOC_AC72ETo
-  public :: LIS_MOC_AC72Rain
-  public :: LIS_MOC_GD
-  public :: LIS_MOC_AC72Irrigation
-  public :: LIS_MOC_Tmin
-  public :: LIS_MOC_Tmax
-  public :: LIS_MOC_RootingDepth
-  public :: LIS_MOC_Yield
-  public :: LIS_MOC_StExp
-  public :: LIS_MOC_StSen
-  public :: LIS_MOC_AC72cycle_complete
-  ! end AC72
+  ! AquaCrop
+  public :: LIS_MOC_AC_Biomass
+  public :: LIS_MOC_AC_CCiActual
+  public :: LIS_MOC_AC_RootZoneWC_Actual
+  public :: LIS_MOC_AC_RootZoneWC_WP
+  public :: LIS_MOC_AC_RootZoneWC_FC
+  public :: LIS_MOC_AC_Tact
+  public :: LIS_MOC_AC_Eact
+  public :: LIS_MOC_AC_ETo
+  public :: LIS_MOC_AC_Rain
+  public :: LIS_MOC_AC_Irrigation
+  public :: LIS_MOC_AC_Tmin
+  public :: LIS_MOC_AC_Tmax
+  public :: LIS_MOC_AC_RootingDepth
+  public :: LIS_MOC_AC_Yield
+  public :: LIS_MOC_AC_StExp
+  public :: LIS_MOC_AC_StSen
+  public :: LIS_MOC_AC_cycle_complete
+  ! end AquaCrop
  
   ! RUC 
   public :: LIS_MOC_QVG
@@ -959,25 +957,24 @@ module LIS_histDataMod
     integer ::  LIS_MOC_FPICE   = -9999
 !  <- end Noah MP  ->
 
-!  <- AC72 ->
-   integer :: LIS_MOC_Biomass  = -9999
-   integer :: LIS_MOC_CCiActual  = -9999
-   integer :: LIS_MOC_RootZoneWC_Actual  = -9999
-   integer :: LIS_MOC_RootZoneWC_WP  = -9999
-   integer :: LIS_MOC_RootZoneWC_FC  = -9999
-   integer :: LIS_MOC_Tact  = -9999
-   integer :: LIS_MOC_Eact  = -9999
-   integer :: LIS_MOC_AC72ETo  = -9999
-   integer :: LIS_MOC_AC72Rain  = -9999
-   integer :: LIS_MOC_GD = -9999
-   integer :: LIS_MOC_AC72Irrigation  = -9999
-   integer :: LIS_MOC_Tmin  = -9999
-   integer :: LIS_MOC_Tmax  = -9999
-   integer :: LIS_MOC_RootingDepth  = -9999
-   integer :: LIS_MOC_Yield  = -9999
-   integer :: LIS_MOC_StExp  = -9999
-   integer :: LIS_MOC_StSen  = -9999
-   integer :: LIS_MOC_AC72cycle_complete  = -9999
+!  <- AquaCrop ->
+   integer :: LIS_MOC_AC_Biomass  = -9999
+   integer :: LIS_MOC_AC_CCiActual  = -9999
+   integer :: LIS_MOC_AC_RootZoneWC_Actual  = -9999
+   integer :: LIS_MOC_AC_RootZoneWC_WP  = -9999
+   integer :: LIS_MOC_AC_RootZoneWC_FC  = -9999
+   integer :: LIS_MOC_AC_Tact  = -9999
+   integer :: LIS_MOC_AC_Eact  = -9999
+   integer :: LIS_MOC_AC_ETo  = -9999
+   integer :: LIS_MOC_AC_Rain  = -9999
+   integer :: LIS_MOC_AC_Irrigation  = -9999
+   integer :: LIS_MOC_AC_Tmin  = -9999
+   integer :: LIS_MOC_AC_Tmax  = -9999
+   integer :: LIS_MOC_AC_RootingDepth  = -9999
+   integer :: LIS_MOC_AC_Yield  = -9999
+   integer :: LIS_MOC_AC_StExp  = -9999
+   integer :: LIS_MOC_AC_StSen  = -9999
+   integer :: LIS_MOC_AC_cycle_complete  = -9999
 
 !   <- RUC -> 
    integer :: LIS_MOC_QVG = -9999
@@ -4539,224 +4536,213 @@ contains
             model_patch=.true.)
     endif
 
-    !LB: AC72
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Biomass:",rc=rc)
+    ! AquaCrop
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Biomass:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Biomass",&
+         "AC_Biomass",&
          "biomass",&
          "biomass",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Biomass,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Biomass,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"t/ha"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"CCiActual:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_CCiActual:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "CCiActual",&
+         "AC_CCiActual",&
          "actual_canopy_cover",&
          "actual canopy cover",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_CCiActual,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_CCiActual,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RootZoneWC_Actual:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_RootZoneWC_Actual:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "RootZoneWC_Actual",&
+         "AC_RootZoneWC_Actual",&
          "actual_rootzone_water_content",&
          "actual rootzone water content",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RootZoneWC_Actual,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_RootZoneWC_Actual,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RootZoneWC_FC:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_RootZoneWC_FC:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "RootZoneWC_FC",&
+         "AC_RootZoneWC_FC",&
          "rootzone_water_content_at_fc",&
          "rootzone water conetn at field capacity",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RootZoneWC_FC,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_RootZoneWC_FC,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RootZoneWC_WP:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_RootZoneWC_WP:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "RootZoneWC_WP",&
+         "AC_RootZoneWC_WP",&
          "rootzone_water_content_at_wp",&
          "rootzone water content at wilting point",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RootZoneWC_WP,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_RootZoneWC_WP,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Tact:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Tact:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Tact",&
+         "AC_Tact",&
          "actual_transpiration",&
          "actual transpiration",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Tact,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Tact,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Eact:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Eact:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Eact",&
+         "AC_Eact",&
          "actual_evporation",&
          "actual evaporation",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Eact,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Eact,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72ETo:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_ETo:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC72ETo",&
-         "ac72_reference_evapotranspiration",&
-         "ac72 reference evapotranspiration",rc)
+         "AC_ETo",&
+         "reference_evapotranspiration",&
+         "reference evapotranspiration",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72ETo,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_ETo,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72Rain:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Rain:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC72Rain",&
-         "ac72_rain",&
-         "ac72 rain",rc)
+         "AC_Rain",&
+         "rain",&
+         "rain",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72Rain,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Rain,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"GD:",rc=rc)
-    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "GD",&
-         "GD",&
-         "GD",rc)
-    if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_GD,&
-            LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
-            model_patch=.true.)
-    endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72Irrigation:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Irrigation:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC72Irrigation",&
-         "AC72Irrigation",&
-         "AC72Irrigation",rc)
+         "AC_Irrigation",&
+         "irrigation",&
+         "irrigation",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72Irrigation,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Irrigation,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Tmin:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Tmin:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Tmin",&
+         "AC_Tmin",&
          "daily_minimum_temperature",&
          "daily minimum temperature",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Tmin,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Tmin,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Tmax:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Tmax:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Tmax",&
+         "AC_Tmax",&
          "daily_maximum_temperature",&
          "daily maximum temperature",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Tmax,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Tmax,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"degC"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"RootingDepth:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_RootingDepth:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "RootingDepth",&
+         "AC_RootingDepth",&
          "rooting_depth",&
          "rooting depth",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_RootingDepth,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_RootingDepth,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"m"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"Yield:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Yield:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "Yield",&
+         "AC_Yield",&
          "yield",&
          "yield",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_Yield,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Yield,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"t/ha"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"StExp:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_StExp:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "StExp",&
-         "stexp",&
-         "stexp",rc)
+         "AC_StExp",&
+         "stress leaf expansion",&
+         "stress leaf expansion",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_StExp,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_StExp,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"StSen:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_StSen:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "StSen",&
-         "StSen",&
-         "StSen",rc)
+         "stress senescence",&
+         "stress senescence",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_StSen,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_StSen,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"%"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 
-    call ESMF_ConfigFindLabel(modelSpecConfig,"AC72cycle_complete:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"AC_cycle_complete:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "AC72cycle_complete",&
-         "AC72cycle_complete",&
-         "AC72cycle_complete",rc)
+         "AC_cycle_complete",&
+         "cycle_complete",&
+         "GDD crop growth cycle completed",rc)
     if ( rc == 1 ) then
-       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC72cycle_complete,&
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_cycle_complete,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"-"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
-    !LB: AC72
+    !End AquaCrop
 
     
     Call ESMF_ConfigFindLabel(modelSpecConfig, "StemMass:", rc = rc)
