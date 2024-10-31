@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -122,7 +122,6 @@ contains
     ! End crop type
   
     ! Define compartment size
-    
       call set_param_attribs(Aquacrop_struc(n)%comp_size, "AC_comp_size",&
           units="m", &
           full_name="Aquacrop compartment size")
@@ -134,7 +133,8 @@ contains
       call define_AC_compartments(n, AquaCrop_struc(n)%comp_size%value(:,:,:))
 
 
-    ! Read temperature climatology file
+    !! Read temperature climatology file
+    ! Read options from ldt.config
     call ESMF_ConfigFindLabel(LDT_config,"AquaCrop temperature climatology directory:",rc=rc)
     call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%tempclimdir,rc=rc)
     call LDT_verify(rc,"AquaCrop temperature climatology directory: not defined")
@@ -215,14 +215,17 @@ contains
     call LDT_writeNETCDFdataHeader(n,ftn,ndimID,&
             Aquacrop_struc(n)%tmax_cli)
 
+    ! Add number of soil layers
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"SOIL_LAYERS", &
         AquaCrop_struc(n)%nlayers))
-    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"AC_CLIM_REF_YEAR", &
-        AquaCrop_struc(n)%tempcli_refyr))
+    ! Add thickness of soil layers
     do i=1,AquaCrop_struc(n)%nlayers
       write (str, '(i0)') i
       call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"THICKNESS_LAYER_"//trim(str),&
                       AquaCrop_struc(n)%lthickness(i)))
+    ! Add Reference year for temperature climatology
+    call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"AC_CLIM_REF_YEAR", &
+        AquaCrop_struc(n)%tempcli_refyr))
     enddo
 
   end subroutine AquaCropParms_writeHeader

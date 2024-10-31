@@ -216,7 +216,7 @@ contains
                 AC72_struc(n)%ac72(t)%prcp = 0.0
                 AC72_struc(n)%ac72(t)%eto = 0.0
 
-                !LB: Initialize HarvestNow (new in AC7.1)
+                !LB: Initialize HarvestNow (new from AC7.1)
                 AC72_struc(n)%ac72(t)%HarvestNow = .false.
                 
             enddo ! end of tile (t) loop

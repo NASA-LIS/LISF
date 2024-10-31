@@ -23,7 +23,6 @@ subroutine AC72_coldstart(mtype)
     use LIS_logMod, only: LIS_logunit
     use LIS_timeMgrMod, only: LIS_date2time
     use AC72_lsmMod
- !  !AC72
     use ac_global, only:    GetCompartment_Layer, &
                             GetCompartment_theta         
 !

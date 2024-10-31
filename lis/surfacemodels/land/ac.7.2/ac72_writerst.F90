@@ -170,6 +170,7 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: CCiPrev_ID
     integer :: CCiTopEarlySen_ID
     integer :: CCxWitheredTpotNoS_ID
+    integer :: Crop_CCoAdjusted_ID
     integer :: Crop_CCxAdjusted_ID
     integer :: Crop_CCxWithered_ID
     integer :: Crop_pActStom_ID
@@ -181,6 +182,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: HItimesAT1_ID
     integer :: HItimesAT2_ID
     integer :: HItimesBEF_ID
+    integer :: PlotVarCrop_ActVal_ID
+    integer :: PlotVarCrop_PotVal_ID
     integer :: RootZoneWC_Actual_ID
     integer :: RootZoneWC_FC_ID
     integer :: RootZoneWC_Leaf_ID
@@ -203,6 +206,7 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: StressLeaf_ID
     integer :: StressSenescence_ID
     integer :: SumGDDcuts_ID
+    integer :: SumGDDPrev_ID
     integer :: SumKci_ID
     integer :: SumKcTopStress_ID
     integer :: SumWaBal_Biomass_ID
@@ -224,6 +228,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
     !! integers
     integer :: Crop_DaysToFullCanopySF_ID
+    integer :: Crop_GDDaysToFullCanopySF_ID
+    integer :: DayLastCut_ID
     integer :: DayNri_ID
     integer :: DaySubmerged_ID
     integer :: Management_WeedDeltaRC_ID
@@ -235,12 +241,15 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     integer :: Simulation_EffectStress_RedWP_ID
     integer :: Simulation_EffectStress_RedKsSto_ID
     integer :: Simulation_EvapStartStg2_ID
+    integer :: Simulation_HIfinal_ID
     integer :: StressSFadjNEW_ID
     integer :: SumInterval_ID
 
     !! logicals
     integer :: NoMoreCrop_ID
     integer :: Simulation_EvapLimitON_ID
+    integer :: Simulation_Germinate_ID
+    integer :: Simulation_ProtectedSeedling_ID
     integer :: Simulation_SWCtopSoilConsidered_ID
 
     !! From derived types
@@ -313,6 +322,10 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, CCxWitheredTpotNoS_ID, "CCxWitheredTpotNoS", &
                             "CCxWitheredTpotNoS at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Crop_CCoAdjusted
+    call LIS_writeHeader_restart(ftn, n, dimID, Crop_CCoAdjusted_ID, "Crop_CCoAdjusted", &
+                            "Crop_CCoAdjusted at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable Crop_CCxAdjusted
     call LIS_writeHeader_restart(ftn, n, dimID, Crop_CCxAdjusted_ID, "Crop_CCxAdjusted", &
                             "Crop_CCxAdjusted at last time step", &
@@ -356,6 +369,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     ! write the header for state variable HItimesBEF
     call LIS_writeHeader_restart(ftn, n, dimID, HItimesBEF_ID, "HItimesBEF", &
                             "HItimesBEF at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable PlotVarCrop_ActVal
+    call LIS_writeHeader_restart(ftn, n, dimID, PlotVarCrop_ActVal_ID, "PlotVarCrop_ActVal", &
+                            "PlotVarCrop_ActVal at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable PlotVarCrop_PotVal
+    call LIS_writeHeader_restart(ftn, n, dimID, PlotVarCrop_PotVal_ID, "PlotVarCrop_PotVal", &
+                            "PlotVarCrop_PotVal at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable RootZoneWC_Actual
     call LIS_writeHeader_restart(ftn, n, dimID, RootZoneWC_Actual_ID, "RootZoneWC_Actual", &
@@ -429,6 +450,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EvapLimitON_ID, "Simulation_EvapLimitON", &
                            "Simulation_EvapLimitON at last time step", &
                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_Germinate
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_Germinate_ID, "Simulation_Germinate", &
+                           "Simulation_Germinate at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_ProtectedSeedling
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_ProtectedSeedling_ID, "Simulation_ProtectedSeedling", &
+                           "Simulation_ProtectedSeedling at last time step", &
+                           "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable Simulation_SumGDD
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_SumGDD_ID, "Simulation_SumGDD", &
                            "Simulation_SumGDD at last time step", &
@@ -452,6 +481,10 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     ! write the header for state variable SumGDDcuts
     call LIS_writeHeader_restart(ftn, n, dimID, SumGDDcuts_ID, "SumGDDcuts", &
                             "SumGDDcuts at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable SumGDDPrev
+    call LIS_writeHeader_restart(ftn, n, dimID, SumGDDPrev_ID, "SumGDDPrev", &
+                            "SumGDDPrev at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable SumKci
     call LIS_writeHeader_restart(ftn, n, dimID, SumKci_ID, "SumKci", &
@@ -531,6 +564,13 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writeHeader_restart(ftn, n, dimID, Crop_DaysToFullCanopySF_ID, "Crop_DaysToFullCanopySF", &
                             "Crop_DaysToFullCanopySF at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    call LIS_writeHeader_restart(ftn, n, dimID, Crop_GDDaysToFullCanopySF_ID, "Crop_GDDaysToFullCanopySF", &
+                            "Crop_GDDaysToFullCanopySF at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable DayLastCut
+    call LIS_writeHeader_restart(ftn, n, dimID, DayLastCut_ID, "DayLastCut", &
+                            "DayLastCut at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable DayNri
     call LIS_writeHeader_restart(ftn, n, dimID, DayNri_ID, "DayNri", &
                             "DayNri at last time step", &
@@ -582,6 +622,10 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     ! write the header for state variable Simulation_EvapStartStg2
     call LIS_writeHeader_restart(ftn, n, dimID, Simulation_EvapStartStg2_ID, "Simulation_EvapStartStg2", &
                             "Simulation_EvapStartStg2 at last time step", &
+                            "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable Simulation_HIfinal
+    call LIS_writeHeader_restart(ftn, n, dimID, Simulation_HIfinal_ID, "Simulation_HIfinal", &
+                            "Simulation_HIfinal at last time step", &
                             "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     
     !! logicals
@@ -849,6 +893,10 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDcuts, &
                             varid=SumGDDcuts_ID, dim=1, wformat=wformat)
 
+    ! SumGDDPrev
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumGDDPrev, &
+                            varid=SumGDDPrev_ID, dim=1, wformat=wformat)
+
     ! SumKci
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%SumKci, &
                             varid=SumKci_ID, dim=1, wformat=wformat)
@@ -898,6 +946,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     ! Crop_DaysToFullCanopySF
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Crop%DaysToFullCanopySF, &
                             varid=Crop_DaysToFullCanopySF_ID, dim=1, wformat=wformat)
+
+    ! Crop_GDDaysToFullCanopySF
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%Crop%GDDaysToFullCanopySF, &
+                            varid=Crop_GDDaysToFullCanopySF_ID, dim=1, wformat=wformat)
+    ! DayLastCut
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayLastCut, &
+                            varid=DayLastCut_ID, dim=1, wformat=wformat)
+
     ! DayNri
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, AC72_struc(n)%ac72%DayNri, &
                             varid=DayNri_ID, dim=1, wformat=wformat)
@@ -944,6 +1000,14 @@ subroutine AC72_dump_restart(n, ftn, wformat)
                                 varid=Management_WeedDeltaRC_ID, dim=1, wformat=wformat)
 
     !! From Crop
+    ! Crop_CCoAdjusted
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%Crop%CCoAdjusted
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=Crop_CCoAdjusted_ID, dim=1, wformat=wformat)
+
     ! Crop_CCxAdjusted
     tmptilen = 0
     do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -994,6 +1058,26 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                                 varid=Simulation_EvapLimitON_ID, dim=1, wformat=wformat)
+
+    ! Simulation_Germinate
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        if (AC72_struc(n)%ac72(t)%Simulation%Germinate) then
+            tmptilen_int(t) = 1
+        endif
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_Germinate_ID, dim=1, wformat=wformat)
+
+    ! Simulation_ProtectedSeedling
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        if (AC72_struc(n)%ac72(t)%Simulation%ProtectedSeedling) then
+            tmptilen_int(t) = 1
+        endif
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_ProtectedSeedling_ID, dim=1, wformat=wformat)
 
     ! Simulation_SWCtopSoilConsidered
     tmptilen_int = 0
@@ -1109,6 +1193,32 @@ subroutine AC72_dump_restart(n, ftn, wformat)
     enddo
     call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
                                 varid=Simulation_EvapStartStg2_ID, dim=1, wformat=wformat)
+
+
+    ! Simulation_HIfinal
+    tmptilen_int = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen_int(t) = AC72_struc(n)%ac72(t)%Simulation%HIfinal
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen_int, &
+                                varid=Simulation_HIfinal_ID, dim=1, wformat=wformat)
+
+    !! From PlotVarCrop
+    ! PlotVarCrop_ActVal
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%PlotVarCrop%ActVal
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=PlotVarCrop_ActVal_ID, dim=1, wformat=wformat)
+
+    ! PlotVarCrop_PotVal
+    tmptilen = 0
+    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+        tmptilen(t) = AC72_struc(n)%ac72(t)%PlotVarCrop%PotVal
+    enddo
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                varid=PlotVarCrop_PotVal_ID, dim=1, wformat=wformat)
 
 
     !! From StressTot

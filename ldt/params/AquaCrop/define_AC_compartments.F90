@@ -36,7 +36,7 @@ subroutine define_AC_compartments(n, array)
   real, allocatable :: depths(:)
   real, allocatable :: rootingd(:)
   real, allocatable :: csizes(:,:)
-  real(dp)          :: TotalDepthL, TotDepthC, DeltaZ, fAdd
+  real              :: TotalDepthL, TotDepthC, DeltaZ, fAdd
   character(200)    :: dir
   character(200)    :: cropinv_file, crop_file
   character(100)    :: header1, str1
@@ -125,11 +125,11 @@ subroutine define_AC_compartments(n, array)
         ! depth
         ! (based on DetermineNrandThicknessCompartments from global.f90)
         ! Does not use rootingd
-        TotalDepthL = 0._dp
+        TotalDepthL = 0.
         do i = 1, AquaCrop_struc(n)%nlayers
             TotalDepthL = TotalDepthL + AquaCrop_struc(n)%lthickness(i)
         end do
-        TotDepthC = 0._dp
+        TotDepthC = 0.
         nrcomp = 0
         loop: do
             DeltaZ = (TotalDepthL - TotDepthC)
@@ -141,7 +141,7 @@ subroutine define_AC_compartments(n, array)
             end if
             TotDepthC = TotDepthC + csizes(ct,nrcomp)
             if ((nrcomp == 12) &
-                .or. (abs(TotDepthC - TotalDepthL) < 0.0001_dp)) exit loop
+                .or. (abs(TotDepthC - TotalDepthL) < 0.0001)) exit loop
             end do loop
 
         ! AquaCrop procedure to adjust the size of the compartments 
@@ -149,7 +149,7 @@ subroutine define_AC_compartments(n, array)
         ! Requires rootingd
 
         ! Calculate new depth of compartments
-        TotDepthC = 0._dp
+        TotDepthC = 0.
         do i = 1, nrcomp
             TotDepthC = TotDepthC + csizes(ct,i)
         enddo
@@ -168,26 +168,26 @@ subroutine define_AC_compartments(n, array)
             end do loop_bis
         end if
 
-        if ((TotDepthC + 0.00001_dp) < rootingd(ct)) then
-            fAdd = (rootingd(ct)/0.1_dp - 12._dp)/78._dp
+        if ((TotDepthC + 0.00001) < rootingd(ct)) then
+            fAdd = (rootingd(ct)/0.1 - 12.)/78.
             do i = 1, 12
-                csizes(ct,i) = 0.1 * (1._dp + i*fAdd)
-                csizes(ct,i) = 0.05 * real(roundc(csizes(ct,i)*20._dp, mold=1), kind=dp)
+                csizes(ct,i) = 0.1 * (1. + i*fAdd)
+                csizes(ct,i) = 0.05 * real(roundc(csizes(ct,i)*20., mold=1))
             end do
-            TotDepthC = 0._dp
+            TotDepthC = 0.
             do i = 1, 12
                 TotDepthC = TotDepthC + csizes(ct,i)
             end do
-            if (TotDepthC < rootingd(ct)) then
+            if (rootingd(ct) - TotDepthC > ac_zero_threshold) then
                 loop2: do
-                    csizes(ct,12) = csizes(ct,12) + 0.05_dp
-                    TotDepthC = TotDepthC + 0.05_dp
+                    csizes(ct,12) = csizes(ct,12) + 0.05
+                    TotDepthC = TotDepthC + 0.05
                     if (TotDepthC >= rootingd(ct)) exit loop2
                 end do loop2
             else
-                do while ((TotDepthC - 0.04999999_dp) >= rootingd(ct))
-                    csizes(ct,12) = csizes(ct,12) - 0.05_dp
-                    TotDepthC = TotDepthC - 0.05_dp
+                do while ((TotDepthC - 0.04999999) >= rootingd(ct))
+                    csizes(ct,12) = csizes(ct,12) - 0.05
+                    TotDepthC = TotDepthC - 0.05
                 end do
             end if
         end if

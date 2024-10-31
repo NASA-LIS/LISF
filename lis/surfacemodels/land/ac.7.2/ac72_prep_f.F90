@@ -126,7 +126,7 @@ subroutine ac72_read_Trecord(n)
     ! !DESCRIPTION: 
     ! 
     !  This subroutine stores the mean temperatures for the ac72 simulation
-    !  period required when AquaCrop for the dtermination of the GDD stages
+    !  period required when AquaCrop for the determination of the GDD stages
     !
     !  
     !EOP
