@@ -174,8 +174,10 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
                                                      var_name = "WIND")
 
     for month in range(1,10):
-        file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
-        file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        file_6h = outdir_6hourly + '/' + \
+            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        file_mon = outdir_monthly + '/' + \
+            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
         dt2 = dt1 + relativedelta(months=1)
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
@@ -232,7 +234,7 @@ def _driver():
 
     year = int(args['syr'])
     ens_num = int(args['ens_num'])
-    print(f" --- ")
+    print(" --- ")
     print(f"[INFO] Forecast Init Date: {fcst_init['monthday']} {year}")
 
     fcst_init["year"] = year
@@ -279,7 +281,7 @@ def _driver():
         os.makedirs(outdirs['outdir_monthly'])
 
     # Loop over CFSv2 variables:
-    cfsv2 = []         
+    cfsv2 = []
     for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                     "q2m", "wnd10m"]:
         print(f"[INFO] CFSv2 variable: {varname}")
@@ -290,18 +292,19 @@ def _driver():
         indir = f"{args['forcedir']}/{subdir}/"
         if subdir == "Oper_TS" and not os.path.exists(indir):
             indir = f"{args['forcedir']}/"
-            
+
         indir += f"{fcst_init['year_cfsv2']}/{fcst_init['date']}"
 
         # Checking CFSv2 member-date subdir presence:
         if not os.path.isdir(indir):
             print(f"[ERR] CFSV2 directory, {indir}, does NOT exist.")
-            print(f"[ERR]  Exiting from this one process_forecast_data.py job (others may continue to run in parallel) ...")
+            print("[ERR]  Exiting from this one process_forecast_data.py job (others may continue to run in parallel) ...")
             sys.exit(1)  # Exit with an error code
 
         # Convert GRIB file to netCDF and handle missing/corrupted data
-        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
-        
+        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], \
+            file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
+
     cfsv2 = xr.merge (cfsv2, compat='override')
     reg_precip = _regrid_precip(cfsv2, args)
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
