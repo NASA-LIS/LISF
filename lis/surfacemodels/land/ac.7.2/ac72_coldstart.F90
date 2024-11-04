@@ -28,8 +28,10 @@ subroutine AC72_coldstart(mtype)
 !
 ! !DESCRIPTION:
 !
-!  This routine initializes the AC72 state variables with some
-!  predefined values constantly for the entire domain. 
+!  This routine initializes the AC72 state variables with predefined
+!  values over the entire domain.
+!  For now, only soil moisture can be predefined. For future runs with
+!  salinity, this variable might also be considered.
 !
 !EOP
  

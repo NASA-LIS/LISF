@@ -26,7 +26,7 @@
       OPEN(19, FILE=trim(SOIL_TBL),FORM='FORMATTED',STATUS='OLD',IOSTAT=ierr)
       IF(ierr .NE. OPEN_OK ) THEN
         WRITE(message,FMT='(A)') &
-        'module_sf_aclsm.F: soil_veg_gen_parm: failure opening SOILPARM.TBL'
+        'module_sf_aclsm_AC72.F: soil_veg_gen_parm: failure opening SOILPARM.TBL'
         CALL wrf_error_fatal ( message )
       END IF
 

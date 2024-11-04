@@ -32,11 +32,6 @@ subroutine AC72_finalize(n)
 
     do n=1, LIS_rc%nnest
     !deallocate all vars
-        ! free memory allocated for each tile
-        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-            deallocate(AC72_struc(n)%ac72(t)%smc)
-        end do  ! tile loop
- 
         ! free memory for ac72, the data at tile level
         deallocate(AC72_struc(n)%ac72)
 
