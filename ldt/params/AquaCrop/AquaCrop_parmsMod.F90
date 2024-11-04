@@ -55,7 +55,7 @@ module AquaCrop_parmsMod
       type(LDT_paramEntry) :: tmax_cli ! tmax climatology
       integer :: nlayers !  number of soil layers
       real :: lthickness(5) ! thickness of layers, max 5 layers for AC
-      integer :: max_comp ! 12 by default
+      integer :: max_comp ! fixed to 12
       integer :: tempcli_refyr ! reference year for cli
       character(len=LDT_CONST_PATH_LEN) :: tempclimdir
       character(125) :: tempclimfile
@@ -76,12 +76,17 @@ contains
 ! !DESCRIPTION:
 !
 ! Allocates memory for data structures for reading 
-! the AquaCrop fraction datasets 
+! the required AquaCrop datasets 
 ! 
 !  The routines invoked are: 
 !  \begin{description}
-!   \item[acParmssetup](\ref{acParmssetup}) \newline
-!    calls the registry to invoke the noahParms setup methods. 
+!   \item[read_CONSTANT_AC_crop]\newline
+!    calls the reader of the crop type via the Crop.Inventory
+!    (for now: only CONSTANT method is implemented) 
+!   \item[define_AC_compartments]\newline
+!    calls the calculation fo the compartment number/size
+!   \item[read_AC_Tclim]\newline
+!    calls the reader of the Tmin and Tmax climatologies
 !  \end{description}
 !
 !EOP
@@ -97,40 +102,40 @@ contains
 ! _____________________________________________________________________
 
   allocate(AquaCrop_struc(LDT_rc%nnest))
-    do n=1,LDT_rc%nnest
+  do n=1,LDT_rc%nnest
     AquaCrop_struc(n)%max_comp = 12
     ! Set crop type
-      call set_param_attribs(Aquacrop_struc(n)%cropt, "AC_CROPT",&
-          units="-", &
-          full_name="Aquacrop crop type")
-      call ESMF_ConfigFindLabel(LDT_config,"AquaCrop crop type data source:",rc=rc)
-      call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%cropt%source,rc=rc)
-      call LDT_verify(rc,"AquaCrop crop type data source: not defined")
-      allocate(Aquacrop_struc(n)%cropt%value(&
-              LDT_rc%lnc(n),LDT_rc%lnr(n),&
-              Aquacrop_struc(n)%cropt%vlevels))
-      select case (AquaCrop_struc(n)%cropt%source)
-        case( "CONSTANT" )
-          call read_CONSTANT_AC_crop(&
-                    n,AquaCrop_struc(n)%cropt%value(:,:,1))
-        case default
-          write(LDT_logunit,*) "[WARN] crop type data source not valid for AquaCrop."
-          write(LDT_logunit,*) "  Please select: CONSTANT"
-          write(LDT_logunit,*) "Program stopping ..."
-          call LDT_endrun
-      end select
-    ! End crop type
+    call set_param_attribs(Aquacrop_struc(n)%cropt, "AC_CROPT",&
+        units="-", &
+        full_name="Aquacrop crop type")
+    call ESMF_ConfigFindLabel(LDT_config,"AquaCrop crop type data source:",rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config,AquaCrop_struc(n)%cropt%source,rc=rc)
+    call LDT_verify(rc,"AquaCrop crop type data source: not defined")
+    allocate(Aquacrop_struc(n)%cropt%value(&
+            LDT_rc%lnc(n),LDT_rc%lnr(n),&
+            Aquacrop_struc(n)%cropt%vlevels))
+    select case (AquaCrop_struc(n)%cropt%source)
+      case( "CONSTANT" )
+        call read_CONSTANT_AC_crop(&
+                  n,AquaCrop_struc(n)%cropt%value(:,:,1))
+      case default
+        write(LDT_logunit,*) "[WARN] crop type data source not valid for AquaCrop."
+        write(LDT_logunit,*) "  Please select: CONSTANT"
+        write(LDT_logunit,*) "Program stopping ..."
+        call LDT_endrun
+    end select
+  ! End crop type
   
-    ! Define compartment size
-      call set_param_attribs(Aquacrop_struc(n)%comp_size, "AC_comp_size",&
-          units="m", &
-          full_name="Aquacrop compartment size")
-      Aquacrop_struc(n)%comp_size%vlevels = AquaCrop_struc(n)%max_comp
-      Aquacrop_struc(n)%comp_size%num_bins = AquaCrop_struc(n)%max_comp
-      allocate(Aquacrop_struc(n)%comp_size%value(&
-              LDT_rc%lnc(n),LDT_rc%lnr(n),&
-              Aquacrop_struc(n)%comp_size%vlevels))
-      call define_AC_compartments(n, AquaCrop_struc(n)%comp_size%value(:,:,:))
+  ! Define compartment size
+    call set_param_attribs(Aquacrop_struc(n)%comp_size, "AC_comp_size",&
+        units="m", &
+        full_name="Aquacrop compartment size")
+    Aquacrop_struc(n)%comp_size%vlevels = AquaCrop_struc(n)%max_comp
+    Aquacrop_struc(n)%comp_size%num_bins = AquaCrop_struc(n)%max_comp
+    allocate(Aquacrop_struc(n)%comp_size%value(&
+            LDT_rc%lnc(n),LDT_rc%lnr(n),&
+            Aquacrop_struc(n)%comp_size%vlevels))
+    call define_AC_compartments(n, AquaCrop_struc(n)%comp_size%value(:,:,:))
 
 
     !! Read temperature climatology file
@@ -150,38 +155,38 @@ contains
     LDT_rc%monthlyData(n) = .true.
 
     ! tmin
-        call set_param_attribs(Aquacrop_struc(n)%tmin_cli, "AC_Tmin_clim",&
-          units="K", &
-          full_name="minimum temperature climatology")
-      Aquacrop_struc(n)%tmin_cli%vlevels = 12
-      Aquacrop_struc(n)%tmin_cli%num_bins = 12
-      allocate(Aquacrop_struc(n)%tmin_cli%value(&
-              LDT_rc%lnc(n),LDT_rc%lnr(n),&
-              Aquacrop_struc(n)%tmin_cli%vlevels))
+    call set_param_attribs(Aquacrop_struc(n)%tmin_cli, "AC_Tmin_clim",&
+      units="K", &
+    full_name="minimum temperature climatology")
+    Aquacrop_struc(n)%tmin_cli%vlevels = 12
+    Aquacrop_struc(n)%tmin_cli%num_bins = 12
+    allocate(Aquacrop_struc(n)%tmin_cli%value(&
+            LDT_rc%lnc(n),LDT_rc%lnr(n),&
+            Aquacrop_struc(n)%tmin_cli%vlevels))
 
     ! tmax
-        call set_param_attribs(Aquacrop_struc(n)%tmax_cli, "AC_Tmax_clim",&
-          units="K", &
-          full_name="maximum temperature climatology")
-      Aquacrop_struc(n)%tmax_cli%vlevels = 12
-      Aquacrop_struc(n)%tmax_cli%num_bins = 12
-      allocate(Aquacrop_struc(n)%tmax_cli%value(&
-              LDT_rc%lnc(n),LDT_rc%lnr(n),&
-              Aquacrop_struc(n)%tmax_cli%vlevels))
+    call set_param_attribs(Aquacrop_struc(n)%tmax_cli, "AC_Tmax_clim",&
+      units="K", &
+      full_name="maximum temperature climatology")
+    Aquacrop_struc(n)%tmax_cli%vlevels = 12
+    Aquacrop_struc(n)%tmax_cli%num_bins = 12
+    allocate(Aquacrop_struc(n)%tmax_cli%value(&
+            LDT_rc%lnc(n),LDT_rc%lnr(n),&
+            Aquacrop_struc(n)%tmax_cli%vlevels))
 
-      ! Call function to read monthly data
-      do k = 1,12
-        AquaCrop_struc(n)%tempclimfile = &
-            trim(AquaCrop_struc(n)%tempclimdir)//'tmin.'//&
-            trim(months(k))//'.txt'
-        call read_AC_Tclim(n, AquaCrop_struc(n)%tmin_cli%value(:,:,k))
-        AquaCrop_struc(n)%tempclimfile = &
-            trim(AquaCrop_struc(n)%tempclimdir)//'tmax.'//&
-            trim(months(k))//'.txt'
-        call read_AC_Tclim(n, AquaCrop_struc(n)%tmax_cli%value(:,:,k))
-      enddo ! end months
-  
-    enddo ! End nest
+    ! Call function to read monthly data
+    do k = 1,12
+      AquaCrop_struc(n)%tempclimfile = &
+          trim(AquaCrop_struc(n)%tempclimdir)//'tmin.'//&
+          trim(months(k))//'.txt'
+      call read_AC_Tclim(n, AquaCrop_struc(n)%tmin_cli%value(:,:,k))
+      AquaCrop_struc(n)%tempclimfile = &
+          trim(AquaCrop_struc(n)%tempclimdir)//'tmax.'//&
+          trim(months(k))//'.txt'
+      call read_AC_Tclim(n, AquaCrop_struc(n)%tmax_cli%value(:,:,k))
+    enddo ! end months
+
+  enddo ! End nest
     
   end subroutine AquaCropParms_init
 
