@@ -2337,8 +2337,8 @@ contains
              enddo
           enddo
        endif
+       
     endif
-    
   end subroutine diagnoseForcingOutput
 
 end module LIS_metforcingMod

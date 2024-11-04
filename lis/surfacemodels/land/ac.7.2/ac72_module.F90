@@ -234,8 +234,6 @@ module AC72_module
         logical  :: HarvestNow
         real(sp), pointer :: Tmax_record(:)
         real(sp), pointer :: Tmin_record(:)  
-        logical :: germ_reached, harv_reached
-        logical :: maxR_reached, sene_reached, flowr_reached
         integer :: irri_lnr
 
         logical :: NoMoreCrop

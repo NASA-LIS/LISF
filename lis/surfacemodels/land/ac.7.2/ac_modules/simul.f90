@@ -4602,7 +4602,7 @@ subroutine CalculateSoilEvaporationStage2()
 
         real(sp) :: x
 
-        if (theta <= GetSoilLayer_WP(1)/200._sp) then
+        if ((theta-GetSoilLayer_WP(1)/200._sp) <= ac_zero_threshold) then
             SaltTransportFactor = 0._sp
         else
             x = (theta*100._sp - GetSoilLayer_WP(1)/2._sp) &

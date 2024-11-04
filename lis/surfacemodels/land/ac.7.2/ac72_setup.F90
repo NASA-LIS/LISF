@@ -282,7 +282,7 @@ subroutine AC72_setup()
             undef_int
     use ac_project_input, only: ProjectInput, allocate_project_input, set_project_input
 
-    use ac_run, only:    
+    use ac_run, only: &
             AdvanceOneTimeStep,&
             FinalizeRun1,&
             FinalizeRun2,&
@@ -600,7 +600,6 @@ subroutine AC72_setup()
             TotalSimRuns = LIS_rc%eyr - LIS_rc%syr + 1
             call allocate_project_input(TotalSimRuns)
             do l=1, TotalSimRuns  ! TotalSimRuns
-                ! MB: for current generic crop this is fixed to 1
                 call set_project_input(l, 'Simulation_YearSeason', 1_int8)
                 ! Simulation
                 call LIS_get_julhr(LIS_rc%syr+(l-1), AC72_struc(n)%Sim_AnnualStartMonth, &

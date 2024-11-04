@@ -497,7 +497,7 @@ subroutine AC72_main(n)
     integer              :: tid
 
     integer              :: daynr, todaynr, iproject, nprojects
-    logical              :: ListProjectFileExist, phenological_stages_ensemble
+    logical              :: ListProjectFileExist
     character(len=:), allocatable :: ListProjectsFile, TheProjectFile
     integer              :: Crop_DaysToGermination, Crop_DaysToMaxRooting, Crop_DaysToFlowering
     integer              :: Crop_DaysToHarvest, Crop_DaysTosenescence, Crop_DaysToCCini
@@ -538,10 +538,6 @@ subroutine AC72_main(n)
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
             tmp_elev = LIS_domain(n)%tile(t)%elev
-            ! debugging lines (do not forget to remove them)
-            if((LIS_rc%da.eq.1).and.(LIS_rc%mo.eq.5).and.(row.eq.9).and.(col.eq.100)) then
-                write(*,*) "stop here"
-            endif
 
             !!------ This Block Is Where We Obtain Weather Forcing ------------------------------!!
             ! retrieve forcing data from AC72_struc(n)%ac72(t) and assign to local variables
@@ -816,7 +812,7 @@ subroutine AC72_main(n)
                 end if
             end if
 
-            ! Irrigation management
+            ! Start irrigation block
             call SetIrriMode(AC72_struc(n)%ac72(t)%IrriMode)
             irr_record_flag = 0
             if(AC72_struc(n)%ac72(t)%IrriMode.ne.IrriMode_NoIrri) then
@@ -936,48 +932,6 @@ subroutine AC72_main(n)
                 ! End irrigation block
                 AC72_struc(n)%ac72(t)%InitializeRun = 0 ! Initialization done
             end if
-
-
-            ! Initialize for new crop cycle
-            ! Reset Crop%DaysTo* to allow that members reach stages at different days
-            phenological_stages_ensemble = .false.
-
-            if (phenological_stages_ensemble) then
-                if (GetDayNri() == GetCrop_Day1()) then
-                AC72_struc(n)%ac72(t)%germ_reached = .false.
-                AC72_struc(n)%ac72(t)%harv_reached = .false.
-                AC72_struc(n)%ac72(t)%flowr_reached = .false.
-                AC72_struc(n)%ac72(t)%MaxR_reached = .false.
-                AC72_struc(n)%ac72(t)%Sene_reached = .false.
-
-                !find calendar days for crop stages
-                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToGermination()) &
-                    .and.  (.not. AC72_struc(n)%ac72(t)%germ_reached)) then ! from sowing
-                    AC72_struc(n)%ac72(t)%Crop%DaysToGermination = GetDayNri() - GetCrop_Day1()
-                    AC72_struc(n)%ac72(t)%germ_reached = .true.
-                end if
-                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToMaxRooting()) &
-                    .and. (.not. AC72_struc(n)%ac72(t)%maxR_reached)) then ! from sowing
-                    AC72_struc(n)%ac72(t)%Crop%DaysToMaxRooting = GetDayNri() - GetCrop_Day1()
-                    AC72_struc(n)%ac72(t)%maxR_reached = .true.
-                end if
-                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToFlowering()) &
-                    .and.  (.not. AC72_struc(n)%ac72(t)%flowr_reached)) then ! from sowing
-                    AC72_struc(n)%ac72(t)%Crop%DaysToFlowering = GetDayNri() - GetCrop_Day1()
-                    AC72_struc(n)%ac72(t)%flowr_reached = .true.
-                end if
-                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToSenescence()) &
-                    .and. (.not. AC72_struc(n)%ac72(t)%sene_reached)) then ! from sowing
-                    AC72_struc(n)%ac72(t)%Crop%DaysToSenescence = GetDayNri() - GetCrop_Day1()
-                    AC72_struc(n)%ac72(t)%sene_reached = .true.
-                end if
-                if ((GetSimulation_SumGDDfromDay1() >= GetCrop_GDDaysToHarvest()) &
-                    .and. (.not. AC72_struc(n)%ac72(t)%harv_reached)) then ! from sowing
-                    AC72_struc(n)%ac72(t)%Crop%DaysToHarvest = GetDayNri() - GetCrop_Day1()
-                    AC72_struc(n)%ac72(t)%harv_reached = .true.
-                end if
-                end if
-            end if ! Initialize crop stages done
 
             ! Run AC
             tmp_wpi = AC72_struc(n)%ac72(t)%WPi
