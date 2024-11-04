@@ -2337,7 +2337,7 @@ contains
              enddo
           enddo
        endif
-       
+
     endif
   end subroutine diagnoseForcingOutput
 
