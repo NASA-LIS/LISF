@@ -111,9 +111,13 @@ subroutine NoahMP401_writerst(n)
        if(wformat .eq. "binary") then
           if (LIS_masterproc) then
              call LIS_releaseUnitNumber(ftn)
+             write(LIS_logunit, *)&
+                  "[INFO] Noah-MP.4.0.1 archive restart written: ",trim(filen)
           endif
        elseif(wformat.eq."distributed binary") then
           call LIS_releaseUnitNumber(ftn)
+          write(LIS_logunit, *)&
+                  "[INFO] Noah-MP.4.0.1 archive restart written: ",trim(filenp)
        elseif(wformat .eq. "netcdf") then
           if(LIS_masterproc) then
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
