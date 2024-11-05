@@ -84,11 +84,13 @@ if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-if [ ! -e lvt.config.usafsipost ] ; then
-   echo "ERROR, lvt.config.usafsipost does not exist!" && exit 1
+lvtconfig=lvt.config.foc.usafsipost.76
+
+if [ ! -e $lvtconfig ] ; then
+   echo "ERROR, $lvtconfig does not exist!" && exit 1
 fi
 
-mpirun -np 1 ./LVT lvt.config.usafsipost || exit 1
+mpirun -np 1 ./LVT $lvtconfig || exit 1
 
 exit 0
 

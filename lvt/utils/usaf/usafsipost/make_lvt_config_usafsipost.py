@@ -86,7 +86,7 @@ def _main():
         newlines.append(newline)
 
     # Create the new, customized lvt.config file
-    newline = "lvt.config.usafsipost"
+    newline = "lvt.config.foc.usafsipost.76"
     with open(newline, "w", encoding="ascii") as file:
         for line in newlines:
             file.write(line)
