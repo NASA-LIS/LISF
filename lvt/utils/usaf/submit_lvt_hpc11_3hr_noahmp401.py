@@ -55,17 +55,19 @@ def _main():
 #SBATCH --time=1:00:00
 #SBATCH --account nwp601
 #SBATCH --output {var}.3hr.slurm.out
-#Set quality of service, if needed.
 #SBATCH --ntasks=1
+#SBATCH --cluster-constraint=blue
+#SBATCH --exclusive
+#SBATCH --mem=0
 
 if [ ! -z $SLURM_SUBMIT_DIR ] ; then
     cd $SLURM_SUBMIT_DIR || exit 1
 fi
 
-#module purge
-module use --append ~/hpc11/privatemodules
-module load lisf_74_prgenv_cray_8.2.0
-
+# Environment
+module use --append /ccs/home/emkemp/hpc11/privatemodules
+module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
+module load afw-python/3.11-202406
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1

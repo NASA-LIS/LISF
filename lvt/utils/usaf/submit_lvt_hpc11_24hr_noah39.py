@@ -20,41 +20,28 @@ import subprocess
 import sys
 import time
 
-_VARS = ['RelSMC_inst', 'SmLiqFrac_inst',
-        'SoilMoist_inst', 'SoilMoist_tavg',
-        'SoilTemp_inst', 'SoilTemp_tavg',
-        'RHMin_inst',
-        'Albedo_tavg', 'AvgSurfT_inst', 'AvgSurfT_tavg',
-        'CanopInt_inst', 'Elevation_inst', 'Evap_tavg',
-        'Greenness_inst',
-        'LWdown_f_inst', 'LWdown_f_tavg',
-        'Landcover_inst', 'Landmask_inst', 'PotEvap_tavg',
-        'Psurf_f_inst', 'Psurf_f_tavg',
-        'Qair_f_inst', 'Qair_f_tavg',
-        'Qg_tavg', 'Qh_tavg', 'Qle_tavg', 'Qs_acc',
-        'Qsb_acc', 'SWE_inst',
-        'SWdown_f_inst', 'SWdown_f_tavg',
-        'SnowDepth_inst', 'Snowcover_inst',
-        'Soiltype_inst',
-        'Tair_f_inst', 'Tair_f_max',
-        'Tair_f_tavg',
-        'TotalPrecip_acc', 'Wind_f_inst', 'Wind_f_tavg']
+_VARS = ["SoilMoist_tavg", "SoilTemp_tavg",
+        "RHMin_inst",
+        "Evap_tavg", "LWdown_f_tavg", "PotEvap_tavg",
+        "SWdown_f_tavg",
+        "Tair_f_max",
+        "Tair_f_tavg",
+        "TotalPrecip_acc", "Wind_f_tavg"]
 
 def _main():
     """Main driver"""
-
     if not os.path.exists("LVT"):
         print("ERROR, LVT executable does not exist!")
         sys.exit(1)
 
     for var in _VARS:
-        scriptname = f"run_lvt.{var}_3hr.sh"
+        scriptname = f"run_lvt.{var}_24hr.sh"
         with open(scriptname, "w", encoding="ascii") as file:
             line = f"""#!/bin/sh
-#SBATCH --job-name={var}.3hr
+#SBATCH --job-name={var}.24hr
 #SBATCH --time=1:00:00
 #SBATCH --account nwp601
-#SBATCH --output {var}.3hr.slurm.out
+#SBATCH --output {var}.24hr.slurm.out
 #SBATCH --ntasks=1
 #SBATCH --cluster-constraint=blue
 #SBATCH --exclusive
@@ -73,10 +60,10 @@ if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-if [ ! -e configs/lvt.config.{var}.3hr ] ; then
-   echo "ERROR, configs/lvt.config.{var}.3hr does not exist!" && exit 1
+if [ ! -e configs/lvt.config.{var}.24hr ] ; then
+   echo "ERROR, configs/lvt.config.{var}.24hr does not exist!" && exit 1
 fi
-srun -n 1 ./LVT configs/lvt.config.{var}.3hr || exit 1
+srun -n 1 ./LVT configs/lvt.config.{var}.24hr || exit 1
 
 exit 0
 """
