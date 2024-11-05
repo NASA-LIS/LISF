@@ -1,0 +1,20 @@
+JULES namelist collections.
+
+ps41_nml_15min/ is for running JULES in PS41 configuration, with 3 snow layers.
+THIS IS THE CONFIGURATION RECOMMENDED FOR USE IN OPERATIONS BY USAF.
+
+single_snow_layer/ is for running JULES in a similar configuration, but with
+only 1 snow layer.  These were used for running LIS7.3-JULES5.0
+"warm-started" from UM Dump files in 2017 and 2018, which used a single
+snow layer.
+
+*NOTE* Users will need to edit three namelist files to update paths valid
+on their local machine.  They are:
+
+ancillaries.nml:  Edit path to 'tile_fractions.dat' (included with namelist
+                  files)
+drive.nml:        Edit path to 'Loobos_1997.dat' (included with namelist files)
+initial_conditions.nml:  Edit path to 'initial_conditions.dat' (included with
+                         namelist files)
+
+
