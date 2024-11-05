@@ -267,19 +267,27 @@ contains
       merra2_struc(n)%startFlag = .true.
       merra2_struc(n)%dayFlag = .true.
 
-      allocate(merra2_struc(n)%merraforc1(&
+      if (trim(LDT_rc%runmode) == "Metforce processing" .or. &
+          trim(LDT_rc%runmode) == "Metforce temporal downscaling" .or. &
+          trim(LDT_rc%runmode) == "Statistical downscaling of met forcing") then
+         allocate(merra2_struc(n)%merraforc1(&
            LDT_rc%met_nf(findex), 24, &
            LDT_rc%lnc(n)*LDT_rc%lnr(n)))
-      allocate(merra2_struc(n)%merraforc2(&
+         allocate(merra2_struc(n)%merraforc2(&
            LDT_rc%met_nf(findex), 24, &
            LDT_rc%lnc(n)*LDT_rc%lnr(n)))
 
-      merra2_struc(n)%merraforc1 = LDT_rc%udef
-      merra2_struc(n)%merraforc2 = LDT_rc%udef
+         merra2_struc(n)%merraforc1 = LDT_rc%udef
+         merra2_struc(n)%merraforc2 = LDT_rc%udef
+      endif
     enddo
 
-    write(LDT_logunit,*)"[INFO] MERRA-2 time interp option :: ",&
-       trim(LDT_rc%met_tinterp(findex))
+    if (trim(LDT_rc%runmode) == "Metforce processing" .or. &
+        trim(LDT_rc%runmode) == "Metforce temporal downscaling" .or. &
+        trim(LDT_rc%runmode) == "Statistical downscaling of met forcing") then
+       write(LDT_logunit,*)"[INFO] MERRA-2 time interp option :: ",&
+             trim(LDT_rc%met_tinterp(findex))
+    endif
 
   end subroutine init_merra2
 end module merra2_forcingMod
