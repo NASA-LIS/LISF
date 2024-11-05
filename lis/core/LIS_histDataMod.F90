@@ -4613,7 +4613,7 @@ contains
     call ESMF_ConfigFindLabel(modelSpecConfig,"AC_Eact:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "AC_Eact",&
-         "actual_evporation",&
+         "actual_evaporation",&
          "actual evaporation",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_AC_Eact,&

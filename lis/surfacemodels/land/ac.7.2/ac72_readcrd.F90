@@ -13,7 +13,7 @@
 ! \label{AC72_readcrd}
 !
 ! !REVISION HISTORY:
-!   18 JAN 2024, Louise Busschaert; initial implementation for AC72
+!   04 NOV 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
 subroutine AC72_readcrd()

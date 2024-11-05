@@ -197,7 +197,7 @@ contains
     integer   :: n,i 
     integer   :: ftn
     integer   :: dimID(3)
-    integer     :: monthID
+    integer   :: monthID
 
     integer   :: ndimID(3)  ! 3D, vlevel>1
     character(25) :: str

@@ -14,7 +14,7 @@
 ! \label{AC72_writerst}
 !
 ! !REVISION HISTORY:
-!   26 FEB 2024: Louise Busschaert; initial implementation for AC72
+!   04 NOV 2024: Louise Busschaert; initial implementation for AC72
 !
 ! !INTERFACE:
 subroutine AC72_writerst(n)
@@ -105,10 +105,7 @@ end subroutine AC72_writerst
 ! \label{AC72_dump_restart}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!  9/4/14: Shugong Wang, initial implementation for LIS 7 and AC72
+!  04 NOV 2024: Louise Busschaert; initial implementation for AC72
 ! !INTERFACE:
 subroutine AC72_dump_restart(n, ftn, wformat)
 

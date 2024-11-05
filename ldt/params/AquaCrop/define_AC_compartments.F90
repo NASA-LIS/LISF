@@ -121,7 +121,7 @@ subroutine define_AC_compartments(n, array)
 
 
     do ct = 1, num_types
-        ! Adjust number of compartments base don the soil profile
+        ! Adjust number of compartments based on the soil profile
         ! depth
         ! (based on DetermineNrandThicknessCompartments from global.f90)
         ! Does not use rootingd

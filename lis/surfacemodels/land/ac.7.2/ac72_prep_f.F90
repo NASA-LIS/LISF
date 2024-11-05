@@ -15,7 +15,7 @@ contains
 ! \label{AC72_ETo_calc}
 !
 ! !REVISION HISTORY:
-!  18 FEB 2024, Louise Busschaert; initial implementation
+!  04 NOV 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:
@@ -106,7 +106,7 @@ end subroutine AC72_ETo_calc
 ! \label{AC72_read_Trecord}
 !
 ! !REVISION HISTORY:
-!  24 MAY 2024, Louise Busschaert; initial implementation
+!  04 NOV 2024, Louise Busschaert; initial implementation
 !                                   
 
 ! !INTERFACE:

@@ -14,7 +14,7 @@
 ! \label{AC72_main}
 !
 ! !REVISION HISTORY:
-!   18 JAN 2024, Louise Busschaert; initial implementation
+!   04 NOV 2024, Louise Busschaert; initial implementation
 !
 ! !INTERFACE:
 subroutine AC72_main(n)
