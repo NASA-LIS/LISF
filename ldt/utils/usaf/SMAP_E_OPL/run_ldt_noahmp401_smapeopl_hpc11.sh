@@ -9,24 +9,23 @@
 #SBATCH --mem=0
 #--------------------------------------------------------------------------
 #
-# SCRIPT: run_smap_e_opl_hpc11.sh
+# SCRIPT: run_ldt_noah39_smapeopl_hpc11.sh
 #
-# Batch script for running LDT to generate SMAP_E_OPL retrievals with
-# LDT.  Customized for USAF HPC11 supercomputer running SLURM batch
-# queueing system.
+# Batch script for running LDT to generate NoahMP401-based SMAP_E_OPL
+# retrievals with LDT.  Customized for USAF HPC11 supercomputer running SLURM
+# batch queueing system. NOTE: Internal paths must be customized before use.
 #
-# USAGE: run_smap_e_opl_hpc11.sh $startdate $starthour $enddate \
-#          $endhour $lsm
+# USAGE: run_ldt_noahmp401_smapeopl_hpc11.sh $startdate $starthour $enddate \
+#          $endhour
 #          where $startdate and $enddate specify the inclusive UTC
 #          date range to run SMAP_E_OPL retrievals (formatted YYYY-MM-DD
 #          or YYYYMMDD); $starthour and $endhour specify the hours of the
-#          respective dates (formatted HH); and $lsm is the LSM name, used
-#          to select the ldt.config template file.
+#          respective dates (formatted HH).
 #
 # Based on Korn shell script provided by Pang-Wei Liu.
 #
 # REVISION HISTORY:
-# 29 Mar 2024: Eric Kemp.  Initial specification, based on Discover script.
+# 05 Nov 2024: Eric Kemp. Initial specification.
 #
 #--------------------------------------------------------------------------
 
@@ -40,13 +39,13 @@ fi
 
 # Environment
 module use --append /ccs/home/emkemp/hpc11/privatemodules
-module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12_draft
-module load afw-python/3.10-202312
+module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
+module load afw-python/3.11-202406
 
-# Paths on local system
-SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/scripts
-BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/bin
-TMPLDIR=/lustre/storm/nwp601/proj-shared/emkemp/lis76_smap_e_opl/tmpl
+# Paths on local system. Must be customized before running script.
+SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noahmp401_smap_e_opl/scripts
+BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noahmp401_smap_e_opl/bin
+TMPLDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/ldt/noahmp401_smap_e_opl/tmpl
 
 # Get the command line arguments to specify the training period
 if [ -z "$1" ] ; then
@@ -88,17 +87,9 @@ end_yyyymmddhh=$(date -d "$end_dt" +%Y%m%d%H)
 
 # Use the LSM command line argument to select the appropriate ldt.config
 # template.
-lsm="$5"
-if [ "$lsm" = "noah" ] ; then
-    tmplfile="$TMPLDIR/ldt.config.smapeopl.noah.tmpl"
-elif [ "$lsm" = "noahmp" ] ; then
-    tmplfile="$TMPLDIR/ldt.config.smapeopl.noahmp.tmpl"
-elif [ "$lsm" = "jules" ] ; then
-    tmplfile="$TMPLDIR/ldt.config.smapeopl.jules.tmpl"
-else
-    echo "ERR, invalid LSM option, expected noah, noahmp, or jules; got $lsm"
-    exit 1
-fi
+lsm="noahmp"
+tmplfile="$TMPLDIR/ldt.config.smapeopl.noahmp.tmpl"
+
 if [ ! -e $tmplfile ] ; then
     echo "ERR, $tmplfile not found!" && exit 1
 fi
@@ -150,7 +141,7 @@ while true; do
         fi
         pid="${PIDS[$i]}"
         # See if pid is still running
-        echo `ps --pid "$pid"`
+        #echo `ps --pid "$pid"`
 
         ps --pid "$pid" > /dev/null
         if [ "$?" -ne 0 ] ; then # ps doesn't see it, so it terminated
@@ -184,5 +175,6 @@ unset actives
 unset yyyymmddhh
 
 # The end
-touch smapeopl.job.done
+echo "INFO, All NoahMP401 SMAP_E_OPL tasks completed at `date`"
+touch noahmp401.smapeopl.job.done
 exit 0
