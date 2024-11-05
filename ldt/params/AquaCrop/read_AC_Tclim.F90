@@ -132,7 +132,7 @@ subroutine read_AC_Tclim(n, array)
     param_gridDesc(3)  = float(nrows)
     param_gridDesc(4)  = yllcorner
     param_gridDesc(5)  = xllcorner
-    param_gridDesc(6)  = 128 ! What's this?
+    param_gridDesc(6)  = 128
     param_gridDesc(7)  = yllcorner + (nrows-1)*cellysize
     param_gridDesc(8)  = xllcorner + (ncols-1)*cellxsize
     param_gridDesc(9)  = cellxsize

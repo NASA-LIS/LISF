@@ -14,7 +14,7 @@
 ! \label{AC72_readrst}
 !
 ! !REVISION HISTORY:
-!  06 MAR 2024; Louise Busschaert, initial implementation
+!  04 NOV 2024; Louise Busschaert, initial implementation
 !
 ! !INTERFACE:
 subroutine AC72_readrst()

@@ -18,7 +18,7 @@ module AC72_module
 !  The variables specified in the data structure include:
 !
 ! !REVISION HISTORY:
-!  06 MAR 2024; Louise Busschaert, initial implementation
+!  04 NOV 2024; Louise Busschaert, initial implementation
 !
 !EOP
   

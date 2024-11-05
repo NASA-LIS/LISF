@@ -17,8 +17,7 @@
 !  This subroutine is generated with the Model Implementation Toolkit developed
 !  by Shugong Wang for the NASA Land Information System Version 7. The initial 
 !  specification of the subroutine is defined by Sujay Kumar. 
-!   2023; Michel Bechtold, Initial implementation
-!   06 MAR 2024; Louise Busschaert, Clean-up
+!   04 NOV 2024; Louise Busschaert, Initial implementation
 !
 ! !INTERFACE:
 subroutine AC72_setup()
@@ -592,7 +591,7 @@ subroutine AC72_setup()
             enddo 
             deallocate(placeholder)
             ! Read soil table
-            call SOIL_PARM_72(AC72_struc(n)%soil_tbl_name)
+            call SOIL_PARM_AC72(AC72_struc(n)%soil_tbl_name)
             TheProjectType = typeproject_typeprm
 
             ! Create AquaCrop 'Run' Structure
@@ -740,7 +739,7 @@ subroutine AC72_setup()
                 MultipleRunConstZrx_temp = GetSimulation_MultipleRunConstZrx()
 
                 ! Set AC72 soil parameters based on soiltype
-                ! Note: 2 soil layers with the same texture
+                ! Note: up to 5 soil layers with the same texture
                 AC72_struc(n)%ac72(t)%SoilLayer(1)%wp = WP(AC72_struc(n)%ac72(t)%soiltype) * 100
                 AC72_struc(n)%ac72(t)%SoilLayer(1)%sat = SAT(AC72_struc(n)%ac72(t)%soiltype) * 100
                 AC72_struc(n)%ac72(t)%SoilLayer(1)%fc = FC(AC72_struc(n)%ac72(t)%soiltype) * 100
@@ -1126,7 +1125,7 @@ end subroutine AC72_setup
 !  \label{AC72_read_MULTILEVEL_param}
 !
 ! !REVISION HISTORY:
-!  20 FEB: Louise Busschaert; Initial implementation
+!  04 NOV Louise Busschaert; Initial implementation
 !
 ! !INTERFACE:
 subroutine AC72_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
@@ -1237,7 +1236,7 @@ subroutine AC72_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 !  \label{AC72_read_croptype}
 !
 ! !REVISION HISTORY:
-!  06 MAR 2024; Louise Busschaert, initial implementation
+!  04 NOV 2024; Louise Busschaert, initial implementation
 !
 ! !INTERFACE:
 subroutine ac72_read_croptype(n)

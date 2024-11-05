@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !-----------------------------------------------------------------
-        SUBROUTINE SOIL_PARM_72(SOIL_TBL)
+        SUBROUTINE SOIL_PARM_AC72(SOIL_TBL)
 !-----------------------------------------------------------------
         USE module_sf_aclsm_72
         use LIS_logMod, only  : LIS_logunit
@@ -54,5 +54,5 @@
       CLOSE (19)
 
 !-----------------------------------------------------------------
-      END SUBROUTINE SOIL_PARM_72
+      END SUBROUTINE SOIL_PARM_AC72
 !-----------------------------------------------------------------

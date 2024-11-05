@@ -79,7 +79,7 @@ module AC72_lsmMod
 
 !
 ! !REVISION HISTORY:
-!  18 JAN 2024, Louise Busschaert; initial implementation for AC72
+!  04 NOV 2024, Louise Busschaert; initial implementation for AC72
 !
 ! !USES:
     use AC72_module
