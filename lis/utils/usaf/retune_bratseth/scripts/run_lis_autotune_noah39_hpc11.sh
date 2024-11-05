@@ -3,23 +3,26 @@
 #SBATCH --time=1:00:00
 #SBATCH --account=NWP601
 #SBATCH --output autotune.slurm.out
-#Adjust node, core, and hardware constraints here
 #SBATCH --ntasks=5 --ntasks-per-node=1
+#SBATCH --cluster-constraint=blue
+#SBATCH --exclusive
+#SBATCH --mem=0
 #------------------------------------------------------------------------------
 #
-# SCRIPT: run_autotune_hpc11r.sh
+# SCRIPT: run_lis_autotune_noah39_hpc11.sh
 #
 # Batch script for running autotune software to update error covariance
 # settings for LIS Air Force Bratseth scheme.  Customized for USAF HPC11
-# supercomputer running SLURM batch queueing system.
+# supercomputer running SLURM batch queueing system. NOTE: Paths must
+# be customized before running script.
 #
-# USAGE:  sbatch run_autotune_hpc11.sh $YYYYMMDDHH $DD
+# USAGE:  sbatch run_lis_autotune_noah39_hpc11.sh $YYYYMMDDHH $DD
 #           where $YYYYMMDDHH is the end date/time of the OBA training period
 #           and $DD is the length (in days) of the OBA training period.
 #
 #
 # REVISION HISTORY:
-# 08 Jun 2022:  Eric Kemp.  Initial specification.
+# 05 Nov 2024: Eric Kemp. Initial revision.
 #
 #------------------------------------------------------------------------------
 
@@ -32,18 +35,18 @@ if [ ! -z $SLURM_SUBMIT_DIR ] ; then
 fi
 
 # Environment
-module use --append ~emkemp/hpc11/privatemodules
-module load lisf_74_prgenv_cray_8.2.0
-module load afw-python/3.9-202203
+module use --append /ccs/home/emkemp/hpc11/privatemodules
+module load lisf_7.6_prgenv_cray_8.5.0_cpe_23.12
+module load afw-python/3.11-202406
 
 # Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
-# Paths on local system
-SCRIPTDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/scripts
-CFGDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/cfgs
-BINDIR=/lustre/active/nwp601/proj-shared/emkemp/build/LISF_557WW_release_7.4.11/lis/utils/usaf/retune_bratseth/src
+# Paths on local system. Customize before running this script.
+SCRIPTDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/scripts
+CFGDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/cfgs
+BINDIR=/lustre/storm/nwp601/proj-shared/emkemp/LISFV7.6/lis/noah39_autotune/bin
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
@@ -361,6 +364,6 @@ srun --ntasks=1 --nodes=1 --exclusive --kill-on-bad-exit=1 \
      $enddt $dayrange || exit 1
 
 # The end
-echo "INFO, Completed autotuning at `date`"
-touch autotune.job.done
+echo "INFO, Completed Noah39 autotuning at `date`"
+touch noah39.autotune.job.done
 exit 0
