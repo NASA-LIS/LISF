@@ -25,16 +25,16 @@ Output data format:                     netcdf
 Output naming style:                    "WMO convention"
 Enable output statistics:               .false.
 Start mode:                             restart
-Starting year: 2024
-Starting month: 09
-Starting day: 26
-Starting hour: 00
+Starting year:                          2024
+Starting month:                            9
+Starting day:                             26
+Starting hour:                             0
 Starting minute:                           0
 Starting second:                           0
-Ending year: 2024
-Ending month: 09
-Ending day: 26
-Ending hour: 12
+Ending year:                            2024
+Ending month:                              9
+Ending day:                               26
+Ending hour:                              12
 Ending minute:                             5
 Ending second:                             0
 Undefined value:                       -9999
@@ -72,7 +72,6 @@ Number of application models:           0
 #Data assimilation options
 Number of data assimilation instances:                3
 Data assimilation algorithm:                          "EnKF"                                  "EnKF"                                  "EnKF"
-#Data assimilation set:                                "USAFSI"                                "SMOPS-ASCAT soil moisture"             "SMAP(NRT) soil moisture"
 Data assimilation set:                                "USAFSI"                                "SMOPS-ASCAT soil moisture"             "SMAP_E_OPL soil moisture"
 
 Data assimilation exclude analysis increments:        0                                       0                                       0
@@ -97,11 +96,8 @@ Bias estimation restart file:                         none                      
 
 #Perturbation options
 Perturbations start mode:                             restart                                 restart                                 restart
-#Perturbations start mode:                     coldstart coldstart coldstart
-
-Perturbations restart output interval:                12hr 12hr 12hr
+Perturbations restart output interval:                12hr                                    12hr                                    12hr
 Perturbations restart filename: ./output_old/LIS_DAPERT_202409260000.d01.bin ./output_old/LIS_DAPERT_202409260000.d01.bin ./output_old/LIS_DAPERT_202409260000.d01.bin
-
 Apply perturbation bias correction:                   1                                       1                                       1
 
 Forcing perturbation algorithm:                       "GMAO scheme"                           "GMAO scheme"                           "GMAO scheme"
@@ -132,20 +128,12 @@ SMOPS ASCAT use realtime data:                                  1
 SMOPS ASCAT soil moisture use scaled standard deviation model:  0
 SMOPS ASCAT CDF read option:                                    1
 
-SMAP_E_OPL soil moisture data directory: input/SMAP_E_OPL
-SMAP_E_OPL soil moisture use scaled standard deviation model: 0
-SMAP_E_OPL model CDF file:            input/cdf/noah39_cdf_200obs.nc
-SMAP_E_OPL observation CDF file:      input/cdf/SMAP_cdf_10km_30obs.nc
-#SMAP_E_OPL observation CDF file:      input/SMAP_E_OPL_noah39_cdf_10km_30obs.nc
-SMAP_E_OPL soil moisture number of bins in the CDF: 100
-SMAP_E_OPL CDF read option:  1
-
-# SMAP(NRT) soil moisture data directory:               ./input/SMAP
-# SMAP(NRT) model CDF file:                             ./input/cdf/noah39_cdf_200obs.nc
-# SMAP(NRT) observation CDF file:                       ./input/cdf/SMAP_cdf_10km_30obs.nc
-# SMAP(NRT) soil moisture number of bins in the CDF:              100
-# SMAP(NRT) soil moisture use scaled standard deviation model:    0
-# SMAP(NRT) CDF read option:                                      1
+SMAP_E_OPL soil moisture data directory:              ./input/SMAP_E_OPL
+SMAP_E_OPL model CDF file:                            ./input/cdf/noah39_cdf_200obs.nc
+SMAP_E_OPL observation CDF file:                      ./input/cdf/SMAP_cdf_10km_30obs.nc
+SMAP_E_OPL soil moisture number of bins in the CDF:             100
+SMAP_E_OPL soil moisture use scaled standard deviation model:   0
+SMAP_E_OPL CDF read option:                                     1
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
@@ -209,7 +197,6 @@ AGRMET use GALWEM precip:                  1               # Set to 1 if using G
 AGRMET GALWEM data directory:              GALWEM          # Always GALWEM
 AGRMET GALWEM nominal resolution (km):     17              # 17 or 10
 AGRMET nogaps wind weight:                 1.0             # Applied for all NWP sources, keep at 1.0
-AGRMET PPT Background bias correction option: 0 # No bias correction
 
 # Rain gauge data.  Use JMOBS until 2012032700, use NONE from
 # 2012032700 until 2012040912, use CDMS beginning 2012040912.
@@ -261,16 +248,13 @@ AGRMET output OBA data:                    1               # 1 = output diagnost
 AGRMET skip backQC:                        0               # 0 = do not skip backQC check in Bratseth
 AGRMET skip superstatQC:                   0               # 0 = do not skip superstatQC check in Bratseth
 AGRMET 3hr maximum precip ceiling:         200.0
-AGRMET PPT Background bias correction option: 0 # 0 = turn off (not ready yet)
-#AGRMET precip obs file format: 1 # Legacy
-AGRMET precip obs file format: 2 # WIGOS
-
-AGRMET number of gauge networks to use: 6
+AGRMET PPT Background bias correction option: 0            # 0 = turn off (not ready yet)
+AGRMET precip obs file format:             2               # 2 = WIGOS; 1 = Legacy
+AGRMET number of gauge networks to use:    6
 AGRMET gauge networks to use::
 AMIL CANA FAA ICAO WMO MOBL
 ::
-#AGRMET sfc obs file format: 1 # Legacy
-AGRMET sfc obs file format: 2 # WIGOS
+AGRMET sfc obs file format:                2               # 2 = WIGOS; 1 = Legacy
 
 # EMK...New recommended settings based on sample NWP and observations
 # for 2 Feb - 7 Mar 2020 and no Box-Cox transformation.
@@ -322,8 +306,8 @@ AGRMET cloud data directory:               WWMCA_GRIB      # WWMCA_LE, NONE, or 
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
 # Use GALWEM_RAD beginning July 2024.
-AGRMET radiation derived from: "GALWEM_RAD"
-AGRMET GALWEM radiation data directory: GALWEM
+AGRMET radiation derived from:             "GALWEM_RAD"
+AGRMET GALWEM radiation data directory:    GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
 # but for now keep these settings.
@@ -359,7 +343,7 @@ AGRMET overcast percentage:                          0.30
 #-----------------------LAND SURFACE MODELS--------------------------
 Noah.3.9 model timestep:                  15mn
 Noah.3.9 restart output interval:         12hr
-Noah.3.9 restart file:  ./output_old/LIS_RST_NOAH39_202409260000.d01.nc
+Noah.3.9 restart file:                    ./output_old/LIS_RST_NOAH39_202409260000.d01.nc
 Noah.3.9 restart file format:             netcdf
 Noah.3.9 vegetation parameter table:      ./input/LS_PARAMETERS/noah39_parms/VEGPARM.TBL
 Noah.3.9 soil parameter table:            ./input/LS_PARAMETERS/noah39_parms/SOILPARM.TBL
