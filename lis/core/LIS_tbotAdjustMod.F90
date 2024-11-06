@@ -591,7 +591,7 @@ contains
                tmp_topo = &
                     LIS_topo(n)%elevation(LIS_domain(n)%tile(i)%col, &
                                           LIS_domain(n)%tile(i)%row)
-               tmp_t = tmp_t - 0.0065 * tmp_topo
+               tmp_t = tmp_t + (LIS_CONST_LAPSE_RATE * tmp_topo)
                
                placetbot1(LIS_domain(n)%tile(i)%col, &
                           LIS_domain(n)%tile(i)%row) = tmp_t

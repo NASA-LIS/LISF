@@ -119,7 +119,6 @@ contains
     real, pointer      :: tmp(:),q2(:),lwd(:),psurf(:)
     
     rdry = 287.
-!    lapse = -0.0065
     
     call ESMF_StateGet(LIS_FORC_Base_State,&
          trim(LIS_FORC_Tair%varname(1)),tmpField,&

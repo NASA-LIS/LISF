@@ -27,7 +27,7 @@ subroutine get_merra2(n, findex)
   use LIS_logMod
   use LIS_metforcingMod
   use merra2_forcingMod
-  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN, LIS_CONST_LAPSE_RATE
 
   implicit none
 
@@ -450,7 +450,7 @@ subroutine get_merra2(n, findex)
 
   endif
 
-  LIS_forc(n,findex)%lapseRate(:) = -0.0065
+  LIS_forc(n,findex)%lapseRate(:) = LIS_CONST_LAPSE_RATE
 
   if ((merra2_struc(n)%usedynlapserate.eq.1).and.                      &
      ((LIS_rc%met_ecor(findex).eq."lapse-rate").or.                    &

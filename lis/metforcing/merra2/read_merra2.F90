@@ -29,6 +29,7 @@ subroutine read_merra2(n, order, month, findex,  &
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
   use merra2_forcingMod, only : merra2_struc
+  use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -251,8 +252,8 @@ subroutine read_merra2(n, order, month, findex,  &
         else
            write(LIS_logunit,*) '[WARN] Could not find ',trim(lapseratefname)
            write(LIS_logunit,*) '[WARN] Using static lapse rate.'
-           merra2_struc(n)%lapserate1 = -0.0065
-           merra2_struc(n)%lapserate2 = -0.0065
+           merra2_struc(n)%lapserate1 = LIS_CONST_LAPSE_RATE
+           merra2_struc(n)%lapserate2 = LIS_CONST_LAPSE_RATE
         endif
      endif
      
@@ -772,6 +773,7 @@ subroutine interp_lapserate_var(n,order,input_var)
   use LIS_logMod
   use LIS_spatialDownscalingMod
   use merra2_forcingMod, only : merra2_struc
+  use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)      
   use netcdf
 #endif
@@ -834,7 +836,7 @@ subroutine interp_lapserate_var(n,order,input_var)
                     merra2_struc(n)%lapserate1(gid,t) = &
                          output_var(c+(r-1)*LIS_rc%lnc(n),t)/1000.0
                  else
-                     merra2_struc(n)%lapserate1(gid,t) = -0.0065
+                     merra2_struc(n)%lapserate1(gid,t) = LIS_CONST_LAPSE_RATE
                  endif
               endif
            enddo
@@ -849,7 +851,7 @@ subroutine interp_lapserate_var(n,order,input_var)
                     merra2_struc(n)%lapserate2(gid,t) = &
                          output_var(c+(r-1)*LIS_rc%lnc(n),t)/1000.0
                  else
-                     merra2_struc(n)%lapserate2(gid,t) = -0.0065
+                     merra2_struc(n)%lapserate2(gid,t) = LIS_CONST_LAPSE_RATE
                  endif
               endif
            enddo

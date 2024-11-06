@@ -133,6 +133,7 @@ contains
   subroutine metforcing_init_offline
 ! !USES:
     use LIS_metforcing_pluginMod, only : LIS_metforcing_plugin
+    use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
 !
 ! !DESCRIPTION:
 !
@@ -176,7 +177,7 @@ contains
                 allocate(LIS_forc(n,m)%lapserate(LIS_rc%ngrid(n)))
 
                 !initialized to the uniform value
-                LIS_forc(n,m)%lapserate = -0.0065
+                LIS_forc(n,m)%lapserate = LIS_CONST_LAPSE_RATE
              endif
           enddo
        enddo
