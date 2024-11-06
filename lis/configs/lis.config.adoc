@@ -175,6 +175,7 @@ Acceptable values are:
 |GeoWRSI.2   | GeoWRSI version 2.0
 |JULES.5.0   | JULES version 5.0
 |CABLE.1.4b  | CABLE version 1.4b
+|AquaCrop.7.2| AquaCrop version 7.2
 ifdef::devonly[]
 |FASST       | FASST
 endif::devonly[]
@@ -9830,6 +9831,63 @@ AWRAL600 initial ss: 0.5 0.5
 AWRAL600 initial sd: 0.5 0.5
 ### 2/sla
 AWRAL600 initial mleaf: 0.67 0.2
+....
+
+`AquaCrop.7.2 soil parameter table:` specifies the soil AquaCrop.7.2 soil parameter file.
+
+`AquaCrop.7.2 model timestep:` specifies the model timestep for AquaCrop.7.2. This option should be set to `"1da"` because of the fixed daily model timestep of AquaCrop.
+
+`AquaCrop.7.2 restart output interval:` specifies the restart writing interval for AquaCrop.7.2 The typical value is 1 month (1mo).
+
+`AquaCrop.7.2 restart file:` specifies the AquaCrop.7.2 restart file.
+
+`AquaCrop.7.2 restart file format:` specifies the restart file format for AquaCrop.7.2.
+
+`AquaCrop.7.2 reference height for forcing T and q:` specifies the height in meters of air temperature and specific humidity forcings.
+
+`AquaCrop.7.2 reference height for forcing u and v:` specifies the height in meters of u and v wind forcings.
+
+`AquaCrop.7.2 initial liquid soil moistures:` specifies the initial liquid volumetric soil moistures (for each layer defined in LDT, from top to bottom) used in the cold start runs. (units stem:[\frac{m^3}{m^3}])
+
+`AquaCrop.7.2 input path:` specifies the directory containing the native AquaCrop files.
+
+`AquaCrop.7.2 CO2_Filename:` specifies the file name of the CO2 file (.CO2) used by AquaCrop.7.2 stored in the "input path" directory.
+
+`AquaCrop.7.2 crop library directory:` specifies the location of the crop library directory containing the AC_Crop.Inventory file and the AC_Crop.List directory containing the crop files.
+
+`AquaCrop.7.2 Management_Filename:` specifies the management file (.MAN) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without management file (set to "(None)").
+
+`AquaCrop.7.2 Irrigation_Filename:` specifies the management file (.IRR) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without irrigation file (set to "(None)").
+
+`AquaCrop.7.2 starting day of sim period:` specifies the starting day of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).
+
+`AquaCrop.7.2 starting month of sim period:` specifies the starting month of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).
+
+`AquaCrop.7.2 starting day of crop period:` specifies the starting day of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).
+
+`AquaCrop.7.2 starting month of crop period:` specifies the starting month of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).
+
+.Example _lis.config_ entry:
+....
+AquaCrop.7.2 soil parameter table: ./SOILPARM_AC72.TBL
+AquaCrop.7.2 model timestep: "1da"
+AquaCrop.7.2 restart output interval: "1mo"
+AquaCrop.7.2 restart file: none
+AquaCrop.7.2 restart file format: netcdf
+AquaCrop.7.2 reference height of T and q: 2.0
+AquaCrop.7.2 reference height of u and v: 10.0
+AquaCrop.7.2 initial liquid soil moistures: 0.33 0.33
+AquaCrop.7.2 input path: "./AC_INPUT_dir/"
+AquaCrop.7.2 CO2_Filename: "file.CO2"
+AquaCrop.7.2 crop library directory: "./crop_params_dir/"
+AquaCrop.7.2 Management_Filename: "file.MAN"
+AquaCrop.7.2 Irrigation_Filename: "file.IRR"
+
+##Simulation and crop period
+AquaCrop.7.2 starting day of sim period: 1
+AquaCrop.7.2 starting month of sim period: 1
+AquaCrop.7.2 starting day of crop period: 22
+AquaCrop.7.2 starting month of crop period: 3
 ....
 
 [[ssec_sublsm,Sublevel land surface models]]
