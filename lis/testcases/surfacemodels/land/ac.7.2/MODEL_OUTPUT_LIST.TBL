@@ -257,24 +257,24 @@ ChV2:                     0  m/s     -    1 0 0 1 208 10      # sensible heat ex
 ChB2:                     0  m/s     -    1 0 0 1 208 10      # sensible heat exchange coefficient over bare ground 
 fpice:                    0  -       -    1 0 0 1 208 10      # snow fraction in precipitation
 
-#AC72
-AC_Biomass:              1  t/ha    -    1 0 0 1 223 1000    # Biomass (ton/ha)
-AC_RootZoneWC_Actual:    1  mm      -    1 0 0 1 153 1000    # actual rootzone water content (mm/rootzonedepth)
-AC_RootZoneWC_WP:        1  mm      -    1 0 0 1 153 1000    # rootzone water content at wilting point (mm/rootzonedepth)
-AC_RootZoneWC_FC:        1  mm      -    1 0 0 1 153 1000    # rootzone water content at field capacity (mm/rootzonedepth)
-AC_Tact:                 1  mm      -    1 0 0 1 153 1000    # Actual plant transpiration (mm)
-AC_Eact:                 1  mm      -    1 0 0 1 153 1000    # Actual soil evaporation (mm)
-AC_ETo:                  1  mm      -    1 0 0 1 153 1000    # reference ET Penman-Monteith (mm)
-AC_Rain:                 1  mm      -    1 0 0 1 153 1000    # daily rainfall (mm)
-AC_Irrigation:           1  mm      -    1 0 0 1 153 1000    # irrigation (mm)
-AC_RootingDepth:         1  m       -    1 0 0 1 151 1000    # rooting depth (m)
-AC_CCiActual:            1  -       -    1 0 0 1 151 1000    # Canopy Cover (-)
-AC_Tmin:                 1  degC    -    1 0 0 1 153 1000    # daily minimum temperature (degC)
-AC_Tmax:                 1  degC    -    1 0 0 1 153 1000    # daily maximum temperature (degC)
-AC_Yield:	         1  t/ha    -    1 0 0 1 153 1000    # Yield (ton/ha)
-AC_StExp:                1  %       -    1 0 0 1 153 1000    # Expansion stress (%)
-AC_StSen:                1  %       -    1 0 0 1 153 1000    # Senescence stress (%)
-AC_cycle_complete:       1  -       -    1 0 0 1 153 1000    # Flag check completion of crop cycle within simulation period
+#AquaCrop output
+AC_Biomass:            1  t/ha  -  1 0 0 1 223 1000 # cummulative biomass (ton/ha)
+AC_RootZoneWC_Actual:  1  mm    -  1 0 0 1 153 1000 # actual rootzone WC (mm)
+AC_RootZoneWC_WP:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at wilting point (mm)
+AC_RootZoneWC_FC:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at field capacity (mm)
+AC_Tact:               1  mm    -  1 0 0 1 153 1000 # actual plant transpiration (mm)
+AC_Eact:               1  mm    -  1 0 0 1 153 1000 # actual soil evaporation (mm)
+AC_ETo:                1  mm    -  1 0 0 1 153 1000 # reference ET Penman-Monteith (mm)
+AC_Rain:               1  mm    -  1 0 0 1 153 1000 # daily rainfall (mm)
+AC_Irrigation:         1  mm    -  1 0 0 1 153 1000 # irrigation (mm)
+AC_RootingDepth:       1  m     -  1 0 0 1 151 1000 # rooting depth (m)
+AC_CCiActual:          1  -     -  1 0 0 1 151 1000 # canopy Cover (-)
+AC_Tmin:               1  degC  -  1 0 0 1 153 1000 # daily minimum temperature (degC)
+AC_Tmax:               1  degC  -  1 0 0 1 153 1000 # daily maximum temperature (degC)
+AC_Yield:	           1  t/ha  -  1 0 0 1 153 1000 # yield (ton/ha)
+AC_StExp:              1  %     -  1 0 0 1 153 1000 # expansion stress (%)
+AC_StSen:              1  %     -  1 0 0 1 153 1000 # senescence stress (%)
+AC_cycle_complete:     1  -     -  1 0 0 1 153 1000 # Flag cycle completed within sim
 
 #Irrigation
 Irrigated water:          1  kg/m2s  -    1 0 0 1 256 10      # Irrigated water amount
