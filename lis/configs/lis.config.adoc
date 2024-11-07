@@ -5720,12 +5720,32 @@ Acceptable values are:
 |1     | Use the bias corrected total precipitation.
 |====
 
+`MERRA2 apply dynamic lapse rates:` specifies whether to read
+in and apply the pre-computed MERRA-2 lapse rates.  This is an
+optional config entry; if not present, the default is 0.  Note
+that one of the two lapse-rate options for the topographic
+correction method for met forcing must be chosen for this
+config entry to be used.
+Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not apply MERRA-2 dynamic lapse rates (use static lapse rate).
+|1     | Apply MERRA-2 dynamic lapse rates
+|====
+
+`MERRA2 dynamic lapse rate data directory:` specifies the
+directory of the pre-computed MERRA-2 lapse rate dataset.
+
 .Example _lis.config_ entry
 ....
-MERRA2 forcing directory:              ./MERRA2/
+MERRA2 forcing directory:                  ./MERRA2
 MERRA2 use lowest model level forcing:     1
 MERRA2 use 2m wind fields:                 0 
 MERRA2 use corrected total precipitation:  1
+MERRA2 apply dynamic lapse rates:          0
+MERRA2 dynamic lapse rate data directory:  ./MERRA2_lapse_rates
 ....
 
 [[sssec_forcings_GEOS-IT,GEOS-IT]]

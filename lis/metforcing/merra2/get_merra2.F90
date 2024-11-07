@@ -16,6 +16,8 @@
 ! !REVISION HISTORY:
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 08 Dec 2015: James Geiger, update timing logic
+! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
+! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 !
 ! !INTERFACE:
 subroutine get_merra2(n, findex)
@@ -25,7 +27,7 @@ subroutine get_merra2(n, findex)
   use LIS_logMod
   use LIS_metforcingMod
   use merra2_forcingMod
-  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN, LIS_CONST_LAPSE_RATE
 
   implicit none
 
@@ -170,10 +172,14 @@ subroutine get_merra2(n, findex)
   real*8            :: time1, time2, timenow
   real              :: gmt1, gmt2
   real              :: ts1, ts2
+  integer           :: gid
 
   integer           :: hr_int1, hr_int2
   integer           :: movetime  ! Flag to move bookend2 files to bookend1
 
+  character(len=LIS_CONST_PATH_LEN) :: lapseratefname
+  character*8                       :: fdate
+  
 ! _________________________________________________________
 
 ! Please note that the timing logic has been tested only for
@@ -307,8 +313,14 @@ subroutine get_merra2(n, findex)
      do kk= merra2_struc(n)%st_iterid, merra2_struc(n)%en_iterid
         call merra2files(n,kk,findex,merra2_struc(n)%merra2dir, yr1, mo1, da1, &
              slvname, flxname, lfoname, radname)
+
+        write(unit=fdate, fmt='(i4.4,i2.2,i2.2)') yr1,mo1,da1
+        lapseratefname = trim(merra2_struc(n)%dynlapseratedir)//&
+             '/MERRA2.lapse_rate.hourly.'//&
+             trim(fdate)//'.global.nc'
+
         call read_merra2(n, order, mo1, &
-             findex, slvname, flxname, lfoname, radname,&
+             findex, slvname, flxname, lfoname, radname, lapseratefname, &
              merra2_struc(n)%merraforc1(kk,:,:,:), ferror)
      enddo
   endif
@@ -319,14 +331,23 @@ subroutine get_merra2(n, findex)
      if ( movetime == 1 ) then
         merra2_struc(n)%merraforc1 = merra2_struc(n)%merraforc2
         merra2_struc(n)%merraforc2 = LIS_rc%udef
+        if (merra2_struc(n)%usedynlapserate.eq.1) then
+           merra2_struc(n)%lapserate1 = merra2_struc(n)%lapserate2
+        endif
      endif
 
      order = 2
      do kk= merra2_struc(n)%st_iterid, merra2_struc(n)%en_iterid
         call merra2files(n,kk,findex,merra2_struc(n)%merra2dir, yr2, mo2, da2, &
              slvname, flxname, lfoname, radname)
+
+        write(unit=fdate, fmt='(i4.4,i2.2,i2.2)') yr2,mo2,da2
+        lapseratefname = trim(merra2_struc(n)%dynlapseratedir)//&
+             '/MERRA2.lapse_rate.hourly.'//&
+             trim(fdate)//'.global.nc'
+
         call read_merra2(n, order, mo2,&
-             findex, slvname, flxname, lfoname, radname, &
+             findex, slvname, flxname, lfoname, radname, lapseratefname, &
              merra2_struc(n)%merraforc2(kk,:,:,:), ferror)
      enddo
   endif
@@ -429,8 +450,36 @@ subroutine get_merra2(n, findex)
 
   endif
 
-end subroutine get_merra2
+  LIS_forc(n,findex)%lapseRate(:) = LIS_CONST_LAPSE_RATE
 
+  if ((merra2_struc(n)%usedynlapserate.eq.1).and.                      &
+     ((LIS_rc%met_ecor(findex).eq."lapse-rate").or.                    &
+      (LIS_rc%met_ecor(findex).eq."lapse-rate and slope-aspect").or.   &
+      (LIS_rc%met_ecor(findex).eq."micromet"))) then
+      if ((LIS_rc%hr.eq.0).and.(LIS_rc%mn.le.int(LIS_rc%ts/60.0))) then
+        do r=1,LIS_rc%lnr(n)
+           do c=1,LIS_rc%lnc(n)
+              if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                 gid = LIS_domain(n)%gindex(c,r)
+                 LIS_forc(n,findex)%lapseRate(gid) = &
+                     merra2_struc(n)%lapserate2(gid,LIS_rc%hr+1)
+              endif
+           enddo
+        enddo
+     else
+        do r=1,LIS_rc%lnr(n)
+           do c=1,LIS_rc%lnc(n)
+              if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                 gid = LIS_domain(n)%gindex(c,r)
+                 LIS_forc(n,findex)%lapseRate(gid) = &
+                     merra2_struc(n)%lapserate1(gid,LIS_rc%hr+1)
+              endif
+           enddo
+        enddo
+     endif
+  endif
+
+end subroutine get_merra2
 
 !BOP
 ! !ROUTINE: merra2files

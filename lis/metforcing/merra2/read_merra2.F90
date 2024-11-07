@@ -15,17 +15,21 @@
 ! 
 ! !REVISION HISTORY:
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
+! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
+! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 !
 ! !INTERFACE:
-subroutine read_merra2(n, order, month, findex,          &
-                       slvname, flxname, lfoname, radname, &
-                       merraforc, ferror)
+subroutine read_merra2(n, order, month, findex,  &
+     slvname, flxname, lfoname, radname,         &
+     lapseratefname,                             &
+     merraforc, ferror)
 ! !USES:
   use LIS_coreMod,       only : LIS_rc, LIS_domain, LIS_masterproc
   use LIS_logMod
   use LIS_FORC_AttributesMod
   use LIS_metforcingMod, only : LIS_forc
   use merra2_forcingMod, only : merra2_struc
+  use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -40,6 +44,7 @@ subroutine read_merra2(n, order, month, findex,          &
   character(len=*), intent(in) :: flxname
   character(len=*), intent(in) :: lfoname
   character(len=*), intent(in) :: radname
+  character(len=*), intent(in) :: lapseratefname
   real, intent(inout)          :: merraforc(merra2_struc(n)%nvars, 24, &
        LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer, intent(out)         :: ferror          
@@ -114,7 +119,12 @@ subroutine read_merra2(n, order, month, findex,          &
   real      :: pardf(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
   real      :: hlml(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
 !  real      :: emis(merra2_struc(n)%ncold, merra2_struc(n)%nrold,24)
-! __________________________________________________________________________
+
+  integer                           :: ftn_drate
+  integer                           :: lapserateid
+  real, allocatable                 :: lapse_rate_in(:,:,:)
+
+!_______________________________________________________________________
 
 #if (defined USE_NETCDF3) 
   write(LIS_logunit,*) "[ERR] MERRA2 reader requires NetCDF4"
@@ -214,6 +224,39 @@ subroutine read_merra2(n, order, month, findex,          &
      call interp_merra2_var(n,findex,month,uwind, 5, .false., merraforc)
      call interp_merra2_var(n,findex,month,vwind, 6, .false., merraforc)
      call interp_merra2_var(n,findex,month,ps,    7, .false., merraforc)
+
+     if ((merra2_struc(n)%usedynlapserate.eq.1).and.                   &
+        ((LIS_rc%met_ecor(findex).eq."lapse-rate").or.                 &
+         (LIS_rc%met_ecor(findex).eq."lapse-rate and slope-aspect").or.&
+         (LIS_rc%met_ecor(findex).eq."micromet"))) then
+        inquire(file=trim(lapseratefname),exist=file_exists)
+        if (file_exists) then
+           write(LIS_logunit,*) 'Reading ',trim(lapseratefname)
+
+           allocate(lapse_rate_in(merra2_struc(n)%ncold,merra2_struc(n)%nrold,24))
+
+           call LIS_verify(nf90_open(path=trim(lapseratefname),        &
+                    mode=NF90_NOWRITE,ncid=ftn_drate),                 &
+                    'nf90_open failed for '//trim(lapseratefname))
+           call LIS_verify(nf90_inq_varid(ftn_drate,                   &
+                    'lapse_rate',lapserateid),                         &
+                    'nf90_inq_varid failed for lapse_rate')
+           call LIS_verify(nf90_get_var(ftn_drate,                     &
+                    lapserateid,lapse_rate_in),                        &
+                    'nf90_get_var failed for lapse_rate')
+           call LIS_verify(nf90_close(ftn_drate),'nf90_close failed')
+
+           call interp_lapserate_var(n,order,lapse_rate_in)
+
+           deallocate(lapse_rate_in)
+        else
+           write(LIS_logunit,*) '[WARN] Could not find ',trim(lapseratefname)
+           write(LIS_logunit,*) '[WARN] Using static lapse rate.'
+           merra2_struc(n)%lapserate1 = LIS_CONST_LAPSE_RATE
+           merra2_struc(n)%lapserate2 = LIS_CONST_LAPSE_RATE
+        endif
+     endif
+     
   else
      write(LIS_logunit,*) '[ERR] ',trim(slvname)//' does not exist'
      call LIS_endrun()
@@ -716,6 +759,107 @@ subroutine interp_merra2_var(n,findex,month, input_var,  var_index, &
   enddo
   
 end subroutine interp_merra2_var
+
+!BOP
+! 
+! !ROUTINE: interp_lapserate_var
+! \label{interp_lapserate_var}
+! 
+! !INTERFACE: 
+subroutine interp_lapserate_var(n,order,input_var)
+
+! !USES: 
+  use LIS_coreMod
+  use LIS_logMod
+  use LIS_spatialDownscalingMod
+  use merra2_forcingMod, only : merra2_struc
+  use LIS_constantsMod, only : LIS_CONST_LAPSE_RATE
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)      
+  use netcdf
+#endif
+  implicit none
+
+! !ARGUMENTS:
+  integer, intent(in)    :: n, order
+  real,    intent(in)    :: input_var(merra2_struc(n)%ncold, &
+       merra2_struc(n)%nrold,24)
+
+  !
+! !DESCRIPTION: 
+!  This subroutine spatially interpolates a MERRA2 field
+!  to the LIS running domain
+! 
+!EOP
+
+  integer   :: t,c,r,k,iret
+  integer   :: doy
+  integer   :: ftn,gid
+  real      :: f (merra2_struc(n)%ncold*merra2_struc(n)%nrold)
+  logical*1 :: lb(merra2_struc(n)%ncold*merra2_struc(n)%nrold)
+  logical*1 :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  integer   :: input_size
+  real      :: output_var(LIS_rc%lnc(n)*LIS_rc%lnr(n),24)
+
+! _____________________________________________________________
+
+  input_size = merra2_struc(n)%ncold*merra2_struc(n)%nrold
+
+  do t=1,24
+     lb = .true.
+     do r=1,merra2_struc(n)%nrold
+        do c=1,merra2_struc(n)%ncold
+           k= c+(r-1)*merra2_struc(n)%ncold
+           f(k) = input_var(c,r,t)
+           if ( f(k) == 1.e+15 ) then
+              f(k)  = LIS_rc%udef
+              lb(k) = .false.
+           endif
+        enddo
+     enddo
+
+     call bilinear_interp(LIS_rc%gridDesc(n,:),lb,f,lo,&
+          output_var(:,t), &
+          merra2_struc(n)%mi,LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,&
+          merra2_struc(n)%w111,merra2_struc(n)%w121,&
+          merra2_struc(n)%w211,merra2_struc(n)%w221,&
+          merra2_struc(n)%n111,merra2_struc(n)%n121,&
+          merra2_struc(n)%n211,merra2_struc(n)%n221,&
+          LIS_rc%udef, iret)
+
+     if (order.eq.1) then
+        do r=1,LIS_rc%lnr(n)
+           do c=1,LIS_rc%lnc(n)
+              if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                 gid = LIS_domain(n)%gindex(c,r)
+                 if(.not.isNaN(output_var(c+(r-1)*LIS_rc%lnc(n),t))) then
+                    merra2_struc(n)%lapserate1(gid,t) = &
+                         output_var(c+(r-1)*LIS_rc%lnc(n),t)/1000.0
+                 else
+                     merra2_struc(n)%lapserate1(gid,t) = LIS_CONST_LAPSE_RATE
+                 endif
+              endif
+           enddo
+        enddo
+     endif
+     if (order.eq.2) then
+        do r=1,LIS_rc%lnr(n)
+           do c=1,LIS_rc%lnc(n)
+              if(LIS_domain(n)%gindex(c,r).ne.-1) then
+                 gid = LIS_domain(n)%gindex(c,r)
+                 if(.not.isNaN(output_var(c+(r-1)*LIS_rc%lnc(n),t))) then
+                    merra2_struc(n)%lapserate2(gid,t) = &
+                         output_var(c+(r-1)*LIS_rc%lnc(n),t)/1000.0
+                 else
+                     merra2_struc(n)%lapserate2(gid,t) = LIS_CONST_LAPSE_RATE
+                 endif
+              endif
+           enddo
+        enddo
+     endif
+  enddo
+
+end subroutine interp_lapserate_var
 
 #if 0 
 !BOP

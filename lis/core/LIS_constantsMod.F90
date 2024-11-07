@@ -74,6 +74,7 @@ module LIS_constantsMod
 
    real, parameter :: LIS_MS2KMDAY = 86.4 ! m/s to km/day
    real, parameter :: LIS_CONST_ANGULAR_VELOCITY = 0.2618 ! Angular velocity of earth's rotation (radian/hr)
+   real, parameter :: LIS_CONST_LAPSE_RATE = -0.0065 ! Static lapse rate [K/m]; from NLDAS (Cosgrove et al., 2003)
 
 !EOC
  end module LIS_constantsMod

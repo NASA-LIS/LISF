@@ -69,15 +69,18 @@ contains
 !  15 Mar 2001: Jon Gottschalck; if-then to handle negative vapor
 !		pressures in long wave correction
 !  14 Nov 2003: Sujay Kumar; Adopted in LIS
+!  13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
+!  31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
 !
 ! !INTERFACE:
-  subroutine LIS_lapseRateCorrection(nest, modelelev, LIS_FORC_Base_State)
+  subroutine LIS_lapseRateCorrection(nest, modelelev, lapserate, LIS_FORC_Base_State)
 ! !USES:
     
     implicit none
 ! !ARGUMENTS: 
     integer, intent(in) :: nest
     real                :: modelelev(LIS_rc%ngrid(nest))
+    real                :: lapserate(LIS_rc%ngrid(nest))
     type(ESMF_State)    :: LIS_FORC_Base_State
 
 ! !DESCRIPTION:
@@ -116,7 +119,6 @@ contains
     real, pointer      :: tmp(:),q2(:),lwd(:),psurf(:)
     
     rdry = 287.
-    lapse = -0.0065
     
     call ESMF_StateGet(LIS_FORC_Base_State,&
          trim(LIS_FORC_Tair%varname(1)),tmpField,&
@@ -155,12 +157,14 @@ contains
     
 
     do t=1,LIS_rc%ntiles(nest)
-       if(tmp(t).gt.0) then 
+       if(tmp(t).gt.0) then
           force_tmp = tmp(t)
           force_hum = q2(t)
           force_lwd = lwd(t)
           force_prs = psurf(t)
           index = LIS_domain(nest)%tile(t)%index
+          lapse = lapserate(index)
+
           elevdiff = LIS_domain(nest)%tile(t)%elev-&
                modelelev(index)
           tcforce=force_tmp+(lapse*elevdiff)

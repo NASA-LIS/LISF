@@ -40,7 +40,8 @@ module LIS_histDataMod
 !                 106 and 114 in place for 112 (some variables left alone) 
 !  01 Jun 2017    Augusto Getirana: Add/update HyMAP2 outputs [SWS, differetial and 
 !                      potential evaporation and deep water infiltration (DWI)]
-!  
+!  13 Sep 2024    Sujay Kumar, Initial code for using dynamic lapse rate
+!  31 Oct 2024    David Mocko, Final code for using dynamic lapse rate
 !  
 !EOP
   use ESMF
@@ -175,6 +176,9 @@ module LIS_histDataMod
   public :: LIS_MOC_ALBEDOFORC  
   public :: LIS_MOC_PARDRFORC  
   public :: LIS_MOC_PARDFFORC  
+
+  public :: LIS_MOC_LAPSERATE
+
 !<for vic>
   public :: LIS_MOC_SNOWFLAGFORC
   public :: LIS_MOC_DENSITYFORC
@@ -647,6 +651,8 @@ module LIS_histDataMod
    integer :: LIS_MOC_PSURFFORC  = -9999
    integer :: LIS_MOC_SWDOWNFORC = -9999
    integer :: LIS_MOC_LWDOWNFORC = -9999
+
+   integer :: LIS_MOC_LAPSERATE  = -9999
 
    ! CLSM FORCING VARIABLES
    integer :: LIS_MOC_PARDRFORC  = -9999
@@ -2881,6 +2887,18 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_PARDFFORC,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"W/m2"/),1,(/"DN"/),2,1,1,&
+            model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Lapserate:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Lapserate",&
+         "lapse_rate",&
+         "lapse rate",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_LAPSERATE,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"K/km"/),1,(/"UP"/),2,1,1,&
             model_patch=.true.)
     endif
 
