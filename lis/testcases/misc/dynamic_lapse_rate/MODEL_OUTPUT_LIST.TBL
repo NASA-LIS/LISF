@@ -1,0 +1,7 @@
+#short_name select? units signconv timeavg? min/max? std? vert.levels grib_id grib_scalefactor longname
+
+#Forcings
+Tair_f:       1  K       -    1 0 0 1  11 10      # Near surface air temperature
+
+Lapserate:    1  K/km    UP   1 0 0 1 255 10      # Lapse rate
+
