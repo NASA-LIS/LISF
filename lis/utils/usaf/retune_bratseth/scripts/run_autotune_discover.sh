@@ -3,12 +3,8 @@
 #SBATCH --time=0:30:00
 #SBATCH --account s1189
 #SBATCH --output autotune.slurm.out
-#Adjust node, core, and hardware constraints here
-##SBATCH --ntasks=5 --mem-per-cpu=4G
-#SBATCH --ntasks=5 --ntasks-per-node=1
-#Substitute your e-mail here
+#SBATCH --ntasks=5 --ntasks-per-node=1 --constraint="[mil]"
 #SBATCH --mail-type=ALL
-#Set quality of service, if needed.
 ##SBATCH --qos=debug
 #------------------------------------------------------------------------------
 #
@@ -28,6 +24,7 @@
 # 13 Dec 2021:  Eric Kemp.  Updated module, and removed obsolete satellite
 #   data feeds.
 # 09 Jun 2022:  Eric Kemp.  Refactored code to reduce runtime.
+# 15 Oct 2024:  Eric Kemp.  Updated for Milan nodes.
 #
 #------------------------------------------------------------------------------
 
@@ -42,17 +39,17 @@ fi
 # Environment
 module purge
 unset LD_LIBRARY_PATH
-module use --append /home/emkemp/privatemodules
-module load lisf_7_intel_2021.4.0_s2s
+module use --append /home/emkemp/privatemodules/sles15
+module load lisf_7.6_intel_2023.2.1_emk
 
 # Define the variables to be processed
 NWPVARS=(gage rh2m spd10m t2m)
 SATVARS=(imerg)
 
 # Paths on local system
-SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/scripts
-CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/cfgs
-BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lis76_debug_retune/work_oba_patch/bin
+SCRIPTDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/scripts
+CFGDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/cfgs
+BINDIR=/discover/nobackup/projects/usaf_lis/emkemp/AFWA/lisf76_foc/NRT/lis/noah39_autotune/bin
 
 # Get the command line arguments to specify the training period.
 if [ -z "$1" ] ; then
@@ -155,7 +152,6 @@ fi
 i=0
 for varname in "${SATVARS[@]}" ; do
     echo "INFO, Task $i:  Calling procOBA_Sat for $varname at `date`"
-    echo `ls`
     if [ ! -e procOBA_Sat.$varname.config ] ; then
         echo "ERROR, procOBA_Sat.$varname.config does not exist!" && exit 1
     fi

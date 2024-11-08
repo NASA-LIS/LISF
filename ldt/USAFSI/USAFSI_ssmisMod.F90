@@ -1029,7 +1029,7 @@ contains
 
       ! EMK
       character*12                   :: program_name          ! NAME OF CALLING PROGRAM
-      character*12                   :: routine_name          ! NAME OF THIS ROUTINE
+      character*20                   :: routine_name          ! NAME OF THIS ROUTINE
 
       ! define data values
       data satid            / '16', '17', '18' /

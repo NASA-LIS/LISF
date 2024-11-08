@@ -1,0 +1,13 @@
+&jules_radiation
+i_sea_alb_method=2
+l_albedo_obs=.false.
+l_dolr_land_black=.false.
+l_embedded_snow=.false.
+l_mask_snow_orog=.false.
+!!l_sea_alb_var_chl=.false.
+l_snow_albedo=.false.
+!!l_spec_alb_bs=.false.
+l_spec_albedo=.false.
+l_spec_sea_alb=.true.
+wght_alb=0.0,0.5,0.0,0.5
+/

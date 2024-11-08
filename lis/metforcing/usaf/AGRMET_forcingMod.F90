@@ -485,6 +485,7 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable      :: mrgp(:,:,:)
      logical                :: pcp_start
      logical                :: pcp_ready
+     logical                :: first_pcp_segment ! EMK 6 Sep 2024
      character(len=6)       :: agr_bgrd_src_c
      real, allocatable      :: agr_hgt_c  ( : , : , : )
      real, allocatable      :: agr_rh_c   ( : , : , : )
@@ -627,93 +628,129 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK NEW...For Bratseth scheme using GALWEM background
      real :: galwem_precip_back_err_scale_length
+     real :: galwem_precip_back_err_inv_scale_length
      real :: galwem_precip_back_sigma_b_sqr
      real :: galwem_precip_gauge_sigma_o_sqr
      real :: galwem_precip_geoprecip_err_scale_length
+     real :: galwem_precip_geoprecip_err_inv_scale_length
      real :: galwem_precip_geoprecip_sigma_o_sqr
      real :: galwem_precip_ssmi_err_scale_length
+     real :: galwem_precip_ssmi_err_inv_scale_length
      real :: galwem_precip_ssmi_sigma_o_sqr
      real :: galwem_precip_cmorph_err_scale_length
+     real :: galwem_precip_cmorph_err_inv_scale_length
      real :: galwem_precip_cmorph_sigma_o_sqr
      real :: galwem_precip_imerg_err_scale_length
+     real :: galwem_precip_imerg_err_inv_scale_length
      real :: galwem_precip_imerg_sigma_o_sqr
+     integer :: galwem_precip_corr_func_type
      real :: galwem_precip_max_dist
 
      real :: galwem_t2m_back_err_scale_length
+     real :: galwem_t2m_back_err_inv_scale_length
      real :: galwem_t2m_back_sigma_b_sqr
      real :: galwem_t2m_stn_sigma_o_sqr
+     integer :: galwem_t2m_corr_func_type
      real :: galwem_t2m_max_dist
 
      real :: galwem_rh2m_back_err_scale_length
+     real :: galwem_rh2m_back_err_inv_scale_length
      real :: galwem_rh2m_back_sigma_b_sqr
      real :: galwem_rh2m_stn_sigma_o_sqr
+     integer :: galwem_rh2m_corr_func_type
      real :: galwem_rh2m_max_dist
 
      real :: galwem_spd10m_back_err_scale_length
+     real :: galwem_spd10m_back_err_inv_scale_length
      real :: galwem_spd10m_back_sigma_b_sqr
      real :: galwem_spd10m_stn_sigma_o_sqr
+     integer :: galwem_spd10m_corr_func_type
      real :: galwem_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme using GFS background
      real :: gfs_precip_back_err_scale_length
+     real :: gfs_precip_back_err_inv_scale_length
      real :: gfs_precip_back_sigma_b_sqr
      real :: gfs_precip_gauge_sigma_o_sqr
      real :: gfs_precip_geoprecip_err_scale_length
+     real :: gfs_precip_geoprecip_err_inv_scale_length
      real :: gfs_precip_geoprecip_sigma_o_sqr
      real :: gfs_precip_ssmi_err_scale_length
+     real :: gfs_precip_ssmi_err_inv_scale_length
      real :: gfs_precip_ssmi_sigma_o_sqr
      real :: gfs_precip_cmorph_err_scale_length
+     real :: gfs_precip_cmorph_err_inv_scale_length
      real :: gfs_precip_cmorph_sigma_o_sqr
      real :: gfs_precip_imerg_err_scale_length
+     real :: gfs_precip_imerg_err_inv_scale_length
      real :: gfs_precip_imerg_sigma_o_sqr
+     integer :: gfs_precip_corr_func_type
      real :: gfs_precip_max_dist
 
      real :: gfs_t2m_back_err_scale_length
+     real :: gfs_t2m_back_err_inv_scale_length
      real :: gfs_t2m_back_sigma_b_sqr
      real :: gfs_t2m_stn_sigma_o_sqr
+     integer :: gfs_t2m_corr_func_type
      real :: gfs_t2m_max_dist
 
      real :: gfs_rh2m_back_err_scale_length
+     real :: gfs_rh2m_back_err_inv_scale_length
      real :: gfs_rh2m_back_sigma_b_sqr
      real :: gfs_rh2m_stn_sigma_o_sqr
+     integer :: gfs_rh2m_corr_func_type
      real :: gfs_rh2m_max_dist
 
      real :: gfs_spd10m_back_err_scale_length
+     real :: gfs_spd10m_back_err_inv_scale_length
      real :: gfs_spd10m_back_sigma_b_sqr
      real :: gfs_spd10m_stn_sigma_o_sqr
+     integer :: gfs_spd10m_corr_func_type
      real :: gfs_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme.  Set dynamically based on available
      ! background field
      real :: bratseth_precip_back_err_scale_length
+     real :: bratseth_precip_back_err_inv_scale_length
      real :: bratseth_precip_back_sigma_b_sqr
      real :: bratseth_precip_gauge_sigma_o_sqr
      real :: bratseth_precip_geoprecip_err_scale_length
+     real :: bratseth_precip_geoprecip_err_inv_scale_length
      real :: bratseth_precip_geoprecip_sigma_o_sqr
      real :: bratseth_precip_ssmi_err_scale_length
+     real :: bratseth_precip_ssmi_err_inv_scale_length
      real :: bratseth_precip_ssmi_sigma_o_sqr
      real :: bratseth_precip_cmorph_err_scale_length
+     real :: bratseth_precip_cmorph_err_inv_scale_length
      real :: bratseth_precip_cmorph_sigma_o_sqr
      real :: bratseth_precip_imerg_err_scale_length
+     real :: bratseth_precip_imerg_err_inv_scale_length
      real :: bratseth_precip_imerg_sigma_o_sqr
+     integer :: bratseth_precip_corr_func_type
      real :: bratseth_precip_max_dist
 
      real :: bratseth_t2m_back_err_scale_length
+     real :: bratseth_t2m_back_err_inv_scale_length
      real :: bratseth_t2m_back_sigma_b_sqr
      real :: bratseth_t2m_stn_sigma_o_sqr
+     integer :: bratseth_t2m_corr_func_type
      real :: bratseth_t2m_max_dist
 
      real :: bratseth_rh2m_back_err_scale_length
+     real :: bratseth_rh2m_back_err_inv_scale_length
      real :: bratseth_rh2m_back_sigma_b_sqr
      real :: bratseth_rh2m_stn_sigma_o_sqr
+     integer :: bratseth_rh2m_corr_func_type
      real :: bratseth_rh2m_max_dist
 
      real :: bratseth_spd10m_back_err_scale_length
+     real :: bratseth_spd10m_back_err_inv_scale_length
      real :: bratseth_spd10m_back_sigma_b_sqr
      real :: bratseth_spd10m_stn_sigma_o_sqr
+     integer :: bratseth_spd10m_corr_func_type
      real :: bratseth_spd10m_max_dist
 
-     integer :: galwem_res ! EMK for GALWEM 10-km     
+     integer :: galwem_res ! EMK for GALWEM 10-km
      integer :: gfs_filename_version ! EMK for new GFS filename convention
 
      ! EMK Add OBA option
@@ -2150,7 +2187,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
 
           allocate(agrmet_struc(n)%mrgp(LIS_rc%lnc(n), LIS_rc%lnr(n),4))
           agrmet_struc(n)%pcp_start = .true. 
-          agrmet_struc(n)%pcp_ready = .false. 
+          agrmet_struc(n)%pcp_ready = .false.
+          agrmet_struc(n)%first_pcp_segment = .true. ! EMK 6 Sep 2024
           agrmet_struc(n)%lastSfcalcHour = 0
           agrmet_struc(n)%lastPcpHour = 0
           agrmet_struc(n)%lastRadHour = 0
