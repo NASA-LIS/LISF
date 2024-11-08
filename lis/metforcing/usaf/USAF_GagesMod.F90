@@ -2619,7 +2619,7 @@ contains
                real(this%amts06(i)) * 0.1, &
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
-               gage_sigma_o_sqr, 0.)
+               gage_sigma_o_sqr, 0., 0.)
           num_obs_copied = num_obs_copied + 1
        end do
        write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &
@@ -2633,7 +2633,7 @@ contains
                real(this%amts12(i)) * 0.1, &
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
-               gage_sigma_o_sqr, 0.)
+               gage_sigma_o_sqr, 0., 0.)
           num_obs_copied = num_obs_copied + 1
        end do
        write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &

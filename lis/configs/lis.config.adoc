@@ -5223,7 +5223,7 @@ x direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved for future use)
 |(3600) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET GEOPRECIP jmax:` specifies the GEOPRECIP grid dimension
@@ -5236,7 +5236,7 @@ y direction which is useful for when precip and native grid differ.
 |1024   | 16th mesh polar stereo
 |(4096) | (64th mesh polar stereo reserved fro future use)
 |(1801) | (1/10 degree latlon reserved for future use {emdash} note
-          this isn`'t grid centered)
+          this is not grid centered)
 |====
 
 `AGRMET SSMI imax:` specifies the SSMI/S grid dimension x direction
@@ -5331,7 +5331,7 @@ Acceptable values are:
 |0     | do not use
 |1     | use the estimate, do not use the rank {emdash}
          assumes that rank of GEOPRECIP is 1;
-         i.e., uses it when it`'s available
+         i.e., uses it when it is available
 |2     | use the estimate and use the rank
 |====
 
@@ -5524,6 +5524,284 @@ of gauge networks to use, to be identified in separate config entry.
 `AGRMET gauge networks to use::` specifies list of names of gauge
 networks to be used. (One line of names per domain.)
 
+`AGRMET GALWEM Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GALWEM SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+
+`AGRMET GFS Precip correlation function type:` specifies function for modeling precipitation error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS T2M correlation function type:` specifies function for modeling 2m temperature error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS RH2M correlation function type:` specifies function for modeling 2m relative humidity error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET GFS SPD10M correlation function type:` specifies function for modeling 10m wind speed error correlations.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use Gaussian function
+|2                       | use inverse exponential function
+|====
+
+`AGRMET precip obs file format:` specifies preobs file format.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+`AGRMET sfc obs file format:` specifies sfcobs file format.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|1                       | use legacy files
+|2                       | use WIGOS supported files
+|====
+
+`AGRMET GALWEM Precip background error scale length (m):` specifies scale length for GALWEM precipitation error correlation.
+
+`AGRMET GALWEM Precip background error variance:` specifies GALWEM precipitation error variance.
+
+`AGRMET GALWEM Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GALWEM Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GALWEM Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GALWEM Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GALWEM Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GALWEM Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GALWEM Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GALWEM Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GALWEM T2M background error scale length (m):` specifies scale length for GALWEM 2m temperature error correlation.
+
+`AGRMET GALWEM T2M background error variance:` specifies GALWEM 2m temperature error variance.
+
+`AGRMET GALWEM T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GALWEM RH2M background error scale length (m):` specifies scale length for GALWEM 2m relative humidity error correlation.
+
+`AGRMET GALWEM RH2M background error variance:` specifies GALWEM 2m relative humidity error variance.
+
+`AGRMET GALWEM RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GALWEM SPD10M background error scale length (m):` specifies scale length for GALWEM 10m wind speed error correlation.
+
+`AGRMET GALWEM SPD10M background error variance:` specifies GALWEM 10m wind speed error variance.
+
+`AGRMET GALWEM SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
+
+`AGRMET GFS Precip background error scale length (m):` specifies scale length for GFS precipitation error correlation.
+
+`AGRMET GFS Precip background error variance:` specifies GFS precipitation error variance.
+
+`AGRMET GFS Precip Gauge observation error variance:` specifies rain gauge observation precipitation error variance.
+
+`AGRMET GFS Precip GEOPRECIP observation error scale length (m):` specifies scale length for GEOPRECIP precipitation error correlation.
+
+`AGRMET GFS Precip GEOPRECIP observation error variance:` specifies GEOPRECIP observation precipitation error variance.
+
+`AGRMET GFS Precip SSMI observation error scale length (m):` specifies scale length for SSMI precipitation error correlation.
+
+`AGRMET GFS Precip SSMI observation error variance:` specifies SSMI observation precipitation error variance.
+
+`AGRMET GFS Precip CMORPH observation error scale length (m):` specifies scale length for CMORPH precipitation error correlation.
+
+`AGRMET GFS Precip CMORPH observation error variance:` specifies CMORPH observation precipitation error variance.
+
+`AGRMET GFS Precip IMERG observation error scale length (m):` specifies scale length for IMERG precipitation error correlation.
+
+`AGRMET GFS Precip IMERG observation error variance:` specifies IMERG observation precipitation error variance.
+
+`AGRMET GFS T2M background error scale length (m):` specifies scale length for GFS 2m temperature error correlation.
+
+`AGRMET GFS T2M background error variance:` specifies GFS 2m temperature error variance.
+
+`AGRMET GFS T2M station observation error variance:` specifies station observation 2m temperature error variance.
+
+`AGRMET GFS RH2M background error scale length (m):` specifies scale length for GFS 2m relative humidity error correlation.
+
+`AGRMET GFS RH2M background error variance:` specifies GFS 2m relative humidity error variance.
+
+`AGRMET GFS RH2M station observation error variance:` specifies station observation 2m relative humidity error variance.
+
+`AGRMET GFS SPD10M background error scale length (m):` specifies scale length for GFS 10m wind speed error correlation.
+
+`AGRMET GFS SPD10M background error variance:` specifies GFS 10m wind speed error variance.
+
+`AGRMET GFS SPD10M station observation error variance:` specifies station observation 10 wind speed error variance.
+
+`AGRMET forcing map projection:` specifies map projection type.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|latlon                  | use latitude/longitude projection
+|====
+
+`AGRMET forcing domain lower left lat:` specifies southwest latitude corner.
+
+`AGRMET forcing domain lower left lon:` specifies southwest longitude corner.
+
+`AGRMET forcing domain upper right lat:` specifies northeast latitude corner.
+
+`AGRMET forcing domain upper right lon:` specifies northeast longitude corner.
+
+`AGRMET forcing domain resolution (dx):` specifies east-west grid resolution in degrees longitude.
+
+`AGRMET forcing domain resolution (dy):` specifies north-south grid resolution in degrees latitude.
+
+`AGRMET use IMERG data:` specifies whether to use 30-min IMERG data
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not assimilate IMERG
+|1                       | Assimilate IMERG
+|====
+
+`AGRMET IMERG temperature threshold:` temperature threshold (K) below which to reject IMERG retrievals.
+
+`AGRMET IMERG data directory:` top directory to find IMERG files.
+
+`AGRMET IMERG product:` identifies which IMERG run to assimilate.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|3B-HHR-E                | 30-min Early Run
+|3B-HHR-L                | 30-min Late Run
+|3B-HHR                  | 30-min Final Run
+|====
+
+`AGRMET IMERG version:` text string identifying IMERG version to assimilate.  Used to construct file names.  V06x and V07x are supported.
+Acceptable values include:
+
+|====
+|Value                   | Description
+
+|V06B                    | Version 06B
+|V06C                    | Version 06C
+|V06D                    | Version 06D
+|V07B                    | Version 07B
+|====
+
+`AGRMET IMERG Probability Liquid Precip Threshold:` threshold to reject IMERG if liquid precip likelihood is too low.
+
+`AGRMET output OBA data:` option for writing OBA (observation, background, analysis) files from Bratseth.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not write OBA files
+|1                       | Write OBA files
+|2                       | Write OBA files w/o actually running Bratseth scheme
+|====
+
+`AGRMET skip backQC:` option to disable backQC step.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip backQC step
+|1                       | Skip backQC step
+|====
+
+`AGRMET skip superstatQC:` option to disable superstatQC step.
+Acceptable values are:
+
+|====
+|Value                   | Description
+
+|0                       | Do not skip superstatQC step
+|1                       | Skip superstatQC step
+|====
+
+`AGRMET 3hr maximum precip ceiling:` set threshold (mm) above which to reject precipitation.
+
+`AGRMET mask file:` path to legacy AGRMET landmask file.
+
+`AGRMET terrain file:` path to legacy AGRMET terrain file.
+
 .Example _lis.config_ entry
 ....
 AGRMET forcing directory:               ./FORCING/
@@ -5595,12 +5873,88 @@ AGRMET CMORPH dx:
 AGRMET CMORPH dy:
 AGRMET use GFS precip:     1
 AGRMET use GALWEM precip:  0
-AGRMET radiation derived from: 'GALWEM_RAD'
+AGRMET radiation derived from: GALWEM_RAD
 AGRMET GALWEM radiation data directory: GALWEM_Rad
 AGRMET number of gauge networks to use: 7
 AGRMET gauge networks to use::
 AMIL CANA FAA ICAO WMO HADS NWSLI
 ::
+AGRMET GALWEM Precip correlation function type: 1
+AGRMET GALWEM T2M correlation function type: 1
+AGRMET GALWEM RH2M correlation function type: 1
+AGRMET GALWEM SPD10M correlation function type: 1
+AGRMET GFS Precip correlation function type: 1
+AGRMET GFS T2M correlation function type: 1
+AGRMET GFS RH2M correlation function type: 1
+AGRMET GFS SPD10M correlation function type: 1
+AGRMET precip obs file format: 1
+AGRMET sfc obs file format: 1
+
+AGRMET GALWEM Precip background error scale length (m):         102000.
+AGRMET GALWEM Precip background error variance:                      0.83
+AGRMET GALWEM Precip Gauge observation error variance:               0.86
+AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
+AGRMET GALWEM Precip GEOPRECIP observation error variance:           1.24
+AGRMET GALWEM Precip SSMI observation error scale length (m):   133000.
+AGRMET GALWEM Precip SSMI observation error variance:                2.58
+AGRMET GALWEM Precip CMORPH observation error scale length (m):  89000.
+AGRMET GALWEM Precip CMORPH observation error variance:              1.15
+AGRMET GALWEM Precip IMERG observation error scale length (m):  101000.
+AGRMET GALWEM Precip IMERG observation error variance:               1.93
+AGRMET GALWEM T2M background error scale length (m):            110000.
+AGRMET GALWEM T2M background error variance:                         1.48
+AGRMET GALWEM T2M station observation error variance:                2.30
+AGRMET GALWEM RH2M background error scale length (m):           119000.
+AGRMET GALWEM RH2M background error variance:                       30.7
+AGRMET GALWEM RH2M station observation error variance:              65.8
+AGRMET GALWEM SPD10M background error scale length (m):          53000.
+AGRMET GALWEM SPD10M background error variance:                      0.62
+AGRMET GALWEM SPD10M station observation error variance:             2.37
+
+AGRMET GFS Precip background error scale length (m):             93000.
+AGRMET GFS Precip background error variance:                         0.47
+AGRMET GFS Precip Gauge observation error variance:                  0.70
+AGRMET GFS Precip GEOPRECIP observation error scale length (m): 131000.
+AGRMET GFS Precip GEOPRECIP observation error variance:              1.06
+AGRMET GFS Precip SSMI observation error scale length (m):      131000.
+AGRMET GFS Precip SSMI observation error variance:                   2.10
+AGRMET GFS Precip CMORPH observation error scale length (m):     91000.
+AGRMET GFS Precip CMORPH observation error variance:                 0.92
+AGRMET GFS Precip IMERG observation error scale length (m):     100000.
+AGRMET GFS Precip IMERG observation error variance:                  1.62
+AGRMET GFS T2M background error scale length (m):               125000.
+AGRMET GFS T2M background error variance:                            1.36
+AGRMET GFS T2M station observation error variance:                   2.38
+AGRMET GFS RH2M background error scale length (m):              197000.
+AGRMET GFS RH2M background error variance:                          51.3
+AGRMET GFS RH2M station observation error variance:                 66.8
+AGRMET GFS SPD10M background error scale length (m):             86000.
+AGRMET GFS SPD10M background error variance:                         0.57
+AGRMET GFS SPD10M station observation error variance:                2.48
+
+AGRMET forcing map projection:             latlon
+AGRMET forcing domain lower left lat:       -89.9531250
+AGRMET forcing domain lower left lon:      -179.9296875
+AGRMET forcing domain upper right lat:       89.9531250
+AGRMET forcing domain upper right lon:      179.9296875
+AGRMET forcing domain resolution (dx):        0.1406250
+AGRMET forcing domain resolution (dy):        0.0937500
+
+AGRMET use IMERG data:                      1
+AGRMET IMERG temperature threshold:        278
+AGRMET IMERG data directory:               ./input/IMERG/Early_V07B
+AGRMET IMERG product:                      3B-HHR-E        # Early Run
+AGRMET IMERG version:                      V07B # Jun 2024
+AGRMET IMERG Probability Liquid Precip Threshold: 100
+
+AGRMET output OBA data: 0
+AGRMET skip backQC: 0
+AGRMET skip superstatQC: 0
+
+AGRMET 3hr maximum precip ceiling: 200.0
+
+AGRMET mask file:                ./input/legacy/all_16/point_switches
+AGRMET terrain file:              ./input/legacy/pst_16/terrain
 ....
 
 

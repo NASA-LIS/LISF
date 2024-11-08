@@ -99,7 +99,7 @@ contains
 
    ! Copy to obsData
    subroutine copyToObsDataImergHHPrecip(this, sigmaOSqr, &
-        oErrScaleLength, net, platform, obsData_struc)
+        oErrScaleLength, oErrInvScaleLength, net, platform, obsData_struc)
 
       ! Modules
       use USAF_bratsethMod, only: USAF_obsData, USAF_assignObsData
@@ -111,6 +111,7 @@ contains
       type(ImergHHPrecip), intent(in) :: this
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
+      real, intent(in) :: oErrInvScaleLength
       character*32, intent(in) :: net
       character*32, intent(in) :: platform
       type(USAF_ObsData), intent(inout) :: obsData_struc
@@ -129,7 +130,8 @@ contains
             lat = (this%swlat) + (i-1)*(this%dlat)
             lon = (this%swlon) + (j-1)*(this%dlon)
             call USAF_assignObsData(obsData_struc, net, platform,&
-                 ob, lat, lon, sigmaOSqr, oErrScaleLength)
+                 ob, lat, lon, sigmaOSqr, oErrScaleLength, &
+                 oErrInvScaleLength)
 
          end do ! i
       end do ! j
@@ -1360,7 +1362,9 @@ contains
 
    ! Driver routine to fetch 3hr IMERG data for given start date.
    subroutine fetch3hrImergHH(j3hr, datadir, product, version, &
-        plp_thresh, nest, sigmaOSqr, oErrScaleLength, net, platform, &
+        plp_thresh, nest, sigmaOSqr, oErrScaleLength, &
+        oErrInvScaleLength, &
+        net, platform, &
         precipObsData)
 
       ! Modules
@@ -1381,6 +1385,7 @@ contains
       integer,intent(in) :: nest
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
+      real, intent(in) :: oErrInvScaleLength
       character(len=*),intent(in) :: net
       character(len=*),intent(in) :: platform
       type(USAF_ObsData), intent(out) :: precipObsData
@@ -1478,7 +1483,7 @@ contains
 
       ! Copy the good values into the ObsData object
       call copyToObsDataImergHHPrecip(imerg, sigmaOSqr, &
-           oErrScaleLength, &
+           oErrScaleLength, oErrInvScaleLength, &
            net, platform, precipObsData)
 
       ! Clean up
