@@ -145,8 +145,8 @@ def _driver():
                 cmd_list.append(cmd)
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            utils.job_script(config_file, jobfile, jobname, ntasks,
-                             hours, cwd, command_list=cmd_list)
+            utils.job_script(config_file, jobfile, jobname, len(cmd_list),
+                             hours, cwd, group_jobs=cmd_list)
 
         else:
             cmd = "python"

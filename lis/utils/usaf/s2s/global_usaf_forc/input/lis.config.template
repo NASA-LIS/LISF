@@ -252,8 +252,6 @@ AGRMET use IMERG data:                     1               # 1 = Use
 AGRMET IMERG temperature threshold:        278
 AGRMET IMERG data directory:               ./input/USAF_FORCING/IMERG
 AGRMET IMERG product:                      3B-HHR-E        # Early Run
-## S2S June-2024 forecast – use the following option:
-#AGRMET IMERG version:                      V06E            # FOR MAY-2024 dates
 ## S2S July-2024 forecast and after – use the following option:
 AGRMET IMERG version:                      V07B            # V07B started 1 June 2024
 AGRMET IMERG Probability Liquid Precip Threshold: 100
@@ -339,26 +337,19 @@ AGRMET GFS SPD10M station observation error variance:                2.48
 # Radiation settings.  Uses WWMCA cloud data.  Use WWMCA_LE from
 # 20071101 to 2012032700, use NONE from 2012032700 to 2012040912,
 # use WWMCA beginning 2012040912, use WWMCA_GRIB beginning 2020070412
-AGRMET cloud data directory:               WWMCA_GRIB
+#AGRMET cloud data directory:               WWMCA_GRIB
 # Use WWMCA GRIB1 files beginning 12Z 4 Jul 2020
 AGRMET WWMCA GRIB1 read option:            1
 AGRMET snow distribution shape parameter:  2.6
 # S2S AGRMET/Bratseth forcing generation step guidance:
 ##  FOR JUNE-2024 S2S Forecast – use following options up to June 1, 2024, 00Z:
-AGRMET radiation derived from:      "cloud types"
-AGRMET cloud data directory:               WWMCA_GRIB              #  Original input WWMCA GRIB-1 files
-#
-##  FOR JULY-2024 S2S Forecast – use following options up to June 24, 2024, 00Z:
 #AGRMET radiation derived from:      "cloud types"
-#AGRMET cloud data directory:               WWMCA_GRIB            #  Original input WWMCA GRIB-1 files
-#  -- June 24, 00Z to July 2, 2024, 00Z
-#AGRMET radiation derived from:      "cloud types"
-#AGRMET cloud data directory:               WWMCA_GRIB_LOOKALIKE     #  WWMCA GRIB Look-alike files target directory
+#AGRMET cloud data directory:               WWMCA_GRIB      #  Original input WWMCA GRIB-1 files
 #
-## FOR AUG-2024 and after S2S Forecast runs – use the following options:
+## AS OF AUG-2024 and after S2S Forecast runs – use the following options:
 #  -- July 2, 2024, 00Z and onward:
-#AGRMET radiation derived from:      "GALWEM_RAD"                               # GALWEM Radiation files
-#AGRMET cloud data directory:            GALWEM     #  GALWEM forcing directory
+AGRMET radiation derived from:         "GALWEM_RAD"         # GALWEM Radiation files
+AGRMET cloud data directory:              GALWEM            #  GALWEM forcing directory
 AGRMET GALWEM radiation data directory:   GALWEM
 
 # Legacy AGRMET settings.  Eventually these will be removed,
