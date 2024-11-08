@@ -57,9 +57,9 @@ if [ $NJOBS -le $NJMAX ] && [ $year -le $clim_eyr ]; then
 	s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE -s BCSD -o Y
 	echo $year > $update_file
     else
-	#s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE -s FCST
+        #s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE -s FCST
         s2s_app/s2s_run.sh -y $year -m $MONTH -c $CFILE
-	echo $year > $update_file
+        echo $year > $update_file
     fi
 fi
 chmod 664 $update_file

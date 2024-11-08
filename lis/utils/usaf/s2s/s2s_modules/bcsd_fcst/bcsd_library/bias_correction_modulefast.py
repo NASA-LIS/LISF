@@ -68,7 +68,7 @@ FCST_INDIR = str(sys.argv[13])
 OBS_CLIM_FILE_TEMPLATE = '{}/raw/Climatology/{}_obs_clim.nc'
 FCST_CLIM_FILE_TEMPLATE = '{}/raw/Climatology/{}/{}_fcst_clim.nc'
 MONTH_NAME_TEMPLATE = '{}01'
-# GEOS5 filename template:
+# CFSV2 monthly filename template:
 FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}.nc'
 
 CONFIG_FILE = str(sys.argv[14])

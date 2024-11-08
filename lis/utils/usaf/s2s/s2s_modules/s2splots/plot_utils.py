@@ -721,7 +721,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         levels = np.linspace(min_val, max_val, len(style_color))
     cmap.set_under(under_over[0])
     cmap.set_over(under_over[1])
-
+    print(domain)
     nplots = len(titles)
     if projection is None:
         fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
