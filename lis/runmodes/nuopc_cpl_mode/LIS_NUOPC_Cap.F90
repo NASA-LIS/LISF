@@ -297,46 +297,46 @@ module LIS_NUOPC
     allocate(is%wrap, stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of internal state memory failed.', &
-      line=__LINE__, file=__FILE__, rcToReturn=rc)) return  ! bail out
+      line=__LINE__, file=__FILE__, rcToReturn=rc)) return
     call ESMF_UserCompSetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! the NUOPC model component will register the generic methods
     call NUOPC_CompDerive(gcomp, model_routine_SS, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! switching to IPD versions
     call ESMF_GridCompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
       userRoutine=InitializeP0, phase=0, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! set entry point for methods that require specific implementation
     call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
       phaseLabelList=(/"IPDv03p1"/), userRoutine=InitializeP1, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call NUOPC_CompSetEntryPoint(gcomp, ESMF_METHOD_INITIALIZE, &
       phaseLabelList=(/"IPDv03p3"/), userRoutine=InitializeP3, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! attach specializing method(s)
     call NUOPC_CompSpecialize(gcomp, specLabel=model_label_DataInitialize, &
        specRoutine=DataInitialize, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call NUOPC_CompSpecialize(gcomp, speclabel=model_label_SetClock, &
       specRoutine=SetClock, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_MethodRemove(gcomp, label=model_label_CheckImport, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail ou
+    if (ESMF_STDERRORCHECK(rc)) return
     call NUOPC_CompSpecialize(gcomp, specLabel=model_label_CheckImport, &
        specRoutine=CheckImport, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail ou
+    if (ESMF_STDERRORCHECK(rc)) return
     call NUOPC_CompSpecialize(gcomp, speclabel=model_label_Advance, &
       specRoutine=ModelAdvance, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call NUOPC_CompSpecialize(gcomp, specLabel=model_label_Finalize, &
       specRoutine=ModelFinalize, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
   end subroutine
 
@@ -360,40 +360,40 @@ module LIS_NUOPC
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Switch to IPDv03 by filtering all other phaseMap entries
     call NUOPC_CompFilterPhaseMap(gcomp, ESMF_METHOD_INITIALIZE, &
       acceptStringList=(/"IPDv03p"/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call LIS_AttributeGet(rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! prepare diagnostics folder
     if (btest(diagnostic,16)) then
       call ESMF_UtilIOMkDir(pathName=trim(is%wrap%dirOutput), &
         relaxedFlag=.true., rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     endif
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -409,57 +409,57 @@ module LIS_NUOPC
 
       ! check gcomp for config
       call ESMF_GridCompGet(gcomp, configIsPresent=configIsPresent, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       ! read and ingest free format component attributes
       if (configIsPresent) then
         call ESMF_GridCompGet(gcomp, config=config, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
         attrFF = NUOPC_FreeFormatCreate(config, &
           label=trim(cname)//"_attributes::", relaxedflag=.true., rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
         call NUOPC_CompAttributeIngest(gcomp, attrFF, addFlag=.true., rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
         call NUOPC_FreeFormatDestroy(attrFF, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       endif
 
       ! Realize all export fields
       call ESMF_AttributeGet(gcomp, name="realize_all_export", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%realizeAllExport = (trim(value)=="true")
 
       ! Set configuration file name
       call ESMF_AttributeGet(gcomp, name="config_file", value=value, &
         defaultValue="lis.config", convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%configFile=value
 
       ! Turn on nest coupling
       call ESMF_AttributeGet(gcomp, name="nest_to_nest", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%nestToNest = (trim(value)=="true")
 
       ! Turn on ensemble coupling
       call ESMF_AttributeGet(gcomp, name="coupled_ensemble", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%cplEns = (trim(value)=="true")
 
       ! Realize all export fields
       call ESMF_AttributeGet(gcomp, name="import_dependency", &
         value=value, defaultValue="false", &
         convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%importDependency = (trim(value)=="true")
 
       ! Get component output directory
       call ESMF_AttributeGet(gcomp, name="output_directory", &
         value=value, defaultValue=trim(cname)//"_OUTPUT", &
         convention="NUOPC", purpose="Instance", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       is%wrap%dirOutput = trim(value)
 
       if (btest(verbosity,16)) then
@@ -519,51 +519,51 @@ module LIS_NUOPC
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call ESMF_GridCompGet(gcomp, vm=vm, localPet=localPet, petCount=petCount, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! initialize lis model for this PET
     call LIS_NUOPC_Init(vm, configFile=is%wrap%configFile, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     if (btest(verbosity,16)) then
       call LIS_Log(trim(cname)//': '//rname,rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     endif
 
     call LIS_FieldDictionaryAdd(rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     is%wrap%nnests = LIS_NestCntGet(rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Max nest check
     if ( is%wrap%nnests > MAXNEST ) then
       call ESMF_LogSetError(ESMF_FAILURE, &
         msg="Maximum nest size is 999,999,999.", &
         line=__LINE__,file=__FILE__,rcToReturn=rc)
-      return  ! bail out
+      return
     endif
 
     allocate( &
@@ -578,7 +578,7 @@ module LIS_NUOPC
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of internal state nest memory failed.", &
       line=__LINE__,file=__FILE__)) &
-      return  ! bail out
+      return
 
     is%wrap%modes=LIS_Unknown
 
@@ -594,7 +594,7 @@ module LIS_NUOPC
         call ESMF_LogSetError(ESMF_FAILURE, &
           msg="Nest to nest must be turned on when multiple domains exist.", &
           line=__LINE__,file=__FILE__,rcToReturn=rc)
-        return  ! bail out
+        return
       endif
     else
       ! add namespace
@@ -602,12 +602,12 @@ module LIS_NUOPC
         CplSet="1", &
         nestedStateName="NestedStateImp_N1", &
         nestedState=is%wrap%NStateImp(1), rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       call NUOPC_AddNestedState(exportState, &
         CplSet="1", &
         nestedStateName="NestedStateExp_N1", &
         nestedState=is%wrap%NStateExp(1), rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     endif
 
     do nIndex = 2, is%wrap%nnests
@@ -616,12 +616,12 @@ module LIS_NUOPC
         CplSet=trim(nStr), &
         nestedStateName="NestedStateImp_N"//trim(nStr), &
         nestedState=is%wrap%NStateImp(nIndex), rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       call NUOPC_AddNestedState(exportState, &
         CplSet=trim(nStr), &
         nestedStateName="NestedStateExp_N"//trim(nStr), &
         nestedState=is%wrap%NStateExp(nIndex), rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     enddo
 #endif
 
@@ -635,14 +635,14 @@ module LIS_NUOPC
             standardName=trim(LIS_FieldList(fIndex)%stdname), &
             name=trim(LIS_FieldList(fIndex)%stateName), &
             rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
        endif
        if (LIS_FieldList(fIndex)%adExport) then
          call NUOPC_Advertise(is%wrap%NStateExp(nIndex), &
            standardName=trim(LIS_FieldList(fIndex)%stdname), &
            name=trim(LIS_FieldList(fIndex)%stateName), &
            rc=rc)
-         if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+         if (ESMF_STDERRORCHECK(rc)) return
        endif
       enddo
     enddo
@@ -729,26 +729,26 @@ module LIS_NUOPC
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     do nIndex = 1, is%wrap%nnests
       write (nStr,"(I0)") nIndex
@@ -757,19 +757,19 @@ module LIS_NUOPC
       if (is%wrap%cplEns) then
         call LIS_EnsMemberCntGet(nIndex, &
           is%wrap%ensMemberCnt(nIndex), rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       else
         is%wrap%ensMemberCnt(nIndex) = 0
       endif
 
       ! Call gluecode to create grid.
       is%wrap%grids(nIndex) = LIS_GridCreate(nIndex, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       if (btest(verbosity,16)) then
         call LIS_ESMF_LogGrid(is%wrap%grids(nIndex), &
           trim(cname)//"_"//rname//"_D"//trim(nStr),rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       endif
 
       ! Write grid to NetCDF file.
@@ -777,7 +777,7 @@ module LIS_NUOPC
         call LIS_ESMF_GridWrite(is%wrap%grids(nIndex), &
           trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
           rname//'_grid_D'//trim(nStr)//".nc", rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       endif
 
       do fIndex = 1, size(LIS_FieldList)
@@ -803,15 +803,15 @@ module LIS_NUOPC
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           else
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -835,15 +835,15 @@ module LIS_NUOPC
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           else
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -859,7 +859,7 @@ module LIS_NUOPC
           endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
@@ -868,15 +868,15 @@ module LIS_NUOPC
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           else
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -888,15 +888,15 @@ module LIS_NUOPC
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, &
               ungriddedLBound=(/1/), ungriddedUBound=(/is%wrap%ensMemberCnt(nIndex)/), rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           else
             field = ESMF_FieldCreate(name=trim(LIS_FieldList(fIndex)%stateName), &
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+            if (ESMF_STDERRORCHECK(rc)) return
           endif
           call ESMF_FieldFill(field, dataFillScheme="const", &
             const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
@@ -919,7 +919,7 @@ module LIS_NUOPC
       if (ESMF_STDERRORCHECK(rc)) return
 
       is%wrap%modes(nIndex) = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp(nIndex),rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
     enddo
 
@@ -1010,36 +1010,36 @@ module LIS_NUOPC
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the Component for its clock
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! get the current time out of the clock
     call ESMF_ClockGet(modelClock, currTime=currTime, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_TimeGet(currTime, timeString=currTimeStr, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     importUpdated = .TRUE.
     do nIndex=1,is%wrap%nnests
@@ -1049,14 +1049,14 @@ module LIS_NUOPC
         ! Check data dependencies
         importCurrent = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), &
           time=currTime, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
 
         if (importCurrent) then
           call ESMF_LogWrite( &
             trim(cname)//': '//rname//' Initialize-Data-Dependency SATISFIED!!! Nest='//trim(nStr), &
             ESMF_LOGMSG_INFO)
           call LIS_ImportFieldsCopy(nIndex,is%wrap%NStateImp(nIndex),rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
         else
           call ESMF_LogWrite( &
             trim(cname)//': '//rname//' Initialize-Data-Dependency NOT YET SATISFIED!!! Nest='//trim(nStr), &
@@ -1066,7 +1066,7 @@ module LIS_NUOPC
       else
         ! Reset all import fields to zero
         call ESMF_StateGet(is%wrap%NStateImp(nIndex),itemCount=itemCount, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
 
         allocate( &
           itemNameList(itemCount), &
@@ -1076,7 +1076,7 @@ module LIS_NUOPC
           msg="Allocation of state item list memory failed.", &
           line=__LINE__, &
           file=__FILE__)) &
-          return  ! bail out
+          return
 
         call ESMF_StateGet(is%wrap%NStateImp(nIndex),itemNameList=itemNameList, &
           itemTypeList=itemTypeList,rc=rc)
@@ -1098,17 +1098,17 @@ module LIS_NUOPC
           msg="Deallocation of state item list memory failed.", &
           line=__LINE__, &
           file=__FILE__)) &
-          return  ! bail out
+          return
       endif
 
       ! Initialize import and export fields
       call LIS_NUOPC_DataInit(nest=nIndex, &
         importState=is%wrap%NStateImp(nIndex), &
         exportState=is%wrap%NStateExp(nIndex),rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemCount=itemCount, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       allocate( &
         itemNameList(itemCount), &
@@ -1118,7 +1118,7 @@ module LIS_NUOPC
         msg="Allocation of state item list memory failed.", &
         line=__LINE__, &
         file=__FILE__)) &
-        return  ! bail out
+        return
 
       call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemNameList=itemNameList, &
         itemTypeList=itemTypeList,rc=rc)
@@ -1130,7 +1130,7 @@ module LIS_NUOPC
             itemName=itemNameList(iIndex),rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_SetAttribute(field, name="Updated", value="true", rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
         endif
       enddo
 
@@ -1139,14 +1139,14 @@ module LIS_NUOPC
         msg="Deallocation of state item list memory failed.", &
         line=__LINE__, &
         file=__FILE__)) &
-        return  ! bail out
+        return
     enddo ! enddo nnests
 
     ! set InitializeDataComplete Attribute to "true", indicating to the
     ! generic code that all inter-model data dependencies are satisfied
     if (importUpdated) then
       call NUOPC_CompAttributeSet(gcomp, name="InitializeDataComplete", value="true", rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       ! Write initialization files
       if (btest(diagnostic,16)) then
         do nIndex=1,is%wrap%nnests
@@ -1155,12 +1155,12 @@ module LIS_NUOPC
             fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
               rname//"_imp_D"//trim(nStr)//"_"//trim(currTimeStr)//"_", &
             overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Write(is%wrap%NStateExp(nIndex), &
             fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
               rname//"_exp_D"//trim(nStr)//"_"//trim(currTimeStr)//"_", &
             overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
         enddo
       endif
     endif
@@ -1190,59 +1190,59 @@ module LIS_NUOPC
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the Component for its clock
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Set minTimestep to the timestep of the first nest
     mindt = LIS_TimestepGet(nest=1,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     do nIndex = 1, is%wrap%nnests
       is%wrap%clocks(nIndex) = ESMF_ClockCreate(modelClock, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       ndt = LIS_TimestepGet(nest=nIndex,rc=rc)
       call ESMF_TimeIntervalSet(nestTimestep, &
         s_r8=ndt, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       call ESMF_ClockSet(is%wrap%clocks(nIndex), &
         timeStep=nestTimestep, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       if (ndt < mindt) mindt = ndt
 
       call ESMF_TimeIntervalSet(is%wrap%stepAccum(nIndex), &
         s_r8=0._ESMF_KIND_R8, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     enddo
 
     call ESMF_TimeIntervalSet(modelTimestep, &
       s_r8=mindt, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call NUOPC_CompSetClock(gcomp, modelClock, &
       modelTimestep, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
   end subroutine
 
@@ -1273,40 +1273,40 @@ subroutine CheckImport(gcomp, rc)
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the component for its clock, importState, and exportState
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! get the stop time out of the clock
     call ESMF_ClockGet(modelClock, startTime=modelStartTime, &
       currTime=modelCurrTime, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     do nIndex=1,is%wrap%nnests
       write (nStr,"(I0)") nIndex
       allCurrTime = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), modelCurrTime,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
       if (.NOT.allCurrTime) then
         call ESMF_LogWrite(trim(cname)//": NUOPC INCOMPATIBILITY DETECTED: "// &
           "Import Fields Nest="//trim(nStr)//" not at correct time", &
@@ -1341,26 +1341,26 @@ subroutine CheckImport(gcomp, rc)
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the component for its clock, importState, and exportState
     call NUOPC_ModelGet(gcomp, &
@@ -1368,17 +1368,17 @@ subroutine CheckImport(gcomp, rc)
       importState=importState, &
       exportState=exportState, &
       rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the clock for the current time and time step
     call ESMF_ClockGet(modelClock, &
       currTime=currTime, timeStep=timeStep, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     advEndTime = currTime + timeStep
     call ESMF_TimeGet(currTime, timeString=currTimeStr, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_TimeGet(advEndTime, timeString=advEndTimeStr, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! HERE THE MODEL ADVANCES: currTime -> currTime + timeStep
 
@@ -1397,13 +1397,13 @@ subroutine CheckImport(gcomp, rc)
           fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
             rname//"_imp_D"//trim(nStr)//"_"//trim(currTimeStr)//"_", &
           overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       endif
 
       is%wrap%stepAccum(nIndex) = is%wrap%stepAccum(nIndex) + timeStep
 
       call ESMF_ClockGet(is%wrap%clocks(nIndex),timeStep=nestTimestep,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
 
       do while (is%wrap%stepAccum(nIndex) >= nestTimestep)
         ! Gluecode NestAdvance
@@ -1413,9 +1413,9 @@ subroutine CheckImport(gcomp, rc)
         call LIS_NUOPC_Run(nIndex,is%wrap%modes(nIndex), &
           is%wrap%NStateImp(nIndex),is%wrap%NStateExp(nIndex), &
           is%wrap%clocks(nIndex), rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
         call ESMF_ClockAdvance(is%wrap%clocks(nIndex),rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
         is%wrap%stepAccum(nIndex) = &
           is%wrap%stepAccum(nIndex) - nestTimestep
       enddo
@@ -1426,7 +1426,7 @@ subroutine CheckImport(gcomp, rc)
           fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
             rname//"_exp_D"//trim(nStr)//"_"//trim(advEndTimeStr)//"_", &
           overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+        if (ESMF_STDERRORCHECK(rc)) return
       endif
     enddo
 
@@ -1469,13 +1469,13 @@ subroutine CheckImport(gcomp, rc)
         if (ESMF_ClockIsCreated(is%wrap%clocks(nIndex))) then
           call ESMF_ClockGet(is%wrap%clocks(nIndex), &
             currTime=nestCurrTime,timeStep=nestTimestep,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call ESMF_TimeGet(nestCurrTime, &
             timeString=nCurrTimeStr,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
           call ESMF_TimeIntervalGet(nestTimestep, &
             timeString=nTimestepStr,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+          if (ESMF_STDERRORCHECK(rc)) return
         else
           nCurrTimeStr = "(not_created)"
           nTimestepStr = "(not_created)"
@@ -1520,47 +1520,47 @@ subroutine CheckImport(gcomp, rc)
 
     ! Query component for name, verbosity, and diagnostic values
     call ESMF_GridCompGet(gcomp, name=cname, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Diagnostic", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     diagnostic = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call ESMF_AttributeGet(gcomp, name="Verbosity", value=value, &
       defaultValue="0", convention="NUOPC", purpose="Instance", rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     verbosity = ESMF_UtilString2Int(value, &
       specialStringList=(/"min","max","bit16","maxplus"/), &
       specialValueList=(/0,65535,65536,131071/), rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query Component for its internal State
     nullify(is%wrap)
     call ESMF_UserCompGetInternalState(gcomp, label_InternalState, is, rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! query the Component for its clock
     call NUOPC_ModelGet(gcomp, modelClock=modelClock, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call ESMF_ClockGet(modelClock, currTime=currTime, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call ESMF_TimeGet(currTime, timeString=currTimeStr, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! finalize the LIS model
     do nIndex=1,is%wrap%nnests
       call LIS_NUOPC_Final(nIndex,modelClock,rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     enddo
 
     deallocate(is%wrap, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of internal state memory failed.', &
-      line=__LINE__, file=__FILE__, rcToReturn=rc)) return  ! bail out
+      line=__LINE__, file=__FILE__, rcToReturn=rc)) return
 
   end subroutine
 
