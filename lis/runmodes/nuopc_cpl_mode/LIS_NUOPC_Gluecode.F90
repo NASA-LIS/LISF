@@ -641,7 +641,7 @@ contains
        call LIS_core_init
 
        call LIS_HookupInit(rc)
-       if(ESMF_STDERRORCHECK(rc)) return ! bail out
+       if(ESMF_STDERRORCHECK(rc)) return
 
        LIS_initialized = .true.
     endif
@@ -681,7 +681,7 @@ contains
     call LIS_surfaceModel_setexport(nest)
 
     call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
@@ -745,21 +745,21 @@ contains
 
     ! use incoming clock
     call ESMF_ClockGet(clock, currTime=currTime, timeStep=timeStep, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     ! LIS time manager expects end of the interval
     stopTime = currTime + timeStep
 
     ! Confirm if the timemgr should receive current time or stop time
     call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     T_ENTER("datacopy")
     call LIS_ImportFieldsCopy(nest,importState,rc=rc)
     T_EXIT("datacopy")
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     T_ENTER("dynparms")
     call LIS_setDynparams(nest)
@@ -777,12 +777,12 @@ contains
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
           msg="Mixed (coupled+offline) met forcing data is not allowed.", &
           line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return  ! bail out
+        return
       case default
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
           msg="Running mode is unknown.", &
           line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return  ! bail out
+        return
     end select
 
     T_ENTER("pertforc")
@@ -870,12 +870,12 @@ contains
     call LIS_surfaceModel_setexport(nest)
 
     call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     ! convert runoff fields from (kg m-2 s-1) to (kg m-2)
 
     call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     ! convert qs field if present
     call ESMF_StateGet(exportState, &
@@ -973,11 +973,11 @@ contains
 
     ! use incoming clock
     call ESMF_ClockGet(clock, currTime=currTime, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     ! Confirm if the timemgr should receive current time or stop time
     call ESMF_TimeGet(currTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return ! bail out
+    if(ESMF_STDERRORCHECK(rc)) return
 
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
@@ -1021,14 +1021,14 @@ contains
       call ESMF_LogSetError(ESMF_RC_OBJ_INIT, &
         msg="LISWRF_export is not initialized.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
+      return
     endif
 
     if (size(LISWRF_export) < LIS_rc%nnest) then
       call ESMF_LogSetError(ESMF_RC_OBJ_INIT, &
         msg="LISWRF_export is not initialized for each nest.", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
+      return
     endif
 
     do fIndex=1, size(LIS_FieldList)
@@ -1036,7 +1036,7 @@ contains
       if (ESMF_LogFoundAllocError(statusToCheck=stat, &
         msg="Allocation of field hookup memory failed.", &
         line=__LINE__,file=__FILE__)) &
-      return  ! bail out
+      return
     enddo
 
     do nIndex=1, LIS_rc%nnest
@@ -1759,22 +1759,22 @@ contains
               call LIS_CopyToNoah_3_3(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
                 nest=nest,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              if(ESMF_STDERRORCHECK(rc)) return
             else if (LIS_rc%lsm.eq."NoahMP.3.6") then
               call LIS_CopyToNoahMP_3_6(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
                 nest=nest,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              if(ESMF_STDERRORCHECK(rc)) return
             else if (LIS_rc%lsm.eq."Noah-MP.4.0.1") then
               call LIS_CopyToNoahMP_4_0_1(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
                 nest=nest,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              if(ESMF_STDERRORCHECK(rc)) return
             else
               call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
                 msg="Direct coupling is not implemented for "//trim(LIS_rc%lsm), &
                 line=__LINE__, file=FILENAME, rcToReturn=rc)
-              return  ! bail out
+              return
             endif
           else
             call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
@@ -1784,11 +1784,11 @@ contains
             if (lisItemType == ESMF_STATEITEM_FIELD ) then
               call LIS_ForcFieldGet(LIS_FieldList(fIndex)%lisForcVarname, &
                 nest=nest,field=lisImportField,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              if(ESMF_STDERRORCHECK(rc)) return
               call LIS_CopyToLIS(field=importField, &
                 fieldLIS=lisImportField, &
                 nest=nest,rc=rc)
-              if(ESMF_STDERRORCHECK(rc)) return ! bail out
+              if(ESMF_STDERRORCHECK(rc)) return
             else ! not present in LIS_Forc
               call ESMF_LogWrite( trim(l_label)// &
                 " field is not present in LIS_Forc state="// &
@@ -1865,62 +1865,62 @@ contains
           call ESMF_StateGet(exportState, &
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=exportField,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          if(ESMF_STDERRORCHECK(rc)) return
           if (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl1") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl2") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl3") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smliqfracl4") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl1") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl2") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl3") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "smfracl4") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=1.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "infxsrt") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=0.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           elseif (LIS_FieldList(fIndex)%stateName .eq. "soldrain") then
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,fillVal=0.0,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           else
             call LIS_CopyFromLIS( &
               farrayLIS=LIS_FieldList(fIndex)%hookup(nest)%exportArray_t, &
               field=exportField,nest=nest,rc=rc)
-            if(ESMF_STDERRORCHECK(rc)) return ! bail out
+            if(ESMF_STDERRORCHECK(rc)) return
           endif
         else
           call ESMF_LogWrite( trim(l_label)// &
@@ -1981,7 +1981,7 @@ contains
           call ESMF_StateGet(importState, &
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=importField,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          if(ESMF_STDERRORCHECK(rc)) return
           call LIS_ESMF_FieldFill(importField, dataFillScheme="sincos", &
             step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
             meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
@@ -2044,7 +2044,7 @@ contains
           call ESMF_StateGet(exportState, &
             itemName=trim(LIS_FieldList(fIndex)%stateName), &
             field=exportField,rc=rc)
-          if(ESMF_STDERRORCHECK(rc)) return ! bail out
+          if(ESMF_STDERRORCHECK(rc)) return
           call LIS_ESMF_FieldFill(exportField, dataFillScheme="sincos", &
             step=step, amplitude=LIS_FieldList(fIndex)%ampValue, &
             meanValue=LIS_FieldList(fIndex)%meanValue, rc=rc)
@@ -2105,7 +2105,7 @@ contains
     allocate(deBlockList(2,2,LIS_npes),petMap(LIS_npes),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of deBlockList and petMap memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return ! bail out
+      line=__LINE__, file=FILENAME, rcToReturn=rc)) return
     do petID=0, LIS_npes-1
       deID = petID + 1
       deBlockList(1,1,deID) = LIS_ews_ind(nest,deID) ! East-West Start
@@ -2116,7 +2116,7 @@ contains
     enddo
 
     deLayout = ESMF_DELayoutCreate(petMap, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     distGrid = ESMF_DistGridCreate( &
       minIndex=(/1,1/), maxIndex=(/LIS_rc%gnc(nest),LIS_rc%gnr(nest)/), &
@@ -2124,15 +2124,15 @@ contains
       deBlockList=deBlockList, &
       delayout=deLayout, &
       rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     call LIS_DecompGet(distgrid,istart=istart,jstart=jstart,rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     deallocate(deBlockList,petMap,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of deBlockList and petMap memory failed.', &
-      line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
+      line=__LINE__,file=FILENAME,rcToReturn=rc)) return
 
     write(did,"(I0)") nest
     LIS_GridCreate = ESMF_GridCreate(name='LIS_Grid_'//trim(did), &
@@ -2141,24 +2141,24 @@ contains
       coordTypeKind=ESMF_TYPEKIND_COORD, &
       gridEdgeLWidth=(/0,0/), gridEdgeUWidth=(/0,1/), &
       rc = rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Add Center Latitude & Longitude Coordinates
     call ESMF_GridAddCoord(LIS_GridCreate, &
       staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Get pointer to Center Latitude array
     call ESMF_GridGetCoord(LIS_GridCreate, coordDim=1, &
       staggerloc=ESMF_STAGGERLOC_CENTER, localDE=0, &
       computationalLBound=lbnd, computationalUBound=ubnd, &
       farrayPtr=coordXcenter, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     ! Get pointer to Center Longitude array
     call ESMF_GridGetCoord(LIS_GridCreate, coordDim=2, &
       staggerloc=ESMF_STAGGERLOC_CENTER, localDE=0, &
       farrayPtr=coordYcenter, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! error checking
     ! lnc_red and lnr_red are "reduced" to not include the halo region
@@ -2167,30 +2167,30 @@ contains
       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
         msg="Size of local coordinate arrays not equal to size of local DE", &
         line=__LINE__, file=FILENAME, rcToReturn=rc)
-      return  ! bail out
+      return
     endif
 
     call LIS_ESMF_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),coordXcenter,rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     call LIS_ESMF_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),coordYcenter,rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     ! Add Grid Mask
     call ESMF_GridAddItem(LIS_GridCreate, itemFlag=ESMF_GRIDITEM_MASK, &
       itemTypeKind=ESMF_TYPEKIND_I4, &
       staggerLoc=ESMF_STAGGERLOC_CENTER, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
     ! Get pointer to Grid Mask array
     call ESMF_GridGetItem(LIS_GridCreate, itemflag=ESMF_GRIDITEM_MASK, &
       localDE=0, &
       staggerloc=ESMF_STAGGERLOC_CENTER, &
       farrayPtr=gridmask, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+      if (ESMF_STDERRORCHECK(rc)) return
     call LIS_ESMF_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
       (/istart,jstart/),gridmask,rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
@@ -2223,25 +2223,25 @@ contains
     allocate(indexCountPDe(2, 0:(LIS_npes - 1)),stat=stat) ! (dimCount, deCount)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of indexCountPDE memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return ! bail out
+      line=__LINE__, file=FILENAME, rcToReturn=rc)) return
     call ESMF_DistGridGet(distgrid, indexCountPDe=indexCountPDe, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     allocate(iIndexList(indexCountPDe(1, LIS_localPet)),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of iIndexList memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return ! bail out
+      line=__LINE__, file=FILENAME, rcToReturn=rc)) return
     call ESMF_DistGridGet(distgrid, localDe=0, dim=1, &
       indexList=iIndexList, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     allocate(jIndexList(indexCountPDe(2, LIS_localPet)),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg='Allocation of jIndexList memory failed.', &
-      line=__LINE__, file=FILENAME, rcToReturn=rc)) return ! bail out
+      line=__LINE__, file=FILENAME, rcToReturn=rc)) return
     call ESMF_DistGridGet(distgrid, localDe=0, dim=2, &
       indexList=jIndexList, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return  ! bail out
+    if (ESMF_STDERRORCHECK(rc)) return
 
     if (present(istart)) istart = minVal(iIndexList)
     if (present(iend)) iend = maxVal(iIndexList)
@@ -2251,11 +2251,11 @@ contains
     deallocate(indexCountPDe,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of indexCountPDe memory failed.', &
-      line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
+      line=__LINE__,file=FILENAME,rcToReturn=rc)) return
     deallocate(iIndexList,jIndexList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg='Deallocation of iIndexList and jIndexList memory failed.', &
-      line=__LINE__,file=FILENAME,rcToReturn=rc)) return ! bail out
+      line=__LINE__,file=FILENAME,rcToReturn=rc)) return
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
@@ -2310,7 +2310,7 @@ contains
         call ESMF_StateGet(LIS_FORC_State(nest), &
           itemName=trim(varname), &
           field=field,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        if(ESMF_STDERRORCHECK(rc)) return
       endif
     endif
 
@@ -2948,7 +2948,7 @@ contains
         endif
         call LIS_ForcFieldGet(field%lisForcVarname, &
           nest=nIndex,itemType=itemType,rc=rc)
-        if(ESMF_STDERRORCHECK(rc)) return ! bail out
+        if(ESMF_STDERRORCHECK(rc)) return
         if (itemType == ESMF_STATEITEM_FIELD) then
           iAssoc = .TRUE.
         else

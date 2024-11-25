@@ -258,7 +258,7 @@ contains
     call LIS_ESMF_GridWrite(grid, fileName=fileName, overwrite=overwrite, &
       status=status, timeslice=timeslice, iofmt=iofmt, &
       relaxedflag=relaxedflag, nclScript=nclScript, map=map, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -347,22 +347,22 @@ contains
         call LIS_ESMF_GridWrite(grid, fileName=fileName, overwrite=overwrite, &
           timeslice=timeslice, iofmt=iofmt, relaxedflag=relaxedflag, &
           nclScript=nclScript, map=LIS_ESMF_MAPPRESET_GLOBAL, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       case ('conus','CONUS','Conus')
         call LIS_ESMF_GridWrite(grid, fileName=fileName, overwrite=overwrite, &
           timeslice=timeslice, iofmt=iofmt, relaxedflag=relaxedflag, &
           nclScript=nclScript, map=LIS_ESMF_MAPPRESET_CONUS, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       case ('irene','IRENE','Irene')
         call LIS_ESMF_GridWrite(grid, fileName=fileName, overwrite=overwrite, &
           timeslice=timeslice, iofmt=iofmt, relaxedflag=relaxedflag, &
           nclScript=nclScript, map=LIS_ESMF_MAPPRESET_IRENE, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       case ('frontrange','FRONTRANGE','FrontRange')
         call LIS_ESMF_GridWrite(grid, fileName=fileName, overwrite=overwrite, &
           timeslice=timeslice, iofmt=iofmt, relaxedflag=relaxedflag, &
           nclScript=nclScript, map=LIS_ESMF_MAPPRESET_FRONTRANGE, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       case default
         call ESMF_LogSetError(rcToCheck=ESMF_RC_ARG_VALUE,   &
           msg="Unknown map preset value "//trim(mapPreset)//".", &
@@ -480,56 +480,56 @@ contains
         lfileName = trim(fileName)
       else
         call ESMF_GridGet(grid, name=gridName, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         lfileName = trim(gridName)//".nc"
       endif
 
       arraybundle = ESMF_ArrayBundleCreate(rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       ! -- centers --
 
       call ESMF_GridGetCoord(grid, staggerLoc=ESMF_STAGGERLOC_CENTER, &
         isPresent=isPresent, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (isPresent) then
         call ESMF_GridGetCoord(grid, coordDim=1, &
           staggerLoc=ESMF_STAGGERLOC_CENTER, array=array, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArraySet(array, name="lon_center", rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_GridGetCoord(grid, coordDim=2, &
           staggerLoc=ESMF_STAGGERLOC_CENTER, array=array, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArraySet(array, name="lat_center", rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
 
       ! -- corners --
 
       call ESMF_GridGetCoord(grid, staggerLoc=ESMF_STAGGERLOC_CORNER, &
         isPresent=hasCorners, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (hasCorners) then
         call ESMF_GridGetCoord(grid, coordDim=1, &
           staggerLoc=ESMF_STAGGERLOC_CORNER, array=array, rc=rc)
         if (.not. ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) then
           call ESMF_ArraySet(array, name="lon_corner", rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         endif
         call ESMF_GridGetCoord(grid, coordDim=2, &
           staggerLoc=ESMF_STAGGERLOC_CORNER, array=array, rc=rc)
         if (.not. ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) then
           call ESMF_ArraySet(array, name="lat_corner", rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         endif
       endif
 
@@ -537,38 +537,38 @@ contains
 
       call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_MASK, &
         staggerLoc=ESMF_STAGGERLOC_CENTER, isPresent=isPresent, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (isPresent) then
         call ESMF_GridGetItem(grid, staggerLoc=ESMF_STAGGERLOC_CENTER, &
           itemflag=ESMF_GRIDITEM_MASK, array=array, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArraySet(array, name="mask", rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
 
       ! -- area --
 
       call ESMF_GridGetItem(grid, itemflag=ESMF_GRIDITEM_AREA, &
         staggerLoc=ESMF_STAGGERLOC_CENTER, isPresent=isPresent, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (isPresent) then
         call ESMF_GridGetItem(grid, staggerLoc=ESMF_STAGGERLOC_CENTER, &
           itemflag=ESMF_GRIDITEM_AREA, array=array, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArraySet(array, name="area", rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_ArrayBundleAdd(arraybundle,(/array/),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
 
       call ESMF_ArrayBundleWrite(arraybundle, &
         fileName=trim(lfileName),rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       call ESMF_ArrayBundleDestroy(arraybundle,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       if (present(nclScript)) then
         lnclScript = nclScript
@@ -578,18 +578,18 @@ contains
 
       if (lnclScript) then
         call ESMF_GridGet(grid,dimCount=dimCount,rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
         ! allocate coordDim info accord. to dimCount and tileCount
         allocate(coordDimCount(dimCount), stat=stat)
         if (ESMF_LogFoundAllocError(statusToCheck=stat, &
           msg="Allocation of coordinate dimensions memory failed.", &
-          CONTEXT, rcToReturn=rc)) return  ! bail out
+          CONTEXT, rcToReturn=rc)) return
 
         ! get coordDim info
         call ESMF_GridGet(grid, coordDimCount=coordDimCount, &
           rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
         coordDimMax = 0
         do dimIndex=1,dimCount
@@ -600,7 +600,7 @@ contains
         deallocate(coordDimCount, stat=stat)
         if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
           msg="Deallocation of coordinate dimensions memory failed.", &
-          CONTEXT, rcToReturn=rc)) return  ! bail out
+          CONTEXT, rcToReturn=rc)) return
 
       endif
     endif
@@ -703,36 +703,36 @@ contains
         lfileName = trim(fileName)
       else
         call ESMF_GridGet(grid, name=gridName, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         lfileName = trim(gridName)//"_decomp.nc"
       endif
 
       call ESMF_GridGet(grid, rank=rank, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       if ( rank .ne. 2) then
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
           msg="Unsupported grid rank.", &
           CONTEXT, rcToReturn=rc)
-        return ! bail out
+        return
       endif
 
       call ESMF_VMGetGlobal(vm, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       call ESMF_VMGet(vm, localPet=localPet, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       field = ESMF_FieldCreate(grid, typekind=ESMF_TYPEKIND_I4, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       call ESMF_FieldGet(field, localDeCount=localDeCount, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       nullify(farrayPtr)
       do deIndex=1, localDeCount
         call ESMF_FieldGet(field, localDe=deIndex, farrayPtr=farrayPtr, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
         farrayPtr(:,:) = localPet
         nullify(farrayPtr)
@@ -740,10 +740,10 @@ contains
 
       call ESMF_FieldWrite(field, fileName=lfileName, variableName="decomp", &
         overwrite=overwrite, status=status, iofmt=iofmt, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       call ESMF_FieldDestroy(field, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     endif
 
@@ -829,7 +829,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field, typekind=typekind, rank=rank, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     l_member = 1
     if(present(member)) l_member = member
@@ -845,22 +845,22 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     allocate(coordDimCount(rank))
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of coordinate dimensions memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     if (trim(l_dataFillScheme)=="sincos") then
       call ESMF_FieldGet(field, grid=grid, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       call ESMF_GridGet(grid,coordTypeKind=coordTypeKind, &
         coordDimCount=coordDimCount, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (rank==1) then
         ! 1D sin pattern
         ! TODO: support Meshes
         call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR8D1, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         if (typekind==ESMF_TYPEKIND_R4) then
           call ESMF_FieldGet(field, farrayPtr=dataPtrR4D1, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           do i=lbound(dataPtrR4D1,1),ubound(dataPtrR4D1,1)
             dataPtrR4D1(i) = &
               (sin(real(l_member)*3.1416*(coord1PtrR8D1(i)+real(l_step))/180.)) * &
@@ -868,7 +868,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
           enddo
         elseif (typekind==ESMF_TYPEKIND_R8) then
           call ESMF_FieldGet(field, farrayPtr=dataPtrR8D1, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           do i=lbound(dataPtrR8D1,1),ubound(dataPtrR8D1,1)
             dataPtrR8D1(i) = &
               (sin(real(l_member)*3.1416*(coord1PtrR8D1(i)+real(l_step))/180.)) * &
@@ -878,7 +878,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
             msg="Unsupported typekind-rank and scheme combination requested.", &
             CONTEXT, rcToReturn=rc)
-          return ! bail out
+          return
         endif
       elseif (rank==2) then
         ! 2D sin*cos pattern
@@ -886,47 +886,47 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
         if (coordTypeKind==ESMF_TYPEKIND_R4) then
           if (coordDimCount(1)==1) then
             call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR4D1, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           else
             ! assume the only other choice here is 2D, if not will trigger error
             call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR4D2, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           endif
           if (coordDimCount(2)==1) then
             call ESMF_GridGetCoord(grid, coordDim=2, farrayPtr=coord2PtrR4D1, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           else
             ! assume the only other choice here is 2D, if not will trigger error
             call ESMF_GridGetCoord(grid, coordDim=2, farrayPtr=coord2PtrR4D2, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           endif
         elseif (coordTypeKind==ESMF_TYPEKIND_R8) then
           if (coordDimCount(1)==1) then
             call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR8D1, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           else
             ! assume the only other choice here is 2D, if not will trigger error
             call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR8D2, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           endif
           if (coordDimCount(2)==1) then
             call ESMF_GridGetCoord(grid, coordDim=2, farrayPtr=coord2PtrR8D1, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           else
             ! assume the only other choice here is 2D, if not will trigger error
             call ESMF_GridGetCoord(grid, coordDim=2, farrayPtr=coord2PtrR8D2, rc=rc)
-            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+            if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           endif
         else
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
             msg="Unsupported coordinate typekind.", &
             CONTEXT, rcToReturn=rc)
-          return ! bail out
+          return
         endif
 
         if (typekind==ESMF_TYPEKIND_R4) then
           call ESMF_FieldGet(field, farrayPtr=dataPtrR4D2, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           if (coordDimCount(1)==1 .and. coordDimCount(2)==1) then
             if (coordTypeKind==ESMF_TYPEKIND_R4) then
             do j=lbound(dataPtrR4D2,2),ubound(dataPtrR4D2,2)
@@ -1011,7 +1011,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
           endif
         elseif (typekind==ESMF_TYPEKIND_R8) then
           call ESMF_FieldGet(field, farrayPtr=dataPtrR8D2, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           if (coordDimCount(1)==1 .and. coordDimCount(2)==1) then
             if (coordTypeKind==ESMF_TYPEKIND_R4) then
             do j=lbound(dataPtrR8D2,2),ubound(dataPtrR8D2,2)
@@ -1098,21 +1098,21 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
             msg="Unsupported typekind-rank and scheme combination requested.", &
             CONTEXT, rcToReturn=rc)
-          return ! bail out
+          return
         endif
       elseif (rank==3) then
         ! 3D sin*cos*sin pattern
         ! TODO: support Meshes
         call ESMF_GridGetCoord(grid, coordDim=1, farrayPtr=coord1PtrR8D3, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_GridGetCoord(grid, coordDim=2, farrayPtr=coord2PtrR8D3, rc=rc)
         if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) &
-          return  ! bail out
+          return
         call ESMF_GridGetCoord(grid, coordDim=3, farrayPtr=coord3PtrR8D3, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (typekind==ESMF_TYPEKIND_R4) then
         call ESMF_FieldGet(field, farrayPtr=dataPtrR4D3, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         do k=lbound(dataPtrR4D3,3),ubound(dataPtrR4D3,3)
         do j=lbound(dataPtrR4D3,2),ubound(dataPtrR4D3,2)
         do i=lbound(dataPtrR4D3,1),ubound(dataPtrR4D3,1)
@@ -1126,7 +1126,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
         enddo
         elseif (typekind==ESMF_TYPEKIND_R8) then
           call ESMF_FieldGet(field, farrayPtr=dataPtrR8D3, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           do k=lbound(dataPtrR8D3,3),ubound(dataPtrR8D3,3)
           do j=lbound(dataPtrR8D3,2),ubound(dataPtrR8D3,2)
           do i=lbound(dataPtrR8D3,1),ubound(dataPtrR8D3,1)
@@ -1142,49 +1142,49 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
           call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
             msg="Unsupported typekind-rank and scheme combination requested.", &
             CONTEXT, rcToReturn=rc)
-          return ! bail out
+          return
         endif
       else
         call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
           msg="Unsupported typekind-rank and scheme combination requested.", &
           CONTEXT, rcToReturn=rc)
-        return ! bail out
+        return
       endif
     else if (trim(dataFillScheme)=="one") then
       if (typekind==ESMF_TYPEKIND_R8 .and. rank==1) then
         ! 1D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR8D1, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR8D1 = 1._ESMF_KIND_R8
       elseif (typekind==ESMF_TYPEKIND_R4 .and. rank==1) then
         ! 1D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR4D1, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR4D1 = 1._ESMF_KIND_R4
       elseif (typekind==ESMF_TYPEKIND_R8 .and. rank==2) then
         ! 2D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR8D2, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR8D2 = 1._ESMF_KIND_R8
       elseif (typekind==ESMF_TYPEKIND_R4 .and. rank==2) then
         ! 2D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR4D2, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR4D2 = 1._ESMF_KIND_R4
       elseif (typekind==ESMF_TYPEKIND_R8 .and. rank==3) then
         ! 3D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR8D3, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR8D3 = 1._ESMF_KIND_R8
       elseif (typekind==ESMF_TYPEKIND_R4 .and. rank==3) then
         ! 3D all 1.
         call ESMF_FieldGet(field, farrayPtr=dataPtrR4D3, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         ! initialize the entire array
         dataPtrR4D3 = 1._ESMF_KIND_R4
       endif
@@ -1192,13 +1192,13 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
         msg="Unknown dataFillScheme requested.", &
         CONTEXT, rcToReturn=rc)
-      return ! bail out
+      return
     endif
 
     deallocate(coordDimCount,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of coordinate dimensions memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1235,31 +1235,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_StateGet(state,itemCount=itemCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount), itemTypeList(itemCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state,itemNameList=itemNameList, &
       itemTypeList=itemTypeList,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do iIndex = 1, itemCount
       if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
         call ESMF_StateGet(state,field=field, &
           itemName=itemNameList(iIndex),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_FillField(field,value=value,rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
     enddo
 
     deallocate(itemNameList, itemTypeList, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1296,31 +1296,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_StateGet(state,itemCount=itemCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount), itemTypeList(itemCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state,itemNameList=itemNameList, &
       itemTypeList=itemTypeList,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do iIndex = 1, itemCount
       if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
         call ESMF_StateGet(state,field=field, &
           itemName=itemNameList(iIndex),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_FillField(field,value=value,rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
     enddo
 
     deallocate(itemNameList, itemTypeList, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1357,31 +1357,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_StateGet(state,itemCount=itemCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount), itemTypeList(itemCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state,itemNameList=itemNameList, &
       itemTypeList=itemTypeList,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do iIndex = 1, itemCount
       if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
         call ESMF_StateGet(state,field=field, &
           itemName=itemNameList(iIndex),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_FillField(field,value=value,rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
     enddo
 
     deallocate(itemNameList, itemTypeList, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1418,31 +1418,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_StateGet(state,itemCount=itemCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount), itemTypeList(itemCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state,itemNameList=itemNameList, &
       itemTypeList=itemTypeList,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do iIndex = 1, itemCount
       if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
         call ESMF_StateGet(state,field=field, &
           itemName=itemNameList(iIndex),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_FillField(field,value=value,rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       endif
     enddo
 
     deallocate(itemNameList, itemTypeList, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1481,26 +1481,26 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_StateGet(state,itemCount=itemCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount), itemTypeList(itemCount), stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state,itemNameList=itemNameList, &
       itemTypeList=itemTypeList,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     k=1 ! initialize
     do iIndex = 1, itemCount
       if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
         call ESMF_StateGet(state,field=field, &
           itemName=itemNameList(iIndex),rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call ESMF_FieldFill(field, dataFillScheme=dataFillScheme, &
           member=k, step=step, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         k=k+1 ! increment the member counter
       endif
     enddo
@@ -1508,7 +1508,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     deallocate(itemNameList, itemTypeList, stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of state item list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1544,26 +1544,26 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldCount=fieldCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(fieldList(fieldCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldList=fieldList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do fIndex=1,fieldCount
       call LIS_ESMF_FillField(fieldList(fIndex),value=value,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
     deallocate(fieldList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1599,26 +1599,26 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldCount=fieldCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(fieldList(fieldCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldList=fieldList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do fIndex=1,fieldCount
       call LIS_ESMF_FillField(fieldList(fIndex),value=value,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
     deallocate(fieldList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1654,26 +1654,26 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldCount=fieldCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(fieldList(fieldCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldList=fieldList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do fIndex=1,fieldCount
       call LIS_ESMF_FillField(fieldList(fIndex),value=value,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
     deallocate(fieldList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1709,26 +1709,26 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldCount=fieldCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(fieldList(fieldCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldList=fieldList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do fIndex=1,fieldCount
       call LIS_ESMF_FillField(fieldList(fIndex),value=value,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
     deallocate(fieldList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1765,27 +1765,27 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldCount=fieldCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(fieldList(fieldCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_FieldBundleGet(fieldbundle, &
       fieldList=fieldList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do fIndex=1,fieldCount
       call ESMF_FieldFill(fieldList(fIndex), dataFillScheme=dataFillScheme, &
         member=fIndex, step=step, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
     deallocate(fieldList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of field lists failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -1817,10 +1817,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_FillArray(array,value=value,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -1852,10 +1852,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_FillArray(array,value=value,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -1887,10 +1887,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_FillArray(array,value=value,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -1922,10 +1922,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_FillArray(array,value=value,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -1972,31 +1972,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank,localDeCount=localDeCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (rank == 1) then
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I81D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R81D = value
         enddo
       else
@@ -2009,25 +2009,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I82D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R82D = value
         enddo
       else
@@ -2040,25 +2040,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I83D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R83D = value
         enddo
       else
@@ -2119,31 +2119,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank,localDeCount=localDeCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (rank == 1) then
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I81D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R81D = value
         enddo
       else
@@ -2156,25 +2156,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I82D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R82D = value
         enddo
       else
@@ -2187,25 +2187,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I83D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R83D = value
         enddo
       else
@@ -2266,31 +2266,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank,localDeCount=localDeCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (rank == 1) then
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I81D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R81D = value
         enddo
       else
@@ -2303,25 +2303,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I82D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R82D = value
         enddo
       else
@@ -2334,25 +2334,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I83D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R83D = value
         enddo
       else
@@ -2413,31 +2413,31 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank,localDeCount=localDeCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (rank == 1) then
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I81D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R41D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R41D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R81D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R81D = value
         enddo
       else
@@ -2450,25 +2450,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I82D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R42D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R82D = value
         enddo
       else
@@ -2481,25 +2481,25 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_I83D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R43D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R43D = value
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R83D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           farray_R83D = value
         enddo
       else
@@ -2610,10 +2610,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_FieldGet(field,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_NetcdfReadIXJX(varname,filename,start,array=array,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -2654,36 +2654,36 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (present(rc)) rc = ESMF_SUCCESS
 
     call ESMF_ArrayGet(array,typekind=typekind,rank=rank,localDeCount=localDeCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (rank == 2) then
       if (typekind == ESMF_TYPEKIND_I4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call LIS_ESMF_NetcdfReadIXJX(varname,filename,start,farray=farray_I42D, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         enddo
       elseif (typekind == ESMF_TYPEKIND_I8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_I82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call LIS_ESMF_NetcdfReadIXJX(varname,filename,start,farray=farray_I82D, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         enddo
       elseif (typekind == ESMF_TYPEKIND_R4) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R42D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call LIS_ESMF_NetcdfReadIXJX(varname,filename,start,farray=farray_R42D, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         enddo
       elseif (typekind == ESMF_TYPEKIND_R8) then
         do deIndex=0,localDeCount-1
           call ESMF_ArrayGet(array,farrayPtr=farray_R82D,localDe=deIndex,rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
           call LIS_ESMF_NetcdfReadIXJX(varname,filename,start,farray=farray_R82D, rc=rc)
-          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+          if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         enddo
       else
         call ESMF_LogSetError(rcToCheck=ESMF_RC_ARG_RANK,   &
@@ -3169,7 +3169,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     do sIndex=1, size(stateList)
       call LIS_ESMF_LogState(stateList(sIndex),nestedFlag,label,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
   end subroutine
@@ -3227,18 +3227,18 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_StateGet(state, nestedFlag=nestedFlag, &
       itemCount=itemCount, name=stateName, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (itemCount > 0 ) then
 
       allocate(itemNameList(itemCount),itemTypeList(itemCount),stat=stat)
       if (ESMF_LogFoundAllocError(statusToCheck=stat, &
         msg="Allocation of item list memory failed.", &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return
 
       call ESMF_StateGet(state, nestedFlag=nestedFlag, &
         itemNameList=itemNameList,itemTypeList=itemTypeList, rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
       do iIndex=1, itemCount
 
@@ -3269,7 +3269,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       deallocate(itemNameList,itemTypeList,stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg="Deallocation of item list memory failed.", &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return
 
     else
       write (logMsg,"(A,A)") trim(llabel)//": ", &
@@ -3315,7 +3315,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_StateGet(state, itemCount=itemCount, &
       nestedFlag=nestedFlag,name=stateName,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if(present(label)) then
       llabel = trim(label)
@@ -3325,16 +3325,16 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call ESMF_StateGet(state, itemCount=itemCount, &
       nestedFlag=nestedFlag,name=stateName,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     allocate(itemNameList(itemCount),itemTypeList(itemCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of item name and type list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     call ESMF_StateGet(state, itemNameList=itemNameList, &
       itemTypeList=itemTypeList, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do iIndex=1, itemCount
       if (itemTypeList(iIndex) /= ESMF_STATEITEM_FIELD) then
@@ -3353,7 +3353,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     deallocate(itemNameList,itemTypeList,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of item name and type list memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -3405,19 +3405,19 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     call ESMF_GridGet(grid, name=gridName, &
       localDeCount=localDeCount, distgrid=distgrid, &
       dimCount=dimCount,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     ! allocate coordDim info accord. to dimCount and tileCount
     allocate(coordDimCount(dimCount), &
       stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of coordinate dimensions memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     ! get coordDim info
     call ESMF_GridGet(grid, coordDimCount=coordDimCount, &
       rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     coordDimMax = 0
     do dimIndex=1,dimCount
@@ -3435,7 +3435,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Dellocation of coordinate dimensions memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     write (logMsg,"(A,A,(A,I0))") trim(llabel)//": ", &
       trim(gridName), &
@@ -3445,7 +3445,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     ! get dimCount and tileCount
     call ESMF_DistGridGet(distgrid, dimCount=dimCount, tileCount=tileCount, &
       deCount=deCount, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     write (logMsg,"(A,A,(A,I0))") trim(llabel)//": ", &
       trim(gridName), &
@@ -3465,12 +3465,12 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       maxIndexPTile(dimCount, tileCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of index array memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     ! get minIndex and maxIndex arrays
     call ESMF_DistGridGet(distgrid, minIndexPTile=minIndexPTile, &
        maxIndexPTile=maxIndexPTile, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do tileIndex=1,tileCount
     do dimIndex=1,dimCount
@@ -3487,19 +3487,19 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     deallocate(minIndexPTile, maxIndexPTile,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of index array memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     ! allocate minIndexPDe and maxIndexPDe accord. to dimCount and deCount
     allocate(minIndexPDe(dimCount, deCount), &
       maxIndexPDe(dimCount, deCount),stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of index array memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
     ! get minIndex and maxIndex arrays
     call ESMF_DistGridGet(distgrid, minIndexPDe=minIndexPDe, &
        maxIndexPDe=maxIndexPDe, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     do deIndex=1,deCount
     do dimIndex=1,dimCount
@@ -3516,7 +3516,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     deallocate(minIndexPDe, maxIndexPDe,stat=stat)
     if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
       msg="Deallocation of index array memory failed.", &
-      CONTEXT, rcToReturn=rc)) return  ! bail out
+      CONTEXT, rcToReturn=rc)) return
 
   end subroutine
 #undef METHOD
@@ -3556,7 +3556,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     do fIndex=1,size(fieldList)
       call LIS_ESMF_LogField(fieldList(fIndex),llabel,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
     enddo
 
   end subroutine
@@ -3605,7 +3605,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     endif
 
     call ESMF_FieldGet(field,status=fieldStatus,name=fieldName,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (fieldStatus == ESMF_FIELDSTATUS_EMPTY) then
       fieldStatusStr = 'EMPTY'
@@ -3620,7 +3620,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     if (fieldStatus == ESMF_FIELDSTATUS_COMPLETE .OR. &
     fieldStatus == ESMF_FIELDSTATUS_GRIDSET ) then
       call ESMF_FieldGet(field, geomtype=fieldGeomtype,rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       if (fieldGeomtype == ESMF_GEOMTYPE_GRID) then
         fieldGeomtypeStr = 'GRID'
       elseif (fieldGeomtype == ESMF_GEOMTYPE_MESH) then
@@ -3638,15 +3638,15 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     call NUOPC_GetAttribute(field, name="ConsumerConnection", &
       value=fieldConsumerConn, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call NUOPC_GetAttribute(field, name="TransferOfferGeomObject", &
       value=fieldTransferOffer, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call NUOPC_GetAttribute(field, name="TransferActionGeomObject", &
       value=fieldTransferAction, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     write (logMsg,"(A,A,(2A))") trim(llabel)//": ", &
       trim(fieldName), &
@@ -3704,10 +3704,10 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     endif
 
     call ESMF_FieldGet(field,array=array,name=fieldName,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     call LIS_ESMF_LogArrayLclVal(array,fieldName=fieldName,label=llabel,rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
   end subroutine
 #undef METHOD
@@ -3760,27 +3760,27 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     endif
 
     call ESMF_ArrayGet(array, typekind=typekind,rank=rank, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (typekind == ESMF_TYPEKIND_I4) then
       if (rank == 1) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I4_1D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I4_1D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 2) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I4_2D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I4_2D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 3) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I4_3D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I4_3D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       else
         call ESMF_LogWrite(trim(llabel)//" rank out of log utility range.", &
           ESMF_LOGMSG_INFO)
@@ -3788,22 +3788,22 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     elseif (typekind == ESMF_TYPEKIND_I8) then
       if (rank == 1) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I8_1D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I8_1D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 2) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I8_2D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I8_2D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 3) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_I8_3D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_I8_3D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       else
         call ESMF_LogWrite(trim(llabel)//" rank out of log uttility range.", &
           ESMF_LOGMSG_INFO)
@@ -3811,22 +3811,22 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     elseif (typekind == ESMF_TYPEKIND_R4) then
       if (rank == 1) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R4_1D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R4_1D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 2) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R4_2D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R4_2D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 3) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R4_3D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R4_3D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       else
         call ESMF_LogWrite(trim(llabel)//" rank out of log utility range.", &
           ESMF_LOGMSG_INFO)
@@ -3834,22 +3834,22 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
     elseif (typekind == ESMF_TYPEKIND_R8) then
       if (rank == 1) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R8_1D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R8_1D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 2) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R8_2D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R8_2D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       elseif (rank == 3) then
         call ESMF_ArrayGet(array, farrayPtr=dataPtr_R8_3D, rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
         call LIS_ESMF_LogFarrayLclVal(dataPtr_R8_3D, fieldName=fieldName, &
           label=trim(llabel), rc=rc)
-        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+        if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
       else
         call ESMF_LogWrite(trim(llabel)//" rank out of log utility range.", &
           ESMF_LOGMSG_INFO)
@@ -4514,21 +4514,21 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
 
     ! query the CplComp for info
     call ESMF_CplCompGet(cplcomp, name=name, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     ! get the CplList Attribute
     call NUOPC_CompAttributeGet(cplcomp, name="CplList", &
       itemCount=cplListSize, rc=rc)
-    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+    if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
 
     if (cplListSize>0) then
       allocate(cplList(cplListSize), stat=stat)
       if (ESMF_LogFoundAllocError(statusToCheck=stat, &
         msg="Allocation of internal CplList memory failed.", &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return
       call NUOPC_CompAttributeGet(cplcomp, name="CplList", valueList=cplList, &
         rc=rc)
-      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return  ! bail out
+      if (ESMF_LogFoundError(rcToCheck=rc, PASSTHRU)) return
    else
      write (logMsg,"(A,A,A)") trim(llabel)//": ", &
        trim(name), &
@@ -4550,7 +4550,7 @@ type(ESMF_KeywordEnforcer), optional:: keywordEnforcer ! must use keywords below
       deallocate(cplList,stat=stat)
       if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
         msg="Deallocation of internal CplList memory failed.", &
-        CONTEXT, rcToReturn=rc)) return  ! bail out
+        CONTEXT, rcToReturn=rc)) return
     endif
 
   end subroutine
