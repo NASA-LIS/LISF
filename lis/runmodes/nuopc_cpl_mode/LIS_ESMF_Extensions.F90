@@ -33,6 +33,7 @@
 !=========================================================================================
 ! LIS ESMF Extensions Module
 !=========================================================================================
+!> @file LIS_ESMF_Extensions.F90 Custom ESMF extensions
 module LIS_ESMF_Extensions
 
   use ESMF
@@ -74,6 +75,7 @@ module LIS_ESMF_Extensions
 !
 !==============================================================================
 
+!> @cond IGNORE_INTERFACES
   interface LIS_ESMF_GridWrite
     module procedure LIS_ESMF_GridWrite_coords
     module procedure LIS_ESMF_GridWrite_preset
@@ -133,6 +135,7 @@ module LIS_ESMF_Extensions
     module procedure LIS_ESMF_LogFarrayLclVal_R82D
     module procedure LIS_ESMF_LogFarrayLclVal_R83D
   end interface
+!> @endcond
 
 !==============================================================================
 !

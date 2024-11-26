@@ -24,6 +24,7 @@
 #define T_EXIT(region)
 #endif
 
+!> @file LIS_NUOPC_Gluecode.F90 LIS NUOPC Gluecode interfaces
 module LIS_NUOPC_Gluecode
 !BOP
 !
@@ -165,6 +166,7 @@ module LIS_NUOPC_Gluecode
     LIS_FORC_CO2
   use LIS_ESMF_Extensions
   use LIS_NUOPC_DataCopy
+  use LIS_NUOPC_Flags
 
   IMPLICIT NONE
 
@@ -663,10 +665,9 @@ contains
 ! !ROUTINE: LIS_NUOPC_DataInit
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_DataInit(nest,importState,exportState,rc)
+  subroutine LIS_NUOPC_DataInit(nest,exportState,rc)
 ! !ARGUMENTS:
     integer,intent(in)                     :: nest
-    type(ESMF_State),intent(inout)         :: importState
     type(ESMF_State),intent(inout)         :: exportState
     integer,intent(out)                    :: rc
 
@@ -700,13 +701,15 @@ contains
 ! !ROUTINE: LIS_NUOPC_Run
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_Run(nest,mode,importState,exportState,clock,rc)
+  subroutine LIS_NUOPC_Run(nest,mode,importState,exportState,clock, &
+  misg_import,rc)
 ! !ARGUMENTS:
     integer,intent(in)                     :: nest
     integer,intent(in)                     :: mode
     type(ESMF_State),intent(inout)         :: importState
     type(ESMF_State),intent(inout)         :: exportState
     type(ESMF_Clock),intent(in)            :: clock
+    type(missingval_flag),intent(in)       :: misg_import
     integer,intent(out)                    :: rc
 !
 ! !DESCRIPTION:
@@ -751,13 +754,14 @@ contains
     stopTime = currTime + timeStep
 
     ! Confirm if the timemgr should receive current time or stop time
+!    call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
     call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
 
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     T_ENTER("datacopy")
-    call LIS_ImportFieldsCopy(nest,importState,rc=rc)
+    call LIS_ImportFieldsCopy(nest,importState,misg_import,rc=rc)
     T_EXIT("datacopy")
     if(ESMF_STDERRORCHECK(rc)) return
 
@@ -816,7 +820,6 @@ contains
     T_ENTER("pertrest")
     call LIS_perturb_writerestart(nest)
     T_EXIT("pertrest")
-
     T_ENTER("darun")
     call LIS_dataassim_run(nest)
     T_EXIT("darun")
@@ -982,6 +985,8 @@ contains
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     LIS_rc%endtime = 1
+
+    call lisfinalize(trim(LIS_rc%runmode)//char(0))
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
@@ -1713,10 +1718,11 @@ contains
 #undef METHOD
 #define METHOD "LIS_ImportFieldsCopy"
 
-  subroutine LIS_ImportFieldsCopy(nest,importState,label,rc)
+  subroutine LIS_ImportFieldsCopy(nest,importState,missing,label,rc)
     ! ARGUMENTS
     integer,intent(in)                :: nest
     type(ESMF_State),intent(inout)    :: importState
+    type(missingval_flag),intent(in)  :: missing
     character(*),intent(in),optional  :: label
     integer,intent(out)               :: rc
     ! LOCAL VARIABLES
@@ -1758,17 +1764,17 @@ contains
             if (LIS_rc%lsm.eq."Noah.3.3") then
               call LIS_CopyToNoah_3_3(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
-                nest=nest,rc=rc)
+                nest=nest,missing=missing,rc=rc)
               if(ESMF_STDERRORCHECK(rc)) return
             else if (LIS_rc%lsm.eq."NoahMP.3.6") then
               call LIS_CopyToNoahMP_3_6(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
-                nest=nest,rc=rc)
+                nest=nest,missing=missing,rc=rc)
               if(ESMF_STDERRORCHECK(rc)) return
             else if (LIS_rc%lsm.eq."Noah-MP.4.0.1") then
               call LIS_CopyToNoahMP_4_0_1(field=importField, &
                 stdName=LIS_FieldList(fIndex)%stdName, &
-                nest=nest,rc=rc)
+                nest=nest,missing=missing,rc=rc)
               if(ESMF_STDERRORCHECK(rc)) return
             else
               call ESMF_LogSetError(ESMF_RC_NOT_IMPL, &
@@ -2083,7 +2089,7 @@ contains
     type(ESMF_DistGrid)                        :: distGrid
     character(len=10)   :: did
     integer             :: petID, deID
-    integer             :: istart, jstart
+    integer             :: start(2)
     integer             :: id, col, row
     real                :: lat_cor, lon_cor
     real                :: lat_cen, lon_cen
@@ -2126,7 +2132,7 @@ contains
       rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    call LIS_DecompGet(distgrid,istart=istart,jstart=jstart,rc=rc)
+    call LIS_DecompGet(distgrid,istart=start(1),jstart=start(2),rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     deallocate(deBlockList,petMap,stat=stat)
@@ -2171,10 +2177,10 @@ contains
     endif
 
     call LIS_ESMF_NetcdfReadIXJX("lon",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),coordXcenter,rc)
+      start,coordXcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return
     call LIS_ESMF_NetcdfReadIXJX("lat",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),coordYcenter,rc)
+      start,coordYcenter,rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
     ! Add Grid Mask
@@ -2189,7 +2195,7 @@ contains
       farrayPtr=gridmask, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
     call LIS_ESMF_NetcdfReadIXJX("LANDMASK",trim(LIS_rc%paramfile(nest)), &
-      (/istart,jstart/),gridmask,rc)
+      start,gridmask,rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
 #ifdef DEBUG
@@ -2618,6 +2624,9 @@ contains
           mIndex,"): ",trim(LIS_rc%metforc(mIndex))
         call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
       enddo
+      write (logMsg,"(A,A,A)") trim(l_label), &
+        " Met forcing blending: ", trim(LIS_rc%metforc_blend_alg)
+      call ESMF_LogWrite(trim(logMsg), ESMF_LOGMSG_INFO)
     endif
 
     do nIndex=1,LIS_rc%nnest

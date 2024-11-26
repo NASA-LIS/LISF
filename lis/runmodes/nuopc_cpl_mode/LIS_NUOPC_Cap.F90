@@ -7,231 +7,11 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-!>
-!! @mainpage NASA's Land Information System (LIS) NUOPC Cap
-!! @author Daniel Rosen (daniel.rosen@noaa.gov)
-!! @author ESMF Support (esmf_support@ucar.edu)
-!! @date 03/14/2017 LIS NUOPC Cap Added to GitHub
-!! @date 03/15/2017 Documentation Added
-!!
-!! @tableofcontents
-!!
-!! @section Overview Overview
-!!
-!! The Land Information System (LIS) is a surface model wrapper developed
-!! and maintained by the National Aeronautics and Space Administration (NASA).
-!! LIS abstracts several land and ocean surface models with standard
-!! interfaces. The LIS cap wraps LIS with NUOPC compliant interfaces. The
-!! result is configurable surface model capable of coupling with other models
-!! in the National Unified Operational Prediction Capability (NUOPC).  As of
-!! LIS version 7.1 only Noah v.3.3 has two-way NUOPC coupling capabilities.
-!!
-!! This page documents the technical design of the specialized NUOPC model and
-!! the LIS gluecode.  For generic NUOPC model documentation please see the
-!! [NUOPC Reference Manual] (https://www.earthsystemcog.org/projects/nuopc/refmans).
-!!
-!!
-!! @section NuopcSpecialization NUOPC Model Specialized Entry Points
-!!
-!! This cap specializes the cap configuration, initialization, advertised
-!! fields, realized fields, data initialization, clock, run, and finalize.
-!!
-!! @subsection SetServices Set Services (Register Subroutines)
-!!
-!! Table summarizing the NUOPC specialized subroutines registered during
-!! [SetServices] (@ref LIS_NUOPC::SetServices).  The "Phase" column says
-!! whether the subroutine is called during the initialization, run, or
-!! finalize part of the coupled system run.
-!!
-!! Phase  |     Cap Subroutine                                | Description
-!! -------|---------------------------------------------------|-------------------------------------------------------------
-!! Init   | [InitializeP0] (@ref LIS_NUOPC::InitializeP0)     | Set the Initialize Phase Definition (IPD). Configure model
-!! Init   | [InitializeP1] (@ref LIS_NUOPC::InitializeP1)     | Initialize model.  Advertize import and export fields
-!! Init   | [InitializeP3] (@ref LIS_NUOPC::InitializeP3)     | Realize import and export fields
-!! Init   | [DataInitialize] (@ref LIS_NUOPC::DataInitialize) | Initialize import and export data
-!! Init   | [SetClock] (@ref LIS_NUOPC::SetClock)             | Set model clock during initialization
-!! Run    | [CheckImport] (@ref LIS_NUOPC::CheckImport)       | Check timestamp on import data.
-!! Run    | [ModelAdvance] (@ref LIS_NUOPC::ModelAdvance)     | Advances the model by a timestep
-!! Final  | [ModelFinalize] (@ref LIS_NUOPC::ModelFinalize)   | Releases memory
-!!
-!!
-!! @section Initialize Initialize
-!!
-!! Description of the initialization phases and internal model calls.
-!! - [InitializeP0] (@ref LIS_NUOPC::InitializeP0)
-!! - [InitializeP1] (@ref LIS_NUOPC::InitializeP1)
-!! - [InitializeP3] (@ref LIS_NUOPC::InitializeP3)
-!! - [DataInitialize] (@ref LIS_NUOPC::DataInitialize)
-!! - [SetClock] (@ref LIS_NUOPC::SetClock)
-!!
-!! @subsection InitializeP0 InitializeP0
-!!
-!! During initialize phase 0 the runtime configuration is read in from model
-!! attributes and the initialization phase definition version is set to
-!! IPDv03.
-!!
-!! @subsection InitializeP1 InitializeP1
-!!
-!! During initialize phase 1 the model is initialized and the import and
-!! export fields are advertised in nested import and export states. Import
-!! fields are configured in the forcing variables list file.
-!!
-!! @subsection InitializeP3 InitializeP3
-!!
-!! During initialize phase 3 import and export fields are realized in each
-!! nested import and export state if they are connected through NUOPC.
-!! Realized fields are created on the LIS grid. All export fields are realized
-!! if realize all export fields is turned on.
-!!
-!! @subsection DataInitialize DataInitialize
-!!
-!! During data initialize this cap checks the timestamp of all import fields
-!! dependent on a coupled model.  Once all dependent import fields have been
-!! initialized this cap is marked initalized. The export fields are updated
-!! and initialized regardless of the import field dependencies.
-!!
-!! @subsection SetClock SetClock
-!!
-!! During set clock the cap creates a new clock for each nest. The time step
-!! for each nest is set in LIS configuration file and initialized during LIS
-!! initialization. The time accumulation tracker for each timestep is reset to
-!! zero.  The cap's time step is updated to the shortest time step
-!! of all nests. The restart write time step is also created and the restart
-!! write time accumulation tracker is reset to zero.
-!!
-!!
-!! @section Run Run
-!!
-!! Description of the run phase(s) and internal model calls.
-!! - [CheckImport] (@ref LIS_NUOPC::CheckImport)
-!! - [ModelAdvance] (@ref LIS_NUOPC::ModelAdvance)
-!!
-!! @subsection CheckImport CheckImport
-!!
-!! During check import the import data is checked to verify that it is at
-!! the beginning or end of the timestep.
-!!
-!! @subsection ModelAdvance ModelAdvance
-!!
-!! During model advance each nest time accumulation tracker is increased by
-!! the timestep of the cap.  If the time accumlation tracker is greater than
-!! the time step of the nest then the nest is advanced.
-!!
-!!
-!! @section Finalize Finalize
-!!
-!! Description of the finalize phase and internal model calls.
-!! - [ModelFinalize] (@ref LIS_NUOPC::ModelFinalize)
-!!
-!! @subsection ModelFinalize ModelFinalize
-!!
-!! During model finalize LIS finalize subroutines are called and memory
-!! allocated during cap initialization is released.
-!!
-!!
-!! @subsection ModelConfiguration Model Configuration
-!!
-!! Model attributes are used to configure the model.
-!!
-!! Attribute          | Default        | Description
-!! -------------------|----------------|-------------------------------------------------------------------------------------
-!! Verbosity          | 0              | String, converted into an integer. Bit 16: LIS cap information will be logged.
-!! Diagnostic         | 0              | String, converted into an integer. Bit 16: LIS cap diagnostics will be written.
-!! realize_all_export | false          | Realize all export fields including non connected fields.
-!! config_file        | lis.config     | Set the LIS configuration file.
-!! nest_to_nest       | false          | Turn on nest to nest coupling. Each nest will be identified with an integer.
-!! coupled_ensemble   | false          | Couple ensemble members using 3D fields with ungridded dimension.
-!! import_dependency  | false          | Data initialization will loop until all import field dependencies are satisfied.
-!! output_directory   | [CNAME]_OUTPUT | Configure the LIS Cap output directory.
-!!
-!!
-!! @section ModelFields Model Fields
-!!
-!! The following tables list the import and export fields.
-!!
-!! @subsection ImportFields Import Fields
-!!
-!! Import fields arelisted in the import_list parameter.
-!!
-!! Standard Name  | Units  | Model Variable  | Description                                | Notes
-!! ---------------|--------|-----------------|--------------------------------------------|--------------------------------------
-!! dummy_field_1  | Pa     | forcing_1       | field description for first import field   | |
-!! dummy_field_2  | kg     | forcing_2       | field description for second import field  | |
-!! dummy_field_3  | W m-2  | forcing_3       | field description for third import field   | field notes
-!!
-!! @subsection ExportField Export Fields
-!!
-!! Export fields are listed in the export_list parameter.
-!!
-!! Standard Name  | Units   | Model Variable  | Description                               | Notes
-!! ---------------|---------|-----------------|-------------------------------------------|---------------------------
-!! dummy_field_1  | m       | output_1        | field description for first export field  | field notes
-!! dummy_field_2  | kg      | output_2        | field description for second export field | |
-!! dummy_field_3  | m s-1   | output_3        | field description for third export field  | field notes
-!!
-!!
-!! @section MemoryManagement Memory Management
-!!
-!! Model configuration is stored in a custom internal state data type. A
-!! pointer to the custom internal state data type is stored in the component.
-!!
-!! The cap allocates new memory for each field so that 2-D coordinate points
-!! can be translated into the LIS tiled field points.
-!!
-!! @section IO Input and Output
-!!
-!! Cap diagnostic output is written to the ESMF PET Logs. Cap diagnostic
-!! output can be increased or decreased by setting the Verbosity attribute.
-!!
-!! NUOPC state restart write files are written depending on the
-!! RestartInterval attribute. If set to 0 then NUOPC state restart write files
-!! will never be written.
-!!
-!! LIS diagnostics output is written to the LIS logs configured in the LIS
-!! configuration file.
-!!
-!! LIS output files are written to the output directory configured in the LIS
-!! configuration file.  LIS output includes LIS history files and LIS restart
-!! files.
-!!
-!! @section BuildingAndInstalling Building and Installing
-!!
-!! Environment Variables
-!! - ESMFMKFILE
-!!
-!! NUOPC Makefile Targets
-!! - nuopc
-!! - nuopcinstall
-!! - nuopcclean
-!!
-!! The build system in [Makefile] (@ref Makefile) wraps the LIS build system
-!! and adds the nuopc, nuopcinstall, and nuopcclean targets. Before building
-!! make sure to configure the internal model.
-!!
-!! To build and install into the current directory run:
-!!    $ make nuopc
-!!
-!! To install into an alternative directory run:
-!!    $ make nuopcinstall DESTDIR=<INSTALL_DIR> INSTDIR=<SUBDIR>
-!!
-!! To build with debugging information run:
-!!    $ make nuopc DEBUG=on
-!!
-!! @section Repository
-!! The LIS NUOPC cap is maintained in a GitHub repository:
-!! https://github.com/NESII/lis_cap
-!!
-!! @section References
-!!
-!! - [LIS] (https://modelingguru.nasa.gov/community/atmospheric/lis)
-!! - [ESPS] (https://www.earthsystemcog.org/projects/esps)
-!! - [ESMF] (https://www.earthsystemcog.org/projects/esmf)
-!! - [NUOPC] (https://www.earthsystemcog.org/projects/nuopc/)
-
 #define FILENAME "LIS_NUOPC_Cap.F90"
 #define MODNAME "LIS_NUOPC_Cap"
 #include "LIS_NUOPC_Macros.h"
 
+!> @file LIS_NUOPC_Cap.F90 LIS NUOPC Cap interfaces
 module LIS_NUOPC
 
   use ESMF
@@ -244,6 +24,7 @@ module LIS_NUOPC
     model_label_Advance     => label_Advance, &
     model_label_Finalize    => label_Finalize
   use LIS_NUOPC_Gluecode
+  use LIS_NUOPC_Flags
   use LIS_ESMF_Extensions
 
   implicit none
@@ -255,12 +36,15 @@ module LIS_NUOPC
   CHARACTER(LEN=*), PARAMETER :: label_InternalState = 'InternalState'
   INTEGER, PARAMETER :: MAXNEST = 999999999
 
+!> @brief Custom LIS NUOPC cap internal state
   type type_InternalStateStruct
     character(len=64)     :: configFile       = 'lis.config'
     logical               :: realizeAllExport = .FALSE.
     logical               :: nestToNest       = .FALSE.
     logical               :: cplEns           = .FALSE.
-    logical               :: importDependency = .FALSE.
+    type(field_init_flag) :: init_export      = FLD_INIT_FILLV
+    type(field_init_flag) :: init_import      = FLD_INIT_FILLV
+    type(missingval_flag) :: misg_import      = MISSINGVAL_FAIL
     character(len=40)     :: dirOutput        = "."
     integer               :: nnests           = 0
     integer               :: nfields          = size(LIS_FieldList)
@@ -273,9 +57,11 @@ module LIS_NUOPC
     integer,allocatable                 :: modes(:)
   end type
 
+!> @cond IGNORE_WRAPPERS
   type type_InternalState
     type(type_InternalStateStruct), pointer :: wrap
   end type
+!> @endcond
 
 !EOP
 
@@ -283,6 +69,10 @@ module LIS_NUOPC
   contains
   !-----------------------------------------------------------------------------
 
+!> @brief Register NUOPC compatible phases for initialize, run, and finalize
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
   subroutine SetServices(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -342,6 +132,16 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
+!> @brief Set the Initialize Phase Definition (IPD). Read model configuration
+!! @param [inout] gcomp       This component object
+!! @param [inout] importState The coupled import state
+!! @param [inout] exportState The coupled export state
+!! @param [inout] clock       The clock used for coupling
+!! @param [out]   rc          Return value for subroutine
+!! @details
+!! During initialize phase 0 the runtime configuration is read in from model
+!! attributes and the initialization phase definition version is set to
+!! IPDv03.
   subroutine InitializeP0(gcomp, importState, exportState, clock, rc)
     type(ESMF_GridComp)   :: gcomp
     type(ESMF_State)      :: importState, exportState
@@ -398,6 +198,9 @@ module LIS_NUOPC
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!> @brief Read configuration from component's attributes
+!! @param [out] rc Return value for subroutine
+!! @details
     subroutine LIS_AttributeGet(rc)
       integer, intent(out)  :: rc
 
@@ -428,6 +231,7 @@ module LIS_NUOPC
       call ESMF_AttributeGet(gcomp, name="realize_all_export", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
+      value = ESMF_UtilStringLowerCase(value, rc=rc)
       is%wrap%realizeAllExport = (trim(value)=="true")
 
       ! Set configuration file name
@@ -440,20 +244,44 @@ module LIS_NUOPC
       call ESMF_AttributeGet(gcomp, name="nest_to_nest", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
+      value = ESMF_UtilStringLowerCase(value, rc=rc)
       is%wrap%nestToNest = (trim(value)=="true")
 
       ! Turn on ensemble coupling
       call ESMF_AttributeGet(gcomp, name="coupled_ensemble", value=value, &
         defaultValue="false", convention="NUOPC", purpose="Instance", rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
+      value = ESMF_UtilStringLowerCase(value, rc=rc)
       is%wrap%cplEns = (trim(value)=="true")
 
-      ! Realize all export fields
+      ! export data initialization type
+      call ESMF_AttributeGet(gcomp, name="initialize_export", &
+        value=value, defaultValue="FLD_INIT_MODEL", &
+        convention="NUOPC", purpose="Instance", rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      is%wrap%init_export = value
+
+      ! Initialize import setting
+      call ESMF_AttributeGet(gcomp, name="initialize_import", &
+        value=value, defaultValue="FLD_INIT_FILLV", &
+        convention="NUOPC", purpose="Instance", rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      is%wrap%init_import = value
+
+      ! Import dependency
       call ESMF_AttributeGet(gcomp, name="import_dependency", &
         value=value, defaultValue="false", &
         convention="NUOPC", purpose="Instance", rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
-      is%wrap%importDependency = (trim(value)=="true")
+      value = ESMF_UtilStringLowerCase(value, rc=rc)
+      if (trim(value)=="true") is%wrap%init_import = FLD_INIT_IMPORT
+
+      ! Missing import value option
+      call ESMF_AttributeGet(gcomp, name="missing_import", &
+        value=value, defaultValue="MISSINGVAL_FAIL", &
+        convention="NUOPC", purpose="Instance", rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      is%wrap%misg_import = value
 
       ! Get component output directory
       call ESMF_AttributeGet(gcomp, name="output_directory", &
@@ -476,8 +304,17 @@ module LIS_NUOPC
         write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
           'Coupled Ensemble       = ',is%wrap%cplEns
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-        write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
-          'Import Dependency      = ',is%wrap%importDependency
+        value = is%wrap%init_export
+        write (logMsg, "(A,(A,A))") trim(cname)//': ', &
+          'Initialize Export      = ',trim(value)
+        call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
+        value = is%wrap%init_import
+        write (logMsg, "(A,(A,A))") trim(cname)//': ', &
+          'Initialize Import      = ',trim(value)
+        call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
+        value = is%wrap%misg_import
+        write (logMsg, "(A,(A,A))") trim(cname)//': ', &
+          'Missing Imports        = ',trim(value)
         call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
         write (logMsg, "(A,(A,L1))") trim(cname)//': ', &
           'Realze All Exports     = ',is%wrap%realizeAllExport
@@ -496,6 +333,16 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
+!> @brief Initialize internal model. Advertise import and export fields
+!! @param [inout] gcomp       This component object
+!! @param [inout] importState The coupled import state
+!! @param [inout] exportState The coupled export state
+!! @param [inout] clock       The clock used for coupling
+!! @param [out]   rc          Return value for subroutine
+!! @details
+!! During initialize phase 1 the model is initialized and the import and
+!! export fields are advertised in nested import and export states. Import
+!! fields are configured in the forcing variables list file.
   subroutine InitializeP1(gcomp, importState, exportState, clock, rc)
     type(ESMF_GridComp)     :: gcomp
     type(ESMF_State)        :: importState, exportState
@@ -651,6 +498,8 @@ module LIS_NUOPC
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!> @brief Log advertised import and export fields
+!! @details
     subroutine LogAdvertised()
       ! local variables
       integer                    :: cntImp
@@ -706,6 +555,17 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
+!> @brief Realize import and export fields
+!! @param [inout] gcomp       This component object
+!! @param [inout] importState The coupled import state
+!! @param [inout] exportState The coupled export state
+!! @param [inout] clock       The clock used for coupling
+!! @param [out]   rc          Return value for subroutine
+!! @details
+!! During initialize phase 3 import and export fields are realized in each
+!! nested import and export state if they are connected through NUOPC.
+!! Realized fields are created on the LIS grid. All export fields are realized
+!! if realize all export fields is turned on.
   subroutine InitializeP3(gcomp, importState, exportState, clock, rc)
     type(ESMF_GridComp)  :: gcomp
     type(ESMF_State)     :: importState, exportState
@@ -809,9 +669,6 @@ module LIS_NUOPC
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
           endif
-          call ESMF_FieldFill(field, dataFillScheme="const", &
-            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -841,9 +698,6 @@ module LIS_NUOPC
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
           endif
-          call ESMF_FieldFill(field, dataFillScheme="const", &
-            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -857,9 +711,6 @@ module LIS_NUOPC
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
             if(ESMF_STDERRORCHECK(rc)) return
           endif
-          call ESMF_FieldFill(field, dataFillScheme="const", &
-            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
@@ -874,9 +725,6 @@ module LIS_NUOPC
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
           endif
-          call ESMF_FieldFill(field, dataFillScheme="const", &
-            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateExp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedExport = .TRUE.
@@ -894,9 +742,6 @@ module LIS_NUOPC
               grid=is%wrap%grids(nIndex), typekind=ESMF_TYPEKIND_FIELD, rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
           endif
-          call ESMF_FieldFill(field, dataFillScheme="const", &
-            const1=REAL(MISSINGVALUE,ESMF_KIND_R8), rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
           call NUOPC_Realize(is%wrap%NStateImp(nIndex), field=field,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
           LIS_FieldList(fIndex)%realizedImport = .TRUE.
@@ -913,10 +758,17 @@ module LIS_NUOPC
         endif
       enddo
 
-      call LIS_ESMF_FillState(is%wrap%NStateImp(nIndex),value=MISSINGVALUE,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-      call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex),value=MISSINGVALUE,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
+      if(.not.(is%wrap%init_import .eq. FLD_INIT_MODEL)) then
+        call LIS_ESMF_FillState(is%wrap%NStateImp(nIndex), MISSINGVALUE, &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+      endif
+
+      if(.not.(is%wrap%init_export .eq. FLD_INIT_MODEL)) then
+        call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex), MISSINGVALUE, &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+      endif
 
       is%wrap%modes(nIndex) = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp(nIndex),rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
@@ -927,6 +779,8 @@ module LIS_NUOPC
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!> @brief Log realized import and export fields
+!! @details
     subroutine LogRealized()
       ! local variables
       integer                    :: cntImp
@@ -982,6 +836,14 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
+!> @brief Initialize import and export data
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
+!! During data initialize this cap checks the timestamp of all import fields
+!! dependent on a coupled model.  Once all dependent import fields have been
+!! initialized this cap is marked initalized. The export fields are updated
+!! and initialized regardless of the import field dependencies.
   subroutine DataInitialize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -1002,7 +864,8 @@ module LIS_NUOPC
     integer                                :: itemCount
     character(len=64),allocatable          :: itemNameList(:)
     type(ESMF_StateItem_Flag), allocatable :: itemTypeList(:)
-    type(ESMF_Field)                       :: field
+    type(ESMF_Field)                       :: ifield, efield
+    integer                                :: eSearch
     logical                                :: importCurrent
     logical                                :: importUpdated
 
@@ -1045,7 +908,41 @@ module LIS_NUOPC
     do nIndex=1,is%wrap%nnests
       write (nStr,"(I0)") nIndex
 
-      if (is%wrap%importDependency) then
+      ! Initialize export fields
+      call LIS_NUOPC_DataInit(nest=nIndex, &
+        exportState=is%wrap%NStateExp(nIndex),rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemCount=itemCount, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      allocate( &
+        itemNameList(itemCount), &
+        itemTypeList(itemCount), &
+        stat=stat)
+      if (ESMF_LogFoundAllocError(statusToCheck=stat, &
+        msg="Allocation of state item list memory failed.", &
+        line=__LINE__, &
+        file=__FILE__)) &
+        return
+      call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemNameList=itemNameList, &
+        itemTypeList=itemTypeList,rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      do iIndex=1, itemCount
+        if (itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
+          call ESMF_StateGet(is%wrap%NStateExp(nIndex),field=efield, &
+            itemName=itemNameList(iIndex),rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
+          call NUOPC_SetAttribute(efield, name="Updated", value="true", rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
+        endif
+      enddo
+      deallocate(itemNameList, itemTypeList, stat=stat)
+      if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
+        msg="Deallocation of state item list memory failed.", &
+        line=__LINE__, &
+        file=__FILE__)) &
+        return
+
+      if (is%wrap%init_import .eq. FLD_INIT_IMPORT) then
         ! Check data dependencies
         importCurrent = NUOPC_IsAtTime(is%wrap%NStateImp(nIndex), &
           time=currTime, rc=rc)
@@ -1055,7 +952,7 @@ module LIS_NUOPC
           call ESMF_LogWrite( &
             trim(cname)//': '//rname//' Initialize-Data-Dependency SATISFIED!!! Nest='//trim(nStr), &
             ESMF_LOGMSG_INFO)
-          call LIS_ImportFieldsCopy(nIndex,is%wrap%NStateImp(nIndex),rc=rc)
+          call LIS_ImportFieldsCopy(nIndex,is%wrap%NStateImp(nIndex),is%wrap%misg_import,rc=rc)
           if (ESMF_STDERRORCHECK(rc)) return
         else
           call ESMF_LogWrite( &
@@ -1064,7 +961,7 @@ module LIS_NUOPC
           importUpdated = .FALSE.
         endif
       else
-        ! Reset all import fields to zero
+        ! Reset all import fields to export or fillv
         call ESMF_StateGet(is%wrap%NStateImp(nIndex),itemCount=itemCount, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
 
@@ -1084,12 +981,33 @@ module LIS_NUOPC
 
         do iIndex=1, itemCount
           if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
-            call ESMF_StateGet(is%wrap%NStateImp(nIndex),field=field, &
+            call ESMF_StateGet(is%wrap%NStateImp(nIndex),field=ifield, &
               itemName=itemNameList(iIndex),rc=rc)
             if (ESMF_STDERRORCHECK(rc)) return
-            call ESMF_FieldFill(field, dataFillScheme="const", &
-              const1=0.0D0, rc=rc)
-            if (ESMF_STDERRORCHECK(rc)) return
+            call ESMF_StateGet(is%wrap%NStateExp(nIndex), &
+              itemSearch=itemNameList(iIndex), itemCount=eSearch, rc=rc)
+            if (eSearch .gt. 0) then
+              call ESMF_StateGet(is%wrap%NStateExp(nIndex),field=efield, &
+                itemName=itemNameList(iIndex),rc=rc)
+              if (ESMF_STDERRORCHECK(rc)) return
+              call ESMF_FieldCopy(ifield, fieldIn=efield, rc=rc)
+              if (ESMF_STDERRORCHECK(rc)) return
+            else
+              if (is%wrap%init_import .eq. FLD_INIT_ZERO) then
+                call ESMF_FieldFill(ifield, dataFillScheme="const", &
+                  const1=0.0_ESMF_KIND_R8, rc=rc)
+                if (ESMF_STDERRORCHECK(rc)) return
+              elseif (is%wrap%init_import .eq. FLD_INIT_FILLV) then
+                call ESMF_FieldFill(ifield, dataFillScheme="const", &
+                  const1=MISSINGVALUE, rc=rc)
+                if (ESMF_STDERRORCHECK(rc)) return
+              else
+                call ESMF_LogSetError(ESMF_FAILURE, &
+                  msg="Invalid import initialization option.", &
+                  line=__LINE__,file=__FILE__,rcToReturn=rc)
+                return
+              endif
+            endif
           endif
         enddo
 
@@ -1101,45 +1019,23 @@ module LIS_NUOPC
           return
       endif
 
-      ! Initialize import and export fields
-      call LIS_NUOPC_DataInit(nest=nIndex, &
-        importState=is%wrap%NStateImp(nIndex), &
-        exportState=is%wrap%NStateExp(nIndex),rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemCount=itemCount, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      allocate( &
-        itemNameList(itemCount), &
-        itemTypeList(itemCount), &
-        stat=stat)
-      if (ESMF_LogFoundAllocError(statusToCheck=stat, &
-        msg="Allocation of state item list memory failed.", &
-        line=__LINE__, &
-        file=__FILE__)) &
+      if(is%wrap%init_export .eq. FLD_INIT_FILLV) then
+        call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex), MISSINGVALUE, &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+      elseif(is%wrap%init_export .eq. FLD_INIT_ZERO) then
+        call LIS_ESMF_FillState(is%wrap%NStateExp(nIndex), 0.0_ESMF_KIND_R8, &
+          rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+      elseif(is%wrap%init_export .eq. FLD_INIT_MODEL) then
+        ! do nothing
+      else
+        call ESMF_LogSetError(ESMF_FAILURE, &
+          msg="Invalid export initialization option.", &
+          line=__LINE__,file=__FILE__,rcToReturn=rc)
         return
+      endif
 
-      call ESMF_StateGet(is%wrap%NStateExp(nIndex),itemNameList=itemNameList, &
-        itemTypeList=itemTypeList,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      do iIndex=1, itemCount
-        if ( itemTypeList(iIndex) == ESMF_STATEITEM_FIELD) then
-          call ESMF_StateGet(is%wrap%NStateExp(nIndex),field=field, &
-            itemName=itemNameList(iIndex),rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
-          call NUOPC_SetAttribute(field, name="Updated", value="true", rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
-        endif
-      enddo
-
-      deallocate(itemNameList, itemTypeList, stat=stat)
-      if (ESMF_LogFoundDeallocError(statusToCheck=stat, &
-        msg="Deallocation of state item list memory failed.", &
-        line=__LINE__, &
-        file=__FILE__)) &
-        return
     enddo ! enddo nnests
 
     ! set InitializeDataComplete Attribute to "true", indicating to the
@@ -1169,6 +1065,16 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
+!> @brief Set model clock during initialization
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
+!! During set clock the cap creates a new clock for each nest. The time step
+!! for each nest is set in LIS configuration file and initialized during LIS
+!! initialization. The time accumulation tracker for each timestep is reset to
+!! zero.  The cap's time step is updated to the shortest time step
+!! of all nests. The restart write time step is also created and the restart
+!! write time accumulation tracker is reset to zero.
   subroutine SetClock(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -1248,7 +1154,13 @@ module LIS_NUOPC
 
   !-----------------------------------------------------------------------------
 
-subroutine CheckImport(gcomp, rc)
+!> @brief Check timestamp on import data
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
+!! During check import the import data is checked to verify that it is at
+!! the beginning or end of the timestep.
+  subroutine CheckImport(gcomp, rc)
     type(ESMF_GridComp) :: gcomp
     integer,intent(out) :: rc
 
@@ -1318,6 +1230,13 @@ subroutine CheckImport(gcomp, rc)
 
   !-----------------------------------------------------------------------------
 
+!> @brief Advances the model by a timestep
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
+!! During model advance each nest time accumulation tracker is increased by
+!! the timestep of the cap.  If the time accumlation tracker is greater than
+!! the time step of the nest then the nest is advanced.
   subroutine ModelAdvance(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
@@ -1412,7 +1331,7 @@ subroutine CheckImport(gcomp, rc)
         endif
         call LIS_NUOPC_Run(nIndex,is%wrap%modes(nIndex), &
           is%wrap%NStateImp(nIndex),is%wrap%NStateExp(nIndex), &
-          is%wrap%clocks(nIndex), rc=rc)
+          is%wrap%clocks(nIndex), is%wrap%misg_import, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
         call ESMF_ClockAdvance(is%wrap%clocks(nIndex),rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
@@ -1432,6 +1351,9 @@ subroutine CheckImport(gcomp, rc)
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+!> @brief Log model advance call
+!! @param [inout] nIndex Index of nest
+!! @details
     subroutine LogAdvance(nIndex)
       integer                    :: nIndex
       ! local variables
@@ -1499,6 +1421,12 @@ subroutine CheckImport(gcomp, rc)
 
   !-----------------------------------------------------------------------------
 
+!> @brief Releases memory
+!! @param [inout] gcomp This component object
+!! @param [out]   rc    Return value for subroutine
+!! @details
+!! During model finalize LIS finalize subroutines are called and memory
+!! allocated during cap initialization is released. see ::modelfinalize
   subroutine ModelFinalize(gcomp, rc)
     type(ESMF_GridComp)  :: gcomp
     integer, intent(out) :: rc
