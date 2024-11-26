@@ -42,5 +42,5 @@
 ! Define Missing Value
 !-------------------------------------------------------------------------------
 
-#define MISSINGVALUE 0
+#define MISSINGVALUE 9.99e20_ESMF_KIND_R8
 
