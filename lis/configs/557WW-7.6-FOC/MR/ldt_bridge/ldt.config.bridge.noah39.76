@@ -78,7 +78,6 @@ Landmask upper right lon:                179.9296875
 Landmask resolution (dx):                  0.1406250
 Landmask resolution (dy):                  0.0937500
 
-# EMK
 Soil fraction data source:              none
 Soils spatial transform:                none
 Soils map projection:                   latlon
