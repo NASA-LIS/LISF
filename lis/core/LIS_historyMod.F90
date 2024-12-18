@@ -7295,7 +7295,7 @@ contains
                    var1_ens(i,m) = -9999.0
                 else
                    var1_ens(i,m) = &
-                        var(t)*LIS_domain(n)%tile(t)%fgrd
+                        var(t)*LIS_routing(n)%tile(t)%fgrd
                 endif
              enddo
           enddo
