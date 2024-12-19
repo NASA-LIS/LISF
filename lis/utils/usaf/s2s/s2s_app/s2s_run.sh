@@ -19,7 +19,8 @@
 #                              SHARED FUNCTIONS
 ######################################################################
 SOURCE_ONLY='N'
-GROUP_JOBS='Y'
+# Option for grouping tasks in slurm jobs (N="off"; Y="on"):
+GROUP_JOBS='N'
 submit_job(){
     if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
