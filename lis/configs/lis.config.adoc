@@ -5738,14 +5738,48 @@ Acceptable values are:
 `MERRA2 dynamic lapse rate data directory:` specifies the
 directory of the pre-computed MERRA-2 lapse rate dataset.
 
+`MERRA2 apply double-sided dynamic lapse rate cutoff:` specifies whether
+to apply a double-sided cutoff to the dynamic lapse rate values. This is
+an optional config entry; if not present, the default is 0. If set to 1, 
+values above (below) the maximum (minimum) cutoff are replaced with the 
+maximum (minimum) cutoff value. Maximum and minimum cutoff values can
+optionally be set using the MERRA2 maximum and minimum lapse rate cutoff
+aguments, or otherwise are assumed the default cutoff values, as described 
+below.
+
+|====
+|Value | Description
+
+|0     | Do not apply MERRA-2 double-sided dynamic lapse rate cutoff.
+|1     | Apply MERRA-2 double-sided dynamic lapse rate cutoff.
+|====
+
+`MERRA2 maximum lapse rate cutoff (K/m):` specifies the maximum value
+for the MERRA2 double-sided dynamic lapse rate cutoff range, in units
+of Kelvin per meter (K/m). This is an optional config entry; if
+not present, the default is set to 0.01 K/m. This is only applied if
+MERRA2 apply double-sided dynamic lapse rate cutoff is turned on
+(i.e., set to a value of 1).
+
+`MERRA2 minimum lapse rate cutoff (K/m):` specifies the minimum value
+for the MERRA2 double-sided dynamic lapse rate cutoff range, in units
+of Kelvin per meter (K/m). This is an optional config entry; if
+not present, the default is set to -0.1 K/m. This is only applied if
+MERRA2 apply double-sided dynamic lapse rate cutoff is turned on
+(i.e., set to a value of 1).
+
 .Example _lis.config_ entry
+
 ....
-MERRA2 forcing directory:                  ./MERRA2
-MERRA2 use lowest model level forcing:     1
-MERRA2 use 2m wind fields:                 0 
-MERRA2 use corrected total precipitation:  1
-MERRA2 apply dynamic lapse rates:          0
-MERRA2 dynamic lapse rate data directory:  ./MERRA2_lapse_rates
+MERRA2 forcing directory:                             ./MERRA2
+MERRA2 use lowest model level forcing:                1
+MERRA2 use 2m wind fields:                            0
+MERRA2 use corrected total precipitation:             1
+MERRA2 apply dynamic lapse rates:                     1
+MERRA2 dynamic lapse rate data directory:             ./MERRA2_lapse_rates
+MERRA2 apply double-sided dynamic lapse rate cutoff:  1
+MERRA2 maximum lapse rate cutoff (K/m):               0.009
+MERRA2 minimum lapse rate cutoff (K/m):               -0.009
 ....
 
 [[sssec_forcings_GEOS-IT,GEOS-IT]]

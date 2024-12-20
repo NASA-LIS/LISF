@@ -15,6 +15,7 @@ module merra2_forcingMod
 ! 18 Mar 2015: James Geiger, initial code (based on merra-land)
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
+! 18 Dec 2024: Kristen Whitney, code for using double-sided dynamic lapse rate cutoff
 !
 ! !DESCRIPTION:
 !  This module contains variables and data structures that are used
@@ -133,7 +134,10 @@ module merra2_forcingMod
      integer, allocatable    :: rseed(:,:)
      integer                 :: usedynlapserate
      character(len=LIS_CONST_PATH_LEN) :: dynlapseratedir
-     
+     integer                 :: applydynlapseratecutoff
+     real                    :: dynlapseratemincutoff
+     real                    :: dynlapseratemaxcutoff
+
   end type merra2_type_dec
 
   type(merra2_type_dec), allocatable :: merra2_struc(:)

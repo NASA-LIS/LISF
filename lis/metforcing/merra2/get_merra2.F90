@@ -18,6 +18,7 @@
 ! 08 Dec 2015: James Geiger, update timing logic
 ! 13 Sep 2024: Sujay Kumar, Initial code for using dynamic lapse rate
 ! 31 Oct 2024: David Mocko, Final code for using dynamic lapse rate
+! 18 Dec 2024: Kristen Whitney, code for using double-sided dynamic lapse rate cutoff
 !
 ! !INTERFACE:
 subroutine get_merra2(n, findex)
@@ -463,6 +464,13 @@ subroutine get_merra2(n, findex)
                  gid = LIS_domain(n)%gindex(c,r)
                  LIS_forc(n,findex)%lapseRate(gid) = &
                      merra2_struc(n)%lapserate2(gid,LIS_rc%hr+1)
+                 if(merra2_struc(n)%applydynlapseratecutoff.eq.1) then
+                    if(LIS_forc(n,findex)%lapseRate(gid).gt.merra2_struc(n)%dynlapseratemaxcutoff) then
+                       LIS_forc(n,findex)%lapseRate(gid) = merra2_struc(n)%dynlapseratemaxcutoff
+                    elseif(LIS_forc(n,findex)%lapseRate(gid).lt.merra2_struc(n)%dynlapseratemincutoff) then
+                       LIS_forc(n,findex)%lapseRate(gid) = merra2_struc(n)%dynlapseratemincutoff
+                    endif
+                 endif
               endif
            enddo
         enddo
@@ -473,6 +481,13 @@ subroutine get_merra2(n, findex)
                  gid = LIS_domain(n)%gindex(c,r)
                  LIS_forc(n,findex)%lapseRate(gid) = &
                      merra2_struc(n)%lapserate1(gid,LIS_rc%hr+1)
+                 if(merra2_struc(n)%applydynlapseratecutoff.eq.1) then
+                    if(LIS_forc(n,findex)%lapseRate(gid).gt.merra2_struc(n)%dynlapseratemaxcutoff) then
+                       LIS_forc(n,findex)%lapseRate(gid) = merra2_struc(n)%dynlapseratemaxcutoff
+                    elseif(LIS_forc(n,findex)%lapseRate(gid).lt.merra2_struc(n)%dynlapseratemincutoff) then
+                       LIS_forc(n,findex)%lapseRate(gid) = merra2_struc(n)%dynlapseratemincutoff
+                    endif
+                 endif
               endif
            enddo
         enddo
