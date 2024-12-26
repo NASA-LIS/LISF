@@ -1,0 +1,54 @@
+AquaCrop v7.2 Test Case
+aquacropv72test
+Crop model implemented as a land surface model in LIS
+2024/11/04 Louise Busschaert (KU Leuven)
+===========================================================================
+
+This test-case performs a 1/4 degree simulation over a small part of the US 
+from 2017-01-01 to 2017-12-31 to test the LDT and LIS for the AquaCrop v7.2
+implemented in LIS.
+
+Note that the test case is based on the "LSM 'Open-loop' (OL) Experiment (LIS)" 
+from NASA-LISF main testcase walkthrough, which can be found at
+https://nasa-lis.github.io/LISF/public_testcase_walkthrough/public_testcase_walkthrough.html
+All the necessary input data can be retrieved from the NASA-LISF test case.
+
+For this specific test case, the aquacropv72test_input.tar.gz and aquacropv72_output.tar.gz
+can be found in a Zenodo repository: https://zenodo.org/records/14035685
+
+
+More specifically, the test case:
+* Runs over a the domain [xmin=-102.875, xmax=-96.125, ymin=34.375, ymax=39.625], with
+  a 0.25° resolution for the time period 2017-01-01 - 2017-12-31.
+* Uses NLDAS2 forcings (NLDAS2 grib)
+* Uses AquaCrop native files stored in INPUT/AC_INPUT/
+
+The LIS output is in NetCDF format.
+
+
+This directory contains: 
+
+* this README file.
+* the lis.config file used for this test case.
+* the MODEL_OUTPUT_LIST.TBL file used to specify the output variables.
+
+To run this test case: 
+
+* Generate the LIS executable.
+* Run the LIS executable using the lis.config file and the sample
+  input data. (takes approx. 10 min)
+* View the NetCDF output using ncview.
+
+References (with a preliminary version of LIS-AC):
+de Roos, S., Bechtold, M., Busschaert, L., Lievens, H., & De Lannoy, G. J. M. (2024). 
+Assimilation of Sentinel-1 backscatter to update AquaCrop estimates of soil moisture 
+and crop biomass. Journal of Geophysical Research: Biogeosciences, 129, e2024JG008231. 
+https://doi.org/10.1029/2024JG008231
+
+Busschaert, L., Bechtold, M., Modanesi, S., Massari, C., Raes, D., Kumar, S. V., De Lannoy, G.,
+Modeling Irrigation and Land Surface Dynamics: Comparing AquaCrop and Noah-MP Over the Po Valley.
+In review for Hydrological and Earth System Sciences. Available at SSRN: 
+https://ssrn.com/abstract=4974019 or http://dx.doi.org/10.2139/ssrn.4974019
+
+
+
