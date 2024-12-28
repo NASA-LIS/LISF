@@ -81,14 +81,14 @@ subroutine NoahMP50_setup()
         !TODO: convert vegetation data source into vegetation types
         if(LIS_rc%uselcmap(n) .ne. 'none') then
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 retrieve parameter VEGETYPE from LIS"
+             "[INFO] Noah-MP.5.0 retrieve parameter VEGETYPE from LIS"
             do t=1, LIS_rc%npatch(n, mtype)
                 NoahMP50_struc(n)%noahmp50(t)%vegetype= LIS_surface(n, mtype)%tile(t)%vegt
             enddo
         else 
             ! read: vegetype
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter VEGETYPE from ", &
+             "[INFO] Noah-MP.5.0 reading parameter VEGETYPE from ", &
                                    trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_vegetype), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -101,14 +101,14 @@ subroutine NoahMP50_setup()
         !TODO: convert soil texture into soil types according to scheme
         if(LIS_rc%usetexturemap(n) .ne. 'none') then
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 retrieve parameter SOILTYPE from LIS"
+             "[INFO] Noah-MP.5.0 retrieve parameter SOILTYPE from LIS"
             do t=1, LIS_rc%npatch(n, mtype)
                 NoahMP50_struc(n)%noahmp50(t)%soiltype= LIS_surface(n, mtype)%tile(t)%soilt
             enddo
         else 
             ! read: soiltype
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter SOILTYPE from ", &
+             "[INFO] Noah-MP.5.0 reading parameter SOILTYPE from ", &
                                    trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_soiltype), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -119,7 +119,7 @@ subroutine NoahMP50_setup()
         endif
         ! read: tbot
         write(LIS_logunit,*) &
-         "[INFO] NoahMP.5.0 reading parameter TBOT from ", &
+         "[INFO] Noah-MP.5.0 reading parameter TBOT from ", &
                                trim(LIS_rc%paramfile(n))
         call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_tbot), placeholder)
         do t = 1, LIS_rc%npatch(n, mtype)
@@ -132,7 +132,7 @@ subroutine NoahMP50_setup()
         if(NoahMP50_struc(n)%crop_opt > 0) then 
             ! read: planting
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter PLANTING from ", &
+             "[INFO] Noah-MP.5.0 reading parameter PLANTING from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_planting), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -142,7 +142,7 @@ subroutine NoahMP50_setup()
             enddo 
 
             ! read: harvest
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter HARVEST from ",&
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter HARVEST from ",&
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_harvest), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -152,7 +152,7 @@ subroutine NoahMP50_setup()
             enddo 
 
             ! read: season_gdd
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SEASON_GDD from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SEASON_GDD from ", &
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_season_gdd), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -166,7 +166,7 @@ subroutine NoahMP50_setup()
         if(NoahMP50_struc(n)%irr_opt > 0) then
             ! read: total irrigation fraction
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter IRFRACT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter IRFRACT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_irfract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -177,7 +177,7 @@ subroutine NoahMP50_setup()
 
             ! read: sprinkler irrigation fraction
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter SIFRACT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter SIFRACT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_sifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -188,7 +188,7 @@ subroutine NoahMP50_setup()
 
             ! read: micro/drip irrigation fraction
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter MIFRACT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter MIFRACT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_mifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -199,7 +199,7 @@ subroutine NoahMP50_setup()
 
             ! read: flood irrigation fraction
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter FIFRACT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter FIFRACT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_fifract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -213,7 +213,7 @@ subroutine NoahMP50_setup()
         if(NoahMP50_struc(n)%tdrn_opt > 0) then
             ! read: tile drainage fraction
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter TDFRACT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter TDFRACT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_tdfract), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -226,7 +226,7 @@ subroutine NoahMP50_setup()
         !!! SW 11/06/2018 
         if(NoahMP50_struc(n)%soil_opt .eq. 2) then 
             ! read: soilcL1
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SOILCL1 from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCL1 from ", &
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_soilcL1), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -236,7 +236,7 @@ subroutine NoahMP50_setup()
             enddo 
 
             ! read: soilcL2
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SOILCL2 from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCL2 from ", &
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_soilcL2), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -246,7 +246,7 @@ subroutine NoahMP50_setup()
             enddo 
 
             ! read: soilcL3
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SOILCL3 from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCL3 from ", &
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_soilcL3), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -256,7 +256,7 @@ subroutine NoahMP50_setup()
             enddo 
 
             ! read: soilcL4
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SOILCL4 from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCL4 from ", &
                  trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_soilcL4), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -270,7 +270,7 @@ subroutine NoahMP50_setup()
         if(NoahMP50_struc(n)%runsub_opt == 5) then
             ! read: efolding depth for transmissivity (m)
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter FDEPTH from ", &
+             "[INFO] Noah-MP.5.0 reading parameter FDEPTH from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_fdepth), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -281,7 +281,7 @@ subroutine NoahMP50_setup()
 
             ! read: equilibrium water table depth (m)
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter EQZWT from ", &
+             "[INFO] Noah-MP.5.0 reading parameter EQZWT from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_eqzwt), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -292,7 +292,7 @@ subroutine NoahMP50_setup()
 
             ! read: riverbed depth (m)
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter RIVERBED from ", &
+             "[INFO] Noah-MP.5.0 reading parameter RIVERBED from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_riverbed), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -303,7 +303,7 @@ subroutine NoahMP50_setup()
 
             ! read: climatology recharge
             write(LIS_logunit,*) &
-             "[INFO] NoahMP.5.0 reading parameter RECHCLIM from ", &
+             "[INFO] Noah-MP.5.0 reading parameter RECHCLIM from ", &
              trim(LIS_rc%paramfile(n))
             call LIS_read_param(n, trim(NoahMP50_struc(n)%LDT_ncvar_rechclim), placeholder)
             do t = 1, LIS_rc%npatch(n, mtype)
@@ -316,7 +316,7 @@ subroutine NoahMP50_setup()
         !----------------------------------------------!
         ! MULTILEVEL reading spatial spatial parameters !
         !----------------------------------------------!
-        write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SHDFAC_MONTHLY from ",&
+        write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SHDFAC_MONTHLY from ",&
              trim(LIS_rc%paramfile(n))
         do k = 1, 12
             call NoahMP50_read_MULTILEVEL_param(n, NoahMP50_struc(n)%LDT_ncvar_shdfac_monthly, k, placeholder)
@@ -329,7 +329,7 @@ subroutine NoahMP50_setup()
         
         if(NoahMP50_struc(n)%soil_opt .eq. 3) then
             ! read: soilcomp
-            write(LIS_logunit,*) "[INFO] NoahMP.5.0 reading parameter SOILCOMP from ", &
+            write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCOMP from ", &
                  trim(LIS_rc%paramfile(n))
             do k = 1, 8
                 call NoahMP50_read_MULTILEVEL_param(n, NoahMP50_struc(n)%LDT_ncvar_soilcomp, k, placeholder)
@@ -343,11 +343,11 @@ subroutine NoahMP50_setup()
         deallocate(placeholder)
 
         !!!! read Noah-MP parameter tables 
-        write(LIS_logunit,*) "[INFO] NoahMP.5.0 parameter table (veg, soil, general): ", &
+        write(LIS_logunit,*) "[INFO] Noah-MP.5.0 parameter table (veg, soil, general): ", &
              trim(NoahMP50_struc(n)%noahmp_tbl_name)     
-        write(LIS_logunit,*) "[INFO] NoahMP.5.0 Landuse classification scheme: ", &
+        write(LIS_logunit,*) "[INFO] Noah-MP.5.0 Landuse classification scheme: ", &
              trim(NoahMP50_struc(n)%landuse_scheme_name) 
-        write(LIS_logunit,*) "[INFO] NoahMP.5.0 Soil classification scheme: ",  &
+        write(LIS_logunit,*) "[INFO] Noah-MP.5.0 Soil classification scheme: ",  &
              "STAS (default, cannot change)" 
         call NoahmpReadTable(trim(NoahMP50_struc(n)%landuse_scheme_name), &
                              trim(NoahMP50_struc(n)%noahmp_tbl_name))

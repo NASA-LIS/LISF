@@ -14,6 +14,6 @@ subroutine wrf_debug(unit_number, message)
   implicit none
   integer :: unit_number 
   character(len=*) :: message 
-  write(LIS_logunit, *) "NoahMP.5.0 refactored version (wrf_debug): ", message 
+  write(LIS_logunit, *) "Noah-MP.5.0 refactored version (wrf_debug): ", message 
 
 end subroutine wrf_debug

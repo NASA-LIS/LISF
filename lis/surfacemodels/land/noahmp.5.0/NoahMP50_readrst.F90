@@ -161,14 +161,14 @@ subroutine NoahMP50_readrst()
             ! check the existance of restart file
             inquire(file=NoahMP50_struc(n)%rfile, exist=file_exists)
             If (.not. file_exists) then 
-                write(LIS_logunit,*) "[ERR] NoahMP50 restart file: ", &
+                write(LIS_logunit,*) "[ERR] Noah-MP.5.0 restart file: ", &
                                       trim(NoahMP50_struc(n)%rfile)
                 write(LIS_logunit,*) "[ERR] does not exist."
                 write(LIS_logunit,*) "[ERR] Program stopping ..."
                 call LIS_endrun
             endif
             write(LIS_logunit,*) &
-                 "[INFO] NoahMP.5.0 restart file used: ",trim(NoahMP50_struc(n)%rfile)
+                 "[INFO] Noah-MP.5.0 restart file used: ",trim(NoahMP50_struc(n)%rfile)
         
             ! open restart file
             if(wformat .eq. "binary") then

@@ -89,7 +89,7 @@ subroutine NoahMP50_coldstart(mtype)
 
         if (trim(LIS_rc%startcode) .eq. "coldstart") then
             write(LIS_logunit,*) &
-             "[INFO] NoahMP50_coldstart -- cold-starting NoahMP.5.0"
+             "[INFO] NoahMP50_coldstart -- cold-starting Noah-MP.5.0"
 
            do t=1, LIS_rc%npatch(n,mtype)
 

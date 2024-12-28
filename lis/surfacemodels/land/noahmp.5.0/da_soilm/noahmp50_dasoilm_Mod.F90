@@ -80,11 +80,11 @@ contains
 !TBD: SVK
 #if 0 
     if(LIS_rc%dascaloption(k).eq."Linear scaling") then 
-       call ESMF_ConfigFindLabel(LIS_config,"NoahMP.5.0 soil moisture CDF file:",&
+       call ESMF_ConfigFindLabel(LIS_config,"Noah-MP.5.0 soil moisture CDF file:",&
             rc=status)
        do n=1,LIS_rc%nnest
           call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
-          call LIS_verify(status, 'NoahMP.5.0 soil moisture CDF file: not defined')
+          call LIS_verify(status, 'Noah-MP.5.0 soil moisture CDF file: not defined')
        enddo
        
        do n=1,LIS_rc%nnest

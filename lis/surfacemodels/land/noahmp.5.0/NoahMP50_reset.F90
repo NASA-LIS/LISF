@@ -38,7 +38,7 @@ subroutine NoahMP50_reset()
 
 
   do n=1,LIS_rc%nnest
-     write(LIS_logunit,*) "NoahMP.5.0 resetting"
+     write(LIS_logunit,*) "Noah-MP.5.0 resetting"
 
      ! initialize forcing variables to zeros
      do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)

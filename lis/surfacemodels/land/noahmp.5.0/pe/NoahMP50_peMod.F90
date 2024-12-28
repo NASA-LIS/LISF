@@ -709,7 +709,7 @@ contains
        enddo
     endif
 
-    write(LIS_logunit,*) '[INFO] Finished setting up NoahMP50 decision space '
+    write(LIS_logunit,*) '[INFO] Finished setting up Noah-MP.5.0 decision space '
   end subroutine NoahMP50_setup_pedecvars
 
 end module NoahMP50_peMod
