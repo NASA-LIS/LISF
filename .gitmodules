@@ -1,4 +1,4 @@
 [submodule "lis/surfacemodels/land/noahmp.5.0/phys/noahmp"]
 	path = lis/surfacemodels/land/noahmp.5.0/phys/noahmp
-	url = https://github.com/cenlinhe/noahmp
+	url = https://github.com/NCAR/noahmp
         branch = release-v5.0-LIS 
