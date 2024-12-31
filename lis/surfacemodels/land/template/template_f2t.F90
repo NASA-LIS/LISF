@@ -163,6 +163,8 @@ subroutine template_f2t(n)
      endif
      if(LIS_FORC_Psurf%selectOpt.eq.1) then
        template_struc(n)%template(t)%psurf=psurf(tid)
+     endif
+     if(LIS_FORC_Rainf%selectOpt.eq.1) then 
         if(pcp(tid).ne.LIS_rc%udef) then
            template_struc(n)%template(t)%rainf=pcp(tid)
         else
