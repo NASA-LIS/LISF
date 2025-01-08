@@ -452,7 +452,8 @@ module RWMCMCAlgorithm
 ! 
 ! !INTERFACE: 
   subroutine writeRWMCMCrestart
-! !USES: 
+    ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use LIS_fileIOMod,  only : LIS_create_output_directory
     use LIS_historyMod, only : LIS_writevar_restart
 ! 
@@ -465,7 +466,7 @@ module RWMCMCAlgorithm
     integer             :: n 
     integer             :: i,m,t
     integer             :: status
-    character*100       :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character (len=4)   :: fgen
     character*100       :: vnames(mcmc_ctl%nparam)
     real, allocatable       :: vardata(:)

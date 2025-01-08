@@ -39,6 +39,7 @@ contains
 
     ! Imports
     use ESMF
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod, only: LIS_masterproc
     use LIS_logMod, only:  LIS_logunit, LIS_alert, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber
@@ -62,7 +63,7 @@ contains
     integer, intent(inout) :: alert_number
 
     ! Locals
-    character(255) :: filename
+    character(len=LIS_CONST_PATH_LEN) :: filename
     integer, allocatable :: twfprc(:)
     integer, allocatable :: duration(:)
     integer, allocatable :: sixprc(:)
@@ -113,7 +114,7 @@ contains
     integer, allocatable :: amts00(:)
     type(USAF_Gages_t) :: obscur, obsprev
     integer :: rc
-    character(255) :: presav_filename
+    character(LIS_CONST_PATH_LEN) :: presav_filename
     integer :: ipass, j
     logical :: exchanges
     type(ESMF_Time) :: curtime, prevtime, reporttime

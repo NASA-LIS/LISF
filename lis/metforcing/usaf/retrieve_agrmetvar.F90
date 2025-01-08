@@ -18,11 +18,12 @@
 ! !INTERFACE:    
 subroutine retrieve_agrmetvar(name,nc,nr,varfield)
 ! !USES: 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod, only : LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS: 
-  character*100       :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   integer             :: nc,nr
   real, intent(inout) :: varfield(nc,nr)
 !

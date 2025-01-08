@@ -106,6 +106,7 @@
 ! !INTERFACE:    
 subroutine AGRMET_makest(n,findex,j6hr,estpcp,source,cdfs2est,prcpwe, use_twelve, cmorphpixel,back4)
 ! !USES: 
+  use LIS_constantsMod,          only : LIS_CONST_PATH_LEN
   use LIS_coreMod,               only : LIS_rc
   use agrmet_forcingMod,         only : agrmet_struc
   use LIS_logMod,                only : LIS_abort, LIS_endrun, &
@@ -136,7 +137,7 @@ subroutine AGRMET_makest(n,findex,j6hr,estpcp,source,cdfs2est,prcpwe, use_twelve
   logical, intent(out) :: cmorphpixel(LIS_rc%lnc(n), LIS_rc%lnr(n),4)
 ! declarations for readmask in geoprecip latlon
       character*9                   :: cstat
-      character*100                 :: file_name,file_nam
+      character(len=LIS_CONST_PATH_LEN) :: file_name,file_nam
       character*255                 :: message(20)
       integer                       :: rec_length
       integer                       :: istat

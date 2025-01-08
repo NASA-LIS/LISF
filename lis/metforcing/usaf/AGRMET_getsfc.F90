@@ -51,6 +51,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 ! !USES: 
   use ESMF ! EMK Patch for DTG check
   use AGRMET_forcingMod, only : agrmet_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod,    only  : LIS_domain, LIS_masterproc
   use LIS_timeMgrMod, only  : LIS_julhr_date
   use LIS_logMod,     only  : LIS_logunit, LIS_alert, &
@@ -203,7 +204,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
 !  \end{description}
 !EOP
 
-  character*100                  :: sfcobsfile
+  character(len=LIS_CONST_PATH_LEN) :: sfcobsfile
   integer                        :: hemi
   integer, allocatable           :: idpt     ( : )
   integer                        :: ierr1

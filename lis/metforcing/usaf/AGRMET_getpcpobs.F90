@@ -40,6 +40,7 @@
 subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
      use_twelve, p6, p12, alert_number, precip6, precip12,pcp_src)
 ! !USES:
+  use LIS_constantsMod, only  : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod, only    : LIS_tick, LIS_julhr_date
   use LIS_logMod, only        : LIS_logunit, LIS_alert
@@ -154,7 +155,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
   integer                   :: cdms_count
   integer                   :: hemi
   integer                   :: i
-  character*100             :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   real, parameter           :: quad9r = -9999.0   
   integer                   :: j1hr
   integer                   :: j3hr

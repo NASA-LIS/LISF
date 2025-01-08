@@ -151,7 +151,7 @@ contains
     character(len=LIS_CONST_PATH_LEN) :: rst_fname
     character*4     :: fiter
     integer, external :: LIS_create_subdirs 
-    character(len=201) :: c_string  
+    character(len=LIS_CONST_PATH_LEN) :: c_string  
 
     n = 1
     

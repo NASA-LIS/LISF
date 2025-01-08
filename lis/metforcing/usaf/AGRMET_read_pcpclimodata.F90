@@ -29,6 +29,7 @@
 ! !INTERFACE:
 subroutine AGRMET_read_pcpclimodata(n)
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc
   use LIS_LMLCMod, only : LIS_LMLC
   use LIS_timeMgrMod, only : LIS_isAlarmRinging
@@ -95,7 +96,7 @@ subroutine AGRMET_read_pcpclimodata(n)
 !EOP
   logical                     :: midmonth
   logical                     :: pcpclimoAlarmCheck
-  character*100               :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer                     :: days(12)
   integer                     :: i,j
   integer                     :: newday

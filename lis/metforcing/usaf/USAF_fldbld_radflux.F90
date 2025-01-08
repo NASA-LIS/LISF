@@ -24,8 +24,9 @@
 ! !INTERFACE:    
 subroutine USAF_fldbld_radflux(n,swdown,longwv)
 
-! !USES: 
+! !USES:
   use AGRMET_forcingMod, only : agrmet_struc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_endrun, LIS_abort,&
                                 LIS_alert
@@ -62,7 +63,7 @@ subroutine USAF_fldbld_radflux(n,swdown,longwv)
 !EOP
 
   integer :: rc
-  character(len=255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   character(len=10)  :: yyyymmddhh
   integer            :: julhr
   integer            :: istart

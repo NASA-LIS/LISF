@@ -18,6 +18,7 @@
 ! !INTERFACE: 
 subroutine AGRMET_sfcalc(n) 
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod,         only : LIS_rc, LIS_masterproc, LIS_localPet, &
        LIS_domain, LIS_gdeltas, LIS_goffsets, LIS_npes, &
        LIS_ews_halo_ind, LIS_ewe_halo_ind, &
@@ -170,7 +171,7 @@ subroutine AGRMET_sfcalc(n)
 !</rm -- jim merge>
   type(OBA) :: t2mOBA, rh2mOBA, spd10mOBA
   character(len=50) :: t2mPathOBA,rh2mPathOBA,spd10mPathOBA
-  character(len=120) :: obaFilename
+  character(len=LIS_CONST_PATH_LEN) :: obaFilename
   character(len=10) :: yyyymmddhh
   integer :: ierr
   integer :: r,c, L
