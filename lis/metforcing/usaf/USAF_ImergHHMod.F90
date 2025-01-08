@@ -150,6 +150,7 @@ contains
 #if (defined USE_HDF5)
       use HDF5
 #endif
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_endrun, &
            LIS_alert
@@ -177,7 +178,7 @@ contains
       integer*2, allocatable :: tmp_prob_liq_precip(:,:,:)
       integer*2, allocatable :: tmp_ir_kalman_weights(:,:,:)
       integer :: icount
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer :: ierr
       logical :: saved_good
       logical :: version_good
@@ -1221,6 +1222,7 @@ contains
         yr, mo, da, hr, mn, filename)
 
       ! Imports
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod, only:  LIS_logunit, LIS_abort, LIS_endrun, &
            LIS_alert
@@ -1241,7 +1243,7 @@ contains
       integer, intent(in) :: da
       integer, intent(in) :: hr
       integer, intent(in) :: mn
-      character(len=255), intent(out) :: filename
+      character(len=LIS_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       integer :: tmp_yr, tmp_mo, tmp_da, tmp_hr, tmp_mn, tmp_ss
@@ -1251,7 +1253,7 @@ contains
       type(ESMF_TIME) :: start_time, end_time, start_of_day
       type(ESMF_TIMEINTERVAL) :: half_hour
       type(ESMF_TIMEINTERVAL) :: time_diff
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer :: ierr
       integer, save :: alert_number = 1
       logical :: file_exists
@@ -1368,6 +1370,7 @@ contains
         precipObsData)
 
       ! Modules
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod, only: LIS_logunit, LIS_alert
       use LIS_timeMgrMod, only: LIS_julhr_date, LIS_calendar
@@ -1396,8 +1399,8 @@ contains
       type(ImergHHPrecip) :: imerg
       integer :: yr, mo, da, hr, mn
       integer :: itime
-      character(len=255) :: filename
-      character(255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: filename
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer, save :: alert_number = 1
       logical :: file_exists
       integer :: icount

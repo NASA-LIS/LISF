@@ -24,7 +24,8 @@
 ! 21 Feb 2020  Added support for 10-km GALWEM.............Eric Kemp/GSFC
 ! !INTERFACE:    
 subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -49,9 +50,9 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
 !
 !EOP
   integer                 :: ftn, igrib
-  character*120           :: gribfile
+  character(len=LIS_CONST_PATH_LEN) :: gribfile
   integer                 :: yr1, mo1, da1, hr1
-  character*255           :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: gridres_dlat, gridres_dlon
   integer                 :: ifguess, jfguess
@@ -414,7 +415,8 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
                                      agr_tmp_sfc, agr_hgt_sfc, agr_rh_sfc, &
                                      agr_wspd_sfc,                         &
                                      agr_pres_sfc,rc)
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
@@ -448,7 +450,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
 !     
 !EOP
   character*9                   :: cstat
-  character*255                 :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   character(len=4)              :: grib_msg
   character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt

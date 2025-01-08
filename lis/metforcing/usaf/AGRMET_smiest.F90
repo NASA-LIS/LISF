@@ -35,6 +35,7 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
                                                 ! in previous versions 
 ! !USES:
   use AGRMET_forcingMod, only : agrmet_struc
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,   only : LIS_rc, LIS_masterproc
   use LIS_fileIOMod, only : LIS_putget
   use LIS_timeMgrMod, only : LIS_julhr_date
@@ -91,7 +92,7 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
 !  \end{description}
 !EOP
   real            :: ra_tmp(2,imax,jmax)
-  character*100   :: ifil
+  character(len=LIS_CONST_PATH_LEN) :: ifil
   character*100   :: message(20)
   character*30    :: routine_name
   logical         :: exists

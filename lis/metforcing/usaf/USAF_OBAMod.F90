@@ -252,6 +252,9 @@ contains
    ! Creates filename for OBA statistics
    subroutine makeFilename(pathOBA,yyyymmddhh,accum,filename)
 
+      ! Imports
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -259,7 +262,7 @@ contains
       character(len=*), intent(in) :: pathOBA
       character(len=10), intent(in) :: yyyymmddhh
       integer, intent(in) :: accum
-      character(len=120), intent(out) :: filename
+      character(len=LIS_CONST_PATH_LEN), intent(out) :: filename
 
       write(filename,1000) trim(pathOBA),'/oba_',yyyymmddhh,'_',accum,'.txt'
       1000 format(A,A,A,A,I2.2,A)

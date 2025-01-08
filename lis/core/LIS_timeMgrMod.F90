@@ -2692,7 +2692,8 @@ end function LIS_getSecsInDekad
 !
 ! !INTERFACE:    
 subroutine LIS_julhr_date( julhr, yyyy,mm,dd,hh)
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod, only : lis_abort
 
   implicit none 
@@ -2739,7 +2740,7 @@ subroutine LIS_julhr_date( julhr, yyyy,mm,dd,hh)
 ! \end{description}
 !
 !EOP
-  character*255                  :: message ( 20 )  
+  character(len=LIS_CONST_PATH_LEN) :: message ( 20 )  
 
 !     ------------------------------------------------------------------
 !     executable code begins here... use LIS_tmjul4 to convert julhr to 
