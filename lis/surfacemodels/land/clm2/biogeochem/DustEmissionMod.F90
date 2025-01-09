@@ -316,6 +316,7 @@ end subroutine Dust
 ! $Id: DustEmissionMod.F90,v 1.6 2004/11/24 22:56:13 jim Exp $
 !-----------------------------------------------------------------------
 
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use clm2_lsmMod
     use clm_varmap, only : begpatch, endpatch          
 #if (defined MAKE_DUST_BASIN)
@@ -325,7 +326,7 @@ end subroutine Dust
     include 'netcdf.inc'
 
 ! ------------------------ local variables ---------------------------
-  character(len=80) felev     !elevation file
+  character(len=LIS_CONST_PATH_LEN) felev     !elevation file
 
 ! NETCDF related
 
