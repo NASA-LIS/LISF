@@ -30,7 +30,7 @@ program main
    implicit none
 
    ! Local variables
-   character(len=255) :: outfile
+   character(len=ESMF_MAXPATHLEN) :: outfile
    integer :: iunit_input, istat, iunit_out_vario
    integer :: j, i
    integer*8, allocatable :: icounts_vario(:)
@@ -43,7 +43,7 @@ program main
    integer :: max_num_files
    integer :: max_vario_bins
    integer :: vario_bin_dist
-   character(len=255) :: datadir
+   character(len=ESMF_MAXPATHLEN) :: datadir
    integer :: startyear
    integer :: startmonth
    integer :: startday
@@ -74,10 +74,10 @@ program main
    real :: dlat
    real :: dist_thresh
    logical :: use_blacklist
-   character(len=255) :: blacklist_file
+   character(len=ESMF_MAXPATHLEN) :: blacklist_file
    character(len=9), allocatable :: blacklist_stns(:)
    integer :: nstns
-   character(len=255) :: logname
+   character(len=ESMF_MAXPATHLEN) :: logname
 
    character(len=maxlen_sattype), parameter :: SSMI      = "SSMI"
    character(len=maxlen_sattype), parameter :: CMORPH    = "CMORPH"
@@ -877,6 +877,7 @@ contains
         use_blacklist, nstns, blacklist_stns)
 
       ! Imports
+      use esmf
       use USAF_GridHashMod, only: GridHash, newGridHash, destroyGridHash, &
            insertIntoGridHash, getObindexVectorFromGridHash, &
            createIJForGridHash
@@ -893,7 +894,7 @@ contains
       type(esmf_time), intent(in) :: starttime
       type(esmf_time), intent(in) :: endtime
       type(esmf_timeinterval), intent(in) :: deltatime
-      character(len=255), intent(in) :: datadir
+      character(len=ESMF_MAXPATHLEN), intent(in) :: datadir
       integer, intent(in) :: max_stations
       integer, intent(in) :: max_sat_reports
       integer, intent(in) :: max_vario_bins
@@ -915,8 +916,8 @@ contains
       integer :: yyyy, mm, dd, hh
       character(len=10) :: yyyymmddhh, yyyymmddhh_k, yyyymmddhh_kk
       integer :: rc
-      character(len=44) :: infile
-      character(len=123) :: fullpath
+      character(len=ESMF_MAXPATHLEN) :: infile
+      character(len=ESMF_MAXPATHLEN) :: fullpath
       integer :: istat
       integer :: iunit_input
       type(Reports) :: R_gages_sat, R_matches
