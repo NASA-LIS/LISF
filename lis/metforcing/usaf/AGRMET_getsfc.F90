@@ -225,7 +225,7 @@ subroutine AGRMET_getsfc( n, julhr, t2mObs, rh2mObs, spd10mObs, &
   character*6                    :: cjulhr
   character*10                   :: date10 ! EMK replace cjulhr in log
   character*14, allocatable      :: dtg      ( : )
-  character*100                  :: message  ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message  ( 20 )
   !character*8, allocatable       :: netyp    ( : )
   character*9, allocatable       :: netyp    ( : )
   character*8                    :: norsou   ( 2 )

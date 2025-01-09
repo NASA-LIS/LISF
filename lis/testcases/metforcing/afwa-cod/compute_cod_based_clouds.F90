@@ -18,6 +18,7 @@
 ! !INTERFACE:
 subroutine compute_cod_based_clouds(n, cod, cloud_pcts)
 !  !USES:
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_coreMod!,       only : LIS_rc
    use LIS_logMod,        only : LIS_logunit
    use LIS_timeMgrMod,    only : LIS_get_julhr,LIS_tick,LIS_time2date
@@ -35,7 +36,7 @@ use LIS_mpiMod
 
    integer             :: hemi
    integer             :: yr1,mo1,da1,hr1,mn1,ss1,julhr,doy1
-   character*200       :: filename
+   character(len=LIS_CONST_PATH_LEN) :: filename
    logical             :: file_exists
    integer             :: ip
    real                :: udef
@@ -44,7 +45,7 @@ use LIS_mpiMod
    real                :: ts1,gmt1
 !<debug -- jim testing>
 integer :: istat
-character*200       :: cfilename
+character(len=LIS_CONST_PATH_LEN) :: cfilename
 real, allocatable, dimension(:,:) :: temp_cod
 !</debug -- jim testing>
 

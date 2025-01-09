@@ -156,7 +156,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
   integer                   :: hemi
   integer                   :: i
   character(len=LIS_CONST_PATH_LEN) :: filename
-  real, parameter           :: quad9r = -9999.0   
+  real, parameter           :: quad9r = -9999.0
   integer                   :: j1hr
   integer                   :: j3hr
   integer                   :: startjul
@@ -180,7 +180,7 @@ subroutine AGRMET_getpcpobs(n, j6hr, month, prcpwe, &
   integer                      :: ierr1, ierr2, ierr3
   integer                      :: k
   logical                      :: cdms_flag
-  character(255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
 
   type rain_obs
      sequence
