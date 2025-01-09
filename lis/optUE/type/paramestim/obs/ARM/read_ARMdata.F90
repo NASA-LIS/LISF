@@ -1733,7 +1733,8 @@ end subroutine read_baebbr_flux_file
 ! !INTERFACE: 
 subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-  
+
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,  only : LIS_localPet
   implicit none
 
@@ -1773,7 +1774,7 @@ subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
   character*4       :: fproc
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -1815,7 +1816,8 @@ end subroutine create_arm_ecor_flux_filename
 ! !INTERFACE: 
 subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-  
+
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_localPet
 
   implicit none
@@ -1856,7 +1858,7 @@ subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
   character*4       :: fproc
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -1898,7 +1900,8 @@ end subroutine create_arm_baebbr_flux_filename
 ! !INTERFACE: 
 subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_localPet
   
   implicit none
@@ -1937,7 +1940,7 @@ subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
   character*4       :: fproc
 
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LIS_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
