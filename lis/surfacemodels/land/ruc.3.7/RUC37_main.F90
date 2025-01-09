@@ -22,7 +22,8 @@
 !
 ! !INTERFACE:
 subroutine RUC37_main(n)
-! !USES:
+  ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
@@ -82,9 +83,9 @@ subroutine RUC37_main(n)
     logical              :: tmp_use_monthly_albedo_map ! if usemonalb == .true., then the alb value passed to lsmruc will be used as the background snow-free albedo term.  if usemonalb == .false., then alb will be computed within lsmruc from minimum and maximum values in vegparm.tbl, and the current green vegetation fraction. [-]
     integer              :: tmp_option_iz0tlnd     ! option to turn on (iz0tlnd=1) or off (iz0tlnd=0) the vegetation-category-dependent calculation of the zilitinkivich coefficient czil in the sfcdif subroutines. [-]
     integer              :: tmp_option_sfcdif      ! option to use previous (sfcdif_option=0) or updated (sfcdif_option=1) version of sfcdif subroutine. [-]
-    character(len=256)   :: tmp_landuse_tbl_name   ! noah model landuse parameter table [-]
-    character(len=256)   :: tmp_soil_tbl_name      ! noah model soil parameter table [-]
-    character(len=256)   :: tmp_gen_tbl_name       ! noah model soil parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_landuse_tbl_name   ! noah model landuse parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_soil_tbl_name      ! noah model soil parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_gen_tbl_name       ! noah model soil parameter table [-]
     character(len=256)   :: tmp_landuse_scheme_name ! landuse classification scheme [-]
     character(len=256)   :: tmp_soil_scheme_name   ! soil classification scheme [-]
     integer              :: tmp_nsoil              ! number of soil levels. [-]

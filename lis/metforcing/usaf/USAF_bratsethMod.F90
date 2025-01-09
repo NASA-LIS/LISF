@@ -3003,7 +3003,6 @@ contains
       integer :: file_julhr
       integer :: getsixhr
       integer :: yr_2d
-      !character(len=120) :: gribfile, gribfile2
       character(len=LIS_CONST_PATH_LEN) :: gribfile, gribfile2
       integer :: center
       real :: gridres

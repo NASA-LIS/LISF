@@ -126,7 +126,7 @@ contains
     integer :: yyyy, mm, dd, h, m, s
     character(255) :: timestring
     integer :: iunit
-    character(255) :: message(20)
+    character(len=LIS_CONST_PATH_LEN) :: message(20)
     integer, parameter :: MAX_NEW_NETWORKS = 20
     character(10), save :: new_networks(MAX_NEW_NETWORKS) = &
          (/"NULL      ", &

@@ -198,7 +198,7 @@ subroutine readagrmetforcing(n,findex, order)
   real,allocatable :: rlh(:,:)
   integer          :: ip
   integer          :: julhr
-  character(len=255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
 
   real,allocatable            :: cldamt(:,:,:)
   integer,allocatable         :: cldamt_nh( :,:,:)

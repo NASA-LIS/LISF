@@ -132,7 +132,6 @@ subroutine AGRMET_fldbld_precip_gfs(n,findex,julhr,fc_hr,gfsdata)
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
-  !character*120           :: avnfile, avnfile2
   character(len=LIS_CONST_PATH_LEN) :: avnfile, avnfile2
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: julhr

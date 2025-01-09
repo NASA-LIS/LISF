@@ -146,7 +146,7 @@ subroutine AGRMET_geoest( n, j3hr, land ,gest, grnk, quad9r, &
   real                              :: grnk_tmp(2,imax,jmax),grnk_temp(1,imax,jmax)
   real                              :: gest_tmp(2,imax,jmax),gest_temp(1,imax,jmax)
   character(len=LIS_CONST_PATH_LEN) :: ifil
-  character*100                     :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   character*30                      :: routine_name
   logical                           :: exists
   logical                           :: gdgeornk

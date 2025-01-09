@@ -359,7 +359,6 @@ subroutine AGRMET_getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
   character(3) :: fchr
   
   character(len=54) :: fname1
-  character(len=20) :: fname2
 
   write (UNIT=fhr, FMT='(i2.2)') hr
   write (UNIT=fchr, FMT='(i3.3)') fc_hr

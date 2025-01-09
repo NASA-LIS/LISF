@@ -93,7 +93,7 @@ subroutine AGRMET_smiest( n,j3hr, quad9r, ra, razero,alert_number,imax,jmax)
 !EOP
   real            :: ra_tmp(2,imax,jmax)
   character(len=LIS_CONST_PATH_LEN) :: ifil
-  character*100   :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   character*30    :: routine_name
   logical         :: exists
   logical         :: use_zeros

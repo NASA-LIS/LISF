@@ -138,7 +138,7 @@ subroutine AGRMET_makest(n,findex,j6hr,estpcp,source,cdfs2est,prcpwe, use_twelve
 ! declarations for readmask in geoprecip latlon
       character*9                   :: cstat
       character(len=LIS_CONST_PATH_LEN) :: file_name,file_nam
-      character*255                 :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer                       :: rec_length
       integer                       :: istat
       integer                       :: istat1

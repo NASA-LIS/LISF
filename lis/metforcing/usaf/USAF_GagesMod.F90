@@ -1761,6 +1761,7 @@ contains
   subroutine USAF_gages_read_data(this, filename, date10, alert_number)
 
     ! Imports
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod, only: LIS_masterproc
     use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber, &
          LIS_alert, LIS_logunit
@@ -1803,7 +1804,7 @@ contains
     logical :: found
     integer :: i
     integer :: iunit
-    character(255) :: message(20)
+    character(len=LIS_CONST_PATH_LEN) :: message(20)
 
     message = ''
     call this%delete() ! Make sure structure is empty

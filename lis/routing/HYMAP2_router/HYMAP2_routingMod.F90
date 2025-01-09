@@ -2122,7 +2122,6 @@ contains
     integer                     :: status
     integer                     :: l
     integer                     :: varid
-    character*100               :: cfile
 !    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2185,7 +2184,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: varid
-    character*100               :: cfile
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2240,7 +2238,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r,l
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2295,7 +2292,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2351,7 +2347,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)

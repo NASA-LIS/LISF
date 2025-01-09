@@ -221,7 +221,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
   character(len=LIS_CONST_PATH_LEN) :: filename_min6
   character(len=LIS_CONST_PATH_LEN) :: filename_min12
   character*5                   :: iofunc
-  character*100                 :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer                       :: count
   integer                       :: count6
   integer                       :: count6obs
