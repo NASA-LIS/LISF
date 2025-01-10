@@ -260,6 +260,7 @@ end subroutine get_ecmwf
 subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
      yr,mo,da,hr)
 ! !USES: 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_timeMgrMod, only : LDT_tick
 
   implicit none
@@ -281,7 +282,7 @@ subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
   real*8 :: itime
   real :: igmt
   integer :: iyr,imo,ida,ihr,imn,iss,ts,idoy
-  character(200) :: filename, file1, file2
+  character(len=LDT_CONST_PATH_LEN) :: filename, file1, file2
 
 
   !instantaneous files 

@@ -15,6 +15,7 @@
 subroutine create_gdasfilename(option, name00, name03, name06, &
      F06flag, gdasdir, yr, mo, da, hr )
 ! !USES: 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_timeMgrMod, only : LDT_tick
 
   implicit none
@@ -126,7 +127,6 @@ subroutine create_gdasfilename(option, name00, name03, name06, &
   logical :: is_analysis_hr
   character(len=2)  :: analysis_hour_inst, analysis_hour_avg, &
                        fcstcode0, fcstcode1, fcstcode2
-  character(len=80) :: fbase
   character(len=8)  :: fdir
   character(len=10) :: ftime
   character(len=21) :: fsubs

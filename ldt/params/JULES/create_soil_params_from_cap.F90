@@ -22,6 +22,7 @@
 subroutine create_soil_params_from_cap( n, nc_cap_param, soil_type) 
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only : LDT_rc
   use LDT_logMod,  only : LDT_logunit,  LDT_endrun
   use LDT_gridmappingMod    
@@ -31,7 +32,7 @@ subroutine create_soil_params_from_cap( n, nc_cap_param, soil_type)
   implicit none
 ! !ARGUMENTS: 
   integer,intent(in)    :: n
-  character(len=128)    :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
+  character(len=LDT_CONST_PATH_LEN) :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
   real, intent(inout)   :: soil_type(LDT_rc%lnc(n),LDT_rc%lnr(n))
 !
 ! !DESCRIPTION:

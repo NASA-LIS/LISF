@@ -24,6 +24,8 @@ module LISlsmTEFF_obsMod
 !  01 Nov 2021    Yonghwan Kwon: Modified for effective soil temperature
 !
 
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -46,7 +48,7 @@ module LISlsmTEFF_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      character*20  :: security_class
      character*20  :: distribution_class
      character*20  :: data_category

@@ -101,7 +101,7 @@ subroutine readSMOSL2smObs(n)
   character(len=LDT_CONST_PATH_LEN)           :: fname
   character(len=LDT_CONST_PATH_LEN)           :: smos_filename
   character*8             :: yyyymmdd
-  character*200           :: list_files
+  character(len=LDT_CONST_PATH_LEN)           :: list_files
   integer                 :: sind
   integer                 :: yr,mo,da,hr,mn,ss
   integer                 :: ftn

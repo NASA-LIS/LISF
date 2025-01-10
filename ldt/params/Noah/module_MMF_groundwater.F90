@@ -188,14 +188,16 @@ contains
   ! ----------------------------------------------------------------
   
   SUBROUTINE mmf_data_reader (MBR, nest, datadir, lisout, mmf_transform, short_name)
-    
+
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     implicit none
 
     class (MMF_BCsReader), intent(inout)    :: MBR
     character(*), intent (in)               :: datadir, mmf_transform, short_name
     real, dimension (:,:,:), intent (inout) :: lisout
     integer, intent (in)                    :: nest    
-    character(len=1024):: geogridFile
+    character(len=LDT_CONST_PATH_LEN):: geogridFile
     character(len=80)  :: tileName
     integer            :: num_tile_lon,num_tile_lat
     integer            :: rc,status,tx,ty,txs,txe,tys,tye

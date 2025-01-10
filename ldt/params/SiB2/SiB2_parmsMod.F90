@@ -28,6 +28,7 @@ module SiB2_parmsMod
 !  04 Nov 2013: K. Arsenault: Added layers for SiB2 model
 !
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -51,7 +52,7 @@ module SiB2_parmsMod
 
   type, public :: noah_type_dec
 !  - SiB2 parameters:
-     character*100 :: sib2parmsdir
+     character(len=LDT_CONST_PATH_LEN) :: sib2parmsdir
 
      ! -  SiB2 LSM-specific:
 ! -  SiB2 model-specific:

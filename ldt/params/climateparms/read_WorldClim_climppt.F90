@@ -22,6 +22,7 @@
 
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc, LDT_domain
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -73,7 +74,7 @@
   type(File_bil_header), target  :: hdrInfW
   real*4, pointer, dimension(:),save  :: real4ptr1dL  ! 4-byte real array
 
-  character(len=200) :: last_file_read = "none"
+  character(len=LDT_CONST_PATH_LEN) :: last_file_read = "none"
 
 ! __________________________________________________________________________________________
 

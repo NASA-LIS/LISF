@@ -106,7 +106,7 @@ module merra2_forcingMod
      integer                :: uselml
      integer                :: usecorr
 
-     character*140          :: merra2hgt_file
+     character(len=LDT_CONST_PATH_LEN) :: merra2hgt_file
 
   end type merra2_type_dec
 
