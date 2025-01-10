@@ -3274,6 +3274,7 @@ contains
   subroutine LVT_readDataMask
 ! !USES:     
 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 
 ! 
@@ -3282,7 +3283,7 @@ contains
 !   screen grid points, both spatially and temporally. 
 !EOP
 
-    character*100 :: maskfile
+    character(len=LVT_CONST_PATH_LEN) :: maskfile
     logical       :: file_exists
     real          :: datamask(LVT_rc%lnc, LVT_rc%lnr)
     integer       :: ftn

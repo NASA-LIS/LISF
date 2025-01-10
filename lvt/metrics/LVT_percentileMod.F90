@@ -18,6 +18,7 @@ module LVT_percentileMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_histDataMod
@@ -99,10 +100,10 @@ module LVT_percentileMod
      real             :: d_classes(5)
      integer, allocatable :: ftn_ts_darea(:)
      integer          :: usescaling
-     character*100    :: mean_filename1
-     character*100    :: mean_filename2
-     character*100    :: std_filename1
-     character*100    :: std_filename2
+     character(len=LVT_CONST_PATH_LEN) :: mean_filename1
+     character(len=LVT_CONST_PATH_LEN) :: mean_filename2
+     character(len=LVT_CONST_PATH_LEN) :: std_filename1
+     character(len=LVT_CONST_PATH_LEN) :: std_filename2
      type(ESMF_Time)  :: stime, etime
      real,    allocatable :: mean1(:)
      real,    allocatable :: mean2(:)
@@ -121,7 +122,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine LVT_initpercentile(selectNlevs, stats,metric)
-! !ARGUMENTS: 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    ! !ARGUMENTS: 
     integer                 :: selectNlevs(LVT_rc%nDataStreams)
     type(LVT_statsEntry)    :: stats
     type(LVT_metricEntry)   :: metric
@@ -136,7 +138,7 @@ contains
     type(ESMF_Time)         :: stopTime
     type(ESMF_TimeInterval) :: timeStep
     integer                 :: i,k,t,c,r
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     character*3             :: ftime
     character*4             :: fens
     integer                 :: rc
@@ -148,10 +150,10 @@ contains
     real, allocatable       :: pctile_model(:,:,:)
 
     integer          :: usescaling
-    character*100    :: mean_filename1
-    character*100    :: mean_filename2
-    character*100    :: std_filename1
-    character*100    :: std_filename2
+    character(len=LVT_CONST_PATH_LEN) :: mean_filename1
+    character(len=LVT_CONST_PATH_LEN) :: mean_filename2
+    character(len=LVT_CONST_PATH_LEN) :: std_filename1
+    character(len=LVT_CONST_PATH_LEN) :: std_filename2
 
     allocate(LVT_pctile_struc(LVT_rc%nensem))
     allocate(stats%pctile(LVT_rc%nensem))
@@ -557,7 +559,8 @@ contains
 ! !INTERFACE: 
   subroutine diagnoseSinglepercentileParams(model, obs, stats,metric)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -592,7 +595,7 @@ contains
     type(ESMF_Time)         :: startTime, currTime
     type(ESMF_TimeInterval) :: ts
     character*3             :: ftime
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     integer                 :: tindex, day1,day2, day3, day4, day5
     integer                 :: yr_index
     integer                 :: p1,p2,p3,p4,p5
@@ -840,7 +843,7 @@ contains
   subroutine diagnoseSinglepercentile(model,obs,stats,metric)
 ! 
 ! !USES:   
-        
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -875,7 +878,7 @@ contains
     type(ESMF_Time)         :: currTime
     real                    :: min_value
     character*3             :: ftime
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     integer  :: yr_index, tindex
     logical  :: leap_year, skip_flag
     real     :: pvalue
@@ -1182,7 +1185,7 @@ contains
   subroutine computeSinglepercentileparams(alarm,model,obs,stats,metric)
 ! 
 ! !USES:   
-        
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -1212,7 +1215,7 @@ contains
     type(LVT_metricEntry)   :: metric
 !EOP
 
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     character*3             :: ftime
     integer                 :: ftn
     integer                 :: nsize

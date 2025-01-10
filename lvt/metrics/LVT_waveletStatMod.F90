@@ -554,7 +554,8 @@ contains
 ! !INTERFACE:
   subroutine LVT_writeMetric_waveletstat(pass,final,vlevels,stats,obs)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod, only : LVT_getNextUnitNumber, LVT_releaseUnitNumber
     use LVT_statsMod, only : LVT_writeSummaryStats
     use LVT_pluginIndices
@@ -580,7 +581,7 @@ contains
 
     integer                 :: i ,k,m
     integer                 :: ftn
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     
 
     if(LVT_metrics%waveletstat%selectOpt.eq.1) then

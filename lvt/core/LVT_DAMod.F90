@@ -183,7 +183,8 @@ contains
   subroutine LVT_readLISDAdata(pass)
 ! 
 ! !USES:     
-   
+
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -200,7 +201,7 @@ contains
 ! 
 !EOP
 #if 0 
-    character*100 :: innovfile, gainfile, spreadfile
+    character(len=LVT_CONST_PATH_LEN) :: innovfile, gainfile, spreadfile
     logical       :: file_exists
     integer       :: ftn
     integer       :: t
@@ -580,7 +581,7 @@ contains
   subroutine LVT_computeDAstats(pass)
 ! 
 ! !USES:     
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -601,7 +602,7 @@ contains
     integer            :: c,r,v,t
     character(len=12)  :: cdate
     character(len=4)   :: cdate1
-    character*100      :: fname1, fname2
+    character(len=LVT_CONST_PATH_LEN) :: fname1, fname2
     integer            :: ftn
 #if 0 
     integer            :: dimID(2), nobsId, ninnov_meanId, ninnov_varId
