@@ -6065,7 +6065,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
        ens_index,dir,stdev)
 ! 
 ! !USES: 
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 ! !ARGUMENTS: 
     integer                    :: index(3)
@@ -6115,7 +6115,7 @@ elseif(name.eq."SMAPL3TBh_A") then ! MN
     integer      :: ensem
     logical      :: stdev_flag
     logical      :: dir_flag
-    character*20 :: dir_tmp
+    character(len=LVT_CONST_PATH_LEN) :: dir_tmp
     real         :: stdev_tmp(LVT_rc%lnc,LVT_rc%lnr)
 
     ! If index is less than zero, the variable was not present in the

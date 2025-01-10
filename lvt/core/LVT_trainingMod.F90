@@ -144,7 +144,8 @@ contains
 ! !INTERFACE: 
   subroutine LVT_writeTrainingOutput(pass)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_logMod
 
@@ -175,7 +176,7 @@ contains
 ! !ARGUMENTS: 
 
 !EOP
-    character*100           :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
     character(len=14)       :: cdate
     integer                 :: ftn
     integer                 :: varId

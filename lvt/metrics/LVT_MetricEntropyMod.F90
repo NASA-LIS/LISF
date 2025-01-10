@@ -32,6 +32,7 @@ module LVT_MetricEntropyMod
 !
 !EOP
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_statsDataMod
@@ -60,7 +61,7 @@ module LVT_MetricEntropyMod
      integer                 :: nts_threshold
      integer, allocatable    :: nts(:,:)
      real, allocatable       :: value_model_ts(:)
-     character*100           :: rstFile
+     character(len=LVT_CONST_PATH_LEN) :: rstFile
   end type mentropydec
 
   type(mentropydec), allocatable, save :: LVT_mentropy_struc(:)
@@ -326,7 +327,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine computeSingleMetricEntropy(alarm,model,obs,stats,metric)
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_informationContentMod
 
     implicit none
@@ -374,7 +376,7 @@ contains
     character*4 :: fdim2
     character*7 :: fdim1
     integer     :: ftn
-    character*100 :: matlab_command
+    character(len=LVT_CONST_PATH_LEN) :: matlab_command
 
     ts_class = 1
 

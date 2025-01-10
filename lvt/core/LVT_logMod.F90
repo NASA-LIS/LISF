@@ -183,7 +183,8 @@ contains
 ! !INTERFACE:    
   subroutine LVT_abort( abort_message )
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -225,7 +226,7 @@ contains
 !
 !EOP
     character*7                :: iofunc
-    character*13               :: message_file
+    character(len=LVT_CONST_PATH_LEN) :: message_file
     
     integer                    :: i
     integer                    :: ftn 
@@ -292,7 +293,8 @@ contains
 ! !INTERFACE:    
   subroutine LVT_alert( program_name, alert_number, message )
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -335,7 +337,7 @@ contains
 
     character*3                   :: calert_number
     character*7                   :: iofunc
-    character*37                  :: message_file
+    character(len=LVT_CONST_PATH_LEN) :: message_file
     integer                       :: i
     integer                       :: istat
     integer                       :: ftn

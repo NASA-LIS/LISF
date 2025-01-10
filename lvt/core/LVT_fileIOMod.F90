@@ -93,7 +93,8 @@ contains
 ! !INTERFACE:
 subroutine LVT_create_output_directory(mname,dir_name,style)
 ! 
-! !USES:
+  ! !USES:
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod, only : LVT_rc
    use LVT_logMod,  only : LVT_log_msg, LVT_endrun
    implicit none 
@@ -140,7 +141,7 @@ subroutine LVT_create_output_directory(mname,dir_name,style)
 !EOP
    character(len=4) :: cdate
    character(len=8) :: cdate1
-   character(len=200) :: out_dname
+   character(len=LVT_CONST_PATH_LEN) :: out_dname
    character(len=50)  :: style_temp
    
    if(PRESENT(style)) then 
@@ -217,6 +218,7 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
      wout, style,odir)
 ! 
 ! !USES:
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
    use LVT_logMod,   only : LVT_log_msg, LVT_endrun
 
@@ -289,10 +291,10 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LVT_CONST_PATH_LEN)       :: dname
+   character(len=LVT_CONST_PATH_LEN), save :: out_fname
    character(len=50)        :: style_temp
-   character(len=100)        :: odir_temp
+   character(len=LVT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if(.not.PRESENT(odir)) then 
@@ -628,7 +630,8 @@ subroutine create_output_filename_with_timestamp(&
      model_name, writeint, &
      wout, style,odir)
 ! 
-! !USES:
+  ! !USES:
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,  only : LVT_rc, LVT_LIS_rc
    use LVT_logMod,   only : LVT_log_msg, LVT_endrun
 
@@ -703,10 +706,10 @@ subroutine create_output_filename_with_timestamp(&
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LVT_CONST_PATH_LEN)       :: dname
+   character(len=LVT_CONST_PATH_LEN), save :: out_fname
    character(len=50)        :: style_temp
-   character(len=100)        :: odir_temp
+   character(len=LVT_CONST_PATH_LEN)       :: odir_temp
    integer                  :: i, c
 
    if(.not.PRESENT(odir)) then 
@@ -1024,7 +1027,8 @@ subroutine create_output_filename_with_timestamp(&
 ! !INTERFACE:
 subroutine LVT_create_daobs_filename(n, fname)
 ! 
-! !USES:
+  ! !USES:
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,  only : LVT_rc
   
    implicit none 
@@ -1057,7 +1061,7 @@ subroutine LVT_create_daobs_filename(n, fname)
 ! 
 !EOP
 
-   character(len=200) :: out_fname
+   character(len=LVT_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate, cdate1
 
    

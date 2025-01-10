@@ -16,7 +16,8 @@
 subroutine LVT_readConfig(configfile)
 ! 
 ! !USES:
-  use ESMF 
+  use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_statsDataMod
@@ -52,8 +53,8 @@ subroutine LVT_readConfig(configfile)
   character*30  :: scInterval
   character*10  :: time
   integer        :: ios,final_dirpos
-  character(100) :: diag_fname
-  character(100) :: diag_dir
+  character(len=LVT_CONST_PATH_LEN) :: diag_fname
+  character(len=LVT_CONST_PATH_LEN) :: diag_dir
   integer, external  :: LVT_create_subdirs
 
   inquire(file=(configfile), exist=exists)
