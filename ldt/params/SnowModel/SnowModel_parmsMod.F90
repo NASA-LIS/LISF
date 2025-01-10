@@ -29,6 +29,7 @@ module SnowModel_parmsMod
 #endif
 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -56,7 +57,7 @@ module SnowModel_parmsMod
      integer :: Nveg         
 
      real           :: topoveg_gridDesc(20)
-     character(140) :: topoveg_file
+     character(LDT_CONST_PATH_LEN) :: topoveg_file
      character(50)  :: topoveg_gridtransform
      character(50)  :: topoveg_proj
 

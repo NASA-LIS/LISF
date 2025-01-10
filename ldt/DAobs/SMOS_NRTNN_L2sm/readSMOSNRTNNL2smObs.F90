@@ -66,7 +66,7 @@ subroutine readSMOSNRTNNL2smObs(n)
    character*8        :: yyyymmdd
    character*4        :: yyyy
    character*2        :: mm, dd, hh
-   character*100      :: list_files
+   character(len=LDT_CONST_PATH_LEN)      :: list_files
    character(len=LDT_CONST_PATH_LEN)      :: smos_filename(10)
    real               :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    integer            :: lat_varid, lon_varid, sm_varid, dim_ids(2)
@@ -145,6 +145,7 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_timeMgrMod
@@ -156,7 +157,7 @@ subroutine read_SMOSNRTL2sm_data(n, fname, smobs_inp)
 ! !INPUT PARAMETERS: 
 ! 
   integer              :: n
-  character (len=200)  :: fname
+  character(len=LDT_CONST_PATH_LEN)  :: fname
   real                 :: smobs_inp(LDT_rc%lnc(n),LDT_rc%lnr(n))
   !real*8               :: time
 

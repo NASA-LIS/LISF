@@ -59,6 +59,7 @@ subroutine read_SiB2_parms(n, nvegtypes, &
 
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,     only : LDT_rc, LDT_domain
   use LDT_logMod,      only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_endrun
@@ -126,7 +127,7 @@ subroutine read_SiB2_parms(n, nvegtypes, &
   integer        :: nc, nr
   integer        :: ftn
   logical        :: file_exists
-  character(140) :: vegfile
+  character(len=LDT_CONST_PATH_LEN) :: vegfile
   character(2)   :: numvegchar
   integer        :: ip,nperiod,nfiles,i,j,nf
   real           :: vegtyp(LDT_rc%lnr(n),LDT_rc%lnc(n),nvegtypes)

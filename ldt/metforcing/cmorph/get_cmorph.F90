@@ -154,6 +154,8 @@ end subroutine get_cmorph
 ! !INTERFACE:
 subroutine cmorphfile( filename, cmorphdir, yr, mo, da, hr)
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   implicit none
 ! !ARGUMENTS: 
   character(len=*) :: filename
@@ -185,12 +187,11 @@ subroutine cmorphfile( filename, cmorphdir, yr, mo, da, hr)
 !1212292800
 
   integer, parameter :: T2008060100 = 1212292800
-  character(len=120) :: temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   integer tout(9), fmktime, it, ih, irec
 
-  character*100 :: fbase, ftimedir, fstem 
+  character(len=LDT_CONST_PATH_LEN) :: fbase, ftimedir, fstem 
   character*4 :: cyr
   character*2 :: cmo, cda, chr 
 
