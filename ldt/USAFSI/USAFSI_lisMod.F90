@@ -38,6 +38,7 @@ contains
 
       ! Imports
       use grib_api
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_verify, LDT_endrun
       use USAFSI_paramsMod
@@ -53,7 +54,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(len=LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       character*12 :: routine_name
       integer :: ifile, igrib
@@ -398,10 +399,11 @@ contains
 
    ! Builds path to LIS GRIB2 file
    subroutine construct_lis_grib2_filename(date10, filename)
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_usafsiMod, only: usafsi_settings
       implicit none
       character*10, intent(in) :: date10
-      character*255, intent(out) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
       filename = trim(usafsi_settings%lis_grib2_dir) &
            // "/PS." &
            // "557WW_SC." &

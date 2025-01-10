@@ -68,6 +68,7 @@ contains
       !*************************************************************************
       !*************************************************************************
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
       ! Defaults
@@ -83,8 +84,8 @@ contains
 
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
-      character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*255               :: message_file     ! MESSAGE FILE NAME
+      character(len=LDT_CONST_PATH_LEN) :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      character(len=LDT_CONST_PATH_LEN) :: message_file     ! MESSAGE FILE NAME
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
       integer                     :: nlines           ! NUMBER OF LINES IN MESSAGE
@@ -378,6 +379,7 @@ contains
       !*************************************************************************
       !*************************************************************************
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
 
       ! Defaults
@@ -396,8 +398,8 @@ contains
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
       !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*255               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
-      character*255               :: message_file     ! MESSAGE FILE NAME
+      character(len=LDT_CONST_PATH_LEN) :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
+      character(len=LDT_CONST_PATH_LEN) :: message_file     ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
       integer                     :: i                ! DO LOOP COUNTER
       integer                     :: istat            ! I/O STATUS
@@ -657,6 +659,8 @@ contains
       !*******************************************************************************
       !*******************************************************************************
 
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -666,7 +670,7 @@ contains
       ! Arguments
       integer*1,     intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
@@ -766,6 +770,8 @@ contains
       !*******************************************************************************
       !*******************************************************************************
 
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -775,7 +781,7 @@ contains
       ! Arguments
       integer,       intent(inout) :: buffer      (igrid, jgrid) ! DATA TO BE READ/WRITTEN
       character*1,   intent(in)    :: iofunc                     ! I/O FUNCTION ('r', 'w')
-      character*255, intent(in)    :: file_name                  ! FILE PATH AND NAME
+      character(len=LDT_CONST_PATH_LEN), intent(in)    :: file_name                  ! FILE PATH AND NAME
       character*12,  intent(in)    :: program_name               ! NAME OF CALLING PROGRAM
       character*20,  intent(in)    :: routine_name               ! NAME OF CALLING ROUTINE
       integer,       intent(in)    :: igrid                      ! SIZE OF GRID IN I-DIRECTION
