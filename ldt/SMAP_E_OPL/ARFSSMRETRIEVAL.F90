@@ -36,12 +36,13 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     USE varsio_m
     USE algo_vpol_m
     use LDT_ARFSSM_netcdfMod, only: LDT_ARFSSM_write_netcdf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     USE LDT_smap_e_oplMod  
 
     IMPLICIT NONE
 ! !ARGUMENTS:
-    CHARACTER (len=100)          :: SMAPFILE                             
+    CHARACTER (len=LDT_CONST_PATH_LEN) :: SMAPFILE                             
     REAL*4, DIMENSION(2560,1920), intent(in) :: TS_bfresample_01, &
          TS_bfresample_02, TS_bfresample_03
     REAL*4, DIMENSION(2560,1920) :: ARFS_SNOW, UTChr                     
@@ -51,7 +52,7 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     type(ESMF_Time), intent(in) :: thirdtime
 !EOP 
     INTEGER :: i, j, nrow, mcol          
-    CHARACTER (len=100) :: fname_TAU    
+    CHARACTER (len=LDT_CONST_PATH_LEN) :: fname_TAU    
     CHARACTER (len=5) :: DOY_chr
     REAL*4 :: C, K, sm_retrieval, tau_return
     REAL*4, DIMENSION(2560,1920) :: ARFS_TB
@@ -66,7 +67,7 @@ subroutine ARFSSMRETRIEVAL(SMAPFILE, &
     INTEGER*4 :: ios, NX, NY
     INTEGER*4 :: ncid, nid, tsoil01id
 
-    character (len=100) :: retrieval_fname
+    character (len=LDT_CONST_PATH_LEN) :: retrieval_fname
     integer             :: L1B_dir_len,L1B_fname_len
     real                :: utc_check
 

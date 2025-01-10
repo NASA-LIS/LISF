@@ -25,7 +25,8 @@
 !
 ! !INTERFACE:
 subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
-! !USES:
+  ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_domainMod
   use LDT_logMod
@@ -43,7 +44,7 @@ subroutine readLIS_Teff_usaf(n, yyyymmdd, hh, Orbit, teff, rc)
 !EOP
   integer :: c,r
   real    :: tsoil(LDT_rc%lnc(n),LDT_rc%lnr(n),4)
-  character(255) :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   logical :: file_exists
   integer :: rc1
   integer :: gid

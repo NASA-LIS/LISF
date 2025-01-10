@@ -14,6 +14,7 @@
 subroutine USAFSI_binary()
    
    ! Imports
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
    use LDT_logMod, only: LDT_logunit
    use USAFSI_arraysMod, only: USAFSI_arrays
 
@@ -24,7 +25,7 @@ subroutine USAFSI_binary()
    integer, parameter :: lunit = 100
 
    ! Local variables
-   character*125 :: file_path
+   character(len=LDT_CONST_PATH_LEN) :: file_path
    integer :: istat
 
    ! Open file

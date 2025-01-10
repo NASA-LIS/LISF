@@ -40,9 +40,10 @@ contains
         filename)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit
       use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
-      
+
       ! Defaults
       implicit none
 
@@ -54,7 +55,7 @@ contains
       integer, intent(inout) :: dd
       integer, intent(inout) :: hh
       integer, intent(inout) :: fh
-      character*255, intent(out) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       integer :: julhr, julhr_orig
@@ -116,6 +117,9 @@ contains
    subroutine construct_gofs_cice_filename(rootdir, region, &
            yyyy, mm, dd, hh, fh, filename)
 
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -127,7 +131,7 @@ contains
       integer, intent(in) :: dd
       integer, intent(in) :: hh
       integer, intent(in) :: fh
-      character*255, intent(out) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       character*10 :: yyyymmddhh
@@ -146,6 +150,7 @@ contains
         filename)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit
       use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
 
@@ -159,7 +164,7 @@ contains
       integer, intent(inout) :: dd
       integer, intent(inout) :: hh
       integer, intent(inout) :: fh
-      character*255, intent(inout) :: filename
+      character(LDT_CONST_PATH_LEN), intent(inout) :: filename
 
       ! Local variables
       integer :: julhr, julhr_orig
@@ -227,6 +232,9 @@ contains
    subroutine construct_gofs_sst_filename(rootdir, &
         yyyy, mm, dd, hh, fh, filename)
 
+      ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -237,7 +245,7 @@ contains
       integer, intent(in) :: dd
       integer, intent(in) :: hh
       integer, intent(in) :: fh
-      character*255, intent(out) :: filename
+      character(LDT_CONST_PATH_LEN), intent(out) :: filename
 
       ! Local variables
       character*10 :: yyyymmddhh
@@ -259,6 +267,7 @@ contains
         ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_verify, ldt_logunit
       use netcdf
@@ -284,7 +293,7 @@ contains
       integer, parameter :: nlon = 4500
 
       ! Local variables
-      character*255 :: filename
+      character(LDT_CONST_PATH_LEN) :: filename
       integer :: ncid, water_temp_varid
       real, allocatable :: water_temp(:,:,:,:)
       real, allocatable :: water_temp_1d(:)
@@ -522,6 +531,7 @@ contains
         yyyy, mm, dd, hh, fh, icecon, ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use netcdf
@@ -546,7 +556,7 @@ contains
       integer, parameter :: nlon = 4500
 
       ! Local variables
-      character*255 :: filename
+      character(LDT_CONST_PATH_LEN) :: filename
       integer :: ncid, aice_varid
       real, allocatable :: aice(:,:,:)
       real, allocatable :: aice_1d(:)

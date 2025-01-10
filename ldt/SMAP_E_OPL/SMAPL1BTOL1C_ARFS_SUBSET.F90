@@ -30,16 +30,17 @@ subroutine SMAPL1BRESAMPLE_SUBSET(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
   USE FUNCTIONS
   USE TOOLSUBS
   USE invdist_l1b2arfs
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   USE LDT_logMod
   USE LDT_smap_e_oplMod
 
   IMPLICIT NONE
 
   INTEGER :: i, j, nrow, mcol
-  CHARACTER (len=100) :: SMAPFILE
-  character (len=100) :: L1B_dir
+  CHARACTER (len=LDT_CONST_PATH_LEN) :: SMAPFILE
+  character (len=LDT_CONST_PATH_LEN) :: L1B_dir
   character (len=20)  :: variable_name(13)
-  character (len=100) :: resample_filename(13)
+  character (len=LDT_CONST_PATH_LEN) :: resample_filename(13)
   character (len=1)   :: Orbit
   integer             :: var_i
   integer             :: L1B_dir_len,L1B_fname_len

@@ -22,6 +22,7 @@
 subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_smap_e_oplMod
@@ -36,7 +37,7 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
   integer, intent(out) :: rc
 
 !EOP
-  character*255       :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*8         :: yyyymmdd_snow
   character*4         :: yyyy_snow
   character*2         :: mm_snow, dd_snow, hh_snow

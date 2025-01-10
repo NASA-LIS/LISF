@@ -39,6 +39,7 @@ contains
    subroutine USAFSI_proc_xcalgmi(date10, gmi_in, gmi, option)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use USAFSI_utilMod
       
@@ -47,13 +48,13 @@ contains
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=255), intent(in)  :: gmi_in
-      character(len=255), intent(in)  :: gmi
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: gmi_in
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: gmi
       integer,            intent(in)  :: option
 
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=255)              :: filename, nc_filename
+      character(len=LDT_CONST_PATH_LEN) :: filename, nc_filename
       !integer,           dimension(:), allocatable :: surflag0, surflag   !YY
       character(len=10), dimension(:), allocatable :: date0, date10_arr
       real,              dimension(:), allocatable :: lat0, lon0, tb10h0, tb10v0, tb19h0, tb19v0, &
@@ -224,13 +225,14 @@ contains
 #endif
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
 
       !Defaults
       implicit none
 
       !Arguments
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real,         allocatable, intent(inout) :: lat(:), lon(:)
       real,         allocatable                :: lat_raw(:,:), lon_raw(:,:)
@@ -526,6 +528,7 @@ contains
       ! option == 4; Kelly, 2009 
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_usafsiMod, only: usafsi_settings
  
       ! Defaults
@@ -554,8 +557,8 @@ contains
 
       ! Local variables
       integer                             :: i
-      character(len=255)                  :: ff_filename
-      character(len=255)                  :: fd_filename
+      character(len=LDT_CONST_PATH_LEN)   :: ff_filename
+      character(len=LDT_CONST_PATH_LEN)   :: fd_filename
       real                                :: pd19,pd37,pd89,tt,si89, &
            scat,sc37,sc89,scx
       logical                             :: flag
@@ -1188,6 +1191,7 @@ contains
    subroutine read_forestfraction(ff_filename, ff)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_verify
       use netcdf
 
@@ -1195,7 +1199,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -1236,7 +1240,9 @@ contains
 #endif
 
    subroutine read_forestdensity(fd_filename, fd)
+
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_verify
       use netcdf
 
@@ -1244,7 +1250,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=255), intent(in) :: fd_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: fd_filename
       real, intent(out)           :: fd(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -1271,7 +1277,9 @@ contains
 
 
    subroutine search_files(date10, gmi_in)
+
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use USAFSI_utilMod, only: date10_julhr, julhr_date10
 
       ! Defaults
@@ -1279,11 +1287,11 @@ contains
 
       ! Arguments
       character*10,       intent(in) :: date10
-      character*255,      intent(in) :: gmi_in
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: gmi_in
 
       ! Local variables
       integer            :: eof, n, i, j, k
-      character(len=255)               :: file_path, cmd
+      character(len=LDT_CONST_PATH_LEN) :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
       character*2                    :: st_hr_str, cnt

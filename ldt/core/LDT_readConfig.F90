@@ -20,7 +20,8 @@
 subroutine LDT_readConfig(configfile)
 
 ! !USES:
-  use ESMF 
+  use ESMF
+  use LDT_constantsMod,    only : LDT_CONST_PATH_LEN
   use LDT_coreMod,         only : LDT_rc, LDT_config, LDT_localPet, LDT_npes
   use LDT_DAobsDataMod
   use LDT_DAmetricsDataMod,only : LDT_DAmetricsPtr
@@ -49,8 +50,8 @@ subroutine LDT_readConfig(configfile)
 
   integer        :: ios
   integer        :: final_dirpos
-  character(100) :: diag_fname
-  character(100) :: diag_dir
+  character(len=LDT_CONST_PATH_LEN) :: diag_fname
+  character(len=LDT_CONST_PATH_LEN) :: diag_dir
   integer, external :: LDT_create_subdirs
 
 !____________________________________________________________

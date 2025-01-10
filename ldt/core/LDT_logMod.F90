@@ -133,10 +133,10 @@ contains
 !
 ! !INTERFACE:    
   subroutine LDT_abort( abort_message )
-
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     implicit none
     
-    character*100  :: abort_message(20)
+    character(len=LDT_CONST_PATH_LEN)  :: abort_message(20)
     
 ! !DESCRIPTION:
 !
@@ -159,7 +159,7 @@ contains
 !
 !EOP
     character*7                :: iofunc
-    character*13               :: message_file
+    character(len=LDT_CONST_PATH_LEN) :: message_file
     integer                    :: i
     integer                    :: ftn 
     integer                    :: istat

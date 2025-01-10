@@ -173,7 +173,7 @@ integer function filedate(log1,filename)
 !
 ! local variables
   integer, dimension(12) :: fileinfo
-  character*80 :: wrtline
+  character(len=LDT_CONST_PATH_LEN) :: wrtline
   character*3 :: errnum
   integer :: istat
 !
@@ -196,10 +196,11 @@ end function filedate
 !
 !
 logical function checkintfile(log1,dataf1,dataf2)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN 
 !
 ! argument variables
   integer, intent(INOUT) :: log1
-  character*80, intent(INOUT) :: dataf1,dataf2
+  character(len=LDT_CONST_PATH_LEN), intent(INOUT) :: dataf1,dataf2
 !
 ! local variables
   logical :: fileexists = .FALSE.
@@ -358,16 +359,17 @@ end function datestr
 ! Duplicate declaration... check if this is needed
 #if 0 
 subroutine readcard(brkfile,datebeg,dateend,ng,intmins,outfmt,error)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
-  character(80), intent(OUT) :: brkfile
+  character(len=LDT_CONST_PATH_LEN), intent(OUT) :: brkfile
   character(10), intent(OUT) :: datebeg,dateend
   integer, intent(OUT) :: ng,intmins,outfmt
   logical, intent(OUT) :: error
 !
 ! local variables
   logical :: fileexists
-  character(11) :: cardfile
+  character(len=LDT_CONST_PATH_LEN) :: cardfile
   integer :: funit = 10
 !
   cardfile = 'Breakpt.crd'
@@ -393,6 +395,7 @@ end subroutine readcard
 !
 !
 subroutine brkprecip(brkfile,datebeg,dateend,ngauges,intmins,outfmt)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
   character(len=*), intent(INOUT) :: brkfile
@@ -401,7 +404,7 @@ subroutine brkprecip(brkfile,datebeg,dateend,ngauges,intmins,outfmt)
 !
 ! local variables
   logical :: brkexists,ppdexists,idxexists,intfiles
-  character*80 :: wrtline
+  character(len=LDT_CONST_PATH_LEN) :: wrtline
   character(len=LDT_CONST_PATH_LEN) :: logfile,ppdfile,idxfile,outfile
   integer :: brkfunit = 50
   integer :: log1 = 60
@@ -559,18 +562,19 @@ end subroutine intindex
 !
 !
 subroutine readheader(log1,funit,datafile,intf,gidxs,hlines)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
   integer, intent(IN) :: log1,funit
-  character*80, intent(IN) :: datafile
+  character(len=LDT_CONST_PATH_LEN), intent(IN) :: datafile
   logical, intent(IN) :: intf
   integer, intent (INOUT) :: gidxs(:,:)
   integer, intent(OUT) :: hlines
 !
 ! local variables
-  character*80 :: wrtline
-  character*120 :: hline
-  character*80 :: dataf2,dataf3
+  character(len=LDT_CONST_PATH_LEN) :: wrtline
+  character(len=LDT_CONST_PATH_LEN) :: hline
+  character(len=LDT_CONST_PATH_LEN) :: dataf2,dataf3
   integer :: ng
   integer :: ppdfunit,idxfunit
   integer :: i,j,k,m,n
@@ -663,16 +667,17 @@ end subroutine readheader
 !
 !
 subroutine procstndata(log1,datafile,hlines,ng,gidxs)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
   integer, intent(IN) :: log1,hlines,ng
-  character*80, intent(IN) :: datafile
+  character(len=LDT_CONST_PATH_LEN), intent(IN) :: datafile
   integer, intent(INOUT) :: gidxs(:,:)
 !
 ! local variables
-  character*80 :: dataf2,dataf3
-  character*80 :: wrtline
-  character*80 :: hline
+  character(len=LDT_CONST_PATH_LEN) :: dataf2,dataf3
+  character(len=LDT_CONST_PATH_LEN) :: wrtline
+  character(len=LDT_CONST_PATH_LEN) :: hline
   character*40 :: tprec,next_tprec
   character*7 :: nrecs
   integer :: fileend = 0
@@ -813,10 +818,11 @@ end subroutine procstndata
 !
 !
 subroutine breakagg(log1,funit,datafile,hlines,ng,nint,intmins,dates,gidxs,precip,accy)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
   integer, intent(IN) :: log1,funit
-  character*80, intent(IN) :: datafile
+  character(len=LDT_CONST_PATH_LEN), intent(IN) :: datafile
   integer, intent(IN) :: hlines,ng,nint
   integer, intent(INOUT) :: intmins
   integer, intent(INOUT) :: dates(:,:)
@@ -825,9 +831,9 @@ subroutine breakagg(log1,funit,datafile,hlines,ng,nint,intmins,dates,gidxs,preci
   integer, intent(OUT) :: accy(:,:)
 !
 ! local variables
-  character*80 :: wrtline
-  character*80 :: hline
-  character*80 :: idxdataf
+  character(len=LDT_CONST_PATH_LEN) :: wrtline
+  character(len=LDT_CONST_PATH_LEN) :: hline
+  character(len=LDT_CONST_PATH_LEN) :: idxdataf
   character*3 :: gage
   character*6 :: brecs,events
   integer, dimension(2,5) :: tdata = 0 
@@ -1056,16 +1062,17 @@ end subroutine metric
 !
 !
 subroutine writestnrec(log1,ng,nint,intmins,outfmt,dates,gidxs,precip,outfile)
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 !
 ! argument variables
   integer, intent(IN) :: log1,ng,nint,intmins,outfmt
-  character*80, intent(INOUT) :: outfile
+  character(len=LDT_CONST_PATH_LEN), intent(INOUT) :: outfile
   integer, intent(INOUT) :: dates(:,:)
   integer, intent(IN) :: gidxs(:,:)
   real, intent(IN) :: precip(:,:)
 !
 ! local variables
-  character*80 :: wrtline,datafile
+  character(len=LDT_CONST_PATH_LEN) :: wrtline,datafile
   character*16 :: datetime ! MM/DD/YYYY hh:mm 
   character*3 :: gnum
   integer :: funit = 10
