@@ -39,6 +39,7 @@ subroutine AC72_main(n)
                             GetCompartment_theta,&
                             GetCrop,&
                             GetCrop_Day1,&
+                            GetCrop_DayN,&
                             GetCrop_DaysToCCini,&
                             GetCrop_DaysToFlowering,&
                             GetCrop_DaysToFullCanopy,&
@@ -527,7 +528,7 @@ subroutine AC72_main(n)
     ! check AC72 alarm. If alarm is ring, run model.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "AC72 model alarm")
     if (alarmCheck) Then
-        if (AC72_struc(n)%ac72(1)%InitializeRun.eq.1) then
+        if (AC72_struc(n)%ac72(1)%read_Trecord.eq.1) then
         ! Read T record of next sim period
             call ac72_read_Trecord(n)
         endif
@@ -828,7 +829,9 @@ subroutine AC72_main(n)
 
                 ! For IrriMode_Generate and IrriMode_Manual
                 ! Check if new record needs to be read
-                if(AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Generate) then
+                if((AC72_struc(n)%ac72(t)%IrriMode.eq.IrriMode_Generate) &
+                     .and. (GetDayNri() >= GetCrop_Day1()) &
+                     .and. (GetDayNri() <= GetCrop_DayN())) then
                     if((AC72_struc(n)%ac72(t)%daynri-AC72_struc(n)%ac72(t)%Crop%Day1+1)&
                     .gt.AC72_struc(n)%ac72(t)%IrriInfoRecord1%ToDay) then
                         irr_record_flag = 1
@@ -931,6 +934,7 @@ subroutine AC72_main(n)
                 endif
                 ! End irrigation block
                 AC72_struc(n)%ac72(t)%InitializeRun = 0 ! Initialization done
+                AC72_struc(n)%ac72(t)%read_Trecord = 0
             end if
 
             ! Run AC
@@ -1124,6 +1128,7 @@ subroutine AC72_main(n)
             ! (DayNri - 1 because DayNri is already for next day)
             if ((GetDayNri()-1) .eq. GetSimulation_ToDayNr()) then
                 AC72_struc(n)%ac72(t)%InitializeRun = 1
+                AC72_struc(n)%ac72(t)%read_Trecord = 1
                 AC72_struc(n)%ac72(t)%irun = AC72_struc(n)%ac72(t)%irun + 1
             end if
 
