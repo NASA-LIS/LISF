@@ -145,7 +145,7 @@ SMAP_E_OPL CDF read option:                                  1
 #SMAP(NRT) observation CDF file:         ./input/cdf/SMAP_cdf_10km_30obs.nc
 #SMAP(NRT) soil moisture number of bins in the CDF:            100
 #SMAP(NRT) soil moisture use scaled standard deviation model:    0
-#SMAP(NRT) CDF read option:
+#SMAP(NRT) CDF read option:                                      1
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used
