@@ -1341,6 +1341,8 @@ CONTAINS
                var_name = trim(dataEntry%short_name)//'_inst'
             CASE(1)
                var_name = trim(dataEntry%short_name)//'_tavg'
+            CASE(2)
+               var_name = trim(dataEntry%short_name)
             CASE(3)
                var_name = trim(dataEntry%short_name)//'_acc'
             END SELECT
@@ -1353,14 +1355,14 @@ CONTAINS
          nlev = dataEntry%vlevels
          if (dataEntry%timeAvgOpt.eq.2) then 
             CALL increment_field_counter()
-            var_name = trim(dataEntry%short_name)//"_tavg"
+            var_name2 = trim(var_name)//"_tavg"
             call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                dataEntry%modelOutput(1,:,1:nlev),  &
-               var_name, local_var2D, local_var3D, local_var4D, &
+               var_name2, local_var2D, local_var3D, local_var4D, &
                i1, i2, j1, j2, nlev, nmodel_status)
 
             CALL increment_field_counter()
-            var_name2 = trim(dataEntry%short_name)//"_inst"
+            var_name2 = trim(var_name)//"_inst"
             call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                dataEntry%modelOutput(2,:,1:nlev),  &
                var_name2, local_var2D, local_var3D, local_var4D, &
@@ -1376,14 +1378,14 @@ CONTAINS
          end if
          if (dataEntry%minmaxOpt.gt.0) then 
             CALL increment_field_counter()
-            var_name2 = trim(dataEntry%short_name)//"_min"
+            var_name2 = trim(var_name)//"_min"
             call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                dataEntry%minimum(:,1:nlev),  &
                var_name2, local_var2D, local_var3D, local_var4D, &
                i1, i2, j1, j2, nlev, nmodel_status)
 
             CALL increment_field_counter()
-            var_name2 = trim(dataEntry%short_name)//"_max"
+            var_name2 = trim(var_name)//"_max"
             call PFIO_write_single_var(n, PFIOmodel_idx, vcol_id, TRIM(file_name), &
                dataEntry%maximum(:,1:nlev),  &
                var_name2, local_var2D, local_var3D, local_var4D, &
