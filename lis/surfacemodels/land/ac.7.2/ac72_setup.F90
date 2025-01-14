@@ -904,6 +904,7 @@ subroutine AC72_setup()
                 call InitializeRunPart1(int(AC72_struc(n)%ac72(t)%irun, kind=int8), AC72_struc(n)%ac72(t)%TheProjectType)
                 call InitializeSimulationRunPart2()
                 AC72_struc(n)%ac72(t)%InitializeRun = 0
+                AC72_struc(n)%ac72(t)%read_Trecord = 0
                 ! Check if enough GDDays to complete cycle, if not, turn on flag to warn the user
                 AC72_struc(n)%AC72(t)%crop = GetCrop()
                 if(GetCrop_ModeCycle().eq.ModeCycle_GDDays)then
@@ -1115,10 +1116,13 @@ subroutine AC72_setup()
                 call LIS_get_julhr(LIS_rc%yr, LIS_rc%mo, LIS_rc%da, &
                                   0,0,0,time1julhours)
                 time1days = (time1julhours - timerefjulhours)/24
-                if (time1days.eq.GetSimulation_ToDayNr()) then
-                    AC72_struc(n)%ac72(t)%irun = 2 ! Means that we need to start a new sim
+                ! If we restart on the first day of simulation
+                ! Do not read Trecord in main but initialize run
+                if ((AC72_struc(n)%Sim_AnnualStartMonth.eq.LIS_rc%smo) &
+                    .and.(AC72_struc(n)%Sim_AnnualStartDay.eq.LIS_rc%sda)) then
                     AC72_struc(n)%ac72(t)%InitializeRun = 1
                 endif
+                
         enddo ! do t = 1, LIS_rc%npatch(n, mtype)
     enddo
 end subroutine AC72_setup
