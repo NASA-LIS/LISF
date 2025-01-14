@@ -2705,6 +2705,383 @@ contains
     integer       :: shuffle, deflate, deflate_level
     character*100 :: short_name
     integer       :: fill_value
+    integer :: dimID_vert
+    integer :: start, end
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+
+    nmodel_status = 0
+    if(present(non_model_fields)) then
+       nmodel_status = non_model_fields
+    endif
+
+    data_index = dataEntry%index
+
+    shuffle = NETCDF_shuffle
+    deflate = NETCDF_deflate
+    deflate_level =NETCDF_deflate_level
+
+    ! write(LIS_logunit,*)'EMK: HERE'
+    ! write(LIS_logunit,*)'EMK: dataEntry%short_name: ', &
+    !      trim(dataEntry%short_name)
+    ! write(LIS_logunit,*)'EMK: dataEntry%selectOpt: ', &
+    !      dataEntry%selectOpt
+    ! write(LIS_logunit,*)'EMK: nmodel_status: ', &
+    !      nmodel_status
+    ! write(LIS_logunit,*)'EMK: dataEntry%timeAvgOpt: ', &
+    !      dataEntry%timeAvgOpt
+    ! write(LIS_logunit,*)'EMK: dataEntry%vlevels: ', &
+    !      dataEntry%vlevels
+    ! write(LIS_logunit,*)'EMK: LIS_rc%wopt: ', &
+    !      trim(LIS_rc%wopt)
+    ! write(LIS_logunit,*)'EMK: LIS_rc%nlatlon_dimensions: ', &
+    !      trim(LIS_rc%nlatlon_dimensions)
+
+    if (dataEntry%selectOpt .ne. 1) return ! Nothing to do
+
+    ! Define vertical dimension if var has more than one vlevel
+    if (dataEntry%vlevels > 1) then
+       call LIS_verify(nf90_def_dim(ftn, &
+            trim(dataEntry%short_name)//'_profiles', &
+            dataEntry%vlevels, dimID_vert), &
+            'nf90_def_dim failed (2d gridspace) in LIS_historyMod')
+       if (LIS_rc%wopt.eq."1d tilespace") then
+          dimID(2) = dimID_vert
+       else if(LIS_rc%wopt.eq."2d gridspace") then
+          dimID(3) = dimID_vert
+       else if(LIS_rc%wopt.eq."2d ensemble gridspace") then
+          dimID(4) = dimID_vert
+       endif
+    endif
+
+    ! Define start and end limits of dimID to pass to nf90_def_var
+    if (nmodel_status == 1) then
+       ! Latitude.  No vertical levels.
+       if (LIS_rc%wopt == "1d tilespace") then
+          start = 2; end = 2
+       else if (LIS_rc%wopt == "2d gridspace" .or. &
+            LIS_rc%wopt == "2d ensemble gridspace") then
+          if (LIS_rc%nlatlon_dimensions == '1D') then
+             start = 2; end = 2
+          else
+             start = 1; end = 2
+          end if
+       end if
+    else if (nmodel_status == 2) then
+       ! Longitude. No vertical levels.
+       if (LIS_rc%wopt == "1d tilespace") then
+          start = 1; end = 1
+       else if (LIS_rc%wopt == "2d gridspace" .or. &
+            LIS_rc%wopt == "2d ensemble gridspace") then
+          if (LIS_rc%nlatlon_dimensions == '1D') then
+             start = 1; end = 1
+          else
+             start = 1; end = 2
+          end if
+       end if
+    else
+       ! General case.  Must consider 1D vs 2D horizontal, ensembles,
+       ! and vertical levels
+       if (LIS_rc%wopt == "1d tilespace") then
+          if (dataEntry%vlevels > 1) then
+             start = 1; end = 2
+          else
+             start = 1; end = 1
+          end if
+       else if (LIS_rc%wopt == "2d gridspace") then
+          if (dataEntry%vlevels > 1) then
+             start = 1; end = 3
+          else
+             start = 1; end = 2
+          end if
+       else if (LIS_rc%wopt == "2d ensemble gridspace") then
+          if (dataEntry%vlevels > 1) then
+             start = 1; end = 4
+          else
+             start = 1; end = 3
+          end if
+       end if
+    end if
+
+    ! Now define the variable.  We must consider lat, lon, _inst, _tavg,
+    ! or _acc.  Extra logic below will consider _tavg and _inst
+    ! together, as well as _min and _max.
+    if (nmodel_status .ne. 0) then
+       ! Latitude or Longitude.  Just use the actual variable name.
+       short_name = trim(dataEntry%short_name)
+    else
+       ! Use the timeAvgOpt flag to append appropriate suffix.
+       if (dataEntry%timeAvgOpt.eq.0) then
+          short_name = trim(dataEntry%short_name)//'_inst'
+       elseif (dataEntry%timeAvgOpt.eq.1) then
+          short_name = trim(dataEntry%short_name)//'_tavg'
+       elseif (dataEntry%timeAvgOpt.eq.2) then
+          ! This flag means write both _tavg and _inst.  We do _tavg
+          ! first, and will handle _inst further down.
+          short_name = trim(dataEntry%short_name)//'_tavg'
+       elseif (dataEntry%timeAvgOpt.eq.3) then
+          short_name = trim(dataEntry%short_name)//'_acc'
+       endif
+    endif
+
+    ! Define the variable, fill value, and deflate settings
+    call LIS_verify(nf90_def_var(ftn, &
+         trim(short_name), &
+         nf90_float, &
+         dimids=dimID(start:end), &
+         varID=dataEntry%varId_def), &
+         'nf90_def_var for ' // trim(short_name) // &
+         'failed in defineNETCDFheadervar')
+#if(defined USE_NETCDF4)
+    call LIS_verify(nf90_def_var_fill(ftn, &
+         dataEntry%varId_def, &
+         1, fill_value), 'nf90_def_var_fill failed for '//&
+         short_name)
+    call LIS_verify(nf90_def_var_deflate(ftn, &
+         dataEntry%varId_def, &
+         shuffle, deflate, deflate_level),&
+         'nf90_def_var_deflate for '//trim(short_name)//&
+         'failed in defineNETCDFheadervar')
+#endif
+
+    if (dataEntry%timeAvgOpt.eq.2) then
+       ! We requested both_tavg and _inst.  Handling _inst now.
+       call LIS_verify(nf90_def_var(ftn, &
+            trim(dataEntry%short_name)//'_inst',&
+            nf90_float,&
+            dimids = dimID(start:end), varID=dataEntry%varId_opt1),&
+            'nf90_def_var for ' // &
+            trim(dataEntry%short_name) // '_inst' // &
+            'failed in defineNETCDFheadervar')
+#if(defined USE_NETCDF4)
+       call LIS_verify(nf90_def_var_fill(ftn, &
+            dataEntry%varId_opt1, &
+            1,fill_value), 'nf90_def_var_fill failed for ' // &
+            dataEntry%short_name // '_inst')
+       call LIS_verify(nf90_def_var_deflate(ftn, &
+            dataEntry%varId_opt1, &
+            shuffle, deflate, deflate_level), &
+            'nf90_def_var_deflate for ' // &
+            trim(dataEntry%short_name) // "_inst" // &
+            'failed in defineNETCDFheadervar')
+#endif
+    end if ! timeAvgOpt == 2
+
+    ! Now handle _min and _max, if requested.
+    if (dataEntry%minMaxOpt.gt.0) then
+       call LIS_verify(nf90_def_var(ftn, &
+            trim(dataEntry%short_name)//"_min", &
+            nf90_float, &
+            dimids = dimID(start:end), &
+            varID=dataEntry%varId_min), &
+            'nf90_def_var for ' // &
+            trim(dataEntry%short_name) // "_min" // &
+            'failed in defineNETCDFheadervar')
+#if(defined USE_NETCDF4)
+       call LIS_verify(nf90_def_var_fill(ftn, &
+            dataEntry%varId_min, &
+            1, fill_value), 'nf90_def_var_fill failed for '// &
+            trim(dataEntry%short_name)//"_min")
+       call LIS_verify(nf90_def_var_deflate(ftn, &
+            dataEntry%varId_min, &
+            shuffle, deflate, deflate_level), &
+            'nf90_def_var_deflate for '// &
+            trim(dataEntry%short_name)//"_min" // &
+            'failed in defineNETCDFheadervar')
+#endif
+
+       call LIS_verify(nf90_def_var(ftn, &
+            trim(dataEntry%short_name)//"_max", &
+            nf90_float, &
+            dimids = dimID(start:end), &
+            varID=dataEntry%varId_max), &
+            'nf90_def_var for '// &
+            trim(dataEntry%short_name) // "_max" // &
+            'failed in defineNETCDFheadervar')
+#if(defined USE_NETCDF4)
+       call LIS_verify(nf90_def_var_fill(ftn, &
+            dataEntry%varId_max, &
+            1, fill_value), 'nf90_def_var_fill failed for ' // &
+            trim(dataEntry%short_name)//"_max")
+       call LIS_verify(nf90_def_var_deflate(ftn, &
+            dataEntry%varId_max, &
+            shuffle, deflate, deflate_level), &
+            'nf90_def_var_deflate for ' // &
+            trim(dataEntry%short_name) // "_max" // &
+            'failed in defineNETCDFheadervar')
+#endif
+    endif ! minMaxOpt
+
+    ! Now add attributes
+    call LIS_verify(nf90_put_att(ftn,dataEntry%varId_def, &
+         "units", trim(dataEntry%units)), &
+         'nf90_put_att for units failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "standard_name", trim(dataEntry%standard_name)), &
+         'nf90_put_att for standard_name failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "long_name",trim(dataEntry%long_name)), &
+         'nf90_put_att for long_name failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "scale_factor", 1.0), &
+         'nf90_put_att for scale_factor failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "add_offset", 0.0), &
+         'nf90_put_att for add_offset failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "missing_value", LIS_rc%udef), &
+         'nf90_put_att for missing_value failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "_FillValue", LIS_rc%udef), &
+         'nf90_put_att for _FillValue failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "vmin", dataEntry%valid_min), &
+         'nf90_put_att for vmin failed in defineNETCDFheaderVar')
+    call LIS_verify(nf90_put_att(ftn, dataEntry%varId_def, &
+         "vmax", dataEntry%valid_max), &
+         'nf90_put_att for vmax failed in defineNETCDFheaderVar')
+
+    ! Special handling for case where both _tavg and _inst are written.
+    if (dataEntry%timeAvgOpt.eq.2) then
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "units", trim(dataEntry%units)), &
+            'nf90_put_att for units failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "standard_name", trim(dataEntry%standard_name)), &
+            'nf90_put_att for standard_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "long_name", trim(dataEntry%long_name)), &
+            'nf90_put_att for long_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "scale_factor", 1.0), &
+            'nf90_put_att for scale_factor failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "add_offset", 0.0), &
+            'nf90_put_att for add_offset failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "missing_value", LIS_rc%udef), &
+            'nf90_put_att for missing_value failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "_FillValue", LIS_rc%udef), &
+            'nf90_put_att for _FillValue failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "vmin", dataEntry%valid_min), &
+            'nf90_put_att for vmin failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_opt1, &
+            "vmax", dataEntry%valid_max), &
+            'nf90_put_att for vmax failed in defineNETCDFheaderVar')
+    endif ! timeAvgOpt == 2
+
+    ! Add metadata for max/min variables
+    if (dataEntry%minMaxOpt.gt.0) then
+
+       ! Min metadata
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "units", trim(dataEntry%units)), &
+            'nf90_put_att for units failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "standard_name", trim(dataEntry%standard_name)), &
+            'nf90_put_att for standard_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "long_name", trim(dataEntry%long_name)), &
+            'nf90_put_att for long_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn,dataEntry%varId_min, &
+            "scale_factor", 1.0), &
+            'nf90_put_att for scale_factor failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "add_offset", 0.0), &
+            'nf90_put_att for add_offset failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "missing_value", LIS_rc%udef), &
+            'nf90_put_att for missing_value failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "_FillValue", LIS_rc%udef), &
+            'nf90_put_att for _FillValue failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "vmin", dataEntry%valid_min), &
+            'nf90_put_att for vmin failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_min, &
+            "vmax", dataEntry%valid_max), &
+            'nf90_put_att for vmax failed in defineNETCDFheaderVar')
+
+       ! Max metadata
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "units", trim(dataEntry%units)), &
+            'nf90_put_att for units failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "standard_name", trim(dataEntry%standard_name)), &
+            'nf90_put_att for standard_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "long_name", trim(dataEntry%long_name)), &
+            'nf90_put_att for long_name failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "scale_factor", 1.0), &
+            'nf90_put_att for scale_factor failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "add_offset", 0.0), &
+            'nf90_put_att for add_offset failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "missing_value", LIS_rc%udef), &
+            'nf90_put_att for missing_value failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "_FillValue", LIS_rc%udef), &
+            'nf90_put_att for _FillValue failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "vmin", dataEntry%valid_min), &
+            'nf90_put_att for vmin failed in defineNETCDFheaderVar')
+       call LIS_verify(nf90_put_att(ftn, dataEntry%varId_max, &
+            "vmax", dataEntry%valid_max), &
+            'nf90_put_att for vmax failed in defineNETCDFheaderVar')
+    endif
+
+#endif
+  end subroutine defineNETCDFheaderVar
+
+#if 0
+!BOP
+! !ROUTINE: defineNETCDFheaderVar
+! \label{defineNETCDFheaderVar}
+! 
+! !INTERFACE: 
+  subroutine defineNETCDFheaderVar(n,ftn,dimID, dataEntry, non_model_fields)
+! !USES: 
+
+! !ARGUMENTS:     
+    integer                           :: n
+    integer                           :: ftn
+    type(LIS_metadataEntry), pointer  :: dataEntry
+    integer,   optional               :: non_model_fields
+    integer                           :: dimID(4)
+! 
+! !DESCRIPTION: 
+!    This routine writes the required NETCDF header for a single variable
+! 
+!   The arguments are: 
+!   \begin{description}
+!   \item[n]
+!    index of the nest
+!   \item[ftn]
+!    NETCDF file unit handle
+!   \item[dimID]
+!    NETCDF dimension ID corresponding to the variable
+!   \item[dataEntry]
+!    object containing the values and attributes of the variable to be 
+!    written
+!   \end{description}
+!
+!   The routines invoked are: 
+!   \begin{description}
+!   \item[LIS\_endrun](\ref{LIS_endrun})
+!     call to abort program when a fatal error is detected. 
+!   \item[LIS\_verify](\ref{LIS_verify})
+!     call to check if the return value is valid or not.
+!   \end{description}
+!EOP
+    integer       :: nmodel_status
+    integer       :: data_index
+    integer       :: shuffle, deflate, deflate_level
+    character*100 :: short_name
+    integer       :: fill_value
 
     ! EMK FIXME...This subroutine should be refactored to specify the correct length of the dimID array to
     ! pass to the netCDF library.  Once set based on output methodology and number of vertical levels, the
@@ -2723,6 +3100,20 @@ contains
     shuffle = NETCDF_shuffle
     deflate = NETCDF_deflate
     deflate_level =NETCDF_deflate_level
+
+    write(LIS_logunit,*)'EMK: HERE'
+    write(LIS_logunit,*)'EMK: dataEntry%short_name: ', &
+         trim(dataEntry%short_name)
+    write(LIS_logunit,*)'EMK: nmodel_status: ', &
+         nmodel_status
+    write(LIS_logunit,*)'EMK: dataEntry%timeAvgOpt: ', &
+         dataEntry%timeAvgOpt
+    write(LIS_logunit,*)'EMK: dataEntry%vlevels: ', &
+         dataEntry%vlevels
+    write(LIS_logunit,*)'EMK: LIS_rc%wopt: ', &
+         trim(LIS_rc%wopt)
+    write(LIS_logunit,*)'EMK: LIS_rc%nlatlon_dimensions: ', &
+         trim(LIS_rc%nlatlon_dimensions)
 
     if(dataEntry%selectOpt.eq.1)then 
        if(LIS_rc%wopt.eq."1d tilespace") then 
@@ -3824,6 +4215,7 @@ contains
     endif
 #endif
   end subroutine defineNETCDFheaderVar
+#endif
 
 !BOP
 ! !ROUTINE: writeSingleNETCDFvar
