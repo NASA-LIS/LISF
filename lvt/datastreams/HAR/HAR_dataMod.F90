@@ -15,8 +15,11 @@
 !
 ! !INTERFACE:
 module HAR_dataMod
-   implicit none
-   private
+
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
+  implicit none
+  private
 
 !
 ! !INPUT PARAMETERS: 
@@ -44,7 +47,7 @@ module HAR_dataMod
 !EOP
 
    type, public :: hardatadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)

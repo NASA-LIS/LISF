@@ -17,7 +17,8 @@ module GLERL_dataMod
 ! 
 ! !USES: 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  
   implicit none
 
   PRIVATE 
@@ -47,7 +48,7 @@ module GLERL_dataMod
 !EOP
 
   type, public :: glerldec
-     character*100               :: odir, locfile
+     character(len=LVT_CONST_PATH_LEN) :: odir, locfile
      integer                     :: nlocs
      character*50,  allocatable  :: lake_locname(:)
      real,          allocatable  :: lake_lat(:)

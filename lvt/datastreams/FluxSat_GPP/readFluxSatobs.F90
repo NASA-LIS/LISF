@@ -18,6 +18,7 @@ subroutine readFluxSatObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_timeMgrMod,  only : LVT_calendar
   use LVT_logMod,      only : LVT_logunit, LVT_verify
@@ -47,7 +48,7 @@ subroutine readFluxSatObs(source)
 ! 
 !EOP
 
-  character*100           :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical                 :: file_exists
   integer                 :: nid, ios
   integer                 :: gppid, rowId, colId

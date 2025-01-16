@@ -17,6 +17,7 @@ module FMISWE_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,7 +51,7 @@ module FMISWE_obsMod
   PUBLIC :: FMISWEobs !Object to hold FMISWE observation attributes
 !EOP
   type, public :: fmisweobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real                 :: udef
      logical              :: startflag
      integer              :: yr
