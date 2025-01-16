@@ -17,6 +17,7 @@ module ASOSWE_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -49,7 +50,7 @@ module ASOSWE_obsMod
   PUBLIC :: ASOSWEobs !Object to hold ASOSWE observation attributes
 !EOP
   type, public :: asosweobsdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
   end type asosweobsdec
 
   type(asosweobsdec), allocatable :: asosweobs(:)
@@ -64,7 +65,8 @@ contains
 ! !INTERFACE:
   subroutine ASOSWE_obsinit(i)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -95,8 +97,7 @@ contains
     integer            :: syr, smo, sda, shr, smn, sss
     integer            :: eyr, emo, eda, ehr, emn, ess
     integer            :: ts
-    character*100      :: coordfile
-    character*100      :: mdata
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
     real               :: xi1,xj1,xmesh,orient,alat1,alon1
     integer            :: t
     real               :: gridDesci(50)

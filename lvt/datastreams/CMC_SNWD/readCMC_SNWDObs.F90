@@ -38,6 +38,7 @@
 subroutine readCMC_SNWDObs(source)
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -66,7 +67,7 @@ subroutine readCMC_SNWDObs(source)
   integer                :: i,j,t,c,r
   integer                :: stn_col, stn_row
   real                   :: col,row
-  character*100          :: cmcsnwdfilename
+  character(len=LVT_CONST_PATH_LEN) :: cmcsnwdfilename
   logical                :: file_exists
   logical                :: readflag
   integer                :: ftn, ios

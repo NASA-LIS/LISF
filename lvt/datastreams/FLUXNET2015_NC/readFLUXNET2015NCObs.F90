@@ -152,6 +152,7 @@ subroutine read_fluxnet_station_nc(source, stn_index)
 ! 
 ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -289,8 +290,7 @@ subroutine read_fluxnet_station_nc(source, stn_index)
   integer :: status
 
   !This initializes the current line, first line, and filename variables. 
-  Character (len = 2000) :: currentLine
-  Character (len = 500)  :: filename 
+  Character (len = LVT_CONST_PATH_LEN)  :: filename 
   character*4           :: fyr
   logical               :: file_exists
 

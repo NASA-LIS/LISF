@@ -18,6 +18,7 @@ subroutine readGRUNrunoffobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -58,7 +59,7 @@ subroutine readGRUNrunoffobs(source)
   type(ESMF_Time)         :: gruntime
   type(ESMF_TimeInterval) :: offset
   integer                 :: off_month
-  character(len=100)      :: var_name,fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   logical                 :: file_exists
   real*8                  :: lis_prevtime
   real                    :: runoff(LVT_rc%lnc,LVT_rc%lnr)

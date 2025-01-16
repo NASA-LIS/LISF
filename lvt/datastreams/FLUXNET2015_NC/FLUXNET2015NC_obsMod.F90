@@ -41,6 +41,7 @@
 module FLUXNET2015NC_obsMod
 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,7 +51,7 @@ module FLUXNET2015NC_obsMod
   PUBLIC :: FLUXNET2015NCobs
 
   type, public :: FLUXNET2015NCobsdec
-     character*500 :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: n_stns
      character*100, allocatable  :: stn_name(:)
      real,          allocatable  :: stnlat(:)
@@ -82,7 +83,8 @@ contains
 ! !INTERFACE: 
  subroutine FLUXNET2015NC_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -111,7 +113,7 @@ contains
 ! 
 !
 !EOP
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn 
     integer       :: k,iloc
     integer       :: arrayLen
