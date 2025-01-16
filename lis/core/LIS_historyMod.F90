@@ -2743,7 +2743,7 @@ contains
     if (nmodel_status == 1) then
        ! Latitude.  No vertical levels.
        if (LIS_rc%wopt == "1d tilespace") then
-          start = 2; end = 2
+          start = 1; end = 1
        else if (LIS_rc%wopt == "2d gridspace" .or. &
             LIS_rc%wopt == "2d ensemble gridspace") then
           if (LIS_rc%nlatlon_dimensions == '1D') then
