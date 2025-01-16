@@ -16,7 +16,9 @@
 module LVTbenchmarkOUT_obsMod
 ! 
 ! !USES:   
-!
+  !
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
 ! !INPUT PARAMETERS: 
 ! 
 ! !OUTPUT PARAMETERS:
@@ -46,7 +48,7 @@ module LVTbenchmarkOUT_obsMod
 !EOP
   
   type, public :: daobsdec
-     character*100  :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*50   :: vname
   end type daobsdec
 

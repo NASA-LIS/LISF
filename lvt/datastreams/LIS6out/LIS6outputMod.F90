@@ -16,6 +16,8 @@
 module LIS6outputMod
 ! 
 ! !USES:   
+
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -46,7 +48,7 @@ module LIS6outputMod
 !EOP
   
   type, public :: lis6obsdec
-     character*100  :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
   end type lis6obsdec
 
   type(lis6obsdec), allocatable :: lis6output(:)
