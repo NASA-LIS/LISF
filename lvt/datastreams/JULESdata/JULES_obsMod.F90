@@ -17,6 +17,7 @@ module JULES_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -47,7 +48,7 @@ module JULES_obsMod
 !EOP
 
   type, public :: julesdec
-     character*500               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      type(ESMF_Time)             :: refTime
      integer                     :: ntimes
      logical                     :: startMode

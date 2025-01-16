@@ -18,6 +18,7 @@ subroutine readJASMINsmObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit, LVT_getNextUnitNumber, & 
@@ -52,7 +53,7 @@ subroutine readJASMINsmObs(source)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   real              :: smobs(LVT_rc%lnc*LVT_rc%lnr,4)
   real              :: rootsm(LVT_rc%lnc*LVT_rc%lnr)
   real              :: lat,lon
