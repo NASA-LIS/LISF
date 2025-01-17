@@ -241,6 +241,7 @@ end subroutine readMERRA2Obs
 
 subroutine process_MERRA2data(source, yr, mo, da)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use MERRA2obsMod
@@ -258,7 +259,7 @@ subroutine process_MERRA2data(source, yr, mo, da)
   integer                :: da
 
   integer                :: ftn, ftn_flx
-  character*100          :: fname, flxname
+  character(len=LVT_CONST_PATH_LEN) :: fname, flxname
   logical                :: file_exists
   integer                :: qsid,qsbid, swnetid, qleid, qhid, frsnoid, snodid
   integer                :: sweid, qgid, sfsmid, rzsmid, prcpid, tairid, tskinid
