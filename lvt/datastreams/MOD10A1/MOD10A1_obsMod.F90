@@ -17,6 +17,7 @@ module MOD10A1_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -50,7 +51,7 @@ module MOD10A1_obsMod
   PUBLIC :: Mod10a1obs
 !EOP
   type, public :: mod10a1obsdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: modis_nc, modis_nr
      real, allocatable           :: rlat(:)
      real, allocatable           :: rlon(:)
