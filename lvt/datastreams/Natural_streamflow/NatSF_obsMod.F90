@@ -17,6 +17,7 @@ module NatSF_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module NatSF_obsMod
 ! 
 !EOP
 
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: n_stns
      character*100, allocatable  :: stn_name(:)
      real,          allocatable  :: stnlat(:)
