@@ -27,7 +27,7 @@ program LVTpreproc
 !EOP
   implicit none
 
-  character*100 :: configfile
+  character(len=LVT_CONST_PATH_LEN) :: configfile
   integer       :: i 
   integer       :: iargc
 

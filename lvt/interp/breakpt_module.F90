@@ -176,11 +176,12 @@ module breakpoint_module
 integer function filedate(log1,filename)
 !
 ! dependencies
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use dfport
 !
 ! argument variables
   integer, intent(INOUT) :: log1
-  character*80 :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
 !
 ! local variables
   integer, dimension(12) :: fileinfo
