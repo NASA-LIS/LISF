@@ -18,6 +18,7 @@ subroutine readIMDPRCPobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,     only : LVT_logunit, LVT_getNextUnitNumber, &
@@ -50,7 +51,7 @@ subroutine readIMDPRCPobs(source)
 !EOP
 
   integer             :: ftn 
-  character*100       :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   character*4         :: fyr
   logical             :: file_exists
   real, allocatable   :: rainf(:,:,:)

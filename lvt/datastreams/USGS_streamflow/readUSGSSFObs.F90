@@ -17,6 +17,7 @@
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,        only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_timeMgrMod,     only : LVT_calendar, LVT_tick
@@ -44,7 +45,7 @@
 
 
 
-  character*100       :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   character*20        :: datestring, datestring2, qstring
   integer             :: stn_col, stn_row, c,r
   real                :: col,row
