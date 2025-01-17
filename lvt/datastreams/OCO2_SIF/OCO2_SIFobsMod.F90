@@ -17,6 +17,7 @@ module OCO2_SIFobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -47,7 +48,7 @@ module OCO2_SIFobsMod
 !EOP
 
   type, public :: oco2sifdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20            :: channel
      logical                 :: startFlag
   end type oco2sifdec
