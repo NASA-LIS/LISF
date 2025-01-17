@@ -595,7 +595,6 @@ subroutine process_ERAIland_runoff_data(source, fcstfile, &
      srunoff, baseflow)
 
   use ESMF
-  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -758,7 +757,6 @@ subroutine process_ERAIland_fcst1_data(source, fcstfile, &
      qle_out, qh_out, rnet_out, tp_out, qsm_out, evap_out)
 
   use ESMF
-  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
