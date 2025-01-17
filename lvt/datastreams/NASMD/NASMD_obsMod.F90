@@ -17,6 +17,7 @@ module NASMD_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -69,7 +70,7 @@ module NASMD_obsMod
   PUBLIC :: NASMDobs
 !EOP
   type, public :: nasmdobsdec
-     character*100             :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                   :: nstns
      character*10,     allocatable :: stnid(:)
      real,             allocatable :: stnlat(:)
@@ -118,7 +119,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine NASMD_obsinit(i)
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -140,7 +142,7 @@ contains
     integer                 :: eyr, emo, eda, ehr, emn, ess
     integer                 :: ts
     character*2             :: cdum
-    character*100           :: coordfile
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
 
     if(.not.allocated(nasmdobs)) then 
        allocate(nasmdobs(LVT_rc%nDataStreams))
