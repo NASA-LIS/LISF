@@ -1633,7 +1633,7 @@ Soil texture spatial transform:     none
 
 `Soil texture fill value for Antarctica:` indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of `Soil texture fill value:` will be used.
 
-`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.
+`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO, south of 60S (i.e., texture is set to all water), and multiple surface model types (e.g., LSM and Openwater) are used.
 
 [cols="<,<",]
 |===
@@ -1759,7 +1759,7 @@ Curvature number of bands:     1
 
 Topography maps
 
-`Elevation map:` specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files.
+`Elevation map:` specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files. Note: The SRTM tiles only go to 60deg S, and south of that the associated SRTM reader can fill in with GTOPO30 Antarctica tile files.
 
 `Slope map:` specifies the slope of the LIS grid. If the slope map type selected is SRTM_Native, then the file entry is actually just the directory path, which contains the tiled SRTM elevation files.  
 
