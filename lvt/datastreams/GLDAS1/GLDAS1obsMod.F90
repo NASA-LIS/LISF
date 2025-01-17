@@ -17,6 +17,7 @@ module GLDAS1obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -45,7 +46,7 @@ module GLDAS1obsMod
 !EOP
 
   type, public :: gldas1dec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20            :: model_name
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)

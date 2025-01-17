@@ -17,6 +17,7 @@ module UCLASWEreanal_dataMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
   PRIVATE 
@@ -46,7 +47,7 @@ module UCLASWEreanal_dataMod
   PUBLIC :: UCLASWEreanaldata
 
   type, public :: uclaswereanaldatadec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nc, nr
      integer              :: yr
      type(ESMF_Time)         :: startTime

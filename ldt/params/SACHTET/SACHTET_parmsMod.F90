@@ -78,35 +78,35 @@ module SACHTET_parmsMod
 !  - SAC-HTET parameters:
      character*140 :: csoilparm_method
 !     character*140 :: cosbysoils_table
-     character*140 :: sacsoilparms_table
-     character*140 :: sacvegparms_table
-     character*140 :: lzfpm_file      ! Lower zone 
-     character*140 :: lzfsm_file      !
-     character*140 :: lzpk_file       !
-     character*140 :: lzsk_file       !
-     character*140 :: lztwm_file      !
-     character*140 :: uzfwm_file      !
-     character*140 :: uztwm_file      !
-     character*140 :: uzk_file        !
-     character*140 :: pfree_file      !
-     character*140 :: rexp_file       !
-     character*140 :: zperc_file      !
+     character(len=LDT_CONST_PATH_LEN) :: sacsoilparms_table
+     character(len=LDT_CONST_PATH_LEN) :: sacvegparms_table
+     character(len=LDT_CONST_PATH_LEN) :: lzfpm_file      ! Lower zone 
+     character(len=LDT_CONST_PATH_LEN) :: lzfsm_file      !
+     character(len=LDT_CONST_PATH_LEN) :: lzpk_file       !
+     character(len=LDT_CONST_PATH_LEN) :: lzsk_file       !
+     character(len=LDT_CONST_PATH_LEN) :: lztwm_file      !
+     character(len=LDT_CONST_PATH_LEN) :: uzfwm_file      !
+     character(len=LDT_CONST_PATH_LEN) :: uztwm_file      !
+     character(len=LDT_CONST_PATH_LEN) :: uzk_file        !
+     character(len=LDT_CONST_PATH_LEN) :: pfree_file      !
+     character(len=LDT_CONST_PATH_LEN) :: rexp_file       !
+     character(len=LDT_CONST_PATH_LEN) :: zperc_file      !
 
-     character*140 :: sacmask_file    ! SAC HTET mask file
-     character*140 :: pctim_file      !
-     character*140 :: efc_file        ! Forest fraction cover
-     character*140 :: soilalb_file    !
-     character*140 :: timeOffset_file !
+     character(len=LDT_CONST_PATH_LEN) :: sacmask_file    ! SAC HTET mask file
+     character(len=LDT_CONST_PATH_LEN) :: pctim_file      !
+     character(len=LDT_CONST_PATH_LEN) :: efc_file        ! Forest fraction cover
+     character(len=LDT_CONST_PATH_LEN) :: soilalb_file    !
+     character(len=LDT_CONST_PATH_LEN) :: timeOffset_file !
 
-     character*140 :: stxt_file       !
-     character*140 :: tbot_file       !
-     character*140 :: zbot_file       !
-     character*140 :: adimp_file      !
-     character*140 :: side_file       !
-     character*140 :: riva_file       !
-     character*140 :: rserv_file      !
-     character*140 :: rsmax_file      !
-     character*140 :: cksl_file       !
+     character(len=LDT_CONST_PATH_LEN) :: stxt_file       !
+     character(len=LDT_CONST_PATH_LEN) :: tbot_file       !
+     character(len=LDT_CONST_PATH_LEN) :: zbot_file       !
+     character(len=LDT_CONST_PATH_LEN) :: adimp_file      !
+     character(len=LDT_CONST_PATH_LEN) :: side_file       !
+     character(len=LDT_CONST_PATH_LEN) :: riva_file       !
+     character(len=LDT_CONST_PATH_LEN) :: rserv_file      !
+     character(len=LDT_CONST_PATH_LEN) :: rsmax_file      !
+     character(len=LDT_CONST_PATH_LEN) :: cksl_file       !
 
 ! -  SAC-HTET model-specific:
      type(LDT_paramEntry) :: sachtet356  ! SAC-HTET v.3.5.6 model version parameters (collective)
@@ -251,7 +251,7 @@ contains
                    'SEP','OCT','NOV','DEC'/
 
 !   character*50       :: sacsoilparms_option
-   character*140      :: cosbysoils_table
+   character(len=LDT_CONST_PATH_LEN) :: cosbysoils_table
    character*50       :: sachtetparms_proj
    integer            :: type_value
    character(20)      :: type_name 

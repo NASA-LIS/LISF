@@ -22,6 +22,8 @@ module preprocMod
   public :: paramProcWrite
   public :: LVT_verify
 
+  integer, parameter, public :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
+
   type lvtrcdec
 
 ! -- Tile parameters:
@@ -71,8 +73,8 @@ module preprocMod
      character*50,  allocatable :: mask_type(:)
 
 ! -- Parameter filepath names:
-     character*140, allocatable :: mfile(:)
-     character*140, allocatable :: vfile(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: mfile(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: vfile(:)
      integer,       allocatable :: vfile_form(:)
 
      integer                :: bareclass 

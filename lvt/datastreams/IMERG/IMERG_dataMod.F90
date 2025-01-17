@@ -11,6 +11,8 @@
 ! NOTE:  Currently only V05B IMERG data are supported
 module IMERG_dataMod
 
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
    ! Defaults
    implicit none
    private
@@ -22,7 +24,7 @@ module IMERG_dataMod
    public :: IMERGdata
 
    type, public :: imergdatadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       character*10  :: imergver, imergprd
       real          :: datares
       real, allocatable           :: rlat(:)

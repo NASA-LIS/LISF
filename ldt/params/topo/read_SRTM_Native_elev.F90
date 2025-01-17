@@ -22,6 +22,7 @@
 subroutine read_SRTM_Native_elev( n, num_bins, fgrd, elevave )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -101,7 +102,7 @@ subroutine read_SRTM_Native_elev( n, num_bins, fgrd, elevave )
    real, allocatable :: yrev_elev(:,:)      ! Y-reversed mosaicked-tile elevation
    real, allocatable :: subset_elev(:,:)    ! Read input parameter
   
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
 !________________________________________________________________________
 
   fgrd = 0.

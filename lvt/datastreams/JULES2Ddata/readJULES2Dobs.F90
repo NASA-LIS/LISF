@@ -18,6 +18,7 @@ subroutine readJULES2DObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_logMod
@@ -58,7 +59,7 @@ subroutine readJULES2DObs(source)
 ! 
 !EOP
 
-  character*500           :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical                 :: file_exists
   integer                 :: k,nid, ios,l,iret
   integer                 :: timeid, tId, xId, yId, soilId

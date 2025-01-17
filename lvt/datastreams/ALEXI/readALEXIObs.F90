@@ -18,6 +18,7 @@ subroutine readALEXIObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_logMod
@@ -48,7 +49,7 @@ subroutine readALEXIObs(source)
   real                   :: currTime
   logical                :: alarmCheck 
   logical                :: file_exists
-  character*100          :: lh_filename, sh_filename, gh_filename
+  character(len=LVT_CONST_PATH_LEN) :: lh_filename, sh_filename, gh_filename
   integer                :: c,r,ios,ftn
   logical*1              :: li(ALEXIobs(source)%nc*ALEXIobs(source)%nr)
   logical*1              :: lo(LVT_rc%lnc*LVT_rc%lnr)

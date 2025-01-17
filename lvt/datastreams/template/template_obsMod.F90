@@ -17,6 +17,7 @@ module template_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -41,7 +42,7 @@ module template_obsMod
   PUBLIC :: templateobs
 
   type, public :: templateobsdec
-     character*100 :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
   end type templateobsdec
 
   type(templateobsdec) :: templateobs

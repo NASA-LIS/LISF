@@ -15,6 +15,8 @@
 ! !INTERFACE:
 module GDASforc_dataMod
 
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
    ! Defaults
    implicit none
    private
@@ -26,7 +28,7 @@ module GDASforc_dataMod
    public :: GDASforcdata
 
    type, public :: gdasforcdatadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)

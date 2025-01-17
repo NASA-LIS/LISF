@@ -166,6 +166,8 @@ CONTAINS
 
 SUBROUTINE clm2_shr_msg_stdio(model)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
    !--- arguments ---
    character(len=*),intent(in) :: model ! used to construct env varible name
 
@@ -173,9 +175,9 @@ SUBROUTINE clm2_shr_msg_stdio(model)
    character(len=  8)   :: var_dir   ! env variable name wrt cwd
    character(len=  8)   :: var_in    ! env variable name wrt stdin
    character(len=  8)   :: var_out   ! env variable name wrt stdout
-   character(len=256)   :: str_dir   ! env variable value for cwd
-   character(len=256)   :: str_in    ! env variable value for stdin file
-   character(len=256)   :: str_out   ! env variable value for stdout file
+   character(len=LIS_CONST_PATH_LEN) :: str_dir   ! env variable value for cwd
+   character(len=LIS_CONST_PATH_LEN) :: str_in    ! env variable value for stdin file
+   character(len=LIS_CONST_PATH_LEN) :: str_out   ! env variable value for stdout file
    integer(SHR_KIND_IN) :: rcode_dir ! 0 => no error on cwd    system call
    integer(SHR_KIND_IN) :: rcode_in  ! 0 => no error on stdin  system call
    integer(SHR_KIND_IN) :: rcode_out ! 0 => no error on stdout system call

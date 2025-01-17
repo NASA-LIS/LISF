@@ -17,6 +17,7 @@ module USGSSF_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module USGSSF_obsMod
 ! 
 !EOP
 
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: n_stns
      integer                 :: nts
      integer                 :: version
@@ -65,7 +66,8 @@ contains
 ! !INTERFACE: 
  subroutine USGSSF_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -86,7 +88,7 @@ contains
 ! 
 !EOP
 
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn, k, status
 
     if(.not.allocated(USGSSFobs)) then 

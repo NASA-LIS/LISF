@@ -24,6 +24,7 @@
 
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN 
   use LDT_coreMod,  only : LDT_rc, LDT_domain
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
                            LDT_releaseUnitNumber, LDT_endrun
@@ -35,7 +36,7 @@
 ! !ARGUMENTS: 
 ! Inputs:
   integer,        intent(in) :: n
-  character(140), intent(in) :: cosbysoils_table
+  character(len=LDT_CONST_PATH_LEN), intent(in) :: cosbysoils_table
   type(LDT_paramEntry), intent(in) :: soiltext
   type(LDT_paramEntry), intent(in) :: hsg
 ! Outputs:

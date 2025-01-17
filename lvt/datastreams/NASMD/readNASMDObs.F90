@@ -17,6 +17,7 @@ subroutine readNASMDObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_timeMgrMod,   only : LVT_calendar, LVT_tick
@@ -57,7 +58,7 @@ subroutine readNASMDObs(source)
   character*10        :: id
   integer             :: i,t,k,kk,st,et,ios
   logical             :: readflag,file_exists
-  character*100       :: nasmdfilename
+  character(len=LVT_CONST_PATH_LEN) :: nasmdfilename
   real                :: sf_wtsum, rz_wtsum
   integer             :: yr,mo,da,hr,mn,ss,doy
   real                :: gmt

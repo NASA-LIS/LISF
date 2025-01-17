@@ -17,6 +17,7 @@ module SCANGMAO_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -59,7 +60,7 @@ module SCANGMAO_obsMod
   PUBLIC :: SCANGMAOobs
 !EOP
   type, public :: scangmaoobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      integer,     allocatable :: stnid(:)
      real,        allocatable :: stnlat(:)
@@ -134,7 +135,7 @@ contains
     integer                 :: eyr, emo, eda, ehr, emn, ess
     integer                 :: ts
     character*2             :: cdum
-    character*100           :: coordfile
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
 
     if(.not.allocated(scangmaoobs)) then 
        allocate(scangmaoobs(LVT_rc%nDataStreams))

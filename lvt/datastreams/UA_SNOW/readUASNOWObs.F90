@@ -19,6 +19,7 @@ subroutine readUASNOWObs(source)
 ! !USES:
    use ESMF
    use LVT_histDataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod,    only : LVT_rc
    use LVT_timeMgrMod, only : LVT_calendar
    use LVT_logMod,     only : LVT_logunit, LVT_verify
@@ -49,7 +50,7 @@ subroutine readUASNOWObs(source)
 !EOP
 
    integer             :: ftn
-   character*100       :: uafilename
+   character(len=LVT_CONST_PATH_LEN) :: uafilename
    logical             :: file_exists
    real, allocatable   :: swe1(:,:,:),snwd1(:,:,:)
    real                :: swe_in(uasnowobs(source)%nc*uasnowobs(source)%nr)

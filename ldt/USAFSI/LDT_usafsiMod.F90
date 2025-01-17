@@ -12,6 +12,8 @@
 
 module LDT_usafsiMod
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -25,18 +27,18 @@ module LDT_usafsiMod
   type, public :: usafsi_t
      ! Former environment variables
      character*10  :: date10
-     character*255 :: fracdir
-     character*255 :: modif
+     character(len=LDT_CONST_PATH_LEN) :: fracdir
+     character(len=LDT_CONST_PATH_LEN) :: modif
      integer :: sfcobsfmt ! EMK 20230727
-     character*255 :: sfcobs
-     character*255 :: ssmis
-     character*255 :: gmi    !kyh20201118
-     character*255 :: amsr2  !kyh20201217
-     character*255 :: stmpdir
-     character*255 :: sstdir ! EMK 20220113
-     character*255 :: static
-     character*255 :: unmod
-     character*255 :: viirsdir
+     character(len=LDT_CONST_PATH_LEN) :: sfcobs
+     character(len=LDT_CONST_PATH_LEN) :: ssmis
+     character(len=LDT_CONST_PATH_LEN) :: gmi    !kyh20201118
+     character(len=LDT_CONST_PATH_LEN) :: amsr2  !kyh20201217
+     character(len=LDT_CONST_PATH_LEN) :: stmpdir
+     character(len=LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+     character(len=LDT_CONST_PATH_LEN) :: static
+     character(len=LDT_CONST_PATH_LEN) :: unmod
+     character(len=LDT_CONST_PATH_LEN) :: viirsdir
 
      ! Former namelist variables
      real :: clmadj
@@ -62,11 +64,11 @@ module LDT_usafsiMod
 
      ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
-     character*255 :: ssmis_raw_dir
-     character*255 :: gmi_raw_dir        !kyh20201118
-     character*255 :: amsr2_raw_dir      !kyh20201217
-     character*255 :: ff_file
-     character*255 :: fd_file            !kyh20210113
+     character(len=LDT_CONST_PATH_LEN) :: ssmis_raw_dir
+     character(len=LDT_CONST_PATH_LEN) :: gmi_raw_dir        !kyh20201118
+     character(len=LDT_CONST_PATH_LEN) :: amsr2_raw_dir      !kyh20201217
+     character(len=LDT_CONST_PATH_LEN) :: ff_file
+     character(len=LDT_CONST_PATH_LEN) :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -78,18 +80,18 @@ module LDT_usafsiMod
 
      ! Other new settings
      real :: fill_climo
-     character*255 :: source_of_ocean_data ! EMK 20240718
-     character*255 :: gofs_sst_dir
-     character*255 :: gofs_cice_dir
-     character*255 :: espcd_sst_dir  ! EMK 20240718
-     character*255 :: espcd_cice_dir ! EMK 20240718
-     character*255 :: lis_grib2_dir
+     character(len=LDT_CONST_PATH_LEN) :: source_of_ocean_data ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: gofs_sst_dir
+     character(len=LDT_CONST_PATH_LEN) :: gofs_cice_dir
+     character(len=LDT_CONST_PATH_LEN) :: espcd_sst_dir  ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: espcd_cice_dir ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
      character*20 :: data_res
      character*20 :: area_of_data
-     character*255 :: galwem_root_dir
-     character*255 :: galwem_sub_dir
+     character(len=LDT_CONST_PATH_LEN) :: galwem_root_dir
+     character(len=LDT_CONST_PATH_LEN) :: galwem_sub_dir
      integer :: use_timestamp
      integer :: galwem_res
 

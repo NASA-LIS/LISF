@@ -27,6 +27,7 @@ subroutine mklai (flai, ndiag, pft, mlai, msai, mhgtt, mhgtb)
 ! $Id: mklai.F90,v 1.5 2004/05/07 22:18:36 jim Exp $
 !-----------------------------------------------------------------------
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_precisionMod
   use clm2_varpar    !lsm parameters
 !  use clm2_varsur    !lsm surface variables  
@@ -46,7 +47,7 @@ subroutine mklai (flai, ndiag, pft, mlai, msai, mhgtt, mhgtb)
 ! -----------------------------------------------------------------
 
 ! ------------------------ local variables ------------------------
-  character(len=256) :: locfn       !local dataset file name
+  character(len=LIS_CONST_PATH_LEN) :: locfn       !local dataset file name
 
   integer :: nlon_i                 !input grid : longitude points (read in)
   integer :: nlat_i                 !input grid : latitude  points (read in)

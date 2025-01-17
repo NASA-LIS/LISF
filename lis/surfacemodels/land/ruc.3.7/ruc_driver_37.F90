@@ -22,6 +22,8 @@ subroutine ruc_driver_37(                                                  &
   ! caltmp and calhum.
   !
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   use module_Noahlsm_utility_ruc37
   !
   ! module_sf_ruclsm contains the ruc lsm physics code.  this driver program
@@ -72,9 +74,9 @@ subroutine ruc_driver_37(                                                  &
   integer,intent(in)  :: iz0tlnd          ! option to turn on (iz0tlnd=1) or off (iz0tlnd=0) the vegetation-category-dependent calculation of the zilitinkivich coefficient czil in the sfcdif subroutines.
   integer, intent(in) :: sfcdif_option    ! option to use previous (sfcdif_option=0) or updated (sfcdif_option=1) version of sfcdif subroutine.
   
-  character(len=256), intent(in) :: landuse_tbl_name      ! noah model landuse parameter table
-  character(len=256), intent(in) :: soil_tbl_name         ! noah model soil parameter table
-  character(len=256), intent(in) :: gen_tbl_name          ! noah model general parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: landuse_tbl_name      ! noah model landuse parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: soil_tbl_name         ! noah model soil parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: gen_tbl_name          ! noah model general parameter table
   character(len=256), intent(in) :: landuse_scheme_name   ! landuse classficiation scheme
   character(len=256), intent(in) :: soil_scheme_name      ! soil classification scheme  
   integer, intent(in) :: nsoil            ! number of soil levels.

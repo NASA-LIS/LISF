@@ -17,6 +17,7 @@ subroutine readCPCPRCPobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,     only : LVT_logunit, LVT_getNextUnitNumber, &
@@ -47,7 +48,7 @@ subroutine readCPCPRCPobs(source)
 !EOP
 
   integer             :: ftn 
-  character*100       :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical             :: file_exists
   real                :: prcp_in(cpcprcpobs(source)%nc*cpcprcpobs(source)%nr)
   real                :: prcp_in1(cpcprcpobs(source)%nc*cpcprcpobs(source)%nr)

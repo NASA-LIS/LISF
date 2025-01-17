@@ -16,7 +16,8 @@
 ! !INTERFACE:
 program LVTmain
 ! 
-! !USES:       
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod, only : LVT_rc, LVT_configinit
 !
 ! !INPUT PARAMETERS: 
@@ -36,7 +37,7 @@ program LVTmain
 !EOP
   implicit none
 
-  character*500 :: configfile = 'lvt.config'
+  character(len=LVT_CONST_PATH_LEN) :: configfile = 'lvt.config'
   integer       :: i 
   integer       :: iargc
 !BOC  

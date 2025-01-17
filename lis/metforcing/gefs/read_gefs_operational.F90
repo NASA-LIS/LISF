@@ -33,7 +33,7 @@ subroutine read_gefs_operational(n, m, findex, order, filename, ferror)
   integer, intent(in)       :: n
   integer, intent(in)       :: m
   integer, intent(in)       :: order
-  character*140, intent(in) :: filename
+  character(len=*), intent(in) :: filename
   integer, intent(out)      :: ferror
 !
 ! !DESCRIPTION:

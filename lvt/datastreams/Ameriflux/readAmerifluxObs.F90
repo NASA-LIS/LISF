@@ -176,6 +176,7 @@ subroutine read_ameriflux_station(source, stn_index)
 ! 
 ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -238,7 +239,7 @@ subroutine read_ameriflux_station(source, stn_index)
 
   !This initializes the current line, first line, and filename variables. 
   Character (len = 300) :: currentLine
-  Character (len = 200) :: filename 
+  Character (len = LVT_CONST_PATH_LEN) :: filename 
   character*4           :: fyr
   logical               :: file_exists
 

@@ -18,6 +18,7 @@ module GRUNrunoff_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,8 +51,8 @@ module GRUNrunoff_obsMod
 !EOP
 
   type, public :: grundec
-     character*100           :: odir
-     character*100           :: mapfile
+     character(len=LVT_CONST_PATH_LEN) :: odir
+     character(len=LVT_CONST_PATH_LEN) :: mapfile
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)

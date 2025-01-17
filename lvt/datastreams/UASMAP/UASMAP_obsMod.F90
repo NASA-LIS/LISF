@@ -17,6 +17,7 @@ module UASMAP_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -48,7 +49,7 @@ module UASMAP_obsMod
   PUBLIC :: UASMAPobs
 !EOP
   type, public :: thysmobsdec
-     character*100              :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real                       :: gridDesci(50)
      integer                    :: nc, nr
      type(proj_info)            :: proj

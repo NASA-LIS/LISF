@@ -791,6 +791,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_rc, LIS_masterproc
       use LIS_logMod, only: LIS_abort, LIS_endrun, LIS_getNextUnitNumber, &
            LIS_releaseUnitNumber, LIS_logunit, LIS_alert
@@ -814,7 +815,7 @@ contains
       integer :: j3hr
       integer :: fc_hr
       character(len=6) :: src
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer :: rc,ierr
       character(len=10) :: yyyymmddhh
       integer :: c, r
@@ -990,6 +991,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_fileIOMod, only: LIS_putget
       use LIS_logMod, only: LIS_logunit, LIS_alert
@@ -1016,9 +1018,9 @@ contains
       integer :: alert_number
       integer :: first,last,hemi
       integer :: yr,mo,da,hr
-      character(len=100) :: ifil
+      character(len=LIS_CONST_PATH_LEN) :: ifil
       logical :: exists
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       character(len=30) :: routine_name
       logical :: use_zeros
       integer :: local_global_or_hemi
@@ -1173,6 +1175,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only     : LIS_masterproc
       use LIS_fileIOMod, only: LIS_putget
       use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert
@@ -1202,10 +1205,10 @@ contains
       integer :: first, last, hemi
       logical :: gdgeornk, exists
       integer :: yr,mo,da,hr
-      character(len=100) :: ifil
+      character(len=LIS_CONST_PATH_LEN) :: ifil
       integer :: k
       integer :: alert_number
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       character(len=30) :: routine_name
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
       real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength, &
@@ -2975,6 +2978,7 @@ contains
 #else
       use LIS_coreMod,       only : LIS_masterproc
 #endif
+      use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
       use LIS_coreMod,       only : LIS_rc
       use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
@@ -2999,8 +3003,7 @@ contains
       integer :: file_julhr
       integer :: getsixhr
       integer :: yr_2d
-      !character(len=120) :: gribfile, gribfile2
-      character(len=255) :: gribfile, gribfile2
+      character(len=LIS_CONST_PATH_LEN) :: gribfile, gribfile2
       integer :: center
       real :: gridres
       integer :: Ni, Nj, ifguess, jfguess
@@ -3224,6 +3227,7 @@ contains
 #if (defined USE_GRIBAPI)
       use grib_api
 #endif
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
@@ -3233,8 +3237,7 @@ contains
       implicit none
 
       ! Arguments
-      !character(len=120), intent(in) :: gribfile
-      character(len=255), intent(in) :: gribfile
+      character(len=LIS_CONST_PATH_LEN), intent(in) :: gribfile
       integer, intent(in) :: yr1, mo1, da1, hr1
       logical, intent(out) :: found
       integer, intent(out) :: center
@@ -3247,7 +3250,7 @@ contains
       character(len=100) :: gtype
       logical :: found_inq
 #if (!defined USE_GRIBAPI)
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
 #endif
       found = .false.
       ! Dummy values, replaced by GRIB data contents below
@@ -6096,6 +6099,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber, &
            LIS_releaseUnitNumber
       use LIS_timeMgrMod, only : LIS_julhr_date
@@ -6121,7 +6125,7 @@ contains
       character(len=32) :: net, platform
       real :: sigmaOSqr, oErrScaleLength, oErrInvScaleLength
       integer :: count_good_obs
-      character(len=120) :: fname
+      character(len=LIS_CONST_PATH_LEN) :: fname
       real :: ob
       real :: rlat, rlon
       integer :: yr, mo, da, hr

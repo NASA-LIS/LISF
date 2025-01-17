@@ -17,6 +17,7 @@ module Daymet_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 !
@@ -62,7 +63,7 @@ module Daymet_obsMod
   PUBLIC :: Daymetobs !Object to hold Daymet observation attributes
 !EOP
   type, public :: daymetobsdec
-     character*100               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: nc
      integer                     :: nr
      real                        :: udef

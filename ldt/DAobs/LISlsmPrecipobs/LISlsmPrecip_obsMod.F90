@@ -23,6 +23,8 @@ module LISlsmPrecip_obsMod
 !  16 Nov 2021    Mahdi Navari  Initial Specification (based on LISlsmSM_obsMod)
 !
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -45,7 +47,7 @@ module LISlsmPrecip_obsMod
      character*50  :: format
      character*50  :: wstyle
      character*50  :: wopt
-     character*100 :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      character*20  :: security_class
      character*20  :: distribution_class
      character*20  :: data_category

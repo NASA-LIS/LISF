@@ -14,6 +14,7 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
 
   ! Imports
   use AGRMET_forcingMod, only : agrmet_struc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
                                 LIS_verify, LIS_endrun
@@ -35,10 +36,10 @@ subroutine USAF_fldbld_radflux_gfs(n, julhr, fg_swdata, &
   ! Locals
   integer                 :: ftn, ftn2
   integer                 :: igrib, igrib2
-  character*250           :: avnfile, avnfile2
+  character(len=LIS_CONST_PATH_LEN) :: avnfile, avnfile2
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: fc_hr
-  character*255           :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                 :: iginfo(2), iginfo2(2)
   real                    :: gridres, gridres2
   integer                 :: alert_number
@@ -500,6 +501,7 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
      fg_swdown, fg_lwdown, alert_number )
 
   ! Imports
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 #if (defined USE_GRIBAPI)
   use grib_api
@@ -517,7 +519,7 @@ subroutine USAF_fldbld_read_radflux_gfs(fg_filename, ifguess, jfguess, &
   integer,        intent(inout) :: alert_number
 
   ! Locals
-  character*255                 :: message  ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message  ( 20 )
   integer                       :: count_swdown
   integer                       :: count_lwdown
   integer                       :: ierr

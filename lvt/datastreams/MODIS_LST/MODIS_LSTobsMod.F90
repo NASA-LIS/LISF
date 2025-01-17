@@ -17,6 +17,7 @@ module MODIS_LSTobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -45,7 +46,7 @@ module MODIS_LSTobsMod
 !EOP
 
   type, public :: modislstdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      integer, allocatable        :: n11(:)
      real,    allocatable        :: lst(:)

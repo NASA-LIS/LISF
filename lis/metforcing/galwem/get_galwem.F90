@@ -65,7 +65,7 @@ subroutine get_galwem(n, findex)
   integer :: first_fcsthr, next_fcsthr
   integer :: ierr
   logical :: lrc
-  character(255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
 
   ! GALWEM cycles every 6 hours; each cycle provide up to 168 hours (7 days) forecast for GALWEM-17km;
   ! each cycle provide up to 240 hours (10 days) forecast for GALWEM-25deg;

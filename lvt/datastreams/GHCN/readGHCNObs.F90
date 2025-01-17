@@ -17,6 +17,7 @@ subroutine readGHCNObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_timeMgrMod
@@ -55,7 +56,7 @@ subroutine readGHCNObs(source)
   integer                 :: stn_col, stn_row
   real                    :: col, row
   real                    :: offset  
-  character*100           :: ghcnname
+  character(len=LVT_CONST_PATH_LEN) :: ghcnname
   type(ESMF_TimeInterval) :: dayInterval
   type(ESMF_Time)         :: startTime, initTime
   type(ESMF_Time)         :: ghcntime1, ghcntime2

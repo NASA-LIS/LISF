@@ -17,6 +17,7 @@ module ISMN_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -42,7 +43,7 @@ module ISMN_obsMod
   type, public :: ismnstn
      integer                    :: vlevels
      real                       :: lat,lon
-     character*500, allocatable :: fname(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: fname(:)
      real,         allocatable  :: sm(:,:)
      real,         allocatable  :: sfsm(:)
      real,         allocatable  :: rzsm(:)
@@ -51,7 +52,7 @@ module ISMN_obsMod
 
   type, public :: ismnobsdec
 
-     character*500               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: yr
      integer                     :: n_stns
      integer                     :: nts 
@@ -73,7 +74,8 @@ contains
 ! !INTERFACE:
   subroutine ISMN_obsInit(i)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,    only : LVT_rc, LVT_config
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -97,7 +99,7 @@ contains
     integer                 :: k 
     integer                 :: ftn
     integer                 :: status
-    character*500           :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
 
     if(.not.allocated(ISMNobs)) then 
        allocate(ISMNobs(LVT_rc%nDataStreams))

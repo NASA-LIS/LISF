@@ -38,6 +38,7 @@ subroutine AGRMET_valid( n, pcap, mrg, est, est6, src,&
      rel, rel6, cdfsii3, cdfsii6, srcwts, julhr,&
      pathpcp)
 ! !USES: 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,   only : LIS_rc
   use LIS_logMod,    only : LIS_logunit,LIS_endrun, &
        LIS_getNextUnitNumber, LIS_releaseUnitNumber
@@ -101,7 +102,7 @@ subroutine AGRMET_valid( n, pcap, mrg, est, est6, src,&
 !  \end{description}
 !EOP
 
-  character*100                :: ifil
+  character(len=LIS_CONST_PATH_LEN) :: ifil
   integer                      :: i
   integer                      :: j
   character*10                 :: date10_03

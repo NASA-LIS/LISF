@@ -47,7 +47,7 @@ subroutine readAquariusL2smObs(n)
   character*7             :: yyyyddd
   character*4             :: fyr
   character*2             :: fmo,fda
-  character*200           :: list_files
+  character(len=LDT_CONST_PATH_LEN)           :: list_files
   integer                 :: sind
   integer                 :: yr,doy,mo,da,hr,mn,ss
   integer                 :: ftn
