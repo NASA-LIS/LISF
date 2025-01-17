@@ -41,6 +41,10 @@ subroutine read_SRTM_Native_aspect( n, num_bins, fgrd, aspectave )
 !  This subroutine retrieves static elevation data from the SRTM source
 !  and reprojects it to the latlon projection. 
 !
+!  NOTE:  SRTM "Native" ~1km files do not include areas south of 60degS.
+!         GTOPO30 elevation tiles can be read in, since they include points
+!         south of 60degS (Antarctica).
+!
 !  Source information:
 !   http://dds.cr.usgs.gov/srtm/version2_1/SRTM30/
 !

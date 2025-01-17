@@ -2979,7 +2979,7 @@ end subroutine LIS_quilt_b_domain
           deallocate(locallon)
 
        else
-          write(LIS_logunit,*) '[ERR] ',LIS_rc%paramfile(n), ' does not exist'
+          write(LIS_logunit,*) '[ERR] ',trim(LIS_rc%paramfile(n)), ' does not exist'
           write(LIS_logunit,*) '[ERR] program stopping ...'
           call LIS_endrun
        endif
