@@ -221,7 +221,9 @@ end subroutine readANSASWEobs
 !
 ! !INTERFACE: 
 subroutine ANSAswe_filename(name, ndir, yr, mo,da)
-  
+
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   implicit none
 ! 
 ! !USES:   
@@ -251,7 +253,7 @@ subroutine ANSAswe_filename(name, ndir, yr, mo,da)
 !
 ! 
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   integer           :: yr, mo, da
   character (len=*) :: ndir
 ! 

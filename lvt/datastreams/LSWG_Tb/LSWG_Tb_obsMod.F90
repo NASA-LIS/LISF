@@ -112,7 +112,7 @@ contains
     integer            :: ts
     integer            :: siteid
     character(len=LVT_CONST_PATH_LEN) :: coordfile
-    character*100      :: mdata
+    character(len=LVT_CONST_PATH_LEN) :: mdata
 
 #if 0 
     call ESMF_ConfigGetAttribute(LVT_config, lswg_Tbobs%filename, &
