@@ -17,6 +17,7 @@ module SMOSL1TB_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -48,7 +49,7 @@ module SMOSL1TB_obsMod
 !EOP
   type, public :: smosl2smobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      logical             :: startmode     
 
   end type smosl2smobsdec

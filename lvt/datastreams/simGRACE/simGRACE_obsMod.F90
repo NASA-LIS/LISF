@@ -18,6 +18,7 @@ module simGRACE_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -48,7 +49,7 @@ module simGRACE_obsMod
 !EOP
 
   type, public :: simgracedec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*50            :: config
      logical                 :: startFlag
      integer                 :: useRawData
@@ -86,7 +87,8 @@ contains
 ! !INTERFACE: 
   subroutine simGRACE_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,   only : LVT_rc, LVT_Config
     use LVT_histDataMod
     use LVT_logMod
@@ -117,7 +119,7 @@ contains
     integer               :: i
     integer               :: status
     real                  :: gridDesci(50)
-    character*100           :: domFile
+    character(len=LVT_CONST_PATH_LEN) :: domFile
     character*100           :: map_proj
     logical                 :: file_exists
     real                    :: stlat, stlon, dx, dy

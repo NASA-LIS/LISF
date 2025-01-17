@@ -39,6 +39,7 @@ subroutine readSNODEPobs(source)
 ! !USES:   
   use ESMF
   use grib_api
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -67,7 +68,7 @@ subroutine readSNODEPobs(source)
   integer                :: npts
   integer                :: ftn1,ftn2
   integer                :: pds5,pds7,pds5_val,pds7_val
-  character*100          :: name_nh, name_sh
+  character(len=LVT_CONST_PATH_LEN) :: name_nh, name_sh
   type(ESMF_Time)        :: snodeptime, snodeptime1
   logical                :: file_exists1,file_exists2,read_flag
   real                   :: timenow
@@ -228,9 +229,11 @@ end subroutine readSNODEPobs
 
 subroutine create_SNODEP_filename(name, mesh, hemi, ndir, yr, mo,da,hr,mn)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   implicit none
 
-  character*100     :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   integer           :: hemi
   integer           :: mesh
   integer           :: yr, mo, da, hr,mn

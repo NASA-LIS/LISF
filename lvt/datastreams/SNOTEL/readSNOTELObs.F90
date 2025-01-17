@@ -17,6 +17,7 @@ subroutine readSNOTELObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,     only : LVT_logunit, LVT_getNextUnitNumber, &
@@ -55,7 +56,7 @@ subroutine readSNOTELObs(source)
   integer                :: i,j,t,c,r,jj
   integer                :: stn_col, stn_row
   real                   :: col,row
-  character*100          :: snotelfilename
+  character(len=LVT_CONST_PATH_LEN) :: snotelfilename
   logical                :: file_exists
   logical                :: readflag
   integer                :: ftn, ios,ios1
