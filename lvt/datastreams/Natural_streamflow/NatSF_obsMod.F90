@@ -63,7 +63,8 @@ contains
 ! !INTERFACE: 
  subroutine NatSF_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -84,7 +85,7 @@ contains
 ! 
 !EOP
 
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn, k, status
 
     if(.not.allocated(NatSFobs)) then 
