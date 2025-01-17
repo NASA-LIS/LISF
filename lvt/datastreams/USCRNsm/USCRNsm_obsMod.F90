@@ -17,6 +17,7 @@ module USCRNsm_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -48,7 +49,7 @@ module USCRNsm_obsMod
   PUBLIC :: USCRNsmobs
 !EOP
   type, public :: uscrnsmobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      character*40, allocatable :: stnid(:)
      real,         allocatable :: stnlat(:)
@@ -101,7 +102,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine USCRNsm_obsinit(i)
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -122,7 +124,8 @@ contains
     integer                 :: syr, smo, sda, shr, smn, sss
     integer                 :: eyr, emo, eda, ehr, emn, ess
     integer                 :: ts, iloc
-    character*100           :: coordfile, cline
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
+    character*100           :: cline
     integer                 :: filecheck
 
     if(.not.allocated(uscrnsmobs)) then 
