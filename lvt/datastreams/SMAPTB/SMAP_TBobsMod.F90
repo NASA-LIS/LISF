@@ -17,7 +17,8 @@ module SMAP_TBobsMod
 ! 
 ! !USES: 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  
   implicit none
 
   PRIVATE 
@@ -48,7 +49,7 @@ module SMAP_TBobsMod
 !EOP
   type, public :: smapobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20         :: data_designation
 
      integer              :: nc

@@ -17,7 +17,7 @@ module SMOSREX_obsMod
 ! 
 ! !USES: 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 
   PRIVATE 
@@ -44,7 +44,7 @@ module SMOSREX_obsMod
   PUBLIC :: SMOSREXobs
 !EOP
   type, public :: smosrexobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      integer,     allocatable :: stnid(:)
      real,        allocatable :: stnlat(:)
