@@ -4630,7 +4630,7 @@ Soil texture spatial transform:     none</pre>
 <p><code>Soil texture fill value for Antarctica:</code> indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of <code>Soil texture fill value:</code> will be used.</p>
 </div>
 <div class="paragraph">
-<p><code>Soil texture force exclusion of water points during fill:</code> indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.</p>
+<p><code>Soil texture force exclusion of water points during fill:</code> indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO, south of 60S (i.e., texture is set to all water), and multiple surface model types (e.g., LSM and Openwater) are used.</p>
 </div>
 <table class="tableblock frame-all grid-all stretch">
 <colgroup>
@@ -4844,7 +4844,7 @@ Curvature number of bands:     1</pre>
 <p>Topography maps</p>
 </div>
 <div class="paragraph">
-<p><code>Elevation map:</code> specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files.</p>
+<p><code>Elevation map:</code> specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files. Note: The SRTM tiles only go to 60deg S, and south of that the associated SRTM reader can fill in with GTOPO30 Antarctica tile files.</p>
 </div>
 <div class="paragraph">
 <p><code>Slope map:</code> specifies the slope of the LIS grid. If the slope map type selected is SRTM_Native, then the file entry is actually just the directory path, which contains the tiled SRTM elevation files.</p>
@@ -17963,7 +17963,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.0<br>
-Last updated 2024-11-27 14:27:03 UTC
+Last updated 2025-01-21 15:25:25 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
