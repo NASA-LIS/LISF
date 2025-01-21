@@ -49,7 +49,6 @@ subroutine LIS_readPEDecSpaceAttributes(decattribfile, &
 !EOP
   integer            :: ftn 
   integer            :: i, count
-  character*100      :: temp
 
   write(LIS_logunit,*) 'Opening attributes for observations ',&
        trim(decattribfile)

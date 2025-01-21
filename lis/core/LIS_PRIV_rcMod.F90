@@ -841,7 +841,6 @@ module LIS_PRIV_rcMod
      character*50           :: startcode
      integer                :: plevel
      character(len=LIS_CONST_PATH_LEN) :: odir
-!     character*100          :: dfile      
      character(len=LIS_CONST_PATH_LEN) :: dfile      
      integer                :: sdoy        
      integer                :: sss         

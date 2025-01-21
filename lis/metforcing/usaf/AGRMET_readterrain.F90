@@ -119,7 +119,7 @@ subroutine get_agrmetterrain_filename(name, dir,hemi)
 !    created filename
 !  \end{description}
 !EOP
-  character*100 :: temp
+  character(len=LIS_CONST_PATH_LEN) :: temp
   character*1 :: fbase(100),fhemi(3)
   integer :: c,i
   write(UNIT=temp, fmt='(a100)') dir  

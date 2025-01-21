@@ -100,7 +100,7 @@ end subroutine AGRMET_getcmorph
 !
 ! !INTERFACE:
 subroutine cmorfile_agrmet( name, agrmetdir, cmordir, use_timestamp, yr, mo, da, hr)
-
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
   character(len=*) :: name
@@ -132,7 +132,7 @@ subroutine cmorfile_agrmet( name, agrmetdir, cmordir, use_timestamp, yr, mo, da,
 !
 !EOP
 
-  character(len=120) :: temp
+  character(len=LIS_CONST_PATH_LEN) :: temp
   integer :: i, c, d
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   character*1 :: fdir(99), fbase(99), fdir2(8),ftime(10), ftimedir(10)

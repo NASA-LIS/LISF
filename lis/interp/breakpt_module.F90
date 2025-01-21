@@ -370,7 +370,7 @@ subroutine readcard(brkfile,datebeg,dateend,ng,intmins,outfmt,error)
 !
 ! local variables
   logical :: fileexists
-  character(11) :: cardfile
+  character(len=LIS_CONST_PATH_LEN) :: cardfile
   integer :: funit = 10
 !
   cardfile = 'Breakpt.crd'
