@@ -34,6 +34,7 @@
 program generateGrADsControlFile
 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 #if ( defined AIX )
   use xlfutility, only : iargc
 #endif
@@ -41,8 +42,8 @@ program generateGrADsControlFile
   implicit none
 
   integer              :: nsm_levs, nst_levs 
-  character*80         :: gradsfile,lisdir,modelname,configfile, listfile
-  character*80         :: statsfile 
+  character(len=LIS_CONST_PATH_LEN) :: gradsfile,lisdir,modelname,configfile, listfile
+  character(len=LIS_CONST_PATH_LEN) :: statsfile 
   character*40         :: lsm
   character*20         :: wform
   character*100, allocatable :: varname(:)

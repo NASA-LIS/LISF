@@ -58,7 +58,7 @@ module CRTM2_EMMod
      integer                               :: nclouds
      integer                               :: naerosols
      character*256                         :: sensor_id
-     character*100                         :: coeff_data
+     character(len=LIS_CONST_PATH_LEN)     :: coeff_data
      real                                  :: zenith_angle
      integer				   :: SensorIndex
      integer				   :: ChannelIndex

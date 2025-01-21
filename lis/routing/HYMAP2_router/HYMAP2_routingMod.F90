@@ -172,7 +172,7 @@ module HYMAP2_routingMod
   integer              :: resopflag
   integer              :: resoptype
   character(len=LIS_CONST_PATH_LEN) :: resopdir
-  character*100         :: resopheader
+  character(len=LIS_CONST_PATH_LEN) :: resopheader
   !ag (29Jun2016)
   integer              :: floodflag
   character(len=LIS_CONST_PATH_LEN) :: HYMAP_dfile      
@@ -216,7 +216,7 @@ module HYMAP2_routingMod
   integer              :: ntinsert       !time series length (number of time steps in the input files)
   integer              :: insertflag
   character(len=LIS_CONST_PATH_LEN) :: insertdir
-  character*100         :: insertheader
+  character(len=LIS_CONST_PATH_LEN) :: insertheader
 
 !ag(30Mar2021)
 ! === ocean tides variables/parameters ===
@@ -227,7 +227,7 @@ module HYMAP2_routingMod
   integer               :: nttides       !time series length (number of time steps in the input files)
   integer               :: tidesflag
   character(len=LIS_CONST_PATH_LEN) :: tidesdir
-  character*100         :: tidesheader
+  character(len=LIS_CONST_PATH_LEN) :: tidesheader
 
   end type HYMAP2_routing_dec
 
@@ -286,7 +286,6 @@ contains
     real,    allocatable :: elevtn(:,:),uparea(:,:),basin(:,:)
     
     !ag (11Mar2016)
-    character*100  :: temp1
     integer        :: rc
     character*1    :: fproc(4)
     integer        :: ios

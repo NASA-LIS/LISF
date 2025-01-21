@@ -60,8 +60,8 @@ module NLDAS_routingMod
 
      real,  allocatable   :: streamflow(:,:)
 
-     character*100    :: initial_1
-     character*100    :: initial_2
+     character(len=LIS_CONST_PATH_LEN) :: initial_1
+     character(len=LIS_CONST_PATH_LEN) :: initial_2
      character(len=LIS_CONST_PATH_LEN) :: rstfile
      real, allocatable    :: area(:,:)
 

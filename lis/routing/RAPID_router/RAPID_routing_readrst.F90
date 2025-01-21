@@ -29,7 +29,6 @@ subroutine RAPID_routing_readrst
   integer       :: n 
   integer       :: ftn
   integer       :: status
-  character*100 :: filename
   logical       :: read_restart
   integer       :: varid_Qout
 
