@@ -289,7 +289,7 @@ subroutine  SNODEP_filename(name, mesh, hemi, ndir, yr, mo, da, hr, mn, conv)
 
   implicit none
 
-  character*100     :: name
+  character(len=*)  :: name
   integer           :: hemi
   integer           :: mesh
   integer           :: yr, mo, da, hr,mn
