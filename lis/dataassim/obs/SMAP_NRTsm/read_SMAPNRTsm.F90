@@ -104,7 +104,7 @@ subroutine read_SMAPNRTsm(n, k, OBS_State, OBS_Pert_State)
   integer                :: ftn,ierr
   character(len=LIS_CONST_PATH_LEN) :: smap_filename(10),tstring(10)
   character(len=4) :: istring
-  character(len=200) :: cmd
+  character(len=LIS_CONST_PATH_LEN) :: cmd
   integer :: rc
   integer, external :: create_filelist ! C function
 

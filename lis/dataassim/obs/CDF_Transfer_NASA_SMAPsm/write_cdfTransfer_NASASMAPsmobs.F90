@@ -20,6 +20,7 @@
 subroutine write_cdfTransfer_NASASMAPsmobs(n, k, OBS_State)
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
   use LIS_fileIOMod
@@ -44,7 +45,7 @@ subroutine write_cdfTransfer_NASASMAPsmobs(n, k, OBS_State)
   logical                  :: data_update
   real, pointer            :: smobs(:)
   real                     :: smobs_unsc(LIS_rc%obs_ngrid(k))
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

@@ -16,6 +16,7 @@ subroutine write_USAFSIobs(n, k, OBS_State)
 
    ! Imports
    use ESMF
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_coreMod, only: LIS_masterproc
    use LIS_DAobservationsMod, only: LIS_writevar_gridded_obs
    use LIS_fileIOMod, only: LIS_create_output_directory
@@ -36,7 +37,7 @@ subroutine write_USAFSIobs(n, k, OBS_State)
    ! Local variables
    logical                  :: data_update
    integer                  :: ftn
-   character(100)           :: obsname
+   character(len=LIS_CONST_PATH_LEN) :: obsname
    type(ESMF_Field)         :: snowField
    real, pointer            :: snowobs(:)
    integer                  :: status
