@@ -40,7 +40,6 @@ subroutine SMAPL1BRESAMPLE_SUBSET(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
   CHARACTER (len=LDT_CONST_PATH_LEN) :: SMAPFILE
   character (len=LDT_CONST_PATH_LEN) :: L1B_dir
   character (len=20)  :: variable_name(13)
-  character (len=LDT_CONST_PATH_LEN) :: resample_filename(13)
   character (len=1)   :: Orbit
   integer             :: var_i
   integer             :: L1B_dir_len,L1B_fname_len

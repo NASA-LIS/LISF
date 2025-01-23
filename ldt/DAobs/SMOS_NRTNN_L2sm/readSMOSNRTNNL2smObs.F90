@@ -54,7 +54,6 @@ subroutine readSMOSNRTNNL2smObs(n)
    logical            :: file_exists
    integer            :: c, r, i, j
    character(len=LDT_CONST_PATH_LEN)      :: fname
-   character(len=LDT_CONST_PATH_LEN) :: nc_filename
    integer            :: mn_ind
    integer            :: yr, mo, da, hr, mn, ss
    integer            :: doy

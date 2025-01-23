@@ -98,7 +98,6 @@ subroutine readSMOSL2smObs(n)
   logical                 :: alarmCheck
   logical                 :: file_exists
   integer                 :: c,r,i,j
-  character(len=LDT_CONST_PATH_LEN)           :: fname
   character(len=LDT_CONST_PATH_LEN)           :: smos_filename
   character*8             :: yyyymmdd
   character(len=LDT_CONST_PATH_LEN)           :: list_files

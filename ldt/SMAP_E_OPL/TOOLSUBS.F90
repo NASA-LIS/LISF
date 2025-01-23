@@ -50,7 +50,7 @@ MODULE TOOLSUBS
 !    SUBROUTINE AVHRR_NDVI(filename,lon_ind,lat_ind,avg_NDVI)
     SUBROUTINE AVHRR_NDVI(ssid,lon_ind,lat_ind,avg_NDVI)
       use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-         CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
+         !CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
          INTEGER :: sd_id, ssid, DFACC, status, sfstart,sfselect,sfrdata, sfendacc, sfend, N_NDVI
          INTEGER :: start(2), edges(2), stride(2)
          INTEGER*2,DIMENSION(:,:),ALLOCATABLE :: data

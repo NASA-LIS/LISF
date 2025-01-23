@@ -191,7 +191,7 @@ subroutine cmorphfile( filename, cmorphdir, yr, mo, da, hr)
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   integer tout(9), fmktime, it, ih, irec
 
-  character(len=LDT_CONST_PATH_LEN) :: fbase, ftimedir, fstem 
+  character(len=LDT_CONST_PATH_LEN) :: fstem 
   character*4 :: cyr
   character*2 :: cmo, cda, chr 
 
