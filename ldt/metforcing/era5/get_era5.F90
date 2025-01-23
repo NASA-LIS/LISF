@@ -271,7 +271,6 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character*4  :: cyear
   character*2  :: cmonth
   character*8  :: cdate
-  character(len=LDT_CONST_PATH_LEN) :: dir
   integer      :: hr, mn, ss
   real*8       :: time
   integer      :: doy
