@@ -135,7 +135,6 @@ subroutine processSMOSfiles(source, smobs, iyr, imo, ida, ihr, imn, iss)
   real                    :: smobs(LVT_rc%lnc,LVT_rc%lnr)
   integer                 :: iyr, imo, ida, ihr, imn, iss
 
-  character(len=LVT_CONST_PATH_LEN) :: fname
   character(len=LVT_CONST_PATH_LEN) :: smos_filename
   character*8             :: yyyymmdd
   character(len=LVT_CONST_PATH_LEN) :: list_files

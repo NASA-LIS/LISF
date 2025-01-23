@@ -129,7 +129,6 @@ contains
     integer              :: i
     integer              :: status
     real                 :: gridDesci(50)
-    character(len=LVT_CONST_PATH_LEN) :: domFile
     character*100        :: map_proj
     logical              :: file_exists
 

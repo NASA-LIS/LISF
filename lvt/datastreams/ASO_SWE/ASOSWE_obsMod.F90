@@ -97,7 +97,6 @@ contains
     integer            :: syr, smo, sda, shr, smn, sss
     integer            :: eyr, emo, eda, ehr, emn, ess
     integer            :: ts
-    character(len=LVT_CONST_PATH_LEN) :: coordfile
     real               :: xi1,xj1,xmesh,orient,alat1,alon1
     integer            :: t
     real               :: gridDesci(50)

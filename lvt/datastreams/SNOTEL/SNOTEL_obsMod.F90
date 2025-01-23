@@ -104,7 +104,7 @@ contains
     integer            :: ts
     integer            :: siteid
     character(len=LVT_CONST_PATH_LEN) :: coordfile
-    character(len=LVT_CONST_PATH_LEN) :: mdata
+    !character(len=LVT_CONST_PATH_LEN) :: mdata
     
     if(.not.allocated(snotelobs)) then 
        allocate(snotelobs(LVT_rc%nDataStreams))

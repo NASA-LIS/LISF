@@ -84,7 +84,6 @@ contains
 ! 
 !EOP
 
-    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn, k, status
 
     if(.not.allocated(USGSSFgridobs)) then 

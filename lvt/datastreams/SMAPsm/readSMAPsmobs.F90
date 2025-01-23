@@ -51,7 +51,6 @@ subroutine readSMAPsmobs(source)
 
   logical           :: alarmcheck, file_exists, readflag
   integer           :: iret
-  character(len=LVT_CONST_PATH_LEN) :: name
   real              :: smc(LVT_rc%lnc, LVT_rc%lnr)
   integer           :: fnd 
   character*8       :: yyyymmdd
