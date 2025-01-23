@@ -221,7 +221,7 @@ contains
 ! 
 !EOP
 !BOP
-    character*100              :: abort_message(20)
+    character(len=*)           :: abort_message(20)
     
 !
 !EOP

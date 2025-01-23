@@ -3184,6 +3184,7 @@ contains
 !  This subroutine writes a single variable to a grib file
 !
 !EOP
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
     integer                       :: ftn
     real                          :: gtmp(LVT_rc%lnc*LVT_rc%lnr)
@@ -3208,7 +3209,7 @@ contains
     real                          :: lat_ll, lon_ll
     integer                       :: igrib,iret
     integer                       :: decimalPrecision,gribSFtemp
-    character*100                 :: message(20)
+    character(len=LVT_CONST_PATH_LEN) :: message(20)
 
     ! Note passing string of defined points only to output
     ! because bitmap in GRIB-1 file will fill in the rest
@@ -3416,6 +3417,7 @@ contains
 !
 !
 !EOP
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
     integer                       :: ftn
     real                          :: gtmp(LVT_rc%lnc*LVT_rc%lnr)
@@ -3452,7 +3454,7 @@ contains
     real                          :: lat_ll, lon_ll
     integer                       :: igrib,iret
     integer                       :: decimalPrecision,gribSFtemp
-    character*100                 :: message(20)
+    character(len=LVT_CONST_PATH_LEN) :: message(20)
     logical :: ensembleSpread_local
     integer :: typeOfGeneratingProcess_local
     integer :: typeOfProcessedData_local
