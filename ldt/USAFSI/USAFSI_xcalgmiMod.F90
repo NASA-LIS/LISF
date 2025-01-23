@@ -1227,9 +1227,10 @@ contains
 #else
    ! Dummy version
    subroutine read_forestfraction(ff_filename, ff)
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
       write(LDT_logunit,*) &
            "[ERR] Recompile LDT with netCDF4 support!"

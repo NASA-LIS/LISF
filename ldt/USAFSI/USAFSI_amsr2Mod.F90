@@ -223,13 +223,14 @@ contains
 #endif
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
 
       !Defaults
       implicit none
 
       !Arguments
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real,         allocatable, intent(inout) :: lat(:), lon(:)
       real,         allocatable, intent(inout) :: tb10h(:), tb10v(:), tb19h(:), tb19v(:), &

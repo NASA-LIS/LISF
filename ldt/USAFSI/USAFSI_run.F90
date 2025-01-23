@@ -111,7 +111,7 @@ subroutine USAFSI_run(n)
   ! Local variables
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
   character(len=LDT_CONST_PATH_LEN) ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
-  character*90               ::  message    (msglns)  ! ERROR MESSAGE
+  character(len=LDT_CONST_PATH_LEN) ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
   character(len=LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
   character(len=LDT_CONST_PATH_LEN) ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
