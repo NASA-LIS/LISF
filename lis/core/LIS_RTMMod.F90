@@ -94,7 +94,9 @@ contains
     character*10            :: time
     character*100           :: temp
     integer                 :: status
+#if 0
     character(len=LIS_CONST_PATH_LEN) :: statsfilename    
+#endif
 
     TRACE_ENTER("rtm_init")
     allocate(LIS_rtm_struc(LIS_rc%nnest))

@@ -69,7 +69,6 @@ contains
     implicit none
     integer                :: k
     integer                :: n 
-    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
     integer                :: status
     integer                :: ngrid
 

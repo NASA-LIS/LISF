@@ -52,7 +52,6 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
   integer                 :: ftn, igrib
   character(len=LIS_CONST_PATH_LEN) :: gribfile
   integer                 :: yr1, mo1, da1, hr1
-  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: gridres_dlat, gridres_dlon
   integer                 :: ifguess, jfguess

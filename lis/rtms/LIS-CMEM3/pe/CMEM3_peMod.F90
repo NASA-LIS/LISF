@@ -68,7 +68,6 @@ contains
 #endif
     implicit none
 ! !ARGUMENTS: 
-    character(len=LIS_CONST_PATH_LEN) :: decSpaceAttribsFile
     type(ESMF_State)            :: DEC_State
     type(ESMF_State)            :: Feas_State
 
@@ -79,7 +78,9 @@ contains
 !  estimation, initializes them, and updates the LIS decision space.  
 ! 
 !EOP
-
+#if (defined RTMS) 
+    character(len=LIS_CONST_PATH_LEN) :: decSpaceAttribsFile
+#endif
     integer                     :: n 
     type(ESMF_ArraySpec)        :: arrspec1
     type(ESMF_Field)            :: varField

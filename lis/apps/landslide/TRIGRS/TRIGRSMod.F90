@@ -445,7 +445,7 @@ contains
     !real::x1,mnzmx,mndep ! SY
     real::x1 !,mnzmx,mndep ! SY
     !character (len=1):: tb ! SY
-    character (len=LIS_CONST_PATH_LEN):: outfil,infil
+    character (len=LIS_CONST_PATH_LEN):: outfil
     character (len=14):: fminfil='TRfs_min_'
     character (len=14):: zfminfil='TRz_at_fs_min_'
     character (len=14):: pminfil='TRp_at_fs_min_'

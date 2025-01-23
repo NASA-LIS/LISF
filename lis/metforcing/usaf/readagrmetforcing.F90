@@ -33,7 +33,6 @@
 ! !INTERFACE:
 subroutine readagrmetforcing(n,findex, order)
 ! !USES:
-  use LIS_constantsMod, only    : LIS_CONST_PATH_LEN
   use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_localPet, &
                                 LIS_masterproc
   use LIS_timeMgrMod,only       : LIS_get_julhr,LIS_tick,LIS_time2date
@@ -182,7 +181,6 @@ subroutine readagrmetforcing(n,findex, order)
 !   computes the downward shortwave radiation value
 !  \end{description}
 !EOP
-  character(len=LIS_CONST_PATH_LEN) :: filename
   integer          :: hemi
   integer          :: c,r,t,gid,sftype
   integer          :: istat
@@ -198,7 +196,6 @@ subroutine readagrmetforcing(n,findex, order)
   real,allocatable :: rlh(:,:)
   integer          :: ip
   integer          :: julhr
-  character(len=LIS_CONST_PATH_LEN) :: message(20)
 
   real,allocatable            :: cldamt(:,:,:)
   integer,allocatable         :: cldamt_nh( :,:,:)

@@ -227,8 +227,6 @@ subroutine readagrmetpcpforcing(n,findex, order)
    character*10        :: date10_03
    character*4         :: fyr
    character*2         :: fmo,fda
-   character(len=LIS_CONST_PATH_LEN) :: ofil
-   character(len=LIS_CONST_PATH_LEN) :: ifil
    logical             :: exists
    integer             :: ftn
    real                :: gridDesc(6)

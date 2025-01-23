@@ -788,7 +788,10 @@ end subroutine ensrf_update
 !
 !EOP
     integer                :: ftn
-    character(len=LIS_CONST_PATH_LEN) :: innovfile, gainfile, incrfile
+    character(len=LIS_CONST_PATH_LEN) :: innovfile
+#if 0
+    character(len=LIS_CONST_PATH_LEN) :: gainfile
+#endif
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3), ares_Id, ninnov_Id, innov_id
     integer                :: forecast_sigma_id, aincr_Id

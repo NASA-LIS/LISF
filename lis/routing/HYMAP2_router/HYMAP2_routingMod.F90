@@ -290,8 +290,6 @@ contains
     character*1    :: fproc(4)
     integer        :: ios
     integer        :: final_dirpos
-    character(len=LIS_CONST_PATH_LEN) :: diag_fname
-    character(len=LIS_CONST_PATH_LEN) :: diag_dir
     integer, external  :: LIS_create_subdirs
 
     !ag (03Apr2017)

@@ -58,7 +58,7 @@ subroutine read_AmerifluxObs(Obj_Space)
   type(ESMF_Field)    :: qgField
   type(ESMF_Field)    :: sfstField
   type(ESMF_Field)    :: sfsmField
-  character(len=LIS_CONST_PATH_LEN) :: obsdir, name
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical             :: data_update
   logical             :: file_exists
   logical             :: readflag
