@@ -72,7 +72,7 @@ module SACHTET_parmsMod
      character*50  :: tbot_topocorr
 
 ! - RDHM 3.5.6
-     character*140 :: rdhmconsts_table
+     character(len=LDT_CONST_PATH_LEN) :: rdhmconsts_table
      real          :: rdhm_undef
 
 !  - SAC-HTET parameters:

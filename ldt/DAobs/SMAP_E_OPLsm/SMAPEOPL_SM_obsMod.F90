@@ -19,6 +19,7 @@
 module SMAPEOPLSMobsMod
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -35,7 +36,7 @@ module SMAPEOPLSMobsMod
 !EOP
   type, public :: smapeoplsmdec
 
-     character*100        :: odir
+     character(len=LDT_CONST_PATH_LEN) :: odir
      integer              :: nc, nr
      real                 :: gridDesci(50)
      real,    allocatable :: smobs(:,:)
