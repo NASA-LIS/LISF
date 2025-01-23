@@ -71,7 +71,6 @@ subroutine read_LSWG_Tb_Obs(k)
   !gridded Tb in RTM channel space to which to apply cloud mask
   real,   allocatable :: Tb2(:,:,:,:)  
 
-  character(len=LVT_CONST_PATH_LEN) :: maskfile
   character*10        :: ftime
   type(ESMF_Time)     :: Tbtime, masktime, masktime_prev, temptime
   type(ESMF_TimeInterval) :: timestep, mask_timestep,doy

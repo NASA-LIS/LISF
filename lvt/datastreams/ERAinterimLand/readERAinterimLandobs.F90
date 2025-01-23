@@ -341,7 +341,6 @@ subroutine process_ERAIlandANLYSdata(source, anlysfile, &
   real                    :: rsn(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character(len=LVT_CONST_PATH_LEN) :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: swvl1id,swvl2id,swvl3id,swvl4id
@@ -620,7 +619,6 @@ subroutine process_ERAIland_runoff_data(source, fcstfile, &
   real                    :: baseflow(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character(len=LVT_CONST_PATH_LEN) :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: sroid, ssroid
@@ -788,7 +786,6 @@ subroutine process_ERAIland_fcst1_data(source, fcstfile, &
   real                    :: evap_out(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character(len=LVT_CONST_PATH_LEN) :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: qleid, qhid, tpid, qsmid,ssrid, strid, evapid

@@ -602,7 +602,9 @@ contains
     integer            :: c,r,v,t
     character(len=12)  :: cdate
     character(len=4)   :: cdate1
+#if 0
     character(len=LVT_CONST_PATH_LEN) :: fname1, fname2
+#endif
     integer            :: ftn
 #if 0 
     integer            :: dimID(2), nobsId, ninnov_meanId, ninnov_varId

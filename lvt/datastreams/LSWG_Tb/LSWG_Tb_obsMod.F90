@@ -111,8 +111,9 @@ contains
     integer            :: eyr, emo, eda, ehr, emn, ess
     integer            :: ts
     integer            :: siteid
-    character(len=LVT_CONST_PATH_LEN) :: coordfile
+#if 0
     character(len=LVT_CONST_PATH_LEN) :: mdata
+#endif
 
 #if 0 
     call ESMF_ConfigGetAttribute(LVT_config, lswg_Tbobs%filename, &

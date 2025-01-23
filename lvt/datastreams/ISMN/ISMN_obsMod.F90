@@ -99,7 +99,6 @@ contains
     integer                 :: k 
     integer                 :: ftn
     integer                 :: status
-    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
 
     if(.not.allocated(ISMNobs)) then 
        allocate(ISMNobs(LVT_rc%nDataStreams))

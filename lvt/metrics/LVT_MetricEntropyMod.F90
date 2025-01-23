@@ -376,8 +376,9 @@ contains
     character*4 :: fdim2
     character*7 :: fdim1
     integer     :: ftn
+#if (defined USE_MATLAB_SUPPORT)
     character(len=LVT_CONST_PATH_LEN) :: matlab_command
-
+#endif
     ts_class = 1
 
     if(LVT_rc%endtime.eq.1.and.metric%selectOpt.eq.1) then 
