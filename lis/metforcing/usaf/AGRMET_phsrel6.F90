@@ -27,7 +27,6 @@ subroutine AGRMET_phsrel6 ( n, estpcp, j6hr, p6,&
      quad9r, cdfs2est, source, &
      obswch, p3, pathpcp)
 ! !USES: 
-  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,    only : LIS_rc, LIS_masterproc
   use LIS_logMod,     only : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber
@@ -87,7 +86,6 @@ subroutine AGRMET_phsrel6 ( n, estpcp, j6hr, p6,&
 !  \item[AGRMET\_parse6] (\ref{AGRMET_parse6}) \newline
 !  \end{description}
 !EOP
-  character(len=LIS_CONST_PATH_LEN) :: ofil
   character*10                      :: date10_03
   integer                           :: yr1,mo1,da1,hr1
   character*4                       :: fyr

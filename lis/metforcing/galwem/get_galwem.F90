@@ -47,7 +47,6 @@ subroutine get_galwem(n, findex)
 
 !EOP
   integer           :: order,ferror
-  character(len=LIS_CONST_PATH_LEN) :: fname
   integer           :: yr1, mo1, da1, hr1, mn1, ss1, doy1
   integer           :: yr2, mo2, da2, hr2, mn2, ss2, doy2
   real*8            :: time1, time2

@@ -189,7 +189,6 @@ contains
     integer         :: n 
     integer         :: ftn    
     integer         :: iterid
-    character(len=LIS_CONST_PATH_LEN) :: out_dname
     character(len=LIS_CONST_PATH_LEN) :: rst_fname    
 
     n = 1

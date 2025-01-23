@@ -70,7 +70,6 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
   character*100   :: gtype
   integer         :: file_julhr
   integer         :: yr1, mo1, da1, hr1
-  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer         :: iginfo      ( 40 )
   real            :: gridres_dlat, gridres_dlon
   integer         :: ifguess, jfguess

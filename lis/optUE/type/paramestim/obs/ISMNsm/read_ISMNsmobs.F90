@@ -52,7 +52,6 @@ subroutine read_ISMNsmobs(Obj_Space)
   character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical               :: data_update
   integer               :: i
-  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   logical               :: file_exists

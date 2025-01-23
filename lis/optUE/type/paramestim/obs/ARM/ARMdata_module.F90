@@ -116,9 +116,7 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field),allocatable  ::  obsField(:)
-    character(len=LIS_CONST_PATH_LEN) ::  smobsdir
     character*100, allocatable    ::  vname(:)
-    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     integer                   ::  k, iloc
     character*100             ::  currentLine

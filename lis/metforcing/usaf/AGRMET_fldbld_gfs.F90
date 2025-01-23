@@ -138,7 +138,6 @@ subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
 
   integer                 :: nunit
   integer                 :: ksec2       ( 10 )
-  character(len=LIS_CONST_PATH_LEN) :: message( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: ginfo       ( 40 )
   real                    :: gridres
@@ -743,7 +742,6 @@ subroutine AGRMET_fldbld_read_gfs( fg_filename, ifguess, jfguess,&
 !  \end{description}
 !EOP
   character*9                   :: cstat
-  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                       :: count_dpd
   integer                       :: count_hgt
   integer                       :: count_rh
