@@ -332,7 +332,7 @@ contains
       character*10                :: datefr           ! DATE-TIME GROUP OF FRACTIONAL SNOW
       character(len=LDT_CONST_PATH_LEN) :: file_path        ! FULLY-QUALIFIED FILE NAME
       character*7                 :: iofunc           ! ACTION TO BE PERFORMED
-      character*90                :: message (msglns) ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message (msglns) ! ERROR MESSAGE
       character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
       character*10                :: yyyymmddhh
       integer                     :: fracnt           ! NUMBER OF FRACTIONAL POINTS
@@ -554,7 +554,7 @@ contains
       character*4                 :: cmonth  (12)     ! MONTH OF YEAR
       character*4                 :: file_ext         ! LAST PORTION OF FILE NAME
       character(len=LDT_CONST_PATH_LEN) :: file_path        ! FULLY-QUALIFIED FILE NAME
-      character*90                :: message (msglns) ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message (msglns) ! ERROR MESSAGE
       character*20                :: routine_name     ! NAME OF THIS SUBROUTINE
       real, allocatable :: climo_0p25deg(:,:)
       integer*1, allocatable :: snow_poss_0p25deg(:,:)
@@ -794,7 +794,7 @@ contains
       character*10                :: date10_prev           ! DATE-TIME GROUP OF LAST HOUR READ
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
       character*4                 :: msgval                ! ERROR MESSAGE VALUE
-      character*90                :: message     (msglns)  ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)  ! ERROR MESSAGE
       character(len=LDT_CONST_PATH_LEN) :: obsfile               ! NAME OF OBSERVATION TEXT FILE
       character*5                 :: obsnet                ! RETURNED OBS STATION NETWORK
       character*32                 :: obssta                ! RETURNED OBS STATION ID
@@ -1267,7 +1267,7 @@ contains
       character*10                :: dtglis                ! LIS DATE-TIME GROUP
       character(len=LDT_CONST_PATH_LEN) :: file_stmp             ! FULLY-QUALIFIED SFCTMP FILE NAME
       character*7                 :: iofunc                ! ACTION TO BE PERFORMED
-      character*90                :: message     (msglns)  ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)  ! ERROR MESSAGE
 
       character*20                :: routine_name          ! NAME OF THIS ROUTINE
       character*10 :: yyyymmddhh
@@ -1475,7 +1475,7 @@ contains
       character*10                :: date10_prev           ! DATE-TIME GROUP OF LAST HOUR READ
       character(len=LDT_CONST_PATH_LEN) :: file_path             ! SSMIS SNOW OR ICE EDR TEXT FILE
       character*6                 :: interval              ! TIME INTERVAL FOR FILENAME
-      character*90                :: message     (msglns)  ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)  ! ERROR MESSAGE
       character*4                 :: msgval                ! PLACEHOLDER FOR ERROR MESSAGE VALUES
       character*20                :: routine_name          ! NAME OF THIS SUBROUTINE
       character*10 :: yyyymmddhh
@@ -1835,7 +1835,7 @@ contains
       ! Local variables
       character*10               :: date10_prev      ! PREVIOUS CYCLE DATE-TIME GROUP
       character(len=LDT_CONST_PATH_LEN) :: file_path        ! INPUT FILE PATH AND NAME
-      character*90               :: message (msglns) ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message (msglns) ! ERROR MESSAGE
       character*20               :: routine_name     ! NAME OF THIS SUBROUTINE
       character(len=LDT_CONST_PATH_LEN) :: prevdir          ! PATH TO PREVIOUS CYCLE'S DATA
       integer                    :: runcycle         ! CYCLE HOUR
@@ -2149,6 +2149,7 @@ contains
    subroutine getsno_nc(date10, julhr_beg, ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use USAFSI_netcdfMod, only: USAFSI_read_netcdf, &
            USAFSI_read_netcdf_12z
@@ -2171,7 +2172,7 @@ contains
       integer :: julhr
       character*20 :: routine_name
       character*10 :: date10_prev
-      character*90 :: message(msglns)
+      character(len=LDT_CONST_PATH_LEN) :: message(msglns)
 
       data routine_name / 'GETSNO_NC   '/
 
@@ -2589,7 +2590,7 @@ contains
       character(LDT_CONST_PATH_LEN) :: snomap_path      ! FULLY-QUALIFIED SNOMAP FILE NAME
       character(LDT_CONST_PATH_LEN) :: snoage_path      ! FULLY-QUALIFIED SNOAGE FILE NAME
       character(7)                :: iofunc           ! ACTION TO BE PERFORMED
-      character(90)               :: message (msglns) ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message (msglns) ! ERROR MESSAGE
       character(20)               :: routine_name     ! NAME OF THIS SUBROUTINE
       character(10)               :: yyyymmddhh
       integer                     :: i                ! SNODEP I-COORDINATE

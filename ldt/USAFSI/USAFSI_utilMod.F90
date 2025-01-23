@@ -207,6 +207,8 @@ contains
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
 
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -217,7 +219,7 @@ contains
       character*20,  intent(in)   :: routine_name     ! NAME OF CALLING ROUTINE
 
       ! Local variables
-      character*90                :: message     (20) ! ERROR MESSAGE ! EMK
+      character(len=LDT_CONST_PATH_LEN) :: message     (20) ! ERROR MESSAGE ! EMK
       character*12                :: librtne_name     ! NAME OF THIS ROUTINE
       integer                     :: days             ! TOTAL DAYS
       integer                     :: dd               ! DAY OF THE MONTH
@@ -397,7 +399,6 @@ contains
       ! Local variables
       character*7                 :: access_type      ! FILE ACCESS TYPE
       character*2                 :: calert_number    ! ALERT NUMBER FOR FILE NAME
-      !character*100               :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character(len=LDT_CONST_PATH_LEN) :: errmsg  (msglns) ! ERROR MESSAGE TO OUTPUT
       character(len=LDT_CONST_PATH_LEN) :: message_file     ! MESSAGE FILE NAME
       integer                     :: alert_number     ! ALERT NUMBER
@@ -534,6 +535,8 @@ contains
       !-----------------------------------------------------------------------
       !-----------------------------------------------------------------------
 
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -544,7 +547,7 @@ contains
       character*20,  intent(in)   :: routine_call     ! NAME OF CALLING ROUTINE
 
       ! Local variables
-      character*90                :: message     (20) ! ERROR MESSAGE ! EMK
+      character(len=LDT_CONST_PATH_LEN) :: message     (20) ! ERROR MESSAGE ! EMK
       integer                     :: dd               ! DAY OF THE MONTH
       integer                     :: hh               ! HOUR OF THE DAY
       integer                     :: j                ! DO LOOP COUNTER
@@ -679,7 +682,7 @@ contains
       ! Local variables
       character*7                  :: access_type                ! FILE ACCESS TYPE
       character*4                  :: cstat                      ! I/O STATUS FOR MESSAGE
-      character*90                 :: message     (msglns)       ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)       ! ERROR MESSAGE
       integer                      :: istat                      ! I/O STATUS
       integer                      :: istat1                     ! CONVERSION STATUS
       integer                      :: reclen                     ! FILE RECORD LENGTH
@@ -790,7 +793,7 @@ contains
       ! Local variables
       character*7                  :: access_type                ! FILE ACCESS TYPE
       character*4                  :: cstat                      ! I/O STATUS FOR MESSAGE
-      character*90                 :: message     (msglns)       ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)       ! ERROR MESSAGE
       integer                      :: istat                      ! I/O STATUS
       integer                      :: istat1                     ! CONVERSION STATUS
       integer                      :: reclen                     ! FILE RECORD LENGTH
@@ -881,6 +884,8 @@ contains
       !*******************************************************************************
       !*******************************************************************************
 
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
       ! Defaults
       implicit none
 
@@ -899,7 +904,7 @@ contains
       ! Local variables
       character*7                  :: access_type                ! FILE ACCESS TYPE
       character*4                  :: cstat                      ! I/O STATUS FOR MESSAGE
-      character*90                 :: message     (msglns)       ! ERROR MESSAGE
+      character(len=LDT_CONST_PATH_LEN) :: message     (msglns)       ! ERROR MESSAGE
       integer                      :: istat                      ! I/O STATUS
       integer                      :: istat1                     ! CONVERSION STATUS
       integer                      :: reclen                     ! FILE RECORD LENGTH
