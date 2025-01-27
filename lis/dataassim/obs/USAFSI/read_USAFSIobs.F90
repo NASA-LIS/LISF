@@ -416,7 +416,7 @@ contains
    subroutine USAFSI_reader(filename, n, k, snoanl, ierr)
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       implicit none
-      character(255), intent(in) :: filename
+      character(len=*), intent(in) :: filename
       integer, intent(in) :: n
       integer, intent(in) :: k
       real, allocatable, intent(out) :: snoanl(:,:)
