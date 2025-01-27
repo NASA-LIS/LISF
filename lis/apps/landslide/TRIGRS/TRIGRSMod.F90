@@ -4988,6 +4988,7 @@ contains
   subroutine isvgrd(z3,grd,z2,nrow,ncol,nodat,nodata, &
        mnd,param,outfil,ti,header) ! SY
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
 
@@ -5003,7 +5004,7 @@ contains
     double precision nodat,nodata,param(6),ti,a
     character*14 header(6)
     character*1 sp
-    character*255 outfil
+    character(len=LIS_CONST_PATH_LEN) :: outfil
     character*31 scratch
     integer ftn ! SY
     sp=char(32)

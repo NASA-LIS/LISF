@@ -20,6 +20,7 @@
 
 MODULE data_types
  ! used to define model data structures
+ use LIS_constantsMod, only: LIS_CONST_PATH_LEN
  USE nrtype, integerMissing=>nr_integerMissing
  USE var_lookup,only:maxvarStat
  implicit none
@@ -41,7 +42,7 @@ MODULE data_types
  ! ***********************************************************************************************************
  ! define a derived type for the data in the file
  type,public  :: file_info
-  character(len=256)                     :: filenmData='notPopulatedYet' ! name of data file
+  character(len=LIS_CONST_PATH_LEN)      :: filenmData='notPopulatedYet' ! name of data file
   integer(i4b)                           :: nVars                    ! number of variables in the file
   integer(i4b)                           :: nTimeSteps               ! number of variables in the file
   integer(i4b),allocatable               :: data_id(:)               ! netcdf variable id for each forcing data variable

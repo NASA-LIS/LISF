@@ -32,7 +32,8 @@ contains
  ! public subroutine ffile_info: read information on model forcing files
  ! ************************************************************************************************
  subroutine ffile_info(nGRU,err,message)
- ! used to read metadata on the forcing data file
+   ! used to read metadata on the forcing data file
+ use LIS_constantsMod, only: LIS_CONST_PATH_LEN
  USE ascii_util_module,only:file_open
  USE netcdf_util_module,only:nc_file_open    ! open netCDF file
  USE netcdf_util_module,only:netcdf_err      ! netcdf error handling function
@@ -62,9 +63,9 @@ contains
  ! the rest
  character(LEN=1024),allocatable      :: dataLines(:)   ! vector of lines of information (non-comment lines)
  character(len=256)                   :: cmessage       ! error message for downwind routine
- character(LEN=256)                   :: infile         ! input filename
+ character(LEN=LIS_CONST_PATH_LEN)    :: infile         ! input filename
  integer(i4b)                         :: unt            ! file unit (free unit output from file_open)
- character(LEN=256)                   :: filenameData   ! name of forcing datafile
+ character(LEN=LIS_CONST_PATH_LEN)    :: filenameData   ! name of forcing datafile
  integer(i4b)                         :: ivar           ! index of model variable
  integer(i4b)                         :: iFile          ! counter for forcing files
  integer(i4b)                         :: nFile          ! number of forcing files in forcing file list

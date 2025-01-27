@@ -30,6 +30,7 @@ contains
  ! ************************************************************************************************
  subroutine read_force(istep,iHRU_global,iFile,iRead,ncid,time_data,forc_data,err,message)
  ! provide access to subroutines
+ use LIS_constantsMod, only: LIS_CONST_PATH_LEN
  USE nrtype                                            ! variable types, etc.
  USE netcdf                                            ! netcdf capability
  USE netcdf_util_module,only:nc_file_open              ! open netcdf file
@@ -73,7 +74,7 @@ contains
  ! rest
  real(dp),parameter                :: amiss= -1.d+30   ! missing real
  real(dp),parameter                :: verySmall=1e-3   ! tiny number
- character(len=256)                :: infile           ! filename
+ character(len=LIS_CONST_PATH_LEN) :: infile           ! filename
  character(len=256)                :: cmessage         ! error message for downwind routine
  character(len=256)                :: refTimeString    ! reference time string
  integer(i4b)                      :: iline            ! loop through lines in the file
