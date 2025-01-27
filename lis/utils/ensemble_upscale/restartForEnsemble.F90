@@ -30,9 +30,9 @@
 program restartForEnsemble
 
 ! need : filename, number of fields, 
-
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   integer       :: i , j, k, m
-  character*80  :: inputf, outputf
+  character(len=LIS_CONST_PATH_LEN)  :: inputf, outputf
   integer       :: nens, nfields, ntiles
   integer       :: lsm
   character*80  :: ctmp

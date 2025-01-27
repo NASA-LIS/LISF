@@ -576,7 +576,7 @@ subroutine readheader(log1,funit,datafile,intf,gidxs,hlines)
 ! local variables
   character(len=LIS_CONST_PATH_LEN) :: wrtline
   character*120 :: hline
-  character*80 :: dataf2,dataf3
+  character(len=LIS_CONST_PATH_LEN) :: dataf2,dataf3
   integer :: ng
   integer :: ppdfunit,idxfunit
   integer :: i,j,k,m,n

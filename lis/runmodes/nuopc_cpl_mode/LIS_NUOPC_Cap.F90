@@ -243,6 +243,7 @@ module LIS_NUOPC
     model_label_CheckImport => label_CheckImport, &
     model_label_Advance     => label_Advance, &
     model_label_Finalize    => label_Finalize
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_NUOPC_Gluecode
   use LIS_ESMF_Extensions
 
@@ -256,12 +257,12 @@ module LIS_NUOPC
   INTEGER, PARAMETER :: MAXNEST = 999999999
 
   type type_InternalStateStruct
-    character(len=64)     :: configFile       = 'lis.config'
+    character(len=LIS_CONST_PATH_LEN) :: configFile       = 'lis.config'
     logical               :: realizeAllExport = .FALSE.
     logical               :: nestToNest       = .FALSE.
     logical               :: cplEns           = .FALSE.
     logical               :: importDependency = .FALSE.
-    character(len=40)     :: dirOutput        = "."
+    character(len=LIS_CONST_PATH_LEN) :: dirOutput        = "."
     integer               :: nnests           = 0
     integer               :: nfields          = size(LIS_FieldList)
     integer,allocatable                 :: ensMemberCnt(:)

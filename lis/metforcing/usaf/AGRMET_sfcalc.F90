@@ -170,7 +170,7 @@ subroutine AGRMET_sfcalc(n)
 #endif
 !</rm -- jim merge>
   type(OBA) :: t2mOBA, rh2mOBA, spd10mOBA
-  character(len=50) :: t2mPathOBA,rh2mPathOBA,spd10mPathOBA
+  character(len=LIS_CONST_PATH_LEN) :: t2mPathOBA,rh2mPathOBA,spd10mPathOBA
   character(len=LIS_CONST_PATH_LEN) :: obaFilename
   character(len=10) :: yyyymmddhh
   integer :: ierr
