@@ -2497,7 +2497,7 @@
 !   simulations.  If you are doing something else, you will have to
 !   make numerous changes to this code and the subroutines that are
 !   called from it.
-
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -2527,7 +2527,7 @@
       real swed_init(icount)
       real sden_init(icount)
 
-      character*80 output_path_wo_assim
+      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim
 
       print *,'TRANSFERRING THE SNOW DATA TO THE NEXT YEAR'
       print *,'TRANSFERRING THE SNOW DATA TO THE NEXT YEAR'
@@ -2739,7 +2739,7 @@
 ! Here I am going to sweep through June and July and determine
 !   whether the snowpack ever became isothermal during this
 !   period.
-
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer k,iend_year,iyear,i,j,ii,jj
@@ -2749,7 +2749,7 @@
 
       integer, parameter :: nnx=361,nny=361
 
-      character*80 output_path_wo_assim
+      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim
 
 ! Parcels.
       real roff_col(icount)

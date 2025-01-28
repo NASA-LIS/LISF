@@ -56,7 +56,7 @@
 !   obs 1, t=2 is for obs 2, t=3 is for the time between the last
 !   obs time and the end of year 1, t=4 is for the obs 1 in year
 !   2, etc.).
-
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -73,11 +73,12 @@
       integer nobs_dates,nx,ny,max_iter,local_assim_flag,iday_init,&
      &  imonth_init,iyear_init,nyear,nyears,nobs_total,nobs_total_cfi
 
-      character*89 fname_swed,fname_sspr,fname_ssmt
-      character*80 fname_sweobs
-      character*80 fname_sweobs_barnes_mask
+      character(len=LIS_CONST_PATH_LEN) :: fname_swed,fname_sspr,&
+     &  fname_ssmt
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs_barnes_mask
 
-      character*80 output_path_wo_assim
+      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim
       integer trailing_blanks,i_len_wo
       integer i,j
 
@@ -195,7 +196,9 @@
 !     fname_swed = 'outputs/wo_assim/swed.gdat'
 !     fname_sspr = 'outputs/wo_assim/sspr.gdat'
 !     fname_ssmt = 'outputs/wo_assim/ssmt.gdat'
-      i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
+      !i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
+      i_len_wo = LIS_CONST_PATH_LEN - &
+     & trailing_blanks(output_path_wo_assim)
       fname_swed = output_path_wo_assim(1:i_len_wo)//'swed.gdat'
       fname_sspr = output_path_wo_assim(1:i_len_wo)//'sspr.gdat'
       fname_ssmt = output_path_wo_assim(1:i_len_wo)//'ssmt.gdat'
@@ -313,6 +316,7 @@
      &  imonth_init,iyear_init,nyear,nobs_total,print_inc,&
      &  nyears,dt,max_iter,xhour_init)
 
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -341,9 +345,10 @@
      &  iidy,iobs_rec_tmp,iday_init,imonth_init,iyear_init,nyear,&
      &  krec,nobs_total,nyears,max_iter
 
-      character*89 fname_swed,fname_sspr,fname_ssmt
-      character*80 fname_sweobs
-      character*80 fname_sweobs_barnes_mask
+      character(len=LIS_CONST_PATH_LEN) :: fname_swed,fname_sspr,&
+     &  fname_ssmt
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs_barnes_mask
 
 ! Perform some initialization steps.
       if (nyear.eq.1) then
@@ -935,6 +940,7 @@
      &  fname_sweobs,fname_sweobs_barnes_mask,nobs_dates,&
      &  corr_factor_tmp,beta,iobsint,ifill,grid)
 
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -952,8 +958,8 @@
       double precision yg(nx_max,ny_max),xg(nx_max,ny_max)
       double precision xstn(nstns_max),ystn(nstns_max)
 
-      character*80 fname_sweobs
-      character*80 fname_sweobs_barnes_mask
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs
+      character(len=LIS_CONST_PATH_LEN) :: fname_sweobs_barnes_mask
 
       print *
       print *,'You are doing local assimilation, this requires'
@@ -1124,6 +1130,8 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  nobs_total,nyears)
 
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -1133,8 +1141,9 @@
 
       integer len_desc,trailing_blanks
 
-      character*95 output_fname
-      character*80 filename,description
+      character(len=LIS_CONST_PATH_LEN) :: output_fname
+      character(len=LIS_CONST_PATH_LEN) :: filename
+      character*80 description
       character*3 cmo(12)
       character*2 cdt
 
