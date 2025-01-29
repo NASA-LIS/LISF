@@ -161,7 +161,9 @@ contains
    integer(i4b)                     :: fileUnit                   ! file unit (output from file_open; a unit not currently used)
    character(LEN=256),allocatable   :: dataLines(:)               ! vector of character strings from non-comment lines
    character(LEN=256),allocatable   :: chardata(:)                ! vector of character data
+#if 0
    character(len=LIS_CONST_PATH_LEN):: fileout=''                 ! output filename
+#endif
    character(len=64)                :: output_fileSuffix=''       ! suffix for the output file
    character(len=LIS_CONST_PATH_LEN):: attrFile                   ! attributes file name
    character(len=LIS_CONST_PATH_LEN):: restartFile                ! restart file name
