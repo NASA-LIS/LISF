@@ -115,7 +115,7 @@ module preprocMod
 
 !- LSM-specific parameters:
   type, public :: lsmparam_type_dec
-     character*100 :: param_filename
+     character(len=LVT_CONST_PATH_LEN) :: param_filename
      
      type(LVT_paramEntry) :: landmask
      type(LVT_paramEntry) :: landcover
