@@ -789,9 +789,6 @@ end subroutine ensrf_update
 !EOP
     integer                :: ftn
     character(len=LIS_CONST_PATH_LEN) :: innovfile
-#if 0
-    character(len=LIS_CONST_PATH_LEN) :: gainfile
-#endif
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3), ares_Id, ninnov_Id, innov_id
     integer                :: forecast_sigma_id, aincr_Id
@@ -967,75 +964,6 @@ end subroutine ensrf_update
 !
 ! 1. Kalman gain
 !--------------------------------------------------------------------------
-
-#if 0 
-       if(LIS_masterproc) then 
-          call LIS_create_gain_filename(n,gainfile,&
-               'Ensrf')
-          
-#if (defined USE_NETCDF4)
-          status = nf90_create(path=gainfile,cmode=nf90_hdf5,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in ensrf_Mod')
-#endif
-#if (defined USE_NETCDF3)
-          status = nf90_create(path=gainfile,cmode=nf90_clobber,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in ensrf_Mod')
-#endif
-          
-          call LIS_verify(nf90_def_dim(ftn,'ntiles',&
-               LIS_rc%glbnpatch(n,LIS_rc%lsm_index),&
-               dimID(1)),&
-               'nf90_def_dim for ntiles failed in ensrf_mod')
-          call LIS_verify(nf90_put_att(ftn,&
-               NF90_GLOBAL,"missing_value", LIS_rc%udef),&
-               'nf90_put_att for missing_value failed in ensrf_mod')
-          
-!--------------------------------------------------------------------------
-!  Kalman gain -meta data
-!--------------------------------------------------------------------------
-          write(unit=finst, fmt='(i2.2)') k
-          varname = "kgain_"//trim(finst)
-          vardimname = "kgain_"//trim(finst)//"_levels"
-          standard_name = "Kalman_gain_for_DA_instance_"//&
-               trim(finst)
-          
-          call LIS_verify(nf90_def_dim(ftn,&
-               vardimname,LIS_rc%nstvars(k),dimId(2)),&
-               'nf90_def_dim failed for kgain_'//trim(finst))
-          
-          call LIS_verify(nf90_def_var(ftn,varname,&
-               nf90_float,&
-               dimids = dimID(1:2), varID=kgain_Id),&
-               'nf90_def_var for kgain failed in ensrf_mod')
-          
-#if(defined USE_NETCDF4)
-          call LIS_verify(nf90_def_var_deflate(ftn,&
-               kgain_Id,&
-               shuffle, deflate, deflate_level),&
-               'nf90_def_var_deflate for kgain failed in ensrf_mod')             
-#endif
-          call LIS_verify(nf90_put_att(ftn,kgain_Id,&
-               "standard_name",standard_name),&
-               'nf90_put_att for kgain failed in ensrf_mod')
-          call LIS_verify(nf90_enddef(ftn),&
-               'nf90_enddef failed in ensrf_mod')
-       endif
-       do v=1,LIS_rc%nstvars(k)
-          call LIS_writevar_restart(ftn,n,LIS_rc%lsm_index,&
-               ensrf_struc(n,k)%k_gain(:,v),kgain_id, &                  
-               dim=v,wformat="netcdf")
-       enddo
-       if(LIS_masterproc) then 
-          call LIS_verify(nf90_close(ftn),&
-               'nf90_close failed in ensrf_mod')
-       endif
-#endif
     endif
   end subroutine writeInnovationOutput
 
