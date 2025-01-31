@@ -47,7 +47,6 @@
     real,    pointer    :: obse(:)
     integer, parameter :: numchannels=7
     type(ESMF_Field)    :: emField
-    !character(len=LIS_CONST_PATH_LEN) :: emobsdir 
     logical             :: data_update
     integer             :: status 
     logical             :: found
@@ -57,7 +56,6 @@
     type(ESMF_Time)         :: lis_time1
     integer             :: t
     integer             :: n 
-!    logical             :: is_ascend_pass_hr
     logical             :: ob_in_curr_hr
     integer             :: day_index
     logical             :: is_overpass_hr
@@ -122,16 +120,6 @@
     endif
 
     if (is_overpass_hr.and.(.not.maskout)) then
-!       call ESMF_AttributeGet(Obj_Space,"Data Directory",&
-!            emobsdir, rc=status)
-!       call LIS_verify(status)
-!       call ESMF_AttributeGet(Obj_Space,"Data Update Status",&
-!           data_update, rc=status)
-!       call LIS_verify(status)
-
-       !          allocate(emobs(LIS_rc%lnc(n),LIS_rc%lnr(n),numchannels))
-       !          allocate(obse(LIS_rc%ngrid(n),numchannels))
-     !  allocate(obse(LIS_rc%ngrid(n)))
 
        call ESMF_TimeSet(lis_time1, yy=LIS_rc%yr, mm=LIS_rc%mo, &
             dd=LIS_rc%da,h=LIS_rc%hr,&
