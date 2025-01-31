@@ -18,6 +18,7 @@ subroutine readGLASSalbedoObs(source)
 !
 ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -45,7 +46,7 @@ subroutine readGLASSalbedoObs(source)
   integer                :: c,r, tindex
   integer                :: flag
   integer                :: ftn
-  character*200          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   character*50           :: grid_name
   logical                :: file_exists
   integer                :: iret

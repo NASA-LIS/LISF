@@ -55,6 +55,7 @@ contains
 
       ! Imports
       use ESMF
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_rc, LIS_config
       use LIS_DAobservationsMod, only: LIS_obsVecGrid, LIS_obsEnsOnGrid
       use LIS_logMod, only: LIS_verify, LIS_logunit, LIS_getNextUnitNumber, &
@@ -74,7 +75,7 @@ contains
       integer                ::  ftn
       integer                ::  i
       type(ESMF_ArraySpec)   ::  intarrspec
-      character(100)         ::  USAFSIobsdir
+      character(len=LIS_CONST_PATH_LEN) ::  USAFSIobsdir
       character(40)          ::  USAFSI_infile_name
       integer                ::  n
       type(pert_dec_type)    ::  obs_pert

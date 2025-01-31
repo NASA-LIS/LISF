@@ -18,6 +18,7 @@ subroutine readGLEAMObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_logMod
@@ -54,7 +55,7 @@ subroutine readGLEAMObs(source)
   real                   :: currTime
   logical                :: alarmCheck 
   logical                :: file_exists
-  character*100          :: lh_filename
+  character(len=LVT_CONST_PATH_LEN) :: lh_filename
   integer                :: c,r,ios,ftn, lhid
   logical*1              :: li(GLEAMobs(source)%nc*GLEAMobs(source)%nr)
   logical*1              :: lo(LVT_rc%lnc*LVT_rc%lnr)

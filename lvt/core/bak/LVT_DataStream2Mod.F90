@@ -118,6 +118,7 @@ contains
   subroutine LVT_writeObsData
 ! 
 ! !USES: 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_fileIOMod, only : LVT_create_output_directory, &
          LVT_create_output_filename
 
@@ -138,7 +139,7 @@ contains
 
     integer         :: n,i 
     integer         :: ftn 
-    character*100   :: lisfile
+    character(len=LVT_CONST_PATH_LEN) :: lisfile
     type(LVT_metadataEntry), pointer :: obs
 
     n = 1

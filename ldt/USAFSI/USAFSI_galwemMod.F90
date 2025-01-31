@@ -36,6 +36,7 @@ contains
 #if (defined USE_GRIBAPI)
     use grib_api
 #endif
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     use LDT_timeMgrMod, only: LDT_julhr_date
     use LDT_usafsiMod, only: usafsi_settings
@@ -52,7 +53,7 @@ contains
     integer, intent(inout) :: rc
 
     ! Local variables
-    character(255) :: gribfilename
+    character(LDT_CONST_PATH_LEN) :: gribfilename
     real :: gridDesci_glb(50)
     logical :: file_exists
     logical :: found

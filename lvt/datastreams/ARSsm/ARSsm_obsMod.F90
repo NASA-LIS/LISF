@@ -17,7 +17,7 @@ module ARSsm_obsMod
 ! 
 ! !USES:   
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 
   PRIVATE
@@ -41,7 +41,7 @@ module ARSsm_obsMod
   
   type, public :: ismnobsdec
 
-     character*100         :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer               :: yr
      integer               :: n_stns
      character*50, allocatable :: stn_name(:)
@@ -69,7 +69,8 @@ contains
 ! !INTERFACE:
   subroutine ARSsm_obsInit(i)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -96,7 +97,7 @@ contains
     integer                 :: ftn
     integer                 :: status
     real                  :: col,row
-    character*100           :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     type(LVT_metadataEntry),    pointer :: sm
     
     if(.not.allocated(ARSsmobs)) then 

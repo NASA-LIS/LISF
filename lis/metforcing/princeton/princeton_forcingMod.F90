@@ -79,7 +79,7 @@ module princeton_forcingMod
      real                   :: ts
      integer                :: ncold, nrold   
      character(len=LIS_CONST_PATH_LEN) :: princetondir
-     character*100          :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
      character*100          :: version
      integer                :: mi
      real*8                 :: princetontime1,princetontime2

@@ -853,7 +853,7 @@ subroutine create_lsm_twsoutput_filename(n, form, fname, odir, wstyle, wopt,mnam
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
    character(len=LDT_CONST_PATH_LEN) :: dname
-   character(len=200), save :: out_fname
+   character(len=LDT_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    !ag (21Dec2017)

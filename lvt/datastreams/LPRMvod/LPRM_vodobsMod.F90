@@ -17,6 +17,7 @@ module LPRM_vodobsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,7 +51,7 @@ module LPRM_vodobsMod
 !EOP
   type, public :: lprmobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20         :: data_designation
 
      integer              :: nc

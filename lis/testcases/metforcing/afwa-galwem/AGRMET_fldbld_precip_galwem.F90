@@ -20,6 +20,7 @@
 ! !INTERFACE:
 subroutine AGRMET_fldbld_precip_galwem(n,julhr,fc_hr,fg_data)
 ! !USES:
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
                                 LIS_verify, LIS_endrun
@@ -123,10 +124,10 @@ subroutine AGRMET_fldbld_precip_galwem(n,julhr,fc_hr,fg_data)
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
-  character*120           :: avnfile, avnfile2
+  character(len=LIS_CONST_PATH_LEN) :: avnfile, avnfile2
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: julhr
-  character*100           :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                 :: iginfo      ( 2 )
   real                    :: gridres
   integer                 :: alert_number
@@ -427,6 +428,7 @@ end subroutine AGRMET_fldbld_precip_galwem
 subroutine AGRMET_fldbld_read_precip_galwem(fg_filename, ifguess, jfguess,&
                                             fg_prec, alert_number )
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod, only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
@@ -489,7 +491,7 @@ subroutine AGRMET_fldbld_read_precip_galwem(fg_filename, ifguess, jfguess,&
 !
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                       :: count_prec
   integer                       :: i
   integer                       :: ierr
@@ -501,7 +503,7 @@ subroutine AGRMET_fldbld_read_precip_galwem(fg_filename, ifguess, jfguess,&
                                    param_num_val, forecasttime_val
   real,           allocatable   :: dum1d       ( : )
 !<debug -- jim testing>
-character(len=40) :: jim_name
+character(len=LIS_CONST_PATH_LEN) :: jim_name
 !</debug -- jim testing>
 
 

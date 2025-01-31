@@ -11,6 +11,8 @@
 ! NOTE:  Currently only 0.05 deg daily CHIRPSv2 data are supported
 module CHIRPSv2_dataMod
 
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
    ! Defaults
    implicit none
    private
@@ -22,7 +24,7 @@ module CHIRPSv2_dataMod
    public :: CHIRPSv2data
 
    type, public :: chirpsv2datadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)

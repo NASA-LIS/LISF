@@ -368,10 +368,11 @@ contains
  ! external routines
  USE netcdf_util_module,only:nc_file_close  ! close netcdf file
  USE netcdf_util_module,only:nc_file_open   ! open netcdf file
+ use LIS_constantsMod, only: LIS_CONST_PATH_LEN
  implicit none
  ! --------------------------------------------------------------------------------------------------------
  ! input
- character(len=256),intent(in)      :: filename      ! name of the restart file
+ character(len=LIS_CONST_PATH_LEN),intent(in)      :: filename      ! name of the restart file
  integer(i4b),intent(in)            :: nGRU          ! number of GRUs
  integer(i4b),intent(in)            :: nHRU          ! number of HRUs
  type(var_info),intent(in)          :: prog_meta(:)  ! metadata 

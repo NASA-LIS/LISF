@@ -44,7 +44,9 @@ subroutine write_AmerifluxObs(Obj_Space)
   real,    allocatable    :: obsl(:)
   type(ESMF_Field)    :: smField
   type(ESMF_Logical)  :: data_update
+#if 0
   character(len=LIS_CONST_PATH_LEN) :: obsname
+#endif
   integer             :: status
   integer             :: ftn
   integer             :: n 

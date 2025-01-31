@@ -17,7 +17,9 @@
 module LISda_obsMod
 ! 
 ! !USES:   
-!
+  !
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
 ! !INPUT PARAMETERS: 
 ! 
 ! !OUTPUT PARAMETERS:
@@ -48,7 +50,7 @@ module LISda_obsMod
 !EOP
   
   type, public :: daobsdec
-     character*100               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: scal
      integer                     :: obstype
      integer                     :: obsinstance
@@ -105,7 +107,7 @@ contains
     integer                 :: ncId, nrId
     type(ESMF_Config)       :: modelSpecConfig
     character*20            :: domain
-    character*100           :: domFile
+    character(len=LVT_CONST_PATH_LEN) :: domFile
     character*100           :: map_proj
     character*10            :: time
     character*20            :: obstype

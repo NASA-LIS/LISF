@@ -1041,7 +1041,9 @@ contains
     integer                   :: objcount
     integer                   :: fobjcount
     integer                   :: offset1
+#if 0
     character(len=LDT_CONST_PATH_LEN)             :: fname
+#endif
     real,             pointer     :: forcvar(:)    
     real,             pointer     :: pertdata(:)
     character*100,    allocatable :: forcobjs(:)

@@ -101,7 +101,6 @@ subroutine AGRMET_valid( n, pcap, mrg, est, est6, src,&
 !  \end{description}
 !EOP
 
-  character*100                :: ifil
   integer                      :: i
   integer                      :: j
   character*10                 :: date10_03

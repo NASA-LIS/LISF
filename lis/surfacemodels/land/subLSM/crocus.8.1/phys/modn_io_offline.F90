@@ -41,6 +41,7 @@
 !*       0.    DECLARATIONS
 !              ------------
 !
+use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 IMPLICIT NONE
 !
 !*    Types of files
@@ -60,10 +61,10 @@ IMPLICIT NONE
 !*    Names of files
 !     --------------
 !
- CHARACTER(LEN=28):: CPGDFILE  ='PGD'          ! name of the PGD file
- CHARACTER(LEN=28):: CPREPFILE ='PREP'         ! name of the INITIAL file
- CHARACTER(LEN=28):: CSURFFILE ='SURFOUT'      ! name of the final output CSURFEX file
- CHARACTER(LEN=28):: CNAMELIST ='OPTIONS.nam'  ! name of namelist file
+ CHARACTER(LEN=LIS_CONST_PATH_LEN):: CPGDFILE  ='PGD'          ! name of the PGD file
+ CHARACTER(LEN=LIS_CONST_PATH_LEN):: CPREPFILE ='PREP'         ! name of the INITIAL file
+ CHARACTER(LEN=LIS_CONST_PATH_LEN):: CSURFFILE ='SURFOUT'      ! name of the final output CSURFEX file
+ CHARACTER(LEN=LIS_CONST_PATH_LEN):: CNAMELIST ='OPTIONS.nam'  ! name of namelist file
 !
 !
 !*    General flags defining output options

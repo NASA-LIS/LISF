@@ -61,6 +61,7 @@ subroutine noahmp_driver_36(iloc, jloc, &
                             sfcheadrt)  ! out 
   
   ! use LIS_FORC_AttributesMod 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use module_sf_noahlsm_36, only: slcats, lucats, slpcats
   use noahmp_globals_36, only: dveg, opt_crs , opt_btr , opt_run ,      &
                                opt_sfc , opt_frz, opt_inf , opt_rad ,   &
@@ -76,10 +77,10 @@ subroutine noahmp_driver_36(iloc, jloc, &
                                FOLNMX, WDPOOL, WRRAT, MRP ! SY    
   use noahmp_routines_36, only: noahmp_sflx_36, redprm 
   implicit none
-  character(len=256), intent(in) :: landuse_tbl_name      ! Noah model landuse parameter table
-  character(len=256), intent(in) :: soil_tbl_name         ! Noah model soil parameter table
-  character(len=256), intent(in) :: gen_tbl_name          ! Noah model general parameter table
-  character(len=256), intent(in) :: noahmp_tbl_name       ! NoahMP parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: landuse_tbl_name      ! Noah model landuse parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: soil_tbl_name         ! Noah model soil parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: gen_tbl_name          ! Noah model general parameter table
+  character(len=LIS_CONST_PATH_LEN), intent(in) :: noahmp_tbl_name       ! NoahMP parameter table
   character(len=256), intent(in) :: landuse_scheme_name   ! Landuse classficiation scheme
   character(len=256), intent(in) :: soil_scheme_name      ! Soil classification scheme  
   integer, intent(in) :: dveg_opt             ! vegetation model ( 1->prescribed [table LAI, shdfac=FVEG]; 2->dynamic; 3->table LAI, calculate FVEG 4->table LAI, shdfac=maximum)    

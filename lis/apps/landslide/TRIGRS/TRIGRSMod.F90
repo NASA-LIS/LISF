@@ -46,7 +46,7 @@ contains
     use LIS_coreMod, only : LIS_rc, LIS_config
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
-    use LIS_constantsMod,  only : LIS_CONST_PI
+    use LIS_constantsMod,  only : LIS_CONST_PI, LIS_CONST_PATH_LEN
     use LIS_timeMgrMod, only : LIS_parseTimeString, &
          LIS_update_timestep, LIS_registerAlarm ! SY
 
@@ -62,7 +62,7 @@ contains
 
     implicit none
 
-    character*100       :: trigrs_initfile
+    character(len=LIS_CONST_PATH_LEN) :: trigrs_initfile
     integer             :: rc
     integer             :: n
 
@@ -71,7 +71,7 @@ contains
     integer:: maxzo ! SY
     real::mnzmx,mndep ! SY
     character (len=1):: tb
-    character (len=255):: outfil,infil
+    character (len=LIS_CONST_PATH_LEN):: outfil,infil
     character (len=8):: date
     character (len=10):: time
     character (len=7):: vrsn
@@ -412,6 +412,7 @@ contains
 ! !INTERFACE:
   subroutine TRIGRS_run(n)
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod,  only : LIS_rc, LIS_domain
     use LIS_logMod,         only : LIS_endrun, LIS_verify, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify ! SY
@@ -444,7 +445,7 @@ contains
     !real::x1,mnzmx,mndep ! SY
     real::x1 !,mnzmx,mndep ! SY
     !character (len=1):: tb ! SY
-    character (len=255):: outfil,infil
+    character (len=LIS_CONST_PATH_LEN):: outfil
     character (len=14):: fminfil='TRfs_min_'
     character (len=14):: zfminfil='TRz_at_fs_min_'
     character (len=14):: pminfil='TRp_at_fs_min_'
@@ -1467,6 +1468,7 @@ contains
   subroutine srdgrd(grd,pth,ncol,nrow,celsiz,nodat, &
      pf,pf1,ctr,imax,temp,infil,param,header) ! SY
      !pf,pf1,ctr,imax,temp,u,infil,param,header,u1) ! SY
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
     implicit none
@@ -1475,7 +1477,7 @@ contains
     double precision east,west,north,south
     real pf(imax),pf1(grd),temp(pth),nodats
     character*14 header(6)
-    character*255 infil
+    character(len=LIS_CONST_PATH_LEN) :: infil
     integer ftn ! SY
  !  
     ftn = LIS_getNextUnitNumber() ! SY  
@@ -1586,6 +1588,7 @@ contains
   subroutine irdgrd(grd,pth,ncol,nrow,celsiz,inodat,mnd, &! SY
       y,y1,ctr,imax,itemp,infil,param,header) ! SY
       !y,y1,ctr,imax,itemp,u,infil,param,header,u1) ! SY
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
     implicit none
@@ -1595,7 +1598,7 @@ contains
     double precision param(6),celsiz,cns,cew,nodat
     double precision east,west,north,south
     character*14 header(6)
-    character*255 infil
+    character(len=LIS_CONST_PATH_LEN) :: infil
     integer ftn ! SY
  !  
     infil=adjustl(infil)
@@ -1764,6 +1767,7 @@ contains
 
 ! Runoff routing for TRIGRS        
 ! By Rex L. Baum, 1 April 2004, latest revision 1 Jul 2011
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, LIS_getNextUnitNumber, &
          LIS_releaseUnitNumber, LIS_verify
 
@@ -1778,7 +1782,7 @@ contains
     integer:: grd!,unum ! SY
     integer:: ncol,nrow!,u(unum) ! SY
     logical:: logi(5)
-    character (len=255):: infil,outfil
+    character (len=LIS_CONST_PATH_LEN):: infil,outfil
     character (len=31):: rofil, scratch,irfil
     character (len=14):: header(6)
     real:: rnof,inflx,test1
@@ -2155,6 +2159,7 @@ contains
   subroutine ssvgrd(z3,grd,z2,nrow,ncol,nodata,param, &
        outfil,ti,header) ! SY
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
 
@@ -2169,7 +2174,7 @@ contains
     double precision test, param(6),ti,a
     character*14 header(6)
     character*1 sp
-    character*255 outfil
+    character(len=LIS_CONST_PATH_LEN) :: outfil
     character*31 scratch
     integer ftn ! SY
     sp=char(32)
@@ -4380,6 +4385,7 @@ contains
 !  by W.Z. Savage, spring 2001, with modifications by R.L. Baum
   !subroutine iverson(imx1,u1,profil,ulog) ! SY
   subroutine iverson(imx1,u1,profil) ! SY
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
         LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify ! SY
     use grids
@@ -4394,7 +4400,7 @@ contains
     real (double) :: rf1,rf2,rf3,rf4,rfa,rfb,rf
     real (double) :: fs,rslo,rphi,fmn,ptest,pmn,dhat ! pmn added 4/15/2010, dhat added 8 Jan 2013
     real (double) :: newdep,captstar1,captstar2,tdif1,tdif2
-    character (len=255) profil
+    character (len=LIS_CONST_PATH_LEN) profil
     write(LIS_logunit,*) 'Starting saturated-zone' ! SY
     write(LIS_logunit,*) 'computations for infinite-depth' ! SY
     write(*,*) 'Starting saturated-zone'
@@ -4582,6 +4588,7 @@ contains
 !  (both) USGS
   !subroutine savage(imx1,u1,profil,ulog,nccs) ! SY
   subroutine savage(imx1,u1,profil,nccs) ! SY
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
         LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify ! SY
     use grids
@@ -4598,7 +4605,7 @@ contains
     real (double):: tol,delt1,delt2,t1old,t2old
     real (double):: ddg2rad,dlz 
     logical :: lcv 
-    character (len=255)::  profil
+    character (len=LIS_CONST_PATH_LEN)::  profil
     write(LIS_logunit,*) 'Starting saturated-zone' ! SY
     write(LIS_logunit,*) 'computations for finite-depth' ! SY
     write(*,*) 'Starting saturated-zone'
@@ -4981,6 +4988,7 @@ contains
   subroutine isvgrd(z3,grd,z2,nrow,ncol,nodat,nodata, &
        mnd,param,outfil,ti,header) ! SY
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
 
@@ -4996,7 +5004,7 @@ contains
     double precision nodat,nodata,param(6),ti,a
     character*14 header(6)
     character*1 sp
-    character*255 outfil
+    character(len=LIS_CONST_PATH_LEN) :: outfil
     character*31 scratch
     integer ftn ! SY
     sp=char(32)
@@ -5075,6 +5083,7 @@ contains
 !  Rex L. Baum, 21 Apr 2010, latest revision 07 Feb 2012
   subroutine prpijz(u1,profil,ncol,nrow,header,vrsn)
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
 
@@ -5089,7 +5098,7 @@ contains
     integer::i,j,jj,ctr,ncol,nrow,u1,ctr1,swt,m,nvar,outrow,zval ! SY
     real (double):: test0
     real (double):: xmin,xmax,ymin,ymax,zlo,zhi,plo,pmax,chimin,chimax
-    character (len=255)::outfil
+    character (len=LIS_CONST_PATH_LEN)::outfil
     character (len=18):: profil
     character (len=14):: header(6)
     character (len=8)::fini(2)
@@ -5241,6 +5250,7 @@ contains
         !subroutine ssizgrd(row,col,celsiz,nodat,ctr,u,infil,header,ulog) ! SY
   subroutine ssizgrd(row,col,celsiz,nodat,ctr,infil,header) ! SY
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_logMod, only : LIS_endrun, LIS_logunit, &
          LIS_getNextUnitNumber, LIS_releaseUnitNumber, LIS_verify
     implicit none
@@ -5252,7 +5262,7 @@ contains
     real:: nodats
     real, allocatable:: temp(:)
     character (len=14):: header(6)
-    character (len=255):: infil
+    character (len=LIS_CONST_PATH_LEN):: infil
     integer:: ftn ! SY
     !  
     infil=adjustl(infil) ! adjustl statements added to improve compatibility with other compilers 14 Feb 2013 RLB

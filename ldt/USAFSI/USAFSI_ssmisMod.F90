@@ -41,6 +41,7 @@ contains
    subroutine USAFSI_proc_ssmis(date10, ssmis_in, ssmis, option)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use USAFSI_utilMod
       use USAFSI_paramsMod
@@ -51,13 +52,13 @@ contains
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=255), intent(in)  :: ssmis_in
-      character(len=255), intent(in)  :: ssmis
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: ssmis_in
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: ssmis
       integer,            intent(in)  :: option
 
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=255)              :: filename, nc_filename
+      character(len=LDT_CONST_PATH_LEN) :: filename, nc_filename
       integer,           dimension(:), allocatable :: surflag0, surflag, &
            satid0, satid
       character(len=10), dimension(:), allocatable :: date0, date10_arr
@@ -237,13 +238,14 @@ contains
 
       ! Imports
       use eccodes
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: ldt_logunit
 
       ! Defaults
       implicit none
 
       ! Arguments
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -399,9 +401,10 @@ contains
    ! Dummy version if no ECCODES support was compiled
    subroutine read_bufr_attributes(filename, satid, date10_arr, lat, lon, &
         surflag, tb19h, tb19v, tb37h, tb37v, tb22v, tb91v, tb91h)
+      use LDT_constantMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_endrun, LDT_logunit
       implicit none
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -430,6 +433,7 @@ contains
       ! option == 3; Foster et al., 1997
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: ldt_logunit
       use LDT_usafsiMod, only: usafsi_settings
 
@@ -457,7 +461,7 @@ contains
 
       ! Local variables
       integer                                        :: i
-      character(len=255)                             :: ff_filename
+      character(len=LDT_CONST_PATH_LEN)              :: ff_filename
       real(kind=8)                                   :: pd19,pd91,tt,si91, &
            scat,sc37,sc91,scx
       logical                                        :: flag
@@ -960,6 +964,7 @@ contains
    subroutine read_forestfraction(ff_filename, ff)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_verify
       use netcdf
 
@@ -967,7 +972,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -995,9 +1000,10 @@ contains
 #else
    ! Dummy version
    subroutine read_forestfraction(ff_filename, ff)
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
       write(LDT_logunit,*) &
            "[ERR] Recompile LDT with netCDF4 support!"
@@ -1010,6 +1016,7 @@ contains
    subroutine search_files(date10, ssmis_in)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use USAFSI_utilMod, only: date10_julhr, julhr_date10
 
       ! Defaults
@@ -1017,11 +1024,11 @@ contains
 
       ! Arguments
       character*10,       intent(in) :: date10
-      character*255,      intent(in) :: ssmis_in
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: ssmis_in
 
       ! Local variables
       integer            :: eof, n, i, j, k
-      character(len=255)               :: file_path, cmd
+      character(len=LDT_CONST_PATH_LEN) :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
       character*2                    :: satid (3)

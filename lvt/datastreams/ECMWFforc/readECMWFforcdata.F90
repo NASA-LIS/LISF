@@ -20,6 +20,7 @@ subroutine readECMWFforcdata(source)
    ! Imports
    use ESMF
    use ECMWFforc_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -37,7 +38,7 @@ subroutine readECMWFforcdata(source)
 
    ! Local variables
    integer             :: ftn 
-   character*100       :: avgfile1,avgfile2, instfile
+   character(len=LVT_CONST_PATH_LEN) :: avgfile1,avgfile2, instfile
    logical             :: file_exists1,file_exists2
    real                :: prcp_in(ecmwfforcdata(source)%nc,ecmwfforcdata(source)%nr)
    real                :: prcp_in1(ecmwfforcdata(source)%nc*ecmwfforcdata(source)%nr)
@@ -174,6 +175,7 @@ end subroutine readECMWFforcdata
 subroutine create_ECMWFforc_filename(dir,yr,mo,da,hr,&
      avgfilename1,avgfilename2,instfilename)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_timeMgrMod, only : LVT_tick
   ! Defaults
   implicit none
@@ -190,7 +192,7 @@ subroutine create_ECMWFforc_filename(dir,yr,mo,da,hr,&
   real*8         :: itime
   real           :: igmt
   integer        :: iyr,imo,ida,ihr,imn,iss,ts,idoy
-  character(200) :: filename, file1, file2
+  character(len=LVT_CONST_PATH_LEN) :: filename, file1, file2
   
 
   !instantaneous files 

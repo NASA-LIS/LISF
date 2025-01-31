@@ -603,7 +603,7 @@ contains
   subroutine LVT_LISoutputInit()
 ! 
 ! !USES:   
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_timeMgrMod, only: LVT_parseTimeString
 
     implicit none
@@ -645,9 +645,9 @@ contains
     logical                             :: var_found
 
     logical              :: vic_flag(2)
-    character*100        :: vic_d1file(2)
-    character*100        :: vic_d2file(2)
-    character*100        :: vic_d3file(2)
+    character(len=LVT_CONST_PATH_LEN)        :: vic_d1file(2)
+    character(len=LVT_CONST_PATH_LEN)        :: vic_d2file(2)
+    character(len=LVT_CONST_PATH_LEN)        :: vic_d3file(2)
     real, allocatable    :: vic_depth(:,:)
     integer              :: j,lis_gid
     

@@ -17,6 +17,7 @@ module LSWG_Tb_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -43,7 +44,7 @@ module LSWG_Tb_obsMod
   PUBLIC :: LSWG_Tbobs
 
   type, public :: lswgtbobsdec
-     character*100        :: filename
+     character(len=LVT_CONST_PATH_LEN) :: filename
      character*100        :: sname
      integer              :: nstns
      integer              :: nstates
@@ -55,7 +56,7 @@ module LSWG_Tb_obsMod
      type(ESMF_Time)      :: startTime, stopTime
      type(ESMF_TimeInterval) :: timestep
      logical                 :: start
-     character*100           :: maskfile
+     character(len=LVT_CONST_PATH_LEN) :: maskfile
      integer                 :: maskcol
      integer                 :: mask_option
      real                    :: cloud_pct
@@ -77,7 +78,8 @@ contains
   subroutine LSWG_Tb_obsinit(i)
 ! 
 ! !USES: 
-#if 0 
+#if 0
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod, only : LVT_rc, LVT_config
     use LVT_RTMobsDataMod, only : LVT_RTMobsData, LVT_initializeRTMObsEntry
     use LVT_RTMhistDataMod, only : LVT_RTMhistData
@@ -109,8 +111,9 @@ contains
     integer            :: eyr, emo, eda, ehr, emn, ess
     integer            :: ts
     integer            :: siteid
-    character*100      :: coordfile
-    character*100      :: mdata
+#if 0
+    character(len=LVT_CONST_PATH_LEN) :: mdata
+#endif
 
 #if 0 
     call ESMF_ConfigGetAttribute(LVT_config, lswg_Tbobs%filename, &

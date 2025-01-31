@@ -154,6 +154,7 @@ end subroutine readMERRA2asmObs
 
 subroutine process_MERRA2asmdata(source, yr, mo, da)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use MERRA2asmobsMod
@@ -171,7 +172,7 @@ subroutine process_MERRA2asmdata(source, yr, mo, da)
   integer                :: da
 
   integer                :: ftn
-  character*100          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   logical                :: file_exists
   integer                :: t2mid,qv2mid,u10mid,v10mid
   real         :: t2m(merra2asmobs(source)%nc, merra2asmobs(source)%nr,24)

@@ -16,7 +16,8 @@
 !
 ! !INTERFACE:
 subroutine AGRMET_cmorph (n, name_cmor, cmorphdata, quad9r )
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc, LIS_domain
   use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber
@@ -58,7 +59,7 @@ subroutine AGRMET_cmorph (n, name_cmor, cmorphdata, quad9r )
   real  testout1(xd,yd)                             ! Reconfigured original precip array
   real :: testout(xd,yd)
   real, allocatable :: precip_regrid(:,:)                      ! Interpolated precip array
-  character(len=120) :: fname, name_cmor                    ! Filename variables
+  character(len=LIS_CONST_PATH_LEN) :: fname, name_cmor                    ! Filename variables
   integer           :: ftn
 !=== End Variable Definition =======================
 

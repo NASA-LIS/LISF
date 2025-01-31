@@ -15,6 +15,7 @@ subroutine readIMERGdata(source)
    ! Imports
    use ESMF
    use IMERG_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -32,7 +33,7 @@ subroutine readIMERGdata(source)
 
    ! Local variables
    integer             :: ftn 
-   character*100       :: filename
+   character(len=LVT_CONST_PATH_LEN) :: filename
    logical             :: file_exists
    real                :: prcp_in(imergdata(source)%nc,imergdata(source)%nr)
    real                :: prcp_in1(imergdata(source)%nc*imergdata(source)%nr)
@@ -311,7 +312,7 @@ subroutine create_IMERG_filename(odir, &
    integer :: uyr, umo, uda, uhr, umn, umnadd, umnday, uss
    character*4   :: cyr, cmnday
    character*2   :: cmo, cda, chr, cmn, cmnadd
-   character*100 :: fbase, ftimedir, fstem, fext
+   character*100 :: fstem, fext
    
    uyr = yr
    umo = mo

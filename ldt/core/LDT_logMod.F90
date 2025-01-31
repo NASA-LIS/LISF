@@ -133,10 +133,10 @@ contains
 !
 ! !INTERFACE:    
   subroutine LDT_abort( abort_message )
-
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     implicit none
     
-    character*100  :: abort_message(20)
+    character(len=LDT_CONST_PATH_LEN)  :: abort_message(20)
     
 ! !DESCRIPTION:
 !
@@ -159,7 +159,7 @@ contains
 !
 !EOP
     character*7                :: iofunc
-    character*13               :: message_file
+    character(len=LDT_CONST_PATH_LEN) :: message_file
     integer                    :: i
     integer                    :: ftn 
     integer                    :: istat
@@ -227,7 +227,8 @@ contains
 !
 ! !INTERFACE:    
   subroutine LDT_alert( program_name, alert_number, message )
-!EOP    
+    !EOP
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     implicit none
     
     character(len=*),  intent(in)    :: program_name  
@@ -258,7 +259,7 @@ contains
 !EOP
     character*3                   :: calert_number
     character*7                   :: iofunc
-    character*37                  :: message_file
+    character(len=LDT_CONST_PATH_LEN) :: message_file
     integer                       :: i
     integer                       :: istat
     integer                       :: ftn

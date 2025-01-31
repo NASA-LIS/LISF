@@ -69,8 +69,10 @@ contains
 
     implicit none
     integer                :: k
-    integer                :: n 
+    integer                :: n
+#if 0
     character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+#endif
     integer                :: status
     integer                :: ngrid
 

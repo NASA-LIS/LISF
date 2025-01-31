@@ -157,8 +157,6 @@ contains
     type(pert_dec_type)    ::  obs_pert
     real, pointer          ::  obs_temp(:,:)
     real                   :: gridDesci(50)
-    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
-    character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)
     real, allocatable          :: ssdev(:)
     integer                :: jj
     real                   :: cornerlat1, cornerlat2

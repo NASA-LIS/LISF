@@ -28,6 +28,7 @@ module CRTM2_handlerMod
 
   USE CRTM_Module
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
  
@@ -54,7 +55,7 @@ module CRTM2_handlerMod
      integer                               :: nclouds
      integer                               :: naerosols
      character*256                         :: sensor_id
-     character*100                         :: coeff_data
+     character(len=LIS_CONST_PATH_LEN)     :: coeff_data
      real                                  :: zenith_angle
      type(CRTM_ChannelInfo_type),  allocatable :: ChannelInfo(:)
      type(CRTM_Geometry_type), allocatable :: Geometry(:)

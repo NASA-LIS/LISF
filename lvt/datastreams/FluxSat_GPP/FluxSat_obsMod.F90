@@ -17,6 +17,7 @@ module FluxSat_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -47,7 +48,7 @@ module FluxSat_obsMod
 !EOP
 
   type, public :: fluxcomdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real, allocatable       :: rlat(:)
      real, allocatable       :: rlon(:)
      integer, allocatable    :: n11(:)

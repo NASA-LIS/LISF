@@ -16,6 +16,7 @@ subroutine readIMERGmonthlydata(source)
   ! Imports
   use ESMF
   use IMERG_monthly_dataMod, only: imergmonthlydata
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod, only: LVT_rc, LVT_isAtAFinerResolution
   use LVT_histDataMod, only: LVT_logSingleDataStreamVar, &
        LVT_MOC_totalprecip
@@ -29,7 +30,7 @@ subroutine readIMERGmonthlydata(source)
   integer, intent(in) :: source
 
   ! Local variables
-  character*255       :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical             :: file_exists
   real                :: prcp_in(imergmonthlydata(source)%nc, &
        imergmonthlydata(source)%nr)
@@ -294,6 +295,7 @@ subroutine create_IMERG_monthly_filename(source, yr, mo, filename)
 
   ! Imports
   use IMERG_monthly_dataMod, only: imergmonthlydata
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_logMod, only: LVT_logunit, LVT_endrun
 
   ! Defaults
@@ -307,7 +309,7 @@ subroutine create_IMERG_monthly_filename(source, yr, mo, filename)
   character*4   :: cyr
   character*2   :: cmo
   character*100 :: fstem, fext
-  character*255 :: odir
+  character(len=LVT_CONST_PATH_LEN) :: odir
   character*4   :: imVer
 
   write(cyr, '(I4.4)') yr

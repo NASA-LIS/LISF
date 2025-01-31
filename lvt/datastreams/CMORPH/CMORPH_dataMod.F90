@@ -17,6 +17,7 @@ module CMORPH_dataMod
    
    ! Imports
    use ESMF
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
    ! Defaults
    implicit none
@@ -29,7 +30,7 @@ module CMORPH_dataMod
    public :: CMORPHdata
 
    type, public :: cmorphdatadec
-      character*100               :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real*8                      :: changetime1
       real*8                      :: changetime2
       real, allocatable           :: rlat(:)

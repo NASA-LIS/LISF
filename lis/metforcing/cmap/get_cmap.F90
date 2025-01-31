@@ -358,13 +358,14 @@ end subroutine cmapfile
 ! !INTERFACE:
 subroutine cmapfile_old( filename, cmapdir, yr, mo, da, hr )
 !EOP
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
 
 !==== Local Variables=======================
 
   character(len=*)   :: filename
   character(len=*)   :: cmapdir
-  character(len=100) :: temp
+  character(len=LIS_CONST_PATH_LEN) :: temp
   integer :: yr, mo, da, hr
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1

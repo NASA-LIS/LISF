@@ -75,6 +75,7 @@ use rapid_var, only :                                                          &
                    vecscat,ZV_SeqZero,ZV_pointer,IV_riv_loc1,IV_riv_index,     &
                    ZV_riv_tot_lat,ZV_riv_tot_lon       
 
+use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 use LIS_coreMod, only: LIS_rc
 use LIS_logMod
 use LIS_timeMgrMod
@@ -99,18 +100,18 @@ logical,       intent(in)     :: buq          ! uncertainty quantif.
 integer,       intent(in)     :: run_opt      ! run option
 integer,       intent(in)     :: routing_opt  ! routing option
 integer,       intent(in)     :: phi_opt      ! phi option
-character*200, intent(in)     :: connectfile  ! river connectivity file
+character(len=LIS_CONST_PATH_LEN), intent(in) :: connectfile  ! river connectivity file
 integer,       intent(in)     :: n_riv_tot    ! number of river connectivity
 integer,       intent(in)     :: max_reach    ! max number of upstream reaches
-character*200, intent(in)     :: weightfile   ! river weight table
+character(len=LIS_CONST_PATH_LEN), intent(in) :: weightfile   ! river weight table
 integer,       intent(in)     :: n_wei_table  ! number of reach in weight table file
-character*200, intent(in)     :: basinIDfile  ! river basin ID file
+character(len=LIS_CONST_PATH_LEN), intent(in) :: basinIDfile  ! river basin ID file
 integer,       intent(in)     :: n_riv_bas    ! number of river basins
-character*200, intent(in)     :: kfile        ! Muskingum parameter k file
-character*200, intent(in)     :: xfile        ! Muskingum parameter x file
+character(len=LIS_CONST_PATH_LEN), intent(in) :: kfile        ! Muskingum parameter k file
+character(len=LIS_CONST_PATH_LEN), intent(in) :: xfile        ! Muskingum parameter x file
 
-character*200, intent(in)     :: nmlfile
-character*200, intent(in)     :: qfile
+character(len=LIS_CONST_PATH_LEN), intent(in) :: nmlfile
+character(len=LIS_CONST_PATH_LEN), intent(in) :: qfile
 
 !Runoff data are in kg/m2 accumulated over a time step
 integer,       intent(in)     :: nc, nr

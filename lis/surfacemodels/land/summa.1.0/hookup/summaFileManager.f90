@@ -22,11 +22,14 @@
 ! (C) Copyright 2009-2010  ---  Dmitri Kavetski and Martyn Clark ---  All rights reserved
 !******************************************************************
 MODULE summafilemanager
+use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 use nrtype
 implicit none
 public
 ! summa-wide pathlength
-integer(i4b),parameter::summaPathLen=256
+!integer(i4b),parameter::summaPathLen=256
+integer(i4b),parameter::summaPathLen=LIS_CONST_PATH_LEN
+
 ! defines the path for data files (and default values)
 CHARACTER(LEN=summaPathLen)  :: SETNGS_PATH='settings/'         ! SETNGS_PATH
 CHARACTER(LEN=summaPathLen)  :: INPUT_PATH ='input/default/'    ! INPUT_PATH

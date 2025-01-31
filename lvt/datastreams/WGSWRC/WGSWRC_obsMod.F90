@@ -17,6 +17,7 @@ module WGSWRC_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -41,7 +42,7 @@ module WGSWRC_obsMod
   
   type, public :: wgswrcobsdec
 
-     character*100         :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer               :: yr
      integer               :: n_stns
      character*50, allocatable :: stn_name(:)
@@ -64,7 +65,8 @@ contains
 ! !INTERFACE:
   subroutine WGSWRC_obsInit(i)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_obsDataMod
     use LVT_logMod
@@ -86,7 +88,7 @@ contains
     integer                 :: k 
     integer                 :: ftn
     integer                 :: status
-    character*100           :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
 
     if(.not.allocated(WGSWRCobs)) then 
        allocate(WGSWRCobs(LVT_rc%nDataStreams))
