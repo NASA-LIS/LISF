@@ -65,7 +65,6 @@ contains
 !
 !EOP
     
-    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     implicit none
     integer                :: k
     integer                :: n 
