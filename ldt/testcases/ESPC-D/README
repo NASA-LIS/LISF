@@ -1,0 +1,19 @@
+ESPC-D Reader Test Case
+
+This testcase processes Navy Earth System Prediction Capability (ESPC-D) data.
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case. (This file should be 
+  edited to make sure that the locations of the parameter and 
+  forcing files are specified correctly.) 
+* the input.ctl GrADS descriptor file for viewing the input parameter file.
+* the output.ctl GrADS descriptor file for viewing the OUTPUT.
+* the testcase.ctl GrADS descriptor file for viewing the TARGET_OUTPUT.
+
+To run this test case: 
+
+* Generate the LDT executable. 
+* Run the LDT executable using the ldt.config file and the sample 
+  input data. 
