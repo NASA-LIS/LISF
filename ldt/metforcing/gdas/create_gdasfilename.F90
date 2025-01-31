@@ -15,7 +15,6 @@
 subroutine create_gdasfilename(option, name00, name03, name06, &
      F06flag, gdasdir, yr, mo, da, hr )
 ! !USES: 
-  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
   use LDT_timeMgrMod, only : LDT_tick
 
   implicit none
