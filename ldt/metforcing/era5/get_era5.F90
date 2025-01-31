@@ -234,7 +234,6 @@ end subroutine get_era5
 subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
 
 ! !USES:
-  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_timeMgrMod
