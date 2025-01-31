@@ -47,14 +47,15 @@ subroutine noahmp50_descale_usafsi(n, LSM_State, LSM_Incr_State)
 !  \end{description}
 !EOP
 
+#if 0
   type(ESMF_Field)       :: sweField
   type(ESMF_Field)       :: snodField
-
   integer                :: t
   integer                :: status
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
- 
+#endif
+
 #if 0
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)

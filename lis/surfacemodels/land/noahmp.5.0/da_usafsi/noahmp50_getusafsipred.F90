@@ -29,7 +29,7 @@ subroutine noahmp50_getusafsipred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc,LIS_surface
+  use LIS_coreMod, only : LIS_rc
   use NoahMP50_lsmMod
   use LIS_DAobservationsMod
 

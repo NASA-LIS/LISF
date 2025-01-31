@@ -99,8 +99,6 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
   real                 :: twater, twater1, twater2
   real                 :: ippix, crootd
   real                 :: smcmax, smcref, smcwlt
-  !real                 :: smcref1, smcwlt1, shdfac
-  real                 :: smhigh, smlow
   integer              :: lroot,veg_index1,veg_index2
   real                 :: gsthresh, ltime
   real                 :: shdfac, shdmin, shdmax
@@ -108,7 +106,8 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
   real                 :: AWS
   real                 :: Dtime
   real, allocatable    :: placeshdmax(:,:), placeshdmin(:,:)
-  real                 :: sfctemp, tempcheck
+  !real                 :: sfctemp
+  real                 :: tempcheck
 
   type(ESMF_Field)     :: irriggwratioField
   real,  pointer       :: irriggwratio(:)

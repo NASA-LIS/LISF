@@ -19,7 +19,7 @@
 subroutine noahmp50_getrunoffs_rapid(n)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only : LIS_rc
   use LIS_routingMod, only : LIS_runoff_state
   use LIS_logMod
   use LIS_historyMod
@@ -39,7 +39,6 @@ subroutine noahmp50_getrunoffs_rapid(n)
   real, pointer          :: sfrunoff(:)
   real, pointer          :: baseflow(:)
   integer                :: t
-  integer                :: c,r
   integer                :: status
   real, allocatable      :: runoff1(:)
   real, allocatable      :: runoff2(:)

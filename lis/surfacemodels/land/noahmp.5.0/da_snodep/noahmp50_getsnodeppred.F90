@@ -27,7 +27,7 @@ subroutine noahmp50_getsnodeppred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc,LIS_surface
+  use LIS_coreMod, only : LIS_rc
   use noahmp50_lsmMod
   use SNODEPobs_Mod, only: SNODEP_obs_obj
   use LIS_DAobservationsMod

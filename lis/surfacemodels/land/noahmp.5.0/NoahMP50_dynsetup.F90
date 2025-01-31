@@ -24,9 +24,8 @@
 ! !INTERFACE:
 subroutine NoahMP50_dynsetup(n)
 ! !USES:
-    use LIS_coreMod, only    : LIS_rc, LIS_domain, LIS_surface
+    use LIS_coreMod, only    : LIS_rc, LIS_surface
     use LIS_fileIOMod, only  : LIS_read_param
-    use LIS_logMod, only     : LIS_logunit
     use LIS_snowMod, only    : LIS_snow_struc
     use LIS_timeMgrMod, only : LIS_date2time, LIS_tick
     use NoahMP50_lsmMod, only : NoahMP50_struc
@@ -40,12 +39,8 @@ subroutine NoahMP50_dynsetup(n)
     integer, intent(in) :: n
 
     integer   :: tid
-    integer   :: t, gid, change, local_hour
-    integer   :: locdoy, locyr, locmo, locda, lochr, locmn, locss
-    real*8    :: loctime
-    real      :: interp_fraction
-    real      :: locgmt
-    integer   :: col, row, ncount(LIS_rc%ngrid(n))
+    integer   :: t, gid
+    integer   :: ncount(LIS_rc%ngrid(n))
 
     if (LIS_rc%snowsrc(n) .gt. 0) then
 

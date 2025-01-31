@@ -54,7 +54,7 @@ subroutine NoahMP50_updatesoilm(n, LSM_State, LSM_Incr_State)
   real, pointer          :: soilmIncr2(:)
   real, pointer          :: soilmIncr3(:)
   real, pointer          :: soilmIncr4(:)
-  integer                :: t,i,m
+  integer                :: t
   integer                :: status
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)

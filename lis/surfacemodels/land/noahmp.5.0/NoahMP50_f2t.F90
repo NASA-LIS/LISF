@@ -46,7 +46,7 @@ subroutine NoahMP50_f2t(n)
 !
 !EOP
 
-    integer           :: t, v, status
+    integer           :: t, status
     integer           :: tid 
  
     ! Near Surface Air Temperature [K]
@@ -85,8 +85,6 @@ subroutine NoahMP50_f2t(n)
     type(ESMF_Field)  :: snowField
     real, pointer     :: snowf(:)
 
-    integer, pointer   :: layer_h(:), layer_m(:)
- 
     !!! GET FORCING FIELDS FROM LIS
     ! get near surface air temperature
     call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)

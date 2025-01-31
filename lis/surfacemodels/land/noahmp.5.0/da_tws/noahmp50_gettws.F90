@@ -55,7 +55,6 @@ subroutine noahmp50_gettws(n, LSM_State)
   real, pointer          :: soilm4(:)
   real, pointer          :: gws(:)
   real, pointer          :: swe(:)
-  character*100          :: lsm_state_objs(4)
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in noahmp50_gettws')

@@ -55,9 +55,11 @@ subroutine noahmp50_qcveg(n, LSM_State)
 
   real                   :: laimean(LIS_rc%ngrid(n))
   integer                :: nlaimean(LIS_rc%ngrid(n))
- 
+
+#if 0
   integer                :: N_ens
   real                   :: state_tmp(LIS_rc%nensem(n)),state_mean
+#endif
 
   call ESMF_StateGet(LSM_State,"LAI",laiField,rc=status)
   call LIS_verify(status)

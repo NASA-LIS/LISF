@@ -21,8 +21,8 @@
 subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod,      only : LIS_rc, LIS_surface
-  use LIS_logMod,       only : LIS_logunit,LIS_verify
+  use LIS_coreMod,      only : LIS_rc
+  use LIS_logMod,       only : LIS_verify
   use NoahMP50_lsmMod, only : NoahMP50_struc
   use NoahMP50_peMod,  only : NoahMP50_pe_struc
 
@@ -40,7 +40,7 @@ subroutine NoahMP50_set_pedecvars(DEC_State, Feas_State)
   real, pointer          :: vdata(:)
   character*100          :: vname
   integer, pointer       :: mod_flag_NoahMP50(:)
-  integer                :: i,t
+  integer                :: i
   integer                :: status
 
   n = 1
@@ -81,7 +81,7 @@ subroutine NoahMP50_getvardata(n,DEC_State,vname, vdata, statusStateGet)
 ! !USES:
   use ESMF
   use LIS_coreMod,   only : LIS_rc
-  use LIS_logMod,    only : LIS_logunit,LIS_verify
+  use LIS_logMod,    only : LIS_verify
 
   implicit none
 ! !ARGUMENTS: 
@@ -97,7 +97,7 @@ subroutine NoahMP50_getvardata(n,DEC_State,vname, vdata, statusStateGet)
 !EOP
   real, pointer          :: vardata(:)
   type(ESMF_Field)       :: varField
-  integer                :: statusStateGet, statusFieldGet,i
+  integer                :: statusStateGet, statusFieldGet
   
   call ESMF_StateGet(DEC_State,vname,varField,rc=statusStateGet)
 !  call LIS_verify(status)
@@ -114,8 +114,8 @@ end subroutine NoahMP50_getvardata
 subroutine NoahMP50_checkBounds(n,DEC_State,vname, vardata, mod_flag_NoahMP50)
 ! !USES:
   use ESMF
-  use LIS_coreMod,   only : LIS_rc, LIS_surface
-  use LIS_logMod,    only : LIS_logunit,LIS_verify
+  use LIS_coreMod,   only : LIS_rc
+  use LIS_logMod,    only : LIS_verify
 
   implicit none
 ! !ARGUMENTS: 
@@ -156,7 +156,7 @@ end subroutine NoahMP50_checkBounds
 subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
 ! !USES:
   use ESMF
-  use LIS_coreMod,      only : LIS_rc, LIS_surface
+  use LIS_coreMod,      only : LIS_rc
   use NoahMP50_lsmMod, only : NoahMP50_struc
 
   implicit none
@@ -170,8 +170,8 @@ subroutine NoahMP50_checkConstraints(n,DEC_State,mod_flag_NoahMP50)
 !  This routine assigns the decision space to NoahMP model variables. 
 ! 
 !EOP
-  type(ESMF_Field)       :: varField
-  real                   :: vardata_min, vardata_max
+
+
   character*100          :: vname
   integer                :: t
   integer                :: status1, status2
@@ -287,8 +287,8 @@ end subroutine NoahMP50_checkConstraints
 subroutine NoahMP50_setVars(n,DEC_State,mod_flag_NoahMP50)
 ! !USES:
   use ESMF
-  use LIS_coreMod,      only : LIS_rc, LIS_surface
-  use LIS_logMod,       only : LIS_logunit,LIS_verify
+  use LIS_coreMod,      only : LIS_rc
+  use LIS_logMod,       only : LIS_verify
   use NoahMP50_lsmMod, only : NoahMP50_struc
   use NoahMP50_peMod,  only : NoahMP50_pe_struc
 
@@ -490,8 +490,8 @@ end subroutine NoahMP50_setVars
 subroutine NoahMP50_setModFlag(n,DEC_State,Feas_State,mod_flag_NoahMP50)
 ! !USES:
   use ESMF
-  use LIS_coreMod,   only : LIS_rc, LIS_surface
-  use LIS_logMod,    only : LIS_logunit,LIS_verify
+  use LIS_coreMod,   only : LIS_rc
+  use LIS_logMod,    only : LIS_verify
 
   implicit none
 ! !ARGUMENTS: 

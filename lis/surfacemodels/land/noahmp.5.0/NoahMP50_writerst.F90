@@ -125,8 +125,7 @@ end subroutine NoahMP50_writerst
 subroutine NoahMP50_dump_restart(n, ftn, wformat)
 
 ! !USES:
-    use LIS_coreMod, only : LIS_rc, LIS_masterproc
-    use LIS_logMod, only  : LIS_logunit
+    use LIS_coreMod, only : LIS_rc
     use LIS_historyMod
     use NoahMP50_lsmMod
 

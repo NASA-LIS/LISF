@@ -41,14 +41,12 @@ subroutine noahmp50_qctws(n, LSM_State)
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
 !  \end{description}
 !EOP
-  integer                :: t,gid
+  integer                :: t
   integer                :: status
   real, pointer          :: soilm1(:)
   real, pointer          :: soilm2(:)
   real, pointer          :: soilm3(:)
   real, pointer          :: soilm4(:)
-  real                   :: smmax
-  real                   :: smmin
   
   type(ESMF_Field)       :: sm1Field
   type(ESMF_Field)       :: sm2Field
@@ -67,8 +65,6 @@ subroutine noahmp50_qctws(n, LSM_State)
   real                   :: swemax
   real                   :: swemin
 
-  real                   :: sndens
-  logical                :: update_flag(LIS_rc%ngrid(n))  
 !------- 
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)

@@ -43,12 +43,8 @@ subroutine noahmp50_getLAIpred(n, k,obs_pred)
 !  \item[obs\_pred] model's estimate of observations \newline
 !  \end{description}
 !EOP
-  real                   :: obs_tmp
-  integer                :: i,t,m,gid,kk
-  real                   :: inputs_tp(6)
-  character*50           :: units_tp(6)
+  integer                :: t
   real                   :: lai(LIS_rc%npatch(n,LIS_rc%lsm_index))
-
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
      lai(t) = NoahMP50_struc(n)%noahmp50(t)%lai

@@ -413,7 +413,7 @@ end subroutine NoahMP50_setup
 subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 ! !USES:
     use netcdf
-    use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_localPet,   &   
+    use LIS_coreMod, only : LIS_rc, LIS_localPet,   &   
                             LIS_ews_halo_ind, LIS_ewe_halo_ind, &
                             LIS_nss_halo_ind, LIS_nse_halo_ind   
     use LIS_logMod,  only : LIS_logunit, LIS_verify, LIS_endrun
@@ -440,9 +440,9 @@ subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 !
 !EOP      
 
-    integer       :: ios1
+
     integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
-    integer       :: nc, nr, t, nlevel, k
+    integer       :: nc, nr, nlevel
     real, pointer :: level_data(:, :, :)
     logical       :: file_exists
 

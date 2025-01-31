@@ -19,7 +19,7 @@
 subroutine noahmp50_getsws_hymap2(n)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only : LIS_rc
   use LIS_routingMod, only : LIS_runoff_state
   use LIS_logMod
   use LIS_historyMod
@@ -40,8 +40,6 @@ subroutine noahmp50_getsws_hymap2(n)
   real, pointer          :: rivstotmp(:)
   real, pointer          :: fldstotmp(:)
   real, pointer          :: fldfrctmp(:)
-  integer                :: t
-  integer                :: c,r
   integer                :: status
   integer                :: enable2waycpl
 

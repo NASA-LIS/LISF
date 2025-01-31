@@ -47,28 +47,11 @@ subroutine noahmp50_setvegvars(n, LSM_State)
 ! 
 !EOP
   real, parameter        :: MIN_THRESHOLD = 0.02 
-  type(ESMF_Field)       :: laiField,sm1Field
-  real                   :: MAX_threshold
-  real                   :: sm_threshold
-  real                   :: delta1
-  integer                :: SOILTYP           ! soil type index [-]
-  integer                :: t,i,gid,m,t_unpert
+  type(ESMF_Field)       :: laiField
+  integer                :: t
   integer                :: status
-  real, pointer          :: lai(:),soilm1(:)
+  real, pointer          :: lai(:)
   real                   :: lfmass
-  logical                :: flag_tmp(LIS_rc%nensem(n))
-  logical                :: update_flag(LIS_rc%ngrid(n))
-  logical                :: ens_flag(LIS_rc%nensem(n))
-  logical                :: update_flag_tile(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  logical                :: update_flag_ens(LIS_rc%ngrid(n))
-  logical                :: update_flag_new(LIS_rc%ngrid(n))
-  real                   :: tmp1(LIS_rc%nensem(n))
-  integer                :: pcount
-  logical                :: bounds_violation
-  real                   :: MinEnsSM1 ,MaxEnsSM1
-  real                   :: tmpval
-  integer                :: nIter
-  real                   :: smc_tmp 
 
   call ESMF_StateGet(LSM_State,"LAI",laiField,rc=status)
   call LIS_verify(status)

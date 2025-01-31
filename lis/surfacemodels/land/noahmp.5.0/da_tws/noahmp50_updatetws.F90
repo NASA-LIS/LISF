@@ -62,11 +62,8 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
   real, pointer          :: soilmIncr3(:)
   real, pointer          :: soilmIncr4(:)
   real, pointer          :: swe(:), sweincr(:)
-  integer                :: t,i,m,gid
+  integer                :: t
   integer                :: status
-  real                   :: swetmp, sndens
-  logical                :: update_flag(LIS_rc%ngrid(n))
-  real                   :: perc_violation(LIS_rc%ngrid(n))
 
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)

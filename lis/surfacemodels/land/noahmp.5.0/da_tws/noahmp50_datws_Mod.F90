@@ -67,9 +67,9 @@ contains
     
     implicit none
     integer                :: k
-    integer                :: n 
-    integer                :: status
-    integer                :: ngrid
+    !integer                :: n 
+    !integer                :: status
+    !integer                :: ngrid
 
     if(.not.allocated(noahmp50_dasm_struc)) then 
        allocate(noahmp50_dasm_struc(LIS_rc%nnest))

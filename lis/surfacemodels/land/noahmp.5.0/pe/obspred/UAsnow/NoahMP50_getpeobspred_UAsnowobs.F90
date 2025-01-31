@@ -21,7 +21,7 @@ subroutine NoahMP50_getpeobspred_UAsnowobs(Obj_Func)
   use LIS_coreMod, only : LIS_rc
   use LIS_soilsMod,  only : LIS_soils
   use NoahMP50_lsmMod, only : NoahMP50_struc
-  use LIS_logMod,       only : LIS_verify, LIS_logunit
+  use LIS_logMod,       only : LIS_verify
 
   implicit none
 ! !ARGUMENTS: 
@@ -39,7 +39,6 @@ subroutine NoahMP50_getpeobspred_UAsnowobs(Obj_Func)
   type(ESMF_Field)       :: sweField
   real, pointer          :: swe(:)
   integer                :: t
-  integer                :: i
   integer                :: status
 
 

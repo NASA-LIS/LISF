@@ -46,7 +46,6 @@ subroutine noahmp50_getrunoffs_mm(n)
   real, allocatable      :: runoff1_t(:)
   real, allocatable      :: runoff2_t(:)
   integer                :: t
-  integer                :: c,r
   integer                :: status
 
   !ag (25Apr2017)

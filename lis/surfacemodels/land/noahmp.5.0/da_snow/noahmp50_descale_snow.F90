@@ -46,14 +46,6 @@ subroutine noahmp50_descale_snow(n, LSM_State, LSM_Incr_State)
 !  \end{description}
 !EOP
 
-  type(ESMF_Field)       :: sweField
-  type(ESMF_Field)       :: snodField
-
-  integer                :: t
-  integer                :: status
-  real, pointer          :: swe(:)
-  real, pointer          :: snod(:)
- 
 
 end subroutine noahmp50_descale_snow
 

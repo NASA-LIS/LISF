@@ -27,7 +27,7 @@ subroutine noahmp50_updateusafsivars(n, LSM_State, LSM_Incr_State)
   use ESMF
   use LIS_coreMod
   use NoahMP50_lsmMod
-  use LIS_logMod,   only : LIS_logunit, LIS_verify
+  use LIS_logMod,   only : LIS_verify
 
   implicit none
 ! !ARGUMENTS: 

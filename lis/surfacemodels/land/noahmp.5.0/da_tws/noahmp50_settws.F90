@@ -67,7 +67,6 @@ subroutine noahmp50_settws(n, LSM_State)
   real                   :: snodens(LIS_rc%npatch(n,LIS_rc%lsm_index))
   integer                :: i, c,r,t,m,gid
   integer                :: SOILTYP           ! soil type index [-]
-  real                   :: sh2o_tmp, sh2o_rnd 
   real                   :: dsneqv,dsnowh,snowh_new
   real                   :: TWS1, TWS2, TWSd,delta1
   integer                :: status

@@ -48,7 +48,6 @@ subroutine NoahMP50_main(n)
     real                 :: lat, lon
     real                 :: tempval
     integer              :: row, col, tid
-    integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
 !

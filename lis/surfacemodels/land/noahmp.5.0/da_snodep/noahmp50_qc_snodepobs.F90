@@ -55,7 +55,6 @@ subroutine noahmp50_qc_snodepobs(n,k,OBS_State)
 
   real, pointer            :: snowobs(:)
   integer                  :: t
-  integer                  :: gid
   integer                  :: status
   real                     :: stc1(LIS_rc%npatch(n,LIS_rc%lsm_index))
   real                     :: vegt(LIS_rc%npatch(n,LIS_rc%lsm_index))

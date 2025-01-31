@@ -68,10 +68,12 @@ contains
 
     implicit none
     integer                :: k
-    integer                :: n 
-    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+#if 0
+    integer                :: n
     integer                :: status
     integer                :: ngrid
+    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
+#endif
 
     if(.not.allocated(noahmp50_dasm_struc)) then 
        allocate(noahmp50_dasm_struc(LIS_rc%nnest))

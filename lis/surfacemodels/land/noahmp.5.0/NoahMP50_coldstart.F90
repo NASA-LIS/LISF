@@ -48,9 +48,8 @@ subroutine NoahMP50_coldstart(mtype)
     implicit none
 
     integer :: mtype
-    integer :: t, l, n, i
-    integer :: c, r
-    integer ::     row, col
+    integer :: t, l, n
+    integer :: row, col
 
 !---------------------------------------------------------------------
 

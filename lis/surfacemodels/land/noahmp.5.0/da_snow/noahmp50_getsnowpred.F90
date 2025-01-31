@@ -29,7 +29,7 @@ subroutine noahmp50_getsnowpred(n, k, obs_pred)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc,LIS_surface
+  use LIS_coreMod, only : LIS_rc
   use noahmp50_lsmMod
   use LIS_DAobservationsMod
 

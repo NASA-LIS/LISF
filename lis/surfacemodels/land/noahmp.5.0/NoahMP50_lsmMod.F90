@@ -280,7 +280,6 @@ contains
 !EOP
         implicit none        
         integer  :: n, t     
-        integer  :: status   
         character*3 :: fnest ! EMK for RHMin
 
         ! allocate memory for nest 

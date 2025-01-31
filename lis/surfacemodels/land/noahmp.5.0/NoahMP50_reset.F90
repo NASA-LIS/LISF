@@ -34,8 +34,6 @@ subroutine NoahMP50_reset()
 !EOP
   implicit none
   integer                 :: t,n
-  integer                 :: status
-
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) "Noah-MP.5.0 resetting"

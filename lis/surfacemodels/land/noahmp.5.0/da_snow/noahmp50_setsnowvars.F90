@@ -29,9 +29,8 @@
 subroutine noahmp50_setsnowvars(n, LSM_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_surface
-  use LIS_snowMod, only : LIS_snow_struc
-  use LIS_logMod, only : LIS_logunit, LIS_verify, LIS_endrun
+  use LIS_coreMod, only : LIS_rc
+  use LIS_logMod, only : LIS_verify
   use noahmp50_lsmMod
 
   implicit none

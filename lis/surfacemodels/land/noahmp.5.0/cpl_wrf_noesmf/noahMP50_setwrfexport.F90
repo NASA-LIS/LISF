@@ -43,7 +43,7 @@ subroutine NoahMP50_setwrfexport(n)
 ! !ARGUMENTS:
   integer, intent(in) :: n 
 !EOP
-  integer               :: i,j,k,t
+  integer               :: i
   real, allocatable     :: temp(:)
 
   allocate(temp(LIS_rc%npatch(n,LIS_rc%lsm_index)))

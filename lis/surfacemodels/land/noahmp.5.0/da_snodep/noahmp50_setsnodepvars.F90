@@ -28,8 +28,8 @@
 subroutine noahmp50_setsnodepvars(n, LSM_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_surface
-  use LIS_logMod, only : LIS_logunit, LIS_verify
+  use LIS_coreMod, only : LIS_rc, LIS_surface
+  use LIS_logMod, only : LIS_verify
   use LIS_snowMod, only : LIS_snow_struc
   use noahmp50_lsmMod
 

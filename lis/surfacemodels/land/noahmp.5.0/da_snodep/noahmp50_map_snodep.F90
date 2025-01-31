@@ -23,9 +23,9 @@
 subroutine noahmp50_map_snodep(n,k,OBS_State,LSM_Incr_State)
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc, LIS_surface
+  use LIS_coreMod, only : LIS_rc
   use LIS_constantsMod, only  : LIS_CONST_TKFRZ
-  use LIS_logMod,   only  : LIS_logunit, LIS_verify
+  use LIS_logMod,   only  : LIS_verify
   use LIS_lsmMod
   use noahmp50_lsmMod
 

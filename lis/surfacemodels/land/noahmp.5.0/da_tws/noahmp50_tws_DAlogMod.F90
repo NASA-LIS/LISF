@@ -39,7 +39,7 @@ contains
   subroutine noahmp50_tws_DAlog(n)
     
     ! USES:
-    use LIS_coreMod, only : LIS_rc,LIS_surface
+    use LIS_coreMod, only : LIS_rc
     use LIS_timeMgrMod
     use noahmp50_lsmMod
     use LIS_logMod, only : LIS_logunit, LIS_verify
@@ -52,7 +52,8 @@ contains
     ! Calculates total column water storage three times per month, to
     ! approximate the GRACE return frequency
     
-    integer                  :: i,m,t,gid,d          
+    !integer                  :: i,m,t,gid,d
+    integer                  :: t,d
     integer                  :: yr,mo,da,hr,mn,ss
     integer                  :: yr1, mo1, da1
     integer                  :: yr2, mo2, da2

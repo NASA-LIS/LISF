@@ -71,21 +71,16 @@ subroutine NoahMP50_setsoilm(n, LSM_State)
   logical                :: ens_flag(LIS_rc%nensem(n))
 ! mn
   integer                :: SOILTYP           ! soil type index [-]
-  real                   :: SMCMAX , SMCWLT
-  real                   :: tmp(LIS_rc%nensem(n)), tmp0(LIS_rc%nensem(n))
   real                   :: tmp1(LIS_rc%nensem(n)),tmp2(LIS_rc%nensem(n)),tmp3(LIS_rc%nensem(n)),tmp4(LIS_rc%nensem(n)) 
   logical                :: update_flag_tile(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  logical                :: flag_ens(LIS_rc%ngrid(n))
   logical                :: flag_tmp(LIS_rc%nensem(n))
   logical                :: update_flag_ens(LIS_rc%ngrid(n))
   logical                :: update_flag_new(LIS_rc%ngrid(n))
-  integer                :: RESULT, pcount, icount
+  integer                :: pcount
+  !integer                :: icount
   real                   :: MaxEnsSM1 ,MaxEnsSM2 ,MaxEnsSM3 ,MaxEnsSM4
   real                   :: MinEnsSM1 ,MinEnsSM2 ,MinEnsSM3 ,MinEnsSM4 
-  real                   :: MaxEns_sh2o1, MaxEns_sh2o2, MaxEns_sh2o3, MaxEns_sh2o4
-  real                   :: smc_rnd, smc_tmp 
-  real                   :: sh2o_tmp, sh2o_rnd 
-  INTEGER, DIMENSION (1) :: seed 
+  real                   :: smc_tmp 
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&

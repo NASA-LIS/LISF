@@ -42,10 +42,9 @@ subroutine NoahMP50_readcrd()
     integer      :: rc 
     integer      :: n, i
     character*10 :: time 
-    character*6  :: str_i
     integer      :: ios
     integer, allocatable :: nids(:)
-    character*32 :: soil_scheme_name, landuse_scheme_name
+    character*32 :: landuse_scheme_name
 
     allocate(nids(LIS_rc%nnest))
  

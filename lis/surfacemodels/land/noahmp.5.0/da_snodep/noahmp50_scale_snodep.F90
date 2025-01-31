@@ -45,6 +45,7 @@ subroutine noahmp50_scale_snodep(n, LSM_State)
 !  \end{description}
 !EOP
 
+#if 0
   type(ESMF_Field)       :: sweField
   type(ESMF_Field)       :: snodField
 
@@ -52,7 +53,8 @@ subroutine noahmp50_scale_snodep(n, LSM_State)
   integer                :: status
   real, pointer          :: swe(:)
   real, pointer          :: snod(:)
- 
+#endif
+
 #if 0 
   call ESMF_StateGet(LSM_State,"SWE",sweField,rc=status)
   call LIS_verify(status)

@@ -52,9 +52,7 @@ subroutine NoahMP50_qc_soilmobs(n,k,OBS_State)
 
   real, pointer            :: smobs(:)
   integer                  :: t
-  integer                  :: gid
   integer                  :: status
-  real                     :: lat,lon
 
 ! mn
   integer                  :: SOILTYP           ! soil type index [-]

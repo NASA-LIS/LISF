@@ -25,7 +25,7 @@
 ! !INTERFACE:
 subroutine NoahMP50_readrst()
 ! !USES:
-    use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+    use LIS_coreMod, only    : LIS_rc
     use LIS_historyMod, only : LIS_readvar_restart
     use LIS_logMod, only     : LIS_logunit, LIS_endrun, &
                                LIS_getNextUnitNumber,   &
@@ -121,7 +121,6 @@ subroutine NoahMP50_readrst()
     integer           :: yr,mo,da,hr,mn,ss,doy
     real*8            :: time
     real              :: gmt
-    real              :: ts
 
  
     do n=1, LIS_rc%nnest
