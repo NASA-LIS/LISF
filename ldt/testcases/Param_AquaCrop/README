@@ -1,0 +1,55 @@
+Param_AquaCrop Test Case
+aquacropv72test
+AquaCrop parameter processing in LDT
+2024/11/04 Louise Busschaert (KU Leuven)
+===========================================================================
+
+This test-case prepares the lis_input.d01.nc for  a 1/4 degree simulation 
+over a small part of the US.
+
+Note that the test case is based on the "LSM Parameter Processing Run (LDT)" 
+from NASA-LISF main testcase walkthrough, which can be found at
+https://nasa-lis.github.io/LISF/public_testcase_walkthrough/public_testcase_walkthrough.html
+All the necessary input data can be retrieved from the NASA-LISF test case.
+
+For this specific test case, the aquacropv72test_ldt.tar.gz input can be found in Zenodo
+repository: https://zenodo.org/records/14035685
+
+
+More specifically, the test case:
+* prepares an input file for a domain [xmin=-102.875, xmax=-96.125, ymin=34.375, ymax=39.625], 
+  with a 0.25° resolution.
+* Uses NLDAS2 forcings (NLDAS2 grib)
+* Uses the MODIS_Native land cover parameters
+* Uses the STATSGOFAO_Native soil texture data source
+* Uses the SRTM topographic parameters
+* Uses AquaCrop native files stored in INPUT/AC_INPUT/
+
+The LDT output is in NetCDF format.
+
+
+This directory contains: 
+
+* this README file.
+* the ldt.config file used for this test case.
+
+To run this test case: 
+
+* Generate the LDT executable.
+* Run the LDT executable using the ldt.config file and the sample
+  input data. (takes a few minutes)
+* View the NetCDF output using ncview.
+
+References (with a preliminary version of LIS-AC):
+de Roos, S., Bechtold, M., Busschaert, L., Lievens, H., & De Lannoy, G. J. M. (2024). 
+Assimilation of Sentinel-1 backscatter to update AquaCrop estimates of soil moisture 
+and crop biomass. Journal of Geophysical Research: Biogeosciences, 129, e2024JG008231. 
+https://doi.org/10.1029/2024JG008231
+
+Busschaert, L., Bechtold, M., Modanesi, S., Massari, C., Raes, D., Kumar, S. V., De Lannoy, G.,
+Modeling Irrigation and Land Surface Dynamics: Comparing AquaCrop and Noah-MP Over the Po Valley.
+In review for Hydrological and Earth System Sciences. Available at SSRN: 
+https://ssrn.com/abstract=4974019 or http://dx.doi.org/10.2139/ssrn.4974019
+
+
+
