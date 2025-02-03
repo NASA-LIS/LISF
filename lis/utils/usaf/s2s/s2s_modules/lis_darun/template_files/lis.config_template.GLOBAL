@@ -258,33 +258,48 @@ AGRMET skip backQC:                        0               # 0 = do not skip bac
 AGRMET skip superstatQC:                   0               # 0 = do not skip superstatQC check in Bratseth
 AGRMET 3hr maximum precip ceiling:         200.0
 
+# New LIS 7.6 entries:
+AGRMET PPT Background bias correction option: 0            # 0 = turn off (not ready yet)
+AGRMET precip obs file format:             2               # 2 = WIGOS; 1 = Legacy
+AGRMET number of gauge networks to use:    6
+AGRMET gauge networks to use::
+AMIL CANA FAA ICAO WMO MOBL
+::
+AGRMET sfc obs file format:                2               # 2 = WIGOS; 1 = Legacy
+
 # EMK...New recommended settings based on sample NWP and observations
 # for 2 Feb - 7 Mar 2020 and no Box-Cox transformation.
 
 # Bratseth error covariance settings for GALWEM-17km background field.
-# Replace with commented entries below when GALWEM switches to 10-km.
-AGRMET GALWEM Precip background error scale length (m):            102000.
-AGRMET GALWEM Precip background error variance:                         0.83
-AGRMET GALWEM Precip Gauge observation error variance:                  0.86
+AGRMET GALWEM Precip correlation function type: 1 # Gaussian
 AGRMET GALWEM Precip GEOPRECIP observation error scale length (m): 132000.
 AGRMET GALWEM Precip GEOPRECIP observation error variance:              1.24
 AGRMET GALWEM Precip SSMI observation error scale length (m):      133000.
 AGRMET GALWEM Precip SSMI observation error variance:                   2.58
 AGRMET GALWEM Precip CMORPH observation error scale length (m):     89000.
 AGRMET GALWEM Precip CMORPH observation error variance:                 1.15
-AGRMET GALWEM Precip IMERG observation error scale length (m):     101000.
-AGRMET GALWEM Precip IMERG observation error variance:                  1.93
-AGRMET GALWEM T2M background error scale length (m):               110000.
-AGRMET GALWEM T2M background error variance:                            1.48
-AGRMET GALWEM T2M station observation error variance:                   2.30
-AGRMET GALWEM RH2M background error scale length (m):              119000.
-AGRMET GALWEM RH2M background error variance:                          30.7
-AGRMET GALWEM RH2M station observation error variance:                 65.8
-AGRMET GALWEM SPD10M background error scale length (m):             53000.
-AGRMET GALWEM SPD10M background error variance:                         0.62
-AGRMET GALWEM SPD10M station observation error variance:                2.37
+AGRMET GALWEM T2M correlation function type:    1 # Gaussian
+AGRMET GALWEM RH2M correlation function type:   1 # Gaussian
+AGRMET GALWEM SPD10M correlation function type: 1 # Gaussian
+
+# NEW AUTOTUNED ERROR COVARIANCE SETTINGS
+AGRMET GALWEM Precip background error scale length (m): 94368.36506326153
+AGRMET GALWEM Precip background error variance: 0.6586632892470315
+AGRMET GALWEM Precip Gauge observation error variance: 1.4866804528703506
+AGRMET GALWEM Precip IMERG observation error scale length (m): 70301.71006098029
+AGRMET GALWEM Precip IMERG observation error variance: 1.373020856962049
+AGRMET GALWEM T2M background error scale length (m): 88385.26158120963
+AGRMET GALWEM T2M background error variance: 0.33319803850581065
+AGRMET GALWEM T2M station observation error variance: 1.2835683851126716
+AGRMET GALWEM RH2M background error scale length (m): 30000.000000000004
+AGRMET GALWEM RH2M background error variance: 8.109153907540295
+AGRMET GALWEM RH2M station observation error variance: 45.65518758551446
+AGRMET GALWEM SPD10M background error scale length (m): 82504.37534617611
+AGRMET GALWEM SPD10M background error variance: 0.1736058558226681
+AGRMET GALWEM SPD10M station observation error variance: 1.182785372301848
 
 # GFSFV3 Bratseth error covariance settings. Used if GALWEM is unavailable.
+AGRMET GFS Precip correlation function type: 1 # Gaussian
 AGRMET GFS Precip background error scale length (m):             93000.
 AGRMET GFS Precip background error variance:                         0.47
 AGRMET GFS Precip Gauge observation error variance:                  0.70
@@ -296,12 +311,15 @@ AGRMET GFS Precip CMORPH observation error scale length (m):     91000.
 AGRMET GFS Precip CMORPH observation error variance:                 0.92
 AGRMET GFS Precip IMERG observation error scale length (m):     100000.
 AGRMET GFS Precip IMERG observation error variance:                  1.62
+AGRMET GFS T2M correlation function type: 1 # Gaussian
 AGRMET GFS T2M background error scale length (m):               125000.
 AGRMET GFS T2M background error variance:                            1.36
 AGRMET GFS T2M station observation error variance:                   2.38
+AGRMET GFS RH2M correlation function type: 1 # Gaussian
 AGRMET GFS RH2M background error scale length (m):              197000.
 AGRMET GFS RH2M background error variance:                          51.3
 AGRMET GFS RH2M station observation error variance:                 66.8
+AGRMET GFS SPD10M correlation function type: 1 # Gaussian
 AGRMET GFS SPD10M background error scale length (m):             86000.
 AGRMET GFS SPD10M background error variance:                         0.57
 AGRMET GFS SPD10M station observation error variance:                2.48
@@ -351,7 +369,6 @@ AGRMET cloud threshold to generate CDFSII estimate: 85.0
 AGRMET median cloud cover percentage1:              15.0
 AGRMET median cloud cover percentage2:               0.60
 AGRMET overcast percentage:                          0.30
-
 
 #-----------------------LAND SURFACE MODELS--------------------------
 # Noah-MP.4.0.1 LSM:
