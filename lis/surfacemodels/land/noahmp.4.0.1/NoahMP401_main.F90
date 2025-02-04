@@ -36,6 +36,7 @@ subroutine NoahMP401_main(n)
     use LIS_logMod, only     : LIS_logunit, LIS_endrun
     use LIS_FORC_AttributesMod
     use NoahMP401_lsmMod
+    use module_sf_noahmp_groundwater_401, only : WTABLE_mmf_noahmp
 
     implicit none
 ! !ARGUMENTS:
@@ -45,7 +46,7 @@ subroutine NoahMP401_main(n)
     real                 :: dt
     real                 :: lat, lon
     real                 :: tempval
-    integer              :: row, col, tid
+    integer              :: row, col, tid, ridx, cidx
     integer              :: year, month, day, hour, minute, second
     logical              :: alarmCheck
 
@@ -246,6 +247,9 @@ subroutine NoahMP401_main(n)
     real, dimension(1,1) :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
     real, dimension(1,1) :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 
+    ! TML: Debugging term to print model variables if set to 1.
+    integer                 :: tmp_printdebug              ! print model output if true
+
         !ag (05Jan2021)
     real                 :: tmp_rivsto
     real                 :: tmp_fldsto
@@ -255,6 +259,55 @@ subroutine NoahMP401_main(n)
     real :: tmp_q2sat, tmp_es
     character*3 :: fnest
     REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
+
+    !!!! MMF scheme 
+    integer :: min_row, max_row, min_col, max_col, nsoil
+    integer               :: isurban  ! urban type 
+    real                  :: wtddt    ! 
+    real                  :: ddz      ! 
+    real                  :: totwater, deltat 
+    integer, allocatable  :: isltyp(:, :)   ! soil type 
+    integer, allocatable  :: ivgtyp(:, :)   ! vegetation type 
+    real, allocatable  :: smoiseq(:, :, :)  ! equilibrium soil moisture content [m3/m3]
+    real, allocatable  :: dzs(:)            ! thickness of soil layers [m]
+    real, allocatable  :: fdepth(:, :)      ! efolding depth for transmissivity (m) 
+    real, allocatable  :: area(:, :)        ! grid cell area in m^2 ? 
+    real, allocatable  :: topo(:, :)
+    real, allocatable  :: eqwtd(:, :)
+    real, allocatable  :: riverbed(:, :) 
+    real, allocatable  :: rivercond(:, :)
+    real, allocatable  :: rechclim(:,:)
+
+    !inout  
+    real, allocatable :: smois(:, :, :)   ! SMC
+    real, allocatable :: sh2oxy(:, :, :)  ! SH2O 
+    real, allocatable :: wtd(:, :)        ! the depth to water table [m]
+    real, allocatable :: smcwtd(:, :)     ! soil moisture between bottom of the soil and the water table [m3/m3]
+    real, allocatable :: deeprech(:, :)   ! 
+    real, allocatable :: qslat(:, :)      ! lateral flow
+    real, allocatable :: qrfs(:, :)
+    real, allocatable :: qsprings(:, :)
+    real, allocatable :: rech(:, :)       ! groundwater recharge (net vertical flux across the water table), positive up
+    real, allocatable :: xland(:, :)          ! XLAND     ! =2 ocean; =1 land/seaice
+    real, allocatable :: xice(:, :)           ! sea ice fraction 
+    real, allocatable :: pexp(:, :)
+    real, allocatable :: qrf(:, :)
+    real, allocatable :: qspring(:, :)
+    
+    ! local variables, need to be very careful 
+    integer::                   ids,ide, jds,jde, kds,kde,                    &
+                                ims,ime, jms,jme, kms,kme,                    &
+                                its,ite, jts,jte, kts,kte 
+    
+    integer :: tmp_row, tmp_col 
+    ! local
+    real                        ::  xice_threshold
+    integer                     ::  isice
+    
+
+    ! used to be parameters but set to constant number
+
+
 
     allocate( tmp_sldpth( NOAHMP401_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -283,6 +336,15 @@ subroutine NoahMP401_main(n)
             lat = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat
             lon = LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
 
+            ! TML print statement for model debugging.
+            tmp_printdebug = 0
+            if (row .eq. 12) then
+                if (col .eq. 25) then
+                    tmp_printdebug = 1
+                    !print *, "PRINTED DEBUG VARIABLES ON"
+                endif
+            endif
+
             ! retrieve forcing data from NOAHMP401_struc(n)%noahmp401(t) and assign to local variables
             ! tair: air temperature
             tmp_tair       = NOAHMP401_struc(n)%noahmp401(t)%tair   / NOAHMP401_struc(n)%forc_count
@@ -308,9 +370,9 @@ subroutine NoahMP401_main(n)
             tmp_lwdown     = NOAHMP401_struc(n)%noahmp401(t)%lwdown / NOAHMP401_struc(n)%forc_count
 
             ! prcp: total precipitation (rainfall+snowfall)
-            ! Both Noah-MP-3.6 and Noah-MP-4.0.1 require total precipitation as forcing input.
-            ! In Noah-MP-3.6, the forcing is required to be precipitation rate [kg m-2 sec-1].
-            ! In Noah-MP-4.0.1, the forcing is required to be precipitation amount [kg m-2].
+            ! Both NoahMP-3.6.1 and NoahMP-4.0.1 requires total precipitation as forcing input.
+            ! In LIS/NoahMP-3.6.1, the input forcing is total precipitation [mm], but in
+            ! LIS/NoahMP-4.0.1, the forcing data provides precipitation rate [mm/s] !!!
 
             ! T. Lahmers: Correct total precip for cases when model time step > forcing timestep. 
             ! Edit suggested by D. Mocko and K. Arsenault
@@ -755,7 +817,8 @@ subroutine NoahMP401_main(n)
                                    NOAHMP401_struc(n)%noahmp401(t)%param, & ! out   - relative soil moisture [-]
                                    tmp_sfcheadrt         , & 
                                    tmp_infxs1rt          , &
-                                   tmp_soldrain1rt    ) ! out   - extra output for WRF-HYDRO [m]
+                                   tmp_soldrain1rt    , &  !) ! out   - extra output for WRF-HYDRO [m]
+                                   tmp_printdebug               ) ! TML: Added debug print statement
 
             ! save state variables from local variables to global variables
             NOAHMP401_struc(n)%noahmp401(t)%sfcrunoff       = tmp_sfcrunoff
@@ -783,6 +846,7 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%qsnow           = tmp_qsnow
             NOAHMP401_struc(n)%noahmp401(t)%wslake          = tmp_wslake
             NOAHMP401_struc(n)%noahmp401(t)%zwt             = tmp_zwt
+            NOAHMP401_struc(n)%noahmp401(t)%wtd             = tmp_zwt      !!! wtd should be the same as zwt 
             NOAHMP401_struc(n)%noahmp401(t)%wa              = tmp_wa
             NOAHMP401_struc(n)%noahmp401(t)%wt              = tmp_wt
             NOAHMP401_struc(n)%noahmp401(t)%tsno(:)         = tmp_tsno(:)
@@ -867,6 +931,11 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
+            !SW
+            noahmp401_struc(n)%noahmp401(t)%subsnow    = tmp_subsnow
+            noahmp401_struc(n)%noahmp401(t)%qsnbot     = tmp_qsnbot
+            noahmp401_struc(n)%noahmp401(t)%pah        = tmp_pah
+            noahmp401_struc(n)%noahmp401(t)%relsmc(:)  = tmp_relsmc(:)
             NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt(1,1)
             NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt(1,1)
 
@@ -880,6 +949,265 @@ subroutine NoahMP401_main(n)
                tmp_q2sat = 0.622*tmp_es/(tmp_psurf-(1.-0.622)*tmp_es)
                noahmp401_struc(n)%noahmp401(t)%rhmin = tmp_qair / tmp_q2sat
             endif
+        enddo ! end of tile (t) loop, for Noah-MP physics 
+        
+        !!! MMF scheme, SW 
+        if(NOAHMP401_struc(n)%run_opt .eq. 5) then
+            ! determine nrow, ncol 
+            min_row = noahmp401_struc(n)%row_min
+            max_row = noahmp401_struc(n)%row_max
+            min_col = noahmp401_struc(n)%col_min
+            max_col = noahmp401_struc(n)%col_max 
+            !do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            !    dt = LIS_rc%ts
+            !    row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+            !    col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+            !    min_row = min(min_row, row)
+            !    max_row = max(max_row, row) 
+            !    min_col = min(min_col, col)
+            !    max_col = max(max_col, col) 
+            !enddo 
+            
+            !print *, 'max row'
+            !print *, max_row 
+            !print *, 'max col'
+            !print *, max_col
+            ims = min_col 
+            ime = max_col
+            jms = min_row
+            jme = max_row 
+            ids = min_col 
+            ide = max_col
+            jds = min_row
+            jde = max_row
+            its = min_col 
+            ite = max_col
+            jts = min_row
+            jte = max_row 
+
+            kds = 1 
+            kde = 1 
+            kms = 1 
+            kme = 2 
+            kts = 1 
+            kte = 2 
+            nsoil = NOAHMP401_struc(n)%nsoil
+
+            ! assume i corresponds to col and j corresponds to row
+            ! this assumption should not matter to results
+            allocate(    fdepth(min_col:max_col, min_row:max_row))      ! P
+            allocate(      area(min_col:max_col, min_row:max_row))      ! P
+            allocate(      topo(min_col:max_col, min_row:max_row))      ! P
+            allocate(     eqwtd(min_col:max_col, min_row:max_row))      ! P 
+            allocate(      pexp(min_col:max_col, min_row:max_row))      ! P
+            allocate(  riverbed(min_col:max_col, min_row:max_row))      ! P
+            allocate( rivercond(min_col:max_col, min_row:max_row))      ! P
+            allocate(  rechclim(min_col:max_col, min_row:max_row))      ! P
+            
+            allocate(    isltyp(min_col:max_col, min_row:max_row))      ! P
+            allocate(    ivgtyp(min_col:max_col, min_row:max_row))      ! P
+
+            allocate(   smoiseq(min_col:max_col, 1:NOAHMP401_struc(n)%nsoil, min_row:max_row)) ! S
+            allocate(     smois(min_col:max_col, 1:NOAHMP401_struc(n)%nsoil, min_row:max_row)) ! S
+            allocate(    sh2oxy(min_col:max_col, 1:NOAHMP401_struc(n)%nsoil, min_row:max_row)) ! S
+            allocate(   dzs(NOAHMP401_struc(n)%nsoil))                  ! P
+            allocate(       wtd(min_col:max_col, min_row:max_row))      ! S
+            allocate(    smcwtd(min_col:max_col, min_row:max_row))      ! S
+            allocate(  deeprech(min_col:max_col, min_row:max_row))      ! S recharge to or from the water table when deep [m]
+            allocate(     qslat(min_col:max_col, min_row:max_row))      ! S cumulative term of qlat 
+            allocate(      qrfs(min_col:max_col, min_row:max_row))      ! S cumulative term of groundwater-river water flux
+            allocate(  qsprings(min_col:max_col, min_row:max_row))      ! S cumulative term of water springing at the surface from groundwater convergence in the column
+            allocate(      rech(min_col:max_col, min_row:max_row))      ! S recharge to or from the water table when shallow [m] (diagnostic)
+            allocate(     xland(min_col:max_col, min_row:max_row))      ! P
+            allocate(      xice(min_col:max_col, min_row:max_row))      ! P
+            allocate(       qrf(min_col:max_col, min_row:max_row))      ! O groundwater - river water flux
+            allocate(   qspring(min_col:max_col, min_row:max_row))      ! O water springing at the surface from groundwater convergence in the column
+
+            ! we may not run sub-grid tiling with MMF 
+            
+            ! land, ice, sea ice setup 
+            xland(:,:)     = 1.0 ! the grid is fully filled with land 
+            xice(:,:)      = 0.0 ! ice fraction is 0
+            xice_threshold = 0.5 ! be consistent with hrldas 
+            isice          = 100 ! this number should not be one of vegetation type id 
+            isurban        = LIS_rc%urbanclass  ! be consistent with hrldas 
+            ! soil layer thickness 
+            dzs(:) = tmp_sldpth(:) 
+            
+            do row = min_row, max_row
+                do col = min_col, max_col
+                    t = NOAHMP401_struc(n)%rct_idx(col,row) ! rct_idx is col x row TML 
+                    if(t .eq. LIS_rc%udef) then ! undefined for land, but maybe still valid for MMF 
+                        xland(col,row)     = 2 ! 2 is used for the undefined grid cells in the HRLDAS test case 
+                        isltyp(col,row)    = NOAHMP401_struc(n)%soil2d(col,row)  ! required by MMF, soil2d is col x row TML  
+                        ivgtyp(col,row)    = NOAHMP401_struc(n)%vege2d(col,row)  ! vege2d is col x row TML 
+                    else
+                        ! soil type 
+                        isltyp(col,row)    = NOAHMP401_struc(n)%noahmp401(t)%soiltype 
+                        ! vegetation type 
+                        ivgtyp(col,row)    = NOAHMP401_struc(n)%noahmp401(t)%vegetype
+                        ! soil moisture
+                        smois(col, :, row)   = NOAHMP401_struc(n)%noahmp401(t)%smc(:)
+                        sh2oxy(col, :, row)  = NOAHMP401_struc(n)%noahmp401(t)%sh2o(:) 
+                        smoiseq(col, :, row) = NOAHMP401_struc(n)%noahmp401(t)%smoiseq(:)
+                        smcwtd(col, row)     = NOAHMP401_struc(n)%noahmp401(t)%smcwtd
+                        deeprech(col, row)   = NOAHMP401_struc(n)%noahmp401(t)%deeprech
+                        rechclim(col, row)   = NOAHMP401_struc(n)%noahmp401(t)%rechclim
+                        wtd(col,row)         = noahmp401_struc(n)%noahmp401(t)%wtd
+
+                        rech(col,row)        = noahmp401_struc(n)%noahmp401(t)%rech
+                        qslat(col,row)       = noahmp401_struc(n)%noahmp401(t)%qslat
+                        qrfs(col,row)        = noahmp401_struc(n)%noahmp401(t)%qrfs   
+                        qsprings(col,row)    = noahmp401_struc(n)%noahmp401(t)%qsprings 
+                        qrf(col,row)         = noahmp401_struc(n)%noahmp401(t)%qrf
+                        qspring(col,row)     = noahmp401_struc(n)%noahmp401(t)%qspring
+
+                    endif
+                    
+                    if(isltyp(col,row) .eq. 14) then
+                        smcwtd(col, row) = 1.0
+                        wtd(col,row) = 0.0 
+                    endif
+
+                    ! MMF parameters may be needed for undefined grid cells 
+                    ridx = row - NOAHMP401_struc(n)%row_min + 1
+                    cidx = col - NOAHMP401_struc(n)%col_min + 1
+                    fdepth(col,row)    = NOAHMP401_struc(n)%fdepth(cidx, ridx)    !! all variables col x row TML 
+                    topo(col,row)      = NOAHMP401_struc(n)%topo(cidx, ridx)
+                    area(col,row)      = NOAHMP401_struc(n)%area(cidx, ridx)
+                    riverbed(col,row)  = NOAHMP401_struc(n)%riverbed(cidx, ridx)
+                    eqwtd(col,row)     = NOAHMP401_struc(n)%eqwtd(cidx, ridx)
+                    rivercond(col,row) = NOAHMP401_struc(n)%rivercond(cidx, ridx)
+                    rechclim(col,row)  = NOAHMP401_struc(n)%rechclim(cidx, ridx)
+                    pexp(col,row)      = 1.0
+                enddo ! col loop
+            enddo ! row loop
+            
+            wtddt = LIS_rc%ts/60.0 ! time step in minutes? 
+
+            !print*, 'WTABLE_mmf_noahmp Initial Values'
+            !print*, 'FDEPTH = ',fdepth(25,12)
+            !print*, 'AREA = ',area(25,12)
+            !print*, 'TOPO = ',topo(25,12)
+            !print*, 'ISURBAN = ',isurban(25,12)
+            !print*, 'IVGTYP = ',ivgtyp(25,12)
+            !print*, 'RIVERCOND = ',rivercond(25,12)
+            !print*, 'RIVERBED = ',riverbed(25,12)
+            !print*, 'EQWTD = ',eqwtd(25,12)
+            !print*, 'PEXP = ',pexp(25,12)
+            !print*, 'SMC-1 = ',smois(25,1,12)
+            !print*, 'SMC-2 = ',smois(25,2,12)
+            !print*, 'SMC-3 = ',smois(25,3,12)
+            !print*, 'SMC-4 = ',smois(25,4,12)
+            !print*, 'SH2O-1 = ',sh2oxy(25,1,12)
+            !print*, 'SH2O-2 = ',sh2oxy(25,2,12)
+            !print*, 'SH2O-3 = ',sh2oxy(25,3,12)
+            !print*, 'SH2O-4 = ',sh2oxy(25,4,12)
+            !print*, 'SMCWTD = ',smcwtd(25,12)
+            !print*, 'WTD = ',wtd(25,12)
+            !print*, 'QRF = ',qrf(25,12)
+            !print*, 'DEEPRECH = ',deeprech(25,12)
+            !print*, 'QSPRING = ',qspring(25,12)
+            !print*, 'QSLAT = ',qslat(25,12)
+            !print*, 'QRFS = ',qrfs(25,12)
+            !print*, 'QSPRINGS = ',qsprings(25,12)
+            !print*, 'RECH = ',rech(25,12)
+
+            !!! call MMF physics 
+            call  WTABLE_mmf_noahmp (nsoil     ,xland    ,xice    ,xice_threshold  ,isice ,& !in
+                                     isltyp    ,smoiseq  ,dzs     ,wtddt                  ,& !in
+                                     fdepth    ,area     ,topo    ,isurban ,ivgtyp        ,& !in
+                                     rivercond ,riverbed ,eqwtd   ,pexp                   ,& !in
+                                     smois     ,sh2oxy   ,smcwtd  ,wtd  ,qrf              ,& !inout
+                                     deeprech  ,qspring  ,qslat   ,qrfs ,qsprings  ,rech  ,& !inout
+                                     ids,ide, jds,jde, kds,kde,                    &
+                                     ims,ime, jms,jme, kms,kme,                    &
+                                     its,ite, jts,jte, kts,kte                     )
+
+            !print*, 'WTABLE_mmf_noahmp Final Values'
+            !print*, 'FDEPTH = ',fdepth(25,12)
+            !print*, 'AREA = ',area(25,12)
+            !print*, 'TOPO = ',topo(25,12)
+            !print*, 'ISURBAN = ',isurban(25,12)
+            !print*, 'IVGTYP = ',ivgtyp(25,12)
+            !print*, 'RIVERCOND = ',rivercond(25,12)
+            !print*, 'RIVERBED = ',riverbed(25,12)
+            !print*, 'EQWTD = ',eqwtd(25,12)
+            !print*, 'PEXP = ',pexp(25,12)
+            !print*, 'SMC-1 = ',smois(25,1,12)
+            !print*, 'SMC-2 = ',smois(25,2,12)
+            !print*, 'SMC-3 = ',smois(25,3,12)
+            !print*, 'SMC-4 = ',smois(25,4,12)
+            !print*, 'SH2O-1 = ',sh2oxy(25,1,12)
+            !print*, 'SH2O-2 = ',sh2oxy(25,2,12)
+            !print*, 'SH2O-3 = ',sh2oxy(25,3,12)
+            !print*, 'SH2O-4 = ',sh2oxy(25,4,12)
+            !print*, 'SMCWTD = ',smcwtd(25,12)
+            !print*, 'WTD = ',wtd(25,12)
+            !print*, 'QRF = ',qrf(25,12)
+            !print*, 'DEEPRECH = ',deeprech(25,12)
+            !print*, 'QSPRING = ',qspring(25,12)
+            !print*, 'QSLAT = ',qslat(25,12)
+            !print*, 'QRFS = ',qrfs(25,12)
+            !print*, 'QSPRINGS = ',qsprings(25,12)
+            !print*, 'RECH = ',rech(25,12)
+
+            ! get state and output 
+            do row = min_row, max_row
+                do col = min_col, max_col
+                    NOAHMP401_struc(n)%eqwtd(col, row) = eqwtd(col,row)
+
+                    t = NOAHMP401_struc(n)%rct_idx(col,row) ! rct_idx is row major, Shugong Wang 
+                    if (t .eq. LIS_rc%udef)  cycle 
+                    noahmp401_struc(n)%noahmp401(t)%smc(:)      = smois(col, :, row)
+                    noahmp401_struc(n)%noahmp401(t)%sh2o(:)     = sh2oxy(col, :, row)
+                    noahmp401_struc(n)%noahmp401(t)%smoiseq(:)  = smoiseq(col, :, row)
+                    noahmp401_struc(n)%noahmp401(t)%smcwtd      = smcwtd(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%wtd         = wtd(col,row)  !TML added wtd and zwt.
+                    noahmp401_struc(n)%noahmp401(t)%zwt         = wtd(col,row)  !Same variable...
+                    noahmp401_struc(n)%noahmp401(t)%deeprech    = deeprech(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%rech        = rech(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%qslat       = qslat(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%qrfs        = qrfs(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%qsprings    = qsprings(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%qrf         = qrf(col,row)
+                    noahmp401_struc(n)%noahmp401(t)%qspring     = qspring(col,row)
+                enddo ! col loop
+            enddo ! row loop
+
+            ! free memory
+            deallocate(   fdepth)
+            deallocate(     area)
+            deallocate(     topo)
+            deallocate(    eqwtd)
+            deallocate(     pexp)
+            deallocate( riverbed)
+            deallocate(rivercond)
+            deallocate( rechclim)
+            
+            deallocate(   isltyp)
+            deallocate(   ivgtyp)
+
+            deallocate(  smoiseq)
+            deallocate(    smois)
+            deallocate(   sh2oxy)
+            deallocate(  dzs)   
+            deallocate(      wtd)
+            deallocate(   smcwtd)
+            deallocate( deeprech)
+            deallocate(    qslat)
+            deallocate(     qrfs)
+            deallocate( qsprings)
+            deallocate(     rech)
+            deallocate(    xland)
+            deallocate(     xice)
+            deallocate(      qrf)
+            deallocate(  qspring)
+        endif ! if run MMF 
+        
+       
+        ! write output 
+        do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
 
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RHMIN, &
              value=noahmp401_struc(n)%noahmp401(t)%rhmin, &
@@ -914,7 +1242,8 @@ subroutine NoahMP401_main(n)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = NOAHMP401_struc(n)%noahmp401(t)%albedo, &
                                               vlevel=1, unit="-", direction="-", surface_type = LIS_rc%lsm_index)
 
-            if (tmp_albedo.ne.LIS_rc%udef) tmp_albedo = tmp_albedo * 100.0
+            !if (tmp_albedo.ne.LIS_rc%udef) tmp_albedo = tmp_albedo * 100.0
+            if (NOAHMP401_struc(n)%noahmp401(t)%albedo .ne. LIS_rc%udef) tmp_albedo = NOAHMP401_struc(n)%noahmp401(t)%albedo * 100.0
 
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_ALBEDO, value = tmp_albedo, &
                                               vlevel=1, unit="%", direction="-", surface_type = LIS_rc%lsm_index)
@@ -1310,11 +1639,13 @@ subroutine NoahMP401_main(n)
 
             ! Code added by Zhuo Wang on 02/28/2019
             ![ 92] output variable: qsnbot (unit=kg m-2 s-1). ***  melting water out of snow bottom 
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSM, value = tmp_qsnbot, &
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSM, value = tmp_qsnbot, &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSM, value = NOAHMP401_struc(n)%noahmp401(t)%qsnbot, &
                   vlevel=1, unit="kg m-2 s-1", direction="S2L", surface_type = LIS_rc%lsm_index)
 
             ![ 93] output variable: subsnow (unit=kg m-2 s-1). ***  snow sublimation 
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SUBSNOW, value = tmp_subsnow, &
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SUBSNOW, value = tmp_subsnow, &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SUBSNOW, value = NOAHMP401_struc(n)%noahmp401(t)%subsnow, &
                   vlevel=1, unit="kg m-2 s-1", direction="-", surface_type = LIS_rc%lsm_index)
 
             ![ 94] output variable: AvgSurfT (unit=K). *** average surface temperature 
@@ -1331,10 +1662,12 @@ subroutine NoahMP401_main(n)
                             (NOAHMP401_struc(n)%noahmp401(t)%canliq  + &
                              NOAHMP401_struc(n)%noahmp401(t)%canice)
             endif
+            
             do i = 1,NOAHMP401_struc(n)%nsoil
                TWS_out = TWS_out +                                     &
                       (NOAHMP401_struc(n)%noahmp401(t)%smc(i)  *       &
-                      tmp_sldpth(i)*LIS_CONST_RHOFW)
+                      !tmp_sldpth(i)*lis_const_rhofw)
+                      NOAHMP401_struc(n)%sldpth(i)*lis_const_rhofw)
             enddo
             if (NOAHMP401_struc(n)%noahmp401(t)%wa.ge.0.0) then
                TWS_out = TWS_out + NOAHMP401_struc(n)%noahmp401(t)%wa
@@ -1344,8 +1677,29 @@ subroutine NoahMP401_main(n)
 
             ![ 96] Qa - Advective energy - Heat transferred to a snow cover by rain
             !         - (unit=W m-2) - added by David Mocko
-            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = tmp_pah, &
+            !call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = tmp_pah, &
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = NOAHMP401_struc(n)%noahmp401(t)%pah, &
                   vlevel=1, unit="W m-2",direction="DN",surface_type=LIS_rc%lsm_index)
+
+            ![ 97] Qslat - Accumulated Lateral Flow (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSLAT, value = NOAHMP401_struc(n)%noahmp401(t)%qslat, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 98] Qsprings - Accumulated Seeping Water (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSPRINGS, value = NOAHMP401_struc(n)%noahmp401(t)%qsprings, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 99] Qrfs - Accumulated Flux From Groundwater to Rivers (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QRFS, value = NOAHMP401_struc(n)%noahmp401(t)%qrfs, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 100] Wtd - Water Table Depth (for MMF Groundwater) - (unit=m) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_WTD, value = NOAHMP401_struc(n)%noahmp401(t)%wtd, &
+                  vlevel=1, unit="m", direction="-", surface_type = LIS_rc%lsm_index)
+
+            ![ 101] Rech - Accumulated Recharge (for MMF Groundwater) - (unit=mm) 
+            call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_RECH, value = NOAHMP401_struc(n)%noahmp401(t)%rech, &
+                  vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
 
 ! Added water balance change terms - David Mocko
             endsm = 0.0
@@ -1379,25 +1733,25 @@ subroutine NoahMP401_main(n)
                      surface_type=LIS_rc%lsm_index)
 
 ! David Mocko (10/29/2019) - Copy RELSMC calculation from Noah-3.X
-           do i = 1,tmp_nsoil
-              if (tmp_relsmc(i).gt.1.0) then
-                 tmp_relsmc(i) = 1.0
+           do i = 1,NOAHMP401_struc(n)%nsoil
+              if (NOAHMP401_struc(n)%noahmp401(t)%relsmc(i).gt.1.0) then
+                 NOAHMP401_struc(n)%noahmp401(t)%relsmc(i) = 1.0
               endif
-              if (tmp_relsmc(i).lt.0.01) then
-                 tmp_relsmc(i) = 0.01
+              if (NOAHMP401_struc(n)%noahmp401(t)%relsmc(i).lt.0.01) then
+                 NOAHMP401_struc(n)%noahmp401(t)%relsmc(i) = 0.01
               endif
 
 ! J.Case (9/11/2014) -- Set relative soil moisture to missing (LIS_rc%udef)
 ! if the vegetation type is urban class.
-              if (tmp_vegetype.eq.tmp_urban_vegetype) then
-                 tmp_relsmc(i) = LIS_rc%udef
+              if (NOAHMP401_struc(n)%noahmp401(t)%vegetype.eq.tmp_urban_vegetype) then
+                 NOAHMP401_struc(n)%noahmp401(t)%relsmc(i) = LIS_rc%udef
               endif
               call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_RELSMC,vlevel=i, &
-                       value=tmp_relsmc(i),unit='-',direction="-",surface_type=LIS_rc%lsm_index)
-              if (tmp_relsmc(i).eq.LIS_rc%udef) then
-                 tempval = tmp_relsmc(i)
+                       value=NOAHMP401_struc(n)%noahmp401(t)%relsmc(i),unit='-',direction="-",surface_type=LIS_rc%lsm_index)
+              if (NOAHMP401_struc(n)%noahmp401(t)%relsmc(i).eq.LIS_rc%udef) then
+                 tempval = NOAHMP401_struc(n)%noahmp401(t)%relsmc(i)
               else
-                 tempval = tmp_relsmc(i)*100.0
+                 tempval = NOAHMP401_struc(n)%noahmp401(t)%relsmc(i)*100.0
               endif
               call LIS_diagnoseSurfaceOutputVar(n,t,LIS_MOC_RELSMC,vlevel=i, &
                        value=tempval,unit='%',direction="-",surface_type=LIS_rc%lsm_index)
