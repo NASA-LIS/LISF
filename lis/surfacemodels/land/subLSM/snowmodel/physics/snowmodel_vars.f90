@@ -1,11 +1,10 @@
 module snowmodel_vars
 
-  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use snowmodel_inc
   implicit none
 
 ! Misc variables.
-  character(len=LIS_CONST_PATH_LEN) :: snowmodel_dot_par_fname
+  character*100 snowmodel_dot_par_fname
 
 ! SnowTran-3D variables.
   integer max_iter
@@ -93,14 +92,13 @@ module snowmodel_vars
 
   real run_micromet,run_enbal,run_snowpack,run_snowtran
 
-  character(len=LIS_CONST_PATH_LEN) :: topoveg_fname,&
-  &  met_input_fname,topo_ascii_fname,&
+  character*80 topoveg_fname,met_input_fname,topo_ascii_fname,&
   &  veg_ascii_fname
 
   real curve_lg_scale_flag
   real, allocatable ::  curve_wt_lg(:,:)
 
-  character(len=LIS_CONST_PATH_LEN) :: tabler_sfc_path_name
+  character*80 tabler_sfc_path_name
   real Tabler_1_flag,Tabler_2_flag
 ! End SnowTran-3D variables.
 
@@ -223,13 +221,12 @@ module snowmodel_vars
   real print_user,print_inc
   double precision nrecs_max
 
-  character(len=LIS_CONST_PATH_LEN) :: micromet_output_fname
-  character(len=LIS_CONST_PATH_LEN) :: enbal_output_fname
-  character(len=LIS_CONST_PATH_LEN) :: snowtran_output_fname
-  character(len=LIS_CONST_PATH_LEN) :: snowpack_output_fname
-  character(len=LIS_CONST_PATH_LEN) :: multilayer_output_fname
-  character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim, &
-       & output_path_wi_assim
+  character*80 micromet_output_fname
+  character*80 enbal_output_fname
+  character*80 snowtran_output_fname
+  character*80 snowpack_output_fname
+  character*80 multilayer_output_fname
+  character*80 output_path_wo_assim,output_path_wi_assim
   
   character*1 print_var(n_print_vars)
   character*4 print_outvars(n_print_vars)

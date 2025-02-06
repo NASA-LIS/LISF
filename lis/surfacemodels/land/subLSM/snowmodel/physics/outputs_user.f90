@@ -23,7 +23,7 @@
 !   These might be special-case situations, like just writing out
 !   data at the end of every day, writing out a few grid cells,
 !   saving each data arrays to individual files, etc.
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
       use snowmodel_inc
       implicit none
 
@@ -70,8 +70,7 @@
 !      real vars(nx_max,ny_max,n_print_vars)
       real vars(nx,ny,n_print_vars)  ! KRA
 
-      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim,&
-     &  output_path_wi_assim
+      character*80 output_path_wo_assim,output_path_wi_assim
       character*1 print_var(n_print_vars)
       character*4 print_outvars(n_print_vars)
 
@@ -90,13 +89,8 @@
       integer i_trailing_blanks,trailing_blanks,i_len_wo,i_len_wi
 
 ! Calculate how long the paths are.
-      !i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
-      !i_len_wi = 80 - trailing_blanks(output_path_wi_assim)
-      i_len_wo = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_wo_assim)
-      i_len_wi = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_wi_assim)
-
+      i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
+      i_len_wi = 80 - trailing_blanks(output_path_wi_assim)
 !     print *, i_len_wo,i_len_wi
 !     print *, output_path_wo_assim(1:i_len_wo)
 !     print *, output_path_wi_assim(1:i_len_wi)

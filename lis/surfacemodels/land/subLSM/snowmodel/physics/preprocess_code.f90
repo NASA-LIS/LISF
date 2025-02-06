@@ -37,7 +37,6 @@
      &  output_path_wo_assim,output_path_wi_assim,nrecs_max,&
      &  tabler_sfc_path_name,print_outvars,diam_layer)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -111,17 +110,14 @@
       real run_micromet,run_enbal,run_snowpack,run_snowtran
       real print_micromet,print_enbal,print_snowpack,print_snowtran
 
-      character(len=LIS_CONST_PATH_LEN) :: topoveg_fname,&
-     &  met_input_fname,topo_ascii_fname,&
+      character*80 topoveg_fname,met_input_fname,topo_ascii_fname,&
      &  veg_ascii_fname
-      character(len=LIS_CONST_PATH_LEN) ::  snowtran_output_fname,&
-     &  micromet_output_fname,&
+      character*80 snowtran_output_fname,micromet_output_fname,&
      &  enbal_output_fname,snowpack_output_fname,&
      &  multilayer_output_fname
 
-      character(len=LIS_CONST_PATH_LEN) :: tabler_sfc_path_name
-      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim,&
-     &  output_path_wi_assim
+      character*80 tabler_sfc_path_name
+      character*80 output_path_wo_assim,output_path_wi_assim
 
       character*1 print_var(n_print_vars)
       character*4 print_outvars(n_print_vars)
@@ -140,7 +136,7 @@
       real cf_precip_flag,cf_precip_scalar
 
       integer ipath_length,i_len_wo,i_len_wi,trailing_blanks
-      character(len=LIS_CONST_PATH_LEN) :: vege_ht_fname
+      character*80 vege_ht_fname
 
       integer nyears,nyear,nobs_total,nobs_dates,nstns,krec
 
@@ -869,10 +865,7 @@
 
          if (icorr_factor_loop.eq.1) then
 
-          !i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
-          i_len_wo = LIS_CONST_PATH_LEN - &
-     &            trailing_blanks(output_path_wo_assim)
-  
+          i_len_wo = 80 - trailing_blanks(output_path_wo_assim)
           open (401,&
      &    file=output_path_wo_assim(1:i_len_wo)//'multilayer_2Dxy.gdat',&
      &      form='unformatted',access='direct',&
@@ -917,10 +910,7 @@
           close (407)
           close (408)
 
-          !i_len_wi = 80 - trailing_blanks(output_path_wi_assim)
-          i_len_wi = LIS_CONST_PATH_LEN - &
-     &      trailing_blanks(output_path_wi_assim)
-
+          i_len_wi = 80 - trailing_blanks(output_path_wi_assim)
           open (401,&
      &    file=output_path_wi_assim(1:i_len_wi)//'multilayer_2Dxy.gdat',&
      &      form='unformatted',access='direct',&
@@ -1687,7 +1677,6 @@
      &  canopy_int_old,topo,sum_sprec,ihrestart_flag,&
      &  i_dataassim_loop)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -1711,7 +1700,7 @@
       character*5 name3
       character*5 niter
       character*1 iloop
-      character(len=LIS_CONST_PATH_LEN) :: fname
+      character*30 fname
 
 ! Build the file name so it includes the interation number.
       name1 = 'hrestart/hrestart_'
@@ -1802,7 +1791,6 @@
      &  print_var,print_outvars,print_multilayer,&
      &  multilayer_output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -1817,15 +1805,14 @@
 
       character*1 print_var(n_print_vars)
 
-      character(len=LIS_CONST_PATH_LEN) :: micromet_output_fname
-      character(len=LIS_CONST_PATH_LEN) :: enbal_output_fname
-      character(len=LIS_CONST_PATH_LEN) :: snowpack_output_fname
-      character(len=LIS_CONST_PATH_LEN) :: snowtran_output_fname
-      character(len=LIS_CONST_PATH_LEN) :: multilayer_output_fname
-      character(len=LIS_CONST_PATH_LEN) :: tabler_sfc_path_name
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim,&
-     &   output_path_wi_assim
+      character*80 micromet_output_fname
+      character*80 enbal_output_fname
+      character*80 snowpack_output_fname
+      character*80 snowtran_output_fname
+      character*80 multilayer_output_fname
+      character*80 tabler_sfc_path_name
+      character*80 output_path
+      character*80 output_path_wo_assim,output_path_wi_assim
 
       character*4 print_outvars(n_print_vars)
       character*80 description(n_print_vars)
@@ -2032,7 +2019,6 @@
       subroutine mk_density_assim_sfc_ctl(nx,ny,deltax,deltay,xmn,ymn,&
      &  undef,den_outvars,den_description)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,igrads_dt
@@ -2041,9 +2027,8 @@
 
       integer len_name,len_path,len_desc,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character*80 den_description
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*80 output_fname,filename,den_description
+      character*80 output_path_tmp
       character*14 den_outvars
       character*3 cmo
       character*2 cdt
@@ -2062,15 +2047,9 @@
 
       output_path_tmp = '^'
 
-      !len_path = 80 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
-
+      len_path = 80 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//den_outvars//'.gdat'
-      !len_name = 80 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
-
+      len_name = 80 - trailing_blanks(output_fname)
       len_desc = 80 - trailing_blanks(den_description)
 
       open (71,file=filename)
@@ -2142,7 +2121,6 @@
      &  undef,output_path,print_inc,den_outvars,&
      &  den_description)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2153,11 +2131,10 @@
 
       integer len_name,len_path,len_desc,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character*80 den_description
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*105 output_fname
+      character*80 filename,den_description
+      character*80 output_path
+      character*86 output_path_tmp
       character*14 den_outvars
       character*3 cmo(12)
       character*2 cdt
@@ -2196,13 +2173,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &   trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//den_outvars//'.gdat'
-      !len_name = 105 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &   trailing_blanks(output_fname)
+      len_name = 105 - trailing_blanks(output_fname)
       len_desc = 80 - trailing_blanks(den_description)
 
       open (71,file=filename)
@@ -2275,7 +2248,6 @@
      &  undef,output_path,k,print_outvars,description,&
      &  print_inc)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2286,11 +2258,10 @@
 
       integer len_name,len_path,len_desc,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character*80 description
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*95 output_fname
+      character*80 filename,description
+      character*80 output_path
+      character*86 output_path_tmp
       character*4 print_outvars
       character*3 cmo(12)
       character*2 cdt
@@ -2333,13 +2304,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//print_outvars//'.gdat'
-      !len_name = 95 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 95 - trailing_blanks(output_fname)
       len_desc = 80 - trailing_blanks(description)
 
       open (71,file=filename)
@@ -2411,7 +2378,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2421,8 +2387,8 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character(len=LIS_CONST_PATH_LEN) :: output_fname_tmp
+      character*80 output_fname,filename
+      character*83 output_fname_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -2458,9 +2424,7 @@
         output_fname_tmp = output_fname//'   '
       endif
 
-      !len_name = 83 - trailing_blanks(output_fname_tmp)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname_tmp)
+      len_name = 83 - trailing_blanks(output_fname_tmp)
 
       open (71,file=filename)
 
@@ -2547,7 +2511,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2557,8 +2520,8 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character(len=LIS_CONST_PATH_LEN) :: output_fname_tmp
+      character*80 output_fname,filename
+      character*83 output_fname_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -2594,9 +2557,7 @@
         output_fname_tmp = output_fname//'   '
       endif
 
-      !len_name = 83 - trailing_blanks(output_fname_tmp)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname_tmp)
+      len_name = 83 - trailing_blanks(output_fname_tmp)
 
       open (71,file=filename)
 
@@ -2687,7 +2648,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2697,8 +2657,8 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character(len=LIS_CONST_PATH_LEN) :: output_fname_tmp
+      character*80 output_fname,filename
+      character*83 output_fname_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -2734,9 +2694,7 @@
         output_fname_tmp = output_fname//'   '
       endif
 
-      !len_name = 83 - trailing_blanks(output_fname_tmp)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname_tmp)
+      len_name = 83 - trailing_blanks(output_fname_tmp)
 
       open (71,file=filename)
 
@@ -2837,7 +2795,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -2847,8 +2804,8 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character(len=LIS_CONST_PATH_LEN) :: output_fname_tmp
+      character*80 output_fname,filename
+      character*83 output_fname_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -2884,9 +2841,7 @@
         output_fname_tmp = output_fname//'   '
       endif
 
-      !len_name = 83 - trailing_blanks(output_fname_tmp)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname_tmp)
+      len_name = 83 - trailing_blanks(output_fname_tmp)
 
       open (71,file=filename)
 
@@ -2968,7 +2923,6 @@
       subroutine mk_tabler_1_ctl(nx,ny,deltax,deltay,xmn,ymn,&
      &  undef,output_path)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,igrads_dt
@@ -2977,10 +2931,10 @@
 
       integer len_name,len_path,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*99 output_fname
+      character*80 filename
+      character*80 output_path
+      character*83 output_path_tmp
       character*3 cmo
       character*2 cdt
 
@@ -3003,13 +2957,9 @@
         output_path_tmp = output_path//'   '
       endif
 
-      !len_path = 83 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &   trailing_blanks(output_path_tmp)
+      len_path = 83 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'tabler_sfcs.gdat'
-      !len_name = 99 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &   trailing_blanks(output_fname)
+      len_name = 99 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3095,7 +3045,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k,print_inc)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       implicit none
 
       integer nx,ny,iyear_init,imonth_init,iday_init,max_iter,&
@@ -3106,10 +3055,10 @@
 
       integer len_name,len_path,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*97 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3151,13 +3100,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname=output_path_tmp(1:len_path)//'tabler_sfcs_iter.gdat'
-      !len_name = 97 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 97 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3229,7 +3174,6 @@
      &  iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_fname)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3240,8 +3184,8 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname,filename
-      character(len=LIS_CONST_PATH_LEN) :: output_fname_tmp
+      character*80 output_fname,filename
+      character*83 output_fname_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3277,9 +3221,7 @@
         output_fname_tmp = output_fname//'   '
       endif
 
-      !len_name = 83 - trailing_blanks(output_fname_tmp)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname_tmp)
+      len_name = 83 - trailing_blanks(output_fname_tmp)
 
       open (71,file=filename)
 
@@ -3364,7 +3306,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3375,10 +3316,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3419,13 +3360,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_2Dxy.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3502,7 +3439,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3513,10 +3449,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3557,13 +3493,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_snod.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3634,7 +3566,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3645,10 +3576,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3689,13 +3620,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_sden.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3766,7 +3693,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3777,10 +3703,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3821,13 +3747,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_swed.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -3898,7 +3820,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -3909,10 +3830,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -3953,13 +3874,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_diam.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -4030,7 +3947,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -4041,10 +3957,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -4085,13 +4001,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_flux.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -4162,7 +4074,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -4173,10 +4084,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -4217,13 +4128,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_temp.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
@@ -4294,7 +4201,6 @@
      &  dt,iyear_init,imonth_init,iday_init,xhour_init,max_iter,&
      &  undef,output_path,k)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -4305,10 +4211,10 @@
 
       integer len_name,trailing_blanks
 
-      character(len=LIS_CONST_PATH_LEN) :: output_fname
-      character(len=LIS_CONST_PATH_LEN) :: filename
-      character(len=LIS_CONST_PATH_LEN) :: output_path
-      character(len=LIS_CONST_PATH_LEN) :: output_path_tmp
+      character*106 output_fname
+      character*80 filename
+      character*80 output_path
+      character*86 output_path_tmp
       character*3 cmo(12)
       character*2 cdt
 
@@ -4349,13 +4255,9 @@
         output_path_tmp = output_path//'      '
       endif
 
-      !len_path = 86 - trailing_blanks(output_path_tmp)
-      len_path = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_path_tmp)
+      len_path = 86 - trailing_blanks(output_path_tmp)
       output_fname = output_path_tmp(1:len_path)//'multilayer_cond.gdat'
-      !len_name = 106 - trailing_blanks(output_fname)
-      len_name = LIS_CONST_PATH_LEN - &
-     &  trailing_blanks(output_fname)
+      len_name = 106 - trailing_blanks(output_fname)
 
       open (71,file=filename)
 
