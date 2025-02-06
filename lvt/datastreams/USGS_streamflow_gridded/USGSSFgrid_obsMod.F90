@@ -63,7 +63,6 @@ contains
  subroutine USGSSFgrid_obsinit(i)
 ! 
    ! !USES:
-    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
