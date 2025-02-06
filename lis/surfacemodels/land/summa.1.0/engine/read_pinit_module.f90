@@ -35,8 +35,7 @@ contains
  ! public subroutine read_pinit: read default model parameter values and constraints
  ! ************************************************************************************************
  subroutine read_pinit(filenm,isLocal,mpar_meta,parFallback,err,message)
-   ! used to read metadata on the forcing data file
- use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+ ! used to read metadata on the forcing data file
  USE summaFileManager,only:SETNGS_PATH     ! path for metadata files
  USE ascii_util_module,only:file_open      ! open ascii file
  USE ascii_util_module,only:split_line     ! extract the list of variable names from the character string
@@ -56,7 +55,7 @@ contains
  ! define general variables
  logical(lgt),parameter                 :: backwardsCompatible=.false. ! .true. if skip check that all parameters are populated
  character(len=256)                     :: cmessage       ! error message for downwind routine
- character(LEN=LIS_CONST_PATH_LEN)      :: infile         ! input filename
+ character(LEN=256)                     :: infile         ! input filename
  integer(i4b)                           :: unt            ! file unit (free unit output from file_open)
  integer(i4b)                           :: iline          ! loop through lines in the file
  integer(i4b),parameter                 :: maxLines=1000  ! maximum lines in the file

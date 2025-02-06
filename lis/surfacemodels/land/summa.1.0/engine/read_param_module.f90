@@ -48,8 +48,7 @@ contains
  ! ************************************************************************************************
  ! public subroutine read_param: read trial model parameter values
  ! ************************************************************************************************
-  subroutine read_param(iRunMode,checkHRU,startGRU,nHRU,nGRU,typeStruct,mparStruct,bparStruct,err,message)
- use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+ subroutine read_param(iRunMode,checkHRU,startGRU,nHRU,nGRU,typeStruct,mparStruct,bparStruct,err,message)
  ! used to read model initial conditions
  USE summaFileManager,only:SETNGS_PATH               ! path for metadata files
  USE summaFileManager,only:PARAMETER_TRIAL           ! file with parameter trial values
@@ -71,7 +70,7 @@ contains
  character(*),        intent(out)      :: message          ! error message
  ! define local variables
  character(len=1024)                   :: cmessage         ! error message for downwind routine
- character(LEN=LIS_CONST_PATH_LEN)     :: infile           ! input filename
+ character(LEN=1024)                   :: infile           ! input filename
  integer(i4b)                          :: iHRU             ! index of HRU within data vector
  integer(i4b)                          :: localHRU,iGRU    ! index of HRU and GRU within data structure
  integer(i4b)                          :: ixParam          ! index of the model parameter in the data structure
