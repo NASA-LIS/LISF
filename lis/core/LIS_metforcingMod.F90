@@ -1330,7 +1330,6 @@ contains
 ! !INTERFACE: 
   subroutine LIS_perturb_forcing(n)
 ! !USES: 
-    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
 ! !ARGUMENTS: 
     integer,  intent(IN)   :: n 
