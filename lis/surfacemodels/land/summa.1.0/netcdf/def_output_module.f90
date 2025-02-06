@@ -64,8 +64,7 @@ contains
  ! **********************************************************************************************************
  ! public subroutine def_output: define model output file
  ! **********************************************************************************************************
-subroutine def_output(nHRU,nSoil,infile,err,message)
- use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+ subroutine def_output(nHRU,nSoil,infile,err,message)
  USE globalData,only:structInfo                               ! information on the data structures
  USE globalData,only:forc_meta,attr_meta,type_meta            ! metaData structures
  USE globalData,only:prog_meta,diag_meta,flux_meta,deriv_meta ! metaData structures
@@ -84,7 +83,7 @@ subroutine def_output(nHRU,nSoil,infile,err,message)
  integer(i4b)                :: iStruct                       ! loop through structure types 
  integer(i4b),parameter      :: modelTime=1                   ! model timestep output frequency
  character(len=5)            :: fstring                       ! string to hold model output freuqnecy
- character(len=LIS_CONST_PATH_LEN) :: fname                         ! temporary filename
+ character(len=1000)         :: fname                         ! temporary filename
  character(len=256)          :: cmessage                      ! temporary error message
 
  ! initialize errors

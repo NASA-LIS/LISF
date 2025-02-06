@@ -661,7 +661,6 @@ contains
  ! subroutine to populate write commands from file input
  ! ------------------------------------------------
  subroutine read_output_file(err,message)
- use LIS_constantsMod, only: LIS_CONST_PATH_LEN
  USE get_ixName_module,only:get_ixUnknown
 
  ! some dimensional parameters
@@ -702,7 +701,7 @@ contains
 
  ! local variables
  character(LEN=256)                 :: cmessage        ! error message of downwind routine
- character(LEN=LIS_CONST_PATH_LEN)  :: outfile         ! full path of model output file 
+ character(LEN=256)                 :: outfile         ! full path of model output file 
  integer(i4b)                       :: unt             ! file unit
  character(LEN=512),allocatable     :: charlines(:)    ! vector of character strings
  character(LEN=64),allocatable      :: lineWords(:)    ! vector to parse textline
