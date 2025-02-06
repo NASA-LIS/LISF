@@ -51,7 +51,6 @@
 !   It is set up to deal with integer, real, and string (character)
 !   input values.
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_vars, only: allocate_arrays
       use snowmodel_inc
       implicit none
@@ -88,16 +87,13 @@
 
       integer nx,ny,max_iter,icond_flag,irun_data_assim
 
-      character(len=LIS_CONST_PATH_LEN) :: topoveg_fname,&
-     &  met_input_fname,topo_ascii_fname,&
+      character*80 topoveg_fname,met_input_fname,topo_ascii_fname,&
      &  veg_ascii_fname
 
-      character(len=LIS_CONST_PATH_LEN) :: snowtran_output_fname,&
-     &  micromet_output_fname,&
+      character*80 snowtran_output_fname,micromet_output_fname,&
      &  enbal_output_fname,snowpack_output_fname,multilayer_output_fname
 
-      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim,&
-     &  output_path_wi_assim,&
+      character*80 output_path_wo_assim,output_path_wi_assim,&
      &  tabler_sfc_path_name
 
       integer iyear_init,imonth_init,iday_init,&
@@ -115,7 +111,7 @@
       integer iobsint  ! flag (=1) use dn value from .par file
       real xlat      ! approx. latitude of domain center, decimal deg
 
-      character(len=LIS_CONST_PATH_LEN) :: snowmodel_dot_par_fname
+      character*100 snowmodel_dot_par_fname
 
 ! Working parameters.
       character*120 input_string
@@ -2020,11 +2016,11 @@
 !     snowmodel parpath/parname.par
 !   and it will look for the .par file in the different location
 !   and/or the different name.
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
       implicit none
 
       integer nargs,iargc
-      character(len=LIS_CONST_PATH_LEN) :: snowmodel_dot_par_fname
+      character*100 snowmodel_dot_par_fname
 
       snowmodel_dot_par_fname = "snowmodel.par"
 

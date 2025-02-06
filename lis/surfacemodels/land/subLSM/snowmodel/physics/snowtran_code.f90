@@ -63,7 +63,6 @@
      &  output_path_wi_assim,icorr_factor_loop,windspd_2m_grid,&
      &  Qsubl_depth)
 
-      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use snowmodel_inc
       implicit none
 
@@ -183,8 +182,7 @@
       real seaice_conc(nx,ny)
 
       real Tabler_1_flag,Tabler_2_flag
-      character(len=LIS_CONST_PATH_LEN) :: output_path_wo_assim,&
-     &  output_path_wi_assim,&
+      character*80 output_path_wo_assim,output_path_wi_assim,&
      &  tabler_sfc_path_name
       integer i_len_tabler,trailing_blanks,icorr_factor_loop,&
      &  i_len_wo,i_len_wi
