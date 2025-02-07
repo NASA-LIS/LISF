@@ -17,6 +17,7 @@ module SMOSNESDIS_smobsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -49,7 +50,7 @@ module SMOSNESDIS_smobsMod
 !EOP
   type, public :: smosnesdisobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
 
      integer              :: nc
      integer              :: nr

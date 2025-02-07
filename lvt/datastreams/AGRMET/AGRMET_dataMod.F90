@@ -37,7 +37,8 @@
 module AGRMET_dataMod
 ! !USES: 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  
   implicit none
 
   PRIVATE 
@@ -51,7 +52,7 @@ module AGRMET_dataMod
   PUBLIC :: AGRMETdata
 !EOP
   type, public :: agrmetdatadec
-     character*255           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real*8                  :: changetime1,changetime2
      real, allocatable           :: rlat(:)
      real, allocatable           :: rlon(:)

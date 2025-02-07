@@ -18,6 +18,7 @@ module MERRA2obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -46,7 +47,7 @@ module MERRA2obsMod
 !EOP
 
   type, public :: merra2dec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)
@@ -74,7 +75,7 @@ module MERRA2obsMod
      
      integer                 :: usecorr   !Yeosang Yoon
      integer                 :: usescalef
-     character*100           :: scaleffile
+     character(len=LVT_CONST_PATH_LEN) :: scaleffile
      real, allocatable       :: refxrange(:,:,:,:)
      real, allocatable       :: refcdf(:,:,:,:)
      real, allocatable       :: merraxrange(:,:,:,:)

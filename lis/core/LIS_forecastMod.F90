@@ -151,7 +151,7 @@ contains
     character(len=LIS_CONST_PATH_LEN) :: rst_fname
     character*4     :: fiter
     integer, external :: LIS_create_subdirs 
-    character(len=201) :: c_string  
+    character(len=LIS_CONST_PATH_LEN) :: c_string  
 
     n = 1
     
@@ -189,7 +189,6 @@ contains
     integer         :: n 
     integer         :: ftn    
     integer         :: iterid
-    character(len=LIS_CONST_PATH_LEN) :: out_dname
     character(len=LIS_CONST_PATH_LEN) :: rst_fname    
 
     n = 1

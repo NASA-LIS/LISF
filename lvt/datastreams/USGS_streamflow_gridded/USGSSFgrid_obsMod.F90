@@ -17,6 +17,7 @@ module USGSSFgrid_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module USGSSFgrid_obsMod
 ! 
 !EOP
 
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc,nr
      integer                 :: mo
      integer                 :: nts
@@ -61,7 +62,7 @@ contains
 ! !INTERFACE: 
  subroutine USGSSFgrid_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -82,7 +83,6 @@ contains
 ! 
 !EOP
 
-    character*100 :: stnlist_file
     integer       :: ftn, k, status
 
     if(.not.allocated(USGSSFgridobs)) then 

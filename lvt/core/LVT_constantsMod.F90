@@ -24,7 +24,12 @@ module LVT_constantsMod
 !----------------------------------------------------------------------------
 ! physical constants (all data public)
 !----------------------------------------------------------------------------
+   use ESMF, only: ESMF_MAXPATHLEN
    public
+
+   ! Software contraints
+   integer, parameter :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
+
 !   real,parameter :: CONST_PI     = 3.14159265358979323846  ! pi
    real,parameter :: LVT_CONST_PI     = 3.14159265   ! pi
    real,parameter :: LVT_CONST_CDAY   = 86400.0      ! sec in calendar day ~ sec

@@ -19,6 +19,7 @@ subroutine readMODIS_LSTObs(source)
 ! !USES:   
   use ESMF
   use LVT_coreMod,     only : LVT_rc
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_logMod,      only : LVT_logunit, LVT_verify, &
        LVT_getNextUnitNumber, LVT_releaseUnitNumber
   use LVT_histDataMod
@@ -67,7 +68,7 @@ subroutine readMODIS_LSTObs(source)
 ! 
 !EOP
 
-  character*100          :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer                :: ftn 
   logical                :: file_exists
   integer                :: nid, ios, ier, ivar1, ivar2, ivar3

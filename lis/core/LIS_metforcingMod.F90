@@ -1351,11 +1351,11 @@ contains
     integer                   :: objcount
     integer                   :: fobjcount
     integer                   :: offset1
-    character*100             :: fname
-    character*100,    allocatable :: forcobjs(:)
-    real,             pointer :: forcvar(:)    
+    character*100 :: fname
+    character*100, allocatable :: forcobjs(:)
+    real,             pointer :: forcvar(:)
     type(ESMF_Field), allocatable :: forcField(:)
-    character*100,    allocatable :: stateobjs(:)
+    character*100, allocatable :: stateobjs(:)
     type(ESMF_Field), allocatable :: stateField(:)
     real,             pointer :: pertdata(:)
     integer                   :: perttype

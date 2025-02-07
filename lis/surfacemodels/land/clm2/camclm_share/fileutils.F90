@@ -10,6 +10,7 @@
 #include <LIS_misc.h>
 module fileutils
 
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 !public methods
 
     public :: get_filename  
@@ -27,7 +28,7 @@ module fileutils
 CONTAINS
 !=======================================================================
 
-  character(len=256) function get_filename (fulpath)
+  character(len=LIE_CONST_PATH_LEN) function get_filename (fulpath)
 
 !----------------------------------------------------------------------- 
 ! 
@@ -61,7 +62,7 @@ CONTAINS
   
 !=======================================================================
 
-  character(len=256) function set_filename (rem_dir, loc_fn)
+  character(len=LIS_CONST_PATH_LEN) function set_filename (rem_dir, loc_fn)
   
 !----------------------------------------------------------------------- 
 ! 
@@ -95,6 +96,7 @@ CONTAINS
 !=======================================================================
 
    subroutine getfil (fulpath, locfn, iflag)
+     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
      use LIS_logMod, only : LIS_logunit
 !----------------------------------------------------------------------- 
 ! 
@@ -121,7 +123,7 @@ CONTAINS
    integer klen            !length of fulpath character string
    integer ierr            !error status
    logical lexist          !true if local file exists
-   character(len=256) text !mswrite command
+   character(len=LIS_CONST_PATH_LEN) text !mswrite command
 ! --------------------------------------------------------------------
  
  
@@ -180,6 +182,7 @@ CONTAINS
 !=======================================================================
  
    subroutine putfil(locfn, mssfpn, pass, irt, lremov)
+     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
      use LIS_logMod, only : LIS_logunit
 !----------------------------------------------------------------------- 
 ! 
@@ -205,8 +208,8 @@ CONTAINS
 !-----------------------------------------------------------------------
  
 !---------------------------Local workspace-----------------------------
-   character(len=256) cmd     ! Command string
-   character(len=256) cmdtem  ! Temporary for command string
+   character(len=LIS_CONST_PATH_LEN) cmd    ! Command string
+   character(len=LIS_CONST_PATH_LEN) cmdtem ! Temporary for command string
    character(len=  4) crt     ! Retention time as characters
    character(len= 16) wpass   ! Write password
    integer ier                ! error number

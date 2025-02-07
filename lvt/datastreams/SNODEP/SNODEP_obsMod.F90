@@ -17,6 +17,7 @@ module SNODEP_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 !
@@ -79,7 +80,7 @@ module SNODEP_obsMod
      integer                :: hemi_nr(2)
      integer                :: mi
      integer                :: pmax
-     character*100               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: mesh
      logical                     :: startFlag
   end type snodepobsdec

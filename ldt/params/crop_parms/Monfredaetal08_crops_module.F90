@@ -51,6 +51,7 @@ CONTAINS
 subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,     only : LDT_rc
   use LDT_logMod,      only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_verify, LDT_endrun
@@ -92,7 +93,7 @@ subroutine read_Monfredaetal08_croptype(n, num_types, fgrd)
    real,    parameter :: IN_yres = 1.0/12.0 ! or 180deg/2160 row points
 
 ! Other
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
    logical :: file_exists
    integer :: i, i2, j, t, c, r
    integer :: glpnc, glpnr             ! Parameter (global) total columns and rows
@@ -259,8 +260,10 @@ end subroutine read_Monfredaetal08_croptype
 subroutine readMonfredaCropfiles( n, tempfile, subpnc, subpnr, subparam_gridDesc, &
                                   lat_line, lon_line, croptype_frac )
 
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
    integer,       intent(in) :: n
-   character(140),intent(in) :: tempfile
+   character(len=LDT_CONST_PATH_LEN),intent(in) :: tempfile
    integer,       intent(in) :: subpnc, subpnr    
    real,          intent(in) :: subparam_gridDesc(20)  
    integer,       intent(in) :: lat_line(subpnc,subpnr), lon_line(subpnc,subpnr)

@@ -16,7 +16,8 @@
 ! !INTERFACE:
 subroutine readMCD15A2Hobs(source)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc
   use LVT_logMod
   use LVT_histDataMod
@@ -48,7 +49,7 @@ subroutine readMCD15A2Hobs(source)
 
   integer, parameter           :: nc = 36000, nr=15000
   integer                      :: lat_off, lon_off
-  character*100                :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   real*8                       :: cornerlat(2), cornerlon(2)
   logical                      :: file_exists
   logical*1, allocatable       :: lb(:)

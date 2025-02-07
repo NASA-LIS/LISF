@@ -133,7 +133,8 @@ end subroutine readERA5Obs
 !
 ! !INTERFACE: 
 subroutine process_ERA5data(source, yr, mo, da)
-! !USES: 
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use ERA5obsMod
@@ -156,7 +157,7 @@ subroutine process_ERA5data(source, yr, mo, da)
   integer                :: da
 
   integer                :: ftn, ftn_flx
-  character*100          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   logical                :: file_exists
   integer                :: prcpid, tairid
   real, allocatable      :: prcp(:,:)

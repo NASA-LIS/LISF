@@ -16,8 +16,9 @@
 ! !INTERFACE:
 module GRACE_obsMod
 ! 
-! !USES: 
+  ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -61,8 +62,8 @@ module GRACE_obsMod
      real, allocatable       :: scalefactor(:,:)  !BZ
      integer                 :: reftime
      integer                 :: tdims
-     character*120           :: filename
-     character*150           :: gracescalefile
+     character(len=LVT_CONST_PATH_LEN) :: filename
+     character(len=LVT_CONST_PATH_LEN) :: gracescalefile
      character*100           :: datasource
      character*20            :: gridtransformopt
 
@@ -94,7 +95,8 @@ contains
 ! !INTERFACE: 
   subroutine GRACE_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,   only : LVT_rc, LVT_Config
     use LVT_histDataMod
     use LVT_logMod
@@ -127,7 +129,6 @@ contains
     integer              :: i
     integer              :: status
     real                 :: gridDesci(50)
-    character*100        :: domFile
     character*100        :: map_proj
     logical              :: file_exists
 

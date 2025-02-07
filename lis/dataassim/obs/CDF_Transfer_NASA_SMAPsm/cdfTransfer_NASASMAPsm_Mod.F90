@@ -21,6 +21,7 @@
 module cdfTransfer_NASASMAPsm_Mod
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -68,12 +69,12 @@ module cdfTransfer_NASASMAPsm_Mod
                                                  !e.g., 4/29 13:00:00)
      integer                    :: cdf_read_opt  ! 0: read all months at one time
                                                  ! 1: read only the current month
-     character*100              :: modelcdffile
-     character*100              :: obscdffile
+     character(len=LIS_CONST_PATH_LEN) :: modelcdffile
+     character(len=LIS_CONST_PATH_LEN) :: obscdffile
      integer                    :: n_strat_bins
      integer                    :: useCDFtransfer
-     character*100              :: ref_p_climo_file
-     character*100              :: target_p_climo_file
+     character(len=LIS_CONST_PATH_LEN) :: ref_p_climo_file
+     character(len=LIS_CONST_PATH_LEN) :: target_p_climo_file
      real,    allocatable       :: ref_p_climo_maxval(:)
      real,    allocatable       :: target_p_climo(:,:,:)
 
@@ -91,6 +92,7 @@ contains
 ! !INTERFACE:
   subroutine cdfTransfer_NASASMAPsm_setup(k, OBS_State, OBS_Pert_State)
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod
     use LIS_timeMgrMod
     use LIS_historyMod
@@ -126,7 +128,7 @@ contains
     type(ESMF_ArraySpec)   ::  intarrspec, realarrspec
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
-    character*100          ::  rtsmopssmobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  rtsmopssmobsdir
     character*100          ::  temp
     real,  allocatable     ::  obsstd(:)
     character*1            ::  vid(2)

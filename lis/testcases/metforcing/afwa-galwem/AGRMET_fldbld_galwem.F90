@@ -20,6 +20,7 @@
 ! !INTERFACE:    
 subroutine AGRMET_fldbld_galwem(n,order,julhr)
 ! !USES: 
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -96,10 +97,10 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr)
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
-  character*120           :: avnfile
+  character(len=LIS_CONST_PATH_LEN) :: avnfile
   integer                 :: yr1, mo1, da1, hr1
   integer                 :: julhr
-  character*100           :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: gridres
   integer                 :: alert_number
@@ -363,6 +364,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,   &
                                      agr_pres)
 ! !USES:
 !<debug -- jim testing>
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc, LIS_masterproc
   use LIS_mpiMod
   use LIS_historyMod
@@ -488,7 +490,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,   &
 !     \end{description}
 !EOP
   character*9                   :: cstat
-  character*100                 :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   character(len=4)              :: grib_msg
   character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt
@@ -515,7 +517,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,   &
   real, allocatable :: fg_uwnd ( : , : )
   real, allocatable :: fg_vwnd ( : , : )
 !<debug -- jim testing>
-  character(len=100) :: jim_name
+  character(len=LIS_CONST_PATH_LEN) :: jim_name
 !</debug -- jim testing>
 
 

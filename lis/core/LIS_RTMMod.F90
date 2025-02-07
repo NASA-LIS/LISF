@@ -58,7 +58,7 @@ module LIS_RTMMod
   type, private :: rtm_type_dec
      character(len=LIS_CONST_PATH_LEN) :: outputdirname
      character(len=LIS_CONST_PATH_LEN) :: outputfilename
-     character*100           :: fstatsname
+     character(len=LIS_CONST_PATH_LEN) :: fstatsname
      logical                 :: rtmAlarmCheck
      real                    :: rtmoutInterval
      real                    :: rtmInterval
@@ -94,7 +94,6 @@ contains
     character*10            :: time
     character*100           :: temp
     integer                 :: status
-    character(len=LIS_CONST_PATH_LEN) :: statsfilename    
 
     TRACE_ENTER("rtm_init")
     allocate(LIS_rtm_struc(LIS_rc%nnest))
@@ -168,16 +167,6 @@ contains
        
        call rtminitialize(trim(LIS_rc%rtm)//char(0))
     endif
-#if 0 
-!!!!!!!!!!!!!TESTING OUTPUT FILE  INITIALIZATION STEP (BEGIN)
-       write(unit=outputdirname,FMT='(I2.2)') trim(LIS_rc%rtm)
-       outputdirname='RTM_'//trim(outputdirname)
-       write(unit=outputfilename,FMT='(I2.2)') trim(LIS_rc%rtm)
-       outputfilename='RTM_'//trim(outputfilename)
-       write(unit=statsfilename,FMT='(I2.2)') trim(LIS_rc%rtm)
-       statsfilename='RTMStats_'//trim(statsfilename)
-       call LIS_create_stats_filename(n, fstatsname,statsfilename)
-#endif       
     TRACE_EXIT("rtm_init")
        
   end subroutine LIS_RTM_init

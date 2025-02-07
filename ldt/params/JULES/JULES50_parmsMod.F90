@@ -29,6 +29,7 @@ module JULES50_parmsMod
 #endif
 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -73,10 +74,10 @@ module JULES50_parmsMod
      type(LDT_paramEntry) :: top_fexp
 
      real, allocatable :: soil_type(:,:) 
-     character(len=128)   :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
-     character(len=128)   :: nc_whs_param    ! NetCDF file of WHS soil albedo input file 
+     character(len=LDT_CONST_PATH_LEN) :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
+     character(len=LDT_CONST_PATH_LEN) :: nc_whs_param    ! NetCDF file of WHS soil albedo input file 
      !character(len=32)    :: soil_param_mode
-     character(len=128)   :: nc_um_ancillary
+     character(len=LDT_CONST_PATH_LEN) :: nc_um_ancillary
   end type jules_type_dec
 
   type(jules_type_dec), allocatable :: JULES50_struc(:)

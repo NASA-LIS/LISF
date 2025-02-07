@@ -194,7 +194,8 @@ contains
 ! 
 ! !INTERFACE:
   subroutine LDT_greenness_init
-! !USES:
+    ! !USES:
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
     use LDT_paramOptCheckMod, only: LDT_gfracOptChecks, &
@@ -232,8 +233,8 @@ contains
    real, allocatable            :: gfrac_gridDesc(:,:)
    character*50             :: gfrac_proj
    character*50,  allocatable   :: gfrac_gridtransform(:)
-   character*100, allocatable   :: gfracdir(:)
-   character*140, allocatable   :: gfracfile(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable   :: gfracdir(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable   :: gfracfile(:)
    character*20,  allocatable   :: gfracInterval(:)
 ! _____________________________________________________________
 

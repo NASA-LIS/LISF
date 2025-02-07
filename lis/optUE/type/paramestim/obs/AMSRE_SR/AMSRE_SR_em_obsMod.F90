@@ -95,7 +95,6 @@ contains
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
     character(len=LIS_CONST_PATH_LEN) ::  emissivityobsdir
-    character(len=LIS_CONST_PATH_LEN) ::  emissivityobsmaskdir
     character*100             ::  vname
     character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn

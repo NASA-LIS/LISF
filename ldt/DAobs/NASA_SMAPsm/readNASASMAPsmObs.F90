@@ -62,7 +62,7 @@ subroutine readNASASMAPsmObs(n)
    character*8       :: yyyymmdd
    character*4       :: yyyy
    character*2       :: mm, dd, hh
-   character*200     :: list_files
+   character(len=LDT_CONST_PATH_LEN)     :: list_files
    character(len=LDT_CONST_PATH_LEN)     :: smap_filename(10)
    real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
    character(len=3) :: CRID

@@ -17,6 +17,7 @@ subroutine readFMISWEobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc
   use LVT_histDataMod
   use LVT_timeMgrMod, only : LVT_tick
@@ -48,7 +49,7 @@ subroutine readFMISWEobs(source)
 ! 
 !EOP
   integer                :: ftn
-  character*100          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   integer                :: doy
   real                   :: gmt
   integer                :: hr, mn, ss,ts

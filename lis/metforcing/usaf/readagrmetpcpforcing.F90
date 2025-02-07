@@ -50,6 +50,7 @@ subroutine readagrmetpcpforcing(n,findex, order)
 #ifdef ESMF_TRACE
    use ESMF, only: ESMF_TraceRegionEnter, ESMF_TraceRegionExit
 #endif
+   use LIS_constantsMod, only    : LIS_CONST_PATH_LEN
    use LIS_coreMod, only         : LIS_rc, LIS_domain, LIS_masterproc
    use LIS_logMod, only          : LIS_logunit
    use LIS_mpiMod, only          : LIS_mpi_comm
@@ -222,12 +223,10 @@ subroutine readagrmetpcpforcing(n,findex, order)
    integer        :: c,r
    integer        :: yr1,mo1,da1,hr1
    integer        :: alert_number
-   character*100       :: pathpcp
+   character(len=LIS_CONST_PATH_LEN) :: pathpcp
    character*10        :: date10_03
    character*4         :: fyr
    character*2         :: fmo,fda
-   character*100       :: ofil
-   character*100       :: ifil
    logical             :: exists
    integer             :: ftn
    real                :: gridDesc(6)
@@ -271,12 +270,12 @@ subroutine readagrmetpcpforcing(n,findex, order)
    integer :: k1,k2,k3,k4
    character(len=32) :: type
    character(len=10) :: yyyymmddhh
-   character(len=50) :: pathOBA
+   character(len=LIS_CONST_PATH_LEN) :: pathOBA
    logical :: found_inq
-   character(len=120) :: obaFilename
+   character(len=LIS_CONST_PATH_LEN) :: obaFilename
    type(OBA) :: precipOBA ! EMK
    character(len=6) :: pcp_src(4)
-   character(len=255) :: imerg_datadir
+   character(len=LIS_CONST_PATH_LEN) :: imerg_datadir
    character(len=20) :: imerg_product
    character(len=20) :: imerg_version
    integer*2 :: imerg_plp_thresh

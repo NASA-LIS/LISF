@@ -17,6 +17,7 @@ module GIMMSMODIS_NDVIobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -46,7 +47,7 @@ module GIMMSMODIS_NDVIobsMod
 !EOP
 
   type, public :: gimmsmodisndvidec
-     character*200           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)
      real,    allocatable    :: rlon(:)

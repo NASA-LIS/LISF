@@ -27,7 +27,7 @@
 !
 ! !INTERFACE:
 subroutine NoahMP401_main(n)
-! !USES:
+  ! !USES:
     use LIS_coreMod
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging

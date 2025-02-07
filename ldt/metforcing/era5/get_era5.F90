@@ -270,7 +270,6 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character*4  :: cyear
   character*2  :: cmonth
   character*8  :: cdate
-  character*20 :: dir
   integer      :: hr, mn, ss
   real*8       :: time
   integer      :: doy

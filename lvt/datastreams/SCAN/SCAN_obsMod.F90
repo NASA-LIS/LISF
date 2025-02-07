@@ -17,6 +17,7 @@ module SCAN_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -58,7 +59,7 @@ module SCAN_obsMod
   PUBLIC :: SCANobs
 !EOP
   type, public :: scanobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      integer,     allocatable :: stnid(:)
      real,        allocatable :: stnlat(:)
@@ -111,7 +112,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine SCAN_obsinit(i)
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -132,7 +134,7 @@ contains
     integer                 :: syr, smo, sda, shr, smn, sss
     integer                 :: eyr, emo, eda, ehr, emn, ess
     integer                 :: ts
-    character*100           :: coordfile
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
 
     if(.not.allocated(scanobs)) then 
        allocate(scanobs(LVT_rc%nDataStreams))

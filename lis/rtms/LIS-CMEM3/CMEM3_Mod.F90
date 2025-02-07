@@ -150,7 +150,6 @@ contains
     integer :: j
     integer :: n_Sensors, n_Channels, n_tiles, n_fs, nc, np, rc, ftn
     integer :: status
-    character*100 :: temp, fieldname
     real, allocatable :: tmp_gridDesc(:, :)
 
     allocate(tmp_gridDesc(LIS_rc%nnest, 8))

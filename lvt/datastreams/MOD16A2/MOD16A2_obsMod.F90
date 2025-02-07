@@ -17,6 +17,7 @@ module MOD16A2_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -45,7 +46,7 @@ module MOD16A2_obsMod
 !EOP
 
   type, public :: mod16a2dec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      integer, allocatable        :: n11(:)
      real,    allocatable        :: qle(:)

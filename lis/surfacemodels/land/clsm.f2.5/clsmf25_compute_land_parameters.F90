@@ -50,7 +50,6 @@ subroutine clsmf25_compute_land_parameters(nest)
     integer :: d2g
     integer :: dummy_int, k, month, m
     real :: z_in_m, term1, term2
-    character(300) :: filename
     
     write(LIS_logunit,*)"[INFO] Computing derived CLSM land surface parameters ..."
     write(LIS_logunit,*)

@@ -40,6 +40,7 @@ contains
 
     ! Imports
     use netcdf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
     use USAFSI_paramsMod, only: program_name, msglns
@@ -55,7 +56,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
     real, allocatable, intent(inout) :: aice(:,:,:)
     integer, intent(out) :: nlon
     integer, intent(out) :: nlat
@@ -65,7 +66,7 @@ contains
     logical :: file_exists
     integer :: yyyy_local, mm_local, dd_local, hh_local
     integer :: fh_local
-    character*255 :: message (msglns)
+    character(len=LDT_CONST_PATH_LEN) :: message (msglns)
     character*20 :: routine_name
     character*10 :: yyyymmddhh
     integer, parameter :: nlat_arc = 2501
@@ -270,6 +271,7 @@ contains
        aice, nlon, nlat)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
 
     ! Defaults
@@ -282,7 +284,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
     real, allocatable, intent(inout) :: aice(:,:,:)
     integer, intent(out) :: nlon
     integer, intent(out) :: nlat
@@ -299,6 +301,9 @@ contains
   subroutine construct_espcd_cice_filename(rootdir, region, &
        yyyy, mm, dd, hh, fh, filename)
 
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
@@ -310,7 +315,7 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     integer, intent(in) :: fh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Local variables
     character*10 :: yyyymmddhh
@@ -331,6 +336,7 @@ contains
 
     ! Imports
     use netcdf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
     use USAFSI_paramsMod, only: program_name, msglns
@@ -345,7 +351,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(inout) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(inout) :: filename
     real, allocatable, intent(inout) :: water_temp(:,:,:,:)
     integer, intent(out) :: nlat
     integer, intent(out) :: nlon
@@ -354,7 +360,7 @@ contains
     integer :: julhr, julhr_orig
     integer :: yyyy_local, mm_local, dd_local, hh_local, fh_local
     logical :: file_exists
-    character*255 :: message (msglns)
+    character(len=LDT_CONST_PATH_LEN) :: message (msglns)
     character*20 :: routine_name
     character*10 :: yyyymmddhh
     integer :: ncid, water_temp_varid
@@ -547,6 +553,7 @@ contains
        filename, water_temp, nlat, nlon)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
 
     ! Defaults
@@ -558,7 +565,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(inout) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(inout) :: filename
     real, allocatable, intent(inout) :: water_temp(:,:,:,:)
     integer, intent(out) :: nlat
     integer, intent(out) :: nlon
@@ -575,6 +582,9 @@ contains
   subroutine construct_espcd_sst_filename(rootdir, &
        yyyy, mm, dd, hh, fh, filename)
 
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
@@ -585,7 +595,7 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     integer, intent(in) :: fh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Locals
     character*10 :: yyyymmddhh
@@ -606,6 +616,7 @@ contains
        yyyy, mm, dd, hh, ierr)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc, LDT_domain
     use LDT_logMod, only: LDT_verify, LDT_endrun
     use netcdf
@@ -628,7 +639,7 @@ contains
     ! Locals
     integer :: nlat
     integer :: nlon
-    character*255 :: filename
+    character(LDT_CONST_PATH_LEN) :: filename
     real, allocatable :: water_temp(:,:,:,:)
     real, allocatable :: water_temp_1d(:)
     real, allocatable :: sst_1d(:)
@@ -844,6 +855,7 @@ contains
        landmask, yyyy, mm, dd, hh, icecon, ierr)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
     use netcdf
@@ -865,7 +877,7 @@ contains
     integer, parameter :: nlat_arc = 2501
     integer, parameter :: nlat_ant = 1549
     integer :: nlon = 9000
-    character*255 :: filename
+    character(LDT_CONST_PATH_LEN) :: filename
     real, allocatable :: aice(:,:,:)
     real, allocatable :: aice_1d(:)
     real, allocatable :: icecon_1d(:)

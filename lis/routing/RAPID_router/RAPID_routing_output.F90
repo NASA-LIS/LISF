@@ -39,7 +39,6 @@ subroutine RAPID_routing_output(n)
   
   integer, intent(in)   :: n 
   
-  !character*100         :: filename
   character(len=LIS_CONST_PATH_LEN) :: filename ! EMK
   integer               :: ftn
   integer               :: status

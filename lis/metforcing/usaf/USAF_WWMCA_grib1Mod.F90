@@ -24,6 +24,9 @@
 
 module USAF_WWMCA_grib1Mod
 
+  ! Imports
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -31,7 +34,7 @@ module USAF_WWMCA_grib1Mod
   ! Create structure to share internal routines
   type :: wwmca_grib1_t
      private
-     character(len=255) :: full_grib_path
+     character(len=LIS_CONST_PATH_LEN) :: full_grib_path
      integer :: nx
      integer :: ny
      integer :: nk

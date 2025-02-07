@@ -18,6 +18,7 @@ subroutine readSMAP_L3TB(source)
 !
 ! !USES:
    use ESMF
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod, only: LVT_rc
    use LVT_histDataMod
    use LVT_logMod !,       only : LVT_logunit
@@ -49,7 +50,7 @@ subroutine readSMAP_L3TB(source)
 
    logical           :: alarmcheck, file_exists, readflag
    integer           :: iret
-   character*200     :: fname
+   character(len=LVT_CONST_PATH_LEN) :: fname
    real              :: Tb(LVT_rc%lnc, LVT_rc%lnr, 4)
    integer           :: fnd
    real              :: timenow
@@ -57,7 +58,7 @@ subroutine readSMAP_L3TB(source)
    character*2       :: mm, dd, hh
    integer               :: yr, mo, da, hr, mn, ss
    integer               :: doy
-   character*200      :: list_files
+   character(len=LVT_CONST_PATH_LEN) :: list_files
    integer               :: ftn, ierr
    character(len=3) :: CRID
 

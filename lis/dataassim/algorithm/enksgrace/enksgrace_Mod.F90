@@ -518,9 +518,7 @@ contains
 !BZ    type(ESMF_Logical)            :: fresh_incr
 ! BZ add following
     type(ESMF_State)       ::  OBS_State(LIS_rc%nnest)
-    character(len=LIS_CONST_PATH_LEN) :: GRACEobsdir
     logical             :: file_exists
-    character(len=LIS_CONST_PATH_LEN) :: name
     character (len=4) :: fyr
     character (len=2) :: fmo    
 
@@ -684,7 +682,7 @@ end subroutine enksgrace_update
 !
 !EOP
     integer                :: ftn
-    character(len=LIS_CONST_PATH_LEN) :: innovfile, gainfile, incrfile
+    character(len=LIS_CONST_PATH_LEN) :: innovfile
     integer                :: shuffle, deflate, deflate_level
     integer                :: dimID(3), ares_Id, ninnov_Id, innov_id
     character*100          :: varname, vardimname, standard_name

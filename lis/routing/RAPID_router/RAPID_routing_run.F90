@@ -49,7 +49,6 @@ subroutine RAPID_routing_run(n)
   integer               :: status
   logical               :: alarmCheck
 
-  !character*200         :: qout_filename
   character(len=LIS_CONST_PATH_LEN) :: qout_filename ! EMK
   ! for mpi
   real,   allocatable   :: runoff1_t(:)

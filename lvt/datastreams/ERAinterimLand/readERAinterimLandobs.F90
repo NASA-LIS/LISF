@@ -18,6 +18,7 @@ subroutine readERAinterimLandObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -55,7 +56,7 @@ subroutine readERAinterimLandObs(source)
   real*8                  :: lis_prevtime
   type(ESMF_Time)         :: merra2time1, merra2time2, initTime
   type(ESMF_TimeInterval) :: dayInterval
-  character(len=100)      :: fcst1_filename, fcst2_filename, anlys_filename
+  character(len=LVT_CONST_PATH_LEN) :: fcst1_filename, fcst2_filename, anlys_filename
 
   real                    :: sm1(LVT_rc%lnc, LVT_rc%lnr)
   real                    :: sm2(LVT_rc%lnc, LVT_rc%lnr)
@@ -302,6 +303,7 @@ subroutine process_ERAIlandANLYSdata(source, anlysfile, &
      sm1, sm2, sm3, sm4, st1, st2, st3, st4, sd, swe, skt)
 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -339,7 +341,6 @@ subroutine process_ERAIlandANLYSdata(source, anlysfile, &
   real                    :: rsn(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character*100      :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: swvl1id,swvl2id,swvl3id,swvl4id
@@ -618,7 +619,6 @@ subroutine process_ERAIland_runoff_data(source, fcstfile, &
   real                    :: baseflow(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character*100      :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: sroid, ssroid
@@ -786,7 +786,6 @@ subroutine process_ERAIland_fcst1_data(source, fcstfile, &
   real                    :: evap_out(LVT_rc%lnc, LVT_rc%lnr)
 
   integer            :: ftn
-  character*100      :: fname
   logical            :: file_exists
   integer            :: timeid
   integer            :: qleid, qhid, tpid, qsmid,ssrid, strid, evapid

@@ -63,6 +63,7 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 ! !USES: 
   use AGRMET_forcingMod, only : agrmet_struc
   use LIS_LMLCMod,       only : LIS_LMLC
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod,    only : LIS_julhr_date
   use LIS_logMod,        only : LIS_alert, LIS_abort, LIS_logunit, LIS_endrun
@@ -203,8 +204,8 @@ subroutine AGRMET_cdfs2_est( n,k, cliprc, clippd,&
 !  \end{description}
 !EOP
   character*10                      :: date10
-  character*120                     :: ifil
-  character*255                     :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: ifil
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer,       allocatable        :: times  ( :, : , : )
   integer*1,     allocatable        :: totalc ( :, : , : )
   real                              :: cldtim(LIS_rc%lnc(n), LIS_rc%lnr(n))

@@ -17,6 +17,7 @@ subroutine readARSsmObs(source)
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_timeMgrMod,   only : LVT_tick, LVT_date2time, LVT_calendar, &
@@ -41,13 +42,12 @@ subroutine readARSsmObs(source)
 ! 
 !EOP
 
-  character*200         :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   real                  :: gmt
   integer               :: st,et
   logical               :: file_exists
-  character*20          :: name1, name2
   integer               :: stnid
   character*1           :: st_f, sm_f
   integer               :: stn_col, stn_row

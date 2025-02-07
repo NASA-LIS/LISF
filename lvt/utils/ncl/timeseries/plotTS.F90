@@ -43,14 +43,15 @@ program plotTS
 !EOP
   implicit none
 
+  integer, parameter :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
   type(ESMF_Config)      :: ts_config
   character*50           :: model_name
   character*50           :: d1label, d2label
   integer                :: d1style, d2style
-  character*100          :: tsconfigfile,ofile
-  character*100          :: configfile,gfile,tsfile, statsodir
-  character*100          :: rmsefile,biasfile,rcorrfile,mfile
-  character*100          :: acorrfile, armsefile
+  character(len=LVT_CONST_PATH_LEN) :: tsconfigfile,ofile
+  character(len=LVT_CONST_PATH_LEN) :: configfile,gfile,tsfile, statsodir
+  character(len=LVT_CONST_PATH_LEN) :: rmsefile,biasfile,rcorrfile,mfile
+  character(len=LVT_CONST_PATH_LEN) :: acorrfile, armsefile
   character*3            :: expcode
   type(ESMF_Config)      :: config_lvt
   integer                :: rc

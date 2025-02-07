@@ -17,6 +17,7 @@ module TRMM3B42V7_dataMod
    
    ! Imports
    use ESMF
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
    ! Defaults
    implicit none
@@ -29,7 +30,7 @@ module TRMM3B42V7_dataMod
    public :: TRMM3B42V7data
 
    type, public :: trmm3b42v7datadec
-      character*100               :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)
       integer, allocatable        :: n11(:)

@@ -17,6 +17,7 @@ module MODISsportLAIobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -45,7 +46,7 @@ module MODISsportLAIobsMod
 !EOP
 
   type, public :: MODISsportLAIdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nc, nr
      real                    :: gridDesc(50)
      logical                 :: startFlag

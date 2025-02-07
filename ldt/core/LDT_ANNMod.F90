@@ -672,7 +672,7 @@ contains
    integer            :: system 
 #endif
    integer, external  :: LDT_create_subdirs 
-   character(len=201) :: c_string     
+   character(len=LDT_CONST_PATH_LEN) :: c_string     
    character(len=LDT_CONST_PATH_LEN)      :: filename
    integer            :: c,r,gid,dimID(2),tdimID
    integer            :: latId, lonId, varId,xtimeID

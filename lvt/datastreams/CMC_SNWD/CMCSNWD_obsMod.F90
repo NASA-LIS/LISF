@@ -17,6 +17,7 @@ module CMCSNWD_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 !
@@ -67,7 +68,7 @@ module CMCSNWD_obsMod
   PUBLIC :: CMCSNWDobs !Object to hold CMCSNWD observation attributes
 !EOP
   type, public :: cmcsnwdobsdec
-     character*100               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: nc
      integer                     :: nr
      real                        :: udef
@@ -94,7 +95,8 @@ contains
 ! !INTERFACE: 
   subroutine CMCSNWD_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -122,8 +124,6 @@ contains
     real*8             :: tdur
     integer            :: syr, smo, sda, shr, smn, sss
     integer            :: ts
-    character*100      :: coordfile
-    character*100      :: mdata
     real               :: xi1,xj1,xmesh,orient,alat1,alon1
     integer            :: t
     real               :: gridDesci(50)

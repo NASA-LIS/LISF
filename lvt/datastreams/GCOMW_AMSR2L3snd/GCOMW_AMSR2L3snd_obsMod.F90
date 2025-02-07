@@ -17,6 +17,7 @@ module GCOMW_AMSR2L3snd_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -49,7 +50,7 @@ module GCOMW_AMSR2L3snd_obsMod
 !EOP
   type, public :: amsr2smobsdec
 
-     character*100          :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                :: mo
      logical                :: startmode
      integer                :: amsr2nc, amsr2nr

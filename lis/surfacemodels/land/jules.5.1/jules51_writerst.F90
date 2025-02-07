@@ -21,6 +21,7 @@
 ! !INTERFACE:
 subroutine jules51_writerst(n)
 ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use LIS_coreMod, only    : LIS_rc, LIS_masterproc
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_getNextUnitNumber, &
@@ -52,7 +53,7 @@ subroutine jules51_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn, k, l, t, c  

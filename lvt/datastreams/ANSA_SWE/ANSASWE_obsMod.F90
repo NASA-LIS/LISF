@@ -37,6 +37,7 @@
 module ANSASWE_obsMod
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -52,7 +53,7 @@ module ANSASWE_obsMod
 !EOP
   type, public :: ansasweobsdec
 
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real                 :: gridDesc(6)
      integer              :: mi
      integer              :: nc, nr

@@ -17,6 +17,7 @@ module GLEAM_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_logMod
 
   implicit none
@@ -48,7 +49,7 @@ module GLEAM_obsMod
 !EOP
 
   type, public :: gleamdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*10            :: version
      integer                 :: nc,nr
      logical                 :: startFlag

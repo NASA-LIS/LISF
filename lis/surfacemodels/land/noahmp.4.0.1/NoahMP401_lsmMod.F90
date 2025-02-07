@@ -187,9 +187,9 @@ module NoahMP401_lsmMod
         real, pointer      :: sldpth(:)
         integer            :: nsoil
         integer            :: nsnow
-        character(len=256) :: soil_tbl_name
-        character(len=256) :: gen_tbl_name
-        character(len=256) :: noahmp_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: soil_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: gen_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: noahmp_tbl_name
         character(len=256) :: landuse_scheme_name
         integer            :: dveg_opt
         integer            :: crs_opt

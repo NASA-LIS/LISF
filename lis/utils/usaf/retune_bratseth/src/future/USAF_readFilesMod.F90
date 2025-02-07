@@ -45,7 +45,7 @@ contains
     type(esmf_time), intent(in) :: starttime
     type(esmf_time), intent(in) :: endtime
     type(esmf_timeinterval), intent(in) :: deltatime
-    character(len=255), intent(in) :: datadir
+    character(len=ESMF_MAXPATHLEN), intent(in) :: datadir
     integer, intent(in) :: max_stations
     integer, intent(in) :: max_sat_reports
     integer, intent(in) :: max_vario_bins
@@ -69,8 +69,8 @@ contains
     type(esmf_time) :: curtime
     integer :: yyyy, mm, dd, hh
     integer :: rc
-    character(len=44) :: infile
-    character(len=123) :: fullpath
+    character(len=ESMF_MAXPATHLEN) :: infile
+    character(len=ESMF_MAXPATHLEN) :: fullpath
     integer :: istat
     integer :: ierr
     integer :: count_skips

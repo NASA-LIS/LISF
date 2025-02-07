@@ -44,6 +44,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
 ! !USES: 
   use AGRMET_forcingMod, only: agrmet_struc
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_masterproc, LIS_domain
   use LIS_logMod, only : LIS_alert, LIS_logunit
   use LIS_mpiMod
@@ -216,11 +217,11 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
   character*10                  :: date10
   character*10                  :: date10_min6
   character*10                  :: date10_min12
-  character*120                 :: filename
-  character*120                 :: filename_min6
-  character*120                 :: filename_min12
+  character(len=LIS_CONST_PATH_LEN) :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename_min6
+  character(len=LIS_CONST_PATH_LEN) :: filename_min12
   character*5                   :: iofunc
-  character*100                 :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer                       :: count
   integer                       :: count6
   integer                       :: count6obs

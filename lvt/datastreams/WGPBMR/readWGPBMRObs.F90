@@ -17,6 +17,7 @@ subroutine readWGPBMRObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit, LVT_getNextUnitNumber, &
@@ -43,7 +44,7 @@ subroutine readWGPBMRObs(source)
   integer             :: ftn 
   integer             :: c,r
   logical             :: file_exists
-  character*100       :: wgpbmrfilename
+  character(len=LVT_CONST_PATH_LEN) :: wgpbmrfilename
   real                :: dummy(LVT_rc%lnc, LVT_rc%lnr)
   real                :: smc(LVT_rc%lnc, LVT_rc%lnr)
   real                :: gridDesc(6)

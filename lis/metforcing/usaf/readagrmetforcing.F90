@@ -181,7 +181,6 @@ subroutine readagrmetforcing(n,findex, order)
 !   computes the downward shortwave radiation value
 !  \end{description}
 !EOP
-  character*200    :: filename
   integer          :: hemi
   integer          :: c,r,t,gid,sftype
   integer          :: istat
@@ -197,7 +196,6 @@ subroutine readagrmetforcing(n,findex, order)
   real,allocatable :: rlh(:,:)
   integer          :: ip
   integer          :: julhr
-  character(len=255) :: message(20)
 
   real,allocatable            :: cldamt(:,:,:)
   integer,allocatable         :: cldamt_nh( :,:,:)
