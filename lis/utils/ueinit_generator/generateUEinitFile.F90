@@ -26,8 +26,9 @@
 ! !ROUINE: 
 program generateUEinitFile
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   integer       :: i,k,m,c,r
-  character*80  :: opt_outfile, ue_initfile
+  character(len=LIS_CONST_PATH_LEN) :: opt_outfile, ue_initfile
   integer       :: nens_ue, glbngrid, gnc, gnr, nparam
   integer       :: opt, iterno, count, obj_func
   character*80  :: ctmp

@@ -80,6 +80,7 @@ subroutine USAFSI_run(n)
 
   ! Imports
   use LDT_bratsethMod
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only: LDT_masterproc, LDT_rc
   use LDT_logMod, only: LDT_logunit, LDT_endrun
   use LDT_pluginIndices
@@ -109,20 +110,20 @@ subroutine USAFSI_run(n)
 
   ! Local variables
   character*10               ::  date10               ! DATE-TIME GROUP OF CYCLE
-  character*255              ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
-  character*90               ::  message    (msglns)  ! ERROR MESSAGE
+  character(len=LDT_CONST_PATH_LEN) ::  fracdir              ! FRACTIONAL SNOW DIRECTORY PATH
+  character(len=LDT_CONST_PATH_LEN) ::  message    (msglns)  ! ERROR MESSAGE
   character*5,  allocatable  ::  netid      (:)       ! NETWORK ID OF AN OBSERVATION
-  character*255              ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
-  character*255              ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
+  character(len=LDT_CONST_PATH_LEN) ::  modif                ! PATH TO MODIFIED DATA DIRECTORY
+  character(len=LDT_CONST_PATH_LEN) ::  sfcobs               ! PATH TO DBPULL SNOW OBS DIRECTORY
   integer :: sfcobsfmt ! Format of sfcobs file
-  character*255              ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
+  character(len=LDT_CONST_PATH_LEN) ::  TB_product_path      ! TB_based retrivals path          !kyh20201118
   !character*9,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
   character*32,  allocatable  ::  staid      (:)       ! STATION ID OF AN OBSERVATION
-  character*255              ::  static               ! STATIC FILE DIRECTORY PATH
-  character*255              ::  stmpdir              ! SFC TEMP DIRECTORY PATH
-  character*255 :: sstdir ! EMK 20220113
-  character*255              ::  unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
-  character*255              ::  viirsdir             ! PATH TO VIIRS DATA DIRECTORY
+  character(len=LDT_CONST_PATH_LEN) :: static               ! STATIC FILE DIRECTORY PATH
+  character(len=LDT_CONST_PATH_LEN) :: stmpdir              ! SFC TEMP DIRECTORY PATH
+  character(len=LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+  character(len=LDT_CONST_PATH_LEN) :: unmod                ! PATH TO UNMODIFIED DATA DIRECTORY
+  character(len=LDT_CONST_PATH_LEN) :: viirsdir             ! PATH TO VIIRS DATA DIRECTORY
   integer                    ::  runcycle             ! CYCLE HOUR
   integer                    ::  hemi                 ! HEMISPHERE (1 = NH, 2 = SH, 3 = GLOBAL)
   integer                    ::  julhr                ! AFWA JULIAN HOUR BEING PROCESSED
@@ -156,7 +157,7 @@ subroutine USAFSI_run(n)
   logical :: just_12z
 
   ! PMW snow depth retrievals, Yeosang Yoon
-  character*255              ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
+  character(len=LDT_CONST_PATH_LEN) ::  TB_raw_dir          ! Brightness temperature raw file directory path  !kyh20201118
 
   maxsobs = usafsi_settings%maxsobs
 
@@ -578,6 +579,7 @@ contains
   subroutine read_params(nc, nr, landmask, elevation, landice)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod, only: LDT_logunit, LDT_verify
     use LDT_paramDataMod, only: LDT_LSMparam_struc
@@ -594,7 +596,7 @@ contains
     real, allocatable, intent(out) :: landice(:,:)
 
     ! Local variables
-    character*255 :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     integer :: ncid
     integer :: dimids(3)
     integer :: landmask_varid, elevation_varid, surfacetype_varid

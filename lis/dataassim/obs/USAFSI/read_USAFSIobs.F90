@@ -19,6 +19,7 @@ subroutine read_USAFSIobs(n, k, OBS_State, OBS_Pert_State)
    ! Imports
    use ESMF
    use USAFSIobs_Mod, only: USAFSI_obs
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_coreMod, only: LIS_rc
    use LIS_DAobservationsMod, only: LIS_obs_domain
    use LIS_logMod, only: LIS_verify, LIS_logunit
@@ -42,14 +43,14 @@ subroutine read_USAFSIobs(n, k, OBS_State, OBS_Pert_State)
    integer             :: dd
    type(ESMF_TimeInterval) :: deltaT
    logical             :: file_exists
-   character(255)      :: filename
+   character(len=LIS_CONST_PATH_LEN) :: filename
    integer, allocatable :: gid(:)
    integer             :: hh
    integer             :: ierr
    integer             :: mm
    integer             :: nc
    integer             :: nr
-   character(100)      :: obsdir
+   character(len=LIS_CONST_PATH_LEN) :: obsdir
    character(40)       :: prefix 
    real,    pointer    :: obsl(:)
    integer             :: r
@@ -168,9 +169,9 @@ contains
    ! Constructs USAFSI filename
    subroutine USAFSI_filename(filename, dir, prefix, yyyy, mm, dd, hh)
       implicit none
-      character(255), intent(inout) :: filename
-      character(100), intent(in) :: dir
-      character(40),  intent(in) :: prefix  
+      character(len=*), intent(inout) :: filename
+      character(len=*), intent(in) :: dir
+      character(len=*),  intent(in) :: prefix
       integer, intent(in) :: yyyy
       integer, intent(in) :: mm
       integer, intent(in) :: dd
@@ -202,7 +203,7 @@ contains
       implicit none
       
       ! Arguments
-      character(255), intent(in) :: filename
+      character(len=*), intent(in) :: filename
       integer, intent(in) :: n
       integer, intent(in) :: k
       real, allocatable, intent(out) :: snoanl(:,:)
@@ -415,7 +416,7 @@ contains
    subroutine USAFSI_reader(filename, n, k, snoanl, ierr)
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       implicit none
-      character(255), intent(in) :: filename
+      character(len=*), intent(in) :: filename
       integer, intent(in) :: n
       integer, intent(in) :: k
       real, allocatable, intent(out) :: snoanl(:,:)

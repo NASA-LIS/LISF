@@ -17,6 +17,7 @@ subroutine readCMORPHdata(source)
    ! Imports
    use ESMF
    use CMORPH_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -30,7 +31,7 @@ subroutine readCMORPHdata(source)
 
    ! Local variables
    integer,   parameter         :: nc = 1440, nr=480
-   character*200                :: filename
+   character(len=LVT_CONST_PATH_LEN) :: filename
    logical                      :: file_exists
    integer                      :: nunit,ufn,iret,ierr
    integer                      :: c,r

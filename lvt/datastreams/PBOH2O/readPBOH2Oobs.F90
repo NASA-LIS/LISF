@@ -18,6 +18,7 @@ subroutine readPBOH2OObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_logMod
   use LVT_histDataMod
@@ -50,7 +51,7 @@ subroutine readPBOH2OObs(source)
   type(ESMF_Time)  :: pboh2otime1, pboh2otime2
   integer          :: k,t
   integer          :: ftn
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   real             :: gmt
   real                :: time
   logical                 :: file_exists

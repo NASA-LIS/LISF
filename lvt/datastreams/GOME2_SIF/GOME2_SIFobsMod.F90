@@ -17,6 +17,7 @@ module GOME2_SIFobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -47,7 +48,7 @@ module GOME2_SIFobsMod
 !EOP
 
   type, public :: gome2sifdec
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*20            :: version
      integer                 :: nc, nr
      real,    allocatable    :: rlat(:)

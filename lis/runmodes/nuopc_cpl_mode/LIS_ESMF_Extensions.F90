@@ -385,7 +385,8 @@ contains
   ! call using generic interface: LIS_ESMF_GridWrite
   subroutine LIS_ESMF_GridWrite_default(grid, fileName, overwrite, status, &
     timeslice, iofmt, relaxedflag, nclScript, map, rc)
-! ! ARGUMENTS
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+    ! ! ARGUMENTS
     type(ESMF_Grid),            intent(in)            :: grid
     character(len=*),           intent(in),  optional :: fileName
     logical,                    intent(in),  optional :: overwrite
@@ -454,7 +455,7 @@ contains
     ! local variables
     logical                 :: ioCapable
     logical                 :: doItFlag
-    character(len=64)       :: lfileName
+    character(len=LIS_CONST_PATH_LEN) :: lfileName
     character(len=64)       :: gridName
     type(ESMF_Array)        :: array
     type(ESMF_ArrayBundle)  :: arraybundle
@@ -618,7 +619,8 @@ contains
 ! !INTERFACE:
   ! call using generic interface: LIS_ESMF_DecompWrite
   subroutine LIS_ESMF_DecompWrite(grid, fileName, overwrite, status, &
-    iofmt, relaxedflag, rc)
+       iofmt, relaxedflag, rc)
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 ! ! ARGUMENTS
     type(ESMF_Grid),            intent(in)            :: grid
     character(len=*),           intent(in),  optional :: fileName
@@ -680,7 +682,7 @@ contains
     ! local variables
     logical                        :: ioCapable
     logical                        :: doItFlag
-    character(len=64)              :: lfileName
+    character(len=LIS_CONST_PATH_LEN) :: lfileName
     character(len=64)              :: gridName
     integer                        :: rank
     type(ESMF_VM)                  :: vm

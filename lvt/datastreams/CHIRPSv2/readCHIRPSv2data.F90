@@ -18,6 +18,7 @@ subroutine readCHIRPSv2data(source)
    ! Imports
    use ESMF
    use CHIRPSv2_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -35,7 +36,7 @@ subroutine readCHIRPSv2data(source)
 
    ! Local variables
    integer             :: ftn 
-   character*100       :: filename
+   character(len=LVT_CONST_PATH_LEN) :: filename
    logical             :: file_exists
    real                :: prcp_in(chirpsv2data(source)%nc,chirpsv2data(source)%nr)
    real                :: prcp_in1(chirpsv2data(source)%nc*chirpsv2data(source)%nr)

@@ -29,6 +29,7 @@ module RDHM_parmsMod
 #endif
 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -56,7 +57,7 @@ module RDHM_parmsMod
   type, public :: rdhm_type_dec
 
 ! - RDHM 3.5.6
-     character*140 :: rdhmconsts_table
+     character(len=LDT_CONST_PATH_LEN) :: rdhmconsts_table
      real          :: rdhm_undef
 
 ! -  RDHM-specific:

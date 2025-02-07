@@ -96,7 +96,8 @@ contains
 ! 
 ! !INTERFACE:
   subroutine GLS_init()
-! !USES:   
+    ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod, only : LIS_rc, LIS_config, LIS_domain
     use LIS_timeMgrMod, only : LIS_clock, LIS_calendar, LIS_seconds2time
     use LIS_fileIOMod, only : LIS_readDomainConfigSpecs, LIS_readData
@@ -105,7 +106,7 @@ contains
 !
 ! !DESCRIPTION:
 !EOP
-    character*100 :: suscep_map
+    character(len=LIS_CONST_PATH_LEN) :: suscep_map
     real          :: gls_gridDesc(1,6)
     integer       :: n,c,r,t
     integer       :: rc, status
@@ -627,7 +628,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine GLS_output(n)
-! !USES: 
+    ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_masterproc
     use LIS_logMod, only : LIS_getNextUnitNumber, LIS_releaseUnitNumber
     use LIS_fileIOMod,  only : LIS_create_output_directory
@@ -641,7 +643,7 @@ contains
     integer           :: ftn 
     character(len=12) :: cdate1
     logical        :: alarmCheck
-    character*100  :: filename
+    character(len=LIS_CONST_PATH_LEN) :: filename
     integer        :: c,r
     integer        :: iret
 

@@ -17,7 +17,8 @@ module CPCPRCP_obsMod
 ! 
 ! !USES:   
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  
   implicit none
   PRIVATE 
 !
@@ -45,7 +46,7 @@ module CPCPRCP_obsMod
   PUBLIC :: CPCPRCPobs
 
   type, public :: cpcprcpobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: userealtime
      character*30         :: domainType
      integer              :: nc, nr

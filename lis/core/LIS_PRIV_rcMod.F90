@@ -841,7 +841,6 @@ module LIS_PRIV_rcMod
      character*50           :: startcode
      integer                :: plevel
      character(len=LIS_CONST_PATH_LEN) :: odir
-!     character*100          :: dfile      
      character(len=LIS_CONST_PATH_LEN) :: dfile      
      integer                :: sdoy        
      integer                :: sss         
@@ -893,7 +892,7 @@ module LIS_PRIV_rcMod
      character*50, allocatable  :: daalg(:)
      
      integer, allocatable       :: useANNinDA(:)
-     character*100, allocatable :: ANNdaFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: ANNdaFile(:)
 
      character*50, allocatable  :: biasalg(:)
      character*50, allocatable  :: biasrst(:)

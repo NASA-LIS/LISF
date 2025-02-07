@@ -18,6 +18,7 @@ subroutine readLPRM_AMSREsmObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit, LVT_getNextUnitNumber, & 
@@ -54,7 +55,7 @@ subroutine readLPRM_AMSREsmObs(source)
   logical           :: alarmCheck
   logical           :: file_exists
   integer           :: c,r,i,j
-  character*100     :: fname_A, fname_D,fname
+  character(len=LVT_CONST_PATH_LEN) :: fname_A, fname_D,fname
   real              :: smobs_A(LVT_rc%lnc*LVT_rc%lnr)
   real              :: smobs_D(LVT_rc%lnc*LVT_rc%lnr)
   real              :: smobs(LVT_rc%lnc*LVT_rc%lnr)

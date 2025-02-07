@@ -2668,6 +2668,7 @@ function LVT_is_last_step(LVT_rc)
 subroutine LVT_julhr_date( julhr, yyyy,mm,dd,hh)
 ! !USES:
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none 
 ! !ARGUMENTS: 
@@ -2713,7 +2714,7 @@ subroutine LVT_julhr_date( julhr, yyyy,mm,dd,hh)
 ! \end{description}
 !
 !EOP
-  character*100                  :: message ( 20 )  
+  character(len=LVT_CONST_PATH_LEN)                  :: message ( 20 )  
 
 !     ------------------------------------------------------------------
 !     executable code begins here... use LVT_tmjul4 to convert julhr to 

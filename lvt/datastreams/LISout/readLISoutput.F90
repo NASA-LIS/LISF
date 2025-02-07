@@ -42,8 +42,8 @@ subroutine readLISoutput(source)
 ! 
 !EOP
   
-  character*500                    :: fname1 
-  character*500, allocatable       :: fname(:)
+  character(len=LVT_CONST_PATH_LEN) :: fname1 
+  character(len=LVT_CONST_PATH_LEN), allocatable :: fname(:)
 
   logical                          :: file_exists
   real                             :: obsData(LVT_rc%lnc, LVT_rc%lnr)

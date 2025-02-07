@@ -17,6 +17,7 @@ module SNODEP_metobsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -49,7 +50,7 @@ module SNODEP_metobsMod
 !EOP
   type, public :: SNODEPmetobsdec
 
-     character*100           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: da
      type(ESMF_Time)         :: startTime
      real, allocatable       :: snod(:,:,:)

@@ -60,14 +60,15 @@ contains
 ! !INTERFACE:
   subroutine crtm2em_setup_pedecvars(DEC_State, Feas_State)
 ! !USES:
+#if (defined RTMS) 
     use LIS_coreMod,       only : LIS_rc, LIS_config,LIS_vecPatch, LIS_surface, LIS_localPET
     use LIS_logMod,        only : LIS_logunit, LIS_verify
-#if (defined RTMS) 
+
     use CRTM2_EMMod,       only : crtm_struc
+    use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
 #endif
     implicit none
 ! !ARGUMENTS: 
-    character*100               :: decSpaceAttribsFile
     type(ESMF_State)            :: DEC_State
     type(ESMF_State)            :: Feas_State
 
@@ -78,6 +79,8 @@ contains
 !  estimation, initializes them, and updates the LIS decision space.  
 ! 
 !EOP
+#if (defined RTMS)
+    character(len=LIS_CONST_PATH_LEN) :: decSpaceAttribsFile
 
     integer                     :: n 
     type(ESMF_ArraySpec)        :: arrspec1
@@ -95,7 +98,6 @@ contains
     integer                     :: count
     integer                     :: gid
 
-#if (defined RTMS) 
     call ESMF_StateGet(Feas_State, "Feasibility Flag", feasField, rc=status)
     call LIS_verify(status)
     call ESMF_FieldGet(feasField,localDE=0,farrayPtr=mod_flag,rc=status)

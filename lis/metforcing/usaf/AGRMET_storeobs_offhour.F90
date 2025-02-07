@@ -25,6 +25,7 @@ subroutine AGRMET_storeobs_offhour(n, nsize, isize, obs, ilat, ilon,  &
      duration, stncnt, alert_number, filename)
 
   ! Imports
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only: LIS_masterproc        ! EMK 20240523
   use LIS_logMod, only: LIS_logunit, LIS_alert ! EMK 20240523
   use USAF_bratsethMod, only: USAF_is_gauge    ! EMK 20240523
@@ -142,7 +143,7 @@ subroutine AGRMET_storeobs_offhour(n, nsize, isize, obs, ilat, ilon,  &
   type(rain_obs), intent(inout)  :: obs(isize)
 
   ! EMK 20240523
-  character(255) :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer, parameter :: MAX_NEW_NETWORKS = 20
   character(10), save :: new_networks(MAX_NEW_NETWORKS) = &
        (/"NULL      ", &

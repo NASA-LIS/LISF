@@ -24,6 +24,7 @@
 ! !INTERFACE:
 subroutine AGRMET_getcmorph(n, cmorphdata, j3hr, quad9r)
 ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc, LIS_masterproc
   use LIS_timeMgrMod, only : LIS_julhr_date
   use agrmet_forcingMod, only :agrmet_struc
@@ -64,7 +65,7 @@ subroutine AGRMET_getcmorph(n, cmorphdata, j3hr, quad9r)
   real*8  :: ctime,ftime_cmor       ! Current LDAS time and end boundary times for precip data sources 
   real*8  :: datatime, gap, breaktime, fnametime                    ! Times used in HUFFMAN to determine data and filename boundaries (see below)
   real    :: gmt1,gmt4
-  character(len=120) :: name ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: name ! Filename variables for precip data sources
 
 !=== End Variable Definition =======================
 
@@ -99,7 +100,7 @@ end subroutine AGRMET_getcmorph
 !
 ! !INTERFACE:
 subroutine cmorfile_agrmet( name, agrmetdir, cmordir, use_timestamp, yr, mo, da, hr)
-
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
   character(len=*) :: name
@@ -131,7 +132,7 @@ subroutine cmorfile_agrmet( name, agrmetdir, cmordir, use_timestamp, yr, mo, da,
 !
 !EOP
 
-  character(len=120) :: temp
+  character(len=LIS_CONST_PATH_LEN) :: temp
   integer :: i, c, d
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   character*1 :: fdir(99), fbase(99), fdir2(8),ftime(10), ftimedir(10)

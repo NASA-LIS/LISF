@@ -359,7 +359,8 @@ contains
 ! !INTERFACE:
   subroutine LVT_writeDataStreams
 !
-! !USES:
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod
     use LVT_coreMod, only: LVT_LIS_rc ! EMK
     use LVT_557post_ps41_snowMod ! EMK
@@ -377,7 +378,7 @@ contains
 
 
     integer, parameter                   :: nsoillayers = 4
-    character*200                        :: fname_mean,fname_ssdev
+    character(len=LVT_CONST_PATH_LEN)    :: fname_mean,fname_ssdev
     character(len=8)                     :: cdate2
     character(len=4)                     :: cdate3
     integer                              :: ftn_mean,ftn_ssdev
@@ -2186,6 +2187,9 @@ contains
   subroutine LVT_append_navgem_sst_field(ftn_mean, time_unit, time_past, &
        time_curr, timeRange, toplev, botlev)
 
+    ! Imports
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+    
     ! Defaults
     implicit none
 
@@ -2199,7 +2203,7 @@ contains
     real, intent(in) :: botlev(1)
 
     ! Locals
-    character(250) :: navgem_sst_fname
+    character(len=LVT_CONST_PATH_LEN) :: navgem_sst_fname
     real :: gridDesci(50) ! Full NAVGEM grid
     character(10) :: cdate
     logical :: file_exists
@@ -2363,6 +2367,7 @@ contains
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
 #endif
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
     integer                 :: ftn_mean
     integer                 :: time_unit
@@ -2374,7 +2379,7 @@ contains
     real, intent(in) :: lat(LVT_rc%lnc,LVT_rc%lnr)
     real, intent(in) :: lon(LVT_rc%lnc,LVT_rc%lnr)
 
-    character*100           :: hycom_fname
+    character(len=LVT_CONST_PATH_LEN) :: hycom_fname
     character*10            :: cdate
     logical                 :: file_exists
     integer                 :: nid,ios
@@ -3179,6 +3184,7 @@ contains
 !  This subroutine writes a single variable to a grib file
 !
 !EOP
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
     integer                       :: ftn
     real                          :: gtmp(LVT_rc%lnc*LVT_rc%lnr)
@@ -3203,7 +3209,7 @@ contains
     real                          :: lat_ll, lon_ll
     integer                       :: igrib,iret
     integer                       :: decimalPrecision,gribSFtemp
-    character*100                 :: message(20)
+    character(len=LVT_CONST_PATH_LEN) :: message(20)
 
     ! Note passing string of defined points only to output
     ! because bitmap in GRIB-1 file will fill in the rest
@@ -3411,6 +3417,7 @@ contains
 !
 !
 !EOP
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
     integer                       :: ftn
     real                          :: gtmp(LVT_rc%lnc*LVT_rc%lnr)
@@ -3447,7 +3454,7 @@ contains
     real                          :: lat_ll, lon_ll
     integer                       :: igrib,iret
     integer                       :: decimalPrecision,gribSFtemp
-    character*100                 :: message(20)
+    character(len=LVT_CONST_PATH_LEN) :: message(20)
     logical :: ensembleSpread_local
     integer :: typeOfGeneratingProcess_local
     integer :: typeOfProcessedData_local
@@ -4653,10 +4660,12 @@ contains
   subroutine get_hycom_sst_filename(sst_filename, sst_year, sst_month, &
        sst_day, sst_hour, sst_fcst_hr)
 
+     use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
      implicit none
 
      ! Arguments
-     character(len=100), intent(inout) :: sst_filename
+     character(len=LVT_CONST_PATH_LEN), intent(inout) :: sst_filename
      integer, intent(out) :: sst_year
      integer, intent(out) :: sst_month
      integer, intent(out) :: sst_day
@@ -4762,11 +4771,12 @@ contains
   subroutine get_hycom_cice_filename(region, cice_filename, &
        cice_year, cice_month, cice_day, cice_hour, cice_fcst_hr)
 
+     use LVT_constantsMod, only: LVT_CONST_PATH_LEN
      implicit none
 
      ! Arguments
      character(len=3), intent(in) :: region
-     character(len=100), intent(inout) :: cice_filename
+     character(len=LVT_CONST_PATH_LEN), intent(inout) :: cice_filename
      integer, intent(out) :: cice_year
      integer, intent(out) :: cice_month
      integer, intent(out) :: cice_day

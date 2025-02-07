@@ -19,6 +19,7 @@ subroutine readCOAMPSoutdata(source)
 ! Imports
    use ESMF
    use COAMPSout_dataMod
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
    use LVT_coreMod
    use LVT_histDataMod
    use LVT_logMod
@@ -40,7 +41,7 @@ subroutine readCOAMPSoutdata(source)
 !EOP
 
 ! Local variables
-  character*100           :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   integer                 :: fcsthr, yr, mo, da, hr, mn, ss
   integer                 :: c,r,gindex
   integer                 :: ftn, ios

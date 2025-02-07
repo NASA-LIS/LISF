@@ -22,7 +22,8 @@
 !
 ! !INTERFACE:    
 subroutine AGRMET_julhr_date10( julhr, date10)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_timeMgrMod, only : LIS_tmjul4
   use LIS_logMod,     only : LIS_abort, LIS_endrun
 
@@ -62,7 +63,7 @@ subroutine AGRMET_julhr_date10( julhr, date10)
 !   convert julian hour to hour,day,month and year
 !  \end{description}
 !EOP
-  character*255                  :: message ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message ( 20 )
   integer                        :: dd     
   integer                        :: hh     
   integer                        :: j      

@@ -65,7 +65,7 @@ module pf_types
      character(len=LIS_CONST_PATH_LEN) :: path      ! path to measurements file 
      character(80)    :: name      ! name identifier for measurements 
      character(len=LIS_CONST_PATH_LEN) :: scalepath ! path to file with scaling parameters
-     character(80)    :: scalename ! filename for scaling parameters
+     character(len=LIS_CONST_PATH_LEN) :: scalename ! filename for scaling parameters
      real             :: std       ! default obs error std
 
      real             :: std_normal_max  ! see pert_param_type

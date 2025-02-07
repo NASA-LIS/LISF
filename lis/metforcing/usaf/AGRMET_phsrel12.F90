@@ -93,8 +93,6 @@ subroutine AGRMET_phsrel12( n, p12, j6hr, &
   integer                      :: k 
   real                         :: e(LIS_rc%lnc(n),LIS_rc%lnr(n),4)
   real                         :: p3(LIS_rc%lnc(n),LIS_rc%lnr(n),4)
-  character*100                :: ofil
-  character*100                :: ifil
   character*10                 :: date10_03
   logical                      :: exists
   integer                      :: j3hr

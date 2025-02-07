@@ -53,10 +53,11 @@ module stninterp_module
 subroutine calcgrids(dirname,stnfile,stns,nnn,method,order,cols,rows,&
                      llx,lly,urx,ury,incr,npts,locarr)
 !
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   implicit none
 !
 ! argument variables
-  character*40, intent(IN) :: dirname,stnfile
+  character(len=LDT_CONST_PATH_LEN), intent(IN) :: dirname,stnfile
   integer, intent(INOUT) :: stns,nnn,method,order
   integer, intent(INOUT) :: cols,rows
   real*4, intent(INOUT) :: llx,lly,urx,ury,incr

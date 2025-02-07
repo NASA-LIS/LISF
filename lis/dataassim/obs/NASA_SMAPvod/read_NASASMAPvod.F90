@@ -87,7 +87,7 @@ subroutine read_NASASMAPvod(n, k, OBS_State, OBS_Pert_State)
   integer                :: doy
   real                   :: gmt
   character(len=4)       :: istring
-  character(len=200)     :: cmd
+  character(len=LIS_CONST_PATH_LEN) :: cmd
   integer                :: ftn
   integer                :: ierr
   character*100          :: temp1

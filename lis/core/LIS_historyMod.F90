@@ -7397,6 +7397,7 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
 
 ! !USES:
   use map_utils
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_pluginIndices
   
   implicit none
@@ -7468,7 +7469,7 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*255        :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1
@@ -7751,6 +7752,7 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 
 ! !USES:
   use map_utils
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_pluginIndices
   
   implicit none
@@ -7823,7 +7825,7 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*255        :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1

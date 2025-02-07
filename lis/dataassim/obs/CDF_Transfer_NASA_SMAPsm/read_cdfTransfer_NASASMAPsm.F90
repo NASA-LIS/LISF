@@ -20,6 +20,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
 ! !USES:
    use ESMF
    use LIS_mpiMod
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_coreMod
    use LIS_logMod
    use LIS_timeMgrMod
@@ -28,7 +29,6 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    use map_utils
    use LIS_pluginIndices
    use cdfTransfer_NASASMAPsm_Mod, only: cdfT_SMAPsm_struc
-   !use cdfTransfer_NASASMAPsm_Mod, only: cdfT_SMAPsm_struc
 
    implicit none
 ! !ARGUMENTS:
@@ -57,8 +57,8 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    real, parameter       :: MAX_SM_VALUE = 0.45, MIN_SM_VALUE = 0.0001
    integer                :: status
    integer                :: grid_index
-   character*100          :: smobsdir
-   character*100          :: fname
+   character(len=LIS_CONST_PATH_LEN) :: smobsdir
+   character(len=LIS_CONST_PATH_LEN) :: fname
    logical                :: alarmCheck, file_exists
    integer                :: t, c, r, jj
    real,          pointer :: obsl(:)
@@ -89,7 +89,7 @@ subroutine read_cdfTransfer_NASASMAPsm(n, k, OBS_State, OBS_Pert_State)
    integer                :: nyr, nmo, nda, nhr, nmn, nss
    real*8                 :: timenow, time1,time2,time3
    integer                :: doy
-   character*200          :: list_files
+   character(len=LIS_CONST_PATH_LEN) :: list_files
    integer                :: mn_ind
    integer                :: ftn, ierr
    integer                :: rc

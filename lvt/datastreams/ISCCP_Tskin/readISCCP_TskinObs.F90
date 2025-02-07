@@ -14,7 +14,8 @@
 !
 ! !INTERFACE:
 subroutine readISCCP_Tskinobs(source)
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_historyMod
   use LVT_logMod
@@ -54,7 +55,7 @@ subroutine readISCCP_Tskinobs(source)
   integer             :: land_i_gswp2, land_j_gswp2
   real                :: tsclr
 !  real, dimension(N_gswp2_compressed) :: tmp_obs, tmp_lat, tmp_lon
-  character*100       :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   real, dimension(N_gswp2) :: tmp_obs
   integer             :: c,r,j,i,istat
   real                :: tskin(LVT_rc%lnc, LVT_rc%lnr)
@@ -139,7 +140,9 @@ end subroutine readISCCP_Tskinobs
 subroutine ISCCP_Tskin_filename(name, ndir, yr, mo,da,hr)
 ! 
 ! !USES:   
-!
+  !
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
 ! !INPUT PARAMETERS: 
 ! 
 ! !OUTPUT PARAMETERS:
@@ -153,7 +156,7 @@ subroutine ISCCP_Tskin_filename(name, ndir, yr, mo,da,hr)
 !EOP
   
   implicit none
-  character*80      :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   integer           :: yr, mo, da, hr
   character (len=*) :: ndir
   character (len=4) :: fyr

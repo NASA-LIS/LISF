@@ -98,7 +98,7 @@ contains
     type(ESMF_Field)       ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)   ::  pertArrSpec
     character(len=LIS_CONST_PATH_LEN) ::  synwlobsdir
-    character*100          ::  wldistancemap
+    character(len=LIS_CONST_PATH_LEN) ::  wldistancemap
     character*100          ::  temp
     character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
     character(len=LIS_CONST_PATH_LEN) :: obscdffile(LIS_rc%nnest)

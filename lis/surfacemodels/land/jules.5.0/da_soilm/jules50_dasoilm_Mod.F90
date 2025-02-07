@@ -65,11 +65,9 @@ contains
 !
 !EOP
     
-
     implicit none
     integer                :: k
     integer                :: n 
-    character*100          :: modelcdffile(LIS_rc%nnest)
     integer                :: status
     integer                :: ngrid
 

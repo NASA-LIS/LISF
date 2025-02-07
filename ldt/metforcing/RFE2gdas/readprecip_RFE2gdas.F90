@@ -68,7 +68,6 @@ subroutine readprecip_RFE2gdas( n, fname, month, findex, order, ferror_RFE2gdas,
   REAL, ALLOCATABLE     :: rain2d(:,:)
   real, dimension(LDT_rc%lnc(n), LDT_rc%lnr(n)) :: varfield ! reprojected arrray
   integer               ::  ftn, ios, ftn2, ftn3
-  character(len=84)     :: fnametemp
 !=== End Variable Definition =======================
 
   varfield = LDT_rc%udef

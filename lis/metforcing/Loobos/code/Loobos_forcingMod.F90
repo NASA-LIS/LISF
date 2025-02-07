@@ -25,6 +25,8 @@ module Bondville_forcingMod
 ! !REVISION HISTORY: 
 ! 05 Oct 2010: David Mocko, Updated for Bondville test case
 ! 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +42,7 @@ module Bondville_forcingMod
 
   type, public         :: Bondville_type_dec
      real                 :: ts
-     character*80         :: Bondvillefile
+     character(len=LIS_CONST_PATH_LEN) :: Bondvillefile
      real                 :: undef
      real*8               :: starttime,Bondvilletime1,Bondvilletime2
      integer              :: findtime1,findtime2,nstns

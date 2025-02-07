@@ -485,6 +485,7 @@ contains
   subroutine putget_real(buffer, iofunc, file_name, igrid, jgrid)
 
     ! Modules
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod, only: LVT_logunit
 
     ! Defaults
@@ -501,7 +502,7 @@ contains
     integer, parameter :: msglns = 20
     character*14 :: access_type
     character*4 :: cstat
-    character*90 :: message(msglns)
+    character(len=LVT_CONST_PATH_LEN) :: message(msglns)
     integer :: istat
     integer :: istat1
     integer :: reclen

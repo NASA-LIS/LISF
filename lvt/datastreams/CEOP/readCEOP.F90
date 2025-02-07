@@ -18,6 +18,7 @@ subroutine readCEOP(source)
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_timeMgrMod
@@ -85,7 +86,7 @@ subroutine readCEOP(source)
   real, allocatable             :: time(:)
   integer                   :: t,k,st,et,c,r
   logical                   :: file_exists
-  character*100             :: sfcfile
+  character(len=LVT_CONST_PATH_LEN) :: sfcfile
   real                      :: tskin(LVT_rc%lnc,LVT_rc%lnr)
   integer                   :: ntskin(LVT_rc%lnc,LVT_rc%lnr)
 

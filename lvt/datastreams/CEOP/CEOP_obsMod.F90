@@ -25,6 +25,7 @@
 module CEOP_obsMod
 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -40,7 +41,7 @@ module CEOP_obsMod
   end type ceopstn
 
   type, public :: ceopobsdec
-     character*50            :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: nstns
      integer                 :: readsfc
      integer                 :: readflx
@@ -80,6 +81,7 @@ contains
 !EOP
   subroutine CEOP_obsInit(i)
 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,    only : LVT_rc, LVT_config
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -90,7 +92,7 @@ contains
     
     integer,     intent(IN) :: i   ! index of the observation type
     integer                 :: rc,status
-    character*100           :: stnlist
+    character(len=LVT_CONST_PATH_LEN) :: stnlist
     type(ESMF_Time)         :: startTime, stopTime
     integer                 :: ftn
     integer                 :: nts

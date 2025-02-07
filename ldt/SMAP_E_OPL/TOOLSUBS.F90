@@ -49,7 +49,8 @@ MODULE TOOLSUBS
 
 !    SUBROUTINE AVHRR_NDVI(filename,lon_ind,lat_ind,avg_NDVI)
     SUBROUTINE AVHRR_NDVI(ssid,lon_ind,lat_ind,avg_NDVI)
-         CHARACTER (len=100)    :: filename
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+         !CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
          INTEGER :: sd_id, ssid, DFACC, status, sfstart,sfselect,sfrdata, sfendacc, sfend, N_NDVI
          INTEGER :: start(2), edges(2), stride(2)
          INTEGER*2,DIMENSION(:,:),ALLOCATABLE :: data
@@ -117,7 +118,9 @@ MODULE TOOLSUBS
     END SUBROUTINE AVHRR_NDVI_MATRIX
 
     SUBROUTINE GetSMAP(filename,dataset,smap_row,smap_col,lon_ind,lat_ind,sm_mat)
-    CHARACTER (len=100)    :: filename, dataset
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+    CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
+    character(len=100) ::  dataset
 #if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id
 #endif
@@ -147,7 +150,9 @@ MODULE TOOLSUBS
     END SUBROUTINE GetSMAP
 
     SUBROUTINE GetSMAP_L2(filename,dataset1,dataset2,dataset3,data_out,ind)
-    CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+    CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
+    CHARACTER (len=100)    :: dataset1, dataset2, dataset3
 #if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id1, dataset_id2, dataset_id3, dspace_id
 #endif
@@ -190,9 +195,11 @@ MODULE TOOLSUBS
     SUBROUTINE GetSMAP_L1B(filename, data1_out, data2_out, data3_out, data4_out, data5_out, data6_out, data7_out, data8_out, &
                            data9_out, data10_out, data11_out, data12_out, data13_out, data14_out, data15_out, n, m)
 
-      use LDT_logMod, only: LDT_logunit ! EMK
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+    use LDT_logMod, only: LDT_logunit ! EMK
 
-    CHARACTER (len=100)    :: filename, dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7
+    CHARACTER (len=LDT_CONST_PATH_LEN)    :: filename
+    character(len=100) :: dataset1, dataset2, dataset3, dataset4, dataset5, dataset6, dataset7
     CHARACTER (len=100)    :: dataset8, dataset9, dataset10, dataset11, dataset12, dataset13, dataset14, dataset15
 #if (defined USE_HDF5)
     INTEGER(HID_T) :: file_id, dataset_id1, dataset_id2, dataset_id3, dataset_id4, dataset_id5, dataset_id6, dataset_id7, dspace_id

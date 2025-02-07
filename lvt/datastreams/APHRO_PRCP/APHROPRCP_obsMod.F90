@@ -17,6 +17,7 @@ module APHROPRCP_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
   PRIVATE 
@@ -47,7 +48,7 @@ module APHROPRCP_obsMod
   PUBLIC :: APHROPRCPobs
 
   type, public :: aphroprcpobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*100        :: loc
      integer              :: nc, nr
      integer              :: yr

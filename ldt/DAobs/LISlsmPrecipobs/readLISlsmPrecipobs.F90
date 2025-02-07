@@ -24,6 +24,7 @@ subroutine readLISlsmPrecipobs(n)
 #if (defined USE_GRIBAPI)
   use grib_api
 #endif
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_DAobsDataMod
   use LDT_historyMod
@@ -39,7 +40,7 @@ subroutine readLISlsmPrecipobs(n)
 
   integer,   intent(in) :: n
 
-  character*200    :: fname 
+  character(len=LDT_CONST_PATH_LEN)    :: fname 
   logical          :: file_exists
   real             :: precip_data(LDT_rc%lnc(n),LDT_rc%lnr(n))
   
@@ -215,6 +216,7 @@ subroutine create_lsm_output_fname(n, form, fname, odir, wstyle, wopt, &
                                       distribution_class, data_category,  &
                                       area_of_data, write_interval)
 ! !USES:
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
    use LDT_coreMod,  only : LDT_rc
    use LDT_logMod
 
@@ -301,8 +303,8 @@ subroutine create_lsm_output_fname(n, form, fname, odir, wstyle, wopt, &
    character*1             :: fres1(10)
    character(len=1)        :: fproj
    integer                 :: curr_mo = 0
-   character(len=200)       :: dname
-   character(len=200), save :: out_fname
+   character(len=LDT_CONST_PATH_LEN) :: dname
+   character(len=LDT_CONST_PATH_LEN), save :: out_fname
    integer                  :: i, c
 
    mname = 'SURFACEMODEL'

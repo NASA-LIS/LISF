@@ -24,6 +24,7 @@
 subroutine read_MERIT1K_slope( n, num_bins, fgrd, slopeave )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -110,7 +111,7 @@ subroutine read_MERIT1K_slope( n, num_bins, fgrd, slopeave )
    real, allocatable :: subset_elev(:,:)    ! Read input parameter
    real, allocatable :: subset_slope(:,:)   ! Derived from input parameter
 
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
 !________________________________________________________________________
 
   fgrd = 0.

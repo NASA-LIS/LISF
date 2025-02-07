@@ -90,10 +90,11 @@ module stninterp_module
 subroutine calcgrids(dirname,stnfile,stns,nnn,method,order,cols,rows,&
                      llx,lly,urx,ury,incr,npts,locarr)
 !
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! argument variables
-  character*40, intent(IN) :: dirname,stnfile
+  character(len=LVT_CONST_PATH_LEN), intent(IN) :: dirname,stnfile
   integer, intent(INOUT) :: stns,nnn,method,order
   integer, intent(INOUT) :: cols,rows
   real*4, intent(INOUT) :: llx,lly,urx,ury,incr
@@ -103,8 +104,8 @@ subroutine calcgrids(dirname,stnfile,stns,nnn,method,order,cols,rows,&
 ! local variables
   integer :: s
   logical :: lerr = .FALSE.
-  character*80 :: infile
-  character*80 :: outfile
+  character(len=LVT_CONST_PATH_LEN) :: infile
+  character(len=LVT_CONST_PATH_LEN) :: outfile
   integer :: funit = 10
   real(4), allocatable :: stndata(:,:)
   integer(4), allocatable :: W1grid(:,:,:) ! station numbers for each grid cell
