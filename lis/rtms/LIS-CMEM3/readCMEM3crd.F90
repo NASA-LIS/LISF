@@ -24,7 +24,6 @@ subroutine readCMEM3crd()
   use ESMF
   use CMEM3_Mod, only : cmem3_struc
   use LIS_coreMod, only : LIS_rc, LIS_config
-  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_logMod
 
 !
