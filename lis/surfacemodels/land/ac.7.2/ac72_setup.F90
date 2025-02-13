@@ -146,6 +146,7 @@ subroutine AC72_setup()
             GetTotalWaterContent,&
             GetTpot,&
             GetZiAqua,&
+            InitializeGlobalStrings,&
             IrriMode_Generate,&
             IrriMode_Manual, &
             ModeCycle_GDDays, &
@@ -682,6 +683,9 @@ subroutine AC72_setup()
                 col = LIS_surface(n, mtype)%tile(t)%col
                 row = LIS_surface(n, mtype)%tile(t)%row
 
+                ! Initialize global strings
+                call InitializeGlobalStrings()
+
                 call SetPathNameSimul(trim(AC72_struc(n)%PathNameSimul)) ! needed for InitializeSettings
                 ! Initializes all settings to default, later overwritten in main
                 call InitializeSettings(use_default_soil_file=.false.,use_default_crop_file=.false.)
@@ -1009,9 +1013,9 @@ subroutine AC72_setup()
                 AC72_struc(n)%AC72(t)%SurfaceStorage = GetSurfaceStorage()
                 AC72_struc(n)%AC72(t)%Tact = GetTact()
                 AC72_struc(n)%AC72(t)%Tpot = GetTpot()
-                AC72_struc(n)%AC72(t)%TactWeedInfested = GetTactWeedInfested()
+                AC72_struc(n)%AC72(t)%TactWeedInfested = 0. !not ini in AC GetTactWeedInfested()
                 AC72_struc(n)%AC72(t)%Tmax = GetTmax()
-                AC72_struc(n)%AC72(t)%Tmin =GetTmin()
+                AC72_struc(n)%AC72(t)%Tmin = GetTmin()
 
 
                 AC72_struc(n)%AC72(t)%GwTable = GetGwTable()
@@ -1087,7 +1091,7 @@ subroutine AC72_setup()
                 AC72_struc(n)%AC72(t)%NoYear = GetNoYear()
                 AC72_struc(n)%AC72(t)%WaterTableInProfile = GetWaterTableInProfile()
                 AC72_struc(n)%AC72(t)%StartMode = GetStartMode()
-                AC72_struc(n)%AC72(t)%NrRuns = NrRuns
+                AC72_struc(n)%AC72(t)%NrRuns = GetSimulation_NrRuns()
                 AC72_struc(n)%AC72(t)%TheProjectType = TheProjectType
 
                 ! Check for irrigation (irrigation file management)
