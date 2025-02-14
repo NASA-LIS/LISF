@@ -134,19 +134,15 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
       Type(Variable)          :: v
-
-      integer                 :: dimID(4)
-      integer                 :: tdimID,xtimeID,ensID
       integer                 :: t,c,r,i,index1
       real, allocatable       :: ensval(:) 
       character(len=8)        :: xtime_begin_date
       character(len=6)        :: xtime_begin_time
       character(len=50)       :: xtime_units
       character(len=50)       :: xtime_timeInc
-      integer                 :: iret
       integer                 :: group_
       character(len=100)      :: model_name_
-      integer                 :: status, gindex
+      integer                 :: status
       ! Note that the fix to add lat/lon to the NETCDF output will output
       ! undefined values for the water points. 
       character(len=8)        :: date
@@ -463,19 +459,15 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
       Type(Variable)          :: v
-
-      integer                 :: dimID(4)
-      integer                 :: tdimID,xtimeID,ensID
-      integer                 :: t,c,r,i,index1, m
-      real, allocatable       :: ensval(:) 
+      integer                 :: t,c,r,i, m
+      real, allocatable       :: ensval(:)
       character(len=8)        :: xtime_begin_date
       character(len=6)        :: xtime_begin_time
       character(len=50)       :: xtime_units
       character(len=50)       :: xtime_timeInc
-      integer                 :: iret
       integer                 :: group_
       character(len=100)      :: model_name_
-      integer                 :: status, gindex
+      integer                 :: status
       ! Note that the fix to add lat/lon to the NETCDF output will output
       ! undefined values for the water points. 
       character(len=8)        :: date
@@ -775,16 +767,13 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
       integer            :: data_index
-      integer            :: status, ierr
+      integer            :: status
       integer            :: deflate_level
       character(len=100) :: short_name
-      integer            :: fill_value
 
       character(len=100) :: vname_def, vname_opt1, vname_min, vname_max
       character(len=256) :: dim_names
       Type(Variable)     :: v_def, v_opt1, v_min, v_max
-      REAL               :: vmin 
-      REAL               :: vmax
       integer            :: nmodel_status
 !EOP
 !------------------------------------------------------------------------------
@@ -1123,7 +1112,7 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
       real                    :: time_data(1)
-      integer                 :: i,k,m,t, group_, status, rc
+      integer                 :: i, group_, status
       character(len=8)        :: xtime_begin_date
       character(len=6)        :: xtime_begin_time
       character(len=50)       :: xtime_units
@@ -1139,9 +1128,7 @@ CONTAINS
       type(local_3Dfield_var), allocatable :: local_var3D(:)
       type(local_4Dfield_var), allocatable :: local_var4D(:)
       integer                 :: i1, i2, j1, j2
-      type(ArrayReference)    :: ref
       integer                 :: global_dim(2)
-      integer                 :: r, c, index1
 !EOP
 !---------------------------------------------------------------------------------------------
 !BOC
@@ -1299,7 +1286,7 @@ CONTAINS
 !   \end{description}
 !
 ! !LOCAL VARIABLES:
-      integer       :: i,k,m,t, nlev
+      integer       :: k,m,t, nlev
       character(len=90) :: var_name
       character(len=90) :: var_name2
       integer       :: nmodel_status
@@ -1439,16 +1426,14 @@ CONTAINS
 !  \end{description}
 !
 ! !LOCAL VARIABLES:
-      integer              :: l, iret
+      integer              :: l
       integer              :: global_dim(2)
-      real                 :: vmean,vstdev,vmin,vmax
       real, allocatable    :: var1(:,:)
       real, allocatable    :: loclat(:)
       real, allocatable    :: loclon(:)
       real, allocatable    :: var1_ens(:,:,:)
-      integer              :: count1 ,c,r,m,gid,ntiles,ierr,i,t
-      integer              :: ews_ind, nss_ind
-      integer              :: idx2, idx3, idx4, gindex
+      integer              :: c,r,m,i,t
+      integer              :: gindex
       type(ArrayReference) :: ref
 !EOP
 !------------------------------------------------------------------------------
@@ -1671,7 +1656,7 @@ CONTAINS
 !
 ! !LOCAL VARIABLES:
       real                    :: time_data(1)
-      integer                 :: i,k,m,t, group_, status, rc
+      integer                 :: i, group_, status
       character(len=8)        :: xtime_begin_date
       character(len=6)        :: xtime_begin_time
       character(len=50)       :: xtime_units
@@ -1687,9 +1672,7 @@ CONTAINS
       type(local_3Dfield_var), allocatable :: local_var3D(:)
       type(local_4Dfield_var), allocatable :: local_var4D(:)
       integer                 :: i1, i2, j1, j2
-      type(ArrayReference)    :: ref
       integer                 :: global_dim(2)
-      integer                 :: r, c, index1
 !EOP
 !---------------------------------------------------------------------------------------------
 !BOC
@@ -1829,7 +1812,7 @@ CONTAINS
 !   \end{description}
 !
 ! !LOCAL VARIABLES:
-      integer       :: i,k,m,t, nlev
+      integer       :: k,t, nlev
       character(len=90) :: var_name
       character(len=90) :: var_name2
       integer       :: nmodel_status
@@ -1963,16 +1946,14 @@ CONTAINS
 !  \end{description}
 !
 ! !LOCAL VARIABLES:
-      integer              :: l, iret
+      integer              :: l
       integer              :: global_dim(2)
-      real                 :: vmean,vstdev,vmin,vmax
       real, allocatable    :: var1(:,:)
       real, allocatable    :: loclat(:)
       real, allocatable    :: loclon(:)
       real, allocatable    :: var1_ens(:,:,:)
-      integer              :: count1 ,c,r,m,gid,ntiles,ierr,i,t
-      integer              :: ews_ind, nss_ind
-      integer              :: idx2, idx3, idx4, gindex
+      integer              :: c,r,m,i,t
+      integer              :: gindex
       type(ArrayReference) :: ref
 !EOP
 !------------------------------------------------------------------------------
@@ -2562,7 +2543,7 @@ CONTAINS
       real, intent(in) :: var_tile(:,:)
       real, intent(out) :: var3d(i1:i2,j1:j2, nlev)
 
-      integer :: r, c, t, peIdx
+      integer :: r, c, peIdx
       integer :: ntiles, count1, gid
 
       var3d = pfio_missing_value ! LIS_rc%udef
@@ -2630,7 +2611,7 @@ CONTAINS
       integer, intent(in) :: n
       integer, intent(out) :: i1, i2
 
-      integer :: r, c, l, i1_n, i2_n, ntiles, stid
+      integer :: r, c, l, i1_n, ntiles, stid
       integer :: count1, gid, tid, mymin, mymax,t
       logical :: first_time
 
