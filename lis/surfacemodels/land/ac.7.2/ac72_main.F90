@@ -912,6 +912,11 @@ subroutine AC72_main(n)
                     endif
                 endif
 
+                ! Overwrite the SMC to avoid problems when restarting
+                do l=1, AC72_struc(n)%ac72(t)%NrCompartments
+                    call SetCompartment_theta(l,AC72_struc(n)%ac72(t)%smc(l))
+                enddo
+
                 ! Irrigaton file management after InitializeRun
                 if(GetIrriMode().ne.IrriMode_NoIrri) then
                     call fIrri_close()
