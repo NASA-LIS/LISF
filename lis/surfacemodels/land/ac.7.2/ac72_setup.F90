@@ -187,6 +187,19 @@ subroutine AC72_setup()
             SetETo,&
             SetEToRecord,&
             SetEToRecord,&
+            SetEToRecord_DataType,&
+            SetEToRecord_fromd,&
+            SetEToRecord_FromDayNr,&
+            SetEToRecord_fromm,&
+            SetEToRecord_FromString,&
+            SetEToRecord_fromy,&
+            SetEToRecord_FromY,&
+            SetEToRecord_NrObs,&
+            SetEToRecord_tod,&
+            SetEToRecord_ToDayNr,&
+            SetEToRecord_tom, &
+            SetEToRecord_ToString,&
+            SetEToRecord_toy,&
             SetEvapoEntireSoilSurface,&
             SetFullFileNameProgramParameters,&
             SetGenerateDepthMode,&
@@ -231,6 +244,19 @@ subroutine AC72_setup()
             SetRain,& 
             SetRainRecord,&
             SetRainRecord,&
+            SetRainRecord_DataType,&
+            SetRainRecord_fromd,&
+            SetRainRecord_FromDayNr,&
+            SetRainRecord_fromm,&
+            SetRainRecord_FromString,&
+            SetRainRecord_fromy,&
+            SetRainRecord_FromY,&
+            SetRainRecord_NrObs,&
+            SetRainRecord_tod,&
+            SetRainRecord_ToDayNr,&
+            SetRainRecord_tom, &
+            SetRainRecord_ToString,&
+            SetRainRecord_toy,&
             SetRootingDepth,&
             SetRootZoneSalt,&
             SetRootZoneWC_Actual,&
@@ -265,6 +291,20 @@ subroutine AC72_setup()
             SetTact,&
             SetTactWeedInfested,&
             SetTemperatureRecord,&
+            SetTemperatureRecord,&
+            SetTemperatureRecord_DataType,&
+            SetTemperatureRecord_fromd,&
+            SetTemperatureRecord_FromDayNr,&
+            SetTemperatureRecord_fromm,&
+            SetTemperatureRecord_FromString,&
+            SetTemperatureRecord_fromy,&
+            SetTemperatureRecord_FromY,&
+            SetTemperatureRecord_NrObs,&
+            SetTemperatureRecord_tod,&
+            SetTemperatureRecord_ToDayNr,&
+            SetTemperatureRecord_tom, &
+            SetTemperatureRecord_ToString,&
+            SetTemperatureRecord_toy,&
             SetTmax,& 
             SetTmaxRun,& 
             SetTmaxTnxReference12MonthsRun,&
@@ -711,24 +751,65 @@ subroutine AC72_setup()
                 call GetRequestDailyResults()
                 call GetRequestParticularResults()
 
+                call SetClimFile('(External)')
+                call SetCO2Description('')
+                call SetProfFilefull('External')
+
                 call SetClimRecord_DataType(0_int8)
                 call SetClimRecord_fromd(LIS_rc%sda)
                 call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
                 call SetClimRecord_fromm(LIS_rc%smo)
-                call SetClimRecord_fromstring("")
+                call SetClimRecord_fromstring('any date')
                 call SetClimRecord_fromy(LIS_rc%syr)
                 call SetClimRecord_NrObs(999)
                 call SetClimRecord_tod(LIS_rc%eda)
                 call SetClimRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
                 call SetClimRecord_tom(LIS_rc%emo)
-                call SetClimRecord_tostring("")
+                call SetClimRecord_tostring('any date')
                 call SetClimRecord_toy(LIS_rc%eyr)
-                call SetClimFile('(External)')
-                call SetCO2Description('')
-                call SetProfFilefull('External')
-                call SetTemperatureRecord(GetClimRecord())
-                call SetEToRecord(GetClimRecord())
-                call SetRainRecord(GetClimRecord())
+
+                ! SetTemperatureRecord
+                call SetTemperatureRecord_DataType(0_int8)
+                call SetTemperatureRecord_fromd(LIS_rc%sda)
+                call SetTemperatureRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
+                call SetTemperatureRecord_fromm(LIS_rc%smo)
+                call SetTemperatureRecord_fromstring('any date')
+                call SetTemperatureRecord_fromy(LIS_rc%syr)
+                call SetTemperatureRecord_NrObs(999)
+                call SetTemperatureRecord_tod(LIS_rc%eda)
+                call SetTemperatureRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
+                call SetTemperatureRecord_tom(LIS_rc%emo)
+                call SetTemperatureRecord_tostring('any date')
+                call SetTemperatureRecord_toy(LIS_rc%eyr)
+
+                ! SetEToRecord
+                call SetEToRecord_DataType(0_int8)
+                call SetEToRecord_fromd(LIS_rc%sda)
+                call SetEToRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
+                call SetEToRecord_fromm(LIS_rc%smo)
+                call SetEToRecord_fromstring('any date')
+                call SetEToRecord_fromy(LIS_rc%syr)
+                call SetEToRecord_NrObs(999)
+                call SetEToRecord_tod(LIS_rc%eda)
+                call SetEToRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
+                call SetEToRecord_tom(LIS_rc%emo)
+                call SetEToRecord_tostring('any date')
+                call SetEToRecord_toy(LIS_rc%eyr)
+
+                ! SetRainRecord
+                call SetRainRecord_DataType(0_int8)
+                call SetRainRecord_fromd(LIS_rc%sda)
+                call SetRainRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
+                call SetRainRecord_fromm(LIS_rc%smo)
+                call SetRainRecord_fromstring('any date')
+                call SetRainRecord_fromy(LIS_rc%syr)
+                call SetRainRecord_NrObs(999)
+                call SetRainRecord_tod(LIS_rc%eda)
+                call SetRainRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
+                call SetRainRecord_tom(LIS_rc%emo)
+                call SetRainRecord_tostring('any date')
+                call SetRainRecord_toy(LIS_rc%eyr)
+
                 call SetSimulation_Storage_CropString('None')
 
                 call SetMultipleProjectDescription('undefined')
@@ -874,13 +955,13 @@ subroutine AC72_setup()
                 call SetClimRecord_fromd(0)
                 call SetClimRecord_fromdaynr(ProjectInput(1)%Simulation_DayNr1)
                 call SetClimRecord_fromm(0)
-                call SetClimRecord_fromstring("")
+                call SetClimRecord_fromstring('any date')
                 call SetClimRecord_fromy(LIS_rc%syr)
                 call SetClimRecord_NrObs(999)
                 call SetClimRecord_tod(0)
                 call SetClimRecord_todaynr(ProjectInput(GetSimulation_NrRuns())%Simulation_DayNrN)
                 call SetClimRecord_tom(0)
-                call SetClimRecord_tostring("")
+                call SetClimRecord_tostring('any date')
                 call SetClimRecord_toy(0)
                 call SetClimFile('(External)')
 
