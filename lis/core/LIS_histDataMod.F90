@@ -317,6 +317,8 @@ module LIS_histDataMod
   public :: LIS_MOC_RTM_EMISSIVITY
   public :: LIS_MOC_RTM_TB
   public :: LIS_MOC_RTM_SM
+  public :: LIS_MOC_RTM_Sig0VV
+  public :: LIS_MOC_RTM_Sig0VH
   ! Irrigation
   public :: LIS_MOC_IRRIGATEDWATER  
 
@@ -822,6 +824,8 @@ module LIS_histDataMod
    integer :: LIS_MOC_RTM_EMISSIVITY = -9999
    integer :: LIS_MOC_RTM_TB = -9999
    integer :: LIS_MOC_RTM_SM = -9999
+   integer :: LIS_MOC_RTM_Sig0VV = -9999
+   integer :: LIS_MOC_RTM_Sig0VH = -9999
 
    integer :: LIS_MOC_IRRIGATEDWATER
 
@@ -4322,6 +4326,28 @@ contains
        call register_dataEntry(LIS_MOC_RTM_COUNT,LIS_MOC_RTM_SM,&
             LIS_histData(n)%head_rtm_list,&
             n,1,ntiles,(/"m3/m3"/),1,(/"-"/),1,1,1)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RTM Sig0VV:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_rtm_list,&
+         "RTM_Sig0VV",&
+         "rtm_Sigma0_VV",&
+         "rtm Sigma0 VV",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_RTM_COUNT,LIS_MOC_RTM_Sig0VV,&
+            LIS_histData(n)%head_rtm_list,&
+            n,1,ntiles,(/"dB"/),1,(/"-"/),1,1,1)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"RTM Sig0VH:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_rtm_list,&
+         "RTM_Sig0VH",&
+         "rtm_Sigma0_VH",&
+         "rtm Sigma0 VH",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_RTM_COUNT,LIS_MOC_RTM_Sig0VH,&
+            LIS_histData(n)%head_rtm_list,&
+            n,1,ntiles,(/"dB"/),1,(/"-"/),1,1,1)
     endif
 
     call ESMF_ConfigFindLabel(modelSpecConfig,"Irrigated water:",rc=rc)
