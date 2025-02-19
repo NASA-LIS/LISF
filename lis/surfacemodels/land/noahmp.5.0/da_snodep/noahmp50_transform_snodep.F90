@@ -26,7 +26,6 @@ subroutine noahmp50_transform_snodep(n,OBS_State)
   use ESMF
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_verify
-  use noahmp50_lsmMod
   use SNODEPobs_Mod, only : SNODEP_obs_obj
 !EOP
   implicit none

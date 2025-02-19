@@ -8,7 +8,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-#include "LIS_misc.h"
 !BOP
 !
 ! !ROUTINE: NoahMP50_setup

@@ -8,7 +8,6 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
-!#include "LIS_misc.h"
 module NoahMP50_lsmMod
 !BOP
 !

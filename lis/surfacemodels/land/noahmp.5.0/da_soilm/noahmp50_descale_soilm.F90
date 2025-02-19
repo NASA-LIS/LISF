@@ -21,9 +21,6 @@ subroutine NoahMP50_descale_soilm(n, LSM_State, LSM_Incr_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only  : LIS_verify
-  use NoahMP50_lsmMod
 
   implicit none
 ! !ARGUMENTS: 

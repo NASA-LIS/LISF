@@ -29,7 +29,6 @@ subroutine noahmp50_qc_snowobs(n,k,OBS_State)
   use ESMF
   use LIS_coreMod
   use LIS_logMod,  only : LIS_verify
-  use LIS_constantsMod, only : LIS_CONST_TKFRZ
   use LIS_DAobservationsMod
   use noahmp50_lsmMod
 

@@ -26,7 +26,6 @@ subroutine noahmp50_map_usafsi(n,k,OBS_State,LSM_Incr_State)
 ! !USES:
   use ESMF
   use LIS_coreMod, only : LIS_rc
-  use LIS_constantsMod, only  : LIS_CONST_TKFRZ
   use LIS_logMod,   only  : LIS_verify
   use LIS_lsmMod
   use NoahMP50_lsmMod

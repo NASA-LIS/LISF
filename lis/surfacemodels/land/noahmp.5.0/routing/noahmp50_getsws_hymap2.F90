@@ -22,7 +22,6 @@ subroutine noahmp50_getsws_hymap2(n)
   use LIS_coreMod, only : LIS_rc
   use LIS_routingMod, only : LIS_runoff_state
   use LIS_logMod
-  use LIS_historyMod
   use noahmp50_lsmMod, only : noahmp50_struc
 
   implicit none

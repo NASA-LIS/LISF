@@ -7,7 +7,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#include "LIS_misc.h"
+
 module NoahMP50_dasoilm_Mod
 !BOP
 !
@@ -19,12 +19,9 @@ module NoahMP50_dasoilm_Mod
 
 ! 15 Dec 2018: Mahdi Navari, Sujay Kumar ; Modified for NoahMP401 !
 ! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+
 ! !USES:        
-  use ESMF
   use LIS_coreMod
-  use LIS_dataAssimMod
-  use LIS_logMod
-  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 

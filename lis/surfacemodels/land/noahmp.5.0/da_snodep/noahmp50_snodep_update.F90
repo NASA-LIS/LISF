@@ -19,7 +19,6 @@
 ! !INTERFACE
 subroutine noahmp50_snodep_update(n, t, dsneqv, dsnowh)
 
-  use LIS_coreMod
   use NoahMP50_lsmMod
   use NoahMP50_snowphys_updateMod
 

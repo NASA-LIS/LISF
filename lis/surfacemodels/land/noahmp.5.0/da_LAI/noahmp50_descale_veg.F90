@@ -19,9 +19,6 @@ subroutine noahmp50_descale_veg(n, LSM_State, LSM_Incr_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only  : LIS_verify
-  use noahmp50_lsmMod
 
   implicit none
 ! !ARGUMENTS: 

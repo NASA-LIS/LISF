@@ -18,12 +18,9 @@
 subroutine noahmp50_getLAIpred(n, k,obs_pred)
 ! !USES:
   use ESMF
-  use LIS_constantsMod
   use LIS_coreMod
-  use LIS_dataAssimMod
   use LIS_DAobservationsMod
   use noahmp50_lsmMod
-  use noahmp50_dasoilm_Mod
 !EOP
 
   implicit none

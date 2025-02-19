@@ -20,7 +20,6 @@ subroutine noahmp50_updatevegvars(n, LSM_State, LSM_Incr_State)
   use ESMF
   use LIS_coreMod
   use LIS_logMod
-  use noahmp50_lsmMod
 
   implicit none
 ! !ARGUMENTS: 

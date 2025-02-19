@@ -21,7 +21,6 @@ subroutine noahmp50_qcveg(n, LSM_State)
   use ESMF
   use LIS_coreMod
   use LIS_logMod,  only  : LIS_verify
-  use noahmp50_lsmMod
 
   implicit none
 ! !ARGUMENTS: 

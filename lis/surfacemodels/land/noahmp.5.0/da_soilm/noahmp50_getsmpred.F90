@@ -20,14 +20,11 @@
 ! !INTERFACE:
 subroutine NoahMP50_getsmpred(n, k,obs_pred)
 ! !USES:
-  use ESMF
   use LIS_constantsMod
   use LIS_coreMod
   use LIS_dataAssimMod
   use LIS_DAobservationsMod
   use NoahMP50_lsmMod
-  use NoahMP50_dasoilm_Mod
-!EOP
 
   implicit none
 ! !ARGUMENTS: 

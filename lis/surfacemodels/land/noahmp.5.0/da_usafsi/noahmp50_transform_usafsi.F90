@@ -26,10 +26,7 @@ subroutine noahmp50_transform_usafsi(n,OBS_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only : LIS_verify
-  use NoahMP50_lsmMod
-!EOP
+
   implicit none
 
   integer, intent(in)      :: n

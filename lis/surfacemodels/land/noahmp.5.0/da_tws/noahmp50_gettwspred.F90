@@ -19,14 +19,10 @@
 ! !INTERFACE:
 subroutine noahmp50_gettwspred(n, k,obs_pred)
 ! !USES:
-  use ESMF
   use LIS_coreMod
   use LIS_logMod
   use LIS_DAobservationsMod
   use noahmp50_tws_DAlogMod
-  use noahmp50_lsmMod
-
-!EOP
 
   implicit none
 ! !ARGUMENTS: 

@@ -407,8 +407,6 @@ end subroutine noahmp50_settws
 subroutine noahmp50_tws_reorderEnsForOutliers(i,nensem, statevec, &
      minvalue,maxvalue, status)
   
-  use LIS_coreMod
-  
   implicit none
   integer              :: i
   integer              :: nensem

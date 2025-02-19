@@ -24,9 +24,6 @@ subroutine noahmp50_descale_snow(n, LSM_State, LSM_Incr_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use noahmp50_lsmMod
-  use LIS_logMod
 
   implicit none
 ! !ARGUMENTS: 

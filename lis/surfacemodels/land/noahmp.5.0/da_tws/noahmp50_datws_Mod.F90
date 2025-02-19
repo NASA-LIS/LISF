@@ -7,7 +7,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
-#include "LIS_misc.h"
+
 module noahmp50_datws_Mod
 !BOP
 !
@@ -21,10 +21,7 @@ module noahmp50_datws_Mod
 ! 29 May 2020: Bailing Li created for Noah-MP.4.0.1
 ! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 ! !USES:        
-  use ESMF
   use LIS_coreMod
-  use LIS_dataAssimMod
-  use LIS_logMod
 
   implicit none
 
