@@ -8,6 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+#include "LIS_misc.h"
 !BOP
 !
 ! !ROUTINE: NoahMP50_setup
@@ -411,7 +412,9 @@ end subroutine NoahMP50_setup
 ! !INTERFACE:
 subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 ! !USES:
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
+#endif
     use LIS_coreMod, only : LIS_rc, LIS_localPet,   &   
                             LIS_ews_halo_ind, LIS_ewe_halo_ind, &
                             LIS_nss_halo_ind, LIS_nse_halo_ind   
@@ -445,6 +448,12 @@ subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
     real, pointer :: level_data(:, :, :)
     logical       :: file_exists
 
+#if (defined USE_NETCDF3)
+  write(LIS_logunit,*) "[ERR] NoahMP50_read_MULTILEVEL_param requires NetCDF4"
+  call LIS_endrun()
+#endif
+
+#if (defined USE_NETCDF4)
     inquire(file=LIS_rc%paramfile(n), exist=file_exists)
     if(file_exists) then
         write(LIS_logunit, *) '[INFO] Reading '//trim(ncvar_name)//' map for level ', level
@@ -511,6 +520,7 @@ subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
         write(LIS_logunit, *) '[ERR] program stopping ...'
         call LIS_endrun
     endif
+#endif
 
  end subroutine NoahMP50_read_MULTILEVEL_param
                                           
