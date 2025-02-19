@@ -150,7 +150,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
 !  \end{description}
 !
 !
-!  The following is the list of variables written in the NoahMP401
+!  The following is the list of variables written in the NoahMP v5
 !  restart file:
 !  \begin{verbatim}
 !    nc, nr, ntiles             - grid and tile space dimensions
