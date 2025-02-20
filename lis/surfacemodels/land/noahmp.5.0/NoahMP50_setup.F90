@@ -78,7 +78,6 @@ subroutine NoahMP50_setup()
         ! reading spatial parameters !
         !----------------------------!
         ! vegetype takes value from the LIS built-in parameter vegt
-        !TODO: convert vegetation data source into vegetation types
         if(LIS_rc%uselcmap(n) .ne. 'none') then
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.5.0 retrieve parameter VEGETYPE from LIS"
@@ -98,7 +97,6 @@ subroutine NoahMP50_setup()
             enddo
         endif
         ! soiltype takes value from the LIS built-in parameter soilt
-        !TODO: convert soil texture into soil types according to scheme
         if(LIS_rc%usetexturemap(n) .ne. 'none') then
             write(LIS_logunit,*) &
              "[INFO] Noah-MP.5.0 retrieve parameter SOILTYPE from LIS"

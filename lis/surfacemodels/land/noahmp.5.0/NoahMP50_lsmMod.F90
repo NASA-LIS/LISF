@@ -292,7 +292,6 @@ contains
             allocate(Noahmp50_struc(n)%noahmp50(LIS_rc%npatch(n, LIS_rc%lsm_index)))
             !------------------------------------------------------------------------
             ! allocate memory for vector variables passed to model interfaces        
-            ! TODO: check the following allocation statements carefully!
             !------------------------------------------------------------------------
             ! allocate memory for multilevel spatial parameter
             do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -400,11 +399,9 @@ contains
             Noahmp50_struc(n)%noahmp50(:)%rhmin = 999.0
 
             !------------------------------------------------------------------------
-            ! TODO: setup number of soil moisture/temperature layers and depth here  
+            ! Setup number of soil moisture/temperature layers and depth here
             !------------------------------------------------------------------------
-            ! TODO: set number of soil moisture layers in surface model
             LIS_sfmodel_struc(n)%nsm_layers = Noahmp50_struc(n)%nsoil
-            ! TODO: set number of soil temperature layers in surface model
             LIS_sfmodel_struc(n)%nst_layers = Noahmp50_struc(n)%nsoil
             allocate(LIS_sfmodel_struc(n)%lyrthk(Noahmp50_struc(n)%nsoil))
             !LIS_sfmodel_struc(n)%lyrthk(:) = Noahmp50_struc(n)%sldpth(:)

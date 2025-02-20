@@ -311,223 +311,176 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                        output_format = trim(wformat))
 
     ! write the header for state variable sfcrunoff
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, sfcrunoff_ID, "SFCRUNOFF", &
                                  "accumulated surface runoff", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable udrrunoff
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, udrrunoff_ID, "UDRRUNOFF", &
                                  "accumulated sub-surface runoff", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable smc
-    !TODO: check dimension of the state variable following "vlevels="
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, smc_ID, "SMC", &
                                  "volumtric soil moisture", &
                                  "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                  var_flag = "dim2") 
    
       ! write the header for state variable sh2o
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, sh2o_ID, "SH2O", &
                                    "volumtric liquid soil moisture", &
                                    "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                     var_flag = "dim2") 
    
       ! write the header for state variable tslb
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tslb_ID, "TSLB", &
                                    "soil temperature", &
                                    "K", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                     var_flag = "dim2")
    
       ! write the header for state variable sneqv
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, sneqv_ID, "SNEQV", &
                                    "snow water equivalent", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable snowh
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, snowh_ID, "SNOWH", &
                                    "physical snow depth", &
                                    "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable canwat
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, canwat_ID, "CANWAT", &
                                    "total canopy water + ice", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable acsnom
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, acsnom_ID, "ACSNOM", &
                                    "accumulated snow melt leaving pack", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable acsnow
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, acsnow_ID, "ACSNOW", &
                                    "accumulated snow on grid", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable isnow
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, isnow_ID, "ISNOW", &
                                    "actual no. of snow layers", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable tv
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tv_ID, "TV", &
                                    "vegetation leaf temperature", &
                                    "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable tg
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tg_ID, "TG", &
                                    "bulk ground surface temperature", &
                                    "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable canice
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, canice_ID, "CANICE", &
                                    "canopy-intercepted ice", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable canliq
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, canliq_ID, "CANLIQ", &
                                    "canopy-intercepted liquid water", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable eah
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, eah_ID, "EAH", &
                                    "canopy air vapor pressure", &
                                    "Pa", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable tah
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tah_ID, "TAH", &
                                    "canopy air temperature", &
                                    "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable cm
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, cm_ID, "CM", &
                                    "bulk momentum drag coefficient", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable ch
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, ch_ID, "CH", &
                                    "bulk sensible heat exchange coefficient", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable fwet
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, fwet_ID, "FWET", &
                                    "wetted or snowed fraction of canopy", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable sneqvo
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, sneqvo_ID, "SNEQVO", &
                                    "snow mass at last time step", &
                                    "mm h2o", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable albold
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, albold_ID, "ALBOLD", &
                                    "snow albedo at last time step", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable qsnow
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, qsnow_ID, "QSNOW", &
                                    "snowfall on the ground", &
                                    "mm/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable wslake
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, wslake_ID, "WSLAKE", &
                                    "lake water storage", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable zwt
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, zwt_ID, "ZWT", &
                                    "water table depth", &
                                    "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable wa
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, wa_ID, "WA", &
                                    "water in aquifer", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable wt
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, wt_ID, "WT", &
                                    "water in aquifer and saturated soil", &
                                    "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable tsno
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tsno_ID, "TSNO", &
                                    "snow layer temperature", &
                                    "K", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
                                    var_flag = "dim3")
    
       ! write the header for state variable zss
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, zss_ID, "ZSS", &
                                    "snow/soil layer depth from snow surface", &
                                    "m", vlevels=NoahMP50_struc(n)%nsnow+NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                    var_flag = "dim1") 
    
       ! write the header for state variable snowice
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, snowice_ID, "SNOWICE", &
                                    "snow layer ice", &
                                    "mm", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
                                     var_flag = "dim3")
    
       ! write the header for state variable snowliq
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, snowliq_ID, "SNOWLIQ", &
                                    "snow layer liquid water", &
                                    "mm", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
                                    var_flag = "dim3")
    
       ! write the header for state variable lfmass
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, lfmass_ID, "LFMASS", &
                                    "leaf mass", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable rtmass
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, rtmass_ID, "RTMASS", &
                                    "mass of fine roots", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable stmass
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, stmass_ID, "STMASS", &
                                    "stem mass", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable wood
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, wood_ID, "WOOD", &
                                    "mass of wood (including woody roots)", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable stblcp
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, stblcp_ID, "STBLCP", &
                                    "stable carbon in deep soil", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable fastcp
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, fastcp_ID, "FASTCP", &
                                    "short-lived carbon in shallow soil", &
                                    "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable lai
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, lai_ID, "LAI", &
                                    "leaf area index", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable sai
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, sai_ID, "SAI", &
                                    "stem area index", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
       ! write the header for state variable tauss
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, tauss_ID, "TAUSS", &
                                    "snow age factor", &
                                    "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
@@ -535,80 +488,64 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
       ! for MMF groundwater
       if (NoahMP50_struc(n)%runsub_opt == 5) then 
       ! write the header for state variable smoiseq
-      !TODO: check dimension of the state variable following "vlevels="
-      !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
       call LIS_writeHeader_restart(ftn, n, dimID, smoiseq_ID, "SMOISEQ", &
                                    "equilibrium volumetric soil moisture content", &
                                    "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                  var_flag = "dim2") 
  
     ! write the header for state variable smcwtd
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, smcwtd_ID, "SMCWTD", &
                                  "soil moisture content in the layer to the water table when deep", &
                                  "m3/m3", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable deeprech
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, deeprech_ID, "DEEPRECH", &
                                  "recharge to the water table when deep", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable rech
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, rech_ID, "RECH", &
                                  "recharge to the water table (diagnostic)", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable pexp
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, pexp_ID, "PEXP", &
                                  "groundwater expotential parameter", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable area
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, area_ID, "AREA", &
                                  "river area", &
                                  "m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qrf
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qrf_ID, "QRF", &
                                  "groundwater baseflow", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qspring
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qspring_ID, "QSPRING", &
                                  "seeping water", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qslat
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qslat_ID, "QSLAT", &
                                  "accumulated lateral flow", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qrfs
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qrfs_ID, "QRFS", &
                                  "accumulated GW baseflow", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable qsprings
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qsprings_ID, "QSPRINGS", &
                                  "accumulated seeping water", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable fdepth
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, fdepth_ID, "FDEPTH", &
                                  "depth", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable rivercond
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, rivercond_ID, "RIVERCOND", &
                                  "river conductivity", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable riverbed
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, riverbed_ID, "RIVERBED", &
                                  "riverbed depth", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable eqzwt
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, eqzwt_ID, "EQZWT", &
                                  "equilibrium water table depth", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
@@ -617,57 +554,46 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
     ! for irrigation
     if (NoahMP50_struc(n)%irr_opt >0) then
     ! write the header for state variable irnumsi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnumsi_ID, "IRNUMSI", &
                                  "sprinkler irrigation count", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irnummi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnummi_ID, "IRNUMMI", &
                                  "micro irrigation count", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irnumfi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irnumfi_ID, "IRNUMFI", &
                                  "flood irrigation count", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irwatsi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irwatsi_ID, "IRWATSI", &
                                  "sprinkler irrigation water amount", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irwatmi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irwatmi_ID, "IRWATMI", &
                                  "micro irrigation water amount", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irwatfi
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irwatfi_ID, "IRWATFI", &
                                  "flood irrigation water amount", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irsivol
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irsivol_ID, "IRSIVOL", &
                                  "sprinkler irrigation water volume", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irmivol
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irmivol_ID, "IRMIVOL", &
                                  "micro irrigation water volume", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irfivol
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irfivol_ID, "IRFIVOL", &
                                  "flood irrigation water volume", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable ireloss
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, ireloss_ID, "IRELOSS", &
                                  "loss of irrigation water to evaporation", &
                                  "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable irrsplh
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, irrsplh_ID, "IRRSPLH", &
                                  "latent heating from sprinkler evaporation", &
                                  "W/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
@@ -676,40 +602,33 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
     ! for tile drainage
     if (NoahMP50_struc(n)%tdrn_opt >0) then
     ! write the header for state variable qtdrain
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, qtdrain_ID, "QTDRAIN", &
                                  "accumulated tile drainage discharge", &
                                  "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     endif
 
     ! write the header for state variable grain
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, grain_ID, "GRAIN", &
                                  "mass of grain XING", &
                                  "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable gdd
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, gdd_ID, "GDD", &
                                  "growing degree days XING (based on 10C)", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable pgs
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, pgs_ID, "PGS", &
                                  "growing degree days XING", &
                                  "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! for additional restart variables
     ! write the header for state variable accssoil
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accssoil_ID, "ACC_SSOIL", &
                                  "accumulated ground heat flux", &
                                  "W/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accqinsur
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accqinsur_ID, "ACC_QINSUR", &
                                  "accumulated soil surface water flux", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accqseva
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accqseva_ID, "ACC_QSEVA", &
                                  "accumulated soil surface evaporation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
@@ -719,27 +638,22 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                  "m/s", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
                                  var_flag = "dim2")
     ! write the header for state variable accdwater
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accdwater_ID, "ACC_DWATER", &
                                  "accumulated water storage change", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accprcp
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accprcp_ID, "ACC_PRCP", &
                                  "accumulated precipitation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accecan
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accecan_ID, "ACC_ECAN", &
                                  "accumulated canopy evaporation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accetran
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accetran_ID, "ACC_ETRAN", &
                                  "accumulated transpiration", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
     ! write the header for state variable accedir
-    !TODO: replace -99999 and 99999 with correct values for valid_min and valid_max
     call LIS_writeHeader_restart(ftn, n, dimID, accedir_ID, "ACC_EDIR", &
                                  "accumulated net soil evaporation", &
                                  "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
@@ -758,7 +672,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                               varid=udrrunoff_ID, dim=1, wformat=wformat)
 
     ! volumtric soil moisture
-    do l=1, NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%smc(l)
@@ -767,7 +681,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                   varid=smc_ID, dim=l, wformat=wformat)
     enddo
     ! volumtric liquid soil moisture
-    do l=1, NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%sh2o(l)
@@ -776,7 +690,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                   varid=sh2o_ID, dim=l, wformat=wformat)
     enddo
     ! soil temperature
-    do l=1, NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(l)
@@ -873,7 +787,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                               varid=wt_ID, dim=1, wformat=wformat)
 
     ! snow layer temperature
-    do l=1, NoahMP50_struc(n)%nsnow   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsnow
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%tsno(l)
@@ -882,7 +796,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                   varid=tsno_ID, dim=l, wformat=wformat)
     enddo
     ! snow/soil layer depth from snow surface
-    do l=1, NoahMP50_struc(n)%nsnow+NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsnow+NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%zss(l)
@@ -891,7 +805,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                   varid=zss_ID, dim=l, wformat=wformat)
     enddo
     ! snow layer ice
-    do l=1, NoahMP50_struc(n)%nsnow   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsnow
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%snowice(l)
@@ -900,7 +814,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                                   varid=snowice_ID, dim=l, wformat=wformat)
     enddo
     ! snow layer liquid water
-    do l=1, NoahMP50_struc(n)%nsnow   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsnow
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%snowliq(l)
@@ -948,7 +862,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
     if (NoahMP50_struc(n)%runsub_opt == 5) then
 
     ! equilibrium volumetric soil moisture content
-    do l=1, NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%smoiseq(l)
@@ -1096,7 +1010,7 @@ subroutine NoahMP50_dump_restart(n, ftn, wformat)
                               varid=accqseva_ID, dim=1, wformat=wformat)
 
     ! accumulated plant transpiration each layer
-    do l=1, NoahMP50_struc(n)%nsoil   ! TODO: check loop
+    do l=1, NoahMP50_struc(n)%nsoil
         tmptilen = 0
         do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
             tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%accetrani(l)

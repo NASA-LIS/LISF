@@ -207,7 +207,7 @@ subroutine NoahMP50_readrst()
                                      varname="UDRRUNOFF", wformat=wformat)
  
             ! read: volumtric soil moisture
-            do l=1, NoahMP50_struc(n)%nsoil ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsoil
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SMC", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsoil, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -216,7 +216,7 @@ subroutine NoahMP50_readrst()
             enddo
  
             ! read: volumtric liquid soil moisture
-            do l=1, NoahMP50_struc(n)%nsoil ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsoil
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SH2O", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsoil, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -225,7 +225,7 @@ subroutine NoahMP50_readrst()
             enddo
  
             ! read: soil temperature
-            do l=1, NoahMP50_struc(n)%nsoil ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsoil
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="TSLB", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsoil, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -322,7 +322,7 @@ subroutine NoahMP50_readrst()
                                      varname="WT", wformat=wformat)
  
             ! read: snow layer temperature
-            do l=1, NoahMP50_struc(n)%nsnow ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsnow
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="TSNO", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsnow, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -340,7 +340,7 @@ subroutine NoahMP50_readrst()
             enddo
  
             ! read: snow layer ice
-            do l=1, NoahMP50_struc(n)%nsnow ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsnow
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWICE", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsnow, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -349,7 +349,7 @@ subroutine NoahMP50_readrst()
             enddo
  
             ! read: snow layer liquid water
-            do l=1, NoahMP50_struc(n)%nsnow ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsnow
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SNOWLIQ", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsnow, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -395,7 +395,7 @@ subroutine NoahMP50_readrst()
 
             if (NoahMP50_struc(n)%runsub_opt == 5) then 
                ! read: equilibrium volumetric soil moisture content
-               do l=1, NoahMP50_struc(n)%nsoil ! TODO: check loop
+               do l=1, NoahMP50_struc(n)%nsoil
                   call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="SMOISEQ", &
                                            dim=l, vlevels = NoahMP50_struc(n)%nsoil, wformat=wformat)
                    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
@@ -529,7 +529,7 @@ subroutine NoahMP50_readrst()
             call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accedir, &
                                      varname="ACC_EDIR", wformat=wformat)
 
-            do l=1, NoahMP50_struc(n)%nsoil ! TODO: check loop
+            do l=1, NoahMP50_struc(n)%nsoil
                 call LIS_readvar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, varname="ACC_ETRANI", &
                                          dim=l, vlevels = NoahMP50_struc(n)%nsoil, wformat=wformat)
                 do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
