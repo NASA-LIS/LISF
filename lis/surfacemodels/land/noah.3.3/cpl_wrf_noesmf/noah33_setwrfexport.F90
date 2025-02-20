@@ -58,6 +58,28 @@ subroutine noah33_setwrfexport(n)
   call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%soldrain_t,&
        noah33_struc(n)%noah%soldrain1rt)
 #endif
+#ifdef PARFLOW
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = noah33_struc(n)%noah(i)%wtrflx(1)
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%wtrflx1_t,&
+       temp)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = noah33_struc(n)%noah(i)%wtrflx(2)
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%wtrflx2_t,&
+       temp)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = noah33_struc(n)%noah(i)%wtrflx(3)
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%wtrflx3_t,&
+       temp)
+  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     temp(i) = noah33_struc(n)%noah(i)%wtrflx(4)
+  enddo
+  call LIS_patch2tile(n,LIS_rc%lsm_index,LISWRF_export(n)%wtrflx4_t,&
+       temp)
+#endif
 
   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      temp(i) = noah33_struc(n)%noah(i)%smc(1)
