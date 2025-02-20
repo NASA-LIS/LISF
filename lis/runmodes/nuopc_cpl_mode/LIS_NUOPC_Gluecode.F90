@@ -227,7 +227,7 @@ module LIS_NUOPC_Gluecode
     type(LIS_FieldHookup), allocatable :: hookup(:)
   end type
 
-  type(LIS_Field),dimension(78)  :: LIS_FieldList = (/ &
+  type(LIS_Field),dimension(83)  :: LIS_FieldList = (/ &
     LIS_Field(stdName='2m_air_temperature', &
       stateName='t2_f', &
       ampValue=1.d0, meanValue=0.d0, &
@@ -546,7 +546,27 @@ module LIS_NUOPC_Gluecode
    LIS_Field(stdName='accum_plant_transpiration', &
       stateName='ett', &
       ampValue=1.d0, meanValue=0.d0, &
-      units='W m-2',transferOffer='will provide')/)
+      units='W m-2',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_1', &
+      stateName='wtrflx1', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_2', &
+      stateName='wtrflx2', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_3', &
+      stateName='wtrflx3', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_4', &
+      stateName='wtrflx4', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='ground_water_storage', &
+      stateName='wa', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='mm',transferOffer='will provide')/)
 
 !EOP
 
@@ -616,7 +636,7 @@ contains
 
     if(.not.LIS_initialized) then
        if (present(configFile)) LIS_rc%lis_config_file = trim(configFile)
-       call LIS_config_init(vm=vm) ! "retrospective"
+       call LIS_config_init(vm=vm)
        call LIS_domain_init
        call LIS_createTmnUpdate
        call LIS_param_init
@@ -625,7 +645,7 @@ contains
 
        LIS_rc%met_nf(:) = 9 ! WRFout sets to 17
 
-       call LIS_metforcing_init            ! "retrospective"
+       call LIS_metforcing_init
        call LIS_irrigation_init
        call LIS_initDAObservations
        call LIS_routing_init
@@ -1680,6 +1700,49 @@ contains
           LIS_FieldList(fIndex)%adExport=.TRUE.
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soldrain
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soldrain_t
+#endif
+#ifdef PARFLOW
+        case ('total_water_flux_layer_1')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx1
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx1_t
+        case ('total_water_flux_layer_2')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx2
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx2_t
+        case ('total_water_flux_layer_3')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx3
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx3_t
+        case ('total_water_flux_layer_4')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx4
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx4_t
+        case ('ground_water_storage')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%%#NOTAVAILABLE#
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%%#NOTAVAILABLE#_t
 #endif
 #ifdef GSM_EXTLND
         case ('accum_plant_transpiration')              ! (77)
