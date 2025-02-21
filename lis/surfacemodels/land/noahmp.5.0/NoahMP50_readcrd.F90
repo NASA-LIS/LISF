@@ -472,7 +472,6 @@ subroutine NoahMP50_readcrd()
 
 
     ! The following lines hard code the LDT NetCDF variable names. 
-    ! Modified by Zhuo Wang on 11/08/2018
     ! Setting some values to PLANTING, HARVEST, SEASON_GDD, SOILCOMP, SOILCL1-->SOILCL4 in NoahMP50_main.F90
     do n=1, LIS_rc%nnest
         ! Noahmp50_struc(n)%LDT_ncvar_vegetype = ' ! Edit here if hard code name

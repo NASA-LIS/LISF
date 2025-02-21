@@ -64,13 +64,11 @@ subroutine NoahMP50_main(n)
 
 ! define variables for NoahMP50
 
-    ! Code added by Zhuo Wang 02/28/2019
     real                 :: AvgSurfT_out           ! average surface temperature [K]
     real                 :: TWS_out                ! terrestrial water storage [mm]
-    ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
    
-    ! EMK for 557WW
+    ! for 557WW
     real :: tmp_q2sat, tmp_es
     character*3 :: fnest
     REAL, PARAMETER:: LVH2O = 2.501000E+6 ! Latent heat for evapo for water  
@@ -93,7 +91,7 @@ subroutine NoahMP50_main(n)
             ! retrieve forcing data from NoahMP50_struc(n)%noahmp50(t) and assign to 1-D NoahmpIO variables
             ! T_PHY: air temperature
             NoahmpIO%T_PHY(1,1,1) = NoahMP50_struc(n)%noahmp50(t)%tair   / NoahMP50_struc(n)%forc_count
-            ! Yeosang Yoon, for snow DA
+            ! for snow DA
             NoahMP50_struc(n)%noahmp50(t)%sfctmp = NoahmpIO%T_PHY(1,1,1)
 
             ! P8W: air pressure
@@ -125,7 +123,6 @@ subroutine NoahMP50_main(n)
             !   NoahmpIO%RAINBL(1,1) = dt * (NoahMP50_struc(n)%noahmp50(t)%prcp / NoahMP50_struc(n)%forc_count)
             !endif
 
-            !ag(05Jan2021)
             ! rivsto/fldsto: River storage and flood storage
             ! NoahMP50_struc(n)%noahmp50(t)%rivsto and NoahMP50_struc(n)%noahmp50(t)%fldsto
             ! are updated in noahmp50_getsws_hymap2.F90
@@ -183,7 +180,6 @@ subroutine NoahMP50_main(n)
             endif
             !
 
-            !ag (05Jan2021)
             ! check validity of rivsto
             if(NoahmpIO%rivsto(1,1) .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "[ERR] undefined value found for forcing variable rivsto in Noah-MP.5.0"
@@ -274,7 +270,6 @@ subroutine NoahMP50_main(n)
                NoahmpIO%season_gdd(1,1) = 0.0
             endif
 
-! Zhuo Wang tested on 11/15/2018, not read from LDT-generated netcdf input file
             if (NoahmpIO%IOPT_SOIL .eq. 2) then 
                NoahmpIO%soilcL1(1,1) = NoahMP50_struc(n)%noahmp50(t)%soilcL1
                NoahmpIO%soilcL2(1,1) = NoahMP50_struc(n)%noahmp50(t)%soilcL2
@@ -594,7 +589,7 @@ subroutine NoahMP50_main(n)
                NoahMP50_struc(n)%noahmp50(t)%qslat     = NoahmpIO%qslatxy(1,1)
             endif
 
-            ! EMK Update RHMin for 557WW
+            ! Update RHMin for 557WW
             if (NoahmpIO%T_PHY(1,1,1) .lt. &
                  noahmp50_struc(n)%noahmp50(t)%tair_agl_min) then
                noahmp50_struc(n)%noahmp50(t)%tair_agl_min = NoahmpIO%T_PHY(1,1,1)
@@ -759,7 +754,7 @@ subroutine NoahMP50_main(n)
                                                   vlevel=i, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
             end do
 
-            ! Yeosang Yoon, for snow DA
+            ! for snow DA
             ! output variable: z_snow (unit=m). ***  snow layer-bottom depth from snow surface
             do i=1, NoahMP50_struc(n)%nsnow
                 call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_SNOW_LBDFSS, value = NoahMP50_struc(n)%noahmp50(t)%zss(i), &
@@ -1030,7 +1025,6 @@ subroutine NoahMP50_main(n)
                   value=(-1.0 * NoahMP50_struc(n)%noahmp50(t)%fira), &
                   unit="W m-2", direction="DN", surface_type=LIS_rc%lsm_index)
 
-            ! Code added by Zhuo Wang on 02/28/2019
             ![ 92] output variable: qsnbot (unit=kg m-2 s-1). ***  melting water out of snow bottom 
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QSM, value = NoahmpIO%qsnbotxy(1,1), &
                   vlevel=1, unit="kg m-2 s-1", direction="S2L", surface_type = LIS_rc%lsm_index)
@@ -1065,11 +1059,11 @@ subroutine NoahMP50_main(n)
                    vlevel=1, unit="mm", direction="-", surface_type = LIS_rc%lsm_index)
 
             ![ 96] Qa - Advective energy - Heat transferred to a snow cover by rain
-            !         - (unit=W m-2) - added by David Mocko
+            !         - (unit=W m-2)
             call LIS_diagnoseSurfaceOutputVar(n, t, LIS_MOC_QA, value = NoahmpIO%pahxy(1,1), &
                   vlevel=1, unit="W m-2",direction="DN",surface_type=LIS_rc%lsm_index)
 
-! Added water balance change terms - David Mocko
+! Added water balance change terms
             endsm = 0.0
             do i = 1,NoahmpIO%nsoil
                endsm = endsm +                                         &
@@ -1141,8 +1135,8 @@ subroutine NoahMP50_main(n)
 
     endif ! end of alarmCheck loop
 
-    ! EMK...See if noahmp50_struc(n)%noahmp50(t)%tair_agl_min needs to be 
-    ! reset for calculating RHMin.  
+    ! See if noahmp50_struc(n)%noahmp50(t)%tair_agl_min needs to be
+    ! reset for calculating RHMin.
     alarmCheck = LIS_isAlarmRinging(LIS_rc, &
          "NoahMP50 RHMin alarm "//trim(fnest))
     if (alarmCheck) then

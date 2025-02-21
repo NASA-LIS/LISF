@@ -547,7 +547,7 @@ subroutine LIS_lsmda_plugin
 #endif
 
 #if ( defined SM_NOAHMP_5_0 ) 
-! MN NoahMP.5 Soil moisture DA
+! NoahMP.5 Soil moisture DA
    external NoahMP50_getsoilm
    external NoahMP50_setsoilm
    external NoahMP50_getsmpred
@@ -3172,7 +3172,6 @@ subroutine LIS_lsmda_plugin
 #endif
 
 #if ( defined SM_NOAHMP_5_0 )
-! MN
 ! NoahMP.5 RT SMOPS ASCAT soil moisture
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_SMOPS_ASCATsmobsId)//char(0),NoahMP50_dasoilm_init)
@@ -3212,7 +3211,7 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP50_descale_soilm)
    call registerlsmdaupdatestate(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_SMAPNRTsmobsId)//char(0),NoahMP50_updatesoilm)
-!MN
+
 ! NoahMP.5 SMAP(NASA) soil moisture
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP50_dasoilm_init)
@@ -3233,7 +3232,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_NASASMAPsmobsId )//char(0),NoahMP50_updatesoilm)
 
-!YK
 ! NoahMP.5 SMOS NRT NN soil moisture
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_SMOSNRTNNL2smobsId )//char(0),NoahMP50_dasoilm_init)
@@ -3254,7 +3252,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaupdatestate(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_SMOSNRTNNL2smobsId )//char(0),NoahMP50_updatesoilm)
 
-!YK
 ! NoahMP.5 SMAP E OPL soil moisture
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_SMAPEOPLsmobsId )//char(0),NoahMP50_dasoilm_init)
@@ -3314,7 +3311,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdaqcobsstate(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_synsndId)//char(0),noahmp50_qc_snowobs)
 
-! NoahMP.5 ESACCI soil moisture !2022.06.29 Pang
+! NoahMP.5 ESACCI soil moisture
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_ESACCIsmobsId)//char(0),noahmp50_dasoilm_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
@@ -3375,7 +3372,7 @@ subroutine LIS_lsmda_plugin
    call registerlsmdadiagnosevars(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_GRACEtwsobsId)//char(0),noahmp50_tws_DAlog)
 
-! Wanshu Nie, LAI DA
+! LAI DA
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_GLASSlaiobsId)//char(0),noahmp50_daveg_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
@@ -3418,7 +3415,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdadiagnosevars(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_MCD15A2HlaiobsId)//char(0),noahmp50_veg_DAlog)
 
-!Y.Kwon
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_VIIRSgvfobsId)//char(0),noahmp50_daveg_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
@@ -3441,7 +3437,6 @@ subroutine LIS_lsmda_plugin
    call registerlsmdadiagnosevars(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_VIIRSgvfobsId)//char(0),noahmp50_veg_DAlog)
 
-!Y.Kwon
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
         trim(LIS_CDFSgvfobsId)//char(0),noahmp50_daveg_init)
    call registerlsmdagetstatevar(trim(LIS_noahmp50Id)//"+"//&
@@ -3487,7 +3482,7 @@ subroutine LIS_lsmda_plugin
         trim(LIS_GCOMW_AMSR2L3sndobsId)//char(0),NoahMP50_qc_snowobs)
 #endif
 
-! Yeosang Yoon, SNODEP DA
+! SNODEP DA
 #if ( defined DA_OBS_SNODEP )
 ! DA + snodep wirings
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
@@ -3512,7 +3507,7 @@ subroutine LIS_lsmda_plugin
         trim(LIS_snodepobsId)//char(0),noahmp50_descale_snodep)
 #endif
 
-! Yeosang Yoon, USAFSI DA
+! USAFSI DA
 #if ( defined DA_OBS_USAFSI )
 ! DA + usafsi wirings
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
@@ -3561,7 +3556,6 @@ subroutine LIS_lsmda_plugin
 
 #endif
 
-! Melissa Wrzesien (MLW)
 ! NoahMP.5 SNODAS snow depth
 #if ( defined DA_OBS_SNODAS)
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&
@@ -3586,7 +3580,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_SNODASobsId)//char(0),NoahMP50_qc_snowobs)
 #endif
 
-! Melissa Wrzesien (MLW)
 ! NoahMP.5 ANSA snow depth
 #if ( defined DA_OBS_ANSA_SNWD)
    call registerlsmdainit(trim(LIS_noahmp50Id)//"+"//&

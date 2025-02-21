@@ -374,7 +374,7 @@ module NoahMP50_module
         ! forcing
         !------------------------------------------------------
         real               :: tair
-        real               :: sfctmp    ! Yeosang Yoon for snow DA
+        real               :: sfctmp    ! for snow DA
         real               :: psurf
         real               :: wind_e
         real               :: wind_n
@@ -495,7 +495,6 @@ module NoahMP50_module
         real               :: accecan
         real               :: accetran
         real               :: accedir
-        !ag (05Jan2021)
         ! 2-way coupling parameters
         real               :: rivsto
         real               :: fldsto
@@ -561,7 +560,7 @@ module NoahMP50_module
         real               :: chv2
         real               :: chb2
 
-        !EMK for 557WW
+        !for 557WW
         real :: tair_agl_min
         real :: rhmin
 

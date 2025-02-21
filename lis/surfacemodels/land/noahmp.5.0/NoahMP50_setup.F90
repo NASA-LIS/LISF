@@ -126,7 +126,6 @@ subroutine NoahMP50_setup()
             NoahMP50_struc(n)%noahmp50(t)%tbot = placeholder(col, row)
         enddo
 
-        !!! SW 11/06/2018 
         if(NoahMP50_struc(n)%crop_opt > 0) then 
             ! read: planting
             write(LIS_logunit,*) &
@@ -160,7 +159,7 @@ subroutine NoahMP50_setup()
             enddo 
         endif
 
-        ! CH 05/01/2023: for irrigation
+        ! for irrigation
         if(NoahMP50_struc(n)%irr_opt > 0) then
             ! read: total irrigation fraction
             write(LIS_logunit,*) &
@@ -207,7 +206,7 @@ subroutine NoahMP50_setup()
             enddo
         endif
 
-        ! CH 05/01/2023: for tile drainage
+        ! for tile drainage
         if(NoahMP50_struc(n)%tdrn_opt > 0) then
             ! read: tile drainage fraction
             write(LIS_logunit,*) &
@@ -221,7 +220,6 @@ subroutine NoahMP50_setup()
             enddo
         endif
  
-        !!! SW 11/06/2018 
         if(NoahMP50_struc(n)%soil_opt .eq. 2) then 
             ! read: soilcL1
             write(LIS_logunit,*) "[INFO] Noah-MP.5.0 reading parameter SOILCL1 from ", &
@@ -264,7 +262,7 @@ subroutine NoahMP50_setup()
             enddo 
         endif 
 
-        ! CH 05/01/2023: for MMF groundwater
+        ! for MMF groundwater
         if(NoahMP50_struc(n)%runsub_opt == 5) then
             ! read: efolding depth for transmissivity (m)
             write(LIS_logunit,*) &

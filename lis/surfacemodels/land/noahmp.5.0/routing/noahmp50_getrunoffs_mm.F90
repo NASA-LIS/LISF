@@ -48,7 +48,6 @@ subroutine noahmp50_getrunoffs_mm(n)
   integer                :: t
   integer                :: status
 
-  !ag (25Apr2017)
   type(ESMF_Field)       :: evapotranspiration_Field
   real,pointer           :: evapotranspiration(:)
   real, allocatable      :: gvar3(:)
@@ -115,7 +114,6 @@ subroutine noahmp50_getrunoffs_mm(n)
   deallocate(runoff1_t)
   deallocate(runoff2_t)
 
-  !ag (05Jun2017)
   !Including meteorological forcings + evapotranspiration for computing evaporation from open waters in HyMAP2)
   if(evapflag.ne.0)then
     allocate(evapotranspiration1(LIS_rc%npatch(n,LIS_rc%lsm_index)))

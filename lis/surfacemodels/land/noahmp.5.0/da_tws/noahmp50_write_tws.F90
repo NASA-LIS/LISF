@@ -65,7 +65,7 @@ subroutine noahmp50_write_tws(ftn,n, LSM_State)
      tmp(t) = NoahMP50_struc(n)%noahmp50(t)%smc(4)
   enddo
   call LIS_writevar_restart(ftn,n,1,tmp)
-  !Wanshu
+
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      tmp(t) = NoahMP50_struc(n)%noahmp50(t)%wa
   enddo

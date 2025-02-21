@@ -53,7 +53,6 @@ subroutine noahmp50_qctws(n, LSM_State)
   type(ESMF_Field)       :: sm3Field
   type(ESMF_Field)       :: sm4Field
 
-!Wanshu
   type(ESMF_Field)       :: gwField, sweField
   real, pointer          :: gws(:)
   real                   :: gwsmax, gwsmin
@@ -99,7 +98,6 @@ subroutine noahmp50_qctws(n, LSM_State)
   call LIS_verify(status,&
        "ESMF_FieldGet for Soil Moisture Layer 4 failed in noahmp50_qctws")
 
-  !Wanshu
   call ESMF_StateGet(LSM_State,"Groundwater Storage",gwField,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for gw in noahmp50_qctws')
   
@@ -129,7 +127,7 @@ subroutine noahmp50_qctws(n, LSM_State)
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-  !Bailing Li: max min soil moisture should be retrieved based on soil type
+  ! max min soil moisture should be retrieved based on soil type
      SOILTYP       = NoahMP50_struc(n)%noahmp50(t)%soiltype
      MAX_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCMAX(1)  !SMCMAX_TABLE(SOILTYP) 
      MIN_THRESHOLD = NoahMP50_struc(n)%noahmp50(t)%param%SMCWLT(1)  !SMCWLT_TABLE(SOILTYP) 
@@ -164,7 +162,7 @@ subroutine noahmp50_qctws(n, LSM_State)
      if(soilm4(t).lt.MIN_THRESHOLD) then
         soilm4(t) = MIN_THRESHOLD
      endif
-     !Wanshu
+
      if(gws(t).gt.gwsmax) then
         gws(t) = gwsmax
      endif
