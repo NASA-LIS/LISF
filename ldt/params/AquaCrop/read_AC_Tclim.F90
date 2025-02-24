@@ -71,15 +71,16 @@ subroutine read_AC_Tclim(n, array)
   integer, allocatable     :: n221(:)
   real, allocatable        :: w111(:),w121(:)
   real, allocatable        :: w211(:),w221(:)
-  integer, allocatable     :: n112(:,:)  ! Map array for budget/conservative interp
-  integer, allocatable     :: n122(:,:)
-  integer, allocatable     :: n212(:,:)
-  integer, allocatable     :: n222(:,:)
-  real, allocatable        :: w112(:,:),w122(:,:)
-  real, allocatable        :: w212(:,:),w222(:,:)
 
   character(20)     :: temp
   real, allocatable :: read_input(:,:)
+
+  external :: upscaleByAveraging_input
+  external :: upscaleByAveraging
+  external :: neighbor_interp_input
+  external :: neighbor_interp
+  external :: bilinear_interp_input
+  external :: bilinear_interp
 
 ! __________________________________________________________________________________________
 
