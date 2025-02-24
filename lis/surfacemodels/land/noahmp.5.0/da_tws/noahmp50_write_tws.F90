@@ -32,7 +32,7 @@ subroutine noahmp50_write_tws(ftn,n, LSM_State)
 !
 ! !DESCRIPTION:
 !
-!  Returns the twsoisture related state prognostic variables for
+!  Returns the soilmoisture and groundwater related state prognostic variables for
 !  data assimilation
 ! 
 !  The arguments are: 

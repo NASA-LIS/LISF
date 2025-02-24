@@ -29,7 +29,7 @@ subroutine noahmp50_qcveg(n, LSM_State)
 !
 ! !DESCRIPTION:
 !
-!  Returns the soilmoisture related state prognostic variables for
+!  Returns the LAI related state prognostic variables for
 !  data assimilation
 ! 
 !  The arguments are: 

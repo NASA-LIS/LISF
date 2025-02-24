@@ -29,8 +29,8 @@ subroutine noahmp50_updatevegvars(n, LSM_State, LSM_Incr_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
+!  This routine assigns the LAI prognostic variables to NoahMP's
+!  model space.
 ! 
 !EOP
   type(ESMF_Field)       :: laiField, laiIncrField

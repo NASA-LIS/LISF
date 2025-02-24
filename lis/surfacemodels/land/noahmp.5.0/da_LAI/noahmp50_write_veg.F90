@@ -31,7 +31,7 @@ subroutine noahmp50_write_veg(ftn,n, LSM_State)
 !
 ! !DESCRIPTION:
 !
-!  Returns the soil moisture related state prognostic variables for
+!  Returns the LAI related state prognostic variables for
 !  data assimilation
 ! 
 !  The arguments are: 

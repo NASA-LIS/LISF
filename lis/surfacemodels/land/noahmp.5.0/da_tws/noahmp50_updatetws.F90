@@ -31,8 +31,8 @@ subroutine noahmp50_updatetws(n, LSM_State, LSM_Incr_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noahmp's
-!  model space. 
+!  This routine assigns the soil moisture and grounwater prognostic variables
+!  to NoahMP's model space.
 ! 
 !EOP
 

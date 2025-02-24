@@ -42,8 +42,8 @@ subroutine noahmp50_setvegvars(n, LSM_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
+!  This routine assigns the LAI prognostic variables to NoahMP's
+!  model space.
 ! 
 !EOP
   real, parameter        :: MIN_THRESHOLD = 0.02 

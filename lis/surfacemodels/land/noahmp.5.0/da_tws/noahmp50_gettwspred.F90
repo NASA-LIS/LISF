@@ -32,7 +32,7 @@ subroutine noahmp50_gettwspred(n, k,obs_pred)
 !
 ! !DESCRIPTION:
 !
-!  Returns the Soil moisture obs pred (model's estimate of 
+!  Returns the groundwater obs pred (model's estimate of
 !  observations) for data assimilation
 ! 
 !  The arguments are: 

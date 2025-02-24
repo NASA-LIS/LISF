@@ -27,7 +27,7 @@ subroutine noahmp50_scale_veg(n, LSM_State)
 !
 ! !DESCRIPTION:
 !
-!  Scales esioisture related state prognostic variables for
+!  Scales LAI related state prognostic variables for
 !  data assimilation
 ! 
 !  The arguments are: 

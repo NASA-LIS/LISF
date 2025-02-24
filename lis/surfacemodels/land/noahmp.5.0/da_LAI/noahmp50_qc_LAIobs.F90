@@ -31,10 +31,7 @@ subroutine noahmp50_qc_LAIobs(n,k,OBS_State)
 ! !DESCRIPTION:
 !
 !  This subroutine performs any model-based QC of the observation 
-!  prior to data assimilation. Here the soil moisture observations
-!  are flagged when LSM indicates that (1) rain is falling (2)
-!  soil is frozen or (3) ground is fully or partially covered 
-!  with snow MN:(4) ground is covered with vegatation (more than 50%). 
+!  prior to data assimilation.
 !  
 !  The arguments are: 
 !  \begin{description}

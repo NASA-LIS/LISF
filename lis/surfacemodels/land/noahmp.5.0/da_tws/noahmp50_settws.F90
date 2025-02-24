@@ -32,8 +32,8 @@ subroutine noahmp50_settws(n, LSM_State)
 !
 ! !DESCRIPTION:
 !  
-!  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
+!  This routine assigns the soil moisture and groundwater prognostic variables
+!  to NoahMP's model space.
 ! 
 !EOP
   real, parameter        :: MIN_GWS_THRESHOLD = 0.00
