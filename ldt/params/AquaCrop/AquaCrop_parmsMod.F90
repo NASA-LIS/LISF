@@ -92,12 +92,16 @@ contains
 !EOP
    implicit none
    integer  :: flag
-   integer  :: n,i,c,r,m,k
+   integer  :: n,k
    integer  :: rc
 
-    character*3 :: months(12)
-    data months /'jan','feb','mar','apr','may','jun','jul','aug',&
-                 'sep','oct','nov','dec'/
+   external :: read_CONSTANT_AC_crop
+   external :: define_AC_compartments
+   external :: read_AC_Tclim
+
+   character*3 :: months(12)
+   data months /'jan','feb','mar','apr','may','jun','jul','aug', &
+        'sep','oct','nov','dec'/
 
 ! _____________________________________________________________________
 
