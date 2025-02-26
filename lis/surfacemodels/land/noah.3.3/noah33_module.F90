@@ -93,6 +93,8 @@ module noah33_module
 !   \item[relsmc]
 !    Volumetric relative soil moisture $(m^3/m^3)$
 !    (smc - smcwlt) / (porosity - smcwlt)
+!   \item[wtrflx]
+!    total water flux. unit: kg m-2 s-1
 !   \end{description}
 !
 ! !REVISION HISTORY:
@@ -245,6 +247,9 @@ module noah33_module
      real :: sfhead1rt
      real :: infxs1rt
      real :: soldrain1rt
+#endif
+#ifdef PARFLOW
+     real,allocatable :: wtrflx(:)
 #endif
   end type noah33dec
 

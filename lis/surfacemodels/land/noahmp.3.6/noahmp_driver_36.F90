@@ -58,7 +58,11 @@ subroutine noahmp_driver_36(iloc, jloc, &
                             chleaf  , chuc    , chv2    , chb2    , fpice   , &
                             !ag (12Sep2019)
                             rivsto, fldsto, fldfrc, &
-                            sfcheadrt)  ! out 
+                            sfcheadrt                                                   & ! out :
+#ifdef PARFLOW
+                            ,qinsur,etrani                                              & ! out :
+#endif
+                            )
   
   ! use LIS_FORC_AttributesMod 
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
@@ -300,6 +304,10 @@ subroutine noahmp_driver_36(iloc, jloc, &
   real, intent(inout) :: fldsto               ! flood storage
   real, intent(inout) :: fldfrc               ! flood storage
   real, intent(inout) :: sfcheadrt            ! extra output for WRF-HYDRO [m] 
+#ifdef PARFLOW
+  real, intent(out)   :: qinsur               ! water input on soil surface [m/s]
+  real, intent(out)   :: etrani(nsoil)        ! evapotranspiration from soil layers [mm s-1]
+#endif
 
   ! external function
   real, external      :: month_d_36
@@ -386,6 +394,11 @@ subroutine noahmp_driver_36(iloc, jloc, &
 !  jloc = 1 
 #ifndef WRF_HYDRO
   sfcheadrt = 0.0 
+#endif
+
+#ifdef PARFLOW
+  qinsur = 0.0
+  etrani = 0.0
 #endif
 
   if (opt_sfc == 3) then
@@ -589,6 +602,9 @@ subroutine noahmp_driver_36(iloc, jloc, &
                rivsto  , fldsto, fldfrc            &
 #ifdef WRF_HYDRO
                ,sfcheadrt                                                  & ! in/out :
+#endif
+#ifdef PARFLOW
+               ,qinsur,etrani                                              & ! out :
 #endif
                )
 

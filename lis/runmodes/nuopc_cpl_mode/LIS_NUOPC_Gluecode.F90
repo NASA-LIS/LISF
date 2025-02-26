@@ -227,7 +227,7 @@ module LIS_NUOPC_Gluecode
     type(LIS_FieldHookup), allocatable :: hookup(:)
   end type
 
-  type(LIS_Field),dimension(78)  :: LIS_FieldList = (/ &
+  type(LIS_Field),dimension(83)  :: LIS_FieldList = (/ &
     LIS_Field(stdName='2m_air_temperature', &
       stateName='t2_f', &
       ampValue=1.d0, meanValue=0.d0, &
@@ -546,7 +546,27 @@ module LIS_NUOPC_Gluecode
    LIS_Field(stdName='accum_plant_transpiration', &
       stateName='ett', &
       ampValue=1.d0, meanValue=0.d0, &
-      units='W m-2',transferOffer='will provide')/)
+      units='W m-2',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_1', &
+      stateName='wtrflx1', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_2', &
+      stateName='wtrflx2', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_3', &
+      stateName='wtrflx3', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='total_water_flux_layer_4', &
+      stateName='wtrflx4', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='kg m-2 s-1',transferOffer='will provide'), &
+   LIS_Field(stdName='ground_water_storage', &
+      stateName='wa', &
+      ampValue=1.d0, meanValue=0.d0, &
+      units='mm',transferOffer='will provide')/)
 
 !EOP
 
@@ -616,31 +636,11 @@ contains
 
     if(.not.LIS_initialized) then
        if (present(configFile)) LIS_rc%lis_config_file = trim(configFile)
-       call LIS_config_init(vm=vm) ! "retrospective"
-       call LIS_domain_init
-       call LIS_createTmnUpdate
-       call LIS_param_init
-       call LIS_perturb_init
-       call LIS_surfaceModel_init
-
-       LIS_rc%met_nf(:) = 9 ! WRFout sets to 17
-
-       call LIS_metforcing_init            ! "retrospective"
-       call LIS_irrigation_init
-       call LIS_initDAObservations
-       call LIS_routing_init
-       call LIS_routing_readrestart
-       call LIS_dataassim_init
-       call LIS_surfaceModel_setup
-       call LIS_surfaceModel_readrestart
-       call LIS_perturb_readrestart
-       call LIS_perturb_readrestart
-       call LIS_RTM_init
-       call LIS_appModel_init
+       call LIS_config_init(vm=vm)
+       call lisinit(trim(LIS_rc%runmode)//char(0))
 
        call LISWRF_alloc_states
        call LISWRF_reset_states
-       call LIS_core_init
 
        call LIS_HookupInit(rc)
        if(ESMF_STDERRORCHECK(rc)) return
@@ -765,104 +765,7 @@ contains
     T_EXIT("datacopy")
     if(ESMF_STDERRORCHECK(rc)) return
 
-    T_ENTER("dynparms")
-    call LIS_setDynparams(nest)
-    T_EXIT("dynparms")
-
-    select case (mode)
-      case (LIS_Offline)
-        ! Read in data from Met forcing sources listed in lis.config
-        T_ENTER("getmetforc")
-        call LIS_get_met_forcing(nest)
-        T_EXIT("getmetforc")
-      case (LIS_Coupled)
-        ! No extra work needs to be done
-      case (LIS_Hybrid)
-        call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-          msg="Mixed (coupled+offline) met forcing data is not allowed.", &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-      case default
-        call ESMF_LogSetError(ESMF_RC_ARG_BAD, &
-          msg="Running mode is unknown.", &
-          line=__LINE__, file=FILENAME, rcToReturn=rc)
-        return
-    end select
-
-    T_ENTER("pertforc")
-    call LIS_perturb_forcing(nest)
-    T_EXIT("pertforc")
-
-    T_ENTER("irrrun")
-    call LIS_irrigation_run(nest)
-    T_EXIT("irrrun")
-
-    T_ENTER("f2t")
-    call LIS_surfaceModel_f2t(nest)
-    T_EXIT("f2t")
-
-    T_ENTER("smrun")
-    call LIS_surfaceModel_run(nest)
-    T_EXIT("smrun")
-
-    T_ENTER("smpert")
-    call LIS_surfaceModel_perturb_states(nest)
-    T_EXIT("smpert")
-
-    T_ENTER("daread")
-    call LIS_readDAobservations(nest)
-    T_EXIT("daread")
-
-    T_ENTER("pertda")
-    call LIS_perturb_DAobservations(nest)
-    T_EXIT("pertda")
-
-    T_ENTER("pertrest")
-    call LIS_perturb_writerestart(nest)
-    T_EXIT("pertrest")
-    T_ENTER("darun")
-    call LIS_dataassim_run(nest)
-    T_EXIT("darun")
-
-    T_ENTER("daout")
-    call LIS_dataassim_output(nest)
-    T_EXIT("daout")
-
-    T_ENTER("smout")
-    call LIS_surfaceModel_output(nest)
-    T_EXIT("smout")
-
-    T_ENTER("smrest")
-    call LIS_surfaceModel_writerestart(nest)
-    T_EXIT("smrest")
-
-    T_ENTER("rtrun")
-    call LIS_routing_run(nest)
-    T_EXIT("rtrun")
-
-    T_ENTER("rtout")
-    call LIS_routing_writeoutput(nest)
-    T_EXIT("rtout")
-
-    T_ENTER("rtrest")
-    call LIS_routing_writerestart(nest)
-    T_EXIT("rtrest")
-
-    T_ENTER("rtmrun")
-    call LIS_RTM_run(nest)
-    T_EXIT("rtmrun")
-
-    T_ENTER("rtmout")
-    call LIS_RTM_output(nest)
-    T_EXIT("rtmout")
-
-    T_ENTER("apprun")
-    call LIS_runAppModel(nest)
-    T_EXIT("apprun")
-
-    T_ENTER("appout")
-    call LIS_outputAppModel(nest)
-    T_EXIT("appout")
+    call lisstep(trim(LIS_rc%runmode)//char(0))
 
     ! =========================================================
     ! Write LIS output data to export state
@@ -1681,6 +1584,49 @@ contains
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%soldrain
           LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%soldrain_t
 #endif
+#ifdef PARFLOW
+        case ('total_water_flux_layer_1')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx1
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx1_t
+        case ('total_water_flux_layer_2')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx2
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx2_t
+        case ('total_water_flux_layer_3')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx3
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx3_t
+        case ('total_water_flux_layer_4')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+!          LIS_FieldList(fIndex)%reqImport=(#NOTAVAILABLE#%selectOpt == 1)
+!          LIS_FieldList(fIndex)%adImport=.FALSE.
+          LIS_FieldList(fIndex)%adExport=.TRUE.
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%wtrflx4
+          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%wtrflx4_t
+        case ('ground_water_storage')              ! (?)
+!          if (allocated(#NOTAVAILABLE#%varname)) &
+!            LIS_FieldList(fIndex)%lisForcVarname=#NOTAVAILABLE#%varname(1)
+          LIS_FieldList(fIndex)%adImport = .TRUE.
+          LIS_FieldList(fIndex)%directConn = .TRUE.
+          LIS_FieldList(fIndex)%sharedMem = .TRUE.
+!          LIS_FieldList(fIndex)%adExport=.FALSE.
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray=>LISWRF_export(nIndex)%%#NOTAVAILABLE#
+!          LIS_FieldList(fIndex)%hookup(nIndex)%exportArray_t=>LISWRF_export(nIndex)%%#NOTAVAILABLE#_t
+#endif
 #ifdef GSM_EXTLND
         case ('accum_plant_transpiration')              ! (77)
 !          if (allocated(#NOTAVAILABLE#%varname)) &
@@ -2486,6 +2432,8 @@ contains
       LIS_RunModeGet = LIS_Offline
     elseif ( connectedCount == reqCount ) then
       LIS_RunModeGet = LIS_Coupled
+      LIS_rc%metforc_blend_alg = "overlay"
+      LIS_rc%metforc(:) = "none"
     else
       LIS_RunModeGet = LIS_Hybrid
     endif
