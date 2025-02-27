@@ -1,9 +1,9 @@
 
-        557WW LIS 7.5 - Global-Hydro Intelligence (GHI) 
+        557WW LIS 7.7 - Global-Hydro Information (GHI) 
  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 24 Oct 2024
+  Last Modified 31 Jan 2025
 
 		TABLE OF CONTENTS
 		_________________
@@ -52,11 +52,11 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   2.1  SOFTWARE REQUIREMENTS
 
-* LIS 7.5, compiled with GRIB2 support (ecCodes and AFWA-specific
+* LIS 7.7, compiled with GRIB2 support (ecCodes and AFWA-specific
     grib configuration settings), and netCDF4 with compression.
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
+  LISF/env/discover/lisf_7.7_intel_2023.2.1_s2s
 
 * Python 3.11, with the following extra libraries installed:
                NCCS        HPC
@@ -82,10 +82,10 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
 
  The main GHI S2S subsystem software is found in your
-  latest LIS 7.5 557WW code tarball, within the directory
+  latest LIS 7.7 557WW code tarball, within the directory
   structure:
 
-   lisf-557ww-7.5/lis/utils/usaf/s2s/
+   lisf-557ww-7.7/lis/utils/usaf/s2s/
 
  The main E2ES script that runs the S2S subsystem is a 
   bash shell script and is located in the directory:   
@@ -111,7 +111,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   LISFDIR: [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
   E2ESDIR: [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
   METFORC: [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
-  LISFMOD: lisf_7.5_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
+  LISFMOD: lisf_7.7_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
   SPCODE: s1189    [YOUR LOCAL MACHINE GROUPID CODE]
   DATATYPE: forecast  [OPTIONS INCLUDE:  "forecast" or "hindcast"]
   supplementarydir:  [YOUR GHI_S2S/supplementary_files DIRECTORY PATH WITH RUNTIME INPUT FILES]
@@ -444,7 +444,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
     forecast model precipitation data for driving the models offline in LIS.
     The forecasts are for the 557 WW ~25KM global domain, bias-corrected
-    using the USAF-LIS7.5-S2S (e.g., NAFPA precipitation) dataset, and covers
+    using the USAF-LIS7.7-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
   - 13 high-level scripts (1 main and 12 individual task scripts) to create
