@@ -21,9 +21,6 @@ module AquaCrop_parmsMod
 !
 !  10 May 2024; Michel Becthold, Louise Busschaert, initial implementation
 !
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-  use netcdf
-#endif
   use ESMF
   use LDT_coreMod
   use LDT_historyMod
@@ -196,7 +193,9 @@ contains
 
  subroutine AquaCropParms_writeHeader(n,ftn,dimID,monthID)
 
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
     use netcdf
+#endif
 
     integer   :: n,i 
     integer   :: ftn
@@ -208,6 +207,8 @@ contains
 
     ndimID(1) = dimID(1)
     ndimID(2) = dimID(2)
+
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
 
     call LDT_writeNETCDFdataHeader(n,ftn,dimID,&
             Aquacrop_struc(n)%cropt)
@@ -236,18 +237,25 @@ contains
     call LDT_verify(nf90_put_att(ftn,NF90_GLOBAL,"AC_CLIM_REF_YEAR", &
         AquaCrop_struc(n)%tempcli_refyr))
     enddo
+#endif
 
   end subroutine AquaCropParms_writeHeader
 
   subroutine AquaCropParms_writeData(n,ftn)
 
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+
     integer   :: n 
     integer   :: ftn
 
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%cropt)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%comp_size)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmin_cli)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmax_cli)
+#endif
 
   end subroutine AquaCropParms_writeData
 
