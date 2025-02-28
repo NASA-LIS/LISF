@@ -14,19 +14,6 @@
 ! !REVISION HISTORY:
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 ! 
-! Apply the update if it met the update conditions
-! Update conditions: 
-!                  1- Prior SM(sh2o) + increment > MIN_THRESHOLD 
-!                  2- Prior SM(sh2o) + increment < sm_threshold
-! There are 3 cases 
-! 1- If all the ensemble members met the update conditions --> apply the update
-! 2- If more than 50% of the ensemble members met the update condition --> 
-!    apply the update for that members and set the other member to the mean 
-!    value of the ensemble (i.e. mean of the members that met the conditions)
-! 3- If less then 50% of the ensemble members met the update conditions --> 
-!    adjust the states    
-
-
 ! !INTERFACE:
 subroutine noahmp50_setvegvars(n, LSM_State)
 ! !USES:

@@ -13,14 +13,14 @@
 !
 
 subroutine noahmp50_veg_DAlog(n)
-  
-    ! USES:
-      
-    ! ARGUMENTS:  
-    integer, intent(in)    :: n 
-      
-    ! DESCRIPTION:
-    
+
+! !USES:
+  !NONE
+
+! !ARGUMENTS:
+   integer, intent(in)    :: n
+
+! !DESCRIPTION:
 
 end subroutine noahmp50_veg_DAlog
-  
+
