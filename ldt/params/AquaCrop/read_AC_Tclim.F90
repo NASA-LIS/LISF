@@ -16,19 +16,18 @@
 !  2 Oct 2024: Louise Busschaert; Initial Specification
 !
 ! !INTERFACE:
-#include "LDT_misc.h"
 subroutine read_AC_Tclim(n, array)
 
   ! !USES:
+  use AquaCrop_parmsMod
   use ESMF
   use LDT_coreMod,       only : LDT_rc, LDT_domain
   use LDT_logMod,        only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
-  use LDT_fileIOMod,     only : readLISdata
   use LDT_paramDataMod, only: LDT_LSMparam_struc
-  use AquaCrop_parmsMod
 
   implicit none
+
   ! !ARGUMENTS:
   integer,    intent(in) :: n
   real,    intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n))
