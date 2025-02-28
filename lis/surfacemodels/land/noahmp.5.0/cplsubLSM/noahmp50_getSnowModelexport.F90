@@ -32,39 +32,6 @@ subroutine noahmp50_getSnowModelexport(n, LSM2SUBLSM_State)
 ! 
 !EOP
 
-#if 0
-  type(ESMF_Field)   :: gtField
-  type(ESMF_Field)   :: XWGIField
-  type(ESMF_Field)   :: XWGField
-  real, pointer      :: gt(:)
-  real, pointer      :: XWGI(:)
-  real, pointer      :: XWG(:)
-  integer            :: t
-  integer            :: status
-
-  call ESMF_StateGet(LSM2SUBLSM_State,"Ground temperature",gtField,rc=status)
-  call LIS_verify(status)
-  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric liquid water content",XWGField,rc=status)
-  call LIS_verify(status)
-  call ESMF_StateGet(LSM2SUBLSM_State,"soil volumetric frozen water content",XWGIField,rc=status)
-  call LIS_verify(status)
-
-  call ESMF_FieldGet(gtField,localDE=0,farrayPtr=gt,rc=status)
-  call LIS_verify(status)
-  call ESMF_FieldGet(XWGField,localDE=0,farrayPtr=XWG,rc=status)
-  call LIS_verify(status)
-  call ESMF_FieldGet(XWGIField,localDE=0,farrayPtr=XWGI,rc=status)
-  call LIS_verify(status)
-
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-     gt(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(1)
-     !gt(t) = NoahMP50_struc(n)%noahmp50(t)%tgb
-     XWGI(t) = NoahMP50_struc(n)%noahmp50(t)%smc(1) - NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric frozen soil moisture [m3/m3]
-     XWG(t)  = NoahMP50_struc(n)%noahmp50(t)%sh2o(1) ! volumetric liquid soil moisture [m3/m3]
-  enddo
-
-#endif
-
 end subroutine noahmp50_getSnowModelexport
 
 

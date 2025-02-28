@@ -59,57 +59,12 @@ contains
 ! !DESCRIPTION:        
 !
 !EOP
-    
-
     implicit none
     integer                :: k
-#if 0
-    integer                :: n
-    integer                :: status
-    integer                :: ngrid
-    character(len=LIS_CONST_PATH_LEN) :: modelcdffile(LIS_rc%nnest)
-#endif
 
     if(.not.allocated(noahmp50_dasm_struc)) then 
        allocate(noahmp50_dasm_struc(LIS_rc%nnest))
     endif
     
-!TBD: SVK
-#if 0 
-    if(LIS_rc%dascaloption(k).eq."Linear scaling") then 
-       call ESMF_ConfigFindLabel(LIS_config,"Noah-MP.5.0 soil moisture CDF file:",&
-            rc=status)
-       do n=1,LIS_rc%nnest
-          call ESMF_ConfigGetAttribute(LIS_config,modelcdffile(n),rc=status)
-          call LIS_verify(status, 'Noah-MP.5.0 soil moisture CDF file: not defined')
-       enddo
-       
-       do n=1,LIS_rc%nnest
-       
-!Hardcoded for now.
-          noahmp50_dasm_struc(n)%nbins = 100
-          
-          call LIS_getCDFattributes(modelcdffile(n),&
-               noahmp50_dasm_struc(n)%ntimes, ngrid)
-          
-          allocate(noahmp50_dasm_struc(n)%model_xrange(&
-               LIS_rc%ngrid(n), noahmp50_dasm_struc(n)%ntimes, &
-               noahmp50_dasm_struc(n)%nbins))
-          allocate(noahmp50_dasm_struc(n)%model_cdf(&
-               LIS_rc%ngrid(n), noahmp50_dasm_struc(n)%ntimes, &
-               noahmp50_dasm_struc(n)%nbins))
-          
-          call LIS_readCDFdata(n,&
-               noahmp50_dasm_struc(n)%nbins, &
-               noahmp50_dasm_struc(n)%ntimes, &
-               ngrid, &
-               modelcdffile(n), &
-               "SoilMoist",&
-               noahmp50_dasm_struc(n)%model_xrange,&
-               noahmp50_dasm_struc(n)%model_cdf)
-       enddo
-    endif
-#endif
-
   end subroutine NoahMP50_dasoilm_init
 end module NoahMP50_dasoilm_Mod
