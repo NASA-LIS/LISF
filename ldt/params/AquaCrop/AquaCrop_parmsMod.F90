@@ -21,13 +21,8 @@ module AquaCrop_parmsMod
 !
 !  10 May 2024; Michel Becthold, Louise Busschaert, initial implementation
 !
-  use ESMF
-  use LDT_coreMod
-  use LDT_historyMod
-  use LDT_paramDataMod
-  use LDT_logMod
-  use LDT_paramMaskCheckMod
-  use LDT_constantsMod, only : LDT_CONST_PATH_LEN
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+  use LDT_paramDataMod, only: LDT_paramEntry
 
   implicit none
 
@@ -64,9 +59,11 @@ module AquaCrop_parmsMod
 contains
 
   subroutine AquaCropParms_init(flag)
+
     ! !USES:
-    use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
-    use LDT_logMod,    only : LDT_verify
+    use ESMF
+    use LDT_coreMod, only: LDT_rc, LDT_config
+    use LDT_logMod,  only: LDT_verify, LDT_logunit, LDT_endrun
     !
     ! !DESCRIPTION:
     !
@@ -86,6 +83,7 @@ contains
     !
     !EOP
     implicit none
+
     integer  :: flag
     integer  :: n,k
     integer  :: rc
@@ -191,11 +189,11 @@ contains
 
   subroutine AquaCropParms_writeHeader(n,ftn,dimID,monthID)
 
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
+    use LDT_logMod, only: LDT_verify
 
-    integer   :: n,i 
+    implicit none
+
+    integer   :: n,i
     integer   :: ftn
     integer   :: dimID(3)
     integer   :: monthID
@@ -241,11 +239,9 @@ contains
 
   subroutine AquaCropParms_writeData(n,ftn)
 
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-    use netcdf
-#endif
+    implicit none
 
-    integer   :: n 
+    integer   :: n
     integer   :: ftn
 
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -271,6 +267,10 @@ contains
     !   in the param_attribs.txt file.
     !
     ! !USES:
+    use LDT_paramDataMod, only: LDT_paramEntry
+
+    implicit none
+
     type(LDT_paramEntry),intent(inout) :: paramEntry
     character(len=*),    intent(in)    :: short_name
     character(len=*),     optional     :: units
