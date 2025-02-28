@@ -55,7 +55,7 @@ module AquaCrop_parmsMod
      integer :: max_comp ! fixed to 12
      integer :: tempcli_refyr ! reference year for cli
      character(len=LDT_CONST_PATH_LEN) :: tempclimdir
-     character(125) :: tempclimfile
+     character(len=LDT_CONST_PATH_LEN) :: tempclimfile
      character(125) :: tempclim_gridtransform
   end type aquacrop_type_dec
 
@@ -118,7 +118,7 @@ contains
           call read_CONSTANT_AC_crop(&
                n,AquaCrop_struc(n)%cropt%value(:,:,1))
        case default
-          write(LDT_logunit,*) "[WARN] crop type data source not valid for AquaCrop."
+          write(LDT_logunit,*) "[ERR] crop type data source not valid for AquaCrop."
           write(LDT_logunit,*) "  Please select: CONSTANT"
           write(LDT_logunit,*) "Program stopping ..."
           call LDT_endrun
