@@ -279,7 +279,6 @@ SUBROUTINE calc_declin ( nowdate, latitude, longitude, cosz, yearlen, julian)
 
 !KWM   write(wrf_err_message,10)DECDEG/DEGRAD
 !KWM10 FORMAT(1X,'*** SOLAR DECLINATION ANGLE = ',F6.2,' DEGREES.',' ***')
-!KWM   CALL wrf_debug (50, wrf_err_message)
 
 END SUBROUTINE calc_declin
 
