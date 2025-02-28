@@ -21,9 +21,10 @@ subroutine read_CONSTANT_AC_crop(n, array)
   ! !USES:
   use ESMF
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
-  use LDT_coreMod,      only : LDT_rc, LDT_config
+  use LDT_coreMod,      only: LDT_rc, LDT_config
   use LDT_paramDataMod, only: LDT_LSMparam_struc
-  use LDT_logMod
+  use LDT_logMod, only: LDT_verify, LDT_getNextUnitNumber, &
+       LDT_releaseUnitNumber, LDT_logunit, LDT_endrun
 
   implicit none
   ! !ARGUMENTS: 
