@@ -7,6 +7,7 @@
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
+#include "LDT_misc.h"
 module AquaCrop_parmsMod
 !BOP
 !
@@ -189,7 +190,11 @@ contains
 
   subroutine AquaCropParms_writeHeader(n,ftn,dimID,monthID)
 
+    use LDT_historyMod, only: LDT_writeNetcdfDataHeader
     use LDT_logMod, only: LDT_verify
+#if(defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
 
     implicit none
 
@@ -239,20 +244,19 @@ contains
 
   subroutine AquaCropParms_writeData(n,ftn)
 
+    use LDT_historyMod, only: LDT_writeNetcdfData
+
     implicit none
 
     integer   :: n
     integer   :: ftn
 
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%cropt)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%comp_size)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmin_cli)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%tmax_cli)
-#endif
 
   end subroutine AquaCropParms_writeData
-
 
   !BOP
   ! !ROUTINE:  set_param_attribs
