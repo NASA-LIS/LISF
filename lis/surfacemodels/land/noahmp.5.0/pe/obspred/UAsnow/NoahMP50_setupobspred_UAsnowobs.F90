@@ -12,7 +12,7 @@
 !  \label{NoahMP50_setupobspred_UAsnowobs}
 !
 ! !REVISION HISTORY:
-! 2 May 2020: Sujay Kumar; Initial Specification
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine NoahMP50_setupobspred_UAsnowobs(OBSPred)

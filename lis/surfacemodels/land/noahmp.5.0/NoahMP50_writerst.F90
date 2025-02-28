@@ -15,12 +15,8 @@
 ! \label{NoahMP50_writerst}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for LIS 7 and NoahMP401
-!  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
-
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
 ! !INTERFACE:
 subroutine NoahMP50_writerst(n)
 ! !USES:
@@ -116,11 +112,8 @@ end subroutine NoahMP50_writerst
 ! \label{NoahMP50_dump_restart}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!  10/25/18: Shugong Wang, Zhuo Wang, initial implementation for LIS 7 and NoahMP401
-!  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
 ! !INTERFACE:
 subroutine NoahMP50_dump_restart(n, ftn, wformat)
 

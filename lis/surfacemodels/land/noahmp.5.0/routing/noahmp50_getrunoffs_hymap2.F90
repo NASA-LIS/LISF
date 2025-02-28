@@ -12,7 +12,6 @@
 !  \label{noahmp50_getrunoffs_hymap2}
 !
 ! !REVISION HISTORY:
-!  6 May 2011: Sujay Kumar; Initial Specification
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:

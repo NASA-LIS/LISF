@@ -135,10 +135,6 @@ module NoahMP50_lsmMod
 ! \end{description}
 !
 ! !REVISION HISTORY:
-!  This module is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the module is defined by Sujay Kumar. 
-!  10/25/18: Shugong Wang, Zhuo Wang Initial implementation for LIS 7 and NoahMP401
 !  05/01/23: Cenlin He, update to work with refactored Noah-MP (v5.0 and later)
 
 ! !USES:

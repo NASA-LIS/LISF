@@ -12,7 +12,7 @@
 !  \label{noahmp50_setvegvars}
 !
 ! !REVISION HISTORY:
-! 13 Feb 2020: Sujay Kumar; Initial Specification
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 ! 
 ! Apply the update if it met the update conditions
 ! Update conditions: 

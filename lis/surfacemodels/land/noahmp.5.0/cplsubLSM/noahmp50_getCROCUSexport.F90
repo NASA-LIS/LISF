@@ -12,10 +12,7 @@
 ! \label{noahmp50_getCROCUSexport}
 !
 ! !REVISION HISTORY:
-! 19 Sep 2020: Sujay Kumar; Initial Specification
-! 17 Nov 2020: Mahdi Navari; In analogous to ISBA-Crocus %tgb replaced with %tslb
-!  2 Dec 2020: Mahdi Navari; Edited to add soil volumetric liquid and frozen water content
-! May 2023: Cenlin He; modified to work with refactored Noah-MP v5 and later
+!  May 2023: Cenlin He; modified to work with refactored Noah-MP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_getCROCUSexport(n, LSM2SUBLSM_State)

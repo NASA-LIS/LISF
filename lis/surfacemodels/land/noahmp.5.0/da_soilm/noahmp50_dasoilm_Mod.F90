@@ -16,9 +16,7 @@ module NoahMP50_dasoilm_Mod
 ! !DESCRIPTION:
 !  
 ! !REVISION HISTORY:
-
-! 15 Dec 2018: Mahdi Navari, Sujay Kumar ; Modified for NoahMP401 !
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 
 ! !USES:        
   use LIS_coreMod

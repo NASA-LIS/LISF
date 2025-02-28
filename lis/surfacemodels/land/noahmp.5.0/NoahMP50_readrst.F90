@@ -15,12 +15,7 @@
 ! \label{NoahMP50_readrst}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for LIS 7 and Noah-MP-4.0.1
-!   01/08/2021 Bailing Li; implemented code for reading GRACE DA restart file
-!   May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 
 ! !INTERFACE:
 subroutine NoahMP50_readrst()

@@ -12,10 +12,8 @@
 ! \label{noahmp50_gettws}
 !
 ! !REVISION HISTORY:
-! 14 Mar 2017: Sujay Kumar; Initial Specification
-! 18 Aug 2017: Wanshu Nie; Add groundwater component
-! 29 May 2020: Bailing Li; created for Noah-MP4.0.1
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
 ! !INTERFACE:
 subroutine noahmp50_gettws(n, LSM_State)
 

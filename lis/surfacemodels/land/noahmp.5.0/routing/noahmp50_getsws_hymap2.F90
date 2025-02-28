@@ -12,8 +12,7 @@
 !  \label{noahmp50_getsws_hymap2}
 !
 ! !REVISION HISTORY:
-! 12 Sep 2019: Augusto Getirana; implementation of two-way coupling
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_getsws_hymap2(n)

@@ -8,10 +8,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! 16Feb12  Ben Zaitchik; Initial Specification
-! 29 May 2020: Bailing Li; created for Noah-MP4.0.1
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
-!
+! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 
 module noahmp50_tws_DAlogMod
   

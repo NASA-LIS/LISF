@@ -12,10 +12,8 @@
 ! \label{NoahMP50_getsoilm}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 15 Dec 2018: Mahdi Navari; Modified for NoahMP50 
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
 ! !INTERFACE:
 subroutine NoahMP50_getsoilm(n, LSM_State)
 

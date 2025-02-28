@@ -13,11 +13,6 @@
 ! \label{NoahMP50_f2t}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!  
-!  10/25/18: Shugong Wang, Zhuo Wang; Initial implementation for LIS 7 and NoahMP401
 !  May 2023: Cenlin He; updated for Noah-MP v5 (refactored) and later
 
 ! !INTERFACE:

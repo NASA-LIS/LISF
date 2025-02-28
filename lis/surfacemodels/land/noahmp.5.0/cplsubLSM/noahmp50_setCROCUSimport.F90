@@ -12,8 +12,7 @@
 ! \label{noahmp50_setCROCUSimport}
 !
 ! !REVISION HISTORY:
-! 19 Sep 2020: Sujay Kumar; Initial Specification
-! May 2023: Cenlin He; Modified to work with refactored Noah-MP v5 and later
+!  May 2023: Cenlin He; Modified to work with refactored Noah-MP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_setCROCUSimport(n, SubLSM2LSM_State)

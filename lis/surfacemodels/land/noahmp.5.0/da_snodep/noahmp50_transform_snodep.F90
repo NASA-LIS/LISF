@@ -12,11 +12,6 @@
 ! \label{noahmp50_transform_snodep}
 !
 ! !REVISION HISTORY:
-! 25Jun2006: Sujay Kumar: Initial Specification
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-!  03 Oct 2018; Yeosang Yoon; Modified for NoahMP 3.6
-!  14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
 !  May 2023:    Cenlin He; Modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:

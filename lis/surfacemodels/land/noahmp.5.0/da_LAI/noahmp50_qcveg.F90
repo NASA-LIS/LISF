@@ -12,7 +12,7 @@
 ! \label{noahmp50_qcveg}
 !
 ! !REVISION HISTORY:
-! 13 Feb 2020: Sujay Kumar; Initial Specification
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_qcveg(n, LSM_State)

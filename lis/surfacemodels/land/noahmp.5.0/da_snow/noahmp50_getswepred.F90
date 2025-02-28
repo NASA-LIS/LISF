@@ -12,10 +12,7 @@
 ! \label{noahmp50_getswepred}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_getswepred(n, k, obs_pred)

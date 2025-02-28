@@ -14,13 +14,7 @@
 ! \label{NoahMP50_read_OPT_parameters}
 !
 ! !REVISION HISTORY:
-!
-!  This subroutine reads the optimized parameters generated typically 
-!  from the LIS OPT/UE system. In general, this routine can be used
-!  to overwrite the default lookup table values that the model uses. 
-! 
-!   5 May 2020: Sujay Kumar; Initial specification
-!   May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 
 ! !INTERFACE:
 !
@@ -333,8 +327,7 @@ end subroutine NoahMP50_read_OPT_parameters
 !  \label{NoahMP50_read_OPT_param}
 !
 ! !REVISION HISTORY:
-!  03 Sept 2004: Sujay Kumar; Initial Specification for read_laiclimo
-!  30 Oct  2013: Shugong Wang; Generalization for reading OPT spatial parameter
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine NoahMP50_read_OPT_param(n, ncvar_name, placeholder,var_found)

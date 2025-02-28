@@ -12,9 +12,7 @@
 ! \label{noahmp50_setSnowModelimport}
 !
 ! !REVISION HISTORY:
-! 19 Sep 2020: Sujay Kumar; Initial Specification
-! 12 Aug 2021: Kristi Arsenault; Added SnowModel
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_setSnowModelimport(n, SubLSM2LSM_State)

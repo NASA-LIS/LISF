@@ -16,10 +16,8 @@ module noahmp50_datws_Mod
 ! !DESCRIPTION:
 !  
 ! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
-! 14 Mar 2017: Sujay Kumar; Initial Specification
-! 29 May 2020: Bailing Li created for Noah-MP.4.0.1
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 ! !USES:        
   use LIS_coreMod
 

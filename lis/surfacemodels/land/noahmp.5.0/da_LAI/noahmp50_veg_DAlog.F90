@@ -8,7 +8,8 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! 15 Apr 2021: Wanshu Nie; created for Noah-MP4.0.1
+! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 
 subroutine noahmp50_veg_DAlog(n)

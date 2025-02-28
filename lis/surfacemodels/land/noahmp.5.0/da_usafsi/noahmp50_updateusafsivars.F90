@@ -12,14 +12,7 @@
 ! \label{noahmp50_updateusafsivars}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1 and SNODEP
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
-! 09 Jan 2020: Yeosang Yoon; Updated QC
-! May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
+!  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
 !
 ! !INTERFACE:
 subroutine noahmp50_updateusafsivars(n, LSM_State, LSM_Incr_State)

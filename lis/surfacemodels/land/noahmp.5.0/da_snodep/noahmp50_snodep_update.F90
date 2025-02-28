@@ -12,8 +12,6 @@
 ! \label{noahmp50_snodep_update}
 !
 ! !REVISION HISTORY:
-!  13 Aug 2017: Sujay Kumar; Initial specification
-!  14 Dec 2018: Yeosang Yoon; Modified code for NoahMP 4.0.1
 !  May 2023:    Cenlin He; Modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE

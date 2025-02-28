@@ -18,8 +18,8 @@ module NoahMP50_peMod
 !  the LSM parameters to be used in opt/ue. 
 !
 ! !REVISION HISTORY:
-!  27 Apr 2020; Sujay Kumar, Initial Code
 !  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+!
 ! !USES:        
   use ESMF
   use LIS_numerRecipesMod, only : LIS_rand_func
@@ -56,7 +56,6 @@ contains
 !  \label{NoahMP50_setup_pedecvars}
 !
 ! !REVISION HISTORY:
-! 02 Feb 2018: Soni Yatheendradas; Initial Specification
 !  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:

@@ -12,12 +12,7 @@
 ! \label{noahmp50_map_snodep}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
-! May 2023: Cenlin He; Modified for NoahMP v5 and later
+!  May 2023: Cenlin He; Modified for NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_map_snodep(n,k,OBS_State,LSM_Incr_State)

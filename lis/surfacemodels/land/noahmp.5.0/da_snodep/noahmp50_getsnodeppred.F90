@@ -12,15 +12,7 @@
 ! \label{noahmp50_getsnodeppred}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-! 01 May 2014: Yuqiong Liu; modifed to include mesh8, mesh16, and 0p25 SNODEP data
-! 24 May 2017: Yeosang Yoon: updated the file to work with the DA observation
-!              space updates.
-! 03 Oct 2018: Yeosang Yoon; Modified for NoahMP 3.6
-! 14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_getsnodeppred(n, k, obs_pred)

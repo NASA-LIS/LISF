@@ -12,8 +12,7 @@
 !  \label{NoahMP50_set_pedecvars}
 !
 ! !REVISION HISTORY:
-! 02 Feb 2018: Soni Yatheendradas; Initial Specification
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 
 

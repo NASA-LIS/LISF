@@ -12,13 +12,6 @@
 ! \label{noahmp50_transform_usafsi}
 !
 ! !REVISION HISTORY:
-! 25Jun2006: Sujay Kumar: Initial Specification
-!  02 Mar 2010: Sujay Kumar; Modified for Noah 3.1
-!  21 Jul 2011: James Geiger; Modified for Noah 3.2
-!  03 Oct 2018; Yeosang Yoon; Modified for NoahMP 3.6
-!  14 Dec 2018: Yeosang Yoon; Modified for NoahMP 4.0.1
-! 15 May 2019: Yeosang Yoon; Modified for NoahMP 4.0.1 and LDTSI
-! 13 Dec 2019: Eric Kemp; Replaced LDTSI with USAFSI
 !  May 2023: Cenlin He; update to work with refactored NoahMP (v5.0 and newer)
 !
 ! !INTERFACE:

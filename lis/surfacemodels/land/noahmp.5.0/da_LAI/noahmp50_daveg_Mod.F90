@@ -16,7 +16,7 @@ module noahmp50_daveg_Mod
 ! !DESCRIPTION:
 !  
 ! !REVISION HISTORY:
-! 13 Feb 2020: Sujay Kumar; Initial Specification
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !USES:        
   use ESMF

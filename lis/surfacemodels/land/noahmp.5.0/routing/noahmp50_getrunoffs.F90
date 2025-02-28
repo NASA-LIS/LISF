@@ -12,8 +12,6 @@
 !  \label{noahmp50_getrunoffs}
 !
 ! !REVISION HISTORY:
-!  6 May 2011: Sujay Kumar; Initial Specification
-! 26 Feb 2019: David Mocko, added Noah-MP-4.0.1 routing into LIS-7
 !  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:

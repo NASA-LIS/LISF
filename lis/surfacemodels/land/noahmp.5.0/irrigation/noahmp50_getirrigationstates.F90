@@ -48,19 +48,6 @@ subroutine noahmp50_getirrigationstates(n,irrigState)
 !    intensity exceeds total crop fraction
 !
 ! REVISION HISTORY:
-!
-! Aug 2008: Hiroko Kato; Initial code
-! Nov 2012: Sujay Kumar, Incorporated into LIS
-! Jun 2014: Ben Zaitchik; Added flood scheme
-! Aug 2016: Wanshu Nie; Incorporated into NoahMP
-! May 2018: Wanshu Nie; Add temperature check for GRACE-DA purpose
-! May 2019: Jessica Erlingis; Incorporate W. Nie's updates into LIS
-!                             and add optional flag for groundwater abstraction
-! Feb 2020: Jessica Erlingis; Correct sprinkler scheme so that it checks moisture
-!                             at otimess and applies constant rate for irrhrs
-! March 2020: Jessica Erlingis; Add to Noah-MP 4.0.1
-! Apr 2021: Wanshu Nie; Add option to interact with DVEG
-! May 2021: Wanshu Nie; update irrigation using ensemble mean when runing with DA.
 ! May 2023: Cenlin He; update to work with Noah-MP refactored code (v5.0 and later)
 
 !EOP

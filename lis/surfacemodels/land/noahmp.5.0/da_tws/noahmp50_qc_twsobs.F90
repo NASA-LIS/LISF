@@ -12,7 +12,7 @@
 ! \label{noahmp50_qc_twsobs}
 !
 ! !REVISION HISTORY:
-! 14 Mar 2017: Sujay Kumar: Initial Specification
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_qc_twsobs(n,k,OBS_State)

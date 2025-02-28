@@ -12,9 +12,7 @@
 ! \label{noahmp50_qctws}
 !
 ! !REVISION HISTORY:
-! 14 Mar 2017: Sujay Kumar; Initial Specification
-! 29 May 2020: Bailing Li; Created for Noah-MP4.0.1 
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_qctws(n, LSM_State)

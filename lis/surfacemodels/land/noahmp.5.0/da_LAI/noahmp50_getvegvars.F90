@@ -12,10 +12,8 @@
 ! \label{noahmp50_getvegvars}
 !
 ! !REVISION HISTORY:
-! 27Feb2005: Sujay Kumar; Initial Specification
-! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 1 Aug 2016: Mahdi Navari; Modified for Noahmp401 
-!   To do: makes it general for x layers (currently hard coded for 4 layers)
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
 ! !INTERFACE:
 subroutine noahmp50_getvegvars(n, LSM_State)
 

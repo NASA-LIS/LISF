@@ -12,11 +12,7 @@
 ! \label{noahmp50_getSnowModelexport}
 !
 ! !REVISION HISTORY:
-! 19 Sep 2020: Sujay Kumar; Initial Specification
-! 17 Nov 2020: Mahdi Navari; In analogous to ISBA-Crocus %tgb replaced with %tslb
-!  2 Dec 2020: Mahdi Navari; Edited to add soil volumetric liquid and frozen water content
-! 12 Aug 2021: Kristi Arsenault; Added SnowModel connections
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_getSnowModelexport(n, LSM2SUBLSM_State)

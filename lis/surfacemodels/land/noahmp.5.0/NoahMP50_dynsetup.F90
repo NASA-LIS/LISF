@@ -14,12 +14,7 @@
 ! \label{NoahMP50_dynsetup}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for LIS 7 and NoahMP401
-!   11 Nov 2020: Eric Kemp, added updates to LIS_snow_struc
-!   May 2023: Cenlin He, modified for refactored noahmp v5 and later
+!  May 2023: Cenlin He; modified for refactored noahmp v5 and later
 
 ! !INTERFACE:
 subroutine NoahMP50_dynsetup(n)

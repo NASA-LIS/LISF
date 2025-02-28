@@ -15,11 +15,8 @@
 ! \label{NoahMP50_setup}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit developed
-!  by Shugong Wang for the NASA Land Information System Version 7. The initial 
-!  specification of the subroutine is defined by Sujay Kumar. 
-!  10/25/18: Shugong Wang, Zhuo Wang; initial implementation for LIS 7 and NoahMP50
-!  05/01/23: Cenlin He, update to work with refactored Noah-MP (v5.0 and later)
+!  05/01/23: Cenlin He; update to work with refactored Noah-MP (v5.0 and later)
+!
 ! !INTERFACE:
 
 subroutine NoahMP50_setup()
@@ -402,8 +399,7 @@ end subroutine NoahMP50_setup
 !  \label{read_MULTILEVEL_param}
 !
 ! !REVISION HISTORY:
-!  03 Sept 2004: Sujay Kumar; Initial Specification for read_laiclimo
-!  30 Oct  2013: Shugong Wang; Generalization for reading MULTILEVEL spatial parameter
+!  05/01/23: Cenlin He; update to work with refactored Noah-MP (v5.0 and later)
 !
 ! !INTERFACE:
 subroutine NoahMP50_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)

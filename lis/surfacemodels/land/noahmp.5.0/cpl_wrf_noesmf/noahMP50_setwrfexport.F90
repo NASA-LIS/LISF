@@ -24,10 +24,7 @@
 !    soil drainage (soldrain)
 !
 ! !REVISION HISTORY:
-! 02 Dec 2003; Sujay Kumar, Initial Version
-! 17 Nov 2008; Sujay Kumar, Modified for the ESMF coupled version
-! 28 Jun 2018; Chandana Gangodagamage Modified for the NoahMP.3.6
-! May 2023: Cenlin He, modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He, modified for refactored NoahMP v5 and later
 ! 
 ! !INTERFACE:
 subroutine NoahMP50_setwrfexport(n)

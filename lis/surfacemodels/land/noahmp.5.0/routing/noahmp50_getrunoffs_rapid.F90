@@ -12,7 +12,6 @@
 !  \label{noahmp50_getrunoffs_rapid}
 !
 ! !REVISION HISTORY:
-!  17 Mar 2021: Yeosang Yoon; Initial Specification
 !  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:

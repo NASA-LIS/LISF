@@ -12,8 +12,7 @@
 ! \label{noahmp50_write_tws}
 !
 ! !REVISION HISTORY:
-! 14 Mar 2017: Sujay Kumar; Initial Specification
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_write_tws(ftn,n, LSM_State)

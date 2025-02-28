@@ -12,8 +12,7 @@
 ! \label{noahmp50_qc_LAIobs}
 !
 ! !REVISION HISTORY:
-! 25Feb2008: Sujay Kumar: Initial Specification
-! 1 Aug 2016: Mahdi Navari; Modified for Noahmp401 
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine noahmp50_qc_LAIobs(n,k,OBS_State)

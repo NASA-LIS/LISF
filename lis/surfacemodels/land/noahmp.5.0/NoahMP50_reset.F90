@@ -13,8 +13,7 @@
 ! \label{NoahMP50_reset}
 !
 ! !REVISION HISTORY:
-! Modified by Shugong Wang for Noah-MP.4.0.1  
-! modified by Cenlin He for refactored Noah-MP v5 and later
+!  May 2033: Cenlin He; for refactored Noah-MP v5 and later
 
 ! !INTERFACE:
 subroutine NoahMP50_reset()

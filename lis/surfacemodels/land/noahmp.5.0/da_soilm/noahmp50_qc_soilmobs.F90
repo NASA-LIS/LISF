@@ -12,10 +12,7 @@
 ! \label{NoahMP50_qc_soilmobs}
 !
 ! !REVISION HISTORY:
-! 25Feb2008: Sujay Kumar: Initial Specification
-! 15 Dec 2018: Mahdi Navari; Modified for NoahMP50
-! 15 Jun 2020: Yonghwan Kwon: Modified vegetation fraction threshold 
-! May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
 !
 ! !INTERFACE:
 subroutine NoahMP50_qc_soilmobs(n,k,OBS_State)

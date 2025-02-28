@@ -14,16 +14,7 @@
 ! \label{NoahMP50_main}
 !
 ! !REVISION HISTORY:
-!  This subroutine is generated with the Model Implementation Toolkit
-!  developed by Shugong Wang for the NASA Land Information System V7.
-!  The initial specification of the subroutine is by Sujay Kumar.
-!
-!   10/25/18: Shugong Wang, Zhuo Wang; initial implementation for NoahMP50 with LIS-7
-!   05/15/19: Yeosang Yoon; code added for snow DA to work
-!   10/29/19: David Mocko; Added RELSMC to output, and an option
-!                          for different units for Qs/Qsb/Albedo
-!   03/09/22: David Mocko: Fixed "input LAI" for dynamic vegetation options 7/8/9
-!   05/23/23: Cenlin He: modified for refactored NoahMP v5 and later
+!  05/23/23: Cenlin He; modified for refactored NoahMP v5 and later
 
 ! !INTERFACE:
 subroutine NoahMP50_main(n)
