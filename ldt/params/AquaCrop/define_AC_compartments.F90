@@ -17,14 +17,16 @@
 !
 ! !INTERFACE:
 subroutine define_AC_compartments(n, array)
+
   ! !USES:
+  use ac_utils
+  use AquaCrop_parmsMod
   use ESMF
   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,      only: LDT_rc, LDT_config
+  use LDT_logMod, only: LDT_verify, LDT_logunit, &
+       LDT_getNextUnitNumber, LDT_releaseUnitNumber
   use LDT_paramDataMod, only: LDT_LSMparam_struc
-  use LDT_logMod
-  use AquaCrop_parmsMod
-  use ac_utils
 
   implicit none
 
