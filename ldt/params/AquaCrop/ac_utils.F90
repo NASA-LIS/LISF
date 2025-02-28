@@ -7,12 +7,8 @@ module ac_utils
        int32, &
        real32
 
-  use, intrinsic :: iso_c_binding, only: c_f_pointer, &
-       c_loc, &
-       c_null_char, &
-       c_ptr
-
   implicit none
+
   integer, parameter :: sp = real32
   !! double precision real kind
 
