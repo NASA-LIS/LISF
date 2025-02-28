@@ -139,8 +139,6 @@ subroutine read_AC_Tclim(n, array)
   param_gridDesc(10) = cellysize
   param_gridDesc(20) = 0.
 
-  !   call LDT_checkDomainExtents(n, param_gridDesc(:))
-
   mi = ncols * nrows
   mo = LDT_rc%lnc(n)*LDT_rc%lnr(n)
   allocate( gi1(mi), li1(mi) )
