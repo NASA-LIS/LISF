@@ -33,7 +33,7 @@ import os
 import sys
 import argparse
 import yaml
-
+from shared import utils
 #
 # Local methods
 #
@@ -54,46 +54,19 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def _driver():
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
+         job_name, ntasks, hours, cwd, nmme_model):
     """Main driver."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
-    parser.add_argument('-e', '--fcst_eyr', required=True, help='forecast end year')
-    parser.add_argument('-c', '--config_file', required=True, help='config file name')
-    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
-    parser.add_argument('-n', '--month_num', required=True, help='month number')
-    parser.add_argument('-j', '--job_name', required=True, help='job_name')
-    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
-    parser.add_argument('-H', '--hours', required=True, help='hours')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
-    parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
-
-    args = parser.parse_args()
-    config_file = args.config_file
-    fcst_syr = args.fcst_syr
-    fcst_eyr = args.fcst_eyr
-    month_abbr = args.month_abbr
-    month_num = args.month_num
-    job_name = args.job_name
-    ntasks = args.ntasks
-    hours = args.hours
-    cwd = args.cwd
-    nmme_model = args.nmme_model
 
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    # import local module
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
-
     # Path of the main project directory
     projdir = args.project_directory
 
     # Path of the directory where all the BC codes are kept
-    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
+    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
     # Log file output directory
     #logdir = cwd + '/log_files'
@@ -158,4 +131,20 @@ def _driver():
 # Main Method
 #
 if __name__ == "__main__":
-    _driver()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
+    parser.add_argument('-e', '--fcst_eyr', required=True, help='forecast end year')
+    parser.add_argument('-c', '--config_file', required=True, help='config file name')
+    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
+    parser.add_argument('-n', '--month_num', required=True, help='month number')
+    parser.add_argument('-j', '--job_name', required=True, help='job_name')
+    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
+    parser.add_argument('-H', '--hours', required=True, help='hours')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-M', '--nmme_model', required=True, help='NMME Model')
+    parser.add_argument('-p', '--project_directory', required=True, help='Project (E2ES) directory')
+
+    args = parser.parse_args()
+
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
+         args.job_name, args.ntasks, args.hours, args.cwd, args.nmme_model)

@@ -23,11 +23,11 @@ GROUP_JOBS='Y'
 submit_job(){
     if [[ $1 == "" ]] || [[ $1 == ":" ]]; then
 	submit_ID="`sbatch $2 |  cut -d' ' -f4`"
-	python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -c $BWD/$CFILE
+	python $LISHDIR/ghis2s/main/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -c $BWD/$CFILE
     else
 	submit_ID="`sbatch --dependency=afterok:$1 $2 |  cut -d' ' -f4`"
 	c2c=`echo $1 | sed "s|:|,|g"`
-	python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c` -c $BWD/$CFILE
+	python $LISHDIR/ghis2s/main/s2s_api.py -s $JOB_SCHEDULE -m $submit_ID -f $2 -a `echo $c2c` -c $BWD/$CFILE
     fi
     echo $submit_ID
 }
@@ -270,7 +270,7 @@ ulimit -s unlimited
 export ARCH=`uname`
 
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
+export LISHDIR=${LISFDIR}/lis/utils/usaf/S2S/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -468,11 +468,11 @@ lis_darun(){
     mkdir -p -m 775 ${E2ESDIR}/lis_darun/input/
     mkdir -p -m 775 ${E2ESDIR}/lis_darun/output/lis.config_files/
     cd ${E2ESDIR}/lis_darun/input/
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/template_files
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/attribs
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/tables
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/forcing_variables.txt
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/noahmp401_parms
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/template_files
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/attribs
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/tables
     /bin/ln -s ${SUPDIR}/lis_darun/cdf/${DOMAIN} cdf
     /bin/ln -s ${SUPDIR}/lis_darun/RS_DATA
     /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
@@ -496,7 +496,7 @@ lis_darun(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/s2s_api.py -c ${BWD}/${CFILE} -f lisda_run.j -H 5 -j lisda_ -w ${CWD} -L Y
+    python $LISHDIR/ghis2s/main/s2s_api.py -c ${BWD}/${CFILE} -f lisda_run.j -H 5 -j lisda_ -w ${CWD} -L Y
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
         if [[ $CONSTRAINT =~ "mil" ]]; then
            COMMAND='./LIS '
@@ -554,7 +554,7 @@ ldt_ics(){
     mkdir -p -m 775 $MODELS
     mkdir -p -m 775 ldt.config_files
     mkdir -p -m 775 template_files    
-    /bin/cp -p ${LISHDIR}/s2s_modules/ldt_ics/template_files/ldt.config_noahmp401_nmme_TEMPLATE.${DOMAIN} template_files/ldt.config_noahmp401_nmme_TEMPLATE
+    /bin/cp -p ${LISHDIR}/ghis2s/ldt_ics/template_files/ldt.config_noahmp401_nmme_TEMPLATE.${DOMAIN} template_files/ldt.config_noahmp401_nmme_TEMPLATE
     cd ${E2ESDIR}/ldt_ics/input
     /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
     /bin/ln -s ${SUPDIR}/LS_PARAMETERS
@@ -579,8 +579,8 @@ ldt_ics(){
     # configure batch script
     # ----------------------
     
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ldtics_run.j -t 1 -H 2 -j ldtics_ -w ${CWD}
-    COMMAND="python ${LISHDIR}/s2s_modules/ldt_ics/generate_ldtconfig_files_ensrst_nrt.py -y ${YYYY} -m ${mon} -i ./lisda_output -w $CWD -s $BWD/$CFILE"
+    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ldtics_run.j -t 1 -H 2 -j ldtics_ -w ${CWD}
+    COMMAND="python ${LISHDIR}/ghis2s/ldt_ics/generate_ldtconfig_files_ensrst_nrt.py -y ${YYYY} -m ${mon} -i ./lisda_output -w $CWD -s $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ldtics_run.j
     
     # submit job
@@ -637,7 +637,7 @@ bcsd_fcst(){
 	cmdfile="bcsd01.file"
 	jobname=bcsd01
         [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	python $LISHDIR/ghis2s/bcsd/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	job_list="$jobname*.j"
 	bcsd01_ID=
 	for jfile in $job_list
@@ -655,10 +655,10 @@ bcsd_fcst(){
 	    bcsd01_ID=
 	    /bin/rm bcsd01_*.j
 	    split -l 3  $cmdfile part_
-	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
-	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
-	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_03_run.j -t 1 -H 3 -j ${jobname}_03_ -w ${CWD} -C "part_ac"
-	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_04_run.j -t 1 -H 3 -j ${jobname}_04_ -w ${CWD} -C "part_ad"
+	    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 3 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 3 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_03_run.j -t 1 -H 3 -j ${jobname}_03_ -w ${CWD} -C "part_ac"
+	    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_04_run.j -t 1 -H 3 -j ${jobname}_04_ -w ${CWD} -C "part_ad"
 	    /bin/rm ${cmdfile} "part_aa" "part_ab" "part_ac" "part_ad" 
 	    bcsd01_ID=$(submit_job "" "${jobname}_01_run.j")
 	    thisID=$(submit_job "" "${jobname}_02_run.j")
@@ -674,7 +674,7 @@ bcsd_fcst(){
 	jobname=bcsd03
 	cmdfile="bcsd03.file"
         [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	python $LISHDIR/ghis2s/bcsd/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	
 	unset job_list
 	job_list="$jobname*.j"
@@ -693,7 +693,7 @@ bcsd_fcst(){
 	if [ $GROUP_JOBS == "Y" ]; then
 	    bcsd03_ID=
 	    /bin/rm bcsd03*.j
-	    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 3 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	    /bin/rm ${cmdfile}
 	    bcsd03_ID=$(submit_job "" "${jobname}_run.j")
 	fi
@@ -704,7 +704,7 @@ bcsd_fcst(){
     jobname=bcsd04
     cmdfile="bcsd04.file"
     [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
+    python $LISHDIR/ghis2s/bcsd/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
     job_list="$jobname*.j"
@@ -728,8 +728,8 @@ bcsd_fcst(){
 	bcsd04_ID=
 	/bin/rm bcsd04*.j
 	split -l 4  $cmdfile part_
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
 	/bin/rm ${cmdfile} "part_aa" "part_ab"  
 	bcsd04_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_01_run.j")
 	thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_02_run.j")
@@ -744,7 +744,7 @@ bcsd_fcst(){
     [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
+	python $LISHDIR/ghis2s/bcsd/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -769,8 +769,8 @@ bcsd_fcst(){
 	bcsd05_ID=
 	/bin/rm bcsd05*.j
 	split -l 3  $cmdfile part_
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
 	/bin/rm ${cmdfile} "part_aa" "part_ab"
 	bcsd05_ID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_01_run.j")
 	thisID=$(submit_job "$bcsd01_ID:$bcsd03_ID" "${jobname}_02_run.j")
@@ -783,7 +783,7 @@ bcsd_fcst(){
     jobname=bcsd06
     cmdfile="bcsd06.file"
     [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
+    python $LISHDIR/ghis2s/bcsd/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -801,7 +801,7 @@ bcsd_fcst(){
     if [ $GROUP_JOBS == "Y" ]; then
 	bcsd06_ID=
 	/bin/rm bcsd06*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd06_ID=$(submit_job "$bcsd04_ID:$bcsd05_ID" "${jobname}_run.j")
     fi
@@ -811,7 +811,7 @@ bcsd_fcst(){
     #  (forecast_task_07.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd07
-    # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_07.py -s $YYYY -m $mmm -c -w ${CWD}
+    # python $LISHDIR/ghis2s/bcsd/forecast_task_07.py -s $YYYY -m $mmm -c -w ${CWD}
     # NOTE: This is run inside a Task 6 job
     
     # Task 8: NMME Temporal Disaggregation (forecast_task_08.py: after 6, 7)
@@ -822,7 +822,7 @@ bcsd_fcst(){
 
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
+	python $LISHDIR/ghis2s/bcsd/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -841,7 +841,7 @@ bcsd_fcst(){
     bcsd08_ID=`echo $bcsd08_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm bcsd08*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 5 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd08_ID=$(submit_job "$bcsd06_ID" "${jobname}_run.j")
     fi
@@ -854,7 +854,7 @@ bcsd_fcst(){
     cmdfile="bcsd09-10.file"
     [ -e "${jobname}-10_run.j" ] && /bin/rm ${jobname}-10_*.j
 
-    python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
+    python $LISHDIR/ghis2s/bcsd/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
@@ -868,7 +868,7 @@ bcsd_fcst(){
     # ---------------------------------------------------------------------------
     jobname=bcsd10
     # NOTE : Task 10  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_10.py -s $YYYY -m $mmm -n $MM -w ${CWD} -M NMME_MODEL 
+    # python $LISHDIR/ghis2s/bcsd/forecast_task_10.py -s $YYYY -m $mmm -n $MM -w ${CWD} -M NMME_MODEL 
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -888,7 +888,7 @@ bcsd_fcst(){
 	jobname=bcsd09-10
 	/bin/rm bcsd09*.j
 	/bin/rm bcsd10*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd09_ID=$(submit_job "$bcsd08_ID" "${jobname}_run.j")
 	bcsd10_ID=
@@ -900,7 +900,7 @@ bcsd_fcst(){
     jobname=bcsd11
     cmdfile="bcsd11-12.file"
     # NOTE : Task 11  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
+    # python $LISHDIR/ghis2s/bcsd/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
@@ -914,7 +914,7 @@ bcsd_fcst(){
     # ---------------------------------------------------------------------------
     jobname=bcsd12
     # NOTE : Task 12  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
+    # python $LISHDIR/ghis2s/bcsd/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
@@ -925,7 +925,7 @@ bcsd_fcst(){
 	jobname=bcsd11-12
 	/bin/rm bcsd11*.j
 	/bin/rm bcsd12*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
 	/bin/rm ${cmdfile}
 	bcsd11_ID=$(submit_job "$bcsd09_ID" "${jobname}_run.j")
 	bcsd12_ID=
@@ -954,10 +954,10 @@ lis_fcst(){
     cd ${E2ESDIR}/lis_fcst
     mkdir -p -m 775 input/LDT_ICs/
     cd ${E2ESDIR}/lis_fcst/input/
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/forcing_variables.txt
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_darun/noahmp401_parms
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_fcst/template_files
-    /bin/ln -s ${LISHDIR}/s2s_modules/lis_fcst/tables
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/forcing_variables.txt
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_darun/noahmp401_parms
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_fcst/template_files
+    /bin/ln -s ${LISHDIR}/ghis2s/lis_fcst/tables
     /bin/ln -s ${SUPDIR}/lis_darun/${LDTFILE}
     
     cd ${E2ESDIR}/lis_fcst/input/LDT_ICs/    
@@ -975,7 +975,7 @@ lis_fcst(){
     /bin/ln -s ${E2ESDIR}/bcsd_fcst
     
     # write SLURM job scripts
-    python $LISHDIR/s2s_modules/lis_fcst/generate_lis_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
+    python $LISHDIR/ghis2s/lis_fcst/generate_lis_config_scriptfiles_fcst.py -c $BWD/$CFILE -y $YYYY -m $MM -w $CWD -j $jobname
     
     lisfcst_ID=
     
@@ -1058,7 +1058,7 @@ s2spost(){
 	else
 	    /bin/ln -s ${E2ESDIR}/s2spost/${YYYY}${MM}/$model
 	fi
-	python $LISHDIR/s2s_modules/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
+	python $LISHDIR/ghis2s/s2spost/run_s2spost_9months.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 3 -M $model
     done
     
     job_list=`ls $jobname*.j`
@@ -1077,8 +1077,8 @@ s2spost(){
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2spost_*.j
 	split -l 27  $cmdfile part_
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 4 -j ${jobname}_01_ -w ${CWD} -C "part_aa"
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 4 -j ${jobname}_02_ -w ${CWD} -C "part_ab"
 	/bin/rm ${cmdfile} "part_aa" "part_ab"
 	s2spost_ID=$(submit_job "$lisfcst_ID" "${jobname}_01_run.j")
 	thisID=$(submit_job "$lisfcst_ID" "${jobname}_02_run.j")
@@ -1116,7 +1116,7 @@ s2smetrics(){
     CWD=`pwd`
     for model in $MODELS
     do
-	python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
+	python $LISHDIR/ghis2s/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE -j $jobname -t 1 -H 4 -M $model
     done
     
     job_list=`ls $jobname*anom_run.j`
@@ -1134,14 +1134,14 @@ s2smetrics(){
     s2smetric_ID=`echo $s2smetric_ID | sed "s| |:|g"`
     if [ $GROUP_JOBS == "Y" ]; then
 	/bin/rm s2smetric_*.j
-	python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C $cmdfile
+	python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 4 -j ${jobname}_ -w ${CWD} -C $cmdfile
 	/bin/rm ${cmdfile}
 	s2smetric_ID=$(submit_job "$s2spost_ID" "${jobname}_run.j")
     fi
     
     # write tiff file
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 3 -j ${jobname}_tiff_ -w ${CWD}
-    COMMAND="srun --exclusive --ntasks 1 python $LISHDIR/s2s_modules/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
+    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_tiff_run.j -t 1 -H 3 -j ${jobname}_tiff_ -w ${CWD}
+    COMMAND="srun --exclusive --ntasks 1 python $LISHDIR/ghis2s/s2smetric/postprocess_nmme_job.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE"
     sed -i "s|COMMAND|${COMMAND}|g" ${jobname}_tiff_run.j
 
     s2smetric_tiff_ID=$(submit_job "$s2smetric_ID" "${jobname}_tiff_run.j")
@@ -1170,13 +1170,13 @@ s2splots(){
     /bin/ln -s ${E2ESDIR}/s2splots/
     /bin/ln -s ${E2ESDIR}/s2smetric/ 
 
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
-    echo "python ${LISHDIR}/s2s_modules/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
+    echo "python ${LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/ghis2s/s2splots/plot_hybas.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/ghis2s/s2splots/plot_mena.py -y ${YYYY} -m ${MM} -w ${CWD} -c $BWD/$CFILE" >> "$cmdfile"
+    echo "python ${LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 1" >> "$cmdfile"
+    echo "python ${LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y ${YYYY} -m ${mon} -w ${CWD} -c $BWD/$CFILE -l 2" >> "$cmdfile"
 
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    python $LISHDIR/ghis2s/main/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 6 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
     s2splots_ID=$(submit_job "$s2smetric_tiff_ID" "${jobname}_run.j")
         
@@ -1191,7 +1191,7 @@ SCRDIR=${E2ESDIR}/scratch/${YYYY}${MM}/
 if [ "$REPORT" = 'Y' ] || [ "$REPORT" = 'y' ]; then
     # Print status report
     if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
-	#python $LISHDIR/s2s_app/s2s_api.py -r Y  -c $BWD/$CFILE -w ${E2ESDIR} -d ${YYYY}${MM}
+	#python $LISHDIR/ghis2s/main/s2s_api.py -r Y  -c $BWD/$CFILE -w ${E2ESDIR} -d ${YYYY}${MM}
 	print_walltimes
     else
 	print_walltimes
@@ -1276,7 +1276,7 @@ echo "#######################################################################" >
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         " >> $JOB_SCHEDULE
-python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER"  -c $BWD/$CFILE
+python $LISHDIR/ghis2s/main/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER"  -c $BWD/$CFILE
 
 #######################################################################
 #                               Submit jobs

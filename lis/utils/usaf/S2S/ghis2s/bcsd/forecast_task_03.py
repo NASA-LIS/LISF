@@ -29,6 +29,7 @@
 import sys
 import argparse
 import yaml
+from shared import utils
 
 # Local methods
 def _usage():
@@ -45,40 +46,18 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def _driver():
-    """Main driver."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
-    parser.add_argument('-c', '--config_file', required=True, help='config file name')
-    parser.add_argument('-m', '--month_num', required=True, type=int, help='month number')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-j', '--job_name', required=True, help='job_name')
-    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
-    parser.add_argument('-H', '--hours', required=True, help='hours')
-
-    args = parser.parse_args()
-    config_file = args.config_file
-    current_year = args.current_year
-    month_num = args.month_num
-    job_name = args.job_name
-    ntasks = args.ntasks
-    hours = args.hours
-    cwd = args.cwd
+def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd):
+    """Main driver."""    
 
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    # import local module
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-#pylint: disable=import-outside-toplevel
-    from s2s_modules.shared import utils
-
     # Path of the main project directory
     projdir = cwd
 
     # Path of the directory where all the BC codes are kept
-    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
+    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
     # Path of the directory where supplementary files are kept
     supplementary_dir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
@@ -108,4 +87,15 @@ def _driver():
         utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
 if __name__ == "__main__":
-    _driver()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
+    parser.add_argument('-c', '--config_file', required=True, help='config file name')
+    parser.add_argument('-m', '--month_num', required=True, type=int, help='month number')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-j', '--job_name', required=True, help='job_name')
+    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
+    parser.add_argument('-H', '--hours', required=True, help='hours')
+    args = parser.parse_args()
+    
+    main(args.config_file, args.current_year, args.month_num, args.job_name, args.ntasks,
+         args.hours, args.cwd)
