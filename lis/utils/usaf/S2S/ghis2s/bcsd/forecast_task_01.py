@@ -30,6 +30,7 @@ import os
 import sys
 import argparse
 import yaml
+from shared import utils
 #pylint: disable=import-outside-toplevel, too-many-locals
 # Local methods
 def _usage():
@@ -74,46 +75,29 @@ def calc_ic_dates(icmon):
         sys.exit(1)
     return ic_dates
 
-def _driver():
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hours):
     """Main driver."""
 
-    # Parse command arguements
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
-    parser.add_argument('-e', '--fcst_eyr', required=False, help='forecast end year')
-    parser.add_argument('-c', '--config_file', required=True, help='config file name')
-    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-j', '--job_name', required=True, help='job_name')
-    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
-    parser.add_argument('-H', '--hours', required=True, help='hours')
-
-    args = parser.parse_args()
-    config_file = args.config_file
-    syear = int(args.fcst_syr)
-    if args.fcst_eyr is None:
+    syear = int(fcst_syr)
+    if fcst_eyr is None:
         eyear = None
     else:
-        eyear = int(args.fcst_eyr)
-    month_abbr = args.month_abbr
-    cwd = args.cwd
-    job_name = args.job_name
-    ntasks = args.ntasks
-    hours = args.hours
+        eyear = int(fcst_eyr)
+    month_abbr = month_abbr
+    cwd = cwd
+    job_name = job_name
+    ntasks = ntasks
+    hours = hours
 
     # Load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    # Import local module
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
-
     # Path of the main project directory
     projdir = cwd
 
     # Path of the directory where all the BC codes are kept
-    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/bcsd_fcst/bcsd_library/'
+    srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
     # Log file output directory
     logdir = cwd + '/log_files'
 
@@ -165,4 +149,16 @@ def _driver():
     print(f"[INFO] Write command to process CFSv2 files for {imon}")
 
 if __name__ == "__main__":
-    _driver()
+    # Parse command arguements
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--fcst_syr', required=True, help='forecast start year')
+    parser.add_argument('-e', '--fcst_eyr', required=False, help='forecast end year')
+    parser.add_argument('-c', '--config_file', required=True, help='config file name')
+    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-j', '--job_name', required=True, help='job_name')
+    parser.add_argument('-t', '--ntasks', required=True, help='ntasks')
+    parser.add_argument('-H', '--hours', required=True, help='hours')
+
+    args = parser.parse_args()
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.cwd, args.job_name, args.ntasks, args.hours))
