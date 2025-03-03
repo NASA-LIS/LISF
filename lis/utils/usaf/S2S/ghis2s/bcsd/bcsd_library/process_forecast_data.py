@@ -39,7 +39,7 @@ import xesmf as xe
 import yaml
 # pylint: disable=import-error
 from convert_forecast_data_to_netcdf import read_wgrib
-from bcsd_stats_functions import get_domain_info
+from shared.utils import get_domain_info
 from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 

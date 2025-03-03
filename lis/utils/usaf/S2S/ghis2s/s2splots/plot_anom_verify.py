@@ -30,6 +30,8 @@ import xesmf as xe
 import numpy as np
 import yaml
 import eccodes
+from plot_utils
+from shared.utils import get_domain_info
 # pylint: disable=invalid-name, consider-using-f-string, import-outside-toplevel, redefined-outer-name
 
 USAF_COLORS = True
@@ -151,7 +153,7 @@ def comp_monthly_nafpa (config_file, year, month, flabel):
 
     with open(config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    from s2s_modules.bcsd_fcst.bcsd_library.bcsd_stats_functions import get_domain_info
+    
 
 
     # Read all CFSv2 forcings
@@ -187,7 +189,6 @@ def write_clim(config_file, month, flabel):
 
     with open(config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-    from s2s_modules.bcsd_fcst.bcsd_library.bcsd_stats_functions import get_domain_info
 
     clim_years = cfg["POST"]["verification_clim"]
     cyear_beg = clim_years[0]
@@ -271,9 +272,7 @@ if __name__ == "__main__":
 
     with open(args.config_file, 'r', encoding="utf-8") as file:
         cfg = yaml.safe_load(file)
-
-    sys.path.append(cfg['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.s2splots import plot_utils
+    
     plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth) + cfg["EXP"]["lsmdir"] + '/'
     cartopy.config['data_dir'] = cfg['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
     ndays = (date(year, month+1, 1) - date(year, month, 1)).days

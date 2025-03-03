@@ -20,7 +20,8 @@ import yaml
 from dateutil.relativedelta import relativedelta
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
-from bcsd_stats_functions import get_domain_info
+from shared.utils import get_domain_info
+
 # pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values

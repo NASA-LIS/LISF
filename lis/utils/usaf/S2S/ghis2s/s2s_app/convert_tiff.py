@@ -4,6 +4,7 @@ import xarray as xr
 import numpy as np
 import yaml
 from shared import utils
+from s2splots import plot_utils
 
 def parse_list(arg):
     try:
@@ -39,7 +40,7 @@ if args.output_png is None:
     sys.exit()
 
 # plot
-from s2s_modules.s2splots import plot_utils
+
 domain =  [np.min(da.y.data), np.max(da.y.data), np.min(da.x.data), np.max(da.x.data)]
 
 if args.range is None:

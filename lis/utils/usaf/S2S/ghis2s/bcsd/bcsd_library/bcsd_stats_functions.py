@@ -5,8 +5,6 @@
 #Author: Shrad Shukla
 """
 
-
-
 from datetime import datetime
 import sys
 import math
@@ -19,21 +17,8 @@ import yaml
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 from netCDF4 import default_fillvals as nc4_default_fillvals
+from shared import utils
 # pylint: enable=no-name-in-module
-
-def get_domain_info (configfile, extent=None, coord=None):
-    """ gets domain info"""
-    # load config file
-    with open(configfile, 'r', encoding="utf-8") as file:
-        config = yaml.safe_load(file)
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
-
-    if extent is not None:
-        return utils.get_domain_info(configfile, extent=True)
-    if coord is not None:
-        return utils.get_domain_info(configfile, coord=True)
-    return None
 
 def write_4d_netcdf(infile, var, varname, description, source, var_units, sig_digit, lons, lats, \
                     ens_num, lead_num, sdate, dates):

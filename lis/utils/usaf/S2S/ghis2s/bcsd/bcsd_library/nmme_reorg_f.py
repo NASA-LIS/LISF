@@ -38,7 +38,7 @@ import xesmf as xe
 import yaml
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
-from bcsd_stats_functions import get_domain_info
+from shared.utils import get_domain_info
 from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
