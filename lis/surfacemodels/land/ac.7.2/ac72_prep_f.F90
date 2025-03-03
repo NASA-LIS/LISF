@@ -9,33 +9,36 @@
 module ac72_prep_f
 
 contains
-!BOP
-!
-! !ROUTINE: AC72_ETo_calc
-! \label{AC72_ETo_calc}
-!
-! !REVISION HISTORY:
-!  04 NOV 2024, Louise Busschaert; initial implementation
-!                                   
+  !BOP
+  !
+  ! !ROUTINE: AC72_ETo_calc
+  ! \label{AC72_ETo_calc}
+  !
+  ! !REVISION HISTORY:
+  !  04 NOV 2024, Louise Busschaert; initial implementation
+  !
 
-! !INTERFACE:
-subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
-! !USES:
-    use LIS_tbotAdjustMod,  only: LIS_tbotTimeUtil
-    use LIS_coreMod,        only: LIS_rc
-    use LIS_logMod, only     : LIS_logunit
-    use LIS_constantsMod
+  ! !INTERFACE:
+  subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
+
+    ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PI, LIS_CONST_TKFRZ
+    use LIS_coreMod, only: LIS_rc
+    use LIS_logMod, only: LIS_logunit
+    use LIS_tbotAdjustMod, only: LIS_tbotTimeUtil
 
     !
-    ! !DESCRIPTION: 
-    ! 
+    ! !DESCRIPTION:
+    !
     !  This routine computes the reference evapotranspiration (ETo)
     !  with the Penman-Monteith equation, following the guidelines
     !  of the FAO Irrigation and Drainage Paper No. 56.
     !
-    !  
+    !
     !EOP
+
     implicit none
+
     real, intent(in)      :: P ! kPa
     real, intent(in)      :: Tmax, Tmin, Tdew
     real, intent(in)      :: ws ! wind speed
@@ -43,7 +46,7 @@ subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     real, intent(in)      :: z ! elevation
     real, intent(in)      :: lat
     real, intent(inout)   :: eto ! returns eto [mm day-1]
-    
+
     real                  :: Tmean
     real                  :: gamma, ea, es, slope
     real                  :: phi, dr, delta, omega, Ra, Rso
@@ -58,13 +61,13 @@ subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
 
     ! Mean saturation vapour pressure (es) [kPa]
     es = (0.6108 * EXP((17.27 * Tmin) / (237.3 + Tmin)) &
-            + 0.6108 * EXP((17.27 * Tmax) / (237.3 + Tmax))) / 2
+         + 0.6108 * EXP((17.27 * Tmax) / (237.3 + Tmax))) / 2
     ! Actual vapor pressure (ea) [kPa]
     ea = 0.6108 * EXP((17.27 * Tdew) / (237.3 + Tdew))
 
     ! Slope of saturation vapour pressure curve [kPa degC-1]
     slope = (4098 * (0.6108 * EXP((17.27 * Tmean)/(Tmean + 237.3)))) &
-            / (Tmean + 237.3)**2
+         / (Tmean + 237.3)**2
 
     ! Extraterrestrial radiation (Ra) [MJ m-2 day-1]
     call LIS_tbotTimeUtil(julian_in,LIS_rc%yr) ! First get day of year
@@ -75,7 +78,7 @@ subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     Ra = (24 * 60/LIS_CONST_PI) * 0.082 * dr * (omega*SIN(phi)*SIN(delta) &
          + COS(phi)*COS(delta)*SIN(omega))
     if(Ra.le.0) then ! return 0 ETo for unrealisic numbers
-            eto = 0
+       eto = 0
     endif
 
     ! Net radiation at crop surface (Rn) [MJ m-2 day-1]
@@ -83,54 +86,56 @@ subroutine AC72_ETo_calc(P, Tmax, Tmin, Tdew, ws, Rs, z, lat, eto)
     Rns = (1 - 0.23) * Rs ! fixed value of 0.23 for albedo
     ratio = Rs/Rso
     if (ratio.gt.1) then
-        ratio=1
+       ratio=1
     endif
     Rnl = 4.903E-9 * (((Tmax + LIS_CONST_TKFRZ)**4 + (Tmin + LIS_CONST_TKFRZ)**4) / 2.) &
-                    * (0.34 - 0.14 * SQRT(ea)) &
-                    * (1.35 * ratio - 0.35) ! Net longwave radiation [MJ m-2 day-1]
+         * (0.34 - 0.14 * SQRT(ea)) &
+         * (1.35 * ratio - 0.35) ! Net longwave radiation [MJ m-2 day-1]
     Rn = Rns - Rnl
 
     ! Penman-Monteith --> reference evapotranspiration [mm day-1]
     eto = (0.408 * slope * Rn + (gamma * (900 / (Tmean + LIS_CONST_TKFRZ)) * ws * (es - ea))) &
-        / (slope + gamma * (1 + 0.34 * ws))
+         / (slope + gamma * (1 + 0.34 * ws))
     if(eto.le.0) then
-        eto = 0 ! avoid negative values
+       eto = 0 ! avoid negative values
     endif
-    
-end subroutine AC72_ETo_calc
 
+  end subroutine AC72_ETo_calc
 
-!BOP
-!
-! !ROUTINE: AC72_read_Trecord
-! \label{AC72_read_Trecord}
-!
-! !REVISION HISTORY:
-!  04 NOV 2024, Louise Busschaert; initial implementation
-!                                   
+  !BOP
+  !
+  ! !ROUTINE: AC72_read_Trecord
+  ! \label{AC72_read_Trecord}
+  !
+  ! !REVISION HISTORY:
+  !  04 NOV 2024, Louise Busschaert; initial implementation
+  !
 
-! !INTERFACE:
-subroutine ac72_read_Trecord(n)
-! !USES:
-    use ESMF
-    use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
-    use LIS_timeMgrMod,     only: LIS_advance_timestep, LIS_is_last_step
-    use LIS_coreMod,        only: LIS_rc, LIS_surface, LIS_resetTimeMgr
-    use LIS_PRIV_rcMod,     only: lisrcdec
-    use LIS_logMod,         only: LIS_logunit, LIS_verify
-    use LIS_constantsMod
-    use LIS_FORC_AttributesMod
+  ! !INTERFACE:
+  subroutine ac72_read_Trecord(n)
+
+    ! !USES:
     use AC72_lsmMod
+    use ESMF
+    use LIS_constantsMod, only: LIS_CONST_TKFRZ
+    use LIS_coreMod,        only: LIS_rc, LIS_surface, LIS_resetTimeMgr
+    use LIS_FORC_AttributesMod
+    use LIS_logMod,         only: LIS_logunit, LIS_verify
+    use LIS_metForcingMod,  only: LIS_get_met_forcing, LIS_FORC_State
+    use LIS_PRIV_rcMod,     only: lisrcdec
+    use LIS_timeMgrMod,     only: LIS_advance_timestep, LIS_is_last_step
 
     !
-    ! !DESCRIPTION: 
-    ! 
+    ! !DESCRIPTION:
+    !
     !  This subroutine stores the mean temperatures for the ac72 simulation
     !  period required when AquaCrop for the determination of the GDD stages
     !
-    !  
+    !
     !EOP
+
     implicit none
+
     integer, intent(in)      :: n
 
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
@@ -149,8 +154,8 @@ subroutine ac72_read_Trecord(n)
     LIS_rc_saved = LIS_rc
     ! Re-initialize met forcings
     do m=1,LIS_rc%nmetforc
-        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
-        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+       call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
+       call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)
     enddo
     LIS_rc%rstflag(n) = 1
 
@@ -163,9 +168,9 @@ subroutine ac72_read_Trecord(n)
     ! Set LIS_rc time to beginning of simulation period (in case of restart)
     ! Check in which year the simulation did start (assuming a 365-366 sim period)
     if (AC72_struc(n)%Sim_AnnualStartMonth.gt.LIS_rc%mo) then
-        yr_start = LIS_rc%yr - 1
+       yr_start = LIS_rc%yr - 1
     else
-        yr_start = LIS_rc%yr
+       yr_start = LIS_rc%yr
     endif
     ! Set LIS_rc to reset clock
     LIS_rc%syr = yr_start
@@ -174,42 +179,42 @@ subroutine ac72_read_Trecord(n)
     LIS_rc%shr = LIS_rc%hr+1
     call LIS_resetTimeMgr
     day_loop: do i=1,366
-        do j=1,met_ts
-            ! read met forcing
-            call LIS_get_met_forcing(n)
+       do j=1,met_ts
+          ! read met forcing
+          call LIS_get_met_forcing(n)
 
-            ! Get Tair
-            call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)
-            call LIS_verify(status, "AC72_prep_f: error getting Tair")
+          ! Get Tair
+          call ESMF_StateGet(LIS_FORC_State(n), trim(LIS_FORC_Tair%varname(1)), tmpField, rc=status)
+          call LIS_verify(status, "AC72_prep_f: error getting Tair")
 
-            call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
-            call LIS_verify(status, "AC72_prep_f: error retrieving Tair")
+          call ESMF_FieldGet(tmpField, localDE = 0, farrayPtr = tmp, rc = status)
+          call LIS_verify(status, "AC72_prep_f: error retrieving Tair")
 
-            ! Store temperatures
-            subdaily_arr(:,j) = tmp
+          ! Store temperatures
+          subdaily_arr(:,j) = tmp
 
-            ! Change LIS time to the next meteo time step
-            call LIS_advance_timestep(LIS_rc)
-        enddo
-        ! Store daily max and min temperatures
-        daily_tmax_arr(:,i) = maxval(subdaily_arr,2)
-        daily_tmin_arr(:,i) = minval(subdaily_arr,2)
-        if ((LIS_rc%da.eq.AC72_struc(n)%Sim_AnnualStartDay)&
+          ! Change LIS time to the next meteo time step
+          call LIS_advance_timestep(LIS_rc)
+       enddo
+       ! Store daily max and min temperatures
+       daily_tmax_arr(:,i) = maxval(subdaily_arr,2)
+       daily_tmin_arr(:,i) = minval(subdaily_arr,2)
+       if ((LIS_rc%da.eq.AC72_struc(n)%Sim_AnnualStartDay)&
             .and.(LIS_rc%mo.eq.AC72_struc(n)%Sim_AnnualStartMonth)&
             .and.(LIS_rc%hr.eq.LIS_rc_saved%hr+1)&
-            .and.(i.ne.1)) exit day_loop 
-            ! Exit if we reach end of sim period
-            ! but still include the last hour
+            .and.(i.ne.1)) exit day_loop
+       ! Exit if we reach end of sim period
+       ! but still include the last hour
     enddo day_loop
 
     deallocate(subdaily_arr)
 
     ! Assign Tmax and Tmin arrays to AC72_struc
     do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-        tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
-        ! AquaCrop rounds meteo input to 4 decimals
-        AC72_struc(n)%ac72(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
-        AC72_struc(n)%ac72(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
+       tid = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%tile_id
+       ! AquaCrop rounds meteo input to 4 decimals
+       AC72_struc(n)%ac72(t)%Tmax_record = anint((daily_tmax_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
+       AC72_struc(n)%ac72(t)%Tmin_record = anint((daily_tmin_arr(tid,:)-LIS_CONST_TKFRZ)*10000)/10000
     enddo
 
     deallocate(daily_tmax_arr)
@@ -225,17 +230,17 @@ subroutine ac72_read_Trecord(n)
     call LIS_resetTimeMgr
     ! Re-initialize met forcings
     do m=1,LIS_rc%nmetforc
-        call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
-        call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)  
+       call finalmetforc(trim(LIS_rc%metforc(m))//char(0),m)
+       call initmetforc(trim(LIS_rc%metforc(m))//char(0),m)
     enddo
     LIS_rc%rstflag(n) = 1 ! For met forcings
 
     ! Check if end of LIS run
     if (LIS_is_last_step(LIS_rc)) then
-        LIS_rc%endtime = 1
+       LIS_rc%endtime = 1
     endif
 
     write(LIS_logunit,*) "[INFO] AC72: new simulation period, reading of temperature record... Done!"
-end subroutine ac72_read_Trecord
+  end subroutine ac72_read_Trecord
 
 end module ac72_prep_f

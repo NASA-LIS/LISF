@@ -17,32 +17,35 @@
 !
 ! !INTERFACE:
 subroutine AC72_finalize(n)
-! !USES:
-    use LIS_coreMod, only : LIS_rc
-    use AC72_lsmMod
-!
-! !DESCRIPTION:
-!
-!  This routine cleans up the allocated memory structures in AC72
-!
-!EOP
-    implicit none   
-    
-    integer :: t, n 
 
-    do n=1, LIS_rc%nnest
-    !deallocate all vars
-        ! free memory for ac72, the data at tile level
-        deallocate(AC72_struc(n)%ac72)
+  ! !USES:
+  use AC72_lsmMod
+  use LIS_coreMod, only : LIS_rc
 
-        ! free memory for constant parameter 
-        deallocate(AC72_struc(n)%Thickness)
+  !
+  ! !DESCRIPTION:
+  !
+  !  This routine cleans up the allocated memory structures in AC72
+  !
+  !EOP
 
-        ! free memory for initial state variable
-        deallocate(AC72_struc(n)%init_smc)
-    end do ! nest loop
-  
-    deallocate(AC72_struc)
- 
+  implicit none
+
+  integer :: n
+
+  do n=1, LIS_rc%nnest
+     !deallocate all vars
+     ! free memory for ac72, the data at tile level
+     deallocate(AC72_struc(n)%ac72)
+
+     ! free memory for constant parameter
+     deallocate(AC72_struc(n)%Thickness)
+
+     ! free memory for initial state variable
+     deallocate(AC72_struc(n)%init_smc)
+  end do ! nest loop
+
+  deallocate(AC72_struc)
+
 end subroutine AC72_finalize
 
