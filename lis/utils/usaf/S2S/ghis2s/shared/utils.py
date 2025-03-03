@@ -69,9 +69,9 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-            if 'mil' in cfg['SETUP']['CONSTRAINT']:
-                _f.write('#SBATCH --partition=packable'  + '\n')
             if group_jobs:
+                if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                    _f.write('#SBATCH --partition=packable'  + '\n')
                 mpc = min(math.ceil(480 / ntasks), 100)
                 _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
