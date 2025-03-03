@@ -15,9 +15,6 @@
 #------------------------------------------------------------------------------
 """
 
-
-
-
 # Standard modules
 import os
 import sys
@@ -25,6 +22,7 @@ import argparse
 import datetime
 import subprocess
 import yaml
+from shared import utils
 # pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
 # Local methods
 def _usage():
@@ -63,7 +61,7 @@ def _run_convert_s2s_anom_cf(config, currentdate, baseoutdir):
            #while not os.path.exists(touchfile):
            #    print(f"[INFO] Waiting for {touchfile}... " + time.asctime() )
            #    time.sleep(30)
-            rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/'
+            rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
             for metric_var in metric_vars:
                 metricfile = os.path.dirname(touchfile)
                 metricfile += f"/{nmme_model}_{metric_var}"
@@ -100,7 +98,7 @@ def _run_merge_s2s_anom_cf(config, currentdate, configfile, baseoutdir):
                               month=currentdate.month,
                               day=1)
     enddate = _calc_enddate(config, startdate)
-    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/'
+    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
     nmme_models = config["EXP"]["NMME_models"]
     for nmme_model in nmme_models:
         cmd = "python"
@@ -118,7 +116,7 @@ def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
     """Automate make_s2s_median_metric_geotiff.py"""
     lsm_model = config["EXP"]["lsmdir"]
     input_dir = f"{baseoutdir}/metrics_cf/{lsm_model}"
-    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2smetric/'
+    rundir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2smetric/'
 
     metrics1 = config["POST"]["metric_vars"]
     metrics = ["{}{}".format(i, '_ANOM') for i in metrics1]
@@ -135,27 +133,12 @@ def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
             print("[ERR] Problem running make_s2s_median_metric_geotiff.py")
             sys.exit(1)
 
-def _driver():
+def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
+         ntasks=None, hours=None):
     """Main driver"""
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
-    parser.add_argument('-m', '--fcst_mon', required=True, help='forecast end year')
-    parser.add_argument('-c', '--configfile', required=True, help='config file name')
-    parser.add_argument('-j', '--jobname', help='job_name')
-    parser.add_argument('-t', '--ntasks', help='ntasks')
-    parser.add_argument('-H', '--hours', help='hours')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-    parser.add_argument('-M', '--nmme_model', required=False, help='NMME Model')
-
-    args = parser.parse_args()
-    configfile = args.configfile
-    fcst_year = args.fcst_year
-    fcst_mon = args.fcst_mon
-    cwd = args.cwd
-    baseoutdir = cwd + '/s2smetric/' + fcst_year  + fcst_mon
-    currentdate = _handle_dates(int(fcst_year), int(fcst_mon))
-    nmme_model = args.nmme_model
+    baseoutdir = cwd + '/s2smetric/{:04d}{:02d}'.format(fcst_year, fcst_mon)
+    currentdate = _handle_dates(fcst_year, fcst_mon)
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
@@ -164,13 +147,8 @@ def _driver():
         _run_merge_s2s_anom_cf(config, currentdate, configfile, baseoutdir)
         _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir)
     else:
-        jobname = args.jobname
-        ntasks = args.ntasks
-        hours = args.hours
-        sys.path.append(config['SETUP']['LISFDIR']  + '/lis/utils/usaf/s2s/')
-        from s2s_modules.shared import utils
         pylibdir = config['SETUP']['LISFDIR'] + \
-            '/lis/utils/usaf/s2s/s2s_modules/s2smetric/metrics_library/'
+            '/lis/utils/usaf/S2S/ghis2s/s2smetric/metrics_library/'
         for anom_type in ["anom", "sanom"]:
             py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
             cmd = "python"
@@ -186,4 +164,18 @@ def _driver():
             utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
 
 if __name__ == "__main__":
-    _driver()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
+    parser.add_argument('-m', '--fcst_mon', required=True, help='forecast end year')
+    parser.add_argument('-c', '--configfile', required=True, help='config file name')
+    parser.add_argument('-j', '--jobname', help='job_name')
+    parser.add_argument('-t', '--ntasks', help='ntasks')
+    parser.add_argument('-H', '--hours', help='hours')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-M', '--nmme_model', required=False, help='NMME Model')
+
+    args = parser.parse_args()
+
+    main(args.configfile, int(args.fcst_year), int(args.fcst_mon), cwd,
+         nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,
+         hours=args.hours)
