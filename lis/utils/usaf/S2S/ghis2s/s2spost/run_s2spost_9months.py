@@ -33,6 +33,8 @@ import sys
 import argparse
 import datetime
 import yaml
+from shared import utils
+
 # pylint: disable=too-many-locals, import-outside-toplevel
 def _usage():
     """Print command line usage."""
@@ -63,18 +65,10 @@ def _advance_date_by_month(curdate):
                                 day=1)
     return newdate
 
-def _submit_batch_jobs(args):
+def submit_batch_jobs(configfile, fcst_year, fcst_mon, jobname, ntasks, hours, cwd, model_forcing):
     """Submit batch jobs for processing LIS forecast."""
-    configfile = args.configfile
-    fcst_year = args.fcst_year
-    fcst_mon = args.fcst_mon
-    job_name = args.jobname
-    ntasks = args.ntasks
-    hours = args.hours
-    cwd = args.cwd
-    model_forcing = args.nmme_model
 
-    startdate = datetime.datetime(int(fcst_year), int(fcst_mon), day=1)
+    startdate = datetime.datetime(fcst_year, fcst_mon, day=1)
     topdatadir = cwd + '/' + model_forcing + '/'
 
     # load config file
@@ -82,11 +76,8 @@ def _submit_batch_jobs(args):
         config = yaml.safe_load(file)
 
     total_months = int(config["EXP"]["lead_months"])
-    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
-
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
-
+    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
+    
     # One batch job per month (call to run_s2spost_1month.py):
     fcstdate = startdate
     curdate = startdate
@@ -108,7 +99,8 @@ def _submit_batch_jobs(args):
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
 
-def _driver():
+# Invoke driver
+if __name__ == "__main__":
     """Main driver."""
     parser = argparse.ArgumentParser()
     parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
@@ -121,8 +113,5 @@ def _driver():
     parser.add_argument('-M', '--nmme_model', required=True, help='NMME model')
 
     args = parser.parse_args()
-    _submit_batch_jobs(args)
-
-# Invoke driver
-if __name__ == "__main__":
-    _driver()
+    submit_batch_jobs(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.jobname,
+                      args.ntasks, args.hours, args.cwd, args.nmme_model)
