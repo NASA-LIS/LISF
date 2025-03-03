@@ -9,12 +9,13 @@
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 MODULE module_sf_aclsm_72
 
-! SOIL PARAMETERS
-        INTEGER :: SLCATS
-        INTEGER, PARAMETER :: NSLTYPE=30
-        CHARACTER(LEN=256) SLTYPE
-        REAL, DIMENSION (1:NSLTYPE) :: &
-        OC, WP, SAT, FC, INFRATE, SD, CL, SI
+  implicit none
 
+  ! SOIL PARAMETERS
+  INTEGER :: SLCATS
+  INTEGER, PARAMETER :: NSLTYPE=30
+  CHARACTER(LEN=256) SLTYPE
+  REAL, DIMENSION (1:NSLTYPE) :: &
+       OC, WP, SAT, FC, INFRATE, SD, CL, SI
 
 END MODULE module_sf_aclsm_72
