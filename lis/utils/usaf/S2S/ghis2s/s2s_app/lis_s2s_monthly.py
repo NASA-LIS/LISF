@@ -38,6 +38,7 @@ import copy
 import glob
 import logging
 import os
+import sys
 import shutil
 import subprocess
 from datetime import datetime as dt
@@ -45,6 +46,8 @@ from datetime import timedelta
 import ymdate
 import specm.restart_program
 from util import copy_and_flag
+sys.path.append("/ccs/proj/nwp303/green/lis_nasa/lis_nasa-7.5.13/lis/utils/usaf/S2S/")
+from ghis2s.s2s_app import s2s_api 
 
 #-----------------------------------------------------------------------------------------
 # Set up the configuration definition
@@ -87,7 +90,7 @@ _CONFIG_DEFINITION = {
     },
     "lis": {
       "lis_nasa": "/ccs/proj/nwp303/green/lis_nasa/lis_nasa-7.5.13",
-      "s2s_app": "/ccs/proj/nwp303/green/lis_nasa/lis_nasa-7.5.13/lis/utils/usaf/s2s/s2s_app",
+      "s2s_app": "/ccs/proj/nwp303/green/lis_nasa/lis_nasa-7.5.13/lis/utils/usaf/S2S/s2s_app",
       "hindcast": "/lustre/active/nwp303/world-shared/LIS75/AdHOC/E2ES_DIR/hindcast/",
       "SMAP_L2_SM_NRT": "/lustre/active/nwp303/proj-shared/data/lis-local/7.5/SMAP",
       "usaf_lis75s2s_gfs2galwem": "/lustre/active/nwp303/proj-shared/data/lis-local/7.5/S2S",
@@ -312,6 +315,10 @@ class LisS2sMonthly(specm.restart_program.RestartProgram):
         # If month < 10, we have to use a single digit month
         month = yyyymm[-1] if yyyymm[-2] == '0' else yyyymm[-2:]
 
+        # initialize s2s_run instance
+        s2s_run = s2s_api.S2SRun(config_file=args.config_file, model_type=args.model_type)
+        s2s_run.main()
+        
         # Build the command
         cmd = f'./s2s_app/s2s_run.sh -y {yyyymm[0:4]} -m {month} -c s2s_config_global_fcast'
         if report:
