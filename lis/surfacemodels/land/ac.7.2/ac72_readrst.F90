@@ -23,7 +23,7 @@ subroutine AC72_readrst()
   use AC72_lsmMod
   use ESMF
   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
-  use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only    : LIS_rc
   use LIS_fileIOMod
   use LIS_historyMod, only : LIS_readvar_restart
   use LIS_logMod, only     : LIS_logunit, LIS_endrun, &
@@ -64,8 +64,8 @@ subroutine AC72_readrst()
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
   real              :: gmt
-  real              :: ts
 
+  external :: AC72_coldstart
 
   do n=1, LIS_rc%nnest
      wformat = trim(AC72_struc(n)%rformat)

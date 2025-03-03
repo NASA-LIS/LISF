@@ -42,7 +42,6 @@ subroutine AC72_readcrd()
   integer      :: rc
   integer      :: n, i
   character*10 :: time
-  character*6  :: str_i
   integer :: ios
   integer, allocatable :: nids(:)
   character*32 :: soil_scheme_name,str

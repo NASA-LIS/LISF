@@ -473,31 +473,15 @@ subroutine AC72_main(n)
 
   ! !ARGUMENTS:
   integer, intent(in)  :: n
+
   integer              :: t
   integer              :: i
-  integer              :: itemp, countertemp
   real                 :: dt
   real                 :: lat, lon
   real                 :: tmp_elev
   integer              :: row, col
-  integer              :: year, month, day, hour, minute, second
-  integer              :: simul_len
   logical              :: alarmCheck
-  real                 :: TminRun_i, TmaxRun_i
-
-  integer              :: status, ierr
-  integer              :: c,r,l
-  integer              :: ios, nid,rivid,fldid
-
-  integer              :: tid
-
-  integer              :: daynr, todaynr, iproject, nprojects
-  logical              :: ListProjectFileExist
-  character(len=:), allocatable :: ListProjectsFile, TheProjectFile
-  integer              :: Crop_DaysToGermination, Crop_DaysToMaxRooting, Crop_DaysToFlowering
-  integer              :: Crop_DaysToHarvest, Crop_DaysTosenescence, Crop_DaysToCCini
-  integer              :: Crop_DaysToFullCanopy, Crop_DaysToFullCanopySF, Crop_DaysToHIo
-  integer(int32) :: temp1
+  integer              :: l
   integer              :: irr_record_flag, DNr ! for irri file management
   character(250)       :: TempStr
 

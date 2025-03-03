@@ -24,7 +24,6 @@ contains
     ! !USES:
     use LIS_constantsMod, only: LIS_CONST_PI, LIS_CONST_TKFRZ
     use LIS_coreMod, only: LIS_rc
-    use LIS_logMod, only: LIS_logunit
     use LIS_tbotAdjustMod, only: LIS_tbotTimeUtil
 
     !
@@ -141,12 +140,14 @@ contains
     real, allocatable     :: daily_tmax_arr(:,:), daily_tmin_arr(:,:)
     real, allocatable     :: subdaily_arr(:,:)
     type(lisrcdec)        :: LIS_rc_saved
-    integer               :: i, j, t, status, met_ts, ierr,m, tid
+    integer               :: i, j, t, status, met_ts, m, tid
     integer               :: yr_start
 
     ! Near Surface Air Temperature [K]
     type(ESMF_Field)  :: tmpField
     real, pointer     :: tmp(:)
+
+    external :: finalmetforc, initmetforc
 
     write(LIS_logunit,*) "[INFO] AC72: new simulation period, reading of temperature record..."
 

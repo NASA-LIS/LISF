@@ -41,7 +41,7 @@ subroutine AC72_f2t(n)
   !
   !EOP
 
-  integer            :: t, v, status
+  integer            :: t, status
   integer            :: tid
   real               :: ee, val, td
 
@@ -87,12 +87,6 @@ subroutine AC72_f2t(n)
   ! Snowfall Rate [kg m-2 s-1]
   type(ESMF_Field)  :: snowField
   real, pointer     :: snowf(:)
-
-  ! Dewpoint Temperature [K]
-  real, pointer     :: tdew(:)
-
-  ! Wind Speed [m/s]
-  real, pointer     :: wndspd(:)
 
 
 !!! GET FORCING FIELDS FROM LIS
