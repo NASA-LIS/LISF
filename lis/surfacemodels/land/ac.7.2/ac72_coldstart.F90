@@ -36,8 +36,7 @@ subroutine AC72_coldstart(mtype)
 
   implicit none
   integer :: mtype
-  integer :: t, l, n, i
-  integer :: c, r
+  integer :: t, l, n
 
   do n=1, LIS_rc%nnest
      if (trim(LIS_rc%startcode) .eq. "coldstart") then

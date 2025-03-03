@@ -522,11 +522,10 @@ subroutine AC72_setup()
   use LIS_coreMod,   only: LIS_rc, LIS_surface
   use LIS_fileIOMod, only: LIS_read_param
   use LIS_logMod,    only: LIS_logunit, LIS_verify, LIS_endrun
-  use LIS_mpiMod,    only: LIS_mpi_comm
   use LIS_timeMgrMod, only: LIS_get_julhr
 
   use module_sf_aclsm_72, only: &
-       OC, WP, SAT, FC, INFRATE, SD, CL, SI
+       WP, SAT, FC, INFRATE, SD, CL, SI
 
   !
   ! !DESCRIPTION:
@@ -553,21 +552,21 @@ subroutine AC72_setup()
   real, allocatable :: placeholder(:,:)
 
   real              :: Z_surf, cl_tmp, si_tmp, sd_tmp, InfRate_tmp
-  integer           :: REW, descr, ierr
+  integer           :: REW, descr
   integer           :: time1julhours, timerefjulhours
   integer           :: time1days, time2days
-  integer           :: yr2, mo2, da2, hr2, mn2
 
-  integer :: daynr, todaynr, iproject, nprojects, NrRuns
   integer(intEnum) :: TheProjectType
-  logical :: ListProjectFileExist
-  character(len=:), allocatable :: ListProjectsFile, TheProjectFile
 
   logical ::  ProgramParametersAvailable
   integer(int32) :: TotalSimRuns
 
   logical :: MultipleRunWithKeepSWC_temp
   real    :: MultipleRunConstZrx_temp
+
+  external :: ac72_read_croptype
+  external :: ac72_read_multilevel_param
+  external :: soil_parm_ac72
 
   mtype = LIS_rc%lsm_index
 
@@ -1226,7 +1225,7 @@ end subroutine AC72_setup
 subroutine AC72_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
   ! !USES:
-  use LIS_coreMod, only : LIS_rc, LIS_domain, LIS_localPet,   &
+  use LIS_coreMod, only : LIS_rc, LIS_localPet,   &
        LIS_ews_halo_ind, LIS_ewe_halo_ind, &
        LIS_nss_halo_ind, LIS_nse_halo_ind
   use LIS_fileIOMod, only: LIS_read_param
@@ -1258,9 +1257,8 @@ subroutine AC72_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
   !
   !EOP
 
-  integer       :: ios1
   integer       :: ios, nid, param_ID, nc_ID, nr_ID, dimids(3)
-  integer       :: nc, nr, t, nlevel, k
+  integer       :: nc, nr, nlevel
   real, pointer :: level_data(:, :, :)
   logical       :: file_exists
 
@@ -1374,14 +1372,13 @@ subroutine ac72_read_croptype(n)
   !EOP
   character(len=LIS_CONST_PATH_LEN) :: crop_path
   integer                 :: ftn
-  integer                 :: t,j,col,row,IINDEX,CT,n_crops
-  integer                 :: nid, ios, status, croptypeId
+  integer                 :: t,col,row,IINDEX,CT,n_crops
+  integer                 :: nid, ios, croptypeId
   integer                 :: rc
   logical                 :: file_exists
   character(len=100),allocatable :: croptypes(:)
   real, allocatable       :: l_croptype(:,:)
   real, allocatable       :: glb_croptype(:,:)
-  real, allocatable       :: glb_croptype1(:,:)
   character*128 :: mess
   ! __________________________________________________________________________
 

@@ -58,6 +58,8 @@ subroutine AC72_writerst(n)
   integer       :: ftn
   integer       :: status
 
+  external :: AC72_dump_restart
+
   ! set restart alarm
   alarmCheck = LIS_isAlarmRinging(LIS_rc, "AC72 restart alarm")
   alarmCheck_sf = LIS_isAlarmRinging(LIS_rc, "AC72 model alarm")
@@ -115,9 +117,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
   ! !USES:
   use AC72_lsmMod
-  use LIS_coreMod, only : LIS_rc, LIS_masterproc
+  use LIS_coreMod, only : LIS_rc
   use LIS_historyMod
-  use LIS_logMod, only  : LIS_logunit
 
   implicit none
 

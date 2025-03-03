@@ -178,8 +178,9 @@ contains
     !EOP
     implicit none
 
-    integer  :: n, t, i
-    integer  :: status
+    integer  :: n, t
+
+    external :: AC72_readcrd
 
     ! allocate memory for nest
     allocate(AC72_struc(LIS_rc%nnest))
