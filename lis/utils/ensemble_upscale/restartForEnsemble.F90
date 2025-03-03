@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -30,9 +30,9 @@
 program restartForEnsemble
 
 ! need : filename, number of fields, 
-
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   integer       :: i , j, k, m
-  character*80  :: inputf, outputf
+  character(len=LIS_CONST_PATH_LEN)  :: inputf, outputf
   integer       :: nens, nfields, ntiles
   integer       :: lsm
   character*80  :: ctmp

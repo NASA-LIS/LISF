@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@
 # 15 Jul 2021: Eric Kemp (SSAI), first version.
 # 19 Jan 2022: Eric Kemp (SSAI), Discover updates.
 # 08 Dec 2022: Eric Kemp (SSAI), refactored to increase pylint score.
+# 18 Oct 2024: Eric Kemp (SSAI), updated for Milan nodes.
 #
 #------------------------------------------------------------------------------
 """
@@ -63,7 +64,7 @@ def _main():
     with open(scriptname, "w", encoding="ascii") as file:
         line = f"""#!/bin/sh
 #SBATCH --account {account}
-#SBATCH --constraint="hasw|sky|cas"
+#SBATCH --constraint="[mil]"
 #SBATCH --job-name=usafsipost
 #SBATCH --ntasks=1
 #SBATCH --output usafsipost.slurm.out
@@ -76,18 +77,20 @@ fi
 
 # NOTE: This privatemodule can be found in LISF/env/discover
 module purge
-module use --append ~/privatemodules
-module load lisf_7.5_intel_2021.4.0
+module use --append /home/emkemp/privatemodules/sles15
+module load lisf_7.6_intel_2023.2.1_emk
 
 if [ ! -e ./LVT ] ; then
    echo "ERROR, LVT does not exist!" && exit 1
 fi
 
-if [ ! -e lvt.config.usafsipost ] ; then
-   echo "ERROR, lvt.config.usafsipost does not exist!" && exit 1
+lvtconfig=lvt.config.foc.usafsipost.76
+
+if [ ! -e $lvtconfig ] ; then
+   echo "ERROR, $lvtconfig does not exist!" && exit 1
 fi
 
-mpirun -np 1 ./LVT lvt.config.usafsipost || exit 1
+mpirun -np 1 ./LVT $lvtconfig || exit 1
 
 exit 0
 

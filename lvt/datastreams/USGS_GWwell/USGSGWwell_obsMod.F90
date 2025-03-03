@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ module USGSGWwell_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -42,7 +43,7 @@ module USGSGWwell_obsMod
 !EOP
 
   type, public :: usgsgwwellobsdec
-     character*100        :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer              :: nstns
      integer              :: nstates
      real                 :: udef
@@ -72,7 +73,8 @@ contains
 ! !INTERFACE: 
   subroutine USGSGWwell_obsinit(i)
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -97,7 +99,7 @@ contains
 
     integer            :: status, rc
     integer            :: ftn,k
-    character*100      :: coordfile
+    character(len=LVT_CONST_PATH_LEN) :: coordfile
     
     call ESMF_ConfigGetAttribute(LVT_config, usgsgwwellobs(i)%odir, &
          label='USGS ground water (well data) observation directory:',rc=status)

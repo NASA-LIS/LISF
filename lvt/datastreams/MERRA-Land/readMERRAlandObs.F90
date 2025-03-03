@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -200,6 +200,7 @@ end subroutine readMERRAlandObs
 
 subroutine process_MERRAlanddata(source, yr, mo, da)
 
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use MERRAlandobsMod
@@ -217,7 +218,7 @@ subroutine process_MERRAlanddata(source, yr, mo, da)
   integer                :: da
 
   integer                :: ftn
-  character*100          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   logical                :: file_exists
   integer                :: qsid,qsbid, swnetid, qleid, qhid, frsnoid, snodid
   integer                :: sweid, qgid, sfsmid, rzsmid, prcpid, tskinid

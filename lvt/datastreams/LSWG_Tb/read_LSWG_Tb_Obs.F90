@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,8 +17,8 @@ subroutine read_LSWG_Tb_Obs(k)
 ! 
 ! !USES:   
   use ESMF
-
-#if 0   
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+#if 0
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_RTMhistDataMod,  only : LVT_logRTMSingleVar
   use LVT_RTMhistDatamod, only : LVT_RTMhistData
@@ -71,7 +71,6 @@ subroutine read_LSWG_Tb_Obs(k)
   !gridded Tb in RTM channel space to which to apply cloud mask
   real,   allocatable :: Tb2(:,:,:,:)  
 
-  character*100       :: maskfile
   character*10        :: ftime
   type(ESMF_Time)     :: Tbtime, masktime, masktime_prev, temptime
   type(ESMF_TimeInterval) :: timestep, mask_timestep,doy

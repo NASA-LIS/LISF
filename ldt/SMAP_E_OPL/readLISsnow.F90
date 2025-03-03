@@ -3,10 +3,10 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
-!-------------------------END NOTICE -- DO NOT EDIT----------------------
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
 !
@@ -18,7 +18,8 @@
 ! 
 ! !INTERFACE: 
 subroutine readLIS_snow(n,yyyymmdd,hh,SnowDepth)
-! !USES:
+  ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_smap_e_oplMod
@@ -32,7 +33,7 @@ subroutine readLIS_snow(n,yyyymmdd,hh,SnowDepth)
   
 !EOP 
   integer             :: c,r
-  character*100       :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*8         :: yyyymmdd_snow
   character*4         :: yyyy_snow
   character*2         :: mm_snow,dd_snow,hh_snow

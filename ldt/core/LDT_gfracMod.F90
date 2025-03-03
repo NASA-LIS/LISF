@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -194,7 +194,8 @@ contains
 ! 
 ! !INTERFACE:
   subroutine LDT_greenness_init
-! !USES:
+    ! !USES:
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
     use LDT_paramOptCheckMod, only: LDT_gfracOptChecks, &
@@ -232,8 +233,8 @@ contains
    real, allocatable            :: gfrac_gridDesc(:,:)
    character*50             :: gfrac_proj
    character*50,  allocatable   :: gfrac_gridtransform(:)
-   character*100, allocatable   :: gfracdir(:)
-   character*140, allocatable   :: gfracfile(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable   :: gfracdir(:)
+   character(len=LDT_CONST_PATH_LEN), allocatable   :: gfracfile(:)
    character*20,  allocatable   :: gfracInterval(:)
 ! _____________________________________________________________
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@ MODULE clm2_shr_file_mod
 
    use clm2_shr_kind_mod, only: CLM2_SHR_KIND_IN
    use clm2_shr_sys_mod, only: clm2_shr_sys_system   ! System calls
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_logMod, only : LIS_logunit
 
    IMPLICIT none
@@ -37,12 +38,12 @@ SUBROUTINE clm2_shr_file_put(rcode,loc_fn,rem_fn,passwd,rtpd,async,remove)
    logical             ,optional    :: async   ! true <=> asynchronous put
 
    !----- local -----  
-   character(len=256)   :: passwd2  ! password
+   character(len=LIS_CONST_PATH_LEN) :: passwd2  ! password
    integer(CLM2_SHR_KIND_IN) :: rtpd2    ! MSS retention period
    logical              :: remove2  ! true <=> rm after put
    logical              :: async2   ! true <=> asynchronous put
-   character(len=256)   :: rfn      ! rem_fn without the destination prefix
-   character(len=256)   :: cmd      ! command sent to system call
+   character(len=LIS_CONST_PATH_LEN) :: rfn      ! rem_fn without the destination prefix
+   character(len=LIS_CONST_PATH_LEN) :: cmd      ! command sent to system call
 
    !----- formats -----
    character(len=*),parameter :: F00 = "('(clm2_shr_file_put) ',4a)"
@@ -129,11 +130,11 @@ SUBROUTINE clm2_shr_file_get(rcode,loc_fn,rem_fn,passwd,async,clobber)
    logical             ,optional    :: clobber ! true <=> clobber existing file
 
    !----- local -----
-   character(len=256) :: passwd2  ! password
+   character(len=LIS_CONST_PATH_LEN) :: passwd2  ! password
    logical            :: async2   ! true <=> asynchronous get
    logical            :: clobber2 ! true <=> clobber existing file
-   character(len=256) :: rfn      ! rem_fn without the destination prefix
-   character(len=256) :: cmd      ! command sent to system call
+   character(len=LIS_CONST_PATH_LEN) :: rfn ! rem_fn without the destination prefix
+   character(len=LIS_CONST_PATH_LEN) :: cmd ! command sent to system call
    logical            :: exists   ! true <=> local file aready exists
 
    !----- formats -----

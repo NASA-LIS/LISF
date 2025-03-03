@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@
 module CDFSgvf_Mod
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -76,8 +77,8 @@ module CDFSgvf_Mod
                                                  !e.g., 4/29 13:00:00)
      integer                    :: cdf_read_opt  ! 0: read all months at one time
                                                  ! 1: read only the current monTh
-     character*100              :: modelcdffile
-     character*100              :: obscdffile
+     character(len=LIS_CONST_PATH_LEN) :: modelcdffile
+     character(len=LIS_CONST_PATH_LEN) :: obscdffile
 
   end type CDFSgvf_dec
 
@@ -92,7 +93,8 @@ contains
 ! 
 ! !INTERFACE: 
   subroutine CDFSgvf_setup(k, OBS_State, OBS_Pert_State)
-! !USES: 
+    ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod
     use LIS_timeMgrMod
     use LIS_historyMod
@@ -130,7 +132,7 @@ contains
     type(ESMF_ArraySpec)       ::  intarrspec, realarrspec
     type(ESMF_Field)           ::  pertField(LIS_rc%nnest)
     type(ESMF_ArraySpec)       ::  pertArrSpec
-    character*100              ::  gvfobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  gvfobsdir
     character*100              ::  temp
     character*1                ::  vid(2)
     character*40, allocatable  ::  vname(:)

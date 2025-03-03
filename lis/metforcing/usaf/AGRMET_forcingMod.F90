@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -331,22 +331,25 @@ module AGRMET_forcingMod
      real*8                 :: pcpclimoAlarmTime
      real*8                 :: albAlarmTime
      real*8                 :: gfracAlarmTime
-     character*100          :: agrmetdir      
-     character*100          :: climodir     
-     character*100          :: maskfile,maskfile2,maskfile8,maskfile16,maskfile64,maskfilell
-     character*100          :: terrainfile,terrainfile8,terrainfile16,terrainfile64,terrainfilll
-     character*100          :: sfcntmfile     
-     character*100          :: sfcalcdir
-     character*100          :: mrgpcpdir
-     character*100          :: clouddir
-     character*100          :: ssmidir
-     character*100          :: geodir
-     character*100          :: gfsdir
-     character*100          :: galwemdir
-     character*100          :: cdmsdir
-     character*100          :: cmordir
-     character*100          :: analysisdir
-     character*100          :: retroFileRoot
+     character(len=LIS_CONST_PATH_LEN) :: agrmetdir      
+     character(len=LIS_CONST_PATH_LEN) :: climodir     
+     character(len=LIS_CONST_PATH_LEN) :: maskfile,maskfile2,maskfile8,maskfile16,maskfile64,maskfilell
+     character(len=LIS_CONST_PATH_LEN) :: terrainfile,terrainfile8,terrainfile16,terrainfile64,terrainfilll
+     character(len=LIS_CONST_PATH_LEN) :: sfcntmfile     
+     character(len=LIS_CONST_PATH_LEN) :: sfcalcdir
+     character(len=LIS_CONST_PATH_LEN) :: mrgpcpdir
+     character(len=LIS_CONST_PATH_LEN) :: clouddir
+     character(len=LIS_CONST_PATH_LEN) :: ssmidir
+     character(len=LIS_CONST_PATH_LEN) :: geodir
+     character(len=LIS_CONST_PATH_LEN) :: gfsdir
+     character(len=LIS_CONST_PATH_LEN) :: galwemdir
+! TEMP -- KRA
+     character(len=LIS_CONST_PATH_LEN) :: galwemraddir
+! TEMP -- KRA
+     character(len=LIS_CONST_PATH_LEN) :: cdmsdir
+     character(len=LIS_CONST_PATH_LEN) :: cmordir
+     character(len=LIS_CONST_PATH_LEN) :: analysisdir
+     character(len=LIS_CONST_PATH_LEN) :: retroFileRoot
      character*20           :: first_guess_source
      integer                :: use_timestamp
      integer                :: gfs_timestamp
@@ -482,6 +485,7 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable      :: mrgp(:,:,:)
      logical                :: pcp_start
      logical                :: pcp_ready
+     logical                :: first_pcp_segment ! EMK 6 Sep 2024
      character(len=6)       :: agr_bgrd_src_c
      real, allocatable      :: agr_hgt_c  ( : , : , : )
      real, allocatable      :: agr_rh_c   ( : , : , : )
@@ -556,8 +560,9 @@ integer, allocatable   :: n112_sh4(:)
 ! EMK END
      integer                :: lastSfcalcHour
      integer                :: lastPcpHour
+     integer                :: lastRadHour
 !new 
-     integer            :: ncol, nrow
+     integer                :: ncol, nrow
      integer, allocatable   :: n11_1_gfs(:)
      integer, allocatable   :: n12_1_gfs(:)
      integer, allocatable   :: n21_1_gfs(:)
@@ -607,7 +612,7 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable :: metdata2(:,:)
 
      ! EMK...IMERG settings
-     character*100          :: imerg_dir
+     character(len=LIS_CONST_PATH_LEN) :: imerg_dir
      character*10           :: imerg_product
      character*10           :: imerg_version
      integer*2              :: imerg_plp_thresh
@@ -623,93 +628,129 @@ integer, allocatable   :: n112_sh4(:)
 
      ! EMK NEW...For Bratseth scheme using GALWEM background
      real :: galwem_precip_back_err_scale_length
+     real :: galwem_precip_back_err_inv_scale_length
      real :: galwem_precip_back_sigma_b_sqr
      real :: galwem_precip_gauge_sigma_o_sqr
      real :: galwem_precip_geoprecip_err_scale_length
+     real :: galwem_precip_geoprecip_err_inv_scale_length
      real :: galwem_precip_geoprecip_sigma_o_sqr
      real :: galwem_precip_ssmi_err_scale_length
+     real :: galwem_precip_ssmi_err_inv_scale_length
      real :: galwem_precip_ssmi_sigma_o_sqr
      real :: galwem_precip_cmorph_err_scale_length
+     real :: galwem_precip_cmorph_err_inv_scale_length
      real :: galwem_precip_cmorph_sigma_o_sqr
      real :: galwem_precip_imerg_err_scale_length
+     real :: galwem_precip_imerg_err_inv_scale_length
      real :: galwem_precip_imerg_sigma_o_sqr
+     integer :: galwem_precip_corr_func_type
      real :: galwem_precip_max_dist
 
      real :: galwem_t2m_back_err_scale_length
+     real :: galwem_t2m_back_err_inv_scale_length
      real :: galwem_t2m_back_sigma_b_sqr
      real :: galwem_t2m_stn_sigma_o_sqr
+     integer :: galwem_t2m_corr_func_type
      real :: galwem_t2m_max_dist
 
      real :: galwem_rh2m_back_err_scale_length
+     real :: galwem_rh2m_back_err_inv_scale_length
      real :: galwem_rh2m_back_sigma_b_sqr
      real :: galwem_rh2m_stn_sigma_o_sqr
+     integer :: galwem_rh2m_corr_func_type
      real :: galwem_rh2m_max_dist
 
      real :: galwem_spd10m_back_err_scale_length
+     real :: galwem_spd10m_back_err_inv_scale_length
      real :: galwem_spd10m_back_sigma_b_sqr
      real :: galwem_spd10m_stn_sigma_o_sqr
+     integer :: galwem_spd10m_corr_func_type
      real :: galwem_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme using GFS background
      real :: gfs_precip_back_err_scale_length
+     real :: gfs_precip_back_err_inv_scale_length
      real :: gfs_precip_back_sigma_b_sqr
      real :: gfs_precip_gauge_sigma_o_sqr
      real :: gfs_precip_geoprecip_err_scale_length
+     real :: gfs_precip_geoprecip_err_inv_scale_length
      real :: gfs_precip_geoprecip_sigma_o_sqr
      real :: gfs_precip_ssmi_err_scale_length
+     real :: gfs_precip_ssmi_err_inv_scale_length
      real :: gfs_precip_ssmi_sigma_o_sqr
      real :: gfs_precip_cmorph_err_scale_length
+     real :: gfs_precip_cmorph_err_inv_scale_length
      real :: gfs_precip_cmorph_sigma_o_sqr
      real :: gfs_precip_imerg_err_scale_length
+     real :: gfs_precip_imerg_err_inv_scale_length
      real :: gfs_precip_imerg_sigma_o_sqr
+     integer :: gfs_precip_corr_func_type
      real :: gfs_precip_max_dist
 
      real :: gfs_t2m_back_err_scale_length
+     real :: gfs_t2m_back_err_inv_scale_length
      real :: gfs_t2m_back_sigma_b_sqr
      real :: gfs_t2m_stn_sigma_o_sqr
+     integer :: gfs_t2m_corr_func_type
      real :: gfs_t2m_max_dist
 
      real :: gfs_rh2m_back_err_scale_length
+     real :: gfs_rh2m_back_err_inv_scale_length
      real :: gfs_rh2m_back_sigma_b_sqr
      real :: gfs_rh2m_stn_sigma_o_sqr
+     integer :: gfs_rh2m_corr_func_type
      real :: gfs_rh2m_max_dist
 
      real :: gfs_spd10m_back_err_scale_length
+     real :: gfs_spd10m_back_err_inv_scale_length
      real :: gfs_spd10m_back_sigma_b_sqr
      real :: gfs_spd10m_stn_sigma_o_sqr
+     integer :: gfs_spd10m_corr_func_type
      real :: gfs_spd10m_max_dist
 
      ! EMK NEW...For Bratseth scheme.  Set dynamically based on available
      ! background field
      real :: bratseth_precip_back_err_scale_length
+     real :: bratseth_precip_back_err_inv_scale_length
      real :: bratseth_precip_back_sigma_b_sqr
      real :: bratseth_precip_gauge_sigma_o_sqr
      real :: bratseth_precip_geoprecip_err_scale_length
+     real :: bratseth_precip_geoprecip_err_inv_scale_length
      real :: bratseth_precip_geoprecip_sigma_o_sqr
      real :: bratseth_precip_ssmi_err_scale_length
+     real :: bratseth_precip_ssmi_err_inv_scale_length
      real :: bratseth_precip_ssmi_sigma_o_sqr
      real :: bratseth_precip_cmorph_err_scale_length
+     real :: bratseth_precip_cmorph_err_inv_scale_length
      real :: bratseth_precip_cmorph_sigma_o_sqr
      real :: bratseth_precip_imerg_err_scale_length
+     real :: bratseth_precip_imerg_err_inv_scale_length
      real :: bratseth_precip_imerg_sigma_o_sqr
+     integer :: bratseth_precip_corr_func_type
      real :: bratseth_precip_max_dist
 
      real :: bratseth_t2m_back_err_scale_length
+     real :: bratseth_t2m_back_err_inv_scale_length
      real :: bratseth_t2m_back_sigma_b_sqr
      real :: bratseth_t2m_stn_sigma_o_sqr
+     integer :: bratseth_t2m_corr_func_type
      real :: bratseth_t2m_max_dist
 
      real :: bratseth_rh2m_back_err_scale_length
+     real :: bratseth_rh2m_back_err_inv_scale_length
      real :: bratseth_rh2m_back_sigma_b_sqr
      real :: bratseth_rh2m_stn_sigma_o_sqr
+     integer :: bratseth_rh2m_corr_func_type
      real :: bratseth_rh2m_max_dist
 
      real :: bratseth_spd10m_back_err_scale_length
+     real :: bratseth_spd10m_back_err_inv_scale_length
      real :: bratseth_spd10m_back_sigma_b_sqr
      real :: bratseth_spd10m_stn_sigma_o_sqr
+     integer :: bratseth_spd10m_corr_func_type
      real :: bratseth_spd10m_max_dist
 
-     integer :: galwem_res ! EMK for GALWEM 10-km     
+     integer :: galwem_res ! EMK for GALWEM 10-km
      integer :: gfs_filename_version ! EMK for new GFS filename convention
 
      ! EMK Add OBA option
@@ -730,6 +771,10 @@ integer, allocatable   :: n112_sh4(:)
      real, allocatable :: gfs_nrt_bias_ratio(:,:)
      real, allocatable :: galwem_nrt_bias_ratio(:,:)
      integer :: pcp_back_bias_ratio_month
+
+     ! EMK Add list of gage networks to use
+     integer :: num_gage_networks
+     character(32), allocatable :: gage_networks(:)
   end type agrmet_type_dec
 
   type(agrmet_type_dec), allocatable :: agrmet_struc(:)
@@ -756,7 +801,8 @@ contains
 ! !INTERFACE:
   subroutine init_AGRMET(findex)
 
-! !USES: 
+    ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
@@ -830,8 +876,8 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
     integer :: kprs
     byte, allocatable :: buffer(:,:,:) 
     character*9                   :: cstat
-    character*100                 :: file_name,file_nam
-    character*255                 :: message(20)
+    character(len=LIS_CONST_PATH_LEN) :: file_name,file_nam
+    character(len=LIS_CONST_PATH_LEN) :: message(20)
     integer                       :: rec_length
     integer                       :: istat
     integer                       :: istat1
@@ -2142,9 +2188,12 @@ real :: xi14,xj14,xmesh4,orient4,alat14,alon14
 
           allocate(agrmet_struc(n)%mrgp(LIS_rc%lnc(n), LIS_rc%lnr(n),4))
           agrmet_struc(n)%pcp_start = .true. 
-          agrmet_struc(n)%pcp_ready = .false. 
+          agrmet_struc(n)%pcp_ready = .false.
+          agrmet_struc(n)%first_pcp_segment = .true. ! EMK 6 Sep 2024
           agrmet_struc(n)%lastSfcalcHour = 0
           agrmet_struc(n)%lastPcpHour = 0
+          agrmet_struc(n)%lastRadHour = 0
+
           call AGRMET_read_pcpclimodata(n)
 
           agrmet_struc(n)%albAlarmTime = 0.0

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -66,6 +66,8 @@ module LIS_historyMod
 !                   used in GRIB1 & GRIB2 format
 !  18 Oct 2018: David Mocko: Check lis.config entry for option to turn off
 !                   writing ASCII stats files with netCDF output format
+!  25 Oct 2024: Mahdi Navari: updated the code to fix the bug in writing
+!                    model output in 2D ensemble grid space (see https://github.com/NASA-LIS/LISF/issues/1627 )
 !
 ! !USES: 
   use LIS_coreMod
@@ -3440,16 +3442,16 @@ contains
                 ! lat/lon field output will write in 1D 
                 if(LIS_rc%nlatlon_dimensions == '1D') then
                    if(nmodel_status.eq.1) then
-                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                      call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name),&
                            nf90_float,&
                            dimids = dimID(2), varID=dataEntry%varId_def),&
-                           'nf90_def_var for '//trim(short_name)//&
+                           'nf90_def_var for '//trim(dataEntry%short_name)//&
                            'failed in defineNETCDFheadervar')                     
                    elseif(nmodel_status.eq.2) then
-                      call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                      call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name),&
                            nf90_float,&
                            dimids = dimID(1), varID=dataEntry%varId_def),&
-                           'nf90_def_var for '//trim(short_name)//&
+                           'nf90_def_var for '//trim(dataEntry%short_name)//&
                            'failed in defineNETCDFheadervar')                     
                    else                
                       call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name)//'_tavg',&
@@ -3460,10 +3462,10 @@ contains
                    endif
                 ! latlon field output will write in 2D
                 else
-                     call LIS_verify(nf90_def_var(ftn,trim(short_name),&
+                     call LIS_verify(nf90_def_var(ftn,trim(dataEntry%short_name),&
                          nf90_float,&
                          dimids = dimID(1:2), varID=dataEntry%varID_def),&
-                         'nf90_def_var for '//trim(short_name)//&
+                         'nf90_def_var for '//trim(dataEntry%short_name)//&
                          'failed in defineNETCDFheadervar')
                 endif 
 
@@ -7293,7 +7295,7 @@ contains
                    var1_ens(i,m) = -9999.0
                 else
                    var1_ens(i,m) = &
-                        var(t)*LIS_domain(n)%tile(t)%fgrd
+                        var(t)*LIS_routing(n)%tile(t)%fgrd
                 endif
              enddo
           enddo
@@ -7395,6 +7397,7 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
 
 ! !USES:
   use map_utils
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_pluginIndices
   
   implicit none
@@ -7466,7 +7469,7 @@ subroutine writevar_grib1_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*255        :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1
@@ -7749,6 +7752,7 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 
 ! !USES:
   use map_utils
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_pluginIndices
   
   implicit none
@@ -7821,7 +7825,7 @@ subroutine writevar_grib2_withstats_real(ftn, ftn_stats, n,   &
 !    call to compute diagnostic statistics of a variable
 !  \end{description}
 !EOP
-  character*255        :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer              :: igrib
   character*8          :: date
   integer              :: idate,idate1

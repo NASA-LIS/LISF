@@ -3,10 +3,10 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
-!-------------------------END NOTICE -- DO NOT EDIT----------------------
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
@@ -22,6 +22,7 @@
 subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_smap_e_oplMod
@@ -36,7 +37,7 @@ subroutine readUSAFSI(n, yyyymmdd, hh, SnowDepth, rc)
   integer, intent(out) :: rc
 
 !EOP
-  character*255       :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   character*8         :: yyyymmdd_snow
   character*4         :: yyyy_snow
   character*2         :: mm_snow, dd_snow, hh_snow

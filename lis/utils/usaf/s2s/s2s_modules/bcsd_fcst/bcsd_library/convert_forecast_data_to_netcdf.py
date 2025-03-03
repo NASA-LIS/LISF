@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -122,6 +122,8 @@ def read_wgrib (argv1, argv2, argv3, argv4, argv5, argv6, argv7, argv8):
     args['subdaily_file'] = \
         f"{args['indir']}/" + \
         f"{args['comparison_name']}"
+
+    # Run checks on the CFSv2 grib files here:
 
     ds_ = None
     ds_ = _check_replace_missing (args)

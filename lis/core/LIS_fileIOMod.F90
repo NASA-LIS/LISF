@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -2926,7 +2926,8 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 ! !Private name: call using putget()
     subroutine putget_int ( buffer, iofunc, file_name, &
          routine_name, imax, jmax )
-! !USES: 
+      ! !USES:
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_logMod,    only : LIS_abort, LIS_endrun, & 
            LIS_getNextUnitNumber, LIS_releaseUnitNumber
 
@@ -2966,7 +2967,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 !EOP
 
       character*9                   :: cstat
-      character*255                 :: message     (20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer                       :: rec_length
       integer                       :: istat
       integer                       :: istat1
@@ -3068,7 +3069,8 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 ! !Private name: call using putget()
     subroutine putget_real ( buffer, iofunc, file_name, &
          routine_name, imax, jmax )
-! !USES: 
+      ! !USES:
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_logMod,    only : LIS_abort, & 
            LIS_getNextUnitNumber, LIS_releaseUnitNumber
       implicit none
@@ -3108,7 +3110,7 @@ subroutine LIS_create_obs_filename(n, fname, mname)
 !  \end{description}
 !EOP      
 
-      character*255                 :: message     (20)
+      character(len=LIS_CONST_PATH_LEN) :: message     (20)
       integer                       :: rec_length
       character*9                   :: cstat
       integer                       :: istat

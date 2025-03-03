@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -39,9 +39,6 @@ subroutine LVT_readMetricsAttributes(attribFile)
 
   type(ESMF_Config)            :: attribConfig
   integer                      :: rc
-  character*100                  :: messages ( 20 )
-  
-  messages(:) = ''
 
   attribConfig = ESMF_ConfigCreate(rc=rc)
   call ESMF_ConfigLoadFile(attribConfig,trim(attribFile),rc=rc)

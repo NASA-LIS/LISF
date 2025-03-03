@@ -88,7 +88,7 @@ This script will prompt the user with a series of questions regarding support to
 | `LIS_OPENJPEG`  | path to openJPEG library         | required
 | `LIS_ECCODES`   | path to ecCodes library          | required
 | `LIS_NETCDF`    | path to NetCDF library           | required
-| `LIS_HDF4`      | path to HDF4 library             | optional
+| `LIS_HDF4`      | path to HDF4 library             | optional (required to use HDFEOS2)
 | `LIS_HDF5`      | path to HDF5 library             | optional
 | `LIS_HDFEOS`    | path to HDFEOS2 library          | optional
 | `LIS_MINPACK`   | path to MINPACK library          | optional
@@ -98,6 +98,7 @@ This script will prompt the user with a series of questions regarding support to
 | `LIS_LAPACK`    | path to LAPACK library           | optional
 | `LIS_PETSC`     | path to PETSc library            | optional
 | `LIS_JPEG`      | path to JPEG library             | optional (use system libjpeg by default)
+| `LIS_RPC`       | path to RPC library              | optional (use system RPC library by default)
 |====
 
 //{cpp} is C++

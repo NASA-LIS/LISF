@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ module Snow17_parmsMod
 !  04 Nov 2013: K. Arsenault: Added layers for SNOW-17 model
 !
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -48,29 +49,29 @@ module Snow17_parmsMod
 
   type, public :: snow17_type_dec
 
-     character*140 :: rdhmconsts_table
+     character(len=LDT_CONST_PATH_LEN) :: rdhmconsts_table
      real          :: rdhm_undef
 
      real          :: snow17parms_gridDesc(20)
      character*50  :: snow17parms_proj
      character*50  :: snow17parms_gridtransform
 
-     character*140 :: mfmax_file      !
-     character*140 :: mfmin_file      !
-     character*140 :: uadj_file       !
-     character*140 :: alat_file       !
-     character*140 :: elev_file       !
-     character*140 :: scf_file        !
-     character*140 :: nmf_file        !
-     character*140 :: si_file         ! 
-     character*140 :: mbase_file      !
-     character*140 :: pxtemp_file     !
-     character*140 :: plwhc_file      !
-     character*140 :: tipm_file       !
-     character*140 :: pgm_file        !
-     character*140 :: laec_file       !
-     character*140 :: adc_dir         ! 
-     character*140 :: adc_file        ! 
+     character(len=LDT_CONST_PATH_LEN) :: mfmax_file      !
+     character(len=LDT_CONST_PATH_LEN) :: mfmin_file      !
+     character(len=LDT_CONST_PATH_LEN) :: uadj_file       !
+     character(len=LDT_CONST_PATH_LEN) :: alat_file       !
+     character(len=LDT_CONST_PATH_LEN) :: elev_file       !
+     character(len=LDT_CONST_PATH_LEN) :: scf_file        !
+     character(len=LDT_CONST_PATH_LEN) :: nmf_file        !
+     character(len=LDT_CONST_PATH_LEN) :: si_file         ! 
+     character(len=LDT_CONST_PATH_LEN) :: mbase_file      !
+     character(len=LDT_CONST_PATH_LEN) :: pxtemp_file     !
+     character(len=LDT_CONST_PATH_LEN) :: plwhc_file      !
+     character(len=LDT_CONST_PATH_LEN) :: tipm_file       !
+     character(len=LDT_CONST_PATH_LEN) :: pgm_file        !
+     character(len=LDT_CONST_PATH_LEN) :: laec_file       !
+     character(len=LDT_CONST_PATH_LEN) :: adc_dir         ! 
+     character(len=LDT_CONST_PATH_LEN) :: adc_file        ! 
 
 ! -  Snow-17 model-specific:
      type(LDT_paramEntry) :: snow17      ! SNOW-17 model parameters (collective)

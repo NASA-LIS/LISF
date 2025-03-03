@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@
 !  18 Dec 2021: Yonghwan Kwon; modified for LDT
 !  09 Feb 2023: Eric Kemp; now processes subset of fields, no output of
 !    data to separate binary files.
+!  19 Apr 2024: Eric Kemp; changed pixel times to REAL*8.
 !
 ! DESCRIPTION: RESAMPLE SMAPL1B TB TO AIR FORCE GRID
 ! INPUT : SMAP - L1B Brightness Temperature
@@ -29,28 +30,30 @@ subroutine SMAPL1BRESAMPLE_SUBSET(SMAPFILE,L1B_dir,Orbit,ARFS_TIME,rc)
   USE FUNCTIONS
   USE TOOLSUBS
   USE invdist_l1b2arfs
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   USE LDT_logMod
   USE LDT_smap_e_oplMod
 
   IMPLICIT NONE
 
   INTEGER :: i, j, nrow, mcol
-  CHARACTER (len=100) :: SMAPFILE
-  character (len=100) :: L1B_dir
+  CHARACTER (len=LDT_CONST_PATH_LEN) :: SMAPFILE
+  character (len=LDT_CONST_PATH_LEN) :: L1B_dir
   character (len=20)  :: variable_name(13)
-  character (len=100) :: resample_filename(13)
   character (len=1)   :: Orbit
   integer             :: var_i
   integer             :: L1B_dir_len,L1B_fname_len
   integer :: ierr
   integer :: rc
 
-  REAL*4,DIMENSION(:,:),ALLOCATABLE :: TIME_L1B, TBV_COR_L1B
+  REAL*8,DIMENSION(:,:),ALLOCATABLE :: TIME_L1B
+  REAL*4,DIMENSION(:,:),ALLOCATABLE :: TBV_COR_L1B
   REAL*4,DIMENSION(:,:),ALLOCATABLE :: LAT_L1B, LON_L1B, SCNANG_L1B
   REAL*4,DIMENSION(:),ALLOCATABLE :: ANTSCN_L1B
   INTEGER*4,DIMENSION(:,:),ALLOCATABLE :: TBVFLAG_L1B, TBHFLAG_L1B
   REAL*8,DIMENSION(:), ALLOCATABLE :: ARFS_LAT, ARFS_LON
-  REAL*4,DIMENSION(2560,1920) :: ARFS_TIME, ARFS_COR_TBV
+  REAL*8,DIMENSION(2560,1920) :: ARFS_TIME
+  REAL*4,DIMENSION(2560,1920) :: ARFS_COR_TBV
 
   REAL :: T1, T2
 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,8 @@ module LDT_NAFPA_back_climpptMod
   ! REVISION HISTORY:
   ! 13 May 2022: Eric Kemp/SSAI: First version.
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -28,7 +30,7 @@ module LDT_NAFPA_back_climpptMod
   ! interpolating to LIS grid, summing, and averaging each month
   type, public :: LDT_NAFPA_back_climppt_t
      private
-     character(255) :: topdir_input
+     character(len=LDT_CONST_PATH_LEN) :: topdir_input
      integer :: nlat_input
      integer :: nlon_input
      real :: gridDesc_input(20)
@@ -206,6 +208,7 @@ contains
     ! Imports
     use ESMF
     use LDT_climateParmsMod, only: LDT_climate_struc
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc, LDT_domain
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use netcdf
@@ -225,7 +228,7 @@ contains
     ! Locals
     integer :: ipass
     integer :: iyear, iyear_start, iyear_end
-    character(255) :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     logical :: found_inq
     integer :: iret
     integer :: ftn, varid
@@ -467,6 +470,9 @@ contains
 
   subroutine create_filename(this, imonth, iyear, filename)
 
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
@@ -474,7 +480,7 @@ contains
     class(LDT_NAFPA_back_climppt_t), intent(in) :: this
     integer, intent(in) :: imonth
     integer, intent(in) :: iyear
-    character(255), intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Locals
     integer :: imonth_file, iyear_file

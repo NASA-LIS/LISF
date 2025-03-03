@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -156,6 +156,8 @@ subroutine LIS_openwatermodel_plugin
         trim(LIS_retroId)//char(0),templateOpenWater_f2t)
    call registeropenwaterf2t(trim(LIS_templateOpenWaterId)//"+"//&
         trim(LIS_agrmetrunId)//char(0),templateOpenWater_f2t)
+   call registeropenwaterf2t(trim(LIS_templateOpenWaterId)//"+"//&
+        trim(LIS_forecastrunId)//char(0),templateOpenWater_f2t)
    call registeropenwaterwrst(trim(LIS_templateOpenWaterId)//char(0),&
         templateOpenWater_writerst)
    call registeropenwaterfinalize(trim(LIS_templateOpenWaterId)//char(0),&

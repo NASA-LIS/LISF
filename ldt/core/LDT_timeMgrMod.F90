@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -2639,7 +2639,8 @@ end function LDT_getSecsInDekad
 !
 ! !INTERFACE:    
 subroutine LDT_julhr_date( julhr, yyyy,mm,dd,hh)
-! !USES:
+  ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_logMod, only : ldt_abort
 
   implicit none 
@@ -2686,7 +2687,7 @@ subroutine LDT_julhr_date( julhr, yyyy,mm,dd,hh)
 ! \end{description}
 !
 !EOP
-  character*100                  :: message ( 20 )  
+  character(len=LDT_CONST_PATH_LEN) :: message ( 20 )  
 
 !     ------------------------------------------------------------------
 !     executable code begins here... use LDT_tmjul4 to convert julhr to 

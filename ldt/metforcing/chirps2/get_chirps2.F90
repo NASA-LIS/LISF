@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@
 ! !INTERFACE:
 subroutine get_chirps2(n,findex)
 ! !USES:
+  use LDT_constantsMod,    only : LDT_CONST_PATH_LEN
   use LDT_coreMod,         only : LDT_rc 
   use LDT_metforcingMod,   only : LDT_forc
   use LDT_timeMgrMod,      only : LDT_get_nstep, LDT_tick
@@ -61,7 +62,7 @@ subroutine get_chirps2(n,findex)
   real*8  :: time1,time2
   real    :: gmt1,gmt2,ts1,ts2
 
-  character*120 :: chirps2_filename
+  character(len=LDT_CONST_PATH_LEN) :: chirps2_filename
   logical       :: file_exists
 
 ! ___________________________________________________________________

@@ -1,15 +1,17 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
 ! NOTE:  Currently only 0.05 deg daily CHIRPSv2 data are supported
 module CHIRPSv2_dataMod
+
+   use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
    ! Defaults
    implicit none
@@ -22,7 +24,7 @@ module CHIRPSv2_dataMod
    public :: CHIRPSv2data
 
    type, public :: chirpsv2datadec
-      character*100 :: odir
+      character(len=LVT_CONST_PATH_LEN) :: odir
       real          :: datares
       real, allocatable           :: rlat(:)
       real, allocatable           :: rlon(:)

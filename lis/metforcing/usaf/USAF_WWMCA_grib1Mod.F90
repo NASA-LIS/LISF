@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,9 @@
 
 module USAF_WWMCA_grib1Mod
 
+  ! Imports
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -31,7 +34,7 @@ module USAF_WWMCA_grib1Mod
   ! Create structure to share internal routines
   type :: wwmca_grib1_t
      private
-     character(len=255) :: full_grib_path
+     character(len=LIS_CONST_PATH_LEN) :: full_grib_path
      integer :: nx
      integer :: ny
      integer :: nk

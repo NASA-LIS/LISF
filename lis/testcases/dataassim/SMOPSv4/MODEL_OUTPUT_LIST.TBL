@@ -1,0 +1,4 @@
+#Subsurface state variables
+SoilMoist:    1  m3/m3   -    2 0 0 4 201 1000     # Average layer soil moisture (kg/m2)
+RelSMC:       0  m3/m3   -    0 0 0 4 141 1000    # Relative soil moisture
+

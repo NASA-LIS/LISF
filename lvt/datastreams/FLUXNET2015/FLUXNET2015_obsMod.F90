@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -41,6 +41,7 @@
 module FLUXNET2015_obsMod
 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -50,7 +51,7 @@ module FLUXNET2015_obsMod
   PUBLIC :: FLUXNET2015obs
 
   type, public :: FLUXNET2015obsdec
-     character*500 :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                 :: n_stns
      character*100, allocatable  :: stn_name(:)
      real,          allocatable  :: stnlat(:)
@@ -81,7 +82,8 @@ contains
 ! !INTERFACE: 
  subroutine FLUXNET2015_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -110,7 +112,7 @@ contains
 ! 
 !
 !EOP
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn 
     integer       :: k,iloc
     integer       :: arrayLen

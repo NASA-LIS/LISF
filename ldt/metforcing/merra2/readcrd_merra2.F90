@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -67,7 +67,7 @@ subroutine readcrd_merra2()
   do n=1,LDT_rc%nnest
      write(LDT_logunit,*) 'Using MERRA2 forcing'
      write(LDT_logunit,*) 'MERRA2 forcing directory: ',&
-          merra2_struc(n)%merra2DIR
+           trim(merra2_struc(n)%merra2DIR)
 
      merra2_struc(n)%merra2time1 = 3000.0
      merra2_struc(n)%merra2time2 = 0.0

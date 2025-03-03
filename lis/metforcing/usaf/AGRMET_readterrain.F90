@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@
 ! !INTERFACE:
 subroutine AGRMET_readterrain(n)
 ! !USES: 
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_fileIOMod,     only : LIS_putget
   use LIS_logMod,        only : LIS_logunit,LIS_abort, LIS_endrun
@@ -51,8 +52,8 @@ subroutine AGRMET_readterrain(n)
 !EOP
   integer       :: hemi
   logical       :: exists
-  character*100 :: name
-  character*255 :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: name
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   character*30  :: routine_name
 
   data routine_name     / 'AGRMET_readterrain' /
@@ -94,12 +95,12 @@ end subroutine AGRMET_readterrain
 ! 
 ! !INTERFACE: 
 subroutine get_agrmetterrain_filename(name, dir,hemi)
-
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS:   
   integer, intent(in) :: hemi
-  character*100       :: name
-  character*100        :: dir
+  character(len=LIS_CONST_PATH_LEN) :: name
+  character(len=LIS_CONST_PATH_LEN) :: dir
 ! 
 ! !DESCRIPTION: 
 !  This routines generates the name of the AGRMET terrain file, by 
@@ -118,7 +119,7 @@ subroutine get_agrmetterrain_filename(name, dir,hemi)
 !    created filename
 !  \end{description}
 !EOP
-  character*100 :: temp
+  character(len=LIS_CONST_PATH_LEN) :: temp
   character*1 :: fbase(100),fhemi(3)
   integer :: c,i
   write(UNIT=temp, fmt='(a100)') dir  

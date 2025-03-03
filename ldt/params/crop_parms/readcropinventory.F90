@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@ subroutine readcropinventory( nest, crop_classification, &
                               num_types, crop_array )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_verify, LDT_endrun
@@ -52,7 +53,7 @@ subroutine readcropinventory( nest, crop_classification, &
 !- Local:
    integer        :: ftn, ios1
    integer        :: i, k
-   character(100) :: cropinv_file
+   character(len=LDT_CONST_PATH_LEN) :: cropinv_file
    character(100) :: header1
    character(20)  :: read_cropname
    character(40)  :: read_fullname

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -356,8 +356,8 @@ module LDT_PRIV_rcMod
      integer                :: cdf_nbins
      integer                :: cdf_ntimes
      integer                :: group_cdfs
-     character*50           :: group_cdfs_attrib_file
-     character*50           :: group_cdfs_strat_file
+     character(len=LDT_CONST_PATH_LEN) :: group_cdfs_attrib_file
+     character(len=LDT_CONST_PATH_LEN) :: group_cdfs_strat_file
      real                   :: group_cdfs_min
      real                   :: group_cdfs_max
      integer                :: group_cdfs_nbins
@@ -366,7 +366,7 @@ module LDT_PRIV_rcMod
      integer                :: strat_cdfs
      integer                :: write_strat_cdfs
      character*50           :: strat_src
-     character*50           :: strat_file
+     character(len=LDT_CONST_PATH_LEN) :: strat_file
      !character*50           :: strat_cdfs_attrib_file
      integer                :: strat_cdfs_nbins
      integer                :: stratified_cdfs_nbins
@@ -406,8 +406,8 @@ module LDT_PRIV_rcMod
      character*100          :: rstsource
      character*50           :: ensrstmode
      character*50           :: ensrstsampling
-     character*140          :: inputrst
-     character*140          :: outputrst
+     character(len=LDT_CONST_PATH_LEN) :: inputrst
+     character(len=LDT_CONST_PATH_LEN) :: outputrst
      integer                :: nens_in
      integer                :: nens_out
 

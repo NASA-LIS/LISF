@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ module GeoWRSI_parmsMod
 !  20 Oct 2013: K. Arsenault: Updated for WRSI LSM parameters.
 !
   use ESMF
+  use LDT_constantsMod
   use LDT_coreMod
   use LDT_historyMod
   use LDT_gfracMod
@@ -55,13 +56,13 @@ module GeoWRSI_parmsMod
      character*50           :: wrsiparms_gridtransform
 
 !  - WRSI model parameters:
-     character*140  :: wrsimask_file   ! WRSI regional mask file
-     character*140  :: lgp_file        ! Length of growing period file
-     character*140  :: whc_file        ! Water holding capacity file
-     character*140  :: sosclim_file    ! SOS climatology file
-     character*140  :: wrsiclim_file   ! WRSI climatology file
-     character*140  :: sos_file        ! Start-of-season (SOS) file
-     character*140  :: sosanom_file    ! SOS anomaly file
+     character(len=LDT_CONST_PATH_LEN) :: wrsimask_file   ! WRSI regional mask file
+     character(len=LDT_CONST_PATH_LEN) :: lgp_file        ! Length of growing period file
+     character(len=LDT_CONST_PATH_LEN) :: whc_file        ! Water holding capacity file
+     character(len=LDT_CONST_PATH_LEN) :: sosclim_file    ! SOS climatology file
+     character(len=LDT_CONST_PATH_LEN) :: wrsiclim_file   ! WRSI climatology file
+     character(len=LDT_CONST_PATH_LEN) :: sos_file        ! Start-of-season (SOS) file
+     character(len=LDT_CONST_PATH_LEN) :: sosanom_file    ! SOS anomaly file
 
 
 ! -  WRSI model-specifc:

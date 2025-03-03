@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -34,7 +34,8 @@
 module NLDAS2_dataMod
 ! !USES:
   use ESMF
-  
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -48,7 +49,7 @@ module NLDAS2_dataMod
   PUBLIC :: NLDAS2data
 !EOP
   type, public            :: nldas2datadec
-     character*120           :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*120           :: interval
      real, allocatable       :: rlat(:)
      real, allocatable       :: rlon(:)
@@ -82,7 +83,8 @@ contains
 ! !INTERFACE:
   subroutine NLDAS2_datainit(i)
 !
-! !USES:
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_logMod
     use LVT_histDataMod
@@ -113,7 +115,7 @@ contains
     integer              :: updoy, yr1,mo1,da1,hr1,mn1,ss1
     real                 :: upgmt
     integer              :: ftn
-    character*50         :: vic_d1file,vic_d2file,vic_d3file
+    character(len=LVT_CONST_PATH_LEN) :: vic_d1file,vic_d2file,vic_d3file
     
     if(.not.allocated(nldas2data)) then 
        allocate(nldas2data(LVT_rc%nDataStreams))

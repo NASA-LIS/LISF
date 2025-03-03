@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,7 +46,8 @@
 module Ameriflux_obsMod
 
   use ESMF
-
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+ 
   implicit none
 
   PRIVATE 
@@ -55,7 +56,7 @@ module Ameriflux_obsMod
   PUBLIC :: Amerifluxobs
 
   type, public :: Amerifluxobsdec
-     character*100 :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      character*50            :: version
      integer                 :: n_stns
      character*100, allocatable  :: site_name(:)
@@ -98,7 +99,8 @@ contains
 ! !INTERFACE: 
  subroutine Ameriflux_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -127,7 +129,7 @@ contains
 ! 
 !
 !EOP
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     integer       :: ftn 
     integer       :: k,iloc
     integer       :: arrayLen

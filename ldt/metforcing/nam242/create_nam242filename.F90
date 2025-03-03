@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@ subroutine create_nam242filename(option, name00, name03, name06, &
      F06flag, namdir, yr, mo, da, hr )
 ! !USES:
   ! Dagang add begin
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_timeMgrMod, only : LDT_tick, LDT_date2time
   use LDT_coreMod,    only : LDT_rc
   use LDT_logMod,     only : LDT_logunit
@@ -65,7 +66,7 @@ subroutine create_nam242filename(option, name00, name03, name06, &
   integer :: remainder
   character(len=2) :: initcode0, initcode1, fcstcode0, fcstcode1, fcstcode2
   character*1 :: fbase(80), fdir(13), ftime(10), fsubs(26)
-  character(LEN=100) :: temp1,temp2
+  character(LEN=LDT_CONST_PATH_LEN) :: temp1,temp2
   real*8      :: time1,dumbtime
   integer     :: doy1,doy
   real        :: gmt1,gmt

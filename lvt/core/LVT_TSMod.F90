@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@ module LVT_TSMod
 ! !USES: 
   use ESMF
   use LVT_logMod
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_statsDataMod
   use LVT_histDataMod
@@ -64,7 +65,7 @@ module LVT_TSMod
 
   type, public :: ts_struc
 
-     character*500  :: tslocfile
+     character(len=LVT_CONST_PATH_LEN)  :: tslocfile
      character*500  :: tslocname
      real         :: tslat1
      real         :: tslon1
@@ -1499,7 +1500,7 @@ contains
        metric_total)
 ! 
 ! !USES:     
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -1528,7 +1529,7 @@ contains
     real, allocatable :: bin(:)
     
     integer        :: ftn,i,t,k,kk,binval
-    character*500  :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(LVT_rc%data_based_strat.eq.1) then       
        if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then  
@@ -1594,7 +1595,7 @@ contains
        nsize_m,metric_total,nsize_o,obs_total)
 ! 
 ! !USES:     
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -1628,7 +1629,7 @@ contains
     real, allocatable :: obin(:)
     
     integer        :: ftn,i,t,k,kk,binval
-    character*500  :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(LVT_rc%data_based_strat.eq.1) then       
        if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then  
@@ -1719,7 +1720,7 @@ contains
        count_metric_asc)
 ! 
 ! !USES:   
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -1748,7 +1749,7 @@ contains
     real     :: wsum_v_sc(LVT_rc%nasc)
     integer  :: wnsum_v_sc(LVT_rc%nasc)
     integer                   :: tid,k,l,i,kk,ftn
-    character*500             :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(metric%computeSC.eq.1.and.metric%timeOpt.eq.1) then
        if(stats%selectOpt.eq.1.and.model%selectNlevs.ge.1) then 
@@ -1816,7 +1817,7 @@ contains
        count_metric_asc,nsize_o,obs_asc,count_obs_asc)
 ! 
 ! !USES:   
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -1852,7 +1853,7 @@ contains
     real     :: wsum_v_sc(LVT_rc%nasc)
     integer  :: wnsum_v_sc(LVT_rc%nasc)
     integer                   :: tid,k,l,i,kk,ftn
-    character*500             :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(metric%computeSC.eq.1.and.metric%timeOpt.eq.1) then
        if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
@@ -1941,7 +1942,7 @@ contains
        nsize,metric_adc,count_metric_adc)
 ! 
 ! !USES:   
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -1970,7 +1971,7 @@ contains
     real     :: wsum_v_adc(LVT_rc%nadc)
     integer  :: wnsum_v_adc(LVT_rc%nadc)
     integer                   :: tid,k,l,i,kk,ftn
-    character*500             :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(metric%computeADC.eq.1.and.metric%timeOpt.eq.1) then
        if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 
@@ -2038,7 +2039,7 @@ contains
        nsize_m,metric_adc,count_metric_adc,nsize_o,obs_adc,count_obs_adc)
 ! 
 ! !USES:   
-
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 ! !INPUT PARAMETERS: 
 ! 
@@ -2074,7 +2075,7 @@ contains
     real     :: wsum_v_adc(LVT_rc%nadc)
     integer  :: wnsum_v_adc(LVT_rc%nadc)
     integer                   :: tid,k,l,i,kk,ftn
-    character*500             :: filename
+    character(len=LVT_CONST_PATH_LEN) :: filename
 
     if(metric%computeADC.eq.1.and.metric%timeOpt.eq.1) then
        if(stats%selectOpt.eq.1.and.obs%selectNlevs.ge.1) then 

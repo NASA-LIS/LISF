@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ module GRDC_obsMod
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 
   implicit none
 
@@ -54,7 +55,7 @@ module GRDC_obsMod
 !EOP
 
      integer                     :: version
-     character*100               :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                     :: use_daily
      integer                     :: n_stns
      integer                     :: nts
@@ -80,7 +81,8 @@ contains
 ! !INTERFACE: 
  subroutine GRDC_obsinit(i)
 ! 
-! !USES: 
+   ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_logMod
@@ -101,7 +103,7 @@ contains
 ! 
 !EOP
 
-    character*100 :: stnlist_file
+    character(len=LVT_CONST_PATH_LEN) :: stnlist_file
     character*200 :: currentLine
     character*20  :: data_freq
     integer       :: iloc

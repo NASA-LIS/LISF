@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -44,6 +44,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
 
 ! !USES: 
   use AGRMET_forcingMod, only: agrmet_struc
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_masterproc, LIS_domain
   use LIS_logMod, only : LIS_alert, LIS_logunit
   use LIS_mpiMod
@@ -216,11 +217,11 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
   character*10                  :: date10
   character*10                  :: date10_min6
   character*10                  :: date10_min12
-  character*120                 :: filename
-  character*120                 :: filename_min6
-  character*120                 :: filename_min12
+  character(len=LIS_CONST_PATH_LEN) :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename_min6
+  character(len=LIS_CONST_PATH_LEN) :: filename_min12
   character*5                   :: iofunc
-  character*100                 :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer                       :: count
   integer                       :: count6
   integer                       :: count6obs
@@ -1151,7 +1152,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                     float(obs_cur(i)%amt6) * 0.1, &
                     obs_cur(i)%lat, obs_cur(i)%lon,&
                     agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                    0.)
+                    0., 0.)
 
 !-----------------------------------------------------------------------
 !           calculate distance between the current observation and 
@@ -1220,7 +1221,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                  float(obs_cur(i)%amt12) * 0.1, &
                  obs_cur(i)%lat, obs_cur(i)%lon, &
                  agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                 0.)
+                 0., 0.)
             
             newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                  * 100.0
@@ -1288,7 +1289,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                    0.0, &
                    obs_cur(i)%lat, obs_cur(i)%lon, &
                    agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                   0.)
+                   0., 0.)
 
               newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                    * 100.0
@@ -1341,7 +1342,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                       float(obs_cur(i)%amtmsc) * 0.1, &
                       obs_cur(i)%lat, obs_cur(i)%lon, &
                       agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                      0.)
+                      0., 0.)
 
                 newd = sumsqr(ri, float(nint(ri)), rj, float(nint(rj)))  &
                      * 100.0
@@ -1399,7 +1400,7 @@ subroutine AGRMET_processobs(n, obs, isize, stncnt, hemi, julhr, &
                         float(obs_6(i)%amtmsc) * 0.1, &
                         obs_6(i)%lat, obs_6(i)%lon, &
                         agrmet_struc(n)%bratseth_precip_gauge_sigma_o_sqr, &
-                        0.)
+                        0., 0.)
                    
                    newd = sumsqr(ri, float(nint(ri)), &
                         rj, float(nint(rj))) * 100.0

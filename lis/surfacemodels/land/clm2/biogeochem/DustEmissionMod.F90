@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -316,6 +316,7 @@ end subroutine Dust
 ! $Id: DustEmissionMod.F90,v 1.6 2004/11/24 22:56:13 jim Exp $
 !-----------------------------------------------------------------------
 
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use clm2_lsmMod
     use clm_varmap, only : begpatch, endpatch          
 #if (defined MAKE_DUST_BASIN)
@@ -325,7 +326,7 @@ end subroutine Dust
     include 'netcdf.inc'
 
 ! ------------------------ local variables ---------------------------
-  character(len=80) felev     !elevation file
+  character(len=LIS_CONST_PATH_LEN) felev     !elevation file
 
 ! NETCDF related
 

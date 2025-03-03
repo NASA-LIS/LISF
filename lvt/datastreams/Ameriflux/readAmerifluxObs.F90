@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -176,6 +176,7 @@ subroutine read_ameriflux_station(source, stn_index)
 ! 
 ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_timeMgrMod
@@ -238,7 +239,7 @@ subroutine read_ameriflux_station(source, stn_index)
 
   !This initializes the current line, first line, and filename variables. 
   Character (len = 300) :: currentLine
-  Character (len = 200) :: filename 
+  Character (len = LVT_CONST_PATH_LEN) :: filename 
   character*4           :: fyr
   logical               :: file_exists
 

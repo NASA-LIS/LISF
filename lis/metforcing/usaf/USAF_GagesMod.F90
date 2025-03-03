@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 ! MODULE: USAF_GagesMod
 !
@@ -1744,8 +1753,7 @@ contains
     end do
 
     300 continue
-    close(iunit)
-    call LIS_releaseUnitNumber(iunit)
+    call LIS_releaseUnitNumber(iunit) ! Closes file
 
   end subroutine USAF_gages_write_data
 
@@ -1753,6 +1761,7 @@ contains
   subroutine USAF_gages_read_data(this, filename, date10, alert_number)
 
     ! Imports
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod, only: LIS_masterproc
     use LIS_logMod, only: LIS_getNextUnitNumber, LIS_releaseUnitNumber, &
          LIS_alert, LIS_logunit
@@ -1795,7 +1804,7 @@ contains
     logical :: found
     integer :: i
     integer :: iunit
-    character(255) :: message(20)
+    character(len=LIS_CONST_PATH_LEN) :: message(20)
 
     message = ''
     call this%delete() ! Make sure structure is empty
@@ -1815,8 +1824,8 @@ contains
        end if
        return
     end if
-    iunit = LIS_getNextUnitNumber()
 
+    iunit = LIS_getNextUnitNumber()
     open(iunit, file=trim(filename), iostat=istat)
     if (istat .ne. 0) then
        write(LIS_logunit,*)'[WARN] Problem opening ', trim(filename)
@@ -1828,6 +1837,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
+       call LIS_releaseUnitNumber(iunit)
        return
     end if
 
@@ -1843,8 +1853,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        return
     end if
 
@@ -1859,8 +1868,7 @@ contains
                alert_number, message)
           alert_number = alert_number + 1
        end if
-       close(iunit)
-       call LIS_releaseUnitNumber(iunit)
+       call LIS_releaseUnitNumber(iunit) ! Closes file
        return
     end if
 
@@ -1914,8 +1922,7 @@ contains
             i9, 1x, i9)
     end do
 
-    close(iunit)
-    call LIS_releaseUnitNumber(iunit)
+    call LIS_releaseUnitNumber(iunit) ! Closes file
 300 continue
 
     ! If read was successful, copy to USAF_gages_t structure.
@@ -2613,7 +2620,7 @@ contains
                real(this%amts06(i)) * 0.1, &
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
-               gage_sigma_o_sqr, 0.)
+               gage_sigma_o_sqr, 0., 0.)
           num_obs_copied = num_obs_copied + 1
        end do
        write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &
@@ -2627,7 +2634,7 @@ contains
                real(this%amts12(i)) * 0.1, &
                real(this%lats(i)) * 0.01, &
                real(this%lons(i)) * 0.01, &
-               gage_sigma_o_sqr, 0.)
+               gage_sigma_o_sqr, 0., 0.)
           num_obs_copied = num_obs_copied + 1
        end do
        write(LIS_logunit,*)'[INFO] Copied ', num_obs_copied, &

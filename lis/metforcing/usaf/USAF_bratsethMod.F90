@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,16 @@
 !              ........................................Eric Kemp/SSAI/NASA
 ! 03 Jun 2020  Removed Box-Cox transform in precipitation analysis
 !              ........................................Eric Kemp/SSAI/NASA
+! 29 Nov 2023  Pass QC-rejected obs to OBA files.......Eric Kemp/SSAI/NASA
+! 12 Mar 2024  Restrict BackQC and SuperstatQC to gage reports. Fixed
+!              typo in SuperstatQC threshold...........Eric Kemp/SSAI/NASA
+! 21 Mar 2024  Changed internal BackQC and SuperstatQC logic to only
+!              skip for IMERG.  This allows use with T, RH, and wind
+!              speed analyses..........................Eric Kemp/SSAI/NASA
+! 24 May 2024  Export USAF_is_gauge function, and add HADS and
+!              NWSLI gage networks.....................Eric Kemp/SSAI/NASA
+! 29 Aug 2024  Added option to use inverse exponential autocorrelation
+!              function................................Eric Kemp/SSAI/NASA
 !
 ! DESCRIPTION:
 !
@@ -34,7 +44,7 @@
 !
 ! Bratseth, A M, 1986:  Statistical interpolation by means of successive
 !   corrections.  Tellus, 38A, 439-447.
-! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition, 
+! Cressie, N A C, 1993:  Statistics for Spatial Data.  Revised Edition,
 !   Wiley, New York, 928 pp.
 ! Daley, R, 1991:  Atmospheric Data Analysis.  Cambridge University Press,
 !   Cambridge, UK, 457 pp.
@@ -103,6 +113,7 @@ module USAF_bratsethMod
       real, allocatable :: lon(:) ! Longitude of observation (deg E)
       real, allocatable :: sigmaOSqr(:) ! Error variance of observation
       real, allocatable :: oErrScaleLength(:) ! Obs error correlation length
+      real, allocatable :: oErrInvScaleLength(:) ! Obs error inverse correlation length
       real, allocatable :: back(:) ! Background variable
       integer, allocatable :: qc(:) ! Quality control flag
    end type USAF_obsData
@@ -133,6 +144,8 @@ module USAF_bratsethMod
    public :: USAF_snowDepthQC
    public :: USAF_backQC
    public :: USAF_superstatQC
+   ! EMK 20240524
+   public :: USAF_is_gauge
 
    ! A simple linked list type that can be used in a hash table.  Intended
    ! to store indices of arrays in the USAF_obsData type for efficient look-up.
@@ -143,12 +156,6 @@ module USAF_bratsethMod
 
    ! Private constants
    real, parameter :: MISSING = -9999
-
-   ! Quality control flags.  Should these be public?
-   integer, parameter :: QC_UNKNOWN = 0
-   integer, parameter :: QC_GOOD = 1
-   integer, parameter :: QC_SUSPECT = 2
-   integer, parameter :: QC_REJECT = 3
 
 contains
 
@@ -179,6 +186,7 @@ contains
          allocate(this%lon(maxobs))
          allocate(this%sigmaOSqr(maxobs))
          allocate(this%oErrScaleLength(maxobs))
+         allocate(this%oErrInvScaleLength(maxobs))
          allocate(this%back(maxobs))
          allocate(this%qc(maxobs))
       else
@@ -189,6 +197,7 @@ contains
          allocate(this%lon(agrmet_struc(n)%max_pcpobs))
          allocate(this%sigmaOSqr(agrmet_struc(n)%max_pcpobs))
          allocate(this%oErrScaleLength(agrmet_struc(n)%max_pcpobs))
+         allocate(this%oErrInvScaleLength(agrmet_struc(n)%max_pcpobs))
          allocate(this%back(agrmet_struc(n)%max_pcpobs))
          allocate(this%qc(agrmet_struc(n)%max_pcpobs))
       end if
@@ -217,6 +226,7 @@ contains
       deallocate(this%lon)
       deallocate(this%sigmaOSqr)
       deallocate(this%oErrScaleLength)
+      deallocate(this%oErrInvScaleLength)
       deallocate(this%back)
       deallocate(this%qc)
 !      TRACE_EXIT("bratseth_dstroy")
@@ -226,6 +236,9 @@ contains
    !---------------------------------------------------------------------------
    ! FIXME: Merge with USAF_createObsData
    subroutine initObsData(this)
+
+      ! Imports
+      use USAF_OBAMod, only: QC_UNKNOWN
 
       ! Defaults
       implicit none
@@ -242,15 +255,17 @@ contains
       this%lon(:) = MISSING
       this%sigmaOSqr(:) = MISSING
       this%oErrScaleLength(:) = MISSING
+      this%oErrInvScaleLength(:) = MISSING
       this%back(:) = MISSING
       this%qc(:) = QC_UNKNOWN
 
    end subroutine InitObsData
 
    !---------------------------------------------------------------------------
-   ! Loops through contents of ObsData structure and counts all obs with
-   ! "good" quality control flag.
+   ! Loops through contents of ObsData structure and counts all obs
+   ! not flagged for rejection.
    function USAF_countGoodObs(this) result(goodObs)
+      use USAF_OBAMod, only: QC_REJECT
       implicit none
       type(USAF_ObsData), intent(in) :: this
       integer :: goodObs
@@ -259,6 +274,7 @@ contains
       goodObs = 0
       do i = 1, this%nobs
          if (this%qc(i) .ne. QC_REJECT) then
+            ! QC_SUSPECT obs count as "good" so they are included in OBA
             goodObs = goodObs + 1
          end if
       end do ! i
@@ -269,11 +285,12 @@ contains
    ! Copies a single observation into a ObsData structure.  Value of
    ! background field at observation is optional (useful for adding
    ! "superobservations").
-   subroutine USAF_assignObsData(this,net,platform,ob,lat,lon,sigmaOSqr, &
-        oErrScaleLength,back)
+   subroutine USAF_assignObsData(this, net, platform, ob, lat, lon, &
+        sigmaOSqr, oErrScaleLength, oErrInvScaleLength, back, qc)
 
       ! Imports
       use LIS_logmod, only : LIS_logunit
+      use USAF_OBAmod, only: QC_UNKNOWN
 
       ! Defaults
       implicit none
@@ -287,7 +304,9 @@ contains
       real, intent(in) :: lon
       real, intent(in) :: sigmaOSqr
       real, intent(in) :: oErrScaleLength
+      real, intent(in) :: oErrInvScaleLength
       real, optional, intent(in) :: back
+      integer, optional, intent(in) :: qc
 
       ! Local variables
       integer :: nobs
@@ -318,11 +337,17 @@ contains
       end if
       this%sigmaOSqr(nobs) = sigmaOSqr
       this%oErrScaleLength(nobs) = oErrScaleLength
-      this%qc(nobs) = QC_UNKNOWN
+      this%oErrInvScaleLength(nobs) = oErrInvScaleLength
       this%nobs = nobs
       if (present(back)) then
          this%back(nobs) = back
       end if
+      if (present(qc)) then
+         this%qc(nobs) = qc
+      else
+         this%qc(nobs) = QC_UNKNOWN
+      end if
+
 !      TRACE_EXIT("bratseth_assign")
 
    end subroutine USAF_assignObsData
@@ -358,6 +383,7 @@ contains
    subroutine USAF_split6hrGaugeObsData(this,nest,imax,jmax,back4,pcap,p3,p6)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -372,7 +398,7 @@ contains
       type(USAF_ObsData),intent(out) :: p3
       type(USAF_ObsData),intent(out) :: p6
 
-      ! Local variables 
+      ! Local variables
       integer :: nobs6
       real :: tmp_back2(2)
       real :: tmp_obs2(2)
@@ -444,16 +470,20 @@ contains
             end if
          end do
 
-         ! Assign 
+         ! Assign
          if (tmp_obs2(1) .ne. MISSING) then
             call USAF_assignObsData(p3, this%net(n), this%platform(n), &
-                 tmp_obs2(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back2(1))
+                 tmp_obs2(1), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back2(1))
          end if
          if (tmp_obs2(2) .ne. MISSING) then
             call USAF_assignObsData(p6, this%net(n), this%platform(n), &
-                 tmp_obs2(2), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back2(2))
+                 tmp_obs2(2), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back2(2))
          end if
 
       end do ! n
@@ -468,6 +498,7 @@ contains
         p9,p12)
 
       ! Imports
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -573,23 +604,31 @@ contains
          ! Assign
          if (tmp_obs4(1) .ne. MISSING) then
             call USAF_assignObsData(p3, this%net(n), this%platform(n), &
-                 tmp_obs4(1), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back4(1))
+                 tmp_obs4(1), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back4(1))
          end if
          if (tmp_obs4(2) .ne. MISSING) then
             call USAF_assignObsData(p6, this%net(n), this%platform(n), &
-                 tmp_obs4(2), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back4(2))
+                 tmp_obs4(2), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back4(2))
          end if
          if (tmp_obs4(3) .ne. MISSING) then
             call USAF_assignObsData(p9, this%net(n), this%platform(n), &
-                 tmp_obs4(3), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back4(3))
+                 tmp_obs4(3), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back4(3))
          end if
          if (tmp_obs4(4) .ne. MISSING) then
             call USAF_assignObsData(p12, this%net(n), this%platform(n), &
-                 tmp_obs4(4), this%lat(n), this%lon(n), this%sigmaOSqr(n), &
-                 this%oErrScaleLength(n),back=tmp_back4(4))
+                 tmp_obs4(4), this%lat(n), this%lon(n), &
+                 this%sigmaOSqr(n), &
+                 this%oErrScaleLength(n), this%oErrInvScaleLength(n), &
+                 back=tmp_back4(4))
          end if
 
       end do ! n
@@ -620,7 +659,7 @@ contains
       integer :: ihemi
       integer :: npts
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
-      real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
+      real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength, oErrInvScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
       character(len=32) :: net
       character(len=32) :: platform
@@ -636,6 +675,8 @@ contains
       sigmaOSqr = agrmet_struc(nest)%bratseth_precip_ssmi_sigma_o_sqr
       oErrScaleLength = &
            agrmet_struc(nest)%bratseth_precip_ssmi_err_scale_length
+      oErrInvScaleLength = &
+           agrmet_struc(nest)%bratseth_precip_ssmi_err_inv_scale_length
 
       ! Allocate memory for map projection calculations
       npts = imax*jmax
@@ -713,7 +754,8 @@ contains
                   ob = ra_tmp(ihemi,i,j)
                   count_good_ssmi = count_good_ssmi + 1
                   call USAF_assignObsData(this,net,platform,ob, rlat(icount), &
-                       rlon(icount),sigmaOSqr,oErrScaleLength)
+                       rlon(icount),sigmaOSqr,oErrScaleLength, &
+                       oErrInvScaleLength)
                end do ! i
             end do ! j
 
@@ -749,6 +791,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only: agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_rc, LIS_masterproc
       use LIS_logMod, only: LIS_abort, LIS_endrun, LIS_getNextUnitNumber, &
            LIS_releaseUnitNumber, LIS_logunit, LIS_alert
@@ -772,7 +815,7 @@ contains
       integer :: j3hr
       integer :: fc_hr
       character(len=6) :: src
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       integer :: rc,ierr
       character(len=10) :: yyyymmddhh
       integer :: c, r
@@ -948,6 +991,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_fileIOMod, only: LIS_putget
       use LIS_logMod, only: LIS_logunit, LIS_alert
@@ -974,9 +1018,9 @@ contains
       integer :: alert_number
       integer :: first,last,hemi
       integer :: yr,mo,da,hr
-      character(len=100) :: ifil
+      character(len=LIS_CONST_PATH_LEN) :: ifil
       logical :: exists
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       character(len=30) :: routine_name
       logical :: use_zeros
       integer :: local_global_or_hemi
@@ -1131,6 +1175,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only     : LIS_masterproc
       use LIS_fileIOMod, only: LIS_putget
       use LIS_logMod, only: LIS_logunit, LIS_endrun, LIS_alert
@@ -1160,13 +1205,14 @@ contains
       integer :: first, last, hemi
       logical :: gdgeornk, exists
       integer :: yr,mo,da,hr
-      character(len=100) :: ifil
+      character(len=LIS_CONST_PATH_LEN) :: ifil
       integer :: k
       integer :: alert_number
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
       character(len=30) :: routine_name
       real, allocatable :: xpts(:), ypts(:), rlat(:), rlon(:)
-      real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength
+      real :: sigmaOSqr, ob, xi1, xj1, oErrScaleLength, &
+           oErrInvScaleLength
       real :: xpnmcaf, ypnmcaf, orient, xmesh, xmeshl
       character(len=32) :: net
       character(len=32) :: platform
@@ -1185,6 +1231,8 @@ contains
       sigmaOSqr = agrmet_struc(nest)%bratseth_precip_geoprecip_sigma_o_sqr
       oErrScaleLength = &
            agrmet_struc(nest)%bratseth_precip_geoprecip_err_scale_length
+      oErrInvScaleLength = &
+           agrmet_struc(nest)%bratseth_precip_geoprecip_err_inv_scale_length
 
       routine_name = "USAF_getGeoPrecipObsData"
       alert_number = 0
@@ -1437,19 +1485,19 @@ contains
                         if (k .eq. 1) then
                            call USAF_assignObsData(precip3,net,platform,ob, &
                                 rlat(icount),rlon(icount),sigmaOSqr, &
-                                oErrScaleLength)
+                                oErrScaleLength, oErrInvScaleLength)
                         else if (k .eq. 2) then
                            call USAF_assignObsData(precip6,net,platform,ob, &
                                 rlat(icount),rlon(icount),sigmaOSqr, &
-                                oErrScaleLength)
+                                oErrScaleLength, oErrInvScaleLength)
                         else if (k .eq. 3) then
                            call USAF_assignObsData(precip9,net,platform,ob, &
                                 rlat(icount),rlon(icount),sigmaOSqr, &
-                                oErrScaleLength)
+                                oErrScaleLength, oErrInvScaleLength)
                         else if (k .eq. 4) then
                            call USAF_assignObsData(precip12,net,platform,ob, &
                                 rlat(icount),rlon(icount),sigmaOSqr, &
-                                oErrScaleLength)
+                                oErrScaleLength, oErrInvScaleLength)
                         end if
                      end do ! i
                   end do ! j
@@ -1584,13 +1632,15 @@ contains
    !     are pending.
    !---------------------------------------------------------------------------
 
-   subroutine USAF_analyzePrecip(precipAll,nest,back,hourindex,mrgp,precipOBA)
+   subroutine USAF_analyzePrecip(precipAll, nest, back, hourindex, &
+        corr_func_type, mrgp, precipOBA)
 
       ! Imports
       use AGRMET_forcingMod, only:  agrmet_struc
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
-      use USAF_OBAMod, only: OBA, createOBA,assignOBA
+      use LIS_logMod, only: LIS_logunit
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -1600,6 +1650,7 @@ contains
       integer,intent(in) :: nest
       real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
       integer, intent(in) :: hourindex
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
       type(OBA), intent(out) :: precipOBA
 
@@ -1646,7 +1697,7 @@ contains
                  precipAll%net(j), precipAll%platform(j), &
                  precipAll%lat(j), precipAll%lon(j), &
                  precipAll%obs(j), precipAll%back(j), &
-                 A=0.)
+                 A=0., qc=precipAll%qc(j), set_qc_good=.true.)
          end do ! j
          call USAF_destroyObsData(precipAll)
          TRACE_EXIT("bratseth_analyzePrcp")
@@ -1655,10 +1706,10 @@ contains
 
       ! Calculate (inverse) data density around each observation.
       sigmaBSqr = agrmet_struc(nest)%bratseth_precip_back_sigma_b_sqr
-      call calc_invDataDensities(precipAll,sigmaBSqr,nest, &
+      call calc_invDataDensities(precipAll, sigmaBSqr, nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
-           agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           is_gauge, &
+           agrmet_struc(nest)%bratseth_precip_back_err_inv_scale_length, &
+           USAF_is_gauge, corr_func_type, &
            invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
@@ -1666,18 +1717,21 @@ contains
       ! with the required number of iterations (npasses).  Also return
       ! OBA information for output.
       convergeThresh = 0.01
-      call calc_obsAnalysis(precipAll,sigmaBSqr,nobs,invDataDensities,nest,&
+      call calc_obsAnalysis(precipAll, sigmaBSqr, nobs, &
+           invDataDensities, nest, &
            agrmet_struc(nest)%bratseth_precip_max_dist, &
-           agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-           convergeThresh, is_gauge, sumObsEstimates, &
+           agrmet_struc(nest)%bratseth_precip_back_err_inv_scale_length, &
+           convergeThresh, USAF_is_gauge, corr_func_type, &
+           sumObsEstimates, &
            npasses, precipOBA)
 
       ! Calculate analysis at grid points.
-      call calc_gridAnalysis(precipAll,nest,sigmaBSqr,nobs,invDataDensities,&
-        sumObsEstimates,npasses,back, &
-        agrmet_struc(nest)%bratseth_precip_max_dist, &
-        agrmet_struc(nest)%bratseth_precip_back_err_scale_length, &
-        mrgp)
+      call calc_gridAnalysis(precipAll, nest, sigmaBSqr, nobs, &
+           invDataDensities,&
+           sumObsEstimates,npasses,back, &
+           agrmet_struc(nest)%bratseth_precip_max_dist, &
+           agrmet_struc(nest)%bratseth_precip_back_err_inv_scale_length, &
+           corr_func_type, mrgp)
 
       ! Clean up
       deallocate(invDataDensities)
@@ -1838,13 +1892,16 @@ contains
    ! correlated.
    !
    ! NOTE:  Requires LIS to be run in lat-lon projection!
-   subroutine calc_invDataDensities(this,sigmaBSqr,nest,max_dist, &
-        backErrScaleLength,isUncorrObType,invDataDensities,silent)
+   subroutine calc_invDataDensities(this, sigmaBSqr, nest, max_dist, &
+        backErrInvScaleLength, isUncorrObType, corr_func_type, &
+        invDataDensities, silent)
 
       ! Imports
       use LIS_coreMod, only: LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAmod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -1854,8 +1911,9 @@ contains
       real, intent(in) :: sigmaBSqr
       integer, intent(in) :: nest
       real, intent(in) :: max_dist
-      real, intent(in) :: backErrScaleLength
+      real, intent(in) :: backErrInvScaleLength
       logical, external :: isUncorrObType
+      integer, intent(in) :: corr_func_type
       real, allocatable, intent(out) :: invDataDensities(:)
       logical, intent(in), optional :: silent
 
@@ -1937,8 +1995,19 @@ contains
             ! contributions from neighbors.
             do j = 1, nobs_cr
                job = jobs_cr_vector(j)
+               if (this%qc(job) .eq. QC_REJECT) cycle
+               ! QC_SUSPECT data not used in analysis, but saved for OBA
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+
                do i = 1, nobs_neighbors
                   iob = iobs_neighbors_vector(i)
+
+                  if (this%qc(iob) .eq. QC_REJECT) cycle
+                  ! QC_SUSPECT data not used in analysis, but saved
+                  ! for OBA
+                  if (this%qc(iob) .eq. QC_SUSPECT_BACKQC) cycle
+                  if (this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                   if (iob .eq. job) then
                      dist = 0
@@ -1949,13 +2018,15 @@ contains
                   end if
                   if (dist .gt. max_dist) cycle
 
-                  b = backErrCov(sigmaBSqr,dist,backErrScaleLength)
+                  b = backErrCov(sigmaBSqr, dist, &
+                       backErrInvScaleLength, &
+                       corr_func_type)
                   num = b
                   if (iob .eq. job) then
                      num = num + this%sigmaOSqr(job)
                   else if (trim(this%net(iob)) .eq. trim(this%net(job))) then
                      ! Satellite observations have correlated errors.
-                     if (.not. isUncorrObType(this%net(job))) then
+                     if (.not. isUncorrObType(this%net(job),nest)) then
                         if (.not. this%oErrScaleLength(job) > 0 .and. &
                              .not. this%oErrScaleLength(job) < 0) then
                            write(LIS_logunit,*) &
@@ -1967,8 +2038,8 @@ contains
 
                         num = num + &
                              obsErrCov(this%sigmaOSqr(job), &
-                                       this%oErrScaleLength(job), &
-                                       dist)
+                                       this%oErrInvScaleLength(job), &
+                                       dist, corr_func_type)
                      end if
                   end if
 
@@ -2015,6 +2086,9 @@ contains
       do j = 1, nobs
          ! Skip bad data
          if ( this%qc(j) .eq. QC_REJECT) cycle
+         ! QC_SUSPECT data not used in analysis, but saved for OBA
+         if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+         if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
          invDataDensities(j) = &
               invDataDensities(j)*(sigmaBSqr + this%sigmaOSqr(j))
          invDataDensities(j) = 1. / invDataDensities(j)
@@ -2049,8 +2123,9 @@ contains
    !
    ! The observed, background, and analysis values at the observation
    ! points are also collected in an OBA structure for post-processing.
-   subroutine calc_obsAnalysis(this,sigmaBSqr,nobs,invDataDensities,nest,&
-        max_dist,backErrScaleLength, convergeThresh, isUncorrObType, &
+   subroutine calc_obsAnalysis(this, sigmaBSqr, nobs, &
+        invDataDensities, nest, max_dist, backErrInvScaleLength, &
+        convergeThresh, isUncorrObType, corr_func_type, &
         sumObsEstimates, npasses, varOBA, &
         skip, silent)
 
@@ -2059,7 +2134,8 @@ contains
       use LIS_coreMod, only : LIS_localPet, LIS_rc
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_mpiMod
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT, &
+           QC_SUSPECT_BACKQC, QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2071,9 +2147,10 @@ contains
       real, intent(in) :: invDataDensities(nobs)
       integer, intent(in) :: nest
       real, intent(in) :: max_dist
-      real, intent(in) :: backErrScaleLength
+      real, intent(in) :: backErrInvScaleLength
       real, intent(in) :: convergeThresh
       logical, external :: isUncorrObType
+      integer, intent(in) :: corr_func_type
       real, allocatable, intent(out) :: sumObsEstimates(:)
       integer, intent(out) :: npasses
       type(OBA), intent(inout) :: varOBA
@@ -2162,6 +2239,11 @@ contains
       allocate(pprev_ana(nobs))
       allocate(pprev_est(nobs))
 
+      pnew_ana = 0
+      pnew_ana_pet = 0
+      pnew_est = 0
+      pnew_est_pet = 0
+
       pprev_est(:) = this%back(:) ! First guess
       pprev_ana(:) = this%back(:) ! First guess
       sumObsEstimates(:) = 0
@@ -2221,15 +2303,23 @@ contains
                do j = 1, nobs_cr
                   job = jobs_cr_vector(j)
 
-                  if (this%qc(job) .eq. QC_REJECT) then
-                     sumObsEstimates_pet(j) = 0
+                  if (this%qc(job) .eq. QC_REJECT .or. &
+                       this%qc(job) .eq. QC_SUSPECT_BACKQC .or. &
+                       this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) then
+                     !sumObsEstimates_pet(j) = 0
+                     sumObsEstimates_pet(job) = 0 ! EMK FIX 20231129
                      cycle
                   endif
+                  ! We will allow analysis to be calculated at points
+                  ! being monitored, but these points will not contribute
+                  ! observation data.
 
                   do i = 1, nobs_neighbors
                      iob = iobs_neighbors_vector(i)
 
-                     if (this%qc(iob) .eq. QC_REJECT) then
+                     if (this%qc(iob) .eq. QC_REJECT .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_BACKQC .or. &
+                          this%qc(iob) .eq. QC_SUSPECT_SUPERSTATQC) then
                         sumObsEstimates_pet(iob) = 0
                         cycle
                      endif
@@ -2244,7 +2334,7 @@ contains
                      if (dist .gt. max_dist) cycle
 
                      b = backErrCov(sigmaBSqr,dist, &
-                          backErrScaleLength)
+                          backErrInvScaleLength, corr_func_type)
 
                      ! First, update the observation estimate
                      weight = b
@@ -2253,11 +2343,11 @@ contains
                      else if (trim(this%net(iob)) .eq. &
                               trim(this%net(job))) then
                         ! Satellite data have horizontal error correlations
-                        if (.not. isUncorrObType(this%net(job))) then
+                        if (.not. isUncorrObType(this%net(job),nest)) then
                            weight = weight + &
                                 obsErrCov(this%sigmaOSqr(job), &
-                                this%oErrScaleLength(job), &
-                                dist)
+                                this%oErrInvScaleLength(job), &
+                                dist, corr_func_type)
                         end if
                      end if
                      weight = weight * invDataDensities(iob)
@@ -2349,7 +2439,9 @@ contains
 
          do j = 1, nobs
 
-            if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_REJECT .or. &
+                 this%qc(j) .eq. QC_SUSPECT_BACKQC .or. &
+                 this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             ! Check for convergence
             y_prev = pprev_ana(j)
@@ -2362,7 +2454,8 @@ contains
                done = .false.
             end if
 
-            ! Updates mean absolute differences against observed values
+            ! Updates mean absolute differences against observed
+            ! values
             if (verbose) then
                icount = icount + 1
                y_est = pnew_est(j)
@@ -2373,12 +2466,13 @@ contains
                diff = y_ana - y_obs
                mad_ana = mad_ana + abs(diff)
 
-               ! A crude check for unusually high normalized deviations.
-               normdev = (y_obs - y_ana)*(y_obs - y_ana)/this%sigmaOSqr(j)
+               ! A crude check for unusually high normalized
+               ! deviations.
+               normdev = (y_obs - y_ana)*(y_obs - y_ana) / &
+                    this%sigmaOSqr(j)
                if (normdev .gt. 9) then
                   num_high_dev = num_high_dev + 1
                end if
-
             end if
 
             pprev_est(j) = pnew_est(j)
@@ -2494,6 +2588,8 @@ contains
          icount = 0
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if (this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
             if (present(skip)) then
                if (skip(j)) cycle
@@ -2510,6 +2606,7 @@ contains
          varOBA = createOBA(nest, maxobs=good_obs)
          do j = 1, nobs
             if (this%qc(j) .eq. QC_REJECT) cycle
+            ! Keep QC_SUSPECT obs for OBA
             if (present(skip)) then
                if (skip(j)) cycle
             end if
@@ -2519,7 +2616,7 @@ contains
             call assignOBA(varOBA, &
                  this%net(j), this%platform(j), &
                  this%lat(j), this%lon(j), &
-                 O, B, A)
+                 O, B, A, this%qc(j), set_qc_good=.true.)
          end do ! j
       end if
 
@@ -2556,8 +2653,9 @@ contains
    !
    ! NOTE:  Bratseth values are not interpolated to water points.
 
-   subroutine calc_gridAnalysis(this,nest,sigmaBSqr,nobs,invDataDensities,&
-        sumObsEstimates,npasses,back,max_dist,backErrScaleLength,mrgp)
+   subroutine calc_gridAnalysis(this, nest, sigmaBSqr, nobs, &
+        invDataDensities, sumObsEstimates, npasses, back, max_dist, &
+        backErrInvScaleLength, corr_func_type, mrgp)
 
       ! Imports
       use LIS_coreMod, only: LIS_rc, LIS_domain, &
@@ -2566,6 +2664,8 @@ contains
       use LIS_logMod, only : LIS_logunit, LIS_endrun
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -2580,7 +2680,8 @@ contains
       integer, intent(in) :: npasses
       real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
       real, intent(in) :: max_dist
-      real, intent(in) :: backErrScaleLength
+      real, intent(in) :: backErrInvScaleLength
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: mrgp(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
 
       ! Local variables
@@ -2669,13 +2770,16 @@ contains
 
                ! Skip bad observations.
                if (this%qc(job) .eq. QC_REJECT) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_BACKQC) cycle
+               if (this%qc(job) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
                dist = great_circle_distance(locallat,locallon, &
                     this%lat(job), this%lon(job))
                if (dist .gt. max_dist) cycle
 
                weight = &
-                    backErrCov(sigmaBSqr,dist,backErrScaleLength) &
+                    backErrCov(sigmaBSqr, dist, backErrInvScaleLength, &
+                    corr_func_type) &
                     * invDataDensities(job)
 
                tmp_mrgp = tmp_mrgp + &
@@ -2741,44 +2845,86 @@ contains
 
    !---------------------------------------------------------------------------
    ! Observation error covariance function.
-   real function obsErrCov(sigmaOSqr,oErrScaleLength,dist)
-      implicit none
-      real, intent(in) :: sigmaOSqr
-      real, intent(in) :: oErrScaleLength ! in meters
-      real, intent(in) :: dist ! in meters
-      obsErrCov = sigmaOSqr*obsErrCorr(oErrScaleLength,dist)
+   real function obsErrCov(sigmaOSqr, oErrInvScaleLength, dist, &
+        corr_func_type)
+     implicit none
+     real, intent(in) :: sigmaOSqr
+     real, intent(in) :: oErrInvScaleLength ! in meters
+     real, intent(in) :: dist ! in meters
+     integer, intent(in) :: corr_func_type
+     obsErrCov = sigmaOSqr*obsErrCorr(oErrInvScaleLength, dist, &
+          corr_func_type)
    end function obsErrCov
 
    !---------------------------------------------------------------------------
-   ! Observation error correlation function.  Currently Gaussian.
-   real function obsErrCorr(oErrScaleLength,dist)
-      implicit none
-      real, intent(in) :: oErrScaleLength ! in meters
-      real, intent(in) :: dist ! in meters
-      real :: invOErrScaleLength
-      invOErrScaleLength = 1. / oErrScaleLength
-      obsErrCorr = exp(-1*dist*dist*invOErrScaleLength*InvOErrScaleLength)
-   end function obsErrCorr
+   ! Observation error correlation function.
+   real function obsErrCorr(oErrInvScaleLength, dist, corr_func_type)
+
+     ! Imports
+     use LIS_logMod, only: LIS_logunit, LIS_endrun
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     real, intent(in) :: oErrInvScaleLength ! in meters
+     real, intent(in) :: dist ! in meters
+     integer, intent(in) :: corr_func_type
+
+     if (corr_func_type == 1) then ! Gaussian
+         obsErrCorr = &
+              exp(-1*dist*dist*OErrInvScaleLength*OErrInvScaleLength)
+      else if (corr_func_type == 2) then ! Inverse Exponential
+         obsErrCorr = &
+              exp(-1*dist*OErrInvScaleLength)
+      else
+         write(LIS_logunit,*) '[ERR] Invalid correlation option!'
+         write(LIS_logunit,*) &
+              '[ERR] Expected 1 (Gaussian) or 2 (Inverse Exponential)'
+         write(LIS_logunit,*) '[ERR] Received ', corr_func_type
+         call LIS_endrun()
+      end if
+    end function obsErrCorr
 
    !---------------------------------------------------------------------------
    ! Background error covariance function.
-   real function backErrCov(sigmaBSqr,dist,scale_length)
-      implicit none
-      real, intent(in) :: sigmaBSqr
-      real, intent(in) :: dist ! in meters
-      real, intent(in) :: scale_length
-      backErrCov = sigmaBSqr*backErrCorr(dist,scale_length)
+    real function backErrCov(sigmaBSqr, dist, inv_scale_length, &
+         corr_func_type)
+     implicit none
+     real, intent(in) :: sigmaBSqr
+     real, intent(in) :: dist ! in meters
+     real, intent(in) :: inv_scale_length
+     integer, intent(in) :: corr_func_type
+     backErrCov = sigmaBSqr*backErrCorr(dist, inv_scale_length, &
+          corr_func_type)
    end function backErrCov
 
    !---------------------------------------------------------------------------
-   ! Background error correlation function.  Currently Gaussian.
-   real function backErrCorr(dist,scale_length)
-      implicit none
-      real, intent(in) :: dist ! in meters
-      real, intent(in) :: scale_length
-      real :: inv_scale_length
-      inv_scale_length = 1./scale_length
-      backErrCorr = exp(-1*dist*dist*inv_scale_length*inv_scale_length)
+   ! Background error correlation function.
+   real function backErrCorr(dist, inv_scale_length, corr_func_type)
+
+     ! Imports
+     use LIS_logMod, only: LIS_logunit, LIS_endrun
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     real, intent(in) :: dist ! in meters
+     real, intent(in) :: inv_scale_length
+     integer, intent(in) :: corr_func_type
+
+     if (corr_func_type == 1) then ! Gaussian
+        backErrCorr = exp(-1*dist*dist*inv_scale_length*inv_scale_length)
+     else if (corr_func_type == 2) then ! Inverse exponential
+        backErrCorr = exp(-1*dist*inv_scale_length)
+     else
+        write(LIS_logunit,*)'[ERR] Invalid correlation function type!'
+        write(LIS_logunit,*) &
+             '[ERR] Expected 1 (Gaussian) or 2 (Inverse exponential)'
+        write(LIS_logunit,*) '[ERR] Found ', corr_func_type
+     end if
+
    end function backErrCorr
 
    !---------------------------------------------------------------------------
@@ -2832,6 +2978,7 @@ contains
 #else
       use LIS_coreMod,       only : LIS_masterproc
 #endif
+      use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
       use LIS_coreMod,       only : LIS_rc
       use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
@@ -2856,8 +3003,7 @@ contains
       integer :: file_julhr
       integer :: getsixhr
       integer :: yr_2d
-      !character(len=120) :: gribfile, gribfile2
-      character(len=255) :: gribfile, gribfile2
+      character(len=LIS_CONST_PATH_LEN) :: gribfile, gribfile2
       integer :: center
       real :: gridres
       integer :: Ni, Nj, ifguess, jfguess
@@ -2911,6 +3057,7 @@ contains
 
          yr_2d = mod(yr1,100)
          if (yr_2d.eq.0) yr_2d = 100
+
          if (src .eq. "GFS") then
             ! EMK...Added support for new GFS filename convention
             call getAVNfilename(gribfile, agrmet_struc(nest)%agrmetdir,&
@@ -3080,6 +3227,7 @@ contains
 #if (defined USE_GRIBAPI)
       use grib_api
 #endif
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_coreMod, only: LIS_masterproc
       use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, &
            LIS_verify, LIS_endrun
@@ -3089,8 +3237,7 @@ contains
       implicit none
 
       ! Arguments
-      !character(len=120), intent(in) :: gribfile
-      character(len=255), intent(in) :: gribfile
+      character(len=LIS_CONST_PATH_LEN), intent(in) :: gribfile
       integer, intent(in) :: yr1, mo1, da1, hr1
       logical, intent(out) :: found
       integer, intent(out) :: center
@@ -3103,7 +3250,7 @@ contains
       character(len=100) :: gtype
       logical :: found_inq
 #if (!defined USE_GRIBAPI)
-      character(len=255) :: message(20)
+      character(len=LIS_CONST_PATH_LEN) :: message(20)
 #endif
       found = .false.
       ! Dummy values, replaced by GRIB data contents below
@@ -3271,12 +3418,14 @@ contains
    !
    ! This implementation is parallelized by distributing work among the
    ! different LIS ESMF PETs.
-   subroutine USAF_superstatQC(this,nest,new_name,network,silent_rejects)
+   subroutine USAF_superstatQC(this,nest,new_name,silent_rejects)
 
       ! Imports
       use LIS_coreMod, only: LIS_domain, LIS_rc, LIS_localPet
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -3285,7 +3434,6 @@ contains
       type(USAF_ObsData), intent(inout) :: this
       integer,intent(in) :: nest
       character(len=32), intent(in) :: new_name
-      character(len=*), optional :: network
       logical,optional,intent(in) :: silent_rejects
 
       ! Local variables
@@ -3301,7 +3449,9 @@ contains
       real, allocatable :: means(:)
       real, allocatable :: superobs(:),superlat(:),superlon(:)
       real, allocatable :: superSigmaOSqr(:), superSigmaOSqr_pet(:)
-      real, allocatable :: superOErrScaleLength(:), superOErrScaleLength_pet(:)
+      real, allocatable :: superOErrScaleLength(:), &
+           superOErrScaleLength_pet(:)
+      real, allocatable :: superOErrInvScaleLength(:)
       integer, allocatable :: superob_count(:), superob_count_pet(:)
       integer :: pet, pet_incr
       integer :: glbcr
@@ -3376,6 +3526,8 @@ contains
       superSigmaOSqr(:) = 0
       allocate(superOErrScaleLength(glbcr))
       superOErrScaleLength(:) = 0
+      allocate(superOErrInvScaleLength(glbcr))
+      superOErrInvScaleLength(:) = 0
       allocate(superob_count(glbcr))
       superob_count(:) = 0
 
@@ -3404,21 +3556,12 @@ contains
 
             ! Skip bad data
             if ( this%qc(j) .eq. QC_REJECT) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_BACKQC) cycle
+            if ( this%qc(j) .eq. QC_SUSPECT_SUPERSTATQC) cycle
 
-            ! Screen by type
-            if (present(network)) then
-               if (trim(network) .eq. "SSMI") then
-                  if (.not. is_ssmi(this%net(j))) cycle
-               else if (trim(network) .eq. "GEOPRECIP") then
-                  if (.not. is_geoprecip(this%net(j))) cycle
-               else if (trim(network) .eq. "CMORPH") then
-                  if (.not. is_cmorph(this%net(j))) cycle
-               else if (trim(network) .eq. "IMERG") then
-                  if (.not. is_imerg(this%net(j))) cycle
-               end if
-            else ! Gauges
-               if (.not. is_gauge(this%net(j))) cycle
-            end if
+            ! Do not apply to IMERG.  But allow application to other
+            ! data sources.
+            if ( is_imerg(this%net(j)) ) cycle
 
             ! Now see which LIS grid box this is in.  First, handle latitude.
             found = .false.
@@ -3462,7 +3605,8 @@ contains
                if (means(gindex) .eq. MISSING) cycle
 
                icount = superob_count(gindex)
-               threshold = 3 * this%sigmaOSqr(j) * &
+               ! EMK 12 Mar 2024...Fixed typo in threshold eqn
+               threshold = 4 * sqrt(this%sigmaOSqr(j)) * &
                     sqrt(real(icount) / real(icount-1))
 
                if (abs(means(gindex) - this%obs(j)) .gt. threshold) then
@@ -3602,6 +3746,12 @@ contains
                           superSigmaOSqr(gindex) / superob_count(gindex)
                      superOErrScaleLength(gindex) = &
                           superOErrScaleLength(gindex) / superob_count(gindex)
+                     if (superOErrScaleLength(gindex) > 0) then
+                        superOErrInvScaleLength(gindex) = &
+                             1. / superOErrScaleLength(gindex)
+                     else
+                        superOErrInvScaleLength(gindex) = 0
+                     end if
                   else ! Superob either not possible or not needed
                      superobs(gindex) = MISSING
                   end if
@@ -3636,7 +3786,8 @@ contains
       num_rejected_obs = 0
       do j = 1, nobs
          if (actions(j) .eq. -1) then
-            this%qc(j) = QC_REJECT
+            !this%qc(j) = QC_REJECT
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             if (.not. silent_rejects_local) then
                write(LIS_logunit,*) &
                     '[INFO] superstatQC rejection j: ',j, &
@@ -3649,7 +3800,8 @@ contains
             endif
             num_rejected_obs = num_rejected_obs + 1
          else if (actions(j) .eq. 1) then
-            this%qc(j) = QC_REJECT ! Was merged into superob
+            !this%qc(j) = QC_REJECT ! Was merged into superob
+            this%qc(j) = QC_SUSPECT_SUPERSTATQC ! Don't use, but save for OBA
             num_merged_obs = num_merged_obs + 1
          end if
       end do ! j
@@ -3665,12 +3817,13 @@ contains
             gindex = c + (r-1)*LIS_rc%gnc(nest)
             if (superobs(gindex) .eq. MISSING) cycle
 
-            call USAF_assignObsData(this,net_new,platform_new, &
+            call USAF_assignObsData(this, net_new, platform_new, &
                  superobs(gindex), &
                  superlat(gindex), &
                  superlon(gindex), &
                  superSigmaOSqr(gindex), &
-                 superOErrScaleLength(gindex))
+                 superOErrScaleLength(gindex), &
+                 superOErrInvScaleLength(gindex))
 
             num_superobs = num_superobs + 1
          end do ! c
@@ -3687,6 +3840,7 @@ contains
       deallocate(superlon)
       deallocate(superSigmaOSqr)
       deallocate(superOErrScaleLength)
+      deallocate(superOErrInvScaleLength)
       deallocate(superob_count)
 
       deallocate(actions_pet)
@@ -3709,6 +3863,150 @@ contains
    end subroutine USAF_superstatQC
 
    !---------------------------------------------------------------------------
+   ! QC checks for duplicate gage reports.  Exact duplicates (including
+   ! variable value and lat/long) are rejected, otherwise they are
+   ! preserved for subsequent merging by superstatQC.
+   subroutine USAF_dupQC_new(this)
+
+      ! Imports
+      use LIS_logMod, only: LIS_logunit, LIS_endrun
+      use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
+
+      ! Defaults
+      implicit none
+
+      ! Arguments
+      type(USAF_ObsData), intent(inout) :: this
+
+      ! Local variables
+      integer :: count_dups
+      integer :: total_reject_count
+      integer :: i, j
+      integer :: nobs
+      double precision :: t1, t2
+      integer :: ierr
+
+      nobs = this%nobs
+      if (nobs .eq. 0) then
+         write(LIS_logunit,*)&
+              '[INFO] dupQC found no observations to test'
+         return
+      endif
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
+      t1 = MPI_Wtime()
+#endif
+
+      total_reject_count = 0
+
+      do j = 1, nobs
+
+         ! Skip if this ob has already been flagged for rejection
+         if (this%qc(j) .eq. QC_REJECT) cycle
+
+         ! Skip if this is a satellite estimate
+         if (this%net(j) .eq. "SSMI") cycle
+         if (this%net(j) .eq. "GEOPRECIP") cycle
+         if (this%net(j) .eq. "CMORPH") cycle
+         if (this%net(j) .eq. "IMERG") cycle
+
+         ! Some CDMS obs are missing station IDs.  We will skip these
+         if ( this%net(j) .eq. "CDMS" .and. &
+              this%platform(j) .eq. "00000000") cycle
+
+         ! Some MOBL obs are missing station IDs.  We will skip.
+         if (this%net(j) .eq. "MOBL" .and. &
+                 this%platform(j) .eq. "00000000") cycle
+
+         ! Get count of duplicates of ob j
+         count_dups = 0
+
+         do i = j+1, nobs
+
+            ! Skip if this ob has already been flagged for rejection
+            if (this%qc(i) .eq. QC_REJECT) cycle
+
+            ! Skip if this is a satellite estimate
+            if (this%net(i) .eq. "SSMI") cycle
+            if (this%net(i) .eq. "GEOPRECIP") cycle
+            if (this%net(i) .eq. "CMORPH") cycle
+            if (this%net(i) .eq. "IMERG") cycle
+
+            ! Some CDMS obs are missing station IDs.  We will skip these
+            if (this%net(i) .eq. "CDMS" .and. &
+                 this%platform(i) .eq. "00000000") cycle
+
+            ! Some MOBL obs are missing station IDs.  We will skip.
+            if (this%net(i) .eq. "MOBL" .and. &
+                 this%platform(i) .eq. "00000000") cycle
+
+            ! Skip if the network or platform ID doesn't match
+            if (this%net(i) .ne. this%net(j)) cycle
+            if (this%platform(i) .ne. this%platform(j)) cycle
+
+            ! Skip if the lat/lon doesn't match. Some minor differences
+            ! exist due to different reporting formats (e.g., SYNOP vs
+            ! BUFR).  We will let superstatQC handle merging such
+            ! cases.
+            if (this%lat(i) .ne. this%lat(j)) cycle
+            if (this%lon(i) .ne. this%lon(j)) cycle
+
+            ! Skip if the observed value differs.  We will let
+            ! superstatQC handle merging values together.
+            if (this%obs(i) .ne. this%obs(j)) cycle
+
+            ! Duplicate found.  Update the count and flag the
+            ! duplicate.
+            ! write(LIS_logunit,*)'[INFO] dupQC found dupe i = ', i, &
+            !      ' net: ',trim(this%net(i)), &
+            !      ' platform: ',trim(this%platform(i)), &
+            !      ' lat: ',this%lat(i), &
+            !      ' lon: ',this%lon(i), &
+            !      ' obs: ',this%obs(i), &
+            !      ' back: ',this%back(i)
+
+            count_dups = count_dups + 1
+            this%qc(i) = QC_REJECT
+
+         end do
+
+         if (count_dups > 0) then
+            write(LIS_logunit,*) &
+                 '[INFO] dupQC rejecting ', count_dups, &
+                 ' exact duplicate(s) of ob j: ', j, &
+                 ' net: ',trim(this%net(j)), &
+                 ' platform: ',trim(this%platform(j)), &
+                 ' lat: ',this%lat(j), &
+                 ' lon: ',this%lon(j), &
+                 ' obs: ',this%obs(j), &
+                 ' back: ',this%back(j)
+            write(LIS_logunit,*) &
+                 '-------------------------------------------------'
+         end if
+
+         total_reject_count = total_reject_count + count_dups
+
+      end do ! j
+
+      write(LIS_logunit,*) &
+           '[INFO] dupQC rejected ', total_reject_count, ' total obs'
+
+#if (defined SPMD)
+      call MPI_Barrier(LIS_MPI_COMM, ierr)
+      call handle_mpi_error(ierr, &
+           'MPI_Barrier call in USAF_dupQC')
+      t2 = MPI_Wtime()
+      write(LIS_logunit,*) &
+           '[INFO] Elapsed time in dupQC is ', t2 - t1, ' seconds'
+#endif
+
+   end subroutine USAF_dupQC_new
+
+   !---------------------------------------------------------------------------
    ! QC checks for duplicate gage reports.  Based on Mahfouf et al (2007).
    !
    ! If duplicates are found for a particular station but all are identical,
@@ -3727,6 +4025,7 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -3742,7 +4041,8 @@ contains
       type(close_obs), pointer :: head, tail, new, ptr
       integer :: count_dups
       integer :: total_reject_count, total_merge_count, total_create_count
-      real :: mean,back,newlat,newlon,sigmaOSqr,oErrScaleLength
+      real :: mean, back, newlat, newlon, sigmaOSqr
+      real :: oErrScaleLength, oErrInvScaleLength
       character(len=32) :: net
       character(len=32) :: platform
       real :: diff
@@ -4007,6 +4307,7 @@ contains
                newlon = this%lon(r)
                sigmaOSqr = this%sigmaOSqr(r)
                oErrScaleLength = this%oErrScaleLength(r)
+               oErrInvScaleLength = this%oErrInvScaleLength(r)
 
                ! EMK Bug fix:  Make sure net and platform are set for the
                ! superob.  Print these values.
@@ -4020,8 +4321,10 @@ contains
                write(LIS_logunit,*) &
                     '------------------------------------------------------'
 
-               call USAF_assignObsData(this,net,platform,mean,newlat,newlon,&
-                    sigmaOSqr,oErrScaleLength,back=back)
+               call USAF_assignObsData(this, net, platform, mean, &
+                    newlat, newlon,&
+                    sigmaOSqr, oErrScaleLength, oErrInvScaleLength, &
+                    back=back)
 
                total_create_count = total_create_count + 1
 
@@ -4131,6 +4434,8 @@ contains
       ! Imports
       use LIS_logMod, only: LIS_logunit, LIS_endrun
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT, QC_SUSPECT_BACKQC, &
+           QC_SUSPECT_SUPERSTATQC
 
       ! Defaults
       implicit none
@@ -4177,12 +4482,19 @@ contains
 
          ! Skip bad data
          if ( this%qc(r) .eq. QC_REJECT) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_SUPERSTATQC) cycle
+         if ( this%qc(r) .eq. QC_SUSPECT_BACKQC) cycle
+
+         ! Do not apply to IMERG.  But allow application to other data
+         ! sources.
+         if ( .not. is_imerg(this%net(r)) ) cycle
 
          errorThresh = 4*sqrt(sigmaBSqr + this%sigmaOSqr(r))
          absDiff = abs(this%obs(r) - this%back(r))
 
          if (absDiff .gt. errorThresh) then
-            this%qc(r) = QC_REJECT
+            !this%qc(r) = QC_REJECT
+            this%qc(r) = QC_SUSPECT_BACKQC ! Don't use, but save for OBA
 
             reject_count = reject_count + 1
 
@@ -4196,7 +4508,8 @@ contains
                     ' obs: ',this%obs(r), &
                     ' back: ',this%back(r), &
                     ' abs diff: ', abs(this%obs(r) - this%back(r)), &
-                    ' errorThresh ', errorThresh
+                    ' errorThresh ', errorThresh, &
+                    ' qc: ', this%qc(r)
             end if
          end if
 
@@ -4218,22 +4531,38 @@ contains
 
    !---------------------------------------------------------------------------
    ! Checks if observation network is recognized as a gauge.
-   logical function is_gauge(net)
-      implicit none
-      character(len=32), intent(in) :: net
-      logical :: answer
-      answer = .false.
-      if (trim(net) .eq. "AMIL") answer = .true.
-      if (trim(net) .eq. "CANA") answer = .true.
-      if (trim(net) .eq. "FAA") answer = .true.
-      if (trim(net) .eq. "ICAO") answer = .true.
-      if (trim(net) .eq. "WMO") answer = .true.
-      if (trim(net) .eq. "MOBL") answer = .true.
-      if (trim(net) .eq. "SUPERGAGE") answer = .true.
-      ! Handle reformatted CDMS data that are missing the network type.
-      if (trim(net) .eq. "CDMS") answer = .true.
-      is_gauge = answer
-   end function is_gauge
+   logical function USAF_is_gauge(net, n) result(answer)
+
+     ! Imports
+     use AGRMET_forcingMod, only: agrmet_struc
+
+     ! Defaults
+     implicit none
+
+     ! Arguments
+     character(len=32), intent(in) :: net
+     integer, intent(in) :: n
+
+     ! Locals
+     integer :: j
+
+     answer = .false. ! First guess
+
+     ! Two special cases
+     if (trim(net) .eq. "SUPERGAGE" .or. &
+          trim(net) .eq. "CDMS") then
+        answer = .true.
+        return
+     end if
+
+     ! General case:  Check list from LIS config file
+     do j = 1, agrmet_struc(n)%num_gage_networks
+        if (net == agrmet_struc(n)%gage_networks(j)) then
+           answer = .true.
+           exit
+        end if
+     end do
+   end function USAF_is_gauge
 
    !---------------------------------------------------------------------------
    ! Dummy function for establishing a surface station is uncorrelated.
@@ -4241,9 +4570,10 @@ contains
    ! Bratseth routines that need to know which reports in a collection
    ! have correlated errors.  When analyzing screen-level variables with
    ! surface stations, all observations should have uncorrelated errors.
-   logical function is_stn(net)
+   logical function is_stn(net, n)
       implicit none
       character(len=32), intent(in) :: net
+      integer, intent(in) :: n
       logical :: answer
       answer = .true.
       is_stn = answer
@@ -4913,6 +5243,7 @@ contains
       use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_localPet
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5068,6 +5399,7 @@ contains
       use LIS_LMLCMod, only: LIS_LMLC
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAmod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5166,6 +5498,7 @@ contains
            LIS_ews_ind, LIS_ewe_ind, LIS_nss_ind, LIS_nse_ind
       use LIS_logMod, only: LIS_logunit
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5358,6 +5691,7 @@ contains
       use LIS_logMod, only: LIS_logunit
       use LIS_snowMod, only: LIS_snow_struc
       use LIS_mpiMod
+      use USAF_OBAMod, only: QC_REJECT
 
       ! Defaults
       implicit none
@@ -5583,15 +5917,16 @@ contains
    !     function has a much shorter radius of influence that greatly speeds
    !     up the analysis. 
    !---------------------------------------------------------------------------
-   subroutine USAF_analyzeScreen(screenObs,nest,back,sigmaBSqr, &
-        max_dist, backErrScaleLength,analysis, screenOBA)
+   subroutine USAF_analyzeScreen(screenObs, nest, back, sigmaBSqr, &
+        max_dist, backErrInvScaleLength, corr_func_type, analysis, &
+        screenOBA)
 
       ! Imports
       use AGRMET_forcingMod, only: agrmet_struc
       use LIS_coreMod, only: LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind, &
            LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
       use LIS_logMod, only: LIS_logunit
-      use USAF_OBAMod, only: OBA, createOBA, assignOBA
+      use USAF_OBAMod, only: OBA, createOBA, assignOBA, QC_REJECT
 
       ! Defaults
       implicit none
@@ -5602,7 +5937,8 @@ contains
       real, intent(in) :: back(LIS_rc%gnc(nest), LIS_rc%gnr(nest))
       real, intent(in) :: sigmaBSqr
       real, intent(in) :: max_dist
-      real, intent(in) :: backErrScaleLength
+      real, intent(in) :: backErrInvScaleLength
+      integer, intent(in) :: corr_func_type
       real, intent(inout) :: analysis(LIS_rc%lnc(nest),LIS_rc%lnr(nest))
       type(OBA), intent(out) :: screenOBA
 
@@ -5644,24 +5980,6 @@ contains
       write(LIS_logunit,*)'[INFO] Running dupQC on surface observations'
       call USAF_dupQC(screenObs)
 
-      ! EMK...Option 2 just captures O and B info, and skips the
-      ! analysis.
-      if (agrmet_struc(nest)%oba_switch .eq. 2) then
-         goodObs = USAF_countGoodObs(screenObs)
-         screenOBA = createOBA(nest,maxobs=goodObs)
-         do j = 1, screenObs%nobs
-            if (screenObs%qc(j) .eq. QC_REJECT) cycle
-            call assignOBA(screenOBA, &
-                 screenObs%net(j), screenObs%platform(j), &
-                 screenObs%lat(j), screenObs%lon(j), &
-                 screenObs%obs(j), screenObs%back(j), &
-                 A=0.)
-         end do ! j
-         call USAF_destroyObsData(screenObs)
-         TRACE_EXIT("bratseth_analyzeScrn")
-         return ! EMK TEST for O-B
-      end if
-
       ! Compare with background field
       write(LIS_logunit,*)'[INFO] Running backQC on surface observations'
       call USAF_backQC(screenObs,sigmaBSqr)
@@ -5674,6 +5992,25 @@ contains
       type = new_name
       call USAF_interpBackToTypeObsData(screenObs,nest, &
            LIS_rc%gnc(nest),LIS_rc%gnr(nest),back,type)
+
+      ! EMK...Option 2 just captures O and B info, and skips the
+      ! analysis.
+      if (agrmet_struc(nest)%oba_switch .eq. 2) then
+         goodObs = USAF_countGoodObs(screenObs)
+         screenOBA = createOBA(nest,maxobs=goodObs)
+         do j = 1, screenObs%nobs
+            if (screenObs%qc(j) .eq. QC_REJECT) cycle
+            ! Include the QC_SUSPECT obs in the OBA file
+            call assignOBA(screenOBA, &
+                 screenObs%net(j), screenObs%platform(j), &
+                 screenObs%lat(j), screenObs%lon(j), &
+                 screenObs%obs(j), screenObs%back(j), &
+                 A=0., qc=screenObs%qc(j), set_qc_good=.true.)
+         end do ! j
+         call USAF_destroyObsData(screenObs)
+         TRACE_EXIT("bratseth_analyzeScrn")
+         return ! EMK TEST for O-B
+      end if
 
       ! At this point, QC is done.  Copy the good obs into a new structure
       ! for the analysis (this will speed up analysis calculations by
@@ -5693,22 +6030,24 @@ contains
       end if
 
       ! Calculate (inverse) data density around each observation.
-      call calc_invDataDensities(screenObsGood,sigmaBSqr,nest, &
-           max_dist,backErrScaleLength,is_stn,invDataDensities)
+      call calc_invDataDensities(screenObsGood, sigmaBSqr, nest, &
+           max_dist, backErrInvScaleLength, is_stn, corr_func_type, &
+           invDataDensities)
 
       ! Run Bratseth analysis at observation points, and collect the sum of
       ! the corrections at each observation point (in sumObsEstimates), along
       ! with the required number of iterations (npasses).  Also return
       ! OBA information for output.
       convergeThresh = 0.01
-      call calc_obsAnalysis(screenObsGood,sigmaBSqr,nobs,invDataDensities, &
-           nest, max_dist, backErrScaleLength,convergeThresh,is_stn,&
-           sumObsEstimates, npasses, screenOBA)
+      call calc_obsAnalysis(screenObsGood, sigmaBSqr, nobs, &
+           invDataDensities, &
+           nest, max_dist, backErrInvScaleLength, convergeThresh, &
+           is_stn, corr_func_type, sumObsEstimates, npasses, screenOBA)
 
       ! Calculate analysis at grid points.
-      call calc_gridAnalysis(screenObsGood,nest,sigmaBSqr,nobs, &
-           invDataDensities,sumObsEstimates,npasses,back,max_dist,&
-           backErrScaleLength,analysis)
+      call calc_gridAnalysis(screenObsGood, nest, sigmaBSqr, nobs, &
+           invDataDensities, sumObsEstimates, npasses, back, max_dist,&
+           backErrInvScaleLength, corr_func_type, analysis)
 
       ! Clean up
       deallocate(invDataDensities)
@@ -5723,6 +6062,9 @@ contains
    ! been flagged for rejection by quality control.
    subroutine USAF_filterObsData(this,obsData)
 
+      ! Imports
+      use USAF_OBAMod, only: QC_REJECT
+
       ! Defaults
       implicit none
 
@@ -5731,18 +6073,21 @@ contains
       type(USAF_ObsData), intent(in) :: obsData
 
       ! Local variables
-      integer :: j
+      integer :: j, qc
 
       if ( obsData%nobs .eq. 0) return
 
       do j = 1, obsData%nobs
          if (obsData%qc(j) .eq. QC_REJECT) cycle
+         qc = obsData%qc(j) ! Keep QC_SUSPECT obs for OBA
          call USAF_assignObsData(this, &
               obsData%net(j),obsData%platform(j), &
               obsData%obs(j),obsData%lat(j),obsData%lon(j), &
               obsData%sigmaOSqr(j), &
               obsData%oErrScaleLength(j), &
-              back = obsData%back(j))
+              obsData%oErrInvScaleLength(j), &
+              back=obsData%back(j), &
+              qc=qc)
       end do ! j
 
    end subroutine USAF_filterObsData
@@ -5754,6 +6099,7 @@ contains
 
       ! Imports
       use AGRMET_forcingMod, only : agrmet_struc
+      use LIS_constantsMod, only: LIS_CONST_PATH_LEN
       use LIS_logMod, only : LIS_logunit, LIS_getNextUnitNumber, &
            LIS_releaseUnitNumber
       use LIS_timeMgrMod, only : LIS_julhr_date
@@ -5777,9 +6123,9 @@ contains
       integer, parameter :: NCMOR = XD*YD
       real :: precip(XD,YD)
       character(len=32) :: net, platform
-      real :: sigmaOSqr, oErrScaleLength
+      real :: sigmaOSqr, oErrScaleLength, oErrInvScaleLength
       integer :: count_good_obs
-      character(len=120) :: fname
+      character(len=LIS_CONST_PATH_LEN) :: fname
       real :: ob
       real :: rlat, rlon
       integer :: yr, mo, da, hr
@@ -5795,6 +6141,8 @@ contains
       sigmaOSqr = agrmet_struc(nest)%bratseth_precip_cmorph_sigma_o_sqr
       oErrScaleLength = &
            agrmet_struc(nest)%bratseth_precip_cmorph_err_scale_length
+      oErrInvScaleLength = &
+           agrmet_struc(nest)%bratseth_precip_cmorph_err_inv_scale_length
 
       if (use_twelve) then
          k = 2
@@ -5864,21 +6212,25 @@ contains
 
                      ! Now save the ob in the appropriate structure
                      if (k .eq. 1) then
-                        call USAF_assignObsData(precip3,net,platform,ob, &
-                             rlat,rlon,sigmaOSqr, &
-                             oErrScaleLength)
+                        call USAF_assignObsData(precip3, net, platform, &
+                             ob, &
+                             rlat, rlon, sigmaOSqr, &
+                             oErrScaleLength, oErrInvScaleLength)
                      else if (k .eq. 2) then
-                        call USAF_assignObsData(precip6,net,platform,ob, &
-                             rlat,rlon,sigmaOSqr, &
-                             oErrScaleLength)
+                        call USAF_assignObsData(precip6, net, platform, &
+                             ob, &
+                             rlat, rlon, sigmaOSqr, &
+                             oErrScaleLength, oErrInvScaleLength)
                      else if (k .eq. 3) then
-                        call USAF_assignObsData(precip9,net,platform,ob, &
-                             rlat,rlon,sigmaOSqr, &
-                             oErrScaleLength)
+                        call USAF_assignObsData(precip9, net, platform, &
+                             ob, &
+                             rlat, rlon, sigmaOSqr, &
+                             oErrScaleLength, oErrInvScaleLength)
                      else if (k .eq. 4) then
-                        call USAF_assignObsData(precip12,net,platform,ob, &
-                             rlat,rlon,sigmaOSqr, &
-                             oErrScaleLength)
+                        call USAF_assignObsData(precip12, net, &
+                             platform, ob, &
+                             rlat, rlon, sigmaOSqr, &
+                             oErrScaleLength, oErrInvScaleLength)
                      end if
                   enddo ! j
                enddo ! i
@@ -6421,52 +6773,77 @@ contains
       if (trim(src) == "GALWEM") then
          agrmet_struc(nest)%bratseth_precip_back_err_scale_length = &
               agrmet_struc(nest)%galwem_precip_back_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_back_err_inv_scale_length = &
+              agrmet_struc(nest)%galwem_precip_back_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_back_sigma_b_sqr = &
               agrmet_struc(nest)%galwem_precip_back_sigma_b_sqr
          agrmet_struc(nest)%bratseth_precip_gauge_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_gauge_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_geoprecip_err_scale_length =&
               agrmet_struc(nest)%galwem_precip_geoprecip_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_geoprecip_err_inv_scale_length =&
+              agrmet_struc(nest)%galwem_precip_geoprecip_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_geoprecip_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_geoprecip_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_ssmi_err_scale_length = &
               agrmet_struc(nest)%galwem_precip_ssmi_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_ssmi_err_inv_scale_length = &
+              agrmet_struc(nest)%galwem_precip_ssmi_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_ssmi_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_ssmi_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_cmorph_err_scale_length = &
               agrmet_struc(nest)%galwem_precip_cmorph_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_cmorph_err_inv_scale_length = &
+              agrmet_struc(nest)%galwem_precip_cmorph_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_cmorph_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_cmorph_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_imerg_err_scale_length = &
               agrmet_struc(nest)%galwem_precip_imerg_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_imerg_err_inv_scale_length = &
+              agrmet_struc(nest)%galwem_precip_imerg_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_imerg_sigma_o_sqr = &
               agrmet_struc(nest)%galwem_precip_imerg_sigma_o_sqr
+         agrmet_struc(nest)%bratseth_precip_corr_func_type = &
+              agrmet_struc(nest)%galwem_precip_corr_func_type
          agrmet_struc(nest)%bratseth_precip_max_dist = &
               agrmet_struc(nest)%galwem_precip_max_dist
 
       else if (trim(src) == "GFS") then
          agrmet_struc(nest)%bratseth_precip_back_err_scale_length = &
               agrmet_struc(nest)%gfs_precip_back_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_back_err_inv_scale_length = &
+              agrmet_struc(nest)%gfs_precip_back_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_back_sigma_b_sqr = &
               agrmet_struc(nest)%gfs_precip_back_sigma_b_sqr
          agrmet_struc(nest)%bratseth_precip_gauge_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_gauge_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_geoprecip_err_scale_length =&
               agrmet_struc(nest)%gfs_precip_geoprecip_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_geoprecip_err_inv_scale_length =&
+              agrmet_struc(nest)%gfs_precip_geoprecip_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_geoprecip_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_geoprecip_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_ssmi_err_scale_length = &
               agrmet_struc(nest)%gfs_precip_ssmi_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_ssmi_err_inv_scale_length = &
+              agrmet_struc(nest)%gfs_precip_ssmi_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_ssmi_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_ssmi_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_cmorph_err_scale_length = &
               agrmet_struc(nest)%gfs_precip_cmorph_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_cmorph_err_inv_scale_length = &
+              agrmet_struc(nest)%gfs_precip_cmorph_err_inv_scale_length
          agrmet_struc(nest)%bratseth_precip_cmorph_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_cmorph_sigma_o_sqr
          agrmet_struc(nest)%bratseth_precip_imerg_err_scale_length = &
               agrmet_struc(nest)%gfs_precip_imerg_err_scale_length
+         agrmet_struc(nest)%bratseth_precip_imerg_err_inv_scale_length = &
+              agrmet_struc(nest)%gfs_precip_imerg_err_inv_scale_length
+
          agrmet_struc(nest)%bratseth_precip_imerg_sigma_o_sqr = &
               agrmet_struc(nest)%gfs_precip_imerg_sigma_o_sqr
+         agrmet_struc(nest)%bratseth_precip_corr_func_type = &
+              agrmet_struc(nest)%gfs_precip_corr_func_type
          agrmet_struc(nest)%bratseth_precip_max_dist = &
               agrmet_struc(nest)%gfs_precip_max_dist
 
@@ -6505,6 +6882,8 @@ contains
       if (trim(src) == "GALWEM") then
          agrmet_struc(n)%bratseth_t2m_back_err_scale_length = &
               agrmet_struc(n)%galwem_t2m_back_err_scale_length
+         agrmet_struc(n)%bratseth_t2m_back_err_inv_scale_length = &
+              agrmet_struc(n)%galwem_t2m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%galwem_t2m_back_sigma_b_sqr
 
@@ -6514,30 +6893,42 @@ contains
 
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_t2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_t2m_corr_func_type = &
+              agrmet_struc(n)%galwem_t2m_corr_func_type
          agrmet_struc(n)%bratseth_t2m_max_dist = &
               agrmet_struc(n)%galwem_t2m_max_dist
 
          agrmet_struc(n)%bratseth_rh2m_back_err_scale_length = &
               agrmet_struc(n)%galwem_rh2m_back_err_scale_length
+         agrmet_struc(n)%bratseth_rh2m_back_err_inv_scale_length = &
+              agrmet_struc(n)%galwem_rh2m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_rh2m_back_sigma_b_sqr = &
               agrmet_struc(n)%galwem_rh2m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_rh2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_rh2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_rh2m_corr_func_type = &
+              agrmet_struc(n)%galwem_rh2m_corr_func_type
          agrmet_struc(n)%bratseth_rh2m_max_dist = &
               agrmet_struc(n)%galwem_rh2m_max_dist
 
          agrmet_struc(n)%bratseth_spd10m_back_err_scale_length = &
               agrmet_struc(n)%galwem_spd10m_back_err_scale_length
+         agrmet_struc(n)%bratseth_spd10m_back_err_inv_scale_length = &
+              agrmet_struc(n)%galwem_spd10m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_spd10m_back_sigma_b_sqr = &
               agrmet_struc(n)%galwem_spd10m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr = &
               agrmet_struc(n)%galwem_spd10m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_spd10m_corr_func_type = &
+              agrmet_struc(n)%galwem_spd10m_corr_func_type
          agrmet_struc(n)%bratseth_spd10m_max_dist = &
               agrmet_struc(n)%galwem_spd10m_max_dist
 
       else if (trim(src) .eq. "GFS") then
          agrmet_struc(n)%bratseth_t2m_back_err_scale_length = &
               agrmet_struc(n)%gfs_t2m_back_err_scale_length
+         agrmet_struc(n)%bratseth_t2m_back_err_inv_scale_length = &
+              agrmet_struc(n)%gfs_t2m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_t2m_back_sigma_b_sqr = &
               agrmet_struc(n)%gfs_t2m_back_sigma_b_sqr
 
@@ -6547,24 +6938,34 @@ contains
 
          agrmet_struc(n)%bratseth_t2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_t2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_t2m_corr_func_type = &
+              agrmet_struc(n)%gfs_t2m_corr_func_type
          agrmet_struc(n)%bratseth_t2m_max_dist = &
               agrmet_struc(n)%gfs_t2m_max_dist
 
          agrmet_struc(n)%bratseth_rh2m_back_err_scale_length = &
               agrmet_struc(n)%gfs_rh2m_back_err_scale_length
+         agrmet_struc(n)%bratseth_rh2m_back_err_inv_scale_length = &
+              agrmet_struc(n)%gfs_rh2m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_rh2m_back_sigma_b_sqr = &
               agrmet_struc(n)%gfs_rh2m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_rh2m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_rh2m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_rh2m_corr_func_type = &
+              agrmet_struc(n)%gfs_rh2m_corr_func_type
          agrmet_struc(n)%bratseth_rh2m_max_dist = &
               agrmet_struc(n)%gfs_rh2m_max_dist
 
          agrmet_struc(n)%bratseth_spd10m_back_err_scale_length = &
               agrmet_struc(n)%gfs_spd10m_back_err_scale_length
+         agrmet_struc(n)%bratseth_spd10m_back_err_inv_scale_length = &
+              agrmet_struc(n)%gfs_spd10m_back_err_inv_scale_length
          agrmet_struc(n)%bratseth_spd10m_back_sigma_b_sqr = &
               agrmet_struc(n)%gfs_spd10m_back_sigma_b_sqr
          agrmet_struc(n)%bratseth_spd10m_stn_sigma_o_sqr = &
               agrmet_struc(n)%gfs_spd10m_stn_sigma_o_sqr
+         agrmet_struc(n)%bratseth_spd10m_corr_func_type = &
+              agrmet_struc(n)%gfs_spd10m_corr_func_type
          agrmet_struc(n)%bratseth_spd10m_max_dist = &
               agrmet_struc(n)%gfs_spd10m_max_dist
 

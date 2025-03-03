@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -14,14 +14,25 @@
 ! 
 ! !REVISION HISTORY: 
 !    11 may 11   Adapted from AGRMET_storeobs...Chris Franks/16WS/WXE/SEMS
+!    23 May 24   Check network of each report to ensure it is recognized;
+!                reject if unknown; keep track of unknown networks
+!                encountered during the run; and write alert file as a
+!                new unknown network is encountered..........Eric Kemp/NASA
 !
 ! !INTERFACE: 
-subroutine AGRMET_storeobs_offhour(nsize, isize, obs, ilat, ilon,  &
+subroutine AGRMET_storeobs_offhour(n, nsize, isize, obs, ilat, ilon,  &
      mscprc, sixprc, twfprc, network, plat_id, cdms_flag, bsn, &
-     duration, stncnt)
+     duration, stncnt, alert_number, filename)
+
+  ! Imports
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+  use LIS_coreMod, only: LIS_masterproc        ! EMK 20240523
+  use LIS_logMod, only: LIS_logunit, LIS_alert ! EMK 20240523
+  use USAF_bratsethMod, only: USAF_is_gauge    ! EMK 20240523
 
   implicit none
-  
+
+  integer,    intent(in)         :: n
   integer,    intent(in)         :: isize
   character*10, intent(in)       :: network(isize)
   character*10, intent(in)       :: plat_id(isize)
@@ -34,8 +45,9 @@ subroutine AGRMET_storeobs_offhour(nsize, isize, obs, ilat, ilon,  &
   integer,    intent(in)         :: nsize
   integer,    intent(in)         :: sixprc(isize)
   integer,    intent(inout)      :: stncnt
-  integer,    intent(in)         :: twfprc(isize)   
-
+  integer,    intent(in)         :: twfprc(isize)
+  integer, intent(inout) :: alert_number ! EMK 20240523
+  character(*), intent(in) :: filename ! EMK 20240523
 !
 ! !DESCRIPTION: 
 !    performs some preprocessing on raw 3-hourly observations for 
@@ -114,7 +126,7 @@ subroutine AGRMET_storeobs_offhour(nsize, isize, obs, ilat, ilon,  &
   integer                        :: tempmsc
   real                           :: rlat
   real                           :: rlon
-  
+  character*32 :: network32
   type rain_obs
      sequence
      character*10                 :: net
@@ -129,6 +141,32 @@ subroutine AGRMET_storeobs_offhour(nsize, isize, obs, ilat, ilon,  &
   end type rain_obs
   
   type(rain_obs), intent(inout)  :: obs(isize)
+
+  ! EMK 20240523
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
+  integer, parameter :: MAX_NEW_NETWORKS = 20
+  character(10), save :: new_networks(MAX_NEW_NETWORKS) = &
+       (/"NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      ", &
+       "NULL      "/)
+  integer :: i
 
 !     ------------------------------------------------------------------
 !     If observations were retrieved from CDMS use 6-digit BSN limits 
@@ -176,7 +214,38 @@ subroutine AGRMET_storeobs_offhour(nsize, isize, obs, ilat, ilon,  &
      else
         cycle RECORD
      end if
-     
+
+     ! EMK 20240523...Skip report if network is not recognized. Issue an
+     ! alert. Keep track of unknown networks to avoid redundant alerts.
+     ! EMK 20240917...Fix argument size mismatch
+     network32 = network(irecord)
+     if (.not. USAF_is_gauge(network32,n)) then
+        do i = 1, MAX_NEW_NETWORKS
+           if (new_networks(i) == network(irecord)) then
+              cycle RECORD
+           else if (new_networks(i) == "NULL") then
+              new_networks(i) = network(irecord)
+              write(LIS_logunit,*)'[WARN] Found unrecognized network ', &
+                   trim(network(irecord))
+              write(LIS_logunit,*)'[WARN] Will skip report in preobs file'
+              message(:) = ''
+              message(1) = '[WARN] Program:  LIS'
+              message(2) = '  Routine: AGRMET_storeobs_offhour'
+              message(3) = '  Found unrecognized network in '// &
+                   trim(filename)
+              message(4) = '  Network '//trim(network(irecord))
+              message(5) = '  Contact NASA developers to add this network'
+              if (LIS_masterproc) then
+                 call LIS_alert('LIS.AGRMET_storeobs_offhour', &
+                      alert_number, message)
+                 alert_number = alert_number + 1
+              end if
+              cycle RECORD
+           end if
+        end do
+        if (i > MAX_NEW_NETWORKS) cycle RECORD
+     end if
+
 !     ------------------------------------------------------------------
 !       check for valid wmo block station number (bsn) and valid
 !       precipitation totals.  if they exist, process this ob.

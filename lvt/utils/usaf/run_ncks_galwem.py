@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -51,6 +51,7 @@
 #               for PS41 physics.
 # 05 Dec 2022:  Eric Kemp (SSAI), revised to improve pylint score.
 # 24 Jan 2023:  Eric Kemp (SSAI), updated filenames.
+# 11 Oct 2024:  Eric Kemp (SSAI), updated path to ncks.
 #
 #------------------------------------------------------------------------------
 """
@@ -64,7 +65,7 @@ import sys
 #------------------------------------------------------------------------------
 
 # Path to NCO ncks program
-_NCKS_PATH = "/usr/local/other/nco/4.8.1/bin/ncks" # On Discover
+_NCKS_PATH = "/usr/local/other/nco/5.1.7/bin/ncks" # On Discover
 
 # Supported LIS LSMs
 _LIS_LSMS = ["NOAH", "NOAHMP", "JULES"]

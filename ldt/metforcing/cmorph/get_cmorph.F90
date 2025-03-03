@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -154,6 +154,8 @@ end subroutine get_cmorph
 ! !INTERFACE:
 subroutine cmorphfile( filename, cmorphdir, yr, mo, da, hr)
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   implicit none
 ! !ARGUMENTS: 
   character(len=*) :: filename
@@ -185,12 +187,11 @@ subroutine cmorphfile( filename, cmorphdir, yr, mo, da, hr)
 !1212292800
 
   integer, parameter :: T2008060100 = 1212292800
-  character(len=120) :: temp
   integer :: i, c
   integer :: uyr, umo, uda, uhr, umn, uss, ts1
   integer tout(9), fmktime, it, ih, irec
 
-  character*100 :: fbase, ftimedir, fstem 
+  character(len=LDT_CONST_PATH_LEN) :: fstem 
   character*4 :: cyr
   character*2 :: cmo, cda, chr 
 

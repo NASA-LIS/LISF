@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -36,6 +36,8 @@ module summa1_lsmMod
   use nrtype
   use summa1_module
   use globalData
+
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -87,7 +89,7 @@ module summa1_lsmMod
      integer(i4b)                     :: nHRU                       ! number of global hydrologic response units
      integer(i4b)                     :: hruCount                   ! number of local hydrologic response units
      real(dp),dimension(12)           :: greenVegFrac_monthly       ! fraction of green vegetation in each month (0-1)
-     character(len=256)               :: summaFileManagerFile   ! path/name of file defining directories and files
+     character(len=LIS_CONST_PATH_LEN)               :: summaFileManagerFile   ! path/name of file defining directories and files
 
      type(summa1dec), allocatable :: summa1(:)
   end type summa1_type_dec
@@ -134,7 +136,9 @@ contains
    USE modelwrite_module
    USE def_output_module
    USE check_icond_module
-! !DESCRIPTION:        
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
+   ! !DESCRIPTION:        
 !
 !EOP
    implicit none
@@ -157,10 +161,12 @@ contains
    integer(i4b)                     :: fileUnit                   ! file unit (output from file_open; a unit not currently used)
    character(LEN=256),allocatable   :: dataLines(:)               ! vector of character strings from non-comment lines
    character(LEN=256),allocatable   :: chardata(:)                ! vector of character data
-   character(len=256)               :: fileout=''                 ! output filename
+#if 0
+   character(len=LIS_CONST_PATH_LEN):: fileout=''                 ! output filename
+#endif
    character(len=64)                :: output_fileSuffix=''       ! suffix for the output file
-   character(len=256)               :: attrFile                   ! attributes file name
-   character(len=256)               :: restartFile                ! restart file name
+   character(len=LIS_CONST_PATH_LEN):: attrFile                   ! attributes file name
+   character(len=LIS_CONST_PATH_LEN):: restartFile                ! restart file name
    integer(i4b)                     :: iRunMode                   ! define the current running mode
    integer(i4b)                     :: fileGRU                    ! number of GRUs in the input file
    integer(i4b)                     :: fileHRU                    ! number of HRUs in the input file

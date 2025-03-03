@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,6 +28,7 @@ module SiB2_parmsMod
 !  04 Nov 2013: K. Arsenault: Added layers for SiB2 model
 !
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -51,7 +52,7 @@ module SiB2_parmsMod
 
   type, public :: noah_type_dec
 !  - SiB2 parameters:
-     character*100 :: sib2parmsdir
+     character(len=LDT_CONST_PATH_LEN) :: sib2parmsdir
 
      ! -  SiB2 LSM-specific:
 ! -  SiB2 model-specific:

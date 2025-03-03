@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@
 subroutine write_CDFSgvfobs(n, k, OBS_State)
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
   use LIS_fileIOMod
@@ -43,7 +44,7 @@ subroutine write_CDFSgvfobs(n, k, OBS_State)
   logical                  :: data_update
   real, pointer            :: smobs(:)
   real                     :: smobs_unsc(LIS_rc%obs_ngrid(k))
-  character*100            :: obsname
+  character(len=LIS_CONST_PATH_LEN) :: obsname
   integer                  :: ftn
   integer                  :: status
 

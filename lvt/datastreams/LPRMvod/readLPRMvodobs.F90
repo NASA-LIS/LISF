@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readLPRMvodobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -49,7 +50,6 @@ subroutine readLPRMvodobs(source)
 
   logical           :: alarmcheck, file_exists, readflag
   integer           :: iret
-  character*200     :: name
   real              :: vod_file(LPRM_vodobs(source)%nc,LPRM_vodobs(source)%nr)
   real              :: vod_inp(LPRM_vodobs(source)%nc*LPRM_vodobs(source)%nr)
   logical*1         :: vod_b_inp(LPRM_vodobs(source)%nc*LPRM_vodobs(source)%nr)
@@ -61,7 +61,7 @@ subroutine readLPRMvodobs(source)
   integer           :: fnd 
   integer                :: ftn,ios
   integer                :: vodid,flagid,latid,lonid
-  character*100          :: lprm_filename
+  character(len=LVT_CONST_PATH_LEN) :: lprm_filename
   integer                :: yr, mo, da, hr, mn, ss
   real                   :: gmt
   integer                :: c,r,c1,r1

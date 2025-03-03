@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readGLDAS1Obs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -48,7 +49,7 @@ subroutine readGLDAS1Obs(source)
 !EOP
   integer                 :: nc 
   integer                 :: nr 
-  character*120           :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   logical                 :: file_exists
   logical                 :: qle_flag, qh_flag, qg_flag
   logical                 :: precip_flag, tskin_flag
@@ -1236,7 +1237,8 @@ subroutine readGLDAS1Obs(source)
 subroutine create_GLDAS1_filename(odir, model_name, datares, &
      yr,mo,doy, hr, filename)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_logMod
 
   implicit none
@@ -1274,7 +1276,7 @@ subroutine create_GLDAS1_filename(odir, model_name, datares, &
   character*2             :: fmo
   character*2             :: fhr
 
-  character*100           :: list_name
+  character(len=LVT_CONST_PATH_LEN) :: list_name
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy

@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -145,8 +145,8 @@ def _driver():
                 cmd_list.append(cmd)
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            utils.job_script(config_file, jobfile, jobname, ntasks,
-                             hours, cwd, command_list=cmd_list)
+            utils.job_script(config_file, jobfile, jobname, len(cmd_list),
+                             hours, cwd, group_jobs=cmd_list)
 
         else:
             cmd = "python"

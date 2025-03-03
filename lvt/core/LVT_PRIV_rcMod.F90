@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,7 +16,8 @@
 module LVT_PRIV_rcMod 
 ! 
 ! !USES:   
-!
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+  !
 ! !INPUT PARAMETERS: 
 ! 
 ! !OUTPUT PARAMETERS:
@@ -58,7 +59,7 @@ module LVT_PRIV_rcMod
 
   implicit none
   type lvtrcdec
-     character*500          :: configfile
+     character(len=LVT_CONST_PATH_LEN) :: configfile
      integer                :: max_model_types
 
      character*500           :: runmode
@@ -108,9 +109,9 @@ module LVT_PRIV_rcMod
      character*500           :: lvt_out_format
      character*500           :: lvt_wopt
      character*500           :: startmode
-     character*500          :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
 !     character*500           :: model_name
-     character*500          :: diagfile
+     character(len=LVT_CONST_PATH_LEN) :: diagfile
 
      integer                :: npesx
      integer                :: npesy
@@ -119,7 +120,7 @@ module LVT_PRIV_rcMod
 
      integer                :: vegsrc
 
-     character*500          :: paramfile
+     character(len=LVT_CONST_PATH_LEN) :: paramfile
      character*500          :: spTransformAnlysDomain
 
      integer                :: vfile_form
@@ -217,7 +218,7 @@ module LVT_PRIV_rcMod
      integer                :: daycount_sout
      integer                :: monthCount
      integer                :: monthCount_sout
-     character*500          :: rstfile
+     character(len=LVT_CONST_PATH_LEN) :: rstfile
 
      integer                :: ts
      character*500           :: tsconv
@@ -230,9 +231,9 @@ module LVT_PRIV_rcMod
      integer, allocatable   :: tlag(:)
 
      integer                :: wrst
-     character*500          :: outputSpecFile
-     character*500          :: statsSpecFile
-     character*500          :: statsodir
+     character(len=LVT_CONST_PATH_LEN) :: outputSpecFile
+     character(len=LVT_CONST_PATH_LEN) :: statsSpecFile
+     character(len=LVT_CONST_PATH_LEN) :: statsodir
      integer                :: statswriteint
      integer                :: restartInterval
      logical, allocatable   :: resetFlag(:)
@@ -257,7 +258,7 @@ module LVT_PRIV_rcMod
 
      integer                :: dataMask
      integer                :: maskflag
-     character*500          :: maskdir
+     character(len=LVT_CONST_PATH_LEN) :: maskdir
      integer                :: monthly_mask(12)
      integer                :: ftn_summ_file
      integer                :: obsCountThreshold
@@ -284,9 +285,9 @@ module LVT_PRIV_rcMod
      real                   :: strat_var_threshold
      integer                :: strat_nlevels
 
-     character*500          :: data_strat_attrib_file
+     character(len=LVT_CONST_PATH_LEN) :: data_strat_attrib_file
      integer                :: data_based_strat
-     character*100, allocatable  :: data_based_strat_file(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable  :: data_based_strat_file(:)
      character*100, allocatable  :: data_based_strat_var(:)
      integer                :: data_based_nstrats
      real,         allocatable  :: data_based_strat_max(:)
@@ -296,15 +297,15 @@ module LVT_PRIV_rcMod
      real,         allocatable  :: strat_data(:,:)
 
      integer                :: ntslocs
-     character*500          :: tsspecfile
+     character(len=LVT_CONST_PATH_LEN) :: tsspecfile
      integer                :: tsspecstyle
 
      integer                :: n_sc_locs
-     character*500          :: sc_specfile
+     character(len=LVT_CONST_PATH_LEN) :: sc_specfile
      integer                :: sc_specstyle
 
      integer                :: n_adc_locs
-     character*500          :: adc_specfile
+     character(len=LVT_CONST_PATH_LEN) :: adc_specfile
      integer                :: adc_specstyle
 
      real                   :: udef
@@ -319,7 +320,7 @@ module LVT_PRIV_rcMod
 
      integer                :: anomalyTlength
      character*500          :: sp_avg_mode         
-     character*500          :: reg_maskfile
+     character(len=LVT_CONST_PATH_LEN) :: reg_maskfile
      real,         allocatable  :: regmask(:,:)
      real                   :: regmask_max
      ! The following lines are added by Shugong Wang for backward support of LIS 6 
@@ -372,7 +373,7 @@ module LVT_PRIV_rcMod
      real,  allocatable         :: HYCOM_hi_arc_n11(:)
      real,  allocatable         :: HYCOM_hi_ant_n11(:)
      integer                    :: processHYCOM
-     character*100              :: HYCOMdir
+     character(len=LVT_CONST_PATH_LEN) :: HYCOMdir
      integer                    :: applyNoiseReductionFilter
      character*100              :: smoothingFilterType
 
@@ -384,9 +385,9 @@ module LVT_PRIV_rcMod
      logical :: output_sh_ps16
      logical :: output_nh_ps16_snodep
      logical :: output_sh_ps16_snodep
-     character(len=255) :: input_dir
-     character(len=255) :: input_prefix
-     character(len=255) :: output_dir
+     character(len=LVT_CONST_PATH_LEN) :: input_dir
+     character(len=LVT_CONST_PATH_LEN) :: input_prefix
+     character(len=LVT_CONST_PATH_LEN) :: output_dir
   end type lvtrcdec
   
   type lisrcdec
@@ -399,9 +400,9 @@ module LVT_PRIV_rcMod
      character*500, allocatable  :: sf_model_type_name_select(:)
 
      integer                :: nsurfacetypes
-     character*500          :: domfile
+     character(len=LVT_CONST_PATH_LEN) :: domfile
      character*500          :: map_proj
-     character*500          :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      integer                :: nest
      character*500          :: style
      character*500          :: format
@@ -456,7 +457,7 @@ module LVT_PRIV_rcMod
      real                   :: slope_minp    
      integer                :: aspect_maxt
      real                   :: aspect_minp    
-     character*500          :: outputSpecFile
+     character(len=LVT_CONST_PATH_LEN) :: outputSpecFile
 
      real,     allocatable      :: rlat_dn(:)
      real,     allocatable      :: rlon_dn(:)

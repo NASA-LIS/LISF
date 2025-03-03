@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,        only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_timeMgrMod,     only : LVT_calendar, LVT_tick
@@ -44,7 +45,7 @@
 !EOP
 !--------------------------------------------------------------------------
 
-  character*100       :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   character*20        :: datestring, qstring
   integer             :: stn_col, stn_row, c,r
   real                :: col,row
@@ -58,7 +59,6 @@
   integer             :: iloc
   integer             :: ios,ios1,ios2,status
   integer             :: yr, mo, da
-  character*100       :: line
   logical             :: file_exists
   type(ESMF_Time)     :: obsTime,obsTime1
   real                :: q(LVT_rc%lnc,LVT_rc%lnr)

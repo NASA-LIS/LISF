@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -130,7 +130,8 @@ contains
 ! !INTERFACE: 
   subroutine LVT_readDataStream1
 ! 
-! !USES: 
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,   only : LVT_rc
     use LVT_fileIOMod, only : LVT_create_output_filename
     use LVT_logMod,    only : LVT_logunit
@@ -153,7 +154,7 @@ contains
 ! 
 !EOP
 
-    character*200 :: fname
+    character(len=LVT_CONST_PATH_LEN) :: fname
     logical          :: file_exists
 !hardcoded for now
 
@@ -208,6 +209,7 @@ contains
   subroutine LVT_readDAobsData
 ! 
 ! !USES: 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,   only : LVT_rc
     use LVT_logMod,    only : LVT_logunit
     use LVT_fileIOMod, only : LVT_create_daobs_filename
@@ -229,7 +231,7 @@ contains
 ! 
 !EOP
 
-    character*100 :: fname 
+    character(len=LVT_CONST_PATH_LEN) :: fname 
     logical          :: file_exists
 
     call LVT_create_daobs_filename(LVT_rc%nnest, fname)

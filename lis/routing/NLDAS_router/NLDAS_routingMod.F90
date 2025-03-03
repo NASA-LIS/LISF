@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,8 +60,8 @@ module NLDAS_routingMod
 
      real,  allocatable   :: streamflow(:,:)
 
-     character*100    :: initial_1
-     character*100    :: initial_2
+     character(len=LIS_CONST_PATH_LEN) :: initial_1
+     character(len=LIS_CONST_PATH_LEN) :: initial_2
      character(len=LIS_CONST_PATH_LEN) :: rstfile
      real, allocatable    :: area(:,:)
 
@@ -96,7 +96,7 @@ contains
     integer              :: n 
     integer              :: ftn 
     integer              :: status
-    character*100        :: uh_file_1, uh_file_2
+    character(len=LIS_CONST_PATH_LEN) :: uh_file_1, uh_file_2
     character(len=LIS_CONST_PATH_LEN) :: order_file
     integer              :: i,j,k
     integer              :: yr, mo, da, hr, mn, ss

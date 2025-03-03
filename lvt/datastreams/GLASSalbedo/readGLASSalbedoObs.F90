@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readGLASSalbedoObs(source)
 !
 ! !USES:
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -45,7 +46,7 @@ subroutine readGLASSalbedoObs(source)
   integer                :: c,r, tindex
   integer                :: flag
   integer                :: ftn
-  character*200          :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   character*50           :: grid_name
   logical                :: file_exists
   integer                :: iret

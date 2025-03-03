@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -841,7 +841,6 @@ module LIS_PRIV_rcMod
      character*50           :: startcode
      integer                :: plevel
      character(len=LIS_CONST_PATH_LEN) :: odir
-!     character*100          :: dfile      
      character(len=LIS_CONST_PATH_LEN) :: dfile      
      integer                :: sdoy        
      integer                :: sss         
@@ -893,7 +892,7 @@ module LIS_PRIV_rcMod
      character*50, allocatable  :: daalg(:)
      
      integer, allocatable       :: useANNinDA(:)
-     character*100, allocatable :: ANNdaFile(:)
+     character(len=LIS_CONST_PATH_LEN), allocatable :: ANNdaFile(:)
 
      character*50, allocatable  :: biasalg(:)
      character*50, allocatable  :: biasrst(:)
@@ -939,7 +938,7 @@ module LIS_PRIV_rcMod
      character*20           :: distribution_class
      character*20           :: data_category
      character*20           :: area_of_data
-     character*255          :: lis_config_file='lis.config'
+     character(len=LIS_CONST_PATH_LEN) :: lis_config_file='lis.config'
      character*100          :: institution = 'NASA GSFC'
 !RTM related variables
      character*50           :: rtm

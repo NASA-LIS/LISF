@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -179,7 +179,8 @@ def _driver():
 
         # Run LDT
         if 'discover' in platform.node() or 'borg' in platform.node():
-            cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+#            cmd = f"mpirun -np 1 {_LDT_EXEC} {ldtconfig_lsm_target}"
+            cmd = f"srun {_LDT_EXEC} {ldtconfig_lsm_target}"
         else:
             cmd = f"srun {_LDT_EXEC} {ldtconfig_lsm_target}"
         print(f"[INFO] {cmd}")

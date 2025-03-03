@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,7 @@
 subroutine read_SRTM_Native_slope( n, num_bins, fgrd, slopeave )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -40,6 +41,10 @@ subroutine read_SRTM_Native_slope( n, num_bins, fgrd, slopeave )
 ! !DESCRIPTION:
 !  This subroutine retrieves static elevation data from the SRTM source
 !  and reprojects it to the latlon projection. 
+!
+!  NOTE:  SRTM "Native" ~1km files do not include areas south of 60degS.
+!         GTOPO30 elevation tiles can be read in, since they include points
+!         south of 60degS (Antarctica).
 !
 !  Source information:
 !   http://dds.cr.usgs.gov/srtm/version2_1/SRTM30/
@@ -103,7 +108,7 @@ subroutine read_SRTM_Native_slope( n, num_bins, fgrd, slopeave )
    real, allocatable :: subset_elev(:,:)    ! Read input parameter
    real, allocatable :: subset_slope(:,:)   ! Derived from input parameter
 
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
 !________________________________________________________________________
 
   fgrd = 0.

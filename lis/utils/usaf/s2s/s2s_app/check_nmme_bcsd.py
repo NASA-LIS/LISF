@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,8 +40,10 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--lead_month', required=True, help='lead month 0-9')
     parser.add_argument('-y', '--year', required=True, help='forcing start year')
     parser.add_argument('-c', '--config_file', required=True, help='config file')
+#    parser.add_argument('-m', '--model', required=True,
+#                        help='NMME model [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]')
     parser.add_argument('-m', '--model', required=True,
-                        help='NMME model [CCM4, CCSM4, CFSv2, GEOSv2, GFDL, GNEMO5]')
+                        help='NMME model [CanESM5, CESM1, CFSv2, GEOSv2, GFDL, GNEMO52]')
 
     args = parser.parse_args()
     ic_month = int(args.init_month)
@@ -81,7 +83,7 @@ if __name__ == "__main__":
     fm_label = str(year) + '-' + calendar.month_abbr[fcast_month]
     print (fm_label)
 
-    # python check_nmme_bcsd.py -m CCM4 -l 4 -y 2000
+    # python check_nmme_bcsd.py -m CESM1 -l 4 -y 2000
     # Jan 2001
     # compute MODEL mean : 1) raw, 2) bcsd
     nmme_clim_file_raw = NMME_CLIM_TEMPLATE_RAW.format(NMME_PATH,mmm,model)

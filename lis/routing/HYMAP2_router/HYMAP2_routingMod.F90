@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -172,7 +172,7 @@ module HYMAP2_routingMod
   integer              :: resopflag
   integer              :: resoptype
   character(len=LIS_CONST_PATH_LEN) :: resopdir
-  character*100         :: resopheader
+  character(len=LIS_CONST_PATH_LEN) :: resopheader
   !ag (29Jun2016)
   integer              :: floodflag
   character(len=LIS_CONST_PATH_LEN) :: HYMAP_dfile      
@@ -216,7 +216,7 @@ module HYMAP2_routingMod
   integer              :: ntinsert       !time series length (number of time steps in the input files)
   integer              :: insertflag
   character(len=LIS_CONST_PATH_LEN) :: insertdir
-  character*100         :: insertheader
+  character(len=LIS_CONST_PATH_LEN) :: insertheader
 
 !ag(30Mar2021)
 ! === ocean tides variables/parameters ===
@@ -227,7 +227,7 @@ module HYMAP2_routingMod
   integer               :: nttides       !time series length (number of time steps in the input files)
   integer               :: tidesflag
   character(len=LIS_CONST_PATH_LEN) :: tidesdir
-  character*100         :: tidesheader
+  character(len=LIS_CONST_PATH_LEN) :: tidesheader
 
   end type HYMAP2_routing_dec
 
@@ -286,13 +286,10 @@ contains
     real,    allocatable :: elevtn(:,:),uparea(:,:),basin(:,:)
     
     !ag (11Mar2016)
-    character*100  :: temp1
     integer        :: rc
     character*1    :: fproc(4)
     integer        :: ios
     integer        :: final_dirpos
-    character(len=LIS_CONST_PATH_LEN) :: diag_fname
-    character(len=LIS_CONST_PATH_LEN) :: diag_dir
     integer, external  :: LIS_create_subdirs
 
     !ag (03Apr2017)
@@ -2122,7 +2119,6 @@ contains
     integer                     :: status
     integer                     :: l
     integer                     :: varid
-    character*100               :: cfile
 !    real                        :: array1(LIS_rc%gnc(n),LIS_rc%gnr(n),z)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2185,7 +2181,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: varid
-    character*100               :: cfile
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
@@ -2240,7 +2235,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r,l
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2295,7 +2289,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -2351,7 +2344,6 @@ contains
     logical                     :: file_exists
     integer                     :: status
     integer                     :: c,r
-    character*100               :: cfile
     integer                     :: varid
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)

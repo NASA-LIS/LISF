@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -151,7 +151,7 @@ contains
     character(len=LIS_CONST_PATH_LEN) :: rst_fname
     character*4     :: fiter
     integer, external :: LIS_create_subdirs 
-    character(len=201) :: c_string  
+    character(len=LIS_CONST_PATH_LEN) :: c_string  
 
     n = 1
     
@@ -189,7 +189,6 @@ contains
     integer         :: n 
     integer         :: ftn    
     integer         :: iterid
-    character(len=LIS_CONST_PATH_LEN) :: out_dname
     character(len=LIS_CONST_PATH_LEN) :: rst_fname    
 
     n = 1

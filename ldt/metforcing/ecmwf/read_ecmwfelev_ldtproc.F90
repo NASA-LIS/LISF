@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@
 ! !INTERFACE:
 subroutine read_ecmwfelev_ldtproc(n, findex, change)
 ! !USES:
+  use LDT_constantsMod,   only : LDT_CONST_PATH_LEN
   use LDT_coreMod,        only : LDT_rc, LDT_domain
   use LDT_metforcingMod,  only : LDT_forc
   use LDT_fileIOMod,      only : LDT_read_param
@@ -45,7 +46,7 @@ subroutine read_ecmwfelev_ldtproc(n, findex, change)
   integer :: c,r,line1,line2,nc_dom,line
   integer :: glnc, glnr
   real    :: go(LDT_rc%lnc(n),LDT_rc%lnr(n))
-  character(80) :: filename
+  character(len=LDT_CONST_PATH_LEN) :: filename
 
   if ( trim(LDT_rc%met_ecor(findex)) .ne."none" ) then 
      write(LDT_logunit,*) " Reading the ECMWF elevation: ",trim(filename)

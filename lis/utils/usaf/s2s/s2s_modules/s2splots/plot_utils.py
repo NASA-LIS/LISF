@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -38,7 +38,9 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import cartopy.io.img_tiles as cimgt
 import shapely.geometry as sgeom
+import cartopy.mpl.ticker as cticker
 import requests
+import dask
 import PIL
 import numpy as np
 mpl.use('pdf')
@@ -52,7 +54,7 @@ ADD_LAND = True
 ADD_RIVERS = True
 RESOL = '50m'  # use data at this scale
 FIGWIDTH = 25
-cbar_axes = [0.15, 0.04, 0.7, 0.02]
+cbar_axes = [0.1, 0.02, 0.8, 0.02]
 
 mpl.use('pdf')
 mpl.style.use('bmh')
@@ -233,9 +235,10 @@ def load_table (table_key):
                 [  0,195,255],
                 [  0,227,255],
                 [  0,255,255],
+                [ 55,255,199],
                 [255,255,255],
                 [255,255,255],
-                [190,255, 67],
+                [120,255,135],
                 [240,255, 15],
                 [255,219,  0],
                 [255,187,  0],
@@ -424,6 +427,52 @@ def load_table (table_key):
                            [255, 215,   0],
                            [  0,   0,   0],
                            [119, 119, 119]],
+        'clim_reanaly': [[255,240,242],
+                         [237,216,240],
+                         [217,191,237],
+                         [198,166,232],
+                         [179,141,228],
+                         [179,141,228],
+                         [130,114,207],
+                         [91,85,187],
+                         [51,56,166],
+                         [7,26,145],
+                         [55,87,180],
+                         [99,145,216],
+                         [142,201,250],
+                         [165,212,251],
+                         [189,224,253],
+                         [212,235,254],
+                         [235,245,255],
+                         [255,255,255],
+                         [255,255,255],
+                         [255,237,217],
+                         [255,210,163],
+                         [255,183,108],
+                         [255,156,51],
+                         [255,129,0],
+                         [211,84,0],
+                         [166,38,0],
+                         [121,0,0],
+                         [155,0,0],
+                         [189,0,0],
+                         [222,0,0],
+                         [255,0,0],
+                         [255,112,96],
+                         [255,172,156],
+                         [255,225,205],
+                         [255,240,241]],
+        'CBR_wet': [[255,  255,  255],
+                    [247,  252,  240],
+                    [224,  243,  219],
+                    [204,  235,  197],
+                    [168,  221,  181],
+                    [123,  204,  196],
+                    [ 78,  179,  211],
+                    [ 43,  140,  190],
+                    [  8,  104,  172],
+                    [  8,   64,  129],
+                    [  0,   32,   62]],
         'cb_9step':[[255,   0,   0],
                     [255, 128,   0],
                     [255, 255,   0],
@@ -524,6 +573,16 @@ def load_table (table_key):
         rgb_list.append([rgb[0],rgb[1], rgb[2]])
     tables['mono_green'] = rgb_list
 
+    num_steps = 26
+    start_yellow = np.array([255, 255, 153])# Yellow
+    end_orange = np.array([255, 165, 0])    # Orange
+    end_brown = np.array([51, 25, 0])       # Brown
+    gradient_yellow_to_orange = np.linspace(start_yellow, end_orange, num_steps // 2, dtype=int)
+    gradient_orange_to_brown = np.linspace(end_orange, end_brown, num_steps // 2, dtype=int)
+    gradient_yellow_to_brown = np.concatenate((gradient_yellow_to_orange, gradient_orange_to_brown))
+    rgb_list = gradient_yellow_to_brown.tolist()
+    tables['mono_YOB'] = rgb_list    
+
     if table_key[-1] == '_':
         ct_ = tables[table_key[:-1]]
         ct_.reverse()
@@ -544,9 +603,12 @@ def preproc(ds_):
 
 def crop (limits, lat, lon, xrin):
     ''' crops a data set'''
-    xr_lon = (lon >= limits[2]) & (lon <= limits[3])
-    xr_lat = (lat >= limits[0]) & (lat <= limits[1])
-    crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)
+    with dask.config.set(**{'array.slicing.split_large_chunks': True}):
+        xr_lon = (lon >= limits[2]) & (lon <= limits[3])
+        xr_lat = (lat >= limits[0]) & (lat <= limits[1])
+        xr_lon = xr_lon.compute()
+        xr_lat = xr_lat.compute()
+        crop_xcm = xrin.where(xr_lon & xr_lat, drop=True)
     return crop_xcm
 
 def getclosest_ij(lats,lons,latpt,lonpt):
@@ -621,8 +683,19 @@ class CachedTiler(object):
 
 def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, \
               under_over, min_val=None, max_val=None, fscale=None, levels=None, \
-              stitle=None, clabel=None, cartopy_datadir=None):
+              stitle=None, clabel=None, cartopy_datadir=None, colorbar2=None, \
+              projection=None):
     ''' plot contour maps'''
+    '''
+    added 2nd colorbar option
+    colorbar2 = {levels: [],
+                 begin : int (0-indexed)
+                 color_palette: ''
+                 cax_axes: [[], []]
+                 orientation: [, ]'
+                 clabel: ''}
+                 
+    '''
     cartopy_dir(cartopy_datadir)
     if fscale is None:
         fscale = FONT_SCALE
@@ -639,29 +712,85 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
 
     if levels is None:
         if min_val is None:
-            min_val = np.floor(np.nanmin(var [var>0.]))
+            min_val = np.floor(np.nanmin(var))
             max_val = np.ceil(np.nanmax(var))
+            abs_max = max(abs(min_val), abs(max_val))
+            min_val = -1.*abs_max
+            max_val = abs_max
+
         levels = np.linspace(min_val, max_val, len(style_color))
     cmap.set_under(under_over[0])
     cmap.set_over(under_over[1])
-
+    print(domain)
     nplots = len(titles)
-    fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+    if projection is None:
+        fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+    elif projection[0] == 'polar':
+        fig = plt.figure(figsize= (FIGWIDTH * ncols, FIGWIDTH * nrows))
+    else:
+        fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
+        
     gs_ = gridspec.GridSpec(nrows, ncols, wspace=0.1, hspace=0.1)
-    cax = fig.add_axes(cbar_axes)
+    
+    if colorbar2 is None:
+        cax = fig.add_axes(cbar_axes)
+        orientation = 'horizontal'
+    else:
+        cax_one = fig.add_axes(colorbar2['cax_axes'][0])
+        cax_two = fig.add_axes(colorbar2['cax_axes'][1])
 
     # plot maps
     for count_plot in range(nplots):
-        ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
+        if colorbar2 is not None:
+            ''' invoke the 2nd colorbar if required '''
+            if count_plot == colorbar2['begin']:
+                style_color = load_table(colorbar2['color_palette'])
+                color_arr = []
+                for color in style_color:
+                    rgb = [float(value) / 255 for value in color]
+                    color_arr.append(rgb)
+                cmap = colors.LinearSegmentedColormap.from_list('my_palette', color_arr, N=256)
+                levels = colorbar2['levels']
+                clabel = colorbar2['clabel']
+
+        if projection is None:
+            ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.PlateCarree())
+        elif projection[0] == "mol":
+            ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Mollweide())
+        elif projection[0] == 'polar':
+            ax_ = fig.add_subplot(gs_[count_plot], projection=ccrs.Stereographic(central_latitude=projection[1]))
+            ax_.set_extent([domain[2], domain[3], domain[0], domain[1]], crs=ccrs.PlateCarree())
+             
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
-                             cmap=cmap,zorder=3, alpha=0.8)
-        gl_ = ax_.gridlines(draw_labels=True)
+                             cmap=cmap,zorder=3, alpha=0.8,
+                             transform=ccrs.PlateCarree())
+        
+        if projection is None:
+            gl_ = ax_.gridlines(draw_labels=True)
+        else:
+            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=4)
+            if projection[0] == 'polar':
+                gl_.xformatter = cticker.LongitudeFormatter()  
+                gl_.yformatter = cticker.LatitudeFormatter()  
+                gl_.linewidth = 1  
+                gl_.color = 'gray'  
+                gl_.linestyle = '--'
+
         gl_.top_labels = False
         gl_.bottom_labels = False
         gl_.left_labels = False
         gl_.right_labels = False
 
+        if projection is not None:
+            if projection[0] == 'polar':
+                gl_.top_labels = False
+                gl_.bottom_labels = True
+                gl_.left_labels = True
+                gl_.right_labels = True
+                gl_.xformatter = cticker.LongitudeFormatter()
+                gl_.yformatter = cticker.LatitudeFormatter()
+                
         plt.title(titles[count_plot], fontsize=fscale*FONT_SIZE2)
 
         if np.mod (count_plot, ncols) == 0:
@@ -681,13 +810,26 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         if (domain[3] - domain[2]) < 180.:
             ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
                             edgecolor='black', facecolor='none')
+            
+        if colorbar2 is not None:
+            if count_plot < colorbar2['begin']:
+                cax = cax_one
+                orientation = colorbar2['orientation'][0]
+            else:
+                cax = cax_two
+                orientation = colorbar2['orientation'][1]
+                
         if under_over[0] == "white" and under_over[1] == "white":
-            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels)
+            cbar = fig.colorbar(cs_, cax=cax, orientation=orientation, ticks=levels)
         else:
-            cbar = fig.colorbar(cs_, cax=cax, orientation='horizontal', ticks=levels,extend=EXTEND)
-        cbar.ax.tick_params(labelsize=fscale*20, labelrotation=90)
+            cbar = fig.colorbar(cs_, cax=cax, orientation=orientation, ticks=levels,extend=EXTEND)
+        if orientation == 'horizontal':
+            cbar.ax.tick_params(labelsize=fscale*20, labelrotation=90)
+        else:
+            cbar.ax.tick_params(labelsize=fscale*10, labelrotation=0)
         if clabel is not None:
             cbar.set_label(clabel, fontsize=fscale*30)
+        
         plt.savefig(figure, dpi=150, format='png', bbox_inches='tight')
     plt.close()
 

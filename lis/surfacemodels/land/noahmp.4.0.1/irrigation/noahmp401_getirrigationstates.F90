@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -212,7 +212,7 @@ subroutine noahmp401_getirrigationstates(n,irrigState)
 
         t=(i-1)*LIS_rc%nensem(n)+m
 
-     timestep = NOAHMP401_struc(n)%dt
+     timestep = NOAHMP401_struc(n)%ts
      soiltyp = noahmp401_struc(n)%noahmp401(t)%soiltype
     
  

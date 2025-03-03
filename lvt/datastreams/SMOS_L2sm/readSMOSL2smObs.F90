@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -123,6 +123,7 @@ end subroutine readSMOSL2smObs
 subroutine processSMOSfiles(source, smobs, iyr, imo, ida, ihr, imn, iss)
 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_logMod
@@ -134,10 +135,9 @@ subroutine processSMOSfiles(source, smobs, iyr, imo, ida, ihr, imn, iss)
   real                    :: smobs(LVT_rc%lnc,LVT_rc%lnr)
   integer                 :: iyr, imo, ida, ihr, imn, iss
 
-  character*100           :: fname
-  character*100           :: smos_filename
+  character(len=LVT_CONST_PATH_LEN) :: smos_filename
   character*8             :: yyyymmdd
-  character*200           :: list_files
+  character(len=LVT_CONST_PATH_LEN) :: list_files
   integer                 :: sind
   integer                 :: yr,mo,da,hr,mn,ss
   integer                 :: ftn

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,7 +28,8 @@ module ioFileMod
 !=======================================================================
  
    subroutine getfil (fulpath, locfn, iflag)
- 
+
+     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 ! --------------------------------------------------------------------
 ! obtain local copy of file
 ! o first check current working directory
@@ -47,7 +48,7 @@ module ioFileMod
    integer klen            !length of fulpath character string
    integer ierr            !error status
    logical lexist          !true if local file exists
-   character(len=256) text !mswrite command
+   character(len=LIS_CONST_PATH_LEN) text !mswrite command
 ! --------------------------------------------------------------------
  
  
@@ -111,7 +112,8 @@ module ioFileMod
 !-----------------------------------------------------------------------
 ! Dispose model output file to Mass Store
 !-----------------------------------------------------------------------
- 
+     use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
 !------------------------------Arguments--------------------------------
    integer, intent(in) :: irt              ! Mass Store retention time
    character(len=*), intent(in) :: locfn   ! Local filename
@@ -123,8 +125,8 @@ module ioFileMod
 !-----------------------------------------------------------------------
  
 !---------------------------Local workspace-----------------------------
-   character(len=256) cmd     ! Command string
-   character(len=256) cmdtem  ! Temporary for command string
+   character(len=LIS_CONST_PATH_LEN) cmd     ! Command string
+   character(len=LIS_CONST_PATH_LEN) cmdtem  ! Temporary for command string
    character(len=  4) crt     ! Retention time as characters
    character(len= 16) wpass   ! Write password
    integer ier                ! error number

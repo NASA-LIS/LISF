@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@ module RDHM_parmsMod
 #endif
 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -56,7 +57,7 @@ module RDHM_parmsMod
   type, public :: rdhm_type_dec
 
 ! - RDHM 3.5.6
-     character*140 :: rdhmconsts_table
+     character(len=LDT_CONST_PATH_LEN) :: rdhmconsts_table
      real          :: rdhm_undef
 
 ! -  RDHM-specific:

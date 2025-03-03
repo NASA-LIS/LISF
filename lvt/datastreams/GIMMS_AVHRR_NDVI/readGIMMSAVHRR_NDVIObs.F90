@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readGIMMSAVHRR_NDVIObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_logMod
   use LVT_histDataMod
@@ -44,7 +45,7 @@ subroutine readGIMMSAVHRR_NDVIObs(source)
   integer                :: c,r, tindex
   integer                :: flag
   integer                :: ftn
-  character*100          :: fname_a, fname_b
+  character(len=LVT_CONST_PATH_LEN) :: fname_a, fname_b
   logical*1              :: output_bitmap(LVT_rc%lnc*LVT_rc%lnr)
   real                   :: ndvi_out_a(LVT_rc%lnc*LVT_rc%lnr)
   real                   :: ndvi_out_b(LVT_rc%lnc*LVT_rc%lnr)

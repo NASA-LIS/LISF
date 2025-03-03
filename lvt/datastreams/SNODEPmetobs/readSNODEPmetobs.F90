@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -138,6 +138,7 @@ subroutine read_snodepdata(source, odir, yr, mo, da)
 ! 
 ! !USES:  
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_timeMgrMod, only : LVT_calendar
   use LVT_logMod,     only : LVT_logunit, LVT_verify, LVT_getNextUnitNumber, &
@@ -190,7 +191,7 @@ subroutine read_snodepdata(source, odir, yr, mo, da)
   real                    :: col,row
   integer                 :: status
   integer                 :: data_index
-  character*100           :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   real                    :: tempc, dewpc, avgc
   type(ESMF_Time)         :: datatime, starttime
 

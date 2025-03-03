@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@ subroutine create_soil_albedo_from_whs( n, nc_whs_param, soil_albedo)
 
 ! !USES:
   !use LDT_paramDataMod ! check mask 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only : LDT_rc
   use LDT_logMod,  only : LDT_logunit,  LDT_endrun
   use LDT_gridmappingMod    
@@ -31,7 +32,7 @@ subroutine create_soil_albedo_from_whs( n, nc_whs_param, soil_albedo)
   implicit none
 ! !ARGUMENTS: 
   integer,intent(in)    :: n
-  character(len=128)    :: nc_whs_param    ! NetCDF file of CAP soil texture fraction file 
+  character(len=LDT_CONST_PATH_LEN)    :: nc_whs_param    ! NetCDF file of CAP soil texture fraction file 
   real, intent(inout)   :: soil_albedo(LDT_rc%lnc(n),LDT_rc%lnr(n))
 !
 ! !DESCRIPTION:

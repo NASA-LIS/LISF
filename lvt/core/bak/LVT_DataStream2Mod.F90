@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -118,6 +118,7 @@ contains
   subroutine LVT_writeObsData
 ! 
 ! !USES: 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_fileIOMod, only : LVT_create_output_directory, &
          LVT_create_output_filename
 
@@ -138,7 +139,7 @@ contains
 
     integer         :: n,i 
     integer         :: ftn 
-    character*100   :: lisfile
+    character(len=LVT_CONST_PATH_LEN) :: lisfile
     type(LVT_metadataEntry), pointer :: obs
 
     n = 1

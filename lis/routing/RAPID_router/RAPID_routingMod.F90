@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -28,7 +28,7 @@ module RAPID_routingMod
 ! 
 ! !USES: 
   use ESMF
- 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -47,7 +47,7 @@ module RAPID_routingMod
      real             :: dt
      integer          :: imis                   !! real undefined value
 
-     character*100    :: rstfile
+     character(len=LIS_CONST_PATH_LEN) :: rstfile
      integer          :: numout
      integer          :: fileopen
      real             :: outInterval 
@@ -67,14 +67,14 @@ module RAPID_routingMod
      integer          :: run_opt      ! run option
      integer          :: routing_opt  ! routing option        
      integer          :: phi_opt      ! phi option
-     character*200    :: connectfile  ! river connectivity file
+     character(len=LIS_CONST_PATH_LEN) :: connectfile  ! river connectivity file
      integer          :: max_reach    ! max number of upstream reaches
-     character*200    :: weightfile   ! river weight table
-     character*200    :: basinIDfile  ! river basin ID file
-     character*200    :: kfile        ! Muskingum parameter k file
-     character*200    :: xfile        ! Muskingum parameter x file
+     character(len=LIS_CONST_PATH_LEN) :: weightfile   ! river weight table
+     character(len=LIS_CONST_PATH_LEN) :: basinIDfile  ! river basin ID file
+     character(len=LIS_CONST_PATH_LEN) :: kfile        ! Muskingum parameter k file
+     character(len=LIS_CONST_PATH_LEN) :: xfile        ! Muskingum parameter x file
 
-     character*200    :: nmlfile
+     character(len=LIS_CONST_PATH_LEN) :: nmlfile
  
      integer          :: n_riv_tot    ! number of river connectivity 
      integer          :: n_riv_bas    ! number of river basins  

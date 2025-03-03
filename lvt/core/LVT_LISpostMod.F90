@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -141,6 +141,7 @@ contains
 ! !INTERFACE:   
   subroutine LVT_process_LISoutput
 
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
 !
 !DESCRIPTION:
 ! This routine reads the distributed binary LIS outputs and quilts
@@ -151,9 +152,9 @@ contains
     integer       :: ftn(LVT_LISpost%npes),ftn_nc
     integer       :: lnc(LVT_LISpost%npes),lnr(LVT_LISpost%npes)
     logical       :: file_exists
-    character*200 :: froot,temp1,fname_out
+    character(len=LVT_CONST_PATH_LEN) :: froot,temp1,fname_out
     character*100  :: vname,units
-    character*200  :: fname(LVT_LISpost%npes)
+    character(len=LVT_CONST_PATH_LEN) :: fname(LVT_LISpost%npes)
     real,          allocatable :: var(:,:,:,:)
     real           :: gvar(LVT_rc%gnc,LVT_rc%gnr,&
          LVT_LIS_rc(1)%nensem,LVT_LISpost%nlevels)

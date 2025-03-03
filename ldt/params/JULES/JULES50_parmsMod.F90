@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@ module JULES50_parmsMod
 #endif
 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_historyMod
   use LDT_paramDataMod
@@ -73,10 +74,10 @@ module JULES50_parmsMod
      type(LDT_paramEntry) :: top_fexp
 
      real, allocatable :: soil_type(:,:) 
-     character(len=128)   :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
-     character(len=128)   :: nc_whs_param    ! NetCDF file of WHS soil albedo input file 
+     character(len=LDT_CONST_PATH_LEN) :: nc_cap_param    ! NetCDF file of CAP soil texture fraction file 
+     character(len=LDT_CONST_PATH_LEN) :: nc_whs_param    ! NetCDF file of WHS soil albedo input file 
      !character(len=32)    :: soil_param_mode
-     character(len=128)   :: nc_um_ancillary
+     character(len=LDT_CONST_PATH_LEN) :: nc_um_ancillary
   end type jules_type_dec
 
   type(jules_type_dec), allocatable :: JULES50_struc(:)

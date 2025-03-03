@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,7 @@
 
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,  only : LIS_rc, LIS_domain, &
                            LIS_masterproc, LIS_npes
   use LIS_logMod,   only : LIS_logunit, LIS_endrun
@@ -56,7 +57,7 @@
   character(len=4)    :: cyr4
   type(charN)         :: sos_filename
   type(charN)         :: sosa_filename
-  character(300),target :: temp_filename
+  character(len=LIS_CONST_PATH_LEN),target :: temp_filename
 
 ! BIL parameters/variables:
   logical             :: fileread_ok

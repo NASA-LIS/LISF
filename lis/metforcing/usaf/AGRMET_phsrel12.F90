@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -93,8 +93,6 @@ subroutine AGRMET_phsrel12( n, p12, j6hr, &
   integer                      :: k 
   real                         :: e(LIS_rc%lnc(n),LIS_rc%lnr(n),4)
   real                         :: p3(LIS_rc%lnc(n),LIS_rc%lnr(n),4)
-  character*100                :: ofil
-  character*100                :: ifil
   character*10                 :: date10_03
   logical                      :: exists
   integer                      :: j3hr

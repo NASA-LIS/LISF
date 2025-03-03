@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -174,8 +174,10 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
                                                      var_name = "WIND")
 
     for month in range(1,10):
-        file_6h = outdir_6hourly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
-        file_mon = outdir_monthly + '/' + final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        file_6h = outdir_6hourly + '/' + \
+            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+        file_mon = outdir_monthly + '/' + \
+            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
         dt2 = dt1 + relativedelta(months=1)
         dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
         dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
@@ -216,9 +218,9 @@ def _print_reftime(fcst_init, ens_num):
     reftime = \
         f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
     reftime += f",{fcst_init['hour']}:00:00,1hour"
-    txt = f"[INFO] ENS{ens_num}: " + \
+    txt = f"[INFO] CFSv2 ENS-MEM #{ens_num}: " + \
         f"{fcst_init['year']}-{fcst_init['monthday']}:" + \
-        f"{fcst_init['hour']}"
+        f"{fcst_init['hour']} cycle"
     print(txt)
 
 def _driver():
@@ -232,7 +234,8 @@ def _driver():
 
     year = int(args['syr'])
     ens_num = int(args['ens_num'])
-    print(f"[INFO] {fcst_init['monthday']} {year}")
+    print(" --- ")
+    print(f"[INFO] Forecast Init Date: {fcst_init['monthday']} {year}")
 
     fcst_init["year"] = year
     if fcst_init['monthday'] == "jan01":
@@ -260,23 +263,28 @@ def _driver():
         wanted_months.append(i)
     wanted_months = wanted_months[1:10]
 
+    # Print Ensemble member and reference date+cycle time:
     _print_reftime(fcst_init, ens_num)
 
+    # 6-hourly output dir:
     outdirs['outdir_6hourly'] = \
         f"{args['outdir']}/6-Hourly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_6hourly']):
         os.makedirs(outdirs['outdir_6hourly'])
+
+    # Monthly output dir:
     outdirs['outdir_monthly'] = \
         f"{args['outdir']}/Monthly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_monthly']):
         os.makedirs(outdirs['outdir_monthly'])
 
-    cfsv2 = []         
+    # Loop over CFSv2 variables:
+    cfsv2 = []
     for varname in ["prate", "pressfc", "tmp2m", "dlwsfc", "dswsfc",
                     "q2m", "wnd10m"]:
-        print(f"[INFO] {varname}")
+        print(f"[INFO] CFSv2 variable: {varname}")
         subdir, file_pfx, file_sfx = \
             _set_input_file_info(fcst_init['year_cfsv2'],
                                  fcst_init['month'],
@@ -284,12 +292,19 @@ def _driver():
         indir = f"{args['forcedir']}/{subdir}/"
         if subdir == "Oper_TS" and not os.path.exists(indir):
             indir = f"{args['forcedir']}/"
-            
+
         indir += f"{fcst_init['year_cfsv2']}/{fcst_init['date']}"
 
+        # Checking CFSv2 member-date subdir presence:
+        if not os.path.isdir(indir):
+            print(f"[ERR] CFSV2 directory, {indir}, does NOT exist.")
+            print("[ERR]  Exiting from this one process_forecast_data.py job (others may continue to run in parallel) ...")
+            sys.exit(1)  # Exit with an error code
+
         # Convert GRIB file to netCDF and handle missing/corrupted data
-        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
-        
+        cfsv2.append(read_wgrib (indir, file_pfx, fcst_init['timestring'], \
+            file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
+
     cfsv2 = xr.merge (cfsv2, compat='override')
     reg_precip = _regrid_precip(cfsv2, args)
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &

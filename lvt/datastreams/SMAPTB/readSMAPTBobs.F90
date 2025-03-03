@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readSMAPTBobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit
@@ -44,7 +45,7 @@ subroutine readSMAPTBobs(source)
 
   logical           :: alarmcheck, file_exists, readflag
   integer           :: iret
-  character*200     :: ls_comm, cmd2, filename
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2, filename
   character*4       :: fyr
   character*2       :: fmo, fda
   real              :: smc(LVT_rc%lnc, LVT_rc%lnr,2)

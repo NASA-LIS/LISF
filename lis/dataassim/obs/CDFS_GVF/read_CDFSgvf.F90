@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,7 @@ subroutine read_CDFSgvf(n, k, OBS_State, OBS_Pert_State)
 ! !USES: 
   use ESMF
   use LIS_mpiMod
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
@@ -55,8 +56,8 @@ subroutine read_CDFSgvf(n, k, OBS_State, OBS_Pert_State)
   real,  parameter       :: MAX_LAI_VALUE=10.0, MIN_LAI_VALUE=0.0001
   integer                :: status
   integer                :: grid_index
-  character*100          :: gvfobsdir
-  character*100          :: fname
+  character(len=LIS_CONST_PATH_LEN) :: gvfobsdir
+  character(len=LIS_CONST_PATH_LEN) :: fname
   logical                :: alarmCheck, file_exists
   integer                :: t,c,r,i,j,p,jj
   real,          pointer :: obsl(:)

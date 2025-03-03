@@ -1633,7 +1633,7 @@ Soil texture spatial transform:     none
 
 `Soil texture fill value for Antarctica:` indicates which soil texture value to be used if an arbitrary value fill is needed south of 60S. If not specified, value of `Soil texture fill value:` will be used.
 
-`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO south of 60S (texture is set to all water) and multiple surface model types are used.
+`Soil texture force exclusion of water points during fill:` indicates whether to force exclusion of water points when filling soil texture. Required when using STATSGOFAO, south of 60S (i.e., texture is set to all water), and multiple surface model types (e.g., LSM and Openwater) are used.
 
 [cols="<,<",]
 |===
@@ -1759,7 +1759,7 @@ Curvature number of bands:     1
 
 Topography maps
 
-`Elevation map:` specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files.
+`Elevation map:` specifies the elevation of the LIS grid. If the elevation map type selected is SRTM_Native, then the elevation file entry is actually just the directory path, which contains the tiled SRTM elevation files. Note: The SRTM tiles only go to 60deg S, and south of that the associated SRTM reader can fill in with GTOPO30 Antarctica tile files.
 
 `Slope map:` specifies the slope of the LIS grid. If the slope map type selected is SRTM_Native, then the file entry is actually just the directory path, which contains the tiled SRTM elevation files.  
 
@@ -3463,7 +3463,8 @@ for ensemble restart generation. Options are:
 |Value |Description
 
 |none | Do not apply random sampling strategy
-|random sampling | Use random sampling strategy
+|"`random sampling`" | Use random sampling strategy
+|"`unperturbed sampling`" | Only use the non-perturbed member
 |===
 
 .Example _ldt.config_ entry
@@ -4797,9 +4798,23 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 
 `USAFSI bogus climatology snow depth value (m):` bogus value for climatology if not available
 
+`USAFSI source of ocean data:` specifies the source of the USAFSI ocean data.  Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|GOFS   | Global Ocean Forecast System
+|ESPC-D | Earth System Prediction Capability - Deterministic
+|===
+
 `USAFSI GOFS SST data directory:` directory with GOFS sea surface temperature netCDF files
 
 `USAFSI GOFS CICE data directory:` directory with GOFS sea ice netCDF files
+
+`USAFSI ESPC-D SST data directory:` directory with ESPC-D sea surface temperature netCDF files
+
+`USAFSI ESPC-D CICE data directory:` directory with ESPC-D sea ice netCDF files
 
 `USAFSI LIS GRIB2 data directory:` directory with LIS GRIB2 2-m temperature analyses
 
@@ -4822,13 +4837,16 @@ USAFSI skewed backQC snow depth threshold (m):  0.4
 .Example _ldt.config_ entry
 ....
 USAFSI bogus climatology snow depth value (m): 0.2
-USAFSI GOFS SST data directory: ./SNODEPIN//GOFS
-USAFSI GOFS CICE data directory: ./SNODEPIN//GOFS
-USAFSI LIS GRIB2 data directory: /discover/nobackup/emkemp/AFWA/data/LIS_GRIB2
-USAFSI LIS GRIB2 security class: U
-USAFSI LIS GRIB2 data category:  C
+USAFSI source of ocean data: "ESPC-D"
+USAFSI GOFS SST data directory:   ./USAFSIIN/GOFS
+USAFSI GOFS CICE data directory:  ./USAFSIIN/GOFS
+USAFSI ESPC-D SST data directory:   ./USAFSIIN/ESPC-D
+USAFSI ESPC-D CICE data directory:  ./USAFSIIN/ESPC-D
+USAFSI LIS GRIB2 data directory:  ./USAFSIIN/LIS_T2
+USAFSI LIS GRIB2 security class:  U
+USAFSI LIS GRIB2 data category:   C
 USAFSI LIS GRIB2 data resolution: C0P09DEG
-USAFSI LIS GRIB2 area of data: GLOBAL
+USAFSI LIS GRIB2 area of data:    GLOBAL
 USAFSI GALWEM root directory: USAF_FORCING
 USAFSI GALWEM subdirectory: GALWEM
 USAFSI GALWEM use timestamp directories: 1

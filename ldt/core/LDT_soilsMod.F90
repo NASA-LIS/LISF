@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -479,7 +479,7 @@ module LDT_soilsMod
     enddo
 
  !- Soil texture:
-    if( check_data) then 
+    if( check_data ) then 
 
       do n=1,LDT_rc%nnest
          if( INDEX(LDT_LSMparam_struc(n)%texture%source,"STATSGO") > 0 ) then
@@ -537,9 +537,9 @@ module LDT_soilsMod
          end if
 
          ! EMK...Allow option to force exclusion of water points when
-         ! filling soil texture.  Necessary when using STATSGOFAO south of
-         ! 60S (texture set to all water) and multiple surface model types
-         ! are used.
+         ! filling soil texture.  Necessary when using STATSGOFAO, south of
+         ! 60S (i.e., texture set to all water) and multiple surface model types
+         ! (e.g., LSM and Openwater) are used.
          ! If option not specified, set to false.
 
          call ESMF_ConfigFindLabel(LDT_config, &
@@ -549,7 +549,17 @@ module LDT_soilsMod
             call ESMF_ConfigGetAttribute(LDT_config, soiltext%force_exclude_water, &
                  label="Soil texture force exclusion of water points during fill:",rc=rc)
          else
-            soiltext%force_exclude_water = .false.
+            if(( INDEX(LDT_LSMparam_struc(1)%texture%source,"STATSGO") > 0 ) .and. &
+               ( LDT_rc%nsf_model_types > 1 )) then
+               write(LDT_logunit,*) "[INFO] Setting 'Soil texture force exclusion of water points during fill:'"
+               write(LDT_logunit,*) "     to '.true.', since STATSGOFAO and surface model types > 1 in ldt.config file."
+               soiltext%force_exclude_water = .true.
+            else
+               write(LDT_logunit,*) "[INFO] Setting 'Soil texture force exclusion of water points during fill:'"
+               write(LDT_logunit,*) "     to '.false.', since it is not specified in the ldt.config file and "
+               write(LDT_logunit,*) "     STATSGOFAO is not present nor surface model types > 1."
+               soiltext%force_exclude_water = .false.
+            endif
          end if
 
        elseif( soiltext%filltype == "none" ) then
@@ -1239,9 +1249,9 @@ module LDT_soilsMod
          end if
 
          ! EMK...Allow option to force exclusion of water points when
-         ! filling soil texture.  Necessary when using STATSGOFAO south of
-         ! 60S (texture set to all water) and multiple surface model types
-         ! are used.
+         ! filling soil texture.  Necessary when using STATSGOFAO, south of
+         ! 60S (i.e., texture set to all water) and multiple surface model types
+         ! (e.g., LSM and Openwater) are used.
          ! If option not specified, set to false.
 
          call ESMF_ConfigFindLabel(LDT_config, &
@@ -1251,7 +1261,17 @@ module LDT_soilsMod
             call ESMF_ConfigGetAttribute(LDT_config, soiltext%force_exclude_water, &
                  label="Soil texture force exclusion of water points during fill:",rc=rc)
          else
-            soiltext%force_exclude_water = .false.
+            if(( INDEX(LDT_LSMparam_struc(1)%texture%source,"STATSGO") > 0 ) .and. &
+               ( LDT_rc%nsf_model_types > 1 )) then
+               write(LDT_logunit,*) "[INFO] Setting 'Soil texture force exclusion of water points during fill:'"
+               write(LDT_logunit,*) "     to '.true.', since STATSGOFAO and surface model types > 1 in ldt.config file."
+               soiltext%force_exclude_water = .true.
+            else
+               write(LDT_logunit,*) "[INFO] Setting 'Soil texture force exclusion of water points during fill:'"
+               write(LDT_logunit,*) "     to '.false.', since it is not specified in the ldt.config file and "
+               write(LDT_logunit,*) "     STATSGOFAO is not present nor surface model types > 1."
+               soiltext%force_exclude_water = .false.
+            endif
          end if
 
        elseif( soiltext%filltype == "none" ) then

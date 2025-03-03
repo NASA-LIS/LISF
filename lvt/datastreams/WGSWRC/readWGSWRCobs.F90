@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ subroutine readWGSWRCObs(source)
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod,  only : LVT_logSingleVar
   use LVT_obsDataMod,   only : LVT_obsData
@@ -43,14 +44,13 @@ subroutine readWGSWRCObs(source)
 ! 
 !EOP
 
-  character*200         :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer               :: ios
   integer               :: yr,doy,mo,da,hr,mn,ss
   real*8                :: lis_prevtime
   real                  :: gmt
   integer               :: st,et
   logical               :: file_exists
-  character*20          :: name1, name2
   integer               :: stnid
   integer               :: sm(7)
   real                  :: st1, st2, st3, st4, st5,st6,st7

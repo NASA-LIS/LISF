@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,6 +42,7 @@ contains
    subroutine USAFSI_write_netcdf(date10)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc, LDT_masterproc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use LDT_usafsiMod, only: usafsi_settings
@@ -58,7 +59,7 @@ contains
       character*10, intent(in) :: date10
 
       ! Local variables
-      character*255 :: outfilename
+      character(len=LDT_CONST_PATH_LEN) :: outfilename
       integer :: iret
       integer :: ncid
       character*8 :: date
@@ -470,6 +471,7 @@ contains
    subroutine USAFSI_read_netcdf(date10,ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -486,7 +488,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(len=LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       integer :: ncid, dim_ids(3)
       integer :: snoanl_varid, snoage_varid, icecon_varid, icemask_varid, &
@@ -664,6 +666,7 @@ contains
    subroutine USAFSI_read_netcdf_12z(date10,ierr)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_coreMod, only: LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
       use LDT_usafsiMod, only: usafsi_settings
@@ -680,7 +683,7 @@ contains
       integer, intent(out) :: ierr
 
       ! Local variables
-      character*255 :: infilename
+      character(len=LDT_CONST_PATH_LEN) :: infilename
       logical :: file_exists
       integer :: ncid, dim_ids(3)
       integer :: snoage_varid, iceage_varid

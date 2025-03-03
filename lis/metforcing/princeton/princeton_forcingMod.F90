@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -79,7 +79,7 @@ module princeton_forcingMod
      real                   :: ts
      integer                :: ncold, nrold   
      character(len=LIS_CONST_PATH_LEN) :: princetondir
-     character*100          :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
      character*100          :: version
      integer                :: mi
      real*8                 :: princetontime1,princetontime2

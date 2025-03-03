@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@
 ! !INTERFACE:
 subroutine jules53_writerst(n)
 ! !USES:
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
     use LIS_coreMod, only    : LIS_rc, LIS_masterproc
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_getNextUnitNumber, &
@@ -52,7 +53,7 @@ subroutine jules53_writerst(n)
 ! \end{description}
 !EOP
 
-    character*100 :: filen
+    character(len=LIS_CONST_PATH_LEN) :: filen
     character*20  :: wformat
     logical       :: alarmCheck
     integer       :: ftn, k, l, t, c  

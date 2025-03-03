@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -40,7 +40,8 @@
 !              ................................Eric Kemp/GSFC
 ! !INTERFACE:    
 subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -132,13 +133,11 @@ subroutine AGRMET_fldbld_gfs(n,order,julhr,rc)
 !  \end{description}
 !EOP
   integer                 :: ftn, igrib
-  !character*120           :: avnfile
-  character*255           :: avnfile ! EMK
+  character(len=LIS_CONST_PATH_LEN) :: avnfile ! EMK
   integer                 :: yr1, mo1, da1, hr1
 
   integer                 :: nunit
   integer                 :: ksec2       ( 10 )
-  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: ginfo       ( 40 )
   real                    :: gridres
@@ -446,7 +445,8 @@ subroutine getAVNfilename(filename, rootdir, dir, &
      use_timestamp, gfs_timestamp, gfs_filename_version, &
      yr, mo, da, hr, fc_hr)
 
-   use LIS_logMod, only: LIS_logunit, LIS_endrun
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+  use LIS_logMod, only: LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS: 
@@ -490,7 +490,7 @@ subroutine getAVNfilename(filename, rootdir, dir, &
   character(10) :: ftime1
   character( 2) :: fhr
   character( 4) :: fchr
-  character(255) :: basename
+  character(len=LIS_CONST_PATH_LEN) :: basename
   character(8) :: cyyyymmdd
   character(3) :: chhh
 
@@ -607,7 +607,8 @@ subroutine AGRMET_fldbld_read_gfs( fg_filename, ifguess, jfguess,&
      wndwgt, minwnd, fg_hgt, fg_rh,&
      fg_tmp, fg_hgt_sfc, fg_rh_sfc, fg_tmp_sfc, fg_wspd, fg_pres, &
      kprs, prslvls, alert_number, rc )
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_masterproc
   use LIS_logMod, only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
@@ -741,7 +742,6 @@ subroutine AGRMET_fldbld_read_gfs( fg_filename, ifguess, jfguess,&
 !  \end{description}
 !EOP
   character*9                   :: cstat
-  character*255                 :: message     ( 20 )
   integer                       :: count_dpd
   integer                       :: count_hgt
   integer                       :: count_rh
@@ -1780,6 +1780,7 @@ end function check_gfs_grib2_message
 integer function set_plevel(editionNumber,pds9,level)
 
    ! Imports
+   use LIS_constantsMod, only: LIS_CONST_PATH_LEN
    use LIS_coreMod, only: LIS_masterproc
    use LIS_logmod, only: LIS_logunit,LIS_abort, &
       LIS_alert,LIS_endrun
@@ -1796,7 +1797,7 @@ integer function set_plevel(editionNumber,pds9,level)
    ! Locals
    integer :: plevel
    integer :: ierr
-   character(len=255) :: messages(20)
+   character(len=LIS_CONST_PATH_LEN) :: messages(20)
 
    if (editionNumber == 1) then
       plevel = pds9

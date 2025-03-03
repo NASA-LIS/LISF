@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,6 +42,7 @@ subroutine readANSASWEobs(source)
   use hdf5
 #endif
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,      only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,       only : LVT_logunit, LVT_getNextUnitNumber, & 
@@ -56,7 +57,7 @@ subroutine readANSASWEobs(source)
 !EOP
 #if (defined USE_HDF5) 
   character*100,   parameter    :: swe_field_name = "ansa_swe_cyl_GB"
-  character*100                 :: ansa_filename
+  character(len=LVT_CONST_PATH_LEN) :: ansa_filename
   integer(hsize_t), allocatable :: dims(:)
   integer(hid_t)                :: dataspace
   integer(hid_t)                :: memspace
@@ -220,7 +221,9 @@ end subroutine readANSASWEobs
 !
 ! !INTERFACE: 
 subroutine ANSAswe_filename(name, ndir, yr, mo,da)
-  
+
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
+
   implicit none
 ! 
 ! !USES:   
@@ -250,7 +253,7 @@ subroutine ANSAswe_filename(name, ndir, yr, mo,da)
 !
 ! 
 ! !ARGUMENTS: 
-  character*80      :: name
+  character(len=LVT_CONST_PATH_LEN) :: name
   integer           :: yr, mo, da
   character (len=*) :: ndir
 ! 

@@ -32,6 +32,8 @@ jobs:
 
       - name: Install Asciidoctor-PDF
         run: |
+          gem install public_suffix -v 5.1.1
+          gem install css_parser -v 1.17.1
           gem install asciidoctor-pdf
           asciidoctor-pdf --version
 

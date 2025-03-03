@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -282,7 +282,7 @@ subroutine create_ecmwf_filename(dir,avgfilename1, avgfilename2, instfilename,&
   real :: igmt
   integer :: iyr,imo,ida,ihr,imn,iss,ts,idoy
   character(len=LIS_CONST_PATH_LEN) :: filename
-  character(200)                    :: file1, file2
+  character(len=LIS_CONST_PATH_LEN) :: file1, file2
 
 
   !instantaneous files 

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -98,10 +98,9 @@ subroutine readSMOSL2smObs(n)
   logical                 :: alarmCheck
   logical                 :: file_exists
   integer                 :: c,r,i,j
-  character(len=LDT_CONST_PATH_LEN)           :: fname
   character(len=LDT_CONST_PATH_LEN)           :: smos_filename
   character*8             :: yyyymmdd
-  character*200           :: list_files
+  character(len=LDT_CONST_PATH_LEN)           :: list_files
   integer                 :: sind
   integer                 :: yr,mo,da,hr,mn,ss
   integer                 :: ftn

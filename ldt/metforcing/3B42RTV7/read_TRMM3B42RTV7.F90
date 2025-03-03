@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -227,9 +227,10 @@ subroutine read_TRMM3B42RTV7 (n, filename_TRMM3B42RT, findex, &
 
  subroutine read_3B42RTV7_gzip(zipfile, output, xd, yd)
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod, only : LDT_rc
 
-  character*200, intent(in) :: zipfile
+  character(len=LDT_CONST_PATH_LEN), intent(in) :: zipfile
   integer, intent(in) :: xd, yd
   real, intent(inout) :: output(xd, yd)
 

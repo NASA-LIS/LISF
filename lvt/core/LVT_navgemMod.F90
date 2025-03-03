@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -485,6 +485,7 @@ contains
   subroutine putget_real(buffer, iofunc, file_name, igrid, jgrid)
 
     ! Modules
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_logMod, only: LVT_logunit
 
     ! Defaults
@@ -501,7 +502,7 @@ contains
     integer, parameter :: msglns = 20
     character*14 :: access_type
     character*4 :: cstat
-    character*90 :: message(msglns)
+    character(len=LVT_CONST_PATH_LEN) :: message(msglns)
     integer :: istat
     integer :: istat1
     integer :: reclen

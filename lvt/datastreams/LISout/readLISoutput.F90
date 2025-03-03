@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,8 +42,8 @@ subroutine readLISoutput(source)
 ! 
 !EOP
   
-  character*500                    :: fname1 
-  character*500, allocatable       :: fname(:)
+  character(len=LVT_CONST_PATH_LEN) :: fname1 
+  character(len=LVT_CONST_PATH_LEN), allocatable :: fname(:)
 
   logical                          :: file_exists
   real                             :: obsData(LVT_rc%lnc, LVT_rc%lnr)

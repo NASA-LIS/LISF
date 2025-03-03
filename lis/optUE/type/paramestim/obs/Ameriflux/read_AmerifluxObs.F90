@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -58,7 +58,7 @@ subroutine read_AmerifluxObs(Obj_Space)
   type(ESMF_Field)    :: qgField
   type(ESMF_Field)    :: sfstField
   type(ESMF_Field)    :: sfsmField
-  character(len=LIS_CONST_PATH_LEN) :: obsdir, name
+  character(len=LIS_CONST_PATH_LEN) :: obsdir
   logical             :: data_update
   logical             :: file_exists
   logical             :: readflag

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,6 +29,7 @@ module CRTM_handlerMod
 
   USE CRTM_Module
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
  
@@ -55,7 +56,7 @@ module CRTM_handlerMod
      integer                               :: nclouds
      integer                               :: naerosols
      character*256                         :: sensor_id
-     character*100                         :: coeff_data
+     character(len=LIS_CONST_PATH_LEN)     :: coeff_data
      real                                  :: zenith_angle
      type(CRTM_ChannelInfo_type),  allocatable :: ChannelInfo(:)
      type(CRTM_GeometryInfo_type), allocatable :: GeometryInfo(:)

@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,8 @@
 
 module LDT_smap_e_oplMod
 
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
   ! Defaults
   implicit none
   private
@@ -38,11 +40,11 @@ module LDT_smap_e_oplMod
   ! Public type
   type, public :: smap_e_opl_dec
 
-    character*100        :: L1Bdir, L1Bresampledir, L1Bresampledir_02, SMoutdir 
-    character*100        :: LISdir, LISsnowdir
-    character*100        :: TAUdir, OMEGAfile, BDfile, &
+    character(len=LDT_CONST_PATH_LEN) :: L1Bdir, L1Bresampledir, L1Bresampledir_02, SMoutdir 
+    character(len=LDT_CONST_PATH_LEN)        :: LISdir, LISsnowdir
+    character(len=LDT_CONST_PATH_LEN)        :: TAUdir, OMEGAfile, BDfile, &
                             CLAYfile, Hfile, LCfile
-    character*100        :: dailystats_ref, dailystats_lis
+    character(len=LDT_CONST_PATH_LEN)        :: dailystats_ref, dailystats_lis
     character*10         :: date_curr
     integer              :: L1BresampWriteOpt, L1Btype, SMAPfilelistSuffixNumber
     integer              :: Teffscale
@@ -243,6 +245,7 @@ contains
 
 ! !USES:
     use esmf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod
     use LDT_logMod
 
@@ -254,8 +257,8 @@ contains
     integer, external       :: LDT_create_subdirs
     integer                 :: i, fi
     integer                 :: ftn, ierr
-    character*100           :: fname
-    character*100           :: smap_L1B_filename(10)
+    character(len=LDT_CONST_PATH_LEN) :: fname
+    character(len=LDT_CONST_PATH_LEN) :: smap_L1B_filename(10)
     character*8             :: yyyymmdd, yyyymmdd_01, yyyymmdd_02, yyyymmdd_03
     character*6             :: hhmmss(10)
     character*4             :: yyyy, yyyy_01, yyyy_02, yyyy_03
@@ -274,7 +277,7 @@ contains
     real                    :: teff_02(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: teff_03(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: SnowDepth(LDT_rc%lnc(n),LDT_rc%lnr(n))
-    real                    :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
+    real*8                  :: TIMEsec(LDT_rc%lnc(n),LDT_rc%lnr(n))
     real                    :: UTChr(LDT_rc%lnc(n),LDT_rc%lnr(n))
     integer                 :: L1B_dir_len
     integer                 :: doy_pre, doy_curr
@@ -502,6 +505,8 @@ contains
              ! get UTC
              call get_UTC(n,TIMEsec,UTChr)
 
+             !write(LDT_logunit,*)'EMK: UTChr = ', UTChr
+
              ! retrieve
              ierr = LDT_create_subdirs(len_trim(SMAPeOPL%SMoutdir), &
                 trim(SMAPeOPL%SMoutdir))
@@ -518,6 +523,8 @@ contains
 
   subroutine search_SMAPL1B_files(ndir,date_curr,L1Btype,suffix)
 
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     implicit none
 ! !ARGUMENTS:
     character (len=*) :: ndir
@@ -528,7 +535,7 @@ contains
     character*8       :: yyyymmdd
     character*2       :: hh
     character*2       :: tmp
-    character*200     :: list_files
+    character(len=LDT_CONST_PATH_LEN) :: list_files
 
     yyyymmdd = date_curr(1:8)
     hh       = date_curr(9:10)

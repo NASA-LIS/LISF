@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -36,6 +36,7 @@ module jules52_lsmMod
 ! !USES:        
 
   use jules52_module
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
   
@@ -72,8 +73,8 @@ module jules52_lsmMod
      integer                    :: count
      real                       :: rstInterval
      integer                    :: outInterval
-     character(len=256)         :: namelist_dir
-     character(len=256)         :: rfile 
+     character(len=LIS_CONST_PATH_LEN) :: namelist_dir
+     character(len=LIS_CONST_PATH_LEN) :: rfile
      character(len=32)          :: rformat
      type(jules52dec), allocatable :: jules52(:)
   end type jules52_type_dec

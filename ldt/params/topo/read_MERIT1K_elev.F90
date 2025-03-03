@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +23,7 @@
 subroutine read_MERIT1K_elev( n, num_bins, fgrd, elevave )
 
 ! !USES:
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod,  only : LDT_rc
   use LDT_logMod,   only : LDT_logunit, LDT_getNextUnitNumber, &
        LDT_releaseUnitNumber, LDT_endrun
@@ -107,7 +108,7 @@ subroutine read_MERIT1K_elev( n, num_bins, fgrd, elevave )
    real, allocatable :: yrev_elev(:,:)      ! Y-reversed mosaicked-tile elevation
    real, allocatable :: subset_elev(:,:)    ! Read input parameter
   
-   character(140) :: tempfile
+   character(len=LDT_CONST_PATH_LEN) :: tempfile
 !________________________________________________________________________
 
   fgrd = 0.

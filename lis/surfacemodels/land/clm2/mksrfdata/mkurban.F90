@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,7 @@ subroutine mkurban (furb, ndiag, urb_o)
 ! $Id: mkurban.F90,v 1.5 2004/05/07 22:18:37 jim Exp $
 !-----------------------------------------------------------------------
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_precisionMod
   use clm2_varpar    !lsm parameters
   use clm2_varsur    !lsm surface variables
@@ -40,7 +41,7 @@ subroutine mkurban (furb, ndiag, urb_o)
 ! -----------------------------------------------------------------
 
 ! ------------------------ local variables ------------------------
-  character(len=256) locfn                  !local dataset file name
+  character(len=LIS_CONST_PATH_LEN) locfn   !local dataset file name
 
   integer :: nlon_i                         !input grid : longitude points (read in)
   integer :: nlat_i                         !input grid : latitude  points (read in)

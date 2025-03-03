@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@
 subroutine read_stg4( n, fname,findex,order, ferror_stg4 )
 
 ! !USES:
+  use LDT_constantsMod,   only : LDT_CONST_PATH_LEN
   use LDT_coreMod,        only : LDT_rc, LDT_domain
   use LDT_logMod,         only : LDT_verify, LDT_logunit, LDT_endrun
   use LDT_metforcingMod,  only : LDT_forc
@@ -33,7 +34,7 @@ subroutine read_stg4( n, fname,findex,order, ferror_stg4 )
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname          
+  character(len=LDT_CONST_PATH_LEN)   :: fname          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_stg4

@@ -1,0 +1,164 @@
+#%Module1.0###################################################################
+
+proc ModulesHelp { } {
+    puts stderr "\t[module-info name] - loads the LISF_7_5_INTEL_2023_2_1_OPENMPI_5_0_0 env"
+    puts stderr ""
+    puts stderr "This is for use on NCCS' discover system running SLES 15.4."
+    puts stderr ""
+    puts stderr "\tThe following env variables are set:"
+    puts stderr "\t\tDEV_ENV"
+    puts stderr "\t\tLIS_ARCH"
+    puts stderr "\t\tLIS_SPMD"
+    puts stderr "\t\tLIS_FC"
+    puts stderr "\t\tLIS_CC"
+    puts stderr "\t\tLIS_RPC"
+    puts stderr "\t\tLIS_OPENJPEG"
+    puts stderr "\t\tLIS_ECCODES"
+    puts stderr "\t\tLIS_NETCDF"
+    puts stderr "\t\tLIS_HDF4"
+    puts stderr "\t\tLIS_HDFEOS"
+    puts stderr "\t\tLIS_HDF5"
+    puts stderr "\t\tLIS_MODESMF"
+    puts stderr "\t\tLIS_LIBESMF"
+    puts stderr "\t\tLIS_MINPACK"
+    puts stderr "\t\tLIS_CRTM"
+    puts stderr "\t\tLIS_CRTM_PROF"
+    puts stderr "\t\tLIS_CMEM"
+    puts stderr "\t\tLIS_LAPACK"
+    puts stderr "\t\tLIS_PETSC"
+    puts stderr "\t\tLDT_ARCH"
+    puts stderr "\t\tLDT_FC"
+    puts stderr "\t\tLDT_CC"
+    puts stderr "\t\tLDT_RPC"
+    puts stderr "\t\tLDT_OPENJPEG"
+    puts stderr "\t\tLDT_ECCODES"
+    puts stderr "\t\tLDT_NETCDF"
+    puts stderr "\t\tLDT_HDF4"
+    puts stderr "\t\tLDT_HDFEOS"
+    puts stderr "\t\tLDT_HDF5"
+    puts stderr "\t\tLDT_MODESMF"
+    puts stderr "\t\tLDT_LIBESMF"
+    puts stderr "\t\tLDT_GDAL"
+    puts stderr "\t\tLDT_FORTRANGIS"
+    puts stderr "\t\tLDT_LIBGEOTIFF"
+    puts stderr "\t\tLVT_ARCH"
+    puts stderr "\t\tLVT_FC"
+    puts stderr "\t\tLVT_CC"
+    puts stderr "\t\tLVT_RPC"
+    puts stderr "\t\tLVT_OPENJPEG"
+    puts stderr "\t\tLVT_ECCODES"
+    puts stderr "\t\tLVT_NETCDF"
+    puts stderr "\t\tLVT_HDF4"
+    puts stderr "\t\tLVT_HDFEOS"
+    puts stderr "\t\tLVT_HDF5"
+    puts stderr "\t\tLVT_MODESMF"
+    puts stderr "\t\tLVT_LIBESMF"
+    puts stderr "\t\tLVT_GDAL"
+    puts stderr "\t\tLVT_FORTRANGIS"
+    puts stderr ""
+    puts stderr "\tThe following modules are loaded:"
+    puts stderr "\t\tcomp/gcc/12.3.0"
+    puts stderr "\t\tcomp/intel/2023.2.1"
+    puts stderr "\t\tgit/2.42.0"
+    puts stderr "\t\tmpi/openmpi/5.0.0/intel-2023.2.1 (GMAO)"
+    puts stderr ""
+}
+
+conflict comp mpi
+
+module-whatis	"loads the [module-info name] environment"
+
+set modname     [module-info name]
+set modmode     [module-info mode]
+
+module load comp/gcc/12.3.0
+module load comp/intel/2023.2.1
+module load git/2.42.0
+module use -a /discover/swdev/gmao_SIteam/modulefiles-SLES15
+module load mpi/openmpi/5.0.0/intel-2023.2.1
+
+set   def_lis_rpc         /usr/lib64/libtirpc.so
+set   def_lis_hdf5        /discover/nobackup/projects/lis/libs/sles-15.4/hdf5/1.14.2_gnu-12.3.0_intel-2023.2.1
+set   def_lis_netcdf      /discover/nobackup/projects/lis/libs/sles-15.4/netcdf/4.9.2_gnu-12.3.0_intel-2023.2.1
+set   def_lis_openjpeg    /discover/nobackup/projects/lis/libs/sles-15.4/openjpeg/2.3.0-150000.3.13.1.x86_64/usr
+set   def_lis_eccodes     /discover/nobackup/projects/lis/libs/sles-15.4/eccodes/2.32.0_gnu-12.3.0_intel-2023.2.1
+set   def_lis_hdf4        /discover/nobackup/projects/lis/libs/sles-15.4/hdf4/4.2.16-2_gnu-12.3.0_intel-2023.2.1
+set   def_lis_hdfeos      /discover/nobackup/projects/lis/libs/sles-15.4/hdfeos2/3.0_gnu-12.3.0_intel-2023.2.1
+set   def_lis_modesmf     /discover/nobackup/projects/lis/libs/sles-15.4/esmf/8.5.0_gnu-12.3.0_intel-2023.2.1_openmpi-5.0.0/mod/modO/Linux.intel.64.openmpi.default
+set   def_lis_libesmf     /discover/nobackup/projects/lis/libs/sles-15.4/esmf/8.5.0_gnu-12.3.0_intel-2023.2.1_openmpi-5.0.0/lib/libO/Linux.intel.64.openmpi.default
+set   def_lvt_proj        /discover/nobackup/projects/lis/libs/sles-15.4/proj/9.3.0_gnu-12.3.0_intel-2023.2.1
+set   def_ldt_libgeotiff  /discover/nobackup/projects/lis/libs/sles-15.4/geotiff/1.7.1_gnu-12.3.0_intel-2023.2.1
+set   def_lvt_gdal        /discover/nobackup/projects/lis/libs/sles-15.4/gdal/3.7.2_gnu-12.3.0_intel-2023.2.1
+set   def_lvt_fortrangis  /discover/nobackup/projects/lis/libs/sles-15.4/fortrangis/3.0-1_gnu-12.3.0_intel-2023.2.1
+set   def_lis_petsc       /discover/nobackup/projects/lis/libs/sles-15.4/petsc/3.20.0_gnu-12.3.0_intel-2023.2.1_openmpi-5.0.0
+set   def_lis_minpack     /discover/nobackup/projects/lis/libs/minpack/intel_11_1_038
+set   def_lis_crtm        /discover/nobackup/projects/lis/libs/JCSDA_CRTM/REL-2.0.2.Surface-rev_intel_18_0_3_222
+set   def_lis_crtm_prof   /discover/nobackup/projects/lis/libs/CRTM_Profile_Utility/intel_18_0_3_222
+set   def_lis_cmem        /discover/nobackup/projects/lis/libs/LIS-MEM/intel_18_0_3_222
+set   def_lis_lapack      /discover/nobackup/projects/lis/libs/lapack/3.6.0_intel_14_0_3_174
+
+setenv   DEV_ENV         LISF_7_5_INTEL_2023_2_1_OPENMPI_5_0_0
+setenv   LIS_ARCH        linux_ifc
+setenv   LIS_SPMD        parallel
+setenv   LIS_FC          mpif90
+setenv   LIS_CC          mpicc
+setenv   LIS_RPC         $def_lis_rpc
+setenv   LIS_OPENJPEG    $def_lis_openjpeg
+setenv   LIS_ECCODES     $def_lis_eccodes
+setenv   LIS_NETCDF      $def_lis_netcdf
+setenv   LIS_HDF4        $def_lis_hdf4
+setenv   LIS_HDFEOS      $def_lis_hdfeos
+setenv   LIS_HDF5        $def_lis_hdf5
+setenv   LIS_MODESMF     $def_lis_modesmf
+setenv   LIS_LIBESMF     $def_lis_libesmf
+setenv   LIS_MINPACK     $def_lis_minpack
+setenv   LIS_CRTM        $def_lis_crtm
+setenv   LIS_CRTM_PROF   $def_lis_crtm_prof
+setenv   LIS_CMEM        $def_lis_cmem
+setenv   LIS_LAPACK      $def_lis_lapack
+setenv   LIS_PETSC       $def_lis_petsc
+
+setenv   LDT_ARCH        linux_ifc
+setenv   LDT_FC          mpif90
+setenv   LDT_CC          mpicc
+setenv   LDT_RPC         $def_lis_rpc
+setenv   LDT_OPENJPEG    $def_lis_openjpeg
+setenv   LDT_ECCODES     $def_lis_eccodes
+setenv   LDT_NETCDF      $def_lis_netcdf
+setenv   LDT_HDF4        $def_lis_hdf4
+setenv   LDT_HDFEOS      $def_lis_hdfeos
+setenv   LDT_HDF5        $def_lis_hdf5
+setenv   LDT_MODESMF     $def_lis_modesmf
+setenv   LDT_LIBESMF     $def_lis_libesmf
+setenv   LDT_GDAL        $def_lvt_gdal
+setenv   LDT_FORTRANGIS  $def_lvt_fortrangis
+setenv   LDT_LIBGEOTIFF  $def_ldt_libgeotiff
+
+
+setenv   LVT_ARCH        linux_ifc
+setenv   LVT_FC          mpif90
+setenv   LVT_CC          mpicc
+setenv   LVT_RPC         $def_lis_rpc
+setenv   LVT_OPENJPEG    $def_lis_openjpeg
+setenv   LVT_ECCODES     $def_lis_eccodes
+setenv   LVT_NETCDF      $def_lis_netcdf
+setenv   LVT_HDF4        $def_lis_hdf4
+setenv   LVT_HDFEOS      $def_lis_hdfeos
+setenv   LVT_HDF5        $def_lis_hdf5
+setenv   LVT_MODESMF     $def_lis_modesmf
+setenv   LVT_LIBESMF     $def_lis_libesmf
+setenv   LVT_GDAL        $def_lvt_gdal
+setenv   LVT_FORTRANGIS  $def_lvt_fortrangis
+
+
+prepend-path   LD_LIBRARY_PATH   "$def_lis_openjpeg/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_ldt_libgeotiff/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lvt_proj/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lvt_gdal/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf4/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_hdf5/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_libesmf"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_netcdf/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_eccodes/lib"
+prepend-path   LD_LIBRARY_PATH   "$def_lis_petsc/lib"
+prepend-path   PATH   "$def_lis_netcdf/bin:$def_lis_eccodes/bin"

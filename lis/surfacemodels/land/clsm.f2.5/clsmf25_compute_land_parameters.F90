@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -50,7 +50,6 @@ subroutine clsmf25_compute_land_parameters(nest)
     integer :: d2g
     integer :: dummy_int, k, month, m
     real :: z_in_m, term1, term2
-    character(300) :: filename
     
     write(LIS_logunit,*)"[INFO] Computing derived CLSM land surface parameters ..."
     write(LIS_logunit,*)

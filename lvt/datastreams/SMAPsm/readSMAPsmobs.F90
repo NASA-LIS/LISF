@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@ subroutine readSMAPsmobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_logMod
@@ -50,15 +51,14 @@ subroutine readSMAPsmobs(source)
 
   logical           :: alarmcheck, file_exists, readflag
   integer           :: iret
-  character*200     :: name
   real              :: smc(LVT_rc%lnc, LVT_rc%lnr)
   integer           :: fnd 
   character*8       :: yyyymmdd
   character*4       :: yyyy
   character*2       :: mm,dd,hh
-  character*200     :: list_files
+  character(len=LVT_CONST_PATH_LEN) :: list_files
   integer           :: ftn,ierr
-  character*200     :: fname
+  character(len=LVT_CONST_PATH_LEN) :: fname
   integer           :: mn_ind
   integer           :: yr, mo, da, hr, mn, ss
   real              :: gmt

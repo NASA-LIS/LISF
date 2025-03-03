@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,8 @@ module preprocMod
   public :: ParamProcInit
   public :: paramProcWrite
   public :: LVT_verify
+
+  integer, parameter, public :: LVT_CONST_PATH_LEN = ESMF_MAXPATHLEN
 
   type lvtrcdec
 
@@ -71,8 +73,8 @@ module preprocMod
      character*50,  allocatable :: mask_type(:)
 
 ! -- Parameter filepath names:
-     character*140, allocatable :: mfile(:)
-     character*140, allocatable :: vfile(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: mfile(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: vfile(:)
      integer,       allocatable :: vfile_form(:)
 
      integer                :: bareclass 
@@ -113,7 +115,7 @@ module preprocMod
 
 !- LSM-specific parameters:
   type, public :: lsmparam_type_dec
-     character*100 :: param_filename
+     character(len=LVT_CONST_PATH_LEN) :: param_filename
      
      type(LVT_paramEntry) :: landmask
      type(LVT_paramEntry) :: landcover

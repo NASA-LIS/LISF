@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -109,9 +109,15 @@ def gather_ensemble_info(nmme_model):
         ens_num=10
     elif nmme_model == "CCM4":
         ens_num=10
+    elif nmme_model == "CanESM5":
+        ens_num=20
     elif nmme_model == "GNEMO5":
         ens_num=10
+    elif nmme_model == "GNEMO52":
+        ens_num=20
     elif nmme_model == "CCSM4":
+        ens_num=10
+    elif nmme_model == "CESM1":
         ens_num=10
     elif nmme_model == "GFDL":
         ens_num=30

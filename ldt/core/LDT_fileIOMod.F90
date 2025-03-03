@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -105,7 +105,8 @@ contains
 !
 ! !INTERFACE:
 subroutine LDT_create_output_directory(mname,dir_name)
-! !USES:
+  ! !USES:
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
    use LDT_coreMod, only : LDT_rc
    use LDT_logMod,  only : LDT_log_msg
    implicit none 
@@ -145,7 +146,7 @@ subroutine LDT_create_output_directory(mname,dir_name)
 !EOP
    character(len=4) :: cdate
    character(len=8) :: cdate1
-   character(len=200) :: out_dname
+   character(len=LDT_CONST_PATH_LEN) :: out_dname
    integer            :: try,ios
 #if (!defined AIX )
    integer            :: system 
@@ -156,7 +157,7 @@ subroutine LDT_create_output_directory(mname,dir_name)
    ! standard POSIX function. This requires defining the C wrapper function,
    ! and specifying new variables to pass to said C function.
    integer, external :: LDT_create_subdirs 
-   character(len=201) :: c_string  
+   character(len=LDT_CONST_PATH_LEN) :: c_string  
 
    if(LDT_rc%wstyle.eq."4 level hierarchy") then 
 
@@ -544,6 +545,7 @@ subroutine LDT_create_output_filename(n, fname, model_name, odir, writeint)
 subroutine LDT_create_stats_filename(n, fname, mname, style)
 
 ! !USES:
+   use LDT_constantsMod, only:  LDT_CONST_PATH_LEN
    use LDT_coreMod,  only : LDT_rc
   
    implicit none 
@@ -571,7 +573,7 @@ subroutine LDT_create_stats_filename(n, fname, mname, style)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LDT_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
    integer            :: style_temp 
 
@@ -606,6 +608,7 @@ subroutine LDT_create_stats_filename(n, fname, mname, style)
 ! !INTERFACE:
 subroutine LDT_create_daobs_filename(n, fname)
 ! !USES:
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
    use LDT_coreMod,  only : LDT_rc
   
    implicit none 
@@ -631,7 +634,7 @@ subroutine LDT_create_daobs_filename(n, fname)
 ! 
 !
 !EOP
-   character(len=200) :: out_fname
+   character(len=LDT_CONST_PATH_LEN) :: out_fname
    character*100      :: cdate
    integer            :: style_temp 
 
@@ -1659,6 +1662,7 @@ end subroutine readldtparam_real_2d
  subroutine create_restart_filename_withtime(n, rootdir,dir_name,model_name,&
       yr,mo,da,hr,mn,ss, wstyle, wformat,fname)
 ! !USES:
+   use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
    implicit none 
 ! !ARGUMENTS:
@@ -1695,8 +1699,8 @@ end subroutine readldtparam_real_2d
 !EOP
    character(len=10)        :: cdate
    character(len=12)        :: cdate1
-   character(len=100)       :: dname
-   character(len=200)       :: out_fname
+   character(len=LDT_CONST_PATH_LEN) :: dname
+   character(len=LDT_CONST_PATH_LEN) :: out_fname
 
 
    if(wstyle.eq."4 level hierarchy") then 

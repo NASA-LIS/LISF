@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ subroutine readGHCNObs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod
   use LVT_histDataMod
   use LVT_timeMgrMod
@@ -55,7 +56,7 @@ subroutine readGHCNObs(source)
   integer                 :: stn_col, stn_row
   real                    :: col, row
   real                    :: offset  
-  character*100           :: ghcnname
+  character(len=LVT_CONST_PATH_LEN) :: ghcnname
   type(ESMF_TimeInterval) :: dayInterval
   type(ESMF_Time)         :: startTime, initTime
   type(ESMF_Time)         :: ghcntime1, ghcntime2

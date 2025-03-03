@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,7 +15,8 @@
 ! !INTERFACE:
 module LVT_optUEMod
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -36,6 +37,7 @@ module LVT_optUEMod
 ! 
 !EOP
 !BOP
+
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -49,14 +51,14 @@ module LVT_optUEMod
   type, public ::  optuectl
      integer                :: optueAlg
      character*10           :: algname
-     character*100          :: decspaceAttribsFile
+     character(len=LVT_CONST_PATH_LEN) :: decspaceAttribsFile
      integer                :: maxIter
      integer                :: nparam
      integer                :: nparam_total
      integer                :: computeTS
      integer                :: ntslocs
      integer                :: tsspecstyle
-     character*100          :: tsspecfile
+     character(len=LVT_CONST_PATH_LEN) :: tsspecfile
      character*40,  allocatable :: vname(:)
      real,   allocatable        :: fitness(:,:)
      real,   allocatable        :: avgfitness(:,:)
@@ -77,9 +79,9 @@ module LVT_optUEMod
      integer      :: ts_tindex
      integer,       allocatable :: ftn_ts_loc(:)
      character*40           :: tslocname
-     character*100, allocatable :: tslocfile(:)
+     character(len=LVT_CONST_PATH_LEN), allocatable :: tslocfile(:)
      integer                :: ftn_ts_fitloc
-     character*100          :: tsloc_fitfile
+     character(len=LVT_CONST_PATH_LEN) :: tsloc_fitfile
   end type optue_ts_struc
 
   type(optuectl)                   :: LVT_optuectl
@@ -339,7 +341,8 @@ contains
 ! !INTERFACE: 
   subroutine LVT_readoptUEdata(iterNo)
 ! 
-! !USES:   
+    ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod
     use LVT_logMod
 
@@ -370,7 +373,7 @@ contains
 !EOP
     integer :: ftn
     integer :: t, iter_f
-    character*100 :: filen
+    character(len=LVT_CONST_PATH_LEN) :: filen
     real    :: dummy(LVT_LIS_rc(1)%lnc, LVT_LIS_rc(1)%lnr)
 
 

@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.5
+!
+! Copyright (c) 2024 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 ! ROUTINE: USAF_getpcpcobs
 !
 ! REVISION HISTORY:
@@ -16,6 +25,7 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
   ! Imports
   use AGRMET_forcingMod, only: agrmet_struc
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod, only: LIS_rc
   use LIS_logMod, only: LIS_logunit
   use LIS_timeMgrMod, only: LIS_tick, LIS_julhr_date
@@ -41,10 +51,10 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
   integer :: j3hr
   integer :: k
   integer :: yr, mo, da, hr
-  character*255 :: preobsdir
+  character(len=LIS_CONST_PATH_LEN) :: preobsdir
   character*8 :: yyyymmdd
   character*10 :: yyyymmddhh
-  character*255 :: presav_filename
+  character(len=LIS_CONST_PATH_LEN) :: presav_filename
   logical :: file_exists
   type(USAF_Gages_t) :: obscur
 
@@ -73,7 +83,7 @@ subroutine USAF_getpcpobs(n, j6hr, month, use_twelve, pcp_src, &
 
      ! Read appropriate preobs file(s), intercompare with older presav2
      ! files, and create new presav2 file for current date/time.
-     call USAF_read_preobs(preobsdir, &
+     call USAF_read_preobs(n, preobsdir, &
           trim(agrmet_struc(n)%analysisdir), &
           agrmet_struc(n)%use_timestamp, yr, mo, da, hr, &
           use_expanded_station_ids, alert_number)

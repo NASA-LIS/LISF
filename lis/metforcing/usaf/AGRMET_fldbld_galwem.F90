@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,7 +24,8 @@
 ! 21 Feb 2020  Added support for 10-km GALWEM.............Eric Kemp/GSFC
 ! !INTERFACE:    
 subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
-! !USES: 
+  ! !USES:
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_verify
   use LIS_timeMgrMod,    only : LIS_julhr_date
@@ -49,9 +50,8 @@ subroutine AGRMET_fldbld_galwem(n,order,julhr,rc)
 !
 !EOP
   integer                 :: ftn, igrib
-  character*120           :: gribfile
+  character(len=LIS_CONST_PATH_LEN) :: gribfile
   integer                 :: yr1, mo1, da1, hr1
-  character*255           :: message     ( 20 )
   integer                 :: iginfo      ( 40 )
   real                    :: gridres_dlat, gridres_dlon
   integer                 :: ifguess, jfguess
@@ -358,7 +358,6 @@ subroutine AGRMET_getGALWEMfilename(filename,rootdir,dir,use_timestamp, &
   character(3) :: fchr
   
   character(len=54) :: fname1
-  character(len=20) :: fname2
 
   write (UNIT=fhr, FMT='(i2.2)') hr
   write (UNIT=fchr, FMT='(i3.3)') fc_hr
@@ -414,7 +413,8 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
                                      agr_tmp_sfc, agr_hgt_sfc, agr_rh_sfc, &
                                      agr_wspd_sfc,                         &
                                      agr_pres_sfc,rc)
-! !USES:
+  ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_coreMod, only : LIS_rc
   use LIS_logMod,  only : LIS_logunit, LIS_abort, LIS_alert, LIS_verify
 
@@ -448,7 +448,7 @@ subroutine AGRMET_fldbld_read_galwem(n, fg_filename, ifguess, jfguess,     &
 !     
 !EOP
   character*9                   :: cstat
-  character*255                 :: message     ( 20 )
+  character(len=LIS_CONST_PATH_LEN) :: message     ( 20 )
   character(len=4)              :: grib_msg
   character(len=4)              :: AGRMET_check_galwem_message
   integer                       :: count_hgt

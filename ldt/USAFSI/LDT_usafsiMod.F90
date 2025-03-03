@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -11,6 +11,8 @@
 #include "LDT_NetCDF_inc.h"
 
 module LDT_usafsiMod
+
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
 
   ! Defaults
   implicit none
@@ -25,18 +27,18 @@ module LDT_usafsiMod
   type, public :: usafsi_t
      ! Former environment variables
      character*10  :: date10
-     character*255 :: fracdir
-     character*255 :: modif
+     character(len=LDT_CONST_PATH_LEN) :: fracdir
+     character(len=LDT_CONST_PATH_LEN) :: modif
      integer :: sfcobsfmt ! EMK 20230727
-     character*255 :: sfcobs
-     character*255 :: ssmis
-     character*255 :: gmi    !kyh20201118
-     character*255 :: amsr2  !kyh20201217
-     character*255 :: stmpdir
-     character*255 :: sstdir ! EMK 20220113
-     character*255 :: static
-     character*255 :: unmod
-     character*255 :: viirsdir
+     character(len=LDT_CONST_PATH_LEN) :: sfcobs
+     character(len=LDT_CONST_PATH_LEN) :: ssmis
+     character(len=LDT_CONST_PATH_LEN) :: gmi    !kyh20201118
+     character(len=LDT_CONST_PATH_LEN) :: amsr2  !kyh20201217
+     character(len=LDT_CONST_PATH_LEN) :: stmpdir
+     character(len=LDT_CONST_PATH_LEN) :: sstdir ! EMK 20220113
+     character(len=LDT_CONST_PATH_LEN) :: static
+     character(len=LDT_CONST_PATH_LEN) :: unmod
+     character(len=LDT_CONST_PATH_LEN) :: viirsdir
 
      ! Former namelist variables
      real :: clmadj
@@ -62,11 +64,11 @@ module LDT_usafsiMod
 
      ! option for PMW snow depth retrieval algorithms
      integer       :: ssmis_option
-     character*255 :: ssmis_raw_dir
-     character*255 :: gmi_raw_dir        !kyh20201118
-     character*255 :: amsr2_raw_dir      !kyh20201217
-     character*255 :: ff_file
-     character*255 :: fd_file            !kyh20210113
+     character(len=LDT_CONST_PATH_LEN) :: ssmis_raw_dir
+     character(len=LDT_CONST_PATH_LEN) :: gmi_raw_dir        !kyh20201118
+     character(len=LDT_CONST_PATH_LEN) :: amsr2_raw_dir      !kyh20201217
+     character(len=LDT_CONST_PATH_LEN) :: ff_file
+     character(len=LDT_CONST_PATH_LEN) :: fd_file            !kyh20210113
 
      ! Bratseth settings
      real :: ob_err_var
@@ -78,15 +80,18 @@ module LDT_usafsiMod
 
      ! Other new settings
      real :: fill_climo
-     character*255 :: gofs_sst_dir
-     character*255 :: gofs_cice_dir
-     character*255 :: lis_grib2_dir
+     character(len=LDT_CONST_PATH_LEN) :: source_of_ocean_data ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: gofs_sst_dir
+     character(len=LDT_CONST_PATH_LEN) :: gofs_cice_dir
+     character(len=LDT_CONST_PATH_LEN) :: espcd_sst_dir  ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: espcd_cice_dir ! EMK 20240718
+     character(len=LDT_CONST_PATH_LEN) :: lis_grib2_dir
      character*20 :: security_class
      character*20 :: data_category
      character*20 :: data_res
      character*20 :: area_of_data
-     character*255 :: galwem_root_dir
-     character*255 :: galwem_sub_dir
+     character(len=LDT_CONST_PATH_LEN) :: galwem_root_dir
+     character(len=LDT_CONST_PATH_LEN) :: galwem_sub_dir
      integer :: use_timestamp
      integer :: galwem_res
 
@@ -107,7 +112,7 @@ contains
     ! Imports
     use ESMF
     use LDT_coreMod, only: LDT_config
-    use LDT_logMod, only: LDT_verify
+    use LDT_logMod, only: LDT_verify, LDT_logunit, LDT_endrun
 
     ! Defaults
     implicit none
@@ -507,23 +512,64 @@ contains
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    ! Get gofs_sst_dir
-    cfg_entry = "USAFSI GOFS SST data directory:"
+    ! EMK 20240718...Specify source of ocean data.
+    cfg_entry = "USAFSI source of ocean data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%gofs_sst_dir, &
+         usafsi_settings%source_of_ocean_data, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (usafsi_settings%source_of_ocean_data .ne. "GOFS" .and. &
+         usafsi_settings%source_of_ocean_data .ne. "ESPC-D") then
+       write(LDT_logunit,*)'[ERR] Unrecognized source of ocean data'
+       write(LDT_logunit,*)'[ERR] Must be GOFS or ESPC-D'
+       write(LDT_logunit,*) &
+            "[ERR] Update entry for 'USAFSI source of ocean data:'"
+       write(LDT_logunit,*)'[ERR] LDT will halt.'
+       call LDT_endrun()
+    end if
 
-    ! Get gofs_cice_dir
-    cfg_entry = "USAFSI GOFS CICE data directory:"
-    call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%gofs_cice_dir, &
-         rc=rc)
-    call LDT_verify(rc, trim(cfg_entry)//" not specified")
+    if (usafsi_settings%source_of_ocean_data == "GOFS") then
+       ! Get gofs_sst_dir
+       cfg_entry = "USAFSI GOFS SST data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%gofs_sst_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+       ! Get gofs_cice_dir
+       cfg_entry = "USAFSI GOFS CICE data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%gofs_cice_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    else if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+
+       ! Get espcd_sst_dir
+       cfg_entry = "USAFSI ESPC-D SST data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%espcd_sst_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+       ! Get espcd_cice_dir
+       cfg_entry = "USAFSI ESPC-D CICE data directory:"
+       call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+       call ESMF_ConfigGetAttribute(LDT_config, &
+            usafsi_settings%espcd_cice_dir, &
+            rc=rc)
+       call LDT_verify(rc, trim(cfg_entry)//" not specified")
+
+    end if
 
     ! Get lis_grib2_dir
     cfg_entry = "USAFSI LIS GRIB2 data directory:"

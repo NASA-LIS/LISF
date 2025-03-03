@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -270,7 +270,6 @@ subroutine era5files(n, kk, findex, era5dir, yr, mo, da, fname)
   character*4  :: cyear
   character*2  :: cmonth
   character*8  :: cdate
-  character*20 :: dir
   integer      :: hr, mn, ss
   real*8       :: time
   integer      :: doy

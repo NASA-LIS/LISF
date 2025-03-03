@@ -3,10 +3,10 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
-!-------------------------END NOTICE -- DO NOT EDIT----------------------
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
 !
@@ -20,6 +20,7 @@
 subroutine readGEOSTEFFObs(n)
 ! !USES:
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_DAobsDataMod
@@ -39,7 +40,7 @@ subroutine readGEOSTEFFObs(n)
 
   logical           :: file_exists
   integer           :: c,r
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   real              :: tsoil01obs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: tsoil02obs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
   real              :: kk, cc_6am, cc_6pm    !parameters for calculating effective soil temperature

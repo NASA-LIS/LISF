@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -230,6 +230,8 @@ contains
 
   subroutine forcingClimo_output(pass)
 
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     integer :: n
     integer :: pass
 
@@ -237,7 +239,7 @@ contains
     character*3       :: cdoy
     integer           :: ftn
     integer           :: iret
-    character*100     :: outfile
+    character(len=LDT_CONST_PATH_LEN) :: outfile
 
     n = 1
     if(LDT_masterproc) then

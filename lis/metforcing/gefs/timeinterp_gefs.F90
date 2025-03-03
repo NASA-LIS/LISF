@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -76,7 +76,7 @@ subroutine timeinterp_gefs(n,findex)
   call LIS_time2date(btime,bdoy,gmt2,byr,bmo,bda,bhr,bmn)
 
   
- !== Interpolate data in time      
+  !== Interpolate data in time
 
   ! Check if bookend times differ, else stop ...
   if( (gefs_struc(n)%fcsttime2-gefs_struc(n)%fcsttime1)==0 ) then
@@ -130,7 +130,6 @@ subroutine timeinterp_gefs(n,findex)
   call ESMF_FieldGet(swdField,localDE=0,farrayPtr=swd,rc=status)
   call LIS_verify(status)
 
-  zdoy=LIS_rc%doy
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,gefs_struc(n)%max_ens_members
         do k=1,mfactor
@@ -138,6 +137,7 @@ subroutine timeinterp_gefs(n,findex)
            index1 = LIS_domain(n)%tile(tid)%index 
 
            ! Compute and apply zenith angle weights
+           zdoy=LIS_rc%doy
            call zterp( 0, LIS_domain(n)%grid(index1)%lat,   &
                 LIS_domain(n)%grid(index1)%lon, gmt1, gmt2, & 
                 LIS_rc%gmt,zdoy,zw1,zw2,czb,cze,czm,LIS_rc )

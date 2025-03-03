@@ -2,7 +2,7 @@
 [[sec-intro]]
 == Introduction
 
-This is the Users`' Guide for Land surface Verification Toolkit (LVT; <<kumar_etal_gmd_2012>>).
+This is the Users Guide for Land surface Verification Toolkit (LVT; <<kumar_etal_gmd_2012>>).
 This document describes how to download and install the LVT software.  It also describes LVT`'s run-time configuration options (the _lvt.config_ file).
 
 This document consists of 9 sections, described as follows:
@@ -37,10 +37,13 @@ This document consists of 9 sections, described as follows:
 === What's New
 //\attention{See \file{RELEASE\_NOTES} found in the \file{source.tar.gz} file for more details.  (See Section~\ref{sec-obtain-src}.)}
 
-//==== Version 7.5
-//. utils
-//* s2smetric/
-//* s2spost/
+==== Version 7.5
+
+. Supports additional data streams
+* COAMPS forcing data (COAMPSout)
+* GRUN runoff data (GRUNrunoff)
+* GPM IMERG Monthly precipitation data (IMERG_monthly)
+* Operational enhanced SMAP soil moisture retrieval data (SMAP_E_OPL)
 
 ==== Version 7.4
 

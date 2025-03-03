@@ -3,7 +3,7 @@
 ! Land Information System Framework (LISF)
 ! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +20,7 @@
 subroutine readSMAPEOPL_SMObs(n)
 ! !USES: 
   use ESMF
+  use LDT_constantsMod, only: LDT_CONST_PATH_LEN
   use LDT_coreMod
   use LDT_logMod
   use LDT_timeMgrMod
@@ -39,14 +40,14 @@ subroutine readSMAPEOPL_SMObs(n)
 
   real*8            :: timenow
   real              :: smobs(LDT_rc%lnc(n)*LDT_rc%lnr(n))
-  character*100     :: fname
+  character(len=LDT_CONST_PATH_LEN) :: fname
   integer           :: mn_ind
   integer           :: mn, ss
   integer           :: doy
   character*8       :: yyyymmdd
   character*2       :: hh
-  character*200     :: list_files
-  character*100     :: smap_filename(10)
+  character(len=LDT_CONST_PATH_LEN) :: list_files
+  character(len=LDT_CONST_PATH_LEN) :: smap_filename(10)
   integer           :: i
   integer           :: ftn, ierr
   real              :: gmt

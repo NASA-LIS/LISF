@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ subroutine readUSGSGWwellobs(source)
 ! 
 ! !USES:   
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_histDataMod
   use LVT_logMod,     only : LVT_logunit, LVT_getNextUnitNumber, &
@@ -57,7 +58,7 @@ subroutine readUSGSGWwellobs(source)
   integer                :: i,j,t,c,r,jj
   integer                :: stn_col, stn_row
   real                   :: col,row
-  character*100          :: usgsgwwellfilename
+  character(len=LVT_CONST_PATH_LEN) :: usgsgwwellfilename
   logical                :: file_exists
   logical                :: readflag
   integer                :: ftn, ios,ios1

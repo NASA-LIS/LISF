@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@
 ! 
 ! !USES: 
 subroutine readLISrunoffdata(n,surface_runoff, baseflow)
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
   use LISrunoffdataMod
@@ -59,7 +60,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   logical*1             :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real                  :: var_out(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer               :: ios, nid,qsid,qsbid,evapid
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   logical               :: file_exists
   logical               :: check_Flag
   !create LIS filename

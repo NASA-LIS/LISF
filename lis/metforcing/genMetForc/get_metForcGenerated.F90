@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -142,7 +142,7 @@ subroutine get_metForcGenerated(n, findex)
         LIS_rc%rstflag(n) == 1 ) then
       LIS_rc%rstflag(n) = 0
       retrieve_file2 = .true.
-      write(LIS_logunit,*)" [ERR] Currently Forcing 1 File is NOT opened in first timestep ..."
+      write(LIS_logunit,*)" [INFO] Forcing 1 file is NOT opened in first timestep ..."
    endif
 
 !- Retrieve LDT-generated Forcing File 2:

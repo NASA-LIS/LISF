@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +21,7 @@
 ! !INTERFACE:
 subroutine AGRMET_readpcpcntm(n)
 ! !USES: 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod,       only : LIS_rc, LIS_ews_halo_ind, LIS_ewe_halo_ind,&
                                 LIS_nss_halo_ind, LIS_nse_halo_ind, LIS_localPet
   use LIS_logMod,        only : LIS_logunit, LIS_abort, LIS_endrun, &
@@ -51,8 +52,8 @@ subroutine AGRMET_readpcpcntm(n)
 !EOP
 
   logical       :: exists
-  character*100 :: name
-  character*255 :: message(20)
+  character(len=LIS_CONST_PATH_LEN) :: name
+  character(len=LIS_CONST_PATH_LEN) :: message(20)
   integer       :: ftn
   real          :: data_in(LIS_rc%gnc(n), LIS_rc%gnr(n))
   integer       :: istat

@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,24 +18,25 @@
 # PURPOSE: writes batch job script
 #
 # REVISION HISTORY:
-# 7 Mar 2022: Sarith Mahanama, first version
+#  7 Mar 2022: Sarith Mahanama, first version
+# 22 Oct 2024: K. Arsenault, updated to account for srun submissions on discover
 #
 #------------------------------------------------------------------------------
 """
-
 
 import glob
 import os
 import platform
 import re
 import datetime
+import math
 import numpy as np
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
 
 def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command = None,
-               command2 = None, command_list = None):
+               command2 = None, command_list = None, group_jobs=None):
     ''' writes SLURM job script '''
     if in_command is None:
         this_command = 'COMMAND'
@@ -63,20 +64,31 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
-        _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        _f.write('#SBATCH --nodes=1' + '\n')
+        _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
+            if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                _f.write('#SBATCH --partition=packable'  + '\n')
+            if group_jobs:
+                mpc = min(math.ceil(480 / ntasks), 100)
+                _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+            else:
+                _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
+
         else:
-#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
+
         _f.write('#SBATCH --job-name=' + job_name + '\n')
         _f.write('#SBATCH --output ' + cwd + '/' + job_name + '%j.out' + '\n')
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
-        _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        _f.write('#                  Run LISF S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
@@ -92,12 +104,17 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
 
-        if  command_list is None:
-            _f.write( this_command + ' || exit 1' + '\n')
-            _f.write( sec_command + '\n')
+        if command_list is None and group_jobs is None:
+            _f.write(f"{this_command} || exit 1\n")
+            _f.write(f"{sec_command}\n")
         else:
-            for this_command in command_list:
-                _f.write( this_command + '\n')
+            if group_jobs:
+                for cmd in group_jobs:
+                    _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
+                _f.write("wait\n")
+            if command_list:
+                for cmd in command_list:
+                    _f.write(f"{cmd}\n")
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
@@ -125,7 +142,7 @@ def print_status_report (e2es, yyyymm):
                     if (not re.search(pattern_not1, line)) and (not re.search(pattern_not2, line)):
                         _l2 = [int(x) for x in line.split(":")[1:4]]
                 if re.search(pattern_sbu, line):
-                    sbu = np.float (line.split(":")[1])
+                    sbu = float (line.split(":")[1])
         file.close()
         print ('{:>3}/{:>3}  {:<35}{:>2}h {:>2}m {:>2}s'.format
                (this_no,nfiles,job_file,_l2[0],_l2[1],_l2[2]))
@@ -173,7 +190,8 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         this_command = in_command
     if hours is None:
         if 'discover' in platform.node() or 'borg' in platform.node():
-            thours ='7:15:00'
+            thours ='7:00:00'
+#            thours ='8:15:00'
         else:
             thours ='6:00:00'
     else:
@@ -201,18 +219,30 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
         _f.write('#SBATCH --time=' + thours + '\n')
+
+        # Slurm constaint entry:
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
         else:
-#            _f.write('#SBATCH --cluster-constraint=green' + '\n')
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
             _f.write('#SBATCH --partition=batch' + '\n')
+            _f.write('#SBATCH --exclusive' + '\n')
+            _f.write('#SBATCH --mem=0' + '\n')
+
+        # Assign ntasks based on hindcast | forecast LISF step:
         if datatype == 'hindcast':
-            _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+            if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                _f.write('#SBATCH --ntasks=' + ntasks + ' --ntasks-per-socket=48 --ntasks-per-core=1' + '\n')
+            else:
+                _f.write('#SBATCH --ntasks=' + ntasks + '\n')
+        # Forecast runmode (and LIS DA run setup):
         else:
             if domain == 'GLOBAL':
-                _f.write('#SBATCH  -N 12' + '\n')
-                _f.write('#SBATCH --ntasks-per-node=24' + '\n')
+                if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                    _f.write('#SBATCH --ntasks=' + ntasks + ' --ntasks-per-socket=48 --ntasks-per-core=1' + '\n')
+                else:
+                    _f.write('#SBATCH  -N 12' + '\n')
+                    _f.write('#SBATCH --ntasks-per-node=24' + '\n')
             else:
                 _f.write('#SBATCH  -N 1' + '\n')
                 _f.write('#SBATCH --ntasks-per-node='+ ntasks + '\n')
@@ -222,14 +252,18 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('#SBATCH --error ' + cwd + '/' + job_name + '%j.err' + '\n')
         _f.write('\n')
         _f.write('#######################################################################' + '\n')
-        _f.write('#                  Run LIS-Hydro S2S ' + job_name + '\n')
+        _f.write('#                  Run LISF S2S ' + job_name + '\n')
         _f.write('#######################################################################' + '\n')
         _f.write('\n')
+
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('source /etc/profile.d/modules.sh' + '\n')
             _f.write('module purge' + '\n')
         if os.path.isfile(lisf + '/env/discover/' + lisf_module):
-            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+# KRA TESTING:
+#            _f.write('module use -a ' + lisf + '/env/discover/' + '\n')
+            _f.write('unset LD_LIBRARY_PATH' + '\n')
+            _f.write('module use --append ' + lisf + '/env/discover/' + '\n')
             _f.write('module --ignore-cache load ' + lisf_module + '\n')
         else:
             _f.write('module use -a ' + supd + '/env/' + '\n')
@@ -237,7 +271,22 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('cd ' + cwd + '\n')
-        _f.write( this_command + ' || exit 1' + '\n')
+
+        if 'mil' in cfg['SETUP']['CONSTRAINT']:
+            _f.write('export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so' + '\n')
+            _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
+            _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
+            _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
+            _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
+            _f.write('     --cpu-bind="none"  \\' + '\n')
+            # Separate out LIS DA run from LIS fcst run:
+            if job_name == "lisda_":
+                _f.write('     ' + this_command + ' || exit 1' + '\n')
+            else:
+                _f.write('     ./LIS -f ' + this_command + ' || exit 1' + '\n')
+        else:
+            _f.write( this_command + ' || exit 1' + '\n')
+
         _f.write('\n')
         _f.write('echo "[INFO] Completed ' + job_name + '!"' + '\n')
         _f.write('\n')
@@ -256,8 +305,8 @@ def get_domain_info (s2s_configfile, extent=None, coord=None):
     if extent is not None:
         lon = np.array(ldt['lon'])
         lat = np.array(ldt['lat'])
-        return np.int(np.floor(np.min(lat[:,0]))), np.int(np.ceil(np.max(lat[:,0]))), \
-            np.int(np.floor(np.min(lon[0,:]))), np.int(np.ceil(np.max(lon[0,:])))
+        return int(np.floor(np.min(lat[:,0]))), int(np.ceil(np.max(lat[:,0]))), \
+            int(np.floor(np.min(lon[0,:]))), int(np.ceil(np.max(lon[0,:])))
 
     if coord is not None:
         lon = np.array(ldt['lon'])
@@ -277,9 +326,7 @@ def tiff_to_da(file):
     crs = dataset.crs
     x_coords = dataset.bounds.left + transform[0] * np.arange(dataset.width)
     y_coords = dataset.bounds.top + transform[4] * np.arange(dataset.height)
-    
+
     # Create an xarray DataArray
     da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
-    
     return da
-

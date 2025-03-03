@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.4
+# Version 7.5
 #
-# Copyright (c) 2022 United States Government as represented by the
+# Copyright (c) 2024 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,9 @@
 #  Removed basemap call and added xarray and xesmf
 #  module calls
 #  Date: Nov 07, 2022
+# Updated: K.R. Arsenault
+#  Implemented latest NMME models (valid Aug-2024)
+#  Date: Sep 17, 2024 
 """
 
 from datetime import datetime
@@ -84,7 +87,11 @@ with open(CONFIGFILE, 'r', encoding="utf-8") as file:
     config = yaml.safe_load(file)
 LEAD_MONS = config['EXP']['lead_months']
 
-MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
+# Note: These lines should become connected to the s2s_config file and not specified
+#        directly in this routine.
+#MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC3', 'COLA-RSMAS-CCSM4', 'GFDL-SPEAR']
+MODEL = ['NCEP-CFSv2', 'NASA-GEOSS2S', 'CanSIPS-IC4', 'COLA-RSMAS-CESM1', 'GFDL-SPEAR']
+###
 MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', \
        'Sep', 'Oct', 'Nov', 'Dec']
 MONTH = ['jan01', 'feb01', 'mar01', 'apr01', 'may01', 'jun01', 'jul01', \
@@ -136,6 +143,7 @@ elif NMME_MODEL == 'GEOSv2':
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
     x = read_nc_files(INFILE, 'prec')
     XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+# Former ECCC models (upto Aug-2024):
 elif NMME_MODEL == 'CCM4':
     MODEL = 'CanSIPS-IC3'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
@@ -148,8 +156,30 @@ elif NMME_MODEL == 'GNEMO5':
     x = read_nc_files(INFILE, 'prec')
     x1 = np.moveaxis(x, 1, 2)
     XPREC = x1[:,0:LEAD_MONS,0:10,:,:]
+# New ECCC models (as of Aug-2024):
+elif NMME_MODEL == 'CanESM5':
+    MODEL = 'CanSIPS-IC4'
+    MODEL2 = 'CanESM5'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL2, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC = x1[:,0:LEAD_MONS,0:10,:,:]
+elif NMME_MODEL == 'GNEMO52':
+    MODEL = 'CanSIPS-IC4'
+    MODEL2 = 'GEM5.2-NEMO'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL2, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    x1 = np.moveaxis(x, 1, 2)
+    XPREC = x1[:,0:LEAD_MONS,0:10,:,:]
+# Former COLA-RSMAS model (as of Aug-2024):
 elif NMME_MODEL == 'CCSM4':
     MODEL = 'COLA-RSMAS-CCSM4'
+    INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
+    x = read_nc_files(INFILE, 'prec')
+    XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]
+# New COLA-RSMAS model (as of Aug-2024):
+elif NMME_MODEL == 'CESM1':
+    MODEL = 'COLA-RSMAS-CESM1'
     INFILE = INFILE_TEMP.format(NMME_DOWNLOAD_DIR, MODEL, MODEL, MON[MM], CYR)
     x = read_nc_files(INFILE, 'prec')
     XPREC = x[:, 0:LEAD_MONS, 0:ENS_NUM, :, :]

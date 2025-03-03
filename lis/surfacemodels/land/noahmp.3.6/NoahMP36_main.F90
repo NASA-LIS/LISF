@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@
 ! !INTERFACE:
 subroutine NoahMP36_main(n)
 ! !USES:
+    use LIS_constantsMod, only: LIS_CONST_PATH_LEN
     use LIS_coreMod
     use LIS_histDataMod
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
@@ -60,10 +61,10 @@ subroutine NoahMP36_main(n)
 !EOP
 
 ! define variables for NoahMP36
-    character(len=256)   :: tmp_landuse_tbl_name   ! Noah model landuse parameter table [-]
-    character(len=256)   :: tmp_soil_tbl_name      ! Noah model soil parameter table [-]
-    character(len=256)   :: tmp_gen_tbl_name       ! Noah model general parameter table [-]
-    character(len=256)   :: tmp_noahmp_tbl_name    ! NoahMP parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_landuse_tbl_name   ! Noah model landuse parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_soil_tbl_name      ! Noah model soil parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_gen_tbl_name       ! Noah model general parameter table [-]
+    character(len=LIS_CONST_PATH_LEN) :: tmp_noahmp_tbl_name    ! NoahMP parameter table [-]
     character(len=256)   :: tmp_landuse_scheme_name ! landuse classification scheme [-]
     character(len=256)   :: tmp_soil_scheme_name   ! soil classification scheme [-]
     integer              :: tmp_dveg_opt           ! vegetation model [-]

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,12 +18,6 @@
 subroutine write_AmerifluxObs(Obj_Space)
 ! !USES: 
   use ESMF
-  use LIS_coreMod,  only : LIS_rc, LIS_masterproc
-  use LIS_logMod,     only : LIS_logunit, LIS_verify, &
-       LIS_getNextUnitNumber, LIS_releaseUnitNumber
-  use LIS_fileIOMod,      only : LIS_create_output_directory
-  use LIS_historyMod,     only : LIS_writevar_gridded
-  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -41,46 +35,7 @@ subroutine write_AmerifluxObs(Obj_Space)
 !  \end{description}
 !
 !EOP
-  real,    allocatable    :: obsl(:)
-  type(ESMF_Field)    :: smField
-  type(ESMF_Logical)  :: data_update
-  character(len=LIS_CONST_PATH_LEN) :: obsname
-  integer             :: status
-  integer             :: ftn
-  integer             :: n 
 
-#if 0 
-  n = 1
-
-  call ESMF_AttributeGet(Obj_Space,"Data Update Status",&
-       data_update, rc=status)
-  call LIS_verify(status)
-
-  if(data_update.eq..true.) then 
-     
-     call ESMF_StateGet(Obj_Space,"PBMR soil moisture",smField,&
-          rc=status)
-     call LIS_verify(status)
-
-     call ESMF_FieldGet(smField, localDE=0,farrayPtr=obsl,rc=status)
-     call LIS_verify(status)
-
-     if(LIS_masterproc) then 
-        ftn = LIS_getNextUnitNumber()
-        call Amerifluxobs_filename(obsname)
-
-        call LIS_create_output_directory('PEOBS') 
-        open(ftn,file=trim(obsname), form='unformatted')
-     endif
-     
-     call LIS_writevar_gridded(ftn, n, obsl)
-     
-     if(LIS_masterproc) then 
-        call LIS_releaseUnitNumber(ftn)
-     endif
-
-  endif
-#endif
 end subroutine write_AmerifluxObs
 
 !BOP

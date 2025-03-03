@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,7 +16,8 @@
 ! !INTERFACE:
 subroutine readMODSCAGobs(source)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,    only : LVT_rc, LVT_domain
   use LVT_logMod
   use LVT_timeMgrMod, only : LVT_tick
@@ -52,7 +53,7 @@ subroutine readMODSCAGobs(source)
 !EOP
 
   integer, parameter           :: nc = 36000, nr=18000
-  character*100                :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   logical                      :: file_exists
   logical*1, allocatable           :: lb(:)
   real, allocatable                :: snfrac1(:,:)

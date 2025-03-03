@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -199,10 +199,10 @@ module NoahMP36_lsmMod
         !-------------------------------------------------------------------------
         ! Constant Parameter
         !-------------------------------------------------------------------------
-        character(len=256) :: landuse_tbl_name
-        character(len=256) :: soil_tbl_name
-        character(len=256) :: gen_tbl_name
-        character(len=256) :: noahmp_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: landuse_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: soil_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: gen_tbl_name
+        character(len=LIS_CONST_PATH_LEN) :: noahmp_tbl_name
         character(len=256) :: landuse_scheme_name
         character(len=256) :: soil_scheme_name
         integer            :: dveg_opt

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +19,7 @@
 ! !USES:
     use grib_api
     use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_coreMod,    only : LVT_rc
     use LVT_logMod,     only : LVT_logunit, LVT_endrun, LVT_verify,  &
          LVT_getNextUnitNumber,                &
@@ -56,7 +57,7 @@
 !EOP
     integer, parameter :: nc = 464
     integer, parameter :: nr = 224
-    character*120      :: filename,sacsmname,streamflowname
+    character(len=LVT_CONST_PATH_LEN) :: filename,sacsmname,streamflowname
     logical            :: file_exists
     integer            :: ftn,sacsmftn,streamflowftn,iret
     integer            :: c,r,t

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -214,7 +214,8 @@ end subroutine readArmobs
 ! !INTERFACE:
 subroutine process_baebbr_flux_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit
   use ARM_obsMod,      only : armobs
@@ -252,7 +253,7 @@ subroutine process_baebbr_flux_data(source,yr,mo,da)
 !
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(armobs(source)%baebbr_select.eq.1) then 
@@ -285,7 +286,8 @@ end subroutine process_baebbr_flux_data
 ! !INTERFACE:
 subroutine process_ecor_flux_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit
   use ARM_obsMod,      only : armobs
@@ -320,7 +322,7 @@ subroutine process_ecor_flux_data(source,yr,mo,da)
   integer          :: da
 !EOP 
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(armobs(source)%ecor_select.eq.1) then 
@@ -352,7 +354,8 @@ end subroutine process_ecor_flux_data
 ! !INTERFACE:
 subroutine process_swats_sm_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use ARM_obsMod,      only : armobs
   use LVT_logMod,      only : LVT_logunit
@@ -389,7 +392,7 @@ subroutine process_swats_sm_data(source,yr,mo,da)
 !
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(armobs(source)%swats_select.eq.1) then 
@@ -420,7 +423,8 @@ end subroutine process_swats_sm_data
 ! !INTERFACE:
 subroutine process_smos_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit
   use ARM_obsMod,      only : armobs
@@ -455,7 +459,7 @@ subroutine process_smos_data(source,yr,mo,da)
   integer          :: da
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(armobs(source)%smos_select.eq.1) then 
@@ -491,7 +495,8 @@ end subroutine process_smos_data
 ! !INTERFACE:
 subroutine process_ebbr_data(source,yr,mo,da)
 ! 
-! !USES:
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use LVT_coreMod,     only : LVT_rc
   use LVT_logMod,      only : LVT_logunit
   use ARM_obsMod,      only : armobs
@@ -528,7 +533,7 @@ subroutine process_ebbr_data(source,yr,mo,da)
   integer          :: da
 !EOP
   integer          :: i 
-  character*100    :: filename
+  character(len=LVT_CONST_PATH_LEN) :: filename
   integer          :: status
 
   if(armobs(source)%ebbr_select.eq.1) then 
@@ -2396,7 +2401,8 @@ end subroutine read_smos_file
 subroutine create_arm_swats_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -2444,7 +2450,7 @@ subroutine create_arm_swats_filename(odir, site_id, stnid, &
   character*2       :: fda
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -2485,7 +2491,8 @@ end subroutine create_arm_swats_filename
 subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -2534,7 +2541,7 @@ subroutine create_arm_ecor_flux_filename(odir, site_id, stnid, &
   character*2       :: fda
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -2576,7 +2583,8 @@ end subroutine create_arm_ecor_flux_filename
 subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -2624,7 +2632,7 @@ subroutine create_arm_baebbr_flux_filename(odir, site_id, stnid, &
   character*2       :: fda
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -2666,7 +2674,8 @@ end subroutine create_arm_baebbr_flux_filename
 subroutine create_arm_smos_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -2713,7 +2722,7 @@ subroutine create_arm_smos_filename(odir, site_id, stnid, &
   character*2       :: fda
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 
@@ -2755,7 +2764,8 @@ end subroutine create_arm_smos_filename
 subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
      yr, mo, da, filename, rc)
 ! 
-! !USES:   
+  ! !USES:
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -2801,7 +2811,7 @@ subroutine create_arm_ebbr_filename(odir, site_id, stnid, &
   character*2       :: fda
   
   integer           :: fsize
-  character*100     :: ls_comm, cmd2
+  character(len=LVT_CONST_PATH_LEN) :: ls_comm, cmd2
 
   rc = 1 !fail to find the file
 

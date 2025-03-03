@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -229,6 +229,7 @@ subroutine read_station_data(source, station_index, station_name, &
 ! 
 ! !USES:
     use ESMF
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     use LVT_timeMgrMod,   	only : LVT_calendar
     use SURFRAD_obsMod, 	only : SURFRADobs
     use LVT_logMod,     	only : LVT_logunit, LVT_getNextUnitNumber, LVT_releaseUnitNumber
@@ -260,8 +261,8 @@ subroutine read_station_data(source, station_index, station_name, &
     integer, parameter 		:: nlines = 1440
     integer 			ftn, icount
     character*3			station_name
-    character*24		file_name
-    character*100 		directory
+    character(len=LVT_CONST_PATH_LEN) :: file_name
+    character(len=LVT_CONST_PATH_LEN) :: directory
     real 			swnet_obs, lwnet_obs
     logical 			file_exists
     
@@ -387,7 +388,8 @@ end subroutine read_station_data
 ! !INTERFACE:
 subroutine get_directory(year, station_index, directory)
 ! 
-! !USES:   
+  ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -406,7 +408,7 @@ subroutine get_directory(year, station_index, directory)
 ! !ARGUMENTS    
     integer year
     integer station_index
-    character*100 directory
+    character(len=LVT_CONST_PATH_LEN) :: directory
 !EOP
 !    print *,'get_directory ', station_index
     character*4 yearC
@@ -449,7 +451,8 @@ end subroutine get_directory
 ! !INTERFACE:
 subroutine get_file_name(year,month,day,station_name, file_name)
 ! 
-! !USES:   
+  ! !USES:
+    use LVT_constantsMod, only: LVT_CONST_PATH_LEN
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -472,7 +475,7 @@ subroutine get_file_name(year,month,day,station_name, file_name)
 
 ! !ARGUMENTS
     integer year,month,day
-    character*24 file_name
+    character(len=LVT_CONST_PATH_LEN) :: file_name
 !EOP    
     
     integer days_passed, yr

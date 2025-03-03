@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -17,6 +17,7 @@ module JASMINsm_obsMod
 ! 
 ! !USES: 
   use ESMF
+  use LVT_constantsMod, only: LVT_CONST_PATH_LEN
   use map_utils
 
   implicit none
@@ -48,7 +49,7 @@ module JASMINsm_obsMod
   PUBLIC :: JASMINsmobs
 !EOP
   type, public :: jasminsmobsdec
-     character*100              :: odir
+     character(len=LVT_CONST_PATH_LEN) :: odir
      real                       :: gridDesci(50)
      integer                    :: jasminnc, jasminnr
      type(proj_info)            :: jasminproj
