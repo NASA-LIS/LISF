@@ -35,15 +35,10 @@ import datetime
 import shutil
 import numpy as np
 import yaml
+from shared import utils
 # pylint: disable=consider-using-f-string, too-many-arguments, too-many-locals, import-outside-toplevel
 # Local constants
 _NUM_ENSMEMBERS = {}
-_NMME_MODELS = []
-FORECAST_YEAR = 0
-FORECAST_MONTH = 0
-WORKDIR = ''
-CONFIGFILE = ''
-JOB_NAME = ''
 
 def _usage():
     """Print command line usage."""
@@ -171,12 +166,14 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
     with open(lisconfig_target, "wt", encoding='ascii') as file_obj:
         data = file_obj.write(data)
 
-def _driver(config):
+def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
     """Main driver."""
-
-    # import local module
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
+    # Load config file
+    with open(config_file, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+        
+    _NMME_MODELS = config['EXP']['NMME_models']
+    _NUM_ENSMEMBERS = config['EXP']['ensemble_sizes'][0]
 
     domlabel=''
     if config['EXP']['DOMAIN'] == 'AFRICOM':
@@ -291,17 +288,4 @@ if __name__ == "__main__":
     PARSER.add_argument('-j', '--JOB_NAME', required=True, help='JOB_NAME')
     ARGS = PARSER.parse_args()
 
-    FORECAST_YEAR = int(ARGS.year)
-    FORECAST_MONTH = int(ARGS.month)
-    WORKDIR = ARGS.WORKDIR
-    CONFIGFILE = ARGS.CONFIGFILE
-    JOB_NAME = ARGS.JOB_NAME
-
-    # Read s2s.config
-    with open(CONFIGFILE, 'r', encoding="utf-8") as file:
-        _CONFIG = yaml.safe_load(file)
-    _NMME_MODELS = _CONFIG['EXP']['NMME_models']
-    _NUM_ENSMEMBERS = _CONFIG['EXP']['ensemble_sizes'][0]
-    print(_NMME_MODELS)
-    print(_NUM_ENSMEMBERS)
-    _driver(_CONFIG)
+    main(ARGS.CONFIGFILE, int(ARGS.year), int(ARGS.month), ARGS.WORKDIR, ARGS.JOB_NAME)
