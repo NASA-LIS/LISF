@@ -29,11 +29,11 @@
 # Standard modules
 #
 
-import subprocess
 import sys
 import argparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from netCDF4 import Dataset
 import yaml
 
 #
@@ -50,6 +50,13 @@ def usage():
     print("[INFO] month_num: Integer number of the initialization month")
     print("[INFO] config_file: Config file that sets up environment")
     print("[INFO] cwd: current working directory")
+    
+def add_v10m(srcfile):
+    with Dataset(srcfile, 'r+') as src:
+        if 'U10M' in src.variables and 'V10M' not in src.variables:
+            u10m = src.variables['U10M']
+            v10m = src.createVariable('V10M', u10m.datatype, u10m.dimensions)
+            v10m[:] = np.zeros_like(u10m[:])  
 
 def driver():
     """Main driver."""
@@ -89,15 +96,7 @@ def driver():
                 relativedelta(months=ilead)).strftime("%Y%m")
 
             srcfile = f"{indir}/CFSv2.{fcst_date}.nc4"
-            dstfile = srcfile
-
-            cmd = "ncap2 -O -s 'V10M=array(0.0,0.0,U10M)'"
-            cmd += f" {srcfile}"
-            cmd += f" {dstfile}"
-            returncode = subprocess.call(cmd, shell=True)
-            if returncode != 0:
-                print("[ERR] Problem creating V10M variable!")
-                sys.exit(1)
+            add_v10m(srcfile)
 
 #
 # Main Method

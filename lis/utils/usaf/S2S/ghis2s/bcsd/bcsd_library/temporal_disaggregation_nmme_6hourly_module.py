@@ -27,7 +27,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from bcsd_function import VarLimits as lim
-from bcsd_stats_functions import get_domain_info
+from shared.utils import get_domain_info
 # pylint: enable=import-error
 
 limits = lim()
@@ -218,6 +218,7 @@ print(f"*** LEAD FINAL: {LEAD_FINAL}")
 BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
 CONFIG_FILE = str(sys.argv[12])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
+LAT_LDT, LON_LDT = get_domain_info(CONFIGFILE, coord=True)
 
 MONTHLY_BC_FCST_DIR = str(sys.argv[13])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
@@ -331,14 +332,10 @@ for MON in [INIT_FCST_MON]:
                                                    mask=OUTPUT_BC_REVISED == -9999.)
             date = [FCST_DATE+relativedelta(hours=n*6) for n in \
             range(NUM_TIMESTEPS)]
-
-            if DOMAIN == 'AFRICOM':
-                write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
-                                'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 39.875, 59.875, -39.875, \
-                                -19.875, 0.25, 0.25, 21600)
-            if DOMAIN == 'GLOBAL':
-                write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
-                                'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
-                                OBS_VAR, LONS, LATS, FCST_DATE, date, 8, 89.875, 179.875, -89.875, \
-                                -179.875, 0.25, 0.25, 21600)
+            
+            write_bc_netcdf(OUTFILE, OUTPUT_BC_REVISED, OBS_VAR, \
+                            'Bias corrected forecasts', 'MODEL:'  +   MODEL_NAME, UNIT, \
+                            OBS_VAR, LONS, LATS, FCST_DATE, date, 8, np.max(LAT_LDT), \
+                            np.max(LON_LDT), np.min(LAT_LDT), np.min(LON_LDT), LON_LDT[1] - LON_LDT[0], \
+                            LAT_LDT[1] - LAT_LDT[0], 21600)
+            

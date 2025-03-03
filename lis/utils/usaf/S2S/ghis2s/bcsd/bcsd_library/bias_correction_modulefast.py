@@ -20,7 +20,8 @@ import xarray as xr
 import numpy as np
 # pylint: disable=import-error
 from shrad_modules import read_nc_files
-from bcsd_stats_functions import write_4d_netcdf, get_domain_info
+from bcsd_stats_functions import write_4d_netcdf
+from shared.utils import get_domain_info
 from bcsd_function import calc_bcsd
 from bcsd_function import VarLimits as lim
 # pylint: enable=import-error
