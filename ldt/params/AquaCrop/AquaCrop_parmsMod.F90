@@ -85,7 +85,8 @@ contains
     !EOP
     implicit none
 
-    integer  :: flag
+    integer, intent(in) :: flag
+
     integer  :: n,k
     integer  :: rc
 
@@ -198,11 +199,12 @@ contains
 
     implicit none
 
-    integer   :: n,i
-    integer   :: ftn
-    integer   :: dimID(3)
-    integer   :: monthID
+    integer, intent(in) :: n
+    integer, intent(in) :: ftn
+    integer, intent(in) :: dimID(3)
+    integer, intent(in) :: monthID
 
+    integer :: i
     integer   :: ndimID(3)  ! 3D, vlevel>1
     character(25) :: str
 
@@ -248,8 +250,8 @@ contains
 
     implicit none
 
-    integer   :: n
-    integer   :: ftn
+    integer, intent(in) :: n
+    integer, intent(in) :: ftn
 
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%cropt)
     call LDT_writeNETCDFdata(n,ftn,AquaCrop_struc(n)%comp_size)
