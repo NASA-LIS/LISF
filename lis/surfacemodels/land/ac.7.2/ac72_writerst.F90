@@ -122,8 +122,8 @@ subroutine AC72_dump_restart(n, ftn, wformat)
 
   implicit none
 
-  integer, intent(in) :: ftn
   integer, intent(in) :: n
+  integer, intent(in) :: ftn
   character(len=*), intent(in) :: wformat
   !
   ! !DESCRIPTION:

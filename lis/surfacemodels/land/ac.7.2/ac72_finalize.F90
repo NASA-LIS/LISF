@@ -31,7 +31,7 @@ subroutine AC72_finalize(n)
 
   implicit none
 
-  integer :: n
+  integer, intent(inout) :: n
 
   do n=1, LIS_rc%nnest
      !deallocate all vars

@@ -10,12 +10,16 @@
 !-----------------------------------------------------------------
 SUBROUTINE SOIL_PARM_AC72(SOIL_TBL)
   !-----------------------------------------------------------------
+
   use LIS_logMod, only  : LIS_logunit, LIS_getNextUnitNumber, &
        LIS_releaseUnitNumber, LIS_endrun
   use LIS_coreMod, only : LIS_masterproc
   USE module_sf_aclsm_72
+
   IMPLICIT NONE
+
   CHARACTER(LEN=*), INTENT(IN) :: SOIL_TBL
+
   integer :: IINDEX, LC
   integer :: ierr
   INTEGER , PARAMETER :: OPEN_OK = 0
