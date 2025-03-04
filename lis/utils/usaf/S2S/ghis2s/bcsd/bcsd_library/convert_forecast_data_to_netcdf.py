@@ -67,7 +67,6 @@ def wgrib2_to_netcdf(grib2_file):
     
     ds_ = cfgrib.open_dataset(grib2_file, indexpath ="")
     for varname, da_ in ds_.data_vars.items():
-        print(varname)
         ds_ = ds_.rename({varname : new_name.get(varname)})
     return ds_
 

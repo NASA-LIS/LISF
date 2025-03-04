@@ -271,6 +271,7 @@ export ARCH=`uname`
 
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/S2S/
+export PYTHONPATH=${LISFDIR}/lis/utils/usaf/S2S/ghis2s/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -638,6 +639,7 @@ bcsd_fcst(){
 	jobname=bcsd01
         [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
 	python $LISHDIR/ghis2s/bcsd/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+
 	job_list="$jobname*.j"
 	bcsd01_ID=
 	for jfile in $job_list

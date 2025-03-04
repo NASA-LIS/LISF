@@ -132,7 +132,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
     """Automate daily processing for given month."""
 
     delta = datetime.timedelta(days=1)
-    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
+    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
     # The very first day may be missing. Gracefully handle this
     firstdate = startdate
@@ -178,7 +178,7 @@ def _loop_daily(config, configfile, topdatadir, fcstdate, startdate, model_forci
 def _proc_month(config, configfile, topdatadir, fcstdate, startdate, model_forcing):
     """Create the monthly CF file."""
 
-    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/s2s_modules/s2spost/'
+    scriptdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/s2spost/'
 
     # The very first day may be missing.  Gracefully handle this.
     firstdate = startdate

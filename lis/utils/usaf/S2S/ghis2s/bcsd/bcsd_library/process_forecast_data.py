@@ -38,9 +38,9 @@ import xarray as xr
 import xesmf as xe
 import yaml
 # pylint: disable=import-error
-from convert_forecast_data_to_netcdf import read_wgrib
+from bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from shared.utils import get_domain_info
-from bcsd_function import VarLimits as lim
+from bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
 limits = lim()

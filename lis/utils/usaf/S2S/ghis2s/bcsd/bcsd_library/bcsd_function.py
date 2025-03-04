@@ -18,7 +18,7 @@ import numpy as np
 #import math
 #import time
 # pylint: disable=import-error
-from bcsd_stats_functions import calc_stats, lookup
+from bcsd.bcsd_library.bcsd_stats_functions import calc_stats, lookup
 # pylint: enable=import-error
 #
 
