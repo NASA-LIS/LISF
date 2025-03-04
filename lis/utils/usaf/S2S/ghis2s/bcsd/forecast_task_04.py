@@ -56,10 +56,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    # import local module
-    sys.path.append(config['SETUP']['LISFDIR'] + '/lis/utils/usaf/s2s/')
-    from s2s_modules.shared import utils
-
     # Path of the main project directory
     projdir = cwd
 

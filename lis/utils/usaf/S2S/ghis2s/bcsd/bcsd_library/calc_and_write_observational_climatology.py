@@ -16,7 +16,7 @@ import numpy as np
 import xarray as xr
 import yaml
 # pylint: disable=import-error
-from shrad_modules import read_nc_files
+from bcsd.bcsd_library.shrad_modules import read_nc_files
 from shared.utils import get_domain_info
 # pylint: enable=import-error
 

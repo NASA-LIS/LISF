@@ -161,4 +161,4 @@ if __name__ == "__main__":
     parser.add_argument('-H', '--hours', required=True, help='hours')
 
     args = parser.parse_args()
-    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.cwd, args.job_name, args.ntasks, args.hours))
+    main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.cwd, args.job_name, args.ntasks, args.hours)

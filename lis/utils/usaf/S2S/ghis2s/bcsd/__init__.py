@@ -5,5 +5,5 @@ from . import forecast_task_05
 from . import forecast_task_06
 from . import forecast_task_08
 from . import forecast_task_09
-from .bcsd_library.convert_forecast_data_to_netcdf import convert_forecast_data_to_netcdf
-from .bcsd_library.process_forecast_data import process_forecast_data
+from .bcsd_library import convert_forecast_data_to_netcdf
+from .bcsd_library import process_forecast_data

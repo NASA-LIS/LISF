@@ -54,7 +54,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
     lisf = cfg['SETUP']['LISFDIR']
     lisf_module = cfg['SETUP']['LISFMOD']
     supd = cfg['SETUP']['supplementarydir']
-
+    pythonpath = os.environ.get("PYTHONPATH")
+    
     with open(jobfile, 'w', encoding="utf-8") as _f:
 
         _f.write('#!/bin/bash' + '\n')
@@ -102,6 +103,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
             _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
+        _f.write('export PYTHONPATH='+ pythonpath + '\n')
         _f.write('cd ' + cwd + '\n')
 
         if command_list is None and group_jobs is None:

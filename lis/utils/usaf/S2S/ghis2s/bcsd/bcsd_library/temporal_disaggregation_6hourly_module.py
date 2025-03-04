@@ -26,7 +26,7 @@ from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
 from shared.utils import get_domain_info
-from bcsd_function import VarLimits as lim
+from bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
 limits = lim()

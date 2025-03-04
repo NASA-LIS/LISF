@@ -8,6 +8,7 @@
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
 
+import os
 import sys
 import argparse
 from datetime import datetime
@@ -27,8 +28,6 @@ This script:
  (4) runs CFSv2 file checker
  (5) s2s_run
 '''
-class S2SRun:
-    def __init__(self, config_file, year, month, report, step, one_step):
         
 def print_status_report(CWD, YYYYMMDIR):
     utils.print_status_report(CWD, YYYYMMDIR)

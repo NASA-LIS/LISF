@@ -37,9 +37,9 @@ import xarray as xr
 import xesmf as xe
 import yaml
 # pylint: disable=import-error
-from shrad_modules import read_nc_files
+from bcsd.bcsd_library.shrad_modules import read_nc_files
 from shared.utils import get_domain_info
-from bcsd_function import VarLimits as lim
+from bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
 limits = lim()
