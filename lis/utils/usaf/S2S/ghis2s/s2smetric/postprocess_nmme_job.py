@@ -176,6 +176,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    main(args.configfile, int(args.fcst_year), int(args.fcst_mon), cwd,
+    main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.cwd,
          nmme_model=args.nmme_model, jobname=args.jobname, ntasks=args.ntasks,
          hours=args.hours)

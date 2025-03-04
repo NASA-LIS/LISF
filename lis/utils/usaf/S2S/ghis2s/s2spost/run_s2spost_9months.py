@@ -65,7 +65,7 @@ def _advance_date_by_month(curdate):
                                 day=1)
     return newdate
 
-def submit_batch_jobs(configfile, fcst_year, fcst_mon, jobname, ntasks, hours, cwd, model_forcing):
+def submit_batch_jobs(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_forcing):
     """Submit batch jobs for processing LIS forecast."""
 
     startdate = datetime.datetime(fcst_year, fcst_mon, day=1)
