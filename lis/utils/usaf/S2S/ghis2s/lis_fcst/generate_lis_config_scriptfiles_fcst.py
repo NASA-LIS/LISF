@@ -24,8 +24,6 @@
 #
 #------------------------------------------------------------------------------
 """
-
-
 # Standard modules
 import os
 import sys
@@ -39,6 +37,7 @@ from shared import utils
 # pylint: disable=consider-using-f-string, too-many-arguments, too-many-locals, import-outside-toplevel
 # Local constants
 _NUM_ENSMEMBERS = {}
+_NMME_MODELS = []
 
 def _usage():
     """Print command line usage."""
@@ -84,7 +83,7 @@ def _handle_dates(year, month, input_numfcstmons):
 def _customize_lisconfig(lisconfig_target, config, dates, \
                          nmme_model, fcstdir, ic_date = None, jobid = None):
     """Create customized lis.config file"""
-
+    global _NMME_MODELS, _NUM_ENSMEMBERS
     with open(lisconfig_target, "rt", encoding='ascii') as file_obj:
         data = file_obj.read()
     data = data.replace("NUMPROCX", f"{config['FCST']['numprocx']}")
@@ -168,13 +167,14 @@ def _customize_lisconfig(lisconfig_target, config, dates, \
 
 def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
     """Main driver."""
+    global _NMME_MODELS, _NUM_ENSMEMBERS 
     # Load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
         
     _NMME_MODELS = config['EXP']['NMME_models']
     _NUM_ENSMEMBERS = config['EXP']['ensemble_sizes'][0]
-
+    
     domlabel=''
     if config['EXP']['DOMAIN'] == 'AFRICOM':
         domlabel = 's2safricom'
@@ -229,7 +229,7 @@ def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
             else:
                 mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
-            utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
+            utils.job_script_lis(config_file, jobfile, jobname, WORKDIR,
                                       in_command=mpi_cmd)
         else:
             # The forecast is divided to nseg number of jobs
@@ -272,7 +272,7 @@ def main(config_file, FORECAST_YEAR, FORECAST_MONTH, WORKDIR, JOB_NAME):
                 else:
                     mpi_cmd = 'srun ./LIS' + ' -f ' + lisconfig_target
 
-                utils.job_script_lis(CONFIGFILE, jobfile, jobname, WORKDIR,
+                utils.job_script_lis(config_file, jobfile, jobname, WORKDIR,
                                  in_command=mpi_cmd)
 
     print("[INFO] Done generating LIS config files and SLURM script files.")
