@@ -1238,8 +1238,8 @@ subroutine AC72_read_MULTILEVEL_param(n, ncvar_name, level, placeholder)
 
   ! !ARGUMENTS:
   integer, intent(in)          :: n
-  integer, intent(in)          :: level
   character(len=*), intent(in) :: ncvar_name
+  integer, intent(in)          :: level
   real, intent(out)            :: placeholder(LIS_rc%lnc(n), LIS_rc%lnr(n))
   ! !DESCRIPTION:
   !  This subroutine reads MULTILEVEL parameters from the LIS

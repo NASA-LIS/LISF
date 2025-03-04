@@ -35,7 +35,9 @@ subroutine AC72_coldstart(mtype)
   !EOP
 
   implicit none
-  integer :: mtype
+
+  integer, intent(in) :: mtype
+
   integer :: t, l, n
 
   do n=1, LIS_rc%nnest
