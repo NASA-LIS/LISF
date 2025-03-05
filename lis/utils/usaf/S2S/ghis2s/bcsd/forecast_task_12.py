@@ -33,6 +33,7 @@ import sys
 import argparse
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+import numpy as np
 from netCDF4 import Dataset
 import yaml
 
@@ -58,22 +59,8 @@ def add_v10m(srcfile):
             v10m = src.createVariable('V10M', u10m.datatype, u10m.dimensions)
             v10m[:] = np.zeros_like(u10m[:])  
 
-def driver():
+def driver(config_file, current_year, month_abbr, month_num, cwd):
     """Main driver."""
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
-    parser.add_argument('-c', '--config_file', required=True, help='config file name')
-    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
-    parser.add_argument('-n', '--month_num', required=True, help='month number')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-
-    args = parser.parse_args()
-    config_file = args.config_file
-    current_year = int(args.current_year)
-    month_abbr = args.month_abbr
-    month_num = int(args.month_num)
-    cwd = args.cwd
-
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
@@ -102,4 +89,12 @@ def driver():
 # Main Method
 #
 if __name__ == "__main__":
-    driver()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
+    parser.add_argument('-c', '--config_file', required=True, help='config file name')
+    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
+    parser.add_argument('-n', '--month_num', required=True, help='month number')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+
+    args = parser.parse_args()
+    driver(args.config_file, int(args.current_year), args.month_abbr, int(args.month_num), args.cwd)
