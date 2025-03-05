@@ -8,9 +8,6 @@
 #mapping approach as described in Wood et al. 2002
 #Date: August 06, 2015
 """
-
-
-
 import os
 import sys
 from datetime import datetime
@@ -218,7 +215,7 @@ print(f"*** LEAD FINAL: {LEAD_FINAL}")
 BC_FCST_SYR, BC_FCST_EYR = int(sys.argv[10]), int(sys.argv[11])
 CONFIG_FILE = str(sys.argv[12])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
-LAT_LDT, LON_LDT = get_domain_info(CONFIGFILE, coord=True)
+LAT_LDT, LON_LDT = get_domain_info(CONFIG_FILE, coord=True)
 
 MONTHLY_BC_FCST_DIR = str(sys.argv[13])
 SUBDAILY_RAW_FCST_DIR = str(sys.argv[14])
