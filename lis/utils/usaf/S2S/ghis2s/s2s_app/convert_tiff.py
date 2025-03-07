@@ -3,8 +3,8 @@ import argparse
 import xarray as xr
 import numpy as np
 import yaml
-from shared import utils
-from s2splots import plot_utils
+from ghis2s.shared import utils
+from ghis2s.s2splots import plot_utils
 
 def parse_list(arg):
     try:

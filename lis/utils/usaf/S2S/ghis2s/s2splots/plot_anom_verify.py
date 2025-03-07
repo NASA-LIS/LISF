@@ -31,7 +31,7 @@ import numpy as np
 import yaml
 import eccodes
 from plot_utils
-from shared.utils import get_domain_info
+from ghis2s.shared.utils import get_domain_info
 # pylint: disable=invalid-name, consider-using-f-string, import-outside-toplevel, redefined-outer-name
 
 USAF_COLORS = True

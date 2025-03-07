@@ -33,7 +33,7 @@ import sys
 import argparse
 import datetime
 import yaml
-from shared import utils
+from ghis2s.shared import utils
 
 # pylint: disable=too-many-locals, import-outside-toplevel
 def _usage():

@@ -23,8 +23,8 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from bcsd.bcsd_library.bcsd_function import VarLimits as lim
-from shared.utils import get_domain_info
+from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.shared.utils import get_domain_info
 # pylint: enable=import-error
 
 limits = lim()

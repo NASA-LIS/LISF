@@ -16,8 +16,8 @@ import numpy as np
 import xarray as xr
 import yaml
 # pylint: disable=import-error
-from bcsd.bcsd_library.shrad_modules import read_nc_files
-from shared.utils import get_domain_info
+from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.shared.utils import get_domain_info
 # pylint: enable=import-error
 
 # This function takes in a time series as input and provides sorted times series of values and

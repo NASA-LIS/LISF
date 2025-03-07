@@ -33,7 +33,7 @@ import datetime
 import shutil
 import numpy as np
 import yaml
-from shared import utils
+from ghis2s.shared import utils
 # pylint: disable=consider-using-f-string, too-many-arguments, too-many-locals, import-outside-toplevel
 # Local constants
 _NUM_ENSMEMBERS = {}

@@ -30,7 +30,7 @@ import os
 import sys
 import argparse
 import yaml
-from shared import utils
+from ghis2s.shared import utils
 #pylint: disable=import-outside-toplevel, too-many-locals
 # Local methods
 def _usage():

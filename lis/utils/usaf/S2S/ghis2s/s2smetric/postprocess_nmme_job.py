@@ -22,7 +22,7 @@ import argparse
 import datetime
 import subprocess
 import yaml
-from shared import utils
+from ghis2s.shared import utils
 # pylint: disable=consider-using-f-string, too-many-locals, import-outside-toplevel
 # Local methods
 def _usage():
