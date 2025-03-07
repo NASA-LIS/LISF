@@ -93,7 +93,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     for nmme_model in  config['EXP']['NMME_models']:
         cmd = "python"
-        cmd += f" {srcdir2}/forecast_task_10.py"
+        cmd += f" {srcdir2}/task_10.py"
         cmd += f" -c {config_file}"
         cmd += f" -s {year}"
         cmd += f" -m {month_abbr}"
@@ -107,7 +107,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     # Now write task 11 scripts
 
     cmd = "python"
-    cmd += f" {srcdir2}/forecast_task_11.py"
+    cmd += f" {srcdir2}/task_11.py"
     cmd += f" -s {year}"
     cmd += f" -m {month_abbr}"
     cmd += f" -c {config_file}"
@@ -120,7 +120,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     # Now write task 12 scripts
 
     cmd = "python"
-    cmd += f" {srcdir2}/forecast_task_12.py"
+    cmd += f" {srcdir2}/task_12.py"
     cmd += f" -s {year}"
     cmd += f" -m {month_abbr}"
     cmd += f" -c {config_file}"

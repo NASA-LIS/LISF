@@ -633,12 +633,12 @@ bcsd_fcst(){
     
     if [ $DATATYPE == "forecast" ]; then
 	# hindcast does not run bcsd01 and bcsd03 since they have been preprocessed.
-	# Task 1: Generate and rescale 6-hourly files to 25 KM (forecast_task_01.py)
+	# Task 1: Generate and rescale 6-hourly files to 25 KM (task_01.py)
 	# --------------------------------------------------------------------------
 	cmdfile="bcsd01.file"
 	jobname=bcsd01
         [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
-	python $LISHDIR/ghis2s/bcsd/forecast_task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	python $LISHDIR/ghis2s/bcsd/task_01.py -s $YYYY -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 
 	job_list="$jobname*.j"
 	bcsd01_ID=
@@ -677,12 +677,12 @@ bcsd_fcst(){
 	    bcsd01_ID=`echo $bcsd01_ID`' '$thisID
 	    bcsd01_ID=`echo $bcsd01_ID | sed "s| |:|g"`
 	fi
-	# Task 3: Rescale and reorganize NMME Data (forecast_task_03.py)
+	# Task 3: Rescale and reorganize NMME Data (task_03.py)
 	# --------------------------------------------------------------
 	jobname=bcsd03
 	cmdfile="bcsd03.file"
         [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
-	python $LISHDIR/ghis2s/bcsd/forecast_task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
+	python $LISHDIR/ghis2s/bcsd/task_03.py -s $YYYY -m $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 2 -j $jobname
 	
 	unset job_list
 	job_list="$jobname*.j"
@@ -707,12 +707,12 @@ bcsd_fcst(){
 	fi
     fi
 
-    # Task 4: Monthly "BC" step applied to CFSv2 (forecast_task_04.py, after 1 and 3)
+    # Task 4: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
     # -------------------------------------------------------------------------------
     jobname=bcsd04
     cmdfile="bcsd04.file"
     [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
-    python $LISHDIR/ghis2s/bcsd/forecast_task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
+    python $LISHDIR/ghis2s/bcsd/task_04.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j $jobname
     
     unset job_list
     job_list="$jobname*.j"
@@ -745,14 +745,14 @@ bcsd_fcst(){
 	bcsd04_ID=`echo $bcsd04_ID | sed "s| |:|g"`
     fi
     
-    # Task 5: Monthly "BC" step applied to NMME (forecast_task_05.py: after 1 and 3)
+    # Task 5: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
     # ------------------------------------------------------------------------------
     jobname=bcsd05
     cmdfile="bcsd05.file"
     [ -e "${jobname}_01_run.j" ] && /bin/rm ${jobname}_*.j
     for model in $MODELS
     do
-	python $LISHDIR/ghis2s/bcsd/forecast_task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
+	python $LISHDIR/ghis2s/bcsd/task_05.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -786,12 +786,12 @@ bcsd_fcst(){
 	bcsd05_ID=`echo $bcsd05_ID | sed "s| |:|g"`
     fi
     
-    # Task 6: CFSv2 Temporal Disaggregation (forecast_task_06.py: after 4 and 5)
+    # Task 6: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd06
     cmdfile="bcsd06.file"
     [ -e "${jobname}_run.j" ] && /bin/rm ${jobname}_*.j
-    python $LISHDIR/ghis2s/bcsd/forecast_task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
+    python $LISHDIR/ghis2s/bcsd/task_06.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 2 -j $jobname
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -816,13 +816,13 @@ bcsd_fcst(){
     
     # Task 7: Generate symbolic links to sub-daily CFSv2 BC forecasts for NMME
     # temporal disaggregation due to an uneven number of ensembles between the datasets
-    #  (forecast_task_07.py: after 4 and 5)
+    #  (task_07.py: after 4 and 5)
     # --------------------------------------------------------------------------
     jobname=bcsd07
-    # python $LISHDIR/ghis2s/bcsd/forecast_task_07.py -s $YYYY -m $mmm -c -w ${CWD}
+    # python $LISHDIR/ghis2s/bcsd/task_07.py -s $YYYY -m $mmm -c -w ${CWD}
     # NOTE: This is run inside a Task 6 job
     
-    # Task 8: NMME Temporal Disaggregation (forecast_task_08.py: after 6, 7)
+    # Task 8: NMME Temporal Disaggregation (task_08.py: after 6, 7)
     # ----------------------------------------------------------------------------
     jobname=bcsd08
     cmdfile="bcsd08.file"
@@ -830,7 +830,7 @@ bcsd_fcst(){
 
     for model in $MODELS
     do
-	python $LISHDIR/ghis2s/bcsd/forecast_task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
+	python $LISHDIR/ghis2s/bcsd/task_08.py -s $YYYY -e $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -t 1 -H 3 -M $model -j $jobname    
     done
     
     unset job_list
@@ -855,14 +855,14 @@ bcsd_fcst(){
     fi
     
     # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
-    #         (forecast_task_09.py: after 8)
+    #         (task_09.py: after 8)
     # ---------------------------------------------------------------------------
     
     jobname=bcsd09
     cmdfile="bcsd09-10.file"
     [ -e "${jobname}-10_run.j" ] && /bin/rm ${jobname}-10_*.j
 
-    python $LISHDIR/ghis2s/bcsd/forecast_task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
+    python $LISHDIR/ghis2s/bcsd/task_09.py -s $YYYY -e $YYYY -m $mmm -n $MM -M CFSv2 -c $BWD/$CFILE -w ${CWD} -p ${E2ESDIR} -j $jobname -t 1 -H 4
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
@@ -872,11 +872,11 @@ bcsd_fcst(){
     
     # Task 10: Combine the NMME forcing fields into final format for LIS to read
     #          and symbolically link to the reusable CFSv2 met forcings
-    #         (forecast_task_10.py: after 8)
+    #         (task_10.py: after 8)
     # ---------------------------------------------------------------------------
     jobname=bcsd10
-    # NOTE : Task 10  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/ghis2s/bcsd/forecast_task_10.py -s $YYYY -m $mmm -n $MM -w ${CWD} -M NMME_MODEL 
+    # NOTE : Task 10  Job scripts are written by task_09.py to execute: 
+    # python $LISHDIR/ghis2s/bcsd/task_10.py -s $YYYY -m $mmm -n $MM -w ${CWD} -M NMME_MODEL 
     
     unset job_list
     job_list=`ls $jobname*.j`
@@ -903,12 +903,12 @@ bcsd_fcst(){
     fi
     
     # Task 11: Copy 9th forecast lead file as 10th forecast lead for LIS runs
-    #         (forecast_task_11.py: after 9 and 10)
+    #         (task_11.py: after 9 and 10)
     # ---------------------------------------------------------------------------
     jobname=bcsd11
     cmdfile="bcsd11-12.file"
-    # NOTE : Task 11  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/ghis2s/bcsd/forecast_task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
+    # NOTE : Task 11  Job scripts are written by task_09.py to execute: 
+    # python $LISHDIR/ghis2s/bcsd/task_11.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
@@ -918,11 +918,11 @@ bcsd_fcst(){
     
     # Task 12:  Task to introduce an all-zero variable V10M due to the way wind
     #           is handled in the USAF forcing
-    #         (forecast_task_12.py: after 9 and 10)
+    #         (task_12.py: after 9 and 10)
     # ---------------------------------------------------------------------------
     jobname=bcsd12
-    # NOTE : Task 12  Job scripts are written by forecast_task_09.py to execute: 
-    # python $LISHDIR/ghis2s/bcsd/forecast_task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
+    # NOTE : Task 12  Job scripts are written by task_09.py to execute: 
+    # python $LISHDIR/ghis2s/bcsd/task_12.py -s $YYYY -m $mmm -n $MM -c $BWD/$CFILE -w ${CWD}
     if [ $GROUP_JOBS == "Y" ]; then
 	job_comm=`grep python ${jobname}_run.j | cut -d'|' -f1`
 	echo "$job_comm" >> "$cmdfile"
