@@ -271,7 +271,7 @@ export ARCH=`uname`
 
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
 export LISHDIR=${LISFDIR}/lis/utils/usaf/S2S/
-export PYTHONPATH=${LISFDIR}/lis/utils/usaf/S2S/ghis2s/
+export PYTHONPATH=${LISFDIR}/lis/utils/usaf/S2S/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
