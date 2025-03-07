@@ -25,7 +25,7 @@ from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 # pylint: enable=no-name-in-module
 # pylint: disable=import-error
-from bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 # pylint: enable=import-error
 
 def write_bc_netcdf(outfile, var, varname, description, source, var_units, \

@@ -20,11 +20,11 @@ from dateutil.relativedelta import relativedelta
 import xarray as xr
 # pylint: disable=import-error
 import yaml
-from bcsd.bcsd_library import bcsd_function
-from bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
-from shared.utils import get_domain_info
-from bcsd.bcsd_library.bcsd_function import VarLimits as lim
-from bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.bcsd.bcsd_library import bcsd_function
+from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
+from ghis2s.shared.utils import get_domain_info
+from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 # pylint: enable=import-error
 
 limits = lim()

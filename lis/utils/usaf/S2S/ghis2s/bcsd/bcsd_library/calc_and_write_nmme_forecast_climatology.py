@@ -19,8 +19,8 @@ import xarray as xr
 import yaml
 from dateutil.relativedelta import relativedelta
 # pylint: disable=import-error
-from bcsd.bcsd_library.shrad_modules import read_nc_files
-from shared.utils import get_domain_info
+from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
+from ghis2s.shared.utils import get_domain_info
 
 # pylint: enable=import-error
 

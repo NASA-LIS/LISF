@@ -15,8 +15,8 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import yaml
-from shared import utils
-from bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
+from ghis2s.shared import utils
+from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
 #pylint: disable=wrong-import-position
 #pylint: disable=import-error
 

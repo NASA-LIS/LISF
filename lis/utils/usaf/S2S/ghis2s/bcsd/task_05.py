@@ -32,7 +32,7 @@ import os
 import sys
 import argparse
 import yaml
-from shared import utils
+from ghis2s.shared import utils
 #
 # Local methods
 #

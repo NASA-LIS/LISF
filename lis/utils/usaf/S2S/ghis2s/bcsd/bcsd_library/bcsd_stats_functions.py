@@ -17,7 +17,7 @@ import yaml
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
 from netCDF4 import default_fillvals as nc4_default_fillvals
-from shared import utils
+from ghis2s.shared import utils
 # pylint: enable=no-name-in-module
 
 def write_4d_netcdf(infile, var, varname, description, source, var_units, sig_digit, lons, lats, \
