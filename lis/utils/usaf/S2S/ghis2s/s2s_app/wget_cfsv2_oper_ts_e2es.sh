@@ -98,7 +98,7 @@ main_loop() {
 	    
 		# File check 2: corrupted file
 		if [ -f "${vartype}.01.${icdate}${cycle}.daily.grb2" ]; then
-		    python $LISHDIR/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
+		    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -i "${vartype}.01.${icdate}${cycle}.daily.grb2" -d $yearmo -c $configfile
 		    py_code=$?
 		
 		    if [ $py_code -gt 0 ]; then
@@ -110,7 +110,7 @@ main_loop() {
 			    ret_code=1
 			else
 			    supfile=`grep ${vartype}.01.${icdate}${cycle}.daily.grb2 ${patchfile}  | cut -d',' -f3 | tr -d ' '`
-			    python $LISHDIR/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
+			    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -i "${patchdir}${supfile}" -d $yearmo -c $configfile
 			    py_code=$?
 			    if [ $py_code -gt 0 ]; then
 				echo "${vartype}.01.${icdate}${cycle}.daily.grb2: Replacement ${supfile} is also CORRUPTED!" >> $CFSV2_LOG
@@ -177,7 +177,7 @@ fi
 patchfile=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/patch_files_list.txt"
 patchdir=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`"/bcsd_fcst/patch_files/"
 export LISFDIR=`grep LISFDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
-export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
+export LISHDIR=${LISFDIR}/lis/utils/usaf/S2S/
 export LISFMOD=`grep LISFMOD $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 export SUPDIR=`grep supplementarydir $configfile | cut -d':' -f2 | tr -d "[:space:]"`
 export DATATYPE=`grep DATATYPE  $configfile | cut -d':' -f2 | tr -d "[:space:]"`
