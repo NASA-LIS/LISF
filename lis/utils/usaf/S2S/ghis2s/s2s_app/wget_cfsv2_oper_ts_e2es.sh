@@ -62,7 +62,7 @@ print_message(){
 }
 
 ret_code_pipe=$(mktemp)
-main_loop() {
+main_loop() {    
     # Initial forecast dates:
     for prevmondays in ${day1} ${day2} ${day3}; do
     
@@ -164,7 +164,8 @@ echo "Year : $year";
 echo "Month: $mon";
 echo "Configfile: $configfile";
 echo
-
+export PYTHONPATH=`grep LISFDIR $configfile | cut -d':' -f2 | tr -d "[:space:]"`
+export PYTHONPATH=${PYTHONPATH}/lis/utils/usaf/S2S/
 # Read config file and extract information:
 export NODE_NAME=`uname -n`
 if [[ $NODE_NAME =~ discover* ]] || [[ $NODE_NAME =~ borg* ]]; then
