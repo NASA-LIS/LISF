@@ -26,6 +26,7 @@
 
 import glob
 import os
+import sys
 import platform
 import re
 import datetime
@@ -54,7 +55,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
     lisf = cfg['SETUP']['LISFDIR']
     lisf_module = cfg['SETUP']['LISFMOD']
     supd = cfg['SETUP']['supplementarydir']
-    pythonpath = os.environ.get("PYTHONPATH")
+    pythonpath = cfg['SETUP']['LISFDIR'] + 'lis/utils/usaf/S2S/'
     
     with open(jobfile, 'w', encoding="utf-8") as _f:
 
@@ -332,3 +333,4 @@ def tiff_to_da(file):
     # Create an xarray DataArray
     da = xr.DataArray(data, dims=('y', 'x'), coords={'y': y_coords, 'x': x_coords}, attrs={'crs': crs})
     return da
+    

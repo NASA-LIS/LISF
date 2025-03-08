@@ -26,13 +26,7 @@ This script:
  (2) writes JOB_SCHEDULE table
  (3) produces production status report
  (4) runs CFSv2 file checker
- (5) s2s_run
 '''
-        
-def print_status_report(CWD, YYYYMMDIR):
-    utils.print_status_report(CWD, YYYYMMDIR)
-    sys.exit()
-
 def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR):
     ds = cfdn.wgrib2_to_netcdf(CFSV2_FILE)
     date_str = np.datetime_as_string(ds['valid_time'][-1].values, unit='s')
@@ -42,10 +36,15 @@ def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR):
         sys.exit(0)
     else:
         sys.exit(1)
-
+    return
+        
+def print_status_report(CWD, YYYYMMDIR):
+    utils.print_status_report(CWD, YYYYMMDIR)
+    return
+    
 def lis_job_file(CONFIGFILE, JOBFILE, JOBNAME, CWD, HOURS):
-    utils.job_script_lis(CONFIGFILE, JOBFILE, JOBNAME, CWD, hours = HOURS)
-    sys.exit()
+    utils.job_script_lis(CONFIGFILE, JOBFILE, JOBNAME, CWD, hours=HOURS)
+    return
 
 def python_job_file(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs):
     if group_jobs is None:
@@ -55,11 +54,11 @@ def python_job_file(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs
             commands = [line.strip() for line in file if line.strip()]
         NTASKS = len(commands)
         utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs=commands)
-    sys.exit()
-    
+    return
+
 def update_job_schedule(SCHEDULE_FILE, MYID, JOBFILE, AFTERID):
     utils.update_job_schedule(SCHEDULE_FILE, MYID, JOBFILE, AFTERID)
-    sys.exit()
+    return
 
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
@@ -82,14 +81,18 @@ if __name__ == "__main__":
 
     if ARGS.REPORT is not None:
         print_status_report(ARGS.CWD, ARGS.YYYYMMDIR)
+        sys.exit()
 
     if ARGS.CFSV2_FILE is not None:
         cfsv2_file_checker(ARGS.CFSV2_FILE, ARGS.YYYYMMDIR)
+        sys.exit()
 
     if ARGS.RUN_LIS is not None:
         lis_job_file(ARGS.CONFIGFILE, ARGS.JOBFILE, ARGS.JOBNAME, ARGS.CWD, str(ARGS.HOURS))
+        sys.exit()
 
     if ARGS.SCHEDULE_FILE is not None:
         update_job_schedule(ARGS.SCHEDULE_FILE, ARGS.MYID, ARGS.JOBFILE, ARGS.AFTERID)
+        sys.exit()
 
     python_job_file(ARGS.CONFIGFILE, ARGS.JOBFILE, ARGS.JOBNAME, ARGS.NTASKS, str(ARGS.HOURS), ARGS.CWD, ARGS.group_jobs)
