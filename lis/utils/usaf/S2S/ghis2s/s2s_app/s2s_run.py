@@ -6,6 +6,7 @@ import subprocess
 import platform
 import shutil
 import yaml
+import argparse
 from ghis2s.s2s_app import s2s_api
 
 class S2Srun():
@@ -254,3 +255,16 @@ class S2Srun():
         self.bcsd()
 
         return
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config_file', required=True, type=str, help='config file')
+    parser.add_argument('-y', '--year', required=True, type=int, help='forecast year')
+    parser.add_argument('-m', '--month', required=True, type=int, help='forecast month')
+    parser.add_argument('-r', '--report', required=False, type=str, help='Report')
+    parser.add_argument('-s', '--step', required=False, type=str, help='S2S step: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS')
+    parser.add_argument('-o', '--one_step', required=False, type=str, help='Is only one step?')
+    args = parser.parse_args()
+
+    s2s = S2Srun(year=args.year, month=args.month, config_file=args.config_file)
+    s2s.main()
