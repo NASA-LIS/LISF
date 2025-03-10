@@ -39,62 +39,50 @@ class DownloadedForecasts():
                 print("January ...")
                 prevmon = 12
                 day1, day2, day3 = 17, 22, 27
-                
             elif mon == 2:
                 print("February ...")
                 prevmon = 1
                 day1, day2, day3 = 21, 26, 31
-                
             elif mon == 3:
                 print("March ...")
                 prevmon = 2
                 day1, day2, day3 = 15, 20, 25
-                
             elif mon == 4:
                 print("April ...")
                 prevmon = 3
                 day1, day2, day3 = 17, 22, 27
-                
             elif mon == 5:
                 print("May ...")
                 prevmon = 4
                 day1, day2, day3 = 16, 21, 26
-        
             elif mon == 6:
                 print("June ...")
                 prevmon = 5
                 day1, day2, day3 = 21, 26, 31
-        
             elif mon == 7:
                 print("July ...")
                 prevmon = 6
                 day1, day2, day3 = 20, 25, 30
-        
             elif mon == 8:
                 print("August ...")
                 prevmon = 7
                 day1, day2, day3 = 20, 25, 30
-        
             elif mon == 9:
                 print("September ...")
                 prevmon = 8
                 day1, day2, day3 = 19, 24, 29
-        
             elif mon == 10:
                 print("October ...")
                 prevmon = 9
                 day1, day2, day3 = 18, 23, 28
-                
             elif mon == 11:
                 print("November ...")
                 prevmon = 10
                 day1, day2, day3 = 18, 23, 28
-        
             elif mon == 12:
                 print("December ...")
                 prevmon = 11
                 day1, day2, day3 = 17, 22, 27
-        
             else:
                 print("Invalid month")
                 return None
