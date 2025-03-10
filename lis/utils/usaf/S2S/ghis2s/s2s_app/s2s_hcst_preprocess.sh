@@ -77,7 +77,7 @@ ulimit -s unlimited
 export ARCH=`uname`
 
 export LISFDIR=`grep LISFDIR $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
-export LISHDIR=${LISFDIR}/lis/utils/usaf/s2s/
+export LISHDIR=${LISFDIR}/lis/utils/usaf/S2S/
 export METFORC=`grep METFORC $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export LISFMOD=`grep LISFMOD $CFILE | cut -d':' -f2 | tr -d "[:space:]"`    
 export SPCODE=`grep SPCODE  $CFILE | cut -d':' -f2 | tr -d "[:space:]"`
@@ -151,7 +151,7 @@ reorg_cfsv2(){
     for ((YEAR=$clim_syr; YEAR<=$clim_eyr; YEAR+=6)); do
 	syr=$YEAR
 	eyr=$((YEAR+5))
-	python $LISHDIR/s2s_modules/bcsd_fcst/forecast_task_01.py -s $syr -e $eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j ${jobname}_set${iter}
+	python $LISHDIR/s2s_modules/bcsd_fcst/task_01.py -s $syr -e $eyr -m $mmm -c $BWD/$CFILE -w ${CWD} -t 1 -H 3 -j ${jobname}_set${iter}
 	((iter++))
     done
     
@@ -190,8 +190,8 @@ reorg_nmme(){
     done;
 
     split -l 3  $cmdfile part_
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_aa"
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_ab"
+    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_01_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_aa"
+    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_02_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C "part_ab"
     /bin/rm ${cmdfile} "part_aa" "part_ab"
     
     reorg_nmme_ID=$(submit_job "" "${jobname}_01_run.j")
@@ -224,7 +224,7 @@ clim_nafpa(){
         echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_observational_climatology.py $var $BWD/$CFILE $outdir" >> "$cmdfile"
     done;
     
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
     
     clim_nafpa_ID=$(submit_job "" "${jobname}_run.j")
@@ -256,7 +256,7 @@ clim_cfsv2(){
         echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_forecast_climatology.py $var $MM $BWD/$CFILE $fcst_indir $outdir" >> "$cmdfile"
     done;
     
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
 
     if [ ${reorg_cfsv2_ID} == "0" ]; then
@@ -296,7 +296,7 @@ clim_nmme(){
 	echo "python $LISHDIR/s2s_modules/bcsd_fcst/bcsd_library/calc_and_write_nmme_forecast_climatology.py 'PRECTOT'  $MM ${model} $BWD/$CFILE $nmme_indir $outdir" >> "$cmdfile"
     done;
 
-    python $LISHDIR/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
+    python $LISHDIR/ghis2s/s2s_app/s2s_api.py -c $BWD/$CFILE -f ${jobname}_run.j -t 1 -H 2 -j ${jobname}_ -w ${CWD} -C ${cmdfile}
     /bin/rm ${cmdfile}
     if [ ${reorg_nmme_ID} == "0" ]; then
        clim_nmme_ID=$(submit_job "" "${jobname}_run.j")    
@@ -328,7 +328,7 @@ echo "#######################################################################" >
 echo "                         SLURM JOB SCHEDULE                            " >> $JOB_SCHEDULE
 echo "#######################################################################" >> $JOB_SCHEDULE
 echo "                         " >> $JOB_SCHEDULE
-python $LISHDIR/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER" -c $BWD/$CFILE
+python $LISHDIR/ghis2s/s2s_app/s2s_api.py -s $JOB_SCHEDULE -m "JOB ID" -f "JOB SCRIPT" -a "AFTER" -c $BWD/$CFILE
 
 #######################################################################
 #                               Submit jobs
