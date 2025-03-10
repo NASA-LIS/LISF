@@ -27,15 +27,22 @@ This script:
  (3) produces production status report
  (4) runs CFSv2 file checker
 '''
-def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR):
+def cfsv2_file_checker(CFSV2_FILE, YYYYMMDIR, py_call=False):
     ds = cfdn.wgrib2_to_netcdf(CFSV2_FILE)
     date_str = np.datetime_as_string(ds['valid_time'][-1].values, unit='s')
     grib_lastdate = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S')
     fcst_lastdate = datetime.strptime(YYYYMMDIR, "%Y%m") + relativedelta(months=9)
+    del ds
     if grib_lastdate >= fcst_lastdate:
-        sys.exit(0)
+        if py_call:
+            return 0
+        else:
+            sys.exit(0)
     else:
-        sys.exit(1)
+        if py_call:
+            return 1
+        else:
+            sys.exit(1)
     return
         
 def print_status_report(CWD, YYYYMMDIR):
