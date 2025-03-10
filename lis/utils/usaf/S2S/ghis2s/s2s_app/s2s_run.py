@@ -149,12 +149,13 @@ class DownloadedForecasts():
     
             with open(self.cfsv2_log, 'a') as f:
                 f.write("   \n")
-        create_cfsv2_log(self.cfsv2_log)
+                
         def print_message(log_file):
             with open(log_file, 'a') as f:
                 f.write("Note: If all recommended substitutes are also not available, you could try a different forecast hour from any of above dates.\n")
                 f.write("\n")
 
+        create_cfsv2_log(self.cfsv2_log)
         
         print(f"Previous mon, days 1-2-3 :: {self.prevmon}, {self.day1}-{self.day2}-{self.day3}")
         print(" ")
