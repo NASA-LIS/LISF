@@ -1,16 +1,248 @@
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import subprocess
+import threading
+import time
 import platform
 import shutil
 import yaml
 import argparse
 from ghis2s.s2s_app import s2s_api
 
-class S2Srun():
+class DownloadedForecasts():
     def __init__(self, year, month, config_file):
+        with open(config_file, 'r', encoding="utf-8") as file:
+            self.config = yaml.safe_load(file)
+        self.config_file = config_file
+        self.E2ESDIR = self.config['SETUP']['E2ESDIR']
+        self.year = year
+        self.month = month
+        YYYY = '{:04d}'.format(year)
+        MM = '{:02d}'.format(month)
+        self.YYYYMM = YYYY + MM
+        self.SCRDIR = self.E2ESDIR + 'scratch/' + YYYY + MM + '/'
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            self.cfsv2datadir = self.config['BCSD']['fcst_download_dir'] + "/Oper_TS/"
+        else:
+            self.cfsv2datadir = self.config['BCSD']['fcst_download_dir']
+        self.patchfile = self.config['SETUP']['supplementarydir'] + "/bcsd_fcst/patch_files/patch_files_list.txt"
+        self.patchdir = "/bcsd_fcst/patch_files/"
+        self.cfsv2_log = os.path.join(self.SCRDIR, 'CFSv2_missing_corrupted_files')
+        self.srcdir = "https://noaacfs.blob.core.windows.net/cfs"
+        if os.path.exists(self.cfsv2_log):
+            os.remove(self.cfsv2_log)
+
+        def set_month_days(mon):
+            if mon == 1:
+                print("January ...")
+                prevmon = 12
+                day1, day2, day3 = 17, 22, 27
+                
+            elif mon == 2:
+                print("February ...")
+                prevmon = 1
+                day1, day2, day3 = 21, 26, 31
+                
+            elif mon == 3:
+                print("March ...")
+                prevmon = 2
+                day1, day2, day3 = 15, 20, 25
+                
+            elif mon == 4:
+                print("April ...")
+                prevmon = 3
+                day1, day2, day3 = 17, 22, 27
+                
+            elif mon == 5:
+                print("May ...")
+                prevmon = 4
+                day1, day2, day3 = 16, 21, 26
+        
+            elif mon == 6:
+                print("June ...")
+                prevmon = 5
+                day1, day2, day3 = 21, 26, 31
+        
+            elif mon == 7:
+                print("July ...")
+                prevmon = 6
+                day1, day2, day3 = 20, 25, 30
+        
+            elif mon == 8:
+                print("August ...")
+                prevmon = 7
+                day1, day2, day3 = 20, 25, 30
+        
+            elif mon == 9:
+                print("September ...")
+                prevmon = 8
+                day1, day2, day3 = 19, 24, 29
+        
+            elif mon == 10:
+                print("October ...")
+                prevmon = 9
+                day1, day2, day3 = 18, 23, 28
+                
+            elif mon == 11:
+                print("November ...")
+                prevmon = 10
+                day1, day2, day3 = 18, 23, 28
+        
+            elif mon == 12:
+                print("December ...")
+                prevmon = 11
+                day1, day2, day3 = 17, 22, 27
+        
+            else:
+                print("Invalid month")
+                return None
+
+            return '{:02d}'.format(prevmon), day1, day2, day3
+
+        self.prevmon, self.day1, self.day2, self.day3 =  set_month_days(month)
+          
+    def CFSv2_file_checker(self):
+        def create_cfsv2_log():
+            # Write the header and instructions to the log file
+            with open(self.cfsv2_log, 'a') as log_file:
+                log_file.write(" #####################################################################################\n")
+                log_file.write("                                  MISSING/INCOMPLETE CFSV2 FILES                      \n")
+                log_file.write(" #####################################################################################\n")
+                log_file.write("                         \n")
+                log_file.write("  A replacement file is required for each missing or corrupted file. CFSv2 replacement files are saved in:\n")
+                log_file.write(f"  {self.patchdir}, \n")
+                log_file.write("  and comma-delimited lines in:  \n")
+                log_file.write(f"  {self.patchfile} \n")
+                log_file.write("  lists the replacement file names for each corrupted file. The table has three columns:  \n")
+                log_file.write("  YYYYMMDDHH, bad_file_name, replacement_file_name.     \n")
+                log_file.write("                         \n")
+                log_file.write(" (1) cd {self.patchdir}      \n")
+                log_file.write(" (2) Each problematic file name in the section below is followed by a list of wget commands to download a suitable replacement file in order of preference.\n")
+                log_file.write("     Download the first suggested replacement file and add a new entry to: \n")
+                log_file.write(f"     {self.patchfile} \n")
+                log_file.write(" (3) Repeat the same procedure to download replacements and update: \n")
+                log_file.write(f"     {self.patchfile} \n")
+                log_file.write("     for every missing/corrupted file.\n")
+                log_file.write(" (4) Relaunch the forecast: s2s_app/s2s_run.sh -y YEAR -m MONTH -c CONFIGFILE\n")
+                log_file.write(" (5) If any of the replacement files fail, you will be redirected to this file.\n")
+                log_file.write(f"     {self.cfsv2_log}\n")
+                log_file.write(" (6) Repeat steps (2) and (3) using a different replacement file for the original bad file.\n")
+                log_file.write("                         \n")
+                
+        def neighb_days(vartype, icdate, cycle, mon):
+            count_days = 1
+            while count_days <= 4:
+                # Calculate the previous date
+                nwdate = (datetime.strptime(icdate, '%Y%m%d') - timedelta(days=count_days)).strftime('%Y%m%d')
+                with open(self.cfsv2_log, 'a') as f:
+                    f.write(f"wget {self.srcdir}/cfs.{nwdate}/{cycle}/time_grib_01/{vartype}.01.{nwdate}{cycle}.daily.grb2\n")
+        
+                # Calculate the next date
+                nwdate = (datetime.strptime(icdate, '%Y%m%d') + timedelta(days=count_days)).strftime('%Y%m%d')
+                if datetime.strptime(nwdate, '%Y%m%d').month != int(mon):
+                    with open(self.cfsv2_log, 'a') as f:
+                        f.write(f"wget {self.srcdir}/cfs.{nwdate}/{cycle}/time_grib_01/{vartype}.01.{nwdate}{cycle}.daily.grb2\n")
+        
+                count_days += 1
+    
+            with open(self.cfsv2_log, 'a') as f:
+                f.write("   \n")
+
+        def print_message(log_file):
+            with open(log_file, 'a') as f:
+                f.write("Note: If all recommended substitutes are also not available, you could try a different forecast hour from any of above dates.\n")
+                f.write("\n")
+
+        print(f"Previous mon, days 1-2-3 :: {self.prevmon}, {self.day1}-{self.day2}-{self.day3}")
+        print(" ")
+        print("==================================================================================================")
+        print(" CFSv2 file checker is running to ensure all forcings files are available and not corrupted.......")
+        print("==================================================================================================")
+        
+        if self.month > 1:
+            os.chdir(self.cfsv2datadir  + '{:04d}'.format(self.year))
+            year2 = self.year
+        else:
+            # - Need to account for Dec/Jan crossover
+            os.chdir(self.cfsv2datadir  + '{:04d}'.format(self.year -1))
+            year2 = self.year -1
+            
+        # Loop through variables and dates
+        # Initial forecast dates:
+        ret_code = 0
+        for prevmondays in [self.day1, self.day2, self.day3]:
+            icdate = f"{year2:04d}{self.prevmon}{prevmondays:02d}"
+            #os.makedirs(icdate, exist_ok=True)
+            os.chdir(icdate)
+
+            # Loop over variable type:
+            for vartype in ['dlwsfc', 'dswsfc', 'q2m', 'wnd10m', 'prate', 'tmp2m', 'pressfc']:   
+                # Forecast cycle (00, 06, 12, 18):
+                for cycle in ['00', '06', '12', '18']:
+                    file_name = f"{vartype}.01.{icdate}{cycle}.daily.grb2"
+                    # File check 1: missing file
+                    if not os.path.isfile(file_name):
+                        with open(patchfile, 'r') as f:
+                            have_patch = f.read()
+                            if file_name not in have_patch:
+                                with open(self.cfsv2_log, 'a') as log_file:
+                                    log_file.write(f"{file_name}:  MISSING\n")
+                                    log_file.write("Possible substitutes in order of preference are:\n")
+                                    neighb_days(vartype, icdate, cycle, prevmon)  
+                                    ret_code = 1
+                                    
+                    # File check 2: corrupted file
+                    if os.path.isfile(file_name):
+                        py_code = s2s_api.cfsv2_file_checker(file_name, self.YYYYMM, py_call=True)
+                        if py_code > 0:
+                            with open(self.patchfile, 'r') as f:
+                                have_patch = f.read()
+                                
+                            if file_name not in have_patch:
+                                with open(self.cfsv2_log, 'a') as log_file:
+                                    log_file.write(f"{file_name}: CORRUPTED\n")
+                                    log_file.write("Possible substitutes in order of preference are:\n")
+                                    neighb_days(vartype, icdate, cycle, prevmon)  
+                                ret_code = 1
+                                
+                            else:
+                                supfile = [line.split(',')[2].strip() for line in open(self.patchfile) if file_name in line][0]
+                                supfile_path = os.path.join(self.patchdir, supfile)
+                                py_code = s2s_api.cfsv2_file_checker(supfile_path, self.YYYYMM, py_call=True)
+                        
+                                if py_code > 0:
+                                    with open(self.cfsv2_log, 'a') as log_file:
+                                        log_file.write(f"{file_name}: Replacement {supfile} is also CORRUPTED!\n")
+                                        log_file.write(f"Try downloading the next file (DON'T forget to update {patchfile})\n")
+                                        neighb_days(vartype, icdate, cycle, prevmon) 
+                                        ret_code = 1
+
+            os.chdir('..')
+
+        if ret_code > 0:
+            print("*** Missing or Incomplete CFSv2 forcing files were found ***.")
+            print("Please follow the instructions in:")
+            print(self.cfsv2_log)
+            print_message()
+        else:
+            with open(self.cfsv2_log, 'a') as log_file:
+                log_file.write("**************************************************************\n")
+                log_file.write(" SUCCESS ! All CFSv2 forcings files passed the file check.\n")
+                log_file.write("**************************************************************\n")
+
+                print("**************************************************************")
+                print(" SUCCESS ! All CFSv2 forcings files passed the file check.")
+                print("**************************************************************")
+
+        print(" -- Done checking (and/or downloading) CFSv2 Forecast files -- ")
+
+        return ret_code
+        
+class S2Srun(DownloadedForecasts):
+    def __init__(self, year, month, config_file):
+        super(S2Srun, self).__init__(year, month, config_file)
         with open(config_file, 'r', encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
         self.config_file = config_file
@@ -29,7 +261,6 @@ class S2Srun():
         self.BWD = os.getcwd()
         self.SCRDIR = self.E2ESDIR + 'scratch/' + self.YYYY + self.MM + '/'
         self.MODELS = self.config["EXP"]["NMME_models"]
-        self.NODE_NAME = platform.node()
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
         
         if not os.path.exists(self.E2ESDIR + 'scratch/'):
@@ -56,17 +287,32 @@ class S2Srun():
         return
             
     def CFSv2_file_checker(self):
-        command = f"bash {self.E2ESDIR}/s2s_app/wget_cfsv2_oper_ts_e2es.sh -y {self.YYYY} -m {self.MM} -c {self.BWD}/{self.config_file} -d N"
-        process = subprocess.run(command, shell=True)
-        ret_code = process.returncode
+        spinner_done = [False]
+        def spinner():
+            """Display a spinner while waiting for a process to complete."""
+            spin_chars = ['\\', '|', '/', '-']
+            idx = 0
+            while not spinner_done[0]:
+                print(f'Please wait... {spin_chars[idx]}', end='\r', flush=True)
+                idx = (idx + 1) % len(spin_chars)
+                time.sleep(0.1)
 
+        #command = f"bash {self.E2ESDIR}/s2s_app/wget_cfsv2_oper_ts_e2es.sh -y {self.YYYY} -m {self.MM} -c {self.BWD}/{self.config_file} -d N"
+        #process = subprocess.run(command, shell=True)
+        #ret_code = process.returncode
+
+        spinner_thread = threading.Thread(target=spinner)
+        spinner_thread.start()
+        ret_code = super(S2Srun, self).CFSv2_file_checker()
+        spinner_done[0] = True
+        spinner_thread.join()        
+        print('\rDone')
+        
         if ret_code > 0:
             print(f"Error return code from the CFSv2 file download checker :: {ret_code}")
             print("> 0 :: Exiting from s2s_run.py --")
             sys.exit(ret_code)
-        else:
-            print('SUCCESS')
-
+ 
         return
 
     def lis_darun(self):
@@ -256,6 +502,7 @@ class S2Srun():
 
         return
 
+        
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config_file', required=True, type=str, help='config file')
