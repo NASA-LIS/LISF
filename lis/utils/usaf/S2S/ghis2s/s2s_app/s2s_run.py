@@ -28,7 +28,7 @@ class DownloadedForecasts():
         else:
             self.cfsv2datadir = self.config['BCSD']['fcst_download_dir']
         self.patchfile = self.config['SETUP']['supplementarydir'] + "/bcsd_fcst/patch_files/patch_files_list.txt"
-        self.patchdir = "/bcsd_fcst/patch_files/"
+        self.patchdir = self.config['SETUP']['supplementarydir'] + "/bcsd_fcst/patch_files/"
         self.cfsv2_log = os.path.join(self.SCRDIR, 'CFSv2_missing_corrupted_files')
         self.srcdir = "https://noaacfs.blob.core.windows.net/cfs"
         if os.path.exists(self.cfsv2_log):
@@ -104,9 +104,9 @@ class DownloadedForecasts():
         self.prevmon, self.day1, self.day2, self.day3 =  set_month_days(month)
           
     def CFSv2_file_checker(self):
-        def create_cfsv2_log():
+        def create_cfsv2_log(cfsv2_log):
             # Write the header and instructions to the log file
-            with open(self.cfsv2_log, 'a') as log_file:
+            with open(cfsv2_log, 'a') as log_file:
                 log_file.write(" #####################################################################################\n")
                 log_file.write("                                  MISSING/INCOMPLETE CFSV2 FILES                      \n")
                 log_file.write(" #####################################################################################\n")
@@ -118,7 +118,7 @@ class DownloadedForecasts():
                 log_file.write("  lists the replacement file names for each corrupted file. The table has three columns:  \n")
                 log_file.write("  YYYYMMDDHH, bad_file_name, replacement_file_name.     \n")
                 log_file.write("                         \n")
-                log_file.write(" (1) cd {self.patchdir}      \n")
+                log_file.write(f" (1) cd {self.patchdir}      \n")
                 log_file.write(" (2) Each problematic file name in the section below is followed by a list of wget commands to download a suitable replacement file in order of preference.\n")
                 log_file.write("     Download the first suggested replacement file and add a new entry to: \n")
                 log_file.write(f"     {self.patchfile} \n")
@@ -149,12 +149,13 @@ class DownloadedForecasts():
     
             with open(self.cfsv2_log, 'a') as f:
                 f.write("   \n")
-
+        create_cfsv2_log(self.cfsv2_log)
         def print_message(log_file):
             with open(log_file, 'a') as f:
                 f.write("Note: If all recommended substitutes are also not available, you could try a different forecast hour from any of above dates.\n")
                 f.write("\n")
 
+        
         print(f"Previous mon, days 1-2-3 :: {self.prevmon}, {self.day1}-{self.day2}-{self.day3}")
         print(" ")
         print("==================================================================================================")
@@ -225,7 +226,7 @@ class DownloadedForecasts():
             print("*** Missing or Incomplete CFSv2 forcing files were found ***.")
             print("Please follow the instructions in:")
             print(self.cfsv2_log)
-            print_message()
+            print_message(self.cfsv2_log)
         else:
             with open(self.cfsv2_log, 'a') as log_file:
                 log_file.write("**************************************************************\n")
@@ -489,7 +490,7 @@ class S2Srun(DownloadedForecasts):
     
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
-        #self.CFSv2_file_checker()
+        self.CFSv2_file_checker()
 
         # (2) LISDA run
         #self.lis_darun()
