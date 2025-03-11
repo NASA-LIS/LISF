@@ -7,11 +7,14 @@ import threading
 import time
 import platform
 import shutil
+import tempfile
 import yaml
 import argparse
 from ghis2s.s2s_app import s2s_api
+from ghis2s.shared import utils
+from ghis2s import bcsd
 
-class DownloadedForecasts():
+class DownloadForecasts():
     def __init__(self, year, month, config_file):
         with open(config_file, 'r', encoding="utf-8") as file:
             self.config = yaml.safe_load(file)
@@ -90,7 +93,33 @@ class DownloadedForecasts():
             return '{:02d}'.format(prevmon), day1, day2, day3
 
         self.prevmon, self.day1, self.day2, self.day3 =  set_month_days(month)
-          
+
+    def CFSv2_download(self):
+        """ download CFSv2 forecasts """
+        if self.month > 1:
+            os.makedirs(self.cfsv2datadir  + '{:04d}'.format(self.year), exist_ok=True)
+            os.chdir(self.cfsv2datadir  + '{:04d}'.format(self.year))
+            year2 = self.year
+        else:
+            # - Need to account for Dec/Jan crossover
+            os.makedirs(self.cfsv2datadir  + '{:04d}'.format(self.year -1), exist_ok=True)
+            os.chdir(self.cfsv2datadir  + '{:04d}'.format(self.year -1))
+            year2 = self.year -1
+
+        for prevmondays in [self.day1, self.day2, self.day3]:
+            icdate = f"{year2:04d}{self.prevmon}{prevmondays:02d}"
+            os.makedirs(icdate, exist_ok=True)
+            os.chdir(icdate)
+            # Loop over variable type:
+            for vartype in ['dlwsfc', 'dswsfc', 'q2m', 'wnd10m', 'prate', 'tmp2m', 'pressfc']:   
+                # Forecast cycle (00, 06, 12, 18):
+                for cycle in ['00', '06', '12', '18']:
+                    file_name = f"{vartype}.01.{icdate}{cycle}.daily.grb2"
+                    file = f"{self.srcdir}/cfs.{icdate}/{cycle}/time_grib_01/{vartype}.01.{icdate}{cycle}.daily.grb2"
+                    if not os.path.isfile(file_name):
+                        command = f"wget {file}"
+                        subprocess.run(command)
+        
     def CFSv2_file_checker(self):
         def create_cfsv2_log(cfsv2_log):
             # Write the header and instructions to the log file
@@ -164,7 +193,6 @@ class DownloadedForecasts():
         ret_code = 0
         for prevmondays in [self.day1, self.day2, self.day3]:
             icdate = f"{year2:04d}{self.prevmon}{prevmondays:02d}"
-            #os.makedirs(icdate, exist_ok=True)
             os.chdir(icdate)
 
             # Loop over variable type:
@@ -230,7 +258,7 @@ class DownloadedForecasts():
 
         return ret_code
         
-class S2Srun(DownloadedForecasts):
+class S2Srun(DownloadForecasts):
     def __init__(self, year, month, config_file):
         super(S2Srun, self).__init__(year, month, config_file)
         with open(config_file, 'r', encoding="utf-8") as file:
@@ -252,6 +280,7 @@ class S2Srun(DownloadedForecasts):
         self.SCRDIR = self.E2ESDIR + 'scratch/' + self.YYYY + self.MM + '/'
         self.MODELS = self.config["EXP"]["NMME_models"]
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
+        self.schedule = self.job_schedule()
         
         if not os.path.exists(self.E2ESDIR + 'scratch/'):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r", self.E2ESDIR], check=True)
@@ -304,6 +333,43 @@ class S2Srun(DownloadedForecasts):
             sys.exit(ret_code)
  
         return
+
+    def job_schedule(self):
+        def create_dict(prev):
+            return {'jobid': [], 'prev': prev}
+            
+        schedule = {}
+        schedule['lisda'] = create_dict(None)
+        schedule['ldtics'] = create_dict(['lisda'])
+        schedule['bcsd01'] = create_dict(None)
+        schedule['bcsd03'] = create_dict(None)
+        schedule['bcsd04'] = create_dict(['bcsd01', 'bcsd03'])
+        schedule['bcsd05'] = create_dict(['bcsd01', 'bcsd03'])
+        schedule['bcsd06'] = create_dict(['bcsd04', 'bcsd05'])
+        schedule['bcsd08'] = create_dict(['bcsd06'])
+        schedule['bcsd09-10'] = create_dict(['bcsd08'])
+        schedule['bcsd11-12'] = create_dict(['bcsd09-10'])
+        schedule['lis_fcst'] = create_dict(['bcsd11-12'])
+        schedule['s2spost'] = create_dict(['lis_fcst'])
+        schedule['s2smetric'] = create_dict(['s2spost'])
+        schedule['s2splots'] = create_dict(['s2smetric'])
+
+        return schedule
+
+    def split_list(self, input_list, num_sublists):
+        """divide a list to sublists"""
+        sublist_size = (len(input_list) - 1) // (num_sublists - 1)
+        result = [input_list[i:i + sublist_size] for i in range(0, len(input_list) - 1, sublist_size)]
+        result.append([input_list[-1]])
+        return result
+
+    def sublist_to_file(self, sublist, CWD):
+        temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt')
+        temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt', dir=CWD)
+        for item in sublist:
+            temp_file.write(f"{item}\n")
+            temp_file.flush()
+        return temp_file
 
     def lis_darun(self):
         """ LIS DARUN STEP """
@@ -447,7 +513,7 @@ class S2Srun(DownloadedForecasts):
 
     def bcsd(self):
         """ BCSD 12 steps """
-        
+                
         obs_clim_dir='{}/hindcast/bcsd_fcst/CFSv2_25km/raw/Climatology/'.format(self.E2ESROOT)
         nmme_clim_dir='{}/hindcast/bcsd_fcst/NMME/raw/Climatology/'.format(self.E2ESROOT)
         usaf_25km='{}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'.format(self.E2ESROOT)
@@ -475,11 +541,46 @@ class S2Srun(DownloadedForecasts):
 
         date_obj = datetime.strptime(f"{self.YYYY}-{self.MM}-01", "%Y-%m-%d")
         mmm = date_obj.strftime("%b").lower()
+
+        # (1) bcsd01 - regrid CFSv2 files
+        # -------------------------------
+        jobname='bcsd01_'
+        slurm_commands, cylc_commands, loop_items = \
+            bcsd.task_01.main(self.BWD +'/' + self.config_file, self.year, None,
+                              mmm, CWD, jobname, 1, 2, py_call=True)
+
+        # multi tasks per job
+        n_sub = 6
+        slurm_sub = self.split_list(slurm_commands, n_sub)
+        loop_sub = self.split_list(loop_items, n_sub)
+        for i in range(n_sub):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                    jobname, 1, str(3), CWD, tfile.name)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
+
+        # (3) bcsd03 regridding NMME
+        # --------------------------
+        jobname='bcsd03_'
+        slurm_commands = \
+            bcsd.task_03.main(self.BWD +'/' + self.config_file, self.year, self.month,
+                              jobname, 1, str(2), CWD, py_call=True)
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(2), CWD, tfile.name)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
         
-    
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
-        self.CFSv2_file_checker()
+        #self.CFSv2_file_checker()
 
         # (2) LISDA run
         #self.lis_darun()
@@ -489,6 +590,10 @@ class S2Srun(DownloadedForecasts):
 
         # (4) BCSD
         self.bcsd()
+
+        # (5) LIS FCST
+        #self.lis_fcst()
+        
 
         return
 
