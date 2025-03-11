@@ -46,7 +46,7 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd):
+def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd, py_call=False):
     """Main driver."""    
 
     # load config file
@@ -69,7 +69,7 @@ def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd):
     nmme_download_dir = config['BCSD']['nmme_download_dir']
     forcedir = f"{projdir}/bcsd_fcst/NMME"
     nmme_output_dir = f"{forcedir}/raw/Monthly"
-
+    slurm_commands = []
     for nmme_model in  config['EXP']['NMME_models']:
         ensemble_size = ensemble_sizes[nmme_model]
         cmd = "python"
@@ -84,7 +84,13 @@ def main(config_file, current_year, month_num, job_name, ntasks, hours, cwd):
         cmd += f" {config_file}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+        if py_call:
+                slurm_commands.append(cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+
+    if py_call:
+        return slurm_commands
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

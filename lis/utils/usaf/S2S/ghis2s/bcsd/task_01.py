@@ -75,7 +75,7 @@ def calc_ic_dates(icmon):
         sys.exit(1)
     return ic_dates
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hours):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hours, py_call=False):
     """Main driver."""
 
     syear = int(fcst_syr)
@@ -83,11 +83,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
         eyear = None
     else:
         eyear = int(fcst_eyr)
-    month_abbr = month_abbr
-    cwd = cwd
-    job_name = job_name
-    ntasks = ntasks
-    hours = hours
 
     # Load config file
     with open(config_file, 'r', encoding="utf-8") as file:
@@ -113,6 +108,13 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     # Process 6-hrly CFSv2 forecasts and output in monthly and 6-hrly formats
     print("[INFO] Processing CFSv2 6-hrly forecast variables")
     nof_raw_ens = config['BCSD']['nof_raw_ens']
+
+    # if the call came from s2s_run.py the method returns 3 lists
+    if py_call:
+        slurm_commands = []
+        cylc_commands = []
+        loop_items = []
+        
     for ens_num in range(1, nof_raw_ens + 1):
         if eyear is not None:
             cmd_list = []
@@ -142,11 +144,29 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
             cmd += f" {config_file}"
             for ic_date in ic_dates:
                 cmd += f" {ic_date}"
+
+            cylc_cmd = "python"
+            cylc_cmd += f" {srcdir}/process_forecast_data.py"
+            cylc_cmd += f" {syear:04d}"
+            cylc_cmd += f' "$ITEM"'
+            cylc_cmd += f" {imon}"
+            cylc_cmd += f" {outdir}"
+            cylc_cmd += f" {config_file}"
+            for ic_date in ic_dates:
+                cylc_cmd += f" {ic_date}"
+                
             jobfile = job_name + '_' + str(ens_num).zfill(2) + '_run.j'
             jobname = job_name + '_' + str(ens_num).zfill(2) + '_'
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            if py_call:
+                slurm_commands.append(cmd)
+                loop_items.append(f"{ens_num:02d}")
+            else:
+                utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Write command to process CFSv2 files for {imon}")
+    if py_call:
+        cylc_commands.append(cylc_cmd)
+        return slurm_commands, cylc_commands, loop_items
 
 if __name__ == "__main__":
     # Parse command arguements
