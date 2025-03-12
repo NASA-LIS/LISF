@@ -50,7 +50,7 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, py_call=False):
     """Main driver."""
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
@@ -90,7 +90,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     outdir = f"{fcst_indir}/bcsd/Monthly/{month_abbr}01"
 
     print("[INFO] Processing forecast bias correction of CFSv2 variables")
-
+    if py_call:
+        slurm_commands = []
+        cylc_commands = []
+        loop_items = []
 #    for var_num in range(len(obs_var_list)):
     for var_num, var_value in enumerate(obs_var_list):
         if var_num in [0, 2]:
@@ -120,12 +123,35 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
         cmd += f" {config_file}"
         cmd += f" {outdir}"
         cmd += f" {logdir}"
+        
         jobfile = job_name + '_' + obs_var + '_run.j'
         jobname = job_name + '_' + obs_var + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+
+        cylc_cmd = "python"
+        cylc_cmd += f" {srcdir}/bias_correction_modulefast.py"
+        cylc_cmd += f' "$ITEM"'
+        cylc_cmd += f" {month_num}"
+        cylc_cmd += f" {lead_months}"
+        cylc_cmd += f" {ens_num}"
+        cylc_cmd += f" {fcst_syr}"
+        cylc_cmd += f" {fcst_eyr}"
+        cylc_cmd += f" {clim_syr}"
+        cylc_cmd += f" {clim_eyr}"
+        cylc_cmd += f" {obs_indir}"
+        cylc_cmd += f" {fcst_indir}"
+        cylc_cmd += f" {config_file}"
+        cylc_cmd += f" {outdir}"
+        cylc_cmd += f" {logdir}"
+        if py_call:
+            slurm_commands.append(cmd)
+            loop_items.append(f" {obs_var} {fcst_var} {var_type} {unit}")
+        else:            
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Completed writing forecast bias correction scripts for: {month_abbr}")
-
+    if py_call:
+        cylc_commands.append(cylc_cmd)
+        return slurm_commands, cylc_commands, loop_items
 #
 # Main Method
 #
