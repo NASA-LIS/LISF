@@ -355,13 +355,18 @@ class S2Srun(DownloadForecasts):
         schedule['s2splots'] = create_dict(['s2smetric'])
 
         return schedule
-
-    def split_list(self, input_list, num_sublists):
-        """divide a list to sublists"""
-        sublist_size = (len(input_list) - 1) // (num_sublists - 1)
-        result = [input_list[i:i + sublist_size] for i in range(0, len(input_list) - 1, sublist_size)]
-        result.append([input_list[-1]])
+    def split_list(self, input_list, length_sublist):
+        result = []
+        for i in range(0, len(input_list), length_sublist):
+            sublist = input_list[i:i + length_sublist]
+            result.append(sublist)
         return result
+    #def split_list(self, input_list, num_sublists):
+    #    """divide a list to sublists"""
+    #    sublist_size = (len(input_list) - 1) // (num_sublists - 1)
+    #    result = [input_list[i:i + sublist_size] for i in range(0, len(input_list) - 1, sublist_size)]
+    #    result.append([input_list[-1]])
+    #    return result
 
     def sublist_to_file(self, sublist, CWD):
         temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt')
@@ -550,10 +555,10 @@ class S2Srun(DownloadForecasts):
                               mmm, CWD, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
-        n_sub = 6
-        slurm_sub = self.split_list(slurm_commands, n_sub)
-        loop_sub = self.split_list(loop_items, n_sub)
-        for i in range(n_sub):
+        l_sub = 2
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        loop_sub = self.split_list(loop_items, l_sub)
+        for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
@@ -577,6 +582,58 @@ class S2Srun(DownloadForecasts):
             tfile.close()
             os.unlink(tfile.name)
         utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
+
+        # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
+        # --------------------------------------------------------------------------
+        jobname='bcsd04_'
+        slurm_commands, cylc_commands, loop_items = \
+            bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+                              1, 3, CWD, py_call=True)
+        # multi tasks per job
+        l_sub = 4
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        loop_sub = self.split_list(loop_items, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                    jobname, 1, str(3), CWD, tfile.name)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
+
+        # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
+        # -------------------------------------------------------------------------
+        jobname='bcsd05_'
+        slurm_commands = []
+        loop_items = []
+        cylc_commands = []
+        for nmme_model in self.MODELS:
+            var1, var2, var3 = \
+                bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+                                  1, 3, CWD, nmme_model, py_call=True)
+            slurm_commands.append(var1)
+            loop_items.append(nmme_model)
+        cylc_commands = var2
+        
+        # multi tasks per job
+        l_sub = 3
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        loop_sub = self.split_list(loop_items, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                    jobname, 1, str(3), CWD, tfile.name)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
+
+        # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
+        # ---------------------------------------------------------------------
+        
         
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/

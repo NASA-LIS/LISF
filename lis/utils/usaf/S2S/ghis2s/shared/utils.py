@@ -138,7 +138,8 @@ def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None):
                 f.write("PIDS+=($!)\n")
                 f.write("\n")
         else:
-            f.write(f"ITEMS=({' '.join(loop_list)})\n")
+            quoted_items = [f"'{item}'" for item in loop_list]
+            f.write(f"ITEMS=({' '.join(quoted_items)})\n")
             # First loop
             f.write("for ITEM in \"${ITEMS[@]}\"; do\n")
             f.write(f"    {command_list[0]} &\n")
@@ -147,7 +148,7 @@ def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None):
 
             if len(command_list) > 1:
                 # Second loop (assuming MODELS is defined elsewhere in your script)
-                f.write("for MODEL in \"${MODELS[@]}\"; do\n")
+                f.write("for ITEM in \"${ITEMS[@]}\"; do\n")
                 f.write(f"    {command_list[1]} &\n")
                 f.write("    PIDS+=($!)\n")
                 f.write("done\n\n")
@@ -185,12 +186,11 @@ if $ALL_DONE; then
     break
 fi
 done
-
-echo "[INFO] Completed s2smetric_!"
-
-/usr/bin/touch DONE
+        """) 
+        f.write(f"echo [INFO] Completed {job_file} ! \n\n")
+        f.write("""/usr/bin/touch DONE
 exit 0
-            """)    
+        """)    
 
 def update_job_schedule (filename, myid, jobname, afterid):
     ''' writes the SLURM_JOB_SCHEDULE file '''
