@@ -12,6 +12,8 @@ import yaml
 import argparse
 from ghis2s.s2s_app import s2s_api
 from ghis2s.shared import utils
+from ghis2s.s2spost import run_s2spost_9months
+from ghis2s.s2smetric import postprocess_nmme_job
 from ghis2s import bcsd
 
 class DownloadForecasts():
@@ -276,7 +278,6 @@ class S2Srun(DownloadForecasts):
         self.DOMAIN = self.config['EXP']['DOMAIN']
         self.SUPDIR = self.config['SETUP']['supplementarydir']
         self.LDTFILE = self.config['SETUP']['ldtinputfile']
-        self.BWD = os.getcwd()
         self.SCRDIR = self.E2ESDIR + 'scratch/' + self.YYYY + self.MM + '/'
         self.MODELS = self.config["EXP"]["NMME_models"]
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
@@ -316,7 +317,7 @@ class S2Srun(DownloadForecasts):
                 idx = (idx + 1) % len(spin_chars)
                 time.sleep(0.1)
 
-        #command = f"bash {self.E2ESDIR}/s2s_app/wget_cfsv2_oper_ts_e2es.sh -y {self.YYYY} -m {self.MM} -c {self.BWD}/{self.config_file} -d N"
+        #command = f"bash {self.E2ESDIR}/s2s_app/wget_cfsv2_oper_ts_e2es.sh -y {self.YYYY} -m {self.MM} -c {self.E2ESDIR}/{self.config_file} -d N"
         #process = subprocess.run(command, shell=True)
         #ret_code = process.returncode
 
@@ -352,9 +353,11 @@ class S2Srun(DownloadForecasts):
         schedule['lis_fcst'] = create_dict(['bcsd11-12'])
         schedule['s2spost'] = create_dict(['lis_fcst'])
         schedule['s2smetric'] = create_dict(['s2spost'])
-        schedule['s2splots'] = create_dict(['s2smetric'])
+        schedule['s2smetric_tiff'] = create_dict(['s2smetric'])
+        schedule['s2splots'] = create_dict(['s2smetric_tiff'])
 
         return schedule
+    
     def split_list(self, input_list, length_sublist):
         result = []
         for i in range(0, len(input_list), length_sublist):
@@ -390,7 +393,7 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.SUPDIR + '/lis_darun/cdf/' +self.DOMAIN,'cdf')
         self.create_symlink(self.SUPDIR + '/lis_darun/RS_DATA','RS_DATA')
         self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)        
-        os.chdir(self.BWD)
+        os.chdir(self.E2ESDIR)
 
         # previous month
         date_obj = datetime.strptime(f"{self.YYYY}-{self.MM}-01", "%Y-%m-%d")
@@ -410,7 +413,7 @@ class S2Srun(DownloadForecasts):
 
         # write lisda_run.j
         # -----------------        
-        s2s_api.lis_job_file(self.BWD +'/' + self.config_file, 'lisda_run.j', 'lisda_', CWD, str(5))
+        s2s_api.lis_job_file(self.E2ESDIR +'/' + self.config_file, 'lisda_run.j', 'lisda_', CWD, str(5))
 
         if 'discover' in platform.node() or 'borg' in platform.node():
             if 'mil' in self.CONSTRAINT:
@@ -460,7 +463,7 @@ class S2Srun(DownloadForecasts):
 
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
         
-        os.chdir(self.BWD)
+        os.chdir(self.E2ESDIR)
         
         return self.schedule
 
@@ -495,10 +498,10 @@ class S2Srun(DownloadForecasts):
         # configure batch script
         # ----------------------
 
-        s2s_api.python_job_file(self.BWD +'/' + self.config_file, 'ldtics_run.j', 'ldtics_', str(1), str(2), CWD, None) 
+        s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 'ldtics_run.j', 'ldtics_', str(1), str(2), CWD, None) 
         
         COMMAND="python {}/ghis2s/ldt_ics/generate_ldtconfig_files_ensrst_nrt.py -y {} -m {} -i ./lisda_output -w {} -s {}/{}".\
-            format(self.LISHDIR, self.YYYY, self.month, CWD, self.BWD, self.config_file)
+            format(self.LISHDIR, self.YYYY, self.month, CWD, self.E2ESDIR, self.config_file)
 
         # add command
         # ---------------
@@ -510,7 +513,7 @@ class S2Srun(DownloadForecasts):
 
         self.schedule['ldtics']['jfiles'].append('ldtics_run.j')
 
-        os.chdir(self.BWD)
+        os.chdir(self.E2ESDIR)
         
         return self.schedule
 
@@ -548,7 +551,7 @@ class S2Srun(DownloadForecasts):
         # (1) bcsd01 - regrid CFSv2 files
         # -------------------------------
         jobname='bcsd01_'
-        slurm_commands = bcsd.task_01.main(self.BWD +'/' + self.config_file, self.year, None,
+        slurm_commands = bcsd.task_01.main(self.E2ESDIR +'/' + self.config_file, self.year, None,
                                            mmm, CWD, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
@@ -557,7 +560,7 @@ class S2Srun(DownloadForecasts):
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
-                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname+ '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
                 self.schedule['bcsd01']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
@@ -569,12 +572,11 @@ class S2Srun(DownloadForecasts):
         # (3) bcsd03 regridding NMME
         # --------------------------
         jobname='bcsd03_'
-        slurm_commands = \
-            bcsd.task_03.main(self.BWD +'/' + self.config_file, self.year, self.MM,
-                              jobname, 1, str(2), CWD, py_call=True)
+        slurm_commands = bcsd.task_03.main(self.E2ESDIR +'/' + self.config_file, self.year, self.MM,
+                                           jobname, 1, str(2), CWD, py_call=True)
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
-            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), CWD, tfile.name)
             self.schedule['bcsd03']['jfiles'].append(jobname + 'run.j')
         finally:
@@ -586,7 +588,7 @@ class S2Srun(DownloadForecasts):
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
-        slurm_commands = bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+        slurm_commands = bcsd.task_04.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
         l_sub = 4
@@ -594,7 +596,7 @@ class S2Srun(DownloadForecasts):
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
-                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
                 self.schedule['bcsd04']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
@@ -608,7 +610,7 @@ class S2Srun(DownloadForecasts):
         jobname='bcsd05_'
         slurm_commands = []
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+            var1 = bcsd.task_05.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, nmme_model, py_call=True)
             slurm_commands.append(var1)
         
@@ -618,7 +620,7 @@ class S2Srun(DownloadForecasts):
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
-                s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
                 self.schedule['bcsd05']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
@@ -630,12 +632,12 @@ class S2Srun(DownloadForecasts):
         # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
         # ---------------------------------------------------------------------
         jobname='bcsd06_'
-        slurm_commands = bcsd.task_06.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+        slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
-            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(5), CWD, tfile.name)
             self.schedule['bcsd06']['jfiles'].append(jobname + 'run.j')
         finally:
@@ -649,13 +651,13 @@ class S2Srun(DownloadForecasts):
         jobname='bcsd08_'
         slurm_commands = []
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_08.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+            var1 = bcsd.task_08.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
             slurm_commands.append(var1)
         
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
-            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(5), CWD, tfile.name)
             self.schedule['bcsd08']['jfiles'].append(jobname + 'run.j')
         finally:
@@ -669,12 +671,12 @@ class S2Srun(DownloadForecasts):
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
         jobname='bcsd09-10_'
-        slurm_9_10, slurm_11_12 = bcsd.task_09.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm,
+        slurm_9_10, slurm_11_12 = bcsd.task_09.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
                                                     self.MM, jobname,1, 4, CWD, self.E2ESDIR, 'CFSv2', py_call=True)
         # bcsd09-10
         tfile = self.sublist_to_file(slurm_9_10, CWD)
         try:
-            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
             self.schedule['bcsd09-10']['jfiles'].append(jobname + 'run.j')
         finally:
@@ -687,7 +689,7 @@ class S2Srun(DownloadForecasts):
         jobname='bcsd11-12_'
         tfile = self.sublist_to_file(slurm_11_12, CWD)
         try:
-            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
             self.schedule['bcsd11-12']['jfiles'].append(jobname + 'run.j')
         finally:
@@ -695,28 +697,148 @@ class S2Srun(DownloadForecasts):
             os.unlink(tfile.name)
             
         utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
+        
+        os.chdir(self.E2ESDIR)
+        return self.schedule
+
+    def s2spost(self):
+        """ S2SPOST STEP """
+        [os.makedirs(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, exist_ok=True) for model in self.MODELS]
+        os.chdir(self.SCRDIR + 's2spost')
+        self.create_symlink(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM + '/', 'lis_fcst')
+        self.create_symlink(self.E2ESDIR + 'lis_fcst/input/', 'input')
+        CWD=self.SCRDIR + 's2spost'
+
+        jobname='s2spost_'        
+        slurm_commands = []
+        for model in self.MODELS:
+            self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
+            var1 = run_s2spost_9months.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
+            slurm_commands.extend(var1)
+
+        # multi tasks per job
+        l_sub = 27
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
+                self.schedule['s2spost']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+                
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
+
+        os.chdir(self.E2ESDIR)
+        
+        return self.schedule
+
+    def s2smetric(self):
+        """ S2SMETRICS STEP """
+        os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/DYN_ANOM', exist_ok=True)
+        os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/DYN_SANOM', exist_ok=True)
+        os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/metrics_cf', exist_ok=True)
+
+        os.chdir(self.SCRDIR + 's2smetric')
+        self.create_symlink(self.E2ESDIR + 's2spost/', 's2spost')
+        self.create_symlink(self.E2ESDIR + 's2smetric/', 's2smetric')
+        CWD=self.SCRDIR + 's2smetric'
+
+        jobname='s2smetric_'
+        slurm_commands = []
+        for model in self.MODELS:
+            var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+                                             hours=str(4), nmme_model= model, py_call=True)
+            slurm_commands.extend(var1)
+
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(4), CWD, tfile.name)
+            self.schedule['s2smetric']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
+
+        jobname='s2smetric_tiff_'
+        s2s_api.lis_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', CWD, str(3))
+        COMMAND = f"srun --exclusive --ntasks 1 python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"
+        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
+
+        # add LIS command
+        with open('s2smetric_tiff_run.j', 'r') as file:
+            filedata = file.read()   
+        filedata = filedata.replace('COMMAND', COMMAND)
+        with open('s2smetric_tiff_run.j', 'w') as file:
+            file.write(filedata)
+
+        self.schedule['s2smetric_tiff']['jfiles'].append('s2smetric_tiff_run.j')
+        utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
+
+        os.chdir(self.E2ESDIR)
+        
+        return self.schedule
+
+    def s2splots(self):
+        os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM, exist_ok=True)
+        os.chdir(self.SCRDIR + 's2splots')
+        self.create_symlink(self.E2ESDIR + 's2splots/', 's2splots')
+        self.create_symlink(self.E2ESDIR + 's2smetric/', 's2smetric')
+        CWD=self.SCRDIR + 's2splots'
+
+        jobname='s2splots_'
+        slurm_commands = []
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_mena.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 1")
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 2")
+
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(6), CWD, tfile.name)
+            self.schedule['s2splots']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
+        
+        os.chdir(self.E2ESDIR)
 
         return self.schedule
-             
+         
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
         #self.CFSv2_file_checker()
 
         # (2) LISDA run
-        #self.lis_darun()
+        self.lis_darun()
 
         # (3) LDT-ICS
-        #self.ldt_ics()
+        self.ldt_ics()
 
         # (4) BCSD
         self.bcsd()
 
         # (5) LIS FCST
         #self.lis_fcst()
+
+        # (6) S2SPOST
+        self.s2spost()
+
+        # (7) S2SMETRIC
+        self.s2smetric()
+
+        # (8) S2SPLOTS
+        self.s2splots()
         
-
         return self.schedule
-
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

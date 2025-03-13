@@ -65,7 +65,7 @@ def _advance_date_by_month(curdate):
                                 day=1)
     return newdate
 
-def submit_batch_jobs(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_forcing):
+def main(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, cwd, model_forcing, py_call=False):
     """Submit batch jobs for processing LIS forecast."""
 
     startdate = datetime.datetime(fcst_year, fcst_mon, day=1)
@@ -81,6 +81,7 @@ def submit_batch_jobs(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, 
     # One batch job per month (call to run_s2spost_1month.py):
     fcstdate = startdate
     curdate = startdate
+    slurm_commands = []
     for _ in range(0, total_months):
         txt = "[INFO] Submitting batch job for"
         txt += f" cf_{model_forcing}_{curdate.year:04d}{curdate.month:02d}"
@@ -94,10 +95,18 @@ def submit_batch_jobs(configfile, fcst_year, fcst_mon, job_name, ntasks, hours, 
             + curdate.strftime("%m")+  '_run.j'
         jobname = job_name + '_' + model_forcing +  '_' + curdate.strftime("%Y") \
             + curdate.strftime("%m")+ '_'
-        utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
+        if py_call:
+            slurm_commands.append(cmd)
+        else:
+            utils.job_script(configfile, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+            
         newdate = _advance_date_by_month(curdate)
         curdate = newdate
+
+    if py_call:
+        return slurm_commands
+        
 
 # Invoke driver
 if __name__ == "__main__":
@@ -113,5 +122,5 @@ if __name__ == "__main__":
     parser.add_argument('-M', '--nmme_model', required=True, help='NMME model')
 
     args = parser.parse_args()
-    submit_batch_jobs(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.jobname,
-                      args.ntasks, args.hours, args.cwd, args.nmme_model)
+    main(args.configfile, int(args.fcst_year), int(args.fcst_mon), args.jobname,
+         args.ntasks, args.hours, args.cwd, args.nmme_model)

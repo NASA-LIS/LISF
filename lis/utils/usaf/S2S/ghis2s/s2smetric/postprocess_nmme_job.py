@@ -134,7 +134,7 @@ def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
             sys.exit(1)
 
 def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
-         ntasks=None, hours=None):
+         ntasks=None, hours=None, py_call=False):
     """Main driver"""
 
     baseoutdir = cwd + '/s2smetric/{:04d}{:02d}'.format(fcst_year, fcst_mon)
@@ -149,6 +149,7 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
     else:
         pylibdir = config['SETUP']['LISFDIR'] + \
             '/lis/utils/usaf/S2S/ghis2s/s2smetric/metrics_library/'
+        slurm_commands = []
         for anom_type in ["anom", "sanom"]:
             py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
             cmd = "python"
@@ -161,7 +162,13 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
             jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
             job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
             print(cmd)
-            utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+            if py_call:
+                slurm_commands.append(cmd)
+            else:
+                utils.job_script(configfile, jobfile, job_name, ntasks, hours, cwd, in_command=cmd)
+
+        if py_call:
+            return slurm_commands
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
