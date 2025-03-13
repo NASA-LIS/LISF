@@ -462,7 +462,7 @@ class S2Srun(DownloadForecasts):
         
         os.chdir(self.BWD)
         
-        return
+        return self.schedule
 
     def ldt_ics(self):
         """ LDT-ICS STEP """
@@ -512,7 +512,7 @@ class S2Srun(DownloadForecasts):
 
         os.chdir(self.BWD)
         
-        return
+        return self.schedule
 
     def bcsd(self):
         """ BCSD 12 steps """
@@ -570,7 +570,7 @@ class S2Srun(DownloadForecasts):
         # --------------------------
         jobname='bcsd03_'
         slurm_commands = \
-            bcsd.task_03.main(self.BWD +'/' + self.config_file, self.year, self.month,
+            bcsd.task_03.main(self.BWD +'/' + self.config_file, self.year, self.MM,
                               jobname, 1, str(2), CWD, py_call=True)
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
@@ -586,7 +586,7 @@ class S2Srun(DownloadForecasts):
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
-        slurm_commands = bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+        slurm_commands = bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
         l_sub = 4
@@ -608,7 +608,7 @@ class S2Srun(DownloadForecasts):
         jobname='bcsd05_'
         slurm_commands = []
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+            var1 = bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, nmme_model, py_call=True)
             slurm_commands.append(var1)
         
@@ -630,7 +630,7 @@ class S2Srun(DownloadForecasts):
         # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
         # ---------------------------------------------------------------------
         jobname='bcsd06_'
-        slurm_commands = bcsd.task_06.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+        slurm_commands = bcsd.task_06.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
         tfile = self.sublist_to_file(slurm_commands, CWD)
@@ -649,7 +649,7 @@ class S2Srun(DownloadForecasts):
         jobname='bcsd08_'
         slurm_commands = []
         for nmme_model in self.MODELS:
-            var1 = bcsd.task_08.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+            var1 = bcsd.task_08.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
             slurm_commands.append(var1)
         
@@ -663,7 +663,41 @@ class S2Srun(DownloadForecasts):
             os.unlink(tfile.name)
 
         utils.cylc_job_scripts(jobname + 'run.sh', 5, CWD, command_list=slurm_commands)
-               
+
+        # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
+        # Task 10: Combine the NMME forcing fields into final format for LIS to read
+        #          and symbolically link to the reusable CFSv2 met forcings
+        # ---------------------------------------------------------------------------
+        jobname='bcsd09-10_'
+        slurm_9_10, slurm_11_12 = bcsd.task_09.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm,
+                                                    self.MM, jobname,1, 4, CWD, self.E2ESDIR, 'CFSv2', py_call=True)
+        # bcsd09-10
+        tfile = self.sublist_to_file(slurm_9_10, CWD)
+        try:
+            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(6), CWD, tfile.name)
+            self.schedule['bcsd09-10']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+            
+        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10)
+
+        # bcsd11-12
+        jobname='bcsd11-12_'
+        tfile = self.sublist_to_file(slurm_11_12, CWD)
+        try:
+            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(6), CWD, tfile.name)
+            self.schedule['bcsd11-12']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+            
+        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
+
+        return self.schedule
+             
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
         #self.CFSv2_file_checker()
@@ -681,7 +715,7 @@ class S2Srun(DownloadForecasts):
         #self.lis_fcst()
         
 
-        return
+        return self.schedule
 
         
 if __name__ == "__main__":
@@ -689,10 +723,46 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--config_file', required=True, type=str, help='config file')
     parser.add_argument('-y', '--year', required=True, type=int, help='forecast year')
     parser.add_argument('-m', '--month', required=True, type=int, help='forecast month')
-    parser.add_argument('-r', '--report', required=False, type=str, help='Report')
-    parser.add_argument('-s', '--step', required=False, type=str, help='S2S step: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS')
-    parser.add_argument('-o', '--one_step', required=False, type=str, help='Is only one step?')
+    parser.add_argument('-s', '--step', required=False, default=None, type=str, help='S2S step: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS')
+    parser.add_argument('-o', '--one_step', action='store_true', help='Is only one step (default: False)?')
+    parser.add_argument('-j', '--submit_job', action='store_true', help='Submit SLURM jobs (default: False)')
+    parser.add_argument('-r', '--report', action='store_true', help='Report')
     args = parser.parse_args()
 
     s2s = S2Srun(year=args.year, month=args.month, config_file=args.config_file)
-    s2s.main()
+    
+    if args.step is not None:
+        if args.step == 'LISDA':
+            schedule = s2s.lis_darun()
+        elif args.step == 'LDTICS':
+            schedule =  s2s.ldt_ics()
+        elif args.step == 'BCSD':
+            schedule = s2s.bcsd()
+            if not args.one_step:
+                schedule = s2s.lis_fcst()
+                schedule = s2s.s2spost()
+                schedule = s2smetrics()
+                schedule = s2splots()
+        elif args.step == 'FCST':
+            schedule = s2s.lis_fcst()
+            if not args.one_step:
+                schedule = s2s.s2spost()
+                schedule = s2smetrics()
+                schedule = s2splots()
+        elif args.step == 'POST':
+            schedule = s2spost()
+            if not args.one_step:
+                schedule = s2smetrics()
+                schedule = s2splots()
+        elif args.step == 'METRICS':
+            schedule = s2smetrics()
+            schedule = s2splots()
+    else:
+        schedule = s2s.main()
+
+    # Submit SLURM jobs
+    # -----------------
+    if  args.submit_job:
+        print(schedule)
+        #s2s.submit_jobs(schedule)
+        
