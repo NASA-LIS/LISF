@@ -740,6 +740,19 @@ subroutine LIS_lsmda_plugin
 #endif
 #endif
 
+   external :: registerlsmdainit
+   external :: registerlsmdagetstatevar
+   external :: registerlsmdaobstransform
+   external :: registerlsmdamapobstolsm
+   external :: registerlsmdaupdatestate
+   external :: registerlsmdaqcstate
+   external :: registerlsmdasetstatevar
+   external :: registerlsmdagetobspred
+   external :: registerlsmdaqcobsstate
+   external :: registerlsmdascalestatevar
+   external :: registerlsmdadescalestatevar
+   external :: registerlsmdadiagnosevars
+
 #if ( defined SM_NOAH_2_7_1 )
 #if ( defined DA_OBS_SNODEP )
 ! Noah-2.7.1 snow depth
