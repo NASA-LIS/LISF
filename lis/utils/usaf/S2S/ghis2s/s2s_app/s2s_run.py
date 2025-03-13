@@ -336,7 +336,7 @@ class S2Srun(DownloadForecasts):
 
     def job_schedule(self):
         def create_dict(prev):
-            return {'jobid': [], 'prev': prev}
+            return {'jfiles': [], 'jobid': [], 'prev': prev}
             
         schedule = {}
         schedule['lisda'] = create_dict(None)
@@ -429,6 +429,8 @@ class S2Srun(DownloadForecasts):
         with open('lisda_run.j', 'w') as file:
             file.write(filedata)
 
+        self.schedule['lisda']['jfiles'].append('lisda_run.j')
+
         # configure lis.config
         # --------------------
         
@@ -458,9 +460,6 @@ class S2Srun(DownloadForecasts):
 
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
         
-        # submit Job
-        # ----------
-
         os.chdir(self.BWD)
         
         return
@@ -509,8 +508,7 @@ class S2Srun(DownloadForecasts):
         with open('ldtics_run.j', 'w') as file:
             file.write(filedata)
 
-        # submit job
-        # ----------
+        self.schedule['ldtics']['jfiles'].append('ldtics_run.j')
 
         os.chdir(self.BWD)
         
@@ -550,24 +548,24 @@ class S2Srun(DownloadForecasts):
         # (1) bcsd01 - regrid CFSv2 files
         # -------------------------------
         jobname='bcsd01_'
-        slurm_commands, cylc_commands, loop_items = \
-            bcsd.task_01.main(self.BWD +'/' + self.config_file, self.year, None,
-                              mmm, CWD, jobname, 1, 2, py_call=True)
+        slurm_commands = bcsd.task_01.main(self.BWD +'/' + self.config_file, self.year, None,
+                                           mmm, CWD, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
         l_sub = 2
         slurm_sub = self.split_list(slurm_commands, l_sub)
-        loop_sub = self.split_list(loop_items, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname, 1, str(3), CWD, tfile.name)
+                                    jobname+ '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
+                self.schedule['bcsd01']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
-
+                
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=slurm_sub[i])
+ 
         # (3) bcsd03 regridding NMME
         # --------------------------
         jobname='bcsd03_'
@@ -578,63 +576,94 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), CWD, tfile.name)
+            self.schedule['bcsd03']['jfiles'].append(jobname + 'run.j')
         finally:
             tfile.close()
             os.unlink(tfile.name)
+            
         utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
 
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
-        slurm_commands, cylc_commands, loop_items = \
-            bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+        slurm_commands = bcsd.task_04.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
         l_sub = 4
         slurm_sub = self.split_list(slurm_commands, l_sub)
-        loop_sub = self.split_list(loop_items, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname, 1, str(3), CWD, tfile.name)
+                                    jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
+                self.schedule['bcsd04']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
+                
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=slurm_sub[i])
 
         # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
         jobname='bcsd05_'
         slurm_commands = []
-        loop_items = []
-        cylc_commands = []
         for nmme_model in self.MODELS:
-            var1, var2, var3 = \
-                bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
-                                  1, 3, CWD, nmme_model, py_call=True)
+            var1 = bcsd.task_05.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+                                     1, 3, CWD, nmme_model, py_call=True)
             slurm_commands.append(var1)
-            loop_items.append(nmme_model)
-        cylc_commands = var2
         
         # multi tasks per job
         l_sub = 3
         slurm_sub = self.split_list(slurm_commands, l_sub)
-        loop_sub = self.split_list(loop_items, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname, 1, str(3), CWD, tfile.name)
+                                    jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
+                self.schedule['bcsd05']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=cylc_commands, loop_list=loop_sub[i])
+                
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=slurm_sub[i])
 
         # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
         # ---------------------------------------------------------------------
+        jobname='bcsd06_'
+        slurm_commands = bcsd.task_06.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+                                           1, 3, CWD, self.E2ESDIR, py_call=True)
+
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(5), CWD, tfile.name)
+            self.schedule['bcsd06']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+            
+        utils.cylc_job_scripts(jobname + 'run.sh', 5, CWD, command_list=slurm_commands)
+
+        # (8) bcsd08: NMME disaagregation
+        # -------------------------------
+        jobname='bcsd08_'
+        slurm_commands = []
+        for nmme_model in self.MODELS:
+            var1 = bcsd.task_08.main(self.BWD +'/' + self.config_file, self.year, self.year, mmm, self.month, jobname,
+                                     1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
+            slurm_commands.append(var1)
         
-        
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.BWD +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(5), CWD, tfile.name)
+            self.schedule['bcsd08']['jfiles'].append(jobname + 'run.j')
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 5, CWD, command_list=slurm_commands)
+               
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
         #self.CFSv2_file_checker()

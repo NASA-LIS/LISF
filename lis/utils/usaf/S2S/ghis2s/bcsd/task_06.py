@@ -53,15 +53,12 @@ def _usage():
     print("[INFO] ntasks: SLURM ntasks")
     print("[INFO] hours: SLURM time hours")
 
-def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, py_call=False):
+def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntasks, hours, cwd, projdir, py_call=False):
     """Main driver."""
     
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-
-    # Path of the main project directory
-    projdir = args.project_directory
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
@@ -99,6 +96,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
         os.makedirs(outdir)
 
     print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+
+    slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd2 = '\n'
         for var_num, var_value in enumerate(obs_var_list):
@@ -109,7 +108,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
                 cmd2 += f" -s {year}"
                 cmd2 += f" -m {month_abbr}"
                 cmd2 += f" -w {projdir}"
-
+                slurm_commands.append(cmd2)
             else:
                 cmd2 = '\n'
                 var_type = "TEMP"
@@ -139,12 +138,16 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
             cmd += f" {domain}"
             jobfile = job_name + '_' + obs_var + '_run.j'
             jobname = job_name + '_' + obs_var + '_'
-
-            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd,
-                             in_command=cmd, command2=cmd2)
+                        
+            if py_call:
+                slurm_commands.append(cmd)
+            else:
+                utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd,
+                                 in_command=cmd, command2=cmd2)
 
     print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
-
+    if py_call:
+        return slurm_commands
 #
 # Main Method
 #
@@ -164,4 +167,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
-         args.job_name, args.ntasks, args.hours, args.cwd)
+         args.job_name, args.ntasks, args.hours, args.cwd, args.project_directory)

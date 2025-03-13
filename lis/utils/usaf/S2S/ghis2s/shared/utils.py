@@ -125,12 +125,17 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('exit 0' + '\n')
     _f.close()
 
-def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None):
+def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None, command2=None):
     with open(job_file, 'w') as f:
         f.write("#!/bin/bash\n\n")
         # Set ITEMS to loop_list
         f.write("# Run tasks in parallel\n")
         f.write("PIDS=()\n")
+        if command2 is not None:
+            f.write(f"{command2} &\n")
+            f.write("PIDS+=($!)\n")
+            f.write("\n")
+            
         if loop_list is None:
             # If loop_list is not provided, loop through command_list
             for cmd in command_list:
