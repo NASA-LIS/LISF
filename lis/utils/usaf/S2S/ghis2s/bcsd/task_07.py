@@ -46,19 +46,8 @@ def _usage():
     print("[INFO] month_abbr: Current month")
     print("[INFO] cwd: current working directory")
 
-def _driver():
+def main(current_year, month_abbr, cwd):
     """Main driver."""
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
-    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
-    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
-
-    args = parser.parse_args()
-    current_year = args.current_year
-    month_abbr = args.month_abbr
-    cwd = args.cwd
-
     # Path of the main project directory
     projdir = cwd
 
@@ -94,4 +83,10 @@ def _driver():
 # Main Method
 #
 if __name__ == "__main__":
-    _driver()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
+    parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+
+    args = parser.parse_args()
+    main(args.current_year, args.month_abbr, args.cwd)

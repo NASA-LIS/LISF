@@ -55,15 +55,12 @@ def _usage():
     print("[INFO] hours: SLURM time hours")
 
 def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
-         job_name, ntasks, hours, cwd, nmme_model):
+         job_name, ntasks, hours, cwd, projdir, nmme_model, py_call=False):
     """Main driver."""
 
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-
-    # Path of the main project directory
-    projdir = args.project_directory
 
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
@@ -102,6 +99,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
         os.makedirs(outdir)
 
     print("[INFO] Processing temporal disaggregation of CFSv2 variables")
+
+    slurm_commands = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
         cmd += f" {srcdir}/temporal_disaggregation_nmme_6hourly_module.py"
@@ -123,10 +122,15 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
         cmd += f" {domain}"
         jobfile = job_name + '_' + nmme_model + '_run.j'
         jobname = job_name + '_' + nmme_model + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+
+        if py_call:
+            slurm_commands.append(cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Wrote NMME temporal disaggregation script for: {month_abbr}")
-
+    if py_call:
+        return slurm_commands
 #
 # Main Method
 #
@@ -147,4 +151,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num,
-         args.job_name, args.ntasks, args.hours, args.cwd, args.nmme_model)
+         args.job_name, args.ntasks, args.hours, args.cwd, args.args.project_directory, nmme_model)
