@@ -54,7 +54,7 @@ def usage():
     print("[INFO] cwd: current working directory")
 
 def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
-         ntasks, hours, cwd, fcst_type):
+         ntasks, hours, cwd, projdir, fcst_type, py_call=False):
     """Main driver."""
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
@@ -62,9 +62,6 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
 
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
-
-    # Path of the main project directory
-    projdir = args.project_directory
 
     # Path of the directory where all the BC codes are kept:
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
@@ -74,6 +71,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km"
 
     print("[INFO] Combining subdaily BC CFSv2 non-precip variables")
+    slurm_9_10 = []
+    slurm_11_12 = []
     for year in range(int(fcst_syr), (int(fcst_eyr) + 1)):
         cmd = "python"
         cmd += f" {srcdir}/combine_sub_daily_downscaled_forcings.py"
@@ -85,7 +84,11 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         cmd += f" {forcedir}"
         jobfile = job_name + '_run.j'
         jobname = job_name + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
+
+        if py_call:
+            slurm_9_10.append(cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd, in_command=cmd)
 
     print(f"[INFO] Wrote  CFSv2 combination script for: {month_abbr}")
 
@@ -102,7 +105,11 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
         cmd += f" -M {nmme_model}"
         jobfile = 'bcsd10_' + nmme_model + '_run.j'
         jobname = 'bcsd10_' + nmme_model + '_'
-        utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
+
+        if py_call:
+            slurm_9_10.append(cmd)
+        else:
+            utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
 
     # Now write task 11 scripts
 
@@ -115,7 +122,11 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     cmd += f" -n {month_num}"
     jobfile = 'bcsd11_run.j'
     jobname = 'bcsd11_'
-    utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
+
+    if py_call:
+        slurm_11_12.append(cmd)
+    else:
+        utils.job_script(config_file, jobfile, jobname, ntasks, '1', cwd, in_command=cmd)
 
     # Now write task 12 scripts
 
@@ -128,8 +139,14 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     cmd += f" -n {month_num}"
     jobfile = 'bcsd12_run.j'
     jobname = 'bcsd12_'
-    utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
 
+    if py_call:
+        slurm_11_12.append(cmd)
+    else:
+        utils.job_script(config_file, jobfile, jobname, ntasks, '3', cwd, in_command=cmd)
+
+    if py_call:
+        return slurm_9_10, slurm_11_12
 #
 # Main Method
 #
@@ -150,4 +167,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     main(args.config_file, args.fcst_syr, args.fcst_eyr, args.month_abbr, args.month_num, args.job_name,
-         args.ntasks, args.hours, args.cwd, args.fcst_type)
+         args.ntasks, args.hours, args.cwd, args.project_directory, args.fcst_type)
