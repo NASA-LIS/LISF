@@ -5755,6 +5755,10 @@ Acceptable values are:</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">CABLE version 1.4b</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop.7.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop version 7.2</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
 </tr>
@@ -21352,6 +21356,81 @@ AWRAL600 initial sd: 0.5 0.5
 AWRAL600 initial mleaf: 0.67 0.2</pre>
 </div>
 </div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 soil parameter table:</code> specifies the soil AquaCrop.7.2 soil parameter file.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 model timestep:</code> specifies the model timestep for AquaCrop.7.2. This option should be set to <code>"1da"</code> because of the fixed daily model timestep of AquaCrop.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 restart output interval:</code> specifies the restart writing interval for AquaCrop.7.2 The typical value is 1 month (1mo).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 restart file:</code> specifies the AquaCrop.7.2 restart file.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 restart file format:</code> specifies the restart file format for AquaCrop.7.2.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 reference height for forcing T and q:</code> specifies the height in meters of air temperature and specific humidity forcings.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 reference height for forcing u and v:</code> specifies the height in meters of u and v wind forcings.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 initial liquid soil moistures:</code> specifies the initial liquid volumetric soil moistures (for each layer defined in LDT, from top to bottom) used in the cold start runs. (units \(\frac{m^3}{m^3}\))</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 input path:</code> specifies the directory containing the native AquaCrop files.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 CO2_Filename:</code> specifies the file name of the CO2 file (.CO2) used by AquaCrop.7.2 stored in the "input path" directory.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 crop library directory:</code> specifies the location of the crop library directory containing the AC_Crop.Inventory file and the AC_Crop.List directory containing the crop files.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 Management_Filename:</code> specifies the management file (.MAN) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without management file (set to "(None)").</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 Irrigation_Filename:</code> specifies the management file (.IRR) used by AquaCrop.7.2 stored in the "input path" directory. If not specified, AquaCrop.7.2 will run without irrigation file (set to "(None)").</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 starting day of sim period:</code> specifies the starting day of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 starting month of sim period:</code> specifies the starting month of the AquaCrop simulation period (same for each year given that the length of the AquaCrop simulation period is hardcoded to 1 calendar year).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 starting day of crop period:</code> specifies the starting day of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop.7.2 starting month of crop period:</code> specifies the starting month of the AquaCrop cropping period (planting/sowing). Currently, only one cropping period is possible within an AquaCrop simulation period (= 1 calendar year).</p>
+</div>
+<div class="literalblock">
+<div class="title">Example <em>lis.config</em> entry:</div>
+<div class="content">
+<pre>AquaCrop.7.2 soil parameter table: ./SOILPARM_AC72.TBL
+AquaCrop.7.2 model timestep: "1da"
+AquaCrop.7.2 restart output interval: "1mo"
+AquaCrop.7.2 restart file: none
+AquaCrop.7.2 restart file format: netcdf
+AquaCrop.7.2 reference height of T and q: 2.0
+AquaCrop.7.2 reference height of u and v: 10.0
+AquaCrop.7.2 initial liquid soil moistures: 0.33 0.33
+AquaCrop.7.2 input path: "./AC_INPUT_dir/"
+AquaCrop.7.2 CO2_Filename: "file.CO2"
+AquaCrop.7.2 crop library directory: "./crop_params_dir/"
+AquaCrop.7.2 Management_Filename: "file.MAN"
+AquaCrop.7.2 Irrigation_Filename: "file.IRR"
+
+##Simulation and crop period
+AquaCrop.7.2 starting day of sim period: 1
+AquaCrop.7.2 starting month of sim period: 1
+AquaCrop.7.2 starting day of crop period: 22
+AquaCrop.7.2 starting month of crop period: 3</pre>
+</div>
+</div>
 </div>
 </div>
 <div class="sect2">
@@ -24396,7 +24475,26 @@ SM_TotalPrecip:  1  m       DN   3 0 0 1  61 10000   # Total precipitation rate 
 SM_SWdown:    1  W/m2    DN   1 0 0 1 204 10         # SnowModel-modified SWdown
 SM_LWdown:    1  W/m2    DN   1 0 0 1 205 10         # SnowModel-modified LWdown
 SM_NWind:     1  m/s     N    1 0 0 1  34 10         # SnowModel-modified NWind
-SM_EWind:     1  m/s     E    1 0 0 1  33 10         # SnowModel-modified EWind</pre>
+SM_EWind:     1  m/s     E    1 0 0 1  33 10         # SnowModel-modified EWind
+
+#AquaCrop output
+AC_Biomass:            1  t/ha  -  1 0 0 1 223 1000 # cummulative biomass (ton/ha)
+AC_RootZoneWC_Actual:  1  mm    -  1 0 0 1 153 1000 # actual rootzone WC (mm)
+AC_RootZoneWC_WP:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at wilting point (mm)
+AC_RootZoneWC_FC:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at field capacity (mm)
+AC_Tact:               1  mm    -  1 0 0 1 153 1000 # actual plant transpiration (mm)
+AC_Eact:               1  mm    -  1 0 0 1 153 1000 # actual soil evaporation (mm)
+AC_ETo:                1  mm    -  1 0 0 1 153 1000 # reference ET Penman-Monteith (mm)
+AC_Rain:               1  mm    -  1 0 0 1 153 1000 # daily rainfall (mm)
+AC_Irrigation:         1  mm    -  1 0 0 1 153 1000 # irrigation (mm)
+AC_RootingDepth:       1  m     -  1 0 0 1 151 1000 # rooting depth (m)
+AC_CCiActual:          1  -     -  1 0 0 1 151 1000 # canopy Cover (-)
+AC_Tmin:               1  degC  -  1 0 0 1 153 1000 # daily minimum temperature (degC)
+AC_Tmax:               1  degC  -  1 0 0 1 153 1000 # daily maximum temperature (degC)
+AC_Yield:              1  t/ha  -  1 0 0 1 153 1000 # yield (ton/ha)
+AC_StExp:              1  %     -  1 0 0 1 153 1000 # expansion stress (%)
+AC_StSen:              1  %     -  1 0 0 1 153 1000 # senescence stress (%)
+AC_cycle_complete:     1  -     -  1 0 0 1 153 1000 # Flag cycle completed within sim</pre>
 </div>
 </div>
 </div>
@@ -24765,7 +24863,7 @@ Program stopping..</pre>
 <div id="footer">
 <div id="footer-text">
 Version 4.0<br>
-Last updated 2025-01-21 15:25:25 UTC
+Last updated 2025-03-14 14:12:57 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">

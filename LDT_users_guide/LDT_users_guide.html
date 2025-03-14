@@ -1886,6 +1886,10 @@ LIBGEOTIFF means GeoTIFF support provided by the GeoTIFF library.</p>
 <td class="tableblock halign-left valign-top"><p class="tableblock">SiB v2</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop.7.2</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">AquaCrop 7.2</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">FASST</p></td>
 </tr>
@@ -6944,6 +6948,74 @@ SiB2 upper right lat:              49.475
 SiB2 upper right lon:             -67.025
 SiB2 resolution (dx):               0.05
 SiB2 resolution (dy):               0.05</pre>
+</div>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop crop type data source:</code> specifies the data source for the crop types. Only current option is &#8220;CONSTANT&#8221;.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop crop library directory:</code> specifies the location of the crop library directory containing the AC_Crop.Inventory file and the AC_Crop.List directory containing the crop files.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop crop type:</code> specifies the crop type used for the &#8220;CONSTANT&#8221; crop type data source option.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop number of soil layers:</code> specifies the number of soil layers (from top to bottom).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop soil layer thickness:</code> specifies the thickness of each soil layer.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop temperature climatology directory:</code> specifies the directory containing the monthly climatologies of minimum and maximum temperatures used for the a priori parametrization of the fertility. The files are provided as formatted monthly .txt files for Tmin and Tmax.</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop reference year for climatology</code>: specifies the reference year to be used for the a priori parametrization of the fertility (usually set to the center of the period used to compute the climatologies).</p>
+</div>
+<div class="paragraph">
+<p><code>AquaCrop temperature climatology spatial transform</code>: specifies the spatial transformation for the climatologies of minimum and maximum temperatures. Options include:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Value</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">none</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Data on same grid as LDT domain</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">neighbor</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reinterpolate by selecting nearest gridcell neighbor</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">bilinear</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Reinterpolate by using bilinear interpolation</p></td>
+</tr>
+</tbody>
+</table>
+<div class="literalblock">
+<div class="title">Example <em>ldt.config</em> entry</div>
+<div class="content">
+<pre>##AquaCrop crop file directories
+AquaCrop crop type data source: "CONSTANT"
+AquaCrop crop library directory: ./crop_params_dir/
+AquaCrop crop type: "crop_type"
+
+##AquaCrop soil layers
+AquaCrop number of soil layers: 2
+AquaCrop soil layer thickness: 0.3 0.9
+
+##AquaCrop tmin/tmax climatology
+AquaCrop temperature climatology directory: ./climatologies_dir/
+AquaCrop reference year for climatology: 2011
+AquaCrop temperature climatology spatial transform: "bilinear"</pre>
 </div>
 </div>
 <div class="sect3">
@@ -17963,7 +18035,7 @@ param domain sections on a UTM projection.</p>
 <div id="footer">
 <div id="footer-text">
 Version 4.0<br>
-Last updated 2025-01-21 15:25:25 UTC
+Last updated 2025-03-14 14:12:57 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
