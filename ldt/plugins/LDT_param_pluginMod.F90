@@ -65,6 +65,7 @@ contains
 !EOP
 
     use Noah_parmsMod
+    use AquaCrop_parmsMod
     use CLSMF25_parmsMod
     use RDHM_parmsMod
     use SACHTET_parmsMod
@@ -139,6 +140,14 @@ contains
          NoahParms_writeHeader)
     call registerlsmparamprocwritedata(trim(LDT_noahmp401Id)//char(0),&
          NoahParms_writeData)
+
+  ! AquaCrop 7.2 LSM:
+    call registerlsmparamprocinit(trim(LDT_ac72Id)//char(0),&
+         AquaCropParms_init)
+    call registerlsmparamprocwriteheader(trim(LDT_ac72Id)//char(0),&
+         AquaCropParms_writeHeader)
+    call registerlsmparamprocwritedata(trim(LDT_ac72Id)//char(0),&
+         AquaCropParms_writeData)
 
   ! CLSM F2.5 LSM:
     call registerlsmparamprocinit(trim(LDT_clsmf25Id)//char(0),&
