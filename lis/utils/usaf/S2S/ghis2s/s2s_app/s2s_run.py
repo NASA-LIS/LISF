@@ -1,8 +1,10 @@
 import os
 import sys
+import glob
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import subprocess
+import re
 import threading
 import time
 import platform
@@ -12,6 +14,7 @@ import yaml
 import argparse
 from ghis2s.s2s_app import s2s_api
 from ghis2s.shared import utils
+from ghis2s.lis_fcst import generate_lis_config_scriptfiles_fcst
 from ghis2s.s2spost import run_s2spost_9months
 from ghis2s.s2smetric import postprocess_nmme_job
 from ghis2s import bcsd
@@ -36,6 +39,7 @@ class DownloadForecasts():
         self.patchdir = self.config['SETUP']['supplementarydir'] + "/bcsd_fcst/patch_files/"
         self.cfsv2_log = os.path.join(self.SCRDIR, 'CFSv2_missing_corrupted_files')
         self.srcdir = "https://noaacfs.blob.core.windows.net/cfs"
+        self.NMME_RAWDIR =  self.config['BCSD']['nmme_download_dir']
         if os.path.exists(self.cfsv2_log):
             os.remove(self.cfsv2_log)
 
@@ -95,6 +99,72 @@ class DownloadForecasts():
             return '{:02d}'.format(prevmon), day1, day2, day3
 
         self.prevmon, self.day1, self.day2, self.day3 =  set_month_days(month)
+
+    def NMME_file_checker(self):
+        """ Checks NMME forecast files availability """
+        Mmm = datetime(int(self.year), int(self.month), 1).strftime("%b")
+        prec_files = glob.glob(f"{self.NMME_RAWDIR}/*/*{Mmm}.{self.year}.nc")
+        print("[INFO] Current NMME files present: ")
+        for file in prec_files:
+            print(file)
+
+        with open(self.E2ESDIR + self.config_file, 'r') as f:
+            config_lines = f.readlines()
+
+        #all_models = next(line.split(':')[2].strip() for line in config_lines if 'NMME_ALL:' in line)
+        #print(f"[INFO] All NMME models: {all_models}")
+
+        #line2 = next(i for i, line in enumerate(config_lines) if 'NMME_models:' in line)
+        #new_line = f"  NMME_models: {all_models}\n"
+        #config_lines[line2] = new_line
+
+        #with open(self.config_file, 'w') as f:
+        #    f.writelines(config_lines)
+        
+        nmme_models = {
+            "CanSIPS-IC4": "GNEMO52, CanESM5",
+            "COLA-RSMAS-CESM1": "CESM1",
+            "GFDL-SPEAR": "GFDL",
+            "NASA-GEOSS2S": "GEOSv2",
+            "NCEP-CFSv2": "CFSv2"
+        }
+
+        have_model = "["
+
+        if len(prec_files) < 5:
+            print("[WARN] -- Some NMME model data may be missing or not available ... ")
+            command = f"bash {self.E2ESDIR}/s2s_app/download_nmme_precip.sh {self.YYYY} {Mmm} {self.E2ESDIR}/${self.config_file}"
+            process = subprocess.run(command, shell=True)
+            
+            prec_files = glob.glob(f"{self.NMME_RAWDIR}/*/*{Mmm}.{self.year}.nc")
+            print(" ... New NMME files downloaded: ")
+            for file in prec_files:
+                print(file)
+
+            for dir in ["CanSIPS-IC4", "COLA-RSMAS-CESM1", "GFDL-SPEAR", "NASA-GEOSS2S", "NCEP-CFSv2"]:
+                fdown = f"{self.NMME_RAWDIR}/{dir}/prec.{dir}.mon_{Mmm}.{self.year}.nc"
+                if os.path.isfile(fdown) and os.path.getsize(fdown) > 0:
+                    have_model += f"{nmme_models[dir]}, "
+                else:
+                    if os.path.exists(fdown):
+                        os.remove(fdown)
+
+            have_model = have_model.rstrip(', ') + "]"
+
+            if len(have_model.split()) < 7:
+                navail = len(have_model.split()) - 1
+                print(f"\nPrecipitation forecasts are available for only {navail} NMME models ({have_model}).")
+                yesorno = input("Do you want to continue (Y/N)? ")
+
+                if yesorno.lower() == 'y':
+                    line2 = next(i for i, line in enumerate(config_lines) if 'NMME_models:' in line)
+                    new_line = f"  NMME_models: {have_model}\n"
+                    config_lines[line2] = new_line
+
+                    with open(self.E2ESDIR + self.config_file, 'w') as f:
+                        f.writelines(config_lines)
+                else:
+                    exit()
 
     def CFSv2_download(self):
         """ download CFSv2 forecasts """
@@ -281,7 +351,7 @@ class S2Srun(DownloadForecasts):
         self.SCRDIR = self.E2ESDIR + 'scratch/' + self.YYYY + self.MM + '/'
         self.MODELS = self.config["EXP"]["NMME_models"]
         self.CONSTRAINT = self.config['SETUP']['CONSTRAINT']
-        self.schedule = self.job_schedule()
+        self.schedule = {}
         
         if not os.path.exists(self.E2ESDIR + 'scratch/'):
             subprocess.run(["setfacl", "-R", "-m", "u::rwx,g::rwx,o::r", self.E2ESDIR], check=True)
@@ -334,42 +404,117 @@ class S2Srun(DownloadForecasts):
             sys.exit(ret_code)
  
         return
-
-    def job_schedule(self):
-        def create_dict(prev):
-            return {'jfiles': [], 'jobid': [], 'prev': prev}
-            
-        schedule = {}
-        schedule['lisda'] = create_dict(None)
-        schedule['ldtics'] = create_dict(['lisda'])
-        schedule['bcsd01'] = create_dict(None)
-        schedule['bcsd03'] = create_dict(None)
-        schedule['bcsd04'] = create_dict(['bcsd01', 'bcsd03'])
-        schedule['bcsd05'] = create_dict(['bcsd01', 'bcsd03'])
-        schedule['bcsd06'] = create_dict(['bcsd04', 'bcsd05'])
-        schedule['bcsd08'] = create_dict(['bcsd06'])
-        schedule['bcsd09-10'] = create_dict(['bcsd08'])
-        schedule['bcsd11-12'] = create_dict(['bcsd09-10'])
-        schedule['lis_fcst'] = create_dict(['bcsd11-12'])
-        schedule['s2spost'] = create_dict(['lis_fcst'])
-        schedule['s2smetric'] = create_dict(['s2spost'])
-        schedule['s2smetric_tiff'] = create_dict(['s2smetric'])
-        schedule['s2splots'] = create_dict(['s2smetric_tiff'])
-
-        return schedule
     
+    def create_dict(self, jobfile, subdir, prev=None):
+        self.schedule[jobfile] = {'subdir': subdir, 'jobid': None, 'prev': []}
+        if prev is not None:
+            if isinstance(prev, list):
+                self.schedule[jobfile]['prev'].extend(prev)
+            else:
+                self.schedule[jobfile]['prev'].append(prev)
+
+    def submit_jobs(self):
+        def get_previds(jobfile):
+            previd_list = []
+            if len(self.schedule[jobfile]['prev']) > 0:
+                for file in self.schedule[jobfile]['prev']:
+                    previd_list.append(self.schedule[file]['jobid'])
+            if len(previd_list) == 0:
+                previd_lis = None
+            return previd_list
+        
+        def submit_slurm_job(job_script, prev_id=None):
+            try:
+                sbatch_command = ['/usr/bin/sbatch ']
+                # Add dependency if prev_id is provided
+                if len(prev_id) > 0:
+                    if isinstance(prev_id, list):
+                        dependency_ids = ':'.join(map(str, prev_id))
+                    else:
+                        # If prev_id is a single value, convert it to string
+                        dependency_ids = str(prev_id)
+                    sbatch_command.extend(['--dependency=afterok:' + dependency_ids])
+                sbatch_command.append(' ' + job_script)
+                sbatch_command = ''.join(sbatch_command)
+                result = subprocess.run(sbatch_command, capture_output=True, text=True, check=True, shell=True)
+                match = re.search(r'Submitted batch job (\d+)', result.stdout)
+                if match:
+                    job_id = match.group(1)
+                    print(f"Job submitted successfully. Job ID: {job_id}")
+                    return job_id
+                else:
+                    print("Failed to extract job ID from sbatch output")
+                    return None
+            except subprocess.CalledProcessError as e:
+                print(f"An error occurred while submitting the job: {e}")
+                return None
+            
+        JOB_SCHEDULE = os.path.join(self.SCRDIR, 'SLURM_JOB_SCHEDULE')
+        if os.path.exists(JOB_SCHEDULE):
+            os.remove(JOB_SCHEDULE)
+
+        header = [
+            "#######################################################################",
+            "                         SLURM JOB SCHEDULE                            ",
+            "#######################################################################",
+            "                         "
+        ]
+        sub_section = {
+            'lisda' : ["                         ",
+                       "(1) LIS Data Assimilation",
+                       "-------------------------",
+                       "                         "],
+            'ldt_ics' :["              ",
+                        "(2) LDT and Initial Conditions",
+                        "------------------------------",
+                        "              "],
+
+            'bcsd_fcst':["              ",
+                         "(3) Bias Correction and Spatial Downscaling",
+                         "-------------------------------------------",
+                         "                                           "],
+            'lis_fcst':["              ",
+                        "(4) LIS Forecast Runs                      ",
+                        "-------------------------------------------",
+                        "                                           "],
+            's2spost':["              ",
+                       "(5) S2S post-process                       ",
+                       "-------------------------------------------",
+                       "                                           "],
+            's2smetric':["              ",
+                         "(6) S2S metric                             ",
+                         "-------------------------------------------",
+                         "                                           "],
+            's2splots':["              ",
+                       "(7) S2S plots                              ",
+                       "-------------------------------------------",
+                       "                                           "]}
+        
+        with open(JOB_SCHEDULE, "a", encoding="utf-8") as file:
+            for line in header:
+                file.write(line + "\n")
+                
+        utils.update_job_schedule(JOB_SCHEDULE, "JOB ID", "JOB SCRIPT", "AFTER")
+        dir_list = []
+        for jfile in self.schedule.keys():
+            subdir = self.schedule[jfile]['subdir']
+            if subdir not in dir_list:
+                dir_list.append(subdir)
+                with open(JOB_SCHEDULE, "a", encoding="utf-8") as file:
+                    for line in sub_section.get(subdir):
+                        file.write(line + "\n")
+            os.chdir(self.SCRDIR + subdir)
+            prev_ids = get_previds(jfile)
+            job_id = submit_slurm_job(jfile, prev_id=prev_ids)
+            self.schedule[jfile]['jobid'] = job_id
+            utils.update_job_schedule(JOB_SCHEDULE, job_id, jfile, ','.join(map(str, prev_ids)))
+                                                                            
     def split_list(self, input_list, length_sublist):
         result = []
         for i in range(0, len(input_list), length_sublist):
             sublist = input_list[i:i + length_sublist]
             result.append(sublist)
         return result
-    #def split_list(self, input_list, num_sublists):
-    #    """divide a list to sublists"""
-    #    sublist_size = (len(input_list) - 1) // (num_sublists - 1)
-    #    result = [input_list[i:i + sublist_size] for i in range(0, len(input_list) - 1, sublist_size)]
-    #    result.append([input_list[-1]])
-    #    return result
 
     def sublist_to_file(self, sublist, CWD):
         temp_file = tempfile.NamedTemporaryFile(mode='w+', delete=False, suffix='.txt')
@@ -432,7 +577,7 @@ class S2Srun(DownloadForecasts):
         with open('lisda_run.j', 'w') as file:
             file.write(filedata)
 
-        self.schedule['lisda']['jfiles'].append('lisda_run.j')
+        self.create_dict('lisda_run.j', 'lis_darun')
 
         # configure lis.config
         # --------------------
@@ -463,13 +608,16 @@ class S2Srun(DownloadForecasts):
 
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
         
-        os.chdir(self.E2ESDIR)
-        
+        os.chdir(self.E2ESDIR)        
         return self.schedule
 
     def ldt_ics(self):
         """ LDT-ICS STEP """
-
+        if 'lisda_run.j' in self.schedule.keys():
+            prev = 'lisda_run.j'
+        else:
+            prev = None
+            
         os.makedirs(self.E2ESDIR + '/ldt_ics/input/', exist_ok=True)
         os.chdir(self.E2ESDIR + '/ldt_ics/')
         [os.makedirs(model, exist_ok=True) for model in self.MODELS]
@@ -511,15 +659,13 @@ class S2Srun(DownloadForecasts):
         with open('ldtics_run.j', 'w') as file:
             file.write(filedata)
 
-        self.schedule['ldtics']['jfiles'].append('ldtics_run.j')
+        self.create_dict('ldtics_run.j', 'ldt_ics', prev=prev)
 
-        os.chdir(self.E2ESDIR)
-        
+        os.chdir(self.E2ESDIR)        
         return self.schedule
 
     def bcsd(self):
-        """ BCSD 12 steps """
-                
+        """ BCSD 12 steps """            
         obs_clim_dir='{}/hindcast/bcsd_fcst/CFSv2_25km/raw/Climatology/'.format(self.E2ESROOT)
         nmme_clim_dir='{}/hindcast/bcsd_fcst/NMME/raw/Climatology/'.format(self.E2ESROOT)
         usaf_25km='{}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'.format(self.E2ESROOT)
@@ -562,7 +708,7 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname+ '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
-                self.schedule['bcsd01']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
+                self.create_dict(jobname+ '{:02d}_'.format(i+1), 'bcsd_fcst')
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
@@ -578,7 +724,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(2), CWD, tfile.name)
-            self.schedule['bcsd03']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname+ '{:02d}_'.format(i+1), 'bcsd_fcst')
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -588,6 +734,8 @@ class S2Srun(DownloadForecasts):
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
+        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd01_' in key]
+        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd03_' in key])
         slurm_commands = bcsd.task_04.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
@@ -598,7 +746,7 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
-                self.schedule['bcsd04']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
@@ -608,6 +756,8 @@ class S2Srun(DownloadForecasts):
         # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
         jobname='bcsd05_'
+        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd01_' in key]
+        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd03_' in key])
         slurm_commands = []
         for nmme_model in self.MODELS:
             var1 = bcsd.task_05.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
@@ -622,7 +772,7 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
-                self.schedule['bcsd05']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
@@ -632,6 +782,8 @@ class S2Srun(DownloadForecasts):
         # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
         # ---------------------------------------------------------------------
         jobname='bcsd06_'
+        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd04_' in key]
+        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd05_' in key])         
         slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
@@ -639,7 +791,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(5), CWD, tfile.name)
-            self.schedule['bcsd06']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -659,7 +811,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(5), CWD, tfile.name)
-            self.schedule['bcsd08']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd06_run.j')
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -678,7 +830,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
-            self.schedule['bcsd09-10']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd08_run.j')
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -691,7 +843,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
-            self.schedule['bcsd11-12']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd09-10_run.j')
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -701,8 +853,65 @@ class S2Srun(DownloadForecasts):
         os.chdir(self.E2ESDIR)
         return self.schedule
 
+    def lis_fcst(self):
+        """ LIS forecast """
+        if 'bcsd11-12_run.j' in self.schedule.keys():
+            prev = 'bcsd11-12_run.j'
+        else:
+            prev = None
+ 
+        jobname='lis_fcst'
+        os.makedirs(self.E2ESDIR + 'lis_fcst/', exist_ok=True)
+        os.makedirs(self.E2ESDIR + 'lis_fcst/input/LDT_ICs/', exist_ok=True)
+
+        os.chdir(self.E2ESDIR + 'lis_fcst/input/')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/forcing_variables.txt','forcing_variables.txt')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_darun/noahmp401_parms','noahmp401_parms')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/template_files','template_files')
+        self.create_symlink(self.LISHDIR + '/ghis2s/lis_fcst/tables','tables')
+        self.create_symlink(self.SUPDIR + '/lis_darun/' + self.LDTFILE, self.LDTFILE)
+
+        os.chdir(self.E2ESDIR + 'lis_fcst/input/LDT_ICs/')
+        for model in self.MODELS:
+            os.makedirs(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM + '/' + model + '/logs/', exist_ok=True)
+            self.create_symlink(self.E2ESDIR + 'ldt_ics/'  + model, model)
+
+        os.chdir(self.SCRDIR + 'lis_fcst/')
+        CWD=self.SCRDIR + 'lis_fcst'
+        self.create_symlink(self.LISFDIR + 'lis/LIS', 'LIS')
+        self.create_symlink(self.E2ESDIR + 'lis_fcst/input', 'input')
+        self.create_symlink(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM, self.YYYY + self.MM)
+        self.create_symlink(self.E2ESDIR + 'bcsd_fcst', 'bcsd_fcst')
+
+        generate_lis_config_scriptfiles_fcst.main(self.E2ESDIR + self.config_file, self.year, self.month, CWD, jobname)
+        for model in self.MODELS:
+            job_list = glob.glob(f"{jobname}_{model}*_run.j")
+            nFiles = len(job_list)
+            for FileNo, jfile in enumerate(job_list):
+                if nFiles > 1:
+                    if FileNo == 0:
+                        self.create_dict(jfile, 'lis_fcst', prev=prev)
+                    else:
+                        self.create_dict(jfile, 'lis_fcst', prev=job_list[FileNo-1])
+                else:
+                    self.create_dict(jfile, 'lis_fcst', prev=prev)
+            
+        os.chdir(self.E2ESDIR)
+        return self.schedule
+        
     def s2spost(self):
         """ S2SPOST STEP """
+        fcst_list = [item for item in self.schedule.keys() if re.match('lis_fcst', item)]
+        if (len(fcst_list) > 0):
+            prev=[]
+            for model in self.MODELS:
+                sublist = sorted([item for item in fcst_list if model in item])
+                last_item = sublist[-1] if sublist else None
+                if last_item is not None:
+                    prev.append(last_item)
+        else:
+            prev = None
+        
         [os.makedirs(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, exist_ok=True) for model in self.MODELS]
         os.chdir(self.SCRDIR + 's2spost')
         self.create_symlink(self.E2ESDIR + 'lis_fcst/' + self.YYYY + self.MM + '/', 'lis_fcst')
@@ -715,7 +924,7 @@ class S2Srun(DownloadForecasts):
             self.create_symlink(self.E2ESDIR + 's2spost/' + self.YYYY + self.MM + '/' + model, model)
             var1 = run_s2spost_9months.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, jobname, 1, str(3), CWD, model, py_call=True)
             slurm_commands.extend(var1)
-
+            
         # multi tasks per job
         l_sub = 27
         slurm_sub = self.split_list(slurm_commands, l_sub)
@@ -724,19 +933,24 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
-                self.schedule['s2spost']['jfiles'].append(jobname + '{:02d}_run.j'.format(i+1))
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 's2spost', prev=prev)
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
                 
             utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
-        os.chdir(self.E2ESDIR)
-        
+        os.chdir(self.E2ESDIR)        
         return self.schedule
 
     def s2smetric(self):
         """ S2SMETRICS STEP """
+        s2spost_list = [item for item in self.schedule.keys() if re.match('s2spost', item)]
+        if len(s2spost_list) > 0:
+            prev = s2spost_list
+        else:
+            prev = None
+            
         os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/DYN_ANOM', exist_ok=True)
         os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/DYN_SANOM', exist_ok=True)
         os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM + '/metrics_cf', exist_ok=True)
@@ -757,7 +971,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(4), CWD, tfile.name)
-            self.schedule['s2smetric']['jfiles'].append(jobname + 'run.j')
+            self.create_dict(jobname + 'run.j', 's2smetric', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -776,14 +990,18 @@ class S2Srun(DownloadForecasts):
         with open('s2smetric_tiff_run.j', 'w') as file:
             file.write(filedata)
 
-        self.schedule['s2smetric_tiff']['jfiles'].append('s2smetric_tiff_run.j')
+        self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev='s2smetric_run.j')
         utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
-        os.chdir(self.E2ESDIR)
-        
+        os.chdir(self.E2ESDIR)        
         return self.schedule
 
     def s2splots(self):
+        if 's2smetric_tiff_run.j' in self.schedule:
+            prev = 's2smetric_tiff_run.j'
+        else:
+            prev = None
+            
         os.makedirs(self.E2ESDIR + 's2smetric/' + self.YYYY + self.MM, exist_ok=True)
         os.chdir(self.SCRDIR + 's2splots')
         self.create_symlink(self.E2ESDIR + 's2splots/', 's2splots')
@@ -802,7 +1020,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
-            self.schedule['s2splots']['jfiles'].append(jobname + 'run.j')
+            self.create_dict('s2splots_run.j', 's2splots', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -810,13 +1028,13 @@ class S2Srun(DownloadForecasts):
         utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
         
         os.chdir(self.E2ESDIR)
-
         return self.schedule
          
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
         #self.CFSv2_file_checker()
-
+        #super(S2Srun, self).NMME_file_checker()
+        
         # (2) LISDA run
         self.lis_darun()
 
@@ -827,7 +1045,7 @@ class S2Srun(DownloadForecasts):
         self.bcsd()
 
         # (5) LIS FCST
-        #self.lis_fcst()
+        self.lis_fcst()
 
         # (6) S2SPOST
         self.s2spost()
@@ -847,8 +1065,8 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--month', required=True, type=int, help='forecast month')
     parser.add_argument('-s', '--step', required=False, default=None, type=str, help='S2S step: LISDA, LDTICS, BCSD, FCST, POST, METRICS or PLOTS')
     parser.add_argument('-o', '--one_step', action='store_true', help='Is only one step (default: False)?')
-    parser.add_argument('-j', '--submit_job', action='store_true', help='Submit SLURM jobs (default: False)')
-    parser.add_argument('-r', '--report', action='store_true', help='Report')
+    parser.add_argument('-j', '--submit_job', action='store_true', help='Submit SLURM jobs (default: False)?')
+    parser.add_argument('-r', '--report', action='store_true', help='Print report')
     args = parser.parse_args()
 
     s2s = S2Srun(year=args.year, month=args.month, config_file=args.config_file)
@@ -863,28 +1081,27 @@ if __name__ == "__main__":
             if not args.one_step:
                 schedule = s2s.lis_fcst()
                 schedule = s2s.s2spost()
-                schedule = s2smetrics()
-                schedule = s2splots()
+                schedule = s2s.s2smetric()
+                schedule = s2s.s2splots()
         elif args.step == 'FCST':
             schedule = s2s.lis_fcst()
             if not args.one_step:
                 schedule = s2s.s2spost()
-                schedule = s2smetrics()
-                schedule = s2splots()
+                schedule = s2s.s2smetric()
+                schedule = s2s.s2splots()
         elif args.step == 'POST':
-            schedule = s2spost()
+            schedule = s2s.s2spost()
             if not args.one_step:
-                schedule = s2smetrics()
-                schedule = s2splots()
+                schedule = s2s.s2smetric()
+                schedule = s2s.s2splots()
         elif args.step == 'METRICS':
-            schedule = s2smetrics()
-            schedule = s2splots()
+            schedule = s2s.s2smetric()
+            schedule = s2s.s2splots()
     else:
         schedule = s2s.main()
 
     # Submit SLURM jobs
     # -----------------
     if  args.submit_job:
-        print(schedule)
-        #s2s.submit_jobs(schedule)
+        s2s.submit_jobs()
         
