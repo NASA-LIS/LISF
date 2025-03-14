@@ -1032,8 +1032,8 @@ class S2Srun(DownloadForecasts):
          
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
-        #self.CFSv2_file_checker()
-        #super(S2Srun, self).NMME_file_checker()
+        self.CFSv2_file_checker()
+        super(S2Srun, self).NMME_file_checker()
         
         # (2) LISDA run
         self.lis_darun()
