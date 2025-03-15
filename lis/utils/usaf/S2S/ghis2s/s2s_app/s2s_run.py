@@ -440,7 +440,7 @@ class S2Srun(DownloadForecasts):
                 match = re.search(r'Submitted batch job (\d+)', result.stdout)
                 if match:
                     job_id = match.group(1)
-                    print(f"Job submitted successfully. Job ID: {job_id}")
+                    print(f"Submitted successfully. Job ID: {job_id}; Job Script: {job_script}")
                     return job_id
                 else:
                     print("Failed to extract job ID from sbatch output")
@@ -609,7 +609,7 @@ class S2Srun(DownloadForecasts):
         shutil.copy('lis.config', 'output/lis.config_files/lis.config_darun_{}{}'.format(YYYYP, MMP))
         
         os.chdir(self.E2ESDIR)        
-        return self.schedule
+        return
 
     def ldt_ics(self):
         """ LDT-ICS STEP """
@@ -662,7 +662,7 @@ class S2Srun(DownloadForecasts):
         self.create_dict('ldtics_run.j', 'ldt_ics', prev=prev)
 
         os.chdir(self.E2ESDIR)        
-        return self.schedule
+        return
 
     def bcsd(self):
         """ BCSD 12 steps """            
@@ -851,7 +851,7 @@ class S2Srun(DownloadForecasts):
         utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
         
         os.chdir(self.E2ESDIR)
-        return self.schedule
+        return
 
     def lis_fcst(self):
         """ LIS forecast """
@@ -897,7 +897,7 @@ class S2Srun(DownloadForecasts):
                     self.create_dict(jfile, 'lis_fcst', prev=prev)
             
         os.chdir(self.E2ESDIR)
-        return self.schedule
+        return
         
     def s2spost(self):
         """ S2SPOST STEP """
@@ -941,7 +941,7 @@ class S2Srun(DownloadForecasts):
             utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
         os.chdir(self.E2ESDIR)        
-        return self.schedule
+        return
 
     def s2smetric(self):
         """ S2SMETRICS STEP """
@@ -994,7 +994,7 @@ class S2Srun(DownloadForecasts):
         utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
         os.chdir(self.E2ESDIR)        
-        return self.schedule
+        return
 
     def s2splots(self):
         if 's2smetric_tiff_run.j' in self.schedule:
@@ -1028,7 +1028,7 @@ class S2Srun(DownloadForecasts):
         utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
         
         os.chdir(self.E2ESDIR)
-        return self.schedule
+        return
          
     def main(self):
         # (1) Run CFSV2 file checker to ensure downloaded files are not corrupted/
@@ -1056,7 +1056,7 @@ class S2Srun(DownloadForecasts):
         # (8) S2SPLOTS
         self.s2splots()
         
-        return self.schedule
+        return
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -1073,32 +1073,32 @@ if __name__ == "__main__":
     
     if args.step is not None:
         if args.step == 'LISDA':
-            schedule = s2s.lis_darun()
+            s2s.lis_darun()
         elif args.step == 'LDTICS':
-            schedule =  s2s.ldt_ics()
+             s2s.ldt_ics()
         elif args.step == 'BCSD':
-            schedule = s2s.bcsd()
+            s2s.bcsd()
             if not args.one_step:
-                schedule = s2s.lis_fcst()
-                schedule = s2s.s2spost()
-                schedule = s2s.s2smetric()
-                schedule = s2s.s2splots()
+                s2s.lis_fcst()
+                s2s.s2spost()
+                s2s.s2smetric()
+                s2s.s2splots()
         elif args.step == 'FCST':
-            schedule = s2s.lis_fcst()
+            s2s.lis_fcst()
             if not args.one_step:
-                schedule = s2s.s2spost()
-                schedule = s2s.s2smetric()
-                schedule = s2s.s2splots()
+                s2s.s2spost()
+                s2s.s2smetric()
+                s2s.s2splots()
         elif args.step == 'POST':
-            schedule = s2s.s2spost()
+            s2s.s2spost()
             if not args.one_step:
-                schedule = s2s.s2smetric()
-                schedule = s2s.s2splots()
+                s2s.s2smetric()
+                s2s.s2splots()
         elif args.step == 'METRICS':
-            schedule = s2s.s2smetric()
-            schedule = s2s.s2splots()
+            s2s.s2smetric()
+            s2s.s2splots()
     else:
-        schedule = s2s.main()
+        s2s.main()
 
     # Submit SLURM jobs
     # -----------------
