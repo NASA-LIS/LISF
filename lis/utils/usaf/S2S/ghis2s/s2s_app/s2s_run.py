@@ -981,7 +981,7 @@ class S2Srun(DownloadForecasts):
 
         generate_lis_config_scriptfiles_fcst.main(self.E2ESDIR + self.config_file, self.year, self.month, CWD, jobname)
         for model in self.MODELS:
-            job_list = glob.glob(f"{jobname}_{model}*_run.j")
+            job_list = sorted(glob.glob(f"{jobname}_{model}*_run.j"))
             nFiles = len(job_list)
             for FileNo, jfile in enumerate(job_list):
                 if nFiles > 1:
