@@ -958,7 +958,7 @@ class S2Srun(DownloadForecasts):
     def lis_fcst(self):
         """ LIS forecast """
         if 'bcsd11-12_run.j' in self.schedule.keys():
-            prev = 'bcsd11-12_run.j'
+            prev = ['ldtics_run.j','bcsd11-12_run.j']
         else:
             prev = None
  
