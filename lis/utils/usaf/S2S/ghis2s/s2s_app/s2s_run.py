@@ -427,13 +427,14 @@ class S2Srun(DownloadForecasts):
             try:
                 sbatch_command = ['/usr/bin/sbatch ']
                 # Add dependency if prev_id is provided
-                if len(prev_id) > 0:
+                if prev_id is not None:
                     if isinstance(prev_id, list):
                         dependency_ids = ':'.join(map(str, prev_id))
                     else:
                         # If prev_id is a single value, convert it to string
                         dependency_ids = str(prev_id)
                     sbatch_command.extend(['--dependency=afterok:' + dependency_ids])
+                    
                 sbatch_command.append(' ' + job_script)
                 sbatch_command = ''.join(sbatch_command)
                 result = subprocess.run(sbatch_command, capture_output=True, text=True, check=True, shell=True)
@@ -460,7 +461,7 @@ class S2Srun(DownloadForecasts):
             "                         "
         ]
         sub_section = {
-            'lisda' : ["                         ",
+            'lis_darun' : ["                         ",
                        "(1) LIS Data Assimilation",
                        "-------------------------",
                        "                         "],
@@ -507,7 +508,12 @@ class S2Srun(DownloadForecasts):
             prev_ids = get_previds(jfile)
             job_id = submit_slurm_job(jfile, prev_id=prev_ids)
             self.schedule[jfile]['jobid'] = job_id
-            utils.update_job_schedule(JOB_SCHEDULE, job_id, jfile, ','.join(map(str, prev_ids)))
+            if isinstance(prev_ids, list):
+                prev_str = ','.join(map(str, prev_ids))
+            else:
+                # If prev_id is a single value, convert it to string
+                prev_str = str(prev_ids)
+            utils.update_job_schedule(JOB_SCHEDULE, job_id, jfile, prev_str)
                                                                             
     def split_list(self, input_list, length_sublist):
         result = []
@@ -830,8 +836,8 @@ class S2Srun(DownloadForecasts):
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
-        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd01_' in key]
-        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd03_' in key])
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd01_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd03_' in key])
         slurm_commands = bcsd.task_04.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
@@ -852,8 +858,8 @@ class S2Srun(DownloadForecasts):
         # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
         jobname='bcsd05_'
-        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd01_' in key]
-        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd03_' in key])
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd01_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd03_' in key])
         slurm_commands = []
         for nmme_model in self.MODELS:
             var1 = bcsd.task_05.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
@@ -878,8 +884,8 @@ class S2Srun(DownloadForecasts):
         # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
         # ---------------------------------------------------------------------
         jobname='bcsd06_'
-        prev = [f"{key}_run.j" for key in self.schedule.keys() if 'bcsd04_' in key]
-        prev.extend([f"{key}_run.j" for key in self.schedule.keys() if 'bcsd05_' in key])         
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd04_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd05_' in key])         
         slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                            1, 3, CWD, self.E2ESDIR, py_call=True)
 
