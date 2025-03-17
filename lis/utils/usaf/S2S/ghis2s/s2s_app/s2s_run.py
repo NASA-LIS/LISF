@@ -420,7 +420,7 @@ class S2Srun(DownloadForecasts):
                 for file in self.schedule[jobfile]['prev']:
                     previd_list.append(self.schedule[file]['jobid'])
             if len(previd_list) == 0:
-                previd_lis = None
+                previd_list = None
             return previd_list
         
         def submit_slurm_job(job_script, prev_id=None):
@@ -524,6 +524,102 @@ class S2Srun(DownloadForecasts):
             temp_file.flush()
         return temp_file
 
+    def write_cylc_snippet(self):
+        """ writes Cylc runtime snippet """
+        def extract_slurm_info(slurm_file):
+            """ reads *.j SLURM file for directives, prescript and env variables"""
+            def convert_time_to_minutes(time_str):
+                """Convert time from HH:MM:SS to minutes."""
+                parts = time_str.split(':')
+                if len(parts) == 3:  
+                    hours = int(parts[0])
+                    minutes = int(parts[1])
+                    return hours * 60 + minutes
+                return None
+            
+            directives = []
+            pre_script = []
+            environment = []
+            
+            with open(slurm_file, 'r') as file:
+                lines = file.readlines()       
+                for line in lines:
+                    line = line.strip()
+                    # Extract SLURM directives
+                    if line.startswith('#SBATCH'):
+                        directive = line[8:].strip()
+                        if directive.startswith('--time='):
+                            # Convert time to minutes
+                            time_value = directive.split('=', 1)[1].strip()
+                            minutes = convert_time_to_minutes(time_value)
+                            if minutes is not None:
+                                directives.append(f'--time={minutes}') 
+                        else:
+                            directives.append(directive)
+                            # Stop reading pre-script after 'cd' command
+                    elif line.startswith('cd'):
+                        break
+                    elif line.startswith('#'):
+                        continue
+                    else:
+                        pre_script.append(line)
+
+            # Extract environment variables from the pre-script
+            for command in pre_script:
+                if command.startswith('export'):
+                    env_var = command.split('=', 1)
+                    if len(env_var) == 2:
+                        rm_export = env_var[0].split(' ',1)
+                        environment.append(rm_export[1].strip() + '=' + env_var[1].strip())
+                        pre_script.remove(command)
+
+            # remove empty lines from pre_script
+            pre_script = [cmd for cmd in pre_script if cmd.strip()]           
+            return directives, pre_script, environment
+
+        def write_lines(file, jfile, inherit_list, subdir, pre_script, directives, environment):
+            file.write(f"    [[{jfile}]]\n")
+            if inherit_list is not None:
+                if isinstance(inherit_list, list):
+                    inherits = ','.join(map(str, inherit_list))
+                else:
+                    inherits = str(inherit_list)
+                file.write(f"        inherit = {inherits}\n")
+            sh_script = subdir + '/' + jfile + '.sh'
+            file.write(f"        script = {sh_script}\n")
+            
+            # Write pre-script
+            file.write("        pre-script = \n")
+            for command in pre_script:
+                file.write(f"                     {command}\n")
+        
+            # Write directives
+            file.write("        [[[directives]]]\n")
+            for directive in directives:
+                file.write(f"            {directive}\n")
+
+            if len(environment) > 0:
+                # Write environment variables
+                file.write("        [[[environment]]]\n")
+                for env in environment:
+                    file.write(f"            {env}\n")
+        
+        ''' the main function '''
+        cylc_file = f"{self.SCRDIR}CYLC_workflow.rc"
+        with open(cylc_file, 'w') as file:
+            file.write("[runtime]\n")
+            for jfile in self.schedule.keys():
+                subdir = self.schedule[jfile]['subdir']
+                directives, pre_script, environment = extract_slurm_info(self.SCRDIR + subdir + '/' + jfile)
+                
+                inherit_list = []
+                if len(self.schedule[jfile]['prev']) > 0:
+                    for pfile in self.schedule[jfile]['prev']:
+                        inherit_list.append(pfile.removesuffix('.j'))
+                if len(inherit_list) == 0:
+                    inherit_list = None
+                write_lines(file, jfile.removesuffix('.j'), inherit_list, subdir, pre_script, directives, environment)
+                
     def lis_darun(self):
         """ LIS DARUN STEP """
         
@@ -708,7 +804,7 @@ class S2Srun(DownloadForecasts):
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname+ '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
-                self.create_dict(jobname+ '{:02d}_'.format(i+1), 'bcsd_fcst')
+                self.create_dict(jobname+ '{:02d}_run.j'.format(i+1), 'bcsd_fcst')
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
@@ -724,7 +820,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(3), CWD, tfile.name)
-            self.create_dict(jobname+ '{:02d}_'.format(i+1), 'bcsd_fcst')
+            self.create_dict(jobname+ 'run.j', 'bcsd_fcst')
         finally:
             tfile.close()
             os.unlink(tfile.name)
@@ -1055,6 +1151,9 @@ class S2Srun(DownloadForecasts):
 
         # (8) S2SPLOTS
         self.s2splots()
+
+        # (9) Write CYLC workflow runtime snippet 
+        self.write_cylc_snippet()
         
         return
         
