@@ -104,6 +104,9 @@ CONTAINS
                        ,SFHEAD1RT                                       &    !I
                        ,INFXS1RT,ETPND1                                 &    !P
 #endif
+#ifdef PARFLOW
+                       ,PCPDRP                                          &    !O
+#endif
                        )
 ! ----------------------------------------------------------------------
 ! SUBROUTINE SFLX - UNIFIED NOAHLSM VERSION 1.0 JULY 2007
@@ -363,6 +366,10 @@ CONTAINS
       REAL :: ALBEDOMIN, ALBEDOMAX
       REAL :: EMISSMIN,  EMISSMAX
       REAL :: Z0MIN,     Z0MAX
+#endif
+
+#ifdef PARFLOW
+      REAL,INTENT(OUT)   :: PCPDRP
 #endif
 
 ! ----------------------------------------------------------------------
@@ -863,6 +870,9 @@ CONTAINS
 #ifdef WRF_HYDRO
                             ,SFHEAD1RT,INFXS1RT,ETPND1                   &
 #endif
+#ifdef PARFLOW
+                            ,PCPDRP                                      &
+#endif
                             )
             ETA_KINEMATIC = ETA
             TSOIL = T1
@@ -882,6 +892,9 @@ CONTAINS
                          VEGTYP,TSOIL                                    &
 #ifdef WRF_HYDRO
                          ,SFHEAD1RT,INFXS1RT,ETPND1                      &
+#endif
+#ifdef PARFLOW
+                         ,PCPDRP                                         &
 #endif
                          )
             ETA_KINEMATIC =  ESNOW + ETNS
@@ -2084,6 +2097,9 @@ CONTAINS
 !DJG NDHMS/WRF-Hydro edit...
                          ,SFHEAD1RT,INFXS1RT,ETPND1                     &
 #endif
+#ifdef PARFLOW
+                         ,PCPDRP                                        &
+#endif
                          )
 
 ! ----------------------------------------------------------------------
@@ -2118,6 +2134,10 @@ CONTAINS
       REAL, DIMENSION(1:NSOIL) :: ET1
       REAL                 :: EC1,EDIR1,ETT1,DF1,ETA1,ETP1,PRCP1,YY,    &
                               YYNUM,ZZ1
+
+#ifdef PARFLOW
+      REAL, INTENT(OUT)    :: PCPDRP
+#endif
 
 ! ----------------------------------------------------------------------
 ! EXECUTABLE CODE BEGINS HERE:
@@ -2166,6 +2186,9 @@ CONTAINS
 #ifdef WRF_HYDRO
                       ,SFHEAD1RT,INFXS1RT                               &
 #endif
+#ifdef PARFLOW
+                      ,PCPDRP                                           &
+#endif
                       )
 
 ! ----------------------------------------------------------------------
@@ -2195,6 +2218,9 @@ CONTAINS
                       DRIP                                              &
 #ifdef WRF_HYDRO
                       ,SFHEAD1RT,INFXS1RT                               &
+#endif
+#ifdef PARFLOW
+                      ,PCPDRP                                           &
 #endif
                       )
 
@@ -2733,6 +2759,9 @@ CONTAINS
 #ifdef WRF_HYDRO
      &                   ,SFHEAD1RT,INFXS1RT                            &
 #endif
+#ifdef PARFLOW
+     &                   ,PCPDRP                                        &
+#endif
      &                   )
 
 ! ----------------------------------------------------------------------
@@ -2757,7 +2786,12 @@ CONTAINS
       REAL, DIMENSION(1:NSOIL), INTENT(INOUT):: SMC, SH2O
       REAL, DIMENSION(1:NSOIL)             :: AI, BI, CI, STCF,RHSTS, RHSTT, &
                                               SICE, SH2OA, SH2OFG
-      REAL                  :: DUMMY, EXCESS,FRZFACT,PCPDRP,RHSCT,TRHSCT
+      REAL                  :: DUMMY, EXCESS,FRZFACT,RHSCT,TRHSCT
+#ifdef PARFLOW
+      REAL,    INTENT(OUT)  :: PCPDRP
+#else
+      REAL                  :: PCPDRP
+#endif
       REAL :: FAC2
       REAL :: FLIMIT
 #ifdef WRF_HYDRO
@@ -3033,6 +3067,9 @@ CONTAINS
 #ifdef WRF_HYDRO
                           ,SFHEAD1RT,INFXS1RT,ETPND1                    &
 #endif
+#ifdef PARFLOW
+                          ,PCPDRP                                       &
+#endif
                           )
 
 ! ----------------------------------------------------------------------
@@ -3067,6 +3104,9 @@ CONTAINS
       REAL, INTENT(OUT)     :: DEW,DRIP,EC,EDIR, ETNS, ESNOW,ETT,       &
                                FLX1,FLX3, RUNOFF1,RUNOFF2,RUNOFF3,      &
                                SSOIL,SNOMLT
+#ifdef PARFLOW
+      REAL, INTENT(OUT)                       :: PCPDRP
+#endif
       REAL, DIMENSION(1:NSOIL),INTENT(IN)     :: RTDIS,ZSOIL
       REAL, DIMENSION(1:NSOIL),INTENT(OUT)    :: ET
       REAL, DIMENSION(1:NSOIL), INTENT(INOUT) :: SMC,SH2O,STC
@@ -3371,6 +3411,9 @@ CONTAINS
                       DRIP                                              &
 #ifdef WRF_HYDRO
                       ,SFHEAD1RT,INFXS1RT                               &
+#endif
+#ifdef PARFLOW
+                      ,PCPDRP                                           &
 #endif
                       )
 ! ----------------------------------------------------------------------
