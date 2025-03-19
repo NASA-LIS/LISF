@@ -62,59 +62,13 @@ module LIS_NUOPC_Gluecode
   use LIS_domainMod, only: &
     LIS_domain_init         !initialize specified domains
   use LIS_surfaceModelMod, only: &
-    LIS_surfaceModel_init, &
-    LIS_surfaceModel_setup, &
-    LIS_surfaceModel_readrestart, &
-    LIS_surfaceModel_run, &
-    LIS_surfaceModel_f2t, &
-    LIS_surfaceModel_output, &
-    LIS_surfaceModel_writerestart, &
-    LIS_surfaceModel_perturb_states, &
     LIS_surfaceModel_setexport
   use LIS_metforcingMod, only: &
-    LIS_metforcing_init, &  ! initialize met forcing setup
-    LIS_get_met_forcing, &  ! retrieve data and interpolate spatially and temporally
-    LIS_perturb_forcing, &  ! perturbs the met forcing variables
     LIS_FORC_State
-  use LIS_DAobservationsMod, only: &
-    LIS_initDAobservations, &
-    LIS_readDAobservations, &
-    LIS_perturb_DAobservations
-  use LIS_perturbMod, only: &
-    LIS_perturb_init, &        ! initialization for perturbation routines
-    LIS_perturb_readrestart, & ! read perturbation restart files
-    LIS_perturb_writerestart
-  use LIS_dataAssimMod, only: &
-    LIS_dataassim_init, &   !initialize data assimilation routines
-    LIS_dataassim_run, &    !invoke data assimilation algorithms
-    LIS_dataassim_output    !invoke data assimilation output
-  use LIS_paramsMod, only: &
-    LIS_param_init, &  !initializes structures, read static data
-    LIS_setDynParams !read time dependent data
-  use LIS_routingMod, only: &
-    LIS_routing_init, &
-    LIS_routing_readrestart, &
-    LIS_routing_run, &
-    LIS_routing_writeoutput, &
-    LIS_routing_writerestart
-  use LIS_irrigationMod, only: &
-    LIS_irrigation_init, &
-    LIS_irrigation_run, &
-    LIS_irrigation_output
-  use LIS_appMod, only: &
-    LIS_appModel_init, &
-    LIS_runAppModel, &
-    LIS_outputAppModel
-  use LIS_RTMMod, only: &
-    LIS_RTM_init, &
-    LIS_RTM_run, &
-    LIS_RTM_output
   use LISWRFGridCompMod, only: &
     LISWRF_alloc_states, &
     LISWRF_reset_states, &
     LISWRF_export
-  use LIS_tbotAdjustMod, only: &
-    LIS_createTmnUpdate
   use LIS_timeMgrMod, only: &
     LIS_timemgr_set      ! set the current time
   use LIS_FORC_AttributesMod, only: &
@@ -597,29 +551,6 @@ contains
 !    initialize the LIS configuration
 !  \item[LIS\_domain\_init] (\ref{LIS_domain_init}) \\
 !    initialize the LIS domains
-!  \item[LIS\_createTmnUpdate] (\ref{LIS_createTmnUpdate}) \\
-!    no description
-!  \item[LIS\_param\_init] (\ref{LIS_param_init}) \\
-!    initialize parameters
-!  \item[LIS\_perturb\_init] (\ref{LIS_perturb_init}) \\
-!    no description
-!  \item[LIS\_surfaceModel\_init] (\ref{LIS_surfaceModel_init}) \\
-!    initialize the surface model.
-!  \item[LIS\_surfaceModel\_init] (\ref{LIS_surfaceModel_init}) \\
-!    no description
-!  \item[LIS\_metforcing\_init] (\ref{LIS_metforcing_init}) \\
-!    initialize the met forcing
-!  \item[LIS\_initDAObservations] (\ref{LIS_initDAobservations}) \\
-!    initialize structures needed to read observations for
-!    data assimilation
-!  \item[LIS\_dataassim\_init] (\ref{LIS_dataassim_init}) \\
-!    no description
-!  \item[LIS\_surfaceModel\_setup] (\ref{LIS_surfaceModel_setup}) \\
-!    complete the LSM setups
-!  \item[LIS\_surfaceModel\_readrestart] (\ref{LIS_surfaceModel_readrestart}) \\
-!    read the restart files
-!  \item[LIS\_perturb\_readrestart] (\ref{LIS_perturb_readrestart}) \\
-!    no description
 !  \item[LIS\_core\_init] (\ref{LIS_core_init}) \\
 !    no description
 ! \end{description}
@@ -691,7 +622,7 @@ contains
   end subroutine
 
   !-----------------------------------------------------------------------------
-  ! LIS_NUOPC_Run: Advance nest calculation based on clock
+  ! LIS_NUOPC_Run: Advance LIS Model
   !-----------------------------------------------------------------------------
 
 #undef METHOD
@@ -701,13 +632,11 @@ contains
 ! !ROUTINE: LIS_NUOPC_Run
 !
 ! !INTERFACE:
-  subroutine LIS_NUOPC_Run(nest,mode,importState,exportState,clock, &
+  subroutine LIS_NUOPC_Run(impStateList,expStateList,clock, &
   misg_import,rc)
 ! !ARGUMENTS:
-    integer,intent(in)                     :: nest
-    integer,intent(in)                     :: mode
-    type(ESMF_State),intent(inout)         :: importState
-    type(ESMF_State),intent(inout)         :: exportState
+    type(ESMF_State),intent(inout)         :: impStateList(:)
+    type(ESMF_State),intent(inout)         :: expStateList(:)
     type(ESMF_Clock),intent(in)            :: clock
     type(missingval_flag),intent(in)       :: misg_import
     integer,intent(out)                    :: rc
@@ -735,10 +664,7 @@ contains
     integer                        :: i, j
     integer                        :: timeStepSecs
 
-    character(len=10)              :: nestStr
-
-    write (nestStr, "(I0)") nest
-    T_ENTER("nest:"//nestStr)
+    integer                        :: sIndex
 
     rc = ESMF_SUCCESS
 
@@ -754,91 +680,76 @@ contains
     stopTime = currTime + timeStep
 
     ! Confirm if the timemgr should receive current time or stop time
-!    call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
     call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
 
     call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     T_ENTER("datacopy")
-    call LIS_ImportFieldsCopy(nest,importState,misg_import,rc=rc)
+    do sIndex=1, size(impStateList)
+      call LIS_ImportFieldsCopy(sIndex,impStateList(sIndex),misg_import,rc=rc)
+      if(ESMF_STDERRORCHECK(rc)) return
+    enddo
     T_EXIT("datacopy")
-    if(ESMF_STDERRORCHECK(rc)) return
 
     call lisstep(trim(LIS_rc%runmode)//char(0))
-
-    ! =========================================================
-    ! Write LIS output data to export state
-    ! =========================================================
-
-    ! See LIS_lsmcpl_pluginMod for subroutines registered to:
-    ! "retrospective", "WRF coupling", "NUOPC coupling"
-    call LIS_surfaceModel_setexport(nest)
-
-    call LIS_ExportFieldsCopy(nest,exportState,rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return
-
-    ! convert runoff fields from (kg m-2 s-1) to (kg m-2)
 
     call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
 
-    ! convert qs field if present
-    call ESMF_StateGet(exportState, &
-      itemName="qs", itemType=itemType, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
+    do sIndex=1, size(expStateList)
+      ! Write LIS output data to export state
+      ! See LIS_lsmcpl_pluginMod for subroutines registered to:
+      ! "retrospective", "WRF coupling", "NUOPC coupling"
+      call LIS_surfaceModel_setexport(sIndex)
+      call LIS_ExportFieldsCopy(sIndex,expStateList(sIndex),rc=rc)
+      if(ESMF_STDERRORCHECK(rc)) return
 
-    if (itemType == ESMF_STATEITEM_FIELD) then
+      ! convert runoff fields qs qsb from (kg m-2 s-1) to (kg m-2)
+      call ESMF_StateGet(expStateList(sIndex), &
+        itemName="qs", itemType=itemType, rc=rc)
+      if (ESMF_STDERRORCHECK(rc)) return
+      if (itemType == ESMF_STATEITEM_FIELD) then
+        call ESMF_StateGet(expStateList(sIndex), &
+          itemName="qs", field=exportField, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+          exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        do j=elb(2), eub(2)
+        do i=elb(1), eub(1)
+          if (exportFarray(i,j) /= MISSINGVALUE) then
+            exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+          endif
+        enddo
+        enddo
+      endif
 
-      call ESMF_StateGet(exportState, &
-        itemName="qs", field=exportField, rc=rc)
+      call ESMF_StateGet(expStateList(sIndex), &
+        itemName="qsb", itemType=itemType, rc=rc)
       if (ESMF_STDERRORCHECK(rc)) return
 
-      call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
-        exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
+      if (itemType == ESMF_STATEITEM_FIELD) then
+        call ESMF_StateGet(expStateList(sIndex), &
+          itemName="qsb", field=exportField, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
+          exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
+        if (ESMF_STDERRORCHECK(rc)) return
+        do j=elb(2), eub(2)
+        do i=elb(1), eub(1)
+          if (exportFarray(i,j) /= MISSINGVALUE) then
+            exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
+          endif
+        enddo
+        enddo
+      endif
 
-      do j=elb(2), eub(2)
-      do i=elb(1), eub(1)
-        if (exportFarray(i,j) /= MISSINGVALUE) then
-          exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
-        endif
-      enddo
-      enddo
-
-    endif
-
-    ! convert qsb field if present
-    call ESMF_StateGet(exportState, &
-      itemName="qsb", itemType=itemType, rc=rc)
-    if (ESMF_STDERRORCHECK(rc)) return
-
-    if (itemType == ESMF_STATEITEM_FIELD) then
-      call ESMF_StateGet(exportState, &
-        itemName="qsb", field=exportField, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      call ESMF_FieldGet(exportField, farrayPtr=exportFarray, &
-        exclusiveLBound=elb, exclusiveUBound=eub, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      do j=elb(2), eub(2)
-      do i=elb(1), eub(1)
-        if (exportFarray(i,j) /= MISSINGVALUE) then
-          exportFarray(i,j) = exportFarray(i,j) * timeStepSecs
-        endif
-      enddo
-      enddo
-
-    endif
-
-    ! end conversions
+    enddo ! end nest loop
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
 #endif
-
-    T_EXIT("nest:"//nestStr)
 
   end subroutine
 
@@ -2280,16 +2191,15 @@ contains
 #define METHOD "LIS_TimestepGet"
 
 !BOP
-! !FUNCTION: LIS_TimestepGet(nest, rc)
+! !FUNCTION: LIS_TimestepGet(rc)
 ! !INTERFACE:
-  function LIS_TimestepGet(nest,rc)
+  function LIS_TimestepGet(rc)
 ! !RETURN VALUE:
-    real               :: LIS_TimestepGet
+    real :: LIS_TimestepGet
 ! !ARGUMENTS:
-    integer,intent(in)                     :: nest
     integer,intent(out)                    :: rc
 ! !DESCRIPTION:
-!   Return timestep for LIS nest
+!   Return timestep for LIS
 !
 !EOP
 !
@@ -2301,7 +2211,7 @@ contains
     call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
 #endif
 
-    LIS_TimestepGet = LIS_rc%nts(nest)
+    LIS_TimestepGet = LIS_rc%ts
 
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": leaving "//METHOD, ESMF_LOGMSG_INFO)
@@ -2383,12 +2293,12 @@ contains
 !BOP
 ! !FUNCTION: LIS_RunModeGet(fieldList,rc)
 ! !INTERFACE:
-  function LIS_RunModeGet(fieldList,state,rc)
+  function LIS_RunModeGet(fieldList,stateList,rc)
 ! !RETURN VALUE:
     integer :: LIS_RunModeGet
 ! !ARGUMENTS:
     type(LIS_Field),intent(in)      :: fieldList(:)
-    type(ESMF_State),intent(in)     :: state
+    type(ESMF_State),intent(in)     :: stateList(:)
     integer,intent(out)             :: rc
 ! !DESCRIPTION:
 !   Return NUOPC coupling for LIS nest
@@ -2396,8 +2306,10 @@ contains
 !EOP
 !
 ! !LOCAL VARIABLES:
+    integer                   :: sIndex
     integer                   :: fIndex
-    integer                   :: reqCount
+    logical                   :: allConnected
+    logical                   :: isConnected
     integer                   :: connectedCount
     type(ESMF_StateItem_Flag) :: itemType
 
@@ -2408,34 +2320,45 @@ contains
 #endif
 
     LIS_RunModeGet = LIS_Unknown
-    reqCount = 0
     connectedCount = 0
+    allConnected = .true.
 
     do fIndex=1, size(fieldList)
       if(fieldList(fIndex)%reqImport) then
-        reqCount = reqCount + 1
-        ! Check itemType to see if field exists in state
-        call ESMF_StateGet(state, &
-          itemName=trim(fieldList(fIndex)%stateName), &
-          itemType=itemType, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return
+        ! Check to see if field is connected in each state
+        do sIndex=1, size(stateList)
+          call ESMF_StateGet(stateList(sIndex), &
+            itemName=trim(fieldList(fIndex)%stateName), &
+            itemType=itemType, rc=rc)
+          if (ESMF_STDERRORCHECK(rc)) return
 
-        if (itemType == ESMF_STATEITEM_FIELD) then
-          if (NUOPC_IsConnected(state, fieldName=trim(fieldList(fIndex)%stateName))) then
-            connectedCount = connectedCount + 1
+          if (itemType == ESMF_STATEITEM_FIELD) then
+            isConnected = NUOPC_IsConnected(stateList(sIndex), &
+              fieldName=trim(fieldList(fIndex)%stateName), rc=rc)
+            if (ESMF_STDERRORCHECK(rc)) return
+          else
+            isConnected = .false.
           endif
-        endif
+
+          if (isConnected) then
+            connectedCount = connectedCount + 1
+          else
+            allConnected = .false.
+          endif
+        enddo
       endif
     enddo
 
-    if( connectedCount == 0 ) then
-      LIS_RunModeGet = LIS_Offline
-    elseif ( connectedCount == reqCount ) then
+    if ( allConnected ) then
       LIS_RunModeGet = LIS_Coupled
       LIS_rc%metforc_blend_alg = "overlay"
       LIS_rc%metforc(:) = "none"
-    else
+    elseif( connectedCount > 0 ) then
       LIS_RunModeGet = LIS_Hybrid
+    elseif( connectedCount == 0 ) then
+      LIS_RunModeGet = LIS_Offline
+    else
+      LIS_RunModeGet = LIS_Unknown
     endif
 
 #ifdef DEBUG
