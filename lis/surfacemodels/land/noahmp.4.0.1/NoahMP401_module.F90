@@ -434,9 +434,22 @@ module NoahMP401_module
         real               :: sai
         real               :: tauss
         real, pointer      :: smoiseq(:)
-        real               :: smcwtd
-        real               :: deeprech
-        real               :: rech
+        real               :: smcwtd     !MMF state
+        real               :: deeprech   !MMF state
+        real               :: rech       !MMF state
+        real               :: wtd        !MMF state, SW, 09142021
+        real               :: qslat      !MMF state, SW
+        real               :: qrfs       !MMF state, SW
+        real               :: qsprings   !MMF state, SW
+        real               :: fdepth     !SW for MMF 09142021
+        real               :: area       !SW for MMF
+        real               :: topo       !SW for MMF
+        real               :: eqwtd      !SW for MMF
+        real               :: riverbed   !SW for MMF
+        real               :: rivercond  !SW for MMF 
+        real               :: qrf        !MMF output SW for MMF
+        real               :: qspring    !MMF output, SW 
+        real               :: rechclim   !SW 
         real               :: grain
         real               :: gdd
         integer            :: pgs
@@ -506,7 +519,12 @@ module NoahMP401_module
         real               :: chuc
         real               :: chv2
         real               :: chb2
-
+       
+        !SW
+        real               :: qsnbot
+        real               :: subsnow
+        real               :: pah 
+        real, pointer      :: relsmc(:)
         !EMK for 557WW
         real :: tair_agl_min
         real :: rhmin
