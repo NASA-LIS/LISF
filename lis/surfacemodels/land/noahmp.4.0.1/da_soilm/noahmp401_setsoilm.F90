@@ -26,7 +26,7 @@ subroutine noahmp401_setsoilm(n, LSM_State)
   use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_surface
   use LIS_logMod, only: LIS_verify
   use noahMP401_lsmMod, only: noahmp401_struc
-  use NOAHMP_TABLES_401, ONLY : SMCMAX_TABLE,SMCWLT_TABLE
+  use noahmp_tables_401, only: smcmax_table, smcwlt_table, isice_table
 
   implicit none
 
@@ -46,15 +46,15 @@ subroutine noahmp401_setsoilm(n, LSM_State)
   real                   :: sm_threshold
   type(ESMF_Field)       :: sm1Field
   real, pointer          :: soilm1(:)
-  real                   :: delta, delta1
-  logical                :: diffCheck(LIS_rc%ngrid(n))
-  logical                :: ensCheck(LIS_rc%ngrid(n))
-  logical                :: largeSM(LIS_rc%ngrid(n))
+  real                   :: delta
+  logical                :: ens_diff(LIS_rc%ngrid(n))
+  logical                :: bounds_violation(LIS_rc%ngrid(n))
   integer                :: i, c, r, t, m, gid
   integer                :: SOILTYP           ! soil type index [-]
+  integer                :: vegtype
   integer                :: status
   logical                :: update_flag(LIS_rc%ngrid(n))
-  logical                :: rc1
+  logical                :: rc
   external :: noahmp401_sm_reorderEnsForOutliers
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
@@ -66,67 +66,71 @@ subroutine noahmp401_setsoilm(n, LSM_State)
        "ESMF_FieldGet: Soil Moisture Layer 1 failed in noahmp401_setsoilm")
 
   update_flag = .true.
-  ensCheck = .true.
-  diffCheck = .false.
-  largeSM  = .false.
+  bounds_violation = .false.
+  ens_diff = .false.
 
+  ! Identify grid points where ice exists (either glacier point, or
+  ! some frozen soil moisture exists).  Note that grid point is flagged
+  ! if *any* ensemble member indicates ice.
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
-     i = LIS_domain(n)%gindex(c,r)
-
-     SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
-     MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP)
-
-     !locations with large soil moisture values are ice points.
-     !we turn off the increments in such locations.
-     if (noahmp401_struc(n)%noahmp401(t)%smc(1).gt.MAX_THRESHOLD.or.&
-         noahmp401_struc(n)%noahmp401(t)%smc(1).gt.0.50) then
-        largeSM(i) = .true.
+     gid = LIS_domain(n)%gindex(c,r)
+     if (.not. update_flag(gid)) cycle ! Skip if ice already detected
+     vegtype = NOAHMP401_struc(n)%noahmp401(t)%vegetype
+     if (vegtype .eq. isice_table) then ! Glacier
+        update_flag(gid) = .false.
+        cycle
      endif
-
+     ! Check if any frozen soil moisture is detected (not just glacier)
+     delta = noahmp401_struc(n)%noahmp401(t)%smc(1) - &
+          noahmp401_struc(n)%noahmp401(t)%sh2o(1)
+     if (abs(delta).ne.0) then
+        update_flag(gid) = .false.
+        cycle
+     end if
   enddo
 
+  ! Toss DA analysis if ice detected.
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
-     i = LIS_domain(n)%gindex(c,r)
-     if(largeSM(i)) then
+     gid = LIS_domain(n)%gindex(c,r)
+     if (.not. update_flag(gid)) then
         soilm1(t) = noahmp401_struc(n)%noahmp401(t)%smc(1)
      endif
   enddo
 
+  ! Find grid points with out-of-bounds DA values, and where DA values
+  ! differ from control member
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
      c = LIS_domain(n)%tile(t)%col
      r = LIS_domain(n)%tile(t)%row
-     i = LIS_domain(n)%gindex(c,r)
-
+     gid = LIS_domain(n)%gindex(c,r)
      SOILTYP = NOAHMP401_struc(n)%noahmp401(t)%soiltype
      MAX_THRESHOLD = SMCMAX_TABLE(SOILTYP)
      MIN_THRESHOLD = SMCWLT_TABLE(SOILTYP)
      sm_threshold = MAX_THRESHOLD - 0.02
-
-     if((soilm1(t).lt.MIN_THRESHOLD.or.&
-          soilm1(t).gt.MAX_THRESHOLD)) then
-        ensCheck(i) = .false.
+     if (soilm1(t).lt.MIN_THRESHOLD.or.&
+          soilm1(t).gt.MAX_THRESHOLD) then
+        bounds_violation(gid) = .true.
      endif
-     if((soilm1(t).ne.soilm1(i*LIS_rc%nensem(n)))) then
-        diffCheck(i) = .true.
+     if (soilm1(t).ne.soilm1(i*LIS_rc%nensem(n))) then
+        ens_diff(gid) = .true.
      endif
   enddo
 
+  ! Attempt to rescale DA ensembles at non-ice points, if bound violation
+  ! is detected and ensemble diff exists.  If not possible, toss the
+  ! DA values.
   do i=1,LIS_rc%ngrid(n)
-     rc1 = .true.
-     if(.not.ensCheck(i).and.diffCheck(i).and.(.not.largeSM(i))) then
+     rc = .true.
+     if (bounds_violation(i) .and. ens_diff(i) .and. update_flag(i)) then
         call noahmp401_sm_reorderEnsForOutliers(LIS_rc%nensem(n),&
              soilm1((i-1)*LIS_rc%nensem(n)+1:i*LIS_rc%nensem(n)),&
-             MIN_THRESHOLD, MAX_THRESHOLD,rc1)
+             MIN_THRESHOLD, MAX_THRESHOLD, rc)
      endif
-     if(.not.rc1) then
-
+     if (.not.rc) then
         do m=1,LIS_rc%nensem(n)
            t = (i-1)*LIS_rc%nensem(n)+m
            soilm1(t) = noahmp401_struc(n)%noahmp401(t)%smc(1)
@@ -134,23 +138,7 @@ subroutine noahmp401_setsoilm(n, LSM_State)
      endif
   enddo
 
-  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
-
-     delta1 = noahmp401_struc(n)%noahmp401(t)%smc(1) - &
-          noahmp401_struc(n)%noahmp401(t)%sh2o(1)
-
-     !if ice layer is present, do not update
-     if(abs(delta1).ne.0) then
-        update_flag(gid) = update_flag(gid).and.(.false.)
-     else
-        update_flag(gid) = update_flag(gid).and.(.true.)
-     endif
-  enddo
-
+  ! Apply the DA updates
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
