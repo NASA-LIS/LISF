@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.5
+! Version 7.4
 !
-! Copyright (c) 2024 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,42 +42,19 @@ subroutine NoahMP401_getsoilm(n, LSM_State)
 !  \end{description}
 !EOP
   type(ESMF_Field)       :: sm1Field
-  type(ESMF_Field)       :: sm2Field
-  type(ESMF_Field)       :: sm3Field
-  type(ESMF_Field)       :: sm4Field
   integer                :: t
   integer                :: status
   real, pointer          :: soilm1(:)
-  real, pointer          :: soilm2(:)
-  real, pointer          :: soilm3(:)
-  real, pointer          :: soilm4(:)
   character*100          :: lsm_state_objs(4)
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 2",sm2Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm2 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 3",sm3Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm3 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm4 in NoahMP401_getsoilm')
-
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sm1 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm2Field,localDE=0,farrayPtr=soilm2,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm2 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm3Field,localDE=0,farrayPtr=soilm3,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm3 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm4Field,localDE=0,farrayPtr=soilm4,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm4 in NoahMP401_getsoilm')
 
 
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      soilm1(t) = noahmp401_struc(n)%noahmp401(t)%smc(1)
-     soilm2(t) = noahmp401_struc(n)%noahmp401(t)%smc(2)
-     soilm3(t) = noahmp401_struc(n)%noahmp401(t)%smc(3)
-     soilm4(t) = noahmp401_struc(n)%noahmp401(t)%smc(4)
   enddo
 
 end subroutine NoahMP401_getsoilm
-
