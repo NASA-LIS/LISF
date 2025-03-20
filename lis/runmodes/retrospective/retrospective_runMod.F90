@@ -111,9 +111,7 @@ contains
 ! !INTERFACE:
   subroutine lis_run_retrospective
 ! !USES:
-    use LIS_coreMod,           only : LIS_rc, LIS_endofrun, &
-                                      LIS_ticktime
-    use LIS_logMod,            only : LIS_logunit
+    use LIS_coreMod,           only : LIS_rc, LIS_endofrun
 !
 ! !DESCRIPTION:
 !
@@ -128,9 +126,7 @@ contains
     integer :: n
 
     do while (.NOT. LIS_endofrun())
-       call LIS_ticktime
        call lis_step_retrospective()
-       flush(LIS_logunit)
     enddo
   end subroutine lis_run_retrospective
 
@@ -140,7 +136,7 @@ contains
 ! !INTERFACE:
   subroutine lis_step_retrospective
 ! !USES:
-    use LIS_coreMod,           only : LIS_rc, LIS_timetoRunNest
+    use LIS_coreMod,           only : LIS_rc, LIS_ticktime, LIS_timetoRunNest
     use LIS_surfaceModelMod,   only : LIS_surfaceModel_f2t, LIS_surfaceModel_run,&
                                       LIS_surfaceModel_output, LIS_surfaceModel_writerestart, &
                                       LIS_surfaceModel_perturb_states
@@ -155,6 +151,7 @@ contains
     use LIS_irrigationMod,     only : LIS_irrigation_run,LIS_irrigation_output
     use LIS_appMod,            only : LIS_runAppModel, LIS_outputAppModel
     use LIS_RTMMod,            only : LIS_RTM_run, LIS_RTM_output
+    use LIS_logMod,            only : LIS_logunit
 !
 ! !DESCRIPTION:
 ! 
@@ -212,6 +209,8 @@ contains
 !EOP
     integer :: n
 
+    call LIS_ticktime
+
 ! Run each nest separately
     do n=1,LIS_rc%nnest
        if(LIS_timeToRunNest(n)) then
@@ -239,6 +238,7 @@ contains
           call LIS_outputAppModel(n)
        endif
     enddo
+    flush(LIS_logunit)
   end subroutine lis_step_retrospective
 
 !BOP

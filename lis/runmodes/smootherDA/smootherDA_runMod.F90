@@ -112,7 +112,6 @@ contains
 ! !USES:
     use LIS_coreMod
     use LIS_timeMgrMod
-    use LIS_logMod
 
 !
 ! !DESCRIPTION:
@@ -130,9 +129,7 @@ contains
 
     do while (.NOT. LIS_endofrun())
        do while(.NOT.LIS_endofTimeWindow())
-          call LIS_ticktime
           call lis_step_smootherDA
-          flush(LIS_logunit)
        enddo
        call lis_reset_smootherDA()
     enddo
@@ -156,6 +153,7 @@ contains
     use LIS_dataAssimMod
     use LIS_routingMod
     use LIS_irrigationMod
+    use LIS_logMod
 
 !
 ! !DESCRIPTION:
@@ -166,6 +164,8 @@ contains
 !
 !EOP
     integer           :: n 
+
+    call LIS_ticktime
 
     do n=1,LIS_rc%nnest
        if(LIS_timeToRunNest(n)) then
@@ -191,7 +191,7 @@ contains
           call updateIncrementsFlag(n)
        endif
     enddo
-
+    flush(LIS_logunit)
   end subroutine lis_step_smootherDA
 
 !BOP

@@ -650,12 +650,7 @@ contains
 !EOP
 !
 ! !LOCAL VARIABLES:
-    type(ESMF_Time)             :: currTime
-    type(ESMF_Time)             :: stopTime
-    type(ESMF_TimeInterval)     :: timeStep
-    integer                     :: yy, mm, dd, h, m, s
-
-    ! used for field conversions
+    type(ESMF_TimeInterval)        :: timeStep
     type(ESMF_StateItem_Flag)      :: itemType
     type(ESMF_Grid)                :: grid
     type(ESMF_Field)               :: exportField
@@ -663,7 +658,6 @@ contains
     integer                        :: elb(2), eub(2)
     integer                        :: i, j
     integer                        :: timeStepSecs
-
     integer                        :: sIndex
 
     rc = ESMF_SUCCESS
@@ -671,19 +665,6 @@ contains
 #ifdef DEBUG
     call ESMF_LogWrite(MODNAME//": entered "//METHOD, ESMF_LOGMSG_INFO)
 #endif
-
-    ! use incoming clock
-    call ESMF_ClockGet(clock, currTime=currTime, timeStep=timeStep, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return
-
-    ! LIS time manager expects end of the interval
-    stopTime = currTime + timeStep
-
-    ! Confirm if the timemgr should receive current time or stop time
-    call ESMF_TimeGet(stopTime, yy=yy, mm=mm, dd=dd, h=h, m=m, s=s, rc=rc)
-    if(ESMF_STDERRORCHECK(rc)) return
-
-    call LIS_timemgr_set(LIS_rc, yy, mm, dd, h, m, s, 0, 0.0)
 
     T_ENTER("datacopy")
     do sIndex=1, size(impStateList)
@@ -694,6 +675,8 @@ contains
 
     call lisstep(trim(LIS_rc%runmode)//char(0))
 
+    call ESMF_ClockGet(clock, timeStep=timeStep, rc=rc)
+    if(ESMF_STDERRORCHECK(rc)) return
     call ESMF_TimeIntervalGet(timeStep, s=timeStepSecs, rc=rc)
     if(ESMF_STDERRORCHECK(rc)) return
 
