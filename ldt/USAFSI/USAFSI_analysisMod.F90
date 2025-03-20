@@ -2152,7 +2152,7 @@ contains
          write(LDT_logunit,*) &
               '[WARN] Cannot find prior USAFSI analysis'
          ierr = 2
-      ! EMK Bug fix:  Only return error for missing 12z analysis if
+      ! Only return error for missing 12z analysis if
       ! current cycle is 12z.  This avoids erroneously searching for
       ! 0.25 deg SNODEP data, and applying climo for missing or zero
       ! values.
