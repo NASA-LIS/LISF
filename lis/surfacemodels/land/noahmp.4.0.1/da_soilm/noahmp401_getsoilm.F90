@@ -14,70 +14,46 @@
 ! !REVISION HISTORY:
 ! 27Feb2005: Sujay Kumar; Initial Specification
 ! 25Jun2006: Sujay Kumar: Updated for the ESMF design
-! 15 Dec 2018: Mahdi Navari; Modified for NoahMP401 
-
+! 15 Dec 2018: Mahdi Navari; Modified for NoahMP401
+! 20 Mar 2025: Eric Kemp; Changed to use top soil layer only.  Based on
+!  code from Sujay Kumar and Wanshu Nie used for, e.g., HydroGlobe.
 ! !INTERFACE:
 subroutine NoahMP401_getsoilm(n, LSM_State)
 
 ! !USES:
   use ESMF
-  use LIS_coreMod, only : LIS_rc
-  use LIS_logMod,  only  : LIS_verify
-  use NoahMP401_lsmMod
+  use LIS_coreMod, only: LIS_rc
+  use LIS_logMod,  only: LIS_verify
+  use NoahMP401_lsmMod, only: noahmp401_struc
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
   integer, intent(in)    :: n
-  type(ESMF_State)       :: LSM_State
+  type(ESMF_State), intent(in) :: LSM_State
 !
 ! !DESCRIPTION:
 !
 !  Returns the soilmoisture related state prognostic variables for
 !  data assimilation
-! 
-!  The arguments are: 
+!
+!  The arguments are:
 !  \begin{description}
 !  \item[n] index of the nest \newline
 !  \item[LSM\_State] ESMF State container for LSM state variables \newline
 !  \end{description}
 !EOP
   type(ESMF_Field)       :: sm1Field
-  type(ESMF_Field)       :: sm2Field
-  type(ESMF_Field)       :: sm3Field
-  type(ESMF_Field)       :: sm4Field
-  integer                :: t
   integer                :: status
   real, pointer          :: soilm1(:)
-  real, pointer          :: soilm2(:)
-  real, pointer          :: soilm3(:)
-  real, pointer          :: soilm4(:)
-  character*100          :: lsm_state_objs(4)
+  integer                :: t
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,'ESMF_StateGet failed for sm1 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 2",sm2Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm2 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 3",sm3Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm3 in NoahMP401_getsoilm')
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
-  call LIS_verify(status,'ESMF_StateGet failed for sm4 in NoahMP401_getsoilm')
-
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,'ESMF_FieldGet failed for sm1 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm2Field,localDE=0,farrayPtr=soilm2,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm2 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm3Field,localDE=0,farrayPtr=soilm3,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm3 in NoahMP401_getsoilm')
-  call ESMF_FieldGet(sm4Field,localDE=0,farrayPtr=soilm4,rc=status)
-  call LIS_verify(status,'ESMF_FieldGet failed for sm4 in NoahMP401_getsoilm')
-
-
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      soilm1(t) = noahmp401_struc(n)%noahmp401(t)%smc(1)
-     soilm2(t) = noahmp401_struc(n)%noahmp401(t)%smc(2)
-     soilm3(t) = noahmp401_struc(n)%noahmp401(t)%smc(3)
-     soilm4(t) = noahmp401_struc(n)%noahmp401(t)%smc(4)
   enddo
 
 end subroutine NoahMP401_getsoilm
-

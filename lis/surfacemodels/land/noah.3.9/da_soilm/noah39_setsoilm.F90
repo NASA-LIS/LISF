@@ -13,550 +13,193 @@
 !
 ! !REVISION HISTORY:
 ! 21Oct2018: Mahdi Navari; Sujay Kumar ; Initial Specification
-! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix 
-!                           (add check for frozen soil) 
+! 8 May 2023: Mahdi Navari; Soil temperature bias bug fix
+!                           (add check for frozen soil)
 ! 10 Apr 2024: Mahdi Navari; ensemble flag bug fix
-! 11 Apr 2024: Mahdi Navari; Fix bug related to computing delta. The bug fix sets 
-!                    the code to use total soil moisture (smc) if the ground 
-!                    is frozen, rather than the liquid part of soil moisture (sh2o).
+! 11 Apr 2024: Mahdi Navari; Fix bug related to computing delta. The bug
+!   fix sets the code to use total soil moisture (smc) if the ground is
+!   frozen, rather than the liquid part of soil moisture (sh2o).
+! 20 Mar 2025: Eric Kemp; Major rewrite -- uses top soil layer only,
+!   overhauled bounds checks and ensemble spread adjusted.  Based on
+!   NoahMP401 code from Sujay Kumar and Wanshu Nie used for, e.g.,
+!   HydroGlobe.
+!
 ! !INTERFACE:
 subroutine noah39_setsoilm(n, LSM_State)
+
 ! !USES:
   use ESMF
-  use LIS_coreMod 
-  use LIS_logMod
-  use noah39_lsmMod
-  use LIS_constantsMod, only : LIS_CONST_TKFRZ
+  use LIS_coreMod, only: LIS_rc, LIS_domain, LIS_surface
+  use LIS_logMod, only: LIS_verify
+  use noah39_lsmMod, only: noah39_struc
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
   integer, intent(in)    :: n
-  type(ESMF_State)       :: LSM_State
+  type(ESMF_State), intent(in) :: LSM_State
 !
 ! !DESCRIPTION:
-!  
-!  This routine assigns the soil moisture prognostic variables to noah's
-!  model space. 
-! 
+!
+!  This routine assigns the soil moisture prognostic variables to NoahMP's
+!  model space.
+!
 !EOP
 
-  real, parameter        :: MIN_THRESHOLD = 0.02 
-  real                   :: MAX_threshold
-  real                   :: sm_threshold
+  real                   :: MIN_THRESHOLD
+  real                   :: MAX_THRESHOLD
   type(ESMF_Field)       :: sm1Field
-  type(ESMF_Field)       :: sm2Field
-  type(ESMF_Field)       :: sm3Field
-  type(ESMF_Field)       :: sm4Field
   real, pointer          :: soilm1(:)
-  real, pointer          :: soilm2(:)
-  real, pointer          :: soilm3(:)
-  real, pointer          :: soilm4(:)
-  integer                :: t, j,i, gid, m, t_unpert, LIS_localP, row , col
+  real                   :: delta
+  logical                :: ens_diff(LIS_rc%ngrid(n))
+  logical                :: bounds_violation(LIS_rc%ngrid(n))
+  integer                :: c, r, t, m, gid
+  integer                :: vegtype
   integer                :: status
-  real                   :: delta(4), ens_count(4)
-  real                   :: delta1,delta2,delta3,delta4
-  real                   :: tmpval
-  logical                :: bounds_violation
-  integer                :: nIter
   logical                :: update_flag(LIS_rc%ngrid(n))
-  logical                :: ens_flag(4,LIS_rc%nensem(n))
-  real                   :: tmp(LIS_rc%nensem(n)), tmp0(LIS_rc%nensem(n))
-  real                   :: tmp1(LIS_rc%nensem(n)),tmp2(LIS_rc%nensem(n)),tmp3(LIS_rc%nensem(n)),tmp4(LIS_rc%nensem(n)) 
-  logical                :: update_flag_tile(LIS_rc%npatch(n,LIS_rc%lsm_index))
-  logical                :: flag_ens(LIS_rc%ngrid(n))
-  logical                :: flag_tmp(LIS_rc%nensem(n))
-  logical                :: update_flag_ens(LIS_rc%ngrid(n))
-  logical                :: update_flag_new(LIS_rc%ngrid(n))
-  integer                :: pcount, icount
-  real                   :: MaxEnsSM1 ,MaxEnsSM2 ,MaxEnsSM3 ,MaxEnsSM4
-  real                   :: MinEnsSM1 ,MinEnsSM2 ,MinEnsSM3 ,MinEnsSM4 
-  real                   :: MaxEns_sh2o1, MaxEns_sh2o2, MaxEns_sh2o3, MaxEns_sh2o4
-  real                   :: smc_rnd, smc_tmp 
-  real                   :: sh2o_tmp, sh2o_rnd 
-  INTEGER, DIMENSION (1) :: seed 
-  real                   :: lat , lon 
-  
-!  integer :: svk_col,svk_row,ii,jj
-!  real    :: svk_statebf(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  logical                :: rc
+  external :: noah39_sm_reorderEnsForOutliers
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Soil Moisture Layer 1 failed in noah39_setsoilm")
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 2",sm2Field,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Soil Moisture Layer 2 failed in noah39_setsoilm")
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 3",sm3Field,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Soil Moisture Layer 3 failed in noah39_setsoilm")
-  call ESMF_StateGet(LSM_State,"Soil Moisture Layer 4",sm4Field,rc=status)
-  call LIS_verify(status,&
-       "ESMF_StateSet: Soil Moisture Layer 4 failed in noah39_setsoilm")
 
   call ESMF_FieldGet(sm1Field,localDE=0,farrayPtr=soilm1,rc=status)
   call LIS_verify(status,&
        "ESMF_FieldGet: Soil Moisture Layer 1 failed in noah39_setsoilm")
-  call ESMF_FieldGet(sm2Field,localDE=0,farrayPtr=soilm2,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Soil Moisture Layer 2 failed in noah39_setsoilm")
-  call ESMF_FieldGet(sm3Field,localDE=0,farrayPtr=soilm3,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Soil Moisture Layer 3 failed in noah39_setsoilm")
-  call ESMF_FieldGet(sm4Field,localDE=0,farrayPtr=soilm4,rc=status)
-  call LIS_verify(status,&
-       "ESMF_FieldGet: Soil Moisture Layer 4 failed in noah39_setsoilm")
 
-  update_flag = .true. 
-  update_flag_tile = .true. 
+  update_flag = .true.
+  bounds_violation = .false.
+  ens_diff = .false.
 
+  ! Identify grid points where ice exists (either glacier point, or
+  ! some frozen soil moisture exists).  Note that grid point is flagged
+  ! if *any* ensemble member indicates ice.
   do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-  
-!    sm_threshold_lo = noah39_struc(n)%noah(t)%smcdry
+     c = LIS_domain(n)%tile(t)%col
+     r = LIS_domain(n)%tile(t)%row
+     gid = LIS_domain(n)%gindex(c,r)
+     if (.not. update_flag(gid)) cycle ! Skip if ice already detected
+     vegtype = noah39_struc(n)%noah(t)%vegt
+     if (vegtype .eq. LIS_rc%glacierclass) then ! Glacier
+        update_flag(gid) = .false.
+        cycle
+     endif
+     ! Check if any frozen soil moisture is detected (not just glacier)
+     delta = noah39_struc(n)%noah(t)%smc(1) - &
+          noah39_struc(n)%noah(t)%sh2o(1)
+     if (abs(delta).ne.0) then
+        update_flag(gid) = .false.
+        cycle
+     end if
+  enddo
+
+  ! Find grid points with out-of-bounds DA values, and where DA values
+  ! differ from control member
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     c = LIS_domain(n)%tile(t)%col
+     r = LIS_domain(n)%tile(t)%row
+     gid = LIS_domain(n)%gindex(c,r)
      MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-     sm_threshold  = MAX_THRESHOLD-MIN_THRESHOLD       
-     
+     MIN_THRESHOLD = noah39_struc(n)%noah(t)%smcwlt
+     if (soilm1(t).lt.MIN_THRESHOLD.or.&
+          soilm1(t).gt.MAX_THRESHOLD) then
+        bounds_violation(gid) = .true.
+     endif
+     if (soilm1(t).ne.soilm1(gid*LIS_rc%nensem(n))) then
+        ens_diff(gid) = .true.
+     endif
+  enddo
+
+  ! Attempt to rescale DA ensembles at non-ice points, if bound violation
+  ! is detected and ensemble diff exists.  If problem occurs, toss the
+  ! DA values.
+  do gid=1,LIS_rc%ngrid(n)
+     rc = .true.
+     if (bounds_violation(gid) .and. ens_diff(gid) .and. &
+          update_flag(gid)) then
+        call noah39_sm_reorderEnsForOutliers(LIS_rc%nensem(n),&
+             soilm1((gid-1)*LIS_rc%nensem(n)+1:gid*LIS_rc%nensem(n)),&
+             MIN_THRESHOLD, MAX_THRESHOLD, rc)
+     endif
+     if (.not.rc) then
+        do m=1,LIS_rc%nensem(n)
+           t = (gid-1)*LIS_rc%nensem(n)+m
+           soilm1(t) = noah39_struc(n)%noah(t)%smc(1)
+        enddo
+     endif
+  enddo
+
+  ! Apply the DA updates
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
      gid = LIS_domain(n)%gindex(&
           LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row) 
-
-
-
-
-!	if ( LIS_localPet == 0 ) then
-!	if (gid ==139027) then
-
-!	row =  LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
-!	col =  LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
-!	      print*, 'LIS_localPet == 0' ,t, gid, row, col, &
-!	          LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lat ,&
-!	          LIS_domain(n)%grid(LIS_domain(n)%gindex(col, row))%lon
-!	endif
-!	endif
-
-  !if (gid == 11380) then
-      !print*,'here'
-      !print*, t, gid,  LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-      !    LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row 
-  !endif     
-     !MN: delta = X(+) - X(-)
-     !NOTE: "noah_updatesoilm.F90" updates the soilm_(t)     
-     delta1 = soilm1(t)-noah39_struc(n)%noah(t)%smc(1)
-     delta2 = soilm2(t)-noah39_struc(n)%noah(t)%smc(2)
-     delta3 = soilm3(t)-noah39_struc(n)%noah(t)%smc(3)
-     delta4 = soilm4(t)-noah39_struc(n)%noah(t)%smc(4)
-     
-     ! MN: check    MIN_THRESHOLD < volumetric liquid soil moisture < threshold 
-     if(noah39_struc(n)%noah(t)%sh2o(1)+delta1.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(1)+delta1.lt.&
-          sm_threshold .and.& 
-          noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then 
-        update_flag(gid) = update_flag(gid).and.(.true.)
-        ! MN save the flag for each tile (col*row*ens)   (64*44)*20
-        update_flag_tile(t) = update_flag_tile(t).and.(.true.)
-     else
-        update_flag(gid) = update_flag(gid).and.(.false.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.false.)
-     endif
-     if(noah39_struc(n)%noah(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold .and.&
-          noah39_struc(n)%noah(t)%stc(2) .gt. LIS_CONST_TKFRZ) then 
-        update_flag(gid) = update_flag(gid).and.(.true.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.true.)
-     else
-        update_flag(gid) = update_flag(gid).and.(.false.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.false.)
-     endif
-     if(noah39_struc(n)%noah(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold .and.&
-          noah39_struc(n)%noah(t)%stc(3) .gt. LIS_CONST_TKFRZ) then 
-        update_flag(gid) = update_flag(gid).and.(.true.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.true.)
-     else
-        update_flag(gid) = update_flag(gid).and.(.false.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.false.)
-     endif
-     if(noah39_struc(n)%noah(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-          noah39_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold .and.&
-          noah39_struc(n)%noah(t)%stc(4) .gt. LIS_CONST_TKFRZ) then 
-        update_flag(gid) = update_flag(gid).and.(.true.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.true.)
-     else
-        update_flag(gid) = update_flag(gid).and.(.false.)
-        update_flag_tile(t) = update_flag_tile(t).and.(.false.)
-     endif
-
-   enddo
-
-!-----------------------------------------------------------------------------------------
-! MN create new flag: if update flag for 50% of the ensemble members is true 
-! then update the stats 
-!-----------------------------------------------------------------------------------------
-   update_flag_ens = .true.  
-   do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(i)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(i)%row) 
-      flag_tmp=update_flag_tile(i:i+LIS_rc%nensem(n)-1)
-      !flag_tmp=update_flag_tile((i-1)*LIS_rc%nensem(n)+1:(i)*LIS_rc%nensem(n))
-      pcount = COUNT(flag_tmp) ! Counts the number of .TRUE. elements
-      if (pcount.lt.LIS_rc%nensem(n)*0.5) then   ! 50%
-         update_flag_ens(gid)= .False.
-      endif
-      update_flag_new(gid)= update_flag(gid).or.update_flag_ens(gid)  ! new flag
-   enddo
-   
-  ! update step
-  ! loop over grid points 
-  do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index),LIS_rc%nensem(n)
-
-     gid = LIS_domain(n)%gindex(&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(i)%col,&
-          LIS_surface(n,LIS_rc%lsm_index)%tile(i)%row) 
-
-     if(update_flag_new(gid)) then 
-!-----------------------------------------------------------------------------------------
-! 1- update the states
-! 1-1- if update flag for tile is TRUE --> apply the DA update    
-! 1-2- if update flag for tile is FALSE --> resample the states  
-! 2- adjust the sataes
-!-----------------------------------------------------------------------------------------
-! store update value for  cases that flag_tile & update_flag_new are TRUE
-! flag_tile = TRUE --> means met the both min and max threshold 
-
-        tmp1 = LIS_rc%udef
-        tmp2 = LIS_rc%udef
-        tmp3 = LIS_rc%udef
-        tmp4 = LIS_rc%udef
-
-        do m=1,LIS_rc%nensem(n)
-           t = i+m-1
-           !t = (i-1)*LIS_rc%nensem(n)+m
-           
-           if(update_flag_tile(t)) then
-              
-              tmp1(m) = soilm1(t) !noah39_struc(n)%noah(t)%smc(1)
-              tmp2(m) = soilm2(t) !noah39_struc(n)%noah(t)%smc(2)
-              tmp3(m) = soilm3(t) !noah39_struc(n)%noah(t)%smc(3)
-              tmp4(m) = soilm4(t) !noah39_struc(n)%noah(t)%smc(4)
-
-           endif
-        enddo
-        
-        MaxEnsSM1 = -10000
-        MaxEnsSM2 = -10000
-        MaxEnsSM3 = -10000
-        MaxEnsSM4 = -10000
-
-        MinEnsSM1 = 10000
-        MinEnsSM2 = 10000
-        MinEnsSM3 = 10000
-        MinEnsSM4 = 10000
-
-        do m=1,LIS_rc%nensem(n)
-           if(tmp1(m).ne.LIS_rc%udef) then 
-              MaxEnsSM1 = max(MaxEnsSM1, tmp1(m))
-              MaxEnsSM2 = max(MaxEnsSM2, tmp2(m))
-              MaxEnsSM3 = max(MaxEnsSM3, tmp3(m))
-              MaxEnsSM4 = max(MaxEnsSM4, tmp4(m))
-
-              MinEnsSM1 = min(MinEnsSM1, tmp1(m))
-              MinEnsSM2 = min(MinEnsSM2, tmp2(m))
-              MinEnsSM3 = min(MinEnsSM3, tmp3(m))
-              MinEnsSM4 = min(MinEnsSM4, tmp4(m))
-              
-           endif
-        enddo
-
-
-       tmp0 = LIS_rc%udef
-
-
-        ! loop over ensemble       
-        do m=1,LIS_rc%nensem(n)
-           t = i+m-1
-           !t = (i-1)*LIS_rc%nensem(n)+m
-
-           MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-           sm_threshold  = MAX_THRESHOLD-MIN_THRESHOLD       
-                      
-           ! MN check update status for each tile  
-           if(update_flag_tile(t)) then
-              
-              delta1 = soilm1(t)-noah39_struc(n)%noah(t)%smc(1)
-              delta2 = soilm2(t)-noah39_struc(n)%noah(t)%smc(2)
-              delta3 = soilm3(t)-noah39_struc(n)%noah(t)%smc(3)
-              delta4 = soilm4(t)-noah39_struc(n)%noah(t)%smc(4)
-              
-              noah39_struc(n)%noah(t)%sh2o(1) = noah39_struc(n)%noah(t)%sh2o(1)+&
-                   delta1
-              noah39_struc(n)%noah(t)%smc(1) = soilm1(t)
-              if(soilm1(t).lt.0) then 
-                 print*, 'setsoilm1 ',t,soilm1(t)
-                 stop
-              endif
-              if(noah39_struc(n)%noah(t)%sh2o(2)+delta2.gt.MIN_THRESHOLD .and.&
-                   noah39_struc(n)%noah(t)%sh2o(2)+delta2.lt.sm_threshold) then 
-                 noah39_struc(n)%noah(t)%sh2o(2) = noah39_struc(n)%noah(t)%sh2o(2)+&
-                      soilm2(t)-noah39_struc(n)%noah(t)%smc(2)
-                 noah39_struc(n)%noah(t)%smc(2) = soilm2(t)
-                 if(soilm2(t).lt.0) then 
-                    print*, 'setsoilm2 ',t,soilm2(t)
-                    stop
-                 endif
-              endif
-              if(noah39_struc(n)%noah(t)%sh2o(3)+delta3.gt.MIN_THRESHOLD .and.&
-                   noah39_struc(n)%noah(t)%sh2o(3)+delta3.lt.sm_threshold) then 
-                 noah39_struc(n)%noah(t)%sh2o(3) = noah39_struc(n)%noah(t)%sh2o(3)+&
-                      soilm3(t)-noah39_struc(n)%noah(t)%smc(3)
-                 noah39_struc(n)%noah(t)%smc(3) = soilm3(t)
-                 if(soilm3(t).lt.0) then 
-                    print*, 'setsoilm3 ',t,soilm3(t)
-                    stop
-                 endif
-              endif
-              ! surface layer
-              if(noah39_struc(n)%noah(t)%sh2o(4)+delta4.gt.MIN_THRESHOLD .and.&
-                   noah39_struc(n)%noah(t)%sh2o(4)+delta4.lt.sm_threshold) then 
-                 noah39_struc(n)%noah(t)%sh2o(4) = noah39_struc(n)%noah(t)%sh2o(4)+&
-                      soilm4(t)-noah39_struc(n)%noah(t)%smc(4)
-                 noah39_struc(n)%noah(t)%smc(4) = soilm4(t)
-                 if(soilm4(t).lt.0) then 
-                    print*, 'setsoilm4 ',t,soilm4(t)
-                    stop
-                 endif
-              endif
-              
-              
-!-----------------------------------------------------------------------------------------
-! randomly resample the smc from [MIN_THRESHOLD,  Max value from DA @ that tiem step]
-!-----------------------------------------------------------------------------------------
-           else 
-              
-!-----------------------------------------------------------------------------------------  
-! set the soil moisture to the ensemble mean  
-!-----------------------------------------------------------------------------------------
-              
-              ! use mean value
-              ! Assume sh2o = smc (i.e. ice content=0) 
-              smc_tmp = (MaxEnsSM1 - MinEnsSM1)/2 + MinEnsSM1
-              noah39_struc(n)%noah(t)%sh2o(1) = smc_tmp 
-              noah39_struc(n)%noah(t)%smc(1) = smc_tmp
-              
-              smc_tmp = (MaxEnsSM2 - MinEnsSM2)/2 + MinEnsSM2            
-              noah39_struc(n)%noah(t)%sh2o(2) = smc_tmp
-              noah39_struc(n)%noah(t)%smc(2) = smc_tmp
-              
-              smc_tmp = (MaxEnsSM3 - MinEnsSM3)/2 + MinEnsSM3
-              noah39_struc(n)%noah(t)%sh2o(3) = smc_tmp
-              noah39_struc(n)%noah(t)%smc(3) = smc_tmp
-              
-              smc_tmp = (MaxEnsSM4 - MinEnsSM4)/2 + MinEnsSM4
-              noah39_struc(n)%noah(t)%sh2o(4) = smc_tmp
-              noah39_struc(n)%noah(t)%smc(4) = smc_tmp
- 
-              
-             !MN  4 print 	
-             tmp0(m) = noah39_struc(n)%noah(t)%smc(1)
-                          
-           endif ! flag for each tile
-        enddo ! loop over tile
- 
-     else ! if update_flag_new(gid) is FALSE   
-        if(LIS_rc%pert_bias_corr.eq.1) then           
-!--------------------------------------------------------------------------
-! if no update is made, then we need to readjust the ensemble if pert bias
-! correction is turned on because the forcing perturbations may cause 
-! biases to persist. 
-!--------------------------------------------------------------------------
-           bounds_violation = .true. 
-           nIter = 0
-           ens_flag = .true. 
-           
-           do while(bounds_violation) 
-              niter = niter + 1
-              !t_unpert = i*LIS_rc%nensem(n)
-              t_unpert = i+LIS_rc%nensem(n)-1
-              do j=1,4
-                 delta(j) = 0.0
-                 do m=1,LIS_rc%nensem(n)-1
-                    t = i+m-1
-                    !t = (i-1)*LIS_rc%nensem(n)+m
-                    
-                    if(m.ne.LIS_rc%nensem(n)) then
-                      if (noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then ! MN 
-                       delta(j) = delta(j) + &
-                            (noah39_struc(n)%noah(t)%sh2o(j) - &
-                            noah39_struc(n)%noah(t_unpert)%sh2o(j))
-                      else ! MN
-                       delta(j) = delta(j) + &
-                            (noah39_struc(n)%noah(t)%smc(j) - &
-                            noah39_struc(n)%noah(t_unpert)%smc(j))
-                      endif
-                    endif
-                    
-                 enddo
-              enddo
-              
-              do j=1,4
-                 ens_count(j) = 0.0
-                 delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
-                 do m=1,LIS_rc%nensem(n)-1
-                    t = i+m-1
-                    !t = (i-1)*LIS_rc%nensem(n)+m
-                    MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-                    sm_threshold  = MAX_THRESHOLD-MIN_THRESHOLD
-                    
-                    tmpval = noah39_struc(n)%noah(t)%sh2o(j) - &
-                         delta(j)
-                    if(tmpval.le.MIN_THRESHOLD) then 
-                       noah39_struc(n)%noah(t)%sh2o(j) = &
-                            max(noah39_struc(n)%noah(t_unpert)%sh2o(j),&
-                            MIN_THRESHOLD)
-                       noah39_struc(n)%noah(t)%smc(j) = &
-                            max(noah39_struc(n)%noah(t_unpert)%smc(j),&
-                            MIN_THRESHOLD)
-                       ens_flag(j,m) = .false.
-                       ens_count(j) = ens_count(j) + 1 
-                    elseif(tmpval.ge.sm_threshold) then
-                       noah39_struc(n)%noah(t)%sh2o(j) = &
-                            min(noah39_struc(n)%noah(t_unpert)%sh2o(j),&
-                            sm_threshold)
-                       noah39_struc(n)%noah(t)%smc(j) = &
-                            min(noah39_struc(n)%noah(t_unpert)%smc(j),&
-                            sm_threshold)
-                       ens_flag(j,m) = .false.
-                       ens_count(j) = ens_count(j) + 1 
-                    endif
-                 enddo
-              enddo
-              
-!--------------------------------------------------------------------------
-! Recalculate the deltas and adjust the ensemble
-!--------------------------------------------------------------------------
-              do j=1,4
-                 delta(j) = 0.0
-                 do m=1,LIS_rc%nensem(n)-1
-                    t = i+m-1
-                    !t = (i-1)*LIS_rc%nensem(n)+m
-                    if(m.ne.LIS_rc%nensem(n)) then 
-                      if (noah39_struc(n)%noah(t)%stc(1) .gt. LIS_CONST_TKFRZ) then ! MN 
-                         delta(j) = delta(j) + &
-                             (noah39_struc(n)%noah(t)%sh2o(j) - &
-                              noah39_struc(n)%noah(t_unpert)%sh2o(j))
-                      else ! MN
-                          delta(j) = delta(j) + &
-                             (noah39_struc(n)%noah(t)%smc(j) - &
-                              noah39_struc(n)%noah(t_unpert)%smc(j))
-                      endif
-                    endif
-                 enddo
-              enddo
-              
-              do j=1,4
-                 if (ens_count(j).lt.(LIS_rc%nensem(n)-1)) then
-                    !delta(j) =delta(j)/(LIS_rc%nensem(n)-1)
-                     delta(j) =delta(j)/(LIS_rc%nensem(n)-1-ens_count(j))
-                 else 
-                      delta(j) =delta(j)/(LIS_rc%nensem(n)-1) !We apply this 
-                      !to remove the residual bias after setting all ensemble members
-                      !to the bond values (MIN_THRESHOLD, sm_threshold, or unperturbed)
-                 endif        
-                 do m=1,LIS_rc%nensem(n)-1
-                    t = i+m-1
-                    !t = (i-1)*LIS_rc%nensem(n)+m
-                    
-                    if(ens_flag(j,m)) then 
-                       tmpval = noah39_struc(n)%noah(t)%sh2o(j) - &
-                            delta(j)
-                       MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-                       if(.not.(tmpval.le.0.0 .or.&
-                            tmpval.gt.(MAX_THRESHOLD))) then 
-                          
-                          noah39_struc(n)%noah(t)%smc(j) = &
-                               noah39_struc(n)%noah(t)%smc(j) - delta(j)
-                          noah39_struc(n)%noah(t)%sh2o(j) = &
-                               noah39_struc(n)%noah(t)%sh2o(j) - delta(j)
-                          bounds_violation = .false.
-                       endif
-                    endif
-                    
-                    tmpval = noah39_struc(n)%noah(t)%sh2o(j)
-                    MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-                    
-                    if(tmpval.le.0.0 .or.&
-                         tmpval.gt.(MAX_THRESHOLD)) then 
-                       bounds_violation = .true. 
-                    else
-                       bounds_violation = .false.
-                    endif
-                 enddo
-              enddo
-              
-              if(nIter.gt.10.and.bounds_violation) then 
-!--------------------------------------------------------------------------
-! All else fails, set to the bounds
-!--------------------------------------------------------------------------
-                 
-!                 write(LIS_logunit,*) '[ERR] Ensemble structure violates physical bounds '
-!                 write(LIS_logunit,*) '[ERR] Please adjust the perturbation settings ..'
-                 do j=1,4
-                    do m=1,LIS_rc%nensem(n)
-                       t = i+m-1
-                       !t = (i-1)*LIS_rc%nensem(n)+m
-                       
-                       MAX_THRESHOLD = noah39_struc(n)%noah(t)%smcmax
-                       
-                       if(noah39_struc(n)%noah(t)%sh2o(j).gt.MAX_THRESHOLD.or.&
-                            noah39_struc(n)%noah(t)%smc(j).gt.MAX_THRESHOLD) then                        
-                          noah39_struc(n)%noah(t)%sh2o(j) = MAX_THRESHOLD
-                          noah39_struc(n)%noah(t)%smc(j) = MAX_THRESHOLD
-                       endif
-                       
-                       if(noah39_struc(n)%noah(t)%sh2o(j).lt.MIN_THRESHOLD.or.&
-                            noah39_struc(n)%noah(t)%smc(j).lt.MIN_THRESHOLD) then                        
-                          noah39_struc(n)%noah(t)%sh2o(j) = MIN_THRESHOLD
-                          noah39_struc(n)%noah(t)%smc(j) = MIN_THRESHOLD
-                       endif
-!                    print*, i, m
-!                    print*, 'smc',t, noah39_struc(n)%noah(t)%smc(:)
-!                    print*, 'sh2o ',t,noah39_struc(n)%noah(t)%sh2o(:)
-!                    print*, 'max ',t,MAX_THRESHOLD !noah39_struc(n)%noah(t)%smcmax
-                    enddo
-!                 call LIS_endrun()
-                 enddo
-              endif
-              
-           end do
-        endif
+          LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)
+     if (update_flag(gid)) then
+        delta = soilm1(t) - NOAH39_struc(n)%noah(t)%smc(1)
+        NOAH39_struc(n)%noah(t)%smc(1) = soilm1(t)
+        NOAH39_struc(n)%noah(t)%sh2o(1) = &
+             NOAH39_struc(n)%noah(t)%sh2o(1) + delta
      endif
   enddo
 
-#if 0 
-  svk_statebf = 0.0
-  
-  do t = 1,LIS_rc%npatch(n,LIS_rc%lsm_index)
-
-     svk_col = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col
-     svk_row = LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row
-     
-     svk_statebf(svk_col,svk_row) =  svk_statebf(svk_col,svk_row) + &
-          noah39_struc(n)%noah(t)%smc(1)
-  enddo
-
-  do jj=1,LIS_rc%lnr(n)
-     do ii=1,LIS_rc%lnc(n)
-        if(svk_statebf(ii,jj).gt.0) then 
-           svk_statebf(ii,jj) = svk_statebf(ii,jj)/LIS_rc%nensem(n)
-        endif
-     enddo
-  enddo
-
-  open(100,file='stateupd.bin',form='unformatted')
-  write(100) svk_statebf
-  close(100)
-!  stop
-#endif
-
-!stop 666
- 
 end subroutine noah39_setsoilm
 
+subroutine noah39_sm_reorderEnsForOutliers(nensem, statevec, &
+     minvalue, maxvalue, status)
+
+  implicit none
+
+  integer, intent(in)  :: nensem
+  real, intent(inout)  :: statevec(nensem)
+  real, intent(in)     :: minvalue,maxvalue
+  logical, intent(inout) :: status
+
+  real                 :: minvT, maxvT, minvG, maxvG
+  logical              :: found_good
+  integer              :: k
+  real                 :: spread_total, spread_good, spread_ratio
+
+  !Ensemble spread (total and with 'good' ensemble members
+  minvT = 1E10
+  maxvT = -1E10
+  minvG = 1E10
+  maxvG = -1E10
+  status = .true.
+  found_good = .false.
+
+  do k=1, nensem
+     if (statevec(k).lt.minvT) then
+        minvT = statevec(k)
+     endif
+     if (statevec(k).gt.maxvT) then
+        maxvT = statevec(k)
+     endif
+
+     if (statevec(k).gt.minvalue.and.statevec(k).lt.maxvalue) then
+        found_good = .true.
+        if (statevec(k).lt.minvG) then
+           minvG = statevec(k)
+        endif
+        if (statevec(k).gt.maxvG) then
+           maxvG = statevec(k)
+        endif
+     endif
+  enddo
+
+  if (found_good) then
+     spread_total = (maxvT - minvT)
+     spread_good  = (maxvG - minvG)
+     spread_ratio = spread_good/spread_total
+     !rescale the ensemble
+     do k=1,nensem-1
+        statevec(k) = statevec(nensem) + &
+             (statevec(k) - statevec(nensem))*spread_ratio
+     enddo
+  else
+     !all members are unphysical.
+     statevec = minvalue
+     status = .false.
+  endif
+
+end subroutine noah39_sm_reorderEnsForOutliers
