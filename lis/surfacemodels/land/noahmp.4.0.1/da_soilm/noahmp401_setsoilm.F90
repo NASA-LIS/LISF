@@ -153,6 +153,7 @@ subroutine noahmp401_sm_reorderEnsForOutliers(nensem, statevec, &
   logical, intent(inout) :: status
 
   real                 :: minvT, maxvT, minvG, maxvG
+  logical              :: found_good
   integer              :: k
   real                 :: spread_total, spread_good, spread_ratio
 
@@ -162,6 +163,7 @@ subroutine noahmp401_sm_reorderEnsForOutliers(nensem, statevec, &
   minvG = 1E10
   maxvG = -1E10
   status = .true.
+  found_good = .false.
 
   do k=1, nensem
      if (statevec(k).lt.minvT) then
@@ -172,6 +174,7 @@ subroutine noahmp401_sm_reorderEnsForOutliers(nensem, statevec, &
      endif
 
      if (statevec(k).gt.minvalue.and.statevec(k).lt.maxvalue) then
+        found_good = .true.
         if (statevec(k).lt.minvG) then
            minvG = statevec(k)
         endif
@@ -181,11 +184,7 @@ subroutine noahmp401_sm_reorderEnsForOutliers(nensem, statevec, &
      endif
   enddo
 
-  if (minvG.eq.1E10.and.maxvG.eq.-1E10) then
-     !all members are unphysical.
-     statevec = minvalue
-     status = .false.
-  else
+  if (found_good) then
      spread_total = (maxvT - minvT)
      spread_good  = (maxvG - minvG)
      spread_ratio = spread_good/spread_total
@@ -194,6 +193,10 @@ subroutine noahmp401_sm_reorderEnsForOutliers(nensem, statevec, &
         statevec(k) = statevec(nensem) + &
              (statevec(k) - statevec(nensem))*spread_ratio
      enddo
+  else
+     !all members are unphysical.
+     statevec = minvalue
+     status = .false.
   endif
 
 end subroutine noahmp401_sm_reorderEnsForOutliers
