@@ -110,16 +110,6 @@ class DownloadForecasts():
 
         with open(self.E2ESDIR + self.config_file, 'r') as f:
             config_lines = f.readlines()
-
-        #all_models = next(line.split(':')[2].strip() for line in config_lines if 'NMME_ALL:' in line)
-        #print(f"[INFO] All NMME models: {all_models}")
-
-        #line2 = next(i for i, line in enumerate(config_lines) if 'NMME_models:' in line)
-        #new_line = f"  NMME_models: {all_models}\n"
-        #config_lines[line2] = new_line
-
-        #with open(self.config_file, 'w') as f:
-        #    f.writelines(config_lines)
         
         nmme_models = {
             "CanSIPS-IC4": "GNEMO52, CanESM5",
@@ -1175,6 +1165,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     s2s = S2Srun(year=args.year, month=args.month, config_file=args.config_file)
+
+    # Print SLURM job report
+    if  args.report:
+        command = f"s2s_app/s2s_run.sh -y {args.year} -m {args.month} -c {args.config_file} -r Y"
+        process = subprocess.run(command, shell=True)
+        sys.exit()
     
     if args.step is not None:
         if args.step == 'LISDA':
