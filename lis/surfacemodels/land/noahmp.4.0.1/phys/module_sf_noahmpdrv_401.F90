@@ -54,6 +54,9 @@ CONTAINS
 #ifdef WRF_HYDRO
                sfcheadrt,INFXSRT,soldrain,                                  &
 #endif
+#ifdef PARFLOW
+               QINSUR,ETRANI,                                               & ! out :
+#endif
                ids,ide,  jds,jde,  kds,kde,                    &
                ims,ime,  jms,jme,  kms,kme,                    &
                its,ite,  jts,jte,  kts,kte,                    &
@@ -150,6 +153,10 @@ CONTAINS
 
 #ifdef WRF_HYDRO
     REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(INOUT) ::  sfcheadrt,INFXSRT,soldrain   ! for WRF-Hydro
+#endif
+#ifdef PARFLOW
+    REAL,    DIMENSION( ims:ime,          jms:jme ), INTENT(OUT) :: QINSUR ! water input on soil surface [m/s]
+    REAL,    DIMENSION( ims:ime, 1:nsoil, jms:jme ), INTENT(OUT) :: ETRANI ! volumetric liquid soil moisture [m3/m3]
 #endif
 ! placeholders for 3D soil
 !    REAL,    DIMENSION( ims:ime, 1:nsoil, jms:jme ), INTENT(IN) ::  BEXP_3D   ! C-H B exponent
@@ -504,6 +511,11 @@ CONTAINS
     DO K = 2, NSOIL
        ZSOIL(K) = -DZS(K) + ZSOIL(K-1)
     END DO
+
+#ifdef PARFLOW
+    QINSUR = 0.0
+    ETRANI = 0.0
+#endif
 
     JLOOP : DO J=jts,jte
 
@@ -914,6 +926,9 @@ CONTAINS
             ,rivsto  , fldsto, fldfrc            &
 #ifdef WRF_HYDRO
             , sfcheadrt(i,j)                               &
+#endif
+#ifdef PARFLOW
+            , QINSUR(I,J), ETRANI(I,1:NSOIL,J)                          & ! OUT :
 #endif
             )            ! OUT :
                   

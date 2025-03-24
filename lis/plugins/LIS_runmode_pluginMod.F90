@@ -95,8 +95,9 @@ subroutine LIS_runmode_plugin
    use LIS_pluginIndices
 
 #if ( defined RM_RETROSPECTIVE )
-   use retrospective_runMod,  only : lis_init_retrospective, &
-                                     lis_run_retrospective,  &
+   use retrospective_runMod,  only : lis_init_retrospective,  &
+                                     lis_run_retrospective,   &
+                                     lis_step_retrospective, &
                                      lis_final_retrospective
 #endif
 
@@ -119,8 +120,10 @@ subroutine LIS_runmode_plugin
 #endif
 
 #if ( defined RM_ENSEMBLE_SMOOTHER )
-   use smootherDA_runMod,     only : lis_init_smootherDA, &
-                                     lis_run_smootherDA,  &
+   use smootherDA_runMod,     only : lis_init_smootherDA,  &
+                                     lis_run_smootherDA,   &
+                                     lis_step_smootherDA, &
+                                     lis_reset_smootherDA, &
                                      lis_final_smootherDA
 #endif
 
@@ -134,6 +137,7 @@ subroutine LIS_runmode_plugin
 #if ( defined RM_RETROSPECTIVE )
    call registerlisinit(trim(LIS_retroId)//char(0),lis_init_retrospective)
    call registerlisrun(trim(LIS_retroId)//char(0),lis_run_retrospective)
+   call registerlisstep(trim(LIS_retroId)//char(0),lis_step_retrospective)
    call registerlisfinalize(trim(LIS_retroId)//char(0),lis_final_retrospective)
 #endif
 
@@ -160,6 +164,8 @@ subroutine LIS_runmode_plugin
 #if ( defined RM_ENSEMBLE_SMOOTHER )
    call registerlisinit(trim(LIS_smootherDAId)//char(0),lis_init_smootherDA)
    call registerlisrun(trim(LIS_smootherDAId)//char(0),lis_run_smootherDA)
+   call registerlisstep(trim(LIS_smootherDAId)//char(0),lis_step_smootherDA)
+   call registerlisreset(trim(LIS_smootherDAId)//char(0),lis_reset_smootherDA)
    call registerlisfinalize(trim(LIS_smootherDAId)//char(0), &
                             lis_final_smootherDA)
 #endif
