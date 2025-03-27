@@ -100,6 +100,7 @@ Surface model types:  "LSM"
 |RDHM.3.5.6 |Sacramento+snow17
 |GeoWRSI.2 |GeoWRSI, v2.0
 |SiB2 |SiB v2
+|AquaCrop.7.2 |AquaCrop 7.2
 ifdef::devonly[]
 |FASST |FASST
 |CABLE |CABLE
@@ -2986,6 +2987,49 @@ SiB2 upper right lon:             -67.025
 SiB2 resolution (dx):               0.05
 SiB2 resolution (dy):               0.05
 ....
+
+`AquaCrop crop type data source:` specifies the data source for the crop types. Only current option is "`CONSTANT`".
+
+`AquaCrop crop library directory:` specifies the location of the crop library directory containing the AC_Crop.Inventory file and the AC_Crop.List directory containing the crop files.
+
+`AquaCrop crop type:` specifies the crop type used for the "`CONSTANT`" crop type data source option.
+
+`AquaCrop number of soil layers:` specifies the number of soil layers (from top to bottom).
+
+`AquaCrop soil layer thickness:` specifies the thickness of each soil layer.
+
+`AquaCrop temperature climatology directory:` specifies the directory containing the monthly climatologies of minimum and maximum temperatures used for the a priori parametrization of the fertility. The files are provided as formatted monthly .txt files for Tmin and Tmax.
+
+`AquaCrop reference year for climatology`: specifies the reference year to be used for the a priori parametrization of the fertility (usually set to the center of the period used to compute the climatologies).
+
+`AquaCrop temperature climatology spatial transform`: specifies the spatial transformation for the climatologies of minimum and maximum temperatures. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|none |Data on same grid as LDT domain
+|neighbor |Reinterpolate by selecting nearest gridcell neighbor
+|bilinear |Reinterpolate by using bilinear interpolation
+|===
+
+.Example _ldt.config_ entry
+....
+##AquaCrop crop file directories
+AquaCrop crop type data source: "CONSTANT"
+AquaCrop crop library directory: ./crop_params_dir/
+AquaCrop crop type: "crop_type"
+
+##AquaCrop soil layers
+AquaCrop number of soil layers: 2
+AquaCrop soil layer thickness: 0.3 0.9
+
+##AquaCrop tmin/tmax climatology
+AquaCrop temperature climatology directory: ./climatologies_dir/
+AquaCrop reference year for climatology: 2011
+AquaCrop temperature climatology spatial transform: "bilinear"
+....
+
 
 ==== WRSI model parameter files
 

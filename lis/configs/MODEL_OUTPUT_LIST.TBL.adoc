@@ -436,5 +436,24 @@ SM_SWdown:    1  W/m2    DN   1 0 0 1 204 10         # SnowModel-modified SWdown
 SM_LWdown:    1  W/m2    DN   1 0 0 1 205 10         # SnowModel-modified LWdown
 SM_NWind:     1  m/s     N    1 0 0 1  34 10         # SnowModel-modified NWind
 SM_EWind:     1  m/s     E    1 0 0 1  33 10         # SnowModel-modified EWind
+
+#AquaCrop output
+AC_Biomass:            1  t/ha  -  1 0 0 1 223 1000 # cummulative biomass (ton/ha)
+AC_RootZoneWC_Actual:  1  mm    -  1 0 0 1 153 1000 # actual rootzone WC (mm)
+AC_RootZoneWC_WP:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at wilting point (mm)
+AC_RootZoneWC_FC:      1  mm    -  1 0 0 1 153 1000 # rootzone WC at field capacity (mm)
+AC_Tact:               1  mm    -  1 0 0 1 153 1000 # actual plant transpiration (mm)
+AC_Eact:               1  mm    -  1 0 0 1 153 1000 # actual soil evaporation (mm)
+AC_ETo:                1  mm    -  1 0 0 1 153 1000 # reference ET Penman-Monteith (mm)
+AC_Rain:               1  mm    -  1 0 0 1 153 1000 # daily rainfall (mm)
+AC_Irrigation:         1  mm    -  1 0 0 1 153 1000 # irrigation (mm)
+AC_RootingDepth:       1  m     -  1 0 0 1 151 1000 # rooting depth (m)
+AC_CCiActual:          1  -     -  1 0 0 1 151 1000 # canopy Cover (-)
+AC_Tmin:               1  degC  -  1 0 0 1 153 1000 # daily minimum temperature (degC)
+AC_Tmax:               1  degC  -  1 0 0 1 153 1000 # daily maximum temperature (degC)
+AC_Yield:              1  t/ha  -  1 0 0 1 153 1000 # yield (ton/ha)
+AC_StExp:              1  %     -  1 0 0 1 153 1000 # expansion stress (%)
+AC_StSen:              1  %     -  1 0 0 1 153 1000 # senescence stress (%)
+AC_cycle_complete:     1  -     -  1 0 0 1 153 1000 # Flag cycle completed within sim
 ....
 

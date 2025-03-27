@@ -819,6 +819,19 @@ subroutine LIS_lsmda_plugin
 #endif
 #endif
 
+   external :: registerlsmdainit
+   external :: registerlsmdagetstatevar
+   external :: registerlsmdaobstransform
+   external :: registerlsmdamapobstolsm
+   external :: registerlsmdaupdatestate
+   external :: registerlsmdaqcstate
+   external :: registerlsmdasetstatevar
+   external :: registerlsmdagetobspred
+   external :: registerlsmdaqcobsstate
+   external :: registerlsmdascalestatevar
+   external :: registerlsmdadescalestatevar
+   external :: registerlsmdadiagnosevars
+
 #if ( defined SM_NOAH_2_7_1 )
 #if ( defined DA_OBS_SNODEP )
 ! Noah-2.7.1 snow depth
@@ -3783,7 +3796,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_GRACEtwsobsId)//char(0),clsmf25_descale_tws)
    call registerlsmdaupdatestate(trim(LIS_clsmf25Id)//"+"//&
         trim(LIS_GRACEtwsobsId)//char(0), clsmf25_update_tws)
-!    call registerwritestatevar(trim(LIS_clsmf25Id)//"+"trim(LIS_GRACEtwsobsId)//char(0),clsmf25_write_tws)
    call registerlsmdadiagnosevars(trim(LIS_clsmf25Id)//"+"//&
         trim(LIS_GRACEtwsobsId)//char(0),clsmf25_tws_DAlog)
 
@@ -3804,7 +3816,6 @@ subroutine LIS_lsmda_plugin
         trim(LIS_simGRACEJPLobsId)//char(0),clsmf25_descale_tws)
    call registerlsmdaupdatestate(trim(LIS_clsmf25Id)//"+"//&
         trim(LIS_simGRACEJPLobsId)//char(0), clsmf25_update_tws)
-!    call registerwritestatevar(trim(LIS_clsmf25Id)//"+"trim(LIS_simGRACEJPLobsId)//char(0),clsmf25_write_tws)
    call registerlsmdadiagnosevars(trim(LIS_clsmf25Id)//"+"//&
         trim(LIS_simGRACEJPLobsId)//char(0),clsmf25_tws_DAlog)
 #endif
