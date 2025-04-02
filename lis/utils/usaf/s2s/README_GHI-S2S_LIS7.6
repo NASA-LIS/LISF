@@ -1,9 +1,9 @@
 
-        557WW LIS 7.5 - Global-Hydro Intelligence (GHI) 
+        557WW LIS 7.6 - Global Hydro Information (GHI) 
  Subseasonal-to-Seasonal (S2S) End-to-End System (E2ES) Master Doc
 
   NASA/GSFC GHI-S2S Team 
-  Last Modified 24 Oct 2024
+  Last Modified 28 Feb 2025
 
 		TABLE OF CONTENTS
 		_________________
@@ -52,27 +52,27 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
 
   2.1  SOFTWARE REQUIREMENTS
 
-* LIS 7.5, compiled with GRIB2 support (ecCodes and AFWA-specific
+* LIS 7.6, compiled with GRIB2 support (ecCodes and AFWA-specific
     grib configuration settings), and netCDF4 with compression.
 
 * For running on Discover, you will load the following module:
-  LISF/env/discover/lisf_7.5_intel_2023.2.1_s2s
+  LISF/env/discover/lisf_7.6_intel_2023.2.1_s2s
 
 * Python 3.11, with the following extra libraries installed:
                NCCS        HPC
-  - xarray     2024.6.0    2024.6.0
-  - dask       2024.7.0    2024.6.2
-  - xesmf      0.8.6       0.8.5
-  - cfgrib     0.9.13.0    0.9.14.0
-  - dateutil   2.9.0       2.9.0
-  - pandas     2.2.2       2.2.2 
+  - Cartopy    0.24.0      0.24.0
+  - cfgrib     0.9.14.0    0.9.14.0
+  - dask       2024.8.1    2024.8.1
+  - dateutil   2.9.0.post0 2.9.0.post0
+  - GDAL       3.9.1       3.9.1
+  - Matplotlib 3.8.4       3.8.4
+  - NetCDF4    1.7.2       1.7.2
   - numpy      1.26.4      1.26.4
-  - PyYAML     6.0.1       6.0.01
-  - GDAL       3.8.4       3.8.1
-  - OSGEO      3.8.4       3.8.1
-  - NetCDF4    1.7.1       1.6.5
-  - Cartopy    0.23.0      0.23.0
-  - Matplotlib 3.9.1       3.8.4
+  - OSGEO      3.9.1       3.9.1
+  - pandas     2.2.3       2.2.3 
+  - PyYAML     6.0.2       6.0.2
+  - xarray     2025.1.1    2025.1.1
+  - xesmf      0.8.8       0.8.8
 
   ** Note:  Updates to the above libraries and modules
         could get updated as frequent as every 3- to
@@ -82,10 +82,10 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   2.2  SETTING UP THE EXPERIMENT DIRECTORY
 
  The main GHI S2S subsystem software is found in your
-  latest LIS 7.5 557WW code tarball, within the directory
+  latest LIS 7.6 557WW code tarball, within the directory
   structure:
 
-   lisf-557ww-7.5/lis/utils/usaf/s2s/
+   lisf-557ww-7.6/lis/utils/usaf/s2s/
 
  The main E2ES script that runs the S2S subsystem is a 
   bash shell script and is located in the directory:   
@@ -111,7 +111,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   LISFDIR: [DIRECTORY_PATH_OF_YOUR_LISF_TOP-LEVEL-CODE_DIRECTORY]
   E2ESDIR: [YOUR_LOCAL_WORKING-RUN_DIRECTORY_PATH]
   METFORC: [MAIN_USAF_FORCING_AND_SATELLITE_DATA_DIRECTORY_PATH]
-  LISFMOD: lisf_7.5_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
+  LISFMOD: lisf_7.6_intel_2023.2.1_s2s  [OR LOCAL MACHINE LISF MODULE LIBRARY LIST]
   SPCODE: s1189    [YOUR LOCAL MACHINE GROUPID CODE]
   DATATYPE: forecast  [OPTIONS INCLUDE:  "forecast" or "hindcast"]
   supplementarydir:  [YOUR GHI_S2S/supplementary_files DIRECTORY PATH WITH RUNTIME INPUT FILES]
@@ -444,7 +444,7 @@ Postprocessing of LIS-based NoahMP4.0.1 and HYMAP2 is supported in terms
   - This step preprocesses CFSv2 (non-precip) and 6 separate NMME
     forecast model precipitation data for driving the models offline in LIS.
     The forecasts are for the 557 WW ~25KM global domain, bias-corrected
-    using the USAF-LIS7.5-S2S (e.g., NAFPA precipitation) dataset, and covers
+    using the USAF-LIS7.6-S2S (e.g., NAFPA precipitation) dataset, and covers
     up to 9 months of forecast as input data to LIS.
 
   - 13 high-level scripts (1 main and 12 individual task scripts) to create
