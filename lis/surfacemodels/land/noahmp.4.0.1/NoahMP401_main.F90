@@ -242,9 +242,9 @@ subroutine NoahMP401_main(n)
     ! Code added by David Mocko 04/25/2019
     real                 :: startsm, startswe, startint, startgw, endsm
 
-    real                 :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
-    real                 :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
-    real                 :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_sfcheadrt          ! extra input  for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_infxs1rt           ! extra output for WRF-HYDRO [m]
+    real, dimension(1,1) :: tmp_soldrain1rt        ! extra output for WRF-HYDRO [m]
 #ifdef PARFLOW
     real                 :: tmp_qinsur             ! water input on soil surface [m/s]
     real,allocatable     :: tmp_etrani(:)          ! evapotranspiration from soil layers [mm s-1]
@@ -575,7 +575,7 @@ subroutine NoahMP401_main(n)
             tmp_grain           = NOAHMP401_struc(n)%noahmp401(t)%grain
             tmp_gdd             = NOAHMP401_struc(n)%noahmp401(t)%gdd
             tmp_pgs             = NOAHMP401_struc(n)%noahmp401(t)%pgs
-            tmp_sfcheadrt       = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
+            tmp_sfcheadrt(1,1)  = NoahMP401_struc(n)%noahmp401(t)%sfcheadrt
 #ifdef PARFLOW
             tmp_etrani(:)       = 0
 #endif
@@ -882,8 +882,8 @@ subroutine NoahMP401_main(n)
             NOAHMP401_struc(n)%noahmp401(t)%chuc      = tmp_chuc
             NOAHMP401_struc(n)%noahmp401(t)%chv2      = tmp_chv2
             NOAHMP401_struc(n)%noahmp401(t)%chb2      = tmp_chb2
-            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt
-            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt
+            NOAHMP401_struc(n)%noahmp401(t)%infxs1rt  = tmp_infxs1rt(1,1)
+            NOAHMP401_struc(n)%noahmp401(t)%soldrain1rt  = tmp_soldrain1rt(1,1)
 #ifdef PARFLOW
             NOAHMP401_struc(n)%noahmp401(t)%wtrflx(1)    = (tmp_qinsur*1000.0) &
               - ((tmp_edir + tmp_etrani(1)))
