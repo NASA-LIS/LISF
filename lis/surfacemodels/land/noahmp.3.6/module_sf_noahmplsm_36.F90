@@ -169,7 +169,7 @@ use ESMF
   INTEGER :: OPT_RUN != 1    !(suggested 1)
 
 ! options for surface layer drag coeff (CH & CM)
-! 0->OFF; 1->M-O ; 2->original Noah (Chen97); 3->MYJ consistent; 4->YSU consistent. 
+! 1->M-O ; 2->original Noah (Chen97); 3->MYJ consistent; 4->YSU consistent.
 
   INTEGER :: OPT_SFC != 1    !(1 or 2 or 3 or 4)
 
@@ -6952,8 +6952,7 @@ END SUBROUTINE ALBEDO_UPD
                        FROZEN_CANOPY,                                 & !in      
                        CANLIQ ,CANICE ,TV     ,                 & !inout
                        CMC    ,ECAN   ,ETRAN  ,QRAIN  ,QSNOW  , & !out
-                       SNOWHIN,FWET   ,FPICE                    & !out
-                       )
+                       SNOWHIN,FWET   ,FPICE   )                           !out
 
 ! ------------------------ code history ------------------------------
 ! canopy hydrology
