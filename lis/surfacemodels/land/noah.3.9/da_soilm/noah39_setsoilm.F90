@@ -120,6 +120,8 @@ subroutine noah39_setsoilm(n, LSM_State)
      if (update_flag(gid) .and. bounds_violation(gid) .and. &
           nonzero_spread(gid)) then
         t_unpert = t_first_mem + LIS_rc%nensem(n) - 1
+        max_threshold = noah39_struc(n)%noah(t_first_mem)%smcmax
+        min_threshold = noah39_struc(n)%noah(t_first_mem)%smcwlt
         call noah39_sm_reorderEnsForOutliers( &
              LIS_rc%nensem(n), &
              soilm1(t_first_mem:t_unpert), &

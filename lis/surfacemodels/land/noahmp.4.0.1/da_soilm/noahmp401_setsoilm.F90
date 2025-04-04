@@ -117,10 +117,13 @@ subroutine noahmp401_setsoilm(n, LSM_State)
      if (update_flag(gid) .and. bounds_violation(gid) .and. &
           nonzero_spread(gid)) then
         t_unpert = t_first_mem + LIS_rc%nensem(n) - 1
+        soiltyp = noahmp401_struc(n)%noahmp401(t_first_mem)%soiltype
+        max_threshold = smcmax_table(soiltyp)
+        min_threshold = smcwlt_table(soiltyp)
         call noahmp401_sm_reorderEnsForOutliers( &
              LIS_rc%nensem(n), &
              soilm1(t_first_mem:t_unpert), &
-             MIN_THRESHOLD, MAX_THRESHOLD, rc)
+             min_threshold, max_threshold, rc)
      endif
      if (.not.rc) then ! Problem occurred when rescaling
         update_flag(gid) = .false.
