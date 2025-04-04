@@ -1,0 +1,5 @@
+#nfields
+1
+#name  varmin  varmax	 
+Soil Moisture Layer 1
+  0.00	0.55   
