@@ -134,7 +134,7 @@ def _run_make_s2s_median_metric_geotiff(config, configfile, baseoutdir):
             sys.exit(1)
 
 def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
-         ntasks=None, hours=None, py_call=False):
+         ntasks=None, hours=None, py_call=False, weekly=False):
     """Main driver"""
 
     baseoutdir = cwd + '/s2smetric/{:04d}{:02d}'.format(fcst_year, fcst_mon)
@@ -151,16 +151,29 @@ def main(configfile, fcst_year, fcst_mon, cwd, nmme_model=None, jobname=None,
             '/lis/utils/usaf/S2S/ghis2s/s2smetric/metrics_library/'
         slurm_commands = []
         for anom_type in ["anom", "sanom"]:
-            py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
-            cmd = "python"
-            cmd += f" {pylibdir}{py_script}"
-            cmd += f" {currentdate.month:02d}"
-            cmd += f" {currentdate.year:04d}"
-            cmd += f" {nmme_model}"
-            cmd += f" {configfile}"
-            cmd += f" {baseoutdir}"
-            jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
-            job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
+            if not weekly:
+                py_script = "convert_dyn_fcst_to_" + anom_type + ".py"
+                cmd = "python"
+                cmd += f" {pylibdir}{py_script}"
+                cmd += f" {currentdate.month:02d}"
+                cmd += f" {currentdate.year:04d}"
+                cmd += f" {nmme_model}"
+                cmd += f" {configfile}"
+                cmd += f" {baseoutdir}"
+                jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
+                job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
+            else:
+                py_script = "compute_weekly_anom.py"
+                cmd = "python"
+                cmd += f" {pylibdir}{py_script}"
+                cmd += f" {currentdate.month:02d}"
+                cmd += f" {currentdate.year:04d}"
+                cmd += f" {nmme_model}"
+                cmd += f" {configfile}"
+                cmd += f" {baseoutdir}"
+                cmd += f" {anom_type.upper()}"
+                jobfile = jobname + '_' + nmme_model + '_' + anom_type + '_run.j'
+                job_name = jobname + '_' + nmme_model + '_' + anom_type + '_'
             print(cmd)
             if py_call:
                 slurm_commands.append(cmd)

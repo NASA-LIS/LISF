@@ -46,7 +46,7 @@ def plot_anoms_basin(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + '/' + config["EXP"]["lsmdir"] + '/'
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
-        os.makedirs(plotdir)
+        os.makedirs(plotdir, exist_ok=True)
     data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config["EXP"]["lsmdir"] + '/'
     data_dir = data_dir_template.format(syear, smonth)
 
@@ -111,7 +111,7 @@ def plot_anoms(syear, smonth, cwd, config, region, standardized_anomaly = None):
     plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
     plotdir = plotdir_template.format(syear, smonth)
     if not os.path.exists(plotdir):
-        os.makedirs(plotdir)
+        os.makedirs(plotdir, exist_ok=True)
 
     # Where input data files are located ("s2smetric dir - CF-convention nc files):
     data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/metrics_cf/' + \

@@ -81,7 +81,8 @@ def dicts(dic_name, key):
         'TUNISIA':(30, 38, 7, 12),
         'ME_CRES':(21, 39, 24, 62),
         'KOREA':(30, 45, 115, 140),
-        'ROMANIA':(40, 55, 18, 45)
+        'ROMANIA':(40, 55, 18, 45),
+        'ARCTIC': (60., 90., -180., 180.)
     }
     # Anomaly unit ranges for each variable:
     anom_levels = {
@@ -97,6 +98,13 @@ def dicts(dic_name, key):
         'ET': np.array([-0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])*2.,
         'standardized': [-4.0, -3.0, -2, -1, -0.5, -0.25, 0.25, 0.5, 1.0, 2.0, 3.0, 4.0]
     }
+    anom_minmax = {
+        'RZSM': [-0.5, 0.5],
+        'SnowDepth':  [-2, 2],
+        'SWE':  [-1000., 1000],
+        'TOP40SM': [-0.5, 0.5],
+        'TOP40ST': [-14., 14.]
+    }
     units = {
         'Streamflow': 'm^3/s',
         'Precip': 'mm/d',
@@ -106,7 +114,11 @@ def dicts(dic_name, key):
         'AirT': 'K',
         'Air_T_AF': 'F',
         'TWS': 'mm',
-        'ET': 'mm/d'
+        'ET': 'mm/d',
+        'SFCST': 'K',
+        'SWE': 'kg/m^2',
+        'SnowCover': '%',
+        'SnowDepth': 'm'
     }
     anom_tables = {
         'Streamflow': 'CB11W',
@@ -124,7 +136,8 @@ def dicts(dic_name, key):
         'CB11W_': ['indigo','black'],
         '14WT2M': ['#68228B','black'],     # darkorchid4','black']
         '14WPR': ['#8B4500','blueviolet'], # darkorange4','blueviolet']
-        'L21': ['blueviolet','#8B4500']
+        'L21': ['blueviolet','#8B4500'],
+        'clim_reanaly': ['blueviolet','#8B4500']
     }
 
     default_levels = [-0.06, -0.05, -0.04, -0.03, -0.02, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06]
@@ -139,6 +152,8 @@ def dicts(dic_name, key):
         ret = anom_tables.get(key, 'CB11W')
     elif dic_name == 'lowhigh':
         ret = lowhigh.get(key)
+    elif dic_name == 'anom_minmax':
+        ret = anom_minmax.get(key)
     return ret
 
 def cartopy_dir(data_dir):
@@ -721,7 +736,6 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         levels = np.linspace(min_val, max_val, len(style_color))
     cmap.set_under(under_over[0])
     cmap.set_over(under_over[1])
-    print(domain)
     nplots = len(titles)
     if projection is None:
         fig = plt.figure(figsize= figure_size(FIGWIDTH, domain, nrows, ncols))
@@ -763,13 +777,13 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
              
         cs_ = plt.pcolormesh(_x, _y, var[count_plot,],
                              norm=colors.BoundaryNorm(levels,ncolors=cmap.N, clip=False),
-                             cmap=cmap,zorder=3, alpha=0.8,
+                             cmap=cmap,zorder=4, alpha=0.8,
                              transform=ccrs.PlateCarree())
         
         if projection is None:
             gl_ = ax_.gridlines(draw_labels=True)
         else:
-            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=4)
+            gl_ = ax_.gridlines(draw_labels=True, dms=True, x_inline=False, y_inline=False, zorder=11)
             if projection[0] == 'polar':
                 gl_.xformatter = cticker.LongitudeFormatter()  
                 gl_.yformatter = cticker.LatitudeFormatter()  
@@ -806,7 +820,7 @@ def contours (_x, _y, nrows, ncols, var, color_palette, titles, domain, figure, 
         ax_.add_feature(OCEAN, linewidth=0.2, zorder=3 )
         ax_.add_feature(COASTLINES, edgecolor='black', alpha=1, zorder=3)
         ax_.add_feature(BODR, linestyle='--', edgecolor='k', alpha=1, zorder=3)
-        ax_.add_feature(cfeature.OCEAN, zorder=100, edgecolor='k')
+        ax_.add_feature(cfeature.OCEAN, zorder=2, edgecolor='k')
         if (domain[3] - domain[2]) < 180.:
             ax_.add_feature(cfeature.STATES,  linestyle=':',linewidth=0.9,
                             edgecolor='black', facecolor='none')
