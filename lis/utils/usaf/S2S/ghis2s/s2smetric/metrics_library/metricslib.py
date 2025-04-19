@@ -13,13 +13,25 @@
 #
 #------------------------------------------------------------------------------
 """
-
-
-
-
 # Standard modules
 import sys
 import numpy as np
+
+def _get_snow_cover(sel_cim_data):
+    """Return snow cover [%]."""
+    return sel_cim_data.Snowcover_tavg
+
+def _get_snow_depth(sel_cim_data):
+    """Return snow depth [m]."""
+    return sel_cim_data.SnowDepth_tavg
+
+def _get_swe(sel_cim_data):
+    """Return Snow Water Equivalent [kg/m^2]."""
+    return sel_cim_data.SWE_tavg
+
+def _get_surface_st(sel_cim_data):
+    """Return top layer soil temperature."""
+    return sel_cim_data.SoilTemp_tavg.isel(soil_layer=0)
 
 def _get_surface_sm(sel_cim_data):
     """Return surface soil moisture."""
@@ -56,6 +68,15 @@ def sel_var(sel_cim_data, var_name, model):
             term2 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=1) * 0.3
             term3 = sel_cim_data.SoilMoist_tavg.isel(soil_layer=2) * 0.6
             var_sel_clim_data = term1 + term2 + term3
+        else:
+            print(f"[ERR] Unknown model {model}")
+            sys.exit(1)
+
+    elif var_name == "TOP40ST":
+        if model in ('NOAHMP', 'NoahMP'):
+            term1 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=0) * 0.1
+            term2 = sel_cim_data.SoilTemp_tavg.isel(soil_layer=1) * 0.3
+            var_sel_clim_data = term1 + term2
         else:
             print(f"[ERR] Unknown model {model}")
             sys.exit(1)
@@ -99,6 +120,10 @@ def sel_var(sel_cim_data, var_name, model):
             "AirT" : _get_air_t,
             "ET" : _get_et,
             "Streamflow" : _get_streamflow,
+            "SFCST": _get_surface_st,
+            "SWE": _get_swe,
+            "SnowDepth": _get_snow_depth,
+            "SnowCover": _get_snow_cover
         }
         try:
             var_sel_clim_data = selections[var_name](sel_cim_data)

@@ -1,4 +1,5 @@
 import os
+import sys
 import calendar
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
@@ -10,62 +11,93 @@ import yaml
 import plot_utils
 # pylint: enable=import-error
 
-parser = argparse.ArgumentParser()
-parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
-parser.add_argument('-m', '--fcst_mon', required=True, help= 'forecast end year')
-parser.add_argument('-c', '--configfile', required=True, help='config file name')
-parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+def plot_anoms(fcst_year, fcst_mon, cwd, config, region, anom_type):
+    plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
+    plotdir = plotdir_template.format(fcst_year, fcst_mon)
+    if not os.path.exists(plotdir):
+        os.makedirs(plotdir, exist_ok=True)
 
-args = parser.parse_args()
-configfile = args.configfile
-fcst_year = int(args.fcst_year)
-fcst_mon = int(args.fcst_mon)
-cwd = args.cwd
+    infile_template = '{}/{}_{}_init_weeks1-6_{:02d}_{:04d}.nc'
+    figure_template = '{}/NMME_plot_{}_{}_weeks1-6_{}.png'
+    
+    lead_week = [0, 1, 2, 3, 4, 5]
+    # Universal setup of plots:
+    nrows = 2
+    ncols = 3
+    domain = plot_utils.dicts('boundary', region)
 
-# load config file
-with open(configfile, 'r', encoding="utf-8") as file:
-    config = yaml.safe_load(file)
-
-plotdir_template = cwd + '/s2splots/{:04d}{:02d}/' + config["EXP"]["lsmdir"] + '/'
-plotdir = plotdir_template.format(fcst_year, fcst_mon)
-if not os.path.exists(plotdir):
-    os.makedirs(plotdir)
-
-infile_template = '{}/{}_ANOM_init_weekly_{:02d}_{:04d}.nc'
-figure_template = '{}/NMME_{}_weekly_anom_{}-{}.png'
-
-lead_week = [0, 1, 2, 3, 4, 5]
-
-data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/DYN_ANOM/' + \
+    data_dir_template = cwd + '/s2smetric/{:04d}{:02d}/DYN_{}/' + \
         config["EXP"]["lsmdir"] + '/'
-data_dir = data_dir_template.format(fcst_year, fcst_mon)
 
-nrows = 1
-ncols = 1
-clabel = 'Anomaly (mm/d)'
-cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-domain = [42., 55., 8.5, 29.5]
-#for var_name in config_["POST"]["metric_vars"]:
-for var_name in ['Precip']:
-    infile = infile_template.format(data_dir, '*_' + var_name, fcst_mon, fcst_year)
-    print("Reading infile {}".format(infile))
-    anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
-    anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
-    median_anom = np.median(anom_crop.anom.values, axis=0)
+    data_dir = data_dir_template.format(fcst_year, fcst_mon, anom_type)
+    cartopy_dir = config['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
+    
+    for var_name in config["POST"]["weekly_vars"]:
+        if anom_type == 'ANOM':
+            clabel = 'Anomaly (' + plot_utils.dicts('units', var_name) + ')'
+            load_table = 'clim_reanaly'
+        else:
+            if var_name == 'RZSM':
+                continue
+            clabel = 'Standardized Anomaly'            
+            if var_name == 'TOP40ST':
+                load_table = 'CB11W_'
+            else:
+                load_table = 'CB11W'
 
-    BEGDATE = date(fcst_year, fcst_mon, 1)
-    for lead in lead_week:
-        ENDDATE = BEGDATE + relativedelta(days=6)
-        titles = [var_name + ' '+  BEGDATE.strftime("%Y%m%d") + '-' + ENDDATE.strftime("%Y%m%d")]
-        plot_arr = median_anom[lead, ]
-        
+        under_over = plot_utils.dicts('lowhigh', load_table)               
+        infile = infile_template.format(data_dir, '*_' + var_name, anom_type, fcst_mon, fcst_year)
+        print("Reading infile {}".format(infile))
+        anom = xr.open_mfdataset(infile, concat_dim='ens', combine='nested')
+        anom_crop = plot_utils.crop(domain, anom.latitude, anom.longitude, anom)
+        median_anom = np.median(anom_crop.anom.values, axis=0)
+        plot_arr = median_anom[lead_week, ]
+        if anom_type == 'SANOM':
+            levels=plot_utils.dicts('anom_levels', 'standardized')
+            plot_arr = np.where(plot_arr < np.max(levels), plot_arr, np.nan)
+            plot_arr = np.where(plot_arr > np.min(levels), plot_arr, np.nan)
+            
+        BEGDATE = date(fcst_year, fcst_mon, 1)
+        titles = []
+        for lead in lead_week:
+            ENDDATE = BEGDATE + relativedelta(days=6)
+            titles.append(var_name + ' '+  BEGDATE.strftime("%Y%m%d") + '-' + ENDDATE.strftime("%Y%m%d"))
+            BEGDATE += relativedelta(days=7)
+            
         maxloc = np.unravel_index(np.nanargmax(plot_arr), plot_arr.shape)
-        print(np.nanmin(plot_arr), np.nanmax(plot_arr), anom_crop.latitude.values[maxloc[0]], anom_crop.longitude.values[maxloc[1]])
-        figure = figure_template.format(plotdir, var_name, BEGDATE.strftime("%Y%m%d"), ENDDATE.strftime("%Y%m%d"))
-        print(BEGDATE.strftime("%Y%m%d"),' ' , ENDDATE.strftime("%Y%m%d"))
-        plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
-                             ncols, np.expand_dims(plot_arr, axis=0), 'clim_reanaly', titles, domain,
-                             figure, ['blueviolet','#8B4500'],
-                             fscale=0.8, clabel=clabel, min_val =-6., max_val = 6.,
-                             cartopy_datadir=cartopy_dir)
-        BEGDATE += relativedelta(days=7)
+        figure = figure_template.format(plotdir, region, var_name, anom_type.lower())
+        stitle = var_name + ' Forecast'
+        if anom_type == 'ANOM':
+            anom_minmax = plot_utils.dicts('anom_minmax', var_name) 
+            plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+                                 ncols, plot_arr, load_table, titles, domain,
+                                 figure, under_over,
+                                 fscale=1.2, stitle=stitle, clabel=clabel, min_val=anom_minmax[0], max_val=anom_minmax[1],
+                                 cartopy_datadir=cartopy_dir, projection=['polar', 90.])
+        else:
+            plot_utils.contours (anom_crop.longitude.values, anom_crop.latitude.values, nrows,
+                                 ncols, plot_arr, load_table, titles, domain,
+                                 figure, under_over,
+                                 fscale=1.2, stitle=stitle, clabel=clabel, levels=levels,
+                                 cartopy_datadir=cartopy_dir, projection=['polar', 90.])
+        #sys.exit()
+    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-y', '--fcst_year', required=True, help='forecast start year')
+    parser.add_argument('-m', '--fcst_mon', required=True, help= 'forecast end year')
+    parser.add_argument('-c', '--configfile', required=True, help='config file name')
+    parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    
+    args = parser.parse_args()
+    configfile = args.configfile
+    fcst_year = int(args.fcst_year)
+    fcst_mon = int(args.fcst_mon)
+    cwd = args.cwd
+    
+    # load config file
+    with open(configfile, 'r', encoding="utf-8") as file:
+        config = yaml.safe_load(file)
+
+    plot_anoms(fcst_year, fcst_mon, cwd, config, 'ARCTIC', 'ANOM')
+    plot_anoms(fcst_year, fcst_mon, cwd, config, 'ARCTIC', 'SANOM')

@@ -1070,6 +1070,25 @@ class S2Srun(DownloadForecasts):
 
         utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
 
+        # weekly metrics
+        jobname='s2smetric_weekly_'
+        slurm_commands = []
+        for model in self.MODELS:
+            var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
+                                             hours=str(6), nmme_model= model, py_call=True, weekly=True)
+            slurm_commands.extend(var1)
+
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(6), CWD, tfile.name)
+            self.create_dict(jobname + 'run.j', 's2smetric', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
+
         jobname='s2smetric_tiff_'
         s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', 1, str(3), CWD, None)
         COMMAND = f"srun --exclusive --ntasks 1 python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"
@@ -1082,7 +1101,7 @@ class S2Srun(DownloadForecasts):
         with open('s2smetric_tiff_run.j', 'w') as file:
             file.write(filedata)
 
-        self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev='s2smetric_run.j')
+        self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=['s2smetric_run.j', 's2smetric_weekly_run.j'])
         utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
         os.chdir(self.E2ESDIR)        
@@ -1107,6 +1126,7 @@ class S2Srun(DownloadForecasts):
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_mena.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 1")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 2")
+        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_weekly_anom.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
 
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:

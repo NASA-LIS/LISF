@@ -28,6 +28,7 @@ CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
 BASEDIR = BASEOUTDIR + "/DYN_" + ANOM + "/"
 METRIC_VARS = CONFIG["POST"]["metric_vars"]
+WEEKLY_VARS = CONFIG["POST"]["weekly_vars"]
 HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + '{:02d}/'.format(FCST_INIT_MON)
 FORECASTS = "./s2spost/"
 
@@ -35,7 +36,7 @@ OUTDIR = BASEDIR + '/' + HYD_MODEL
 if not os.path.exists(OUTDIR):
     os.makedirs(OUTDIR, exist_ok=True)
 
-OUTFILE_TEMPLATE = '{}/{}_{}_{}_init_weekly_{:02d}_{:04d}.nc'
+OUTFILE_TEMPLATE = '{}/{}_{}_{}_init_weeks1-6_{:02d}_{:04d}.nc'
 TARGET_INFILE_TEMPLATE = \
     '{}/{:04d}{:02d}/{}/PS.557WW_SC.U_DI.C_GP.LIS-S2S-{}_GR.C0P25DEG_AR.{}_' \
     'PA.ALL_DD.{:04d}{:02d}01_DT.0000_FD.{}_DT.0000_DF.NC'
@@ -45,8 +46,7 @@ CLIM_INFILE_TEMPLATE = \
     'PA.ALL_DD.*{:02d}01_DT.0000_FD.*{:02d}{:02d}_DT.0000_DF.NC'
 
 LEAD_WEEKS = 6
-#for var_name in METRIC_VARS:
-for var_name in ['AirT']:
+for var_name in WEEKLY_VARS:
     OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, \
                                       var_name, ANOM, FCST_INIT_MON, TARGET_YEAR)
 
@@ -54,6 +54,7 @@ for var_name in ['AirT']:
     for lead in range(LEAD_WEEKS):
         fcast_list = []
         clim_list = []
+        clim_std = []
         print(f"[INFO] Computing {var_name} forecast anomaly for week {lead}")
         for count_days in range(7):
             # processing climatology
@@ -70,6 +71,7 @@ for var_name in ['AirT']:
                        CLIM_SYR) & (day_xr.coords['time.year'] <= \
                        CLIM_EYR))
             clim_list.append(sel_var(sel_cim_data, var_name, HYD_MODEL).mean(dim = ['time','ensemble'], skipna = True))
+            clim_std.append(sel_var(sel_cim_data, var_name, HYD_MODEL))
             
             # reading forecast
             INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS, \
@@ -82,6 +84,9 @@ for var_name in ['AirT']:
             CURRENTDATE += relativedelta(days=1)
             
         weekly_clim = xr.concat(clim_list, dim='day').mean(dim='day')
+        weekly_std = xr.concat(clim_std, dim='day').mean(dim='day')
+        weekly_std = weekly_std.std(dim = ['time','ensemble'])
+
         fcst_xr = xr.open_mfdataset(fcast_list, combine='by_coords')
         fcst_da = sel_var(fcst_xr, var_name, HYD_MODEL).mean(dim = ['time'], skipna = True)
  
@@ -101,7 +106,9 @@ for var_name in ['AirT']:
            (not np.array_equal(weekly_clim.lon.values, fcst_da.lon.values)):
             weekly_clim = weekly_clim.assign_coords({"lon": fcst_da.lon.values,
                                                          "lat": fcst_da.lat.values})
-
+            weekly_std = weekly_std.assign_coords({"lon": fcst_da.lon.values,
+                                                         "lat": fcst_da.lat.values})
+            
         if ANOM == 'ANOM':
             this_anom = xr.apply_ufunc(
                 compute_anomaly,
@@ -114,6 +121,19 @@ for var_name in ['AirT']:
                 dask="forbidden",
                 output_dtypes=[np.float64])
 
+        if ANOM == 'SANOM':
+            this_anom = xr.apply_ufunc(
+                compute_sanomaly,
+                fcst_da.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                weekly_clim.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                weekly_std.chunk({"lat": "auto", "lon": "auto"}).compute(),
+                input_core_dims=[['ensemble',],[],[]],
+                exclude_dims=set(('ensemble',)),
+                output_core_dims=[['ensemble',]],
+                vectorize=True,  # loop over non-core dims
+                dask="forbidden",
+                output_dtypes=[np.float64])
+            
         for ens in range(ens_count):
             all_anom[ens, lead, :, :] = this_anom [:,:,ens]
 

@@ -45,7 +45,7 @@ def plot_anoms(syear, smonth, cwd_, config_, region, standardized_anomaly = None
     plotdir_template = cwd_ + '/s2splots/{:04d}{:02d}/' + '/' + config_["EXP"]["lsmdir"] + '/'
     plotdir = plotdir_template.format(fcst_year, fcst_mon)
     if not os.path.exists(plotdir):
-        os.makedirs(plotdir)
+        os.makedirs(plotdir, exist_ok=True)
     data_dir_template = cwd_ + '/s2smetric/{:04d}{:02d}/metrics_cf/' + config_["EXP"]["lsmdir"] + '/'
     data_dir = data_dir_template.format(fcst_year, fcst_mon)
 
