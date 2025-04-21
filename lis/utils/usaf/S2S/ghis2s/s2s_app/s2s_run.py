@@ -1168,9 +1168,10 @@ class S2Srun(DownloadForecasts):
         # (8) S2SPLOTS
         self.s2splots()
 
-        # (9) Write CYLC workflow runtime snippet 
-        self.write_cylc_snippet()
-        
+        # (9) Write CYLC workflow runtime snippet
+        # -----------------------------------
+        self.write_cylc_snippet() 
+       
         return
         
 if __name__ == "__main__":
@@ -1218,9 +1219,14 @@ if __name__ == "__main__":
         elif args.step == 'METRICS':
             s2s.s2smetric()
             s2s.s2splots()
+
+        # Write CYLC workflow runtime snippet
+        # -----------------------------------
+        s2s.write_cylc_snippet()
+
     else:
         s2s.main()
-
+        
     # Submit SLURM jobs
     # -----------------
     if  args.submit_job:
