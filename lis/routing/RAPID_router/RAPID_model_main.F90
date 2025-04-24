@@ -17,7 +17,7 @@
 ! !REVISION HISTORY:
 ! 26 Mar 2021: Yeosang Yoon: Initial implementation in LIS based on the
 !                            RAPID offline routing code (rapid_main.F90). 
-
+! 20 Mar 2024: Yeosang Yoon: Support to run with ensemble mode
 
 !*******************************************************************************
 ! Subroutine- RAPID_model_main (rapid_main)
@@ -34,7 +34,7 @@ subroutine RAPID_model_main (n,bQinit,bQfinal,bV,bhum,bfor,   &
                              kfile,xfile,                     &
                              nmlfile,qfile,                   &
                              nc,nr,runsf,runsb,initCheck,     &
-                             dt,routingInterval)
+                             dt,routingInterval,n_ens)
 
 !Purpose:
 !Allows to route water through a river network, and to estimate optimal 
@@ -122,6 +122,9 @@ real,          intent(in)     :: dt                  ! internal time step (in se
 real,          intent(in)     :: routingInterval     ! routing time step (in seconds)
 logical                       :: alarmCheck
 PetscScalar,   allocatable    :: Qinit(:)
+
+! for ensemble mode
+integer,       intent(in)     :: n_ens   ! number of ensembles
  
 !*******************************************************************************
 !Initialize
@@ -169,12 +172,12 @@ if (initCheck .eqv. .true.) then
 
    initCheck = .false.
 
-   ! for RAPID restart
-   if(RAPID_routing_struc(n)%startmode.eq."restart") then
+   ! for RAPID restart, OL & ensemble mean
+   if((RAPID_routing_struc(n)%startmode.eq."restart") & 
+     .and. n_ens==0) then
       if (rank==0) then
           allocate(Qinit(IS_riv_bas))
           Qinit=RAPID_routing_struc(n)%Qout
-          
           call VecSetValues(ZV_QoutinitR,IS_riv_bas,IV_riv_loc1, &
                             Qinit(IV_riv_index),INSERT_VALUES,ierr)
           deallocate(Qinit)
@@ -184,8 +187,18 @@ if (initCheck .eqv. .true.) then
    endif
 endif
 
-!Qout_file=trim(qfile)   ! LIS-RAPID output filename
-!alarmCheck = LIS_isAlarmRinging(LIS_rc,"RAPID router output alarm")
+! ensemble mode, need to update the previous status every time 
+if (n_ens>0) then  
+   if (rank==0) then
+      allocate(Qinit(IS_riv_bas))
+      Qinit=RAPID_routing_struc(n)%Qout_ens(:,n_ens)
+      call VecSetValues(ZV_QoutinitR,IS_riv_bas,IV_riv_loc1, &
+                        Qinit(IV_riv_index),INSERT_VALUES,ierr)
+      deallocate(Qinit)
+   endif
+   call VecAssemblyBegin(ZV_QoutinitR,ierr)
+   call VecAssemblyEnd(ZV_QoutinitR,ierr)
+endif
 
 !*******************************************************************************
 !OPTION 1 - use to calculate flows and volumes and generate output data
@@ -341,7 +354,11 @@ if(rank==0) then
    RAPID_routing_struc(n)%riv_tot_lon=ZV_riv_tot_lon 
 
    call VecGetArrayF90(ZV_SeqZero,ZV_pointer,ierr)
-   RAPID_routing_struc(n)%Qout=ZV_pointer
+   if(n_ens==0) then   !OL
+      RAPID_routing_struc(n)%Qout=ZV_pointer
+   else                !ensemble mode
+      RAPID_routing_struc(n)%Qout_ens(:,n_ens)=ZV_pointer
+   endif
    call VecRestoreArrayF90(ZV_SeqZero,ZV_pointer,ierr)
 endif
 
@@ -380,8 +397,6 @@ if (BS_opt_for) call rapid_close_Qfor_file(Qfor_file)
 if (BS_opt_hum) call rapid_close_Qhum_file(Qhum_file)
 if (BS_opt_V) call rapid_close_V_file(V_file)
 
-
-!-------------------------------------------------------------------------------
 !End of OPTION 1
 !-------------------------------------------------------------------------------
 end if
@@ -673,8 +688,10 @@ end if
 !Finalize
 !*******************************************************************************
 !call rapid_clean_var
-if (LIS_rc%endtime==1) then
-    call rapid_final
+if(n_ens==0 .or. n_ens==LIS_rc%nensem(n)) then
+   if (LIS_rc%endtime==1) then
+      call rapid_final
+   endif
 endif
 
 end subroutine RAPID_model_main
