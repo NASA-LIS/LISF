@@ -26,6 +26,7 @@ module LDT_pluginIndices
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
 !  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
 !  28 Jun 2022: Eric Kemp -- Added NAFPA background precipitation
+!  24 Apr 2025: Yeosang Yoon -- Added RAPID
 !
 !EOP
   PRIVATE
@@ -381,6 +382,7 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public, parameter  :: LDT_HYMAPId  = "HYMAP"
    character*50, public, parameter  :: LDT_HYMAP2Id = "HYMAP2"
+   character*50, public, parameter  :: LDT_RAPIDId = "RAPID"
 
 !-------------------------------------------------------------------------
 ! ANN data sources
