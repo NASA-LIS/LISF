@@ -17,6 +17,7 @@
 ! !REVISION HISTORY:
 ! 13 Jul 2021: Yeosang Yoon;  Initial implementation
 ! 31 Aug 2022: Yeosang Yoon;  fix code to product rst file on time
+! 20 Mar 2024: Yeosang Yoon; Support to run with ensemble mode
 
 subroutine RAPID_routing_writerst(n)
 
@@ -27,6 +28,7 @@ subroutine RAPID_routing_writerst(n)
 !
 
   use ESMF
+  use LIS_constantsMod
   use LIS_coreMod
   use LIS_logMod
   use LIS_fileIOMod
@@ -40,11 +42,12 @@ subroutine RAPID_routing_writerst(n)
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck
   integer               :: dimid_time, dimid_riv_bas, dim_Qout(2)
+  integer               :: dimid_ens, dimid_Qout_ens(3)            !2d ensemble gridspace
   integer               :: varid_Qout
   integer               :: shuffle, deflate, deflate_level
 
@@ -82,13 +85,13 @@ subroutine RAPID_routing_writerst(n)
   deflate = NETCDF_deflate
   deflate_level =NETCDF_deflate_level
 
-  if(alarmCheck.or.(LIS_rc%endtime ==1)) then
-     if(LIS_masterproc) then
-        call LIS_create_output_directory('ROUTING')
-        call LIS_create_restart_filename(n,filename,&
-             'ROUTING','RAPID_router',wformat="netcdf")
-        write(LIS_logunit,*) '[INFO] Writing RAPID routing restart ',trim(filename)
+  if(alarmCheck .or. LIS_rc%endtime==1) then
+     call LIS_create_output_directory('ROUTING')
+     call LIS_create_restart_filename(n,filename,&
+          'ROUTING','RAPID_router',wformat="netcdf")
+     write(LIS_logunit,*) '[INFO] Writing RAPID routing restart ',trim(filename)
 
+     if(LIS_masterproc) then
 #if (defined USE_NETCDF4)
         status = nf90_create(path=filename, cmode=nf90_netcdf4, ncid = ftn)
         call LIS_verify(status,"Error in nf90_open in RAPID_routing_writerst")
@@ -99,18 +102,29 @@ subroutine RAPID_routing_writerst(n)
 #endif
         ! Define the dimensions.
         status = nf90_def_dim(ftn,'time',1,dimid_time)
-        call LIS_verify(status, "Error in nf90_def_dim in RAPID_routing_writerst")
+        call LIS_verify(status, "Error in nf90_def_dim for time in RAPID_routing_writerst")
         status = nf90_def_dim(ftn,'rivid',RAPID_routing_struc(n)%n_riv_bas,dimid_riv_bas)
-        call LIS_verify(status, "Error in nf90_def_dim in RAPID_routing_writerst")
+        call LIS_verify(status, "Error in nf90_def_dim for rivid in RAPID_routing_writerst")
+        if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+           status = nf90_def_dim(ftn,'ensemble',LIS_rc%nensem(n),dimid_ens)
+           call LIS_verify(status, "Error in nf90_def_dim for ensemble in RAPID_routing_writerst")
+           dimid_Qout_ens = (/dimid_riv_bas, dimid_ens, dimid_time/)
+        else
+           dim_Qout = (/dimid_riv_bas, dimid_time/)
+        endif
         
-        dim_Qout = (/dimid_riv_bas, dimid_time/)
         ! Define variables
-        status = nf90_def_var(ftn,"Qout",NF90_REAL,dim_Qout,varid_Qout) 
-        call LIS_verify(status, "Error in nf90_def_var in RAPID_routing_writerst")
+        if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+           status = nf90_def_var(ftn,"Qout",NF90_REAL,dimid_Qout_ens,varid_Qout)
+           call LIS_verify(status, "Error in nf90_def_var for Qout in RAPID_ruting_writerst")
+        else
+           status = nf90_def_var(ftn,"Qout",NF90_REAL,dim_Qout,varid_Qout)
+           call LIS_verify(status, "Error in nf90_def_var for Qout in RAPID_routing_writerst")
+        endif
 
         !Define compression parameters
         call LIS_verify(nf90_def_var_deflate(ftn,varid_Qout,shuffle, deflate, deflate_level), &
-                        'Error in nf90_def_var_deflate in RAPID_routing_writerst')
+                        'Error in nf90_def_var_deflate for Qout in RAPID_routing_writerst')
 
         ! Define variable attributes
         call LIS_verify(nf90_put_att(ftn,varid_Qout,'long_name','average river water discharge ' &
@@ -151,13 +165,19 @@ subroutine RAPID_routing_writerst(n)
         call LIS_verify(nf90_enddef(ftn),'Error in ncf90_enddef in RAPID_routing_writerst')
 
         !Write data
-        status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout,&
-                 (/1,1/), (/RAPID_routing_struc(n)%n_riv_bas,1/))
-        call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_writerst')
+        if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+           status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout_ens,&
+                    (/1,1,1/), (/RAPID_routing_struc(n)%n_riv_bas,LIS_rc%nensem(n),1/))
+           call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_writerst')
+        else
+           status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout,&
+                    (/1,1/), (/RAPID_routing_struc(n)%n_riv_bas,1/))
+           call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_writerst')
+        endif
 
         ! Close the file.
         call LIS_verify(nf90_close(ftn), "Error in nf90_close in RAPID_routing_writerst")
-     endif
+     endif !if(LIS_masterproc) then
   endif
 
 end subroutine RAPID_routing_writerst

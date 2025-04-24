@@ -20,6 +20,8 @@
 ! 08 Aug 2022: Yeosang Yoon;  Add code to check 'Output methodology' option
 ! 31 Aug 2022: Yeosang Yoon;  Fix to broadcast a message (output file)
 ! 27 Apr 2023: Eric Kemp; Updated length of output file.
+! 20 Mar 2024: Yeosang Yoon; Support to run with ensemble mode
+
 subroutine RAPID_routing_output(n)
   
   use ESMF
@@ -39,7 +41,6 @@ subroutine RAPID_routing_output(n)
   
   integer, intent(in)   :: n 
   
-  !character*100         :: filename
   character(len=LIS_CONST_PATH_LEN) :: filename ! EMK
   integer               :: ftn
   integer               :: status
@@ -47,6 +48,8 @@ subroutine RAPID_routing_output(n)
   logical               :: alarmCheck
   integer               :: dimid_time, dimid_riv_bas
   integer               :: dimid_rivid, dimid_nv, dimid_nerr, dimid_Qout(2)
+  integer               :: dimid_ens, dimid_Qout_ens(3), varid_ens, i          ! ensemble mode
+  integer, allocatable  :: ensval(:)
   integer               :: varid_Qout, varid_Qout_err,varid_rivid,varid_time
   integer               :: varid_time_bnds, varid_lon, varid_lat,varid_crs
   integer               :: shuffle, deflate, deflate_level
@@ -108,7 +111,6 @@ subroutine RAPID_routing_output(n)
               status = nf90_create(Path = filename, cmode = nf90_clobber, ncid = ftn)
               call LIS_verify(status, "Error in nf90_open in RAPID_routing_output")
 #endif
-
               status = nf90_def_dim(ftn,'rivid',RAPID_routing_struc(n)%n_riv_bas,dimid_rivid)
               call LIS_verify(status, "nf90_put_att failed for rivid in RAPID_routing_output")
               status = nf90_def_dim(ftn,'time',1,dimid_time)
@@ -118,12 +120,25 @@ subroutine RAPID_routing_output(n)
               !status = nf90_def_dim(ftn,'nerr',3,dimid_nerr)
               !call LIS_verify(status, "nf90_put_att failed for nerr in RAPID_routing_output")
 
-              !dimid_Qout = (/dimid_rivid, dimid_time/)
-              dimid_Qout = (/dimid_time, dimid_rivid/)
+              if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+                 status = nf90_def_dim(ftn,'ensemble',LIS_rc%nensem(n),dimid_ens)
+                 call LIS_verify(status, "Error in nf90_def_dim for ensemble in RAPID_routing_output")
+                 dimid_Qout_ens = (/dimid_rivid, dimid_ens, dimid_time/)
+              else
+                 !dimid_Qout = (/dimid_rivid, dimid_time/)
+                 dimid_Qout = (/dimid_time, dimid_rivid/)
+              endif
 
               !Define variables
-              status = nf90_def_var(ftn,"Qout",NF90_REAL,dimid_Qout,varid_Qout)
-              call LIS_verify(status, "nf90_def_var failed for Qout in RAPID_routing_output")
+              if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+                 status = nf90_def_var(ftn,"ensemble",NF90_INT,dimid_ens,varid_ens)
+                 call LIS_verify(status, "nf90_def_var failed for crs in RAPID_routing_output")
+                 status = nf90_def_var(ftn,"Qout",NF90_REAL,dimid_Qout_ens,varid_Qout)
+                 call LIS_verify(status, "Error in nf90_def_var for Qout in RAPID_ruting_output")
+              else
+                 status = nf90_def_var(ftn,"Qout",NF90_REAL,dimid_Qout,varid_Qout)
+                 call LIS_verify(status, "nf90_def_var failed for Qout in RAPID_routing_output")
+              endif
               !status = nf90_def_var(ftn,"Qout_err",NF90_REAL,&
               !         (/dimid_rivid,dimid_nerr/),varid_Qout_err)
               !call LIS_verify(status, "nf90_def_var failed for Qout_err in RAPID_routing_output")
@@ -158,6 +173,10 @@ subroutine RAPID_routing_output(n)
                            'nf90_def_var_deflate failed for lat in RAPID_routing_output')
               !call LIS_verify(nf90_def_var_deflate(ftn,varid_crs,shuffle,deflate,deflate_level),&
               !             'nf90_def_var_deflate failed for crs in RAPID_routing_output')
+              if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+                 call LIS_verify(nf90_def_var_deflate(ftn,varid_ens,shuffle,deflate,deflate_level),&
+                              'nf90_def_var_deflate failed for ens in RAPID_routing_output')
+              endif
 
               ! Define variable attributes
               call LIS_verify(nf90_put_att(ftn,varid_Qout,'long_name','average river water ' & 
@@ -243,6 +262,17 @@ subroutine RAPID_routing_output(n)
               call LIS_verify(nf90_put_att(ftn,varid_crs,'inverse_flattening','298.257223563'), &
                            'nf90_put_att failed for crs')
 
+              if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+                 call LIS_verify(nf90_put_att(ftn,varid_ens,"units","ensemble number"), &
+                              'nf90_put_att failed for ensemble units')
+                 call LIS_verify(nf90_put_att(ftn,varid_ens, "long_name","Ensemble numbers"),&
+                              'nf90_put_att failed for ensemble long_name failed')
+                 allocate(ensval(LIS_rc%nensem(n)))
+                 do i = 1, LIS_rc%nensem(n)
+                    ensval(i) = i
+                 enddo
+              endif
+
               ! Define global attributes
               call date_and_time(date,time,zone,values)
               call LIS_verify(nf90_put_att(ftn,NF90_GLOBAL,"missing_value",LIS_rc%udef), &
@@ -282,14 +312,20 @@ subroutine RAPID_routing_output(n)
               status = nf90_put_var(ftn,varid_crs,0)
               call LIS_verify(status,'Error in nf90_put_var for crs in RAPID_routing_output')
 
-              status = nf90_put_var(ftn,varid_Qout,&
-                       reshape(RAPID_routing_struc(n)%Qout,(/1,RAPID_routing_struc(n)%n_riv_bas/)))
-              !status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout)
-              call LIS_verify(status,'Error in nf90_put_var for Qout in RAPID_routing_output')
+              if(RAPID_routing_struc(n)%useens==2) then         ! ensemble mode
+                 status = nf90_put_var(ftn,varid_ens,ensval,(/1/),(/LIS_rc%nensem(n)/))
+                 call LIS_verify(status,'Error in nf90_put_var for ens in RAPID_routing_output')
+                 status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout_ens,&
+                          (/1,1,1/), (/RAPID_routing_struc(n)%n_riv_bas,LIS_rc%nensem(n),1/))
+                 call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_output')
+              else
+                 status = nf90_put_var(ftn,varid_Qout,&
+                          reshape(RAPID_routing_struc(n)%Qout,(/1,RAPID_routing_struc(n)%n_riv_bas/)))
+                 call LIS_verify(status,'Error in nf90_put_var for Qout in RAPID_routing_output')
+              endif
 
               ! Close the file.
               call LIS_verify(nf90_close(ftn), "Error in nf90_close in RAPID_routing_output")
-
            endif
         endif
      endif
