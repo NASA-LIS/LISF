@@ -10832,7 +10832,7 @@ Acceptable values are:
 
 |0     | Do not run in ensemble mode
 |1     | Run in ensemble mean mode
-|2     | Run in ensemble mode (not support)
+|2     | Run in ensemble mode
 |====
 
 `RAPID run option:` is set to 1 for a regular run. The other options are not
