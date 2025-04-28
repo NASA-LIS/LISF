@@ -33,7 +33,7 @@ subroutine read_nldas20a(n,kk,findex,order,month,name,ferror)
   integer, intent(in)          :: kk     ! Forecast member index
   integer, intent(in)          :: findex ! Forcing index
   integer, intent(in)          :: order
-  integer, intent(out)         :: month
+  integer, intent(in)         :: month
   character(len=*), intent(in) :: name
   integer, intent(out)         :: ferror
 !
