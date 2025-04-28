@@ -64,25 +64,11 @@ include ./configure.lis
 LIS: $(OBJS)
 	 $(FC) -o $@ $(OBJS) $(FOPTS) $(LDFLAGS)
 
-LIBTARGET    =  lislib
-TARGETDIR    =  ./
-$(LIBTARGET) : 
-		gmake -i -r lis_contrib ; \
-		$(AR) lislib.a $(OBJS)  ; \
+lislib: $(OBJS)
+	$(AR) ru lislib.a $(OBJS)
 
-LIBTARGET    =  explis
-TARGETDIR    =  ./
-$(LIBTARGET) : 
-		gmake -i -r lis_contrib                  ; \
-		$(AR) -ru ../../main/libwrflib.a $(OBJS) ; \
-
-LIBTARGET    =  gcelis
-TARGETDIR    =  ./
-$(LIBTARGET) : 
-		gmake -i -r lis_contrib ; \
-		$(AR) lislib.a $(OBJS)  ; \
-
-lis_contrib: $(OBJS)
+explis: $(OBJS)
+	$(AR) ru ../../main/libwrflib.a $(OBJS)
 
 .PHONY: debug
 debug:
