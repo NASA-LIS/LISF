@@ -66,7 +66,7 @@ subroutine read_nldas20b(n,kk,findex,order,name,ferror)
 !EOP
   integer                :: iv,ftn
   integer                :: nldas20,paramid
-  integer                :: k,t,c,r,iret,rc
+  integer                :: k,t,c,r,iret
   real, parameter        :: missingValue = -9999.0
   integer, parameter     :: nvars = 10
   logical                :: pcp_flag
@@ -77,6 +77,8 @@ subroutine read_nldas20b(n,kk,findex,order,name,ferror)
   real, allocatable      :: nldas20_forcing(:,:)
   real                   :: varfield(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real    :: dummy(nldas20_struc(n)%ncold,nldas20_struc(n)%nrold)
+
+  external :: interp_nldas20
 
   ferror = 1
   iv = 0
