@@ -40,7 +40,6 @@ subroutine read_orig_nldas20_elevdiff(n)
 !  \end{description}
 !
 !EOP
-  integer :: i, err
   logical :: file_exists
   integer :: nid,elevId
   integer :: c,r
