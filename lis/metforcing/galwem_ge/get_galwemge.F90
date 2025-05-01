@@ -211,19 +211,15 @@ subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
 
   fname = 'PS.557WW_SC.U_DI.C_GP.GALWEM-GE-MEMB'
 
-  !TODO: need to check, 12z cycle memebers 00,28-44
-  if (hr == 0) then
-       write (UNIT=ens, FMT='(i3.3)') ens_id-1   ! start 00, 01 - 17
+  !TODO: need to check, memebers 00,28-36
+  if (ens_id == 1) then
+     write (UNIT=ens, FMT='(i3.3)') ens_id-1  ! start 00
   else
-     if (ens_id == 1) then
-        write (UNIT=ens, FMT='(i3.3)') ens_id-1  ! start 00
-     else
-        write (UNIT=ens, FMT='(i3.3)') ens_id+26 ! start 28-44
-     endif
+     write (UNIT=ens, FMT='(i3.3)') ens_id+26 ! start 28-36
   endif
 
-  filename = trim(rootdir)//'/'//ftime//'T'//chr//'00Z'//'/'// &
-             trim(fname)//ens//'_GR.C0P5DEG_AR.GLOBAL_DD.'//   &
+  filename = trim(rootdir)//'/'//ftime//'/'//'member'//ens//'/'//&
+             trim(fname)//ens//'_GR.C20KM_AR.GLOBAL_DD.'//   &
              ftime//'_CY.'//chr//'_FH.'//fchr//'_DF.GR2'
 end subroutine get_galwemge_filename
 

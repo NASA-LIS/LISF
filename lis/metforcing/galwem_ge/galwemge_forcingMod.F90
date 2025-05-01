@@ -126,8 +126,8 @@ contains
     enddo
 
     do n=1, LIS_rc%nnest
-       galwemge_struc(:)%nc = 720  ! galwem-ge
-       galwemge_struc(:)%nr = 361
+       galwemge_struc(:)%nc = 1280  ! galwem-ge
+       galwemge_struc(:)%nr = 960
     enddo
 
     ! 8 - key met field
@@ -136,13 +136,13 @@ contains
     do n=1,LIS_rc%nnest
      
        ! Check if starting hour of LIS run matches 00/12:
-       if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 12)) then
-          write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
-          write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
-          write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
-          write(LIS_logunit,*) "[ERR]  your lis.config file.."
-          call LIS_endrun()
-       endif
+       !if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 12)) then
+       !   write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
+       !   write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
+       !   write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
+       !   write(LIS_logunit,*) "[ERR]  your lis.config file.."
+       !   call LIS_endrun()
+       !endif
       
        ! Allocate and initialize GALWEM-GE metforcing data structures:
        LIS_rc%met_nensem(findex) = galwemge_struc(n)%max_ens_members
@@ -166,14 +166,14 @@ contains
        gridDesci(n,1)  = 0
        gridDesci(n,2)  = galwemge_struc(n)%nc !gnc
        gridDesci(n,3)  = galwemge_struc(n)%nr !gnr
-       gridDesci(n,4)  = -89.750    !lat(1,1)
-       gridDesci(n,5)  = -179.750   !lon(1,1)
+       gridDesci(n,4)  =  -89.906250   !lat(1,1)
+       gridDesci(n,5)  = -179.859375   !lon(1,1)
        gridDesci(n,6)  = 128
-       gridDesci(n,7)  = 89.750     !lat(gnc,gnr)
-       gridDesci(n,8)  = 179.750    !lon(gnc,gnr)
-       gridDesci(n,9)  = 0.500      !dx
-       gridDesci(n,10) = 0.500      !dy
-       gridDesci(n,20) = 0           !for 0 to 360?
+       gridDesci(n,7)  =  89.906250    !lat(gnc,gnr)
+       gridDesci(n,8)  = 179.859375    !lon(gnc,gnr)
+       gridDesci(n,9)  = 0.28125       !dx
+       gridDesci(n,10) = 0.18750       !dy
+       gridDesci(n,20) = 0             !for 0 to 360?
 
        galwemge_struc(n)%mi = galwemge_struc(n)%nc*galwemge_struc(n)%nr
        galwemge_struc(n)%fcsttime1 = 3000.0
