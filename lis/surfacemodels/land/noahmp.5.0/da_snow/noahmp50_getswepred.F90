@@ -1,0 +1,45 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: noahmp50_getswepred
+! \label{noahmp50_getswepred}
+!
+! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
+! !INTERFACE:
+subroutine noahmp50_getswepred(n, k, obs_pred)
+
+! !USES:
+  use LIS_coreMod, only : LIS_rc
+  use noahmp50_lsmMod
+  use LIS_DAobservationsMod
+
+  implicit none
+! !ARGUMENTS: 
+  integer, intent(in)    :: n
+  integer, intent(in)    :: k
+  real                   :: obs_pred(LIS_rc%ngrid(n),LIS_rc%nensem(n))
+  real                   :: swe(LIS_rc%npatch(n,LIS_rc%lsm_index))
+!EOP
+
+  integer                :: t
+
+  do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
+     swe(t) = NoahMP50_struc(n)%noahmp50(t)%sneqv !obs in mm
+  enddo
+
+  call LIS_convertPatchSpaceToObsEnsSpace(n,k,&
+       LIS_rc%lsm_index, &
+       swe,&
+       obs_pred)
+
+end subroutine noahmp50_getswepred
+
