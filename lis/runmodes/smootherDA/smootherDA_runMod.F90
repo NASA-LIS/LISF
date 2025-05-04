@@ -19,6 +19,7 @@ module smootherDA_runMod
 !   
 ! !REVISION HISTORY: 
 !  21Oct05    Sujay Kumar  Initial Specification
+!  25Feb25    Dan Rosen    Add Step and Reset Subroutines
 ! 
 !
   use ESMF
@@ -30,6 +31,8 @@ module smootherDA_runMod
 !-----------------------------------------------------------------------------
   public :: lis_init_smootherDA  !init method for optimization-uncertainty modeling mode
   public :: lis_run_smootherDA   !run method for optimization-uncertainty modeling mode
+  public :: lis_step_smootherDA  !step method for optimization-uncertainty modeling mode
+  public :: lis_reset_smootherDA !reset method for optimization-uncertainty modeling mode
   public :: lis_final_smootherDA !finalize method for optimization-uncertainty modeling mode
 !EOP  
 contains
@@ -97,6 +100,8 @@ contains
     call LIS_routing_readrestart
     call LIS_core_init
 
+    LIS_rc%DAincrMode(:) = 0
+
   end subroutine lis_init_smootherDA
 
 !BOP
@@ -104,6 +109,38 @@ contains
 !
 ! !INTERFACE:
   subroutine lis_run_smootherDA
+! !USES:
+    use LIS_coreMod
+    use LIS_timeMgrMod
+
+!
+! !DESCRIPTION:
+!
+!  This is the run method for LIS in a smootherDA running mode.
+!
+!  NOTES:
+!  If the endtime is set to exactly the beginning of a month,
+!  the GRACE analysis will not be applied to the last month
+!  of the simulation. The recommended workaround is to specify
+!  the end time to be not exactly at the end of the month.
+!
+!EOP
+    integer           :: n
+
+    do while (.NOT. LIS_endofrun())
+       do while(.NOT.LIS_endofTimeWindow())
+          call lis_step_smootherDA
+       enddo
+       call lis_reset_smootherDA()
+    enddo
+
+  end subroutine lis_run_smootherDA
+
+!BOP
+! !ROUTINE: lis_step_smootherDA
+!
+! !INTERFACE:
+  subroutine lis_step_smootherDA
 ! !USES:
     use LIS_coreMod
     use LIS_timeMgrMod
@@ -120,52 +157,66 @@ contains
 
 !
 ! !DESCRIPTION:
-! 
-!  This is the run method for LIS in a smootherDA running mode. 
+!
+!  This is the step method for LIS in a smootherDA running mode.
 !
 !  NOTES: 
-!  If the endtime is set to exactly the beginning of a month, 
-!  the GRACE analysis will not be applied to the last month
-!  of the simulation. The recommended workaround is to specify
-!  the end time to be not exactly at the end of the month. 
 !
 !EOP
     integer           :: n 
 
-    LIS_rc%DAincrMode(:) = 0 
-    
-    call LIS_surfaceModel_readrestart
-    do while (.NOT. LIS_endofrun())
-       do while(.NOT.LIS_endofTimeWindow())
-          call LIS_ticktime
-          do n=1,LIS_rc%nnest
-             if(LIS_timeToRunNest(n)) then
-                call LIS_setDynparams(n)
-                call LIS_get_met_forcing(n)
-                call LIS_perturb_forcing(n)
-                call LIS_irrigation_run(n)
-                call LIS_surfaceModel_f2t(n)  
-                call LIS_surfaceModel_run(n)
-                call LIS_surfaceModel_diagnoseVarsForDA(n)
-                call LIS_surfaceModel_perturb_states(n)
-                call LIS_readDAobservations(n)
-                call LIS_perturb_DAobservations(n)
-                call LIS_perturb_writerestart(n)
-                call LIS_dataassim_run(n)
-                call LIS_dataassim_output(n)
-                call LIS_surfaceModel_output(n)  
-                call LIS_surfaceModel_writerestart(n)
-                call LIS_irrigation_output(n)
-                call LIS_routing_run(n)
-                call LIS_routing_writeoutput(n)
-                call LIS_routing_writerestart(n)
-                call updateIncrementsFlag(n)
-             endif
-          enddo
-          flush(LIS_logunit)
-       enddo
+    call LIS_ticktime
 
-       if(LIS_rc%endtime.ne.1) then 
+    do n=1,LIS_rc%nnest
+       if(LIS_timeToRunNest(n)) then
+          call LIS_setDynparams(n)
+          call LIS_get_met_forcing(n)
+          call LIS_perturb_forcing(n)
+          call LIS_irrigation_run(n)
+          call LIS_surfaceModel_f2t(n)
+          call LIS_surfaceModel_run(n)
+          call LIS_surfaceModel_diagnoseVarsForDA(n)
+          call LIS_surfaceModel_perturb_states(n)
+          call LIS_readDAobservations(n)
+          call LIS_perturb_DAobservations(n)
+          call LIS_perturb_writerestart(n)
+          call LIS_dataassim_run(n)
+          call LIS_dataassim_output(n)
+          call LIS_surfaceModel_output(n)
+          call LIS_surfaceModel_writerestart(n)
+          call LIS_irrigation_output(n)
+          call LIS_routing_run(n)
+          call LIS_routing_writeoutput(n)
+          call LIS_routing_writerestart(n)
+          call updateIncrementsFlag(n)
+       endif
+    enddo
+    flush(LIS_logunit)
+  end subroutine lis_step_smootherDA
+
+!BOP
+! !ROUTINE: lis_reset_smootherDA
+!
+! !INTERFACE:
+  subroutine lis_reset_smootherDA
+! !USES:
+    use LIS_coreMod
+    use LIS_timeMgrMod
+    use LIS_surfaceModelMod
+    use LIS_paramsMod
+    use LIS_metforcingMod
+    use LIS_perturbMod
+    use LIS_routingMod
+
+!
+! !DESCRIPTION:
+!
+!  This is the reset clock method for LIS in a smootherDA running mode.
+!
+!  NOTES:
+!
+!EOP
+       if(LIS_rc%endtime.ne.1) then
           call LIS_resetClockForTimeWindow(LIS_rc)
           call LIS_param_reset
           call LIS_metforcing_reset
@@ -175,9 +226,8 @@ contains
 
           LIS_rc%iterationId(:) = LIS_rc%iterationId(:) + 1
        endif
-    enddo
 
-  end subroutine lis_run_smootherDA
+  end subroutine lis_reset_smootherDA
 
   subroutine updateIncrementsFlag(n)
     use LIS_timeMgrMod
