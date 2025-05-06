@@ -23,6 +23,7 @@ module LIS_lsmrtm_pluginMod
 !  08 Feb 11    Yudong Tian; Reistered for CMEM3 
 !  18 Dec 18    Peter Shellito; Registered for NoahMp36 CMEM3
 !  21 Feb 19    Peter Shellito; Registered for Noah36 CMEM3
+!  04 Sep 20    Sara Modanesi; Registered for NoahMp36 WCM
 ! 
 !EOP  
   implicit none
@@ -88,6 +89,9 @@ subroutine LIS_lsmrtm_plugin
 #endif
 #if ( defined RTMS_CMEM )
    external noahmp36_sfc2cmem3
+#endif
+#if ( defined RTMS_WCM )
+   external noahmp36_sfc2wcm
 #endif
 #endif
 
@@ -173,6 +177,19 @@ subroutine LIS_lsmrtm_plugin
         trim(LIS_noahmp36Id)//char(0), noahmp36_sfc2cmem3)
 #endif
 #endif
+
+#if ( defined SM_NOAHMP_3_6 )
+#if ( defined RM_RTM_FORWARD )
+   call registerlsmf2t(trim(LIS_noahmp36Id)//"+"&
+        //trim(LIS_RTMforwardId)//char(0),NoahMP36_f2t)
+#endif
+
+#if ( defined RTMS_WCM)
+   call registerlsm2rtm(trim(LIS_wcmRTMId)//"+"//&
+        trim(LIS_noahmp36Id)//char(0), noahmp36_sfc2wcm)
+#endif
+#endif
+
 
 #if ( defined SM_MOSAIC )
 #if ( defined RM_RTM_FORWARD )
