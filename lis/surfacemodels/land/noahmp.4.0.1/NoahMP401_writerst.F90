@@ -23,7 +23,7 @@
 ! !INTERFACE:
 subroutine NoahMP401_writerst(n)
 ! !USES:
-    use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+    use LIS_coreMod, only    : LIS_rc, LIS_masterproc, LIS_surface
     use LIS_timeMgrMod, only : LIS_isAlarmRinging
     use LIS_logMod, only     : LIS_logunit, LIS_getNextUnitNumber, &
                                LIS_releaseUnitNumber , LIS_verify
@@ -123,7 +123,7 @@ end subroutine NoahMP401_writerst
 subroutine NoahMP401_dump_restart(n, ftn, wformat)
 
 ! !USES:
-    use LIS_coreMod, only : LIS_rc, LIS_masterproc
+    use LIS_coreMod, only : LIS_rc, LIS_masterproc, LIS_surface
     use LIS_logMod, only  : LIS_logunit
     use LIS_historyMod
     use NoahMP401_lsmMod
@@ -217,7 +217,8 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
 ! 
 !EOP 
                
-    integer :: l, t 
+    integer :: l, t
+    integer :: row, col, ridx, cidx 
     real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
     integer :: dimID(11)
     integer :: sfcrunoff_ID
@@ -262,6 +263,15 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
     integer :: tauss_ID
     integer :: smoiseq_ID
     integer :: smcwtd_ID
+    integer :: wtd_ID
+    integer :: eqwtd_ID
+    integer :: rivercond_ID
+    integer :: riverbed_ID
+    integer :: qslat_ID
+    integer :: qrfs_ID
+    integer :: qsprings_ID
+    integer :: qrf_ID
+    integer :: qspring_ID
     integer :: deeprech_ID
     integer :: rech_ID
     integer :: grain_ID
@@ -779,12 +789,70 @@ subroutine NoahMP401_dump_restart(n, ftn, wformat)
                               varid=pgs_ID, dim=1, wformat=wformat)
 
     ! optional gecros crop
-!    do l=1, 60  ! TODO: check loop
-!        tmptilen = 0
-!        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
-!            tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
-!        enddo
-!        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
-!                                  varid=gecros_state_ID, dim=l, wformat=wformat)
-!    enddo
+    !do l=1, 60  ! TODO: check loop
+    !    tmptilen = 0
+    !    do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+    !        tmptilen(t) = NOAHMP401_struc(n)%noahmp401(t)%gecros_state(l)
+    !    enddo
+    !    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+    !                              varid=gecros_state_ID, dim=l, wformat=wformat)
+    !enddo
+
+    !SW for MMF 
+    if(NOAHMP401_struc(n)%run_opt==5) then
+        call LIS_writeHeader_restart(ftn, n, dimID, qslat_ID, "QSLAT", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qslat, &
+                                     varid=qslat_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, qrfs_ID, "QRFS", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qrfs, &
+                                     varid=qrfs_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, qsprings_ID, "QSPRINGS", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%qsprings, &
+                                     varid=qsprings_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, wtd_ID, "WTD", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%wtd, &
+                                     varid=wtd_ID, dim=1, wformat=wformat)
+        
+        !UPDATE 1D VARIABLES TO BE CONSITENT WITH 2D VARIABLES
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            col = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%col
+            row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
+            cidx = col - NOAHMP401_struc(n)%col_min + 1
+            ridx = row - NOAHMP401_struc(n)%row_min + 1
+
+            NOAHMP401_struc(n)%noahmp401(t)%eqwtd = NOAHMP401_struc(n)%eqwtd(cidx, ridx)
+            NOAHMP401_struc(n)%noahmp401(t)%riverbed = NOAHMP401_struc(n)%riverbed(cidx, ridx)
+            NOAHMP401_struc(n)%noahmp401(t)%rivercond = NOAHMP401_struc(n)%rivercond(cidx, ridx)
+        enddo
+
+
+        call LIS_writeHeader_restart(ftn, n, dimID, eqwtd_ID, "EQWTD", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%eqwtd, &
+                                     varid=eqwtd_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, rivercond_ID, "RIVERCOND", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%rivercond, &
+                                     varid=rivercond_ID, dim=1, wformat=wformat)
+
+        call LIS_writeHeader_restart(ftn, n, dimID, riverbed_ID, "RIVERBED", &
+                                     "soil moisture content in the layer to the water table when deep", &
+                                     "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NOAHMP401_struc(n)%noahmp401%riverbed, &
+                                     varid=riverbed_ID, dim=1, wformat=wformat)
+    endif
 end subroutine NoahMP401_dump_restart

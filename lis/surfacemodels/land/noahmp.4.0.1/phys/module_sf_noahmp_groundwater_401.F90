@@ -21,6 +21,7 @@ CONTAINS
 
 ! ----------------------------------------------------------------------
   USE NOAHMP_TABLES_401, ONLY: BEXP_TABLE, DKSAT_TABLE, SMCMAX_TABLE,PSISAT_TABLE, SMCWLT_TABLE
+  use LIS_logMod,     only : LIS_logunit
 ! ----------------------------------------------------------------------
   IMPLICIT NONE
 ! ----------------------------------------------------------------------
@@ -87,9 +88,12 @@ CONTAINS
   INTEGER,   DIMENSION( ims:ime, jms:jme )    :: LANDMASK !-1 for water (ice or no ice) and glacial areas, 1 for land where the LSM does its soil moisture calculations.
   
   REAL :: BEXP,DKSAT,PSISAT,SMCMAX,SMCWLT
+  !REAL :: QLAT_temp,QRF_temp,QSPRING_temp,DEEPRECH_temp
 
+    !print *,"WTABLE Called"
+    !print*, 'ZWT = ',WTD(25,12)
     DELTAT = WTDDT * 60. !timestep in seconds for this calculation
-
+    
     ZSOIL(0) = 0.
     ZSOIL(1) = -DZS(1)
     DO K = 2, NSOIL
@@ -109,7 +113,8 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
                         ,ids,ide,jds,jde,kds,kde                      &
                         ,ims,ime,jms,jme,kms,kme                      &
                         ,its,ite,jts,jte,kts,kte                      )
-
+     !print*, 'LATERALFLOW COMPLETE'
+     !print*, 'ZWT = ',WTD(25,12)
 
 !compute flux from grounwater to rivers in the cell
 
@@ -171,29 +176,118 @@ CALL LATERALFLOW(ISLTYP,WTD,QLAT,FDEPTH,TOPO,LANDMASK,DELTAT,AREA       &
              SH2O(1:NSOIL) = SH2OXY(I,1:NSOIL,J)
              SMCEQ(1:NSOIL) = SMOISEQ(I,1:NSOIL,J)
 
+             !IF (I == 25) THEN
+             !    IF (J == 12) THEN
+             !        print *, "CALLING UPDATEWTD"
+             !        print*, 'NSOIL = ',NSOIL
+             !        print*, 'DZS = ',DZS
+             !        print*, 'ZSOIL = ',ZSOIL
+             !        print*, 'SMCMAX = ',SMCMAX
+             !        print*, 'SMCWLT = ',SMCWLT
+             !        print*, 'PSISAT = ',PSISAT
+             !!        print*, 'BEXP = ',BEXP
+             !        print*, 'TOTWATER = ',TOTWATER
+             !        print*, 'WTD(I,J) = ',WTD(I,J)
+             !        print*, 'SMC = ',SMC
+             !        print*, 'SH2O = ',SH2O
+             !        print*, 'SMCWTD = ',SMCWTD(I,J)
+             !    ENDIF
+             !ENDIF
+
+
 !Update the water table depth and soil moisture
              CALL UPDATEWTD ( NSOIL, DZS , ZSOIL, SMCEQ, SMCMAX, SMCWLT, PSISAT, BEXP ,I , J , &!in
                               TOTWATER, WTD(I,J), SMC, SH2O, SMCWTD(I,J)      , &!inout
                               QSPRING(I,J) ) !out
 
+             !IF (I == 25) THEN
+             !    IF (J == 12) THEN
+             !        print *, "FINISHED UPDATEWTD"
+             !        print*, 'TOTWATER = ',TOTWATER
+             !        print*, 'WTD(I,J) = ',WTD(I,J)
+             !        print*, 'SMC = ',SMC
+             !        print*, 'SH2O = ',SH2O
+             !        print*, 'SMCWTD = ',SMCWTD(I,J)
+             !        print*, 'QSPRING = ',QSPRING(I,J)
+             !    ENDIF
+             !ENDIF
+
+
 !now update soil moisture
              SMOIS(I,1:NSOIL,J) = SMC(1:NSOIL)
              SH2OXY(I,1:NSOIL,J) = SH2O(1:NSOIL)
+
+           ELSE
+           ! Set Cumulative Variables to Zero over Water (i.e. LANDMASK < 0)
+               QLAT(I,J) = 0.
+               QRF(I,J) = 0.
+               QSPRING(I,J) = 0.
+               DEEPRECH(I,J) = 0.
 
            ENDIF
        ENDDO
     ENDDO
 
+    !print*, 'UPDATEWTD COMPLETE'
+    !print*, 'ZWT = ',WTD(25,12)
+
 !accumulate fluxes for output
 
     DO J=jts,jte
        DO I=its,ite
-           QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
-           QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
-           QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
-           RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
+           !***** TML: Previous Debugging Lines to Find Floating Pt. Errors *****
+           ! Remove This Later ...
+           !TML Round Down Small Values to Prevent Floating Point Errors
+           !IF (ABS(QLAT(I,J)).LT.1.E-08)THEN
+           !    QLAT(I,J) = 0.
+           !ENDIF
+           !IF (ABS(QRF(I,J)).LT.1.E-05)THEN
+           !    QRF(I,J) = 0.
+           !ENDIF
+           !IF (ABS(QSPRING(I,J)).LT.1.E-08)THEN
+           !    QSPRING(I,J) = 0.
+           !ENDIF
+           !IF (ABS(DEEPRECH(I,J)).LT.1.E-08)THEN
+           !   DEEPRECH(I,J) = 0.
+           !ENDIF
+           !write(LIS_logunit,*) 'QRF = ',QRF(I,J)
+           !QLAT_temp = QLAT(I,J)*1.E3
+           !QRF_temp = QRF(I,J)*1.E3
+           !QSPRING_temp = QSPRING(I,J)*1.E3
+           !DEEPRECH_temp = DEEPRECH(I,J)*1.E3
+           !Set Excessively large values to 0 (issue for parallel runs)
+           !IF (ABS(QLAT_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QLAT = ',QLAT_temp
+           !    QLAT_temp = 0.
+           !ENDIF
+           !IF (ABS(QRF_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QRF = ',QRF_temp
+           !    QRF_temp = 0.
+           !ENDIF
+           !IF (ABS(QSPRING_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: QSPRING = ',QSPRING_temp
+           !    QSPRING_temp = 0.
+           !ENDIF
+           !IF (ABS(DEEPRECH_temp).GT.1.E+01)THEN
+           !    print*, 'Warning: DEEPRECH = ',DEEPRECH_temp
+           !    DEEPRECH_temp = 0.
+           !ENDIF
+           !write(LIS_logunit,*) 'DEEPRECH_temp = ',DEEPRECH_temp
+           !write(LIS_logunit,*) 'RECH = ',RECH(I,J)
+           !QSLAT(I,J) = QSLAT(I,J) + QLAT_temp
+           !QRFS(I,J) = QRFS(I,J) + QRF_temp
+           !QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING_temp
+           !RECH(I,J) = RECH(I,J) + DEEPRECH_temp
+           !***** TML: END DEBUGGING CODE; Returns to Original Code *****
+           IF(LANDMASK(I,J).GT.0)THEN
+               QSLAT(I,J) = QSLAT(I,J) + QLAT(I,J)*1.E3
+               QRFS(I,J) = QRFS(I,J) + QRF(I,J)*1.E3
+               QSPRINGS(I,J) = QSPRINGS(I,J) + QSPRING(I,J)*1.E3
+               RECH(I,J) = RECH(I,J) + DEEPRECH(I,J)*1.E3
+           ENDIF
 !zero out DEEPRECH
            DEEPRECH(I,J) =0.
+
        ENDDO
     ENDDO
 
@@ -232,17 +326,22 @@ END  SUBROUTINE WTABLE_mmf_noahmp
   REAL,    PARAMETER :: PI = 3.14159265 
   REAL,    PARAMETER :: FANGLE = 0.22754493   ! = 0.5*sqrt(0.5*tan(pi/8))
 
-itsh=max(its-1,ids)
-iteh=min(ite+1,ide-1)
-jtsh=max(jts-1,jds)
-jteh=min(jte+1,jde-1)
+!itsh=max(its-1,ids)
+!iteh=min(ite+1,ide-1)
+!jtsh=max(jts-1,jds)
+!jteh=min(jte+1,jde-1)
 
+! TML: Exchanges not possible between boundaries; need to rely on halos ...
+itsh=its
+iteh=ite
+jtsh=jts
+jteh=jte
 
     DO J=jtsh,jteh
        DO I=itsh,iteh
            IF(FDEPTH(I,J).GT.0.)THEN
                  KLAT = DKSAT_TABLE(ISLTYP(I,J)) * KLATFACTOR(ISLTYP(I,J))
-                 IF(WTD(I,J) < -1.5)THEN
+                 IF(WTD(I,J) .LT. -1.5)THEN
                      KCELL(I,J) = FDEPTH(I,J) * KLAT * EXP( (WTD(I,J) + 1.5) / FDEPTH(I,J) )
                  ELSE
                      KCELL(I,J) = KLAT * ( WTD(I,J) + 1.5 + FDEPTH(I,J) )  
@@ -255,10 +354,16 @@ jteh=min(jte+1,jde-1)
        ENDDO
     ENDDO
 
-itsh=max(its,ids+1)
-iteh=min(ite,ide-2)
-jtsh=max(jts,jds+1)
-jteh=min(jte,jde-2)
+!itsh=max(its,ids+1)
+!iteh=min(ite,ide-2)
+!jtsh=max(jts,jds+1)
+!jteh=min(jte,jde-2)
+
+! TML: Exchanges not possible between boundaries; need to rely on halos ...
+itsh=its+1
+iteh=ite-1
+jtsh=jts+1
+jteh=jte-1
 
     DO J=jtsh,jteh
        DO I=itsh,iteh
@@ -439,6 +544,11 @@ IF(totwater.gt.0.)then
             if(totwater.le.maxwatup)then
                wtd = wtd + totwater/(smcmax-smcwtd)
                totwater=0.
+               !IF (ILOC == 25) THEN
+               !  IF (JLOC == 12) THEN
+               !    print *, "wtd updated"
+               !  ENDIF
+               !ENDIF
             else
                totwater=totwater-maxwatup
                wtd=zsoil(nsoil)-dzs(nsoil)
@@ -605,7 +715,10 @@ ELSEIF(totwater.lt.0.)then
 ENDIF
 
          SH2O = SMC - SICE
-
+ 
+         !if(qspring.lt.-1.E30)then
+         !    print *, 'WARNING EXTREME GW EXCHANGE; Floating point error likely'
+         !endif
 
 END  SUBROUTINE UPDATEWTD
 
