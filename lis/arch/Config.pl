@@ -875,6 +875,10 @@ if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
 }
 
+# USAF_LIS75_SMDA does not prompt user
+if ($ENV{USAF_LIS75_SMDA} eq '1') {
+    #use_useaf_lis75_smda = 1;
+}
 if(defined($ENV{LIS_RPC})){
    $librpc = $ENV{LIS_RPC};
 }
@@ -1235,6 +1239,13 @@ else{
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";
+
+if ($use_usaf_lis75_smda == 1) {
+    printf misc_file "%s\n","#define USAF_LIS75_SMDA ";
+} else {
+    printf misc_file "%s\n","#undef USAF_LIS75_SMDA ";
+}
+
 close(misc_file);
 
 open(netcdf_file,">LIS_NetCDF_inc.h");
