@@ -36,7 +36,7 @@ from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
 
-def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command = None,
+def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_run, in_command = None,
                command2 = None, command_list = None, group_jobs=None):
     ''' writes SLURM job script '''
     if in_command is None:
@@ -75,7 +75,11 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
                 _f.write('#SBATCH --partition=packable'  + '\n')
             if group_jobs:   
                 mpc = min(math.ceil(480 / ntasks), 100)
-                _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
+                if parallel_run is not None:
+                    _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
+                    _f.write('#SBATCH --cpus-per-task=' + parallel_run['NPROCS'] + '\n')
+                else:
+                    _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
                 _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
 
@@ -105,6 +109,8 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
+        if parallel_run is not None:
+            _f.write('export NUM_WORKERS='+ parallel_run['NPROCS'] + '\n')
         _f.write('cd ' + cwd + '\n')
 
         if command_list is None and group_jobs is None:
@@ -113,7 +119,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, in_command
         else:
             if group_jobs:
                 for cmd in group_jobs:
-                    _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
+                    if parallel_run is not None:
+                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['NPROCS']} --ntasks 1 {cmd} &\n")
+                    else:
+                        _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
                 _f.write("wait\n")
             if command_list:
                 for cmd in command_list:

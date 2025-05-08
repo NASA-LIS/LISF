@@ -561,13 +561,22 @@ class S2Srun(DownloadForecasts):
                         pre_script.append(line)
 
             # Extract environment variables from the pre-script
+            commands_to_remove = []
             for command in pre_script:
                 if command.startswith('export'):
                     env_var = command.split('=', 1)
                     if len(env_var) == 2:
                         rm_export = env_var[0].split(' ',1)
-                        environment.append(rm_export[1].strip() + '=' + env_var[1].strip())
-                        pre_script.remove(command)
+                        if len(rm_export) > 1:
+                            var_name = rm_export[1].strip()
+                            var_value = env_var[1].strip()
+                            environment.append(f"{var_name}={var_value}")
+                            commands_to_remove.append(command)
+                            
+            # remove env var from pre script
+            for cmd in commands_to_remove:
+                if cmd in pre_script:
+                    pre_script.remove(cmd)            
 
             # remove empty lines from pre_script
             pre_script = [cmd for cmd in pre_script if cmd.strip()]           
@@ -1073,21 +1082,26 @@ class S2Srun(DownloadForecasts):
         # weekly metrics
         jobname='s2smetric_weekly_'
         slurm_commands = []
+        weekly_vars = self.config["POST"]["weekly_vars"]
+        par_info = {}
+        par_info['NPROCS'] = str(len(weekly_vars))
+        par_info['MEM']= '6GB'
         for model in self.MODELS:
             var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
-                                             hours=str(6), nmme_model= model, py_call=True, weekly=True)
+                                             hours=str(4), nmme_model= model, py_call=True, weekly=True)
             slurm_commands.extend(var1)
 
+        
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(6), CWD, tfile.name)
+                                    jobname, 1, str(4), CWD, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 's2smetric', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
+        utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
 
         jobname='s2smetric_tiff_'
         s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', 1, str(3), CWD, None)
