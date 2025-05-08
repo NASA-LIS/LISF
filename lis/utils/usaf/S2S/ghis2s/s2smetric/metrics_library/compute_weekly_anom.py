@@ -6,6 +6,7 @@ import yaml
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
+from concurrent.futures import ProcessPoolExecutor
 
 # pylint: disable=import-error
 from metricslib import sel_var, compute_anomaly, compute_sanomaly
@@ -27,7 +28,6 @@ DOMAIN_NAME = CONFIG["EXP"]["DOMAIN"]
 CLIM_SYR = int(CONFIG["BCSD"]["clim_start_year"])
 CLIM_EYR = int(CONFIG["BCSD"]["clim_end_year"])
 BASEDIR = BASEOUTDIR + "/DYN_" + ANOM + "/"
-METRIC_VARS = CONFIG["POST"]["metric_vars"]
 WEEKLY_VARS = CONFIG["POST"]["weekly_vars"]
 HINDCASTS = CONFIG["SETUP"]["E2ESDIR"] + '/hindcast/s2spost/' + '{:02d}/'.format(FCST_INIT_MON)
 FORECASTS = "./s2spost/"
@@ -46,11 +46,19 @@ CLIM_INFILE_TEMPLATE = \
     'PA.ALL_DD.*{:02d}01_DT.0000_FD.*{:02d}{:02d}_DT.0000_DF.NC'
 
 LEAD_WEEKS = 6
-for var_name in WEEKLY_VARS:
-    OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, \
-                                      var_name, ANOM, FCST_INIT_MON, TARGET_YEAR)
+num_vars = len(WEEKLY_VARS)
+num_workers = int(os.environ.get('NUM_WORKERS', num_vars))
 
+from concurrent.futures import ProcessPoolExecutor
+
+def process_variable(var_name):
+    OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, NMME_MODEL, var_name, ANOM, FCST_INIT_MON, TARGET_YEAR)
+    
     CURRENTDATE = date(TARGET_YEAR, FCST_INIT_MON, 2)
+    
+    # Create array to store anomaly data (initialized here for each variable)
+    all_anom = None
+    
     for lead in range(LEAD_WEEKS):
         fcast_list = []
         clim_list = []
@@ -59,26 +67,25 @@ for var_name in WEEKLY_VARS:
         for count_days in range(7):
             # processing climatology
             INFILE = glob.glob(CLIM_INFILE_TEMPLATE.format(HINDCASTS, \
-                                                 FCST_INIT_MON, NMME_MODEL, \
-                                                 NMME_MODEL.upper(), DOMAIN_NAME, \
-                                                 FCST_INIT_MON, \
-                                                 CURRENTDATE.month, CURRENTDATE.day))
-            
+                                             FCST_INIT_MON, NMME_MODEL, \
+                                             NMME_MODEL.upper(), DOMAIN_NAME, \
+                                             FCST_INIT_MON, \
+                                             CURRENTDATE.month, CURRENTDATE.day))
             
             day_xr = xr.open_mfdataset(INFILE, combine='by_coords')
             sel_cim_data = day_xr.sel(time= \
-                       (day_xr.coords['time.year'] >= \
-                       CLIM_SYR) & (day_xr.coords['time.year'] <= \
-                       CLIM_EYR))
+                   (day_xr.coords['time.year'] >= \
+                   CLIM_SYR) & (day_xr.coords['time.year'] <= \
+                   CLIM_EYR))
             clim_list.append(sel_var(sel_cim_data, var_name, HYD_MODEL).mean(dim = ['time','ensemble'], skipna = True))
             clim_std.append(sel_var(sel_cim_data, var_name, HYD_MODEL))
             
             # reading forecast
             INFILE = TARGET_INFILE_TEMPLATE.format(FORECASTS, \
-                                                   TARGET_YEAR, FCST_INIT_MON, NMME_MODEL, \
-                                                   NMME_MODEL.upper(), DOMAIN_NAME, \
-                                                   TARGET_YEAR, FCST_INIT_MON, \
-                                                   CURRENTDATE.strftime("%Y%m%d"))
+                                               TARGET_YEAR, FCST_INIT_MON, NMME_MODEL, \
+                                               NMME_MODEL.upper(), DOMAIN_NAME, \
+                                               TARGET_YEAR, FCST_INIT_MON, \
+                                               CURRENTDATE.strftime("%Y%m%d"))
             print(f"[INFO] {INFILE}")
             fcast_list.append(INFILE)
             CURRENTDATE += relativedelta(days=1)
@@ -90,24 +97,23 @@ for var_name in WEEKLY_VARS:
         fcst_xr = xr.open_mfdataset(fcast_list, combine='by_coords')
         fcst_da = sel_var(fcst_xr, var_name, HYD_MODEL).mean(dim = ['time'], skipna = True)
  
-        # Step-3 loop through each grid cell and convert data into anomaly
-        # Defining array to store anomaly data
+        # Get dimensions for anomaly data
         lat_count, lon_count, ens_count = \
             len(fcst_xr.coords['lat']), \
             len(fcst_xr.coords['lon']), \
             len(fcst_xr.coords['ensemble'])
 
-        # 4 members in anomaly output and so on.
+        # Initialize the anomaly array on first lead
         if lead == 0:
             all_anom = np.ones((ens_count, LEAD_WEEKS, lat_count, lon_count))*-9999
 
-        print('[INFO] Converting data into anomaly')
+        print(f'[INFO] Converting {var_name} data into anomaly')
         if (not np.array_equal(weekly_clim.lat.values, fcst_da.lat.values)) or \
            (not np.array_equal(weekly_clim.lon.values, fcst_da.lon.values)):
             weekly_clim = weekly_clim.assign_coords({"lon": fcst_da.lon.values,
-                                                         "lat": fcst_da.lat.values})
+                                                     "lat": fcst_da.lat.values})
             weekly_std = weekly_std.assign_coords({"lon": fcst_da.lon.values,
-                                                         "lat": fcst_da.lat.values})
+                                                     "lat": fcst_da.lat.values})
             
         if ANOM == 'ANOM':
             this_anom = xr.apply_ufunc(
@@ -141,7 +147,7 @@ for var_name in WEEKLY_VARS:
     ### Step-4 Writing output file
     all_anom = np.ma.masked_array(all_anom, mask=(all_anom == -9999))
 
-    ## Creating an latitude and longitude array based on locations of corners
+    ## Creating latitude and longitude arrays
     lats = np.arange(fcst_xr.attrs['SOUTH_WEST_CORNER_LAT'], \
                      fcst_xr.attrs['SOUTH_WEST_CORNER_LAT'] + \
                      (lat_count*0.25), 0.25)
@@ -158,5 +164,17 @@ for var_name in WEEKLY_VARS:
     anom_xr.to_netcdf(OUTFILE, format="NETCDF4",
                       encoding = {'anom': {"zlib":True, "complevel":6, "shuffle":True, "missing_value": -9999., "_FillValue": -9999.}})
     
-        
-        
+    return f"Completed processing for {var_name}"
+
+# ProcessPoolExecutor parallel processing
+with ProcessPoolExecutor(max_workers=num_workers) as executor:
+#with ProcessPoolExecutor() as executor:
+    futures = []
+    for var_name in WEEKLY_VARS:
+        future = executor.submit(process_variable, var_name)
+        futures.append(future)
+    
+    for future in futures:
+        result = future.result()
+        #print(result)
+

@@ -53,14 +53,14 @@ def lis_job_file(CONFIGFILE, JOBFILE, JOBNAME, CWD, HOURS):
     utils.job_script_lis(CONFIGFILE, JOBFILE, JOBNAME, CWD, hours=HOURS)
     return
 
-def python_job_file(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs):
+def python_job_file(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs, parallel_run=None):
     if group_jobs is None:
-        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD)
+        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, parallel_run)
     else:
         with open(group_jobs, 'r') as file:
             commands = [line.strip() for line in file if line.strip()]
         NTASKS = len(commands)
-        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, group_jobs=commands)
+        utils.job_script(CONFIGFILE, JOBFILE, JOBNAME, NTASKS, HOURS, CWD, parallel_run, group_jobs=commands)
     return
 
 def update_job_schedule(SCHEDULE_FILE, MYID, JOBFILE, AFTERID):
