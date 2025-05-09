@@ -26,6 +26,7 @@ from netCDF4 import Dataset
 # pylint: enable=no-name-in-module
 import numpy as np
 import yaml
+from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
 # pylint: enable=import-error
@@ -96,13 +97,15 @@ def plot_anoms(syear, smonth, cwd, config, dlon, dlat, ulon, ulat,
     del anom
     del anom_crop
 
-def process_domain (fcst_year, fcst_mon, cwd, config, rnetwork, plot_domain):
+def process_domain (fcst_year, fcst_mon, cwd, config, plot_domain):
     ''' processes a single domain GLOBAL or USAF COM '''
+    rnetwork = Dataset(config['SETUP']['supplementarydir'] + '/s2splots/RiverNetwork_information.nc4', mode='r')
     downstream_lon = np.array (rnetwork.variables['DownStream_lon'][:])
     downstream_lat = np.array (rnetwork.variables['DownStream_lat'][:])
     upstream_lon   = np.array (rnetwork.variables['UpStream_lon'][:])
     upstream_lat   = np.array (rnetwork.variables['UpStream_lat'][:])
     cum_area = np.array (rnetwork.variables['CUM_AREA'][:])
+    rnetwork.close()
     bmask = xr.open_dataset(config['SETUP']['supplementarydir'] + \
                             '/s2splots/HYBAS_' + plot_domain + '.nc4')
     lonv = bmask.lon.values
@@ -143,12 +146,18 @@ if __name__ == '__main__':
     # load config file
     with open(configfile, 'r', encoding="utf-8") as file:
         config_ = yaml.safe_load(file)
-
-    rnetwork_ =  Dataset (config_['SETUP']['supplementarydir'] + \
-                         '/s2splots/RiverNetwork_information.nc4', mode='r')
+        
     exp_domain = config_["EXP"]["DOMAIN"]
     if exp_domain == 'GLOBAL':
-        for plot_domain_ in DEFCOMS:
-            process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, plot_domain_)
+        num_calls = 5
+        num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
+        from concurrent.futures import ProcessPoolExecutor
+        with ProcessPoolExecutor(max_workers=num_workers) as executor:
+            futures = []
+    
+            for plot_domain_ in DEFCOMS:
+                futures.append(executor.submit(process_domain, fcst_year_, fcst_mon_, cwd_, config_, plot_domain_))
+            for future in futures:
+                result = future.result()
     else:
-        process_domain (fcst_year_, fcst_mon_, cwd_, config_, rnetwork_, exp_domain)
+        process_domain (fcst_year_, fcst_mon_, cwd_, config_, exp_domain)
