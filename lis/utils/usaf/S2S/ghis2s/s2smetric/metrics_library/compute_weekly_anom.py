@@ -6,7 +6,6 @@ import yaml
 from dateutil.relativedelta import relativedelta
 import numpy as np
 import xarray as xr
-from concurrent.futures import ProcessPoolExecutor
 
 # pylint: disable=import-error
 from metricslib import sel_var, compute_anomaly, compute_sanomaly

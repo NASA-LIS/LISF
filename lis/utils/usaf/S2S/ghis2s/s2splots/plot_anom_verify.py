@@ -275,8 +275,11 @@ if __name__ == "__main__":
     
     plotdir = cwd + '/s2splots/{:04d}{:02d}/'.format(fyear,fmonth) + cfg["EXP"]["lsmdir"] + '/'
     cartopy.config['data_dir'] = cfg['SETUP']['supplementarydir'] + '/s2splots/share/cartopy/'
-    ndays = (date(year, month+1, 1) - date(year, month, 1)).days
-
+    if month == 12:
+        ndays = (date(year+1, 1, 1) - date(year, month, 1)).days
+    else:
+        ndays = (date(year, month+1, 1) - date(year, month, 1)).days
+    
     # (1) usaf_lis75s2s_gfs2galwem anomaly
     #climdir = cfg["SETUP"]["E2ESDIR"] + \
     #    '/hindcast/bcsd_fcst/{}/Climatology_{:04d}-{:04d}/'.format(flabel, cyear_beg, cyear_end)

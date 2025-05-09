@@ -1151,9 +1151,8 @@ class S2Srun(DownloadForecasts):
         self.create_symlink(self.E2ESDIR + 's2smetric/', 's2smetric')
         CWD=self.SCRDIR + 's2splots'
 
-        jobname='s2splots_'
+        jobname='s2splots_01_'
         slurm_commands = []
-        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_mena.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 1")
@@ -1163,13 +1162,30 @@ class S2Srun(DownloadForecasts):
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(6), CWD, tfile.name)
-            self.create_dict('s2splots_run.j', 's2splots', prev=prev)
+                                    jobname, 1, str(3), CWD, tfile.name)
+            self.create_dict('s2splots_01_run.j', 's2splots', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
 
         utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
+
+        # 2nd job
+        jobname='s2splots_02_'
+        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
+        par_info = {}
+        par_info['NPROCS'] = str(14)
+        par_info['MEM']= '10GB'
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(3), CWD, tfile.name, parallel_run=par_info)
+            self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
         
         os.chdir(self.E2ESDIR)
         return
@@ -1250,8 +1266,11 @@ if __name__ == "__main__":
                 s2s.s2splots()
         elif args.step == 'METRICS':
             s2s.s2smetric()
+            if not args.one_step:
+                s2s.s2splots()
+        elif args.step == 'PLOTS':
             s2s.s2splots()
-
+        
         # Write CYLC workflow runtime snippet
         # -----------------------------------
         s2s.write_cylc_snippet()
