@@ -1153,7 +1153,6 @@ class S2Srun(DownloadForecasts):
 
         jobname='s2splots_01_'
         slurm_commands = []
-        slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_mena.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 1")
         slurm_commands.append(f"python {self.LISHDIR}/ghis2s/s2splots/plot_anom_verify.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file} -l 2")
@@ -1162,13 +1161,13 @@ class S2Srun(DownloadForecasts):
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(3), CWD, tfile.name)
+                                    jobname, 1, str(2), CWD, tfile.name)
             self.create_dict('s2splots_01_run.j', 's2splots', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_commands)
+        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
 
         # 2nd job
         jobname='s2splots_02_'
@@ -1179,15 +1178,32 @@ class S2Srun(DownloadForecasts):
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(3), CWD, tfile.name, parallel_run=par_info)
+                                    jobname, 1, str(2), CWD, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
-        
+        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
+
+        # 3rd job
+        jobname='s2splots_03_'
+        slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
+        par_info = {}
+        par_info['NPROCS'] = str(5)
+        par_info['MEM']= '10GB'
+        tfile = self.sublist_to_file(slurm_commands, CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(2), CWD, tfile.name, parallel_run=par_info)
+            self.create_dict(jobname + 'run.j', 's2splots', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
         os.chdir(self.E2ESDIR)
+        
         return
          
     def main(self):
