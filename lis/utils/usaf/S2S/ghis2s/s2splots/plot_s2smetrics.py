@@ -24,6 +24,7 @@ import argparse
 import xarray as xr
 import numpy as np
 import yaml
+from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 import plot_utils
 # pylint: enable=import-error
@@ -174,31 +175,54 @@ if __name__ == '__main__':
     with open(configfile, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
-    if config ["EXP"]["DOMAIN"] == 'AFRICOM':
+    num_calls = 14
+    num_workers = int(os.environ.get('NUM_WORKERS', num_calls))
 
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  )
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  )
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  )
-
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  , standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
-
-    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA')
-
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y')
-        plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y')
+    from concurrent.futures import ProcessPoolExecutor
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = []
+        #if config ["EXP"]["DOMAIN"] == 'AFRICOM':
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME')
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  )
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  )
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  )
+        #           
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'FAME', standardized_anomaly = 'Y')
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'WA'  , standardized_anomaly = 'Y')
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'EA'  , standardized_anomaly = 'Y')
+        #    plot_anoms(fcst_year, fcst_mon, cwd, config, 'SA'  , standardized_anomaly = 'Y')
+        #           
+        #    if config ["EXP"]["DOMAIN"] == 'GLOBAL':
+        
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA'))
+        futures.append(future)
+        
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'GLOBAL', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'AFRICA', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'EUROPE', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'CENTRAL_ASIA', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_EAST_ASIA', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'NORTH_AMERICA', standardized_anomaly = 'Y'))
+        futures.append(future)
+        future = executor.submit(plot_anoms(fcst_year, fcst_mon, cwd, config, 'SOUTH_AMERICA', standardized_anomaly = 'Y'))
+        futures.append(future)
+        
+        for future in futures:
+            result = future.result()
