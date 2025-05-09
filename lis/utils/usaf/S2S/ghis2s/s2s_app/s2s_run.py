@@ -1033,7 +1033,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 's2spost', prev=prev)
             finally:
                 tfile.close()
@@ -1085,25 +1085,43 @@ class S2Srun(DownloadForecasts):
         weekly_vars = self.config["POST"]["weekly_vars"]
         par_info = {}
         par_info['NPROCS'] = str(len(weekly_vars))
-        par_info['MEM']= '6GB'
+        par_info['MEM']= '8GB'
         for model in self.MODELS:
             var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(4), nmme_model= model, py_call=True, weekly=True)
             slurm_commands.extend(var1)
 
-        
-        tfile = self.sublist_to_file(slurm_commands, CWD)
-        try:
-            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(4), CWD, tfile.name, parallel_run=par_info)
-            self.create_dict(jobname + 'run.j', 's2smetric', prev=prev)
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
+        if 'discover' in platform.node() or 'borg' in platform.node():
+            tfile = self.sublist_to_file(slurm_commands, CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                        jobname, 1, str(4), CWD, tfile.name, parallel_run=par_info)
+                self.create_dict(jobname + 'run.j', 's2smetric', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
+            utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
+        else:
+            # multi tasks per job
+            l_sub = 6
+            slurm_sub = self.split_list(slurm_commands, l_sub)
+            for i in range(len(slurm_sub)):
+                tfile = self.sublist_to_file(slurm_sub[i], CWD)
+                try:
+                    s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                            jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
+                    self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 's2smetric', prev=prev)
+                finally:
+                    tfile.close()
+                    os.unlink(tfile.name)
+                
+                utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
         jobname='s2smetric_tiff_'
+        prev = ['s2smetric_run.j']
+        prev.extend([f"{key}" for key in self.schedule.keys() if 's2smetric_weekly_' in key])
+        
         s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, 's2smetric_tiff_run.j', 's2smetric_tiff_', 1, str(3), CWD, None)
         COMMAND = f"srun --exclusive --ntasks 1 python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"
         slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2smetric/postprocess_nmme_job.py -y {self.YYYY} -m {self.MM} -w {CWD} -c {self.E2ESDIR}{self.config_file}"]
@@ -1115,7 +1133,7 @@ class S2Srun(DownloadForecasts):
         with open('s2smetric_tiff_run.j', 'w') as file:
             file.write(filedata)
 
-        self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=['s2smetric_run.j', 's2smetric_weekly_run.j'])
+        self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=prev)
         utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
         os.chdir(self.E2ESDIR)        
