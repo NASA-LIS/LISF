@@ -65,7 +65,7 @@ def wgrib2_to_netcdf(grib2_file):
         'u10':'U10M','v10':'V10M','q':'Q2M',
         'sdlwrf':'LWS','sdswrf':'SLRSF',}
     
-    ds_ = cfgrib.open_dataset(grib2_file, indexpath ="")
+    ds_ = cfgrib.open_dataset(grib2_file, indexpath ="", decode_timedelta=True)
     for varname, da_ in ds_.data_vars.items():
         ds_ = ds_.rename({varname : new_name.get(varname)})
     return ds_
