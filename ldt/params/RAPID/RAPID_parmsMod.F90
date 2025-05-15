@@ -46,7 +46,6 @@ module RAPID_parmsMod
 
   type, public :: rapid_type_dec
      character*50  :: rapid_proj
-
   end type rapid_type_dec
 
   type(rapid_type_dec), allocatable :: RAPID_struc(:)
@@ -61,10 +60,7 @@ contains
 ! !INTERFACE:
   subroutine RAPIDparms_init
 ! !USES:
-    use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
-    use LDT_logMod,    only : LDT_verify
-    use LDT_paramOptCheckMod, only: LDT_noahparmsOptChecks, &
-                       LDT_gridOptChecks
+!  none
 !
 ! !DESCRIPTION:
 !
@@ -82,15 +78,10 @@ contains
 
   subroutine RAPIDparms_writeHeader(n,ftn,dimID,monthID)
 
-#if(defined USE_NETCDF3 || defined USE_NETCDF4) 
-    use netcdf
-#endif
-
     integer   :: n
     integer   :: ftn
     integer   :: dimID(3)
     integer   :: monthID
-    integer   :: tdimID(3) 
 
   end subroutine RAPIDparms_writeHeader
   
