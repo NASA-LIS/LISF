@@ -124,7 +124,7 @@ logical                       :: alarmCheck
 PetscScalar,   allocatable    :: Qinit(:)
 
 ! for ensemble mode
-integer,       intent(in)     :: n_ens   ! number of ensembles
+integer,       intent(in)     :: n_ens   ! ensemble index
  
 !*******************************************************************************
 !Initialize
@@ -397,6 +397,7 @@ if (BS_opt_for) call rapid_close_Qfor_file(Qfor_file)
 if (BS_opt_hum) call rapid_close_Qhum_file(Qhum_file)
 if (BS_opt_V) call rapid_close_V_file(V_file)
 
+!-------------------------------------------------------------------------------
 !End of OPTION 1
 !-------------------------------------------------------------------------------
 end if
