@@ -195,10 +195,9 @@ module LDT_ensRstMod
       logical               :: file_exists
       integer               :: seed(NRANDSEED)
       real                  :: rand
-      !ag (1Nov2017)
       real   ,     allocatable  :: var1d(:)
       integer,     allocatable  :: var_map(:)
-      !YY: RAPID
+      !RAPID
       integer               :: time_id,rivid_id,time_len,rivid_len
       integer               :: varid_qout_in, varid_qout_out
       real, allocatable     :: qout_in(:,:)
@@ -253,7 +252,7 @@ module LDT_ensRstMod
          endif
                   
          do k=2,nDims - 1
-            ! EMK Fix formatting for JULES
+            ! Fix formatting for JULES
             if (k-1 .lt. 10) then
                write(unit=fd,fmt='(I1)') k-1
             else
@@ -443,7 +442,6 @@ module LDT_ensRstMod
       elseif(LDT_rc%rstsource.eq."Routing") then
     
          ! HYMAP Router:
-         !ag (1Nov2017)
          if( LDT_rc%routingmodel .eq. "HYMAP") then 
 
             write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
@@ -712,7 +710,7 @@ module LDT_ensRstMod
             deallocate(var1d)
 ! End of HYMAP restart binary file set of code
 #endif
-         ! RAPID Router, YY
+         ! RAPID Router
          elseif(LDT_rc%routingmodel .eq. "RAPID") then
 
             write(LDT_logunit,*)"[INFO] 'Inflating' ensemble restart for routing model: "&
@@ -962,7 +960,7 @@ module LDT_ensRstMod
       endif
 
       do k= 2, nDims-1
-         ! EMK Format fix for JULES
+         ! Format fix for JULES
          if (k-1 .lt. 10) then
             write(unit=fd,fmt='(I1)') k-1
          else
@@ -1202,7 +1200,6 @@ module LDT_ensRstMod
    elseif(LDT_rc%rstsource.eq."Routing") then
 
       ! HYMAP Router:
-      !ag (1Nov2017)
       if( LDT_rc%routingmodel .eq. "HYMAP") then
 
          write(LDT_logunit,*)"[INFO] Downscaling ensemble restart for routing model: "&
@@ -1463,7 +1460,7 @@ module LDT_ensRstMod
             deallocate(var_map)
          endif
 #endif
-      ! RAPID Router, YY
+      ! RAPID Router
       elseif(LDT_rc%routingmodel .eq. "RAPID") then
 
          write(LDT_logunit,*)"[INFO] Downscaling ensemble restart for: "//trim(LDT_rc%routingmodel)
@@ -1655,7 +1652,7 @@ module LDT_ensRstMod
    endif
 
    do k=2,nDims-1 
-      ! EMK Fix format for JULES
+      ! Fix format for JULES
       if (k-1 .lt. 10) then
          write(unit=fd,fmt='(I1)') k-1
       else
