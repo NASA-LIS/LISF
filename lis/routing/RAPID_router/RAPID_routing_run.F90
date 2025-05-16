@@ -218,8 +218,8 @@ subroutine RAPID_routing_run(n)
                                gtmp1_ens(:,m),LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
               call MPI_GATHERV(var2,LIS_deltas(n,LIS_localPet),MPI_REAL,&   ! baseflow
                                gtmp2_ens(:,m),LIS_deltas(n,:),LIS_offsets(n,:),MPI_REAL,0,LIS_mpi_comm,status)
-#endif
            enddo !do m=1, LIS_rc%nensem(n)
+#endif
 
            deallocate(var1)
            deallocate(var2)
