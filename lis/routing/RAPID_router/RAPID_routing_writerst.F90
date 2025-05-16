@@ -86,7 +86,9 @@ subroutine RAPID_routing_writerst(n)
   deflate_level =NETCDF_deflate_level
 
   if(alarmCheck .or. LIS_rc%endtime==1) then
-     call LIS_create_output_directory('ROUTING')
+     if(LIS_masterproc) then
+        call LIS_create_output_directory('ROUTING')
+     endif
      call LIS_create_restart_filename(n,filename,&
           'ROUTING','RAPID_router',wformat="netcdf")
      write(LIS_logunit,*) '[INFO] Writing RAPID routing restart ',trim(filename)

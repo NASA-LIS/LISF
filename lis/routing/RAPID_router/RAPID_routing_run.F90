@@ -87,7 +87,9 @@ subroutine RAPID_routing_run(n)
      allocate(baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n)))
 
      ! output file name
-     call LIS_create_output_directory('ROUTING')
+     if (LIS_masterproc) then
+        call LIS_create_output_directory('ROUTING')
+     endif
      call LIS_create_output_filename(n,qout_filename,model_name='ROUTING', &
           writeint=RAPID_routing_struc(n)%outInterval)
 
