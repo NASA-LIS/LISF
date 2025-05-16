@@ -116,8 +116,6 @@ subroutine RAPID_routing_run(n)
                                LIS_rc%gnc(n),LIS_rc%gnr(n),surface_runoff,baseflow,RAPID_routing_struc(n)%initCheck,                 &
                                RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval,0)
 #endif
-        deallocate(surface_runoff)
-        deallocate(baseflow)
      else                    !mpi
         allocate(runoff1_t(LIS_rc%ntiles(n)))
         allocate(runoff2_t(LIS_rc%ntiles(n)))
@@ -183,8 +181,6 @@ subroutine RAPID_routing_run(n)
 #endif
            deallocate(meanv1)
            deallocate(meanv2)
-           deallocate(runoff1_t)
-           deallocate(runoff2_t)
 
         else if (RAPID_routing_struc(n)%useens==2) then ! ensemble mode
            allocate(var1(LIS_rc%ngrid(n)))
@@ -227,8 +223,6 @@ subroutine RAPID_routing_run(n)
            deallocate(var2)
            deallocate(var1_ens)
            deallocate(var2_ens)
-           deallocate(runoff1_t)
-           deallocate(runoff2_t)
         endif !if(RAPID_routing_struc(n)%useens==0) then ! OL loop
 
         ! reorganizing variable structure (only for root)
@@ -270,8 +264,6 @@ subroutine RAPID_routing_run(n)
 
            deallocate(gtmp1)
            deallocate(gtmp2)
-           deallocate(gvar1)
-           deallocate(gvar2)
 
            ! run RAPID
 #ifdef PETSc
@@ -287,8 +279,6 @@ subroutine RAPID_routing_run(n)
                                   LIS_rc%gnc(n),LIS_rc%gnr(n),surface_runoff,baseflow,RAPID_routing_struc(n)%initCheck,                 &
                                   RAPID_routing_struc(n)%dt,RAPID_routing_struc(n)%routingInterval,0)
 #endif
-           deallocate(surface_runoff)
-           deallocate(baseflow)       
 
         else if (RAPID_routing_struc(n)%useens==2) then ! ensemble mode
            do m=1,LIS_rc%nensem(n)
@@ -344,11 +334,13 @@ subroutine RAPID_routing_run(n)
           
            deallocate(gtmp1_ens)
            deallocate(gtmp2_ens)
-           deallocate(gvar1)
-           deallocate(gvar2)
-           deallocate(surface_runoff)
-           deallocate(baseflow)
         endif !if ((RAPID_routing_struc(n)%useens==0) ...
+        deallocate(gvar1)
+        deallocate(gvar2)
+        deallocate(runoff1_t)
+        deallocate(runoff2_t)
      endif !if(LIS_npes==1) then
+     deallocate(surface_runoff)
+     deallocate(baseflow)
   endif !if(alarmCheck) then
 end subroutine RAPID_routing_run
