@@ -89,6 +89,7 @@ MODULE MODULE_SF_NOAHMPLSM_401
                       !   3 -> SSiB (matric potential)
 
   INTEGER :: OPT_RUN  ! options for runoff and groundwater
+                      !   0 -> OFF (for external coupling);
                       ! **1 -> TOPMODEL with groundwater (Niu et al. 2007 JGR) ;
                       !   2 -> TOPMODEL with an equilibrium water table (Niu et al. 2005 JGR) ;
                       !   3 -> original surface and subsurface runoff (free drainage)
@@ -398,6 +399,9 @@ contains
 #ifdef WRF_HYDRO
                    ,SFCHEADRT                                                  & ! IN/OUT :
 #endif
+#ifdef PARFLOW
+                   ,QINSUR,ETRANI                                              & ! OUT :
+#endif
                    )
 
 ! --------------------------------------------------------------------------------------------------
@@ -454,6 +458,10 @@ contains
 
 #ifdef WRF_HYDRO
   REAL                           , INTENT(INOUT)    :: sfcheadrt
+#endif
+#ifdef PARFLOW
+  REAL                           , INTENT(OUT)    :: QINSUR !water input on soil surface [m/s]
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)    :: ETRANI !evapotranspiration from soil layers (mm/s)
 #endif
 
 ! input/output : need arbitary intial values
@@ -799,6 +807,9 @@ contains
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
+#ifdef PARFLOW
+                 ,QINSUR,ETRANI                                   & !out
+#endif
                  )  !out
 
 ! compute carbon budgets (carbon storages and co2 & bvoc fluxes)
@@ -861,6 +872,7 @@ contains
 ! David Mocko - Added RELSMC after Noah-3.X code
     RELSMC(:) = (SMC(:)               - parameters%SMCWLT(:)) /        &
                 (parameters%SMCMAX(:) - parameters%SMCWLT(:))
+
 
   END SUBROUTINE NOAHMP_SFLX
 
@@ -6353,6 +6365,9 @@ ENDIF   ! CROPTYPE == 0
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
+#ifdef PARFLOW
+                    ,QINSUR,ETRANI                                   & !out
+#endif
                     )  !out
 ! ----------------------------------------------------------------------  
 ! Code history:
@@ -6442,12 +6457,20 @@ ENDIF   ! CROPTYPE == 0
 
 ! local
   INTEGER                                        :: IZ
+#ifdef PARFLOW
+  REAL,                            INTENT(OUT)   :: QINSUR  !water input on soil surface [m/s]
+#else
   REAL                                           :: QINSUR  !water input on soil surface [m/s]
+#endif
   REAL                                           :: QSEVA   !soil surface evap rate [mm/s]
   REAL                                           :: QSDEW   !soil surface dew rate [mm/s]
   REAL                                           :: QSNFRO  !snow surface frost rate[mm/s]
   REAL                                           :: QSNSUB  !snow surface sublimation rate [mm/s]
+#ifdef PARFLOW
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)   :: ETRANI  !evapotranspiration from soil layers (mm/s)
+#else
   REAL, DIMENSION(       1:NSOIL)                :: ETRANI  !transpiration rate (mm/s) [+]
+#endif
   REAL, DIMENSION(       1:NSOIL)                :: WCND   !hydraulic conductivity (m/s)
   REAL                                           :: QDRAIN  !soil-bottom free drainage [mm/s] 
   REAL                                           :: SNOFLOW !glacier flow [mm/s]
@@ -6549,12 +6572,15 @@ ENDIF   ! CROPTYPE == 0
        IF(WSLAKE >= WSLMAX) RUNSRF = QINSUR*1000.             !mm/s
        WSLAKE = WSLAKE + (QINSUR-QSEVA)*1000.*DT -RUNSRF*DT   !mm
     ELSE                                                      ! soil
-       CALL      SOILWATER (parameters,NSOIL  ,NSNOW  ,DT     ,ZSOIL  ,DZSNSO , & !in
+       IF(OPT_RUN == 0) THEN
+         RUNSRF = 0.
+       ELSE
+         CALL    SOILWATER (parameters,NSOIL  ,NSNOW  ,DT     ,ZSOIL  ,DZSNSO , & !in
                             QINSUR ,QSEVA  ,ETRANI ,SICE   ,ILOC   , JLOC , & !in
                             SH2O   ,SMC    ,ZWT    ,VEGTYP , & !inout
                            SMCWTD, DEEPRECH                       , & !inout
                             RUNSRF ,QDRAIN ,RUNSUB ,WCND   ,FCRMAX )   !out
- 
+       ENDIF
        IF(OPT_RUN == 1) THEN 
           CALL GROUNDWATER (parameters,NSNOW  ,NSOIL  ,DT     ,SICE   ,ZSOIL  , & !in
                             STC    ,WCND   ,FCRMAX ,ILOC   ,JLOC   , & !in
@@ -9758,7 +9784,7 @@ END SUBROUTINE EMERG
   INTEGER,  INTENT(IN) :: idveg     !dynamic vegetation (1 -> off ; 2 -> on) with opt_crs = 1
   INTEGER,  INTENT(IN) :: iopt_crs  !canopy stomatal resistance (1-> Ball-Berry; 2->Jarvis)
   INTEGER,  INTENT(IN) :: iopt_btr  !soil moisture factor for stomatal resistance (1-> Noah; 2-> CLM; 3-> SSiB)
-  INTEGER,  INTENT(IN) :: iopt_run  !runoff and groundwater (1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS)
+  INTEGER,  INTENT(IN) :: iopt_run  !runoff and groundwater (0->OFF; 1->SIMGM; 2->SIMTOP; 3->Schaake96; 4->BATS)
   INTEGER,  INTENT(IN) :: iopt_sfc  !surface layer drag coeff (CH & CM) (1->M-O; 2->Chen97)
   INTEGER,  INTENT(IN) :: iopt_frz  !supercooled liquid water (1-> NY06; 2->Koren99)
   INTEGER,  INTENT(IN) :: iopt_inf  !frozen soil permeability (1-> NY06; 2->Koren99)

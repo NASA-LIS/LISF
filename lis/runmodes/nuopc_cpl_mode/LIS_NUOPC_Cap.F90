@@ -50,11 +50,9 @@ module LIS_NUOPC
     integer               :: nfields          = size(LIS_FieldList)
     integer,allocatable                 :: ensMemberCnt(:)
     type(ESMF_Grid),allocatable         :: grids(:)
-    type(ESMF_Clock),allocatable        :: clocks(:)
-    type(ESMF_TimeInterval),allocatable :: stepAccum(:)
     type(ESMF_State),allocatable        :: NStateImp(:)
     type(ESMF_State),allocatable        :: NStateExp(:)
-    integer,allocatable                 :: modes(:)
+    integer                             :: mode
   end type
 
 !> @cond IGNORE_WRAPPERS
@@ -416,18 +414,15 @@ module LIS_NUOPC
     allocate( &
       is%wrap%ensMemberCnt(is%wrap%nnests), &
       is%wrap%grids(is%wrap%nnests), &
-      is%wrap%clocks(is%wrap%nnests), &
-      is%wrap%stepAccum(is%wrap%nnests), &
       is%wrap%NStateImp(is%wrap%nnests), &
       is%wrap%NStateExp(is%wrap%nnests), &
-      is%wrap%modes(is%wrap%nnests), &
       stat=stat)
     if (ESMF_LogFoundAllocError(statusToCheck=stat, &
       msg="Allocation of internal state nest memory failed.", &
       line=__LINE__,file=__FILE__)) &
       return
 
-    is%wrap%modes=LIS_Unknown
+    is%wrap%mode=LIS_Unknown
 
 #ifdef GSM_EXTLND
     is%wrap%NStateImp(1) = importState
@@ -769,13 +764,14 @@ module LIS_NUOPC
           rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
       endif
-
-      is%wrap%modes(nIndex) = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp(nIndex),rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
     enddo
 
-    if (btest(verbosity,16)) call LogRealized()
+    is%wrap%mode = LIS_RunModeGet(LIS_FieldList,is%wrap%NStateImp,rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+
+    if (btest(verbosity,16)) then
+      call LogRealized()
+    endif
 
     contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -786,6 +782,7 @@ module LIS_NUOPC
       integer                    :: cntImp
       integer                    :: cntExp
       integer                    :: fIndex
+      character(len=64)          :: nModeStr
       character(ESMF_MAXSTR)     :: logMsg
 
       ! Count advertised import and export fields
@@ -829,6 +826,20 @@ module LIS_NUOPC
           ' ',TRIM(LIS_FieldList(fIndex)%stdName)
         call ESMF_LogWrite(trim(LogMsg), ESMF_LOGMSG_INFO)
       enddo
+
+      select case(is%wrap%mode)
+        case (LIS_Offline)
+          nModeStr ="LIS_Offline"
+        case (LIS_Coupled)
+          nModeStr = "LIS_Coupled"
+        case (LIS_Hybrid)
+          nModeStr = "LIS_Hybrid"
+        case default
+          nModeStr = "LIS_Unknown"
+      end select
+      write (logMsg, "(A,(A,A))") TRIM(cname)//': ', &
+        'Mode = ',TRIM(nModeStr)
+      call ESMF_LogWrite(TRIM(logMsg),ESMF_LOGMSG_INFO)
 
     end subroutine
 
@@ -1087,7 +1098,6 @@ module LIS_NUOPC
     type(type_InternalState)   :: is
     integer                    :: nIndex
     real(ESMF_KIND_R8)         :: mindt
-    real(ESMF_KIND_R8)         :: ndt
     type(ESMF_Clock)           :: modelClock
     type(ESMF_TimeInterval)    :: modelTimestep
     type(ESMF_TimeInterval)    :: nestTimeStep
@@ -1122,26 +1132,8 @@ module LIS_NUOPC
     if (ESMF_STDERRORCHECK(rc)) return
 
     ! Set minTimestep to the timestep of the first nest
-    mindt = LIS_TimestepGet(nest=1,rc=rc)
+    mindt = LIS_TimestepGet(rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
-
-    do nIndex = 1, is%wrap%nnests
-      is%wrap%clocks(nIndex) = ESMF_ClockCreate(modelClock, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-      ndt = LIS_TimestepGet(nest=nIndex,rc=rc)
-      call ESMF_TimeIntervalSet(nestTimestep, &
-        s_r8=ndt, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-      call ESMF_ClockSet(is%wrap%clocks(nIndex), &
-        timeStep=nestTimestep, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      if (ndt < mindt) mindt = ndt
-
-      call ESMF_TimeIntervalSet(is%wrap%stepAccum(nIndex), &
-        s_r8=0._ESMF_KIND_R8, rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-    enddo
 
     call ESMF_TimeIntervalSet(modelTimestep, &
       s_r8=mindt, rc=rc)
@@ -1254,7 +1246,6 @@ module LIS_NUOPC
     type(ESMF_Time)             :: currTime, advEndTime
     character(len=32)           :: currTimeStr, advEndTimeStr
     type(ESMF_TimeInterval)     :: timeStep
-    type(ESMF_TimeInterval)     :: nestTimeStep
 
     rc = ESMF_SUCCESS
 
@@ -1299,123 +1290,32 @@ module LIS_NUOPC
     call ESMF_TimeGet(advEndTime, timeString=advEndTimeStr, rc=rc)
     if (ESMF_STDERRORCHECK(rc)) return
 
-    ! HERE THE MODEL ADVANCES: currTime -> currTime + timeStep
-
-    ! Because of the way that the internal Clock was set in SetClock(),
-    ! its timeStep is likely smaller than the parent timeStep. As a consequence
-    ! the time interval covered by a single parent timeStep will result in
-    ! multiple calls to the ModelAdvance() routine. Every time the currTime
-    ! will come in by one internal timeStep advanced. This goes until the
-    ! stopTime of the internal Clock has been reached.
-
-    do nIndex=1,is%wrap%nnests
-      write (nStr,"(I0)") nIndex
-      ! Write import files
-      if (btest(diagnostic,16)) then
+    ! Write import files
+    if (btest(diagnostic,16)) then
+      do nIndex=1,is%wrap%nnests
+        write (nStr,"(I0)") nIndex
         call NUOPC_Write(is%wrap%NStateImp(nIndex), &
           fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
             rname//"_imp_D"//trim(nStr)//"_"//trim(currTimeStr)//"_", &
           overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return
-      endif
-
-      is%wrap%stepAccum(nIndex) = is%wrap%stepAccum(nIndex) + timeStep
-
-      call ESMF_ClockGet(is%wrap%clocks(nIndex),timeStep=nestTimestep,rc=rc)
-      if (ESMF_STDERRORCHECK(rc)) return
-
-      do while (is%wrap%stepAccum(nIndex) >= nestTimestep)
-        ! Gluecode NestAdvance
-        if (btest(verbosity,16)) then
-          call LogAdvance(nIndex)
-        endif
-        call LIS_NUOPC_Run(nIndex,is%wrap%modes(nIndex), &
-          is%wrap%NStateImp(nIndex),is%wrap%NStateExp(nIndex), &
-          is%wrap%clocks(nIndex), is%wrap%misg_import, rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return
-        call ESMF_ClockAdvance(is%wrap%clocks(nIndex),rc=rc)
-        if (ESMF_STDERRORCHECK(rc)) return
-        is%wrap%stepAccum(nIndex) = &
-          is%wrap%stepAccum(nIndex) - nestTimestep
       enddo
+    endif
 
-      ! Write export files
-      if (btest(diagnostic,16)) then
+    call LIS_NUOPC_Run(is%wrap%NStateImp, is%wrap%NStateExp, &
+      modelClock, is%wrap%misg_import, rc=rc)
+    if (ESMF_STDERRORCHECK(rc)) return
+
+    ! Write export files
+    if (btest(diagnostic,16)) then
+      do nIndex=1,is%wrap%nnests
+        write (nStr,"(I0)") nIndex
         call NUOPC_Write(is%wrap%NStateExp(nIndex), &
           fileNamePrefix=trim(is%wrap%dirOutput)//"/diag_"//trim(cname)//"_"// &
             rname//"_exp_D"//trim(nStr)//"_"//trim(advEndTimeStr)//"_", &
           overwrite=.true., status=ESMF_FILESTATUS_REPLACE, timeslice=1, rc=rc)
         if (ESMF_STDERRORCHECK(rc)) return
-      endif
-    enddo
-
-    contains ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-!> @brief Log model advance call
-!! @param [inout] nIndex Index of nest
-!! @details
-    subroutine LogAdvance(nIndex)
-      integer                    :: nIndex
-      ! local variables
-      character(ESMF_MAXSTR)     :: logMsg
-      character(len=64)          :: nModeStr
-      type(ESMF_Time)            :: nestCurrTime
-      type(ESMF_TimeInterval)    :: nestTimestep
-      character(len=64)          :: nCurrTimeStr
-      character(len=64)          :: nTimestepStr
-      integer                    :: rc
-
-      call ESMF_LogWrite(trim(cname)//': '//rname//&
-        ' Advancing Nest='//trim(nStr),ESMF_LOGMSG_INFO)
-
-      if (allocated(is%wrap%modes)) then
-        select case(is%wrap%modes(nIndex))
-        case (LIS_Offline)
-          nModeStr ="LIS_Offline"
-        case (LIS_Coupled)
-          nModeStr = "LIS_Coupled"
-        case (LIS_Hybrid)
-          nModeStr = "LIS_Hybrid"
-        case default
-          nModeStr = "LIS_Unknown"
-        end select
-      else
-        nModeStr = "(unallocated)"
-      endif
-      write (logMsg, "(A,(A,I0,A),(A,A))") trim(cname)//': ', &
-        'Nest(',nIndex,') ', &
-        'Mode = ',trim(nModeStr)
-      call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-
-      if (allocated(is%wrap%clocks)) then
-        if (ESMF_ClockIsCreated(is%wrap%clocks(nIndex))) then
-          call ESMF_ClockGet(is%wrap%clocks(nIndex), &
-            currTime=nestCurrTime,timeStep=nestTimestep,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
-          call ESMF_TimeGet(nestCurrTime, &
-            timeString=nCurrTimeStr,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
-          call ESMF_TimeIntervalGet(nestTimestep, &
-            timeString=nTimestepStr,rc=rc)
-          if (ESMF_STDERRORCHECK(rc)) return
-        else
-          nCurrTimeStr = "(not_created)"
-          nTimestepStr = "(not_created)"
-        endif
-      else
-        nCurrTimeStr = "(unallocated)"
-        nTimestepStr = "(unallocated)"
-      endif
-      write (logMsg, "(A,(A,I0,A),(A,A))") trim(cname)//": ", &
-        "Nest(",nIndex,") ", &
-        "Current Time = ",trim(nCurrTimeStr)
-      call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-      write (logMsg, "(A,(A,I0,A),(A,A))") trim(cname)//": ", &
-        "Nest(",nIndex,") ", &
-        "Time Step    = ",trim(nTimestepStr)
-      call ESMF_LogWrite(trim(logMsg),ESMF_LOGMSG_INFO)
-
-    end subroutine
+      enddo
+    endif
 
   end subroutine
 

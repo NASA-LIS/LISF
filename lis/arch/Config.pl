@@ -870,6 +870,11 @@ if ($ENV{WRF_HYDRO} eq '1') {
    $use_wrf_hydro = 1;
 }
 
+# PARFLOW does not prompt user
+if ($ENV{PARFLOW} eq '1') {
+   $use_parflow = 1;
+}
+
 # MPDECOMP2 does not prompt user
 if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
@@ -1083,6 +1088,11 @@ if($use_esmf_trace == 1){
 if ($use_wrf_hydro == 1) {
    $fflags77 = $fflags77." -DWRF_HYDRO";
    $fflags = $fflags." -DWRF_HYDRO";
+}
+
+if ($use_parflow == 1) {
+   $fflags77 = $fflags77." -DPARFLOW";
+   $fflags = $fflags." -DPARFLOW";
 }
 
 if ($use_mpdecomp2 == 1) {
