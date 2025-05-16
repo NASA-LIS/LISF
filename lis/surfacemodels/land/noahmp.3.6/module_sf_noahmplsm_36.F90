@@ -159,6 +159,7 @@ use ESMF
   INTEGER :: OPT_BTR != 1    !(suggested 1)
 
 ! options for runoff and groundwater
+! 0 -> OFF ;
 ! 1 -> TOPMODEL with groundwater (Niu et al. 2007 JGR) ;
 ! 2 -> TOPMODEL with an equilibrium water table (Niu et al. 2005 JGR) ;
 ! 3 -> original surface and subsurface runoff (free drainage)
@@ -168,7 +169,7 @@ use ESMF
   INTEGER :: OPT_RUN != 1    !(suggested 1)
 
 ! options for surface layer drag coeff (CH & CM)
-! 1->M-O ; 2->original Noah (Chen97); 3->MYJ consistent; 4->YSU consistent. 
+! 1->M-O ; 2->original Noah (Chen97); 3->MYJ consistent; 4->YSU consistent.
 
   INTEGER :: OPT_SFC != 1    !(1 or 2 or 3 or 4)
 
@@ -654,6 +655,9 @@ contains
 #ifdef WRF_HYDRO
                    ,SFCHEADRT                                                  & ! IN/OUT :
 #endif
+#ifdef PARFLOW
+                   ,QINSUR,ETRANI                                              & ! OUT :
+#endif
                    )
 
 ! --------------------------------------------------------------------------------------------------
@@ -711,6 +715,11 @@ contains
 
 #ifdef WRF_HYDRO
   REAL                           , INTENT(INOUT)    :: sfcheadrt
+#endif
+
+#ifdef PARFLOW
+  REAL                           , INTENT(OUT)    :: QINSUR !water input on soil surface [m/s]
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)    :: ETRANI !evapotranspiration from soil layers (mm/s)
 #endif
 
 ! input/output : need arbitary intial values
@@ -1018,6 +1027,9 @@ contains
                  rivsto,fldsto,fldfrc       &
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
+#endif
+#ifdef PARFLOW
+                 ,QINSUR,ETRANI                                   & !out
 #endif
                  )  !out
 
@@ -6680,6 +6692,9 @@ END SUBROUTINE ALBEDO_UPD
 #ifdef WRF_HYDRO
                         ,sfcheadrt                     &
 #endif
+#ifdef PARFLOW
+                    ,QINSUR,ETRANI                                   & !out
+#endif
                     )  !out
 ! ----------------------------------------------------------------------  
 ! Code history:
@@ -6768,14 +6783,22 @@ END SUBROUTINE ALBEDO_UPD
 
 ! local
   INTEGER                                        :: IZ
+#ifdef PARFLOW
+  REAL,                            INTENT(OUT)   :: QINSUR  !water input on soil surface [m/s]
+#else
   REAL                                           :: QINSUR  !water input on soil surface [m/s]
+#endif
   REAL                                           :: QRAIN   !rain at ground srf (mm) [+]
   REAL                                           :: QSEVA   !soil surface evap rate [mm/s]
   REAL                                           :: QSDEW   !soil surface dew rate [mm/s]
   REAL                                           :: QSNFRO  !snow surface frost rate[mm/s]
   REAL                                           :: QSNSUB  !snow surface sublimation rate [mm/s]
   REAL                                           :: SNOWHIN !snow depth increasing rate (m/s)
+#ifdef PARFLOW
+  REAL, DIMENSION(       1:NSOIL), INTENT(OUT)   :: ETRANI  !evapotranspiration from soil layers (mm/s)
+#else
   REAL, DIMENSION(       1:NSOIL)                :: ETRANI  !transpiration rate (mm/s) [+]
+#endif
   REAL, DIMENSION(       1:NSOIL)                :: WCND   !hydraulic conductivity (m/s)
   REAL                                           :: QDRAIN  !soil-bottom free drainage [mm/s] 
   REAL                                           :: SNOFLOW !glacier flow [mm/s]
@@ -6803,7 +6826,8 @@ END SUBROUTINE ALBEDO_UPD
                   FROZEN_CANOPY,                                 & !in     
                   CANLIQ ,CANICE ,TV     ,                 & !inout
                   CMC    ,ECAN   ,ETRAN  ,QRAIN  ,QSNOW  , & !out
-                  SNOWHIN,FWET   ,FPICE   )                           !out
+                  SNOWHIN,FWET   ,FPICE                    & !out
+                  )
 
 ! sublimation, frost, evaporation, and dew
 
@@ -6873,12 +6897,15 @@ END SUBROUTINE ALBEDO_UPD
        IF(WSLAKE >= WSLMAX) RUNSRF = QINSUR*1000.             !mm/s
        WSLAKE = WSLAKE + (QINSUR-QSEVA)*1000.*DT -RUNSRF*DT   !mm
     ELSE                                                      ! soil
-
-       CALL      SOILWATER (NSOIL  ,NSNOW  ,DT     ,ZSOIL  ,DZSNSO , & !in
+       IF(OPT_RUN == 0) THEN
+         RUNSRF = 0.
+       ELSE
+         CALL    SOILWATER (NSOIL  ,NSNOW  ,DT     ,ZSOIL  ,DZSNSO , & !in
                             QINSUR ,QSEVA  ,ETRANI ,SICE   ,ILOC   , JLOC , & !in
                             SH2O   ,SMC    ,ZWT    ,VEGTYP ,ISURBAN, & !inout
                            SMCWTD, DEEPRECH                       , & !inout
                             RUNSRF ,QDRAIN ,RUNSUB ,WCND   ,FCRMAX )   !out
+       END IF
  
        IF(OPT_RUN == 1) THEN 
           CALL GROUNDWATER (NSNOW  ,NSOIL  ,DT     ,SICE   ,ZSOIL  , & !in
