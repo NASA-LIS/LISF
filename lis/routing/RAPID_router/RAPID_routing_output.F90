@@ -318,6 +318,7 @@ subroutine RAPID_routing_output(n)
                  status = nf90_put_var(ftn,varid_Qout,RAPID_routing_struc(n)%Qout_ens,&
                           (/1,1,1/), (/RAPID_routing_struc(n)%n_riv_bas,LIS_rc%nensem(n),1/))
                  call LIS_verify(status,'Error in nf90_put_var in RAPID_routing_output')
+                 deallocate(ensval)
               else
                  status = nf90_put_var(ftn,varid_Qout,&
                           reshape(RAPID_routing_struc(n)%Qout,(/1,RAPID_routing_struc(n)%n_riv_bas/)))
