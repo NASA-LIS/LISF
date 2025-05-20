@@ -956,11 +956,7 @@ class S2Srun(DownloadForecasts):
 
     def lis_fcst(self):
         """ LIS forecast """
-        if 'bcsd11-12_run.j' in self.schedule.keys():
-            prev = ['ldtics_run.j','bcsd11-12_run.j']
-        else:
-            prev = None
- 
+        prev = [job for job in ['ldtics_run.j', 'bcsd11-12_run.j'] if job in self.schedule] or None
         jobname='lis_fcst'
         os.makedirs(self.E2ESDIR + 'lis_fcst/', exist_ok=True)
         os.makedirs(self.E2ESDIR + 'lis_fcst/input/LDT_ICs/', exist_ok=True)
@@ -1261,7 +1257,13 @@ if __name__ == "__main__":
         if args.step == 'LISDA':
             s2s.lis_darun()
         elif args.step == 'LDTICS':
-             s2s.ldt_ics()
+            s2s.ldt_ics()
+            if not args.one_step:
+                s2s.bcsd()
+                s2s.lis_fcst()
+                s2s.s2spost()
+                s2s.s2smetric()
+                s2s.s2splots()
         elif args.step == 'BCSD':
             s2s.bcsd()
             if not args.one_step:
