@@ -590,7 +590,7 @@ class S2Srun(DownloadForecasts):
                 else:
                     inherits = str(inherit_list)
                 file.write(f"        inherit = {inherits}\n")
-            sh_script = subdir + '/' + jfile + '.sh'
+            sh_script = self.SCRDIR + subdir + '/' + jfile + '.sh'
             file.write(f"        script = {sh_script}\n")
             
             # Write pre-script
