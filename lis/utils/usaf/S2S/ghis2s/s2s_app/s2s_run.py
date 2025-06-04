@@ -611,7 +611,32 @@ class S2Srun(DownloadForecasts):
         
         ''' the main function '''
         cylc_file = f"{self.SCRDIR}CYLC_workflow.rc"
+        # Build dependency graph based on schedule structure
+        dependency_map = {}
+        for jfile in self.schedule.keys():
+            task_name = jfile.removesuffix('.j')
+            prev_tasks = []
+            if len(self.schedule[jfile]['prev']) > 0:
+                for pfile in self.schedule[jfile]['prev']:
+                    prev_task = pfile.removesuffix('.j')
+                    prev_tasks.append(prev_task)
+                    dependency_map[task_name] = prev_tasks
+                     
         with open(cylc_file, 'w') as file:
+            # Write scheduling section first
+            file.write("[scheduling]\n")
+            file.write("[[dependencies]]\n")
+            file.write("    [[[T00]]] # validity (hours)\n")
+            file.write("        graph = \"\"\"\n")
+            
+            # Generate dependency graph from dependency_map
+            for task, dependencies in dependency_map.items():
+                if dependencies:
+                    dep_str = " & ".join(dependencies)
+                    file.write(f"            {dep_str} => {task}\n")        
+            file.write("        \"\"\"\n")
+
+            # Write runtime section
             file.write("[runtime]\n")
             for jfile in self.schedule.keys():
                 subdir = self.schedule[jfile]['subdir']
