@@ -786,7 +786,7 @@ class S2Srun(DownloadForecasts):
             file.write(filedata)
 
         self.create_dict('ldtics_run.j', 'ldt_ics', prev=prev)
-
+        utils.cylc_job_scripts('ldtics_run.sh', 2, CWD, command_list=[COMMAND])
         os.chdir(self.E2ESDIR)        
         return
 
