@@ -292,7 +292,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
     numprocx=cfg['FCST']['numprocx']
     numprocy=cfg['FCST']['numprocy']
     ntasks=str(numprocx*numprocy)
-
+    cylc_command = f'mpirun -np {ntasks} '
     with open(jobfile, 'w', encoding="utf-8") as _f:
 
         _f.write('#!/bin/bash' + '\n')
@@ -324,9 +324,11 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             if domain == 'GLOBAL':
                 if 'mil' in cfg['SETUP']['CONSTRAINT']:
                     _f.write('#SBATCH --ntasks=' + ntasks + ' --ntasks-per-socket=48 --ntasks-per-core=1' + '\n')
+                    cylc_command = cylc_command + '--map-by socket:PE=48 --bind-to none '
                 else:
                     _f.write('#SBATCH  -N 12' + '\n')
                     _f.write('#SBATCH --ntasks-per-node=24' + '\n')
+                    cylc_command = cylc_command + '--map-by socket:PE=24 --bind-to none '
             else:
                 _f.write('#SBATCH  -N 1' + '\n')
                 _f.write('#SBATCH --ntasks-per-node='+ ntasks + '\n')
@@ -354,11 +356,11 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             _f.write('module load ' + lisf_module + '\n')
         _f.write('ulimit -s unlimited' + '\n')
         _f.write('\n')
-        _f.write('cd ' + cwd + '\n')
 
         if 'mil' in cfg['SETUP']['CONSTRAINT']:
             _f.write('export I_MPI_PMI_LIBRARY=/usr/slurm/lib64/libpmi2.so' + '\n')
             _f.write('export I_MPI_PMI_VALUE_LENGTH_MAX=' + ntasks + '\n')
+            _f.write('cd ' + cwd + '\n')
             _f.write('srun --mpi=pmi2 --ntasks=$SLURM_NTASKS \\' + '\n')
             _f.write('     --ntasks-per-socket=$SLURM_NTASKS_PER_SOCKET \\' + '\n')
             _f.write('     --ntasks-per-core=$SLURM_NTASKS_PER_CORE \\' + '\n')
@@ -366,9 +368,12 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
             # Separate out LIS DA run from LIS fcst run:
             if job_name == "lisda_":
                 _f.write('     ' + this_command + ' || exit 1' + '\n')
+                cylc_command = cylc_command + './LIS' 
             else:
                 _f.write('     ./LIS -f ' + this_command + ' || exit 1' + '\n')
+                cylc_command = cylc_command + './LIS -f ' + this_command.split()[-1]
         else:
+            _f.write('cd ' + cwd + '\n')
             _f.write( this_command + ' || exit 1' + '\n')
 
         _f.write('\n')
@@ -377,6 +382,7 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('/usr/bin/touch DONE' + '\n')
         _f.write('exit 0' + '\n')
     _f.close()
+    cylc_job_scripts(job_name + 'run.sh', int(thours.split(':')[0]), cwd, command_list=[cylc_command])
 
 def get_domain_info (s2s_configfile, extent=None, coord=None):
     ''' get domain infor from LDTINPUT file'''
