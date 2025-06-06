@@ -15,6 +15,7 @@
 ! !REVISION HISTORY:
 !
 ! 09 May 2022: Yeosang Yoon, Initial specification
+! 01 May 2025: Yeosang Yoon; Update codes for precpi. bias-correction
 !
 ! !INTERFACE:
 subroutine timeinterp_galwemge(n,findex)
@@ -225,17 +226,39 @@ subroutine timeinterp_galwemge(n,findex)
 ! precip variable Block Interpolation
 !-----------------------------------------------------------------------
   ! Total precipitation field (accumulated):
+
+  ! Determine forecast interval
+  if(galwemge_struc(n)%fcst_hour <= 192) then
+     fcsthr_intv = 3
+  elseif(galwemge_struc(n)%fcst_hour > 192) then
+     fcsthr_intv = 6
+  endif
+
   do t=1,LIS_rc%ntiles(n)/LIS_rc%nensem(n)
      do m=1,galwemge_struc(n)%max_ens_members
         do k=1,mfactor
            tid = (t-1)*LIS_rc%nensem(n)+(m-1)*mfactor+k
            index1 = LIS_domain(n)%tile(tid)%index
 
-           if(galwemge_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
-              ! account for the accum fields
-              pcp(tid)=galwemge_struc(n)%metdata2(8,m,index1)/(3600*galwemge_struc(n)%fcst_hour)
-              if(pcp(tid).lt.0) then
-                 pcp(tid) = 0.0
+           ! apply precipitation bias correction
+           if (galwemge_struc(n)%bc == 1) then  !1 - use; or 0
+              if (galwemge_struc(n)%pcp_bc(m,index1).ne.LIS_rc%udef) then
+                 ! account for the accum fields
+                 pcp(tid) = galwemge_struc(n)%pcp_bc(m,index1)/real(3600*fcsthr_intv)
+                 if (pcp(tid) .lt. 0) then
+                    pcp(tid) = 0.0
+                 endif
+              endif
+           else  !don't apply bias correction
+              if (galwemge_struc(n)%metdata2(8,m,index1).ne.LIS_rc%udef) then
+                 if (galwemge_struc(n)%fcst_hour==3) then
+                    pcp(tid)=galwemge_struc(n)%metdata2(8,m,index1)/real(3600*fcsthr_intv) !Inital time: no precp.
+                 else
+                    pcp(tid)=(galwemge_struc(n)%metdata2(8,m,index1)-galwemge_struc(n)%metdata1(8,m,index1))/real(3600*fcsthr_intv)
+                 endif
+                 if(pcp(tid).lt.0) then
+                    pcp(tid) = 0.0
+                 endif
               endif
            endif
         enddo

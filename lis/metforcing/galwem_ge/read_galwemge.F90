@@ -521,15 +521,6 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   enddo ! Loop through all GRIB file fields
 
-  ! Make sure we have all required fields.
-  !if ( (count_tair   .ne. 1)  .or. (count_qair    .ne. 1)   .or. &
-  !     (count_swdown .ne. 1 ) .or. (count_lwdown  .ne. 1)   .or. &
-  !     (count_uwind  .ne. 1)  .or. (count_vwind   .ne. 1)   .or. &
-  !     (count_ps     .ne. 1)  .or. (count_prectot .ne. 1) ) then
-  !   write(LIS_logunit,*)'[WARN] Missing data from GALWEM-GE GRIB file!'
-  !   !goto 100
-  !end if
-
   ! Interpolate the fields to the LIS grid
   ! tair
   call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_tair, tair)
