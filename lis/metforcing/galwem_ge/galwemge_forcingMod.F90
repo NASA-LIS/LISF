@@ -20,7 +20,9 @@ module galwemge_forcingMod
 ! REVISION HISTORY:
 ! 09 May 2022; Yeosang Yoon; Initial Specification
 ! 05 Apr 2023; Yeosang Yoon; Update code to fit new format
-
+! 01 May 2025: Yeosang Yoon; Update codes for precpi. bias-correction
+! 02 Jun 2025: Yeosang Yoon; Update codes for new precpi. bias-correction
+!
 ! !USES:
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
@@ -74,6 +76,15 @@ module galwemge_forcingMod
 
      integer                :: nmodels   
 
+     ! precipitation bias correction
+     integer                           :: bc        !option for bias correction
+     character(len=LIS_CONST_PATH_LEN) :: cdf_dir   !MOGREPS-G model CDF directory name
+     real, allocatable                 :: pcp_bc(:,:)
+     real, allocatable                 :: model_cdf(:,:,:)
+     real, allocatable                 :: ref_cdf(:,:,:)
+     real, allocatable                 :: percentiles(:)
+     real, allocatable                 :: landmask(:)
+
   end type galwemge_type_dec
 
   type(galwemge_type_dec), allocatable :: galwemge_struc(:)
@@ -88,7 +99,7 @@ contains
 ! !INTERFACE:
   subroutine init_galwemge(findex)
 ! !USES: 
-    use LIS_coreMod,    only : LIS_rc, LIS_domain
+    use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
 
@@ -104,9 +115,15 @@ contains
 !
 !EOP
 
-    integer :: n
+    integer :: n, i
     real    :: gridDesci(LIS_rc%nnest,50)
 
+    external :: readcrd_galwemge
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: get_cdf_params
+    
     write(LIS_logunit,*) "[INFO] Initializing the GALWEM-GE forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
@@ -126,8 +143,8 @@ contains
     enddo
 
     do n=1, LIS_rc%nnest
-       galwemge_struc(:)%nc = 720  ! galwem-ge
-       galwemge_struc(:)%nr = 361
+       galwemge_struc(:)%nc = 1280  ! galwem-ge
+       galwemge_struc(:)%nr = 960
     enddo
 
     ! 8 - key met field
@@ -136,13 +153,13 @@ contains
     do n=1,LIS_rc%nnest
      
        ! Check if starting hour of LIS run matches 00/12:
-       if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 12)) then
-          write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
-          write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
-          write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
-          write(LIS_logunit,*) "[ERR]  your lis.config file.."
-          call LIS_endrun()
-       endif
+       !if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 12)) then
+       !   write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
+       !   write(LIS_logunit,*) "[ERR] at 00/12Z for a forecast window, so the "
+       !   write(LIS_logunit,*) "[ERR] 'Starting hour:' should be set to 0/12 in"
+       !   write(LIS_logunit,*) "[ERR]  your lis.config file.."
+       !   call LIS_endrun()
+       !endif
       
        ! Allocate and initialize GALWEM-GE metforcing data structures:
        LIS_rc%met_nensem(findex) = galwemge_struc(n)%max_ens_members
@@ -166,14 +183,14 @@ contains
        gridDesci(n,1)  = 0
        gridDesci(n,2)  = galwemge_struc(n)%nc !gnc
        gridDesci(n,3)  = galwemge_struc(n)%nr !gnr
-       gridDesci(n,4)  = -89.750    !lat(1,1)
-       gridDesci(n,5)  = -179.750   !lon(1,1)
+       gridDesci(n,4)  =  -89.906250   !lat(1,1)
+       gridDesci(n,5)  = -179.859375   !lon(1,1)
        gridDesci(n,6)  = 128
-       gridDesci(n,7)  = 89.750     !lat(gnc,gnr)
-       gridDesci(n,8)  = 179.750    !lon(gnc,gnr)
-       gridDesci(n,9)  = 0.500      !dx
-       gridDesci(n,10) = 0.500      !dy
-       gridDesci(n,20) = 0           !for 0 to 360?
+       gridDesci(n,7)  =  89.906250    !lat(gnc,gnr)
+       gridDesci(n,8)  = 179.859375    !lon(gnc,gnr)
+       gridDesci(n,9)  = 0.28125       !dx
+       gridDesci(n,10) = 0.18750       !dy
+       gridDesci(n,20) = 0             !for 0 to 360?
 
        galwemge_struc(n)%mi = galwemge_struc(n)%nc*galwemge_struc(n)%nr
        galwemge_struc(n)%fcsttime1 = 3000.0
@@ -233,6 +250,30 @@ contains
 
           call neighbor_interp_input(n,gridDesci(n,:),&
                galwemge_struc(n)%n113)
+       endif
+    enddo
+
+    ! precipitation bias correction
+    do n = 1, LIS_rc%nnest
+       if (galwemge_struc(n)%bc == 1) then
+          allocate(galwemge_struc(n)%pcp_bc(galwemge_struc(n)%max_ens_members,LIS_rc%ngrid(n)))
+          allocate(galwemge_struc(n)%model_cdf(LIS_rc%ngrid(n),101,8)) !101: percentile, 8: lead time
+          allocate(galwemge_struc(n)%ref_cdf(LIS_rc%ngrid(n),101,8))
+          allocate(galwemge_struc(n)%percentiles(101))
+          allocate(galwemge_struc(n)%landmask(LIS_rc%ngrid(n)))
+
+          do i = 1, 101
+             galwemge_struc(n)%percentiles(i) = real(i - 1) * 100.0 / real(100)
+          end do
+
+          galwemge_struc(n)%pcp_bc = 0.0
+          galwemge_struc(n)%model_cdf = 0
+          galwemge_struc(n)%ref_cdf = 0
+          galwemge_struc(n)%landmask = -9999.0
+
+          ! read cdf parameters
+          call get_cdf_params(n,galwemge_struc(n)%cdf_dir,LIS_rc%mo, &
+               galwemge_struc(n)%model_cdf, galwemge_struc(n)%ref_cdf, galwemge_struc(n)%landmask)
        endif
     enddo
 

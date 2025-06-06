@@ -67,14 +67,10 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
   integer         :: ftn, igrib, ierr
   integer         :: center
   character*100   :: gtype
-  integer         :: file_julhr
-  integer         :: yr1, mo1, da1, hr1
-  character*255   :: message     ( 20 )
   integer         :: iginfo      ( 40 )
   real            :: gridres_dlat, gridres_dlon
   integer         :: ifguess, jfguess
   integer         :: dataDate, dataTime
-  integer         :: fc_hr
 
   real            :: tair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Temperature interpolated to 2 metres [K] 
   real            :: qair(LIS_rc%lnc(n),LIS_rc%lnr(n))      !Relative humidity interpolated to 2 metres[kg/kg] 
@@ -91,6 +87,9 @@ subroutine read_galwemge(n, m, findex, order, gribfile, rc)
 
   integer, intent(out) :: rc
 
+  external :: fldbld_read_galwemge
+  external :: assign_processed_galwemgeforc
+  
   ! Initialize return code to "no error".  We will change it below if
   ! necessary.
   rc = 0
@@ -309,6 +308,9 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   logical                       :: found_inq
 
+  external :: check_galwemge_message
+  external :: interp_galwemge
+  
   rc = 1 ! Initialize as "no error"
 
   ! EMK...Before using ECCODES/GRIB_API, see if the GRIB file exists
@@ -521,15 +523,6 @@ subroutine fldbld_read_galwemge(n, findex, order, gribfile, ifguess, jfguess,   
 
   enddo ! Loop through all GRIB file fields
 
-  ! Make sure we have all required fields.
-  !if ( (count_tair   .ne. 1)  .or. (count_qair    .ne. 1)   .or. &
-  !     (count_swdown .ne. 1 ) .or. (count_lwdown  .ne. 1)   .or. &
-  !     (count_uwind  .ne. 1)  .or. (count_vwind   .ne. 1)   .or. &
-  !     (count_ps     .ne. 1)  .or. (count_prectot .ne. 1) ) then
-  !   write(LIS_logunit,*)'[WARN] Missing data from GALWEM-GE GRIB file!'
-  !   !goto 100
-  !end if
-
   ! Interpolate the fields to the LIS grid
   ! tair
   call interp_galwemge(n, findex, ifguess, jfguess, .false., fg_tair, tair)
@@ -657,14 +650,16 @@ subroutine interp_galwemge(n, findex, ifguess, jfguess, pcp_flag, input, output)
 !EOP
 
   integer   :: mi, mo
-  integer   :: k
   integer   :: i,j
   integer   :: iret
   integer   :: midway
-  character(len=50) :: method
   real, allocatable, dimension(:,:)    :: var
   logical*1, allocatable, dimension(:) :: lb
   logical*1, allocatable, dimension(:) :: lo
+
+  external :: bilinear_interp
+  external :: conserv_interp
+  external :: neighbor_interp
 
   allocate(var(ifguess,jfguess))
   allocate(lb(ifguess*jfguess))
