@@ -69,6 +69,9 @@ subroutine timeinterp_galwemge(n,findex)
   real,pointer       :: tmp(:),q2(:),uwind(:),vwind(:)
   real,pointer       :: swd(:),lwd(:),psurf(:),pcp(:)
   integer            :: mfactor, m, k, tid, fcsthr_intv
+
+  external :: zterp
+
 ! ________________________________________
 
   btime=galwemge_struc(n)%fcsttime1

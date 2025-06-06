@@ -99,7 +99,7 @@ contains
 ! !INTERFACE:
   subroutine init_galwemge(findex)
 ! !USES: 
-    use LIS_coreMod,    only : LIS_rc, LIS_domain
+    use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
 
@@ -118,6 +118,12 @@ contains
     integer :: n, i
     real    :: gridDesci(LIS_rc%nnest,50)
 
+    external :: readcrd_galwemge
+    external :: bilinear_interp_input
+    external :: conserv_interp_input
+    external :: neighbor_interp_input
+    external :: get_cdf_params
+    
     write(LIS_logunit,*) "[INFO] Initializing the GALWEM-GE forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
