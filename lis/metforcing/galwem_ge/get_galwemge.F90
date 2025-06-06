@@ -51,18 +51,19 @@ subroutine get_galwemge(n, findex)
   real*8            :: time1, time2
   real              :: gmt1, gmt2
   real              :: ts1, ts2
-  integer           :: fc_hr
 
-  integer           :: hr_int1, hr_int2
   integer           :: valid_hour
   integer           :: fcsthr_intv
-  integer           :: fcst_hour
   integer           :: openfile
 
   ! precipitation bias correction
   real              :: pcp_tmp(10)
   integer           :: lead_time
 
+  external :: get_galwemge_filename
+  external :: read_galwemge
+  external :: apply_cdf_correction_hybrid
+  
   ! GALWEM-GE cycles every 12 hours; ecch cycle provide up to 384 hours (16 days) forecast; 
   ! <=192 (every 3-hour); > 192 (every 6-hour)
 
@@ -214,7 +215,8 @@ end subroutine get_galwemge
 ! !INTERFACE:
 subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
 
-  use LIS_logMod, only: LIS_logunit, LIS_endrun
+  use LIS_logMod, only: LIS_endrun
+
   implicit none
 ! !ARGUMENTS:
   character(len=*), intent(in)  :: rootdir
@@ -271,6 +273,9 @@ subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, ref_cdf, percen
   real :: model_std, ref_std, ratio
   integer :: i
   real :: upper_clip, lower_clip
+
+  external :: gaussian_smooth
+  external :: interp1_linear
 
   ! 0. Check for degenerate CDFs (all values same or not strictly increasing)
   if (maxval(model_cdf) - minval(model_cdf) < 1e-6 .or. maxval(ref_cdf) - minval(ref_cdf) < 1e-6) then
