@@ -20,6 +20,7 @@
 subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
 
   !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_coreMod
   use LIS_logMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -32,11 +33,11 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
   integer, intent(in)           :: n
   character(len=*), intent(in)  :: rootdir
   integer,          intent(in)  :: month            ! month of year (1-12)
-  
+
   !EOP
   logical                        :: file_exists
   integer                        :: ftn
-  integer                        :: ngrid_id, nlead_id,nperc_id 
+  integer                        :: ngrid_id, nlead_id, nperc_id
   integer                        :: m_cdf_id, r_cdf_id, mask_id
   integer                        :: ngrid, nlead, nperc
   integer                        :: r, c, c1, r1, gid, l
@@ -47,15 +48,15 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
   real                           :: landmask(LIS_rc%ngrid(n))
   real, allocatable              :: param_tmp1(:)
   real, allocatable              :: param_tmp2(:,:)
-  
-  character(len=100)             :: fname
-  character(len=100)             :: filename
+
+  character(len=LIS_CONST_PATH_LEN) :: fname
+  character(len=LIS_CONST_PATH_LEN) :: filename
   character(len=2)               :: fmn
 
   ! get file name
   fname = 'mogrepsg_cdf_params_'
   write (UNIT=fmn, FMT='(i2.2)') month
-  filename = trim(rootdir)//'/'//trim(fname)//fmn//'.nc'
+  filename = trim(rootdir) // '/' // trim(fname) // fmn // '.nc'
 
   ! check file
   inquire(file=filename, exist=file_exists)
@@ -64,7 +65,9 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
      call LIS_endrun()
   endif
 
-  write(LIS_logunit,*) '[INFO] Getting GALWEM-GE bias correction parameters ', trim(filename)
+  write(LIS_logunit,*) &
+       '[INFO] Getting GALWEM-GE bias correction parameters ', &
+       trim(filename)
   call LIS_verify(nf90_open(path=trim(filename), mode=NF90_NOWRITE, &
        ncid=ftn), 'nf90_open failed in get_cdf_params')
 
@@ -74,10 +77,12 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
        'nf90_inquire_dimension failed for ngrid in get_cdf_params')
 
   if (LIS_rc%gnc(n)*LIS_rc%gnr(n) .ne. ngrid) then
-     write(LIS_logunit,*) '[ERR] The input dimensions of the '//trim(fname)
+     write(LIS_logunit,*) &
+          '[ERR] The input dimensions of the ' // trim(fname)
      write(LIS_logunit,*) '(',ngrid,')'
-     write(LIS_logunit,*) 'does not match the dimensions in the LIS parameter file'
-     write(LIS_logunit,*) '(',LIS_rc%gnc(n)*LIS_rc%gnr(n),')'
+     write(LIS_logunit,*) &
+          'does not match the dimensions in the LIS parameter file'
+     write(LIS_logunit,*) '(', LIS_rc%gnc(n)*LIS_rc%gnr(n), ')'
      call LIS_endrun()
   endif
 
@@ -101,7 +106,7 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
   param_tmp1 = -9999.0
   param_tmp2 = -9999.0
 
-  ! read landmask 
+  ! read landmask
   call LIS_verify(nf90_inq_varid(ftn, 'landmask', mask_id), &
        'nf90_inq_varid failed for landmask in get_cdf_params')
   call LIS_verify(nf90_get_var(ftn, mask_id, param_tmp1), &
@@ -178,14 +183,15 @@ subroutine get_cdf_params (n, rootdir, month, model_cdf, ref_cdf, landmask)
      enddo
   enddo
 
-  call LIS_verify(nf90_close(ftn),'failed to close in get_cdf_params')
+  call LIS_verify(nf90_close(ftn), 'failed to close in get_cdf_params')
 
   deallocate(param_hires1)
   deallocate(param_hires2)
   deallocate(param_tmp1)
   deallocate(param_tmp2)
 
-  write(LIS_logunit,*) '[INFO] Done reading GALWEM-GE bias correction parameters data '
+  write(LIS_logunit,*) &
+       '[INFO] Done reading GALWEM-GE bias correction parameters data '
 
 end subroutine get_cdf_params
 

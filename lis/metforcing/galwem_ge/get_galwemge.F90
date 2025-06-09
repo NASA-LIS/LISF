@@ -16,7 +16,7 @@
 ! !REVISION HISTORY:
 ! 15 Mar 2022: Yeosang Yoon, initial code
 ! 04 Apr 2023: Yeosang Yoon, Update code to fit new format
-! 01 Jun 2025: Yeosang Yoon, update codes for new precpi. bias-correction
+! 01 Jun 2025: Yeosang Yoon, update codes for new precip. bias-correction
 !
 ! !INTERFACE:
 subroutine get_galwemge(n, findex)
@@ -63,24 +63,26 @@ subroutine get_galwemge(n, findex)
   external :: get_galwemge_filename
   external :: read_galwemge
   external :: apply_cdf_correction_hybrid
-  
-  ! GALWEM-GE cycles every 12 hours; ecch cycle provide up to 384 hours (16 days) forecast; 
-  ! <=192 (every 3-hour); > 192 (every 6-hour)
 
-  if(LIS_rc%ts.gt.10800) then
-     write(LIS_logunit,*) '[WARN] The model timestep is > forcing data timestep ...'
-     write(LIS_logunit,*) '[WARN] LIS does not support this mode currently.'
+  ! GALWEM-GE cycles every 12 hours; ecch cycle provide up to 384 hours
+  ! (16 days) forecast; <=192 (every 3-hour); > 192 (every 6-hour)
+
+  if (LIS_rc%ts.gt.10800) then
+     write(LIS_logunit,*) &
+          '[ERR] The model timestep is > forcing data timestep ...'
+     write(LIS_logunit,*) &
+          '[ERR] LIS does not support this mode currently.'
      call LIS_endrun()
   endif
 
   openfile=0
 
-  if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then  !beginning of run
+  if (LIS_rc%tscount(n).eq.1 .or. LIS_rc%rstflag(n).eq.1) then  !beginning of run
      LIS_rc%rstflag(n) = 0
   endif
 
   ! First timestep of run
-  if(LIS_rc%tscount(n).eq.1 .or.LIS_rc%rstflag(n).eq.1) then
+  if (LIS_rc%tscount(n).eq.1 .or. LIS_rc%rstflag(n).eq.1) then
     ! Bookend-time record 1
      yr1 = LIS_rc%yr
      mo1=LIS_rc%mo
@@ -102,36 +104,40 @@ subroutine get_galwemge(n, findex)
      call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
      openfile=1
   endif
-  
+
   ! Determine valid times when forecasts are available to be read in:
-  if(galwemge_struc(n)%fcst_hour < 192) then
+  if (galwemge_struc(n)%fcst_hour < 192) then
      fcsthr_intv = 3
      valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
-  elseif(galwemge_struc(n)%fcst_hour >= 192) then
+  elseif (galwemge_struc(n)%fcst_hour >= 192) then
      fcsthr_intv = 6
      valid_hour = fcsthr_intv * (LIS_rc%hr/fcsthr_intv)
   endif
 
-  if(galwemge_struc(n)%fcst_hour == 384) then
-     write(LIS_logunit,*) 'here: ', galwemge_struc(n)%fcst_hour 
+  if (galwemge_struc(n)%fcst_hour == 384) then
+     !write(LIS_logunit,*) 'here: ', galwemge_struc(n)%fcst_hour
      galwemge_struc(n)%fcst_hour = 378 ! for the last forecast run
-  endif 
+  endif
 
-  if((valid_hour==LIS_rc%hr .and. LIS_rc%mn==0) .or. openfile == 1)  then
+  if ((valid_hour==LIS_rc%hr .and. LIS_rc%mn==0) .or. openfile == 1)  then
      ! Forecast hour condition within each file:
-      galwemge_struc(n)%fcst_hour = galwemge_struc(n)%fcst_hour + fcsthr_intv
- 
+     galwemge_struc(n)%fcst_hour = &
+          galwemge_struc(n)%fcst_hour + fcsthr_intv
+
      ! Check if local forecast hour exceeds max grib file forecast hour:
-     if(galwemge_struc(n)%fcst_hour > 384 ) then
-        write(LIS_logunit,*) "[INFO] GALWEM-GE Forecast hour has exceeded the grib file's final"
-        write(LIS_logunit,*) 'forecast hour: ', galwemge_struc(n)%fcst_hour, ' Run will end here for now ... '
+     if (galwemge_struc(n)%fcst_hour > 384 ) then
+        write(LIS_logunit,*) &
+             "[ERR] GALWEM-GE Forecast hour has exceeded the grib file's final"
+        write(LIS_logunit,*) &
+             '[ERR] Forecast hour: ', galwemge_struc(n)%fcst_hour, &
+             ' Run will end here for now ... '
         call LIS_endrun
      endif
-  
+
      ! Update bookend-time record 2:
-     if(LIS_rc%tscount(n).ne.1) then
-        galwemge_struc(n)%fcsttime1=galwemge_struc(n)%fcsttime2
-        galwemge_struc(n)%metdata1=galwemge_struc(n)%metdata2
+     if (LIS_rc%tscount(n).ne.1) then
+        galwemge_struc(n)%fcsttime1 = galwemge_struc(n)%fcsttime2
+        galwemge_struc(n)%metdata1 = galwemge_struc(n)%metdata2
 
         yr2=LIS_rc%yr
         mo2=LIS_rc%mo
@@ -140,70 +146,91 @@ subroutine get_galwemge(n, findex)
         mn2=fcsthr_intv*60    ! Backward looking
         ss2=0
         ts2=0
-        call LIS_tick(time2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
+        call LIS_tick(time2, doy2, gmt2, yr2, mo2, da2, hr2, mn2, ss2, &
+             ts2)
      endif
 
-     do m=1,galwemge_struc(n)%max_ens_members    
+     do m=1, galwemge_struc(n)%max_ens_members
 
         ! Read in file contents:
-        if(LIS_rc%tscount(n) == 1) then  ! Read in first two book-ends 
+        if (LIS_rc%tscount(n) == 1) then  ! Read in first two book-ends
            ferror=0
            order=1
-          ! Obtain filenames   
-           call get_galwemge_filename(galwemge_struc(n)%odir,galwemge_struc(n)%init_yr,&
-                galwemge_struc(n)%init_mo,galwemge_struc(n)%init_da,galwemge_struc(n)%init_hr,&
-                0,m,fname)
+           ! Obtain filenames
+           call get_galwemge_filename(galwemge_struc(n)%odir, &
+                galwemge_struc(n)%init_yr, &
+                galwemge_struc(n)%init_mo, &
+                galwemge_struc(n)%init_da, &
+                galwemge_struc(n)%init_hr, &
+                0, m, fname)
 
-           write(LIS_logunit,*)'[INFO] Getting GALWEM-GE forecast file1 ... ',trim(fname)
+           write(LIS_logunit,*) &
+                '[INFO] Getting GALWEM-GE forecast file1 ... ', &
+                trim(fname)
            call read_galwemge(n, m, findex, order, fname, ferror)
-           if(ferror.ge.1) galwemge_struc(n)%fcsttime1=time1
-                 
+           if (ferror.ge.1) galwemge_struc(n)%fcsttime1=time1
+
            ferror=0
            order=2
-           call get_galwemge_filename(galwemge_struc(n)%odir,galwemge_struc(n)%init_yr,&
-                galwemge_struc(n)%init_mo,galwemge_struc(n)%init_da,galwemge_struc(n)%init_hr,&
-                galwemge_struc(n)%fcst_hour,m,fname)
+           call get_galwemge_filename(galwemge_struc(n)%odir, &
+                galwemge_struc(n)%init_yr, &
+                galwemge_struc(n)%init_mo, &
+                galwemge_struc(n)%init_da, &
+                galwemge_struc(n)%init_hr, &
+                galwemge_struc(n)%fcst_hour, m, fname)
 
-           write(LIS_logunit,*)'[INFO] Getting GALWEM-GE forecast file2 ... ',trim(fname)
+           write(LIS_logunit,*) &
+                '[INFO] Getting GALWEM-GE forecast file2 ... ', &
+                trim(fname)
            call read_galwemge(n, m, findex, order, fname, ferror)
-           if(ferror.ge.1) galwemge_struc(n)%fcsttime2=time2
+           if (ferror.ge.1) galwemge_struc(n)%fcsttime2=time2
         else
            ferror=0
            order=2
-           call get_galwemge_filename(galwemge_struc(n)%odir,galwemge_struc(n)%init_yr,&
-                galwemge_struc(n)%init_mo,galwemge_struc(n)%init_da,galwemge_struc(n)%init_hr,&
-                galwemge_struc(n)%fcst_hour,m,fname)
+           call get_galwemge_filename(galwemge_struc(n)%odir, &
+                galwemge_struc(n)%init_yr, &
+                galwemge_struc(n)%init_mo, &
+                galwemge_struc(n)%init_da, &
+                galwemge_struc(n)%init_hr, &
+                galwemge_struc(n)%fcst_hour, m, fname)
 
-           write(LIS_logunit,*)'[INFO] Getting GALWEM-GE forecast file2 ... ',trim(fname)
+           write(LIS_logunit,*) &
+                '[INFO] Getting GALWEM-GE forecast file2 ... ', &
+                trim(fname)
            call read_galwemge(n, m, findex, order, fname, ferror)
-           if(ferror.ge.1) galwemge_struc(n)%fcsttime2=time2
+           if (ferror.ge.1) galwemge_struc(n)%fcsttime2=time2
         endif
      enddo
 
-     ! apply precipitation bias correction (cdf from difference bewteen NAPFA and GALWEM-GE
-     ! using MOGREPS-G parameters as a proxy)
+     ! apply precipitation bias correction (cdf from difference bewteen
+     ! NAPFA and GALWEM-GE using MOGREPS-G parameters as a proxy)
      if (galwemge_struc(n)%bc == 1) then
-        lead_time = min(8, floor(real(galwemge_struc(n)%fcst_hour) / 24.0) + 1)
+        lead_time = &
+             min(8, floor(real(galwemge_struc(n)%fcst_hour) / 24.0) + 1)
 
         do t = 1, LIS_rc%ngrid(n)
            if (galwemge_struc(n)%fcst_hour==3) then
-              pcp_tmp=galwemge_struc(n)%metdata2(8,:,t)  !Inital time: no precp.
+              pcp_tmp = galwemge_struc(n)%metdata2(8,:,t)  !Inital time: no precp.
            else
-              pcp_tmp=(galwemge_struc(n)%metdata2(8,:,t)-galwemge_struc(n)%metdata1(8,:,t))
+              pcp_tmp = &
+                   (galwemge_struc(n)%metdata2(8,:,t)-galwemge_struc(n)%metdata1(8,:,t))
            endif
 
            ! Apply CDF correction only over land
            if (galwemge_struc(n)%landmask(t) == 1.0) then
-              call apply_cdf_correction_hybrid(pcp_tmp, galwemge_struc(n)%max_ens_members, &
-                   galwemge_struc(n)%model_cdf(t,:,lead_time), galwemge_struc(n)%ref_cdf(t,:,lead_time),&
-                   galwemge_struc(n)%percentiles, 101, galwemge_struc(n)%pcp_bc(:,t))
+              call apply_cdf_correction_hybrid(pcp_tmp, &
+                   galwemge_struc(n)%max_ens_members, &
+                   galwemge_struc(n)%model_cdf(t,:,lead_time), &
+                   galwemge_struc(n)%ref_cdf(t,:,lead_time), &
+                   galwemge_struc(n)%percentiles, 101, &
+                   galwemge_struc(n)%pcp_bc(:,t))
            else  ! For non-land points
               galwemge_struc(n)%pcp_bc(:,t) = pcp_tmp
            endif
         enddo
      endif
   endif
-  openfile=0
+  openfile = 0
 
 end subroutine get_galwemge
 
@@ -213,8 +240,10 @@ end subroutine get_galwemge
 ! \label{get_galwemge_filename}
 !
 ! !INTERFACE:
-subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
+subroutine get_galwemge_filename(rootdir, yr, mo, da, hr, fc_hr, ens_id, &
+     filename)
 
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod, only: LIS_endrun
 
   implicit none
@@ -232,9 +261,9 @@ subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
   character(8) :: ftime
   character(2) :: chr
   character(3) :: fchr
-  character(3) :: ens 
+  character(3) :: ens
 
-  character(len=37) :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
 
   write (UNIT=chr, FMT='(i2.2)') hr
   write (UNIT=fchr, FMT='(i3.3)') fc_hr
@@ -254,13 +283,15 @@ subroutine get_galwemge_filename(rootdir,yr,mo,da,hr,fc_hr,ens_id,filename)
              ftime//'_CY.'//chr//'_FH.'//fchr//'_DF.GR2'
 end subroutine get_galwemge_filename
 
-subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, ref_cdf, percentiles, npercentile, corrected_ens)
+subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, &
+     ref_cdf, percentiles, npercentile, corrected_ens)
   implicit none
 
   ! Inputs
   integer, intent(in) :: nens, npercentile
   real, intent(in)    :: val_ens(nens)
-  real, intent(in)    :: model_cdf(npercentile), ref_cdf(npercentile), percentiles(npercentile)
+  real, intent(in)    :: model_cdf(npercentile), ref_cdf(npercentile), &
+       percentiles(npercentile)
 
   ! Output
   real, intent(out)   :: corrected_ens(nens)
@@ -290,7 +321,8 @@ subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, ref_cdf, percen
 
   ! 2. Validate monotonicity (safety check)
   do i = 1, npercentile - 1
-    if (model_cdf_smooth(i+1) <= model_cdf_smooth(i) .or. ref_cdf_smooth(i+1) <= ref_cdf_smooth(i)) then
+     if (model_cdf_smooth(i+1) <= model_cdf_smooth(i) .or. &
+          ref_cdf_smooth(i+1) <= ref_cdf_smooth(i)) then
       corrected_ens = val_ens  ! skip correction
       return
     end if
@@ -300,14 +332,17 @@ subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, ref_cdf, percen
   val_mean = sum(val_ens) / real(nens)
 
   ! 4. Invert model CDF (val_mean → inv_cdf percentile)
-  call interp1_linear(model_cdf_smooth, percentiles, npercentile, val_mean, inv_cdf)
+  call interp1_linear(model_cdf_smooth, percentiles, npercentile, &
+       val_mean, inv_cdf)
 
   !!5. Clamp inv_cdf to valid percentile range (e.g., 0–100)
   inv_cdf = max(min(inv_cdf, 100.0), 0.0)
 
   ! 6. Map inv_cdf to ref/model values
-  call interp1_linear(percentiles, ref_cdf_smooth, npercentile, inv_cdf, ref_val_at_inv_cdf)
-  call interp1_linear(percentiles, model_cdf_smooth, npercentile, inv_cdf, model_val_at_inv_cdf)
+  call interp1_linear(percentiles, ref_cdf_smooth, npercentile, &
+       inv_cdf, ref_val_at_inv_cdf)
+  call interp1_linear(percentiles, model_cdf_smooth, npercentile, &
+       inv_cdf, model_val_at_inv_cdf)
 
   ! 7. Bias correction of mean
   corr_mean = val_mean + (ref_val_at_inv_cdf - model_val_at_inv_cdf)
@@ -342,7 +377,7 @@ subroutine apply_cdf_correction_hybrid(val_ens, nens, model_cdf, ref_cdf, percen
   end do
 
   ! 11. Cap values using reference CDF range (e.g., P0–P100)
-  lower_clip  = ref_cdf_smooth(1)
+  lower_clip = ref_cdf_smooth(1)
   upper_clip = ref_cdf_smooth(npercentile)
   do i = 1, nens
     corrected_ens(i) = max(min(corrected_ens(i), upper_clip), lower_clip)
@@ -363,34 +398,36 @@ subroutine interp1_linear(x, y, n, xq, yq)
   ! Check monotonicity
   do i = 1, n - 1
     if (x(i+1) <= x(i)) then
-      write(LIS_logunit,*) '[ERR] in interp1_linear: x must be strictly increasing.'
-      write(LIS_logunit,*) 'x(', i, ') = ', x(i), ', x(', i+1, ') = ', x(i+1)
-      call LIS_endrun
+       write(LIS_logunit,*) &
+            '[ERR] in interp1_linear: x must be strictly increasing.'
+       write(LIS_logunit,*) 'x(', i, ') = ', x(i), ', x(', i+1, ') = ', &
+            x(i+1)
+       call LIS_endrun
     end if
   end do
 
   ! Handle left extrapolation
   if (xq <= x(1)) then
-    h = x(2) - x(1)
-    yq = y(1) + (y(2) - y(1)) / h * (xq - x(1))
-    return
+     h = x(2) - x(1)
+     yq = y(1) + (y(2) - y(1)) / h * (xq - x(1))
+     return
   end if
 
   ! Handle right extrapolation
   if (xq >= x(n)) then
-    h = x(n) - x(n-1)
-    yq = y(n-1) + (y(n) - y(n-1)) / h * (xq - x(n-1))
-    return
+     h = x(n) - x(n-1)
+     yq = y(n-1) + (y(n) - y(n-1)) / h * (xq - x(n-1))
+     return
   end if
 
   ! Locate the interval
   do i = 1, n - 1
-    if (xq >= x(i) .and. xq <= x(i+1)) then
-      h = x(i+1) - x(i)
-      t = (xq - x(i)) / h
-      yq = (1.0 - t) * y(i) + t * y(i+1)
-      return
-    end if
+     if (xq >= x(i) .and. xq <= x(i+1)) then
+        h = x(i+1) - x(i)
+        t = (xq - x(i)) / h
+        yq = (1.0 - t) * y(i) + t * y(i+1)
+        return
+     end if
   end do
 
   ! Fallback (should not occur)
