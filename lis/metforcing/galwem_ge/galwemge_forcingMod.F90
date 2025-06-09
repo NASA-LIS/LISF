@@ -40,8 +40,8 @@ module galwemge_forcingMod
 
   type, public ::  galwemge_type_dec
      real                              :: ts
-     integer                           :: nc, nr, vector_len   
-     real*8                            :: fcsttime1,fcsttime2
+     integer                           :: nc, nr, vector_len
+     real*8                            :: fcsttime1, fcsttime2
      character(len=LIS_CONST_PATH_LEN) :: odir     !GALWEM-GE forecast forcing Directory
      character*20                      :: runmode
      integer                           :: max_ens_members
@@ -51,30 +51,30 @@ module galwemge_forcingMod
      integer                :: mi
      !integer                :: day_check1
      !integer                :: day_check2
-     
+
      integer, allocatable   :: n111(:)
      integer, allocatable   :: n121(:)
      integer, allocatable   :: n211(:)
      integer, allocatable   :: n221(:)
-     real, allocatable      :: w111(:),w121(:)
-     real, allocatable      :: w211(:),w221(:)
-     
+     real, allocatable      :: w111(:), w121(:)
+     real, allocatable      :: w211(:), w221(:)
+
      integer, allocatable   :: n112(:,:)
      integer, allocatable   :: n122(:,:)
      integer, allocatable   :: n212(:,:)
      integer, allocatable   :: n222(:,:)
-     real, allocatable      :: w112(:,:),w122(:,:)
-     real, allocatable      :: w212(:,:),w222(:,:)
+     real, allocatable      :: w112(:,:), w122(:,:)
+     real, allocatable      :: w212(:,:), w222(:,:)
 
      integer, allocatable   :: n113(:)
-     
+
      integer                :: findtime1, findtime2
      integer                :: fcst_hour
      integer                :: init_yr, init_mo, init_da, init_hr
-     real, allocatable      :: metdata1(:,:,:) 
+     real, allocatable      :: metdata1(:,:,:)
      real, allocatable      :: metdata2(:,:,:)
 
-     integer                :: nmodels   
+     integer                :: nmodels
 
      ! precipitation bias correction
      integer                           :: bc        !option for bias correction
@@ -95,19 +95,19 @@ contains
 !
 ! !ROUTINE: init_galwemge
 ! \label{init_galwemge}
-! 
+!
 ! !INTERFACE:
   subroutine init_galwemge(findex)
-! !USES: 
+! !USES:
     use LIS_coreMod,    only : LIS_rc
     use LIS_timeMgrMod, only : LIS_update_timestep
     use LIS_logMod,     only : LIS_logunit, LIS_endrun
 
     implicit none
-! !USES: 
+! !USES:
     integer, intent(in)  :: findex
-! 
-! !DESCRIPTION: 
+!
+! !DESCRIPTION:
 !  Defines the native resolution of the input forcing for GALWEM
 !  data. The grid description arrays are based on the decoding
 !  schemes used by NCEP and followed in the LIS interpolation
@@ -123,7 +123,7 @@ contains
     external :: conserv_interp_input
     external :: neighbor_interp_input
     external :: get_cdf_params
-    
+
     write(LIS_logunit,*) "[INFO] Initializing the GALWEM-GE forecast inputs "
 
     ! Forecast mode -- NOT Available at this time for this forcing reader:
@@ -148,10 +148,10 @@ contains
     enddo
 
     ! 8 - key met field
-    LIS_rc%met_nf(findex) = 8  
+    LIS_rc%met_nf(findex) = 8
 
     do n=1,LIS_rc%nnest
-     
+
        ! Check if starting hour of LIS run matches 00/12:
        !if((LIS_rc%shr .ne.  0) .and. (LIS_rc%shr .ne. 12)) then
        !   write(LIS_logunit,*) "[ERR] GALWEM forecast type begins"
@@ -160,10 +160,10 @@ contains
        !   write(LIS_logunit,*) "[ERR]  your lis.config file.."
        !   call LIS_endrun()
        !endif
-      
+
        ! Allocate and initialize GALWEM-GE metforcing data structures:
        LIS_rc%met_nensem(findex) = galwemge_struc(n)%max_ens_members
- 
+
        allocate(galwemge_struc(n)%metdata1(LIS_rc%met_nf(findex),&
                 galwemge_struc(n)%max_ens_members,LIS_rc%ngrid(n)))
        allocate(galwemge_struc(n)%metdata2(LIS_rc%met_nf(findex),&
@@ -179,7 +179,7 @@ contains
        galwemge_struc(n)%metdata1 = 0
        galwemge_struc(n)%metdata2 = 0
        gridDesci = 0
- 
+
        gridDesci(n,1)  = 0
        gridDesci(n,2)  = galwemge_struc(n)%nc !gnc
        gridDesci(n,3)  = galwemge_struc(n)%nr !gnr
@@ -209,11 +209,11 @@ contains
           allocate(galwemge_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
           allocate(galwemge_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
 
-          call bilinear_interp_input(n,gridDesci(n,:),&
-               galwemge_struc(n)%n111,galwemge_struc(n)%n121,&
-               galwemge_struc(n)%n211,galwemge_struc(n)%n221,&
-               galwemge_struc(n)%w111,galwemge_struc(n)%w121,&
-               galwemge_struc(n)%w211,galwemge_struc(n)%w221)
+          call bilinear_interp_input(n, gridDesci(n,:),&
+               galwemge_struc(n)%n111, galwemge_struc(n)%n121,&
+               galwemge_struc(n)%n211, galwemge_struc(n)%n221,&
+               galwemge_struc(n)%w111, galwemge_struc(n)%w121,&
+               galwemge_struc(n)%w211, galwemge_struc(n)%w221)
 
        elseif(trim(LIS_rc%met_interp(findex)).eq."budget-bilinear") then
           allocate(galwemge_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
@@ -225,11 +225,11 @@ contains
           allocate(galwemge_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
           allocate(galwemge_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
 
-          call bilinear_interp_input(n,gridDesci(n,:),&
-               galwemge_struc(n)%n111,galwemge_struc(n)%n121,&
-               galwemge_struc(n)%n211,galwemge_struc(n)%n221,&
-               galwemge_struc(n)%w111,galwemge_struc(n)%w121,&
-               galwemge_struc(n)%w211,galwemge_struc(n)%w221)
+          call bilinear_interp_input(n, gridDesci(n,:),&
+               galwemge_struc(n)%n111, galwemge_struc(n)%n121,&
+               galwemge_struc(n)%n211, galwemge_struc(n)%n221,&
+               galwemge_struc(n)%w111, galwemge_struc(n)%w121,&
+               galwemge_struc(n)%w211, galwemge_struc(n)%w221)
 
           allocate(galwemge_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
           allocate(galwemge_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
@@ -240,15 +240,16 @@ contains
           allocate(galwemge_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
           allocate(galwemge_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
 
-          call conserv_interp_input(n,gridDesci(n,:),&
-               galwemge_struc(n)%n112,galwemge_struc(n)%n122,&
-               galwemge_struc(n)%n212,galwemge_struc(n)%n222,&
-               galwemge_struc(n)%w112,galwemge_struc(n)%w122,&
-               galwemge_struc(n)%w212,galwemge_struc(n)%w222)
+          call conserv_interp_input(n, gridDesci(n,:),&
+               galwemge_struc(n)%n112, galwemge_struc(n)%n122,&
+               galwemge_struc(n)%n212, galwemge_struc(n)%n222,&
+               galwemge_struc(n)%w112, galwemge_struc(n)%w122,&
+               galwemge_struc(n)%w212, galwemge_struc(n)%w222)
+
        elseif(trim(LIS_rc%met_interp(findex)).eq."neighbor") then
           allocate(galwemge_struc(n)%n113(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
 
-          call neighbor_interp_input(n,gridDesci(n,:),&
+          call neighbor_interp_input(n, gridDesci(n,:),&
                galwemge_struc(n)%n113)
        endif
     enddo
@@ -272,8 +273,9 @@ contains
           galwemge_struc(n)%landmask = -9999.0
 
           ! read cdf parameters
-          call get_cdf_params(n,galwemge_struc(n)%cdf_dir,LIS_rc%mo, &
-               galwemge_struc(n)%model_cdf, galwemge_struc(n)%ref_cdf, galwemge_struc(n)%landmask)
+          call get_cdf_params(n, galwemge_struc(n)%cdf_dir, LIS_rc%mo, &
+               galwemge_struc(n)%model_cdf, galwemge_struc(n)%ref_cdf, &
+               galwemge_struc(n)%landmask)
        endif
     enddo
 
