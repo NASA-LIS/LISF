@@ -629,6 +629,8 @@ subroutine noah39_setsoilm(n, LSM_State)
 !  integer :: svk_col,svk_row,ii,jj
 !  real    :: svk_statebf(LIS_rc%lnc(n),LIS_rc%lnr(n))
 
+  write(LIS_logunit,*)'Using LIS 7.5 noah39_setsoilm...'
+  
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Soil Moisture Layer 1 failed in noah39_setsoilm")
