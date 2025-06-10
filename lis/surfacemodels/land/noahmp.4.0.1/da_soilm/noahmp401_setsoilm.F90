@@ -99,7 +99,7 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   real                   :: smc_rnd, smc_tmp 
   real                   :: sh2o_tmp, sh2o_rnd 
   INTEGER, DIMENSION (1) :: seed 
-
+  
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
        "ESMF_StateSet: Soil Moisture Layer 1 failed in NoahMP401_setsoilm")
@@ -595,6 +595,8 @@ subroutine NoahMP401_setsoilm(n, LSM_State)
   real                   :: smc_rnd, smc_tmp 
   real                   :: sh2o_tmp, sh2o_rnd 
   INTEGER, DIMENSION (1) :: seed 
+
+  write(LIS_logunit,*)'Using LIS 7.5 noahmp401_setsoilm...'
 
   call ESMF_StateGet(LSM_State,"Soil Moisture Layer 1",sm1Field,rc=status)
   call LIS_verify(status,&
