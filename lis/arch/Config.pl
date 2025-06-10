@@ -883,10 +883,6 @@ if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
 }
 
-# USAF_LIS75_SMDA does not prompt user
-if ($ENV{USAF_LIS75_SMDA} eq '1') {
-    #use_useaf_lis75_smda = 1;
-}
 if(defined($ENV{LIS_RPC})){
    $librpc = $ENV{LIS_RPC};
 }
