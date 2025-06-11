@@ -835,14 +835,6 @@ if($use_petsc eq ""){
    $use_petsc=0;
 }
 
-print "Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0): ";
-$use_usaf_lis75_smda=<stdin>;
-$use_usaf_lis75_smda=~s/ *#.*$//;
-chomp($use_usaf_lis75_smda);
-if($use_usaf_lis75_smda eq ""){
-   $use_usaf_lis75_smda=0;
-}
-
 if($use_petsc == 1) {
    if(defined($ENV{LIS_PETSC})){
       $sys_petsc_path = $ENV{LIS_PETSC};
@@ -859,6 +851,14 @@ if($use_petsc == 1) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
+}
+
+print "Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0): ";
+$use_usaf_lis75_smda=<stdin>;
+$use_usaf_lis75_smda=~s/ *#.*$//;
+chomp($use_usaf_lis75_smda);
+if($use_usaf_lis75_smda eq ""){
+   $use_usaf_lis75_smda=0;
 }
 
 if(defined($ENV{LIS_JPEG})){
