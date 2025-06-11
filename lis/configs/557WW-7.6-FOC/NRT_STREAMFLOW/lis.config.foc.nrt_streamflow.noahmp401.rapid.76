@@ -71,6 +71,9 @@ Number of application models:           0
 #Data assimilation options
 Number of data assimilation instances:                3
 Data assimilation algorithm:                          "EnKF"                                     "EnKF"                                     "EnKF"
+
+# NOTE:  NEXT LINE IS FOR ASSIMILATING SMAP_E_OPL RETRIEVALS.  ALTERNATE SETTINGS FOR ASSIMILATING SMAP L2 ARE GIVEN BELOW.
+#        IF SMAP L2 IS TO BE USED, COMMENT OUT THE NEXT LINE.
 Data assimilation set:                                "USAFSI"                                   "SMOPS-ASCAT soil moisture"                "SMAP_E_OPL soil moisture"
 Data assimilation exclude analysis increments:        0                                          0                                          0
 Data assimilation number of observation types:        1                                          1                                          1
@@ -126,12 +129,23 @@ SMOPS ASCAT use realtime data:                                  1
 SMOPS ASCAT soil moisture use scaled standard deviation model:  0
 SMOPS ASCAT CDF read option:                                    1
 
+# NOTE:  BELOW SETTINGS ARE FOR ASSIMILATING SMAP_E_OPL RETRIEVALS.  ALTERNATE SETTINGS FOR ASSIMILATING SMAP L2 ARE GIVEN BELOW.
+#        IF SMAP L2 IS TO BE USED, COMMENT OUT THE SMAP_E_OPL ENTRIES BELOW.
 SMAP_E_OPL soil moisture data directory:                      ./input/SMAP_E_OPL/noahmp401
 SMAP_E_OPL soil moisture use scaled standard deviation model: 0
 SMAP_E_OPL model CDF file:                                   ./input/cdf/noahmp401_cdf_200obs.nc
 SMAP_E_OPL observation CDF file:                             ./input/cdf/SMAP_cdf_10km_30obs.nc
 SMAP_E_OPL soil moisture number of bins in the CDF:          100
 SMAP_E_OPL CDF read option:                                  1
+
+# NOTE: ALTERNATE SETTINGS FOR SMAP L2.  UNCOMMENT BELOW SETTINGS IF SMAP L2 IS TO BE USED.
+#Data assimilation set:                                "USAFSI"                                "SMOPS-ASCAT soil moisture"             "SMAP(NRT) soil moisture"
+#SMAP(NRT) soil moisture data directory: ./input/SMAP_L2
+#SMAP(NRT) model CDF file:               ./input/cdf/noahmp401_cdf_200obs.nc
+#SMAP(NRT) observation CDF file:         ./input/cdf/SMAP_cdf_10km_30obs.nc
+#SMAP(NRT) soil moisture number of bins in the CDF:            100
+#SMAP(NRT) soil moisture use scaled standard deviation model:    0
+#SMAP(NRT) CDF read option:                                      1
 
 #------------------------DOMAIN SPECIFICATION--------------------------
 #The following options list the choice of parameter maps to be used

@@ -11,7 +11,8 @@
 ! MODULE: USAFSI_espcdMod
 !
 ! REVISION HISTORY:
-! 17 Jul 2024  Eric Kemp  First version.  (Based on USAF_gofsMod.F90)
+! 17 Jul 2024  Eric Kemp      First version.  (Based on USAF_gofsMod.F90)
+! 16 Dec 2024  Yeosang Yoon   Updated ESPC-D SST file format (depth dimensions)
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy ESPC-D data.
@@ -510,7 +511,7 @@ contains
 
        if (lens(1) .ne. nlon .or. &
             lens(2) .ne. nlat .or. &
-            lens(3) .ne. 1 .or. &
+            lens(3) .ne. 2 .or. &          !depth=2, updated 2024/10/31 
             lens(4) .ne. 1) then
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'

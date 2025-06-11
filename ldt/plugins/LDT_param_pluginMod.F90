@@ -26,6 +26,7 @@ module LDT_param_pluginMod
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
 !  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
 !  28 Jun 2022:  Eric Kemp    - Added NAFPA background precipitation
+!  24 Apr 2025:  Yeosang Yoon - Added RAPID
 !EOP
 
   use LDT_pluginIndices
@@ -283,6 +284,7 @@ contains
 !EOP
 
     use HYMAP_parmsMod   ! Set for both HYMAP 1 and 2
+    use RAPID_parmsMod
 
     ! HYMAP - version 1
     call registerroutingparamprocinit(trim(LDT_HYMAPId)//char(0),&
@@ -299,6 +301,14 @@ contains
          HYMAPParms_writeHeader)
     call registerroutingparamprocwritedata(trim(LDT_HYMAP2Id)//char(0),&
          HYMAPParms_writeData)
+
+    ! RAPID
+    call registerroutingparamprocinit(trim(LDT_RAPIDId)//char(0),&
+         RAPIDParms_init)
+    call registerroutingparamprocwriteheader(trim(LDT_RAPIDId)//char(0),&
+         RAPIDParms_writeHeader)
+    call registerroutingparamprocwritedata(trim(LDT_RAPIDId)//char(0),&
+         RAPIDParms_writeData)
 
   end subroutine LDT_routingparam_plugin
 
