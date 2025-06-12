@@ -31,6 +31,7 @@ import sys
 import argparse
 import yaml
 from ghis2s.shared import utils
+
 #pylint: disable=import-outside-toplevel, too-many-locals
 # Local methods
 def _usage():
@@ -88,6 +89,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+
     # Path of the main project directory
     projdir = cwd
 
@@ -97,7 +102,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, cwd, job_name, ntasks, hou
     logdir = cwd + '/log_files'
 
     # Paths for the daily forecast data (input and output paths)
-    outdir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw"
+    outdir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/raw"
 
     if not os.path.exists(logdir):
         os.makedirs(logdir)

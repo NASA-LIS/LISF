@@ -60,6 +60,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
     srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
@@ -78,7 +82,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     model_name = config['BCSD']['fcst_data_type']
 
     # Path for where forecast files are located:
-    forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km"
+    forcedir = f"{projdir}/bcsd_fcst/CFSv2_{resol}"
 
     #  Calculate bias correction for different variables separately:
     obs_var_list = ["LWGAB", "SWGDN", "PS", "QV2M", "T2M", "U10M"]
@@ -108,6 +112,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
                 cmd2 += f" -s {year}"
                 cmd2 += f" -m {month_abbr}"
                 cmd2 += f" -w {projdir}"
+                cmd2 += f" -r {resol}"
                 slurm_commands.append(cmd2)
             else:
                 cmd2 = '\n'

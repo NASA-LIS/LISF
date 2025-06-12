@@ -791,20 +791,22 @@ class S2Srun(DownloadForecasts):
         return
 
     def bcsd(self):
-        """ BCSD 12 steps """            
-        obs_clim_dir='{}/hindcast/bcsd_fcst/CFSv2_25km/raw/Climatology/'.format(self.E2ESROOT)
+        """ BCSD 12 steps """
+        lats, lons = utils.get_domain_info(self.config_file, coord=True)
+        resol = f'{round((lats[1] - lats[0])*100)}km'
+        fcast_clim_dir='{}/hindcast/bcsd_fcst/CFSv2_{}/raw/Climatology/'.format(self.E2ESROOT, resol)
         nmme_clim_dir='{}/hindcast/bcsd_fcst/NMME/raw/Climatology/'.format(self.E2ESROOT)
         usaf_25km='{}/hindcast/bcsd_fcst/USAF-LIS7.3rc8_25km/raw/Climatology/'.format(self.E2ESROOT)
 
         os.makedirs(self.E2ESDIR + '/bcsd_fcst', exist_ok=True)
         os.chdir(self.E2ESDIR + '/bcsd_fcst')
         os.makedirs('USAF-LIS7.3rc8_25km/raw', exist_ok=True)
-        os.makedirs('CFSv2_25km/raw', exist_ok=True)
+        os.makedirs(f'CFSv2_{resol}/raw', exist_ok=True)
         os.makedirs('NMME/raw', exist_ok=True)
     
         # link Climatology directories
-        os.chdir(self.E2ESDIR + '/bcsd_fcst/CFSv2_25km/raw')
-        self.create_symlink(obs_clim_dir, 'Climatology')
+        os.chdir(self.E2ESDIR + f'/bcsd_fcst/CFSv2_{resol}/raw')
+        self.create_symlink(fcast_clim_dir, 'Climatology')
 
         os.chdir(self.E2ESDIR + '/bcsd_fcst/NMME/raw')
         self.create_symlink(nmme_clim_dir, 'Climatology')
@@ -823,23 +825,34 @@ class S2Srun(DownloadForecasts):
         # (1) bcsd01 - regrid CFSv2 files
         # -------------------------------
         jobname='bcsd01_'
+        resol_info = {
+            '25km': {'CPT': str(1), 'MEM':'13GB', 'NT': str(self.config["EXP"]["lead_months"]), 'TPN': 18, 'l_sub': 2,'HOURS': str(1)},
+            '10km': {'CPT': str(1), 'MEM':'120GB', 'NT': str(1), 'TPN': 2, 'l_sub': 2, 'HOURS': str(3)},
+            '5km': {'CPT': str(1), 'MEM':'240GB', 'NT': str(1), 'TPN': 1, 'l_sub': 1, 'HOURS': str(self.config["EXP"]["lead_months"])},
+        }
+        info = resol_info[resol]    
         slurm_commands = bcsd.task_01.main(self.E2ESDIR +'/' + self.config_file, self.year, None,
                                            mmm, CWD, jobname, 1, 2, py_call=True)
 
         # multi tasks per job
-        l_sub = 2
+        l_sub = info['l_sub']
+        par_info = {}
+        par_info['CPT'] = info['CPT']
+        par_info['MEM'] = info['MEM']
+        par_info['NT'] = info['NT']
+        par_info['TPN'] = info['TPN']
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname+ '{:02d}_'.format(i+1), 1, str(3), CWD, tfile.name)
+                                        jobname+ '{:02d}_'.format(i+1), info['TPN'], info['HOURS'], CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname+ '{:02d}_run.j'.format(i+1), 'bcsd_fcst')
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
                 
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 3, CWD, command_list=slurm_sub[i])
+            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'], CWD, command_list=slurm_sub[i])
  
         # (3) bcsd03 regridding NMME
         # --------------------------
@@ -1105,8 +1118,10 @@ class S2Srun(DownloadForecasts):
         slurm_commands = []
         weekly_vars = self.config["POST"]["weekly_vars"]
         par_info = {}
-        par_info['NPROCS'] = str(len(weekly_vars))
+        par_info['CPT'] = str(len(weekly_vars))
         par_info['MEM']= '8GB'
+        par_info['NT']= str(1)
+        par_info['TPN'] = None
         for model in self.MODELS:
             var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(4), nmme_model= model, py_call=True, weekly=True)
@@ -1194,8 +1209,10 @@ class S2Srun(DownloadForecasts):
         jobname='s2splots_02_'
         slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_s2smetrics.py -y {self.YYYY} -m {self.MM} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
         par_info = {}
-        par_info['NPROCS'] = str(14)
+        par_info['CPT'] = str(14)
         par_info['MEM']= '10GB'
+        par_info['NT']= str(1)
+        par_info['TPN'] = None
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
@@ -1211,8 +1228,10 @@ class S2Srun(DownloadForecasts):
         jobname='s2splots_03_'
         slurm_commands = [f"python {self.LISHDIR}/ghis2s/s2splots/plot_hybas.py -y {self.YYYY} -m {self.month} -w {self.E2ESDIR} -c {self.E2ESDIR}{self.config_file}"]
         par_info = {}
-        par_info['NPROCS'] = str(5)
+        par_info['CPT'] = str(5)
         par_info['MEM']= '10GB'
+        par_info['NT']= str(1)
+        par_info['TPN'] = None
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',

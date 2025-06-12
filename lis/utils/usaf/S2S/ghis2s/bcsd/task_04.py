@@ -56,6 +56,9 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+    
     # Path of the main project directory
     projdir = cwd
 
@@ -76,7 +79,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
     # Path for where observational & forecast files are located:
     forcedir = f"{projdir}/bcsd_fcst"
     obs_indir = f"{forcedir}/USAF-LIS7.3rc8_25km"
-    fcst_indir = f"{forcedir}/CFSv2_25km"
+    fcst_indir = f"{forcedir}/CFSv2_{resol}"
 
     #  Calculate bias correction for different variables separately:
     #obs_var_list = ["Rainf_f_tavg", "LWdown_f_tavg", "SWdown_f_tavg", \

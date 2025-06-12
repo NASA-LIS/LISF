@@ -36,6 +36,7 @@ from dateutil.relativedelta import relativedelta
 import numpy as np
 from netCDF4 import Dataset
 import yaml
+from ghis2s.shared import utils
 
 #
 # Local methods
@@ -64,6 +65,11 @@ def driver(config_file, current_year, month_abbr, month_num, cwd):
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
+
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+   
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
 
@@ -71,7 +77,7 @@ def driver(config_file, current_year, month_abbr, month_num, cwd):
     projdir = cwd
 
     # Path for where forecast files are located:
-    forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km/final/6-Hourly"
+    forcedir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/final/6-Hourly"
 
     for iens in range(1, (ens_num + 1)):
         print(f"Ensemble {iens}/{ens_num}")
