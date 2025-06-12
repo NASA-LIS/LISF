@@ -36,7 +36,7 @@ import yaml
 import numpy as np
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
+from ghis2s.shared import utils
 #
 # Local methods
 #
@@ -93,7 +93,11 @@ def driver():
     # load config file
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
-   
+
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+    
     nmme_models = config['EXP']['NMME_models']
     ensemble_sizes = config['EXP']['ensemble_sizes'][0]
     nof_raw_ens = config['BCSD']['nof_raw_ens']
@@ -102,7 +106,7 @@ def driver():
     projdir = cwd
 
     # Path for the final 6-hourly forcing dataets:
-    forcedir_fcst = f"{projdir}/bcsd_fcst/CFSv2_25km"
+    forcedir_fcst = f"{projdir}/bcsd_fcst/CFSv2_{resol}"
     forcedir_nmme = f"{projdir}/bcsd_fcst/NMME"
 
     # Base model prefixes for forecast files

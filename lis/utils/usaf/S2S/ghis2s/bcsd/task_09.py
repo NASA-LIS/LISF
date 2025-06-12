@@ -60,6 +60,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+        
     lead_months = config['EXP']['lead_months']
     ens_num = config['BCSD']['nof_raw_ens']
 
@@ -68,7 +72,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name,
     srcdir2 = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/'
 
     # Path for the final 6-hourly forcing data:
-    forcedir = f"{projdir}/bcsd_fcst/CFSv2_25km"
+    forcedir = f"{projdir}/bcsd_fcst/CFSv2_{resol}"
 
     print("[INFO] Combining subdaily BC CFSv2 non-precip variables")
     slurm_9_10 = []

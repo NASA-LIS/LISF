@@ -32,6 +32,7 @@ import subprocess
 import os
 import sys
 import argparse
+from ghis2s.shared import utils
 
 #
 # Local methods
@@ -46,7 +47,7 @@ def _usage():
     print("[INFO] month_abbr: Current month")
     print("[INFO] cwd: current working directory")
 
-def main(current_year, month_abbr, cwd):
+def main(current_year, month_abbr, cwd, resol):
     """Main driver."""
     # Path of the main project directory
     projdir = cwd
@@ -58,7 +59,7 @@ def main(current_year, month_abbr, cwd):
     fcst_date = f"{month_abbr}01"
 
     # Path for where forecast files are located:
-    indir = f"{projdir}/bcsd_fcst/CFSv2_25km/raw/6-Hourly/{fcst_date}/{current_year}"
+    indir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/raw/6-Hourly/{fcst_date}/{current_year}"
 
     # Path for where the linked precip files should be placed:
     outdir = f"{projdir}/bcsd_fcst/NMME/linked_cfsv2_precip_files/{fcst_date}/{current_year}"
@@ -87,6 +88,7 @@ if __name__ == "__main__":
     parser.add_argument('-s', '--current_year', required=True, help='forecast start year')
     parser.add_argument('-m', '--month_abbr', required=True, help='month abbreviation')
     parser.add_argument('-w', '--cwd', required=True, help='current working directory')
+    parser.add_argument('-r', '--resol', required=True, help='target grid resolution')
 
     args = parser.parse_args()
-    main(args.current_year, args.month_abbr, args.cwd)
+    main(args.current_year, args.month_abbr, args.cwd, args.resol)

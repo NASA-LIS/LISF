@@ -67,7 +67,13 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
         _f.write('#SBATCH --nodes=1' + '\n')
-        _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
+        if parallel_run is not None:
+            if parallel_run['TPN'] is None:
+                _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
+            else:
+                _f.write('#SBATCH --ntasks-per-node=' + str(parallel_run['TPN']) + '\n')
+        else:
+            _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -77,7 +83,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
                 mpc = min(math.ceil(480 / ntasks), 100)
                 if parallel_run is not None:
                     _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
-                    _f.write('#SBATCH --cpus-per-task=' + parallel_run['NPROCS'] + '\n')
+                    _f.write('#SBATCH --cpus-per-task=' + parallel_run['CPT'] + '\n')
                 else:
                     _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
@@ -110,7 +116,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('\n')
         _f.write('export PYTHONPATH='+ pythonpath + '\n')
         if parallel_run is not None:
-            _f.write('export NUM_WORKERS='+ parallel_run['NPROCS'] + '\n')
+            _f.write('export NUM_WORKERS='+ parallel_run['CPT'] + '\n')
         _f.write('cd ' + cwd + '\n')
 
         if command_list is None and group_jobs is None:
@@ -120,7 +126,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
             if group_jobs:
                 for cmd in group_jobs:
                     if parallel_run is not None:
-                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['NPROCS']} --ntasks 1 {cmd} &\n")
+                        _f.write(f"srun --exclusive --cpus-per-task={parallel_run['CPT']} --ntasks {parallel_run['NT']} {cmd} &\n")
                     else:
                         _f.write(f"srun --exclusive --ntasks 1 {cmd} &\n")
                 _f.write("wait\n")

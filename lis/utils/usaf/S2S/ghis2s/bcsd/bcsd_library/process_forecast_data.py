@@ -27,7 +27,6 @@
 #------------------------------------------------------------------------------
 """
 
-
 # Standard modules
 import os
 import sys
@@ -37,12 +36,14 @@ import numpy as np
 import xarray as xr
 import xesmf as xe
 import yaml
+import gc
+
+#from concurrent.futures import ProcessPoolExecutor
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
-
 limits = lim()
 # Internal functions
 def _usage():
@@ -74,6 +75,7 @@ def _read_cmd_args():
         "ic2" : sys.argv[7],
         "ic3" : sys.argv[8],
         "configfile": sys.argv[5],
+        "config": config,
     }
     ic1 = args['ic1']
     ic2 = args['ic2']
@@ -114,21 +116,60 @@ def _set_input_file_info(input_fcst_year, input_fcst_month, input_fcst_var):
         file_sfx = "daily.grb2"
     return subdir, file_pfx, file_sfx
 
-def _regrid_precip(cfsv2, args):
-    # build regridder
-    # resample to the S2S grid
-    cfsv2["slice"] = cfsv2["T2M"].isel(step=0)
-    lats, lons = get_domain_info(args["configfile"], coord=True)
-    ds_out = xr.Dataset(
-        {
-            "lat": (["lat"], lats),
-            "lon": (["lon"], lons),
-        })
-    prgridder = xe.Regridder(cfsv2, ds_out, "conservative", periodic=True)
-    ds_out = prgridder(cfsv2)
-    return ds_out["PRECTOT"]
+def write_monthly_files(this_6h1, file_6h, file_mon):
+    this_6h2 = this_6h1.rename_vars({"time": "time_step"})
+    this_6h = this_6h2.rename_dims({"step": "time"})
 
-def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
+    encoding = {
+        var: {"zlib": True, "complevel": 6, "shuffle": True, "missing_value": -9999.}
+        for var in ["PRECTOT", "PS", "T2M", "LWS", "SLRSF", "Q2M", "U10M", "V10M", "WIND10M"]
+    }
+
+    this_6h.to_netcdf(file_6h, format="NETCDF4", encoding=encoding)
+    this_mon = this_6h.mean(dim="time")
+    this_mon.to_netcdf(file_mon, format="NETCDF4", encoding=encoding)
+    this_6h2.close()
+    this_6h.close()
+    this_mon.close()
+    del this_6h2, this_6h, this_mon
+    return
+
+def apply_regridding_with_mask(data, regridder, land_mask):
+    """
+    Apply land mask and regrid the data.
+    data : xarray.DataArray or xarray.Dataset
+    regridder : xesmf.Regridder
+    land_mask : xarray.Dataset
+    Returns:
+    --------
+    xarray.DataArray or xarray.Dataset
+    """
+    any_land = land_mask.LANDMASK > 0
+    
+    if isinstance(data, xr.DataArray):
+        masked_data = data.where(any_land)
+        result = regridder(masked_data)
+    
+    elif isinstance(data, xr.Dataset):
+        masked_data = data.copy(deep=True)
+        for var_name in masked_data.data_vars:
+            masked_data[var_name] = masked_data[var_name].where(any_land)
+        result = regridder(masked_data)
+    
+    else:
+        raise TypeError(f"Expected xarray.DataArray or xarray.Dataset, got {type(data)}")
+    
+    return result
+
+def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
+    regrid_method = {
+        '25km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
+                 'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
+        '10km': {'PRECTOT':'conservative', 'SLRSF':'bilinear', 'LWS':'bilinear','PS':'bilinear',
+                 'Q2M':'bilinear', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},
+        '5km': {'PRECTOT':'conservative', 'SLRSF':'conservative', 'LWS':'conservative','PS':'conservative',
+                 'Q2M':'conservative', 'T2M':'bilinear', 'U10M':'bilinear', 'V10M':'bilinear', 'WIND10M':'bilinear'},}
+    
     outdir_6hourly = outdirs["outdir_6hourly"]
     outdir_monthly = outdirs["outdir_monthly"]
     final_name_pfx = f"{fcst_init['monthday']}.cfsv2."
@@ -136,82 +177,83 @@ def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, reg_precip):
          f"{fcst_init['year']}-{fcst_init['month']}-{fcst_init['day']}"
     reftime += f",{fcst_init['hour']}:00:00,1hour"
 
-    if args["run_regrid"] is True:
-        # resample to the S2S grid
-        # build regridder
-        lats, lons = get_domain_info(args["configfile"], coord=True)
-        ds_out = xr.Dataset(
-            {
-                "lat": (["lat"], lats),
-                "lon": (["lon"], lons),
-            }
-        )
+    # resample to the S2S grid
+    # build regridder
+    weightdir = args["config"]['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+    lats, lons = get_domain_info(args["configfile"], coord=True)
+    resol = round((lats[1] - lats[0])*100)
+    resol = f'{resol}km'
+    # read CFSv2 land mask
+    land_mask = xr.open_dataset(weightdir + f'CFSv2_{resol}_landmask.nc4')
+    
+    '''
+    resol='25km': NY=720, NX=1440; 
+    resol='10km': NY=1500, NX=3600; 
+    resol='5km': NY=3000, NX=7200; 
+    cfsv2 dimensions: step: ~1151, latitude: 190, longitude: 384
+    '''
+    
+    method = regrid_method.get(resol)
+    ds_out = xr.Dataset(
+        {
+            "lat": (["lat"], lats),
+            "lon": (["lon"], lons),
+        }
+    )
 
-        args["regridder"] = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True)
-        args["run_regrid"] = False
+    weight_file = weightdir + f'CFSv2_{resol}_bilinear.nc'
+    bil_regridder = xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True, 
+                                 reuse_weights=True, 
+                                 filename=weight_file)
 
-    # apply to the entire data set
-    ds_out = args["regridder"](cfsv2)
-    ds_out2 = ds_out.drop_vars('slice', errors="ignore")
-    ds_out2["PRECTOT"] = reg_precip
+    weight_file = weightdir + f'CFSv2_{resol}_conservative.nc'
+    con_regridder = xe.Regridder(cfsv2, ds_out, "conservative", periodic=True, 
+                                 reuse_weights=True, 
+                                 filename=weight_file)
+    
+    bilinear_vars = [var for var in cfsv2.data_vars if var in method and method[var] == 'bilinear']
+    conservative_vars = [var for var in cfsv2.data_vars if var in method and method[var] == 'conservative']
 
+    if bilinear_vars:
+        cfsv2_bilinear = cfsv2[bilinear_vars]
+        result_bilinear = apply_regridding_with_mask(cfsv2_bilinear, bil_regridder, land_mask)
+        for var in bilinear_vars:
+            ds_out[var] = result_bilinear[var]
+
+    if conservative_vars:
+        cfsv2_conservative = cfsv2[conservative_vars]
+        result_conservative = apply_regridding_with_mask(cfsv2_conservative, con_regridder, land_mask)
+        for var in conservative_vars:
+            ds_out[var] = result_conservative[var]
+            
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
     dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
     # clip limits
-    ds_out2["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out2["PRECTOT"].values[:]),
+    ds_out["PRECTOT"].values[:] = limits.clip_array(np.array(ds_out["PRECTOT"].values[:]),
                                                      var_name = "PRECTOT", precip=True)
-    ds_out2["PS"].values[:] = limits.clip_array(np.array(ds_out2["PS"].values[:]),
+    ds_out["PS"].values[:] = limits.clip_array(np.array(ds_out["PS"].values[:]),
                                                 var_name = "PS")
-    ds_out2["T2M"].values[:] = limits.clip_array(np.array(ds_out2["T2M"].values[:]),
+    ds_out["T2M"].values[:] = limits.clip_array(np.array(ds_out["T2M"].values[:]),
                                                  var_name = "T2M")
-    ds_out2["LWS"].values[:] = limits.clip_array(np.array(ds_out2["LWS"].values[:]),
+    ds_out["LWS"].values[:] = limits.clip_array(np.array(ds_out["LWS"].values[:]),
                                                  var_name = "LWS")
-    ds_out2["SLRSF"].values[:] = limits.clip_array(np.array(ds_out2["SLRSF"].values[:]),
+    ds_out["SLRSF"].values[:] = limits.clip_array(np.array(ds_out["SLRSF"].values[:]),
                                                    var_name = "SLRSF")
-    ds_out2["Q2M"].values[:] = limits.clip_array(np.array(ds_out2["Q2M"].values[:]),
+    ds_out["Q2M"].values[:] = limits.clip_array(np.array(ds_out["Q2M"].values[:]),
                                                  var_name = "Q2M")
-    ds_out2["WIND10M"].values[:] = limits.clip_array(np.array(ds_out2["WIND10M"].values[:]),
+    ds_out["WIND10M"].values[:] = limits.clip_array(np.array(ds_out["WIND10M"].values[:]),
                                                      var_name = "WIND")
 
-    for month in range(1,10):
-        file_6h = outdir_6hourly + '/' + \
-            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
-        file_mon = outdir_monthly + '/' + \
-            final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
-        dt2 = dt1 + relativedelta(months=1)
-        dt1s = np.datetime64(dt1.strftime('%Y-%m-%d'))
-        dt2s = np.datetime64(dt2.strftime('%Y-%m-%d'))
-
-        this_6h1 = ds_out2.sel(step = (ds_out2['valid_time']  >= dt1s) &
-                                (ds_out2['valid_time']  < dt2s), drop=True)
-        this_6h2 = this_6h1.rename_vars({"time": "time_step"})
-        this_6h = this_6h2.rename_dims({"step": "time"})
-        this_6h.to_netcdf(
-            file_6h,format="NETCDF4",
-            encoding = {
-                "PRECTOT": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "PS": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "T2M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "LWS": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "SLRSF": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "Q2M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "U10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "V10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "WIND10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
-        this_mon = this_6h.mean (dim='time')
-        this_mon.to_netcdf(
-            file_mon,format="NETCDF4",
-            encoding = {
-                "PRECTOT": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "PS": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "T2M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "LWS": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "SLRSF": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "Q2M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "U10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "V10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.},
-                "WIND10M": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
-        dt1 = dt2
+    dt1 = dt1 + relativedelta(months=rank)
+    file_6h = outdir_6hourly + '/' + \
+        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+    file_mon = outdir_monthly + '/' + \
+        final_name_pfx + '{:04d}{:02d}.nc'.format (dt1.year,dt1.month)
+    write_monthly_files(ds_out, file_6h, file_mon)
+    ds_out.close()
+    del ds_out 
+    print(f"[INFO] Done processing CFSv2 forecast files rank: {rank}")
+    return
 
 def _print_reftime(fcst_init, ens_num):
     """Print reftime to standard out"""
@@ -223,11 +265,9 @@ def _print_reftime(fcst_init, ens_num):
         f"{fcst_init['hour']} cycle"
     print(txt)
 
-def _driver():
+def _driver(rank):
     """Main driver."""
     args = _read_cmd_args()
-    args['run_regrid'] = True
-    args['regridder'] = 0.
     fcst_init = {}
     fcst_init["monthday"] = args['fcst_init_monthday']
     outdirs = {}
@@ -244,8 +284,9 @@ def _driver():
         fcst_init["year_cfsv2"] = year
 
     mmm = fcst_init['monthday'].split("0")[0].capitalize()
-    dt1 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
-    dt2 = dt1 + relativedelta(months=9)
+    dt0 = datetime.strptime('{} 1 {}'.format(mmm,fcst_init["year"]), '%b %d %Y')
+    dt1 = dt0 + relativedelta(months=rank)
+    dt2 = dt1 + relativedelta(months=1)
     dt1 = np.datetime64(dt1.strftime('%Y-%m-%d'))
     dt2 = np.datetime64(dt2.strftime('%Y-%m-%d'))
 
@@ -256,12 +297,6 @@ def _driver():
     fcst_init['day'] = int(monthday[2:4])
     fcst_init['hour'] = args['all_ensmembers'][ens_num - 1]
     fcst_init['timestring'] = f"{fcst_init['date']}{fcst_init['hour']}"
-    wanted_months = []
-    for i in range(int(fcst_init['month']), 13):
-        wanted_months.append(i)
-    for i in range(1, int(fcst_init['month'])):
-        wanted_months.append(i)
-    wanted_months = wanted_months[1:10]
 
     # Print Ensemble member and reference date+cycle time:
     _print_reftime(fcst_init, ens_num)
@@ -271,14 +306,14 @@ def _driver():
         f"{args['outdir']}/6-Hourly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_6hourly']):
-        os.makedirs(outdirs['outdir_6hourly'])
+        os.makedirs(outdirs['outdir_6hourly'], exist_ok=True)
 
     # Monthly output dir:
     outdirs['outdir_monthly'] = \
         f"{args['outdir']}/Monthly/" + \
         f"{fcst_init['monthday']}/{year}/ens{ens_num}"
     if not os.path.exists(outdirs['outdir_monthly']):
-        os.makedirs(outdirs['outdir_monthly'])
+        os.makedirs(outdirs['outdir_monthly'], exist_ok=True)
 
     # Loop over CFSv2 variables:
     cfsv2 = []
@@ -306,12 +341,27 @@ def _driver():
             file_sfx, outdirs['outdir_6hourly'], temp_name, varname, args['patchdir']))
 
     cfsv2 = xr.merge (cfsv2, compat='override')
-    reg_precip = _regrid_precip(cfsv2, args)
     _migrate_to_monthly_files(cfsv2.sel (step = (cfsv2['valid_time']  >= dt1) &
                                          (cfsv2['valid_time']  < dt2)),
-                              outdirs, fcst_init, args, reg_precip)
-
-    print("[INFO] Done processing CFSv2 forecast files")
+                                        outdirs, fcst_init, args, rank)
+    cfsv2.close()
+    del cfsv2
+    gc.collect()
+    return 
 
 if __name__ == "__main__":
-    _driver()
+    try:
+        rank = int(os.environ.get('SLURM_PROCID', '0'))
+        size = int(os.environ.get('SLURM_NTASKS', '1'))
+    except (ValueError, TypeError):
+        rank = 0
+        size = 1
+    if size==1:
+        args = _read_cmd_args()
+        with open(sys.argv[5], 'r', encoding="utf-8") as file:
+            config = yaml.safe_load(file)
+            for rank in range(config["EXP"]["lead_months"]):
+                _driver(rank)
+    else:
+        _driver(rank)
+        
