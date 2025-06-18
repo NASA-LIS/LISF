@@ -1,0 +1,1038 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+#include "LIS_misc.h"
+!BOP
+!
+! !ROUTINE: NoahMP50_writerst
+! \label{NoahMP50_writerst}
+!
+! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
+! !INTERFACE:
+subroutine NoahMP50_writerst(n)
+! !USES:
+    use LIS_coreMod, only    : LIS_rc, LIS_masterproc
+    use LIS_timeMgrMod, only : LIS_isAlarmRinging
+    use LIS_logMod, only     : LIS_logunit, LIS_getNextUnitNumber, &
+                               LIS_releaseUnitNumber , LIS_verify
+    use LIS_fileIOMod, only  : LIS_create_output_directory, &
+                               LIS_create_restart_filename
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+    use NoahMP50_lsmMod
+
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+    use netcdf
+#endif
+
+    implicit none
+    ! !ARGUMENTS:
+    integer, intent(in) :: n
+!
+! !DESCRIPTION:
+!  This program writes restart files for Noah-MP-4.0.1 LSM.
+!  This includes all relevant water/energy storage and tile information.
+!
+!  The routines invoked are:
+! \begin{description}
+! \item[LIS\_create\_output\_directory](\ref{LIS_create_output_directory})\\
+!  creates a timestamped directory for the restart files
+! \item[LIS\_create\_restart\_filename](\ref{LIS_create_restart_filename})\\
+!  generates a timestamped restart filename
+! \item[NoahMP50\_dump\_restart](\ref{NoahMP50_dump_restart})\\
+!   writes the NoahMP50 variables into the restart file
+! \end{description}
+!EOP
+
+    character(len=LIS_CONST_PATH_LEN) :: filen
+    character*20  :: wformat
+    logical       :: alarmCheck
+    integer       :: ftn
+    integer       :: status
+    character*3   :: fnest
+ 
+    ! set restart alarm
+    write(fnest,'(i3.3)') n
+    alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP50 restart alarm "//trim(fnest))
+    
+    ! set restart file format (read from LIS configration file_
+    wformat = trim(NoahMP50_struc(n)%rformat)
+    
+    if(alarmCheck .or. (LIS_rc%endtime ==1)) then
+        If (LIS_masterproc) Then
+            call LIS_create_output_directory("SURFACEMODEL")
+            call LIS_create_restart_filename(n, filen, "SURFACEMODEL", &
+                                            "NoahMP50",wformat=wformat)
+            if(wformat .eq. "binary") then
+                ftn = LIS_getNextUnitNumber()
+                open(ftn,file=filen,status="unknown", form="unformatted")
+            elseif(wformat .eq. "netcdf") then
+#if (defined USE_NETCDF4)
+                status = nf90_create(path=filen, cmode=nf90_hdf5, ncid = ftn)
+                call LIS_verify(status, &
+                     "Error in nf90_open in NoahMP50_writerst")
+#endif
+#if (defined USE_NETCDF3)
+                status = nf90_create(Path = filen, cmode = nf90_clobber, ncid = ftn)
+                call LIS_verify(status, &
+                     "Error in nf90_open in NoahMP50_writerst")
+#endif
+             endif
+        endif
+    
+        call NoahMP50_dump_restart(n, ftn, wformat)
+    
+        if (LIS_masterproc) then
+            if(wformat .eq. "binary") then
+                call LIS_releaseUnitNumber(ftn)
+            elseif(wformat .eq. "netcdf") then
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+                status = nf90_close(ftn)
+                call LIS_verify(status, &
+                     "Error in nf90_close in NoahMP50_writerst")
+#endif
+            endif
+            write(LIS_logunit, *)&
+                 "[INFO] Noah-MP.5.0 archive restart written: ",trim(filen)
+        endif
+    endif
+end subroutine NoahMP50_writerst
+
+!BOP
+!
+! !ROUTINE: NoahMP50_dump_restart
+! \label{NoahMP50_dump_restart}
+!
+! !REVISION HISTORY:
+!  May 2023: Cenlin He; modified for refactored NoahMP v5 and later
+!
+! !INTERFACE:
+subroutine NoahMP50_dump_restart(n, ftn, wformat)
+
+! !USES:
+    use LIS_coreMod, only : LIS_rc
+    use LIS_historyMod
+    use NoahMP50_lsmMod
+
+    implicit none
+
+    integer, intent(in) :: ftn
+    integer, intent(in) :: n
+    character(len=*), intent(in) :: wformat
+!
+! !DESCRIPTION:
+!  This routine gathers the necessary restart variables and performs
+!  the actual write statements to create the restart files.
+!
+!  The arguments are:
+!  \begin{description}
+!   \item[n]
+!    index of the nest
+!   \item[ftn]
+!    unit number for the restart file
+!   \item[wformat]
+!    restart file format (binary/netcdf)
+!  \end{description}
+!
+!
+!  The following is the list of variables written in the NoahMP v5
+!  restart file:
+!  \begin{verbatim}
+!    nc, nr, ntiles             - grid and tile space dimensions
+!    sfcrunoff                  - NoahMP accumulated surface runoff [m]
+!    udrrunoff                  - NoahMP accumulated sub-surface runoff [m]
+!    smc                        - NoahMP volumtric soil moisture [m3/m3]
+!    sh2o                       - NoahMP volumtric liquid soil moisture [m3/m3]
+!    tslb                       - NoahMP soil temperature [K]
+!    sneqv                      - NoahMP snow water equivalent [mm]
+!    snowh                      - NoahMP physical snow depth [m]
+!    canwat                     - NoahMP total canopy water + ice [mm]
+!    acsnom                     - NoahMP accumulated snow melt leaving pack [-]
+!    acsnow                     - NoahMP accumulated snow on grid [mm]
+!    isnow                      - NoahMP actual no. of snow layers [-]
+!    tv                         - NoahMP vegetation leaf temperature [K]
+!    tg                         - NoahMP bulk ground surface temperature [K]
+!    canice                     - NoahMP canopy-intercepted ice [mm]
+!    canliq                     - NoahMP canopy-intercepted liquid water [mm]
+!    eah                        - NoahMP canopy air vapor pressure [Pa]
+!    tah                        - NoahMP canopy air temperature [K]
+!    cm                         - NoahMP bulk momentum drag coefficient [-]
+!    ch                         - NoahMP bulk sensible heat exchange coefficient [-]
+!    fwet                       - NoahMP wetted or snowed fraction of canopy [-]
+!    sneqvo                     - NoahMP snow mass at last time step [mm h2o]
+!    albold                     - NoahMP snow albedo at last time step [-]
+!    qsnow                      - NoahMP snowfall on the ground [mm/s]
+!    wslake                     - NoahMP lake water storage [mm]
+!    zwt                        - NoahMP water table depth [m]
+!    wa                         - NoahMP water in the "aquifer" [mm]
+!    wt                         - NoahMP water in aquifer and saturated soil [mm]
+!    tsno                       - NoahMP snow layer temperature [K]
+!    zss                        - NoahMP snow/soil layer depth from snow surface [m]
+!    snowice                    - NoahMP snow layer ice [mm]
+!    snowliq                    - NoahMP snow layer liquid water [mm]
+!    lfmass                     - NoahMP leaf mass [g/m2]
+!    rtmass                     - NoahMP mass of fine roots [g/m2]
+!    stmass                     - NoahMP stem mass [g/m2]
+!    wood                       - NoahMP mass of wood (including woody roots) [g/m2]
+!    stblcp                     - NoahMP stable carbon in deep soil [g/m2]
+!    fastcp                     - NoahMP short-lived carbon in shallow soil [g/m2]
+!    lai                        - NoahMP leaf area index [-]
+!    sai                        - NoahMP stem area index [-]
+!    tauss                      - NoahMP snow age factor [-]
+!    smoiseq                    - NoahMP equilibrium volumetric soil moisture content [m3/m3]
+!    smcwtd                     - NoahMP soil moisture content in the layer to the water table when deep [-]
+!    deeprech                   - NoahMP recharge to the water table when deep [-]
+!    rech                       - NoahMP recharge to the water table (diagnostic) [-]
+!    grain                      - NoahMP mass of grain XING [g/m2]
+!    gdd                        - NoahMP growing degree days XING (based on 10C) [-]
+!    pgs                        - NoahMP growing degree days XING [-]
+!  \end{verbatim}
+!
+! The routines invoked are:
+! \begin{description}
+!   \item[LIS\_writeGlobalHeader\_restart](\ref{LIS_writeGlobalHeader_restart})\\
+!      writes the global header information
+!   \item[LIS\_writeHeader\_restart](\ref{LIS_writeHeader_restart})\\
+!      writes the header information for a variable
+!   \item[LIS\_closeHeader\_restart](\ref{LIS_closeHeader_restart})\\
+!      close the header
+!   \item[LIS\_writevar\_restart](\ref{LIS_writevar_restart})\\
+!      writes a variable to the restart file
+! \end{description}
+! 
+!EOP 
+               
+    integer :: l, t 
+    real    :: tmptilen(LIS_rc%npatch(n, LIS_rc%lsm_index))
+    integer :: dimID(11)
+    integer :: sfcrunoff_ID
+    integer :: udrrunoff_ID
+    integer :: smc_ID
+    integer :: sh2o_ID
+    integer :: tslb_ID
+    integer :: sneqv_ID
+    integer :: snowh_ID
+    integer :: canwat_ID
+    integer :: acsnom_ID
+    integer :: acsnow_ID
+    integer :: isnow_ID
+    integer :: tv_ID
+    integer :: tg_ID
+    integer :: canice_ID
+    integer :: canliq_ID
+    integer :: eah_ID
+    integer :: tah_ID
+    integer :: cm_ID
+    integer :: ch_ID
+    integer :: fwet_ID
+    integer :: sneqvo_ID
+    integer :: albold_ID
+    integer :: qsnow_ID
+    integer :: wslake_ID
+    integer :: zwt_ID
+    integer :: wa_ID
+    integer :: wt_ID
+    integer :: tsno_ID
+    integer :: zss_ID
+    integer :: snowice_ID
+    integer :: snowliq_ID
+    integer :: lfmass_ID
+    integer :: rtmass_ID
+    integer :: stmass_ID
+    integer :: wood_ID
+    integer :: stblcp_ID
+    integer :: fastcp_ID
+    integer :: lai_ID
+    integer :: sai_ID
+    integer :: tauss_ID
+    integer :: smoiseq_ID
+    integer :: smcwtd_ID
+    integer :: deeprech_ID
+    integer :: rech_ID
+    integer :: grain_ID
+    integer :: gdd_ID
+    integer :: pgs_ID
+    integer :: pexp_ID
+    integer :: area_ID
+    integer :: qrf_ID
+    integer :: qspring_ID
+    integer :: qslat_ID
+    integer :: qrfs_ID
+    integer :: qsprings_ID
+    integer :: fdepth_ID
+    integer :: rivercond_ID
+    integer :: riverbed_ID
+    integer :: eqzwt_ID
+    integer :: irnumsi_ID
+    integer :: irnummi_ID
+    integer :: irnumfi_ID
+    integer :: irwatsi_ID
+    integer :: irwatmi_ID
+    integer :: irwatfi_ID
+    integer :: irsivol_ID
+    integer :: irmivol_ID
+    integer :: irfivol_ID
+    integer :: ireloss_ID
+    integer :: irrsplh_ID
+    integer :: qtdrain_ID
+    integer :: accssoil_ID
+    integer :: accqinsur_ID
+    integer :: accqseva_ID
+    integer :: accetrani_ID
+    integer :: accdwater_ID
+    integer :: accprcp_ID
+    integer :: accecan_ID
+    integer :: accetran_ID
+    integer :: accedir_ID
+    
+    ! write the header of the restart file
+    call LIS_writeGlobalHeader_restart(ftn, n, LIS_rc%lsm_index, &
+                                       "NoahMP50", &
+                                       dim1=NoahMP50_struc(n)%nsoil+NoahMP50_struc(n)%nsnow, &
+                                       dim2=NoahMP50_struc(n)%nsoil,                          &
+                                       dim3=NoahMP50_struc(n)%nsnow,                          &
+                                       dim4=1,                                                 &
+                                       dimID=dimID,                                            &
+                                       output_format = trim(wformat))
+
+    ! write the header for state variable sfcrunoff
+    call LIS_writeHeader_restart(ftn, n, dimID, sfcrunoff_ID, "SFCRUNOFF", &
+                                 "accumulated surface runoff", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable udrrunoff
+    call LIS_writeHeader_restart(ftn, n, dimID, udrrunoff_ID, "UDRRUNOFF", &
+                                 "accumulated sub-surface runoff", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable smc
+    call LIS_writeHeader_restart(ftn, n, dimID, smc_ID, "SMC", &
+                                 "volumtric soil moisture", &
+                                 "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                 var_flag = "dim2") 
+   
+      ! write the header for state variable sh2o
+      call LIS_writeHeader_restart(ftn, n, dimID, sh2o_ID, "SH2O", &
+                                   "volumtric liquid soil moisture", &
+                                   "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                    var_flag = "dim2") 
+   
+      ! write the header for state variable tslb
+      call LIS_writeHeader_restart(ftn, n, dimID, tslb_ID, "TSLB", &
+                                   "soil temperature", &
+                                   "K", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                    var_flag = "dim2")
+   
+      ! write the header for state variable sneqv
+      call LIS_writeHeader_restart(ftn, n, dimID, sneqv_ID, "SNEQV", &
+                                   "snow water equivalent", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable snowh
+      call LIS_writeHeader_restart(ftn, n, dimID, snowh_ID, "SNOWH", &
+                                   "physical snow depth", &
+                                   "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable canwat
+      call LIS_writeHeader_restart(ftn, n, dimID, canwat_ID, "CANWAT", &
+                                   "total canopy water + ice", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable acsnom
+      call LIS_writeHeader_restart(ftn, n, dimID, acsnom_ID, "ACSNOM", &
+                                   "accumulated snow melt leaving pack", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable acsnow
+      call LIS_writeHeader_restart(ftn, n, dimID, acsnow_ID, "ACSNOW", &
+                                   "accumulated snow on grid", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable isnow
+      call LIS_writeHeader_restart(ftn, n, dimID, isnow_ID, "ISNOW", &
+                                   "actual no. of snow layers", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable tv
+      call LIS_writeHeader_restart(ftn, n, dimID, tv_ID, "TV", &
+                                   "vegetation leaf temperature", &
+                                   "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable tg
+      call LIS_writeHeader_restart(ftn, n, dimID, tg_ID, "TG", &
+                                   "bulk ground surface temperature", &
+                                   "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable canice
+      call LIS_writeHeader_restart(ftn, n, dimID, canice_ID, "CANICE", &
+                                   "canopy-intercepted ice", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable canliq
+      call LIS_writeHeader_restart(ftn, n, dimID, canliq_ID, "CANLIQ", &
+                                   "canopy-intercepted liquid water", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable eah
+      call LIS_writeHeader_restart(ftn, n, dimID, eah_ID, "EAH", &
+                                   "canopy air vapor pressure", &
+                                   "Pa", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable tah
+      call LIS_writeHeader_restart(ftn, n, dimID, tah_ID, "TAH", &
+                                   "canopy air temperature", &
+                                   "K", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable cm
+      call LIS_writeHeader_restart(ftn, n, dimID, cm_ID, "CM", &
+                                   "bulk momentum drag coefficient", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable ch
+      call LIS_writeHeader_restart(ftn, n, dimID, ch_ID, "CH", &
+                                   "bulk sensible heat exchange coefficient", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable fwet
+      call LIS_writeHeader_restart(ftn, n, dimID, fwet_ID, "FWET", &
+                                   "wetted or snowed fraction of canopy", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable sneqvo
+      call LIS_writeHeader_restart(ftn, n, dimID, sneqvo_ID, "SNEQVO", &
+                                   "snow mass at last time step", &
+                                   "mm h2o", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable albold
+      call LIS_writeHeader_restart(ftn, n, dimID, albold_ID, "ALBOLD", &
+                                   "snow albedo at last time step", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable qsnow
+      call LIS_writeHeader_restart(ftn, n, dimID, qsnow_ID, "QSNOW", &
+                                   "snowfall on the ground", &
+                                   "mm/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable wslake
+      call LIS_writeHeader_restart(ftn, n, dimID, wslake_ID, "WSLAKE", &
+                                   "lake water storage", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable zwt
+      call LIS_writeHeader_restart(ftn, n, dimID, zwt_ID, "ZWT", &
+                                   "water table depth", &
+                                   "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable wa
+      call LIS_writeHeader_restart(ftn, n, dimID, wa_ID, "WA", &
+                                   "water in aquifer", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable wt
+      call LIS_writeHeader_restart(ftn, n, dimID, wt_ID, "WT", &
+                                   "water in aquifer and saturated soil", &
+                                   "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable tsno
+      call LIS_writeHeader_restart(ftn, n, dimID, tsno_ID, "TSNO", &
+                                   "snow layer temperature", &
+                                   "K", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
+                                   var_flag = "dim3")
+   
+      ! write the header for state variable zss
+      call LIS_writeHeader_restart(ftn, n, dimID, zss_ID, "ZSS", &
+                                   "snow/soil layer depth from snow surface", &
+                                   "m", vlevels=NoahMP50_struc(n)%nsnow+NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                   var_flag = "dim1") 
+   
+      ! write the header for state variable snowice
+      call LIS_writeHeader_restart(ftn, n, dimID, snowice_ID, "SNOWICE", &
+                                   "snow layer ice", &
+                                   "mm", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
+                                    var_flag = "dim3")
+   
+      ! write the header for state variable snowliq
+      call LIS_writeHeader_restart(ftn, n, dimID, snowliq_ID, "SNOWLIQ", &
+                                   "snow layer liquid water", &
+                                   "mm", vlevels=NoahMP50_struc(n)%nsnow , valid_min=-99999.0, valid_max=99999.0, &
+                                   var_flag = "dim3")
+   
+      ! write the header for state variable lfmass
+      call LIS_writeHeader_restart(ftn, n, dimID, lfmass_ID, "LFMASS", &
+                                   "leaf mass", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable rtmass
+      call LIS_writeHeader_restart(ftn, n, dimID, rtmass_ID, "RTMASS", &
+                                   "mass of fine roots", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable stmass
+      call LIS_writeHeader_restart(ftn, n, dimID, stmass_ID, "STMASS", &
+                                   "stem mass", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable wood
+      call LIS_writeHeader_restart(ftn, n, dimID, wood_ID, "WOOD", &
+                                   "mass of wood (including woody roots)", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable stblcp
+      call LIS_writeHeader_restart(ftn, n, dimID, stblcp_ID, "STBLCP", &
+                                   "stable carbon in deep soil", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable fastcp
+      call LIS_writeHeader_restart(ftn, n, dimID, fastcp_ID, "FASTCP", &
+                                   "short-lived carbon in shallow soil", &
+                                   "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable lai
+      call LIS_writeHeader_restart(ftn, n, dimID, lai_ID, "LAI", &
+                                   "leaf area index", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable sai
+      call LIS_writeHeader_restart(ftn, n, dimID, sai_ID, "SAI", &
+                                   "stem area index", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+      ! write the header for state variable tauss
+      call LIS_writeHeader_restart(ftn, n, dimID, tauss_ID, "TAUSS", &
+                                   "snow age factor", &
+                                   "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+
+      ! for MMF groundwater
+      if (NoahMP50_struc(n)%runsub_opt == 5) then 
+      ! write the header for state variable smoiseq
+      call LIS_writeHeader_restart(ftn, n, dimID, smoiseq_ID, "SMOISEQ", &
+                                   "equilibrium volumetric soil moisture content", &
+                                   "m3/m3", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                 var_flag = "dim2") 
+ 
+    ! write the header for state variable smcwtd
+    call LIS_writeHeader_restart(ftn, n, dimID, smcwtd_ID, "SMCWTD", &
+                                 "soil moisture content in the layer to the water table when deep", &
+                                 "m3/m3", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable deeprech
+    call LIS_writeHeader_restart(ftn, n, dimID, deeprech_ID, "DEEPRECH", &
+                                 "recharge to the water table when deep", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable rech
+    call LIS_writeHeader_restart(ftn, n, dimID, rech_ID, "RECH", &
+                                 "recharge to the water table (diagnostic)", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable pexp
+    call LIS_writeHeader_restart(ftn, n, dimID, pexp_ID, "PEXP", &
+                                 "groundwater expotential parameter", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable area
+    call LIS_writeHeader_restart(ftn, n, dimID, area_ID, "AREA", &
+                                 "river area", &
+                                 "m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable qrf
+    call LIS_writeHeader_restart(ftn, n, dimID, qrf_ID, "QRF", &
+                                 "groundwater baseflow", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable qspring
+    call LIS_writeHeader_restart(ftn, n, dimID, qspring_ID, "QSPRING", &
+                                 "seeping water", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable qslat
+    call LIS_writeHeader_restart(ftn, n, dimID, qslat_ID, "QSLAT", &
+                                 "accumulated lateral flow", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable qrfs
+    call LIS_writeHeader_restart(ftn, n, dimID, qrfs_ID, "QRFS", &
+                                 "accumulated GW baseflow", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable qsprings
+    call LIS_writeHeader_restart(ftn, n, dimID, qsprings_ID, "QSPRINGS", &
+                                 "accumulated seeping water", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable fdepth
+    call LIS_writeHeader_restart(ftn, n, dimID, fdepth_ID, "FDEPTH", &
+                                 "depth", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable rivercond
+    call LIS_writeHeader_restart(ftn, n, dimID, rivercond_ID, "RIVERCOND", &
+                                 "river conductivity", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable riverbed
+    call LIS_writeHeader_restart(ftn, n, dimID, riverbed_ID, "RIVERBED", &
+                                 "riverbed depth", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable eqzwt
+    call LIS_writeHeader_restart(ftn, n, dimID, eqzwt_ID, "EQZWT", &
+                                 "equilibrium water table depth", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    endif
+
+    ! for irrigation
+    if (NoahMP50_struc(n)%irr_opt >0) then
+    ! write the header for state variable irnumsi
+    call LIS_writeHeader_restart(ftn, n, dimID, irnumsi_ID, "IRNUMSI", &
+                                 "sprinkler irrigation count", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irnummi
+    call LIS_writeHeader_restart(ftn, n, dimID, irnummi_ID, "IRNUMMI", &
+                                 "micro irrigation count", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irnumfi
+    call LIS_writeHeader_restart(ftn, n, dimID, irnumfi_ID, "IRNUMFI", &
+                                 "flood irrigation count", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irwatsi
+    call LIS_writeHeader_restart(ftn, n, dimID, irwatsi_ID, "IRWATSI", &
+                                 "sprinkler irrigation water amount", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irwatmi
+    call LIS_writeHeader_restart(ftn, n, dimID, irwatmi_ID, "IRWATMI", &
+                                 "micro irrigation water amount", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irwatfi
+    call LIS_writeHeader_restart(ftn, n, dimID, irwatfi_ID, "IRWATFI", &
+                                 "flood irrigation water amount", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irsivol
+    call LIS_writeHeader_restart(ftn, n, dimID, irsivol_ID, "IRSIVOL", &
+                                 "sprinkler irrigation water volume", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irmivol
+    call LIS_writeHeader_restart(ftn, n, dimID, irmivol_ID, "IRMIVOL", &
+                                 "micro irrigation water volume", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irfivol
+    call LIS_writeHeader_restart(ftn, n, dimID, irfivol_ID, "IRFIVOL", &
+                                 "flood irrigation water volume", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable ireloss
+    call LIS_writeHeader_restart(ftn, n, dimID, ireloss_ID, "IRELOSS", &
+                                 "loss of irrigation water to evaporation", &
+                                 "m", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable irrsplh
+    call LIS_writeHeader_restart(ftn, n, dimID, irrsplh_ID, "IRRSPLH", &
+                                 "latent heating from sprinkler evaporation", &
+                                 "W/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    endif
+
+    ! for tile drainage
+    if (NoahMP50_struc(n)%tdrn_opt >0) then
+    ! write the header for state variable qtdrain
+    call LIS_writeHeader_restart(ftn, n, dimID, qtdrain_ID, "QTDRAIN", &
+                                 "accumulated tile drainage discharge", &
+                                 "mm", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    endif
+
+    ! write the header for state variable grain
+    call LIS_writeHeader_restart(ftn, n, dimID, grain_ID, "GRAIN", &
+                                 "mass of grain XING", &
+                                 "g/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable gdd
+    call LIS_writeHeader_restart(ftn, n, dimID, gdd_ID, "GDD", &
+                                 "growing degree days XING (based on 10C)", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable pgs
+    call LIS_writeHeader_restart(ftn, n, dimID, pgs_ID, "PGS", &
+                                 "growing degree days XING", &
+                                 "-", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! for additional restart variables
+    ! write the header for state variable accssoil
+    call LIS_writeHeader_restart(ftn, n, dimID, accssoil_ID, "ACC_SSOIL", &
+                                 "accumulated ground heat flux", &
+                                 "W/m2", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accqinsur
+    call LIS_writeHeader_restart(ftn, n, dimID, accqinsur_ID, "ACC_QINSUR", &
+                                 "accumulated soil surface water flux", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accqseva
+    call LIS_writeHeader_restart(ftn, n, dimID, accqseva_ID, "ACC_QSEVA", &
+                                 "accumulated soil surface evaporation", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accetrani
+    call LIS_writeHeader_restart(ftn, n, dimID, accetrani_ID, "ACC_ETRANI", &
+                                 "accumulated plant transpiration each layer", &
+                                 "m/s", vlevels=NoahMP50_struc(n)%nsoil , valid_min=-99999.0, valid_max=99999.0, &
+                                 var_flag = "dim2")
+    ! write the header for state variable accdwater
+    call LIS_writeHeader_restart(ftn, n, dimID, accdwater_ID, "ACC_DWATER", &
+                                 "accumulated water storage change", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accprcp
+    call LIS_writeHeader_restart(ftn, n, dimID, accprcp_ID, "ACC_PRCP", &
+                                 "accumulated precipitation", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accecan
+    call LIS_writeHeader_restart(ftn, n, dimID, accecan_ID, "ACC_ECAN", &
+                                 "accumulated canopy evaporation", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accetran
+    call LIS_writeHeader_restart(ftn, n, dimID, accetran_ID, "ACC_ETRAN", &
+                                 "accumulated transpiration", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+    ! write the header for state variable accedir
+    call LIS_writeHeader_restart(ftn, n, dimID, accedir_ID, "ACC_EDIR", &
+                                 "accumulated net soil evaporation", &
+                                 "m/s", vlevels=1, valid_min=-99999.0, valid_max=99999.0)
+
+    ! close header of restart file
+    call LIS_closeHeader_restart(ftn, n, LIS_rc%lsm_index, dimID, NoahMP50_struc(n)%rstInterval)
+
+
+    ! write state variables into restart file
+    ! accumulated surface runoff
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%sfcrunoff, &
+                              varid=sfcrunoff_ID, dim=1, wformat=wformat)
+
+    ! accumulated sub-surface runoff
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%udrrunoff, &
+                              varid=udrrunoff_ID, dim=1, wformat=wformat)
+
+    ! volumtric soil moisture
+    do l=1, NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%smc(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=smc_ID, dim=l, wformat=wformat)
+    enddo
+    ! volumtric liquid soil moisture
+    do l=1, NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%sh2o(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=sh2o_ID, dim=l, wformat=wformat)
+    enddo
+    ! soil temperature
+    do l=1, NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%tslb(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=tslb_ID, dim=l, wformat=wformat)
+    enddo
+    ! snow water equivalent
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%sneqv, &
+                              varid=sneqv_ID, dim=1, wformat=wformat)
+
+    ! physical snow depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%snowh, &
+                              varid=snowh_ID, dim=1, wformat=wformat)
+
+    ! total canopy water + ice
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%canwat, &
+                              varid=canwat_ID, dim=1, wformat=wformat)
+
+    ! accumulated snow melt leaving pack
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%acsnom, &
+                              varid=acsnom_ID, dim=1, wformat=wformat)
+
+    ! accumulated snow on grid
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%acsnow, &
+                              varid=acsnow_ID, dim=1, wformat=wformat)
+
+    ! actual no. of snow layers
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%isnow, &
+                              varid=isnow_ID, dim=1, wformat=wformat)
+
+    ! vegetation leaf temperature
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%tv, &
+                              varid=tv_ID, dim=1, wformat=wformat)
+
+    ! bulk ground surface temperature
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%tg, &
+                              varid=tg_ID, dim=1, wformat=wformat)
+
+    ! canopy-intercepted ice
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%canice, &
+                              varid=canice_ID, dim=1, wformat=wformat)
+
+    ! canopy-intercepted liquid water
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%canliq, &
+                              varid=canliq_ID, dim=1, wformat=wformat)
+
+    ! canopy air vapor pressure
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%eah, &
+                              varid=eah_ID, dim=1, wformat=wformat)
+
+    ! canopy air temperature
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%tah, &
+                              varid=tah_ID, dim=1, wformat=wformat)
+
+    ! bulk momentum drag coefficient
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%cm, &
+                              varid=cm_ID, dim=1, wformat=wformat)
+
+    ! bulk sensible heat exchange coefficient
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%ch, &
+                              varid=ch_ID, dim=1, wformat=wformat)
+
+    ! wetted or snowed fraction of canopy
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%fwet, &
+                              varid=fwet_ID, dim=1, wformat=wformat)
+
+    ! snow mass at last time step
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%sneqvo, &
+                              varid=sneqvo_ID, dim=1, wformat=wformat)
+
+    ! snow albedo at last time step
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%albold, &
+                              varid=albold_ID, dim=1, wformat=wformat)
+
+    ! snowfall on the ground
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qsnow, &
+                              varid=qsnow_ID, dim=1, wformat=wformat)
+
+    ! lake water storage
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%wslake, &
+                              varid=wslake_ID, dim=1, wformat=wformat)
+
+    ! water table depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%zwt, &
+                              varid=zwt_ID, dim=1, wformat=wformat)
+
+    ! water in the "aquifer"
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%wa, &
+                              varid=wa_ID, dim=1, wformat=wformat)
+
+    ! water in aquifer and saturated soil
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%wt, &
+                              varid=wt_ID, dim=1, wformat=wformat)
+
+    ! snow layer temperature
+    do l=1, NoahMP50_struc(n)%nsnow
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%tsno(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=tsno_ID, dim=l, wformat=wformat)
+    enddo
+    ! snow/soil layer depth from snow surface
+    do l=1, NoahMP50_struc(n)%nsnow+NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%zss(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=zss_ID, dim=l, wformat=wformat)
+    enddo
+    ! snow layer ice
+    do l=1, NoahMP50_struc(n)%nsnow
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%snowice(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=snowice_ID, dim=l, wformat=wformat)
+    enddo
+    ! snow layer liquid water
+    do l=1, NoahMP50_struc(n)%nsnow
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%snowliq(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=snowliq_ID, dim=l, wformat=wformat)
+    enddo
+    ! leaf mass
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%lfmass, &
+                              varid=lfmass_ID, dim=1, wformat=wformat)
+
+    ! mass of fine roots
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%rtmass, &
+                              varid=rtmass_ID, dim=1, wformat=wformat)
+
+    ! stem mass
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%stmass, &
+                              varid=stmass_ID, dim=1, wformat=wformat)
+
+    ! mass of wood (including woody roots)
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%wood, &
+                              varid=wood_ID, dim=1, wformat=wformat)
+
+    ! stable carbon in deep soil
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%stblcp, &
+                              varid=stblcp_ID, dim=1, wformat=wformat)
+
+    ! short-lived carbon in shallow soil
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%fastcp, &
+                              varid=fastcp_ID, dim=1, wformat=wformat)
+
+    ! leaf area index
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%lai, &
+                              varid=lai_ID, dim=1, wformat=wformat)
+
+    ! stem area index
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%sai, &
+                              varid=sai_ID, dim=1, wformat=wformat)
+
+    ! snow age factor
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%tauss, &
+                              varid=tauss_ID, dim=1, wformat=wformat)
+
+    ! for MMF groundwater
+    if (NoahMP50_struc(n)%runsub_opt == 5) then
+
+    ! equilibrium volumetric soil moisture content
+    do l=1, NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%smoiseq(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=smoiseq_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! soil moisture content in the layer to the water table when deep
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%smcwtd, &
+                              varid=smcwtd_ID, dim=1, wformat=wformat)
+
+    ! recharge to the water table when deep
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%deeprech, &
+                              varid=deeprech_ID, dim=1, wformat=wformat)
+
+    ! recharge to the water table (diagnostic)
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%rech, &
+                              varid=rech_ID, dim=1, wformat=wformat)
+
+    ! groundwater expotential parameter
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%pexp, &
+                              varid=pexp_ID, dim=1, wformat=wformat)
+
+    ! river area
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%area, &
+                              varid=area_ID, dim=1, wformat=wformat)
+
+    ! groundwater baseflow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qrf, &
+                              varid=qrf_ID, dim=1, wformat=wformat)
+
+    ! seeping water
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qspring, &
+                              varid=qspring_ID, dim=1, wformat=wformat)
+
+    ! accumulated lateral flow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qslat, &
+                              varid=qslat_ID, dim=1, wformat=wformat)
+
+    ! accumulated GW baseflow
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qrfs, &
+                              varid=qrfs_ID, dim=1, wformat=wformat)
+
+    ! accumulated seeping water
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qsprings, &
+                              varid=qsprings_ID, dim=1, wformat=wformat)
+
+    ! depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%fdepth, &
+                              varid=fdepth_ID, dim=1, wformat=wformat)
+
+    ! river conductivity
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%rivercond, &
+                              varid=rivercond_ID, dim=1, wformat=wformat)
+
+    ! riverbed depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%riverbed, &
+                              varid=riverbed_ID, dim=1, wformat=wformat)
+
+    ! equilibrium water table depth
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%eqzwt, &
+                              varid=eqzwt_ID, dim=1, wformat=wformat)
+
+    endif
+
+    ! for irrigation
+    if (NoahMP50_struc(n)%irr_opt >0) then
+    ! sprinkler irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irnumsi, &
+                              varid=irnumsi_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irnummi, &
+                              varid=irnummi_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation count
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irnumfi, &
+                              varid=irnumfi_ID, dim=1, wformat=wformat)
+
+    ! sprinkler irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irwatsi, &
+                              varid=irwatsi_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irwatmi, &
+                              varid=irwatmi_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation water amount
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irwatfi, &
+                              varid=irwatfi_ID, dim=1, wformat=wformat)
+
+    ! sprinkler irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irsivol, &
+                              varid=irsivol_ID, dim=1, wformat=wformat)
+
+    ! micro irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irmivol, &
+                              varid=irmivol_ID, dim=1, wformat=wformat)
+
+    ! flood irrigation water volume
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irfivol, &
+                              varid=irfivol_ID, dim=1, wformat=wformat)
+
+    ! loss of irrigation water to evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%ireloss, &
+                              varid=ireloss_ID, dim=1, wformat=wformat)
+
+    ! latent heating from sprinkler evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%irrsplh, &
+                              varid=irrsplh_ID, dim=1, wformat=wformat)
+
+    endif
+
+    ! for tile drainage
+    if (NoahMP50_struc(n)%tdrn_opt >0) then
+    ! accumulated tile drainage discharge
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%qtdrain, &
+                              varid=qtdrain_ID, dim=1, wformat=wformat)
+    endif
+
+    ! mass of grain XING
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%grain, &
+                              varid=grain_ID, dim=1, wformat=wformat)
+
+    ! growing degree days XING (based on 10C)
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%gdd, &
+                              varid=gdd_ID, dim=1, wformat=wformat)
+
+    ! growing degree days XING
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%pgs, &
+                              varid=pgs_ID, dim=1, wformat=wformat)
+
+    ! for additional variables
+    ! accumulated ground heat flux
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accssoil, &
+                              varid=accssoil_ID, dim=1, wformat=wformat)
+
+    ! accumulated soil surface water flux
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accqinsur, &
+                              varid=accqinsur_ID, dim=1, wformat=wformat)
+
+    ! accumulated soil surface evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accqseva, &
+                              varid=accqseva_ID, dim=1, wformat=wformat)
+
+    ! accumulated plant transpiration each layer
+    do l=1, NoahMP50_struc(n)%nsoil
+        tmptilen = 0
+        do t=1, LIS_rc%npatch(n, LIS_rc%lsm_index)
+            tmptilen(t) = NoahMP50_struc(n)%noahmp50(t)%accetrani(l)
+        enddo
+        call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, tmptilen, &
+                                  varid=accetrani_ID, dim=l, wformat=wformat)
+    enddo
+
+    ! accumulated water storage change
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accdwater, &
+                              varid=accdwater_ID, dim=1, wformat=wformat)
+
+    ! accumulated precipitation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accprcp, &
+                              varid=accprcp_ID, dim=1, wformat=wformat)
+
+    ! accumulated canopy evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accecan, &
+                              varid=accecan_ID, dim=1, wformat=wformat)
+
+    ! accumulated transpiration
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accetran, &
+                              varid=accetran_ID, dim=1, wformat=wformat)
+
+    ! accumulated net soil evaporation
+    call LIS_writevar_restart(ftn, n, LIS_rc%lsm_index, NoahMP50_struc(n)%noahmp50%accedir, &
+                              varid=accedir_ID, dim=1, wformat=wformat)
+
+
+    !!! END OF writing state variables
+
+end subroutine NoahMP50_dump_restart
