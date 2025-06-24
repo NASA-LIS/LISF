@@ -6997,11 +6997,25 @@ run mode. Currently, only the forecast mode is supported.
 `GALWEM-GE forecast number of ensemble members:` specifies the number of ensembles
 of the GALWEM-GE forecast forcing data.
 
+`Apply GALWEM-GE precipitation bias correction:` specifies whether to enable the precipitation
+bias correction. Acceptable values are:
+
+|====
+|Value | Description
+
+|0     | Do not enable
+|1     | Enable
+|====
+
+`GALWEM-GE model CDF directory:` specifies the location of the GALWEM-GE model CDF files.
+
 .Example _lis.config_ entry
 ....
-GALWEM-GE forecast forcing directory:          ./GALWEM_GE
-GALWEM-GE forecast run mode:                   forecast    # forecast | analysis
-GALWEM-GE forecast number of ensemble members: 21
+GALWEM-GE forecast forcing directory:          ./input/GALWEM_GE
+GALWEM-GE forecast run mode:                   forecast   
+GALWEM-GE forecast number of ensemble members: 10
+Apply GALWEM-GE precipitation bias correction: 1 #enter 1 - use; or 0
+GALWEM-GE model CDF directory:                 ./input/cdf/
 ....
 
 [[sssec_mogrepsgforecast,MOGREPS-G forecast]]
