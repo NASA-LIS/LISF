@@ -134,7 +134,7 @@ def write_log_file(log_path, date_str, cycle_str, missing_members, \
     log_filename = f"check_result_{date_str}_CY{cycle_str}.log"
     full_path = os.path.join(log_path, log_filename)
 
-    with open(full_path, "w") as log:
+    with open(full_path, "w", encoding="ascii") as log:
         log.write(f"[{timestamp}] File Check Result for {date_str} Cycle {cycle_str}\n")
         log.write("="*60 + "\n")
 
