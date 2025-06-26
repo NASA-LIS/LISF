@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import argparse
 import pygrib
@@ -16,6 +18,7 @@ def build_filename(base_prefix, grib_suffix, memb_id, fh):
     return f"{base_prefix}-MEMB{memb_id}{grib_suffix}.{fh}_DF.GR2"
 
 def is_grib2_valid(filepath, deep_check=False):
+    """Test if opened file is a GRIB file"""
     try:
         # Step 1: quick size filter
         if os.path.getsize(filepath) < 10 * 1024:
@@ -33,7 +36,9 @@ def is_grib2_valid(filepath, deep_check=False):
     except Exception:
         return False
 
-def check_member_files(member_path, memb_id, forecast_hours, base_prefix, grib_suffix, deep_check=False):
+def check_member_files(member_path, memb_id, forecast_hours, base_prefix, \
+                       grib_suffix, deep_check=False):
+    """Checks files for a given GALWEM GE member"""
     missing_or_corrupted = []
 
     for fh in forecast_hours:
@@ -66,13 +71,16 @@ def check_files(base_path, date_str, cycle_str, deep_check=False):
             missing_members.append(member)
             continue
 
-        bad_files = check_member_files(member_path, memb_id, forecast_hours, base_prefix, grib_suffix, deep_check=deep_check)
+        bad_files = check_member_files(member_path, memb_id, \
+                                       forecast_hours, base_prefix, \
+                                       grib_suffix, deep_check=deep_check)
         if bad_files:
             bad_files_by_member[member] = bad_files
 
     return missing_members, bad_files_by_member
 
 def print_results(missing_members, bad_files):
+    """Prints summary of file checks to screen"""
     print("==== ✅ File Check Result ====")
 
     if missing_members:
@@ -89,7 +97,9 @@ def print_results(missing_members, bad_files):
     else:
         print("✅ All files are present and valid.")
 
-def write_log_file(log_path, date_str, cycle_str, missing_members, bad_files, script_name):
+def write_log_file(log_path, date_str, cycle_str, missing_members, \
+                   bad_files, script_name):
+    """Writes information on available ensemble files to a log file"""
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_filename = f"check_result_{date_str}_CY{cycle_str}.log"
     full_path = os.path.join(log_path, log_filename)
@@ -116,22 +126,31 @@ def write_log_file(log_path, date_str, cycle_str, missing_members, bad_files, sc
     print(f"📝 Log saved to: {full_path}")
 
 def submit_batch_script(script_name):
+    """Submits batch job to SLURM"""
     print(f"\n🚀 Submitting job: {script_name}")
     ret = os.system(f"sbatch {script_name}")
     if ret != 0:
         print(f"❌ Failed to submit job: {script_name} (exit code {ret})")
 
 def main():
+    """Main driver"""
     parser = argparse.ArgumentParser(description="Check GALWEM GRIB2 file status and trigger sbatch if ready")
-    parser.add_argument("--root", type=str, required=True, help="Root directory containing <date>/<cycle>/memberXXX folders")
-    parser.add_argument("--date", type=str, required=True, help="Date (YYYYMMDD)")
-    parser.add_argument("--cycle", type=str, required=True, help="Cycle (e.g., 00, 06, 12, 18)")
-    parser.add_argument("--log-dir", type=str, default=".", help="Directory to save log files (default: current)")
-    parser.add_argument("--deep-check", action="store_true", help="Enable deep GRIB2 read check using pygrib")
+    parser.add_argument("--root", type=str, required=True, \
+                        help="Root directory containing <date>/<cycle>/memberXXX folders")
+    parser.add_argument("--date", type=str, required=True, \
+                        help="Date (YYYYMMDD)")
+    parser.add_argument("--cycle", type=str, required=True, \
+                        help="Cycle (e.g., 00, 06, 12, 18)")
+    parser.add_argument("--log-dir", type=str, default=".", \
+                        help="Directory to save log files (default: current)")
+    parser.add_argument("--deep-check", action="store_true", \
+                        help="Enable deep GRIB2 read check using pygrib")
 
     args = parser.parse_args()
 
-    missing_members, bad_files = check_files(args.root, args.date, args.cycle, deep_check=args.deep_check)
+    missing_members, bad_files = check_files(args.root, args.date, \
+                                             args.cycle, \
+                                             deep_check=args.deep_check)
     print_results(missing_members, bad_files)
 
     if not missing_members and not bad_files:
@@ -140,7 +159,8 @@ def main():
         script_name = "lis.mr.noah39.rapid.galwem.job"
 
     submit_batch_script(script_name)
-    write_log_file(args.log_dir, args.date, args.cycle, missing_members, bad_files, script_name)
+    write_log_file(args.log_dir, args.date, args.cycle, missing_members, \
+                   bad_files, script_name)
 
 if __name__ == "__main__":
     main()
