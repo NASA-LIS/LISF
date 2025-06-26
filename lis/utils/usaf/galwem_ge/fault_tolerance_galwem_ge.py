@@ -1,9 +1,39 @@
 #!/usr/bin/env python3
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.5
+#
+# Copyright (c) 2024 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
+"""
+#--------------------------------------------------------------------------
+#
+# SCRIPT: fault_tolerance_galwem_ge.py
+#
+# PURPOSE:  Checks for GALWEM GE GRIB2 files, and based on results,
+# submits LIS MR run using either GALWEM GE or GALWEM GD as forcing.
+#
+# REQUIREMENTS as of 26 June 2025:
+# * Python 3.11 or higher
+# * Pygrib Python library
+#
+# REVISION HISTORY:
+# 24 June 2025:  Yeosang Yoon, first version.
+# 26 June 2025:  Eric Kemp, updates to satisfy pylint.
+#
+#--------------------------------------------------------------------------
+"""
+
 import os
 import argparse
-import pygrib
 from datetime import datetime
+import pygrib
+
 
 def generate_forecast_hours():
     """Generate a list of forecast hours."""
@@ -114,7 +144,7 @@ def write_log_file(log_path, date_str, cycle_str, missing_members, \
             log.write("All member folders are present.\n")
 
         if bad_files:
-            log.write(f"\nMissing or corrupted files by member:\n")
+            log.write("\nMissing or corrupted files by member:\n")
             for member, files in bad_files.items():
                 log.write(f"  - {member}: {len(files)} problematic files\n")
                 for f, reason in files:
