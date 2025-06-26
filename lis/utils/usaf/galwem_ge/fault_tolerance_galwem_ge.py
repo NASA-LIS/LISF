@@ -29,11 +29,11 @@
 #--------------------------------------------------------------------------
 """
 
-import os
 import argparse
+import os
 from datetime import datetime
-import pygrib
 
+import xarray as xr
 
 def generate_forecast_hours():
     """Generate a list of forecast hours."""
@@ -57,11 +57,10 @@ def is_grib2_valid(filepath, deep_check=False):
         with open(filepath, 'rb') as f:
             if f.read(4) != b'GRIB':
                 return False
-        # Step 3: optional pygrib deep read
+        # Step 3: optional deep read
         if deep_check:
-            with pygrib.open(filepath) as grbs:
-                grbs.read(1)
-
+            ds = xr.open_dataset(filepath, engine='cfgrib')
+            del ds
         return True
     except Exception:
         return False
