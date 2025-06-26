@@ -11,9 +11,12 @@
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
-
-
+import os
+import sys
+import xarray as xr
 import numpy as np
+import multiprocessing as mp
+from functools import partial
 #import calendar
 #import math
 #import time
@@ -141,38 +144,130 @@ def calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, target_fcst_val_arr, targ
                 correct_fcst_coarse[fcst_yr, lead_num, ens_num] = bias_corrected_value
 
     return correct_fcst_coarse
+import numpy as np
+import os
+import multiprocessing as mp
+from functools import partial
 
-def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons, \
-                        np_obs_clim_array, np_fcst_clim_array, \
-                        lead_final, target_fcst_eyr, target_fcst_syr, fcst_syr, ens_final, mon, \
-                        bc_var, tiny, fcst_coarse):
-    """ lat lon calculations """
-
-    correct_fcst_coarse = np.ones(((target_fcst_eyr-target_fcst_syr)+1, lead_final, ens_final, \
-                                    nlats, nlons))*-9999.
-
-    num_lats = ilat_max-ilat_min+1
-    num_lons = ilon_max-ilon_min+1
-
-    print("num_lats = ", num_lats, np_obs_clim_array.shape)
-    print("num_lons = ", num_lons, fcst_coarse.shape)
-
-    for ilat in range(num_lats):
+def process_land_points_chunk(chunk_indices, ilat_min, ilon_min, 
+                             np_obs_clim_array, np_fcst_clim_array, 
+                             fcst_coarse, lead_final, target_fcst_syr,
+                             target_fcst_eyr, fcst_syr, ens_final, mon,
+                             bc_var, tiny):
+    """Process a chunk of land points"""
+    results = []
+    
+    for idx in chunk_indices:
+        ilat, ilon = idx
         lat_num = ilat_min + ilat
-        for ilon in range(num_lons):
-            lon_num = ilon_min + ilon
-            #count_grid = ilon + ilat*num_lons
+        lon_num = ilon_min + ilon
+        
+        obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
+        fcst_clim_all = np_fcst_clim_array[:, :, ilat, ilon]
+        target_fcst_val_arr = fcst_coarse[:, :, :, lat_num, lon_num]
+        
+        result = calc_bcsd(obs_clim_all, fcst_clim_all, lead_final,
+                          target_fcst_val_arr, target_fcst_syr,
+                          target_fcst_eyr, fcst_syr, ens_final, mon,
+                          bc_var, tiny)
+        
+        results.append((lat_num, lon_num, result))
+    
+    return results
 
-            obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
-            fcst_clim_all = np_fcst_clim_array[:, :, ilat, ilon]
-            target_fcst_val_arr = fcst_coarse[:, :, :, lat_num, lon_num]
+def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, nlats, nlons,
+                        np_obs_clim_array, np_fcst_clim_array,
+                        lead_final, target_fcst_eyr, target_fcst_syr, fcst_syr, ens_final, mon,
+                        bc_var, tiny, fcst_coarse, land_mask):
+    """Lat-lon calculations with parallel processing for land points only"""
+    
+    # Pre-allocate output array
+    year_count = (target_fcst_eyr - target_fcst_syr) + 1
+    correct_fcst_coarse = np.ones((year_count, lead_final, ens_final, nlats, nlons)) * -9999.0
 
-            correct_fcst_coarse[:, :, :, lat_num, lon_num] = calc_bcsd(obs_clim_all, \
-                                                                       fcst_clim_all, lead_final, \
-                                                                       target_fcst_val_arr, \
-                                                                       target_fcst_syr, \
-                                                                       target_fcst_eyr, fcst_syr, \
-                                                                       ens_final, mon, \
-                                                                       bc_var, tiny)
-
+    # Find land points within the specified domain
+    domain_mask = land_mask[ilat_min:ilat_max+1, ilon_min:ilon_max+1] > 0
+    y_indices, x_indices = np.where(domain_mask)
+    land_points = list(zip(y_indices, x_indices))
+    land_points_count = len(land_points)
+    
+    print(f"Land points to process: {land_points_count} out of {(ilat_max-ilat_min+1)*(ilon_max-ilon_min+1)} grid cells")
+    
+    if land_points_count == 0:
+        print("No land points to process in domain!")
+        return correct_fcst_coarse
+    
+    # Get the number of workers from environment variable 
+    num_workers = int(os.environ.get('NUM_WORKERS', 1))
+    print(f"Using {num_workers} workers for parallel processing")
+    
+    # Split land points into chunks for each worker
+    chunk_size = max(1, land_points_count // num_workers)
+    chunks = [land_points[i:i + chunk_size] for i in range(0, land_points_count, chunk_size)]
+    
+    print(f"Created {len(chunks)} chunks of ~{chunk_size} points each")
+    
+    # Create a partial function with fixed parameters
+    process_chunk_partial = partial(
+        process_land_points_chunk,
+        ilat_min=ilat_min,
+        ilon_min=ilon_min,
+        np_obs_clim_array=np_obs_clim_array,
+        np_fcst_clim_array=np_fcst_clim_array,
+        fcst_coarse=fcst_coarse,
+        lead_final=lead_final,
+        target_fcst_syr=target_fcst_syr,
+        target_fcst_eyr=target_fcst_eyr,
+        fcst_syr=fcst_syr,
+        ens_final=ens_final,
+        mon=mon,
+        bc_var=bc_var,
+        tiny=tiny
+    )
+    
+    # Process chunks in parallel
+    all_results = []
+    if num_workers > 1:
+        with mp.Pool(processes=num_workers) as pool:
+            chunk_results = pool.map(process_chunk_partial, chunks)
+            for results in chunk_results:
+                all_results.extend(results)
+    else:
+        # Process serially if only one worker
+        all_results = process_chunk_partial(land_points)
+    
+    # Fill in results
+    for lat_num, lon_num, result in all_results:
+        correct_fcst_coarse[:, :, :, lat_num, lon_num] = result
+    
     return correct_fcst_coarse
+
+def apply_regridding_with_mask(data, regridder, land_mask):
+    """
+    Apply land mask and regrid the data.
+    data : xarray.DataArray or xarray.Dataset
+    regridder : xesmf.Regridder
+    land_mask : xarray.Dataset
+    Returns:
+    --------
+    xarray.DataArray or xarray.Dataset
+    """
+    any_land = land_mask.LANDMASK > 0
+    
+    if isinstance(data, xr.DataArray):
+        masked_data = data.where(any_land)
+        result = regridder(masked_data)
+    
+    elif isinstance(data, xr.Dataset):
+        masked_data = data.copy(deep=True)
+        for var_name in masked_data.data_vars:
+            masked_data[var_name] = masked_data[var_name].where(any_land)
+        result = regridder(masked_data)
+    
+    else:
+        raise TypeError(f"Expected xarray.DataArray or xarray.Dataset, got {type(data)}")
+    
+    return result
+
+
+

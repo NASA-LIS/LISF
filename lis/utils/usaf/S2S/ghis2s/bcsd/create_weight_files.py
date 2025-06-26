@@ -10,6 +10,8 @@ from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library import convert_forecast_data_to_netcdf as cfdn
 
 CFSV2_file = '/discover/nobackup/projects/lis/MET_FORCING/CFSv2//Oper_TS/2024/20241217/tmp2m.01.2024121706.daily.grb2'
+NMME_file = '/discover/nobackup/projects/usaf_lis/GHI_S2S/NMME//CanSIPS-IC4/prec.CanESM5.mon_Jan.2025.nc'
+
 def get_land_mask(config, cfsv2_data):
     """
     Create the CFSv2 land mask using the LDT LANDMASK
@@ -59,6 +61,7 @@ if __name__ == "__main__":
     # Parse command arguements
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config_file', required=True, help='config file name')
+    parser.add_argument('-f', '--forcing', required=True, help='config file name')
     args = parser.parse_args()
 
     with open(args.config_file, 'r', encoding="utf-8") as file:
@@ -67,9 +70,19 @@ if __name__ == "__main__":
     weightdir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
     lats, lons = get_domain_info(args.config_file, coord=True)
     resol = round((lats[1] - lats[0])*100)
-    cfsv2 = cfdn.wgrib2_to_netcdf(CFSV2_file)
-    land_mask = get_land_mask(config, cfsv2)
-    land_mask.to_netcdf(weightdir + f'CFSv2_{resol}km_landmask.nc4', format="NETCDF4",
+
+    if args.forcing == 'NMME':
+    #NMME
+        force = xr.open_dataset(NMME_file, decode_times=False)
+        force = force.rename({'Y': 'latitude', 'X': 'longitude'})
+        land_mask = get_land_mask(config, force)
+        
+    if args.forcing == 'CFSv2':
+        # CFSv2
+        force = cfdn.wgrib2_to_netcdf(CFSV2_file)
+        land_mask = get_land_mask(config, force)
+        
+    land_mask.to_netcdf(weightdir + f'{args.forcing}_{resol}km_landmask.nc4', format="NETCDF4",
                         encoding = {"LANDMASK": {"zlib":True, "complevel":6, "shuffle":True, "missing_value":-9999.}})
 
     #any_land = land_mask.LANDMASK > 0
@@ -82,7 +95,7 @@ if __name__ == "__main__":
     #})
 
     # bilinear
-    weight_file = weightdir + f'CFSv2_{resol}km_bilinear.nc'
+    weight_file = weightdir + f'{args.forcing}_{resol}km_bilinear.nc'
     print(weight_file)
     ds_out = xr.Dataset(
             {
@@ -90,10 +103,10 @@ if __name__ == "__main__":
                 "lon": (["lon"], lons),
             }
         )
-    run_xe= xe.Regridder(cfsv2, ds_out, "bilinear", periodic=True, 
+    run_xe= xe.Regridder(force, ds_out, "bilinear", periodic=True, 
                          filename=weight_file)
     # conservative
-    weight_file = weightdir + f'CFSv2_{resol}km_conservative.nc'
+    weight_file = weightdir + f'{args.forcing}_{resol}km_conservative.nc'
     print(weight_file)
     ds_out = xr.Dataset(
             {
@@ -101,7 +114,7 @@ if __name__ == "__main__":
                 "lon": (["lon"], lons),
             }
         )
-    run_xe= xe.Regridder(cfsv2, ds_out, "conservative", periodic=True, 
+    run_xe= xe.Regridder(force, ds_out, "conservative", periodic=True, 
                          filename=weight_file)
     
 

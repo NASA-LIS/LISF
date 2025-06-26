@@ -42,6 +42,7 @@ import gc
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.convert_forecast_data_to_netcdf import read_wgrib
 from ghis2s.shared.utils import get_domain_info
+from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 limits = lim()
@@ -133,33 +134,6 @@ def write_monthly_files(this_6h1, file_6h, file_mon):
     this_mon.close()
     del this_6h2, this_6h, this_mon
     return
-
-def apply_regridding_with_mask(data, regridder, land_mask):
-    """
-    Apply land mask and regrid the data.
-    data : xarray.DataArray or xarray.Dataset
-    regridder : xesmf.Regridder
-    land_mask : xarray.Dataset
-    Returns:
-    --------
-    xarray.DataArray or xarray.Dataset
-    """
-    any_land = land_mask.LANDMASK > 0
-    
-    if isinstance(data, xr.DataArray):
-        masked_data = data.where(any_land)
-        result = regridder(masked_data)
-    
-    elif isinstance(data, xr.Dataset):
-        masked_data = data.copy(deep=True)
-        for var_name in masked_data.data_vars:
-            masked_data[var_name] = masked_data[var_name].where(any_land)
-        result = regridder(masked_data)
-    
-    else:
-        raise TypeError(f"Expected xarray.DataArray or xarray.Dataset, got {type(data)}")
-    
-    return result
 
 def _migrate_to_monthly_files(cfsv2, outdirs, fcst_init, args, rank):
     regrid_method = {

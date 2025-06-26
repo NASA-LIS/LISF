@@ -106,6 +106,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
         cmd2 = '\n'
         for var_num, var_value in enumerate(obs_var_list):
             if var_num == 1:
+                continue
                 var_type = "PRCP"
                 cmd2 = "python"
                 cmd2 += f" {srcdir2}/task_07.py"
@@ -148,7 +149,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
                 slurm_commands.append(cmd)
             else:
                 utils.job_script(config_file, jobfile, jobname, ntasks, hours, cwd,
-                                 in_command=cmd, command2=cmd2)
+                                 in_command=cmd)
 
     print(f"[INFO] Completed CFSv2 temporal disaggregation for: {(month_abbr)}")
     if py_call:
