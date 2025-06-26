@@ -589,25 +589,25 @@ class S2Srun(DownloadForecasts):
                     inherits = ','.join(map(str, inherit_list))
                 else:
                     inherits = str(inherit_list)
-                file.write(f"        inherit = {inherits}\n")
+                #file.write(f"        inherit = {inherits}\n")
             sh_script = self.SCRDIR + subdir + '/' + jfile + '.sh'
             file.write(f"        script = {sh_script}\n")
             
             # Write pre-script
-            file.write("        pre-script = \n")
-            for command in pre_script:
-                file.write(f"                     {command}\n")
+            #file.write("        pre-script = \n")
+            #for command in pre_script:
+            #    file.write(f"                     {command}\n")
         
             # Write directives
             file.write("        [[[directives]]]\n")
             for directive in directives:
                 file.write(f"            {directive}\n")
 
-            if len(environment) > 0:
-                # Write environment variables
-                file.write("        [[[environment]]]\n")
-                for env in environment:
-                    file.write(f"            {env}\n")
+            #if len(environment) > 0:
+            #    # Write environment variables
+            #    file.write("        [[[environment]]]\n")
+            #    for env in environment:
+            #        file.write(f"            {env}\n")
         
         ''' the main function '''
         cylc_file = f"{self.SCRDIR}CYLC_workflow.rc"
@@ -623,21 +623,51 @@ class S2Srun(DownloadForecasts):
                     dependency_map[task_name] = prev_tasks
                      
         with open(cylc_file, 'w') as file:
-            # Write scheduling section first
+            # Write header
+            file.write("#!jinja2\n")
+            file.write("# S2S Forecast Workflow\n")
+            file.write("  \n")
+            file.write("[meta]\n")
+            file.write("    title = S2S Forecast Workflow\n")
+            file.write("    description = S2S Forecast Initialized on YYYY-MM\n")
+            file.write("  \n")
+            file.write("[cylc]\n")
+            file.write("    UTC mode = True\n")
+            file.write("    cycle point format = %Y-%m-%dT%H\n")
+            file.write("  \n")
+            
+            # Write scheduling section
             file.write("[scheduling]\n")
-            file.write("[[dependencies]]\n")
-            file.write("    [[[T00]]] # validity (hours)\n")
-            file.write("        graph = \"\"\"\n")
+            file.write("    initial cycle point = YYYY-MM-01T00\n")
+            file.write("    max active cycle points = 1\n")
+            file.write("  \n")
+            file.write("    [[dependencies]]\n")
+            file.write("        [[[R1]]] # validity (hours)\n")
+            file.write("            graph = \"\"\"\n")
             
             # Generate dependency graph from dependency_map
             for task, dependencies in dependency_map.items():
                 if dependencies:
                     dep_str = " & ".join(dependencies)
-                    file.write(f"            {dep_str} => {task}\n")        
-            file.write("        \"\"\"\n")
-
+                    file.write(f"                {dep_str} => {task}\n")        
+            file.write("            \"\"\"\n")
+            
             # Write runtime section
             file.write("[runtime]\n")
+            file.write("    [[root]]\n")
+            file.write("        # Default settings for all tasks\n")
+            file.write("        [[[job]]]\n")
+            file.write("            batch system = slurm\n")
+            file.write("        [[[environment]]]\n")
+            file.write("            datetime = $CYLC_TASK_CYCLE_POINT\n")
+            file.write("            config = $CYLC_SUITE_DEF_PATH/config.yml\n")
+            file.write("            inputdata = $CYLC_SUITE_DEF_PATH/inputdata.yml\n")
+            file.write("            INSTALL_PATH = $CYLC_SUITE_DEF_PATH\n")
+            file.write("        [[[events]]]\n")
+            file.write("            mail to = USEREMAIL\n")
+            file.write("            mail events = failed\n")
+            file.write("  \n")
+            
             for jfile in self.schedule.keys():
                 subdir = self.schedule[jfile]['subdir']
                 directives, pre_script, environment = extract_slurm_info(self.SCRDIR + subdir + '/' + jfile)
@@ -786,7 +816,9 @@ class S2Srun(DownloadForecasts):
             file.write(filedata)
 
         self.create_dict('ldtics_run.j', 'ldt_ics', prev=prev)
-        utils.cylc_job_scripts('ldtics_run.sh', 2, CWD, command_list=[COMMAND])
+        shutil.copy('ldtics_run.j', 'ldtics_run.sh')
+        utils.remove_sbatch_lines('ldtics_run.sh')
+        #utils.cylc_job_scripts('ldtics_run.sh', 2, CWD, command_list=[COMMAND])
         os.chdir(self.E2ESDIR)        
         return
 
@@ -841,6 +873,7 @@ class S2Srun(DownloadForecasts):
         par_info['MEM'] = info['MEM']
         par_info['NT'] = info['NT']
         par_info['TPN'] = info['TPN']
+        par_info['MP'] = False
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
@@ -851,8 +884,10 @@ class S2Srun(DownloadForecasts):
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-                
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'], CWD, command_list=slurm_sub[i])
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), info['HOURS'], CWD, command_list=slurm_sub[i])
  
         # (3) bcsd03 regridding NMME
         # --------------------------
@@ -867,30 +902,40 @@ class S2Srun(DownloadForecasts):
         finally:
             tfile.close()
             os.unlink(tfile.name)
-            
-        utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
         # (4) bcsd04: Monthly "BC" step applied to CFSv2 (task_04.py, after 1 and 3)
         # --------------------------------------------------------------------------
         jobname='bcsd04_'
+        par_info = {}
+        par_info['CPT'] = '10'
+        par_info['NT']= str(1)
+        par_info['MEM']= '240GB'
+        par_info['TPN'] = None
+        par_info['MP'] = True
         prev = [f"{key}" for key in self.schedule.keys() if 'bcsd01_' in key]
         prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd03_' in key])
         slurm_commands = bcsd.task_04.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                               1, 3, CWD, py_call=True)
         # multi tasks per job
-        l_sub = 4
+        l_sub = 1
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
+                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-                
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
         # (5) bcsd05: Monthly "BC" step applied to NMME (task_05.py: after 1 and 3)
         # -------------------------------------------------------------------------
@@ -904,64 +949,92 @@ class S2Srun(DownloadForecasts):
             slurm_commands.extend(var1)
         
         # multi tasks per job
+        l_sub = 1
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name, parallel_run=par_info)
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1)) 
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
+
+        # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
+        # ---------------------------------------------------------------------
+        jobname='bcsd06_'
+        par_info = {}
+        par_info['CPT'] = '12'
+        par_info['NT']= str(1)
+        par_info['MEM']= '240GB'
+        par_info['TPN'] = None
+        par_info['MP'] = True
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd04_' in key]
+        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd05_' in key])         
+        slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
+                                           1, 3, CWD, self.E2ESDIR, py_call=True)
+
+        # multi tasks per job
         l_sub = 3
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                    jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-                
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
-        # (6) bcsd06: CFSv2 Temporal Disaggregation (task_06.py: after 4 and 5)
-        # ---------------------------------------------------------------------
-        jobname='bcsd06_'
-        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd04_' in key]
-        prev.extend([f"{key}" for key in self.schedule.keys() if 'bcsd05_' in key])         
-        slurm_commands = bcsd.task_06.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
-                                           1, 3, CWD, self.E2ESDIR, py_call=True)
-
-        tfile = self.sublist_to_file(slurm_commands, CWD)
-        try:
-            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(5), CWD, tfile.name)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
-            
-        utils.cylc_job_scripts(jobname + 'run.sh', 5, CWD, command_list=slurm_commands)
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 5, CWD, command_list=slurm_sub[i])
 
         # (8) bcsd08: NMME disaagregation
         # -------------------------------
         jobname='bcsd08_'
+        par_info = {}
+        par_info['CPT'] = '15'
+        par_info['NT']= str(1)
+        par_info['MEM']= '240GB'
+        par_info['TPN'] = None
+        par_info['MP'] = True        
         slurm_commands = []
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd06_' in key]
         for nmme_model in self.MODELS:
             var1 = bcsd.task_08.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm, self.MM, jobname,
                                      1, 3, CWD, self.E2ESDIR, nmme_model, py_call=True)
             slurm_commands.extend(var1)
-        
-        tfile = self.sublist_to_file(slurm_commands, CWD)
-        try:
-            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(5), CWD, tfile.name)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd06_run.j')
-        finally:
-            tfile.close()
-            os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 5, CWD, command_list=slurm_commands)
+        # multi tasks per job
+        l_sub = 2
+        slurm_sub = self.split_list(slurm_commands, l_sub)
+        for i in range(len(slurm_sub)):
+            tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            try:
+                s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
+                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name)
+                self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
+            finally:
+                tfile.close()
+                os.unlink(tfile.name)
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 5, CWD, command_list=slurm_sub[i])
 
         # Task 9: Combine the CFSv2 forcing fields into final format for LIS to read
         # Task 10: Combine the NMME forcing fields into final format for LIS to read
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
         jobname='bcsd09-10_'
+        prev = [f"{key}" for key in self.schedule.keys() if 'bcsd08_' in key]
         slurm_9_10, slurm_11_12 = bcsd.task_09.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
                                                     self.MM, jobname,1, 4, CWD, self.E2ESDIR, 'CFSv2', py_call=True)
         # bcsd09-10
@@ -969,12 +1042,14 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd08_run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
         finally:
             tfile.close()
             os.unlink(tfile.name)
-            
-        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10)
 
         # bcsd11-12
         jobname='bcsd11-12_'
@@ -986,8 +1061,10 @@ class S2Srun(DownloadForecasts):
         finally:
             tfile.close()
             os.unlink(tfile.name)
-            
-        utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_11_12)
         
         os.chdir(self.E2ESDIR)
         return
@@ -1072,8 +1149,10 @@ class S2Srun(DownloadForecasts):
             finally:
                 tfile.close()
                 os.unlink(tfile.name)
-                
-            utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
+
+            shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+            utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+            #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
         os.chdir(self.E2ESDIR)        
         return
@@ -1111,7 +1190,9 @@ class S2Srun(DownloadForecasts):
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
 
         # weekly metrics
         jobname='s2smetric_weekly_'
@@ -1122,6 +1203,7 @@ class S2Srun(DownloadForecasts):
         par_info['MEM']= '8GB'
         par_info['NT']= str(1)
         par_info['TPN'] = None
+        par_info['MP'] = False
         for model in self.MODELS:
             var1 = postprocess_nmme_job.main(self.E2ESDIR +'/' + self.config_file, self.year, self.month, CWD, jobname=jobname, ntasks=1,
                                              hours=str(4), nmme_model= model, py_call=True, weekly=True)
@@ -1137,7 +1219,9 @@ class S2Srun(DownloadForecasts):
                 tfile.close()
                 os.unlink(tfile.name)
 
-            utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
+            shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+            utils.remove_sbatch_lines(jobname + 'run.sh')
+            #utils.cylc_job_scripts(jobname + 'run.sh', 4, CWD, command_list=slurm_commands)
         else:
             # multi tasks per job
             l_sub = 6
@@ -1151,8 +1235,10 @@ class S2Srun(DownloadForecasts):
                 finally:
                     tfile.close()
                     os.unlink(tfile.name)
-                
-                utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
+
+                shutil.copy(jobname + '{:02d}_run.j'.format(i+1), jobname + '{:02d}_run.sh'.format(i+1))
+                utils.remove_sbatch_lines(jobname + '{:02d}_run.sh'.format(i+1))
+                #utils.cylc_job_scripts(jobname + '{:02d}_run.sh'.format(i+1), 4, CWD, command_list=slurm_sub[i])
 
         jobname='s2smetric_tiff_'
         prev = ['s2smetric_run.j']
@@ -1170,7 +1256,10 @@ class S2Srun(DownloadForecasts):
             file.write(filedata)
 
         self.create_dict('s2smetric_tiff_run.j', 's2smetric', prev=prev)
-        utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
+        
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 3, CWD, command_list=slurm_commands)
 
         os.chdir(self.E2ESDIR)        
         return
@@ -1203,7 +1292,9 @@ class S2Srun(DownloadForecasts):
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
 
         # 2nd job
         jobname='s2splots_02_'
@@ -1213,6 +1304,7 @@ class S2Srun(DownloadForecasts):
         par_info['MEM']= '10GB'
         par_info['NT']= str(1)
         par_info['TPN'] = None
+        par_info['MP'] = False
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
@@ -1222,7 +1314,9 @@ class S2Srun(DownloadForecasts):
             tfile.close()
             os.unlink(tfile.name)
 
-        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
 
         # 3rd job
         jobname='s2splots_03_'
@@ -1232,6 +1326,7 @@ class S2Srun(DownloadForecasts):
         par_info['MEM']= '10GB'
         par_info['NT']= str(1)
         par_info['TPN'] = None
+        par_info['MP'] = False
         tfile = self.sublist_to_file(slurm_commands, CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
@@ -1240,8 +1335,10 @@ class S2Srun(DownloadForecasts):
         finally:
             tfile.close()
             os.unlink(tfile.name)
-
-        utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
+            
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 2, CWD, command_list=slurm_commands)
         os.chdir(self.E2ESDIR)
         
         return

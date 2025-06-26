@@ -18,6 +18,7 @@ from datetime import datetime
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import xarray as xr
+import yaml
 # pylint: disable=import-error
 import yaml
 from ghis2s.bcsd.bcsd_library import bcsd_function
@@ -104,6 +105,11 @@ FCST_INFILE_TEMPLATE = '{}/{}/{:04d}/ens{:01d}/{}.nmme.monthly.{:04d}{:02d}.nc'
 CONFIGFILE = str(sys.argv[16])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIGFILE, extent=True)
 LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
+with open(CONFIGFILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+land_mask = np.array(ldt_xr['LANDMASK'].values)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.{}.{}_{:04d}_{:04d}.nc'
@@ -193,10 +199,11 @@ for MON in [INIT_FCST_MON]:
     print("np_FCST_CLIM_ARRAY:", np_FCST_CLIM_ARRAY.shape, \
     type(np_FCST_CLIM_ARRAY))
 
-    CORRECT_FCST_COARSE = bcsd_function.latlon_calculations(ilat_min, \
-    ilat_max, ilon_min, ilon_max, nlats, nlons, np_OBS_CLIM_ARRAY, \
-    np_FCST_CLIM_ARRAY, LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, \
-    FCST_SYR, ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE)
+    CORRECT_FCST_COARSE = \
+        bcsd_function.latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max,
+                                          nlats, nlons, np_OBS_CLIM_ARRAY, np_FCST_CLIM_ARRAY,
+                                          LEAD_FINAL, TARGET_FCST_EYR, TARGET_FCST_SYR, FCST_SYR,
+                                          ENS_NUM, MON, BC_VAR, TINY, FCST_COARSE, land_mask)
 
     mask = np.broadcast_to(mask_exp, CORRECT_FCST_COARSE.shape)
     CORRECT_FCST_COARSE[mask == 0] = -9999.

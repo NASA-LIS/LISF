@@ -62,6 +62,10 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     with open(config_file, 'r', encoding="utf-8") as file:
         config = yaml.safe_load(file)
 
+    # get resolution
+    lats, lons = utils.get_domain_info(config_file, coord=True)
+    resol = f'{round((lats[1] - lats[0])*100)}km'
+
     # Path of the directory where all the BC codes are kept
     srcdir = config['SETUP']['LISFDIR'] + '/lis/utils/usaf/S2S/ghis2s/bcsd/bcsd_library/'
 
@@ -80,6 +84,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     ens_num = ensemble_sizes[nmme_model]
 
     # Path for where forecast files are located:
+    cfsv2dir = f"{projdir}/bcsd_fcst/CFSv2_{resol}/"
     forcedir = f"{projdir}/bcsd_fcst/NMME"
 
     #  Calculate bias correction for different variables separately:
@@ -89,7 +94,7 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     var_type = 'PRCP'
 
     # Path for where forecast and bias corrected files are located:
-    subdaily_raw_fcst_dir = f"{forcedir}/linked_cfsv2_precip_files/{month_abbr}01"
+    subdaily_raw_fcst_dir = f"{cfsv2dir}/raw/6-Hourly/{month_abbr}01"
     monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
     monthly_bc_fcst_dir = f"{forcedir}/bcsd/Monthly/{month_abbr}01"
 

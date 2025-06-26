@@ -40,6 +40,7 @@ import yaml
 from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 from ghis2s.shared.utils import get_domain_info
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
+from ghis2s.bcsd.bcsd_library.bcsd_function import apply_regridding_with_mask
 # pylint: enable=import-error
 
 limits = lim()
@@ -122,7 +123,12 @@ if not os.path.exists(NMME_OUTPUT_DIR):
 
 ## Read in example fine spatial resolution file for lat and lon over domain
 LATS, LONS = get_domain_info(CONFIGFILE, coord=True)
-
+resol = round((LATS[1] - LATS[0])*100)
+resol = f'{resol}km'
+weightdir = config['SETUP']['supplementarydir'] + '/bcsd_fcst/'
+# read CFSv2 land mask
+land_mask = xr.open_dataset(weightdir + f'NMME_{resol}_landmask.nc4')
+    
 ## Read in example coarse spatial resolution file for lat and lon over domain
 EX_NMME_FILENAME = '/ex_raw_nmme_download.nc'
 GE1 = SUPPLEMENTARY_DIR + EX_NMME_FILENAME
@@ -211,32 +217,29 @@ ds_in["slice"] = xr.DataArray(
         lon=(["lon"], LONI))
     )
 ds_in["XPREC"] = xr.DataArray(
-    data = np.array (XPREC[0,0:9,:,:,:]),
+    data = np.array (XPREC[0,0:LEAD_MONS,:,:,:]),
     dims=["mon","ens", "lat", "lon"],
     coords=dict(
-        mon=(["mon"], np.arange(9)),
+        mon=(["mon"], np.arange(LEAD_MONS)),
         ens=(["ens"], np.arange(ENS_NUM)),
         lat=(["lat"], LATI),
         lon=(["lon"], LONI))
     )
-ds_out_unmasked = xr.Dataset(
+ds_out = xr.Dataset(
             {
                 "lat": (["lat"], LATS),
                 "lon": (["lon"], LONS),
         })
-regridder = xe.Regridder(ds_in, ds_out_unmasked, "conservative", periodic=True)
-ds_out_unmasked = regridder(ds_in)
-ds_out = ds_out_unmasked.copy()
+weight_file = weightdir + f'NMME_{resol}_conservative.nc'
 
-# LDT mask
-ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
-        config['SETUP']['ldtinputfile'])
-mask_2d = np.array(ldt_xr['LANDMASK'].values)
-mask_exp = mask_2d[np.newaxis, np.newaxis,:,:]
-darray = np.array(ds_out_unmasked['XPREC'].values)
-mask = np.broadcast_to(mask_exp, darray.shape)
-darray[mask == 0] = -9999.
-ds_out['XPREC'].values = darray
+regridder = xe.Regridder(ds_in, ds_out, "conservative", periodic=True, 
+                         reuse_weights=True, 
+                         filename=weight_file)
+#ds_out_unmasked = regridder(ds_in)
+ds_in2 = ds_in.rename_dims({"lat":"latitude", "lon":"longitude"})
+ds_in = ds_in2.rename_vars({"lat":"latitude", "lon":"longitude"})
+result = apply_regridding_with_mask(ds_in, regridder, land_mask)
+ds_out["XPREC"] = result["XPREC"]
 
 ## Reorganize and write
 YR = CYR
@@ -255,8 +258,7 @@ for m in range(0, ENS_NUM):
         XPRECI = limits.clip_array(XPRECI, var_name="PRECTOT", max_val=0.004, precip=True)
         LATS = np.nan_to_num(LATS, nan=-9999.)
         LONS = np.nan_to_num(LONS, nan=-9999.)
-
         SDATE = datetime(YR, MM+1, 1)
-        write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', 'Downscaled to 0.25deg', \
+        write_3d_netcdf(OUTFILE, XPRECI, 'PRECTOT', f'Downscaled to {resol}', \
         'Raw NMME at 1deg', 'kg m-2 s-1', LONS, LATS, SDATE)
         print(f"Writing {OUTFILE}")

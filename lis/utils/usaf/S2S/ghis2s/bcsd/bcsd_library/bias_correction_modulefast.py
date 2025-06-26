@@ -18,11 +18,12 @@ import os
 from dateutil.relativedelta import relativedelta
 import xarray as xr
 import numpy as np
+import yaml
 # pylint: disable=import-error
 from ghis2s.bcsd.bcsd_library.shrad_modules import read_nc_files
 from ghis2s.bcsd.bcsd_library.bcsd_stats_functions import write_4d_netcdf
 from ghis2s.shared.utils import get_domain_info
-from ghis2s.bcsd.bcsd_library.bcsd_function import calc_bcsd
+from ghis2s.bcsd.bcsd_library import bcsd_function
 from ghis2s.bcsd.bcsd_library.bcsd_function import VarLimits as lim
 # pylint: enable=import-error
 
@@ -75,6 +76,11 @@ FCST_INFILE_TEMPLATE = '{}/raw/Monthly/{}/{:04d}/ens{:01d}/{}.cfsv2.{:04d}{:02d}
 CONFIG_FILE = str(sys.argv[14])
 LAT1, LAT2, LON1, LON2 = get_domain_info(CONFIG_FILE, extent=True)
 LATS, LONS = get_domain_info(CONFIG_FILE, coord=True)
+with open(CONFIG_FILE, 'r', encoding="utf-8") as file:
+    config = yaml.safe_load(file)
+ldt_xr = xr.open_dataset(config['SETUP']['supplementarydir'] + '/lis_darun/' + \
+        config['SETUP']['ldtinputfile'])
+land_mask = np.array(ldt_xr['LANDMASK'].values)
 
 ### Output directory
 OUTFILE_TEMPLATE = '{}/{}.CFSv2.{}_{:04d}_{:04d}.nc'
@@ -115,39 +121,6 @@ def get_index(ref_array, my_value):
     """
     return np.abs(ref_array - my_value).argmin()
 
-def latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
-                        np_obs_clim_array, np_fcst_clim_array, \
-                        lead_final, target_fcst_syr, target_fcst_eyr, \
-                        fcst_syr, ens_num, mon, bc_var, \
-                        tiny, fcst_coarse, correct_fcst_coarse):
-    """Lat and Lon"""
-    num_lats = ilat_max-ilat_min+1
-    num_lons = ilon_max-ilon_min+1
-
-    print("num_lats = ", num_lats, np_obs_clim_array.shape)
-    print("num_lons = ", num_lons, fcst_coarse.shape)
-
-    for ilat in range(num_lats):
-        lat_num = ilat_min + ilat
-        for ilon in range(num_lons):
-            lon_num = ilon_min + ilon
-
-            ## First read Observed clim data (all months available in one file)
-            ## so don't have to read it again for each lead time
-            obs_clim_all = np_obs_clim_array[:, :, ilat, ilon]
-
-            ## Now read forecast climatology data too.
-            fcst_clim_all = np_fcst_clim_array[:, :, ilat, ilon]
-
-            target_fcst_val_arr = fcst_coarse[:, :, :, lat_num, lon_num]
-
-            #print("shape of FCST_COARSE: ", TARGET_FCST_VAL_ARR.shape)
-
-            correct_fcst_coarse[:, :, :, lat_num, lon_num] = \
-            calc_bcsd(obs_clim_all, fcst_clim_all, lead_final, \
-            target_fcst_val_arr, target_fcst_syr, target_fcst_eyr, \
-            fcst_syr, ens_num, mon, bc_var, tiny)
-
 def monthly_calculations(mon):
     """Monthly Bias Correction"""
     month_name = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[mon]).lower())
@@ -177,8 +150,8 @@ def monthly_calculations(mon):
                 fcst_coarse[init_fcst_year-TARGET_FCST_SYR, lead_num, ens, ] = \
                 read_nc_files(infile, FCST_VAR)[:]
     # Defining array to store bias-corrected monthly forecasts
-    correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
-    LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.
+    #correct_fcst_coarse = np.ones(((TARGET_FCST_EYR-TARGET_FCST_SYR)+1, \
+    #LEAD_FINAL, ENS_NUM, len(LATS), len(LONS)))*-9999.
     print("shape of fcst_coarse: ", fcst_coarse.shape)
 
     # Get the lat/lon indexes for the ranges
@@ -199,10 +172,11 @@ def monthly_calculations(mon):
     print("Longitude: ", nlons, ilon_min, ilon_max)
     print("np_obs_clim_array:", np_obs_clim_array.shape, type(np_obs_clim_array))
     print("np_fcst_clim_array:", np_fcst_clim_array.shape, type(np_fcst_clim_array))
-    latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max, \
-    np_obs_clim_array, np_fcst_clim_array, LEAD_FINAL, TARGET_FCST_SYR, \
-    TARGET_FCST_EYR, FCST_SYR, ENS_NUM, mon, BC_VAR, \
-    TINY, fcst_coarse, correct_fcst_coarse)
+    correct_fcst_coarse = \
+        bcsd_function.latlon_calculations(ilat_min, ilat_max, ilon_min, ilon_max,
+                                          nlats, nlons, np_obs_clim_array, np_fcst_clim_array,
+                                          LEAD_FINAL, TARGET_FCST_SYR, TARGET_FCST_EYR, FCST_SYR,
+                                          ENS_NUM, mon, BC_VAR, TINY, fcst_coarse, land_mask)
 
     correct_fcst_coarse = np.ma.masked_array(correct_fcst_coarse, \
                                              mask=correct_fcst_coarse == -9999.)

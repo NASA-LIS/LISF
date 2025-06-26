@@ -32,6 +32,7 @@ import re
 import datetime
 import math
 import numpy as np
+import shutil
 from netCDF4 import Dataset as nc4 #pylint: disable=no-name-in-module
 import yaml
 #pylint: disable=consider-using-f-string, too-many-statements, too-many-locals, too-many-arguments
@@ -69,7 +70,10 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('#SBATCH --nodes=1' + '\n')
         if parallel_run is not None:
             if parallel_run['TPN'] is None:
-                _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
+                if parallel_run['MP']:
+                    _f.write('#SBATCH --ntasks=' + str(ntasks) + '\n')
+                else:
+                    _f.write('#SBATCH --ntasks-per-node=' + str(ntasks) + '\n')
             else:
                 _f.write('#SBATCH --ntasks-per-node=' + str(parallel_run['TPN']) + '\n')
         else:
@@ -77,17 +81,24 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('#SBATCH --time=' + hours + ':00:00' + '\n')
         if 'discover' in platform.node() or 'borg' in platform.node():
             _f.write('#SBATCH --constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
-            if 'mil' in cfg['SETUP']['CONSTRAINT']:
-                _f.write('#SBATCH --partition=packable'  + '\n')
             if group_jobs:   
                 mpc = min(math.ceil(480 / ntasks), 100)
                 if parallel_run is not None:
-                    _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
+                    if parallel_run['MP']:
+                        _f.write('#SBATCH --mem=' + parallel_run['MEM'] + '\n')
+                    else:
+                        if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                            _f.write('#SBATCH --partition=packable'  + '\n')
+                        _f.write('#SBATCH --mem-per-cpu=' + parallel_run['MEM'] + '\n')
                     _f.write('#SBATCH --cpus-per-task=' + parallel_run['CPT'] + '\n')
                 else:
+                    if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                        _f.write('#SBATCH --partition=packable'  + '\n')
                     _f.write('#SBATCH --mem-per-cpu=' + str(mpc) + 'GB'  + '\n')
             else:
                 _f.write('#SBATCH --mem-per-cpu=40GB'  + '\n')
+                if 'mil' in cfg['SETUP']['CONSTRAINT']:
+                    _f.write('#SBATCH --partition=packable'  + '\n')
 
         else:
             _f.write('#SBATCH --cluster-constraint=' + cfg['SETUP']['CONSTRAINT'] + '\n')
@@ -139,6 +150,14 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('/usr/bin/touch DONE' + '\n')
         _f.write('exit 0' + '\n')
     _f.close()
+
+def remove_sbatch_lines(filename):
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+    
+    filtered_lines = [line for line in lines if not line.strip().startswith('#SBATCH')]
+    with open(filename, 'w') as file:
+        file.writelines(filtered_lines)
 
 def cylc_job_scripts(job_file, hours, cwd, command_list=None, loop_list=None, command2=None):
     with open(job_file, 'w') as f:
@@ -388,7 +407,9 @@ def job_script_lis(s2s_configfile, jobfile, job_name, cwd, hours=None, in_comman
         _f.write('/usr/bin/touch DONE' + '\n')
         _f.write('exit 0' + '\n')
     _f.close()
-    cylc_job_scripts(job_name + 'run.sh', int(thours.split(':')[0]), cwd, command_list=[cylc_command])
+    shutil.copy(jobfile, job_name + 'run.sh')
+    remove_sbatch_lines(job_name + 'run.sh')
+    #cylc_job_scripts(job_name + 'run.sh', int(thours.split(':')[0]), cwd, command_list=[cylc_command])
 
 def get_domain_info (s2s_configfile, extent=None, coord=None):
     ''' get domain infor from LDTINPUT file'''
