@@ -99,6 +99,7 @@
 | CRTM2EM        | On
 | CMEM           | On
 | Tau Omega      | On
+| WCM            | On
 |====
 
 .Applications
@@ -151,6 +152,8 @@
 | DA OBS THYSM            | On
 | DA OBS LPRM_AMSREsm     | On
 | DA OBS SMMR_SNWD        | On
+| DA OBS S1_sigmaVVSM     | On
+| DA_OBS_S1_sigmaVVVHSMLAI| On 
 | DA OBS SSMI_SNWD        | On
 | DA OBS ANSA_SNWD        | On
 | DA OBS GCOMW_AMSR2L3SND | On
