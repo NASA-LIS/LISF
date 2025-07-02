@@ -950,9 +950,13 @@ class S2Srun(DownloadForecasts):
         
         # multi tasks per job
         l_sub = 1
+        ensemble_sizes = self.config['EXP']['ensemble_sizes'][0]
         slurm_sub = self.split_list(slurm_commands, l_sub)
         for i in range(len(slurm_sub)):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
+            nmme_model = slurm_sub[i][0].split()[7]
+            ens_num = ensemble_sizes[nmme_model]
+            par_info['CPT'] = str(max(10,ens_num))
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
                                     jobname + '{:02d}_'.format(i+1), 1, str(4), CWD, tfile.name, parallel_run=par_info)
@@ -1019,7 +1023,7 @@ class S2Srun(DownloadForecasts):
             tfile = self.sublist_to_file(slurm_sub[i], CWD)
             try:
                 s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + '{:02d}_run.j'.format(i+1),
-                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name)
+                                        jobname + '{:02d}_'.format(i+1), 1, str(5), CWD, tfile.name, parallel_run=par_info)
                 self.create_dict(jobname + '{:02d}_run.j'.format(i+1), 'bcsd_fcst', prev=prev)
             finally:
                 tfile.close()
@@ -1033,15 +1037,22 @@ class S2Srun(DownloadForecasts):
         # Task 10: Combine the NMME forcing fields into final format for LIS to read
         #          and symbolically link to the reusable CFSv2 met forcings
         # ---------------------------------------------------------------------------
-        jobname='bcsd09-10_'
         prev = [f"{key}" for key in self.schedule.keys() if 'bcsd08_' in key]
         slurm_9_10, slurm_11_12 = bcsd.task_09.main(self.E2ESDIR +'/' + self.config_file, self.year, self.year, mmm,
                                                     self.MM, jobname,1, 4, CWD, self.E2ESDIR, 'CFSv2', py_call=True)
-        # bcsd09-10
-        tfile = self.sublist_to_file(slurm_9_10, CWD)
+        # bcsd09
+        jobname='bcsd09_'
+        par_info = {}
+        par_info['CPT'] = '12'
+        par_info['NT']= str(1)
+        par_info['MEM']= '240GB'
+        par_info['TPN'] = None
+        par_info['MP'] = True        
+
+        tfile = self.sublist_to_file([slurm_9_10[0]], CWD)
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
-                                    jobname, 1, str(6), CWD, tfile.name)
+                                    jobname, 1, str(6), CWD, tfile.name, parallel_run=par_info)
             self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
         finally:
             tfile.close()
@@ -1049,7 +1060,22 @@ class S2Srun(DownloadForecasts):
 
         shutil.copy(jobname + 'run.j', jobname + 'run.sh')
         utils.remove_sbatch_lines(jobname + 'run.sh')
-        #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10)
+        #utils.cylc_job_scripts(jobname + 'run.sh', 6, CWD, command_list=slurm_9_10[0])
+
+        # bcsd10
+        jobname='bcsd10_'
+        tfile = self.sublist_to_file(slurm_9_10[1:], CWD)
+        try:
+            s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
+                                    jobname, 1, str(1), CWD, tfile.name)
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=prev)
+        finally:
+            tfile.close()
+            os.unlink(tfile.name)
+
+        shutil.copy(jobname + 'run.j', jobname + 'run.sh')
+        utils.remove_sbatch_lines(jobname + 'run.sh')
+        #utils.cylc_job_scripts(jobname + 'run.sh', 1, CWD, command_list=slurm_9_10[1:])
 
         # bcsd11-12
         jobname='bcsd11-12_'
@@ -1057,7 +1083,7 @@ class S2Srun(DownloadForecasts):
         try:
             s2s_api.python_job_file(self.E2ESDIR +'/' + self.config_file, jobname + 'run.j',
                                     jobname, 1, str(6), CWD, tfile.name)
-            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev='bcsd09-10_run.j')
+            self.create_dict(jobname + 'run.j', 'bcsd_fcst', prev=['bcsd09_run.j', 'bcsd10_run.j'])
         finally:
             tfile.close()
             os.unlink(tfile.name)

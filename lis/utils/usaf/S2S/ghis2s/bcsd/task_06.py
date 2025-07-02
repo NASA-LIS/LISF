@@ -106,15 +106,14 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num, job_name, ntask
         cmd2 = '\n'
         for var_num, var_value in enumerate(obs_var_list):
             if var_num == 1:
-                continue
                 var_type = "PRCP"
-                cmd2 = "python"
-                cmd2 += f" {srcdir2}/task_07.py"
-                cmd2 += f" -s {year}"
-                cmd2 += f" -m {month_abbr}"
-                cmd2 += f" -w {projdir}"
-                cmd2 += f" -r {resol}"
-                slurm_commands.append(cmd2)
+                #cmd2 = "python"
+                #cmd2 += f" {srcdir2}/task_07.py"
+                #cmd2 += f" -s {year}"
+                #cmd2 += f" -m {month_abbr}"
+                #cmd2 += f" -w {projdir}"
+                #cmd2 += f" -r {resol}"
+                #slurm_commands.append(cmd2)
             else:
                 cmd2 = '\n'
                 var_type = "TEMP"

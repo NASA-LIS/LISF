@@ -68,6 +68,7 @@ def job_script(s2s_configfile, jobfile, job_name, ntasks, hours, cwd, parallel_r
         _f.write('\n')
         _f.write('#SBATCH --account=' + sponsor_code + '\n')
         _f.write('#SBATCH --nodes=1' + '\n')
+        _f.write('#SBATCH --quiet' + '\n')
         if parallel_run is not None:
             if parallel_run['TPN'] is None:
                 if parallel_run['MP']:
