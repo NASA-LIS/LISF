@@ -98,7 +98,8 @@ def main(config_file, fcst_syr, fcst_eyr, month_abbr, month_num,
     monthly_raw_fcst_dir = f"{forcedir}/raw/Monthly/{month_abbr}01"
     monthly_bc_fcst_dir = f"{forcedir}/bcsd/Monthly/{month_abbr}01"
 
-    outdir = f"{forcedir}/bcsd/6-Hourly/{month_abbr}01/{nmme_model}"
+    #outdir = f"{forcedir}/bcsd/6-Hourly/{month_abbr}01/{nmme_model}"
+    outdir = f"{forcedir}/final/6-Hourly/{nmme_model}/{month_abbr}01/"
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)

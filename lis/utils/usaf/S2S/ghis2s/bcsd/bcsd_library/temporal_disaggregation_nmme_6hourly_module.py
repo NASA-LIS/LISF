@@ -275,7 +275,7 @@ def process_ensemble(MON, ens):
 
         # Sub-Daily raw data
         SUBDAILY_INFILE = SUBDAILY_INFILE_TEMPLATE.format(\
-        SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, ens+1, MONTH_NAME, \
+        SUBDAILY_RAW_FCST_DIR, INIT_FCST_YEAR, (ens % 12) + 1, MONTH_NAME, \
         FCST_YEAR, FCST_MONTH)
         print(f"Reading raw sub-daily forecast {SUBDAILY_INFILE}")
         MONTHLY_INPUT_RAW_DATAG = xr.open_dataset(SUBDAILY_INFILE)

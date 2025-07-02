@@ -145,8 +145,8 @@ def driver():
 
     # Copy the precipitation files
     print(f"[INFO] NMME MODEL: {nmme_model}")
-    copy_subdaily_precipitation(current_year, month_abbr, ens_num, indir_nmme,\
-         outdir)
+    #copy_subdaily_precipitation(current_year, month_abbr, ens_num, indir_nmme,\
+    #     outdir)
 
     # Symbolically link the non-precip data
     print("[INFO] Creating symbolic links for non-precip data")

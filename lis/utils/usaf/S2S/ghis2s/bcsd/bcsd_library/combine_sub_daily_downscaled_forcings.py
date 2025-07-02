@@ -20,6 +20,8 @@ from time import ctime as t_ctime
 from time import time as t_time
 from dateutil.relativedelta import relativedelta
 import numpy as np
+from concurrent.futures import ProcessPoolExecutor
+import concurrent.futures
 # pylint: disable=no-name-in-module
 from netCDF4 import Dataset as nc4_dataset
 from netCDF4 import date2num as nc4_date2num
@@ -113,72 +115,86 @@ resolution_x, resolution_y, time_increment):
 ## Usage: <Name of variable in observed climatology> <Name of variable in
 ## reforecast climatology (same as the name in target forecast> <forecast
 ## model number>
-CMDARGS = str(sys.argv)
-INIT_FCST_YEAR = int(sys.argv[1])
-## initial forecast year for which to downscale the data
-INIT_FCST_MON = int(sys.argv[2])
-## initial forecast month for which to downscale the data
 
-MODEL_NAME = str(sys.argv[3])
-ENS_NUM = int(sys.argv[4])
-LEAD_FINAL = int(sys.argv[5])
-MONTH_NAME_TEMPLATE = '{}01'
-MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
+def process_ensemble(MON, ens):
+    INIT_FCST_YEAR = int(sys.argv[1])
+    ## initial forecast year for which to downscale the data
+    INIT_FCST_MON = int(sys.argv[2])
+    ## initial forecast month for which to downscale the data
 
-#Directory and file addresses
-BASEDIR = str(sys.argv[6])
-INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
-#### Change the model name here for other models
-INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
+    MODEL_NAME = str(sys.argv[3])
+    ENS_NUM = int(sys.argv[4])
+    LEAD_FINAL = int(sys.argv[5])
+    MONTH_NAME_TEMPLATE = '{}01'
+    MONTH_NAME = MONTH_NAME_TEMPLATE.format(calendar.month_abbr[INIT_FCST_MON])
 
-OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
-OUTFILE_TEMPLATE = '{}/CFSv2.{:04d}{:02d}.nc4'
+    #Directory and file addresses
+    BASEDIR = str(sys.argv[6])
+    INDIR_TEMPLATE = '{}/bcsd/6-Hourly/{}/{:04d}/ens{:01d}'
+    #### Change the model name here for other models
+    INFILE_TEMPLATE = '{}/{}.{:04d}{:02d}.nc4'
 
-#VAR_NAME_LIST=['LWS', 'SLRSF', 'PS', 'Q2M', 'T2M', 'WIND10M']
-VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
-UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
+    OUTDIR_TEMPLATE = '{}/final/6-Hourly/{}/{:04d}/ens{:01d}'
+    OUTFILE_TEMPLATE = '{}/CFSv2.{:04d}{:02d}.nc4'
 
-for MON in [INIT_FCST_MON]:
+    #VAR_NAME_LIST=['LWS', 'SLRSF', 'PS', 'Q2M', 'T2M', 'WIND10M']
+    VAR_NAME_LIST = ['LWGAB', 'SWGDN', 'PS', 'QV2M', 'T2M', 'U10M']
+    UNITS = ['W/m^2', 'W/m^2', 'Pa', 'kg/kg', 'K', 'm/s']
+
     MONTH_NAME = MONTH_NAME_TEMPLATE.format((calendar.month_abbr[MON]).lower())
     ## This provides abbrevated version of the name of a month: (e.g. for
     ## January (i.e. Month number = 1) it will return "Jan"). The abbrevated
     ## name is used in the forecasts file name
     print(f"Forecast Initialization month is {MONTH_NAME}")
     ## Shape of the above dataset time, Lead, Ens, latitude, longitude
-    for ens in range(ENS_NUM):
-        INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
-        INIT_FCST_YEAR, ens+1)
-        OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
-        INIT_FCST_YEAR, ens+1)
-        if os.path.isdir(OUTDIR):
-            pass
-        else:
-            os.makedirs(OUTDIR, exist_ok=True)
-        print(f"OUTDIR is {OUTDIR}")
-        for LEAD_NUM in range(0, LEAD_FINAL):
-            ## Loop from lead =0 to Final Lead
-            FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
+    #for ens in range(ENS_NUM):
+    INDIR = INDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+                                  INIT_FCST_YEAR, ens+1)
+    OUTDIR = OUTDIR_TEMPLATE.format(BASEDIR, MONTH_NAME, \
+                                    INIT_FCST_YEAR, ens+1)
+    if os.path.isdir(OUTDIR):
+        pass
+    else:
+        os.makedirs(OUTDIR, exist_ok=True)
+    print(f"OUTDIR is {OUTDIR}")
+    for LEAD_NUM in range(0, LEAD_FINAL):
+        ## Loop from lead =0 to Final Lead
+        FCST_DATE = datetime(INIT_FCST_YEAR, INIT_FCST_MON, 1) + \
             relativedelta(months=LEAD_NUM)
-            FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
-            for VAR_NUM, VAR_VALUE in  enumerate(VAR_NAME_LIST):
-                VAR = VAR_NAME_LIST[VAR_NUM]
-                INFILE = INFILE_TEMPLATE.format(INDIR, VAR, FCST_YEAR, \
-                FCST_MONTH)
-                TEMP = read_nc_files(INFILE, VAR)
-                if VAR == VAR_NAME_LIST[0]:
-                    LATS, LONS = read_nc_files(INFILE, 'lat'), \
+        FCST_YEAR, FCST_MONTH = FCST_DATE.year, FCST_DATE.month
+        for VAR_NUM, VAR_VALUE in  enumerate(VAR_NAME_LIST):
+            VAR = VAR_NAME_LIST[VAR_NUM]
+            INFILE = INFILE_TEMPLATE.format(INDIR, VAR, FCST_YEAR, \
+                                            FCST_MONTH)
+            TEMP = read_nc_files(INFILE, VAR)
+            if VAR == VAR_NAME_LIST[0]:
+                LATS, LONS = read_nc_files(INFILE, 'lat'), \
                     read_nc_files(INFILE, 'lon')
-                    IN_DATA = np.empty((len(VAR_NAME_LIST), TEMP.shape[0], \
-                    len(LATS), len(LONS)))
-                IN_DATA[VAR_NUM, ] = TEMP
+                IN_DATA = np.empty((len(VAR_NAME_LIST), TEMP.shape[0], \
+                                    len(LATS), len(LONS)))
+            IN_DATA[VAR_NUM, ] = TEMP
 
-            ### Finished reading all files now writing combined output
-            OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_YEAR, FCST_MONTH)
-            print(f"Now writing {OUTFILE}")
-            SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
-            NUM_DAYS = TEMP.shape[0]
-            DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
-            write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
-            'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
-            UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
-            LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)
+        ### Finished reading all files now writing combined output
+        OUTFILE = OUTFILE_TEMPLATE.format(OUTDIR, FCST_YEAR, FCST_MONTH)
+        print(f"Now writing {OUTFILE}")
+        SDATE = datetime(FCST_YEAR, FCST_MONTH, 1, 6)
+        NUM_DAYS = TEMP.shape[0]
+        DATES = [SDATE+relativedelta(hours=n*6) for n in range(NUM_DAYS)]
+        write_bc_netcdf(OUTFILE, IN_DATA, VAR_NAME_LIST, \
+                        'Bias corrected forecasts', 'MODEL:'  + MODEL_NAME, \
+                        UNITS, VAR_NAME_LIST, LONS, LATS, SDATE, DATES, 8, LATS[-1], \
+                        LONS[-1], LATS[0], LONS[0], 0.25, 0.25, 21600)
+
+for MON in [int(sys.argv[2])]:
+    num_workers = int(sys.argv[4])
+    # ProcessPoolExecutor parallel processing
+    with ProcessPoolExecutor(max_workers=num_workers) as executor:
+        futures = []
+        for ens in range(int(sys.argv[4])):
+            future = executor.submit(process_ensemble, MON, ens)
+            futures.append(future)
+
+        for future in futures:
+            result = future.result()
+    
+    
