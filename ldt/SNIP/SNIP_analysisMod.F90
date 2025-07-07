@@ -8,12 +8,12 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_analysisMod
+! MODULE: SNIP_analysisMod
 !
 ! REVISION HISTORY:
 ! 08 Feb 2019  Eric Kemp  First ported to LDT.
 ! 09 May 2019  Eric Kemp  Renamed LDTSI
-! 13 Dec 2019  Eric Kemp  Renamed USAFSI
+! 13 Dec 2019  Eric Kemp  Renamed SNIP
 ! 02 Nov 2020  Eric Kemp  Removed blacklist code at request of 557WW.
 ! 22 Jan 2021  Yeosang Yoon Add subroutine for new 0.1 deg snow climatology
 ! 13 Jan 2022  Eric Kemp Added support for GRIB1 FNMOC SST file.
@@ -32,7 +32,7 @@
 
 #include "LDT_misc.h"
 
-module USAFSI_analysisMod
+module SNIP_analysisMod
 
    ! Defaults
    implicit none
@@ -80,7 +80,7 @@ contains
       !**
       !**  FILES ACCESSED: NONE
       !**
-      !**  SEE USAFSI_paramsMod.F90 FOR COMMON PARAMETER DESCRIPTIONS
+      !**  SEE SNIP_paramsMod.F90 FOR COMMON PARAMETER DESCRIPTIONS
       !**
       !**  UPDATES
       !**  =======
@@ -101,7 +101,7 @@ contains
 
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
-      use USAFSI_paramsMod
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -299,7 +299,7 @@ contains
       !**  15 NOV 13  ADDED SEARCH BACK IF CURRENT DAY NOT FOUND..MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Adapted to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !*******************************************************************************
       !*******************************************************************************
 
@@ -308,15 +308,15 @@ contains
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use LDT_usafsiMod, only: usafsi_settings
       use map_utils
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod
 
       ! Defaults
       implicit none
 
       ! Arguments
-      character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF USAFSI CYCLE
+      character*10,  intent(in)   :: date10           ! DATE-TIME GROUP OF SNIP CYCLE
       character*255, intent(in)   :: fracdir          ! FRACTIONAL SNOW DIRECTORY PATH
       
       ! Local constants
@@ -366,7 +366,7 @@ contains
       message = ' '
       pntcnt  = 0
       snocum  = 0.0
-      USAFSI_arrays%snofrac = -1
+      SNIP_arrays%snofrac = -1
 
       ! RETRIEVE FRACTIONAL SNOW DATA.
       cyclhr = date10 (9:10)
@@ -433,7 +433,7 @@ contains
             do i = 1, LDT_rc%lnc(1)
                if (pntcnt(i,j) > 0) then
                   fracnt = fracnt + 1
-                  USAFSI_arrays%snofrac(i,j) = snocum(i,j) / real(pntcnt(i,j))
+                  SNIP_arrays%snofrac(i,j) = snocum(i,j) / real(pntcnt(i,j))
                end if
             end do ! i
          end do ! j
@@ -503,8 +503,8 @@ contains
       !**  ${STATIC}/snoclimo_0p25deg_dec.dat    R  SNOW CLIMATOLOGY FOR DECEMBER
       !**  ${STATIC}/snow_mask_0p25deg.dat       R  MASK INDICATING SNOW POSSIBLE
       !**
-      !**   See USAFSI_arraysMod.F90 for common array descriptions
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_arraysMod.F90 for common array descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -526,7 +526,7 @@ contains
       !**  14 DEC 12  REMOVED OBSOLETE ERROR HANDLING FOR CLIMO...MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -535,9 +535,9 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_endrun, ldt_logunit
       use map_utils
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -596,7 +596,7 @@ contains
       CALL PUTGET_REAL (CLIMO_0p25deg, 'r', FILE_PATH, PROGRAM_NAME,    &
            ROUTINE_NAME, IGRID, JGRID)
 
-      USAFSI_arrays%climo(:,:) = -1
+      SNIP_arrays%climo(:,:) = -1
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*nc
@@ -616,9 +616,9 @@ contains
                j_0p25deg = jgrid
             end if
             if (climo_0p25deg(i_0p25deg,j_0p25deg) < -1) then
-               USAFSI_arrays%climo(c,r) = -1
+               SNIP_arrays%climo(c,r) = -1
             else
-               USAFSI_arrays%climo(c,r) = climo_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%climo(c,r) = climo_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
       end do ! r
@@ -627,7 +627,7 @@ contains
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
-            USAFSI_arrays%ptlat(c,r) = LDT_domain(1)%lat(gindex)
+            SNIP_arrays%ptlat(c,r) = LDT_domain(1)%lat(gindex)
          end do ! i
       end do ! j
 
@@ -635,14 +635,14 @@ contains
       do r = 1,nr
          do c = 1 ,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
-            USAFSI_arrays%ptlon(c,r) = LDT_domain(1)%lon(gindex)
+            SNIP_arrays%ptlon(c,r) = LDT_domain(1)%lon(gindex)
          end do ! i
       end do ! j
 
       ! EMK Copy LDT terrain data to elevat array
       do r = 1,nr
          do c = 1 ,nc
-            USAFSI_arrays%elevat(c,r) = elevations(c,r)
+            SNIP_arrays%elevat(c,r) = elevations(c,r)
          end do ! i
       end do ! j
 
@@ -655,7 +655,7 @@ contains
       ! Interpolate the "snow possible" mask to the LDT grid.  
       ! For simplicity, just use the value of the 0.25 deg grid box that the
       ! LDT grid point is within.
-      USAFSI_arrays%snow_poss(:,:) = 0
+      SNIP_arrays%snow_poss(:,:) = 0
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -674,7 +674,7 @@ contains
             else if (j_0p25deg .gt. jgrid) then
                j_0p25deg = jgrid
             end if
-            USAFSI_arrays%snow_poss(c,r) = &
+            SNIP_arrays%snow_poss(c,r) = &
                  snow_poss_0p25deg(i_0p25deg,j_0p25deg)
          end do ! i
       end do ! j
@@ -712,7 +712,7 @@ contains
       !**  ${SFCOBS}/sfcsno_nh.06hr.YYYYMMDD12.txt  R  SSMIS NH SNOW AND ICE EDR DATA
       !**  ${SFCOBS}/sfcsno_sh.06hr.YYYYMMDD12.txt  R  SSMIS SH SNOW AND ICE EDR DATA
       !**
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -752,7 +752,7 @@ contains
       !**  26 JAN 17  REMOVED LEGACY JMOBS CHECKS AGAINST DEPTH.....MR PUSKAR/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**  27 Jul 23  Added new sfcobs file format...Eric Kemp, SSAI
       !**  24 Aug 23  New global sfcsno file format...Eric Kemp, SSAI
       !**
@@ -763,8 +763,8 @@ contains
       use LDT_logMod, only: LDT_logunit
       use LDT_usafsiMod, only: usafsi_settings
       use map_utils ! EMK
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1226,7 +1226,7 @@ contains
       !**  ---------------------------------------------------- --- -----------------------------
       !**  ${STMPDIR}/lis_sfctmp_0p25deg.yyyymmddhh.dat         R/W LIS 2-METER SHELTER TEMP
       !**
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1236,7 +1236,7 @@ contains
       !**  26 SEP 17  CHANGED LIS FILENAME FROM AFWA TO 557WW.................MR PUSKAR/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*****************************************************************************************
       !*****************************************************************************************
@@ -1245,8 +1245,8 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1407,8 +1407,8 @@ contains
       !**  ssmis_snoice_nh.06hr.YYYYMMDDHH.txt  R  SSMIS NH SNOW AND ICE EDR DATA
       !**  ssmis_snoice_sh.06hr.YYYYMMDDHH.txt  R  SSMIS SH SNOW AND ICE EDR DATA
       !**
-      !**   See USAFSI_arraysMod.F90 for common array descriptions
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_arraysMod.F90 for common array descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1442,7 +1442,7 @@ contains
       !**  16 JAN 18  ADDED DTG TO "NO SSMIS EDR" MESSAGES.......MR LEWISTON/16WS/WXET
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**  28 Jan 21  Updated messages.....................Yeosang Yoon/NASA GSFC/SAIC
       !**
       !*******************************************************************************
@@ -1452,9 +1452,9 @@ contains
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils ! EMK
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -1554,8 +1554,8 @@ contains
       snocount_0p25deg     = 0
       snorecs      = 0
       snototal_0p25deg     = 0
-      USAFSI_arrays%ssmis_depth  = misanl
-      USAFSI_arrays%ssmis_icecon = missing
+      SNIP_arrays%ssmis_depth  = misanl
+      SNIP_arrays%ssmis_icecon = missing
 
       ! LOOP THROUGH HEMISPHERES.
       hemi_loop : do hemi = 1, 2
@@ -1700,9 +1700,9 @@ contains
                   j_0p25deg = jgrid
                end if
 
-               USAFSI_arrays%ssmis_icecon(c,r) = &
+               SNIP_arrays%ssmis_icecon(c,r) = &
                     ssmis_icecon_0p25deg(i_0p25deg, j_0p25deg)
-               USAFSI_arrays%ssmis_depth(c,r) = &
+               SNIP_arrays%ssmis_depth(c,r) = &
                     ssmis_depth_0p25deg(i_0p25deg, j_0p25deg)
 
             end do ! c
@@ -1781,8 +1781,8 @@ contains
       !**  ${PREVDIR}/snoage_0p25deg.${DATE10_PREV}.dat   R  SNOW AGE
       !**  ${PREVDIR}/snodep_0p25deg.${DATE10_PREV}.dat   R  SNOW DEPTH
       !**
-      !**   See USAFSI_arraysMod.F90 for common array descriptions
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_arraysMod.F90 for common array descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -1801,7 +1801,7 @@ contains
       !**  10 OCT 13  CHANGED FROM 24-HOUR TO 6-HOUR CYCLES.......MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -1810,9 +1810,9 @@ contains
       use LDT_coreMod, only: LDT_domain, LDT_rc
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -2024,8 +2024,8 @@ contains
 
       ! IF NO PREVIOUS DATA FOUND, CANNOT CONTINUE.
       if (.not. found) then
-         message(1) = '[ERR] PREVIOUS USAFSI DATA MISSING'
-         message(2) = '[ERR] USAFSI CANNOT CONTINUE'
+         message(1) = '[ERR] PREVIOUS SNIP DATA MISSING'
+         message(2) = '[ERR] SNIP CANNOT CONTINUE'
          call abort_message (program_name, routine_name, message)
       end if
 
@@ -2045,14 +2045,14 @@ contains
       ! For simplicity, just use the value of the 0.25 deg grid box that the
       ! LDT grid point is within.
       if (.not. just_12z) then
-         USAFSI_arrays%olddep(:,:) = -1
-         USAFSI_arrays%snoage(:,:) = -1
-         USAFSI_arrays%iceage(:,:) = -1
-         USAFSI_arrays%oldcon(:,:) = -1
-         USAFSI_arrays%oldmask(:,:) = -1
+         SNIP_arrays%olddep(:,:) = -1
+         SNIP_arrays%snoage(:,:) = -1
+         SNIP_arrays%iceage(:,:) = -1
+         SNIP_arrays%oldcon(:,:) = -1
+         SNIP_arrays%oldmask(:,:) = -1
       end if
-      USAFSI_arrays%snoage12z(:,:) = -1
-      USAFSI_arrays%iceage12z(:,:) = -1
+      SNIP_arrays%snoage12z(:,:) = -1
+      SNIP_arrays%iceage12z(:,:) = -1
       do r = 1,nr
          do c = 1,nc
             gindex = c+(r-1)*LDT_rc%lnc(1)
@@ -2073,17 +2073,17 @@ contains
                j_0p25deg = jgrid
             end if
             if (.not. just_12z) then
-               USAFSI_arrays%olddep(c,r) = olddep_0p25deg(i_0p25deg,j_0p25deg)
-               USAFSI_arrays%snoage(c,r) = snoage_0p25deg(i_0p25deg,j_0p25deg)
-               USAFSI_arrays%iceage(c,r) = iceage_0p25deg(i_0p25deg,j_0p25deg)
-               USAFSI_arrays%oldcon(c,r) = oldcon_0p25deg(i_0p25deg,j_0p25deg)
-               USAFSI_arrays%oldmask(c,r) = &
+               SNIP_arrays%olddep(c,r) = olddep_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%snoage(c,r) = snoage_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%iceage(c,r) = iceage_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%oldcon(c,r) = oldcon_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%oldmask(c,r) = &
                     oldmask_0p25deg(i_0p25deg,j_0p25deg)
             endif
             if (runcycle .eq. 12) then
-               USAFSI_arrays%snoage12z(c,r) = &
+               SNIP_arrays%snoage12z(c,r) = &
                     snoage12z_0p25deg(i_0p25deg,j_0p25deg)
-               USAFSI_arrays%iceage12z(c,r) = &
+               SNIP_arrays%iceage12z(c,r) = &
                     iceage12z_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
@@ -2107,16 +2107,16 @@ contains
             gindex = c+(r-1)*LDT_rc%lnc(1)
             rlat = LDT_domain(1)%lat(gindex)
             if (rlat < 40.0 .and. rlat > -40.0) cycle
-            if (USAFSI_arrays%olddep(c,r) .le. 0 .and. &
-                 USAFSI_arrays%climo(c,r) > 0) then
-               USAFSI_arrays%olddep(c,r) = USAFSI_arrays%climo(c,r)
-               USAFSI_arrays%oldmask(c,r) = 1
+            if (SNIP_arrays%olddep(c,r) .le. 0 .and. &
+                 SNIP_arrays%climo(c,r) > 0) then
+               SNIP_arrays%olddep(c,r) = SNIP_arrays%climo(c,r)
+               SNIP_arrays%oldmask(c,r) = 1
                if (landice(c,r) > 0.5) then
-                  USAFSI_arrays%snoage(c,r) = maxage
-                  USAFSI_arrays%snoage12z(c,r) = maxage                
+                  SNIP_arrays%snoage(c,r) = maxage
+                  SNIP_arrays%snoage12z(c,r) = maxage                
                else
-                  USAFSI_arrays%snoage(c,r) = 1
-                  USAFSI_arrays%snoage12z(c,r) = 1
+                  SNIP_arrays%snoage(c,r) = 1
+                  SNIP_arrays%snoage12z(c,r) = 1
                endif
             end if
 
@@ -2140,16 +2140,16 @@ contains
            'CHECKING FOR PREVIOUS CYCLE')
    end subroutine getsno
 
-   ! Fetch USAFSI data from netCDF
+   ! Fetch SNIP data from netCDF
    subroutine getsno_nc(date10, julhr_beg, ierr)
 
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun
-      use USAFSI_netcdfMod, only: USAFSI_read_netcdf, &
-           USAFSI_read_netcdf_12z
-      use USAFSI_utilMod, only: abort_message, date10_julhr, &
+      use SNIP_netcdfMod, only: SNIP_read_netcdf, &
+           SNIP_read_netcdf_12z
+      use SNIP_utilMod, only: abort_message, date10_julhr, &
            julhr_date10
-      use USAFSI_paramsMod, only: msglns, program_name
+      use SNIP_paramsMod, only: msglns, program_name
 
       ! Defaults
       implicit none
@@ -2183,7 +2183,7 @@ contains
       do while ((.not. found) .and. (tries .le. limit))
          julhr_beg = julhr_beg - 6
          call julhr_date10(julhr_beg, date10_prev, program_name, routine_name)
-         call USAFSI_read_netcdf(date10_prev,ierr)
+         call SNIP_read_netcdf(date10_prev,ierr)
          if (ierr == 0) then
             found = .true.
          else
@@ -2201,7 +2201,7 @@ contains
          do while ((.not. found_12z) .and. (tries .le. limit))
             julhr = julhr - 24
             call julhr_date10 (julhr, date10_prev, program_name, routine_name)
-            call USAFSI_read_netcdf_12z(date10_prev,ierr)
+            call SNIP_read_netcdf_12z(date10_prev,ierr)
             if (ierr == 0) then
                found_12z = .true.
             else
@@ -2215,7 +2215,7 @@ contains
       ! to the caller.  Caller will need to try the legacy SNODEP instead.
       if (.not. found) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior USAFSI analysis'
+              '[WARN] Cannot find prior SNIP analysis'
          ierr = 2
       ! Only return error for missing 12z analysis if
       ! current cycle is 12z.  This avoids erroneously searching for
@@ -2223,7 +2223,7 @@ contains
       ! values.
       else if (.not. found_12z .and. runcycle .eq. 12) then
          write(LDT_logunit,*) &
-              '[WARN] Cannot find prior 12Z USAFSI analysis'
+              '[WARN] Cannot find prior 12Z SNIP analysis'
          ierr = 1
       else
          ierr = 0
@@ -2266,8 +2266,8 @@ contains
       !**  ------------------------ --- --------------------------------------
       !**  sst.dat                   R  NAVY SEA SURFACE TEMPS
       !**
-      !**   See USAFSI_arraysMod.F90 for common array descriptions
-      !**   See USAFSI_paramsMod.F90 for common parameter descriptions
+      !**   See SNIP_arraysMod.F90 for common array descriptions
+      !**   See SNIP_paramsMod.F90 for common parameter descriptions
       !**
       !**  UPDATES
       !**  =======
@@ -2281,7 +2281,7 @@ contains
       !**  03 APR 15  UPDATED INPUT GRIB FILE NAME FORMAT.........MR LEWISTON/16WS/WXE
       !**  21 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**  13 Jan 21  Added FNMOC GRIB1 file...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
@@ -2291,9 +2291,9 @@ contains
       use LDT_coreMod, only: LDT_rc, LDT_domain
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use map_utils
-      use USAFSI_arraysMod, only : USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_arraysMod, only : SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -2437,7 +2437,7 @@ contains
             ! REALLY LOOKING BACK ONLY 24 HOURS (IF THAT MAKES SENSE...).
             if (hrdiff .gt. 48) then
                message(1) = '  SST DATA IS MORE THAN 24 HOURS OLD'
-               message(2) = '  USAFSI CYCLE = ' // date10
+               message(2) = '  SNIP CYCLE = ' // date10
                message(3) = '  SEA SFC TEMP = ' // date10_sst
                call error_message (program_name, routine_name, &
                     yyyymmddhh, message)
@@ -2467,7 +2467,7 @@ contains
            jdim=sst_jgrid, &
            proj=sst_0p25deg_proj)
 
-      USAFSI_arrays%sst(:,:) = -1
+      SNIP_arrays%sst(:,:) = -1
       nr = LDT_rc%lnr(1)
       nc = LDT_rc%lnc(1)
       do r = 1,nr
@@ -2489,9 +2489,9 @@ contains
                j_0p25deg = jgrid
             end if
             if (sst_0p25deg(i_0p25deg,j_0p25deg) < -1) then
-               USAFSI_arrays%sst(c,r) = -1
+               SNIP_arrays%sst(c,r) = -1
             else
-               USAFSI_arrays%sst(c,r) = sst_0p25deg(i_0p25deg,j_0p25deg)
+               SNIP_arrays%sst(c,r) = sst_0p25deg(i_0p25deg,j_0p25deg)
             end if
          end do ! c
       end do ! r
@@ -2555,7 +2555,7 @@ contains
       !**  15 FEB 17  ADAPTED FROM GETFRAC ......................... M PUSKAR/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
@@ -2565,9 +2565,9 @@ contains
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use LDT_usafsiMod, only: usafsi_settings
       use map_utils
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
-      use USAFSI_utilMod ! EMK
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
+      use SNIP_utilMod ! EMK
 
       ! Defaults
       implicit none
@@ -2648,7 +2648,7 @@ contains
       map_exists   = .false.
       age_exists   = .false.
       message  = ' '
-      USAFSI_arrays%viirsmap = 255
+      SNIP_arrays%viirsmap = 255
 
       ! RETRIEVE VIIRS SNOW DATA.
       cyclhr = date10 (9:10)
@@ -2852,8 +2852,8 @@ contains
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       use LDT_usafsiMod, only: usafsi_settings
       use map_utils
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -2902,12 +2902,12 @@ contains
             if (landmask(c,r) < 0.5) then
                skip_grid_points(c,r) = .true.
                ! EMK...Make sure prior analysis has no snow here
-               USAFSI_arrays%snoanl(c,r) = -1
-               USAFSI_arrays%snoage(c,r) = -1               
+               SNIP_arrays%snoanl(c,r) = -1
+               SNIP_arrays%snoage(c,r) = -1               
             else if (landice(c,r) > 0.5) then
                ! Use LDT landcover to identify glaciers
                skip_grid_points(c,r) = .true.
-            else if (USAFSI_arrays%snow_poss(c,r) == 0) then
+            else if (SNIP_arrays%snow_poss(c,r) == 0) then
                ! Since the snow_poss mask is coarse resolution (0.25 deg),
                ! there may be artificial snow-free gaps introduced when 
                ! downscaling.  So, we will allow snow analysis to run in high 
@@ -2918,8 +2918,8 @@ contains
                if (rlat > -40.0 .and. rlat < 40.0) then
                   skip_grid_points(c,r) = .true.
                   ! No snow allowed, so zero out these fields now
-                  USAFSI_arrays%snoanl(c,r) = 0
-                  USAFSI_arrays%snoage(c,r) = 0               
+                  SNIP_arrays%snoanl(c,r) = 0
+                  SNIP_arrays%snoage(c,r) = 0               
                end if
             end if
          end do ! c
@@ -2929,7 +2929,7 @@ contains
       do r = 1, nr
          do c = 1, nc
             if (skip_grid_points(c,r)) cycle
-            USAFSI_arrays%snoanl(c,r) = USAFSI_arrays%olddep(c,r)
+            SNIP_arrays%snoanl(c,r) = SNIP_arrays%olddep(c,r)
          end do ! c
       end do ! r
 
@@ -2941,23 +2941,23 @@ contains
 
             ! Get SSMIS value
             satdep = misanl 
-            if (USAFSI_arrays%ssmis_depth(c,r) >= 0) then
-               satdep = USAFSI_arrays%ssmis_depth(c,r)
+            if (SNIP_arrays%ssmis_depth(c,r) >= 0) then
+               satdep = SNIP_arrays%ssmis_depth(c,r)
             end if
 
             ! Handle SSMIS detection problem with very shallow snow.  If below
             ! minimum depth, preserve prior analysis if larger than SSMIS.
             if (satdep >= 0) then
                if (satdep .le. usafsi_settings%minsat) then
-                  if (satdep > USAFSI_arrays%olddep(c,r)) then
-                     USAFSI_arrays%snoanl(c,r) = satdep
+                  if (satdep > SNIP_arrays%olddep(c,r)) then
+                     SNIP_arrays%snoanl(c,r) = satdep
                      updated(c,r) = .true.
                      if (satdep > 0) then
                         snomask(c,r) = 1
                      end if
                   end if
                else
-                  USAFSI_arrays%snoanl(c,r) = satdep
+                  SNIP_arrays%snoanl(c,r) = satdep
                   updated(c,r) = .true.
                   if (satdep > 0) then
                      snomask(c,r) = 1
@@ -2973,7 +2973,7 @@ contains
          do r = 1, nr
             do c = 1, nc     
                if (skip_grid_points(c,r)) cycle
-               if (USAFSI_arrays%snofrac(c,r) > usafsi_settings%minfrac) then
+               if (SNIP_arrays%snofrac(c,r) > usafsi_settings%minfrac) then
                   snomask(c,r) = 1
                end if
             end do ! c
@@ -2985,9 +2985,9 @@ contains
          do r = 1,nr
             do c = 1, nc
                if (skip_grid_points(c,r)) cycle
-               if (USAFSI_arrays%viirsmap(c,r) == 0) then
+               if (SNIP_arrays%viirsmap(c,r) == 0) then
                   snomask(c,r) = 0
-               else if (USAFSI_arrays%viirsmap(c,r) == 1) then
+               else if (SNIP_arrays%viirsmap(c,r) == 1) then
                   snomask(c,r) = 1
                end if
             end do ! c
@@ -3013,11 +3013,11 @@ contains
          do c = 1,nc
             if (skip_grid_points(c,r)) cycle
             if (snomask(c,r) .eq. 0 .and. &
-                 USAFSI_arrays%snoanl(c,r) > 0) then
-               USAFSI_arrays%snoanl(c,r) = 0
-               USAFSI_arrays%snoage(c,r) = 0
+                 SNIP_arrays%snoanl(c,r) > 0) then
+               SNIP_arrays%snoanl(c,r) = 0
+               SNIP_arrays%snoage(c,r) = 0
             end if
-            if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
+            if (SNIP_arrays%snoanl(c,r) .ne. SNIP_arrays%olddep(c,r)) then
                updated(c,r) = .true.
             end if
          end do ! c
@@ -3035,7 +3035,7 @@ contains
 
       write(LDT_logunit,*) &
            '[INFO] Reject obs where snow is never permitted'
-      call bratseth%run_nosnow_qc(nc,nr,USAFSI_arrays%snow_poss)
+      call bratseth%run_nosnow_qc(nc,nr,SNIP_arrays%snow_poss)
 
       write(LDT_logunit,*) &
            '[INFO] Reject obs with elevations too different from LDT'
@@ -3068,12 +3068,12 @@ contains
          if (skip_grid_points(c,r)) then
             !write(LDT_logunit,*) &
             !     '[INFO] Bad background, job, lat, lon, c, r, back: ', &
-            !     job, lat, lon, c, r, USAFSI_arrays%snoanl(c,r)
+            !     job, lat, lon, c, r, SNIP_arrays%snoanl(c,r)
             !write(LDT_logunit,*)'EMK: REJECT job, back: ', &
-            !     job, USAFSI_arrays%snoanl(c,r)
+            !     job, SNIP_arrays%snoanl(c,r)
             glacier_zone_count = glacier_zone_count + 1
             call bratseth%reject_ob(job, "GLACIER ZONE REJECT")
-         else if (USAFSI_arrays%snoanl(c,r) < 0) then
+         else if (SNIP_arrays%snoanl(c,r) < 0) then
             bad_back_count = bad_back_count + 1
             call bratseth%reject_ob(job, "BAD BACKGROUND REJECT")
          else if (snomask(c,r) == 0) then
@@ -3083,14 +3083,14 @@ contains
                !write(LDT_logunit,*) &
                !     '[INFO] Ob with zero snomask, job, lat, lon, ', &
                !     'c, r, back: ', &
-               !     job, lat, lon, c, r, USAFSI_arrays%snoanl(c,r)
+               !     job, lat, lon, c, r, SNIP_arrays%snoanl(c,r)
                snomask_reject_count = snomask_reject_count + 1
                call bratseth%reject_ob(job,"SAT AND T SNOMASK REJECT")
             else
-               call bratseth%set_back(job,USAFSI_arrays%snoanl(c,r))
+               call bratseth%set_back(job,SNIP_arrays%snoanl(c,r))
             end if
          else 
-            call bratseth%set_back(job,USAFSI_arrays%snoanl(c,r))
+            call bratseth%set_back(job,SNIP_arrays%snoanl(c,r))
          end if
       end do ! j
       write(LDT_logunit,*) '[INFO] Rejected ',glacier_zone_count, &
@@ -3131,7 +3131,7 @@ contains
          ! We need separate arrays for input background field and output
          ! analysis
          allocate(gbacks(nc,nr))
-         gbacks(:,:) = USAFSI_arrays%snoanl(:,:)
+         gbacks(:,:) = SNIP_arrays%snoanl(:,:)
 
          ! Calculate the inverse data density for each observation.
          call bratseth%calc_inv_data_dens()
@@ -3142,7 +3142,7 @@ contains
 
          ! Now interpolate to the analysis grid
          call bratseth%calc_grid_anas(1, nc, nr, gbacks, elevations, &
-              USAFSI_arrays%snoanl, skip_grid_points)
+              SNIP_arrays%snoanl, skip_grid_points)
 
          ! Clean up
          deallocate(gbacks)
@@ -3155,15 +3155,15 @@ contains
             if (skip_grid_points(c,r)) cycle
             ! EMK...Clear out snow depth inserted where snow cover is zero.
             if (snomask(c,r) == 0) then
-               USAFSI_arrays%snoanl(c,r) = 0
-               USAFSI_arrays%snoage(c,r) = 0
+               SNIP_arrays%snoanl(c,r) = 0
+               SNIP_arrays%snoage(c,r) = 0
             end if
-            if (USAFSI_arrays%snoanl(c,r) < 0.01) then
-               USAFSI_arrays%snoanl(c,r) = 0
+            if (SNIP_arrays%snoanl(c,r) < 0.01) then
+               SNIP_arrays%snoanl(c,r) = 0
                ! Leave snoage alone here, since a climatological adjustment
                ! is possible further down if snomask is positive.
             end if
-            if (USAFSI_arrays%snoanl(c,r) .ne. USAFSI_arrays%olddep(c,r)) then
+            if (SNIP_arrays%snoanl(c,r) .ne. SNIP_arrays%olddep(c,r)) then
                updated(c,r) = .true.
             end if
          end do ! c
@@ -3175,49 +3175,49 @@ contains
 
             if (skip_grid_points(c,r)) cycle
 
-            if (snomask(c,r) == 1 .and. USAFSI_arrays%snoanl(c,r) == 0) then
+            if (snomask(c,r) == 1 .and. SNIP_arrays%snoanl(c,r) == 0) then
                ! Handle case where satellite says snow but none is analyzed.
                ! Start with prior analysis, and apply climo adjustment if 12Z.
-               USAFSI_arrays%snoanl(c,r) = USAFSI_arrays%olddep(c,r)
+               SNIP_arrays%snoanl(c,r) = SNIP_arrays%olddep(c,r)
                if (runcycle == 12) then
-                  USAFSI_arrays%snoage(c,r) = &
-                       min(USAFSI_arrays%snoage(c,r), &
-                       USAFSI_arrays%snoage12z(c,r))
-                  call appclm(USAFSI_arrays%climo(c,r), &
-                       USAFSI_arrays%olddep(c,r), &
-                       USAFSI_arrays%snoanl(c,r), &
-                       USAFSI_arrays%snoage(c,r))
+                  SNIP_arrays%snoage(c,r) = &
+                       min(SNIP_arrays%snoage(c,r), &
+                       SNIP_arrays%snoage12z(c,r))
+                  call appclm(SNIP_arrays%climo(c,r), &
+                       SNIP_arrays%olddep(c,r), &
+                       SNIP_arrays%snoanl(c,r), &
+                       SNIP_arrays%snoage(c,r))
                end if
                ! If no snow in prior analysis, or if climo adjustment
                ! removes snow, put in bogus value.
-               if (USAFSI_arrays%snoanl(c,r) == 0) then
-                  USAFSI_arrays%snoanl(c,r) = usafsi_settings%unkdep
-                  USAFSI_arrays%snoage(c,r) = 1
+               if (SNIP_arrays%snoanl(c,r) == 0) then
+                  SNIP_arrays%snoanl(c,r) = usafsi_settings%unkdep
+                  SNIP_arrays%snoage(c,r) = 1
                end if
             else if (updated(c,r)) then
                ! Handle cases where snow depth was updated.  This
                ! includes case where satellite says there is snow and
                ! the analysis agrees.
-               if (USAFSI_arrays%snoanl(c,r) == 0) then
-                  USAFSI_arrays%snoage(c,r) = 0
-               else if ((USAFSI_arrays%snoanl(c,r) - &
-                    USAFSI_arrays%olddep(c,r)) >= snothresh) then
-                  USAFSI_arrays%snoage(c,r) = 1
+               if (SNIP_arrays%snoanl(c,r) == 0) then
+                  SNIP_arrays%snoage(c,r) = 0
+               else if ((SNIP_arrays%snoanl(c,r) - &
+                    SNIP_arrays%olddep(c,r)) >= snothresh) then
+                  SNIP_arrays%snoage(c,r) = 1
                else if (runcycle == 12) then
-                  USAFSI_arrays%snoage(c,r) = &
-                       min((USAFSI_arrays%snoage(c,r)+1), maxage)
+                  SNIP_arrays%snoage(c,r) = &
+                       min((SNIP_arrays%snoage(c,r)+1), maxage)
                end if
             else
                ! No updates were made from prior analysis.  Permit
                ! adjustment to climatology.
                if (runcycle .eq. 12) then
-                  USAFSI_arrays%snoage(c,r) = &
-                       min(USAFSI_arrays%snoage(c,r), &
-                           USAFSI_arrays%snoage12z(c,r))
-                  call appclm(USAFSI_arrays%climo(c,r), &
-                       USAFSI_arrays%olddep(c,r), &
-                       USAFSI_arrays%snoanl(c,r), &
-                       USAFSI_arrays%snoage(c,r))
+                  SNIP_arrays%snoage(c,r) = &
+                       min(SNIP_arrays%snoage(c,r), &
+                           SNIP_arrays%snoage12z(c,r))
+                  call appclm(SNIP_arrays%climo(c,r), &
+                       SNIP_arrays%olddep(c,r), &
+                       SNIP_arrays%snoanl(c,r), &
+                       SNIP_arrays%snoage(c,r))
                end if
             end if
          end do ! c
@@ -3235,8 +3235,8 @@ contains
       
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
       
       ! Defaults
       implicit none
@@ -3274,8 +3274,8 @@ contains
             ! Avoid water
             if (landmask(c,r) < 0.5) then
                ! EMK...Make sure prior analysis has no snow here
-               USAFSI_arrays%snoanl(c,r) = -1
-               USAFSI_arrays%snoage(c,r) = -1               
+               SNIP_arrays%snoanl(c,r) = -1
+               SNIP_arrays%snoage(c,r) = -1               
                cycle
             end if
 
@@ -3288,12 +3288,12 @@ contains
 
             ! This is now a possible glacier point.  Initialize the analysis
             ! from the previous value.
-            USAFSI_arrays%snoanl(c,r) = USAFSI_arrays%olddep(c,r)            
+            SNIP_arrays%snoanl(c,r) = SNIP_arrays%olddep(c,r)            
             ! EMK...In case of landmask disagreements between 0.25 deg
             ! legacy SNODEP and LDT grid
-            if (USAFSI_arrays%snoanl(c,r) < 0) then
-               USAFSI_arrays%snoanl(c,r) = USAFSI_arrays%climo(c,r)
-               USAFSI_arrays%snoage(c,r) = maxage
+            if (SNIP_arrays%snoanl(c,r) < 0) then
+               SNIP_arrays%snoanl(c,r) = SNIP_arrays%climo(c,r)
+               SNIP_arrays%snoage(c,r) = maxage
             end if
 
             ! Glaciers are adjusted to climatalogy over the long term (at
@@ -3302,16 +3302,16 @@ contains
             ! If no prior snow depth exists, the glacier is "new"; insert a 
             ! fake value for the current analysis.
             if (runcycle .eq. 12) then
-               call appclm(USAFSI_arrays%climo(c,r), &
-                    USAFSI_arrays%olddep(c,r), &
-                    USAFSI_arrays%snoanl(c,r), &
-                    USAFSI_arrays%snoage(c,r))
+               call appclm(SNIP_arrays%climo(c,r), &
+                    SNIP_arrays%olddep(c,r), &
+                    SNIP_arrays%snoanl(c,r), &
+                    SNIP_arrays%snoage(c,r))
             end if
             ! It is possible that climo adjustment removes snow.  In that case,
             ! put in a bogus value.
-            if (USAFSI_arrays%snoanl(c,r) .le. 0) then
-               USAFSI_arrays%snoanl(c,r) = usafsi_settings%unkdep
-               USAFSI_arrays%snoage(c,r) = 1
+            if (SNIP_arrays%snoanl(c,r) .le. 0) then
+               SNIP_arrays%snoanl(c,r) = usafsi_settings%unkdep
+               SNIP_arrays%snoage(c,r) = 1
             end if
 
          end do ! c
@@ -3325,8 +3325,8 @@ contains
 
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -3347,110 +3347,110 @@ contains
 
             ! Only run over water
             if (landmask(c,r) > 0.5) then
-               USAFSI_arrays%icecon(c,r) = -1
-               USAFSI_arrays%icemask(c,r) = -1
-               USAFSI_arrays%iceage(c,r) = -1
+               SNIP_arrays%icecon(c,r) = -1
+               SNIP_arrays%icemask(c,r) = -1
+               SNIP_arrays%iceage(c,r) = -1
                cycle
             end if
 
             ! Initialize arrays
-            USAFSI_arrays%icemask(c,r) = 0
-            USAFSI_arrays%icecon(c,r) = 0
+            SNIP_arrays%icemask(c,r) = 0
+            SNIP_arrays%icecon(c,r) = 0
 
             ! Find hemisphere
-            if (USAFSI_arrays%ptlat(c,r) .ge. 0) then
+            if (SNIP_arrays%ptlat(c,r) .ge. 0) then
                hemi = 1
             else
                hemi = 2
             end if
 
-            if (abs(USAFSI_arrays%ptlat(c,r)) &
+            if (abs(SNIP_arrays%ptlat(c,r)) &
                  < usafsi_settings%latchk(month,hemi)) then
                ! Force sea ice removal in low latitudes, a function of
                ! month and hemisphere
-               USAFSI_arrays%icemask(c,r) = 0
-               USAFSI_arrays%icecon(c,r) = 0
-               USAFSI_arrays%iceage(c,r) = 0
+               SNIP_arrays%icemask(c,r) = 0
+               SNIP_arrays%icecon(c,r) = 0
+               SNIP_arrays%iceage(c,r) = 0
                
-            else if (abs(USAFSI_arrays%ptlat(c,r)) >= &
+            else if (abs(SNIP_arrays%ptlat(c,r)) >= &
                  usafsi_settings%icelat(month,hemi)) then
                ! Force sea ice in high latitudes, a function of month and
                ! hemisphere, unless valid SSMIS says otherwise.  
-               if (USAFSI_arrays%ssmis_icecon(c,r) >= 0 .and. &
-                    USAFSI_arrays%ssmis_icecon(c,r) .le. 100) then
-                  USAFSI_arrays%icecon(c,r) = USAFSI_arrays%ssmis_icecon(c,r)
-                  if (USAFSI_arrays%icecon(c,r) > usafsi_settings%minice) then
-                     USAFSI_arrays%icemask(c,r) = icepnt
+               if (SNIP_arrays%ssmis_icecon(c,r) >= 0 .and. &
+                    SNIP_arrays%ssmis_icecon(c,r) .le. 100) then
+                  SNIP_arrays%icecon(c,r) = SNIP_arrays%ssmis_icecon(c,r)
+                  if (SNIP_arrays%icecon(c,r) > usafsi_settings%minice) then
+                     SNIP_arrays%icemask(c,r) = icepnt
                   else
-                     USAFSI_arrays%icemask(c,r) = 0
-                     USAFSI_arrays%iceage(c,r) = 0
+                     SNIP_arrays%icemask(c,r) = 0
+                     SNIP_arrays%iceage(c,r) = 0
                   end if
                else
                   ! No SSMI available.  Force sea ice and find a reasonable
                   ! value.
-                  USAFSI_arrays%icemask(c,r) = icepnt
-                  if (USAFSI_arrays%oldcon(c,r) > usafsi_settings%minice) then
-                     USAFSI_arrays%icecon(c,r) = &
-                          USAFSI_arrays%oldcon(c,r) ! Prior analysis
+                  SNIP_arrays%icemask(c,r) = icepnt
+                  if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                     SNIP_arrays%icecon(c,r) = &
+                          SNIP_arrays%oldcon(c,r) ! Prior analysis
                   else
-                     USAFSI_arrays%icecon(c,r) = icedef ! Bogus value
+                     SNIP_arrays%icecon(c,r) = icedef ! Bogus value
                   end if
                end if
 
             else
                ! Mid-latitude case.  
-               if ( (USAFSI_arrays%ssmis_icecon(c,r) > &
+               if ( (SNIP_arrays%ssmis_icecon(c,r) > &
                     usafsi_settings%minice) .and. &
-                    (USAFSI_arrays%ssmis_icecon(c,r) .le. 100)) then
+                    (SNIP_arrays%ssmis_icecon(c,r) .le. 100)) then
                   ! Valid SSMIS detected ice
-                  USAFSI_arrays%icemask(c,r) = icepnt
-                  USAFSI_arrays%icecon(c,r) = USAFSI_arrays%ssmis_icecon(c,r)
-               else if (USAFSI_arrays%ssmis_icecon(c,r) >= 0 .and. &
-                    USAFSI_arrays%ssmis_icecon(c,r) .le. &
+                  SNIP_arrays%icemask(c,r) = icepnt
+                  SNIP_arrays%icecon(c,r) = SNIP_arrays%ssmis_icecon(c,r)
+               else if (SNIP_arrays%ssmis_icecon(c,r) >= 0 .and. &
+                    SNIP_arrays%ssmis_icecon(c,r) .le. &
                     usafsi_settings%minice) then
                   ! Valid SSMIS detected no ice
-                  USAFSI_arrays%icemask(c,r) = 0
-                  USAFSI_arrays%icecon(c,r) = 0
-                  USAFSI_arrays%iceage(c,r) = 0
+                  SNIP_arrays%icemask(c,r) = 0
+                  SNIP_arrays%icecon(c,r) = 0
+                  SNIP_arrays%iceage(c,r) = 0
                else
                   ! No valid SSMIS data.  Attempt to use prior analysis
-                  if (USAFSI_arrays%oldcon(c,r) > usafsi_settings%minice) then
-                     USAFSI_arrays%icemask(c,r) = icepnt
-                     USAFSI_arrays%icecon(c,r) = USAFSI_arrays%oldcon(c,r)
+                  if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                     SNIP_arrays%icemask(c,r) = icepnt
+                     SNIP_arrays%icecon(c,r) = SNIP_arrays%oldcon(c,r)
                   else
                      ! Prior analysis is either ice free or missing.  Assume
                      ! ice free.
-                     USAFSI_arrays%icemask(c,r) = 0
-                     USAFSI_arrays%icecon(c,r) = 0
-                     USAFSI_arrays%iceage(c,r) = 0
+                     SNIP_arrays%icemask(c,r) = 0
+                     SNIP_arrays%icecon(c,r) = 0
+                     SNIP_arrays%iceage(c,r) = 0
                   end if
                end if
             end if
 
             ! Apply SST filter
-            if (USAFSI_arrays%sst(c,r) > 275) then
-               USAFSI_arrays%icemask(c,r) = 0
-               USAFSI_arrays%icecon(c,r) = 0
-               USAFSI_arrays%iceage(c,r) = 0
+            if (SNIP_arrays%sst(c,r) > 275) then
+               SNIP_arrays%icemask(c,r) = 0
+               SNIP_arrays%icecon(c,r) = 0
+               SNIP_arrays%iceage(c,r) = 0
             end if
             
             ! Update age if this is a 12Z analysis
-            if (USAFSI_arrays%icemask(c,r) == icepnt) then
+            if (SNIP_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
-                    USAFSI_arrays%iceage(c,r) == &
-                    USAFSI_arrays%iceage12z(c,r)) then
-                  USAFSI_arrays%iceage(c,r) = &
-                       min( (USAFSI_arrays%iceage(c,r)+1), maxage)
+                    SNIP_arrays%iceage(c,r) == &
+                    SNIP_arrays%iceage12z(c,r)) then
+                  SNIP_arrays%iceage(c,r) = &
+                       min( (SNIP_arrays%iceage(c,r)+1), maxage)
                end if
             end if
                
             ! EMK...Sanity check iceage.  Make sure not missing if
-            ! icemask is defined.  This can happen if USAFSI is 
+            ! icemask is defined.  This can happen if SNIP is 
             ! coldstarted at a time other than 12Z.
             if (runcycle .ne. 12) then
-               if (USAFSI_arrays%icemask(c,r) .ne. -1) then
-                  if (USAFSI_arrays%iceage(c,r) .eq. -1) then
-                     USAFSI_arrays%iceage(c,r) = 0
+               if (SNIP_arrays%icemask(c,r) .ne. -1) then
+                  if (SNIP_arrays%iceage(c,r) .eq. -1) then
+                     SNIP_arrays%iceage(c,r) = 0
                   end if
                end if
             end if
@@ -3465,8 +3465,8 @@ contains
 
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
-      use USAFSI_arraysMod, only: USAFSI_arrays
-      use USAFSI_paramsMod
+      use SNIP_arraysMod, only: SNIP_arrays
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -3488,14 +3488,14 @@ contains
             
             ! Only run over water
             if (landmask(c,r) > 0.5) then
-               USAFSI_arrays%icecon(c,r) = -1
-               USAFSI_arrays%icemask(c,r) = -1
-               USAFSI_arrays%iceage(c,r) = -1
+               SNIP_arrays%icecon(c,r) = -1
+               SNIP_arrays%icemask(c,r) = -1
+               SNIP_arrays%iceage(c,r) = -1
                cycle
             end if
       
             ! Find hemisphere
-            if (USAFSI_arrays%ptlat(c,r) >= 0) then
+            if (SNIP_arrays%ptlat(c,r) >= 0) then
                hemi = 1
             else
                hemi = 2
@@ -3505,79 +3505,79 @@ contains
 
             ! Use the GOFS data if available.  Otherwise, try to fall back
             ! on prior analysis subject to certain constraints.
-            if (USAFSI_arrays%navy_icecon(c,r) >= 0) then
+            if (SNIP_arrays%navy_icecon(c,r) >= 0) then
                ! We have valid GOFS data
-               USAFSI_arrays%icecon(c,r) = &
-                    nint(USAFSI_arrays%navy_icecon(c,r))
-               if (USAFSI_arrays%icecon(c,r) > usafsi_settings%minice) then
-                  USAFSI_arrays%icemask(c,r) = icepnt
+               SNIP_arrays%icecon(c,r) = &
+                    nint(SNIP_arrays%navy_icecon(c,r))
+               if (SNIP_arrays%icecon(c,r) > usafsi_settings%minice) then
+                  SNIP_arrays%icemask(c,r) = icepnt
                else
-                  USAFSI_arrays%icemask(c,r) = 0
-                  USAFSI_arrays%iceage(c,r) = 0
+                  SNIP_arrays%icemask(c,r) = 0
+                  SNIP_arrays%iceage(c,r) = 0
                end if
                check_sst = .false.  ! Defer to GOFS
 
-            else if (abs(USAFSI_arrays%ptlat(c,r)) < &
+            else if (abs(SNIP_arrays%ptlat(c,r)) < &
                  usafsi_settings%latchk(month,hemi)) then
                ! GOFS is missing at this point, and we are in low latitudes.
                ! Force no seaice.
-               USAFSI_arrays%icemask(c,r) = 0
-               USAFSI_arrays%icecon(c,r) = 0
-               USAFSI_arrays%iceage(c,r) = 0
+               SNIP_arrays%icemask(c,r) = 0
+               SNIP_arrays%icecon(c,r) = 0
+               SNIP_arrays%iceage(c,r) = 0
                
-            else if (abs(USAFSI_arrays%ptlat(c,r)) >= &
+            else if (abs(SNIP_arrays%ptlat(c,r)) >= &
                  usafsi_settings%icelat(month,hemi)) then
                ! GOFS is missing at this point, and we are in high latitudes.
                ! Force sea ice and find a reasonable value.
-               USAFSI_arrays%icemask(c,r) = icepnt
-               if (USAFSI_arrays%oldcon(c,r) > usafsi_settings%minice) then
-                  USAFSI_arrays%icecon(c,r) = &
-                       USAFSI_arrays%oldcon(c,r) ! Prior analysis
+               SNIP_arrays%icemask(c,r) = icepnt
+               if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                  SNIP_arrays%icecon(c,r) = &
+                       SNIP_arrays%oldcon(c,r) ! Prior analysis
                else
-                  USAFSI_arrays%icecon(c,r) = icedef ! Bogus value
+                  SNIP_arrays%icecon(c,r) = icedef ! Bogus value
                end if
 
             else
                ! GOFS is missing at this point, and we are in mid-latitudes.
                ! Attempt to use prior analysis.
-               if (USAFSI_arrays%oldcon(c,r) > usafsi_settings%minice) then
-                  USAFSI_arrays%icemask(c,r) = icepnt
-                  USAFSI_arrays%icecon(c,r) = USAFSI_arrays%oldcon(c,r)
+               if (SNIP_arrays%oldcon(c,r) > usafsi_settings%minice) then
+                  SNIP_arrays%icemask(c,r) = icepnt
+                  SNIP_arrays%icecon(c,r) = SNIP_arrays%oldcon(c,r)
                else
                   ! Prior analysis is either ice free or missing.  Assume
                   ! ice free.
-                  USAFSI_arrays%icemask(c,r) = 0
-                  USAFSI_arrays%icecon(c,r) = 0
-                  USAFSI_arrays%iceage(c,r) = 0
+                  SNIP_arrays%icemask(c,r) = 0
+                  SNIP_arrays%icecon(c,r) = 0
+                  SNIP_arrays%iceage(c,r) = 0
                end if
             end if
                
             ! Apply the SST filter unless we used the GOFS sea ice value.
             if (check_sst) then
-               if (USAFSI_arrays%sst(c,r) > 275) then
-                  USAFSI_arrays%icemask(c,r) = 0
-                  USAFSI_arrays%icecon(c,r) = 0
-                  USAFSI_arrays%iceage(c,r) = 0
+               if (SNIP_arrays%sst(c,r) > 275) then
+                  SNIP_arrays%icemask(c,r) = 0
+                  SNIP_arrays%icecon(c,r) = 0
+                  SNIP_arrays%iceage(c,r) = 0
                end if
             end if
             
             ! Update age if this is a 12Z analysis
-            if (USAFSI_arrays%icemask(c,r) == icepnt) then
+            if (SNIP_arrays%icemask(c,r) == icepnt) then
                if ( runcycle == 12 .and. &
-                    USAFSI_arrays%iceage(c,r) == &
-                    USAFSI_arrays%iceage12z(c,r)) then
-                  USAFSI_arrays%iceage(c,r) = &
-                       min( (USAFSI_arrays%iceage(c,r)+1), maxage)
+                    SNIP_arrays%iceage(c,r) == &
+                    SNIP_arrays%iceage12z(c,r)) then
+                  SNIP_arrays%iceage(c,r) = &
+                       min( (SNIP_arrays%iceage(c,r)+1), maxage)
                end if
             end if
 
             ! EMK...Sanity check iceage.  Make sure not missing if
-            ! icemask is defined.  This can happen if USAFSI is 
+            ! icemask is defined.  This can happen if SNIP is 
             ! coldstarted at a time other than 12Z.
             if (runcycle .ne. 12) then
-               if (USAFSI_arrays%icemask(c,r) .ne. -1) then
-                  if (USAFSI_arrays%iceage(c,r) .eq. -1) then
-                     USAFSI_arrays%iceage(c,r) = 0
+               if (SNIP_arrays%icemask(c,r) .ne. -1) then
+                  if (SNIP_arrays%iceage(c,r) .eq. -1) then
+                     SNIP_arrays%iceage(c,r) = 0
                   end if
                end if
             end if
@@ -3605,7 +3605,7 @@ contains
       !**
       !**   OUTPUT:  TOWARM
       !**
-      !**  SEE USAFSI_paramsMod.F90 FOR PARAMETER DESCRIPTIONS
+      !**  SEE SNIP_paramsMod.F90 FOR PARAMETER DESCRIPTIONS
       !**
       !**  UPDATES
       !**  =======
@@ -3618,14 +3618,14 @@ contains
       !**  15 SEP 10  ADDED ABS() TO LATITUDE CHECK...............MR LEWISTON/16WS/WXE
       !**  22 Mar 19  Ported to LDT...Eric Kemp, NASA GSFC/SSAI
       !**  09 May 19  Renamed LDTSI...Eric Kemp, NASA GSFC/SSAI
-      !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
+      !**  13 Dec 19  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
       !**
       !*******************************************************************************
       !*******************************************************************************
 
       ! Imports
       use LDT_usafsiMod, only: usafsi_settings
-      use USAFSI_paramsMod
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
@@ -3700,7 +3700,7 @@ contains
 
       ! Imports
       use LDT_logMod, only: LDT_verify, ldt_logunit
-      use USAFSI_arraysMod, only: USAFSI_arrays
+      use SNIP_arraysMod, only: SNIP_arrays
       use netcdf
 
       ! Defaults
@@ -3730,7 +3730,7 @@ contains
             '[ERR] Error in nf90_open for '//trim(file_path))
       call LDT_verify(nf90_inq_varid(ncid=ncid, name="snoclimo", varid=varid), &
             '[ERR] Error in nf90_inq_varid for snow climatology')
-      call LDT_verify(nf90_get_var(ncid=ncid, varid=varid, values=USAFSI_arrays%climo), &
+      call LDT_verify(nf90_get_var(ncid=ncid, varid=varid, values=SNIP_arrays%climo), &
             '[ERR] Error in nf90_get_var for snow climatology')
       call LDT_verify(nf90_close(ncid), &
             '[ERR] Error in nf90_close for '//trim(file_path))
@@ -3974,4 +3974,4 @@ contains
 #endif
 
    end subroutine read_grib1_sst
-end module USAFSI_analysisMod
+end module SNIP_analysisMod
