@@ -25,6 +25,7 @@
 !                        variable.
 ! 15 Oct 2024  Eric Kemp Updated error_message logic.
 ! 18 Mar 2025  Eric Kemp Fixed bug in checking for earlier 12Z analysis.
+! 07 Jul 2025  Eric Kemp Migration to SNIP.
 !
 ! DESCRIPTION:
 ! Source code for Air Force snow depth analysis.
