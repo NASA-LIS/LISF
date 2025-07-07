@@ -33,6 +33,8 @@ import argparse
 import os
 from datetime import datetime
 
+import cfgrib
+import dask
 import xarray as xr
 
 def generate_forecast_hours():
@@ -59,10 +61,18 @@ def is_grib2_valid(filepath, deep_check=False):
                 return False
         # Step 3: optional deep read
         if deep_check:
-            ds = xr.open_dataset(filepath, engine='cfgrib')
+            # We just need to check one GRIB2 message
+            filters = {
+                'typeOfLevel' : 'surface',
+                'stepType' : 'accum',
+            }
+            ds = xr.open_dataset(filepath, engine='cfgrib', \
+                                 filter_by_keys=filters, \
+                                 decode_timedelta=False)
             del ds
         return True
-    except Exception:
+    except Exception as e:
+        print(f"An unexpected error occurred:  {e}")
         return False
 
 def check_member_files(member_path, memb_id, forecast_hours, base_prefix, \
@@ -187,7 +197,7 @@ def main():
     else:
         script_name = "lis.mr.noah39.rapid.galwem.job"
 
-    submit_batch_script(script_name)
+    #submit_batch_script(script_name)
     write_log_file(args.log_dir, args.date, args.cycle, missing_members, \
                    bad_files, script_name)
 
