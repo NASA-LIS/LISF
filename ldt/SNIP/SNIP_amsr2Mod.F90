@@ -8,40 +8,40 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_amsr2Mod
+! MODULE: SNIP_amsr2Mod
 !
 ! REVISION HISTORY:
-!  17 Dec 2020: Yonghwan Kwon; Initial Implementation 
+!  17 Dec 2020: Yonghwan Kwon; Initial Implementation
 !  28 Jan 2021: Yeosang Yoon; Fix bug in calculate_sea_ice_concentration
 !                             subroutine
 !  08 Feb 2021: Yeosang Yoon; Remove unused variable
 !
 ! DESCRIPTION:
-! Source code for the retrieval of snow depth and sea ice concentration from 
-! AMSR2 brightness temperature observations
+! Source code for the retrieval of snow depth and sea ice concentration
+! from AMSR2 brightness temperature observations
 !-------------------------------------------------------------------------
 
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module USAFSI_amsr2Mod
+module SNIP_amsr2Mod
 
    ! Defaults
    implicit none
    private
-   
+
    ! Public routines
-   public :: USAFSI_proc_amsr2
+   public :: SNIP_proc_amsr2
 
 contains
 
    ! Public routine for processing AMSR2 data
-   subroutine USAFSI_proc_amsr2(date10, amsr2_in, amsr2, option)
+   subroutine SNIP_proc_amsr2(date10, amsr2_in, amsr2, option)
 
       ! Imports
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use USAFSI_utilMod
-      
+      use SNIP_utilMod
+
       ! Defaults
       implicit none
 
@@ -71,12 +71,12 @@ contains
 
       open(unit=90, file='./amsr2_filelist.txt', form='formatted', &
            status='old', action='read')
- 
+
       nFile = 0
       do
          read(90,'(A)',iostat=eof) filename
          if (eof/=0) exit
-         
+
          write (LDT_logunit,*) '[INFO] get amsr2 obs:', trim(filename)
 
          call read_amsr2_attributes(filename, date0, lat0, lon0, tb10h0, tb10v0, &
@@ -113,7 +113,7 @@ contains
             call resize_array(tb89v, tb89v0)
          endif
 
-         nFile = nFile + 1         
+         nFile = nFile + 1
 
       end do
       close(90)
@@ -148,8 +148,8 @@ contains
            '[INFO] Writing AMSR2 data to ', trim(filename)
       open(unit=20, file=filename,status='unknown', action='write')
 
-      satid = 13  !satid does not work for AMSR2, but need a space for satid in txt file 
-                  !for further procecure in USAFSI, which was origianlly developed for SSMIS
+      satid = 13  !satid does not work for AMSR2, but need a space for satid in txt file
+                  !for further procecure in SNIP, which was origianlly developed for SSMIS
       do i=1,size(lat)
          if (snowdepth(i) < 0) then      ! remove unrealistic values
             snowdepth(i)=-0.1
@@ -178,7 +178,7 @@ contains
       close(10)
       close(20)
 
-      ! write netCDF file for USAFSI
+      ! write netCDF file for SNIP
       nc_filename = trim(amsr2)//'amsr2_snoice_0p25deg.'//date10//'.nc'
       write (LDT_logunit,*) &
            '[INFO] Writing AMSR2 data to ', trim(nc_filename)
@@ -209,8 +209,8 @@ contains
       if(allocated(tb37v)) deallocate(tb37v)
       if(allocated(tb89h)) deallocate(tb89h)
       if(allocated(tb89v)) deallocate(tb89v)
-      
-   end subroutine USAFSI_proc_amsr2
+
+   end subroutine SNIP_proc_amsr2
 
    ! *** Remaining routines are private ***
 
@@ -451,7 +451,7 @@ contains
                else
                   if (mod(nyrs,4) == 0) then
                      ndays = ndays - 366
-             
+
                      if (ndays < 0) then
                         ndays = ndays + 366
                         flag = .false.
@@ -469,7 +469,7 @@ contains
                      end if
                   end if
                end if
-            end do           
+            end do
             nyrs = nyrs - 1
             yyyy = 1993 + nyrs
 
@@ -521,13 +521,13 @@ contains
             end do
             mm = nmons
             dd = ndays
-         end if    
+         end if
 
          hh(i) = floor((scan_days - floor(scan_days)) * 24)
       end do
 
       !In L1R data, lat/lon at the frequency other than 89GHz is consistent with the lat/lon
-      ! of the observatio position P of 89GHz A-horn (i.e., odd array of lat/lon(89A) pixcel: 2m-1) 
+      ! of the observatio position P of 89GHz A-horn (i.e., odd array of lat/lon(89A) pixcel: 2m-1)
       if(allocated(lat_odd)) deallocate(lat_odd)
       if(allocated(lon_odd)) deallocate(lon_odd)
       allocate(lat_odd(dims_lat(1)/2,dims_lat(2)))
@@ -541,7 +541,7 @@ contains
       end do
 
       dim_1d = dims_tb(1) * dims_tb(2)  ! npix (243) * nscan (e.g., 2036)
-      
+
       allocate(date_st_arr(dims_tb(2)))
       allocate(date10_arr(dim_1d))
       allocate(lat(dim_1d))
@@ -565,7 +565,7 @@ contains
 
          date_st_arr(inscan) = date_st
       end do
-         
+
       sta_arr = 1
       end_arr = dims_tb(2)   !nscan (e.g., 2036)
       do idims01 = 1, dims_tb(1)  !243
@@ -633,23 +633,23 @@ contains
       call LDT_verify(status,'Error in H5DCLOSE call')
 
       call h5close_f(status)
-      call LDT_verify(status,'Error in H5CLOSE call') 
+      call LDT_verify(status,'Error in H5CLOSE call')
 #endif
    end subroutine read_amsr2_attributes
 
 
    !subroutine calculate_snowdepth(n, surflag, tb10h, tb10v, tb19h, tb19v, &
-   !             tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon) 
+   !             tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon)
    subroutine calculate_snowdepth(n, tb10h, tb10v, tb19h, tb19v, &
                 tb23h, tb23v, tb37h, tb37v, tb89h, tb89v, snowdepth, option, lat, lon)
       ! option == 1: Hollinger, 1991,    SD=4445.0-17.95TB_37V
       ! option == 2: Markus (Chang et al., 1987), SD=1.58(TB_19H-TB_37H)
       ! option == 3; Foster et al., 1997
-      ! option == 4; Kelly, 2009 
+      ! option == 4; Kelly, 2009
 
       ! Imports
-      use LDT_usafsiMod, only: usafsi_settings
- 
+      use LDT_snipMod, only: snip_settings
+
       ! Defaults
       implicit none
 
@@ -699,12 +699,12 @@ contains
             lat_grid(i)=-89.875+0.25*(i-1)
          end do
 
-         ff_filename=trim(usafsi_settings%ff_file)
-         ! read forest fraction    
+         ff_filename=trim(snip_settings%ff_file)
+         ! read forest fraction
          call read_forestfraction(ff_filename,ff)
 
          if (option==4) then
-            fd_filename=trim(usafsi_settings%fd_file)
+            fd_filename=trim(snip_settings%fd_file)
             ! read forest density
             call read_forestdensity(fd_filename,fd)
          endif
@@ -779,7 +779,7 @@ contains
                !print *, snowdepth(i)
             else !option == 4 (Kelly, 2009)
                call checkgrid(lat_grid,lon_grid,lat(i),lon(i),plat,plon)
- 
+
                ! check forest fraction
                if (ff(plon,plat)<0) then
                   ff(plon,plat)=0
@@ -799,17 +799,17 @@ contains
                   endif
                end if
 
-               ! Calculate land surface physical temperature 
+               ! Calculate land surface physical temperature
                Tphy = 58.08 - 0.39*tb19v(i) + 1.21*tb23v(i) - 0.37*tb37h(i) + 0.36*tb89v(i)  !K
 
                ! Test for moderate to deep snow presence
-               ! Threshold are checked to ensure cold snow conditions are potentially present 
+               ! Threshold are checked to ensure cold snow conditions are potentially present
                !    in the 36 GHz Tb
 
                if (tb37h(i) < 245 .and. tb37v(i) < 255) then
                   ! snow is possible
                   ! shallow or medium depth of snow is retrieved
-         
+
                   ! A minimum polarization difference of 3 is applied to ensure that
                   ! the denominator is not too small (Kelly, 2009)
                   if (pd19 < 3) then
@@ -821,10 +821,10 @@ contains
 
                      !forest component
                   SD_f = (1/log10(pd37)) * (tb19v(i)-tb37v(i))/(1-fd(plon,plat)*0.6)     !cm
-                     
+
                   if (SD_f < 0) then
                      SD_f = 0
-                  end if                     
+                  end if
 
                      !non-forested component
                   SD_o = ((1/log10(pd37)) * (tb10v(i)-tb37v(i))) + &
@@ -852,7 +852,7 @@ contains
 
                         !forest component
                      SD_f = (1/log10(pd37)) * (tb19v(i)-tb37v(i))/(1-fd(plon,plat)*0.6)     !cm
-                       
+
                      if (SD_f < 0) then
                         SD_f = 0
                      end if
@@ -877,7 +877,7 @@ contains
                      else
                         snowdepth(i) = -0.1
                      end if
-                  end if                  
+                  end if
                end if
 
             end if ! if (option==1) then
@@ -914,7 +914,7 @@ contains
 
       !flag=.true.
 
-      !TODO: need mask only for ocean tile  
+      !TODO: need mask only for ocean tile
       do i=1,n
          flag=.true.  !Yeosang Yoon
 
@@ -940,7 +940,7 @@ contains
             ct(i)=-1
          end if !lat
       end do
-      
+
    end subroutine calculate_sea_ice_concentration
 
 
@@ -995,7 +995,6 @@ contains
 
    end subroutine resize_array_int
 
-   
    subroutine resize_array_str(arr1, arr2)
 
       ! Defaults
@@ -1022,9 +1021,9 @@ contains
    end subroutine resize_array_str
 
 
-#if(defined USE_NETCDF4) 
+#if(defined USE_NETCDF4)
    subroutine write_netcdf(nc_filename, n, lat, lon, snowdepth, ct)
-   
+
       ! Imports
       use LDT_logMod, only: LDT_verify
       use netcdf
@@ -1294,7 +1293,7 @@ contains
    end subroutine checkgrid
 
 
-#if(defined USE_NETCDF4)   
+#if(defined USE_NETCDF4)
    subroutine read_forestfraction(ff_filename, ff)
 
       ! Imports
@@ -1382,7 +1381,7 @@ contains
 
    subroutine search_files(date10, amsr2_in)
       ! Imports
-      use USAFSI_utilMod, only: date10_julhr, julhr_date10
+      use SNIP_utilMod, only: date10_julhr, julhr_date10
 
       ! Defaults
       implicit none
@@ -1444,7 +1443,7 @@ contains
 
             file_path = trim(amsr2_in)//'GW1AM2_'//date10(1:8)//st_hr_str// &
                         '*_L1SGRTBR_*.h5 2>/dev/null > file'//cnt//'.txt'
- 
+
             cmd = 'ls '//file_path
             call system(cmd)
             n=n+1
@@ -1453,7 +1452,7 @@ contains
 
       call system ('ls file*.txt | xargs cat > ./amsr2_filelist.txt')
       call system ('find . -type f -name "file*.txt" -print0 | xargs -0 rm -rf')
-   
+
    end subroutine search_files
 
-end module USAFSI_amsr2Mod
+end module SNIP_amsr2Mod
