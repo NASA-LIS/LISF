@@ -1,18 +1,19 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.4
+! Version 7.5
 !
-! Copyright (c) 2022 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_espcdMod
+! MODULE: SNIP_espcdMod
 !
 ! REVISION HISTORY:
 ! 17 Jul 2024  Eric Kemp      First version.  (Based on USAF_gofsMod.F90)
 ! 16 Dec 2024  Yeosang Yoon   Updated ESPC-D SST file format (depth dimensions)
+! 07 Jul 2025  Eric Kemp      Modified for SNIP.
 !
 ! DESCRIPTION:
 ! Source code for reading US Navy ESPC-D data.
@@ -21,7 +22,7 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module USAFSI_espcdMod
+module SNIP_espcdMod
 
   ! Defaults
   implicit none
@@ -41,10 +42,11 @@ contains
 
     ! Imports
     use netcdf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
-    use USAFSI_paramsMod, only: program_name, msglns
-    use USAFSI_utilMod, only: error_message
+    use SNIP_paramsMod, only: program_name, msglns
+    use SNIP_utilMod, only: error_message
 
     ! Defaults
     implicit none
@@ -56,7 +58,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
     real, allocatable, intent(inout) :: aice(:,:,:)
     integer, intent(out) :: nlon
     integer, intent(out) :: nlat
@@ -100,7 +102,7 @@ contains
        fh_local = 12
        julhr = julhr - 18
     else
-       write(LDT_logunit,*)'[ERR] Bad USAFSI hour ', hh
+       write(LDT_logunit,*)'[ERR] Bad SNIP hour ', hh
        write(LDT_logunit,*)'[ERR] Must be 00, 06, 12, or 18'
        write(LDT_logunit,*)'[ERR] LDT will exit...'
        call LDT_endrun()
@@ -271,6 +273,7 @@ contains
        aice, nlon, nlat)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
 
     ! Defaults
@@ -283,7 +286,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
     real, allocatable, intent(inout) :: aice(:,:,:)
     integer, intent(out) :: nlon
     integer, intent(out) :: nlat
@@ -300,6 +303,9 @@ contains
   subroutine construct_espcd_cice_filename(rootdir, region, &
        yyyy, mm, dd, hh, fh, filename)
 
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
@@ -311,7 +317,7 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     integer, intent(in) :: fh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Local variables
     character*10 :: yyyymmddhh
@@ -332,10 +338,11 @@ contains
 
     ! Imports
     use netcdf
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
     use LDT_timeMgrMod, only: LDT_get_julhr, LDT_julhr_date
-    use USAFSI_paramsMod, only: program_name, msglns
-    use USAFSI_utilMod, only: error_message
+    use SNIP_paramsMod, only: program_name, msglns
+    use SNIP_utilMod, only: error_message
 
     ! Defaults
     implicit none
@@ -346,7 +353,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(inout) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(inout) :: filename
     real, allocatable, intent(inout) :: water_temp(:,:,:,:)
     integer, intent(out) :: nlat
     integer, intent(out) :: nlon
@@ -385,7 +392,7 @@ contains
     else if (hh == 06) then
        fh_local = 18
     else
-       write(LDT_logunit,*)'[ERR] Bad USAFSI hour ', hh
+       write(LDT_logunit,*)'[ERR] Bad SNIP hour ', hh
        write(LDT_logunit,*)'[ERR] Must be 00, 06, 12, or 18'
        write(LDT_logunit,*)'[ERR] LDT will exit...'
        call LDT_endrun()
@@ -505,7 +512,7 @@ contains
 
        if (lens(1) .ne. nlon .or. &
             lens(2) .ne. nlat .or. &
-            lens(3) .ne. 2 .or. &          !depth=2, updated 2024/10/31 
+            lens(3) .ne. 2 .or. &          !depth=2, updated 2024/10/31
             lens(4) .ne. 1) then
           message(1) = &
                '[WARN] CANNOT GET DIMENSIONS FOR water_temp IN FILE'
@@ -548,6 +555,7 @@ contains
        filename, water_temp, nlat, nlon)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit, LDT_endrun
 
     ! Defaults
@@ -559,7 +567,7 @@ contains
     integer, intent(in) :: mm
     integer, intent(in) :: dd
     integer, intent(in) :: hh
-    character*255, intent(inout) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(inout) :: filename
     real, allocatable, intent(inout) :: water_temp(:,:,:,:)
     integer, intent(out) :: nlat
     integer, intent(out) :: nlon
@@ -576,6 +584,9 @@ contains
   subroutine construct_espcd_sst_filename(rootdir, &
        yyyy, mm, dd, hh, fh, filename)
 
+    ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+
     ! Defaults
     implicit none
 
@@ -586,7 +597,7 @@ contains
     integer, intent(in) :: dd
     integer, intent(in) :: hh
     integer, intent(in) :: fh
-    character*255, intent(out) :: filename
+    character(len=LDT_CONST_PATH_LEN), intent(out) :: filename
 
     ! Locals
     character*10 :: yyyymmddhh
@@ -607,6 +618,7 @@ contains
        yyyy, mm, dd, hh, ierr)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc, LDT_domain
     use LDT_logMod, only: LDT_verify, LDT_endrun
     use netcdf
@@ -629,7 +641,7 @@ contains
     ! Locals
     integer :: nlat
     integer :: nlon
-    character*255 :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     real, allocatable :: water_temp(:,:,:,:)
     real, allocatable :: water_temp_1d(:)
     real, allocatable :: sst_1d(:)
@@ -845,6 +857,7 @@ contains
        landmask, yyyy, mm, dd, hh, icecon, ierr)
 
     ! Imports
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_coreMod, only: LDT_rc
     use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
     use netcdf
@@ -866,7 +879,7 @@ contains
     integer, parameter :: nlat_arc = 2501
     integer, parameter :: nlat_ant = 1549
     integer :: nlon = 9000
-    character*255 :: filename
+    character(len=LDT_CONST_PATH_LEN) :: filename
     real, allocatable :: aice(:,:,:)
     real, allocatable :: aice_1d(:)
     real, allocatable :: icecon_1d(:)
@@ -1016,4 +1029,4 @@ contains
 
 #endif
 
-end module USAFSI_espcdMod
+end module SNIP_espcdMod
