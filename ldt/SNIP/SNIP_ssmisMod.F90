@@ -8,7 +8,7 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_ssmisMod
+! MODULE: SNIP_ssmisMod
 !
 ! REVISION HISTORY:
 !  30 Dec 2018: Yeosang Yoon; Initial Implementation
@@ -17,6 +17,7 @@
 !  09 May 2019: Eric Kemp; Renamed LDTSI
 !  13 Dec 2019: Eric Kemp; Renamed USAFSI
 !  09 Mar 2019: Eric Kemp; bug fixes and tweaks addressing mixed precision.
+!  07 Jul 2025: Eric Kemp; Updated for SNIP.
 !
 ! DESCRIPTION:
 ! Source code for the retrieval of snow depth and sea ice concentration from
@@ -26,38 +27,39 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module USAFSI_ssmisMod
+module SNIP_ssmisMod
 
    ! Defaults
    implicit none
    private
 
    ! Public routines
-   public :: USAFSI_proc_ssmis
+   public :: SNIP_proc_ssmis
 
 contains
 
    ! Public routine for processing SSMIS data
-   subroutine USAFSI_proc_ssmis(date10, ssmis_in, ssmis, option)
+   subroutine SNIP_proc_ssmis(date10, ssmis_in, ssmis, option)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun, LDT_verify
-      use USAFSI_utilMod
-      use USAFSI_paramsMod
       use map_utils
+      use SNIP_utilMod
+      use SNIP_paramsMod
 
       ! Defaults
       implicit none
 
       ! Arguments
       character(len=10),  intent(in)  :: date10
-      character(len=255), intent(in)  :: ssmis_in
-      character(len=255), intent(in)  :: ssmis
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: ssmis_in
+      character(len=LDT_CONST_PATH_LEN), intent(in)  :: ssmis
       integer,            intent(in)  :: option
 
       ! Local variables
       integer                         :: eof, i, j, n, nArr, nFile, x, y
-      character(len=255)              :: filename, nc_filename
+      character(len=LDT_CONST_PATH_LEN) :: filename, nc_filename
       integer,           dimension(:), allocatable :: surflag0, surflag, &
            satid0, satid
       character(len=10), dimension(:), allocatable :: date0, date10_arr
@@ -195,7 +197,7 @@ contains
       close(10)
       close(20)
 
-      ! write netCDF file for USAFSI
+      ! write netCDF file for SNIP
       nc_filename = trim(ssmis)//'ssmis_snoice_0p25deg.'//date10//'.nc'
       write (LDT_logunit,*) &
            '[INFO] Writing SSMIS data to ', trim(nc_filename)
@@ -227,7 +229,7 @@ contains
       if(allocated(tb91v)) deallocate(tb91v)
       if(allocated(tb91h)) deallocate(tb91h)
 
-   end subroutine USAFSI_proc_ssmis
+   end subroutine SNIP_proc_ssmis
 
    ! *** Remaining routines are private ***
 
@@ -237,13 +239,14 @@ contains
 
       ! Imports
       use eccodes
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: ldt_logunit
 
       ! Defaults
       implicit none
 
       ! Arguments
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -399,9 +402,10 @@ contains
    ! Dummy version if no ECCODES support was compiled
    subroutine read_bufr_attributes(filename, satid, date10_arr, lat, lon, &
         surflag, tb19h, tb19v, tb37h, tb37v, tb22v, tb91v, tb91h)
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_endrun, LDT_logunit
       implicit none
-      character(len=255), intent(in) :: filename
+      character(len=LDT_CONST_PATH_LEN), intent(in) :: filename
       integer, allocatable, intent(inout) :: satid(:)
       character(len=10), allocatable, intent(inout) :: date10_arr(:)
       real(kind=8), allocatable, intent(inout) :: lat(:)
@@ -430,8 +434,9 @@ contains
       ! option == 3; Foster et al., 1997
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: ldt_logunit
-      use LDT_usafsiMod, only: usafsi_settings
+      use LDT_SNIPMod, only: SNIP_settings
 
       ! Defaults
       implicit none
@@ -457,7 +462,7 @@ contains
 
       ! Local variables
       integer                                        :: i
-      character(len=255)                             :: ff_filename
+      character(len=LDT_CONST_PATH_LEN)              :: ff_filename
       real(kind=8)                                   :: pd19,pd91,tt,si91, &
            scat,sc37,sc91,scx
       logical                                        :: flag
@@ -475,7 +480,7 @@ contains
             lat_grid(i)=-89.875+0.25*(i-1)
          end do
 
-         ff_filename=trim(usafsi_settings%ff_file)
+         ff_filename=trim(SNIP_settings%ff_file)
          ! read forest fraction
          call read_forestfraction(ff_filename,ff)
       end if
@@ -960,6 +965,7 @@ contains
    subroutine read_forestfraction(ff_filename, ff)
 
       ! Imports
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_verify
       use netcdf
 
@@ -967,7 +973,7 @@ contains
       implicit none
 
       ! Arguments
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
 
       ! Local variables
@@ -995,9 +1001,10 @@ contains
 #else
    ! Dummy version
    subroutine read_forestfraction(ff_filename, ff)
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
       use LDT_logMod, only: LDT_logunit, LDT_endrun
       implicit none
-      character (len=255), intent(in) :: ff_filename
+      character (len=LDT_CONST_PATH_LEN), intent(in) :: ff_filename
       real, intent(out)           :: ff(1440,720)   ! fixed 1/4 deg
       write(LDT_logunit,*) &
            "[ERR] Recompile LDT with netCDF4 support!"
@@ -1010,18 +1017,19 @@ contains
    subroutine search_files(date10, ssmis_in)
 
       ! Imports
-      use USAFSI_utilMod, only: date10_julhr, julhr_date10
+      use LDT_constantsMod, only: LDT_CONST_PATH_LEN
+      use SNIP_utilMod, only: date10_julhr, julhr_date10
 
       ! Defaults
       implicit none
 
       ! Arguments
       character*10,       intent(in) :: date10
-      character*255,      intent(in) :: ssmis_in
+      character(LDT_CONST_PATH_LEN), intent(in) :: ssmis_in
 
       ! Local variables
       integer            :: eof, n, i, j, k
-      character(len=255)               :: file_path, cmd
+      character(len=LDT_CONST_PATH_LEN) :: file_path, cmd
       character*10                   :: date10_prev
       integer                        :: hr, st_hr, julhr
       character*2                    :: satid (3)
@@ -1085,4 +1093,4 @@ contains
 
    end subroutine search_files
 
-end module USAFSI_ssmisMod
+end module SNIP_ssmisMod
