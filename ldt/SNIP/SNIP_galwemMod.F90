@@ -8,10 +8,11 @@
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
-! MODULE: USAFSI_galwemMod
+! MODULE: SNIP_galwemMod
 !
 ! REVISION HISTORY:
 ! 28 Oct 2020  Eric Kemp  Initial version.
+! 07 Jul 2025  Eric Kemp  Updated for SNIP.
 !
 ! DESCRIPTION:
 ! Source code for fetching 2-m air temperature from GALWEM.
@@ -19,23 +20,24 @@
 
 #include "LDT_misc.h"
 
-module USAFSI_galwemMod
+module SNIP_galwemMod
 
   ! Defaults
   implicit none
   private
 
   ! Public methods
-  public :: USAFSI_get_galwem_t2m
+  public :: SNIP_get_galwem_t2m
 
 contains
 
-  subroutine USAFSI_get_galwem_t2m(n, julhr, nc, nr, t2m, rc)
+  subroutine SNIP_get_galwem_t2m(n, julhr, nc, nr, t2m, rc)
 
     ! Imports
 #if (defined USE_GRIBAPI)
     use grib_api
 #endif
+    use LDT_constantsMod, only: LDT_CONST_PATH_LEN
     use LDT_logMod, only: LDT_logunit
     use LDT_timeMgrMod, only: LDT_julhr_date
     use LDT_usafsiMod, only: usafsi_settings
@@ -52,7 +54,7 @@ contains
     integer, intent(inout) :: rc
 
     ! Local variables
-    character(255) :: gribfilename
+    character(LDT_CONST_PATH_LEN) :: gribfilename
     real :: gridDesci_glb(50)
     logical :: file_exists
     logical :: found
@@ -135,7 +137,7 @@ contains
        call grib_count_in_file(ftn, nvars, ierr)
        if ( ierr .ne. 0 ) then
           write(LDT_logunit,*) '[WARN] in grib_count_in_file ' // &
-               'in USAFSI_get_galwem_t2m'
+               'in SNIP_get_galwem_t2m'
           call grib_close_file(ftn)
           cycle
        endif
@@ -156,7 +158,7 @@ contains
                prod_def_tmpl_num, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'productDefinitionTemplateNumber in USAFSI_get_galwem_t2m'
+                  'productDefinitionTemplateNumber in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -171,7 +173,7 @@ contains
           call grib_get(igrib, 'discipline', param_disc_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'discipline in USAFSI_get_galwem_t2m'
+                  'discipline in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -185,7 +187,7 @@ contains
           call grib_get(igrib, 'parameterCategory', param_cat_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'parameterCategory in USAFSI_get_galwem_t2m'
+                  'parameterCategory in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -199,7 +201,7 @@ contains
           call grib_get(igrib, 'parameterNumber', param_num_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'parameterNumber in USAFSI_get_galwem_t2m'
+                  'parameterNumber in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -213,7 +215,7 @@ contains
           call grib_get(igrib, 'typeOfFirstFixedSurface', surface_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'typeOfFirstFixedSurface in USAFSI_get_galwem_t2m'
+                  'typeOfFirstFixedSurface in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -227,7 +229,7 @@ contains
           call grib_get(igrib, 'typeOfSecondFixedSurface', surface_val_2, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'typeOfSecondFixedSurface in USAFSI_get_galwem_t2m'
+                  'typeOfSecondFixedSurface in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -242,7 +244,7 @@ contains
           call grib_get(igrib, 'level', level_val, ierr)
           if (ierr .ne. 0) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'level in USAFSI_get_galwem_t2m'
+                  'level in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           end if
@@ -259,7 +261,7 @@ contains
           call grib_get(igrib, 'centre', center, ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grib_get: ' // &
-                  'centre in USAFSI_get_galwem_t2m'
+                  'centre in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -272,7 +274,7 @@ contains
           call grib_get(igrib, 'gridType', gtype, ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grid_get: ' // &
-                  'gridtype in USAFSI_get_galwem_t2m'
+                  'gridtype in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -285,7 +287,7 @@ contains
           call grib_get(igrib, 'dataDate', dataDate, ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grid_get: ' // &
-                  'dataDate in USAFSI_get_galwem_t2m'
+                  'dataDate in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -298,7 +300,7 @@ contains
           call grib_get(igrib, 'dataTime', dataTime, ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grid_get: ' // &
-                  'dataTime in USAFSI_get_galwem_t2m'
+                  'dataTime in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -310,7 +312,7 @@ contains
           call grib_get(igrib, 'Ni', iginfo(1), ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) &
-                  '[WARN] in grid_get: Ni in USAFSI_get_galwem_t2m'
+                  '[WARN] in grid_get: Ni in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -322,7 +324,7 @@ contains
           call grib_get(igrib, 'Nj', iginfo(2), ierr)
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) &
-                  '[WARN] in grid_get: Nj in USAFSI_get_galwem_t2m'
+                  '[WARN] in grid_get: Nj in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -336,7 +338,7 @@ contains
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grid_get: ' // &
                   'jDirectionIncrementInDegrees ' // &
-                  'in USAFSI_get_galwem_t2m'
+                  'in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -346,7 +348,7 @@ contains
           if ( ierr .ne. 0 ) then
              write(LDT_logunit,*) '[WARN] in grid_get: ' // &
                   'iDirectionIncrementInDegrees ' // &
-                  'in USAFSI_get_galwem_t2m'
+                  'in SNIP_get_galwem_t2m'
              call grib_release(igrib, ierr)
              cycle
           endif
@@ -404,7 +406,7 @@ contains
     deallocate(fg_t2m)
     rc = 0
 
-  end subroutine USAFSI_get_galwem_t2m
+  end subroutine SNIP_get_galwem_t2m
 
   ! Private subroutine
   subroutine get_galwem_filename(filename, rootdir, dir, use_timestamp, &
@@ -601,5 +603,5 @@ contains
        call LDT_endrun()
     end if
   end subroutine set_galwem_griddesc
-end module USAFSI_galwemMod
+end module SNIP_galwemMod
 
