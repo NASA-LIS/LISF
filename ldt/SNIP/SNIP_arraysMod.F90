@@ -11,9 +11,9 @@
 !*****************************************************************************************
 !*****************************************************************************************
 !**
-!**  NAME: USAFSI_ARRAYS
+!**  NAME: SNIP_ARRAYS
 !**
-!**  PURPOSE: HOLDS USAFSI MODEL SHARED ARRAYS
+!**  PURPOSE: HOLDS SNIP MODEL SHARED ARRAYS
 !**
 !**  UPDATES
 !**  =======
@@ -34,18 +34,19 @@
 !**  13 Dec 19  Renamed USAFSI...Eric Kemp, NASA GSFC/SSAI
 !**  19 Jul 24  Renamed gofs_icecon array to navy_icecon array to reflect
 !               source as either ESPC-D or GOFS.
+!**  07 Jul 25  Renamed SNIP...Eric Kemp, NASA GSFC/SSAI
 !*****************************************************************************************
 !*****************************************************************************************
 
 #include "LDT_misc.h"
 
-module USAFSI_arraysMod
+module SNIP_arraysMod
 
    ! Defaults
    implicit none
    private
 
-   type USAFSI_arrays_t
+   type SNIP_arrays_t
       integer*1,  allocatable    :: snow_poss        ( : , : )    ! SNOW POSSIBLE MASK (0=NO SNOW; 1=SNOW)
       integer,    allocatable    :: iceage           ( : , : )    ! ICE AGE (DAYS)
       integer,    allocatable    :: iceage12z        ( : , : )    ! ICE AGE (DAYS) PROM PREVIOUS 12Z
@@ -63,12 +64,12 @@ module USAFSI_arraysMod
       real,       allocatable    :: ptlat            ( : , : )    ! GRID POINT LATITUDES
       real,       allocatable    :: ptlon            ( : , : )    ! GRID POINT LONGITUDES
       real,       allocatable    :: snoanl           ( : , : )    ! CURRENT SNOW DEPTH ANALYSIS (METERS)
-      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON USAFSI GRID
+      real,       allocatable    :: snofrac          ( : , : )    ! FRACTIONAL SNOW DATA ON SNIP GRID
       real,       allocatable    :: ssmis_depth      ( : , : )    ! SNOW DEPTH FROM SSMIS EDRS
       real,       allocatable    :: sst              ( : , : )    ! NAVY SEA SURFACE TEMPERATURES (KELVIN)
       real, allocatable :: navy_icecon(:,:)
-   end type USAFSI_arrays_t
+   end type SNIP_arrays_t
 
-   type(USAFSI_arrays_t), public :: USAFSI_arrays
+   type(SNIP_arrays_t), public :: SNIP_arrays
 
-end module USAFSI_arraysMod
+end module SNIP_arraysMod
