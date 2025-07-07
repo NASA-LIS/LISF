@@ -10,19 +10,19 @@
 #include "LDT_misc.h"
 #include "LDT_NetCDF_inc.h"
 
-module LDT_usafsiMod
+module LDT_snipMod
 
   ! Defaults
   implicit none
   private
 
   ! Public methods
-  public :: LDT_usafsiInit
-  public :: LDT_usafsiRun
+  public :: LDT_snipInit
+  public :: LDT_snipRun
 
   ! Public type.  These are formerly environment and namelist variables from
   ! the original SNODEP.
-  type, public :: usafsi_t
+  type, public :: snip_t
      ! Former environment variables
      character*10  :: date10
      character*255 :: fracdir
@@ -99,13 +99,13 @@ module LDT_usafsiMod
      ! option for snow climatology
      integer       :: climo_option
 
-  end type usafsi_t
-  type(usafsi_t), public :: usafsi_settings
+  end type snip_t
+  type(snip_t), public :: snip_settings
 
 contains
 
-  ! Reads USAFSI-specific entries from ldt.config
-  subroutine LDT_usafsiInit()
+  ! Reads SNIP-specific entries from ldt.config
+  subroutine LDT_snipInit()
 
     ! Imports
     use ESMF
@@ -123,168 +123,168 @@ contains
     ! *** Get former environment variables ***
 
     ! Get date10
-    cfg_entry = "USAFSI valid date (YYYYMMDDHH):"
+    cfg_entry = "SNIP valid date (YYYYMMDDHH):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%date10, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%date10, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get fracdir
-    cfg_entry = "USAFSI fractional snow data directory:"
+    cfg_entry = "SNIP fractional snow data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%fracdir, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fracdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get modif
-    cfg_entry = "USAFSI modified data directory:"
+    cfg_entry = "SNIP modified data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%modif, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%modif, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! New sfcobs format...EMK 20230728
-    cfg_entry = "USAFSI surface obs data format:"
+    cfg_entry = "SNIP surface obs data format:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobsfmt, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%sfcobsfmt, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get sfcobs
-    cfg_entry = "USAFSI surface obs data directory:"
+    cfg_entry = "SNIP surface obs data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sfcobs, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%sfcobs, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
 !------------------------------------------------------------------------------kyh20201118
     ! Select TB data
-    cfg_entry = "USAFSI brightness temperature data option:"
+    cfg_entry = "SNIP brightness temperature data option:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%TB_option, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%TB_option, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get TB data
-    if (usafsi_settings%TB_option == 1) then ! SSMIS
-       cfg_entry = "USAFSI SSMIS data directory:"
+    if (snip_settings%TB_option == 1) then ! SSMIS
+       cfg_entry = "SNIP SSMIS data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis, rc=rc)
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis, rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (usafsi_settings%TB_option == 2) then ! XCAL GMI
-       cfg_entry = "USAFSI XCAL GMI data directory:"
+    elseif (snip_settings%TB_option == 2) then ! XCAL GMI
+       cfg_entry = "SNIP XCAL GMI data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%gmi, rc=rc)
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%gmi, rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (usafsi_settings%TB_option == 3) then ! AMSR2
-       cfg_entry = "USAFSI AMSR2 data directory:"
+    elseif (snip_settings%TB_option == 3) then ! AMSR2
+       cfg_entry = "SNIP AMSR2 data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%amsr2, rc=rc)
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2, rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
 !------------------------------------------------------------------------------kyh20201118
 
     ! Get stmpdir
-    cfg_entry = "USAFSI surface temperature data directory:"
+    cfg_entry = "SNIP surface temperature data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%stmpdir, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%stmpdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! EMK 20220113
-    cfg_entry = "USAFSI FNMOC SST GRIB1 data directory:"
+    cfg_entry = "SNIP FNMOC SST GRIB1 data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%sstdir, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%sstdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get static
-    cfg_entry = "USAFSI static data directory:"
+    cfg_entry = "SNIP static data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%static, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%static, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get unmod
-    cfg_entry = "USAFSI unmodified data directory:"
+    cfg_entry = "SNIP unmodified data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%unmod, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%unmod, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get viirsdir
-    cfg_entry = "USAFSI VIIRS data directory:"
+    cfg_entry = "SNIP VIIRS data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%viirsdir, rc=rc)
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%viirsdir, rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
 !------------------------------------------------------------------------------kyh20201118
     ! *** for PMW snow depth retrieval, Yeosang Yoon
     ! get PMW raw datasets
-    if (usafsi_settings%TB_option == 1) then ! SSMIS
-       cfg_entry = "USAFSI SSMIS raw data directory:"
+    if (snip_settings%TB_option == 1) then ! SSMIS
+       cfg_entry = "SNIP SSMIS raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (usafsi_settings%TB_option == 2) then ! XCAL GMI
-       cfg_entry = "USAFSI XCAL GMI raw data directory:"
+    elseif (snip_settings%TB_option == 2) then ! XCAL GMI
+       cfg_entry = "SNIP XCAL GMI raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%gmi_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%gmi_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    elseif (usafsi_settings%TB_option == 3) then ! AMSR2
-       cfg_entry = "USAFSI AMSR2 raw data directory:"
+    elseif (snip_settings%TB_option == 3) then ! AMSR2
+       cfg_entry = "SNIP AMSR2 raw data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%amsr2_raw_dir, &
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%amsr2_raw_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
 !------------------------------------------------------------------------------kyh20201118
 
     ! YY: get option for PMW snow depth retrieval alogrithm
-    cfg_entry = "USAFSI PMW snow depth retrieval algorithm option:"  
+    cfg_entry = "SNIP PMW snow depth retrieval algorithm option:"  
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ssmis_option, &
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ssmis_option, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! get forest fraction for algorithm 3 and 4
-    if (usafsi_settings%ssmis_option==3 .or. usafsi_settings%ssmis_option==4) then   !kyh20201212
-       cfg_entry = "USAFSI forest fraction file:"   !YY
+    if (snip_settings%ssmis_option==3 .or. snip_settings%ssmis_option==4) then   !kyh20201212
+       cfg_entry = "SNIP forest fraction file:"   !YY
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ff_file, &
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ff_file, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
 
     ! get forest density for algorithm 4
-    if (usafsi_settings%ssmis_option==4) then   !kyh20210113
-       cfg_entry = "USAFSI forest density file:"
+    if (snip_settings%ssmis_option==4) then   !kyh20210113
+       cfg_entry = "SNIP forest density file:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%fd_file, & 
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%fd_file, & 
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end if
 
     ! get option for snow climatology
-    cfg_entry = "USAFSI Snow Climatology:"
+    cfg_entry = "SNIP Snow Climatology:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%climo_option,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%climo_option,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
@@ -292,96 +292,96 @@ contains
 
     ! Get clmadj
     cfg_entry = &
-         "USAFSI decimal fraction adjustment of snow depth towards climo:"
+         "SNIP decimal fraction adjustment of snow depth towards climo:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%clmadj,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%clmadj,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get unkdep
-    cfg_entry = "USAFSI default snow depth (m) when actual depth unknown:"
+    cfg_entry = "SNIP default snow depth (m) when actual depth unknown:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%unkdep,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%unkdep,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minprt
     cfg_entry = &
-         "USAFSI minimum snow depth (m) for which to print a diagnostic:"
+         "SNIP minimum snow depth (m) for which to print a diagnostic:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%minprt,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minprt,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get maxsobs
-    cfg_entry = "USAFSI maximum number of surface observations allowed:"
+    cfg_entry = "SNIP maximum number of surface observations allowed:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%maxsobs,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%maxsobs,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minsat
-    cfg_entry = "USAFSI SSMIS shallow snow depth threshold (m):"
+    cfg_entry = "SNIP SSMIS shallow snow depth threshold (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%minsat,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minsat,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get trplat
-    cfg_entry = "USAFSI latitudes (deg * 100) for summer climo check:"
+    cfg_entry = "SNIP latitudes (deg * 100) for summer climo check:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     do c = 1,3
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%trplat(c),&
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%trplat(c),&
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end do ! c
 
     ! Get elvlim
-    cfg_entry = "USAFSI elevations (m) for summer climo check:"
+    cfg_entry = "SNIP elevations (m) for summer climo check:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     do c = 1,4
-       call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%elvlim(c),&
+       call ESMF_ConfigGetAttribute(LDT_config, snip_settings%elvlim(c),&
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
     end do ! c
 
     ! Get thresh
     cfg_entry = &
-         "USAFSI temperature (deg K * 10) above which no snow is allowed:"
+         "SNIP temperature (deg K * 10) above which no snow is allowed:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%thresh,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%thresh,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
 
     ! Get arctmax
     cfg_entry = &
-         "USAFSI max reported temperature (deg K * 10) allowed around poles:"
+         "SNIP max reported temperature (deg K * 10) allowed around poles:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%arctmax,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%arctmax,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minice
     cfg_entry = &
-         "USAFSI minimum ice concentration (%) needed to set ice flag:"
+         "SNIP minimum ice concentration (%) needed to set ice flag:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%minice,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minice,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get icelat
-    cfg_entry = "USAFSI high latitude thresholds (deg) for sea ice::"
+    cfg_entry = "SNIP high latitude thresholds (deg) for sea ice::"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     do r = 1,2
@@ -389,13 +389,13 @@ contains
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        do c = 1, 12
           call ESMF_ConfigGetAttribute(LDT_config, &
-               usafsi_settings%icelat(c,r), rc=rc)
+               snip_settings%icelat(c,r), rc=rc)
           call LDT_verify(rc, trim(cfg_entry)//" not specified")
        end do ! c
     end do ! r
 
     ! Get latchk
-    cfg_entry = "USAFSI low latitude thresholds (deg) for sea ice::"
+    cfg_entry = "SNIP low latitude thresholds (deg) for sea ice::"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     do r = 1,2
@@ -403,269 +403,269 @@ contains
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        do c = 1, 12
           call ESMF_ConfigGetAttribute(LDT_config, &
-               usafsi_settings%latchk(c,r), rc=rc)
+               snip_settings%latchk(c,r), rc=rc)
           call LDT_verify(rc, trim(cfg_entry)//" not specified")
        end do ! c
     end do ! r
 
     ! Get maxpixage
-    cfg_entry = "USAFSI max age of VIIRS pixels to use:"
+    cfg_entry = "SNIP max age of VIIRS pixels to use:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%maxpixage,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%maxpixage,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minbare
-    cfg_entry = "USAFSI min VIIRS fraction to mark point as bare ground:"
+    cfg_entry = "SNIP min VIIRS fraction to mark point as bare ground:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%minbare,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minbare,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get minfrac
-    cfg_entry = "USAFSI min VIIRS/CDFS-II fraction to mark point as snow:"
+    cfg_entry = "SNIP min VIIRS/CDFS-II fraction to mark point as snow:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%minfrac,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%minfrac,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get usefrac
-    cfg_entry = "USAFSI use CDFS-II fractional snow data:"
+    cfg_entry = "SNIP use CDFS-II fractional snow data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%usefrac,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%usefrac,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get useviirs
-    cfg_entry = "USAFSI use VIIRS snow mask:"
+    cfg_entry = "SNIP use VIIRS snow mask:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%useviirs,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%useviirs,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! ** New Bratseth settings **
     ! Get obs_err_var
-    cfg_entry = "USAFSI observation error variance (m^2):"
+    cfg_entry = "SNIP observation error variance (m^2):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%ob_err_var,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%ob_err_var,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get back_err_var
-    cfg_entry = "USAFSI background error variance (m^2):"
+    cfg_entry = "SNIP background error variance (m^2):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    call ESMF_ConfigGetAttribute(LDT_config, usafsi_settings%back_err_var,&
+    call ESMF_ConfigGetAttribute(LDT_config, snip_settings%back_err_var,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get back_err_h_corr_len
-    cfg_entry = "USAFSI background error horizontal correlation length (m):"
+    cfg_entry = "SNIP background error horizontal correlation length (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%back_err_h_corr_len,&
+         snip_settings%back_err_h_corr_len,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get back_err_v_corr_len
-    cfg_entry = "USAFSI background error vertical correlation length (m):"
+    cfg_entry = "SNIP background error vertical correlation length (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%back_err_v_corr_len,&
+         snip_settings%back_err_v_corr_len,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get elev_diff_thresh
-    cfg_entry = "USAFSI elevQC difference threshold (m):"
+    cfg_entry = "SNIP elevQC difference threshold (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%elevqc_diff_threshold,&
+         snip_settings%elevqc_diff_threshold,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get skewed_backqc_threshold
-    cfg_entry = "USAFSI skewed backQC snow depth threshold (m):"
+    cfg_entry = "SNIP skewed backQC snow depth threshold (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%skewed_backqc_threshold,&
+         snip_settings%skewed_backqc_threshold,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Bogus value for climo if not defined at land point
-    cfg_entry = "USAFSI bogus climatology snow depth value (m):"
+    cfg_entry = "SNIP bogus climatology snow depth value (m):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%fill_climo,&
+         snip_settings%fill_climo,&
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! EMK 20240718...Specify source of ocean data.
-    cfg_entry = "USAFSI source of ocean data:"
+    cfg_entry = "SNIP source of ocean data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%source_of_ocean_data, &
+         snip_settings%source_of_ocean_data, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
-    if (usafsi_settings%source_of_ocean_data .ne. "GOFS" .and. &
-         usafsi_settings%source_of_ocean_data .ne. "ESPC-D") then
+    if (snip_settings%source_of_ocean_data .ne. "GOFS" .and. &
+         snip_settings%source_of_ocean_data .ne. "ESPC-D") then
        write(LDT_logunit,*)'[ERR] Unrecognized source of ocean data'
        write(LDT_logunit,*)'[ERR] Must be GOFS or ESPC-D'
        write(LDT_logunit,*) &
-            "[ERR] Update entry for 'USAFSI source of ocean data:'"
+            "[ERR] Update entry for 'SNIP source of ocean data:'"
        write(LDT_logunit,*)'[ERR] LDT will halt.'
        call LDT_endrun()
     end if
 
-    if (usafsi_settings%source_of_ocean_data == "GOFS") then
+    if (snip_settings%source_of_ocean_data == "GOFS") then
        ! Get gofs_sst_dir
-       cfg_entry = "USAFSI GOFS SST data directory:"
+       cfg_entry = "SNIP GOFS SST data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, &
-            usafsi_settings%gofs_sst_dir, &
+            snip_settings%gofs_sst_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
        ! Get gofs_cice_dir
-       cfg_entry = "USAFSI GOFS CICE data directory:"
+       cfg_entry = "SNIP GOFS CICE data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, &
-            usafsi_settings%gofs_cice_dir, &
+            snip_settings%gofs_cice_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-    else if (usafsi_settings%source_of_ocean_data == "ESPC-D") then
+    else if (snip_settings%source_of_ocean_data == "ESPC-D") then
 
        ! Get espcd_sst_dir
-       cfg_entry = "USAFSI ESPC-D SST data directory:"
+       cfg_entry = "SNIP ESPC-D SST data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, &
-            usafsi_settings%espcd_sst_dir, &
+            snip_settings%espcd_sst_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
        ! Get espcd_cice_dir
-       cfg_entry = "USAFSI ESPC-D CICE data directory:"
+       cfg_entry = "SNIP ESPC-D CICE data directory:"
        call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
        call ESMF_ConfigGetAttribute(LDT_config, &
-            usafsi_settings%espcd_cice_dir, &
+            snip_settings%espcd_cice_dir, &
             rc=rc)
        call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     end if
 
     ! Get lis_grib2_dir
-    cfg_entry = "USAFSI LIS GRIB2 data directory:"
+    cfg_entry = "SNIP LIS GRIB2 data directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%lis_grib2_dir, &
+         snip_settings%lis_grib2_dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get security class
-    cfg_entry = "USAFSI LIS GRIB2 security class:"
+    cfg_entry = "SNIP LIS GRIB2 security class:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%security_class, &
+         snip_settings%security_class, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get data category
-    cfg_entry = "USAFSI LIS GRIB2 data category:"
+    cfg_entry = "SNIP LIS GRIB2 data category:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%data_category, &
+         snip_settings%data_category, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get data resolution
-    cfg_entry = "USAFSI LIS GRIB2 data resolution:"
+    cfg_entry = "SNIP LIS GRIB2 data resolution:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%data_res, &
+         snip_settings%data_res, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get area of data
-    cfg_entry = "USAFSI LIS GRIB2 area of data:"
+    cfg_entry = "SNIP LIS GRIB2 area of data:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%area_of_data, &
+         snip_settings%area_of_data, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get GALWEM root directory
-    cfg_entry = "USAFSI GALWEM root directory:"
+    cfg_entry = "SNIP GALWEM root directory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%galwem_root_dir, &
+         snip_settings%galwem_root_dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get GALWEM subdirectory
-    cfg_entry = "USAFSI GALWEM subdirectory:"
+    cfg_entry = "SNIP GALWEM subdirectory:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%galwem_sub_dir, &
+         snip_settings%galwem_sub_dir, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! See if directory timestamp used for GALWEM
-    cfg_entry = "USAFSI GALWEM use timestamp directories:"
+    cfg_entry = "SNIP GALWEM use timestamp directories:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%use_timestamp, &
+         snip_settings%use_timestamp, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get GALWEM nominal resolution
-    cfg_entry = "USAFSI GALWEM nominal resolution (km):"
+    cfg_entry = "SNIP GALWEM nominal resolution (km):"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%galwem_res, &
+         snip_settings%galwem_res, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
     ! Get output file name (prefix)
-    cfg_entry = "USAFSI netcdf filename prefix:"
+    cfg_entry = "SNIP netcdf filename prefix:"
     call ESMF_ConfigFindLabel(LDT_config, trim(cfg_entry), rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
     call ESMF_ConfigGetAttribute(LDT_config, &
-         usafsi_settings%netcdf_prefix, &
+         snip_settings%netcdf_prefix, &
          rc=rc)
     call LDT_verify(rc, trim(cfg_entry)//" not specified")
 
-  end subroutine LDT_usafsiInit
+  end subroutine LDT_snipInit
 
-  ! This calls the actual USAFSI driver
-  subroutine LDT_usafsiRun(n)
+  ! This calls the actual SNIP driver
+  subroutine LDT_snipRun(n)
     implicit none
     integer, intent(in) :: n
-    external :: USAFSI_run
-    call USAFSI_run(n)
-  end subroutine LDT_usafsiRun
-end module LDT_usafsiMod
+    external :: SNIP_run
+    call SNIP_run(n)
+  end subroutine LDT_snipRun
+end module LDT_snipMod
